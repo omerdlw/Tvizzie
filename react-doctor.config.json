@@ -1,0 +1,6 @@
+{
+  "deadCode": false,
+  "ignore": {
+    "rules": ["react-doctor/require-reduced-motion"]
+  }
+}

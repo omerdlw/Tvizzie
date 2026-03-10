@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@theme {
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-error: #ef4444;
+  --color-warning: #f97316;
+  --color-success: #22c55e;
+
+  /* Legacy Color Bridge */
+  --color-background: var(--color-black);
+  --color-text: var(--color-white);
+  --color-primary: var(--color-white);
+  --color-info: var(--color-success);
+
+  --font-zuume: var(--font-zuume);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+}
+
+* {
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  outline: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .shimmer-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-effect {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 100%);
+    animation: shimmer 2s infinite linear;
+  }
+
+  .animate-shine {
+    animation: shine 2s linear infinite;
+  }
+
+  @keyframes status-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: -200% 50%;
+    }
+  }
+
+  .animate-status-gradient {
+    background-size: 200% auto !important;
+    animation: status-gradient 8s linear infinite !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}

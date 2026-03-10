@@ -1,0 +1,384 @@
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-ExtraLightItalic.eot');
+    src: local('Zuume Cut ExtraLight Italic'), local('ZuumeCut-ExtraLightItalic'),
+        url('ZuumeCut-ExtraLightItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-ExtraLightItalic.woff2') format('woff2'),
+        url('ZuumeCut-ExtraLightItalic.woff') format('woff'),
+        url('ZuumeCut-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-MediumItalic.eot');
+    src: local('Zuume Cut Medium Italic'), local('ZuumeCut-MediumItalic'),
+        url('ZuumeCut-MediumItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-MediumItalic.woff2') format('woff2'),
+        url('ZuumeCut-MediumItalic.woff') format('woff'),
+        url('ZuumeCut-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-ExtraLightItalic.eot');
+    src: local('Zuume ExtraLight Italic'), local('Zuume-ExtraLightItalic'),
+        url('Zuume-ExtraLightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-ExtraLightItalic.woff2') format('woff2'),
+        url('Zuume-ExtraLightItalic.woff') format('woff'),
+        url('Zuume-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Medium.eot');
+    src: local('Zuume Cut Medium'), local('ZuumeCut-Medium'),
+        url('ZuumeCut-Medium.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Medium.woff2') format('woff2'),
+        url('ZuumeCut-Medium.woff') format('woff'),
+        url('ZuumeCut-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Medium.eot');
+    src: local('Zuume Medium'), local('Zuume-Medium'),
+        url('Zuume-Medium.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Medium.woff2') format('woff2'),
+        url('Zuume-Medium.woff') format('woff'),
+        url('Zuume-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-SemiBoldItalic.eot');
+    src: local('Zuume Cut SemiBold Italic'), local('ZuumeCut-SemiBoldItalic'),
+        url('ZuumeCut-SemiBoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-SemiBoldItalic.woff2') format('woff2'),
+        url('ZuumeCut-SemiBoldItalic.woff') format('woff'),
+        url('ZuumeCut-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-MediumItalic.eot');
+    src: local('Zuume Medium Italic'), local('Zuume-MediumItalic'),
+        url('Zuume-MediumItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-MediumItalic.woff2') format('woff2'),
+        url('Zuume-MediumItalic.woff') format('woff'),
+        url('Zuume-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Regular.eot');
+    src: local('Zuume Regular'), local('Zuume-Regular'),
+        url('Zuume-Regular.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Regular.woff2') format('woff2'),
+        url('Zuume-Regular.woff') format('woff'),
+        url('Zuume-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Bold.eot');
+    src: local('Zuume Bold'), local('Zuume-Bold'),
+        url('Zuume-Bold.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Bold.woff2') format('woff2'),
+        url('Zuume-Bold.woff') format('woff'),
+        url('Zuume-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-SemiBold.eot');
+    src: local('Zuume SemiBold'), local('Zuume-SemiBold'),
+        url('Zuume-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-SemiBold.woff2') format('woff2'),
+        url('Zuume-SemiBold.woff') format('woff'),
+        url('Zuume-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-BlackItalic.eot');
+    src: local('Zuume Cut Black Italic'), local('ZuumeCut-BlackItalic'),
+        url('ZuumeCut-BlackItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-BlackItalic.woff2') format('woff2'),
+        url('ZuumeCut-BlackItalic.woff') format('woff'),
+        url('ZuumeCut-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-ExtraLight.eot');
+    src: local('Zuume Cut ExtraLight'), local('ZuumeCut-ExtraLight'),
+        url('ZuumeCut-ExtraLight.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-ExtraLight.woff2') format('woff2'),
+        url('ZuumeCut-ExtraLight.woff') format('woff'),
+        url('ZuumeCut-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-LightItalic.eot');
+    src: local('Zuume Cut Light Italic'), local('ZuumeCut-LightItalic'),
+        url('ZuumeCut-LightItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-LightItalic.woff2') format('woff2'),
+        url('ZuumeCut-LightItalic.woff') format('woff'),
+        url('ZuumeCut-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-ExtraLight.eot');
+    src: local('Zuume ExtraLight'), local('Zuume-ExtraLight'),
+        url('Zuume-ExtraLight.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-ExtraLight.woff2') format('woff2'),
+        url('Zuume-ExtraLight.woff') format('woff'),
+        url('Zuume-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-LightItalic.eot');
+    src: local('Zuume Light Italic'), local('Zuume-LightItalic'),
+        url('Zuume-LightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-LightItalic.woff2') format('woff2'),
+        url('Zuume-LightItalic.woff') format('woff'),
+        url('Zuume-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Black.eot');
+    src: local('Zuume Cut Black'), local('ZuumeCut-Black'),
+        url('ZuumeCut-Black.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Black.woff2') format('woff2'),
+        url('ZuumeCut-Black.woff') format('woff'),
+        url('ZuumeCut-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-BlackItalic.eot');
+    src: local('Zuume Black Italic'), local('Zuume-BlackItalic'),
+        url('Zuume-BlackItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-BlackItalic.woff2') format('woff2'),
+        url('Zuume-BlackItalic.woff') format('woff'),
+        url('Zuume-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-SemiBoldItalic.eot');
+    src: local('Zuume SemiBold Italic'), local('Zuume-SemiBoldItalic'),
+        url('Zuume-SemiBoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-SemiBoldItalic.woff2') format('woff2'),
+        url('Zuume-SemiBoldItalic.woff') format('woff'),
+        url('Zuume-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-ExtraBold.eot');
+    src: local('Zuume ExtraBold'), local('Zuume-ExtraBold'),
+        url('Zuume-ExtraBold.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-ExtraBold.woff2') format('woff2'),
+        url('Zuume-ExtraBold.woff') format('woff'),
+        url('Zuume-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Italic.eot');
+    src: local('Zuume Cut Italic'), local('ZuumeCut-Italic'),
+        url('ZuumeCut-Italic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Italic.woff2') format('woff2'),
+        url('ZuumeCut-Italic.woff') format('woff'),
+        url('ZuumeCut-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Black.eot');
+    src: local('Zuume Black'), local('Zuume-Black'),
+        url('Zuume-Black.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Black.woff2') format('woff2'),
+        url('Zuume-Black.woff') format('woff'),
+        url('Zuume-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-BoldItalic.eot');
+    src: local('Zuume Cut Bold Italic'), local('ZuumeCut-BoldItalic'),
+        url('ZuumeCut-BoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-BoldItalic.woff2') format('woff2'),
+        url('ZuumeCut-BoldItalic.woff') format('woff'),
+        url('ZuumeCut-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-ExtraBold.eot');
+    src: local('Zuume Cut ExtraBold'), local('ZuumeCut-ExtraBold'),
+        url('ZuumeCut-ExtraBold.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-ExtraBold.woff2') format('woff2'),
+        url('ZuumeCut-ExtraBold.woff') format('woff'),
+        url('ZuumeCut-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Light.eot');
+    src: local('Zuume Cut Light'), local('ZuumeCut-Light'),
+        url('ZuumeCut-Light.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Light.woff2') format('woff2'),
+        url('ZuumeCut-Light.woff') format('woff'),
+        url('ZuumeCut-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Italic.eot');
+    src: local('Zuume Italic'), local('Zuume-Italic'),
+        url('Zuume-Italic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Italic.woff2') format('woff2'),
+        url('Zuume-Italic.woff') format('woff'),
+        url('Zuume-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-Light.eot');
+    src: local('Zuume Light'), local('Zuume-Light'),
+        url('Zuume-Light.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-Light.woff2') format('woff2'),
+        url('Zuume-Light.woff') format('woff'),
+        url('Zuume-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Regular.eot');
+    src: local('Zuume Cut Regular'), local('ZuumeCut-Regular'),
+        url('ZuumeCut-Regular.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Regular.woff2') format('woff2'),
+        url('ZuumeCut-Regular.woff') format('woff'),
+        url('ZuumeCut-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-ExtraBoldItalic.eot');
+    src: local('Zuume Cut ExtraBold Italic'), local('ZuumeCut-ExtraBoldItalic'),
+        url('ZuumeCut-ExtraBoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-ExtraBoldItalic.woff2') format('woff2'),
+        url('ZuumeCut-ExtraBoldItalic.woff') format('woff'),
+        url('ZuumeCut-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-BoldItalic.eot');
+    src: local('Zuume Bold Italic'), local('Zuume-BoldItalic'),
+        url('Zuume-BoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-BoldItalic.woff2') format('woff2'),
+        url('Zuume-BoldItalic.woff') format('woff'),
+        url('Zuume-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-SemiBold.eot');
+    src: local('Zuume Cut SemiBold'), local('ZuumeCut-SemiBold'),
+        url('ZuumeCut-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-SemiBold.woff2') format('woff2'),
+        url('ZuumeCut-SemiBold.woff') format('woff'),
+        url('ZuumeCut-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume Cut';
+    src: url('ZuumeCut-Bold.eot');
+    src: local('Zuume Cut Bold'), local('ZuumeCut-Bold'),
+        url('ZuumeCut-Bold.eot?#iefix') format('embedded-opentype'),
+        url('ZuumeCut-Bold.woff2') format('woff2'),
+        url('ZuumeCut-Bold.woff') format('woff'),
+        url('ZuumeCut-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Zuume';
+    src: url('Zuume-ExtraBoldItalic.eot');
+    src: local('Zuume ExtraBold Italic'), local('Zuume-ExtraBoldItalic'),
+        url('Zuume-ExtraBoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Zuume-ExtraBoldItalic.woff2') format('woff2'),
+        url('Zuume-ExtraBoldItalic.woff') format('woff'),
+        url('Zuume-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
