@@ -1,13 +1,18 @@
 'use client'
 
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
-import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-import { AnimatePresence, motion } from 'framer-motion'
-
 import { doc } from 'firebase/firestore'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import FollowListModal from '@/components/modals/follow-list-modal'
@@ -29,19 +34,10 @@ import { useModal } from '@/modules/modal/context'
 import { useNavHeight } from '@/modules/nav/hooks'
 import { useToast } from '@/modules/notification/hooks'
 import {
-  subscribeToUserWatchlist,
-  getWatchlistDocRef,
-} from '@/services/watchlist.service'
-import {
-  subscribeToUserFavorites,
   getFavoriteDocRef,
+  subscribeToUserFavorites,
 } from '@/services/favorites.service'
-import {
-  deleteUserList,
-  subscribeToUserListItems,
-  subscribeToUserLists,
-  toggleUserListItem,
-} from '@/services/lists.service'
+import { getUserListItemsCollection } from '@/services/firestore-media.service'
 import {
   followUser,
   subscribeToFollowStatus,
@@ -50,16 +46,21 @@ import {
   unfollowUser,
 } from '@/services/follows.service'
 import {
+  deleteUserList,
+  subscribeToUserListItems,
+  subscribeToUserLists,
+  toggleUserListItem,
+} from '@/services/lists.service'
+import {
   getUserIdByUsername,
   getUserProfile,
   subscribeToUserProfile,
 } from '@/services/profile.service'
+import { updateUserMediaPosition } from '@/services/user-media.service'
 import {
-  getUserListItemsCollection,
-} from '@/services/firestore-media.service'
-import {
-  updateUserMediaPosition,
-} from '@/services/user-media.service'
+  getWatchlistDocRef,
+  subscribeToUserWatchlist,
+} from '@/services/watchlist.service'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon/index'
 
@@ -151,20 +152,26 @@ export default function ProfilePage({
 
   const sortItems = useCallback((items, sortMethod) => {
     if (!items || items.length === 0) return []
-    
+
     const sorted = [...items]
-    
+
     switch (sortMethod) {
       case 'newest':
         return sorted.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
       case 'oldest':
         return sorted.sort((a, b) => new Date(a.addedAt) - new Date(b.addedAt))
       case 'rating_high':
-        return sorted.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
+        return sorted.sort(
+          (a, b) => (b.vote_average || 0) - (a.vote_average || 0)
+        )
       case 'rating_low':
-        return sorted.sort((a, b) => (a.vote_average || 0) - (b.vote_average || 0))
+        return sorted.sort(
+          (a, b) => (a.vote_average || 0) - (b.vote_average || 0)
+        )
       case 'title_az':
-        return sorted.sort((a, b) => getMediaTitle(a).localeCompare(getMediaTitle(b)))
+        return sorted.sort((a, b) =>
+          getMediaTitle(a).localeCompare(getMediaTitle(b))
+        )
       case 'manual':
         return sorted.sort((a, b) => (b.position || 0) - (a.position || 0))
       default:
@@ -172,9 +179,18 @@ export default function ProfilePage({
     }
   }, [])
 
-  const sortedFavorites = useMemo(() => sortItems(favorites, tabSorts.favorites), [favorites, sortItems, tabSorts.favorites])
-  const sortedWatchlist = useMemo(() => sortItems(watchlist, tabSorts.watchlist), [watchlist, sortItems, tabSorts.watchlist])
-  const sortedListItems = useMemo(() => sortItems(listItems, tabSorts.lists), [listItems, sortItems, tabSorts.lists])
+  const sortedFavorites = useMemo(
+    () => sortItems(favorites, tabSorts.favorites),
+    [favorites, sortItems, tabSorts.favorites]
+  )
+  const sortedWatchlist = useMemo(
+    () => sortItems(watchlist, tabSorts.watchlist),
+    [watchlist, sortItems, tabSorts.watchlist]
+  )
+  const sortedListItems = useMemo(
+    () => sortItems(listItems, tabSorts.lists),
+    [listItems, sortItems, tabSorts.lists]
+  )
 
   const isPageLoading =
     isResolvingProfile ||
@@ -381,27 +397,35 @@ export default function ProfilePage({
     if (tab === 'lists') setListItems(nextItems)
 
     try {
-      // We only update the position of the items that moved. 
+      // We only update the position of the items that moved.
       // For simplicity, we can update positions based on the new array order.
       // Higher position = top of the list in 'manual' sort.
       const now = Date.now()
-      const updates = nextItems.map((item, index) => {
-        const newPosition = now - index // ensure strictly decreasing positions
-        let docRef
-        if (tab === 'favorites') docRef = getFavoriteDocRef(auth.user.id, item)
-        if (tab === 'watchlist') docRef = getWatchlistDocRef(auth.user.id, item)
-        if (tab === 'lists' && selectedList) docRef = doc(getUserListItemsCollection(auth.user.id, selectedList.id), item.mediaKey)
-        
-        if (docRef) {
-          return updateUserMediaPosition(docRef, newPosition)
-        }
-        return null
-      }).filter(Boolean)
+      const updates = nextItems
+        .map((item, index) => {
+          const newPosition = now - index // ensure strictly decreasing positions
+          let docRef
+          if (tab === 'favorites')
+            docRef = getFavoriteDocRef(auth.user.id, item)
+          if (tab === 'watchlist')
+            docRef = getWatchlistDocRef(auth.user.id, item)
+          if (tab === 'lists' && selectedList)
+            docRef = doc(
+              getUserListItemsCollection(auth.user.id, selectedList.id),
+              item.mediaKey
+            )
+
+          if (docRef) {
+            return updateUserMediaPosition(docRef, newPosition)
+          }
+          return null
+        })
+        .filter(Boolean)
 
       await Promise.all(updates)
     } catch (error) {
-       console.error(`[Profile] Failed to persist reorder for ${tab}:`, error)
-       toast.error('Could not save custom order.')
+      console.error(`[Profile] Failed to persist reorder for ${tab}:`, error)
+      toast.error('Could not save custom order.')
     }
   }
 
@@ -592,7 +616,7 @@ export default function ProfilePage({
       unsubscribeLists()
     }
   }, [resolvedUserId, toast])
-  
+
   useEffect(() => {
     if (!resolvedUserId) return undefined
 
@@ -731,15 +755,19 @@ export default function ProfilePage({
               <section>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex flex-col">
-                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">
+                      Sort Items
+                    </h3>
                   </div>
-                  <SortSelect 
-                    value={tabSorts.favorites} 
-                    onChange={(v) => setTabSorts(prev => ({ ...prev, favorites: v }))} 
+                  <SortSelect
+                    value={tabSorts.favorites}
+                    onChange={(v) =>
+                      setTabSorts((prev) => ({ ...prev, favorites: v }))
+                    }
                   />
                 </div>
-                <MediaGrid 
-                  items={sortedFavorites} 
+                <MediaGrid
+                  items={sortedFavorites}
                   canReorder={isOwner && tabSorts.favorites === 'manual'}
                   onReorder={(next) => handleReorder(next, 'favorites')}
                 />
@@ -764,15 +792,19 @@ export default function ProfilePage({
               <section>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex flex-col">
-                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">
+                      Sort Items
+                    </h3>
                   </div>
-                  <SortSelect 
-                    value={tabSorts.watchlist} 
-                    onChange={(v) => setTabSorts(prev => ({ ...prev, watchlist: v }))} 
+                  <SortSelect
+                    value={tabSorts.watchlist}
+                    onChange={(v) =>
+                      setTabSorts((prev) => ({ ...prev, watchlist: v }))
+                    }
                   />
                 </div>
-                <MediaGrid 
-                  items={sortedWatchlist} 
+                <MediaGrid
+                  items={sortedWatchlist}
                   canReorder={isOwner && tabSorts.watchlist === 'manual'}
                   onReorder={(next) => handleReorder(next, 'watchlist')}
                 />
@@ -815,7 +847,7 @@ export default function ProfilePage({
                           onClick={() => handleDeleteList(selectedList)}
                           className="size-9 rounded-full"
                         >
-                           <Icon icon="solar:trash-bin-trash-bold" size={14} />
+                          <Icon icon="solar:trash-bin-trash-bold" size={14} />
                         </Button>
                       </div>
                     )}
@@ -841,11 +873,15 @@ export default function ProfilePage({
                   <>
                     <div className="mt-8 flex items-center justify-between gap-4">
                       <div className="flex flex-col">
-                        <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                        <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">
+                          Sort Items
+                        </h3>
                       </div>
-                      <SortSelect 
-                        value={tabSorts.lists} 
-                        onChange={(v) => setTabSorts(prev => ({ ...prev, lists: v }))} 
+                      <SortSelect
+                        value={tabSorts.lists}
+                        onChange={(v) =>
+                          setTabSorts((prev) => ({ ...prev, lists: v }))
+                        }
                       />
                     </div>
                     <MediaGrid
@@ -860,7 +896,10 @@ export default function ProfilePage({
                                 onClick={() => handleRemoveListItem(item)}
                                 className="absolute top-2 right-2 z-10 size-9 rounded-full bg-black/65 backdrop-blur-sm"
                               >
-                                <Icon icon="solar:trash-bin-trash-bold" size={14} />
+                                <Icon
+                                  icon="solar:trash-bin-trash-bold"
+                                  size={14}
+                                />
                               </Button>
                             )
                           : null

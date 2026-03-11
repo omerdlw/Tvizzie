@@ -109,7 +109,7 @@ export default function PersonDetailClient({ person }) {
         {
           key: 'search-overlay',
           icon: isSearching
-            ? 'solar:close-circle-bold'
+            ? 'material-symbols:close-rounded'
             : 'solar:magnifer-linear',
           order: 30,
           onClick: (e) => {

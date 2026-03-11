@@ -57,7 +57,7 @@ export function TvRegistry({
           key: 'search-overlay',
           tooltip: 'Search',
           icon: isSearching
-            ? 'solar:close-circle-bold'
+            ? 'material-symbols:close-rounded'
             : 'solar:magnifer-linear',
           order: 30,
           onClick: (e) => {

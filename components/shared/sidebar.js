@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { formatCurrency } from '@/lib/utils'
@@ -11,6 +12,138 @@ import Icon from '@/ui/icon'
 const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 const MAX_VISIBLE_PERSONS = 2
+
+const LOCAL_PROVIDERS = {
+  Netflix: '/images/providers/netflix.jpg',
+  'Apple TV': '/images/providers/apple-tv.jpg',
+  'Apple TV Plus': '/images/providers/apple-tv.jpg',
+  'Apple TV Store': '/images/providers/apple-tv.jpg',
+  'Disney Plus': '/images/providers/disney-plus.webp',
+  'Amazon Prime Video': '/images/providers/amazon-prime.webp',
+  'Google Play Movies': '/images/providers/play-store.png',
+  'HBO Max': '/images/providers/hbo-max.webp',
+  YouTube: '/images/providers/youtube.png',
+  'TV+': '/images/providers/apple-tv.jpg',
+  BluTV: '/images/providers/blu-tv.png',
+  MUBI: '/images/providers/mubi.png',
+}
+
+function WatchProviders({ providers, videos }) {
+  const trProviders = providers?.results?.TR
+  if (!trProviders) return null
+
+  const trailer = videos?.results?.find(
+    (v) =>
+      v.site === 'YouTube' &&
+      (v.type === 'Trailer' || v.type === 'Teaser') &&
+      v.official
+  )
+
+  const renderProviderList = (list, label) => {
+    if (!list?.length) return null
+    return (
+      <div className="flex flex-wrap gap-2">
+        {list.map((provider) => {
+          const localIcon = LOCAL_PROVIDERS[provider.provider_name]
+          const iconUrl = localIcon || `${TMDB_IMG}/w92${provider.logo_path}`
+
+          return (
+            <Tooltip
+              key={provider.provider_id}
+              text={`${provider.provider_name} (${label})`}
+              position="top"
+              className="rounded-[10px] bg-white p-2 text-xs font-bold text-black"
+            >
+              <div className="group relative h-8 w-8 overflow-hidden rounded-lg bg-white/5 ring-1 ring-white/10 transition-transform hover:scale-110">
+                <img
+                  src={iconUrl}
+                  alt={provider.provider_name}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute right-0 bottom-0 flex h-3 w-max items-center bg-black/80 px-0.5 text-[6px] font-bold text-white/50 uppercase">
+                  {label}
+                </div>
+              </div>
+            </Tooltip>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const allProviders = [
+    ...(trProviders.flatrate || []).map((p) => ({ ...p, type: 'PLAY' })),
+    ...(trProviders.rent || []).map((p) => ({ ...p, type: 'RENT' })),
+    ...(trProviders.buy || []).map((p) => ({ ...p, type: 'BUY' })),
+  ]
+
+  const uniqueProviders = []
+  const seen = new Set()
+
+  allProviders.forEach((p) => {
+    const key = `${p.provider_name}-${p.type}`
+    if (!seen.has(key)) {
+      uniqueProviders.push(p)
+      seen.add(key)
+    }
+  })
+
+  if (uniqueProviders.length === 0) return null
+
+  return (
+    <div className="flex flex-col gap-3 rounded-[24px] bg-white/5 p-4 ring-1 ring-white/10 backdrop-blur-sm">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">
+          Where to Watch
+        </span>
+        {trailer && (
+          <button
+            onClick={() => {
+              window.open(
+                `https://www.youtube.com/watch?v=${trailer.key}`,
+                '_blank'
+              )
+            }}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-white/50 transition-colors hover:text-white"
+          >
+            <Icon icon="solar:play-circle-bold" size={16} />
+            Trailer
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2.5">
+        {uniqueProviders.slice(0, 5).map((provider) => {
+          const localIcon = LOCAL_PROVIDERS[provider.provider_name]
+          const iconUrl = localIcon || `${TMDB_IMG}/w154${provider.logo_path}`
+
+          return (
+            <div
+              key={`${provider.provider_id}-${provider.type}`}
+              className="flex items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={iconUrl}
+                  alt={provider.provider_name}
+                  className="h-8 w-8 object-cover"
+                />
+                <span className="text-[13px] font-medium text-white/80">
+                  {provider.provider_name}
+                </span>
+              </div>
+              <div className="flex gap-1.5">
+                <span className="rounded-[4px] bg-white/10 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white/60">
+                  {provider.type}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function SidebarRow({ icon, children }) {
   return (
@@ -244,12 +377,16 @@ export default function Sidebar({
 
   return (
     <div className="flex flex-col gap-5">
-      <div
-        className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[30px] bg-cover bg-center bg-no-repeat ring-1 ring-white/10 lg:h-[600px] lg:w-[400px]"
-        style={{
-          backgroundImage: `url(${TMDB_IMG}/original${item.poster_path})`,
-        }}
-      />
+      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[30px] ring-1 ring-white/10 lg:h-[600px] lg:w-[400px]">
+        <Image
+          src={`${TMDB_IMG}/original${item.poster_path}`}
+          alt={item.title || item.name}
+          fill
+          priority
+          className="object-cover"
+          sizes="(max-width: 1024px) 100vw, 400px"
+        />
+      </div>
       {topContent}
       <div className="flex flex-col gap-1 px-2">
         {rows.map((row) => (
@@ -258,6 +395,11 @@ export default function Sidebar({
           </SidebarRow>
         ))}
       </div>
+      <WatchProviders
+        providers={item['watch/providers']}
+        videos={item.videos}
+        logoSize="w-10 h-10" // Added prop to control logo size
+      />
     </div>
   )
 }

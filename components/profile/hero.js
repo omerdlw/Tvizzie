@@ -1,4 +1,3 @@
-import ProfileAction from '@/components/nav-actions/profile-action'
 import { cn } from '@/lib/utils/index'
 import Icon from '@/ui/icon'
 
@@ -28,9 +27,7 @@ function StatItem({ label, value, onClick }) {
 }
 
 export function ProfileHero({
-  isOwner = false,
   profile,
-  onEditToggle,
   activeTab,
   onTabChange,
   favoritesCount = 0,
@@ -38,11 +35,6 @@ export function ProfileHero({
   listsCount = 0,
   followerCount = 0,
   followingCount = 0,
-  isFollowing = false,
-  onFollow,
-  isFollowLoading = false,
-  isAuthenticated = false,
-  onSignIn,
 }) {
   const getAvatarUrl = (p) => {
     const seed = p?.username || p?.id || 'tvizzie'

@@ -39,7 +39,11 @@ export function MobileControlsToggle({ navHeight = 80 }) {
               transition={{ duration: DURATION.FAST }}
               key="close"
             >
-              <Icon icon="solar:close-circle-bold" width={24} height={24} />
+              <Icon
+                icon="material-symbols:close-rounded"
+                width={24}
+                height={24}
+              />
             </motion.div>
           ) : (
             <motion.div

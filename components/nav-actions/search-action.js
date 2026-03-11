@@ -149,7 +149,7 @@ export default function SearchAction() {
                 onClick={() => setQuery('')}
                 className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
               >
-                <Icon icon="solar:close-circle-bold" size={20} />
+                <Icon icon="material-symbols:close-rounded" size={20} />
               </motion.button>
             ) : null}
           </AnimatePresence>

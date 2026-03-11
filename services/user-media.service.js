@@ -58,7 +58,9 @@ export function normalizeUserMediaSnapshot(snapshot) {
     vote_average: Number.isFinite(Number(data.vote_average))
       ? Number(data.vote_average)
       : null,
-    position: Number.isFinite(Number(data.position)) ? Number(data.position) : null,
+    position: Number.isFinite(Number(data.position))
+      ? Number(data.position)
+      : null,
   }
 }
 
@@ -111,7 +113,11 @@ export async function updateUserMediaPosition(docRef, position) {
     throw new Error('updateUserMediaPosition requires a docRef and position')
   }
 
-  await setDoc(docRef, { position, updatedAt: serverTimestamp() }, { merge: true })
+  await setDoc(
+    docRef,
+    { position, updatedAt: serverTimestamp() },
+    { merge: true }
+  )
 
   return { position }
 }

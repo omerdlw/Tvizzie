@@ -1,6 +1,5 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import Container from '@/modules/modal/container'
 import { Button } from '@/ui/elements'
 
