@@ -169,8 +169,8 @@ function CommentCard({
                     >
                       <Icon icon="solar:pen-bold" size={12} />
                     </button>
-                    <button
-                      type="button"
+                    <Button
+                      variant="danger-icon"
                       onClick={() => {
                         openModal('CONFIRMATION_MODAL', 'bottom', {
                           title: 'Delete Review?',
@@ -183,10 +183,10 @@ function CommentCard({
                       }}
                       title="Delete Review"
                       disabled={isSpoiler && !isSpoilerVisible}
-                      className="flex size-7 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition hover:bg-red-500/20"
+                      className="size-7"
                     >
                       <Icon icon="solar:trash-bin-trash-bold" size={12} />
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

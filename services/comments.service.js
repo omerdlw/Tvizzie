@@ -25,8 +25,6 @@ import { normalizeTimestamp } from './firestore-utils'
 const COMMENT_MIN_LENGTH = 10
 const COMMENT_LIMIT = 120
 
-
-
 function normalizeRating(value) {
   if (value === undefined || value === null || value === '') return null
 
@@ -41,7 +39,6 @@ function normalizeRating(value) {
 
 function normalizeCommentSnapshot(snapshot) {
   const data = snapshot.data() || {}
-
 
   return {
     id: snapshot.id,
@@ -147,7 +144,9 @@ export async function upsertMediaComment({
       mediaKey,
       rating: normalizedRating,
       isSpoiler: !!isSpoiler,
-      likes: existingComment.exists() ? existingComment.data()?.likes || [] : [],
+      likes: existingComment.exists()
+        ? existingComment.data()?.likes || []
+        : [],
       createdAt: existingComment.exists()
         ? existingComment.data()?.createdAt || serverTimestamp()
         : serverTimestamp(),
@@ -187,11 +186,16 @@ export async function deleteMediaComment({ media, userId }) {
 
 export async function toggleCommentLike({ media, commentUserId, userId }) {
   if (!media || !commentUserId || !userId) {
-    throw new Error('Media, commentUserId, and userId are required to toggle a like')
+    throw new Error(
+      'Media, commentUserId, and userId are required to toggle a like'
+    )
   }
 
   const mediaSnapshot = createMediaSnapshot(media)
-  const commentRef = doc(getMediaCommentsCollection(mediaSnapshot), commentUserId)
+  const commentRef = doc(
+    getMediaCommentsCollection(mediaSnapshot),
+    commentUserId
+  )
 
   const existingComment = await getDoc(commentRef)
   if (!existingComment.exists()) {
@@ -204,11 +208,10 @@ export async function toggleCommentLike({ media, commentUserId, userId }) {
   await setDoc(
     commentRef,
     {
-      likes: hasLiked ? arrayRemove(userId) : arrayUnion(userId)
+      likes: hasLiked ? arrayRemove(userId) : arrayUnion(userId),
     },
     { merge: true }
   )
 
   return !hasLiked
 }
-

@@ -18,11 +18,11 @@ export default function PersonBio({ biography }) {
         style={
           !expanded && isLong
             ? {
-              WebkitLineClamp: MAX_LINES,
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }
+                WebkitLineClamp: MAX_LINES,
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }
             : undefined
         }
       >

@@ -132,10 +132,11 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
       />
 
       <div
-        className={`relative mx-auto flex h-auto w-full flex-col gap-4 p-3 transition-all duration-700 ease-in-out select-none sm:p-4 md:p-6 ${activeView === 'ratings' && imdbRatings?.length > 10
-          ? 'max-w-[95vw] 2xl:max-w-[1600px]'
-          : 'max-w-6xl'
-          }`}
+        className={`relative mx-auto flex h-auto w-full flex-col gap-4 p-3 transition-all duration-700 ease-in-out select-none sm:p-4 md:p-6 ${
+          activeView === 'ratings' && imdbRatings?.length > 10
+            ? 'max-w-[95vw] 2xl:max-w-[1600px]'
+            : 'max-w-6xl'
+        }`}
       >
         <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
         <div
@@ -331,9 +332,9 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                               const MathAvg =
                                 validEpisodes.length > 0
                                   ? validEpisodes.reduce(
-                                    (acc, curr) => acc + curr.vote_average,
-                                    0
-                                  ) / validEpisodes.length
+                                      (acc, curr) => acc + curr.vote_average,
+                                      0
+                                    ) / validEpisodes.length
                                   : 0
 
                               const ratingColor =

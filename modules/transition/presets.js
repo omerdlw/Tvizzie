@@ -13,7 +13,6 @@ const EASE = {
   EASE_IN: [0.4, 0, 1, 1],
 }
 
-
 export const TRANSITION_PRESETS = {
   fade: {
     initial: { opacity: 0 },

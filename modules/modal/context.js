@@ -59,7 +59,7 @@ export const ModalProvider = ({ children }) => {
     if (onCloseRef.current) {
       try {
         onCloseRef.current(result)
-      } catch { } // eslint-disable-line no-empty
+      } catch {} // eslint-disable-line no-empty
       onCloseRef.current = null
     }
 

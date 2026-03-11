@@ -139,33 +139,33 @@ const Modal = () => {
               'relative flex h-auto transform-gpu flex-col overflow-hidden border border-white/10 bg-black/40 backdrop-blur-xl',
               !full ? 'rounded-[30px]' : 'rounded-none',
               full &&
-              position === MODAL_POSITIONS.TOP &&
-              'w-full border-x-0 border-t-0',
+                position === MODAL_POSITIONS.TOP &&
+                'w-full border-x-0 border-t-0',
               full &&
-              position === MODAL_POSITIONS.BOTTOM &&
-              'w-full border-x-0 border-b-0',
+                position === MODAL_POSITIONS.BOTTOM &&
+                'w-full border-x-0 border-b-0',
               full &&
-              position === MODAL_POSITIONS.LEFT &&
-              'h-full border-y-0 border-l-0',
+                position === MODAL_POSITIONS.LEFT &&
+                'h-full border-y-0 border-l-0',
               full &&
-              position === MODAL_POSITIONS.RIGHT &&
-              'h-full border-y-0 border-r-0',
+                position === MODAL_POSITIONS.RIGHT &&
+                'h-full border-y-0 border-r-0',
               full ? 'max-h-full' : 'max-h-[90vh]',
               'max-w-full',
               !full && 'max-w-[95vw]',
               !full &&
-              !isSideModal &&
-              !isTopBottom &&
-              !isCorner &&
-              'md:min-w-[400px]',
+                !isSideModal &&
+                !isTopBottom &&
+                !isCorner &&
+                'md:min-w-[400px]',
               !full && (isSideModal || isCorner) && 'md:max-w-[400px]',
               !full && isTopBottom && 'md:max-w-[600px]',
               full &&
-              (isTopBottom
-                ? 'w-full'
-                : isSideModal
-                  ? 'h-full md:w-[400px]'
-                  : '')
+                (isTopBottom
+                  ? 'w-full'
+                  : isSideModal
+                    ? 'h-full md:w-[400px]'
+                    : '')
             )}
             variants={getModalVariants(position)}
             style={{ zIndex: Z_INDEX.MODAL, willChange: 'transform, opacity' }}

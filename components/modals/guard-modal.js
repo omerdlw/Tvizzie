@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@/ui/elements'
 import Container from '@/modules/modal/container'
+import { Button } from '@/ui/elements'
 
 export default function NavigationGuardModal({ header, close, data }) {
   const { onConfirm, onCancel } = data || {}
@@ -23,16 +23,16 @@ export default function NavigationGuardModal({ header, close, data }) {
           You have unsaved changes. Are you sure you want to leave this page?
         </p>
 
-        <div className="flex flex-col-reverse gap-3 md:flex-row md:justify-end pr-0.5">
+        <div className="flex flex-col-reverse gap-3 pr-0.5 md:flex-row md:justify-end">
           <Button
             onClick={handleCancel}
-            className="rounded-full bg-white/5 px-8 h-12 flex-auto md:flex-initial cursor-pointer text-[11px] font-bold tracking-[0.2em] uppercase text-white/60 transition hover:bg-white/10 hover:text-white"
+            className="h-12 flex-auto cursor-pointer rounded-full bg-white/5 px-8 text-[11px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white md:flex-initial"
           >
             Stay Here
           </Button>
           <Button
             onClick={handleConfirm}
-            className="rounded-full flex-auto md:flex-initial px-8 h-12 text-[11px] font-bold tracking-[0.2em] uppercase cursor-pointer bg-red-500 hover:bg-red-600 text-white transition"
+            className="h-12 flex-auto cursor-pointer rounded-full bg-red-500 px-8 text-[11px] font-bold tracking-[0.2em] text-white uppercase transition hover:bg-red-600 md:flex-initial"
           >
             Leave Page
           </Button>

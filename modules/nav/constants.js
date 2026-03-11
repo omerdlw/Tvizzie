@@ -34,10 +34,10 @@ export const getNavCardProps = (
     ANIMATION.collapsed
   const safeCardStyle = cardStyle
     ? Object.fromEntries(
-      Object.entries(cardStyle).filter(
-        ([key]) => key !== 'scale' && key !== 'className'
+        Object.entries(cardStyle).filter(
+          ([key]) => key !== 'scale' && key !== 'className'
+        )
       )
-    )
     : {}
 
   const cardDelay = expanded ? position * 0.02 : 0

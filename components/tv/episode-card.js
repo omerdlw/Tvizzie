@@ -44,9 +44,7 @@ export default function EpisodeCard({ episode }) {
             E{episode.episode_number}
           </div>
           <div className="absolute right-0 -bottom-px left-0 bg-linear-to-t from-black/95 via-black/40 to-transparent p-3 pt-6">
-            <p className="truncate text-xs font-bold">
-              {episode.name}
-            </p>
+            <p className="truncate text-xs font-bold">{episode.name}</p>
             <div className="mt-0.5 flex items-center gap-1.5">
               {hasRating && (
                 <>

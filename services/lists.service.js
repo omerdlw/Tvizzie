@@ -27,8 +27,6 @@ import {
   normalizeUserMediaSnapshot,
 } from './user-media.service'
 
-
-
 function slugifyListTitle(value) {
   return cleanString(value)
     .toLowerCase()
@@ -100,7 +98,12 @@ export function subscribeToUserLists(userId, callback, options = {}) {
   )
 }
 
-export function subscribeToUserListItems(userId, listId, callback, options = {}) {
+export function subscribeToUserListItems(
+  userId,
+  listId,
+  callback,
+  options = {}
+) {
   const { onError } = options
   const itemsQuery = query(
     getUserListItemsCollection(userId, listId),
@@ -162,7 +165,9 @@ export async function updateUserList({
   coverUrl = '',
 }) {
   if (!userId || !listId) {
-    throw new Error('Authenticated user and listId are required to update a list')
+    throw new Error(
+      'Authenticated user and listId are required to update a list'
+    )
   }
 
   const validatedTitle = validateListTitle(title)
@@ -181,7 +186,9 @@ export async function updateUserList({
     {
       description: validatedDescription,
       coverUrl: cleanString(coverUrl),
-      slug: existingData.slug || `${slugifyListTitle(validatedTitle) || 'list'}-${listId.slice(0, 6)}`,
+      slug:
+        existingData.slug ||
+        `${slugifyListTitle(validatedTitle) || 'list'}-${listId.slice(0, 6)}`,
       title: validatedTitle,
       updatedAt: serverTimestamp(),
     },
@@ -198,10 +205,14 @@ export async function updateUserList({
 
 export async function deleteUserList({ userId, listId }) {
   if (!userId || !listId) {
-    throw new Error('Authenticated user and listId are required to delete a list')
+    throw new Error(
+      'Authenticated user and listId are required to delete a list'
+    )
   }
 
-  const itemsSnapshot = await getDocs(getUserListItemsCollection(userId, listId))
+  const itemsSnapshot = await getDocs(
+    getUserListItemsCollection(userId, listId)
+  )
   const batch = writeBatch(getUserListDocRef(userId, listId).firestore)
 
   itemsSnapshot.forEach((itemDoc) => {
@@ -221,7 +232,9 @@ export async function getUserListMemberships({ userId, listIds = [], media }) {
 
   const memberships = await Promise.all(
     listIds.map(async (listId) => {
-      const itemSnapshot = await getDoc(getListItemDocRef(userId, listId, media))
+      const itemSnapshot = await getDoc(
+        getListItemDocRef(userId, listId, media)
+      )
       return [listId, itemSnapshot.exists()]
     })
   )
@@ -231,60 +244,65 @@ export async function getUserListMemberships({ userId, listIds = [], media }) {
 
 export async function toggleUserListItem({ userId, listId, media }) {
   if (!userId || !listId) {
-    throw new Error('Authenticated user and listId are required to update list items')
+    throw new Error(
+      'Authenticated user and listId are required to update list items'
+    )
   }
 
   const listRef = getUserListDocRef(userId, listId)
   const itemRef = getListItemDocRef(userId, listId, media)
   const payload = createUserMediaPayload(media)
 
-  const result = await runTransaction(listRef.firestore, async (transaction) => {
-    const listSnapshot = await transaction.get(listRef)
+  const result = await runTransaction(
+    listRef.firestore,
+    async (transaction) => {
+      const listSnapshot = await transaction.get(listRef)
 
-    if (!listSnapshot.exists()) {
-      throw new Error('List not found')
-    }
+      if (!listSnapshot.exists()) {
+        throw new Error('List not found')
+      }
 
-    const itemSnapshot = await transaction.get(itemRef)
-    const currentCount = Number(listSnapshot.data()?.itemsCount || 0)
+      const itemSnapshot = await transaction.get(itemRef)
+      const currentCount = Number(listSnapshot.data()?.itemsCount || 0)
 
-    if (itemSnapshot.exists()) {
-      transaction.delete(itemRef)
+      if (itemSnapshot.exists()) {
+        transaction.delete(itemRef)
+        transaction.set(
+          listRef,
+          {
+            itemsCount: Math.max(0, currentCount - 1),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        )
+
+        return {
+          isInList: false,
+          mediaKey: itemSnapshot.id,
+        }
+      }
+
+      transaction.set(itemRef, payload, { merge: true })
       transaction.set(
         listRef,
         {
-          itemsCount: Math.max(0, currentCount - 1),
+          itemsCount: currentCount + 1,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       )
 
       return {
-        isInList: false,
-        mediaKey: itemSnapshot.id,
+        isInList: true,
+        item: {
+          ...payload,
+          addedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        mediaKey: payload.mediaKey,
       }
     }
-
-    transaction.set(itemRef, payload, { merge: true })
-    transaction.set(
-      listRef,
-      {
-        itemsCount: currentCount + 1,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    )
-
-    return {
-      isInList: true,
-      item: {
-        ...payload,
-        addedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      mediaKey: payload.mediaKey,
-    }
-  })
+  )
 
   return result
 }

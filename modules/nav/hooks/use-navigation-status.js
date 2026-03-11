@@ -127,7 +127,12 @@ export const useNavigationStatus = () => {
     const unsubscribeApiError = globalEvents.subscribe(
       EVENT_TYPES.API_ERROR,
       (eventData) => {
-        const { status: errStatus, message, isCritical, retry } = eventData || {}
+        const {
+          status: errStatus,
+          message,
+          isCritical,
+          retry,
+        } = eventData || {}
         if (!isCritical) return
 
         apiErrorQueue.current.push({ status: errStatus, message, retry })
@@ -139,8 +144,12 @@ export const useNavigationStatus = () => {
           apiErrorQueue.current = []
 
           const isBatch = errors.length > 1
-          const title = isBatch ? 'Multiple API Errors' : `API Error (${errors[0].status || 'Network'})`
-          const description = isBatch ? `${errors.length} requests failed.` : errors[0].message || 'An error occurred during the request.'
+          const title = isBatch
+            ? 'Multiple API Errors'
+            : `API Error (${errors[0].status || 'Network'})`
+          const description = isBatch
+            ? `${errors.length} requests failed.`
+            : errors[0].message || 'An error occurred during the request.'
 
           updateStatus({
             type: 'API_ERROR',
@@ -153,7 +162,7 @@ export const useNavigationStatus = () => {
               <ErrorActions
                 onRetry={() => {
                   clearStatus()
-                  errors.forEach(err => err.retry?.())
+                  errors.forEach((err) => err.retry?.())
                 }}
                 onRefresh={() => window.location.reload()}
                 onInfo={() => alert(JSON.stringify(errors, null, 2))}
@@ -171,7 +180,8 @@ export const useNavigationStatus = () => {
       (eventData) => {
         const { message, error, resetError } = eventData || {}
         const title = error?.name || 'Application Error'
-        const description = error?.message || message || 'An unexpected error occurred.'
+        const description =
+          error?.message || message || 'An unexpected error occurred.'
 
         updateStatus({
           type: 'APP_ERROR',
@@ -182,15 +192,32 @@ export const useNavigationStatus = () => {
           style: getStatusTheme('APP_ERROR'),
           action: () => (
             <ErrorActions
-              onRetry={resetError ? () => {
-                clearStatus()
-                resetError()
-                if (typeof navigator !== 'undefined' && !navigator.onLine) {
-                  setTimeout(() => window.dispatchEvent(new Event('offline')), 0)
-                }
-              } : null}
+              onRetry={
+                resetError
+                  ? () => {
+                      clearStatus()
+                      resetError()
+                      if (
+                        typeof navigator !== 'undefined' &&
+                        !navigator.onLine
+                      ) {
+                        setTimeout(
+                          () => window.dispatchEvent(new Event('offline')),
+                          0
+                        )
+                      }
+                    }
+                  : null
+              }
               onRefresh={() => window.location.reload()}
-              onInfo={() => alert(error?.stack || error?.message || message || 'No detailed error information available.')}
+              onInfo={() =>
+                alert(
+                  error?.stack ||
+                    error?.message ||
+                    message ||
+                    'No detailed error information available.'
+                )
+              }
             />
           ),
           hideSettings: true,
@@ -210,7 +237,9 @@ export const useNavigationStatus = () => {
           isOverlay: true,
           title: user.name || user.email || 'User',
           description: 'Logging out...',
-          icon: user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
+          icon:
+            user.avatarUrl ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
           style: getStatusTheme('LOGOUT'),
           hideSettings: true,
           hideScroll: true,
@@ -231,7 +260,9 @@ export const useNavigationStatus = () => {
           isOverlay: true,
           title: user.name || user.email || 'User',
           description: 'Logging in...',
-          icon: user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
+          icon:
+            user.avatarUrl ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
           style: getStatusTheme('LOGIN'),
           hideSettings: true,
           hideScroll: true,
@@ -259,7 +290,7 @@ export const useNavigationStatus = () => {
         if (prev?.type !== 'OFFLINE') return null
 
         setTimeout(() => {
-          setStatus(current => current?.type === 'ONLINE' ? null : current)
+          setStatus((current) => (current?.type === 'ONLINE' ? null : current))
         }, 4500)
 
         return {

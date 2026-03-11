@@ -108,7 +108,7 @@ const Item = memo(
             <NavItemSkeleton />
           ) : (
             <div className="relative flex h-auto w-full items-center space-x-3">
-              <div className="relative center">
+              <div className="center relative">
                 {link?.icon ? (
                   <div
                     className={
@@ -152,7 +152,7 @@ const Item = memo(
                         )}
                         style={
                           typeof link.icon === 'string' &&
-                            link.icon.startsWith('http')
+                          link.icon.startsWith('http')
                             ? { backgroundImage: `url(${link.icon})` }
                             : {}
                         }
@@ -167,12 +167,12 @@ const Item = memo(
                           typeof link.icon === 'string' &&
                           link.icon.startsWith('http')
                         ) && (
-                            <Iconify
-                              icon={link.icon}
-                              size={14}
-                              className="text-white"
-                            />
-                          )}
+                          <Iconify
+                            icon={link.icon}
+                            size={14}
+                            className="text-white"
+                          />
+                        )}
                       </motion.div>
                     )}
                   </div>
@@ -223,9 +223,9 @@ const Item = memo(
                   <Description
                     text={
                       isHovered &&
-                        !expanded &&
-                        !link.isOverlay &&
-                        link.type !== 'COUNTDOWN'
+                      !expanded &&
+                      !link.isOverlay &&
+                      link.type !== 'COUNTDOWN'
                         ? 'click to see the pages'
                         : link.description
                     }

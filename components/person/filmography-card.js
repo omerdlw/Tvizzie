@@ -20,9 +20,7 @@ export default function FilmographyCard({ credit }) {
     0,
     4
   )
-  const href = isMovie
-    ? `/movie/${credit.id}`
-    : `/tv/${credit.id}`
+  const href = isMovie ? `/movie/${credit.id}` : `/tv/${credit.id}`
   const character = credit.character
   const rating = credit.vote_average > 0 ? credit.vote_average.toFixed(1) : null
 

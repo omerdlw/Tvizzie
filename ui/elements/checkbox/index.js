@@ -51,10 +51,7 @@ const Checkbox = forwardRef(
           {...props}
         >
           <CheckboxPrimitive.Indicator
-            className={cn(
-              'inline-center',
-              classes.indicator
-            )}
+            className={cn('inline-center', classes.indicator)}
           >
             {checkIcon || <Check size={16} />}
           </CheckboxPrimitive.Indicator>

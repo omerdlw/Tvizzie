@@ -6,7 +6,6 @@ import { loadingPlugin } from './loading.plugin'
 import { modalPlugin } from './modal.plugin'
 import { navPlugin } from './nav.plugin'
 import { notificationPlugin } from './notification.plugin'
-
 import { titlePlugin } from './title.plugin'
 
 export const PLUGINS = [
@@ -25,7 +24,7 @@ export const PLUGINS = [
 export function createPluginRunner(plugins) {
   return {
     apply: (config, context) => {
-      if (!config) return () => { }
+      if (!config) return () => {}
 
       const cleanups = plugins.map((plugin) => {
         try {

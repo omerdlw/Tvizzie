@@ -8,7 +8,10 @@ import {
   setDoc,
 } from 'firebase/firestore'
 
-import { buildMediaItemKey, createMediaSnapshot } from './firestore-media.service'
+import {
+  buildMediaItemKey,
+  createMediaSnapshot,
+} from './firestore-media.service'
 
 export function normalizeTimestamp(value) {
   if (!value) return null
@@ -55,6 +58,7 @@ export function normalizeUserMediaSnapshot(snapshot) {
     vote_average: Number.isFinite(Number(data.vote_average))
       ? Number(data.vote_average)
       : null,
+    position: Number.isFinite(Number(data.position)) ? Number(data.position) : null,
   }
 }
 
@@ -96,9 +100,20 @@ export function createUserMediaPayload(media = {}) {
     title: isMovie
       ? media.title || media.original_title || mediaSnapshot.title
       : '',
+    position: media.position || Date.now(),
     updatedAt: serverTimestamp(),
     vote_average: Number.isFinite(voteAverage) ? voteAverage : null,
   }
+}
+
+export async function updateUserMediaPosition(docRef, position) {
+  if (!docRef || position === undefined) {
+    throw new Error('updateUserMediaPosition requires a docRef and position')
+  }
+
+  await setDoc(docRef, { position, updatedAt: serverTimestamp() }, { merge: true })
+
+  return { position }
 }
 
 export function subscribeToUserMediaStatus(docRef, callback, options = {}) {
@@ -122,7 +137,11 @@ export function subscribeToUserMediaStatus(docRef, callback, options = {}) {
   )
 }
 
-export function subscribeToUserMediaCollection(itemsQuery, callback, options = {}) {
+export function subscribeToUserMediaCollection(
+  itemsQuery,
+  callback,
+  options = {}
+) {
   const { onError } = options
 
   return onSnapshot(

@@ -1,10 +1,13 @@
 'use client'
 
-import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+
 import { AnimatePresence, motion } from 'framer-motion'
+
+import { doc } from 'firebase/firestore'
 
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import FollowListModal from '@/components/modals/follow-list-modal'
@@ -18,13 +21,21 @@ import {
 import { ProfileHero } from '@/components/profile/hero'
 import { ListCard } from '@/components/profile/list-card'
 import { MediaGrid } from '@/components/profile/media-grid'
+import { SortSelect } from '@/components/profile/sort-select'
 import { useRegistry } from '@/lib/hooks/use-registry'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/modules/auth'
 import { useModal } from '@/modules/modal/context'
 import { useNavHeight } from '@/modules/nav/hooks'
 import { useToast } from '@/modules/notification/hooks'
-import { subscribeToUserFavorites } from '@/services/favorites.service'
+import {
+  subscribeToUserWatchlist,
+  getWatchlistDocRef,
+} from '@/services/watchlist.service'
+import {
+  subscribeToUserFavorites,
+  getFavoriteDocRef,
+} from '@/services/favorites.service'
 import {
   deleteUserList,
   subscribeToUserListItems,
@@ -32,11 +43,24 @@ import {
   toggleUserListItem,
 } from '@/services/lists.service'
 import {
+  followUser,
+  subscribeToFollowStatus,
+  subscribeToFollowers,
+  subscribeToFollowing,
+  unfollowUser,
+} from '@/services/follows.service'
+import {
   getUserIdByUsername,
-  subscribeToUserProfile,
   getUserProfile,
+  subscribeToUserProfile,
 } from '@/services/profile.service'
-import { subscribeToUserWatchlist } from '@/services/watchlist.service'
+import {
+  getUserListItemsCollection,
+} from '@/services/firestore-media.service'
+import {
+  updateUserMediaPosition,
+} from '@/services/user-media.service'
+import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon/index'
 
 const PROFILE_TABS = ['favorites', 'watchlist', 'lists']
@@ -84,6 +108,15 @@ export default function ProfilePage({
   const [listItems, setListItems] = useState([])
   const [isLoadingCollections, setIsLoadingCollections] = useState(true)
   const [isLoadingListItems, setIsLoadingListItems] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followerCount, setFollowerCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [tabSorts, setTabSorts] = useState({
+    favorites: 'newest',
+    watchlist: 'newest',
+    lists: 'newest',
+  })
 
   const [activeTab, setActiveTab] = useState(() => {
     if (activeTabProp && PROFILE_TABS.includes(activeTabProp)) {
@@ -115,6 +148,33 @@ export default function ProfilePage({
     () => lists.find((list) => list.id === activeListId) || null,
     [activeListId, lists]
   )
+
+  const sortItems = useCallback((items, sortMethod) => {
+    if (!items || items.length === 0) return []
+    
+    const sorted = [...items]
+    
+    switch (sortMethod) {
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
+      case 'oldest':
+        return sorted.sort((a, b) => new Date(a.addedAt) - new Date(b.addedAt))
+      case 'rating_high':
+        return sorted.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
+      case 'rating_low':
+        return sorted.sort((a, b) => (a.vote_average || 0) - (b.vote_average || 0))
+      case 'title_az':
+        return sorted.sort((a, b) => getMediaTitle(a).localeCompare(getMediaTitle(b)))
+      case 'manual':
+        return sorted.sort((a, b) => (b.position || 0) - (a.position || 0))
+      default:
+        return sorted
+    }
+  }, [])
+
+  const sortedFavorites = useMemo(() => sortItems(favorites, tabSorts.favorites), [favorites, sortItems, tabSorts.favorites])
+  const sortedWatchlist = useMemo(() => sortItems(watchlist, tabSorts.watchlist), [watchlist, sortItems, tabSorts.watchlist])
+  const sortedListItems = useMemo(() => sortItems(listItems, tabSorts.lists), [listItems, sortItems, tabSorts.lists])
 
   const isPageLoading =
     isResolvingProfile ||
@@ -201,6 +261,10 @@ export default function ProfilePage({
   function handleDeleteList(list) {
     if (!isOwner) return
     openModal('CONFIRMATION_MODAL', 'bottom', {
+      header: {
+        title: 'DELETE LIST',
+        description: `List ID: ${list.id}`,
+      },
       data: {
         confirmText: 'Delete List',
         description:
@@ -220,7 +284,6 @@ export default function ProfilePage({
             toast.error(error?.message || 'The list could not be deleted.')
           }
         },
-        title: `Delete "${list.title}"?`,
       },
     })
   }
@@ -237,6 +300,110 @@ export default function ProfilePage({
     }
     return ''
   }, [activeTab, auth.isAuthenticated, auth.isReady, selectedList, username])
+
+  const handleFollow = async () => {
+    if (!auth.isAuthenticated) {
+      toast.error('Please sign in to follow users.')
+      return
+    }
+    setIsFollowLoading(true)
+    try {
+      if (isFollowing) {
+        await unfollowUser(auth.user.id, profile.id)
+      } else {
+        await followUser(auth.user.id, profile.id)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setIsFollowLoading(false)
+    }
+  }
+
+  const handleEditProfile = () => {
+    if (!isOwner) return
+    openModal('PROFILE_EDITOR_MODAL', 'center', {
+      data: {
+        profile,
+        authActions: auth,
+      },
+    })
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      await auth.signIn({ provider: 'google' })
+      toast.success('Signed in successfully.')
+    } catch (error) {
+      toast.error(error?.message || 'Sign in failed.')
+    }
+  }
+
+  async function handleCreateList() {
+    if (!isOwner) return
+
+    openModal('LIST_EDITOR_MODAL', 'center', {
+      data: {
+        isOwner: true,
+        userId: auth.user.id,
+        onSuccess: (nextList) => {
+          updateQuery({
+            list: nextList.id,
+            tab: 'lists',
+          })
+        },
+      },
+      title: 'Create Custom List',
+    })
+  }
+
+  async function handleRemoveListItem(item) {
+    if (!isOwner || !selectedList) return
+
+    try {
+      await toggleUserListItem({
+        listId: selectedList.id,
+        media: item,
+        userId: auth.user.id,
+      })
+      toast.success(`${getMediaTitle(item)} was removed from the list.`)
+    } catch (error) {
+      toast.error(error?.message || 'The item could not be removed.')
+    }
+  }
+
+  const handleReorder = async (nextItems, tab) => {
+    if (!isOwner) return
+
+    // Update local state first for instant feedback
+    if (tab === 'favorites') setFavorites(nextItems)
+    if (tab === 'watchlist') setWatchlist(nextItems)
+    if (tab === 'lists') setListItems(nextItems)
+
+    try {
+      // We only update the position of the items that moved. 
+      // For simplicity, we can update positions based on the new array order.
+      // Higher position = top of the list in 'manual' sort.
+      const now = Date.now()
+      const updates = nextItems.map((item, index) => {
+        const newPosition = now - index // ensure strictly decreasing positions
+        let docRef
+        if (tab === 'favorites') docRef = getFavoriteDocRef(auth.user.id, item)
+        if (tab === 'watchlist') docRef = getWatchlistDocRef(auth.user.id, item)
+        if (tab === 'lists' && selectedList) docRef = doc(getUserListItemsCollection(auth.user.id, selectedList.id), item.mediaKey)
+        
+        if (docRef) {
+          return updateUserMediaPosition(docRef, newPosition)
+        }
+        return null
+      }).filter(Boolean)
+
+      await Promise.all(updates)
+    } catch (error) {
+       console.error(`[Profile] Failed to persist reorder for ${tab}:`, error)
+       toast.error('Could not save custom order.')
+    }
+  }
 
   useRegistry({
     background: {
@@ -266,16 +433,18 @@ export default function ProfilePage({
           : profile?.displayName || 'Profile',
       action: (
         <ProfileAction
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
           isOwner={isOwner}
-          selectedList={selectedList}
-          onEditList={handleEditList}
-          onDeleteList={handleDeleteList}
           isAuthenticated={auth.isAuthenticated}
-          onPublicView={Boolean(username)}
           onSignIn={handleGoogleSignIn}
-          isNotFound={!profile && !isResolvingProfile && (Boolean(username) || Boolean(resolveError))}
+          onEditProfile={handleEditProfile}
+          isFollowing={isFollowing}
+          onFollow={handleFollow}
+          isLoading={isFollowLoading}
+          isNotFound={
+            !profile &&
+            !isResolvingProfile &&
+            (Boolean(username) || Boolean(resolveError))
+          }
         />
       ),
     },
@@ -423,6 +592,33 @@ export default function ProfilePage({
       unsubscribeLists()
     }
   }, [resolvedUserId, toast])
+  
+  useEffect(() => {
+    if (!resolvedUserId) return undefined
+
+    const unsubFollowers = subscribeToFollowers(resolvedUserId, (followers) => {
+      setFollowerCount(followers.length)
+    })
+
+    const unsubFollowing = subscribeToFollowing(resolvedUserId, (following) => {
+      setFollowingCount(following.length)
+    })
+
+    let unsubStatus = () => {}
+    if (!isOwner && auth.user?.id) {
+      unsubStatus = subscribeToFollowStatus(
+        auth.user.id,
+        resolvedUserId,
+        setIsFollowing
+      )
+    }
+
+    return () => {
+      unsubFollowers()
+      unsubFollowing()
+      unsubStatus()
+    }
+  }, [resolvedUserId, auth.user?.id, isOwner])
 
   useEffect(() => {
     if (activeTab !== 'lists' || !resolvedUserId || !activeListId) {
@@ -449,48 +645,6 @@ export default function ProfilePage({
     )
   }, [activeListId, activeTab, resolvedUserId, toast])
 
-  async function handleGoogleSignIn() {
-    try {
-      await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully.')
-    } catch (error) {
-      toast.error(error?.message || 'Sign in failed.')
-    }
-  }
-
-  async function handleCreateList() {
-    if (!isOwner) return
-
-    openModal('LIST_EDITOR_MODAL', 'center', {
-      data: {
-        isOwner: true,
-        userId: auth.user.id,
-        onSuccess: (nextList) => {
-          updateQuery({
-            list: nextList.id,
-            tab: 'lists',
-          })
-        },
-      },
-      title: 'Create Custom List',
-    })
-  }
-
-  async function handleRemoveListItem(item) {
-    if (!isOwner || !selectedList) return
-
-    try {
-      await toggleUserListItem({
-        listId: selectedList.id,
-        media: item,
-        userId: auth.user.id,
-      })
-      toast.success(`${getMediaTitle(item)} was removed from the list.`)
-    } catch (error) {
-      toast.error(error?.message || 'The item could not be removed.')
-    }
-  }
-
   const publicLink = profile?.username ? `/profile/${profile.username}` : null
   const ownerLink = username ? '/profile' : null
 
@@ -510,7 +664,7 @@ export default function ProfilePage({
 
   if (!resolvedUserId || !profile) {
     return (
-      <div className="w-screen h-screen center p-4">
+      <div className="center h-screen w-screen p-4">
         <EmptyState
           icon="solar:user-block-bold"
           title="Profile not found"
@@ -523,7 +677,7 @@ export default function ProfilePage({
   return (
     <div
       className={cn(
-        'relative mx-auto flex w-full max-w-7xl flex-col gap-3 p-2.5 sm:p-0',
+        'relative mx-auto flex w-full max-w-6xl flex-col gap-8 p-3 select-none sm:p-4 md:p-6',
         isFullScreenEmpty ? 'h-dvh overflow-hidden' : 'min-h-dvh'
       )}
       style={{
@@ -537,16 +691,20 @@ export default function ProfilePage({
           ownerLink={ownerLink}
           profile={profile}
           publicLink={!username ? publicLink : null}
-          onEditToggle={() => {
-            openModal('PROFILE_EDITOR_MODAL', 'center', {
-              data: {
-                profile,
-                authActions: auth,
-              },
-            })
-          }}
+          onEditToggle={handleEditProfile}
           onCreateList={handleCreateList}
           activeTab={activeTab}
+          onTabChange={handleTabChange}
+          favoritesCount={favorites.length}
+          watchlistCount={watchlist.length}
+          listsCount={lists.length}
+          followerCount={followerCount}
+          followingCount={followingCount}
+          isFollowing={isFollowing}
+          onFollow={handleFollow}
+          isFollowLoading={isFollowLoading}
+          isAuthenticated={auth.isAuthenticated}
+          onSignIn={handleGoogleSignIn}
         />
       </div>
 
@@ -571,7 +729,20 @@ export default function ProfilePage({
               />
             ) : (
               <section>
-                <MediaGrid items={favorites} />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col">
+                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                  </div>
+                  <SortSelect 
+                    value={tabSorts.favorites} 
+                    onChange={(v) => setTabSorts(prev => ({ ...prev, favorites: v }))} 
+                  />
+                </div>
+                <MediaGrid 
+                  items={sortedFavorites} 
+                  canReorder={isOwner && tabSorts.favorites === 'manual'}
+                  onReorder={(next) => handleReorder(next, 'favorites')}
+                />
               </section>
             )
           ) : null}
@@ -580,7 +751,9 @@ export default function ProfilePage({
             watchlist.length === 0 ? (
               <FullScreenEmptyState
                 icon="solar:bookmark-linear"
-                title={isOwner ? 'Watchlist is empty' : 'No public watchlist yet'}
+                title={
+                  isOwner ? 'Watchlist is empty' : 'No public watchlist yet'
+                }
                 description={
                   isOwner
                     ? 'Use the watchlist action on detail pages to queue titles.'
@@ -589,7 +762,20 @@ export default function ProfilePage({
               />
             ) : (
               <section>
-                <MediaGrid items={watchlist} />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col">
+                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                  </div>
+                  <SortSelect 
+                    value={tabSorts.watchlist} 
+                    onChange={(v) => setTabSorts(prev => ({ ...prev, watchlist: v }))} 
+                  />
+                </div>
+                <MediaGrid 
+                  items={sortedWatchlist} 
+                  canReorder={isOwner && tabSorts.watchlist === 'manual'}
+                  onReorder={(next) => handleReorder(next, 'watchlist')}
+                />
               </section>
             )
           ) : null}
@@ -624,14 +810,13 @@ export default function ProfilePage({
                           <Icon icon="solar:pen-bold" size={14} />
                           EDIT
                         </button>
-                        <button
-                          type="button"
+                        <Button
+                          variant="destructive"
                           onClick={() => handleDeleteList(selectedList)}
-                          className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-red-500/20 bg-red-500/20 px-4 text-[10px] font-bold tracking-[0.12em] text-red-300 transition hover:bg-red-500/30 active:scale-95"
+                          className="size-9 rounded-full"
                         >
-                          <Icon icon="solar:trash-bin-trash-bold" size={14} />
-                          DELETE
-                        </button>
+                           <Icon icon="solar:trash-bin-trash-bold" size={14} />
+                        </Button>
                       </div>
                     )}
                     {selectedList.description ? (
@@ -653,22 +838,35 @@ export default function ProfilePage({
                     description="Add titles from movie or TV detail pages to populate it."
                   />
                 ) : (
-                  <MediaGrid
-                    items={listItems}
-                    renderOverlay={
-                      isOwner
-                        ? (item) => (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveListItem(item)}
-                            className="absolute top-2 right-2 z-10 flex size-9 cursor-pointer items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-sm transition hover:bg-red-500"
-                          >
-                            <Icon icon="solar:trash-bin-trash-bold" size={14} />
-                          </button>
-                        )
-                        : null
-                    }
-                  />
+                  <>
+                    <div className="mt-8 flex items-center justify-between gap-4">
+                      <div className="flex flex-col">
+                        <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/30 uppercase">Sort Items</h3>
+                      </div>
+                      <SortSelect 
+                        value={tabSorts.lists} 
+                        onChange={(v) => setTabSorts(prev => ({ ...prev, lists: v }))} 
+                      />
+                    </div>
+                    <MediaGrid
+                      items={sortedListItems}
+                      canReorder={isOwner && tabSorts.lists === 'manual'}
+                      onReorder={(next) => handleReorder(next, 'lists')}
+                      renderOverlay={
+                        isOwner
+                          ? (item) => (
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleRemoveListItem(item)}
+                                className="absolute top-2 right-2 z-10 size-9 rounded-full bg-black/65 backdrop-blur-sm"
+                              >
+                                <Icon icon="solar:trash-bin-trash-bold" size={14} />
+                              </Button>
+                            )
+                          : null
+                      }
+                    />
+                  </>
                 )}
               </section>
             ) : lists.length === 0 ? (

@@ -5,16 +5,16 @@ import React from 'react'
 
 import { usePathname } from 'next/navigation'
 
-import MediaAction from '../components/media-action'
 import {
   useBackgroundActions,
   useBackgroundState,
 } from '@/modules/background/context'
 import { useCountdownState } from '@/modules/countdown'
 
+import MediaAction from '../components/media-action'
 import { useNavigationContext } from '../context'
-import { useNavigationStatus } from './use-navigation-status'
 import { useNavigationItems } from './use-navigation-items'
+import { useNavigationStatus } from './use-navigation-status'
 
 export const useNavigationDisplay = () => {
   const pathname = usePathname()
@@ -83,8 +83,8 @@ export const useNavigationDisplay = () => {
 
     const itemsToProcess = isNotFoundPage
       ? rawItems.filter(
-        (item) => item.path === '/' || item.path === 'not-found'
-      )
+          (item) => item.path === '/' || item.path === 'not-found'
+        )
       : rawItems
 
     itemsToProcess.forEach((item) => {
@@ -227,12 +227,15 @@ export const useNavigationDisplay = () => {
     toggleBackgroundVideo,
   ])
 
-  const result = useMemo(() => ({
-    navigationItems,
-    activeItem,
-    activeIndex,
-    statusState,
-  }), [navigationItems, activeItem, activeIndex, statusState])
+  const result = useMemo(
+    () => ({
+      navigationItems,
+      activeItem,
+      activeIndex,
+      statusState,
+    }),
+    [navigationItems, activeItem, activeIndex, statusState]
+  )
 
   const lastResultRef = useRef(null)
 
@@ -251,7 +254,8 @@ export const useNavigationDisplay = () => {
     const isOverlayChanged = current.statusState !== prev.statusState
 
     // Simplified deep compare for activeItem
-    const isItemChanged = current.activeItem?.path !== prev.activeItem?.path ||
+    const isItemChanged =
+      current.activeItem?.path !== prev.activeItem?.path ||
       current.activeItem?.name !== prev.activeItem?.name ||
       current.activeItem?.type !== prev.activeItem?.type ||
       current.activeItem?.isOverlay !== prev.activeItem?.isOverlay ||

@@ -10,7 +10,7 @@ import Icon from '@/ui/icon'
 
 const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
-export default function ContentCard({ item, className = '' }) {
+export default function ContentCard({ item, className = '', aspectSquare = false }) {
   const [hasError, setHasError] = useState(false)
   const hasImage = (item.poster_path || item.poster_path_full) && !hasError
   const mediaType =
@@ -34,10 +34,13 @@ export default function ContentCard({ item, className = '' }) {
       className={cn(
         'group flex shrink-0 flex-col',
         className ||
-        'w-[calc((100%-12px)/2)] sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-40px)/4)] lg:w-[calc((100%-60px)/6)]'
+          'w-[calc((100%-12px)/2)] sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-40px)/4)] lg:w-[calc((100%-60px)/6)]'
       )}
     >
-      <div className="relative aspect-2/3 w-full backdrop-blur-sm overflow-hidden rounded-[20px] bg-white/5 p-1 ring-1 ring-white/10 transition-all duration-300 group-hover:bg-white/10 group-hover:ring-white/15">
+      <div className={cn(
+        'relative w-full overflow-hidden rounded-[20px] bg-white/5 p-1 ring-1 ring-white/10 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/10 group-hover:ring-white/15',
+        aspectSquare ? 'aspect-square' : 'aspect-2/3'
+      )}>
         <div className="relative h-full w-full overflow-hidden rounded-[16px]">
           {rank && (
             <div className="absolute top-2 left-2 z-10 flex h-7 min-w-[28px] items-center justify-center rounded-full bg-black/60 px-1.5 text-xs font-bold text-white ring-1 ring-white/20 backdrop-blur-md">

@@ -70,9 +70,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
   )
   const rating =
     current.vote_average > 0 ? current.vote_average.toFixed(1) : null
-  const href = isMovie
-    ? `/movie/${current.id}`
-    : `/tv/${current.id}`
+  const href = isMovie ? `/movie/${current.id}` : `/tv/${current.id}`
   const overview =
     current.overview?.length > 200
       ? current.overview.slice(0, 200) + '...'
@@ -167,10 +165,11 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
               key={item.id}
               onClick={() => handleDotClick(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className={`cursor-pointer rounded-full transition-all duration-300 ${index === activeIndex
+              className={`cursor-pointer rounded-full transition-all duration-300 ${
+                index === activeIndex
                   ? 'h-2 w-6 bg-white'
                   : 'h-2 w-2 bg-white/30 hover:bg-white/60'
-                }`}
+              }`}
             />
           ))}
         </div>

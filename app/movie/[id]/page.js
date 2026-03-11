@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 
-import MovieDetailClient from './client'
 import { getMovieComputedData } from '@/components/movie/utils'
 import { TmdbService } from '@/services/tmdb.service'
+
+import MovieDetailClient from './client'
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params
@@ -24,8 +25,9 @@ export async function generateMetadata({ params }) {
   }
 
   const imageUrl = movie.backdrop_path
-    ? `${TmdbService.TMDB_IMG || 'https://image.tmdb.org/t/p'}/w1280${movie.backdrop_path
-    }`
+    ? `${TmdbService.TMDB_IMG || 'https://image.tmdb.org/t/p'}/w1280${
+        movie.backdrop_path
+      }`
     : undefined
 
   return {
@@ -58,9 +60,7 @@ export default async function MovieDetailPage({ params }) {
   }
 
   const computed = getMovieComputedData(movie)
-  const {
-    imdbId,
-  } = computed
+  const { imdbId } = computed
 
   let rating = computed.rating
   let imdbVotes = null

@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 
-import TvDetailClient from './client'
-
 import { getTvComputedData } from '@/components/tv/utils'
 import { TmdbService } from '@/services/tmdb.service'
+
+import TvDetailClient from './client'
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params
@@ -26,8 +26,9 @@ export async function generateMetadata({ params }) {
   }
 
   const imageUrl = show.backdrop_path
-    ? `${TmdbService.TMDB_IMG || 'https://image.tmdb.org/t/p'}/w1280${show.backdrop_path
-    }`
+    ? `${TmdbService.TMDB_IMG || 'https://image.tmdb.org/t/p'}/w1280${
+        show.backdrop_path
+      }`
     : undefined
 
   return {

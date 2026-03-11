@@ -17,9 +17,9 @@ export default function ContentRow({ title, items = [], mediaType }) {
 
   const enrichedItems = mediaType
     ? items.map((item) => ({
-      ...item,
-      media_type: item.media_type || mediaType,
-    }))
+        ...item,
+        media_type: item.media_type || mediaType,
+      }))
     : items
 
   return (

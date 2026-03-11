@@ -38,7 +38,7 @@ export function MovieRegistry({
       actions: [
         {
           key: 'search-overlay',
-          tooltip: "Search",
+          tooltip: 'Search',
           icon: isSearching
             ? 'solar:close-circle-bold'
             : 'solar:magnifer-linear',

@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
-import ProfileLoading from './loading'
 import ProfilePage from './client'
+import ProfileLoading from './loading'
 
 export default function Page() {
   return (

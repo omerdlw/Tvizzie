@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import { cn } from '@/lib/utils'
 import Container from '@/modules/modal/container'
 import { useToast } from '@/modules/notification/hooks'
 import {
@@ -178,7 +179,7 @@ export default function ListPickerModal({ close, data, header }) {
                     key={list.id}
                     onClick={() => handleToggleList(list.id)}
                     disabled={isSaving}
-                    className="flex cursor-pointer items-center justify-between gap-4 rounded-[16px] border border-white/5 bg-white/5 px-5 py-4 text-left transition hover:border-white/20 hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex cursor-pointer items-center justify-between gap-4 rounded-[16px] border border-white/5 bg-white/5 px-5 py-4 text-left transition hover:border-white/20 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-sm font-bold text-white/90">
@@ -192,11 +193,12 @@ export default function ListPickerModal({ close, data, header }) {
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase transition-all ${
+                      className={cn(
+                        'shrink-0 rounded-full px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase transition-all',
                         isActive
-                          ? 'bg-error/30 border border-error'
-                          : 'border border-white/5 bg-white/5 text-white/30'
-                      }`}
+                          ? 'border border-red-500/20 bg-[#450a0a] text-[#fca5a5]'
+                          : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                      )}
                     >
                       {isActive ? 'Remove' : 'Add'}
                     </span>

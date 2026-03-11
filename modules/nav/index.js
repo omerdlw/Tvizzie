@@ -120,10 +120,10 @@ export default function Nav() {
           expanded || statusState?.isOverlay
             ? { opacity: 1, backdropFilter: 'blur(24px)', display: 'block' }
             : {
-              opacity: 0,
-              backdropFilter: 'blur(0px)',
-              transitionEnd: { display: 'none' },
-            }
+                opacity: 0,
+                backdropFilter: 'blur(0px)',
+                transitionEnd: { display: 'none' },
+              }
         }
       >
         <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-black via-black/40 to-black/20" />
@@ -136,12 +136,13 @@ export default function Nav() {
       </AnimatePresence>
 
       <div
-        className={`fixed inset-x-0 bottom-2 mx-auto h-auto w-[calc(100%-16px)] transition-opacity duration-300 select-none sm:w-[460px] ${isModalOpen
-          ? 'pointer-events-none'
-          : isOpen
-            ? 'pointer-events-none opacity-0 md:pointer-events-auto md:opacity-100'
-            : 'opacity-100'
-          }`}
+        className={`fixed inset-x-0 bottom-2 mx-auto h-auto w-[calc(100%-16px)] transition-opacity duration-300 select-none sm:w-[460px] ${
+          isModalOpen
+            ? 'pointer-events-none'
+            : isOpen
+              ? 'pointer-events-none opacity-0 md:pointer-events-auto md:opacity-100'
+              : 'opacity-100'
+        }`}
         style={{ zIndex: Z_INDEX.NAV }}
         id="nav-card-stack"
         ref={navRef}

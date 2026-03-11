@@ -8,8 +8,8 @@ import {
   useBackgroundActions,
   useBackgroundState,
 } from '@/modules/background/context'
-import Icon from '@/ui/icon'
 import Tooltip from '@/ui/elements/tooltip'
+import Icon from '@/ui/icon'
 
 import { useModal } from '../modal/context'
 
@@ -123,7 +123,10 @@ export function useNavActions({ activeItem } = {}) {
 
 export function NavAction({ action }) {
   return (
-    <Tooltip className="bg-white text-black text-xs rounded-[10px] p-1" text={action.tooltip}>
+    <Tooltip
+      className="rounded-[10px] bg-white p-1 text-xs text-black"
+      text={action.tooltip}
+    >
       <button
         className="center z-10 cursor-pointer rounded-full bg-transparent p-1 ring ring-transparent transition-all hover:text-white hover:ring-white/10"
         onClick={action.onClick}

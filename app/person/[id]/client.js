@@ -41,7 +41,7 @@ function calculateAge(birthday, deathday) {
 
 function StatPill({ icon, children }) {
   return (
-    <div className="flex items-center gap-2 rounded-[16px] bg-white/5 px-4 py-2.5 text-sm text-white/70 border border-white/10 backdrop-blur-sm">
+    <div className="flex items-center gap-2 rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70 backdrop-blur-sm">
       <Icon icon={icon} size={16} className="shrink-0 text-white/50" />
       {children}
     </div>
@@ -60,10 +60,11 @@ function FilmographyTabs({ activeTab, onTabChange, movieCount, tvCount }) {
         <button
           key={tab.key}
           onClick={() => onTabChange(tab.key)}
-          className={`cursor-pointer rounded-[10px] px-3 py-1 text-xs font-medium transition-all duration-200 ${activeTab === tab.key
+          className={`cursor-pointer rounded-[10px] px-3 py-1 text-xs font-medium transition-all duration-200 ${
+            activeTab === tab.key
               ? 'bg-white/15 text-white'
               : 'text-white/50 hover:text-white/70'
-            }`}
+          }`}
         >
           {tab.label}
           {tab.count > 0 && (

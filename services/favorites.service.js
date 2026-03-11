@@ -13,7 +13,7 @@ import {
   toggleUserMediaDoc,
 } from './user-media.service'
 
-function getFavoriteDocRef(userId, media) {
+export function getFavoriteDocRef(userId, media) {
   if (!userId) {
     throw new Error('Authenticated user is required to manage favorites')
   }

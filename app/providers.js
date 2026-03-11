@@ -4,8 +4,8 @@ import { useMemo } from 'react'
 
 import { MotionConfig, useReducedMotion } from 'framer-motion'
 
-import ProfileBootstrapper from '@/components/profile/bootstrapper'
 import { SmoothScrollProvider } from '@/components/layout/smooth-scroll'
+import ProfileBootstrapper from '@/components/profile/bootstrapper'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { NAV_CONFIG } from '@/config/nav.config'
 import { PROJECT_CONFIG } from '@/config/project.config'
@@ -46,7 +46,7 @@ const ComposedProviders = pipe(
   [LoadingProvider],
   [CountdownProvider],
   [ModalProvider],
-  [ContextMenuProvider],
+  [ContextMenuProvider]
 )
 
 export const AppProviders = ({ children }) => {

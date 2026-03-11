@@ -13,7 +13,7 @@ import {
   toggleUserMediaDoc,
 } from './user-media.service'
 
-function getWatchlistDocRef(userId, media) {
+export function getWatchlistDocRef(userId, media) {
   if (!userId) {
     throw new Error('Authenticated user is required to manage watchlist items')
   }
@@ -49,7 +49,10 @@ export function subscribeToUserWatchlist(userId, callback, options = {}) {
 }
 
 export async function toggleUserWatchlistItem({ media, userId }) {
-  const result = await toggleUserMediaDoc(getWatchlistDocRef(userId, media), media)
+  const result = await toggleUserMediaDoc(
+    getWatchlistDocRef(userId, media),
+    media
+  )
 
   return {
     item: result.media || null,

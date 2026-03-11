@@ -56,10 +56,10 @@ export const useNavigationLayout = ({
     const reordered =
       activeIdx !== -1
         ? [
-          items[activeIdx],
-          ...items.slice(0, activeIdx),
-          ...items.slice(activeIdx + 1),
-        ]
+            items[activeIdx],
+            ...items.slice(0, activeIdx),
+            ...items.slice(activeIdx + 1),
+          ]
         : items
 
     if (pathname === '/' || isHovered) {

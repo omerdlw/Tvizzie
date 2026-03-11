@@ -29,7 +29,7 @@ function VideoCard({ video }) {
           sizes="288px"
           fill
         />
-        <div className="absolute inset-0 center bg-black/20 transition-colors group-hover:bg-black/10">
+        <div className="center absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/10">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring ring-white/15 backdrop-blur-sm transition-transform group-hover:scale-110">
             <Icon
               className="ml-1 text-white"

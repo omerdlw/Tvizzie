@@ -11,17 +11,12 @@ import {
 
 import { isValidUrl } from '@/lib/utils'
 
-import {
-  getUserDocRef,
-  getUsernameDocRef,
-} from './firestore-media.service'
+import { getUserDocRef, getUsernameDocRef } from './firestore-media.service'
 import { cleanString, normalizeTimestamp } from './firestore-utils'
 
 const USERNAME_MIN_LENGTH = 3
 const USERNAME_MAX_LENGTH = 24
-const USERNAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-
-
+const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/
 
 function normalizeOptionalUrl(value) {
   const normalized = cleanString(value)
@@ -35,17 +30,30 @@ function normalizeOptionalUrl(value) {
 }
 
 function buildUsernameCandidate(value) {
-  return cleanString(value)
+  const turkishMap = {
+    ç: 'c',
+    ğ: 'g',
+    ı: 'i',
+    ö: 'o',
+    ş: 's',
+    ü: 'u',
+  }
+
+  const normalized = cleanString(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-{2,}/g, '-')
+    .replace(/[çğışüö]/g, (char) => turkishMap[char] || char)
+
+  return normalized
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/_{2,}/g, '_')
 }
 
 function createUserIdentity(user = {}) {
   return {
     avatarUrl: user.avatarUrl || user.photoURL || null,
-    displayName: user.displayName || user.name || user.email || 'Anonymous User',
+    displayName:
+      user.displayName || user.name || user.email || 'Anonymous User',
     email: user.email || null,
     id: user.id || user.uid || null,
   }
@@ -63,7 +71,8 @@ function normalizeProfileData(data = {}, id = null) {
     updatedAt: normalizeTimestamp(data.updatedAt),
     username: data.username || null,
     usernameLower:
-      data.usernameLower || (data.username ? String(data.username).toLowerCase() : null),
+      data.usernameLower ||
+      (data.username ? String(data.username).toLowerCase() : null),
   }
 }
 
@@ -74,9 +83,12 @@ function buildAvailableUsername(base, attempt = 0) {
 
   const suffix = String(attempt + 1)
   const maxBaseLength = USERNAME_MAX_LENGTH - suffix.length - 1
-  const trimmedBase = base.slice(0, Math.max(USERNAME_MIN_LENGTH, maxBaseLength))
+  const trimmedBase = base.slice(
+    0,
+    Math.max(USERNAME_MIN_LENGTH, maxBaseLength)
+  )
 
-  return `${trimmedBase}-${suffix}`
+  return `${trimmedBase}_${suffix}`
 }
 
 function getDefaultUsernameBase(user = {}) {
@@ -169,7 +181,11 @@ export function subscribeToUserProfile(userId, callback, options = {}) {
   )
 }
 
-async function tryClaimUsernameForProfile({ user, username, preserveExisting = false }) {
+async function tryClaimUsernameForProfile({
+  user,
+  username,
+  preserveExisting = false,
+}) {
   const identity = createUserIdentity(user)
 
   if (!identity.id) {
@@ -179,61 +195,68 @@ async function tryClaimUsernameForProfile({ user, username, preserveExisting = f
   const userRef = getUserDocRef(identity.id)
   const usernameRef = getUsernameDocRef(username)
 
-  const result = await runTransaction(userRef.firestore, async (transaction) => {
-    const profileSnapshot = await transaction.get(userRef)
-    const usernameSnapshot = await transaction.get(usernameRef)
-    const existingProfile = profileSnapshot.exists() ? profileSnapshot.data() || {} : null
+  const result = await runTransaction(
+    userRef.firestore,
+    async (transaction) => {
+      const profileSnapshot = await transaction.get(userRef)
+      const usernameSnapshot = await transaction.get(usernameRef)
+      const existingProfile = profileSnapshot.exists()
+        ? profileSnapshot.data() || {}
+        : null
 
-    if (
-      usernameSnapshot.exists() &&
-      usernameSnapshot.data()?.userId &&
-      usernameSnapshot.data()?.userId !== identity.id
-    ) {
-      throw new Error('USERNAME_TAKEN')
-    }
+      if (
+        usernameSnapshot.exists() &&
+        usernameSnapshot.data()?.userId &&
+        usernameSnapshot.data()?.userId !== identity.id
+      ) {
+        throw new Error('USERNAME_TAKEN')
+      }
 
-    const nextProfile = {
-      ...(existingProfile || {}),
-      ...(preserveExisting
-        ? {
-            avatarUrl: existingProfile?.avatarUrl || identity.avatarUrl || null,
-            displayName:
-              existingProfile?.displayName ||
-              identity.displayName ||
-              'Anonymous User',
-          }
-        : {
-            avatarUrl: identity.avatarUrl || existingProfile?.avatarUrl || null,
-            displayName:
-              identity.displayName ||
-              existingProfile?.displayName ||
-              'Anonymous User',
-          }),
-      bannerUrl: existingProfile?.bannerUrl || null,
-      description: existingProfile?.description || '',
-      email: identity.email || existingProfile?.email || null,
-      updatedAt: serverTimestamp(),
-      username,
-      usernameLower: username,
-    }
-
-    if (!existingProfile?.createdAt) {
-      nextProfile.createdAt = serverTimestamp()
-    }
-
-    transaction.set(userRef, nextProfile, { merge: true })
-    transaction.set(
-      usernameRef,
-      {
+      const nextProfile = {
+        ...(existingProfile || {}),
+        ...(preserveExisting
+          ? {
+              avatarUrl:
+                existingProfile?.avatarUrl || identity.avatarUrl || null,
+              displayName:
+                existingProfile?.displayName ||
+                identity.displayName ||
+                'Anonymous User',
+            }
+          : {
+              avatarUrl:
+                identity.avatarUrl || existingProfile?.avatarUrl || null,
+              displayName:
+                identity.displayName ||
+                existingProfile?.displayName ||
+                'Anonymous User',
+            }),
+        bannerUrl: existingProfile?.bannerUrl || null,
+        description: existingProfile?.description || '',
+        email: identity.email || existingProfile?.email || null,
         updatedAt: serverTimestamp(),
-        userId: identity.id,
+        username,
         usernameLower: username,
-      },
-      { merge: true }
-    )
+      }
 
-    return true
-  })
+      if (!existingProfile?.createdAt) {
+        nextProfile.createdAt = serverTimestamp()
+      }
+
+      transaction.set(userRef, nextProfile, { merge: true })
+      transaction.set(
+        usernameRef,
+        {
+          updatedAt: serverTimestamp(),
+          userId: identity.id,
+          usernameLower: username,
+        },
+        { merge: true }
+      )
+
+      return true
+    }
+  )
 
   return result
 }
@@ -248,7 +271,9 @@ export async function ensureUserProfile(user = {}) {
   const existingProfile = await getUserProfile(identity.id)
 
   if (existingProfile?.username) {
-    const usernameSnapshot = await getDoc(getUsernameDocRef(existingProfile.username))
+    const usernameSnapshot = await getDoc(
+      getUsernameDocRef(existingProfile.username)
+    )
 
     if (!usernameSnapshot.exists()) {
       await setDoc(
@@ -256,7 +281,8 @@ export async function ensureUserProfile(user = {}) {
         {
           updatedAt: serverTimestamp(),
           userId: identity.id,
-          usernameLower: existingProfile.usernameLower || existingProfile.username,
+          usernameLower:
+            existingProfile.usernameLower || existingProfile.username,
         },
         { merge: true }
       )
@@ -329,7 +355,9 @@ export async function updateUserProfile({ userId, updates = {} }) {
         ? normalizeOptionalUrl(updates.bannerUrl)
         : currentProfile.bannerUrl,
     description:
-      updates.description !== undefined ? cleanString(updates.description) : currentProfile.description,
+      updates.description !== undefined
+        ? cleanString(updates.description)
+        : currentProfile.description,
     displayName:
       updates.displayName !== undefined
         ? cleanString(updates.displayName) || 'Anonymous User'

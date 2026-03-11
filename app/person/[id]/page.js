@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 
-import PersonDetailClient from './client'
 import { TmdbService } from '@/services/tmdb.service'
+
+import PersonDetailClient from './client'
 
 const TMDB_IMG = 'https://image.tmdb.org/t/p'
 

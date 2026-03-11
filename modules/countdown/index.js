@@ -30,7 +30,7 @@ export function CountdownOverlay() {
               scale: 1.12,
               margin: 'auto',
               filter: 'brightness(0.7) grayscale(0.7)',
-              opacity: .6,
+              opacity: 0.6,
             },
             noiseStyle: {
               opacity: 0.7,

@@ -40,9 +40,7 @@ function PersonCard({ person }) {
         )}
       </div>
       <div className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-semibold">
-          {person.name}
-        </span>
+        <span className="truncate text-sm font-semibold">{person.name}</span>
         <span className="truncate text-xs text-white/50">
           {person.character}
         </span>
