@@ -147,33 +147,43 @@ export default function CollectionActions({ media }) {
     }
   }, [auth.isReady, auth.user?.id, mediaSnapshot])
 
+  async function openAuthModal() {
+    return openModal('AUTH_MODAL', 'center', {
+      data: {
+        mode: 'sign-in',
+      },
+      header: {
+        title: 'Sign in to continue',
+        description: `Manage ${title} in your collection.`,
+      },
+    })
+  }
+
   async function ensureSignedIn() {
-    if (auth.isAuthenticated) {
-      return true
+    if (auth.isAuthenticated && auth.user?.id) {
+      return auth.user.id
     }
 
-    try {
-      await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully. Repeat the action to continue.')
-      return false
-    } catch (error) {
-      toast.error(error?.message || 'Sign in failed.')
-      return false
-    }
+    const result = await openAuthModal()
+    const modalUserId = result?.session?.user?.id || null
+
+    if (modalUserId) return modalUserId
+
+    return auth.user?.id || null
   }
 
   async function handleFavoriteClick() {
     if (isSubmittingFavorite) return
 
-    const canContinue = await ensureSignedIn()
-    if (!canContinue) return
+    const userId = await ensureSignedIn()
+    if (!userId) return
 
     setIsSubmittingFavorite(true)
 
     try {
       const result = await toggleUserFavorite({
         media: mediaSnapshot,
-        userId: auth.user.id,
+        userId,
       })
 
       toast.success(
@@ -191,15 +201,15 @@ export default function CollectionActions({ media }) {
   async function handleWatchlistClick() {
     if (isSubmittingWatchlist) return
 
-    const canContinue = await ensureSignedIn()
-    if (!canContinue) return
+    const userId = await ensureSignedIn()
+    if (!userId) return
 
     setIsSubmittingWatchlist(true)
 
     try {
       const result = await toggleUserWatchlistItem({
         media: mediaSnapshot,
-        userId: auth.user.id,
+        userId,
       })
 
       toast.success(
@@ -215,8 +225,8 @@ export default function CollectionActions({ media }) {
   }
 
   async function handleOpenListPicker() {
-    const canContinue = await ensureSignedIn()
-    if (!canContinue) return
+    const userId = await ensureSignedIn()
+    if (!userId) return
 
     openModal('LIST_PICKER_MODAL', 'bottom', {
       header: {
@@ -224,7 +234,7 @@ export default function CollectionActions({ media }) {
       },
       data: {
         media: mediaSnapshot,
-        userId: auth.user.id,
+        userId,
       },
       full: false,
     })

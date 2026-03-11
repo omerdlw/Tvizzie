@@ -14,6 +14,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { doc } from 'firebase/firestore'
 import { AnimatePresence, motion } from 'framer-motion'
 
+import AuthModal from '@/components/modals/auth-modal'
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import FollowListModal from '@/components/modals/follow-list-modal'
 import ListEditorModal from '@/components/modals/list-editor-modal'
@@ -319,7 +320,7 @@ export default function ProfilePage({
 
   const handleFollow = async () => {
     if (!auth.isAuthenticated) {
-      toast.error('Please sign in to follow users.')
+      await handleSignInRequest()
       return
     }
     setIsFollowLoading(true)
@@ -346,13 +347,17 @@ export default function ProfilePage({
     })
   }
 
-  async function handleGoogleSignIn() {
-    try {
-      await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully.')
-    } catch (error) {
-      toast.error(error?.message || 'Sign in failed.')
-    }
+  async function handleSignInRequest() {
+    await openModal('AUTH_MODAL', 'center', {
+      data: {
+        mode: 'sign-in',
+      },
+      header: {
+        title: 'Sign in to continue',
+        description:
+          'Access your profile, favorites, watchlist, and custom lists.',
+      },
+    })
   }
 
   async function handleCreateList() {
@@ -446,6 +451,7 @@ export default function ProfilePage({
       LIST_EDITOR_MODAL: ListEditorModal,
       FOLLOW_LIST_MODAL: FollowListModal,
       PROFILE_EDITOR_MODAL: ProfileEditorModal,
+      AUTH_MODAL: AuthModal,
     },
     nav: {
       description: navDescription,
@@ -459,7 +465,7 @@ export default function ProfilePage({
         <ProfileAction
           isOwner={isOwner}
           isAuthenticated={auth.isAuthenticated}
-          onSignIn={handleGoogleSignIn}
+          onSignIn={handleSignInRequest}
           onEditProfile={handleEditProfile}
           isFollowing={isFollowing}
           onFollow={handleFollow}
@@ -728,7 +734,7 @@ export default function ProfilePage({
           onFollow={handleFollow}
           isFollowLoading={isFollowLoading}
           isAuthenticated={auth.isAuthenticated}
-          onSignIn={handleGoogleSignIn}
+          onSignIn={handleSignInRequest}
         />
       </div>
 

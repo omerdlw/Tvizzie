@@ -39,38 +39,6 @@ function WatchProviders({ providers, videos }) {
       v.official
   )
 
-  const renderProviderList = (list, label) => {
-    if (!list?.length) return null
-    return (
-      <div className="flex flex-wrap gap-2">
-        {list.map((provider) => {
-          const localIcon = LOCAL_PROVIDERS[provider.provider_name]
-          const iconUrl = localIcon || `${TMDB_IMG}/w92${provider.logo_path}`
-
-          return (
-            <Tooltip
-              key={provider.provider_id}
-              text={`${provider.provider_name} (${label})`}
-              position="top"
-              className="rounded-[10px] bg-white p-2 text-xs font-bold text-black"
-            >
-              <div className="group relative h-8 w-8 overflow-hidden rounded-lg bg-white/5 ring-1 ring-white/10 transition-transform hover:scale-110">
-                <img
-                  src={iconUrl}
-                  alt={provider.provider_name}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute right-0 bottom-0 flex h-3 w-max items-center bg-black/80 px-0.5 text-[6px] font-bold text-white/50 uppercase">
-                  {label}
-                </div>
-              </div>
-            </Tooltip>
-          )
-        })}
-      </div>
-    )
-  }
-
   const allProviders = [
     ...(trProviders.flatrate || []).map((p) => ({ ...p, type: 'PLAY' })),
     ...(trProviders.rent || []).map((p) => ({ ...p, type: 'RENT' })),

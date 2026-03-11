@@ -32,7 +32,7 @@ export default function ProfileAction({
         onClick={onSignIn}
         className="mt-2.5 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] border border-transparent bg-white px-4 text-[11px] font-bold tracking-[0.15em] text-black uppercase transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-[0.98]"
       >
-        <Icon icon="logos:google-icon" size={14} />
+        <Icon icon="solar:user-circle-bold" size={14} />
         Sign In
       </button>
     )

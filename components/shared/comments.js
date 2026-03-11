@@ -237,6 +237,7 @@ export default function MediaComments({
 }) {
   const { navHeight } = useNavHeight()
   const auth = useAuth()
+  const { openModal } = useModal()
   const toast = useToast()
   const [comments, setComments] = useState([])
   const [commentText, setCommentText] = useState('')
@@ -389,13 +390,16 @@ export default function MediaComments({
   const mediaTypeLabel =
     entityType === 'tv' ? 'Series' : entityType === 'movie' ? 'Movie' : 'Title'
 
-  async function handleGoogleSignIn() {
-    try {
-      await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully.')
-    } catch (error) {
-      toast.error(error?.message || 'Sign in failed.')
-    }
+  async function handleSignInRequest() {
+    await openModal('AUTH_MODAL', 'center', {
+      data: {
+        mode: 'sign-in',
+      },
+      header: {
+        title: 'Sign in to continue',
+        description: `Leave a review and score for ${title}.`,
+      },
+    })
   }
 
   const handleSubmit = useCallback(
@@ -583,9 +587,9 @@ export default function MediaComments({
 
               <Button
                 className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-5 text-xs font-semibold text-black transition hover:bg-white/5 hover:text-white"
-                onClick={handleGoogleSignIn}
+                onClick={handleSignInRequest}
               >
-                <Icon icon="logos:google-icon" size={14} />
+                <Icon icon="solar:user-circle-bold" size={14} />
                 Sign in
               </Button>
             </div>

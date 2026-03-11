@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import AuthModal from '@/components/modals/auth-modal'
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import ImagePreviewModal from '@/components/modals/image-preview'
 import VideoPreviewModal from '@/components/modals/video-preview-modal'
@@ -89,6 +90,7 @@ export function TvRegistry({
       PREVIEW_MODAL: ImagePreviewModal,
       VIDEO_PREVIEW_MODAL: VideoPreviewModal,
       CONFIRMATION_MODAL: ConfirmationModal,
+      AUTH_MODAL: AuthModal,
     },
   })
 
