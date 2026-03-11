@@ -20,16 +20,14 @@ import {
   getUserListItemsCollection,
   getUserListsCollection,
 } from './firestore-media.service'
+import { cleanString } from './firestore-utils'
 import {
   createUserMediaPayload,
   normalizeTimestamp,
   normalizeUserMediaSnapshot,
 } from './user-media.service'
 
-function cleanString(value) {
-  if (value === undefined || value === null) return ''
-  return String(value).trim()
-}
+
 
 function slugifyListTitle(value) {
   return cleanString(value)

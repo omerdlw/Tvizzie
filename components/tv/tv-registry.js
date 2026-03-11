@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import ImagePreviewModal from '@/components/modals/image-preview'
-import VideoPreviewModal from '@/components/modals/video-preview'
+import VideoPreviewModal from '@/components/modals/video-preview-modal'
 import ReviewAction from '@/components/nav-actions/review-action'
 import SearchAction from '@/components/nav-actions/search-action'
 import TVAction from '@/components/nav-actions/tv-action'

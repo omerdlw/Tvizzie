@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { FollowsService } from '@/services/follows.service'
+import { subscribeToFollowers, subscribeToFollowing } from '@/services/follows.service'
 import { getUserProfile } from '@/services/profile.service'
 import Icon from '@/ui/icon'
 import Container from '@/modules/modal/container'
@@ -16,8 +16,8 @@ export default function FollowListModal({ close, data, header }) {
         if (!userId) return undefined
 
         const subscribe = type === 'followers'
-            ? FollowsService.subscribeToFollowers
-            : FollowsService.subscribeToFollowing
+            ? subscribeToFollowers
+            : subscribeToFollowing
 
         const unsubscribe = subscribe(userId, async (list) => {
             setLoading(true)

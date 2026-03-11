@@ -19,7 +19,7 @@ function PersonCard({ person }) {
   return (
     <Link
       className="group flex items-center gap-3 rounded-[20px] bg-white/5 p-1 pr-4 ring ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:ring-white/15"
-      href={`/person/detail/${person.id}`}
+      href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
     >
       <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-[16px] bg-white/5">

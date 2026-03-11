@@ -24,7 +24,7 @@ export default function ContentCard({ item, className = '' }) {
     : item.name || item.original_name
   const year = (isMovie ? item.release_date : item.first_air_date)?.slice(0, 4)
   const rating = item.vote_average > 0 ? item.vote_average.toFixed(1) : null
-  const href = isMovie ? `/movie/detail/${detailId}` : `/tv/detail/${detailId}`
+  const href = isMovie ? `/movie/${detailId}` : `/tv/${detailId}`
   const rank = item.rank
 
   return (

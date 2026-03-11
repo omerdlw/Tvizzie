@@ -20,25 +20,12 @@ import {
   getMediaCommentsCollection,
   getMediaItemRef,
 } from './firestore-media.service'
+import { normalizeTimestamp } from './firestore-utils'
 
 const COMMENT_MIN_LENGTH = 10
 const COMMENT_LIMIT = 120
 
-function normalizeTimestamp(value) {
-  if (!value) return null
 
-  if (typeof value?.toDate === 'function') {
-    return value.toDate().toISOString()
-  }
-
-  const parsedDate = new Date(value)
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return null
-  }
-
-  return parsedDate.toISOString()
-}
 
 function normalizeRating(value) {
   if (value === undefined || value === null || value === '') return null
@@ -54,7 +41,7 @@ function normalizeRating(value) {
 
 function normalizeCommentSnapshot(snapshot) {
   const data = snapshot.data() || {}
-  console.log(data);
+
 
   return {
     id: snapshot.id,

@@ -20,7 +20,7 @@ export default function TvRecommendationCard({ show }) {
 
   return (
     <Link
-      href={`/tv/detail/${show.id}`}
+      href={`/tv/${show.id}`}
       onDragStart={(e) => e.preventDefault()}
       className="group flex w-[calc((100%-12px)/2)] shrink-0 flex-col gap-2 backdrop-blur-sm sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-48px)/4)]"
     >

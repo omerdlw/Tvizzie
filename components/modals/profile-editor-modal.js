@@ -60,7 +60,7 @@ export default function ProfileEditorModal({ close, data, header }) {
     }
 
     return (
-        <Container header={{ ...header, label: 'Management' }} close={close}>
+        <Container header={{ ...header }} close={close}>
             <form
                 onSubmit={handleSubmit}
                 className="flex w-full flex-col gap-4 p-2.5"
@@ -117,7 +117,6 @@ export default function ProfileEditorModal({ close, data, header }) {
                 </div>
 
                 <div className="space-y-2 p-2">
-                    <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">Biography</label>
                     <Textarea
                         value={form.description}
                         onChange={(event) => handleChange('description', event.target.value)}
@@ -125,7 +124,7 @@ export default function ProfileEditorModal({ close, data, header }) {
                         maxHeight={120}
                         className={{
                             textarea:
-                                'min-h-[100px] w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                                'min-h-[150px] resize-none w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
                         }}
                     />
                 </div>

@@ -71,8 +71,8 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
   const rating =
     current.vote_average > 0 ? current.vote_average.toFixed(1) : null
   const href = isMovie
-    ? `/movie/detail/${current.id}`
-    : `/tv/detail/${current.id}`
+    ? `/movie/${current.id}`
+    : `/tv/${current.id}`
   const overview =
     current.overview?.length > 200
       ? current.overview.slice(0, 200) + '...'

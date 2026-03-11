@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { BaseService } from '@/services/base.service'
+import { apiClient } from '@/modules/api/client'
 
 export function useFetch(endpoint, options = {}) {
   const { manual = false, ...requestOptions } = options
@@ -32,16 +32,26 @@ export function useFetch(endpoint, options = {}) {
 
       const finalEndpoint = combinedOptions.endpoint || endpoint
 
-      const result = await BaseService.request(finalEndpoint, combinedOptions)
-
-      setState({
-        data: result.data,
-        error: result.error,
-        loading: result.loading,
-        status: result.status,
-      })
-
-      return result
+      try {
+        const response = await apiClient.request(finalEndpoint, combinedOptions)
+        const result = {
+          data: response.data,
+          error: null,
+          loading: false,
+          status: response.status || 200,
+        }
+        setState(result)
+        return result
+      } catch (err) {
+        const result = {
+          data: null,
+          error: err.message || 'An error occurred',
+          loading: false,
+          status: err.status || 0,
+        }
+        setState(result)
+        return result
+      }
     },
     [endpoint]
   )

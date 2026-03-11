@@ -78,8 +78,8 @@ export default function PersonTimeline({ person }) {
                 ? credit.title || credit.original_title
                 : credit.name || credit.original_name
               const href = isMovie
-                ? `/movie/detail/${credit.id}`
-                : `/tv/detail/${credit.id}`
+                ? `/movie/${credit.id}`
+                : `/tv/${credit.id}`
               const character = credit.character
               const episodeCount = credit.episode_count
               const mediaIcon = isMovie

@@ -35,7 +35,7 @@ function PersonsDisplay({ persons, label }) {
         {visiblePersons.map((person, index) => (
           <div key={person.id} className="flex items-center gap-1">
             <Link
-              href={`/person/detail/${person.id}`}
+              href={`/person/${person.id}`}
               className="cursor-pointer text-white/70 transition-colors hover:text-white"
             >
               {person.name}
@@ -91,7 +91,7 @@ export default function Sidebar({
           <>
             <span className="mr-1">Directed by</span>
             <Link
-              href={`/person/detail/${director.id}`}
+              href={`/person/${director.id}`}
               className="cursor-pointer text-white/70 transition-colors hover:text-white"
             >
               {director.name}

@@ -582,7 +582,7 @@ export default function MediaComments({
               </div>
 
               <Button
-                className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-5 text-xs font-semibold text-black transition hover:bg-black hover:text-white"
+                className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white px-5 text-xs font-semibold text-black transition hover:bg-white/5 hover:text-white"
                 onClick={handleGoogleSignIn}
               >
                 <Icon icon="logos:google-icon" size={14} />

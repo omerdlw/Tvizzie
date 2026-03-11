@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
-import ProfileLoading from '@/components/profile/profile-loading'
-import ProfilePage from '@/components/profile/profile-page'
+import ProfileLoading from '../loading'
+import ProfilePage from '../client'
 
 export default async function Page({ params }) {
   const { username } = await params

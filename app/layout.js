@@ -10,11 +10,11 @@ import './globals.css'
 import { AppProviders } from './providers'
 
 export const metadata = {
-  description: 'A robust foundation for web projects',
-  title: 'My Web Base',
+  description: 'Discover, track, and review your favorite movies and TV series.',
+  title: 'Tvizzie',
   openGraph: {
-    description: 'A robust foundation for web projects',
-    title: 'My Web Base',
+    description: 'Discover, track, and review your favorite movies and TV series.',
+    title: 'Tvizzie',
     type: 'website',
   },
 }

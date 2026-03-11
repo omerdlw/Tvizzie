@@ -21,7 +21,7 @@ export default function RecommendationCard({ movie }) {
     <Link
       className="group flex w-[calc((100%-12px)/2)] shrink-0 flex-col gap-2 backdrop-blur-sm sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-48px)/4)]"
       onDragStart={(e) => e.preventDefault()}
-      href={`/movie/detail/${movie.id}`}
+      href={`/movie/${movie.id}`}
     >
       <div className="relative aspect-2/3 w-full overflow-hidden rounded-[20px] bg-white/5 p-1 ring ring-white/10 transition-all duration-300 group-hover:bg-white/10 group-hover:ring-white/15">
         <div className="relative h-full w-full overflow-hidden rounded-[16px]">

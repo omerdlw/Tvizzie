@@ -42,7 +42,7 @@ export const Icon = ({ icon, isStackHovered, style }) => {
   )
 
   if (isUrl) {
-    const { ...cleanedStyle } = iconStyle
+    const { background, backgroundColor, ...cleanedStyle } = iconStyle
     return (
       <motion.div
         className="size-12 rounded-[20px] bg-cover bg-center bg-no-repeat"

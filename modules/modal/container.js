@@ -30,11 +30,12 @@ function Title({ title, description, close }) {
 export default function Container({ children, className, header, close }) {
   return (
     <div className="flex w-full max-w-2xl min-w-sm flex-col bg-transparent">
-      <Title
-        description={header.description}
-        title={header.title}
-        close={close}
-      />
+      {header?.title &&
+        <Title
+          description={header.description}
+          title={header.title}
+          close={close}
+        />}
       <div className={cn('h-auto w-full overflow-y-auto', className)}>
         {children}
       </div>

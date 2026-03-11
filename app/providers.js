@@ -4,12 +4,13 @@ import { useMemo } from 'react'
 
 import { MotionConfig, useReducedMotion } from 'framer-motion'
 
-import ProfileBootstrapper from '@/components/profile/profile-bootstrapper'
+import ProfileBootstrapper from '@/components/profile/bootstrapper'
 import { SmoothScrollProvider } from '@/components/layout/smooth-scroll'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { NAV_CONFIG } from '@/config/nav.config'
 import { PROJECT_CONFIG } from '@/config/project.config'
 import { SettingsProvider } from '@/contexts/settings-context'
+import { pipe } from '@/lib/utils/pipe'
 import { AuthProvider } from '@/modules/auth'
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background'
 import { ContextMenuGlobal, ContextMenuProvider } from '@/modules/context-menu'
@@ -32,6 +33,22 @@ const APP_AUTH_CONFIG = {
   enabled: PROJECT_CONFIG.features.auth !== false && AUTH_CONFIG.enabled,
 }
 
+const ComposedProviders = pipe(
+  [SettingsProvider],
+  [FeaturesProvider, { config: PROJECT_CONFIG }],
+  [AuthProvider, { config: APP_AUTH_CONFIG }],
+  [RegistryProvider],
+  [NotificationProvider],
+  [TransitionProvider],
+  [BackgroundProvider],
+  [NavigationProvider, { config: NAV_CONFIG }],
+  [ControlsProvider],
+  [LoadingProvider],
+  [CountdownProvider],
+  [ModalProvider],
+  [ContextMenuProvider],
+)
+
 export const AppProviders = ({ children }) => {
   const shouldReduceMotion = useReducedMotion()
   const prefersReducedMotion = useMemo(() => {
@@ -43,51 +60,25 @@ export const AppProviders = ({ children }) => {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }, [])
 
-
-
   return (
     <MotionConfig
       reducedMotion={
         shouldReduceMotion || prefersReducedMotion ? 'always' : 'never'
       }
     >
-      <SettingsProvider>
-        <FeaturesProvider config={PROJECT_CONFIG}>
-          <AuthProvider config={APP_AUTH_CONFIG}>
-            <ProfileBootstrapper />
-            <RegistryProvider>
-              <NotificationProvider>
-                <TransitionProvider>
-                  <BackgroundProvider>
-                    <NavigationProvider config={NAV_CONFIG}>
-                      <ControlsProvider>
-                        <LoadingProvider>
-                          <CountdownProvider>
-                            <ModalProvider>
-                              <ContextMenuProvider>
-                                <NotificationContainer />
-                                <NotificationListener />
-                                <GlobalErrorListener />
-                                <ContextMenuGlobal />
-                                <BackgroundOverlay />
-                                <CountdownOverlay />
-                                <LoadingOverlay />
-                                <SmoothScrollProvider>
-                                  <GlobalError>{children}</GlobalError>
-                                </SmoothScrollProvider>
-                              </ContextMenuProvider>
-                            </ModalProvider>
-                          </CountdownProvider>
-                        </LoadingProvider>
-                      </ControlsProvider>
-                    </NavigationProvider>
-                  </BackgroundProvider>
-                </TransitionProvider>
-              </NotificationProvider>
-            </RegistryProvider>
-          </AuthProvider>
-        </FeaturesProvider>
-      </SettingsProvider>
+      <ComposedProviders>
+        <ProfileBootstrapper />
+        <NotificationContainer />
+        <NotificationListener />
+        <GlobalErrorListener />
+        <ContextMenuGlobal />
+        <BackgroundOverlay />
+        <CountdownOverlay />
+        <LoadingOverlay />
+        <SmoothScrollProvider>
+          <GlobalError>{children}</GlobalError>
+        </SmoothScrollProvider>
+      </ComposedProviders>
     </MotionConfig>
   )
 }

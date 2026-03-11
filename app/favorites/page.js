@@ -1,5 +1,0 @@
-import { redirect } from 'next/navigation'
-
-export default function FavoritesPage() {
-  redirect('/profile?tab=favorites')
-}

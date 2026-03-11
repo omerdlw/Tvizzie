@@ -1,5 +1,3 @@
-import typography from '@tailwindcss/typography'
-
 export default {
   content: [
     './extend/**/*.{js,ts,jsx,tsx,mdx}',
@@ -42,5 +40,5 @@ export default {
       },
     }
   },
-  plugins: [typography]
+  plugins: []
 }

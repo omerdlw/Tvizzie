@@ -5,7 +5,7 @@ import React from 'react'
 
 import { usePathname } from 'next/navigation'
 
-import MediaAction from '@/components/nav-actions/media-action'
+import MediaAction from '../components/media-action'
 import {
   useBackgroundActions,
   useBackgroundState,
@@ -161,7 +161,7 @@ export const useNavigationDisplay = () => {
         ...foundItem,
         ...statusState,
         isStatus: true,
-        action: statusState.action || foundItem.action,
+        action: null,
       }
     }
 
@@ -172,7 +172,7 @@ export const useNavigationDisplay = () => {
         ...foundItem,
         ...statusState,
         isStatus: true,
-        action: statusState.action || foundItem.action,
+        action: null,
       }
     }
 

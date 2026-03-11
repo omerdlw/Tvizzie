@@ -75,12 +75,6 @@ const getAppendParams = (type) => {
 }
 
 export class TmdbService {
-  /**
-   * Film, Dizi ve Kişi araması yapar.
-   * @param {string} query - Aranacak kelime
-   * @param {string} searchType - Arama türü (multi, movie, tv, person) varsayılan: multi
-   * @param {number} page - Sayfa numarası (varsayılan: 1)
-   */
   static async searchContent(query, searchType = 'multi', page = 1) {
     try {
       const validTypes = ['multi', 'movie', 'tv', 'person']
@@ -111,14 +105,12 @@ export class TmdbService {
       return {
         data: searchRes.data,
         error: null,
-        loading: false,
         status: searchRes.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || 'Error occurred during search',
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -155,7 +147,6 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
@@ -164,7 +155,6 @@ export class TmdbService {
         error:
           err.message ||
           `Error occurred fetching detail bundle for ${type} ${id}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -179,12 +169,9 @@ export class TmdbService {
       const endpoint = `/${type}/${id}?append_to_response=credits,images,external_ids&language=en-US`
       const response = await tmdbClient.get(endpoint)
 
-
-
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
@@ -192,7 +179,6 @@ export class TmdbService {
         data: null,
         error:
           err.message || `Error occurred fetching details for ${type} ${id}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -232,7 +218,6 @@ export class TmdbService {
       return {
         data: scoreMatrix,
         error: null,
-        loading: false,
         status: 200,
       }
     } catch (err) {
@@ -240,7 +225,6 @@ export class TmdbService {
         data: null,
         error:
           err.message || `Error occurred generating score table for TV ${tvId}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -253,7 +237,6 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
@@ -261,7 +244,6 @@ export class TmdbService {
         data: null,
         error:
           err.message || `Error fetching season ${seasonNumber} for TV ${tvId}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -282,6 +264,7 @@ export class TmdbService {
       return { data: null }
     }
   }
+
   static async getTrending(timeWindow = 'day') {
     try {
       const endpoint = `/trending/all/${timeWindow}?language=en-US`
@@ -290,14 +273,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || 'Error occurred fetching trending content',
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -315,14 +296,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || `Error occurred fetching top rated ${type}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -340,14 +319,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || `Error occurred fetching popular ${type}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -361,14 +338,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || 'Error occurred fetching now playing movies',
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -382,14 +357,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || 'Error occurred fetching upcoming movies',
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -405,14 +378,12 @@ export class TmdbService {
       return {
         data: response.data?.genres || [],
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || `Error fetching genres for ${type}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -425,7 +396,6 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
@@ -433,7 +403,6 @@ export class TmdbService {
         data: null,
         error:
           err.message || `Error finding content with ${source} ${externalId}`,
-        loading: false,
         status: err.status || 0,
       }
     }
@@ -465,14 +434,12 @@ export class TmdbService {
       return {
         data: response.data,
         error: null,
-        loading: false,
         status: response.status || 200,
       }
     } catch (err) {
       return {
         data: null,
         error: err.message || `Error discovering ${type}`,
-        loading: false,
         status: err.status || 0,
       }
     }

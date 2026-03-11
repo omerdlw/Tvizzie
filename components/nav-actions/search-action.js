@@ -26,9 +26,9 @@ export default function SearchAction() {
   const resolveDetailPath = (item) => {
     const type = item?.media_type
     if (!type || !item?.id) return null
-    if (type === 'movie') return `/movie/detail/${item.id}`
-    if (type === 'tv') return `/tv/detail/${item.id}`
-    if (type === 'person') return `/person/detail/${item.id}`
+    if (type === 'movie') return `/movie/${item.id}`
+    if (type === 'tv') return `/tv/${item.id}`
+    if (type === 'person') return `/person/${item.id}`
     return null
   }
 

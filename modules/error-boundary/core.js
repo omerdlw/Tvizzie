@@ -97,7 +97,7 @@ export class ErrorBoundaryCore extends React.Component {
 
       return (
         <div className="center bg-error/20 h-screen w-screen">
-          <h1 className="text-9xl font-black">ERROR BOUNDRY</h1>
+          <h1 className="text-9xl font-black">ERROR BOUNDARY</h1>
         </div>
       )
     }
