@@ -347,6 +347,30 @@ export default function ProfilePage({
     })
   }
 
+  const handleOpenFollowList = useCallback(
+    (type) => {
+      if (!resolvedUserId || !profile) {
+        return
+      }
+
+      const isFollowersType = type === 'followers'
+      const title = isFollowersType ? 'Followers' : 'Following'
+
+      openModal('FOLLOW_LIST_MODAL', 'center', {
+        header: {
+          title,
+          description: `@${profile.username || 'user'}`,
+        },
+        data: {
+          userId: resolvedUserId,
+          type: isFollowersType ? 'followers' : 'following',
+          title,
+        },
+      })
+    },
+    [openModal, profile, resolvedUserId]
+  )
+
   async function handleSignInRequest() {
     await openModal('AUTH_MODAL', 'center', {
       data: {
@@ -730,6 +754,8 @@ export default function ProfilePage({
           listsCount={lists.length}
           followerCount={followerCount}
           followingCount={followingCount}
+          onFollowersClick={() => handleOpenFollowList('followers')}
+          onFollowingClick={() => handleOpenFollowList('following')}
           isFollowing={isFollowing}
           onFollow={handleFollow}
           isFollowLoading={isFollowLoading}

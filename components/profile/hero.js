@@ -30,6 +30,8 @@ export function ProfileHero({
   profile,
   activeTab,
   onTabChange,
+  onFollowersClick,
+  onFollowingClick,
   favoritesCount = 0,
   watchlistCount = 0,
   listsCount = 0,
@@ -82,8 +84,16 @@ export function ProfileHero({
 
           <div className="flex items-center gap-6 sm:gap-10">
             <StatItem label="Content" value={contentCount} />
-            <StatItem label="Followers" value={followerCount} />
-            <StatItem label="Following" value={followingCount} />
+            <StatItem
+              label="Followers"
+              value={followerCount}
+              onClick={onFollowersClick}
+            />
+            <StatItem
+              label="Following"
+              value={followingCount}
+              onClick={onFollowingClick}
+            />
           </div>
 
           <div className="flex max-w-xl flex-col items-center gap-2 sm:items-start">
