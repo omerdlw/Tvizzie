@@ -1,6 +1,9 @@
 import {
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
   confirmPasswordReset as firebaseConfirmPasswordReset,
+  deleteUser,
+  linkWithCredential,
   signOut as firebaseSignOut,
   updateEmail as firebaseUpdateEmail,
   updatePassword as firebaseUpdatePassword,
@@ -12,6 +15,13 @@ import {
 } from 'firebase/auth'
 
 import { createAuthAdapter } from './create-adapter'
+import {
+  clearPendingProviderLink,
+  getPendingProviderLink,
+  setPendingGoogleProviderLink,
+} from '@/lib/auth/pending-provider-link.client'
+import { getUsersCollection } from '@/services/firestore-media.service'
+import { getDocs, limit as limitTo, query, where } from 'firebase/firestore'
 
 const RESERVED_CLAIM_KEYS = new Set([
   'aud',
@@ -35,6 +45,8 @@ const AUTH_ERROR_MESSAGES = {
     'The sign-in popup was blocked by the browser Allow popups and try again',
   'auth/popup-closed-by-user':
     'The sign-in popup was closed before the flow completed',
+  LINK_WITH_PASSWORD_REQUIRED:
+    'This Google account matches an existing email/password account. Sign in once with your password to link Google',
   'auth/unauthorized-domain':
     'This domain is not authorized in Firebase Authentication Add the current domain in Firebase Console > Authentication > Settings > Authorized domains',
   'auth/web-storage-unsupported':
@@ -89,6 +101,12 @@ function getProviderKey(payload = {}) {
     payload?.provider || payload?.strategy || payload?.authProvider || null
 
   return typeof provider === 'string' ? provider.trim().toLowerCase() : null
+}
+
+function normalizeEmail(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
 }
 
 function getCustomClaims(claims = {}) {
@@ -183,11 +201,92 @@ async function signInWithResolvedProvider(auth, providers, payload) {
   const provider = resolvePopupProvider(providers, payload)
   if (!provider) return null
 
-  return signInWithPopup(auth, provider)
+  const providerCredential = await signInWithPopup(auth, provider)
+  const providerKey = getProviderKey(payload)
+
+  if (providerKey !== 'google') {
+    return providerCredential
+  }
+
+  const email = normalizeEmail(providerCredential?.user?.email)
+
+  if (!email) {
+    return providerCredential
+  }
+
+  const duplicateSnapshot = await getDocs(
+    query(getUsersCollection(), where('email', '==', email), limitTo(2))
+  )
+
+  const duplicateProfile = duplicateSnapshot.docs
+    .map((snapshot) => ({
+      id: snapshot.id,
+      ...(snapshot.data() || {}),
+    }))
+    .find((profile) => profile.id && profile.id !== providerCredential.user.uid)
+
+  if (!duplicateProfile) {
+    clearPendingProviderLink()
+    return providerCredential
+  }
+
+  const googleCredential =
+    GoogleAuthProvider.credentialFromResult(providerCredential)
+
+  if (googleCredential?.idToken || googleCredential?.accessToken) {
+    setPendingGoogleProviderLink({
+      accessToken: googleCredential.accessToken || null,
+      email,
+      idToken: googleCredential.idToken || null,
+    })
+  }
+
+  try {
+    await deleteUser(providerCredential.user)
+  } finally {
+    await firebaseSignOut(auth).catch(() => null)
+  }
+
+  const error = new Error(AUTH_ERROR_MESSAGES.LINK_WITH_PASSWORD_REQUIRED)
+  error.code = 'LINK_WITH_PASSWORD_REQUIRED'
+  throw error
+}
+
+async function linkPendingProviderIfNeeded(user) {
+  const pendingLink = getPendingProviderLink(user?.email)
+
+  if (!pendingLink) {
+    return user
+  }
+
+  try {
+    if (pendingLink.provider === 'google.com') {
+      const credential = GoogleAuthProvider.credential(
+        pendingLink.idToken || null,
+        pendingLink.accessToken || null
+      )
+
+      await linkWithCredential(user, credential)
+    }
+
+    clearPendingProviderLink()
+    return user
+  } catch (error) {
+    if (
+      error?.code === 'auth/provider-already-linked' ||
+      error?.code === 'auth/credential-already-in-use'
+    ) {
+      clearPendingProviderLink()
+      return user
+    }
+
+    throw error
+  }
 }
 
 export function createFirebaseAuthAdapter(options = {}) {
   const { auth, providers = {}, getMetadata } = options
+  let isProviderSignInInFlight = false
 
   if (!auth) {
     throw new Error(
@@ -221,6 +320,10 @@ export function createFirebaseAuthAdapter(options = {}) {
     },
     onAuthStateChange(listener) {
       return onIdTokenChanged(auth, async (user) => {
+        if (isProviderSignInInFlight) {
+          return
+        }
+
         try {
           const session = await createSessionFromUser(user, { getMetadata })
           listener(session)
@@ -258,11 +361,24 @@ export function createFirebaseAuthAdapter(options = {}) {
     },
     async signIn(payload = {}) {
       try {
-        const providerCredential = await signInWithResolvedProvider(
-          auth,
-          providers,
-          payload
-        )
+        let providerCredential = null
+        const providerKey = getProviderKey(payload)
+
+        if (providerKey) {
+          isProviderSignInInFlight = true
+        }
+
+        try {
+          providerCredential = await signInWithResolvedProvider(
+            auth,
+            providers,
+            payload
+          )
+        } finally {
+          if (providerKey) {
+            isProviderSignInInFlight = false
+          }
+        }
 
         if (providerCredential?.user) {
           return createSessionFromUser(providerCredential.user, { getMetadata })
@@ -280,6 +396,10 @@ export function createFirebaseAuthAdapter(options = {}) {
           payload.email,
           payload.password
         )
+
+        await linkPendingProviderIfNeeded(credential.user).catch((error) => {
+          console.error('[Auth] Provider linking failed after sign-in:', error)
+        })
 
         return createSessionFromUser(credential.user, { getMetadata })
       } catch (error) {

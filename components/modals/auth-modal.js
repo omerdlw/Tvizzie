@@ -65,6 +65,8 @@ const AUTH_ERROR_MESSAGES = {
   CODE_REQUIRED: 'Verification code must be 6 digits',
   CODE_ALREADY_USED:
     'This verification code has already been used. Request a new code',
+  LINK_WITH_PASSWORD_REQUIRED:
+    'This Google account matches an existing email/password account. Sign in once with your password to link Google',
 }
 
 const AUTH_ERROR_MESSAGE_PATTERNS = [
