@@ -3,7 +3,7 @@
 import { forwardRef } from 'react'
 
 import * as SelectPrimitive from '@radix-ui/react-select'
-import { Check, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 import { Z_INDEX } from '@/lib/constants'
 import Icon from '@/ui/icon/index'

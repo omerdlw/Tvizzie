@@ -4,14 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 
-import { EASING, Z_INDEX } from '@/lib/constants'
+import { DURATION, EASING, Z_INDEX } from '@/lib/constants'
 import { useClickOutside } from '@/lib/hooks'
 import { useControlsState } from '@/modules/controls/context'
 import { useModal } from '@/modules/modal/context'
 import { useNavigation } from '@/modules/nav/hooks'
 
 import { MobileControlsToggle } from '../controls/elements'
-import { ANIMATION } from './constants'
+import { STYLES } from './constants'
 import Item from './item'
 
 export default function Nav() {
@@ -85,9 +85,9 @@ export default function Nav() {
     }
 
     const h =
-      ANIMATION.BASE_CARD_HEIGHT +
+      STYLES.animation.baseCardHeight +
       (activeItemHasAction && currentActionHeight > 0
-        ? currentActionHeight + ANIMATION.ACTION_GAP
+        ? currentActionHeight + STYLES.animation.actionGap
         : 0)
 
     setContainerHeight(h)
@@ -106,10 +106,10 @@ export default function Nav() {
   useClickOutside(navRef, () => setExpanded(false))
 
   return (
-    <MotionConfig transition={ANIMATION.transition}>
+    <MotionConfig transition={STYLES.animation.transition}>
       <motion.div
         className="fixed inset-0 cursor-pointer"
-        transition={{ ease: EASING.EASE_OUT, duration: 0.25 }}
+        transition={{ ease: EASING.EASE_OUT, duration: DURATION.SNAPPY }}
         style={{
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: expanded || statusState?.isOverlay ? 'auto' : 'none',
@@ -136,7 +136,7 @@ export default function Nav() {
       </AnimatePresence>
 
       <div
-        className={`fixed right-2 bottom-2 left-2 h-auto select-none touch-manipulation transition-opacity duration-300 sm:left-1/2 sm:right-auto sm:w-[460px] sm:-translate-x-1/2 ${
+        className={`fixed right-2 bottom-2 left-2 h-auto touch-manipulation transition-opacity duration-[var(--motion-duration-normal)] select-none sm:right-auto sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2 ${
           isModalOpen
             ? 'pointer-events-none'
             : isOpen
@@ -150,7 +150,7 @@ export default function Nav() {
         <motion.div
           animate={{ height: containerHeight }}
           style={{ position: 'relative' }}
-          transition={ANIMATION.transition}
+          transition={STYLES.animation.transition}
         >
           <AnimatePresence mode="sync">
             {navigationItems.map((link, i) => {

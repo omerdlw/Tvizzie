@@ -4,13 +4,17 @@ import { motion } from 'framer-motion'
 
 import ContentCard from '@/components/home/content-card'
 import Carousel from '@/components/shared/carousel'
+import { DURATION, EASING } from '@/lib/constants'
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },
 }
 
-const SECTION_TRANSITION = { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }
+const SECTION_TRANSITION = {
+  duration: DURATION.SLOW,
+  ease: EASING.STANDARD,
+}
 
 export default function ContentRow({ title, items = [], mediaType }) {
   if (!items.length) return null

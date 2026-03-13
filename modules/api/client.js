@@ -1,4 +1,5 @@
 import { EVENT_TYPES, globalEvents } from '@/lib/events'
+import { API_URL } from '@/lib/constants'
 
 import { ApiError } from './types'
 
@@ -446,6 +447,6 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '',
+  baseURL: API_URL,
   timeout: 30000,
 })

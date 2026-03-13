@@ -1,7 +1,9 @@
+import { DURATION, EASING } from '@/lib/constants'
+
 export const CONFIG = {
   ANIMATION: {
-    ease: [0.23, 1, 0.32, 1],
-    duration: 0.45,
+    ease: EASING.EMPHASIZED,
+    duration: DURATION.BALANCED,
     type: 'tween',
   },
   VARIANTS: {
@@ -21,7 +23,7 @@ export const CONFIG = {
       'md:flex-row md:pointer-events-auto md:w-full md:justify-start md:space-x-3 md:gap-0 md:[&>*]:w-auto',
     CONTAINER:
       'fixed right-0 left-0 h-auto w-full px-4' +
-      'bottom-3 md:bottom-3 transition-all duration-500 ease-in-out',
+      'bottom-3 md:bottom-3 transition-all duration-[var(--motion-duration-moderate)] ease-[var(--motion-easing-ease-in-out)]',
     SPACER: 'hidden md:block h-auto w-[360px] shrink-0',
   },
 }

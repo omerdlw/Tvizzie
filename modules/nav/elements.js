@@ -57,11 +57,11 @@ export const Icon = ({ icon, isStackHovered, style }) => {
   return (
     <motion.div
       className={cn(
-        'flex size-12 items-center justify-center rounded-[20px] bg-white/5 transition-colors duration-300',
+        'flex size-12 items-center justify-center rounded-[20px] bg-white/5 transition-colors duration-[var(--motion-duration-normal)]',
         isStackHovered && !hasCustomBackground && 'bg-white/10',
         isStackHovered && !hasCustomColor && 'text-white'
       )}
-      transition={{ duration: 0.25, ease: EASING.SMOOTH }}
+      transition={{ duration: DURATION.SNAPPY, ease: EASING.SMOOTH }}
       style={iconStyle}
     >
       <motion.span transition={{ duration: DURATION.FAST }}>

@@ -7,10 +7,15 @@ import Link from 'next/link'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 const MAX_VISIBLE = 6
+const STYLES = Object.freeze({
+  sectionTitle: 'text-xs font-semibold tracking-widest text-white/50 uppercase',
+  sectionAction:
+    'cursor-pointer text-xs font-semibold tracking-widest text-white/50 uppercase transition-colors hover:text-white/70',
+})
 
 function PersonCard({ person }) {
   const [hasError, setHasError] = useState(false)
@@ -18,7 +23,7 @@ function PersonCard({ person }) {
 
   return (
     <Link
-      className="group flex items-center gap-3 rounded-[20px] bg-white/5 p-1 pr-4 ring ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:ring-white/15"
+      className="group flex items-center gap-3 rounded-[20px] bg-white/5 p-1 pr-4 ring ring-white/10 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/10 hover:ring-white/15"
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
     >
@@ -57,13 +62,11 @@ export default function CastSection({ cast }) {
   return (
     <div className="relative flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-          Top Billed Cast
-        </h2>
+        <h2 className={STYLES.sectionTitle}>Top Billed Cast</h2>
         {hasOverflow && (
           <p
             onClick={() => setExpanded((prev) => !prev)}
-            className="cursor-pointer text-xs font-semibold tracking-widest text-white/50 uppercase transition-colors hover:text-white/70"
+            className={STYLES.sectionAction}
           >
             {expanded ? 'Show Less' : 'Show More'}
           </p>
@@ -84,8 +87,12 @@ export default function CastSection({ cast }) {
               }}
               exit={{ opacity: 0, scale: 0.9, y: 10 }}
               transition={{
-                duration: 0.2,
-                delay: index >= MAX_VISIBLE ? (index - MAX_VISIBLE) * 0.05 : 0,
+                duration: DURATION.FAST,
+                ease: EASING.STANDARD,
+                delay:
+                  index >= MAX_VISIBLE
+                    ? (index - MAX_VISIBLE) * DURATION.STAGGER
+                    : 0,
               }}
             >
               <PersonCard person={member} />

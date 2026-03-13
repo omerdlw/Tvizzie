@@ -1,17 +1,6 @@
 'use client'
 
-const DURATION = {
-  FAST: 0.3,
-  NORMAL: 0.5,
-  SLOW: 0.8,
-}
-
-const EASE = {
-  SMOOTH: [0.4, 0, 0.2, 1],
-  BOUNCE: [0.68, -0.55, 0.265, 1.55],
-  EASE_OUT: [0, 0, 0.2, 1],
-  EASE_IN: [0.4, 0, 1, 1],
-}
+import { DURATION, EASING } from '@/lib/constants'
 
 export const TRANSITION_PRESETS = {
   fade: {
@@ -21,7 +10,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   slideUp: {
     initial: { opacity: 0, y: 40 },
@@ -31,7 +20,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, y: -40 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   slideDown: {
     initial: { opacity: 0, y: -40 },
@@ -41,7 +30,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, y: 40 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   slideLeft: {
     initial: { opacity: 0, x: 40 },
@@ -51,7 +40,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, x: -40 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   slideRight: {
     initial: { opacity: 0, x: -40 },
@@ -61,7 +50,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, x: 40 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   scaleUp: {
     initial: { opacity: 0, scale: 0.92 },
@@ -71,7 +60,7 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, scale: 1.08 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   scaleDown: {
     initial: { opacity: 0, scale: 1.08 },
@@ -81,19 +70,19 @@ export const TRANSITION_PRESETS = {
       transitionEnd: { transform: 'none', willChange: 'auto' },
     },
     exit: { opacity: 0, scale: 0.92 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   blurFade: {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: DURATION.NORMAL, ease: EASE.SMOOTH },
+    transition: { duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT },
   },
   none: {
     initial: {},
     animate: {},
     exit: {},
-    transition: { duration: 0 },
+    transition: { duration: DURATION.INSTANT },
   },
 }
 

@@ -4,9 +4,10 @@ import { forwardRef } from 'react'
 
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
-import { Z_INDEX } from '@/lib/constants'
+import { DURATION, EASING, Z_INDEX } from '@/lib/constants'
 
 import { cn, resolveSlotClasses } from '../utils'
+import { STYLES } from './constants'
 
 const Tooltip = forwardRef(
   (
@@ -44,6 +45,9 @@ const Tooltip = forwardRef(
               align="center"
               className={cn(
                 'animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-(--z-tooltip) font-medium',
+                DURATION.CLASS.FAST,
+                EASING.CLASS.STANDARD,
+                STYLES.surface,
                 classes.content,
                 classes.root
               )}

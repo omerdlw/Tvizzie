@@ -65,7 +65,7 @@ export default function SocialLinks({ externalIds }) {
           target="_blank"
           rel="noopener noreferrer"
           title={link.label}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 opacity-60 ring-1 ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:opacity-100 hover:ring-white/15"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 opacity-60 ring-1 ring-white/10 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/10 hover:opacity-100 hover:ring-white/15"
         >
           <Icon icon={link.icon} size={20} className="text-white" />
         </a>

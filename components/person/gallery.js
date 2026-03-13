@@ -5,9 +5,16 @@ import { useState } from 'react'
 import Image from 'next/image'
 
 import Carousel from '@/components/shared/carousel'
+import { TMDB_IMG } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
+const STYLES = Object.freeze({
+  frame:
+    'relative w-full overflow-hidden rounded-[20px] bg-white/5 p-1 ring ring-white/10 transition-all duration-[var(--motion-duration-normal)] group-hover:bg-white/10 group-hover:ring-white/15',
+  inner: 'relative h-full w-full overflow-hidden rounded-[16px]',
+  sectionTitle: 'text-xs font-semibold tracking-widest text-white/50 uppercase',
+})
 
 function PhotoCard({ image, index, openModal }) {
   const [hasError, setHasError] = useState(false)
@@ -16,9 +23,12 @@ function PhotoCard({ image, index, openModal }) {
   return (
     <div
       onClick={() => openModal?.('PREVIEW_MODAL', 'center', { data: image })}
-      className="group relative aspect-2/3 w-[calc((100%-16px)/3)] shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 transition-all duration-300 hover:bg-white/10 hover:ring-white/15 lg:w-[calc((100%-32px)/5)]"
+      className={cn(
+        STYLES.frame,
+        'group aspect-2/3 w-[calc((100%-16px)/3)] shrink-0 cursor-pointer lg:w-[calc((100%-32px)/5)]'
+      )}
     >
-      <div className="relative h-full w-full overflow-hidden rounded-[16px] bg-white/5">
+      <div className={cn(STYLES.inner, 'bg-white/5')}>
         {hasPath ? (
           <Image
             src={`${TMDB_IMG}/w342${image.file_path}`}
@@ -26,7 +36,7 @@ function PhotoCard({ image, index, openModal }) {
             fill
             draggable={false}
             onError={() => setHasError(true)}
-            className="pointer-events-none object-cover transition-transform duration-300 group-hover:scale-105"
+            className="pointer-events-none object-cover transition-transform duration-[var(--motion-duration-normal)] group-hover:scale-105"
             sizes="(min-width: 1024px) 220px, (min-width: 768px) 31vw, 33vw"
           />
         ) : (
@@ -45,9 +55,7 @@ export default function PersonGallery({ images, openModal }) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-        Photos
-      </h2>
+      <h2 className={STYLES.sectionTitle}>Photos</h2>
       <Carousel gap="gap-2">
         {profiles.map((image, index) => (
           <PhotoCard

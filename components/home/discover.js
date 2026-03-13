@@ -5,13 +5,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import ContentCard from '@/components/home/content-card'
+import { DURATION } from '@/lib/constants'
 import { TmdbService } from '@/services/tmdb.service'
 import Icon from '@/ui/icon'
 
 const STAGGER_CONTAINER = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: {
+      staggerChildren: DURATION.RAPID,
+      delayChildren: DURATION.VERY_FAST,
+    },
   },
 }
 
@@ -121,7 +125,7 @@ export default function HomeDiscover({
                   setItems([])
                 }
               }}
-              className={`cursor-pointer rounded-full px-4 py-2 text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 sm:text-xs ${
+              className={`cursor-pointer rounded-full px-4 py-2 text-[10px] font-semibold tracking-widest uppercase transition-all duration-[var(--motion-duration-normal)] sm:text-xs ${
                 type === 'movie'
                   ? 'bg-white text-black ring-1 ring-white/20'
                   : 'text-white/50 hover:bg-white/10 hover:text-white'
@@ -137,7 +141,7 @@ export default function HomeDiscover({
                   setItems([])
                 }
               }}
-              className={`cursor-pointer rounded-full px-4 py-2 text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 sm:text-xs ${
+              className={`cursor-pointer rounded-full px-4 py-2 text-[10px] font-semibold tracking-widest uppercase transition-all duration-[var(--motion-duration-normal)] sm:text-xs ${
                 type === 'tv'
                   ? 'bg-white text-black ring-1 ring-white/20'
                   : 'text-white/50 hover:bg-white/10 hover:text-white'
@@ -154,7 +158,7 @@ export default function HomeDiscover({
               setActiveGenre('all')
               setItems([])
             }}
-            className={`shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-all duration-300 ${
+            className={`shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-all duration-[var(--motion-duration-normal)] ${
               activeGenre === 'all'
                 ? 'bg-white/20 text-white ring-1 ring-white/40'
                 : 'bg-white/5 text-white/50 ring-1 ring-white/10 hover:bg-white/10 hover:text-white'
@@ -169,7 +173,7 @@ export default function HomeDiscover({
                 setActiveGenre(genre.id.toString())
                 setItems([])
               }}
-              className={`shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur-sm transition-all duration-300 ${
+              className={`shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] ${
                 activeGenre === genre.id.toString()
                   ? 'bg-white/20 text-white ring-1 ring-white/40'
                   : 'bg-white/5 text-white/50 ring-1 ring-white/10 hover:bg-white/10 hover:text-white'
@@ -213,7 +217,7 @@ export default function HomeDiscover({
           <button
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="flex cursor-pointer items-center gap-2 rounded-full bg-white/5 px-6 py-3 text-xs font-semibold tracking-widest text-white uppercase ring-1 ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-2 rounded-full bg-white/5 px-6 py-3 text-xs font-semibold tracking-widest text-white uppercase ring-1 ring-white/10 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/10 hover:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loadingMore ? (
               <Icon

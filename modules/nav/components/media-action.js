@@ -47,7 +47,7 @@ export default function MediaAction() {
     virtualDuration > 0 ? Math.min(currentTime / virtualDuration, 1) : 0
 
   return (
-    <div className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden rounded-[20px] bg-white/5 transition-colors duration-200 hover:bg-white/10">
+    <div className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden rounded-[20px] bg-white/5 transition-colors duration-[var(--motion-duration-fast)] hover:bg-white/10">
       <input
         type="range"
         min="0"
@@ -60,7 +60,7 @@ export default function MediaAction() {
         className="absolute inset-0 z-10 w-full cursor-pointer opacity-0"
       />
       <div
-        className="absolute top-0 bottom-0 left-0 rounded-full bg-white/10 transition-all duration-75"
+        className="absolute top-0 bottom-0 left-0 rounded-full bg-white/10 transition-all duration-[var(--motion-duration-micro)]"
         style={{ width: `${progressRatio * 100}%` }}
       />
     </div>

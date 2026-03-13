@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import { STYLES as PAGE_STYLES } from '@/app/constants'
 import { MovieRegistry } from '@/components/movie/movie-registry'
 import RecommendationCard from '@/components/movie/recommendation-card'
 import { getMovieComputedData } from '@/components/movie/utils'
@@ -15,6 +16,10 @@ import VideosSection from '@/components/shared/videos-section'
 import { formatVotes } from '@/lib/utils'
 import { FadeLeft, FadeUp, StaggerContainer } from '@/ui/animations'
 import Icon from '@/ui/icon'
+
+const STYLES = Object.freeze({
+  sectionTitle: 'text-xs font-semibold tracking-widest text-white/50 uppercase',
+})
 
 export default function MovieDetailClient({ movie, rating, imdbVotes }) {
   const [reviewState, setReviewState] = useState({
@@ -48,10 +53,10 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
         reviewState={reviewState}
       />
 
-      <div className="relative mx-auto flex h-auto w-full max-w-6xl flex-col gap-4 p-3 select-none sm:p-4 md:p-6">
-        <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
-        <div className="mt-8 flex h-auto w-full flex-col items-start gap-6 sm:mt-12 lg:mt-20 lg:flex-row lg:gap-12">
-          <FadeLeft className="w-full self-start lg:sticky lg:top-6 lg:w-100">
+      <div className={PAGE_STYLES.layout.detailShell}>
+        <div className={PAGE_STYLES.layout.backdrop} />
+        <div className={PAGE_STYLES.layout.detailSplit}>
+          <FadeLeft className={PAGE_STYLES.layout.sidebar}>
             <Sidebar
               item={movie}
               director={director}
@@ -63,7 +68,7 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
             />
           </FadeLeft>
 
-          <StaggerContainer className="flex w-full min-w-0 flex-col">
+          <StaggerContainer className={PAGE_STYLES.layout.content}>
             <FadeUp>
               <h1 className="font-zuume text-5xl font-bold uppercase sm:text-6xl md:text-7xl lg:text-8xl">
                 {movie.title}
@@ -79,15 +84,15 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
                   className="flex items-center opacity-50 transition-opacity hover:opacity-100"
                   title="View on IMDB"
                 >
-                  <Icon icon="cib:imdb" size={28} className="text-[#f5c518]" />
+                  <Icon icon="cib:imdb" size={28} className="text-warning" />
                 </a>
               )}
               {rating && (
-                <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-400">
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-warning">
                   <Icon
                     icon="solar:star-bold"
                     size={14}
-                    className="text-yellow-500"
+                    className="text-warning"
                   />
                   {rating}
                   {imdbVotes && (
@@ -103,7 +108,7 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
                   {genres.map((genre) => (
                     <span
                       key={genre}
-                      className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur-sm"
+                      className={PAGE_STYLES.chip.subtle}
                     >
                       {genre}
                     </span>
@@ -117,7 +122,7 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
                 {keywords.map((keyword) => (
                   <span
                     key={keyword.id}
-                    className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur-sm"
+                    className={PAGE_STYLES.chip.subtle}
                   >
                     #{keyword.name}
                   </span>
@@ -148,10 +153,8 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
             </FadeUp>
 
             {recommendations.length > 0 && (
-              <FadeUp className="-m-1 mt-10 flex flex-col gap-4">
-                <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                  More like this
-                </h2>
+              <FadeUp className={PAGE_STYLES.layout.section}>
+                <h2 className={STYLES.sectionTitle}>More like this</h2>
                 <Carousel gap="gap-4">
                   {recommendations.map((recommendation) => (
                     <RecommendationCard
@@ -164,10 +167,8 @@ export default function MovieDetailClient({ movie, rating, imdbVotes }) {
             )}
 
             {similar.length > 0 && (
-              <FadeUp className="-m-1 mt-10 flex flex-col gap-4">
-                <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                  Similar Movies
-                </h2>
+              <FadeUp className={PAGE_STYLES.layout.section}>
+                <h2 className={STYLES.sectionTitle}>Similar Movies</h2>
                 <Carousel gap="gap-4">
                   {similar.map((item) => (
                     <RecommendationCard key={item.id} movie={item} />

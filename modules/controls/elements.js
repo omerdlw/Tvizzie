@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 
-import { DURATION, Z_INDEX } from '@/lib/constants'
+import { DURATION, EASING, Z_INDEX } from '@/lib/constants'
 import {
   useControlsActions,
   useControlsState,
@@ -19,12 +19,12 @@ export function MobileControlsToggle({ navHeight = 80 }) {
 
   return (
     <div
-      className="fixed left-1/2 -translate-x-1/2 transition-all duration-300 md:hidden"
+      className="fixed left-1/2 -translate-x-1/2 transition-all duration-[var(--motion-duration-normal)] md:hidden"
       style={{ bottom: `${bottomPosition}px`, zIndex: Z_INDEX.NAV }}
     >
       <motion.button
         className="center size-12 cursor-pointer border border-white/10 bg-black/40 backdrop-blur-sm transition-colors hover:bg-white/10 active:scale-95"
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        transition={EASING.SPRING_CONFIG.CONTROL}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         whileTap={{ scale: 0.95 }}

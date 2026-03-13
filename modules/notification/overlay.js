@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Icon from '@/ui/icon'
 
@@ -20,7 +20,9 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
         opacity: 0,
         x: 100,
       }}
-      transition={{ duration: DURATION.NORMAL, type: 'spring', bounce: 0.3 }}
+      transition={{
+        ...EASING.SPRING_CONFIG.NOTIFICATION,
+      }}
       onDragEnd={(e, { offset, velocity }) => {
         if (offset.x > 100 || velocity.x > 500) {
           onDismiss()

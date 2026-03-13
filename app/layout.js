@@ -2,6 +2,7 @@ import {
   DynamicControls,
   DynamicNav,
 } from '@/components/layout/dynamic-wrappers'
+import { MOTION_CSS_VARIABLES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { CountdownGate } from '@/modules/countdown/gate'
 
@@ -10,8 +11,7 @@ import './globals.css'
 import { AppProviders } from './providers'
 
 export const metadata = {
-  description:
-    'Discover, track, and review your favorite movies and TV series',
+  description: 'Discover, track, and review your favorite movies and TV series',
   title: 'Tvizzie',
   openGraph: {
     description:
@@ -31,6 +31,7 @@ export default function RootLayout({ children }) {
           geist.className,
           zuume.variable
         )}
+        style={MOTION_CSS_VARIABLES}
       >
         <AppProviders>
           <DynamicNav />

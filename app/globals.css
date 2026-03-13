@@ -5,17 +5,19 @@
 @theme {
   --color-white: #ffffff;
   --color-black: #000000;
+  --color-primary: #ffffff;
+  --color-neutral: #94a3b8;
   --color-error: #ef4444;
-  --color-warning: #f97316;
+  --color-warning: #f5c518;
   --color-success: #22c55e;
-
-  /* Legacy Color Bridge */
+  --color-info: #3b82f6;
   --color-background: var(--color-black);
   --color-text: var(--color-white);
-  --color-primary: var(--color-white);
-  --color-info: var(--color-success);
-
   --font-zuume: var(--font-zuume);
+  --animate-spin: spin var(--motion-duration-hero) var(--motion-easing-linear)
+    infinite;
+  --animate-pulse: pulse var(--motion-duration-shimmer)
+    var(--motion-easing-ease-in-out) infinite;
 }
 
 @layer base {
@@ -36,6 +38,12 @@
 }
 
 @layer utilities {
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
@@ -51,6 +59,11 @@
     overflow: hidden;
   }
 
+  .animate-spin {
+    animation: spin var(--motion-duration-hero) var(--motion-easing-linear)
+      infinite;
+  }
+
   .shimmer-effect {
     position: absolute;
     inset: 0;
@@ -60,11 +73,13 @@
       rgba(255, 255, 255, 0.05) 50%,
       transparent 100%
     );
-    animation: shimmer 2s infinite linear;
+    animation: shimmer var(--motion-duration-shimmer) infinite
+      var(--motion-easing-linear);
   }
 
   .animate-shine {
-    animation: shine 2s linear infinite;
+    animation: shine var(--motion-duration-shimmer) var(--motion-easing-linear)
+      infinite;
   }
 
   @keyframes status-gradient {
@@ -79,7 +94,8 @@
 
   .animate-status-gradient {
     background-size: 200% auto !important;
-    animation: status-gradient 8s linear infinite !important;
+    animation: status-gradient var(--motion-duration-ambient)
+      var(--motion-easing-linear) infinite !important;
   }
 }
 
@@ -87,9 +103,9 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: var(--motion-duration-reduced-motion) !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: var(--motion-duration-reduced-motion) !important;
   }
 }
 

@@ -87,15 +87,20 @@ export const ModalProvider = ({ children }) => {
         resolvedConfig
       )
       const { header, data, onClose, chrome } = resolvedConfig
+      const resolvedHeader = {
+        description: header?.description ?? resolvedConfig.description ?? null,
+        title: header?.title ?? resolvedConfig.title ?? null,
+        label: header?.label ?? resolvedConfig.label ?? null,
+      }
 
       onCloseRef.current = onClose || null
 
       setModalState({
         position: resolvedPosition,
         responsivePosition,
-        description: header?.description || null,
-        title: header?.title || null,
-        label: header?.label || null,
+        description: resolvedHeader.description,
+        title: resolvedHeader.title,
+        label: resolvedHeader.label,
         chrome: chrome || MODAL_CHROME.PANEL,
         props: data ?? resolvedConfig,
         isOpen: true,

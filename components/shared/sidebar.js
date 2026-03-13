@@ -1,5 +1,7 @@
 'use client'
 
+import { TMDB_IMG } from '@/lib/constants'
+
 import { useMemo } from 'react'
 
 import Image from 'next/image'
@@ -9,24 +11,8 @@ import { formatCurrency } from '@/lib/utils'
 import Tooltip from '@/ui/elements/tooltip'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 const MAX_VISIBLE_PERSONS = 2
-
-const LOCAL_PROVIDERS = {
-  Netflix: '/images/providers/netflix.jpg',
-  'Apple TV': '/images/providers/apple-tv.jpg',
-  'Apple TV Plus': '/images/providers/apple-tv.jpg',
-  'Apple TV Store': '/images/providers/apple-tv.jpg',
-  'Disney Plus': '/images/providers/disney-plus.webp',
-  'Amazon Prime Video': '/images/providers/amazon-prime.webp',
-  'Google Play Movies': '/images/providers/play-store.png',
-  'HBO Max': '/images/providers/hbo-max.webp',
-  YouTube: '/images/providers/youtube.png',
-  'TV+': '/images/providers/apple-tv.jpg',
-  BluTV: '/images/providers/blu-tv.png',
-  MUBI: '/images/providers/mubi.png',
-}
 
 function WatchProviders({ providers, videos }) {
   const trProviders = providers?.results?.TR
@@ -82,8 +68,7 @@ function WatchProviders({ providers, videos }) {
 
       <div className="flex flex-col gap-2.5">
         {uniqueProviders.slice(0, 5).map((provider) => {
-          const localIcon = LOCAL_PROVIDERS[provider.provider_name]
-          const iconUrl = localIcon || `${TMDB_IMG}/w154${provider.logo_path}`
+          const iconUrl = `${TMDB_IMG}/w154${provider.logo_path}`
 
           return (
             <div
@@ -94,7 +79,7 @@ function WatchProviders({ providers, videos }) {
                 <img
                   src={iconUrl}
                   alt={provider.provider_name}
-                  className="h-8 w-8 object-cover"
+                  className="h-8 w-8 object-cover rounded-lg"
                 />
                 <span className="text-[13px] font-medium text-white/80">
                   {provider.provider_name}
@@ -116,7 +101,7 @@ function WatchProviders({ providers, videos }) {
 function SidebarRow({ icon, children }) {
   return (
     <div className="flex items-start gap-3 py-1.5 text-[13px] text-white/50">
-      <Icon icon={icon} size={18} className="mt-0.4 shrink-0" />
+      <Icon icon={icon} size={18} className="mt-0.5 shrink-0" />
       <div className="flex-1 leading-relaxed">{children}</div>
     </div>
   )
@@ -148,7 +133,6 @@ function PersonsDisplay({ persons, label }) {
         ))}
         {hasOverflow && (
           <Tooltip
-            className="rounded-[10px] bg-white p-1 text-xs text-black"
             text={overflowPersons.map((p) => p.name).join(', ')}
             position="top"
           >

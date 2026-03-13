@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation'
 
 import { ReactLenis } from 'lenis/react'
 
+import { DURATION } from '@/lib/constants'
+
 function isReloadNavigation() {
   if (typeof window === 'undefined') return false
 
@@ -97,7 +99,7 @@ export function SmoothScrollProvider({ children }) {
       root
       options={{
         lerp: 0.2,
-        duration: 0.5,
+        duration: DURATION.MODERATE,
         smoothWheel: true,
         wheelMultiplier: 1,
         touchMultiplier: 2,

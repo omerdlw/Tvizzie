@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import Carousel from '@/components/shared/carousel'
+import SegmentedControl from '@/components/shared/segmented-control'
 import { useModal } from '@/modules/modal/context'
 import Icon from '@/ui/icon'
 
@@ -14,7 +15,7 @@ function VideoCard({ video }) {
 
   return (
     <div
-      className="group relative aspect-video w-72 shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:ring-white/15"
+      className="group relative aspect-video w-72 shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/10 hover:ring-white/15"
       onClick={() =>
         openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })
       }
@@ -22,7 +23,7 @@ function VideoCard({ video }) {
     >
       <div className="relative h-full w-full overflow-hidden rounded-[16px] bg-white/5">
         <Image
-          className="pointer-events-none object-cover transition-transform duration-300 group-hover:scale-105"
+          className="pointer-events-none object-cover transition-transform duration-[var(--motion-duration-normal)] group-hover:scale-105"
           src={thumbnailUrl}
           draggable={false}
           alt={video.name}
@@ -66,23 +67,17 @@ export default function VideosSection({ videos }) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <div className="hide-scrollbar flex items-center gap-1 overflow-x-auto rounded-[12px] bg-white/5 p-0.5 ring ring-white/10 backdrop-blur-lg">
-          {availableTypes.map((type) => (
-            <button
-              className={`cursor-pointer rounded-[10px] px-3 py-1 text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                activeType === type
-                  ? 'bg-white/10'
-                  : 'text-white/50 hover:text-white/70'
-              }`}
-              onClick={() => handleTypeChange(type)}
-              key={type}
-            >
-              {type.endsWith('s') ? type : `${type}s`}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SegmentedControl
+        items={availableTypes.map((type) => ({
+          key: type,
+          label: type.endsWith('s') ? type : `${type}s`,
+        }))}
+        value={activeType}
+        onChange={handleTypeChange}
+        trackClassName="backdrop-blur-sm"
+        buttonClassName="py-1"
+        activeClassName="bg-white/10 text-white"
+      />
       <Carousel gap="gap-3">
         {filteredVideos.map((video) => (
           <VideoCard key={video.id} video={video} />

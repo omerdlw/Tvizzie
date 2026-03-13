@@ -2,9 +2,14 @@
 
 import { motion } from 'framer-motion'
 
+import { DURATION } from '@/lib/constants'
+
 const STAGGER_CONTAINER_VARIANTS = {
   visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
+    transition: {
+      staggerChildren: DURATION.VERY_FAST,
+      delayChildren: DURATION.QUICK,
+    },
   },
   hidden: {},
 }

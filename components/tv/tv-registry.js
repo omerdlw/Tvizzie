@@ -1,5 +1,7 @@
 'use client'
 
+import { TMDB_IMG } from '@/lib/constants'
+
 import { useState } from 'react'
 
 import AuthModal from '@/components/modals/auth-modal'
@@ -11,7 +13,6 @@ import SearchAction from '@/components/nav-actions/search-action'
 import TVAction from '@/components/nav-actions/tv-action'
 import { useRegistry } from '@/lib/hooks'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 export function TvRegistry({
   show,

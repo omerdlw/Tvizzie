@@ -7,6 +7,8 @@ import { useToast } from '@/modules/notification/hooks'
 import { updateUserProfile } from '@/services/profile.service'
 import { Button, Input, Textarea } from '@/ui/elements'
 
+import { MODAL_BUTTON, MODAL_FIELD, MODAL_LAYOUT } from './constants'
+
 export default function ProfileEditorModal({ close, data, header }) {
   const toast = useToast()
   const { profile, onSuccess, authActions } = data || {}
@@ -64,7 +66,7 @@ export default function ProfileEditorModal({ close, data, header }) {
       >
         <div className="grid gap-5 p-2 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+            <label className={MODAL_FIELD.label}>
               Display Name
             </label>
             <Input
@@ -74,13 +76,12 @@ export default function ProfileEditorModal({ close, data, header }) {
               }
               placeholder="Your name"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+            <label className={MODAL_FIELD.label}>
               Username
             </label>
             <Input
@@ -88,13 +89,12 @@ export default function ProfileEditorModal({ close, data, header }) {
               onChange={(event) => handleChange('username', event.target.value)}
               placeholder="username"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+            <label className={MODAL_FIELD.label}>
               Avatar URL
             </label>
             <Input
@@ -104,13 +104,12 @@ export default function ProfileEditorModal({ close, data, header }) {
               }
               placeholder="https://"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
+            <label className={MODAL_FIELD.label}>
               Banner URL
             </label>
             <Input
@@ -120,8 +119,7 @@ export default function ProfileEditorModal({ close, data, header }) {
               }
               placeholder="https://"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
@@ -136,24 +134,23 @@ export default function ProfileEditorModal({ close, data, header }) {
             placeholder="Write something about yourself"
             maxHeight={120}
             className={{
-              textarea:
-                'min-h-[150px] w-full resize-none rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+              textarea: `${MODAL_FIELD.textarea} min-h-[150px]`,
             }}
           />
         </div>
 
-        <div className="flex w-full justify-end gap-4 pt-1">
+        <div className={`${MODAL_LAYOUT.actionRow} pt-1`}>
           <Button
             type="button"
             onClick={close}
-            className="center h-11 flex-auto cursor-pointer rounded-[20px] border border-white/10 bg-white/5 px-6 text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white active:scale-95"
+            className={MODAL_BUTTON.secondary}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSaving}
-            className="center h-11 flex-auto cursor-pointer rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
+            className={MODAL_BUTTON.primary}
           >
             {isSaving ? 'Saving' : 'Save Changes'}
           </Button>

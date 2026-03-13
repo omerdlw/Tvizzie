@@ -15,6 +15,8 @@ import {
 import { Button, Input } from '@/ui/elements'
 import Icon from '@/ui/icon'
 
+import { MODAL_BUTTON, MODAL_FIELD } from './constants'
+
 const AUTH_MODE = {
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
@@ -592,13 +594,13 @@ export default function AuthModal({ close, data, header }) {
         ...header,
         title: modalTitle,
       }}
-      className="w-full sm:w-[460px] rounded-2xl"
+      className="w-full sm:w-[460px]"
       close={close}
     >
-      <div className="flex w-full flex-col p-3">
+      <div className="flex w-full flex-col p-4">
         {isVerificationStep ? (
           <form onSubmit={handleVerifyCode} className="space-y-4">
-            <div className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/75">
+            <div className={MODAL_FIELD.infoBox}>
               <p className="text-[11px] font-semibold tracking-[0.15em] text-white/50 uppercase">
                 Verification Email
               </p>
@@ -624,15 +626,14 @@ export default function AuthModal({ close, data, header }) {
               autoComplete="one-time-code"
               inputMode="numeric"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 py-2 text-center font-semibold text-white transition outline-none placeholder:text-white/30 focus:border-white/15 focus:bg-white/10',
+                input: `${MODAL_FIELD.input} py-2 text-center font-semibold`,
               }}
             />
 
             <Button
               type="submit"
               disabled={isSubmitting || isResending}
-              className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+              className={MODAL_BUTTON.primary}
             >
               {isSubmitting ? 'Verifying your code' : 'Verify Code'}
             </Button>
@@ -642,7 +643,7 @@ export default function AuthModal({ close, data, header }) {
                 type="button"
                 onClick={handleResendVerificationCode}
                 disabled={isSubmitting || isResending || !canResendCode}
-                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-[11px] font-bold tracking-[0.18em] text-white uppercase transition hover:bg-white/10 active:scale-95 disabled:opacity-60"
+                className={MODAL_BUTTON.secondary}
               >
                 {isResending
                   ? 'Sending'
@@ -654,7 +655,7 @@ export default function AuthModal({ close, data, header }) {
                 type="button"
                 onClick={backToCredentials}
                 disabled={isSubmitting || isResending}
-                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-transparent text-[11px] font-bold tracking-[0.18em] text-white/70 uppercase transition hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-60"
+                className={MODAL_BUTTON.secondary}
               >
                 Go Back
               </Button>
@@ -674,8 +675,7 @@ export default function AuthModal({ close, data, header }) {
                       placeholder="Username"
                       autoComplete="username"
                       className={{
-                        input:
-                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                        input: MODAL_FIELD.input,
                       }}
                     />
                     <Input
@@ -686,8 +686,7 @@ export default function AuthModal({ close, data, header }) {
                       placeholder="Display name (optional)"
                       autoComplete="name"
                       className={{
-                        input:
-                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                        input: MODAL_FIELD.input,
                       }}
                     />
                     <Input
@@ -699,8 +698,7 @@ export default function AuthModal({ close, data, header }) {
                       placeholder="Email address"
                       autoComplete="email"
                       className={{
-                        input:
-                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                        input: MODAL_FIELD.input,
                       }}
                     />
                   </>
@@ -713,8 +711,7 @@ export default function AuthModal({ close, data, header }) {
                     placeholder="Username or email"
                     autoComplete="username"
                     className={{
-                      input:
-                        'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                      input: MODAL_FIELD.input,
                     }}
                   />
                 )}
@@ -728,8 +725,7 @@ export default function AuthModal({ close, data, header }) {
                   placeholder="Password"
                   autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   className={{
-                    input:
-                      'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                    input: MODAL_FIELD.input,
                   }}
                 />
 
@@ -743,8 +739,7 @@ export default function AuthModal({ close, data, header }) {
                     placeholder="Confirm password"
                     autoComplete="new-password"
                     className={{
-                      input:
-                        'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                      input: MODAL_FIELD.input,
                     }}
                   />
                 )}
@@ -752,7 +747,7 @@ export default function AuthModal({ close, data, header }) {
                 <Button
                   type="submit"
                   disabled={isSubmitting || isResending}
-                  className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+                  className={MODAL_BUTTON.primary}
                 >
                   {isSubmitting
                     ? isSignUp
@@ -784,11 +779,10 @@ export default function AuthModal({ close, data, header }) {
                 </span>
                 <span className="h-px flex-1 bg-white/10" />
               </div>
-
               <Button
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting || isResending}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-[20px] border border-white/10 bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+                className={MODAL_BUTTON.primary}
               >
                 <Icon icon="logos:google-icon" size={16} />
                 Continue with Google

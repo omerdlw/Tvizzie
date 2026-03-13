@@ -14,14 +14,14 @@ export function ListCard({ isOwner = false, list, onDelete, onEdit, onOpen }) {
           onOpen(list)
         }
       }}
-      className="group relative flex min-h-[280px] w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-white/10 bg-white/5 text-left transition-all duration-500 hover:border-white/25 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+      className="group relative flex min-h-[280px] w-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-white/10 bg-white/5 text-left transition-all duration-[var(--motion-duration-moderate)] hover:border-white/25 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
     >
       {list.coverUrl ? (
         <div className="absolute inset-0 z-0">
           <img
             src={list.coverUrl}
             alt={list.title}
-            className="h-full w-full object-cover opacity-30 transition-transform duration-700 group-hover:scale-105"
+            className="h-full w-full object-cover opacity-30 transition-transform duration-[var(--motion-duration-slower)] group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/50 to-black/30" />
         </div>
@@ -61,7 +61,7 @@ export function ListCard({ isOwner = false, list, onDelete, onEdit, onOpen }) {
               <Icon icon="solar:pen-bold" size={14} />
             </button>
             <Button
-              variant="danger-icon"
+              variant="destructive-icon"
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()

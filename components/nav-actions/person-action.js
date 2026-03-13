@@ -2,33 +2,33 @@
 
 import Icon from '@/ui/icon'
 
-import { NAV_ACTION_TONES, navActionBaseClass } from './constants'
+import { NAV_ACTION_ICON, NAV_ACTION_LAYOUT, navActionClass } from './constants'
 
 export default function PersonAction({ activeView, setActiveView }) {
   return (
-    <div className="mt-2.5 flex w-full items-center gap-2">
+    <div className={NAV_ACTION_LAYOUT.row}>
       <button
         type="button"
         onClick={() =>
           setActiveView(activeView === 'timeline' ? 'profile' : 'timeline')
         }
-        className={navActionBaseClass({
-          layout: 'flex cursor-pointer items-center justify-center gap-2 w-full',
-          className: `flex-1 ${
-            activeView === 'timeline'
-              ? NAV_ACTION_TONES.active
-              : NAV_ACTION_TONES.muted
-          }`,
+        className={navActionClass({
+          className: 'flex-1',
+          tone: 'toggle',
+          isActive: activeView === 'timeline',
         })}
       >
         {activeView === 'timeline' ? (
           <>
-            <Icon icon="solar:arrow-left-bold" size={16} />
+            <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_ICON.default} />
             Back
           </>
         ) : (
           <>
-            <Icon icon="solar:sort-by-time-bold" size={16} />
+            <Icon
+              icon="solar:sort-by-time-bold"
+              size={NAV_ACTION_ICON.default}
+            />
             Timeline
           </>
         )}
@@ -38,23 +38,20 @@ export default function PersonAction({ activeView, setActiveView }) {
         onClick={() =>
           setActiveView(activeView === 'awards' ? 'profile' : 'awards')
         }
-        className={navActionBaseClass({
-          layout: 'flex cursor-pointer items-center justify-center gap-2 w-full',
-          className: `flex-1 ${
-            activeView === 'awards'
-              ? NAV_ACTION_TONES.active
-              : NAV_ACTION_TONES.muted
-          }`,
+        className={navActionClass({
+          className: 'flex-1',
+          tone: 'toggle',
+          isActive: activeView === 'awards',
         })}
       >
         {activeView === 'awards' ? (
           <>
-            <Icon icon="solar:arrow-left-bold" size={16} />
+            <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_ICON.default} />
             Back
           </>
         ) : (
           <>
-            <Icon icon="solar:cup-star-bold" size={16} />
+            <Icon icon="solar:cup-star-bold" size={NAV_ACTION_ICON.default} />
             Awards
           </>
         )}

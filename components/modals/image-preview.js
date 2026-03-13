@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
+import { TMDB_IMG } from '@/lib/constants'
+
 function getAspectRatio(data) {
   const aspectRatio = Number(data?.aspect_ratio)
   if (Number.isFinite(aspectRatio) && aspectRatio > 0) {
@@ -12,7 +14,12 @@ function getAspectRatio(data) {
 
   const width = Number(data?.width)
   const height = Number(data?.height)
-  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+  if (
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0
+  ) {
     return width / height
   }
 
@@ -44,8 +51,8 @@ export default function ImagePreviewModal({ data }) {
         style={{ aspectRatio: String(aspectRatio) }}
       >
         <Image
-          src={`https://image.tmdb.org/t/p/original${filePath}`}
-          className={`object-contain transition-opacity duration-200 ${
+          src={`${TMDB_IMG}/original${filePath}`}
+          className={`object-contain transition-opacity duration-[var(--motion-duration-fast)] ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setIsLoaded(true)}
@@ -53,7 +60,9 @@ export default function ImagePreviewModal({ data }) {
           alt={data?.name || 'Preview image'}
           fill
         />
-        {!isLoaded && <div className="absolute inset-0 animate-pulse bg-white/5" />}
+        {!isLoaded && (
+          <div className="absolute inset-0 animate-pulse bg-white/5" />
+        )}
       </div>
     </div>
   )

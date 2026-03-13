@@ -1,4 +1,4 @@
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 
 export const MODAL_POSITIONS = {
   CENTER: 'center',
@@ -27,14 +27,10 @@ export const MODAL_PRESETS = {
 }
 
 export const ANIMATION_CONFIGS = {
-  SPRING: {
-    stiffness: 260,
-    type: 'spring',
-    damping: 20,
-  },
+  SPRING: EASING.SPRING_CONFIG.MODAL,
   SMOOTH: {
     type: 'tween',
-    ease: [0.32, 0.72, 0, 1],
+    ease: EASING.ACCENT,
     duration: DURATION.SLOW,
   },
 }

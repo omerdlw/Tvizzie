@@ -1,8 +1,8 @@
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 
 import { ANIMATION_CONFIGS, MODAL_POSITIONS } from './config'
 
-const BASE_EXIT_TRANSITION = { duration: DURATION.NORMAL, ease: 'easeIn' }
+const BASE_EXIT_TRANSITION = { duration: DURATION.NORMAL, ease: EASING.EASE_IN }
 const SPRING_TRANSITION = ANIMATION_CONFIGS.SPRING
 const SMOOTH_TRANSITION = ANIMATION_CONFIGS.SMOOTH
 

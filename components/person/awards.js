@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 import { motion } from 'framer-motion'
 
+import { DURATION, EASING } from '@/lib/constants'
 import { TmdbService } from '@/services/tmdb.service'
 import Icon from '@/ui/icon'
 
@@ -18,7 +19,10 @@ const FADE_UP = {
 const STAGGER = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.03, delayChildren: 0.05 },
+    transition: {
+      staggerChildren: DURATION.CASCADE,
+      delayChildren: DURATION.STAGGER,
+    },
   },
 }
 
@@ -79,7 +83,7 @@ export default function PersonAwards({ personId }) {
           <motion.div
             key={org.id}
             variants={FADE_UP}
-            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
             className="flex flex-col gap-4"
           >
             {/* Org Header */}
@@ -133,7 +137,7 @@ export default function PersonAwards({ personId }) {
                         >
                           <div className="w-24 shrink-0">
                             <span
-                              className={`rounded-md px-2 py-1 text-[10px] font-bold tracking-widest uppercase ${isWin ? 'bg-yellow-500/10 text-yellow-500 ring-1 ring-yellow-500/20' : 'bg-white/5 text-white/50 ring-1 ring-white/10'} `}
+                              className={`rounded-md px-2 py-1 text-[10px] font-bold tracking-widest uppercase ${isWin ? 'bg-warning/20 text-warning ring-warning/30 ring-1' : 'bg-white/5 text-white/50 ring-1 ring-white/10'} `}
                             >
                               {cat.type}
                             </span>

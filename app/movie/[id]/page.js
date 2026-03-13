@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 
 import { getMovieComputedData } from '@/components/movie/utils'
+import { TMDB_IMG } from '@/lib/constants'
 import { TmdbService } from '@/services/tmdb.service'
 
 import MovieDetailClient from './client'
@@ -25,9 +26,7 @@ export async function generateMetadata({ params }) {
   }
 
   const imageUrl = movie.backdrop_path
-    ? `${TmdbService.TMDB_IMG || 'https://image.tmdb.org/t/p'}/w1280${
-        movie.backdrop_path
-      }`
+    ? `${TMDB_IMG}/w1280${movie.backdrop_path}`
     : undefined
 
   return {

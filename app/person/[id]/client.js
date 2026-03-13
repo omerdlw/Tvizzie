@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { STYLES as PAGE_STYLES } from '@/app/constants'
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import ImagePreviewModal from '@/components/modals/image-preview'
 import PersonAction from '@/components/nav-actions/person-action'
@@ -16,6 +17,8 @@ import PersonHero from '@/components/person/hero'
 import SocialLinks from '@/components/person/social-links'
 import PersonTimeline from '@/components/person/timeline'
 import Carousel from '@/components/shared/carousel'
+import SegmentedControl from '@/components/shared/segmented-control'
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import { useRegistry } from '@/lib/hooks'
 import { formatDate } from '@/lib/utils'
 import { useModal } from '@/modules/modal/context'
@@ -23,9 +26,11 @@ import { useNavHeight } from '@/modules/nav/hooks'
 import { FadeUp, StaggerContainer } from '@/ui/animations'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 const MAX_KNOWN_FOR = 10
 const MAX_FILMOGRAPHY = 30
+const STYLES = Object.freeze({
+  sectionTitle: 'text-xs font-semibold tracking-widest text-white/50 uppercase',
+})
 
 function calculateAge(birthday, deathday) {
   if (!birthday) return null
@@ -41,7 +46,7 @@ function calculateAge(birthday, deathday) {
 
 function StatPill({ icon, children }) {
   return (
-    <div className="flex items-center gap-2 rounded-[16px] border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70 backdrop-blur-sm">
+    <div className={PAGE_STYLES.chip.stat}>
       <Icon icon={icon} size={16} className="shrink-0 text-white/50" />
       {children}
     </div>
@@ -55,26 +60,19 @@ function FilmographyTabs({ activeTab, onTabChange, movieCount, tvCount }) {
   ]
 
   return (
-    <div className="flex items-center gap-1 rounded-[12px] bg-white/5 p-0.5 ring-1 ring-white/10 backdrop-blur-lg">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => onTabChange(tab.key)}
-          className={`cursor-pointer rounded-[10px] px-3 py-1 text-xs font-medium transition-all duration-200 ${
-            activeTab === tab.key
-              ? 'bg-white/15 text-white'
-              : 'text-white/50 hover:text-white/70'
-          }`}
-        >
-          {tab.label}
-          {tab.count > 0 && (
-            <span className="ml-1.5 text-[10px] text-white/30">
-              {tab.count}
-            </span>
-          )}
-        </button>
-      ))}
-    </div>
+    <SegmentedControl
+      items={tabs}
+      value={activeTab}
+      onChange={onTabChange}
+      trackClassName="backdrop-blur-sm"
+      buttonClassName="py-1"
+      activeClassName="bg-white/10 text-white"
+      renderSuffix={(tab) =>
+        tab.count > 0 ? (
+          <span className="ml-1.5 text-[10px] text-white/30">{tab.count}</span>
+        ) : null
+      }
+    />
   )
 }
 
@@ -108,6 +106,7 @@ export default function PersonDetailClient({ person }) {
       actions: [
         {
           key: 'search-overlay',
+          tooltip: 'Search',
           icon: isSearching
             ? 'material-symbols:close-rounded'
             : 'solar:magnifer-linear',
@@ -183,8 +182,10 @@ export default function PersonDetailClient({ person }) {
   if (!person) return null
 
   return (
-    <div className="relative mx-auto flex h-auto w-full max-w-6xl flex-col items-center gap-4 p-3 select-none [overflow-anchor:none] sm:p-4 md:p-6">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
+    <div
+      className={`${PAGE_STYLES.layout.detailShell} items-center [overflow-anchor:none]`}
+    >
+      <div className={PAGE_STYLES.layout.backdrop} />
 
       <StaggerContainer className="mt-8 flex w-full flex-col items-center gap-10 sm:mt-12 lg:mt-20">
         <FadeUp>
@@ -231,7 +232,7 @@ export default function PersonDetailClient({ person }) {
                 transitionEnd: { transform: 'none' },
               }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
             >
               <PersonTimeline person={person} />
             </motion.div>
@@ -246,7 +247,7 @@ export default function PersonDetailClient({ person }) {
                 transitionEnd: { transform: 'none' },
               }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
             >
               <PersonAwards personId={person.id} />
             </motion.div>
@@ -261,17 +262,15 @@ export default function PersonDetailClient({ person }) {
                 transitionEnd: { transform: 'none' },
               }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
             >
               <div className="w-full max-w-3xl">
                 <PersonBio biography={person.biography} />
               </div>
 
               {knownFor.length > 0 && (
-                <div className="-m-1 flex w-full flex-col gap-4">
-                  <h2 className="ml-1 text-xs font-semibold tracking-widest text-white/50 uppercase">
-                    Known For
-                  </h2>
+                <div className={PAGE_STYLES.layout.inlineSection}>
+                  <h2 className={`ml-1 ${STYLES.sectionTitle}`}>Known For</h2>
                   <Carousel gap="gap-3">
                     {knownFor.map((credit) => (
                       <FilmographyCard
@@ -284,11 +283,9 @@ export default function PersonDetailClient({ person }) {
               )}
 
               {(movieCredits.length > 0 || tvCredits.length > 0) && (
-                <div className="-m-1 flex w-full flex-col gap-4">
+                <div className={PAGE_STYLES.layout.inlineSection}>
                   <div className="ml-1 flex items-center gap-4">
-                    <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                      Filmography
-                    </h2>
+                    <h2 className={STYLES.sectionTitle}>Filmography</h2>
                     <FilmographyTabs
                       activeTab={filmographyTab}
                       onTabChange={handleTabChange}

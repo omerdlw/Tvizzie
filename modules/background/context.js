@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 
 import { REGISTRY_TYPES, useRegistryState } from '../registry/context'
 
@@ -23,7 +23,7 @@ const DEFAULT_BACKGROUND = {
   image: null,
   video: null,
   animation: {
-    transition: { duration: DURATION.SLOW, ease: 'easeInOut' },
+    transition: { duration: DURATION.SLOW, ease: EASING.EASE_IN_OUT },
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },

@@ -60,12 +60,12 @@ export function ProfileHero({
     <div className="relative mx-auto mt-6 w-full max-w-4xl sm:mt-12">
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-12 md:gap-16">
         <div className="group/avatar relative shrink-0">
-          <div className="absolute -inset-1.5 rounded-full bg-linear-to-tr from-white/20 via-white/5 to-white/15 opacity-80 blur-[2px] transition-all duration-700 group-hover/avatar:opacity-100" />
-          <div className="relative size-[100px] overflow-hidden rounded-full ring-[3px] ring-white/15 transition-all duration-500 sm:size-[150px]">
+          <div className="absolute -inset-1.5 rounded-full bg-linear-to-tr from-white/20 via-white/5 to-white/15 opacity-80 blur-[2px] transition-all duration-[var(--motion-duration-slower)] group-hover/avatar:opacity-100" />
+          <div className="relative size-[100px] overflow-hidden rounded-full ring-[3px] ring-white/15 transition-all duration-[var(--motion-duration-moderate)] sm:size-[150px]">
             <img
               src={getAvatarUrl(profile)}
               alt={topName}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover/avatar:scale-110"
+              className="h-full w-full object-cover transition-transform duration-[var(--motion-duration-slower)] group-hover/avatar:scale-110"
             />
           </div>
         </div>
@@ -98,7 +98,7 @@ export function ProfileHero({
 
           <div className="flex max-w-xl flex-col items-center gap-2 sm:items-start">
             {profile?.description && (
-              <p className="text-center text-sm leading-relaxed text-white/45 sm:text-left sm:text-base">
+              <p className="text-center text-sm leading-relaxed text-white/50 sm:text-left sm:text-base">
                 {profile.description}
               </p>
             )}
@@ -112,7 +112,7 @@ export function ProfileHero({
             type="button"
             onClick={() => onTabChange?.(tab.key)}
             className={cn(
-              'relative flex flex-1 cursor-pointer items-center justify-center gap-2 py-4 text-[10px] font-bold tracking-[0.18em] uppercase transition-all duration-300',
+              'relative flex flex-1 cursor-pointer items-center justify-center gap-2 py-4 text-[10px] font-bold tracking-[0.18em] uppercase transition-all duration-[var(--motion-duration-normal)]',
               activeTab === tab.key
                 ? 'text-white'
                 : 'text-white/30 hover:text-white/60'

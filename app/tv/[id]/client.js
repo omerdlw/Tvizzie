@@ -6,6 +6,7 @@ import Image from 'next/image'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { STYLES as PAGE_STYLES } from '@/app/constants'
 import Carousel from '@/components/shared/carousel'
 import CastSection from '@/components/shared/cast-section'
 import CollectionActions from '@/components/shared/collection-actions'
@@ -14,17 +15,28 @@ import ImagesSection from '@/components/shared/images-section'
 import Sidebar from '@/components/shared/sidebar'
 import VideosSection from '@/components/shared/videos-section'
 import EpisodeCard from '@/components/tv/episode-card'
+import {
+  RATING_LEGEND_ITEMS,
+  getRatingSwatchClass,
+  getRatingToneClass,
+} from '@/components/tv/ratings'
 import TvRecommendationCard from '@/components/tv/recommendation-card'
 import SeasonCard from '@/components/tv/season-card'
 import { TvRegistry } from '@/components/tv/tv-registry'
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import { formatVotes } from '@/lib/utils'
 import { TmdbService } from '@/services/tmdb.service'
 import { FadeLeft, FadeUp, StaggerContainer } from '@/ui/animations'
+import { Tooltip } from '@/ui/elements'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
-
-const SECTION_TRANSITION = { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }
+const SECTION_TRANSITION = {
+  duration: DURATION.SLOW,
+  ease: EASING.STANDARD,
+}
+const STYLES = Object.freeze({
+  sectionTitle: 'text-xs font-semibold tracking-widest text-white/50 uppercase',
+})
 
 const SWAP_VARIANTS = {
   enter: { opacity: 0, x: 40 },
@@ -34,31 +46,6 @@ const SWAP_VARIANTS = {
     transitionEnd: { transform: 'none', willChange: 'auto' },
   },
   exit: { opacity: 0, x: -40 },
-}
-
-function Tooltip({ children, text, className = '' }) {
-  const [show, setShow] = useState(false)
-  return (
-    <div
-      className={`relative flex justify-center ${className}`}
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      {children}
-      <AnimatePresence>
-        {show && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="pointer-events-none absolute bottom-full z-50 mb-2 rounded-lg border border-white/10 bg-black/90 px-3 py-1.5 text-[10px] font-medium whitespace-nowrap text-white ring-1 ring-white/5 backdrop-blur-sm"
-          >
-            {text}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
 }
 
 export default function TvDetailClient({ show, imdbRatings, computed }) {
@@ -131,13 +118,13 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
         reviewState={reviewState}
       />
 
-      <div className="relative mx-auto flex h-auto w-full max-w-6xl flex-col gap-4 p-3 transition-all duration-700 ease-in-out select-none sm:p-4 md:p-6">
-        <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
+      <div className={PAGE_STYLES.layout.detailShellAnimated}>
+        <div className={PAGE_STYLES.layout.backdrop} />
         <div
           id={activeView === 'ratings' ? 'ratings-capture-area' : undefined}
-          className="mt-8 flex h-auto w-full flex-col items-start gap-6 sm:mt-12 lg:mt-20 lg:flex-row lg:gap-12"
+          className={PAGE_STYLES.layout.detailSplit}
         >
-          <FadeLeft className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-100">
+          <FadeLeft className={`${PAGE_STYLES.layout.sidebar} shrink-0`}>
             {activeView === 'ratings' ? (
               <div className="hidden min-w-[200px] flex-col gap-4 lg:flex">
                 <div className="relative mb-4 h-[600px] w-[400px] shrink-0 overflow-hidden rounded-[20px] ring-1 ring-white/10">
@@ -150,48 +137,16 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                     sizes="400px"
                   />
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#3b82f6]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Absolute Cinema (9.7+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#166534]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Awesome (9.0+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#22c55e]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Great (8.0+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#facc15]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Good (7.0+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#f97316]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Regular (6.0+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#ef4444]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Bad (5.0+)
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="size-4 rounded-[4px] bg-[#a855f7]" />
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
-                    Garbage
-                  </span>
-                </div>
+                {RATING_LEGEND_ITEMS.map((item) => (
+                  <div key={item.key} className="flex items-center gap-3">
+                    <div
+                      className={`size-4 rounded-[4px] ${item.swatchClass}`}
+                    />
+                    <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
               </div>
             ) : (
               <Sidebar
@@ -205,7 +160,7 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
             )}
           </FadeLeft>
 
-          <StaggerContainer className="flex w-full min-w-0 flex-col">
+          <StaggerContainer className={PAGE_STYLES.layout.content}>
             <AnimatePresence mode="wait">
               {activeView === 'ratings' ? (
                 <motion.div
@@ -278,35 +233,24 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                                   )
 
                                 const rt = episode.vote_average
-                                const ratingColor =
-                                  rt >= 9.7
-                                    ? 'bg-[#3b82f6] text-white'
-                                    : rt >= 9.0
-                                      ? 'bg-[#166534] text-white/90'
-                                      : rt >= 8.0
-                                        ? 'bg-[#22c55e] text-white/90'
-                                        : rt >= 7.0
-                                          ? 'bg-[#facc15] text-black/80'
-                                          : rt >= 6.0
-                                            ? 'bg-[#f97316] text-white/90'
-                                            : rt >= 5.0
-                                              ? 'bg-[#ef4444] text-white/90'
-                                              : rt > 0
-                                                ? 'bg-[#a855f7] text-white/90'
-                                                : 'bg-white/5 text-white/20'
+                                const ratingColor = getRatingToneClass(rt)
 
                                 return (
-                                  <Tooltip
+                                  <div
                                     key={sIdx}
                                     className="aspect-square max-w-[56px] min-w-[28px] flex-1"
-                                    text={`${episode.episode_number}. ${episode.name}`}
                                   >
-                                    <div
-                                      className={`flex h-full w-full cursor-default items-center justify-center rounded-[20%] text-xs font-black transition-all hover:scale-110 sm:text-sm md:text-base ${ratingColor}`}
+                                    <Tooltip
+                                      className="px-2"
+                                      text={`${episode.episode_number}. ${episode.name}`}
                                     >
-                                      {rt > 0 ? rt.toFixed(1) : '-'}
-                                    </div>
-                                  </Tooltip>
+                                      <div
+                                        className={`flex h-full w-full cursor-default items-center justify-center rounded-[20%] text-xs font-black transition-all hover:scale-110 sm:text-sm md:text-base ${ratingColor}`}
+                                      >
+                                        {rt > 0 ? rt.toFixed(1) : '-'}
+                                      </div>
+                                    </Tooltip>
+                                  </div>
                                 )
                               })}
                             </div>
@@ -331,22 +275,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                                     ) / validEpisodes.length
                                   : 0
 
-                              const ratingColor =
-                                MathAvg >= 9.7
-                                  ? 'bg-[#3b82f6] text-white'
-                                  : MathAvg >= 9.0
-                                    ? 'bg-[#166534] text-white/90'
-                                    : MathAvg >= 8.0
-                                      ? 'bg-[#22c55e] text-white/90'
-                                      : MathAvg >= 7.0
-                                        ? 'bg-[#facc15] text-black/80'
-                                        : MathAvg >= 6.0
-                                          ? 'bg-[#f97316] text-white/90'
-                                          : MathAvg >= 5.0
-                                            ? 'bg-[#ef4444] text-white/90'
-                                            : MathAvg > 0
-                                              ? 'bg-[#a855f7] text-white/90'
-                                              : 'bg-white/5 text-white/20'
+                              const ratingColor = getRatingToneClass(MathAvg)
+                              const ratingSwatch = getRatingSwatchClass(MathAvg)
 
                               return (
                                 <div
@@ -359,7 +289,7 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                                     {MathAvg > 0 ? MathAvg.toFixed(1) : '-'}
                                   </div>
                                   <div
-                                    className={`h-1 w-[60%] rounded-full ${ratingColor.split(' ')[0]}`}
+                                    className={`h-1 w-[60%] rounded-full ${ratingSwatch}`}
                                   />
                                 </div>
                               )
@@ -384,8 +314,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                       x: 0,
                       transition: {
                         ...SECTION_TRANSITION,
-                        staggerChildren: 0.1,
-                        delayChildren: 0.15,
+                        staggerChildren: DURATION.VERY_FAST,
+                        delayChildren: DURATION.QUICK,
                       },
                       transitionEnd: { transform: 'none', willChange: 'auto' },
                     },
@@ -415,14 +345,14 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                           <Icon
                             icon="cib:imdb"
                             size={28}
-                            className="text-[#f5c518]"
+                            className="text-warning"
                           />
                         </a>
                       )}
                       {rating && (
-                        <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-400">
+                        <span className="text-warning flex items-center gap-1.5 text-sm font-semibold">
                           <Icon
-                            className="text-yellow-500"
+                            className="text-warning"
                             icon="solar:star-bold"
                             size={14}
                           />
@@ -440,7 +370,7 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                           {genres.map((genre) => (
                             <div
                               key={genre}
-                              className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur-sm"
+                              className={PAGE_STYLES.chip.subtle}
                             >
                               {genre}
                             </div>
@@ -454,7 +384,7 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                         {keywords.map((keyword) => (
                           <span
                             key={keyword.id}
-                            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-white/70 backdrop-blur-sm"
+                            className={PAGE_STYLES.chip.subtle}
                           >
                             #{keyword.name}
                           </span>
@@ -473,15 +403,15 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                     </FadeUp>
 
                     {seasons.length > 0 && (
-                      <FadeUp className="-m-1 mt-10 flex flex-col gap-4">
+                      <FadeUp className={PAGE_STYLES.layout.section}>
                         <div className="mr-1 ml-1 flex items-center justify-between">
-                          <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
+                          <h2 className={STYLES.sectionTitle}>
                             {selectedSeason ? selectedSeason.name : 'Seasons'}
                           </h2>
                           {selectedSeason && (
                             <button
                               onClick={handleBackToSeasons}
-                              className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold tracking-widest text-white/40 uppercase transition-colors hover:text-white/70"
+                              className="flex items-center gap-1.5 text-xs font-semibold tracking-widest text-white/40 uppercase transition-colors hover:text-white/70"
                             >
                               <Icon
                                 icon="solar:alt-arrow-left-bold"
@@ -501,8 +431,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                               animate="center"
                               exit="exit"
                               transition={{
-                                duration: 0.3,
-                                ease: [0.25, 0.1, 0.25, 1],
+                                duration: DURATION.NORMAL,
+                                ease: EASING.STANDARD,
                               }}
                             >
                               <Carousel gap="gap-3">
@@ -523,8 +453,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                               animate="center"
                               exit="exit"
                               transition={{
-                                duration: 0.3,
-                                ease: [0.25, 0.1, 0.25, 1],
+                                duration: DURATION.NORMAL,
+                                ease: EASING.STANDARD,
                               }}
                             >
                               {episodesLoading ? (
@@ -564,10 +494,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                     </FadeUp>
 
                     {recommendations.length > 0 && (
-                      <FadeUp className="-m-1 mt-10 flex flex-col gap-4">
-                        <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                          More like this
-                        </h2>
+                      <FadeUp className={PAGE_STYLES.layout.section}>
+                        <h2 className={STYLES.sectionTitle}>More like this</h2>
                         <Carousel gap="gap-4">
                           {recommendations.map((item) => (
                             <TvRecommendationCard key={item.id} show={item} />
@@ -577,10 +505,8 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
                     )}
 
                     {similar.length > 0 && (
-                      <FadeUp className="-m-1 mt-10 flex flex-col gap-4">
-                        <h2 className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                          Similar Shows
-                        </h2>
+                      <FadeUp className={PAGE_STYLES.layout.section}>
+                        <h2 className={STYLES.sectionTitle}>Similar Shows</h2>
                         <Carousel gap="gap-4">
                           {similar.map((item) => (
                             <TvRecommendationCard key={item.id} show={item} />

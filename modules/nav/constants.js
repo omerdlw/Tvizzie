@@ -1,6 +1,6 @@
 'use client'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 const DEFAULT_DIMENSIONS = {
@@ -10,17 +10,26 @@ const DEFAULT_DIMENSIONS = {
   actionGap: 10,
 }
 
-export const ANIMATION = {
-  collapsed: { offsetY: DEFAULT_DIMENSIONS.collapsedY, scale: 0.9 },
-  expanded: { offsetY: DEFAULT_DIMENSIONS.expandedY, scale: 1 },
-  BASE_CARD_HEIGHT: DEFAULT_DIMENSIONS.cardHeight,
-  ACTION_GAP: DEFAULT_DIMENSIONS.actionGap,
-  transition: {
-    ease: [0.23, 1, 0.32, 1],
-    duration: 0.45,
-    type: 'tween',
-  },
-}
+export const STYLES = Object.freeze({
+  animation: Object.freeze({
+    collapsed: Object.freeze({
+      offsetY: DEFAULT_DIMENSIONS.collapsedY,
+      scale: 0.9,
+    }),
+    expanded: Object.freeze({
+      offsetY: DEFAULT_DIMENSIONS.expandedY,
+      scale: 1,
+    }),
+    baseCardHeight: DEFAULT_DIMENSIONS.cardHeight,
+    actionGap: DEFAULT_DIMENSIONS.actionGap,
+    transition: Object.freeze({
+      ease: EASING.EMPHASIZED,
+      duration: DURATION.BALANCED,
+      type: 'tween',
+    }),
+  }),
+  card: 'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer rounded-[30px] border-2 border-white/10 bg-black/40 p-2.5 backdrop-blur-xl sm:rounded-[30px]',
+})
 
 export const getNavCardProps = (
   expanded,
@@ -29,9 +38,9 @@ export const getNavCardProps = (
   cardStyle,
   cardScale
 ) => {
-  const { offsetY: expandedOffsetY } = ANIMATION.expanded
+  const { offsetY: expandedOffsetY } = STYLES.animation.expanded
   const { offsetY: collapsedOffsetY, scale: collapsedScale } =
-    ANIMATION.collapsed
+    STYLES.animation.collapsed
   const safeCardStyle = cardStyle
     ? Object.fromEntries(
         Object.entries(cardStyle).filter(
@@ -44,7 +53,7 @@ export const getNavCardProps = (
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer rounded-[30px] border-2 border-white/10 bg-black/40 p-2.5 backdrop-blur-xl sm:rounded-[30px]',
+      STYLES.card,
       showBorder && 'border-white/15',
       cardStyle?.className
     ),
@@ -55,34 +64,34 @@ export const getNavCardProps = (
     animate: {
       y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
-      zIndex: ANIMATION.expanded.scale - position,
+      zIndex: STYLES.animation.expanded.scale - position,
       opacity: 1,
     },
     initial: { opacity: 0, scale: 0.92, y: 0 },
     exit: {
       transition: {
         duration: DURATION.FAST,
-        ease: [0.23, 1, 0.32, 1],
+        ease: EASING.EMPHASIZED,
       },
       scale: 0.92,
       opacity: 0,
     },
     transition: {
       y: {
-        ...ANIMATION.transition,
+        ...STYLES.animation.transition,
         delay: cardDelay,
       },
       scale: {
-        ...ANIMATION.transition,
+        ...STYLES.animation.transition,
         delay: cardDelay,
       },
       opacity: {
-        ...ANIMATION.transition,
+        ...STYLES.animation.transition,
         delay: cardDelay,
       },
       zIndex: {
         delay: cardDelay,
-        duration: 0,
+        duration: DURATION.INSTANT,
       },
     },
   }

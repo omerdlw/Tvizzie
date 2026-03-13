@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion'
 
+import { DURATION, EASING } from '@/lib/constants'
+
 const FADE_UP_VARIANTS = {
   visible: {
     opacity: 1,
@@ -15,11 +17,11 @@ export function FadeUp({
   children,
   className = '',
   delay = 0,
-  duration = 0.6,
+  duration = DURATION.SLOW,
 }) {
   return (
     <motion.div
-      transition={{ duration, ease: [0.25, 0.1, 0.25, 1], delay }}
+      transition={{ duration, ease: EASING.STANDARD, delay }}
       variants={FADE_UP_VARIANTS}
       className={className}
     >

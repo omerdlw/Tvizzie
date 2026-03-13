@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { DURATION } from '@/lib/constants'
+
 import { useTransitionActions } from './context'
 import { getPreset } from './presets'
 
@@ -51,7 +53,9 @@ export function Transition({
         ...config.exit,
         transition: {
           ...config.transition,
-          duration: (config.transition?.duration ?? 0.5) * 0.6,
+          duration:
+            (config.transition?.duration ?? DURATION.MODERATE) *
+            DURATION.RATIO.EXIT,
         },
       }}
       onAnimationStart={() => startTransition()}

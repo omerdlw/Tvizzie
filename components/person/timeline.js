@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 import { motion } from 'framer-motion'
 
+import { DURATION, EASING } from '@/lib/constants'
 import Icon from '@/ui/icon'
 
 const FADE_UP = {
@@ -16,7 +17,10 @@ const FADE_UP = {
 const STAGGER = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.03, delayChildren: 0.05 },
+    transition: {
+      staggerChildren: DURATION.CASCADE,
+      delayChildren: DURATION.STAGGER,
+    },
   },
 }
 
@@ -61,7 +65,7 @@ export default function PersonTimeline({ person }) {
         <motion.div
           key={year}
           variants={FADE_UP}
-          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
         >
           {(groupIndex === 0 || timeline[groupIndex - 1][0] !== year) && (
             <div className="mt-6 mb-2 flex items-center gap-4">

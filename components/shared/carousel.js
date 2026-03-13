@@ -109,7 +109,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2' }) {
         <button
           onClick={() => scroll(-1)}
           aria-label="Scroll left"
-          className="absolute top-1/2 -left-4 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-black/40 text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/80 hover:ring-white/40"
+          className="absolute top-1/2 -left-4 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-black/40 text-white backdrop-blur-sm transition-opacity duration-[var(--motion-duration-fast)] hover:bg-black/80 hover:ring-white/40"
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
         </button>
@@ -119,7 +119,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2' }) {
         <button
           onClick={() => scroll(1)}
           aria-label="Scroll right"
-          className="absolute top-1/2 -right-4 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-black/40 text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/80 hover:ring-white/40"
+          className="absolute top-1/2 -right-4 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[14px] border border-white/10 bg-black/40 text-white backdrop-blur-sm transition-opacity duration-[var(--motion-duration-fast)] hover:bg-black/80 hover:ring-white/40"
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />
         </button>

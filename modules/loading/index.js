@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION, EASING } from '@/lib/constants'
 import { Spinner } from '@/ui/spinner'
 
 import { useLoadingState } from './context'
@@ -17,9 +17,10 @@ export function LoadingOverlay() {
       {isLoading && (
         <motion.div
           className="center fixed inset-0 h-screen w-screen bg-black"
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: DURATION.NORMAL }}
+          transition={{ duration: DURATION.NORMAL, ease: EASING.EASE_IN_OUT }}
         >
           {skeleton || <Spinner size={50} />}
         </motion.div>

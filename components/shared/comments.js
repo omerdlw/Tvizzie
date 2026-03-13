@@ -28,8 +28,8 @@ function RatingSelector({ value, onChange }) {
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Icon icon="solar:star-bold" size={15} className="text-yellow-400" />
-          <span className="text-[11px] font-semibold tracking-[0.22em] text-white/45 uppercase">
+          <Icon icon="solar:star-bold" size={15} className="text-warning" />
+          <span className="text-[11px] font-semibold tracking-[0.22em] text-white/50 uppercase">
             Your Score
           </span>
         </div>
@@ -59,7 +59,7 @@ function RatingSelector({ value, onChange }) {
               className={cn(
                 'flex h-12 cursor-pointer items-center justify-center rounded-[20px] border text-sm font-semibold transition',
                 isSelected
-                  ? 'border-yellow-400 bg-yellow-400/70 text-white ring-1 ring-yellow-400/20'
+                  ? 'border-warning bg-warning/70 ring-warning/25 text-black ring-1'
                   : 'border-white/5 bg-white/5 text-white/60 hover:border-white/10 hover:bg-white/10 hover:text-white'
               )}
               key={score}
@@ -107,7 +107,7 @@ function CommentCard({
       <div className="relative flex w-full gap-4">
         <div
           className={cn(
-            'flex w-full items-center gap-4 transition-all duration-300 sm:gap-5',
+            'flex w-full items-center gap-4 transition-all duration-[var(--motion-duration-normal)] sm:gap-5',
             isSpoiler && !isSpoilerVisible
               ? 'pointer-events-none blur-sm select-none'
               : ''
@@ -122,7 +122,7 @@ function CommentCard({
                 comment.user?.avatarUrl ||
                 `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}`
               }
-              className="object-cover transition-transform duration-500 group-hover/avatar:scale-110"
+              className="object-cover transition-transform duration-[var(--motion-duration-moderate)] group-hover/avatar:scale-110"
               alt={displayName}
               unoptimized
               fill
@@ -148,7 +148,7 @@ function CommentCard({
                       onClick={onEdit}
                       title="Edit Review"
                       disabled={isSpoiler && !isSpoilerVisible}
-                      className="text-[11px] font-semibold tracking-[0.14em] text-blue-400 uppercase transition hover:text-blue-200 disabled:opacity-40"
+                      className="text-info hover:text-info/80 text-[11px] font-semibold tracking-[0.14em] uppercase transition disabled:opacity-40"
                     >
                       Edit
                     </button>
@@ -156,17 +156,21 @@ function CommentCard({
                       type="button"
                       onClick={() => {
                         openModal('CONFIRMATION_MODAL', 'bottom', {
-                          title: 'Delete Review?',
-                          description:
-                            'Are you sure you want to delete this review? This action cannot be undone',
-                          confirmText: 'Delete',
-                          isDestructive: true,
-                          onConfirm: onDelete,
+                          header: {
+                            title: 'Delete Review?',
+                          },
+                          data: {
+                            confirmText: 'Delete',
+                            description:
+                              'Are you sure you want to delete this review? This action cannot be undone',
+                            isDestructive: true,
+                            onConfirm: onDelete,
+                          },
                         })
                       }}
                       title="Delete Review"
                       disabled={isSpoiler && !isSpoilerVisible}
-                      className="text-[11px] font-semibold tracking-[0.14em] text-red-400 uppercase transition hover:text-red-200 disabled:opacity-40"
+                      className="text-error hover:text-error/80 text-[11px] font-semibold tracking-[0.14em] uppercase transition disabled:opacity-40"
                     >
                       Delete
                     </button>
@@ -182,7 +186,7 @@ function CommentCard({
             <div className="flex shrink-0 items-center gap-4 self-center">
               <div className="flex flex-col items-end gap-1">
                 {comment.rating ? (
-                  <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-400 uppercase">
+                  <span className="text-warning text-[10px] font-semibold tracking-[0.2em] uppercase">
                     {comment.rating}/10
                   </span>
                 ) : null}
@@ -547,11 +551,7 @@ export default function MediaComments({
           </div>
           {ratingStats.average ? (
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-[11px] font-semibold tracking-[0.22em] text-white/50 uppercase ring ring-white/10">
-              <Icon
-                icon="solar:star-bold"
-                className="text-yellow-400"
-                size={14}
-              />
+              <Icon icon="solar:star-bold" className="text-warning" size={14} />
               <span>
                 {ratingStats.average}/10 avg
                 {ratingStats.count ? ` • ${ratingStats.count} rated` : ''}
@@ -603,7 +603,7 @@ export default function MediaComments({
                     </h3>
                     {ownComment && isEditing && (
                       <button
-                        className="cursor-pointer text-[11px] font-semibold tracking-[0.2em] text-red-400 uppercase transition hover:text-red-200"
+                        className="text-error hover:text-error/80 cursor-pointer text-[11px] font-semibold tracking-[0.2em] uppercase transition"
                         type="button"
                         onClick={() => {
                           setIsEditing(false)

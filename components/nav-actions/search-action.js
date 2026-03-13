@@ -6,6 +6,8 @@ import Image from 'next/image'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import SegmentedControl from '@/components/shared/segmented-control'
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import { useDebounce } from '@/lib/hooks'
 import { useNavigation } from '@/modules/nav/hooks'
 import { searchUserProfiles } from '@/services/profile.service'
@@ -13,11 +15,17 @@ import { TmdbService } from '@/services/tmdb.service'
 import { Input } from '@/ui/elements'
 import Icon from '@/ui/icon'
 
-import { navActionBaseClass } from './constants'
+import { navActionClass } from './constants'
 
 const MAX_RESULTS = 6
 const MEDIA_RESULTS_LIMIT = 4
 const USER_RESULTS_LIMIT = 4
+const STYLES = Object.freeze({
+  input:
+    'relative flex h-11 w-full items-center rounded-[20px] p-2.5 pl-4 font-semibold transition-colors duration-[var(--motion-duration-fast)]',
+  tabButton:
+    'w-full flex-auto rounded-[20px] border border-white/5 px-3 py-2 text-[11px] tracking-wide whitespace-nowrap transition-colors',
+})
 
 export default function SearchAction() {
   const [query, setQuery] = useState('')
@@ -229,12 +237,10 @@ export default function SearchAction() {
     <motion.div className="mt-2.5 w-full" layout="position">
       <Input
         classNames={{
-          wrapper: navActionBaseClass({
-            layout: 'relative flex flex-1 w-full items-center',
-            padding: 'p-2.5 pl-4',
-            typography: '',
-            className:
-              'bg-white/5 ring-1 ring-white/10 focus-within:ring-white/15 focus-within:bg-white/10',
+          wrapper: navActionClass({
+            button: STYLES.input,
+            tone: 'muted',
+            className: 'focus-within:ring-white/20 focus-within:bg-white/10',
           }),
           leftIcon: 'center mr-2 shrink-0',
           input:
@@ -243,7 +249,7 @@ export default function SearchAction() {
         }}
         leftIcon={
           <Icon
-            className={`${isFocused || query ? 'text-white' : 'text-white/50'} transition-colors duration-300`}
+            className={`${isFocused || query ? 'text-white' : 'text-white/50'} transition-colors duration-[var(--motion-duration-normal)]`}
             icon="solar:magnifer-linear"
             size={20}
           />
@@ -293,7 +299,7 @@ export default function SearchAction() {
             className="mt-2 flex flex-col gap-1"
             initial={{ opacity: 0, height: 0 }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            transition={{ duration: DURATION.QUICK, ease: EASING.EASE_OUT }}
             layout="position"
           >
             {results.map((item) => {
@@ -326,7 +332,7 @@ export default function SearchAction() {
               return (
                 <div
                   key={`${item.media_type}-${item.id}`}
-                  className="group flex cursor-pointer items-center justify-between rounded-[20px] p-1 transition-all duration-200 hover:bg-white/10"
+                  className="group flex cursor-pointer items-center justify-between rounded-[20px] p-1 transition-all duration-[var(--motion-duration-fast)] hover:bg-white/10"
                   onClick={() => {
                     handleSelect(item)
                   }}
@@ -337,15 +343,15 @@ export default function SearchAction() {
                         <img
                           src={getAvatarUrl(item)}
                           alt={title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="h-full w-full object-cover transition-transform duration-[var(--motion-duration-moderate)] group-hover:scale-105"
                         />
                       ) : imagePath &&
                         !imageErrors[`${item.media_type}-${item.id}`] ? (
                         <Image
-                          src={`https://image.tmdb.org/t/p/w92${imagePath}`}
+                          src={`${TMDB_IMG}/w92${imagePath}`}
                           alt={title}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover transition-transform duration-[var(--motion-duration-moderate)] group-hover:scale-105"
                           onError={() =>
                             setImageErrors((prev) => ({
                               ...prev,
@@ -396,40 +402,39 @@ export default function SearchAction() {
       <AnimatePresence>
         {query && (
           <motion.div
-            className="hide-scrollbar mt-2 flex items-center gap-2 overflow-x-auto"
+            className="mt-2"
             animate={{ opacity: 1, height: 'auto' }}
             initial={{ opacity: 0, height: 0 }}
             exit={{ opacity: 0, height: 0 }}
           >
-            {[
-              { id: 'multi', label: 'All' },
-              { id: 'movie', label: 'Movies' },
-              { id: 'tv', label: 'TV Shows' },
-              { id: 'person', label: 'People' },
-              { id: 'user', label: 'Users' },
-            ].map((tab) => (
-              <button
-                type="button"
-                key={tab.id}
-                onClick={() => {
-                  setSearchType(tab.id)
-                  setIsManualTab(true)
-                }}
-                className={navActionBaseClass({
-                  padding: 'px-3 py-2',
-                  transition: 'transition-colors',
-                  typography:
-                    'text-[11px] font-bold tracking-wide whitespace-nowrap',
-                  className: `w-full flex-auto border border-white/5 ${
-                    searchType === tab.id
-                      ? 'bg-white/15 text-white'
-                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'
-                  }`,
-                })}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <SegmentedControl
+              className="w-full"
+              trackClassName="w-full gap-2 overflow-visible bg-transparent p-0 ring-0"
+              items={[
+                { key: 'multi', label: 'All' },
+                { key: 'movie', label: 'Movies' },
+                { key: 'tv', label: 'TV Shows' },
+                { key: 'person', label: 'People' },
+                { key: 'user', label: 'Users' },
+              ]}
+              value={searchType}
+              onChange={(value) => {
+                setSearchType(value)
+                setIsManualTab(true)
+              }}
+              activeClassName=""
+              inactiveClassName=""
+              getButtonClassName={(item, isActive) => {
+                const isAllTab = item.key === 'multi'
+
+                return navActionClass({
+                  button: STYLES.tabButton,
+                  tone: 'toggle',
+                  isActive,
+                  className: isAllTab ? 'w-full flex-auto' : 'w-full flex-auto',
+                })
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

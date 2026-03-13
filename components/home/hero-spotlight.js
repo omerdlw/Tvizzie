@@ -7,11 +7,11 @@ import Link from 'next/link'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 const HERO_COUNT = 5
-const INTERVAL_MS = 8000
+const INTERVAL_MS = DURATION.AMBIENT * 1000
 
 const SLIDE_VARIANTS = {
   enter: { opacity: 0, scale: 1.05 },
@@ -93,7 +93,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: DURATION.HERO, ease: EASING.STANDARD }}
           className="absolute inset-0"
         >
           <Image
@@ -118,7 +118,10 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{
+                duration: DURATION.MODERATE,
+                ease: EASING.STANDARD,
+              }}
               className="flex flex-col gap-3"
             >
               <div className="flex items-center gap-2">
@@ -130,7 +133,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
                     <Icon
                       icon="solar:star-bold"
                       size={12}
-                      className="text-yellow-500"
+                      className="text-warning"
                     />
                     {rating}
                   </span>
@@ -150,7 +153,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
 
               <Link
                 href={href}
-                className="mt-1 flex w-fit items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-xs font-semibold tracking-widest text-white uppercase ring-1 ring-white/15 backdrop-blur-sm transition-all duration-300 hover:bg-white/20 hover:ring-white/40"
+                className="mt-1 flex w-fit items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-xs font-semibold tracking-widest text-white uppercase ring-1 ring-white/15 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/20 hover:ring-white/40"
               >
                 <Icon icon="solar:play-bold" size={14} />
                 Discover
@@ -165,7 +168,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
               key={item.id}
               onClick={() => handleDotClick(index)}
               aria-label={`Go to slide ${index + 1}`}
-              className={`cursor-pointer rounded-full transition-all duration-300 ${
+              className={`cursor-pointer rounded-full transition-all duration-[var(--motion-duration-normal)] ${
                 index === activeIndex
                   ? 'h-2 w-6 bg-white'
                   : 'h-2 w-2 bg-white/30 hover:bg-white/60'

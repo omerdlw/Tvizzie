@@ -1,5 +1,6 @@
 'use client'
 
+import { DURATION, EASING } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Select from '@/ui/elements/select'
 import Icon from '@/ui/icon/index'
@@ -37,7 +38,11 @@ export function SortSelect({ value, onChange, className }) {
         trigger: 'center border-0 bg-transparent p-0 hover:bg-transparent',
         value:
           'flex items-center text-[11px] leading-none font-bold tracking-[0.15em] text-white/50 group-hover:text-white',
-        menu: 'animate-in fade-in zoom-in-95 z-100 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-1.5 shadow-2xl backdrop-blur-xl duration-200',
+        menu: cn(
+          'animate-in fade-in zoom-in-95 z-100 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-1.5 shadow-2xl backdrop-blur-sm',
+          DURATION.CLASS.FAST,
+          EASING.CLASS.STANDARD
+        ),
         option:
           'relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[10px] font-bold tracking-[0.12em] text-white/40 transition-colors outline-none hover:bg-white/5 hover:text-white',
         optionActive: 'bg-white/10 text-white',

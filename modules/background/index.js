@@ -133,7 +133,9 @@ export function BackgroundOverlay() {
             ...motionExit,
             transition: {
               ...motionTransition,
-              duration: (motionTransition?.duration ?? 0.5) * 0.6,
+              duration:
+                (motionTransition?.duration ?? DURATION.MODERATE) *
+                DURATION.RATIO.EXIT,
             },
           }}
           className="pointer-events-none fixed inset-0 transform-gpu"
@@ -206,11 +208,11 @@ export function BackgroundOverlay() {
           {overlay && (
             <div
               style={{ opacity: isTransitioning ? 1 : overlayOpacity }}
-              className="absolute inset-0 bg-black transition-opacity duration-300"
+              className="absolute inset-0 bg-black transition-opacity duration-[var(--motion-duration-normal)]"
             />
           )}
           {!overlay && isTransitioning && (
-            <div className="absolute inset-0 bg-black transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-black transition-opacity duration-[var(--motion-duration-normal)]" />
           )}
         </motion.div>
       )}

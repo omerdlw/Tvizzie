@@ -14,6 +14,8 @@ import {
 import { Button, Input, Textarea } from '@/ui/elements'
 import Icon from '@/ui/icon'
 
+import { MODAL_BUTTON, MODAL_FIELD } from './constants'
+
 function getMediaTitle(media = {}) {
   return media?.title || media?.name || 'this title'
 }
@@ -183,7 +185,7 @@ export default function ListPickerModal({ close, data, header }) {
                 {[1, 2, 3].map((item) => (
                   <div
                     key={item}
-                    className="h-24 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
+                    className="h-24 animate-pulse rounded-[20px] border border-white/10 bg-white/5"
                   />
                 ))}
               </div>
@@ -208,9 +210,9 @@ export default function ListPickerModal({ close, data, header }) {
                     onClick={() => handleToggleList(list.id)}
                     disabled={isListSaving || isCreating}
                     className={cn(
-                      'w-full cursor-pointer rounded-[18px] border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60',
+                      'w-full cursor-pointer rounded-[20px] border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60',
                       isActive
-                        ? 'border-emerald-400/35 bg-emerald-400/8'
+                        ? 'border-success/35 bg-success/15'
                         : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/8'
                     )}
                   >
@@ -222,13 +224,13 @@ export default function ListPickerModal({ close, data, header }) {
                           </p>
                           {isActive ? (
                             <Icon
-                              className="shrink-0 text-emerald-300"
+                              className="shrink-0 text-success"
                               icon="solar:check-circle-bold"
                               size={16}
                             />
                           ) : null}
                         </div>
-                        <p className="mt-1 text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">
+                        <p className="mt-1 text-[10px] font-semibold tracking-[0.16em] text-white/50 uppercase">
                           {list.itemsCount} items
                         </p>
                         {list.description ? (
@@ -242,7 +244,7 @@ export default function ListPickerModal({ close, data, header }) {
                         className={cn(
                           'shrink-0 rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.16em] uppercase',
                           isActive
-                            ? 'border border-emerald-400/35 bg-emerald-400/12 text-emerald-300'
+                            ? 'border border-success/35 bg-success/15 text-success'
                             : 'border border-white/15 bg-white/5 text-white/70'
                         )}
                       >
@@ -266,14 +268,13 @@ export default function ListPickerModal({ close, data, header }) {
             </div>
 
             <div className="min-h-0 flex-1 space-y-4 px-5 py-4">
-              <p className="text-sm text-white/45">Lists are public on your profile</p>
+              <p className="text-sm text-white/50">Lists are public on your profile</p>
               <Input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Weekend Marathon"
                 className={{
-                  input:
-                    'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors outline-none placeholder:text-white/30 focus:border-white/25 focus:bg-white/8',
+                  input: MODAL_FIELD.input,
                 }}
               />
 
@@ -283,8 +284,7 @@ export default function ListPickerModal({ close, data, header }) {
                 placeholder="Description (optional)"
                 maxHeight={140}
                 className={{
-                  textarea:
-                    'min-h-[130px] w-full resize-none rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white transition-colors outline-none placeholder:text-white/30 focus:border-white/25 focus:bg-white/8',
+                  textarea: `${MODAL_FIELD.textarea} min-h-[130px]`,
                 }}
               />
             </div>
@@ -293,7 +293,7 @@ export default function ListPickerModal({ close, data, header }) {
               <Button
                 type="submit"
                 disabled={isCreateDisabled}
-                className="h-12 w-full cursor-pointer rounded-[18px] bg-white px-8 text-[11px] font-bold tracking-[0.2em] text-black uppercase transition hover:bg-white/90 disabled:opacity-50"
+                className={`${MODAL_BUTTON.primary} h-12`}
               >
                 {isCreating ? 'Creating' : 'Create List'}
               </Button>

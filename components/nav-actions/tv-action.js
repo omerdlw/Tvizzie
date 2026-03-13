@@ -6,7 +6,11 @@ import { toPng } from 'html-to-image'
 
 import Icon from '@/ui/icon'
 
-import { NAV_ACTION_TONES, navActionBaseClass } from './constants'
+import {
+  NAV_ACTION_ICON,
+  NAV_ACTION_LAYOUT,
+  navActionClass,
+} from './constants'
 
 export default function TVAction({ activeView, setActiveView }) {
   const [capturing, setCapturing] = useState(false)
@@ -42,7 +46,7 @@ export default function TVAction({ activeView, setActiveView }) {
 
       const dataUrl = await toPng(element, {
         cacheBust: true,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: 'var(--color-black)',
         style: { margin: 0 },
       })
 
@@ -63,7 +67,7 @@ export default function TVAction({ activeView, setActiveView }) {
   }
 
   return (
-    <div className="mt-2.5 flex w-full items-center gap-2">
+    <div className={NAV_ACTION_LAYOUT.row}>
       <button
         type="button"
         onClick={(e) => {
@@ -71,23 +75,23 @@ export default function TVAction({ activeView, setActiveView }) {
           e.stopPropagation()
           setActiveView(activeView === 'ratings' ? 'tv-page' : 'ratings')
         }}
-        className={navActionBaseClass({
-          layout: 'flex cursor-pointer items-center justify-center gap-2 w-full',
-          className: `${activeView === 'ratings' ? 'flex-1' : 'w-full'} ${
-            activeView === 'ratings'
-              ? NAV_ACTION_TONES.active
-              : NAV_ACTION_TONES.muted
-          }`,
+        className={navActionClass({
+          className: activeView === 'ratings' ? 'flex-1' : 'w-full',
+          tone: 'toggle',
+          isActive: activeView === 'ratings',
         })}
       >
         {activeView === 'ratings' ? (
           <>
-            <Icon icon="solar:arrow-left-bold" size={16} />
+            <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_ICON.default} />
             Back
           </>
         ) : (
           <>
-            <Icon icon="solar:chart-square-bold" size={16} />
+            <Icon
+              icon="solar:chart-square-bold"
+              size={NAV_ACTION_ICON.default}
+            />
             Ratings
           </>
         )}
@@ -98,19 +102,14 @@ export default function TVAction({ activeView, setActiveView }) {
           type="button"
           onClick={handleCapture}
           disabled={capturing}
-          className={navActionBaseClass({
-            layout:
-              'flex cursor-pointer items-center justify-center gap-2 w-full',
-            className: `flex-1 bg-white/5 text-white/50 ring-1 ring-white/10 ${
-              capturing
-                ? 'cursor-wait opacity-50'
-                : 'hover:bg-white/10 hover:text-white/80'
-            }`,
+          className={navActionClass({
+            tone: 'muted',
+            className: `flex-1 ${capturing ? 'cursor-wait opacity-50' : ''}`,
           })}
         >
           <Icon
             icon={capturing ? 'solar:spinner-bold' : 'solar:camera-bold'}
-            size={16}
+            size={NAV_ACTION_ICON.default}
             className={capturing ? 'animate-spin' : ''}
           />
           {capturing ? 'Capturing' : 'Capture'}

@@ -45,12 +45,12 @@ const getStatusTheme = (type) => {
     },
     icon: {
       background: iconBg,
-      color: '#ffffff',
+      color: 'var(--color-white)',
     },
     shortcutBadge: {
       background: badgeBg,
       borderColor: badgeBorder,
-      color: '#ffffff',
+      color: 'var(--color-white)',
       opacity: 1,
     },
   }

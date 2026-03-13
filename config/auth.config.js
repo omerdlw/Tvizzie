@@ -1,3 +1,4 @@
+import { AUTH_API_URL } from '@/lib/constants'
 import { createApiAuthAdapter, createFirebaseAuthAdapter } from '@/modules/auth'
 import {
   auth,
@@ -5,7 +6,6 @@ import {
   isFirebaseConfigured,
 } from '@/services/firebase.service'
 
-const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || ''
 const FIREBASE_AUTH_ENABLED = Boolean(isFirebaseConfigured && auth)
 const API_AUTH_ENABLED = Boolean(AUTH_API_URL)
 

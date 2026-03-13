@@ -3,10 +3,15 @@
 import { cn } from '@/lib/utils'
 import Icon from '@/ui/icon'
 
-function Title({ title, description, close }) {
+function Title({ title, description, label, close }) {
   return (
     <div className="flex w-full items-center justify-between space-x-4 p-3 border-b border-white/10 sm:space-x-8">
-      <div className="space-y-0.5">
+      <div className="space-y-0.5 ml-3">
+        {label && (
+          <p className="text-[10px] font-bold tracking-[0.2em] text-white/45 uppercase">
+            {label}
+          </p>
+        )}
         {description && (
           <p className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
             {description}
@@ -38,6 +43,7 @@ export default function Container({ children, className, header, close }) {
       {header?.title && (
         <Title
           description={header.description}
+          label={header.label}
           title={header.title}
           close={close}
         />

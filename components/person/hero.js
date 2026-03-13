@@ -1,12 +1,13 @@
 'use client'
 
+import { TMDB_IMG } from '@/lib/constants'
+
 import { useState } from 'react'
 
 import Image from 'next/image'
 
 import Icon from '@/ui/icon'
 
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 export default function PersonHero({ person }) {
   const [hasError, setHasError] = useState(false)

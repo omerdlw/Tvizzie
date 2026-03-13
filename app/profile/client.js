@@ -20,14 +20,15 @@ import FollowListModal from '@/components/modals/follow-list-modal'
 import ListEditorModal from '@/components/modals/list-editor-modal'
 import ProfileEditorModal from '@/components/modals/profile-editor-modal'
 import ProfileAction from '@/components/nav-actions/profile-action'
-import {
-  EmptyState,
-  FullScreenEmptyState,
-} from '@/components/profile/empty-state'
 import { ProfileHero } from '@/components/profile/hero'
 import { ListCard } from '@/components/profile/list-card'
 import { MediaGrid } from '@/components/profile/media-grid'
 import { SortSelect } from '@/components/profile/sort-select'
+import {
+  EmptyState,
+  FullScreenEmptyState,
+} from '@/components/shared/empty-state'
+import { DURATION, EASING } from '@/lib/constants'
 import { useRegistry } from '@/lib/hooks/use-registry'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/modules/auth'
@@ -275,14 +276,17 @@ export default function ProfilePage({
 
   const handleEditList = (list) => {
     if (!isOwner) return
-    openModal('LIST_EDITOR_MODAL', { desktop: 'center', mobile: 'bottom' }, {
-      data: {
-        isOwner: true,
-        userId: auth.user.id,
-        initialData: list,
-      },
-      title: 'Edit Custom List',
-    })
+    openModal(
+      'LIST_EDITOR_MODAL',
+      { desktop: 'center', mobile: 'bottom' },
+      {
+        data: {
+          isOwner: true,
+          userId: auth.user.id,
+          initialData: list,
+        },
+      }
+    )
   }
 
   function handleDeleteList(list) {
@@ -367,10 +371,12 @@ export default function ProfilePage({
       const title = isFollowersType ? 'Followers' : 'Following'
 
       openModal('FOLLOW_LIST_MODAL', 'bottom', {
+        header: {
+          title,
+        },
         data: {
           userId: resolvedUserId,
           type: isFollowersType ? 'followers' : 'following',
-          title,
         },
       })
     },
@@ -388,19 +394,25 @@ export default function ProfilePage({
   async function handleCreateList() {
     if (!isOwner) return
 
-    openModal('LIST_EDITOR_MODAL', { desktop: 'center', mobile: 'bottom' }, {
-      data: {
-        isOwner: true,
-        userId: auth.user.id,
-        onSuccess: (nextList) => {
-          updateQuery({
-            list: nextList.id,
-            tab: 'lists',
-          })
+    openModal(
+      'LIST_EDITOR_MODAL',
+      { desktop: 'center', mobile: 'bottom' },
+      {
+        header: {
+          title: 'Create Custom List',
         },
-      },
-      title: 'Create Custom List',
-    })
+        data: {
+          isOwner: true,
+          userId: auth.user.id,
+          onSuccess: (nextList) => {
+            updateQuery({
+              list: nextList.id,
+              tab: 'lists',
+            })
+          },
+        },
+      }
+    )
   }
 
   async function handleRemoveListItem(item) {
@@ -463,10 +475,10 @@ export default function ProfilePage({
     background: {
       image: profile?.bannerUrl || undefined,
       noiseStyle: {
-        opacity: 0.25,
+        opacity: 0.4,
       },
       overlay: true,
-      overlayOpacity: profile?.bannerUrl ? 0.78 : 0.92,
+      overlayOpacity: 0.8,
     },
     modal: {
       CONFIRMATION_MODAL: ConfirmationModal,
@@ -768,7 +780,7 @@ export default function ProfilePage({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: DURATION.SNAPPY, ease: EASING.STANDARD }}
         >
           {activeTab === 'favorites' ? (
             favorites.length === 0 ? (

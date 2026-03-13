@@ -6,13 +6,12 @@ import ContentRow from '@/components/home/content-row'
 import HomeDiscover from '@/components/home/discover'
 import HeroSpotlight from '@/components/home/hero-spotlight'
 import SearchAction from '@/components/nav-actions/search-action'
+import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
 import { useRegistry } from '@/lib/hooks/use-registry'
 import { useBackgroundActions } from '@/modules/background/context'
 import { useNavHeight } from '@/modules/nav/hooks'
 import { ImdbService } from '@/services/imdb.service'
 import { TmdbService } from '@/services/tmdb.service'
-
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 export default function Page() {
   const [data, setData] = useState({})
@@ -55,7 +54,7 @@ export default function Page() {
           opacity: 0.5,
         },
         animation: {
-          transition: { duration: 1, ease: [0.25, 0.1, 0.25, 1] },
+          transition: { duration: DURATION.HERO, ease: EASING.STANDARD },
           initial: { opacity: 0 },
           animate: { opacity: 1 },
           exit: { opacity: 0 },

@@ -3,6 +3,7 @@
 import { Reorder, useDragControls } from 'framer-motion'
 
 import ContentCard from '@/components/home/content-card'
+import { DURATION } from '@/lib/constants'
 import Icon from '@/ui/icon/index'
 
 function ReorderableItem({ item, index, renderOverlay }) {
@@ -16,18 +17,21 @@ function ReorderableItem({ item, index, renderOverlay }) {
       className="relative w-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{
+        duration: DURATION.NORMAL,
+        delay: index * DURATION.STAGGER,
+      }}
     >
       <div className="relative h-full w-full">
         <ContentCard
           item={item}
-          className="w-full transition-transform duration-500 hover:scale-[1.02]"
+          className="w-full transition-transform duration-[var(--motion-duration-moderate)] hover:scale-[1.02]"
         />
 
         {/* Drag Handle */}
         <div
           onPointerDown={(e) => controls.start(e)}
-          className="absolute top-2 left-2 z-20 flex size-9 cursor-grab items-center justify-center rounded-xl bg-black/60 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black/80 active:scale-90 active:cursor-grabbing"
+          className="absolute top-2 left-2 z-20 flex size-9 cursor-grab items-center justify-center rounded-xl bg-black/60 text-white shadow-lg backdrop-blur-sm transition-all hover:bg-black/80 active:scale-90 active:cursor-grabbing"
         >
           <Icon icon="solar:reorder-bold" size={18} />
         </div>
@@ -71,11 +75,11 @@ export function MediaGrid({
         <div
           key={item.id || item.mediaKey || index}
           className="fade-up relative w-full"
-          style={{ '--delay': `${index * 0.05}s` }}
+          style={{ '--delay': `${index * DURATION.STAGGER}s` }}
         >
           <ContentCard
             item={item}
-            className="w-full transition-transform duration-500 hover:scale-[1.03]"
+            className="w-full transition-transform duration-[var(--motion-duration-moderate)] hover:scale-[1.03]"
           />
           {typeof renderOverlay === 'function' ? renderOverlay(item) : null}
         </div>

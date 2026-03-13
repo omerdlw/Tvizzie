@@ -7,6 +7,8 @@ import { useToast } from '@/modules/notification/hooks'
 import { createUserList, updateUserList } from '@/services/lists.service'
 import { Button, Input, Textarea } from '@/ui/elements'
 
+import { MODAL_BUTTON, MODAL_FIELD, MODAL_LAYOUT } from './constants'
+
 export default function ListEditorModal({ close, data, header }) {
   const toast = useToast()
   const { isOwner, userId, initialData = null, onSuccess } = data || {}
@@ -80,7 +82,7 @@ export default function ListEditorModal({ close, data, header }) {
       >
         <div className="space-y-5 p-2">
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className={MODAL_FIELD.label}>
               List Title
             </label>
             <Input
@@ -88,14 +90,13 @@ export default function ListEditorModal({ close, data, header }) {
               onChange={(event) => handleChange('title', event.target.value)}
               placeholder="e.g. 90s Sci-Fi Essentials"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className={MODAL_FIELD.label}>
               Cover Image URL
             </label>
             <Input
@@ -103,14 +104,13 @@ export default function ListEditorModal({ close, data, header }) {
               onChange={(event) => handleChange('coverUrl', event.target.value)}
               placeholder="https://"
               className={{
-                input:
-                  'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                input: MODAL_FIELD.input,
               }}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className={MODAL_FIELD.label}>
               Description
             </label>
             <Textarea
@@ -121,25 +121,24 @@ export default function ListEditorModal({ close, data, header }) {
               placeholder="Describe your collection"
               maxHeight={120}
               className={{
-                textarea:
-                  'min-h-[150px] resize-none w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                textarea: `${MODAL_FIELD.textarea} min-h-[150px]`,
               }}
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 w-full">
+        <div className={MODAL_LAYOUT.actionRow}>
           <Button
             type="button"
             onClick={close}
-            className="center w-full flex-auto h-11 rounded-[20px] border border-white/10 bg-white/5 px-6 text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white active:scale-95"
+            className={MODAL_BUTTON.secondary}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSaving}
-            className="center w-full flex-auto h-11 rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
+            className={MODAL_BUTTON.primary}
           >
             {isSaving
               ? isEditing

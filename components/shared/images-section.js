@@ -5,10 +5,10 @@ import { useCallback, useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import Carousel from '@/components/shared/carousel'
+import SegmentedControl from '@/components/shared/segmented-control'
+import { TMDB_IMG } from '@/lib/constants'
 import { useModal } from '@/modules/modal/context'
 import Icon from '@/ui/icon'
-
-const TMDB_IMG = 'https://image.tmdb.org/t/p'
 
 const TABS = [
   {
@@ -41,14 +41,14 @@ function ImageCard({ image, index, tab }) {
 
   return (
     <div
-      className={`relative ${tab.aspect} ${tab.width} group shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:ring-white/15`}
+      className={`relative ${tab.aspect} ${tab.width} group shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] hover:bg-white/10 hover:ring-white/15`}
       onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
       onDragStart={(e) => e.preventDefault()}
     >
       <div className="relative h-full w-full overflow-hidden rounded-[16px] bg-white/5">
         {hasPath ? (
           <Image
-            className={`pointer-events-none transition-transform duration-300 group-hover:scale-105 ${isLogo ? 'object-contain p-4' : 'object-cover'}`}
+            className={`pointer-events-none transition-transform duration-[var(--motion-duration-normal)] group-hover:scale-105 ${isLogo ? 'object-contain p-4' : 'object-cover'}`}
             src={`${TMDB_IMG}/${SIZE_MAP[tab.key]}${image.file_path}`}
             sizes={tab.key === 'backdrops' ? '288px' : '144px'}
             alt={`${tab.label} ${index + 1}`}
@@ -97,23 +97,14 @@ export default function ImagesSection({ images }) {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="flex items-center">
-        <div className="flex items-center gap-1 rounded-[12px] bg-white/5 p-0.5 ring-1 ring-white/10 backdrop-blur-sm">
-          {availableTabs.map((tab) => (
-            <button
-              className={`cursor-pointer rounded-[10px] px-3 py-1 text-xs font-medium transition-all duration-200 ${
-                activeKey === tab.key
-                  ? 'bg-white/10'
-                  : 'text-white/50 hover:text-white/70'
-              }`}
-              onClick={() => handleTabChange(tab.key)}
-              key={tab.key}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SegmentedControl
+        items={availableTabs}
+        value={activeKey}
+        onChange={handleTabChange}
+        trackClassName="backdrop-blur-sm"
+        buttonClassName="py-1"
+        activeClassName="bg-white/10 text-white"
+      />
       <Carousel gap="gap-3">
         {items.map((image, index) => (
           <ImageCard

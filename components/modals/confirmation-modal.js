@@ -3,12 +3,15 @@
 import Container from '@/modules/modal/container'
 import { Button } from '@/ui/elements'
 
+import { MODAL_BUTTON, MODAL_LAYOUT } from './constants'
+
 export default function ConfirmationModal({ close, data, header }) {
   const {
     description,
     onConfirm,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
+    isDestructive = true,
   } = data || {}
 
   return (
@@ -19,22 +22,26 @@ export default function ConfirmationModal({ close, data, header }) {
             {description}
           </p>
         )}
-        <div className="flex w-full flex-col gap-3 md:flex-row md:justify-end">
+        <div className={MODAL_LAYOUT.actionRow}>
           <Button
             onClick={close}
-            className="h-12 w-full flex-auto cursor-pointer rounded-[20px] bg-white/5 px-8 text-[11px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white md:flex-initial"
+            className={`${MODAL_BUTTON.secondary} md:flex-initial`}
           >
             {cancelText}
           </Button>
           <Button
-            variant="danger"
+            variant={isDestructive ? 'destructive' : 'default'}
             onClick={() => {
               if (typeof onConfirm === 'function') {
                 onConfirm()
               }
               close()
             }}
-            className="h-12 w-full flex-auto md:flex-initial"
+            className={`${
+              isDestructive
+                ? MODAL_BUTTON.destructive
+                : MODAL_BUTTON.primary
+            } md:flex-initial`}
           >
             {confirmText}
           </Button>

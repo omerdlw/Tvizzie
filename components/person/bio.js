@@ -3,6 +3,10 @@
 import { useState } from 'react'
 
 const MAX_LINES = 4
+const STYLES = Object.freeze({
+  sectionAction:
+    'cursor-pointer text-xs font-semibold tracking-widest text-white/50 uppercase transition-colors hover:text-white/70',
+})
 
 export default function PersonBio({ biography }) {
   const [expanded, setExpanded] = useState(false)
@@ -14,7 +18,7 @@ export default function PersonBio({ biography }) {
   return (
     <div className="flex w-full flex-col gap-2">
       <p
-        className={`text-justify text-sm leading-relaxed text-white/70 transition-all duration-300 ${!expanded && isLong ? `line-clamp-${MAX_LINES}` : ''}`}
+        className={`text-justify text-sm leading-relaxed text-white/70 transition-all duration-[var(--motion-duration-normal)] ${!expanded && isLong ? `line-clamp-${MAX_LINES}` : ''}`}
         style={
           !expanded && isLong
             ? {
@@ -31,7 +35,7 @@ export default function PersonBio({ biography }) {
       {isLong && (
         <button
           onClick={() => setExpanded((prev) => !prev)}
-          className="cursor-pointer self-start text-xs font-semibold tracking-widest text-white/50 uppercase transition-colors hover:text-white/70"
+          className={`self-start ${STYLES.sectionAction}`}
         >
           {expanded ? 'Show Less' : 'Read More'}
         </button>

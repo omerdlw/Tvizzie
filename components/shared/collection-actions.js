@@ -24,18 +24,18 @@ function ActionButton({
   icon,
   label,
   onClick,
-  palette = 'yellow',
+  palette = 'neutral',
 }) {
   const paletteClasses = {
-    yellow: active
-      ? 'bg-yellow-400 text-black'
-      : 'bg-yellow-400 text-black/80 hover:text-black',
-    white: active
-      ? 'bg-white text-black'
-      : 'bg-white/10 text-white hover:bg-white/15',
-    ghost: active
-      ? 'bg-white/20 text-white'
-      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
+    favorite: active
+      ? 'border border-success/35 bg-success/15 text-success'
+      : 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
+    watchlist: active
+      ? 'border border-info/35 bg-info/15 text-info'
+      : 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
+    neutral: active
+      ? 'border border-white/20 bg-white/15 text-white'
+      : 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white',
   }
 
   return (
@@ -44,7 +44,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-[0.18em] uppercase backdrop-blur-sm transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60',
+        'group flex w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-[0.18em] uppercase backdrop-blur-sm transition-all duration-[var(--motion-duration-normal)] disabled:cursor-not-allowed disabled:opacity-60',
         paletteClasses[palette]
       )}
     >
@@ -252,7 +252,7 @@ export default function CollectionActions({ media }) {
               : 'Add Favorite'
         }
         onClick={handleFavoriteClick}
-        palette="yellow"
+        palette="favorite"
       />
 
       <ActionButton
@@ -273,14 +273,14 @@ export default function CollectionActions({ media }) {
               : 'Watchlist'
         }
         onClick={handleWatchlistClick}
-        palette="white"
+        palette="watchlist"
       />
 
       <ActionButton
         icon="solar:list-heart-bold"
         label="Add To List"
         onClick={handleOpenListPicker}
-        palette="ghost"
+        palette="neutral"
       />
     </div>
   )

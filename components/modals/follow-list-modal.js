@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
+import { EmptyState } from '@/components/shared/empty-state'
 import Container from '@/modules/modal/container'
 import {
   subscribeToFollowers,
@@ -47,36 +48,34 @@ export default function FollowListModal({ close, data, header }) {
   }
 
   return (
-    <Container header={{ ...header }} className="w-md" close={close}>
-      <div className="scrollbar-hide flex max-h-[60vh] w-full flex-col gap-4 overflow-y-auto">
+    <Container header={{ ...header }} className="w-full sm:w-[460px]" close={close}>
+      <div className="scrollbar-hide flex max-h-[60vh] w-full flex-col gap-2 overflow-y-auto p-2.5">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-16 animate-pulse border-b border-white/10 last:border-none"
+                className="h-16 animate-pulse rounded-[20px] border border-white/10 bg-white/5"
               />
             ))}
           </div>
         ) : users.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Icon
-              icon="solar:users-group-two-rounded-bold"
-              className="mb-4 text-white/50"
-              size={48}
-            />
-            <p className="text-sm text-white/40">No users found</p>
-          </div>
+          <EmptyState
+            icon="solar:users-group-two-rounded-bold"
+            title="No users found"
+            description="This list is currently empty."
+            className="py-10"
+          />
         ) : (
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
             {users.map((user) => (
               <Link
                 key={user.id}
                 href={`/profile/${user.username || user.id}`}
                 onClick={close}
-                className="group flex items-center gap-4 border-b border-white/10 p-4 transition-all last:border-none hover:bg-white/5"
+                className="group flex items-center gap-4 rounded-[20px] border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10"
               >
-                <div className="size-10 shrink-0 overflow-hidden rounded-xl border border-white/10">
+                <div className="size-10 shrink-0 overflow-hidden rounded-[14px] border border-white/10">
                   <img
                     src={getAvatarUrl(user)}
                     alt={user.displayName}
@@ -94,7 +93,7 @@ export default function FollowListModal({ close, data, header }) {
                 <Icon
                   icon="solar:alt-arrow-right-linear"
                   size={16}
-                  className="text-white/20"
+                  className="text-white/30"
                 />
               </Link>
             ))}

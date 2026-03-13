@@ -8,9 +8,12 @@ export default {
     colors: {
       white: '#ffffff',
       black: '#000000',
+      primary: '#ffffff',
+      neutral: '#94a3b8',
       error: '#ef4444',
       warning: '#f97316',
       success: '#22c55e',
+      info: '#3b82f6',
     },
     opacity: {
       '5': '0.05',

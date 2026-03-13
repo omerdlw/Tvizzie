@@ -3,10 +3,11 @@
 import { useRegistry } from '@/lib/hooks'
 import { hexToRgba } from '@/lib/utils'
 
+import NotFoundTemplate from '@/components/shared/not-found-template'
 import Template from './template'
 
 export default function NotFound() {
-  const errorColor = 'var(--color-error, #d43333)'
+  const errorColor = 'var(--color-error)'
   const alpha40 = hexToRgba(errorColor, 0.4)
   const alpha60 = hexToRgba(errorColor, 0.6)
   const alpha20 = hexToRgba(errorColor, 0.2)
@@ -27,24 +28,24 @@ export default function NotFound() {
           },
           icon: {
             background: alpha40,
-            color: '#ffffff',
+            color: 'var(--color-white)',
           },
           shortcutBadge: {
             background: alpha20,
             borderColor: alpha30,
-            color: '#ffffff',
+            color: 'var(--color-white)',
             opacity: 1,
           },
         },
         hover: {
           icon: {
             background: alpha60,
-            color: '#ffffff',
+            color: 'var(--color-white)',
           },
           shortcutBadge: {
             background: alpha20,
             borderColor: alpha40,
-            color: '#ffffff',
+            color: 'var(--color-white)',
             opacity: 1,
           },
         },
@@ -57,9 +58,10 @@ export default function NotFound() {
   return (
     <Template>
       <div className="center relative h-screen w-screen">
-        <div className="absolute top-2/4 left-2/4 flex -translate-x-2/4 -translate-y-2/4 flex-col items-center space-y-3">
-          <h1 className="text-3xl font-bold opacity-50">PAGE NOT FOUND</h1>
-        </div>
+        <NotFoundTemplate
+          title="Page not found"
+          description="The page you are looking for does not exist or is no longer available."
+        />
       </div>
     </Template>
   )
