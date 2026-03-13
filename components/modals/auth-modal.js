@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/modules/auth'
 import Container from '@/modules/modal/container'
@@ -9,7 +9,6 @@ import {
   ensureUserProfile,
   getUserIdByUsername,
   getUserProfile,
-  updateUserProfile,
   validateUsername,
 } from '@/services/profile.service'
 import { Button, Input } from '@/ui/elements'
@@ -298,18 +297,6 @@ export default function AuthModal({ close, data, header }) {
     }
   }, [isVerificationStep, verificationPayload?.resendAvailableAt])
 
-  const modalTitle = useMemo(() => {
-    if (isVerificationStep) {
-      return 'Verify Email'
-    }
-
-    if (header?.title) {
-      return header.title
-    }
-
-    return isSignUp ? 'Create Account' : 'Sign In'
-  }, [header?.title, isSignUp, isVerificationStep])
-
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -487,14 +474,10 @@ export default function AuthModal({ close, data, header }) {
         password: verificationPayload.password,
       })
 
-      await ensureUserProfile(session.user)
-      await updateUserProfile({
-        userId: session.user.id,
-        updates: {
-          displayName:
-            verificationPayload.displayName || verificationPayload.username,
-          username: verificationPayload.username,
-        },
+      await ensureUserProfile(session.user, {
+        displayName:
+          verificationPayload.displayName || verificationPayload.username,
+        username: verificationPayload.username,
       })
 
       toast.success('Your account was created successfully')

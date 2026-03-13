@@ -322,6 +322,8 @@ export function subscribeToUserProfile(userId, callback, options = {}) {
 }
 
 async function tryClaimUsernameForProfile({
+  displayName: requestedDisplayName = null,
+  failIfProfileHasUsername = false,
   user,
   username,
   preserveExisting = false,
@@ -343,13 +345,24 @@ async function tryClaimUsernameForProfile({
       const existingProfile = profileSnapshot.exists()
         ? profileSnapshot.data() || {}
         : null
-      const displayName = preserveExisting
+      const normalizedDisplayName = cleanString(requestedDisplayName)
+      const nextDisplayName = preserveExisting
         ? existingProfile?.displayName ||
+          normalizedDisplayName ||
           identity.displayName ||
           'Anonymous User'
-        : identity.displayName ||
+        : normalizedDisplayName ||
+          identity.displayName ||
           existingProfile?.displayName ||
           'Anonymous User'
+
+      if (
+        failIfProfileHasUsername &&
+        existingProfile?.username &&
+        existingProfile.username !== username
+      ) {
+        throw new Error('PROFILE_USERNAME_EXISTS')
+      }
 
       if (
         usernameSnapshot.exists() &&
@@ -362,7 +375,7 @@ async function tryClaimUsernameForProfile({
       const nextProfile = {
         ...(existingProfile || {}),
         ...(preserveExisting
-          ? {
+        ? {
               avatarUrl:
                 existingProfile?.avatarUrl || identity.avatarUrl || null,
             }
@@ -372,8 +385,8 @@ async function tryClaimUsernameForProfile({
             }),
         bannerUrl: existingProfile?.bannerUrl || null,
         description: existingProfile?.description || '',
-        displayName,
-        displayNameLower: normalizeDisplayNameSearchValue(displayName),
+        displayName: nextDisplayName,
+        displayNameLower: normalizeDisplayNameSearchValue(nextDisplayName),
         email: identity.email || existingProfile?.email || null,
         updatedAt: serverTimestamp(),
         username,
@@ -395,6 +408,14 @@ async function tryClaimUsernameForProfile({
         { merge: true }
       )
 
+      if (
+        !preserveExisting &&
+        existingProfile?.username &&
+        existingProfile.username !== username
+      ) {
+        transaction.delete(getUsernameDocRef(existingProfile.username))
+      }
+
       return true
     }
   )
@@ -402,14 +423,32 @@ async function tryClaimUsernameForProfile({
   return result
 }
 
-export async function ensureUserProfile(user = {}) {
+export async function ensureUserProfile(user = {}, options = {}) {
   const identity = createUserIdentity(user)
+  const preferredDisplayName = cleanString(options.displayName)
+  const preferredUsername = options.username
+    ? validateUsername(options.username)
+    : null
 
   if (!identity.id) {
     throw new Error('Authenticated user is required to bootstrap a profile')
   }
 
   const existingProfile = await getUserProfile(identity.id)
+
+  if (preferredUsername) {
+    await tryClaimUsernameForProfile({
+      displayName:
+        preferredDisplayName ||
+        existingProfile?.displayName ||
+        identity.displayName,
+      preserveExisting: false,
+      user: identity,
+      username: preferredUsername,
+    })
+
+    return getUserProfile(identity.id)
+  }
 
   if (existingProfile?.username) {
     const usernameSnapshot = await getDoc(
@@ -459,6 +498,8 @@ export async function ensureUserProfile(user = {}) {
 
     try {
       await tryClaimUsernameForProfile({
+        displayName: preferredDisplayName || identity.displayName,
+        failIfProfileHasUsername: true,
         preserveExisting: true,
         user: identity,
         username: candidate,
@@ -468,6 +509,10 @@ export async function ensureUserProfile(user = {}) {
     } catch (error) {
       if (error?.message === 'USERNAME_TAKEN') {
         continue
+      }
+
+      if (error?.message === 'PROFILE_USERNAME_EXISTS') {
+        return getUserProfile(identity.id)
       }
 
       throw error
