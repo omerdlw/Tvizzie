@@ -1,11 +1,10 @@
+import { TMDB_API_URL } from '@/lib/constants'
 import { ApiClient } from '@/modules/api/client'
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY
-const TMDB_BASE_URL =
-  process.env.NEXT_PUBLIC_TMDB_BASE_URL || 'https://api.themoviedb.org/3'
 
 const tmdbClient = new ApiClient({
-  baseURL: TMDB_BASE_URL,
+  baseURL: TMDB_API_URL,
   timeout: 15000,
 })
 

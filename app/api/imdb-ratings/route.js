@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { TMDB_API_URL } from '@/lib/constants'
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const id = searchParams.get('id')
@@ -13,11 +15,9 @@ export async function GET(request) {
   try {
     if (id.startsWith('tt')) {
       const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY
-      const TMDB_BASE_URL =
-        process.env.NEXT_PUBLIC_TMDB_BASE_URL || 'https://api.themoviedb.org/3'
 
       const findRes = await fetch(
-        `${TMDB_BASE_URL}/find/${id}?external_source=imdb_id&language=en-US`,
+        `${TMDB_API_URL}/find/${id}?external_source=imdb_id&language=en-US`,
         {
           headers: {
             Authorization: `Bearer ${TMDB_API_KEY}`,

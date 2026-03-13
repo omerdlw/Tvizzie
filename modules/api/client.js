@@ -1,5 +1,5 @@
+import { TMDB_API_URL } from '@/lib/constants/index'
 import { EVENT_TYPES, globalEvents } from '@/lib/events'
-import { API_URL } from '@/lib/constants'
 
 import { ApiError } from './types'
 
@@ -296,8 +296,7 @@ export class ApiClient {
         throw normalizedError
       }
 
-      const shouldRetry =
-        retriesLeft > 0 && this._isRetryable(normalizedError)
+      const shouldRetry = retriesLeft > 0 && this._isRetryable(normalizedError)
 
       if (shouldRetry) {
         const backoffDelay = delay * Math.pow(2, attempt)
@@ -447,6 +446,6 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient({
-  baseURL: API_URL,
+  baseURL: TMDB_API_URL,
   timeout: 30000,
 })
