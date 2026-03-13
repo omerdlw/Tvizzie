@@ -21,7 +21,7 @@ const Combobox = forwardRef(
       options = [],
       value,
       onChange,
-      placeholder = 'Type to search...',
+      placeholder = 'Type to search',
       filterFn,
       className,
       classNames = {},

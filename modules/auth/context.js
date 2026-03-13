@@ -129,6 +129,44 @@ export function AuthProvider({ children, config = {} }) {
     [emitAuthEvent]
   )
 
+  const setLoadingState = useCallback(() => {
+    setState((prevState) => ({
+      ...prevState,
+      error: null,
+      status: AUTH_STATUS.LOADING,
+    }))
+  }, [])
+
+  const getAdapterContext = useCallback(
+    (session = sessionRef.current) =>
+      createAdapterContext(mergedConfig, storage, session),
+    [mergedConfig, storage]
+  )
+
+  const getAdapterWithMethod = useCallback(
+    (methodName, unavailableMessage, fallbackMessage) => {
+      const adapter = adapterRef.current
+
+      if (typeof adapter?.[methodName] !== 'function') {
+        throw setAuthError(new Error(unavailableMessage), fallbackMessage)
+      }
+
+      return adapter
+    },
+    [setAuthError]
+  )
+
+  const emitSessionEvent = useCallback(
+    (eventType, session, payload = {}) => {
+      emitAuthEvent(eventType, {
+        user: session?.user || null,
+        session: session || null,
+        ...payload,
+      })
+    },
+    [emitAuthEvent]
+  )
+
   const refreshSession = useCallback(
     async ({ session: sourceSession, silent = false } = {}) => {
       const adapter = adapterRef.current
@@ -151,14 +189,11 @@ export function AuthProvider({ children, config = {} }) {
       try {
         const nextSession = await adapter.refreshSession(
           activeSession,
-          createAdapterContext(mergedConfig, storage, activeSession)
+          getAdapterContext(activeSession)
         )
         const resolvedSession = applySession(nextSession)
 
-        emitAuthEvent(EVENT_TYPES.AUTH_REFRESH, {
-          user: resolvedSession?.user || null,
-          session: resolvedSession,
-        })
+        emitSessionEvent(EVENT_TYPES.AUTH_REFRESH, resolvedSession)
 
         return resolvedSession
       } catch (error) {
@@ -174,10 +209,9 @@ export function AuthProvider({ children, config = {} }) {
     [
       applySession,
       clearSession,
-      emitAuthEvent,
-      mergedConfig,
+      emitSessionEvent,
+      getAdapterContext,
       setAuthError,
-      storage,
     ]
   )
 
@@ -220,9 +254,7 @@ export function AuthProvider({ children, config = {} }) {
       }
 
       if (!resolvedSession && adapter?.getSession) {
-        resolvedSession = await adapter.getSession(
-          createAdapterContext(mergedConfig, storage, null)
-        )
+        resolvedSession = await adapter.getSession(getAdapterContext(null))
         resolvedSession = normalizeSession(resolvedSession)
       }
 
@@ -244,7 +276,11 @@ export function AuthProvider({ children, config = {} }) {
     applySession,
     clearSession,
     emitAuthEvent,
-    mergedConfig,
+    getAdapterContext,
+    mergedConfig.enabled,
+    mergedConfig.hydrateFromStorage,
+    mergedConfig.initialSession,
+    mergedConfig.refreshLeewayMs,
     refreshSession,
     setAuthError,
     storage,
@@ -360,10 +396,8 @@ export function AuthProvider({ children, config = {} }) {
 
         if (normalizedSession) {
           applySession(normalizedSession)
-          emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
+          emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, normalizedSession, {
             source: 'adapter-subscription',
-            user: normalizedSession.user,
-            session: normalizedSession,
           })
           return
         }
@@ -375,82 +409,76 @@ export function AuthProvider({ children, config = {} }) {
           session: null,
         })
       },
-      createAdapterContext(mergedConfig, storage, sessionRef.current)
+      getAdapterContext(sessionRef.current)
     )
-  }, [applySession, clearSession, emitAuthEvent, mergedConfig, storage])
+  }, [applySession, clearSession, emitAuthEvent, emitSessionEvent, getAdapterContext])
 
   const signIn = useCallback(
     async (credentials) => {
-      const adapter = adapterRef.current
+      const adapter = getAdapterWithMethod(
+        'signIn',
+        'Active auth adapter does not implement signIn',
+        'Authentication adapter is not configured'
+      )
 
-      if (!adapter?.signIn) {
-        throw setAuthError(
-          new Error('Active auth adapter does not implement signIn'),
-          'Authentication adapter is not configured'
-        )
-      }
-
-      setState((prevState) => ({
-        ...prevState,
-        error: null,
-        status: AUTH_STATUS.LOADING,
-      }))
+      setLoadingState()
 
       try {
         const nextSession = await adapter.signIn(
           credentials,
-          createAdapterContext(mergedConfig, storage, sessionRef.current)
+          getAdapterContext()
         )
         const resolvedSession = applySession(nextSession)
 
-        emitAuthEvent(EVENT_TYPES.AUTH_SIGN_IN, {
-          user: resolvedSession?.user || null,
-          session: resolvedSession,
-        })
+        emitSessionEvent(EVENT_TYPES.AUTH_SIGN_IN, resolvedSession)
 
         return resolvedSession
       } catch (error) {
         throw setAuthError(error, 'Sign in failed')
       }
     },
-    [applySession, emitAuthEvent, mergedConfig, setAuthError, storage]
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
   )
 
   const signUp = useCallback(
     async (payload) => {
-      const adapter = adapterRef.current
+      const adapter = getAdapterWithMethod(
+        'signUp',
+        'Active auth adapter does not implement signUp',
+        'Authentication adapter is not configured'
+      )
 
-      if (!adapter?.signUp) {
-        throw setAuthError(
-          new Error('Active auth adapter does not implement signUp'),
-          'Authentication adapter is not configured'
-        )
-      }
-
-      setState((prevState) => ({
-        ...prevState,
-        error: null,
-        status: AUTH_STATUS.LOADING,
-      }))
+      setLoadingState()
 
       try {
         const nextSession = await adapter.signUp(
           payload,
-          createAdapterContext(mergedConfig, storage, sessionRef.current)
+          getAdapterContext()
         )
         const resolvedSession = applySession(nextSession)
 
-        emitAuthEvent(EVENT_TYPES.AUTH_SIGN_UP, {
-          user: resolvedSession?.user || null,
-          session: resolvedSession,
-        })
+        emitSessionEvent(EVENT_TYPES.AUTH_SIGN_UP, resolvedSession)
 
         return resolvedSession
       } catch (error) {
         throw setAuthError(error, 'Sign up failed')
       }
     },
-    [applySession, emitAuthEvent, mergedConfig, setAuthError, storage]
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
   )
 
   const signOut = useCallback(
@@ -459,17 +487,11 @@ export function AuthProvider({ children, config = {} }) {
       const previousSession = sessionRef.current
       let signOutError = null
 
-      setState((prevState) => ({
-        ...prevState,
-        error: null,
-        status: AUTH_STATUS.LOADING,
-      }))
+      setLoadingState()
 
       try {
         if (!skipAdapter && adapter?.signOut) {
-          await adapter.signOut(
-            createAdapterContext(mergedConfig, storage, previousSession)
-          )
+          await adapter.signOut(getAdapterContext(previousSession))
         }
       } catch (error) {
         signOutError = setAuthError(error, 'Sign out failed')
@@ -488,30 +510,23 @@ export function AuthProvider({ children, config = {} }) {
 
       return true
     },
-    [clearSession, emitAuthEvent, mergedConfig, setAuthError, storage]
+    [clearSession, emitAuthEvent, getAdapterContext, setAuthError, setLoadingState]
   )
 
   const updateProfile = useCallback(
     async (payload) => {
-      const adapter = adapterRef.current
+      const adapter = getAdapterWithMethod(
+        'updateProfile',
+        'Active auth adapter does not implement updateProfile',
+        'Profile updates are not supported by the current auth adapter'
+      )
 
-      if (!adapter?.updateProfile) {
-        throw setAuthError(
-          new Error('Active auth adapter does not implement updateProfile'),
-          'Profile updates are not supported by the current auth adapter'
-        )
-      }
-
-      setState((prevState) => ({
-        ...prevState,
-        error: null,
-        status: AUTH_STATUS.LOADING,
-      }))
+      setLoadingState()
 
       try {
         const response = await adapter.updateProfile(
           payload,
-          createAdapterContext(mergedConfig, storage, sessionRef.current)
+          getAdapterContext()
         )
 
         const normalizedResponse = normalizeSession(response)
@@ -521,36 +536,35 @@ export function AuthProvider({ children, config = {} }) {
 
         const resolvedSession = applySession(nextSession)
 
-        emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
-          user: resolvedSession?.user || null,
-          session: resolvedSession,
-        })
+        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession)
 
         return resolvedSession?.user || null
       } catch (error) {
         throw setAuthError(error, 'Profile update failed')
       }
     },
-    [applySession, emitAuthEvent, mergedConfig, setAuthError, storage]
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
   )
 
   const requestPasswordReset = useCallback(
     async (payload) => {
-      const adapter = adapterRef.current
-
-      if (!adapter?.requestPasswordReset) {
-        throw setAuthError(
-          new Error(
-            'Active auth adapter does not implement requestPasswordReset'
-          ),
-          'Password reset is not supported by the current auth adapter'
-        )
-      }
+      const adapter = getAdapterWithMethod(
+        'requestPasswordReset',
+        'Active auth adapter does not implement requestPasswordReset',
+        'Password reset is not supported by the current auth adapter'
+      )
 
       try {
         const response = await adapter.requestPasswordReset(
           payload,
-          createAdapterContext(mergedConfig, storage, sessionRef.current)
+          getAdapterContext()
         )
 
         emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
@@ -563,26 +577,21 @@ export function AuthProvider({ children, config = {} }) {
         throw setAuthError(error, 'Password reset request failed')
       }
     },
-    [emitAuthEvent, mergedConfig, setAuthError, storage]
+    [emitAuthEvent, getAdapterContext, getAdapterWithMethod, setAuthError]
   )
 
   const confirmPasswordReset = useCallback(
     async (payload) => {
-      const adapter = adapterRef.current
-
-      if (!adapter?.confirmPasswordReset) {
-        throw setAuthError(
-          new Error(
-            'Active auth adapter does not implement confirmPasswordReset'
-          ),
-          'Password reset confirmation is not supported by the current auth adapter'
-        )
-      }
+      const adapter = getAdapterWithMethod(
+        'confirmPasswordReset',
+        'Active auth adapter does not implement confirmPasswordReset',
+        'Password reset confirmation is not supported by the current auth adapter'
+      )
 
       try {
         const response = await adapter.confirmPasswordReset(
           payload,
-          createAdapterContext(mergedConfig, storage, sessionRef.current)
+          getAdapterContext()
         )
 
         emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
@@ -595,7 +604,7 @@ export function AuthProvider({ children, config = {} }) {
         throw setAuthError(error, 'Password reset confirmation failed')
       }
     },
-    [emitAuthEvent, mergedConfig, setAuthError, storage]
+    [emitAuthEvent, getAdapterContext, getAdapterWithMethod, setAuthError]
   )
 
   const clearError = useCallback(() => {

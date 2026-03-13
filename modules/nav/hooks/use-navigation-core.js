@@ -23,6 +23,11 @@ export const useNavigationCore = () => {
     closeModal()
   }, [closeModal])
 
+  const blurActiveElement = useCallback(() => {
+    if (typeof document === 'undefined') return
+    document.activeElement?.blur?.()
+  }, [])
+
   const navigateWithGuards = useCallback(
     async (href, { force = false } = {}) => {
       const from = pathname
@@ -30,6 +35,7 @@ export const useNavigationCore = () => {
       if (!force) {
         const guardResult = await checkGuards(href, from)
         if (guardResult.blocked) {
+          blurActiveElement()
           setPendingPath(href)
           NAV_EVENT_HANDLERS.navigateStart(href, from)
           openModal(GUARD_MODAL_KEY, 'center', {
@@ -39,6 +45,7 @@ export const useNavigationCore = () => {
             },
             data: {
               onConfirm: () => {
+                blurActiveElement()
                 setPendingPath(null)
                 closeModal()
                 router.push(href)
@@ -51,12 +58,13 @@ export const useNavigationCore = () => {
         }
       }
 
+      blurActiveElement()
       NAV_EVENT_HANDLERS.navigateStart(href, from)
       router.push(href)
       NAV_EVENT_HANDLERS.navigate(href, from)
       return true
     },
-    [cancelNavigation, closeModal, openModal, pathname, router]
+    [blurActiveElement, cancelNavigation, closeModal, openModal, pathname, router]
   )
 
   useEffect(() => {

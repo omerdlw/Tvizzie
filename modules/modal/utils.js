@@ -73,46 +73,6 @@ export const getModalVariants = (position) => {
         transition: BASE_EXIT_TRANSITION,
       },
     },
-    [MODAL_POSITIONS.TOP_LEFT]: {
-      hidden: { x: '-100%', y: '-100%', opacity: 0 },
-      visible: { x: 0, y: 0, opacity: 1, transition: SMOOTH_TRANSITION },
-      exit: {
-        x: '-100%',
-        y: '-100%',
-        opacity: 0,
-        transition: BASE_EXIT_TRANSITION,
-      },
-    },
-    [MODAL_POSITIONS.TOP_RIGHT]: {
-      hidden: { x: '100%', y: '-100%', opacity: 0 },
-      visible: { x: 0, y: 0, opacity: 1, transition: SMOOTH_TRANSITION },
-      exit: {
-        x: '100%',
-        y: '-100%',
-        opacity: 0,
-        transition: BASE_EXIT_TRANSITION,
-      },
-    },
-    [MODAL_POSITIONS.BOTTOM_LEFT]: {
-      hidden: { x: '-100%', y: '100%', opacity: 0 },
-      visible: { x: 0, y: 0, opacity: 1, transition: SMOOTH_TRANSITION },
-      exit: {
-        x: '-100%',
-        y: '100%',
-        opacity: 0,
-        transition: BASE_EXIT_TRANSITION,
-      },
-    },
-    [MODAL_POSITIONS.BOTTOM_RIGHT]: {
-      hidden: { x: '100%', y: '100%', opacity: 0 },
-      visible: { x: 0, y: 0, opacity: 1, transition: SMOOTH_TRANSITION },
-      exit: {
-        x: '100%',
-        y: '100%',
-        opacity: 0,
-        transition: BASE_EXIT_TRANSITION,
-      },
-    },
   }
 
   return variants[position] || variants[MODAL_POSITIONS.CENTER]
@@ -122,12 +82,8 @@ export const POSITION_CLASSES = {
   [MODAL_POSITIONS.CENTER]: 'items-center justify-center',
   [MODAL_POSITIONS.TOP]: 'items-center justify-start',
   [MODAL_POSITIONS.BOTTOM]: 'items-center justify-end',
-  [MODAL_POSITIONS.LEFT]: 'items-start justify-center',
-  [MODAL_POSITIONS.RIGHT]: 'items-end justify-center',
-  [MODAL_POSITIONS.TOP_LEFT]: 'items-start justify-start',
-  [MODAL_POSITIONS.TOP_RIGHT]: 'items-end justify-start',
-  [MODAL_POSITIONS.BOTTOM_LEFT]: 'items-start justify-end',
-  [MODAL_POSITIONS.BOTTOM_RIGHT]: 'items-end justify-end',
+  [MODAL_POSITIONS.LEFT]: 'items-start justify-start',
+  [MODAL_POSITIONS.RIGHT]: 'items-end justify-start',
 }
 
 export const BACKDROP_VARIANTS = {

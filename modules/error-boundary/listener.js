@@ -17,17 +17,17 @@ const ERROR_CONFIG = {
 }
 
 function formatErrorMessage(error) {
-  if (!error) return 'An unexpected error occurred.'
+  if (!error) return 'An unexpected error occurred'
 
   if (typeof error === 'string') return error
 
   if (error.message) {
     const msg = error.message
-    if (msg.length > 100) return msg.substring(0, 100) + '...'
+    if (msg.length > 100) return msg.substring(0, 100)
     return msg
   }
 
-  return 'An unexpected error occurred.'
+  return 'An unexpected error occurred'
 }
 
 function shouldIgnoreError(error) {

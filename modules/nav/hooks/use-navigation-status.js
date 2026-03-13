@@ -96,6 +96,28 @@ export const useNavigationStatus = () => {
 
   const apiErrorQueue = useRef([])
   const batchTimeout = useRef(null)
+  const statusClearTimeout = useRef(null)
+  const onlineResetTimeout = useRef(null)
+  const offlineDispatchTimeout = useRef(null)
+
+  const clearTimer = useCallback((timerRef) => {
+    if (!timerRef.current) return
+    clearTimeout(timerRef.current)
+    timerRef.current = null
+  }, [])
+
+  const scheduleStatusClear = useCallback(
+    (duration = 4500) => {
+      clearTimer(statusClearTimeout)
+      statusClearTimeout.current = setTimeout(() => {
+        statusClearTimeout.current = null
+        setStatus((current) =>
+          current?.type === 'LOGIN' || current?.type === 'LOGOUT' ? null : current
+        )
+      }, duration)
+    },
+    [clearTimer]
+  )
 
   const updateStatus = useCallback((newStatus) => {
     setStatus((prev) => {
@@ -115,13 +137,17 @@ export const useNavigationStatus = () => {
     setStatus((prev) => {
       if (prev && STATUS_TYPES.ERROR.includes(prev.type)) {
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
-          setTimeout(() => window.dispatchEvent(new Event('offline')), 0)
+          clearTimer(offlineDispatchTimeout)
+          offlineDispatchTimeout.current = setTimeout(() => {
+            offlineDispatchTimeout.current = null
+            window.dispatchEvent(new Event('offline'))
+          }, 0)
         }
         return null
       }
       return prev
     })
-  }, [pathname])
+  }, [clearTimer, pathname])
 
   useEffect(() => {
     const unsubscribeApiError = globalEvents.subscribe(
@@ -148,8 +174,8 @@ export const useNavigationStatus = () => {
             ? 'Multiple API Errors'
             : `API Error (${errors[0].status || 'Network'})`
           const description = isBatch
-            ? `${errors.length} requests failed.`
-            : errors[0].message || 'An error occurred during the request.'
+            ? `${errors.length} requests failed`
+            : errors[0].message || 'An error occurred during the request'
 
           updateStatus({
             type: 'API_ERROR',
@@ -181,7 +207,7 @@ export const useNavigationStatus = () => {
         const { message, error, resetError } = eventData || {}
         const title = error?.name || 'Application Error'
         const description =
-          error?.message || message || 'An unexpected error occurred.'
+          error?.message || message || 'An unexpected error occurred'
 
         updateStatus({
           type: 'APP_ERROR',
@@ -201,10 +227,11 @@ export const useNavigationStatus = () => {
                         typeof navigator !== 'undefined' &&
                         !navigator.onLine
                       ) {
-                        setTimeout(
-                          () => window.dispatchEvent(new Event('offline')),
-                          0
-                        )
+                        clearTimer(offlineDispatchTimeout)
+                        offlineDispatchTimeout.current = setTimeout(() => {
+                          offlineDispatchTimeout.current = null
+                          window.dispatchEvent(new Event('offline'))
+                        }, 0)
                       }
                     }
                   : null
@@ -215,7 +242,7 @@ export const useNavigationStatus = () => {
                   error?.stack ||
                     error?.message ||
                     message ||
-                    'No detailed error information available.'
+                    'No detailed error information available'
                 )
               }
             />
@@ -236,7 +263,7 @@ export const useNavigationStatus = () => {
           type: 'LOGOUT',
           isOverlay: true,
           title: user.name || user.email || 'User',
-          description: 'Logging out...',
+          description: 'Logging out',
           icon:
             user.avatarUrl ||
             `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
@@ -245,7 +272,7 @@ export const useNavigationStatus = () => {
           hideScroll: true,
         })
 
-        setTimeout(clearStatus, 4500)
+        scheduleStatusClear(4500)
       }
     )
 
@@ -259,7 +286,7 @@ export const useNavigationStatus = () => {
           type: 'LOGIN',
           isOverlay: true,
           title: user.name || user.email || 'User',
-          description: 'Logging in...',
+          description: 'Logging in',
           icon:
             user.avatarUrl ||
             `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
@@ -268,7 +295,7 @@ export const useNavigationStatus = () => {
           hideScroll: true,
         })
 
-        setTimeout(clearStatus, 4500)
+        scheduleStatusClear(4500)
       }
     )
 
@@ -277,7 +304,7 @@ export const useNavigationStatus = () => {
         type: 'OFFLINE',
         isOverlay: true,
         title: 'Connection Lost',
-        description: 'You are currently offline.',
+        description: 'You are currently offline',
         icon: <WifiOff size={24} />,
         style: getStatusTheme('OFFLINE'),
         hideSettings: true,
@@ -289,7 +316,9 @@ export const useNavigationStatus = () => {
       setStatus((prev) => {
         if (prev?.type !== 'OFFLINE') return null
 
-        setTimeout(() => {
+        clearTimer(onlineResetTimeout)
+        onlineResetTimeout.current = setTimeout(() => {
+          onlineResetTimeout.current = null
           setStatus((current) => (current?.type === 'ONLINE' ? null : current))
         }, 4500)
 
@@ -297,7 +326,7 @@ export const useNavigationStatus = () => {
           type: 'ONLINE',
           isOverlay: false,
           title: 'Connection Restored',
-          description: 'You are back online.',
+          description: 'You are back online',
           icon: <Wifi size={24} />,
           style: getStatusTheme('ONLINE'),
           hideSettings: true,
@@ -318,11 +347,14 @@ export const useNavigationStatus = () => {
       unsubscribeApiError()
       unsubscribeSignOut()
       unsubscribeSignIn()
-      if (batchTimeout.current) clearTimeout(batchTimeout.current)
+      clearTimer(batchTimeout)
+      clearTimer(statusClearTimeout)
+      clearTimer(onlineResetTimeout)
+      clearTimer(offlineDispatchTimeout)
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('online', handleOnline)
     }
-  }, [updateStatus, clearStatus])
+  }, [clearStatus, clearTimer, scheduleStatusClear, updateStatus])
 
   return status
 }

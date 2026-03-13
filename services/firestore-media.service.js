@@ -18,7 +18,7 @@ const COLLECTIONS = {
 function ensureFirestore() {
   if (!firestore) {
     throw new Error(
-      'Cloud Firestore is not configured. Check your Firebase environment variables before using media data.'
+      'Cloud Firestore is not configured. Check your Firebase environment variables before using media data'
     )
   }
 
@@ -68,6 +68,12 @@ export function getUserDocRef(userId) {
   }
 
   return doc(db, COLLECTIONS.USERS, userId)
+}
+
+export function getUsersCollection() {
+  const db = ensureFirestore()
+
+  return collection(db, COLLECTIONS.USERS)
 }
 
 export function getUserFavoritesCollection(userId) {

@@ -23,7 +23,7 @@ const MultiSelect = forwardRef(
       onChange,
       maxSelect,
       checkboxPosition = 'left',
-      placeholder = 'Select...',
+      placeholder = 'Select',
       className,
       classNames = {},
       externalClasses = {},

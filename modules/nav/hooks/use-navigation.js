@@ -28,7 +28,13 @@ export const useNavigation = () => {
     navigationItems,
     activeItem,
   })
-  useRouteChangeEffects(setExpanded, setSearchQuery, setIsHovered)
+  useRouteChangeEffects(
+    pathname,
+    expandedState.expandParentForPath,
+    setExpanded,
+    setSearchQuery,
+    setIsHovered
+  )
   const activeItemHasAction = !!activeItem?.action
 
   return {

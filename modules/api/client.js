@@ -250,6 +250,8 @@ export class ApiClient {
           data && typeof data === 'object' && 'message' in data
             ? data.message
             : `HTTP ${response.status}`
+        const willRetryResponse =
+          retriesLeft > 0 && this.retryConfig.retryOn.includes(response.status)
 
         if (!options.silent) {
           if (response.status === HTTP_STATUS.UNAUTHORIZED)
@@ -257,7 +259,7 @@ export class ApiClient {
           else if (response.status === HTTP_STATUS.FORBIDDEN)
             globalEvents.emit(EVENT_TYPES.API_FORBIDDEN)
 
-          if (options.critical) {
+          if (options.critical && !willRetryResponse) {
             globalEvents.emit(EVENT_TYPES.API_ERROR, {
               status: response.status,
               message: errorMessage,
@@ -287,16 +289,23 @@ export class ApiClient {
         data,
       }
     } catch (error) {
-      const shouldRetry = retriesLeft > 0 && this._isRetryable(error)
+      const normalizedError = this._normalizeRequestError(error, options)
+
+      if (normalizedError.name === 'AbortError' && options.signal?.aborted) {
+        throw normalizedError
+      }
+
+      const shouldRetry =
+        retriesLeft > 0 && this._isRetryable(normalizedError)
 
       if (shouldRetry) {
         const backoffDelay = delay * Math.pow(2, attempt)
         const retryInfo = {
-          maxRetries: this.retryConfig.maxRetries,
+          maxRetries: options.maxRetries ?? this.retryConfig.maxRetries,
           delay: backoffDelay,
           attempt: attempt + 1,
           endpoint,
-          error,
+          error: normalizedError,
         }
 
         globalEvents.emit(EVENT_TYPES.API_RETRY, retryInfo)
@@ -304,72 +313,84 @@ export class ApiClient {
         if (onRetry) {
           try {
             onRetry(retryInfo)
-          } catch {
-            // ignore error
+          } catch (retryError) {
+            void retryError
           }
+        }
 
-          await new Promise((r) => setTimeout(r, backoffDelay))
-          return this._executeWithRetry(
+        await new Promise((r) => setTimeout(r, backoffDelay))
+
+        return this._executeWithRetry(
+          endpoint,
+          options,
+          retriesLeft - 1,
+          delay,
+          attempt + 1,
+          onRetry
+        )
+      }
+
+      if (
+        normalizedError instanceof ApiError &&
+        !(normalizedError.response && normalizedError.status > 0)
+      ) {
+        this._emitCriticalError(
+          options,
+          normalizedError.status || 0,
+          normalizedError.message || 'Network error',
+          this._createRetryHandler(
             endpoint,
             options,
-            retriesLeft - 1,
+            retriesLeft,
             delay,
-            attempt + 1,
+            attempt,
             onRetry
           )
-        }
-
-        if (error.name === 'AbortError') {
-          if (options.signal?.aborted) throw error
-          const timeoutError = new ApiError('Request timeout', 408)
-
-          if (!options.silent && options.critical) {
-            globalEvents.emit(EVENT_TYPES.API_ERROR, {
-              status: 408,
-              message: 'Request timeout',
-              isCritical: true,
-              retry:
-                options.retryCallback ||
-                (() =>
-                  this._executeWithRetry(
-                    endpoint,
-                    options,
-                    retriesLeft,
-                    delay,
-                    attempt,
-                    onRetry
-                  )),
-            })
-          }
-
-          throw await this.runErrorInterceptors(timeoutError)
-        }
-        if (error instanceof ApiError)
-          throw await this.runErrorInterceptors(error)
-
-        const networkError = new ApiError(error.message || 'Network error', 0)
-        if (!options.silent && options.critical && !error.status) {
-          globalEvents.emit(EVENT_TYPES.API_ERROR, {
-            status: 0,
-            message: 'Network error',
-            isCritical: true,
-            retry:
-              options.retryCallback ||
-              (() =>
-                this._executeWithRetry(
-                  endpoint,
-                  options,
-                  retriesLeft,
-                  delay,
-                  attempt,
-                  onRetry
-                )),
-          })
-        }
-
-        throw await this.runErrorInterceptors(networkError)
+        )
       }
+
+      throw await this.runErrorInterceptors(normalizedError)
     }
+  }
+
+  _createRetryHandler(endpoint, options, retriesLeft, delay, attempt, onRetry) {
+    if (typeof options.retryCallback === 'function') {
+      return options.retryCallback
+    }
+
+    return () =>
+      this._executeWithRetry(
+        endpoint,
+        options,
+        retriesLeft,
+        delay,
+        attempt,
+        onRetry
+      )
+  }
+
+  _emitCriticalError(options, status, message, retry) {
+    if (options.silent || !options.critical) return
+
+    globalEvents.emit(EVENT_TYPES.API_ERROR, {
+      isCritical: true,
+      message,
+      status,
+      retry,
+    })
+  }
+
+  _normalizeRequestError(error, options) {
+    if (error?.name === 'AbortError') {
+      if (options.signal?.aborted) return error
+      return new ApiError('Request timeout', 408)
+    }
+
+    if (error instanceof ApiError) {
+      return error
+    }
+
+    return new ApiError(error?.message || 'Network error', error?.status || 0)
   }
 
   _isRetryable(error) {

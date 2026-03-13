@@ -26,19 +26,19 @@ const RESERVED_CLAIM_KEYS = new Set([
 
 const AUTH_ERROR_MESSAGES = {
   'auth/cancelled-popup-request':
-    'Another sign-in window is already open. Please complete that flow first.',
+    'Another sign-in window is already open Please complete that flow first',
   'auth/network-request-failed':
-    'Authentication failed because the network request did not complete.',
+    'Authentication failed because the network request did not complete',
   'auth/operation-not-supported-in-this-environment':
-    'This browser environment does not support the selected sign-in flow.',
+    'This browser environment does not support the selected sign-in flow',
   'auth/popup-blocked':
-    'The sign-in popup was blocked by the browser. Allow popups and try again.',
+    'The sign-in popup was blocked by the browser Allow popups and try again',
   'auth/popup-closed-by-user':
-    'The sign-in popup was closed before the flow completed.',
+    'The sign-in popup was closed before the flow completed',
   'auth/unauthorized-domain':
-    'This domain is not authorized in Firebase Authentication. Add the current domain in Firebase Console > Authentication > Settings > Authorized domains.',
+    'This domain is not authorized in Firebase Authentication Add the current domain in Firebase Console > Authentication > Settings > Authorized domains',
   'auth/web-storage-unsupported':
-    'Authentication requires browser storage, but it is unavailable in this environment.',
+    'Authentication requires browser storage, but it is unavailable in this environment',
 }
 
 function toArray(value) {

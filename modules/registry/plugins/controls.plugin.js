@@ -1,5 +1,6 @@
 import { REGISTRY_TYPES } from '../context'
 import { createPlugin } from './create-plugin'
+import { splitRegistryConfig } from './registry-meta'
 
 export const controlsPlugin = createPlugin({
   name: 'controls',
@@ -7,10 +8,18 @@ export const controlsPlugin = createPlugin({
     const controls = config?.controls
     if (!controls) return
 
-    register(REGISTRY_TYPES.CONTROLS, 'page-controls', controls, 'dynamic')
+    const { payload, registerOptions, source } = splitRegistryConfig(controls)
+
+    register(
+      REGISTRY_TYPES.CONTROLS,
+      'page-controls',
+      payload,
+      source,
+      registerOptions
+    )
 
     return () => {
-      unregister(REGISTRY_TYPES.CONTROLS, 'page-controls', 'dynamic')
+      unregister(REGISTRY_TYPES.CONTROLS, 'page-controls', source)
     }
   },
 })

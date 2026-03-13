@@ -17,8 +17,8 @@ const AsyncSelect = forwardRef(
       debounceMs = 300,
       value,
       onChange,
-      placeholder = 'Select...',
-      searchPlaceholder = 'Type to search...',
+      placeholder = 'Select',
+      searchPlaceholder = 'Type to search',
       className,
       classNames = {},
       externalClasses = {},
@@ -109,7 +109,7 @@ const AsyncSelect = forwardRef(
               {isLoading ? (
                 <div className={cn(classes.loading, externalClasses.loading)}>
                   <Loader2 size={16} className="animate-spin" />
-                  <span>Loading...</span>
+                  <span>Loading</span>
                 </div>
               ) : options.length === 0 ? (
                 <div className={cn(classes.noResults)}>

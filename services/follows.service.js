@@ -14,7 +14,7 @@ import {
 
 export async function followUser(followerId, followingId) {
   if (!followerId || !followingId) throw new Error('Invalid user IDs')
-  if (followerId === followingId) throw new Error('You cannot follow yourself.')
+  if (followerId === followingId) throw new Error('You cannot follow yourself')
 
   const followingRef = doc(getUserFollowingCollection(followerId), followingId)
   const followerRef = doc(getUserFollowersCollection(followingId), followerId)

@@ -66,13 +66,7 @@ function useDefaultNavActions() {
         order: -100,
         onClick: (e) => {
           e.stopPropagation()
-          openModal('SETTINGS_MODAL', 'center', {
-            full: false,
-            header: {
-              description: 'Configure your preferences',
-              title: 'Settings',
-            },
-          })
+          openModal('SETTINGS_MODAL', 'center')
         },
       },
     ],

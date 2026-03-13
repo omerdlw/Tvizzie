@@ -6,6 +6,8 @@ import { toPng } from 'html-to-image'
 
 import Icon from '@/ui/icon'
 
+import { NAV_ACTION_TONES, navActionBaseClass } from './constants'
+
 export default function TVAction({ activeView, setActiveView }) {
   const [capturing, setCapturing] = useState(false)
 
@@ -63,16 +65,20 @@ export default function TVAction({ activeView, setActiveView }) {
   return (
     <div className="mt-2.5 flex w-full items-center gap-2">
       <button
+        type="button"
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
           setActiveView(activeView === 'ratings' ? 'tv-page' : 'ratings')
         }}
-        className={`flex ${activeView === 'ratings' ? 'flex-1' : 'w-full'} cursor-pointer items-center justify-center gap-2 rounded-[20px] px-4 py-2.5 text-[11px] font-semibold tracking-widest uppercase transition-all duration-300 ${
-          activeView === 'ratings'
-            ? 'bg-white/15 text-white ring-1 ring-white/15'
-            : 'bg-white/5 text-white/50 ring-1 ring-white/10 hover:bg-white/10 hover:text-white/80'
-        }`}
+        className={navActionBaseClass({
+          layout: 'flex cursor-pointer items-center justify-center gap-2 w-full',
+          className: `${activeView === 'ratings' ? 'flex-1' : 'w-full'} ${
+            activeView === 'ratings'
+              ? NAV_ACTION_TONES.active
+              : NAV_ACTION_TONES.muted
+          }`,
+        })}
       >
         {activeView === 'ratings' ? (
           <>
@@ -89,20 +95,25 @@ export default function TVAction({ activeView, setActiveView }) {
 
       {activeView === 'ratings' && (
         <button
+          type="button"
           onClick={handleCapture}
           disabled={capturing}
-          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[20px] bg-white/5 px-4 py-2.5 text-[11px] font-semibold tracking-widest text-white/50 uppercase ring-1 ring-white/10 transition-all duration-300 ${
-            capturing
-              ? 'cursor-wait opacity-50'
-              : 'hover:bg-white/10 hover:text-white/80'
-          }`}
+          className={navActionBaseClass({
+            layout:
+              'flex cursor-pointer items-center justify-center gap-2 w-full',
+            className: `flex-1 bg-white/5 text-white/50 ring-1 ring-white/10 ${
+              capturing
+                ? 'cursor-wait opacity-50'
+                : 'hover:bg-white/10 hover:text-white/80'
+            }`,
+          })}
         >
           <Icon
             icon={capturing ? 'solar:spinner-bold' : 'solar:camera-bold'}
             size={16}
             className={capturing ? 'animate-spin' : ''}
           />
-          {capturing ? 'Capturing...' : 'Capture'}
+          {capturing ? 'Capturing' : 'Capture'}
         </button>
       )}
     </div>

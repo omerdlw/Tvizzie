@@ -11,11 +11,11 @@ import { AppProviders } from './providers'
 
 export const metadata = {
   description:
-    'Discover, track, and review your favorite movies and TV series.',
+    'Discover, track, and review your favorite movies and TV series',
   title: 'Tvizzie',
   openGraph: {
     description:
-      'Discover, track, and review your favorite movies and TV series.',
+      'Discover, track, and review your favorite movies and TV series',
     title: 'Tvizzie',
     type: 'website',
   },

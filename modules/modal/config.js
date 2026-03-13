@@ -6,10 +6,24 @@ export const MODAL_POSITIONS = {
   RIGHT: 'right',
   LEFT: 'left',
   TOP: 'top',
-  TOP_LEFT: 'top-left',
-  TOP_RIGHT: 'top-right',
-  BOTTOM_LEFT: 'bottom-left',
-  BOTTOM_RIGHT: 'bottom-right',
+}
+
+export const MODAL_CHROME = {
+  PANEL: 'panel',
+  BARE: 'bare',
+}
+
+export const MODAL_BREAKPOINTS = {
+  MOBILE_MAX_WIDTH: 639,
+}
+
+export const MODAL_PRESETS = {
+  PREVIEW_MODAL: {
+    chrome: MODAL_CHROME.BARE,
+  },
+  VIDEO_PREVIEW_MODAL: {
+    chrome: MODAL_CHROME.BARE,
+  },
 }
 
 export const ANIMATION_CONFIGS = {

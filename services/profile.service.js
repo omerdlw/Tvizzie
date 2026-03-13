@@ -1,17 +1,27 @@
 'use client'
 
 import {
+  endAt,
   deleteDoc,
   getDoc,
+  getDocs,
+  limit as limitTo,
   onSnapshot,
+  orderBy,
+  query,
   runTransaction,
   serverTimestamp,
   setDoc,
+  startAt,
 } from 'firebase/firestore'
 
 import { isValidUrl } from '@/lib/utils'
 
-import { getUserDocRef, getUsernameDocRef } from './firestore-media.service'
+import {
+  getUserDocRef,
+  getUsernameDocRef,
+  getUsersCollection,
+} from './firestore-media.service'
 import { cleanString, normalizeTimestamp } from './firestore-utils'
 
 const USERNAME_MIN_LENGTH = 3
@@ -59,13 +69,21 @@ function createUserIdentity(user = {}) {
   }
 }
 
+function normalizeDisplayNameSearchValue(value) {
+  return cleanString(value).toLocaleLowerCase()
+}
+
 function normalizeProfileData(data = {}, id = null) {
+  const displayName = data.displayName || data.name || 'Anonymous User'
+
   return {
     avatarUrl: data.avatarUrl || null,
     bannerUrl: data.bannerUrl || null,
     createdAt: normalizeTimestamp(data.createdAt),
     description: data.description || '',
-    displayName: data.displayName || data.name || 'Anonymous User',
+    displayName,
+    displayNameLower:
+      data.displayNameLower || normalizeDisplayNameSearchValue(displayName),
     email: data.email || null,
     id: id || data.id || null,
     updatedAt: normalizeTimestamp(data.updatedAt),
@@ -163,6 +181,128 @@ export async function getUserProfileByUsername(username) {
   return getUserProfile(userId)
 }
 
+function buildProfileSearchScore(
+  profile,
+  rawSearchTerm,
+  normalizedUsername,
+  normalizedDisplayName
+) {
+  const username = profile?.usernameLower || ''
+  const displayName = profile?.displayName || ''
+  const displayNameLower =
+    profile?.displayNameLower || normalizeDisplayNameSearchValue(displayName)
+
+  let score = 0
+
+  if (normalizedUsername) {
+    if (username === normalizedUsername) {
+      score += 120
+    } else if (username.startsWith(normalizedUsername)) {
+      score += 90
+    }
+  }
+
+  if (displayNameLower === normalizedDisplayName) {
+    score += 110
+  } else if (displayNameLower.startsWith(normalizedDisplayName)) {
+    score += 70
+  } else if (displayName.startsWith(rawSearchTerm)) {
+    score += 50
+  }
+
+  return score
+}
+
+async function runProfileSearch(field, value, limitCount) {
+  if (!value) {
+    return []
+  }
+
+  const snapshot = await getDocs(
+    query(
+      getUsersCollection(),
+      orderBy(field),
+      startAt(value),
+      endAt(`${value}\uf8ff`),
+      limitTo(limitCount)
+    )
+  )
+
+  return snapshot.docs.map(normalizeProfileSnapshot)
+}
+
+export async function searchUserProfiles(searchTerm, options = {}) {
+  const rawSearchTerm = cleanString(searchTerm)
+
+  if (!rawSearchTerm) {
+    return []
+  }
+
+  const limitCount = Math.min(Math.max(Number(options.limitCount) || 6, 1), 10)
+  const normalizedUsername = sanitizeUsername(rawSearchTerm)
+  const normalizedDisplayName =
+    normalizeDisplayNameSearchValue(rawSearchTerm)
+
+  const resultSets = await Promise.allSettled([
+    normalizedUsername
+      ? runProfileSearch('usernameLower', normalizedUsername, limitCount)
+      : Promise.resolve([]),
+    runProfileSearch('displayNameLower', normalizedDisplayName, limitCount),
+    runProfileSearch('displayName', rawSearchTerm, limitCount),
+  ])
+
+  const mergedProfiles = new Map()
+
+  resultSets.forEach((result) => {
+    if (result.status !== 'fulfilled') {
+      return
+    }
+
+    result.value.forEach((profile) => {
+      if (!profile?.id) {
+        return
+      }
+
+      mergedProfiles.set(profile.id, profile)
+    })
+  })
+
+  return Array.from(mergedProfiles.values())
+    .filter((profile) => {
+      const username = profile?.usernameLower || ''
+      const displayName =
+        profile?.displayNameLower ||
+        normalizeDisplayNameSearchValue(profile?.displayName)
+
+      return (
+        (normalizedUsername && username.startsWith(normalizedUsername)) ||
+        displayName.startsWith(normalizedDisplayName)
+      )
+    })
+    .sort((left, right) => {
+      const scoreDiff =
+        buildProfileSearchScore(
+          right,
+          rawSearchTerm,
+          normalizedUsername,
+          normalizedDisplayName
+        ) -
+        buildProfileSearchScore(
+          left,
+          rawSearchTerm,
+          normalizedUsername,
+          normalizedDisplayName
+        )
+
+      if (scoreDiff !== 0) {
+        return scoreDiff
+      }
+
+      return (left.displayName || '').localeCompare(right.displayName || '')
+    })
+    .slice(0, limitCount)
+}
+
 export function subscribeToUserProfile(userId, callback, options = {}) {
   const { onError } = options
 
@@ -203,6 +343,13 @@ async function tryClaimUsernameForProfile({
       const existingProfile = profileSnapshot.exists()
         ? profileSnapshot.data() || {}
         : null
+      const displayName = preserveExisting
+        ? existingProfile?.displayName ||
+          identity.displayName ||
+          'Anonymous User'
+        : identity.displayName ||
+          existingProfile?.displayName ||
+          'Anonymous User'
 
       if (
         usernameSnapshot.exists() &&
@@ -218,21 +365,15 @@ async function tryClaimUsernameForProfile({
           ? {
               avatarUrl:
                 existingProfile?.avatarUrl || identity.avatarUrl || null,
-              displayName:
-                existingProfile?.displayName ||
-                identity.displayName ||
-                'Anonymous User',
             }
           : {
               avatarUrl:
                 identity.avatarUrl || existingProfile?.avatarUrl || null,
-              displayName:
-                identity.displayName ||
-                existingProfile?.displayName ||
-                'Anonymous User',
             }),
         bannerUrl: existingProfile?.bannerUrl || null,
         description: existingProfile?.description || '',
+        displayName,
+        displayNameLower: normalizeDisplayNameSearchValue(displayName),
         email: identity.email || existingProfile?.email || null,
         updatedAt: serverTimestamp(),
         username,
@@ -288,12 +429,19 @@ export async function ensureUserProfile(user = {}) {
       )
     }
 
-    if (!existingProfile.displayName || !existingProfile.avatarUrl) {
+    if (
+      !existingProfile.displayName ||
+      !existingProfile.avatarUrl ||
+      !existingProfile.displayNameLower
+    ) {
       await setDoc(
         getUserDocRef(identity.id),
         {
           avatarUrl: existingProfile.avatarUrl || identity.avatarUrl || null,
           displayName: existingProfile.displayName || identity.displayName,
+          displayNameLower: normalizeDisplayNameSearchValue(
+            existingProfile.displayName || identity.displayName
+          ),
           email: existingProfile.email || identity.email || null,
           updatedAt: serverTimestamp(),
         },
@@ -337,7 +485,7 @@ export async function updateUserProfile({ userId, updates = {} }) {
   const currentProfile = await getUserProfile(userId)
 
   if (!currentProfile) {
-    throw new Error('Profile does not exist yet. Please sign in again.')
+    throw new Error('Profile does not exist yet. Please sign in again')
   }
 
   const nextUsername =
@@ -362,6 +510,11 @@ export async function updateUserProfile({ userId, updates = {} }) {
       updates.displayName !== undefined
         ? cleanString(updates.displayName) || 'Anonymous User'
         : currentProfile.displayName,
+    displayNameLower: normalizeDisplayNameSearchValue(
+      updates.displayName !== undefined
+        ? cleanString(updates.displayName) || 'Anonymous User'
+        : currentProfile.displayName
+    ),
     email: currentProfile.email || null,
     updatedAt: serverTimestamp(),
     username: nextUsername,
@@ -388,7 +541,7 @@ export async function updateUserProfile({ userId, updates = {} }) {
         nextUsernameSnapshot.data()?.userId &&
         nextUsernameSnapshot.data()?.userId !== userId
       ) {
-        throw new Error('This username is already taken.')
+        throw new Error('This username is already taken')
       }
 
       transaction.set(

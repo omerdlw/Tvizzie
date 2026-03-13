@@ -29,8 +29,10 @@ export function CountdownOverlay() {
               height: '100%',
               scale: 1.12,
               margin: 'auto',
-              filter: 'brightness(0.7) grayscale(0.7)',
-              opacity: 0.6,
+              leftGradient: 3,
+              filter:"grayscale(100%)",
+              rightGradient: 3,
+              opacity: 0.75,
             },
             noiseStyle: {
               opacity: 0.7,

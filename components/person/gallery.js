@@ -16,7 +16,7 @@ function PhotoCard({ image, index, openModal }) {
   return (
     <div
       onClick={() => openModal?.('PREVIEW_MODAL', 'center', { data: image })}
-      className="group relative aspect-2/3 w-[calc((100%-32px)/5)] shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 transition-all duration-300 hover:bg-white/10 hover:ring-white/15"
+      className="group relative aspect-2/3 w-[calc((100%-16px)/3)] shrink-0 cursor-pointer rounded-[20px] bg-white/5 p-1 ring ring-white/10 transition-all duration-300 hover:bg-white/10 hover:ring-white/15 lg:w-[calc((100%-32px)/5)]"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[16px] bg-white/5">
         {hasPath ? (
@@ -27,7 +27,7 @@ function PhotoCard({ image, index, openModal }) {
             draggable={false}
             onError={() => setHasError(true)}
             className="pointer-events-none object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="144px"
+            sizes="(min-width: 1024px) 220px, (min-width: 768px) 31vw, 33vw"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

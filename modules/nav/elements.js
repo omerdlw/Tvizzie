@@ -42,10 +42,12 @@ export const Icon = ({ icon, isStackHovered, style }) => {
   )
 
   if (isUrl) {
-    const { ...cleanedStyle } = iconStyle
+    const cleanedStyle = { ...iconStyle }
+    delete cleanedStyle.background
+    delete cleanedStyle.backgroundImage
     return (
       <motion.div
-        className="size-12 rounded-[20px] bg-cover bg-center bg-no-repeat"
+        className="size-12 shrink-0 rounded-[20px] bg-cover bg-center bg-no-repeat"
         transition={{ duration: DURATION.FAST, ease: EASING.SMOOTH }}
         style={{ ...cleanedStyle, backgroundImage: `url(${icon})` }}
       />

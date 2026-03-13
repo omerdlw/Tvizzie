@@ -3,6 +3,8 @@
 import { cn } from '@/lib/utils'
 import Icon from '@/ui/icon'
 
+import { navActionBaseClass } from './constants'
+
 export default function ProfileAction({
   isOwner = false,
   isAuthenticated = false,
@@ -13,12 +15,24 @@ export default function ProfileAction({
   onFollow,
   isLoading = false,
 }) {
+  const authActionClass = navActionBaseClass({
+    typography: 'text-[11px] font-bold tracking-[0.15em] text-black uppercase',
+    className:
+      'bg-white text-black hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10',
+  })
+
+  const followActionClass = navActionBaseClass({
+    typography: 'text-[11px] font-bold tracking-[0.15em] text-black uppercase',
+    className:
+      'bg-white/5 text-white hover:text-white hover:bg-white/5 border border-white/10',
+  })
+
   if (isNotFound) {
     return (
       <button
-        type="button"
         onClick={() => (window.location.href = '/')}
-        className="flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 text-[10px] font-bold tracking-[0.15em] text-black uppercase transition-all hover:bg-white/90 active:scale-[0.98]"
+        className={authActionClass}
+        type="button"
       >
         Back Home
       </button>
@@ -27,11 +41,7 @@ export default function ProfileAction({
 
   if (!isAuthenticated) {
     return (
-      <button
-        type="button"
-        onClick={onSignIn}
-        className="mt-2.5 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] border border-transparent bg-white px-4 text-[11px] font-bold tracking-[0.15em] text-black uppercase transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-[0.98]"
-      >
+      <button type="button" onClick={onSignIn} className={authActionClass}>
         <Icon icon="solar:user-circle-bold" size={14} />
         Sign In
       </button>
@@ -40,11 +50,7 @@ export default function ProfileAction({
 
   if (isOwner) {
     return (
-      <button
-        type="button"
-        onClick={onEditProfile}
-        className="mt-2.5 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] border border-transparent bg-white px-4 text-[11px] font-bold tracking-[0.15em] text-black uppercase transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-[0.98]"
-      >
+      <button type="button" onClick={onEditProfile} className={authActionClass}>
         <Icon icon="solar:pen-bold" size={14} />
         Edit Profile
       </button>
@@ -57,10 +63,10 @@ export default function ProfileAction({
       onClick={onFollow}
       disabled={isLoading}
       className={cn(
-        'mt-2.5 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[20px] px-4 text-[10px] font-bold tracking-[0.15em] uppercase transition-all active:scale-[0.98] disabled:opacity-50',
+        followActionClass,
         isFollowing
-          ? 'border border-white/10 bg-white/5 text-white/70 hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-400'
-          : 'bg-white text-black hover:bg-white/90'
+          ? 'text-white/70 hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-400'
+          : 'bg-white text-black hover:bg-white/5 hover:text-white'
       )}
     >
       <Icon

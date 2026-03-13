@@ -19,9 +19,9 @@ export async function generateMetadata({ params }) {
     ? `${movie.title} (${movie.release_date.split('-')[0]}) - Tvizzie`
     : `${movie.title} - Tvizzie`
 
-  let description = movie.overview || `Details for ${movie.title}.`
+  let description = movie.overview || `Details for ${movie.title}`
   if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '...')
+    description = description.substring(0, 150).replace(/\s+\S*$/, '')
   }
 
   const imageUrl = movie.backdrop_path

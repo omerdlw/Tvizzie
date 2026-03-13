@@ -3,6 +3,7 @@ export {
   useRegistryActions,
   RegistryProvider,
   useModalRegistry,
+  useRegistryHistory,
   useRegistryState,
   useNavRegistry,
   REGISTRY_TYPES,
@@ -10,3 +11,4 @@ export {
 } from './context'
 
 export { RegistryInjector } from './injector'
+export { RegistryDebugPanel } from './debug-panel'

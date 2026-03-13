@@ -37,30 +37,29 @@ const EMAIL_DOMAIN_PATTERNS = [
 ]
 
 const AUTH_ERROR_MESSAGES = {
-  'auth/email-already-in-use': 'This email address is already in use.',
-  'auth/invalid-credential': 'The username/email or password is incorrect.',
-  'auth/invalid-email': 'Enter a valid email address.',
-  'auth/missing-credentials': 'Sign-in credentials are missing.',
-  'auth/network-request-failed': 'A network error occurred. Please try again.',
-  'auth/operation-not-allowed': 'This sign-in method is not available.',
+  'auth/email-already-in-use': 'This email address is already in use',
+  'auth/invalid-credential': 'The username/email or password is incorrect',
+  'auth/invalid-email': 'Enter a valid email address',
+  'auth/missing-credentials': 'Sign-in credentials are missing',
+  'auth/network-request-failed': 'A network error occurred. Please try again',
+  'auth/operation-not-allowed': 'This sign-in method is not available',
   'auth/too-many-requests':
-    'Too many attempts were made. Please try again later.',
-  'auth/user-disabled': 'This account has been disabled.',
-  'auth/user-not-found': 'No account was found with these credentials.',
+    'Too many attempts were made. Please try again later',
+  'auth/user-disabled': 'This account has been disabled',
+  'auth/user-not-found': 'No account was found with these credentials',
   'auth/weak-password':
-    'Password is too weak. Use at least 8 characters, 1 uppercase letter, 1 number, and 1 symbol.',
-  'auth/wrong-password': 'The password is incorrect.',
-  SIGNIN_IDENTIFIER_REQUIRED: 'Username or email is required.',
+    'Password is too weak. Use at least 8 characters, 1 uppercase letter, 1 number, and 1 symbol',
+  'auth/wrong-password': 'The password is incorrect',
+  SIGNIN_IDENTIFIER_REQUIRED: 'Username or email is required',
   PROFILE_EMAIL_MISSING:
-    'No sign-in email was found for this username. Please contact support.',
-  USERNAME_TAKEN: 'This username is already taken.',
-  CODE_INVALID: 'The verification code is invalid.',
-  CODE_EXPIRED: 'The verification code has expired.',
-  CODE_ATTEMPTS_EXHAUSTED:
-    'Too many invalid code attempts. Request a new code.',
-  CODE_REQUIRED: 'Verification code must be 6 digits.',
+    'No sign-in email was found for this username. Please contact support',
+  USERNAME_TAKEN: 'This username is already taken',
+  CODE_INVALID: 'The verification code is invalid',
+  CODE_EXPIRED: 'The verification code has expired',
+  CODE_ATTEMPTS_EXHAUSTED: 'Too many invalid code attempts. Request a new code',
+  CODE_REQUIRED: 'Verification code must be 6 digits',
   CODE_ALREADY_USED:
-    'This verification code has already been used. Request a new code.',
+    'This verification code has already been used. Request a new code',
 }
 
 const AUTH_ERROR_MESSAGE_PATTERNS = [
@@ -135,26 +134,26 @@ function resolveAuthErrorMessage(error, fallbackMessage) {
     return message
   }
 
-  return fallbackMessage || 'Request could not be completed. Please try again.'
+  return fallbackMessage || 'Request could not be completed. Please try again'
 }
 
 function validatePassword(value) {
   const password = String(value || '')
 
   if (password.length < 8) {
-    throw new Error('Password must be at least 8 characters long.')
+    throw new Error('Password must be at least 8 characters long')
   }
 
   if (!/[A-Z]/.test(password)) {
-    throw new Error('Password must contain at least 1 uppercase letter.')
+    throw new Error('Password must contain at least 1 uppercase letter')
   }
 
   if (!/\d/.test(password)) {
-    throw new Error('Password must contain at least 1 number.')
+    throw new Error('Password must contain at least 1 number')
   }
 
   if (!/[^A-Za-z0-9]/.test(password)) {
-    throw new Error('Password must contain at least 1 symbol.')
+    throw new Error('Password must contain at least 1 symbol')
   }
 
   return password
@@ -165,7 +164,7 @@ function validateAllowedEmailDomain(value) {
   const parts = email.split('@')
 
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    throw new Error('Enter a valid email address.')
+    throw new Error('Enter a valid email address')
   }
 
   const domain = parts[1]
@@ -175,7 +174,7 @@ function validateAllowedEmailDomain(value) {
 
   if (!isAllowed) {
     throw new Error(
-      'Only supported email domains are allowed: gmail, outlook, hotmail, yandex, yahoo, tempmail, protonmail, icloud.'
+      'Only supported email domains are allowed: gmail, outlook, hotmail, yandex, yahoo, tempmail, protonmail, icloud'
     )
   }
 
@@ -218,10 +217,10 @@ async function sendVerificationCodeRequest(email) {
 
   const payload = await response
     .json()
-    .catch(() => ({ error: 'Could not send verification code.' }))
+    .catch(() => ({ error: 'Could not send verification code' }))
 
   if (!response.ok) {
-    throw new Error(payload?.error || 'Could not send verification code.')
+    throw new Error(payload?.error || 'Could not send verification code')
   }
 
   return payload
@@ -243,10 +242,10 @@ async function verifyCodeRequest({ challengeToken, code, email }) {
 
   const payload = await response
     .json()
-    .catch(() => ({ error: 'Verification failed.' }))
+    .catch(() => ({ error: 'Verification failed' }))
 
   if (!response.ok) {
-    throw new Error(payload?.error || 'Verification failed.')
+    throw new Error(payload?.error || 'Verification failed')
   }
 
   return payload
@@ -309,20 +308,6 @@ export default function AuthModal({ close, data, header }) {
     return isSignUp ? 'Create Account' : 'Sign In'
   }, [header?.title, isSignUp, isVerificationStep])
 
-  const modalDescription = useMemo(() => {
-    if (isVerificationStep) {
-      return 'Enter the 6-digit code sent to your email.'
-    }
-
-    if (header?.description) {
-      return header.description
-    }
-
-    return isSignUp
-      ? 'Continue with Google or create an account with email.'
-      : 'Continue with Google or sign in with username/email.'
-  }, [header?.description, isSignUp, isVerificationStep])
-
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -377,7 +362,7 @@ export default function AuthModal({ close, data, header }) {
     const password = validatePassword(form.password)
 
     if (password !== form.confirmPassword) {
-      throw new Error('Password confirmation does not match.')
+      throw new Error('Password confirmation does not match')
     }
 
     const existingUserId = await getUserIdByUsername(username)
@@ -399,13 +384,13 @@ export default function AuthModal({ close, data, header }) {
     setIsSubmitting(true)
     try {
       const session = await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully.')
+      toast.success('Signed in successfully')
       if (typeof data?.onSuccess === 'function') {
         data.onSuccess(session)
       }
       close({ success: true, session, method: 'google' })
     } catch (error) {
-      toast.error(resolveAuthErrorMessage(error, 'Google sign-in failed.'))
+      toast.error(resolveAuthErrorMessage(error, 'Google sign-in failed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -415,13 +400,13 @@ export default function AuthModal({ close, data, header }) {
     const password = String(form.password || '')
 
     if (!password) {
-      throw new Error('Password is required.')
+      throw new Error('Password is required')
     }
 
     const { email } = await resolveSignInEmail(form.identifier)
     const session = await auth.signIn({ email, password })
 
-    toast.success('Signed in successfully.')
+    toast.success('Signed in successfully')
     if (typeof data?.onSuccess === 'function') {
       data.onSuccess(session)
     }
@@ -443,7 +428,7 @@ export default function AuthModal({ close, data, header }) {
       resendAvailableAt: challenge.resendAvailableAt,
     })
 
-    toast.success('Verification code sent to your email.')
+    toast.success('Verification code sent to your email')
   }
 
   const handleCredentialsSubmit = async (event) => {
@@ -461,7 +446,7 @@ export default function AuthModal({ close, data, header }) {
       toast.error(
         resolveAuthErrorMessage(
           error,
-          isSignUp ? 'Sign-up failed.' : 'Sign-in failed.'
+          isSignUp ? 'Sign-up failed' : 'Sign-in failed'
         )
       )
     } finally {
@@ -476,7 +461,7 @@ export default function AuthModal({ close, data, header }) {
     const code = String(form.verificationCode || '').trim()
 
     if (!verificationPayload?.email || !verificationPayload?.challengeToken) {
-      toast.error('Verification session was not found. Start again.')
+      toast.error('Verification session was not found. Start again')
       setStep(AUTH_STEP.CREDENTIALS)
       return
     }
@@ -510,7 +495,7 @@ export default function AuthModal({ close, data, header }) {
         },
       })
 
-      toast.success('Your account was created successfully.')
+      toast.success('Your account was created successfully')
       if (typeof data?.onSuccess === 'function') {
         data.onSuccess(session)
       }
@@ -521,7 +506,7 @@ export default function AuthModal({ close, data, header }) {
       })
     } catch (error) {
       toast.error(
-        resolveAuthErrorMessage(error, 'Verification failed. Please try again.')
+        resolveAuthErrorMessage(error, 'Verification failed. Please try again')
       )
     } finally {
       setIsSubmitting(false)
@@ -532,14 +517,14 @@ export default function AuthModal({ close, data, header }) {
     if (isSubmitting || isResending) return
 
     if (!verificationPayload?.email) {
-      toast.error('Verification session was not found. Start again.')
+      toast.error('Verification session was not found. Start again')
       setStep(AUTH_STEP.CREDENTIALS)
       return
     }
 
     if (!canResendCode) {
       toast.error(
-        `Please wait ${resendRemainingSeconds} second${resendRemainingSeconds === 1 ? '' : 's'} before requesting a new code.`
+        `Please wait ${resendRemainingSeconds} second${resendRemainingSeconds === 1 ? '' : 's'} before requesting a new code`
       )
       return
     }
@@ -562,10 +547,10 @@ export default function AuthModal({ close, data, header }) {
       )
       setNow(Date.now())
 
-      toast.success('A new verification code has been sent.')
+      toast.success('A new verification code has been sent')
     } catch (error) {
       toast.error(
-        resolveAuthErrorMessage(error, 'Verification code could not be resent.')
+        resolveAuthErrorMessage(error, 'Verification code could not be resent')
       )
     } finally {
       setIsResending(false)
@@ -606,22 +591,22 @@ export default function AuthModal({ close, data, header }) {
       header={{
         ...header,
         title: modalTitle,
-        description: modalDescription,
       }}
+      className="w-full sm:w-[460px] rounded-2xl"
       close={close}
     >
-      <div className="flex w-full flex-col gap-5 p-2.5">
+      <div className="flex w-full flex-col p-3">
         {isVerificationStep ? (
-          <form onSubmit={handleVerifyCode} className="space-y-4 px-2 pb-3">
+          <form onSubmit={handleVerifyCode} className="space-y-4">
             <div className="rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/75">
-              <p className="text-[11px] font-semibold tracking-[0.15em] text-white/45 uppercase">
+              <p className="text-[11px] font-semibold tracking-[0.15em] text-white/50 uppercase">
                 Verification Email
               </p>
               <p className="mt-1 break-all">
                 {verificationPayload?.email || 'Unknown email'}
               </p>
               {codeExpiryLabel ? (
-                <p className="mt-2 text-xs text-white/55">
+                <p className="mt-1 text-xs text-white/50">
                   Code expires at {codeExpiryLabel}
                 </p>
               ) : null}
@@ -635,21 +620,21 @@ export default function AuthModal({ close, data, header }) {
                   event.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                 )
               }
-              placeholder="6-digit verification code"
+              placeholder="Verification Code"
               autoComplete="one-time-code"
               inputMode="numeric"
               className={{
                 input:
-                  'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-center text-lg font-semibold tracking-[0.35em] text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                  'w-full rounded-[20px] border border-white/10 bg-white/5 py-2 text-center font-semibold text-white transition outline-none placeholder:text-white/30 focus:border-white/15 focus:bg-white/10',
               }}
             />
 
             <Button
               type="submit"
               disabled={isSubmitting || isResending}
-              className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+              className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
             >
-              {isSubmitting ? 'Verifying...' : 'Verify Code'}
+              {isSubmitting ? 'Verifying your code' : 'Verify Code'}
             </Button>
 
             <div className="flex flex-col gap-2">
@@ -657,10 +642,10 @@ export default function AuthModal({ close, data, header }) {
                 type="button"
                 onClick={handleResendVerificationCode}
                 disabled={isSubmitting || isResending || !canResendCode}
-                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-4 text-[11px] font-bold tracking-[0.18em] text-white uppercase transition hover:bg-white/10 active:scale-95 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-[11px] font-bold tracking-[0.18em] text-white uppercase transition hover:bg-white/10 active:scale-95 disabled:opacity-60"
               >
                 {isResending
-                  ? 'Sending...'
+                  ? 'Sending'
                   : canResendCode
                     ? 'Resend Code'
                     : `Resend Code (${resendRemainingSeconds}s)`}
@@ -669,7 +654,7 @@ export default function AuthModal({ close, data, header }) {
                 type="button"
                 onClick={backToCredentials}
                 disabled={isSubmitting || isResending}
-                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-transparent px-4 text-[11px] font-bold tracking-[0.18em] text-white/70 uppercase transition hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center rounded-[20px] border border-white/10 bg-transparent text-[11px] font-bold tracking-[0.18em] text-white/70 uppercase transition hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-60"
               >
                 Go Back
               </Button>
@@ -677,136 +662,137 @@ export default function AuthModal({ close, data, header }) {
           </form>
         ) : (
           <>
-            <div className="space-y-3 p-2">
-              <Button
-                onClick={handleGoogleSignIn}
-                disabled={isSubmitting || isResending}
-                className="flex h-11 w-full items-center gap-2 rounded-[20px] border border-white/10 bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
-              >
-                <Icon icon="logos:google-icon" size={16} />
-                Continue with Google
-              </Button>
-              <div className="flex items-center gap-3 px-2">
-                <span className="h-px flex-1 bg-white/10" />
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-white/35 uppercase">
-                  or
-                </span>
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-            </div>
-
-            <form onSubmit={handleCredentialsSubmit} className="space-y-4 px-2">
-              {isSignUp ? (
-                <>
+            <div className="space-y-4">
+              <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+                {isSignUp ? (
+                  <>
+                    <Input
+                      value={form.username}
+                      onChange={(event) =>
+                        updateField('username', event.target.value)
+                      }
+                      placeholder="Username"
+                      autoComplete="username"
+                      className={{
+                        input:
+                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                      }}
+                    />
+                    <Input
+                      value={form.displayName}
+                      onChange={(event) =>
+                        updateField('displayName', event.target.value)
+                      }
+                      placeholder="Display name (optional)"
+                      autoComplete="name"
+                      className={{
+                        input:
+                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                      }}
+                    />
+                    <Input
+                      type="email"
+                      value={form.email}
+                      onChange={(event) =>
+                        updateField('email', event.target.value)
+                      }
+                      placeholder="Email address"
+                      autoComplete="email"
+                      className={{
+                        input:
+                          'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                      }}
+                    />
+                  </>
+                ) : (
                   <Input
-                    value={form.username}
+                    value={form.identifier}
                     onChange={(event) =>
-                      updateField('username', event.target.value)
+                      updateField('identifier', event.target.value)
                     }
-                    placeholder="Username"
+                    placeholder="Username or email"
                     autoComplete="username"
                     className={{
                       input:
                         'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
                     }}
                   />
-                  <Input
-                    value={form.displayName}
-                    onChange={(event) =>
-                      updateField('displayName', event.target.value)
-                    }
-                    placeholder="Display name (optional)"
-                    autoComplete="name"
-                    className={{
-                      input:
-                        'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
-                    }}
-                  />
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={(event) =>
-                      updateField('email', event.target.value)
-                    }
-                    placeholder="Email address"
-                    autoComplete="email"
-                    className={{
-                      input:
-                        'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
-                    }}
-                  />
-                </>
-              ) : (
-                <Input
-                  value={form.identifier}
-                  onChange={(event) =>
-                    updateField('identifier', event.target.value)
-                  }
-                  placeholder="Username or email"
-                  autoComplete="username"
-                  className={{
-                    input:
-                      'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
-                  }}
-                />
-              )}
+                )}
 
-              <Input
-                type="password"
-                value={form.password}
-                onChange={(event) =>
-                  updateField('password', event.target.value)
-                }
-                placeholder="Password"
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                className={{
-                  input:
-                    'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
-                }}
-              />
-
-              {isSignUp && (
                 <Input
                   type="password"
-                  value={form.confirmPassword}
+                  value={form.password}
                   onChange={(event) =>
-                    updateField('confirmPassword', event.target.value)
+                    updateField('password', event.target.value)
                   }
-                  placeholder="Confirm password"
-                  autoComplete="new-password"
+                  placeholder="Password"
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   className={{
                     input:
                       'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
                   }}
                 />
-              )}
+
+                {isSignUp && (
+                  <Input
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(event) =>
+                      updateField('confirmPassword', event.target.value)
+                    }
+                    placeholder="Confirm password"
+                    autoComplete="new-password"
+                    className={{
+                      input:
+                        'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/8',
+                    }}
+                  />
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || isResending}
+                  className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+                >
+                  {isSubmitting
+                    ? isSignUp
+                      ? 'Sending code'
+                      : 'Signing in'
+                    : isSignUp
+                      ? 'Continue'
+                      : 'Sign In'}
+                </Button>
+              </form>
+
+              <div className="flex justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={toggleMode}
+                  disabled={isSubmitting || isResending}
+                  className="text-[11px] font-semibold tracking-[0.12em] text-white/55 uppercase transition hover:text-white disabled:opacity-50"
+                >
+                  {isSignUp
+                    ? 'Already have an account? Sign In'
+                    : "Don't have an account? Sign Up"}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 px-1">
+                <span className="h-px flex-1 bg-white/10" />
+                <span className="text-[10px] font-semibold tracking-[0.2em] text-white/35 uppercase">
+                  or
+                </span>
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
 
               <Button
-                type="submit"
+                onClick={handleGoogleSignIn}
                 disabled={isSubmitting || isResending}
-                className="flex h-11 w-full items-center justify-center rounded-[20px] bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-[20px] border border-white/10 bg-white px-4 text-[11px] font-bold tracking-[0.18em] text-black uppercase transition hover:bg-white/90 active:scale-95 disabled:opacity-60"
               >
-                {isSubmitting
-                  ? isSignUp
-                    ? 'Sending code...'
-                    : 'Signing in...'
-                  : isSignUp
-                    ? 'Continue'
-                    : 'Sign In'}
+                <Icon icon="logos:google-icon" size={16} />
+                Continue with Google
               </Button>
-            </form>
-
-            <div className="flex justify-center px-2 pb-3">
-              <button
-                type="button"
-                onClick={toggleMode}
-                disabled={isSubmitting || isResending}
-                className="text-[11px] font-semibold tracking-[0.12em] text-white/55 uppercase transition hover:text-white disabled:opacity-50"
-              >
-                {isSignUp
-                  ? 'Already have an account? Sign In'
-                  : "Don't have an account? Sign Up"}
-              </button>
             </div>
           </>
         )}

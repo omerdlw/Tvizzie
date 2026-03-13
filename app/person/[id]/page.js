@@ -18,11 +18,10 @@ export async function generateMetadata({ params }) {
 
   const title = `${person.name} - Tvizzie`
 
-  // Clean empty lines and limit to ~150 chars for SEO description
   let description =
-    person.biography?.trim() || `Information about ${person.name}.`
+    person.biography?.trim() || `Information about ${person.name}`
   if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '...')
+    description = description.substring(0, 150).replace(/\s+\S*$/, '')
   }
 
   const imageUrl = person.profile_path

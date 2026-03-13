@@ -12,7 +12,7 @@ export default function GlobalError({ error, reset }) {
     })
 
     globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-      message: error?.message || 'Kritik uygulama hatası.',
+      message: error?.message || 'Kritik uygulama hatası',
       error,
       resetError: reset,
     })

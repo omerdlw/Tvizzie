@@ -121,7 +121,7 @@ export class TmdbService {
       const validTypes = ['movie', 'tv', 'person']
       if (!validTypes.includes(type)) {
         throw new Error(
-          'Invalid type parameter. Must be "movie", "tv" or "person".'
+          'Invalid type parameter. Must be "movie", "tv" or "person"'
         )
       }
 
@@ -163,7 +163,7 @@ export class TmdbService {
   static async getDetails(id, type = 'movie') {
     try {
       if (type !== 'movie' && type !== 'tv') {
-        throw new Error('Invalid type parameter. Must be "movie" or "tv".')
+        throw new Error('Invalid type parameter. Must be "movie" or "tv"')
       }
 
       const endpoint = `/${type}/${id}?append_to_response=credits,images,external_ids&language=en-US`
@@ -287,7 +287,7 @@ export class TmdbService {
   static async getTopRated(type = 'movie') {
     try {
       if (type !== 'movie' && type !== 'tv') {
-        throw new Error('Invalid type parameter. Must be "movie" or "tv".')
+        throw new Error('Invalid type parameter. Must be "movie" or "tv"')
       }
 
       const endpoint = `/${type}/top_rated?language=en-US`
@@ -310,7 +310,7 @@ export class TmdbService {
   static async getPopular(type = 'movie') {
     try {
       if (type !== 'movie' && type !== 'tv') {
-        throw new Error('Invalid type parameter. Must be "movie" or "tv".')
+        throw new Error('Invalid type parameter. Must be "movie" or "tv"')
       }
 
       const endpoint = `/${type}/popular?language=en-US`
@@ -371,7 +371,7 @@ export class TmdbService {
   static async getGenres(type = 'movie') {
     try {
       if (type !== 'movie' && type !== 'tv') {
-        throw new Error('Invalid type parameter. Must be "movie" or "tv".')
+        throw new Error('Invalid type parameter. Must be "movie" or "tv"')
       }
       const endpoint = `/genre/${type}/list?language=en-US`
       const response = await tmdbClient.get(endpoint)
@@ -416,7 +416,7 @@ export class TmdbService {
   }) {
     try {
       if (type !== 'movie' && type !== 'tv') {
-        throw new Error('Invalid type parameter. Must be "movie" or "tv".')
+        throw new Error('Invalid type parameter. Must be "movie" or "tv"')
       }
       let endpoint = `/discover/${type}?language=en-US&page=${page}&sort_by=${sortBy}`
       if (genreId && genreId !== 'all') {

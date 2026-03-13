@@ -130,52 +130,35 @@ function CommentCard({
           </Link>
 
           <div className="flex min-w-0 flex-1 items-center justify-between gap-4 py-1">
-            <div className="flex min-w-0 flex-col items-start justify-center">
-              <Link
-                href={`/profile/${username || comment.user?.id || comment.id}`}
-                className="group/name"
-              >
-                <h3 className="text-sm font-semibold transition-colors group-hover/name:text-white sm:text-base">
-                  {displayName}
-                </h3>
-              </Link>
-
-              <p className="text-sm leading-6 whitespace-pre-wrap text-white/70 sm:text-base">
-                {comment.content}
-              </p>
-            </div>
-
-            <div className="flex shrink-0 items-center gap-4 self-center">
-              <div className="flex flex-col items-end gap-2.5">
-                <div className="flex flex-col items-end gap-1">
-                  {comment.rating ? (
-                    <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-400 uppercase">
-                      {comment.rating}/10
-                    </span>
-                  ) : null}
-                  <span className="text-right text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
-                    {timestamp ? formatDate(timestamp) : 'Just now'}
-                  </span>
-                </div>
+            <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
+              <div className="flex min-w-0 items-center gap-3">
+                <Link
+                  href={`/profile/${username || comment.user?.id || comment.id}`}
+                  className="group/name"
+                >
+                  <h3 className="text-sm font-semibold transition-colors group-hover/name:text-white sm:text-base">
+                    {displayName}
+                  </h3>
+                </Link>
 
                 {isOwnComment && (
-                  <div className="flex items-center gap-1.5 opacity-50 transition-opacity hover:opacity-100">
+                  <div className="flex shrink-0 items-center gap-3">
                     <button
                       type="button"
                       onClick={onEdit}
                       title="Edit Review"
                       disabled={isSpoiler && !isSpoilerVisible}
-                      className="flex size-7 items-center justify-center rounded-full bg-white/5 text-[#93c5fd] transition hover:bg-white/15"
+                      className="text-[11px] font-semibold tracking-[0.14em] text-blue-400 uppercase transition hover:text-blue-200 disabled:opacity-40"
                     >
-                      <Icon icon="solar:pen-bold" size={12} />
+                      Edit
                     </button>
-                    <Button
-                      variant="danger-icon"
+                    <button
+                      type="button"
                       onClick={() => {
                         openModal('CONFIRMATION_MODAL', 'bottom', {
                           title: 'Delete Review?',
                           description:
-                            'Are you sure you want to delete this review? This action cannot be undone.',
+                            'Are you sure you want to delete this review? This action cannot be undone',
                           confirmText: 'Delete',
                           isDestructive: true,
                           onConfirm: onDelete,
@@ -183,12 +166,29 @@ function CommentCard({
                       }}
                       title="Delete Review"
                       disabled={isSpoiler && !isSpoilerVisible}
-                      className="size-7"
+                      className="text-[11px] font-semibold tracking-[0.14em] text-red-400 uppercase transition hover:text-red-200 disabled:opacity-40"
                     >
-                      <Icon icon="solar:trash-bin-trash-bold" size={12} />
-                    </Button>
+                      Delete
+                    </button>
                   </div>
                 )}
+              </div>
+
+              <p className="text-sm leading-6 whitespace-pre-wrap text-white/70 sm:text-base">
+                {comment.content}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-4 self-center">
+              <div className="flex flex-col items-end gap-1">
+                {comment.rating ? (
+                  <span className="text-[10px] font-semibold tracking-[0.2em] text-yellow-400 uppercase">
+                    {comment.rating}/10
+                  </span>
+                ) : null}
+                <span className="text-right text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
+                  {timestamp ? formatDate(timestamp) : 'Just now'}
+                </span>
               </div>
 
               <div className="flex h-full">
@@ -300,7 +300,7 @@ export default function MediaComments({
 
             console.error('[Comments] Could not load comments:', error)
             setLoadError(
-              error?.message || 'Comments are temporarily unavailable.'
+              error?.message || 'Comments are temporarily unavailable'
             )
             setIsLoading(false)
           },
@@ -308,7 +308,7 @@ export default function MediaComments({
       )
     } catch (error) {
       console.error('[Comments] Could not initialize comments:', error)
-      setLoadError(error?.message || 'Comments are temporarily unavailable.')
+      setLoadError(error?.message || 'Comments are temporarily unavailable')
       setIsLoading(false)
     }
 
@@ -391,13 +391,9 @@ export default function MediaComments({
     entityType === 'tv' ? 'Series' : entityType === 'movie' ? 'Movie' : 'Title'
 
   async function handleSignInRequest() {
-    await openModal('AUTH_MODAL', 'center', {
+    await openModal('AUTH_MODAL', 'bottom', {
       data: {
         mode: 'sign-in',
-      },
-      header: {
-        title: 'Sign in to continue',
-        description: `Leave a review and score for ${title}.`,
       },
     })
   }
@@ -414,13 +410,13 @@ export default function MediaComments({
       const normalizedComment = currentText.trim()
 
       if (!auth.isAuthenticated) {
-        toast.warning('You need to sign in before posting a comment.')
+        toast.warning('You need to sign in before posting a comment')
         return
       }
 
       if (normalizedComment.length < COMMENT_MIN_LENGTH) {
         toast.error(
-          `Comment must be at least ${COMMENT_MIN_LENGTH} characters long.`
+          `Comment must be at least ${COMMENT_MIN_LENGTH} characters long`
         )
         return
       }
@@ -438,14 +434,14 @@ export default function MediaComments({
         })
 
         toast.success(
-          ownComment ? 'Your review was updated.' : 'Your review was published.'
+          ownComment ? 'Your review was updated' : 'Your review was published'
         )
         setIsEditing(false)
         if (!ownComment) {
           setCommentText('')
         }
       } catch (error) {
-        toast.error(error?.message || 'Comment could not be saved.')
+        toast.error(error?.message || 'Comment could not be saved')
       } finally {
         setIsSubmitting(false)
       }
@@ -458,19 +454,19 @@ export default function MediaComments({
 
     try {
       await deleteMediaComment({ media, userId: auth.user.id })
-      toast.success('Your review was deleted.')
+      toast.success('Your review was deleted')
       setCommentText('')
       setRating(null)
       setIsSpoiler(false)
       setIsEditing(false)
     } catch (error) {
-      toast.error(error?.message || 'Failed to delete comment.')
+      toast.error(error?.message || 'Failed to delete comment')
     }
   }
 
   async function handleLike(commentId) {
     if (!auth.isAuthenticated) {
-      toast.warning('You need to sign in to like comments.')
+      toast.warning('You need to sign in to like comments')
       return
     }
 
@@ -481,7 +477,7 @@ export default function MediaComments({
         userId: auth.user.id,
       })
     } catch (error) {
-      toast.error(error?.message || 'Failed to like comment.')
+      toast.error(error?.message || 'Failed to like comment')
     }
   }
 
@@ -607,7 +603,7 @@ export default function MediaComments({
                     </h3>
                     {ownComment && isEditing && (
                       <button
-                        className="text-error hover:text-error/70 cursor-pointer text-[11px] font-semibold tracking-[0.2em] uppercase transition"
+                        className="cursor-pointer text-[11px] font-semibold tracking-[0.2em] text-red-400 uppercase transition hover:text-red-200"
                         type="button"
                         onClick={() => {
                           setIsEditing(false)

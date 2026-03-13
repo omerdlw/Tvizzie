@@ -109,7 +109,7 @@ export default function Nav() {
     <MotionConfig transition={ANIMATION.transition}>
       <motion.div
         className="fixed inset-0 cursor-pointer"
-        transition={{ ease: EASING.SMOOTH, duration: 0.25 }}
+        transition={{ ease: EASING.EASE_OUT, duration: 0.25 }}
         style={{
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: expanded || statusState?.isOverlay ? 'auto' : 'none',
@@ -136,7 +136,7 @@ export default function Nav() {
       </AnimatePresence>
 
       <div
-        className={`fixed inset-x-0 bottom-2 mx-auto h-auto w-[calc(100%-16px)] transition-opacity duration-300 select-none sm:w-[460px] ${
+        className={`fixed right-2 bottom-2 left-2 h-auto select-none touch-manipulation transition-opacity duration-300 sm:left-1/2 sm:right-auto sm:w-[460px] sm:-translate-x-1/2 ${
           isModalOpen
             ? 'pointer-events-none'
             : isOpen

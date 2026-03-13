@@ -77,7 +77,7 @@ export default function Page() {
   if (loading) return null
 
   return (
-    <div className="relative mx-auto mt-8 flex w-full max-w-7xl flex-col gap-6 p-3 select-none sm:mt-12 sm:p-4 md:mt-16 md:gap-10 md:p-6">
+    <div className="relative mx-auto mt-8 flex w-full max-w-6xl flex-col gap-6 p-3 select-none sm:mt-12 sm:p-4 md:gap-10 md:p-6 lg:mt-20">
       <HeroSpotlight items={data.trending} onSlideChange={handleSlideChange} />
       <HomeDiscover
         initialType="movie"

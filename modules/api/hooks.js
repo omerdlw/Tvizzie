@@ -228,11 +228,16 @@ export function useMutation(options = {}) {
   const [data, setData] = useState(null)
   const toast = useToast()
   const toastRef = useRef(toast)
+  const optionsRef = useRef(options)
   toastRef.current = toast
+
+  useEffect(() => {
+    optionsRef.current = options
+  }, [options])
 
   const mutate = useCallback(
     async (mutationFn, mutationOptions = {}) => {
-      const opts = { ...options, ...mutationOptions }
+      const opts = { ...(optionsRef.current || {}), ...mutationOptions }
       setLoading(true)
       setError(null)
 
@@ -289,7 +294,6 @@ export function useMutation(options = {}) {
         ;(opts.onSettled || onSettled)?.()
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       invalidateQueries,
       showSuccessToast,

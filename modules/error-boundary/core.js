@@ -54,7 +54,7 @@ export class ErrorBoundaryCore extends React.Component {
         message:
           this.props.message ||
           error?.message ||
-          'An unexpected error occurred.',
+          'An unexpected error occurred',
         error,
         errorInfo,
         resetError: this.resetError,

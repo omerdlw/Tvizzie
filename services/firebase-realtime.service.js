@@ -5,7 +5,7 @@ import { database } from './firebase.service'
 function getDatabaseInstance() {
   if (!database) {
     throw new Error(
-      'Firebase Realtime Database is not configured. Set NEXT_PUBLIC_FIREBASE_DATABASE_URL before using realtime services.'
+      'Firebase Realtime Database is not configured. Set NEXT_PUBLIC_FIREBASE_DATABASE_URL before using realtime services'
     )
   }
 

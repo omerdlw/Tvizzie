@@ -2,16 +2,13 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
-import { useNavigationContext } from '../context'
-import { useNavigationCore } from './use-navigation-core'
-
 export const useRouteChangeEffects = (
+  pathname,
+  expandParentForPath,
   setExpanded,
   setSearchQuery,
   setIsHovered
 ) => {
-  const { expandParentForPath } = useNavigationContext()
-  const { pathname } = useNavigationCore()
   const pathnameRef = useRef(pathname)
 
   const resetNavigationState = useCallback(() => {

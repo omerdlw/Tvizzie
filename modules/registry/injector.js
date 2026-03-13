@@ -5,21 +5,40 @@ import { useEffect } from 'react'
 import { useRegistryContext } from './context'
 
 export const RegistryInjector = ({ items, type }) => {
-  const { register, unregister } = useRegistryContext()
+  const { batch, register, unregister } = useRegistryContext()
 
   useEffect(() => {
     if (!items || !type) return
+    const entries = Object.entries(items)
+    if (entries.length === 0) return
 
-    Object.entries(items).forEach(([key, item]) => {
-      register(type, key, item)
-    })
+    if (typeof batch === 'function') {
+      batch((queue) => {
+        entries.forEach(([key, item]) => {
+          queue.register(type, key, item)
+        })
+      })
+    } else {
+      entries.forEach(([key, item]) => {
+        register(type, key, item)
+      })
+    }
 
     return () => {
-      Object.keys(items).forEach((key) => {
+      if (typeof batch === 'function') {
+        batch((queue) => {
+          entries.forEach(([key]) => {
+            queue.unregister(type, key)
+          })
+        })
+        return
+      }
+
+      entries.forEach(([key]) => {
         unregister(type, key)
       })
     }
-  }, [items, type, register, unregister])
+  }, [batch, items, type, register, unregister])
 
   return null
 }

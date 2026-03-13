@@ -34,7 +34,7 @@ export function ListCard({ isOwner = false, list, onDelete, onEdit, onOpen }) {
           {list.title}
         </h3>
         <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-white/70">
-          {list.description || 'No description yet.'}
+          {list.description || 'No description yet'}
         </p>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-[11px] font-semibold tracking-[0.12em] text-white/40 uppercase">

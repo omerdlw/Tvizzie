@@ -31,7 +31,7 @@ function validateAllowedEmailDomain(value) {
   const [localPart, domain] = email.split('@')
 
   if (!localPart || !domain) {
-    throw new Error('Enter a valid email address.')
+    throw new Error('Enter a valid email address')
   }
 
   const isAllowed = EMAIL_DOMAIN_PATTERNS.some((pattern) =>
@@ -40,7 +40,7 @@ function validateAllowedEmailDomain(value) {
 
   if (!isAllowed) {
     throw new Error(
-      'Only supported email domains are allowed: gmail, outlook, hotmail, yandex, yahoo, tempmail, protonmail, icloud.'
+      'Only supported email domains are allowed: gmail, outlook, hotmail, yandex, yahoo, tempmail, protonmail, icloud'
     )
   }
 
@@ -76,8 +76,16 @@ export async function POST(request) {
     const message = String(error?.message || 'Could not send verification code')
     const rateLimitError =
       message.includes('Too many') || message.includes('Please wait')
+    const providerConfigError =
+      message.includes('SMTP configuration is incomplete') ||
+      message.includes('Brevo SMTP configuration is incomplete')
+    const providerAuthError = message.includes(
+      'Email provider authentication failed'
+    )
     const status = rateLimitError
       ? 429
+      : providerConfigError || providerAuthError
+        ? 502
       : message.includes('required') ||
           message.includes('invalid') ||
           message.includes('expired') ||

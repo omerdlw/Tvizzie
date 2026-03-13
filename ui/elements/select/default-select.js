@@ -6,6 +6,7 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown } from 'lucide-react'
 
 import { Z_INDEX } from '@/lib/constants'
+import Icon from '@/ui/icon/index'
 
 import { cn, resolveSlotClasses } from '../utils'
 
@@ -15,7 +16,7 @@ const DefaultSelect = forwardRef(
       options = [],
       value,
       onChange,
-      placeholder = 'Select...',
+      placeholder = 'Select',
       className,
       classNames = {},
       disabled = false,
@@ -36,20 +37,42 @@ const DefaultSelect = forwardRef(
         <SelectPrimitive.Trigger
           ref={ref}
           className={cn(
-            classes.value,
-            classes.trigger,
+            'flex items-center justify-center',
             classes.root,
-            'inline-flex w-full items-center justify-between'
+            classes.trigger
           )}
         >
-          {leftIcon && <span className={cn(classes.leftIcon)}>{leftIcon}</span>}
-          <SelectPrimitive.Value placeholder={placeholder}>
-            {selectedOption?.label || placeholder}
-          </SelectPrimitive.Value>
+          {leftIcon && (
+            <span
+              className={cn(
+                'inline-flex items-center justify-center shrink-0',
+                classes.leftIcon
+              )}
+            >
+              {leftIcon}
+            </span>
+          )}
+          <span className={cn('inline-flex items-center', classes.value)}>
+            <SelectPrimitive.Value placeholder={placeholder}>
+              {selectedOption?.label || placeholder}
+            </SelectPrimitive.Value>
+          </span>
           {rightIcon ? (
-            <span className={cn(classes.rightIcon)}>{rightIcon}</span>
+            <span
+              className={cn(
+                'inline-flex items-center justify-center shrink-0',
+                classes.rightIcon
+              )}
+            >
+              {rightIcon}
+            </span>
           ) : (
-            <SelectPrimitive.Icon className={cn(classes.icon)}>
+            <SelectPrimitive.Icon
+              className={cn(
+                'inline-flex items-center justify-center shrink-0',
+                classes.icon
+              )}
+            >
               <ChevronDown size={16} />
             </SelectPrimitive.Icon>
           )}
@@ -70,16 +93,23 @@ const DefaultSelect = forwardRef(
                   className={cn(
                     classes.option,
                     value === option.value && classes.optionActive,
-                    'relative flex items-center'
+                    'relative flex items-center gap-2'
                   )}
                 >
+                  {option.icon && (
+                    <Icon
+                      icon={option.icon}
+                      size={14}
+                      className={cn(classes.optionIcon)}
+                    />
+                  )}
                   <SelectPrimitive.ItemText>
                     {option.label}
                   </SelectPrimitive.ItemText>
                   <SelectPrimitive.ItemIndicator
                     className={cn(classes.indicator)}
                   >
-                    <Check size={16} />
+                    <Icon icon="solar:check-read-bold" size={16} />
                   </SelectPrimitive.ItemIndicator>
                 </SelectPrimitive.Item>
               ))}

@@ -20,9 +20,9 @@ export async function generateMetadata({ params }) {
     ? `${name} (${show.first_air_date.split('-')[0]}) - Tvizzie`
     : `${name} - Tvizzie`
 
-  let description = show.overview || `Details for ${name}.`
+  let description = show.overview || `Details for ${name}`
   if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '...')
+    description = description.substring(0, 150).replace(/\s+\S*$/, '')
   }
 
   const imageUrl = show.backdrop_path

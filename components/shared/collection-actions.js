@@ -148,13 +148,9 @@ export default function CollectionActions({ media }) {
   }, [auth.isReady, auth.user?.id, mediaSnapshot])
 
   async function openAuthModal() {
-    return openModal('AUTH_MODAL', 'center', {
+    return openModal('AUTH_MODAL', 'bottom', {
       data: {
         mode: 'sign-in',
-      },
-      header: {
-        title: 'Sign in to continue',
-        description: `Manage ${title} in your collection.`,
       },
     })
   }
@@ -188,11 +184,11 @@ export default function CollectionActions({ media }) {
 
       toast.success(
         result.isFavorite
-          ? `${title} was added to your favorites.`
-          : `${title} was removed from your favorites.`
+          ? `${title} was added to your favorites`
+          : `${title} was removed from your favorites`
       )
     } catch (error) {
-      toast.error(error?.message || 'Favorite could not be updated.')
+      toast.error(error?.message || 'Favorite could not be updated')
     } finally {
       setIsSubmittingFavorite(false)
     }
@@ -214,11 +210,11 @@ export default function CollectionActions({ media }) {
 
       toast.success(
         result.isInWatchlist
-          ? `${title} was added to your watchlist.`
-          : `${title} was removed from your watchlist.`
+          ? `${title} was added to your watchlist`
+          : `${title} was removed from your watchlist`
       )
     } catch (error) {
-      toast.error(error?.message || 'Watchlist could not be updated.')
+      toast.error(error?.message || 'Watchlist could not be updated')
     } finally {
       setIsSubmittingWatchlist(false)
     }
@@ -229,14 +225,10 @@ export default function CollectionActions({ media }) {
     if (!userId) return
 
     openModal('LIST_PICKER_MODAL', 'bottom', {
-      header: {
-        description: 'Custom Lists',
-      },
       data: {
         media: mediaSnapshot,
         userId,
       },
-      full: false,
     })
   }
 
@@ -254,7 +246,7 @@ export default function CollectionActions({ media }) {
         }
         label={
           isSubmittingFavorite
-            ? 'Saving...'
+            ? 'Saving'
             : isFavorite
               ? 'Favorited'
               : 'Add Favorite'
@@ -275,7 +267,7 @@ export default function CollectionActions({ media }) {
         }
         label={
           isSubmittingWatchlist
-            ? 'Updating...'
+            ? 'Updating'
             : isInWatchlist
               ? 'In Watchlist'
               : 'Watchlist'

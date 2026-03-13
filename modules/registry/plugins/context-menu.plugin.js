@@ -1,5 +1,6 @@
 import { REGISTRY_TYPES } from '../context'
 import { createPlugin } from './create-plugin'
+import { splitRegistryConfig } from './registry-meta'
 
 export const contextMenuPlugin = createPlugin({
   name: 'contextMenu',
@@ -7,12 +8,22 @@ export const contextMenuPlugin = createPlugin({
     const contextMenu = config?.contextMenu
     if (!contextMenu) return
 
+    const { payload, registerOptions, source } = splitRegistryConfig(
+      contextMenu
+    )
+
     const key = pathname || 'current-page'
 
-    register(REGISTRY_TYPES.CONTEXT_MENU, key, contextMenu, 'dynamic')
+    register(
+      REGISTRY_TYPES.CONTEXT_MENU,
+      key,
+      payload,
+      source,
+      registerOptions
+    )
 
     return () => {
-      unregister(REGISTRY_TYPES.CONTEXT_MENU, key, 'dynamic')
+      unregister(REGISTRY_TYPES.CONTEXT_MENU, key, source)
     }
   },
 })

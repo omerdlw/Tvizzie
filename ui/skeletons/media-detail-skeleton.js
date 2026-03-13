@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
-
 import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
@@ -16,10 +14,6 @@ export function MediaDetailSkeleton({ className }) {
   const pathname = usePathname()
   const isTv = pathname?.includes('/tv/')
 
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
   return (
     <div
       className={cn(
@@ -30,7 +24,6 @@ export function MediaDetailSkeleton({ className }) {
       <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
 
       <div className="mt-8 flex h-auto w-full flex-col items-start gap-6 sm:mt-12 lg:mt-20 lg:flex-row lg:gap-12">
-        {/* Sidebar Poster Skeleton */}
         <div className="w-full self-start lg:sticky lg:top-6 lg:w-[400px]">
           <div className="flex flex-col gap-6">
             <Shimmer className="relative aspect-2/3 w-full overflow-hidden rounded-[20px] bg-white/5 ring-1 ring-white/5 lg:h-[600px] lg:w-[400px]" />
@@ -45,12 +38,9 @@ export function MediaDetailSkeleton({ className }) {
           </div>
         </div>
 
-        {/* Content Skeleton */}
         <div className="flex w-full min-w-0 flex-col">
-          {/* Zuume Title Skeleton - Large scaled to match 8xl */}
           <Shimmer className="h-14 w-full rounded-2xl bg-white/10 sm:h-20 sm:w-3/4 md:h-24 lg:h-28" />
 
-          {/* Meta Info Row */}
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Shimmer className="h-8 w-8 rounded-[6px] bg-white/5" />
             <div className="flex items-center gap-2">
@@ -60,7 +50,6 @@ export function MediaDetailSkeleton({ className }) {
             </div>
           </div>
 
-          {/* Keywords Row */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {[...Array(6)].map((_, i) => (
               <Shimmer
@@ -70,7 +59,6 @@ export function MediaDetailSkeleton({ className }) {
             ))}
           </div>
 
-          {/* Tagline / Overview text */}
           <div className="mt-6 flex flex-col gap-4">
             <Shimmer className="h-3 w-1/2 rounded bg-white/5" />
             <div className="flex flex-col gap-3">
@@ -82,7 +70,6 @@ export function MediaDetailSkeleton({ className }) {
             </div>
           </div>
 
-          {/* Seasons Section (TV Only) */}
           {isTv && (
             <div className="mt-12 flex flex-col gap-4">
               <Shimmer className="h-3 w-24 rounded bg-white/5" />
@@ -99,7 +86,6 @@ export function MediaDetailSkeleton({ className }) {
             </div>
           )}
 
-          {/* Cast Section Skeleton */}
           <div className="mt-12 flex flex-col gap-4">
             <div className="flex items-center justify-between px-1">
               <Shimmer className="h-3 w-32 rounded bg-white/5" />
@@ -121,7 +107,6 @@ export function MediaDetailSkeleton({ className }) {
             </div>
           </div>
 
-          {/* Section Skeletons (Images & Videos) */}
           {[...Array(2)].map((_, sectionIdx) => (
             <div key={sectionIdx} className="mt-12 flex flex-col gap-4">
               <div className="flex w-fit items-center gap-1.5 rounded-[12px] bg-white/5 p-1 ring-1 ring-white/5">
@@ -140,7 +125,6 @@ export function MediaDetailSkeleton({ className }) {
             </div>
           ))}
 
-          {/* Recommendations / Similar */}
           {[...Array(2)].map((_, sectionIdx) => (
             <div key={sectionIdx + 10} className="mt-12 flex flex-col gap-4">
               <Shimmer className="ml-1 h-3 w-32 rounded bg-white/5" />

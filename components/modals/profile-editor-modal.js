@@ -46,25 +46,25 @@ export default function ProfileEditorModal({ close, data, header }) {
         }
       }
 
-      toast.success('Profile updated.')
+      toast.success('Profile updated')
       if (typeof onSuccess === 'function') onSuccess(nextProfile)
       close()
     } catch (error) {
-      toast.error(error?.message || 'Profile could not be updated.')
+      toast.error(error?.message || 'Profile could not be updated')
     } finally {
       setIsSaving(false)
     }
   }
 
   return (
-    <Container header={{ ...header }} close={close}>
+    <Container className="w-full sm:w-xl" header={{ ...header }} close={close}>
       <form
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-4 p-2.5"
       >
         <div className="grid gap-5 p-2 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
               Display Name
             </label>
             <Input
@@ -80,7 +80,7 @@ export default function ProfileEditorModal({ close, data, header }) {
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
               Username
             </label>
             <Input
@@ -94,7 +94,7 @@ export default function ProfileEditorModal({ close, data, header }) {
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
               Avatar URL
             </label>
             <Input
@@ -102,7 +102,7 @@ export default function ProfileEditorModal({ close, data, header }) {
               onChange={(event) =>
                 handleChange('avatarUrl', event.target.value)
               }
-              placeholder="https://..."
+              placeholder="https://"
               className={{
                 input:
                   'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
@@ -110,7 +110,7 @@ export default function ProfileEditorModal({ close, data, header }) {
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/40 uppercase">
+            <label className="ml-1 text-[10px] font-bold tracking-[0.15em] text-white/50 uppercase">
               Banner URL
             </label>
             <Input
@@ -118,7 +118,7 @@ export default function ProfileEditorModal({ close, data, header }) {
               onChange={(event) =>
                 handleChange('bannerUrl', event.target.value)
               }
-              placeholder="https://..."
+              placeholder="https://"
               className={{
                 input:
                   'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
@@ -133,7 +133,7 @@ export default function ProfileEditorModal({ close, data, header }) {
             onChange={(event) =>
               handleChange('description', event.target.value)
             }
-            placeholder="Write something about yourself..."
+            placeholder="Write something about yourself"
             maxHeight={120}
             className={{
               textarea:
@@ -155,7 +155,7 @@ export default function ProfileEditorModal({ close, data, header }) {
             disabled={isSaving}
             className="center h-11 flex-auto cursor-pointer rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
           >
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? 'Saving' : 'Save Changes'}
           </Button>
         </div>
       </form>

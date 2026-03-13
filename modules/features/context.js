@@ -8,8 +8,6 @@ import {
   useState,
 } from 'react'
 
-import { PROJECT_CONFIG } from '@/config/project.config'
-
 const FeaturesContext = createContext(null)
 
 function createDefaultFeatures(config, initialFeatures) {
@@ -21,8 +19,7 @@ function createDefaultFeatures(config, initialFeatures) {
   }
 }
 
-export function FeaturesProvider({ initialFeatures = {}, children }) {
-  const config = PROJECT_CONFIG
+export function FeaturesProvider({ config = {}, initialFeatures = {}, children }) {
   const [features, setFeatures] = useState(() =>
     createDefaultFeatures(config, initialFeatures)
   )

@@ -64,6 +64,7 @@ import {
 } from '@/services/watchlist.service'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon/index'
+import { ProfileDetailSkeleton } from '@/ui/skeletons/profile-detail-skeleton'
 
 const PROFILE_TABS = ['favorites', 'watchlist', 'lists']
 
@@ -120,16 +121,11 @@ export default function ProfilePage({
     lists: 'newest',
   })
 
-  const [activeTab, setActiveTab] = useState(() => {
-    if (activeTabProp && PROFILE_TABS.includes(activeTabProp)) {
-      return activeTabProp
-    }
-    if (typeof window !== 'undefined') {
-      const param = new URLSearchParams(window.location.search).get('tab')
-      if (param && PROFILE_TABS.includes(param)) return param
-    }
-    return 'favorites'
-  })
+  const [activeTab, setActiveTab] = useState(() =>
+    activeTabProp && PROFILE_TABS.includes(activeTabProp)
+      ? activeTabProp
+      : 'favorites'
+  )
   const activeListId = searchParams.get('list') || ''
 
   const resolvedUserId = username ? remoteUserId : auth.user?.id || null
@@ -150,6 +146,19 @@ export default function ProfilePage({
     () => lists.find((list) => list.id === activeListId) || null,
     [activeListId, lists]
   )
+
+  useEffect(() => {
+    if (activeTabProp && PROFILE_TABS.includes(activeTabProp)) {
+      setActiveTab((prev) => (prev === activeTabProp ? prev : activeTabProp))
+      return
+    }
+
+    const tabParam = searchParams.get('tab')
+    const nextTab =
+      tabParam && PROFILE_TABS.includes(tabParam) ? tabParam : 'favorites'
+
+    setActiveTab((prev) => (prev === nextTab ? prev : nextTab))
+  }, [activeTabProp, searchParams])
 
   const sortItems = useCallback((items, sortMethod) => {
     if (!items || items.length === 0) return []
@@ -258,14 +267,15 @@ export default function ProfilePage({
 
   function handleTabChange(tab) {
     setActiveTab(tab)
-    const base = username ? `/profile/${username}` : '/profile'
-    const url = tab === 'favorites' ? base : `${base}?tab=${tab}`
-    window.history.replaceState(null, '', url)
+    updateQuery({
+      tab: tab === 'favorites' ? null : tab,
+      list: null,
+    })
   }
 
   const handleEditList = (list) => {
     if (!isOwner) return
-    openModal('LIST_EDITOR_MODAL', 'center', {
+    openModal('LIST_EDITOR_MODAL', { desktop: 'center', mobile: 'bottom' }, {
       data: {
         isOwner: true,
         userId: auth.user.id,
@@ -278,14 +288,10 @@ export default function ProfilePage({
   function handleDeleteList(list) {
     if (!isOwner) return
     openModal('CONFIRMATION_MODAL', 'bottom', {
-      header: {
-        title: 'DELETE LIST',
-        description: `List ID: ${list.id}`,
-      },
       data: {
         confirmText: 'Delete List',
         description:
-          'This removes the list and all items inside it from your profile.',
+          'This removes the list and all items inside it from your profile',
         isDestructive: true,
         onConfirm: async () => {
           try {
@@ -293,12 +299,12 @@ export default function ProfilePage({
               listId: list.id,
               userId: auth.user.id,
             })
-            toast.success(`"${list.title}" was deleted.`)
+            toast.success(`"${list.title}" was deleted`)
             if (activeListId === list.id) {
               updateQuery({ list: null, tab: 'lists' })
             }
           } catch (error) {
-            toast.error(error?.message || 'The list could not be deleted.')
+            toast.error(error?.message || 'The list could not be deleted')
           }
         },
       },
@@ -339,12 +345,16 @@ export default function ProfilePage({
 
   const handleEditProfile = () => {
     if (!isOwner) return
-    openModal('PROFILE_EDITOR_MODAL', 'center', {
-      data: {
-        profile,
-        authActions: auth,
-      },
-    })
+    openModal(
+      'PROFILE_EDITOR_MODAL',
+      { desktop: 'center', mobile: 'bottom' },
+      {
+        data: {
+          profile,
+          authActions: auth,
+        },
+      }
+    )
   }
 
   const handleOpenFollowList = useCallback(
@@ -356,11 +366,7 @@ export default function ProfilePage({
       const isFollowersType = type === 'followers'
       const title = isFollowersType ? 'Followers' : 'Following'
 
-      openModal('FOLLOW_LIST_MODAL', 'center', {
-        header: {
-          title,
-          description: `@${profile.username || 'user'}`,
-        },
+      openModal('FOLLOW_LIST_MODAL', 'bottom', {
         data: {
           userId: resolvedUserId,
           type: isFollowersType ? 'followers' : 'following',
@@ -372,14 +378,9 @@ export default function ProfilePage({
   )
 
   async function handleSignInRequest() {
-    await openModal('AUTH_MODAL', 'center', {
+    await openModal('AUTH_MODAL', 'bottom', {
       data: {
         mode: 'sign-in',
-      },
-      header: {
-        title: 'Sign in to continue',
-        description:
-          'Access your profile, favorites, watchlist, and custom lists.',
       },
     })
   }
@@ -387,7 +388,7 @@ export default function ProfilePage({
   async function handleCreateList() {
     if (!isOwner) return
 
-    openModal('LIST_EDITOR_MODAL', 'center', {
+    openModal('LIST_EDITOR_MODAL', { desktop: 'center', mobile: 'bottom' }, {
       data: {
         isOwner: true,
         userId: auth.user.id,
@@ -411,9 +412,9 @@ export default function ProfilePage({
         media: item,
         userId: auth.user.id,
       })
-      toast.success(`${getMediaTitle(item)} was removed from the list.`)
+      toast.success(`${getMediaTitle(item)} was removed from the list`)
     } catch (error) {
-      toast.error(error?.message || 'The item could not be removed.')
+      toast.error(error?.message || 'The item could not be removed')
     }
   }
 
@@ -454,7 +455,7 @@ export default function ProfilePage({
       await Promise.all(updates)
     } catch (error) {
       console.error(`[Profile] Failed to persist reorder for ${tab}:`, error)
-      toast.error('Could not save custom order.')
+      toast.error('Could not save custom order')
     }
   }
 
@@ -466,9 +467,6 @@ export default function ProfilePage({
       },
       overlay: true,
       overlayOpacity: profile?.bannerUrl ? 0.78 : 0.92,
-    },
-    loading: {
-      isLoading: isPageLoading,
     },
     modal: {
       CONFIRMATION_MODAL: ConfirmationModal,
@@ -562,7 +560,7 @@ export default function ProfilePage({
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Profile could not be loaded.')
+          toast.error(error?.message || 'Profile could not be loaded')
         },
       }
     )
@@ -606,7 +604,7 @@ export default function ProfilePage({
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Favorites could not be loaded.')
+          toast.error(error?.message || 'Favorites could not be loaded')
           resolveStream('favorites')
         },
       }
@@ -620,7 +618,7 @@ export default function ProfilePage({
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Watchlist could not be loaded.')
+          toast.error(error?.message || 'Watchlist could not be loaded')
           resolveStream('watchlist')
         },
       }
@@ -634,7 +632,7 @@ export default function ProfilePage({
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Lists could not be loaded.')
+          toast.error(error?.message || 'Lists could not be loaded')
           resolveStream('lists')
         },
       }
@@ -692,7 +690,7 @@ export default function ProfilePage({
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'List items could not be loaded.')
+          toast.error(error?.message || 'List items could not be loaded')
           setIsLoadingListItems(false)
         },
       }
@@ -702,15 +700,15 @@ export default function ProfilePage({
   const publicLink = profile?.username ? `/profile/${profile.username}` : null
   const ownerLink = username ? '/profile' : null
 
-  if (isPageLoading) return null
+  if (isPageLoading) return <ProfileDetailSkeleton />
 
   if (!username && auth.isReady && !auth.isAuthenticated) {
     return (
-      <div className="center h-screen w-screen p-4">
+      <div className="center mx-auto h-dvh w-full max-w-6xl p-3 sm:p-4 md:p-6">
         <EmptyState
           icon="solar:user-circle-bold"
           title="Sign in to open your profile"
-          description="Your favorites, watchlist, and custom lists are tied to your account."
+          description="Your favorites, watchlist, and custom lists are tied to your account"
         />
       </div>
     )
@@ -718,11 +716,11 @@ export default function ProfilePage({
 
   if (!resolvedUserId || !profile) {
     return (
-      <div className="center h-screen w-screen p-4">
+      <div className="center mx-auto h-dvh w-full max-w-6xl p-3 sm:p-4 md:p-6">
         <EmptyState
           icon="solar:user-block-bold"
           title="Profile not found"
-          description="The requested profile does not exist or is no longer available."
+          description="The requested profile does not exist or is no longer available"
         />
       </div>
     )
@@ -731,7 +729,7 @@ export default function ProfilePage({
   return (
     <div
       className={cn(
-        'relative mx-auto flex w-full max-w-6xl flex-col gap-8 p-3 select-none sm:p-4 md:p-6',
+        'relative mx-auto flex w-full max-w-6xl flex-col gap-8 p-3 select-none [overflow-anchor:none] sm:p-4 md:p-6',
         isFullScreenEmpty ? 'h-dvh overflow-hidden' : 'min-h-dvh'
       )}
       style={{
@@ -779,8 +777,8 @@ export default function ProfilePage({
                 title={isOwner ? 'No favorites yet' : 'No public favorites yet'}
                 description={
                   isOwner
-                    ? 'Open any title page and add favorites from the sidebar.'
-                    : `${profile.displayName} has not shared favorites yet.`
+                    ? 'Open any title page and add favorites from the sidebar'
+                    : `${profile.displayName} has not shared favorites yet`
                 }
               />
             ) : (
@@ -816,8 +814,8 @@ export default function ProfilePage({
                 }
                 description={
                   isOwner
-                    ? 'Use the watchlist action on detail pages to queue titles.'
-                    : `${profile.displayName} has not shared watchlist items yet.`
+                    ? 'Use the watchlist action on detail pages to queue titles'
+                    : `${profile.displayName} has not shared watchlist items yet`
                 }
               />
             ) : (
@@ -899,7 +897,7 @@ export default function ProfilePage({
                   <FullScreenEmptyState
                     icon="solar:list-heart-linear"
                     title="This list is empty"
-                    description="Add titles from movie or TV detail pages to populate it."
+                    description="Add titles from movie or TV detail pages to populate it"
                   />
                 ) : (
                   <>
@@ -946,8 +944,8 @@ export default function ProfilePage({
                 title={isOwner ? 'No custom lists yet' : 'No public lists yet'}
                 description={
                   isOwner
-                    ? 'Create your first themed list, then add titles from detail pages.'
-                    : `${profile.displayName} has not published lists yet.`
+                    ? 'Create your first themed list, then add titles from detail pages'
+                    : `${profile.displayName} has not published lists yet`
                 }
               />
             ) : (

@@ -224,7 +224,7 @@ export default function HomeDiscover({
             ) : (
               <Icon icon="solar:refresh-bold" size={16} />
             )}
-            {loadingMore ? 'Loading...' : 'Load More'}
+            {loadingMore ? 'Loading' : 'Load More'}
           </button>
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { MotionConfig, useReducedMotion } from 'framer-motion'
 
@@ -8,7 +8,12 @@ import { SmoothScrollProvider } from '@/components/layout/smooth-scroll'
 import ProfileBootstrapper from '@/components/profile/bootstrapper'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { NAV_CONFIG } from '@/config/nav.config'
-import { PROJECT_CONFIG } from '@/config/project.config'
+import {
+  isProjectFeatureEnabled,
+  isRegistryDebugPanelEnabled,
+  isRegistryHistoryCaptureEnabled,
+  PROJECT_CONFIG,
+} from '@/config/project.config'
 import { SettingsProvider } from '@/contexts/settings-context'
 import { pipe } from '@/lib/utils/pipe'
 import { AuthProvider } from '@/modules/auth'
@@ -25,19 +30,20 @@ import { NavigationProvider } from '@/modules/nav/context'
 import { NotificationContainer } from '@/modules/notification'
 import { NotificationProvider } from '@/modules/notification/context'
 import { NotificationListener } from '@/modules/notification/listener'
+import { RegistryDebugPanel } from '@/modules/registry/debug-panel'
 import { RegistryProvider } from '@/modules/registry/context'
 import { TransitionProvider } from '@/modules/transition'
 
 const APP_AUTH_CONFIG = {
   ...AUTH_CONFIG,
-  enabled: PROJECT_CONFIG.features.auth !== false && AUTH_CONFIG.enabled,
+  enabled: isProjectFeatureEnabled('auth') && AUTH_CONFIG.enabled,
 }
 
 const ComposedProviders = pipe(
   [SettingsProvider],
   [FeaturesProvider, { config: PROJECT_CONFIG }],
   [AuthProvider, { config: APP_AUTH_CONFIG }],
-  [RegistryProvider],
+  [RegistryProvider, { enableHistory: isRegistryHistoryCaptureEnabled() }],
   [NotificationProvider],
   [TransitionProvider],
   [BackgroundProvider],
@@ -50,6 +56,8 @@ const ComposedProviders = pipe(
 )
 
 export const AppProviders = ({ children }) => {
+  const [isHydrated, setIsHydrated] = useState(false)
+  const showRegistryDebugPanel = isRegistryDebugPanelEnabled()
   const shouldReduceMotion = useReducedMotion()
   const prefersReducedMotion = useMemo(() => {
     if (
@@ -58,6 +66,10 @@ export const AppProviders = ({ children }) => {
     )
       return false
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
+  useEffect(() => {
+    setIsHydrated(true)
   }, [])
 
   return (
@@ -71,6 +83,7 @@ export const AppProviders = ({ children }) => {
         <NotificationContainer />
         <NotificationListener />
         <GlobalErrorListener />
+        {isHydrated && showRegistryDebugPanel && <RegistryDebugPanel />}
         <ContextMenuGlobal />
         <BackgroundOverlay />
         <CountdownOverlay />

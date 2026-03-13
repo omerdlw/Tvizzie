@@ -19,7 +19,7 @@ export function GlobalError({ children, onReset }) {
 
   return (
     <ErrorBoundaryCore
-      message="Something went wrong. Please try refreshing the page or try again."
+      message="Something went wrong Please try refreshing the page or try again"
       title="Application Error"
       resetKey={pathname}
       variant="full"
@@ -36,7 +36,7 @@ export function GlobalError({ children, onReset }) {
 export function ModuleError({ children, onReset, name }) {
   return (
     <ErrorBoundaryCore
-      message="This module encountered an unexpected error."
+      message="This module encountered an unexpected error"
       title={name ? `${name} Error` : 'Module Error'}
       onReset={onReset}
       variant="module"

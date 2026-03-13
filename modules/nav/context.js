@@ -30,7 +30,7 @@ export function NavigationProvider({ children }) {
   const [navHeight, setNavHeight] = useState(0)
   const config = NAV_CONFIG
 
-  const { register, unregister } = useNavRegistry()
+  const { batch, register, unregister } = useNavRegistry()
 
   useRegistry({
     modal: {
@@ -42,18 +42,40 @@ export function NavigationProvider({ children }) {
   const navItems = useMemo(() => config?.items || {}, [config])
 
   useEffect(() => {
-    Object.values(navItems).forEach((item) => {
-      const key = item.path || item.name
-      register(key, { ...item, isParent: !!item.children }, 'static')
-    })
+    const entries = Object.values(navItems).map((item) => [
+      item.path || item.name,
+      { ...item, isParent: !!item.children },
+    ])
+
+    if (entries.length === 0) return
+
+    if (typeof batch === 'function') {
+      batch((queue) => {
+        entries.forEach(([key, item]) => {
+          queue.register(key, item, 'static')
+        })
+      })
+    } else {
+      entries.forEach(([key, item]) => {
+        register(key, item, 'static')
+      })
+    }
 
     return () => {
-      Object.values(navItems).forEach((item) => {
-        const key = item.path || item.name
+      if (typeof batch === 'function') {
+        batch((queue) => {
+          entries.forEach(([key]) => {
+            queue.unregister(key, 'static')
+          })
+        })
+        return
+      }
+
+      entries.forEach(([key]) => {
         unregister(key, 'static')
       })
     }
-  }, [register, unregister, navItems])
+  }, [batch, register, unregister, navItems])
 
   const toggleParent = useCallback((parentName) => {
     setExpandedParents((prev) => {

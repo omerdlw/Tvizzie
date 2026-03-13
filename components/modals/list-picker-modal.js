@@ -25,12 +25,16 @@ export default function ListPickerModal({ close, data, header }) {
   const [lists, setLists] = useState([])
   const [memberships, setMemberships] = useState({})
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const [savingListIds, setSavingListIds] = useState([])
   const [isCreating, setIsCreating] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
 
   const mediaTitle = useMemo(() => getMediaTitle(media), [media])
+  const normalizedTitle = title.trim()
+  const isAnyListSaving = savingListIds.length > 0
+  const isCreateDisabled =
+    isCreating || isAnyListSaving || !userId || !media || normalizedTitle.length === 0
 
   useEffect(() => {
     if (!userId) {
@@ -49,7 +53,7 @@ export default function ListPickerModal({ close, data, header }) {
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Lists are temporarily unavailable.')
+          toast.error(error?.message || 'Lists are temporarily unavailable')
           setIsLoading(false)
         },
       }
@@ -79,7 +83,7 @@ export default function ListPickerModal({ close, data, header }) {
         }
       } catch (error) {
         if (!ignore) {
-          toast.error(error?.message || 'List memberships could not be loaded.')
+          toast.error(error?.message || 'List memberships could not be loaded')
         }
       }
     }
@@ -92,9 +96,8 @@ export default function ListPickerModal({ close, data, header }) {
   }, [lists, media, toast, userId])
 
   async function handleToggleList(listId) {
-    if (isSaving || !userId || !media) return
-
-    setIsSaving(true)
+    if (savingListIds.includes(listId) || isCreating || !userId || !media) return
+    setSavingListIds((prev) => [...prev, listId])
 
     try {
       const result = await toggleUserListItem({ listId, media, userId })
@@ -106,25 +109,33 @@ export default function ListPickerModal({ close, data, header }) {
 
       toast.success(
         result.isInList
-          ? `${mediaTitle} was added to the list.`
-          : `${mediaTitle} was removed from the list.`
+          ? `${mediaTitle} was added to the list`
+          : `${mediaTitle} was removed from the list`
       )
     } catch (error) {
-      toast.error(error?.message || 'The list could not be updated.')
+      toast.error(error?.message || 'The list could not be updated')
     } finally {
-      setIsSaving(false)
+      setSavingListIds((prev) => prev.filter((id) => id !== listId))
     }
   }
 
   async function handleCreateList(event) {
     event.preventDefault()
 
-    if (isCreating || !userId || !media) return
+    if (isCreating || isAnyListSaving || !userId || !media) return
+    if (!normalizedTitle) {
+      toast.error('List title is required')
+      return
+    }
 
     setIsCreating(true)
 
     try {
-      const nextList = await createUserList({ description, title, userId })
+      const nextList = await createUserList({
+        description: description.trim(),
+        title: normalizedTitle,
+        userId,
+      })
       await toggleUserListItem({
         listId: nextList.id,
         media,
@@ -137,9 +148,9 @@ export default function ListPickerModal({ close, data, header }) {
       }))
       setDescription('')
       setTitle('')
-      toast.success(`Created "${nextList.title}" and added ${mediaTitle}.`)
+      toast.success(`Created "${nextList.title}" and added ${mediaTitle}`)
     } catch (error) {
-      toast.error(error?.message || 'The list could not be created.')
+      toast.error(error?.message || 'The list could not be created')
     } finally {
       setIsCreating(false)
     }
@@ -151,106 +162,144 @@ export default function ListPickerModal({ close, data, header }) {
         ...header,
         title: `Add ${mediaTitle}`,
       }}
+      className="w-full sm:w-[800px]"
       close={close}
     >
-      <div className="scrollbar-hide flex max-h-[70vh] w-full min-w-xl flex-col gap-6 overflow-y-auto p-2.5">
-        <div className="space-y-4 p-2">
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
-            <Icon icon="solar:list-bold" size={14} />
-            Your Lists
+      <div className="scrollbar-hide grid max-h-[76vh] min-h-0 w-full grid-cols-1 overflow-y-auto sm:grid-cols-[1.2fr_0.8fr]">
+        <section className="flex min-h-0 flex-col border-b border-white/10 sm:border-r sm:border-b-0">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.2em] text-white/55 uppercase">
+              <Icon icon="solar:list-bold" size={14} />
+              Your Lists
+            </div>
+            <span className="text-[11px] text-white/50 tracking-[0.2em] uppercase">
+              {lists.length} total
+            </span>
           </div>
 
-          {isLoading ? (
-            <div className="flex min-h-24 items-center justify-center text-sm text-white/45">
-              Loading your lists...
-            </div>
-          ) : lists.length === 0 ? (
-            <div className="rounded-[20px] border border-dashed border-white/10 bg-white/3 p-4 text-center text-xs text-white/30 italic">
-              No custom lists yet. Create your first one below.
-            </div>
-          ) : (
-            <div className="grid gap-3">
-              {lists.map((list) => {
+          <div className="min-h-0 flex-1 space-y-3 px-5 py-4">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((item) => (
+                  <div
+                    key={item}
+                    className="h-24 animate-pulse rounded-[18px] border border-white/10 bg-white/5"
+                  />
+                ))}
+              </div>
+            ) : lists.length === 0 ? (
+              <div className="flex min-h-40 flex-col items-center justify-center rounded-[20px] border border-dashed border-white/12 bg-white/5 text-center">
+                <p className="text-xs font-semibold tracking-[0.16em] text-white/50 uppercase">
+                  No Lists Yet
+                </p>
+                <p className="mt-2 text-sm text-white/40">
+                  Create your first list on the right panel
+                </p>
+              </div>
+            ) : (
+              lists.map((list) => {
                 const isActive = !!memberships[list.id]
+                const isListSaving = savingListIds.includes(list.id)
 
                 return (
                   <button
                     type="button"
                     key={list.id}
                     onClick={() => handleToggleList(list.id)}
-                    disabled={isSaving}
-                    className="flex cursor-pointer items-center justify-between gap-4 rounded-[16px] border border-white/5 bg-white/5 px-5 py-4 text-left transition hover:border-white/20 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isListSaving || isCreating}
+                    className={cn(
+                      'w-full cursor-pointer rounded-[18px] border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60',
+                      isActive
+                        ? 'border-emerald-400/35 bg-emerald-400/8'
+                        : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/8'
+                    )}
                   >
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-white/90">
-                        {list.title}
-                      </div>
-                      <div className="mt-1 flex items-center gap-2 text-[10px] font-medium tracking-widest text-white/30 uppercase">
-                        <span>{list.itemsCount} items</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-base font-bold text-white">
+                            {list.title}
+                          </p>
+                          {isActive ? (
+                            <Icon
+                              className="shrink-0 text-emerald-300"
+                              icon="solar:check-circle-bold"
+                              size={16}
+                            />
+                          ) : null}
+                        </div>
+                        <p className="mt-1 text-[10px] font-semibold tracking-[0.16em] text-white/45 uppercase">
+                          {list.itemsCount} items
+                        </p>
                         {list.description ? (
-                          <span className="truncate">• {list.description}</span>
+                          <p className="mt-2 break-all text-sm text-white/50">
+                            {list.description}
+                          </p>
                         ) : null}
                       </div>
+
+                      <span
+                        className={cn(
+                          'shrink-0 rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.16em] uppercase',
+                          isActive
+                            ? 'border border-emerald-400/35 bg-emerald-400/12 text-emerald-300'
+                            : 'border border-white/15 bg-white/5 text-white/70'
+                        )}
+                      >
+                        {isListSaving ? 'Saving' : isActive ? 'Selected' : 'Add'}
+                      </span>
                     </div>
-                    <span
-                      className={cn(
-                        'shrink-0 rounded-full px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase transition-all',
-                        isActive
-                          ? 'border border-red-500/20 bg-[#450a0a] text-[#fca5a5]'
-                          : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                      )}
-                    >
-                      {isActive ? 'Remove' : 'Add'}
-                    </span>
                   </button>
                 )
-              })}
+              })
+            )}
+          </div>
+        </section>
+
+        <section className="min-h-0">
+          <form onSubmit={handleCreateList} className="flex h-full min-h-0 flex-col">
+            <div className="flex items-center border-b border-white/10 px-5 py-4">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.2em] text-white/55 uppercase">
+                <Icon icon="solar:add-square-bold" size={14} />
+                Create List
+              </div>
             </div>
-          )}
-        </div>
 
-        <form onSubmit={handleCreateList} className="">
-          <div className="space-y-1 p-2">
-            <p className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
-              Create List
-            </p>
-            <p className="text-[11px] text-white/40">
-              Lists are public on your profile.
-            </p>
-          </div>
+            <div className="min-h-0 flex-1 space-y-4 px-5 py-4">
+              <p className="text-sm text-white/45">Lists are public on your profile</p>
+              <Input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Weekend Marathon"
+                className={{
+                  input:
+                    'w-full rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors outline-none placeholder:text-white/30 focus:border-white/25 focus:bg-white/8',
+                }}
+              />
 
-          <div className="space-y-4 p-2">
-            <Input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Weekend Marathon"
-              className={{
-                input:
-                  'w-full rounded-[20px] border border-white/5 bg-white/5 px-4 py-3 text-sm text-white transition-colors outline-none placeholder:text-white/20 focus:border-white/20',
-              }}
-            />
+              <Textarea
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="Description (optional)"
+                maxHeight={140}
+                className={{
+                  textarea:
+                    'min-h-[130px] w-full resize-none rounded-[18px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white transition-colors outline-none placeholder:text-white/30 focus:border-white/25 focus:bg-white/8',
+                }}
+              />
+            </div>
 
-            <Textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Description (optional)"
-              maxHeight={120}
-              className={{
-                textarea:
-                  'min-h-[100px] w-full resize-none rounded-[20px] border border-white/5 bg-white/5 px-4 py-3 text-sm text-white transition-colors outline-none placeholder:text-white/20 focus:border-white/20',
-              }}
-            />
-          </div>
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button
-              type="submit"
-              disabled={isCreating}
-              className="h-12 w-full cursor-pointer rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition hover:bg-white/90 disabled:opacity-50"
-            >
-              {isCreating ? 'Creating...' : 'Create List'}
-            </Button>
-          </div>
-        </form>
+            <div className="border-t border-white/10 px-5 py-4">
+              <Button
+                type="submit"
+                disabled={isCreateDisabled}
+                className="h-12 w-full cursor-pointer rounded-[18px] bg-white px-8 text-[11px] font-bold tracking-[0.2em] text-black uppercase transition hover:bg-white/90 disabled:opacity-50"
+              >
+                {isCreating ? 'Creating' : 'Create List'}
+              </Button>
+            </div>
+          </form>
+        </section>
       </div>
     </Container>
   )

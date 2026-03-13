@@ -12,7 +12,7 @@ export default function Error({ error, reset }) {
     })
 
     globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-      message: error?.message || 'Sayfa düzeyinde bir hata oluştu.',
+      message: error?.message || 'Sayfa düzeyinde bir hata oluştu',
       resetError: reset,
       error,
     })

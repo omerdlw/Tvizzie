@@ -13,6 +13,8 @@ const Textarea = forwardRef(
       maxWidth,
       value,
       onChange,
+      autoCapitalize = 'none',
+      autoCorrect = 'off',
       ...props
     },
     ref
@@ -58,6 +60,8 @@ const Textarea = forwardRef(
           ref={setTextareaRef}
           value={value}
           onChange={onChange}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
           className={cn(
             'w-full resize bg-transparent',
             classes.textarea,

@@ -1,3 +1,10 @@
 node_modules
 .next
 .env
+.DS_Store
+.gitignore
+.prettierrc
+firestore.rules
+jsconfig.json
+vercel.json
+react-doctor.config.json

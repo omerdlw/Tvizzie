@@ -12,6 +12,8 @@ const Input = forwardRef(
       type = 'text',
       leftIcon,
       rightIcon,
+      autoCapitalize = 'none',
+      autoCorrect = 'off',
       ...props
     },
     ref
@@ -24,11 +26,17 @@ const Input = forwardRef(
         <input
           ref={ref}
           type={type}
-          className={cn('bg-transparent', classes.input, classes.root)}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          className={cn(
+            'min-w-0 flex-1 bg-transparent',
+            classes.input,
+            classes.root
+          )}
           {...props}
         />
         {rightIcon && (
-          <span className={cn(classes.rightIcon)}>{rightIcon}</span>
+          <span className={cn('shrink-0', classes.rightIcon)}>{rightIcon}</span>
         )}
       </div>
     )

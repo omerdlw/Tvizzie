@@ -183,10 +183,10 @@ export default function PersonDetailClient({ person }) {
   if (!person) return null
 
   return (
-    <div className="relative mx-auto flex h-auto w-full max-w-6xl flex-col items-center gap-4 p-3 select-none sm:p-4 md:p-6">
+    <div className="relative mx-auto flex h-auto w-full max-w-6xl flex-col items-center gap-4 p-3 select-none [overflow-anchor:none] sm:p-4 md:p-6">
       <div className="pointer-events-none fixed inset-0 -z-10 bg-linear-to-t from-black via-black/40 to-transparent" />
 
-      <StaggerContainer className="mt-24 flex w-full flex-col items-center gap-10">
+      <StaggerContainer className="mt-8 flex w-full flex-col items-center gap-10 sm:mt-12 lg:mt-20">
         <FadeUp>
           <PersonHero person={person} />
         </FadeUp>

@@ -5,7 +5,7 @@ import Icon from '@/ui/icon'
 
 function Title({ title, description, close }) {
   return (
-    <div className="flex w-full items-center justify-between space-x-4 border-b border-white/10 p-4 sm:space-x-8 md:p-6">
+    <div className="flex w-full items-center justify-between space-x-4 p-3 border-b border-white/10 sm:space-x-8">
       <div className="space-y-0.5">
         {description && (
           <p className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase">
@@ -19,7 +19,7 @@ function Title({ title, description, close }) {
       <button
         type="button"
         onClick={close}
-        className="shrink-0 cursor-pointer rounded-full border border-white/10 p-3 text-white/70 transition-colors hover:border-transparent hover:bg-white/5 hover:text-white"
+        className="size-10 shrink-0 cursor-pointer rounded-full border border-white/10 text-white/70 transition-colors hover:border-transparent hover:bg-white/5 hover:text-white"
       >
         <Icon icon="material-symbols:close-rounded" size={24} />
       </button>
@@ -29,7 +29,12 @@ function Title({ title, description, close }) {
 
 export default function Container({ children, className, header, close }) {
   return (
-    <div className="flex w-full max-w-2xl min-w-sm flex-col bg-transparent">
+    <div
+      className={cn(
+        'flex max-h-[85vh] flex-col bg-transparent',
+        className
+      )}
+    >
       {header?.title && (
         <Title
           description={header.description}
@@ -37,9 +42,7 @@ export default function Container({ children, className, header, close }) {
           close={close}
         />
       )}
-      <div className={cn('h-auto w-full overflow-y-auto', className)}>
-        {children}
-      </div>
+      <div className="min-h-0 w-full flex-1 overflow-y-auto">{children}</div>
     </div>
   )
 }

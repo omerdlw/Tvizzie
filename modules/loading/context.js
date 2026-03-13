@@ -23,11 +23,19 @@ export function LoadingProvider({ children }) {
   const pendingStopRef = useRef(false)
   const minDurationRef = useRef(0)
   const startTimeRef = useRef(null)
+  const stopTimeoutRef = useRef(null)
 
   const { get } = useRegistryState()
   const registryLoading = get(REGISTRY_TYPES.LOADING, 'page-loading')
 
+  const clearStopTimeout = useCallback(() => {
+    if (!stopTimeoutRef.current) return
+    clearTimeout(stopTimeoutRef.current)
+    stopTimeoutRef.current = null
+  }, [])
+
   const startLoading = useCallback((options = {}) => {
+    clearStopTimeout()
     minDurationRef.current = options.minDuration || 0
     startTimeRef.current = Date.now()
     pendingStopRef.current = false
@@ -35,13 +43,14 @@ export function LoadingProvider({ children }) {
     setIsLoadingState(true)
     if (options.skeleton) setSkeleton(options.skeleton)
     if (options.minDuration) setMinDuration(options.minDuration)
-  }, [])
+  }, [clearStopTimeout])
 
   const stopLoading = useCallback(() => {
     const startTime = startTimeRef.current
     const minDur = minDurationRef.current
 
     const finish = () => {
+      clearStopTimeout()
       setIsLoadingState(false)
       setSkeleton(null)
       setMinDuration(0)
@@ -60,12 +69,14 @@ export function LoadingProvider({ children }) {
     if (remaining <= 0) {
       finish()
     } else {
+      clearStopTimeout()
       pendingStopRef.current = true
-      setTimeout(() => {
+      stopTimeoutRef.current = setTimeout(() => {
+        stopTimeoutRef.current = null
         if (pendingStopRef.current) finish()
       }, remaining)
     }
-  }, [])
+  }, [clearStopTimeout])
 
   const setIsLoading = useCallback(
     (value) => {
@@ -77,6 +88,13 @@ export function LoadingProvider({ children }) {
     },
     [startLoading, stopLoading]
   )
+
+  useEffect(() => {
+    return () => {
+      pendingStopRef.current = false
+      clearStopTimeout()
+    }
+  }, [clearStopTimeout])
 
   useEffect(() => {
     if (registryLoading) {
@@ -93,7 +111,7 @@ export function LoadingProvider({ children }) {
       setIsLoading(false)
       setSkeleton(null)
     }
-  }, [registryLoading, setIsLoading, setSkeleton])
+  }, [registryLoading, setIsLoading])
 
   const stateValue = useMemo(
     () => ({

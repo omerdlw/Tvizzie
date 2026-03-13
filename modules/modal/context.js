@@ -10,18 +10,65 @@ import {
 } from 'react'
 
 import Modal from '@/modules/modal'
-import { MODAL_POSITIONS } from '@/modules/modal/config'
+import {
+  MODAL_BREAKPOINTS,
+  MODAL_CHROME,
+  MODAL_POSITIONS,
+  MODAL_PRESETS,
+} from '@/modules/modal/config'
 
 const ModalActionsContext = createContext(null)
 const ModalStateContext = createContext(null)
 
+function isObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function resolveResponsivePosition(position, responsivePosition) {
+  if (!isObject(responsivePosition) || typeof window === 'undefined') {
+    return position
+  }
+
+  const isMobile = window.matchMedia(
+    `(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`
+  ).matches
+
+  if (isMobile && responsivePosition.mobile) {
+    return responsivePosition.mobile
+  }
+
+  if (!isMobile && responsivePosition.desktop) {
+    return responsivePosition.desktop
+  }
+
+  return position
+}
+
+function normalizePositionConfig(positionInput, config = {}) {
+  const positionFromArg =
+    typeof positionInput === 'string' ? positionInput : MODAL_POSITIONS.CENTER
+  const responsiveFromArg = isObject(positionInput) ? positionInput : null
+  const responsiveFromConfig = isObject(config.responsivePosition)
+    ? config.responsivePosition
+    : null
+
+  const responsivePosition = responsiveFromConfig || responsiveFromArg
+  const resolvedPosition = resolveResponsivePosition(
+    positionFromArg,
+    responsivePosition
+  )
+
+  return { resolvedPosition, responsivePosition }
+}
+
 const INITIAL_STATE = {
   position: MODAL_POSITIONS.CENTER,
+  responsivePosition: null,
   description: null,
   label: null,
   modalType: null,
   isOpen: false,
-  full: false,
+  chrome: MODAL_CHROME.PANEL,
   title: null,
   props: {},
 }
@@ -33,19 +80,26 @@ export const ModalProvider = ({ children }) => {
 
   const openModal = useCallback(
     (modalType, position = MODAL_POSITIONS.CENTER, config = {}) => {
-      const { header, data, onClose } = config
+      const preset = MODAL_PRESETS[modalType] || {}
+      const resolvedConfig = { ...preset, ...config }
+      const { resolvedPosition, responsivePosition } = normalizePositionConfig(
+        position,
+        resolvedConfig
+      )
+      const { header, data, onClose, chrome } = resolvedConfig
 
       onCloseRef.current = onClose || null
 
       setModalState({
+        position: resolvedPosition,
+        responsivePosition,
         description: header?.description || null,
         title: header?.title || null,
         label: header?.label || null,
-        full: config.full || false,
-        props: data || config,
+        chrome: chrome || MODAL_CHROME.PANEL,
+        props: data ?? resolvedConfig,
         isOpen: true,
         modalType,
-        position,
       })
 
       return new Promise((resolve) => {

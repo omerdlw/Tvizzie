@@ -13,7 +13,7 @@ import { getUserProfile } from '@/services/profile.service'
 import Icon from '@/ui/icon'
 
 export default function FollowListModal({ close, data, header }) {
-  const { userId, type, title } = data || {}
+  const { userId, type } = data || {}
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -47,17 +47,14 @@ export default function FollowListModal({ close, data, header }) {
   }
 
   return (
-    <Container
-      header={{ ...header, title: title || header.title, label: 'Social' }}
-      close={close}
-    >
-      <div className="scrollbar-hide flex max-h-[60vh] w-full flex-col gap-4 overflow-y-auto p-2.5">
+    <Container header={{ ...header }} className="w-md" close={close}>
+      <div className="scrollbar-hide flex max-h-[60vh] w-full flex-col gap-4 overflow-y-auto">
         {loading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-16 animate-pulse rounded-2xl bg-white/5"
+                className="h-16 animate-pulse border-b border-white/10 last:border-none"
               />
             ))}
           </div>
@@ -65,19 +62,19 @@ export default function FollowListModal({ close, data, header }) {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Icon
               icon="solar:users-group-two-rounded-bold"
+              className="mb-4 text-white/50"
               size={48}
-              className="mb-4 text-white/10"
             />
             <p className="text-sm text-white/40">No users found</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {users.map((user) => (
               <Link
                 key={user.id}
                 href={`/profile/${user.username || user.id}`}
                 onClick={close}
-                className="group flex items-center gap-4 rounded-[20px] border border-white/5 bg-white/2 p-3 transition-all hover:border-white/10 hover:bg-white/10"
+                className="group flex items-center gap-4 border-b border-white/10 p-4 transition-all last:border-none hover:bg-white/5"
               >
                 <div className="size-10 shrink-0 overflow-hidden rounded-xl border border-white/10">
                   <img
@@ -87,7 +84,7 @@ export default function FollowListModal({ close, data, header }) {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="truncate text-sm font-bold text-white transition-colors group-hover:text-indigo-400">
+                  <h4 className="truncate text-sm font-bold text-white transition-colors">
                     {user.displayName}
                   </h4>
                   <p className="truncate text-[10px] font-bold tracking-widest text-white/30 uppercase">

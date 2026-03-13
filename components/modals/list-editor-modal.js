@@ -29,7 +29,7 @@ export default function ListEditorModal({ close, data, header }) {
 
     if (!isOwner || isSaving) return
     if (!form.title.trim()) {
-      toast.error('Please provide a list title.')
+      toast.error('Please provide a list title')
       return
     }
 
@@ -48,7 +48,7 @@ export default function ListEditorModal({ close, data, header }) {
           userId: userId,
         })
 
-        toast.success(`"${updatedList.title}" was updated.`)
+        toast.success(`"${updatedList.title}" was updated`)
         if (typeof onSuccess === 'function') onSuccess(updatedList)
       } else {
         const listData = {
@@ -59,19 +59,21 @@ export default function ListEditorModal({ close, data, header }) {
         }
         const nextList = await createUserList(listData)
 
-        toast.success(`"${nextList.title}" was created.`)
+        toast.success(`"${nextList.title}" was created`)
         if (typeof onSuccess === 'function') onSuccess(nextList)
       }
       close()
     } catch (error) {
-      toast.error(error?.message || 'The list could not be saved.')
+      toast.error(error?.message || 'The list could not be saved')
     } finally {
       setIsSaving(false)
     }
   }
 
   return (
-    <Container header={{ ...header, label: 'Collection' }} close={close}>
+    <Container
+      className="w-full sm:w-[460px]"
+      header={{ ...header, label: 'Collection' }} close={close}>
       <form
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-6 p-2.5"
@@ -99,7 +101,7 @@ export default function ListEditorModal({ close, data, header }) {
             <Input
               value={form.coverUrl}
               onChange={(event) => handleChange('coverUrl', event.target.value)}
-              placeholder="https://..."
+              placeholder="https://"
               className={{
                 input:
                   'w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
@@ -116,33 +118,33 @@ export default function ListEditorModal({ close, data, header }) {
               onChange={(event) =>
                 handleChange('description', event.target.value)
               }
-              placeholder="Describe your collection..."
+              placeholder="Describe your collection"
               maxHeight={120}
               className={{
                 textarea:
-                  'min-h-[100px] w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
+                  'min-h-[150px] resize-none w-full rounded-[20px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition-all outline-none placeholder:text-white/20 focus:border-white/20 focus:bg-white/8',
               }}
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-end gap-3 w-full">
           <Button
             type="button"
             onClick={close}
-            className="flex h-11 items-center rounded-[20px] border border-white/10 bg-white/5 px-6 text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white active:scale-95"
+            className="center w-full flex-auto h-11 rounded-[20px] border border-white/10 bg-white/5 px-6 text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase transition hover:bg-white/10 hover:text-white active:scale-95"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSaving}
-            className="flex h-11 items-center rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
+            className="center w-full flex-auto h-11 rounded-[20px] bg-white px-8 text-[10px] font-bold tracking-[0.2em] text-black uppercase transition-all hover:bg-white/90 active:scale-95 disabled:opacity-50"
           >
             {isSaving
               ? isEditing
-                ? 'Updating...'
-                : 'Creating...'
+                ? 'Updating'
+                : 'Creating'
               : isEditing
                 ? 'Update List'
                 : 'Create List'}

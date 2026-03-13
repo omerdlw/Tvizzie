@@ -1,9 +1,7 @@
 'use client'
 
-import * as Select from '@radix-ui/react-select'
-import { motion } from 'framer-motion'
-
 import { cn } from '@/lib/utils'
+import Select from '@/ui/elements/select'
 import Icon from '@/ui/icon/index'
 
 const SORT_OPTIONS = [
@@ -24,58 +22,35 @@ export function SortSelect({ value, onChange, className }) {
     SORT_OPTIONS.find((opt) => opt.value === value) || SORT_OPTIONS[0]
 
   return (
-    <Select.Root value={value} onValueChange={onChange}>
-      <Select.Trigger
-        className={cn(
-          'flex h-8 items-center justify-between gap-2.5 rounded-full border border-white/10 bg-white/5 px-4',
-          'text-[10px] font-bold tracking-[0.15em] text-white/50 transition-all outline-none hover:bg-white/10 hover:text-white focus:border-white/20 active:scale-95',
+    <Select
+      value={value}
+      onChange={onChange}
+      options={SORT_OPTIONS}
+      leftIcon={
+        <Icon icon={currentOption.icon} size={13} className="text-white" />
+      }
+      className={{
+        root: cn(
+          'center h-8 w-fit gap-2 rounded-full border border-white/10 px-2 transition-all outline-none hover:bg-black/40 focus:border-white/20 active:scale-95',
           className
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <Icon icon={currentOption.icon} size={13} className="text-white" />
-          <Select.Value>{currentOption.label}</Select.Value>
-        </div>
+        ),
+        trigger: 'center border-0 bg-transparent p-0 hover:bg-transparent',
+        value:
+          'flex items-center text-[11px] leading-none font-bold tracking-[0.15em] text-white/50 group-hover:text-white',
+        menu: 'animate-in fade-in zoom-in-95 z-100 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-1.5 shadow-2xl backdrop-blur-xl duration-200',
+        option:
+          'relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[10px] font-bold tracking-[0.12em] text-white/40 transition-colors outline-none hover:bg-white/5 hover:text-white',
+        optionActive: 'bg-white/10 text-white',
+        indicator: 'text-primary ml-auto',
+        icon: 'flex items-center justify-center opacity-50 transition-transform group-data-open:rotate-180',
+      }}
+      rightIcon={
         <Icon
           icon="solar:alt-arrow-down-linear"
           size={12}
-          className="opacity-40"
+          className="opacity-50"
         />
-      </Select.Trigger>
-
-      <Select.Portal>
-        <Select.Content
-          position="popper"
-          sideOffset={8}
-          align="end"
-          className="animate-in fade-in zoom-in-95 z-100 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a]/90 p-1.5 shadow-2xl backdrop-blur-xl duration-200"
-        >
-          <Select.Viewport>
-            {SORT_OPTIONS.map((option) => (
-              <Select.Item
-                key={option.value}
-                value={option.value}
-                className={cn(
-                  'relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[10px] font-bold tracking-[0.12em] text-white/40 transition-colors outline-none',
-                  'hover:bg-white/5 hover:text-white data-[state=checked]:bg-white/10 data-[state=checked]:text-white'
-                )}
-              >
-                <Icon icon={option.icon} size={14} />
-                <Select.ItemText>{option.label}</Select.ItemText>
-                {option.value === value && (
-                  <motion.div layoutId="sort-check" className="ml-auto">
-                    <Icon
-                      icon="solar:check-read-bold"
-                      size={14}
-                      className="text-primary"
-                    />
-                  </motion.div>
-                )}
-              </Select.Item>
-            ))}
-          </Select.Viewport>
-        </Select.Content>
-      </Select.Portal>
-    </Select.Root>
+      }
+    />
   )
 }
