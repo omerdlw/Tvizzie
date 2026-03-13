@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
+import {
+  clearPendingProfileBootstrap,
+  setPendingProfileBootstrap,
+} from '@/lib/auth/pending-profile.client'
 import { useAuth } from '@/modules/auth'
 import Container from '@/modules/modal/container'
 import { useToast } from '@/modules/notification/hooks'
@@ -304,6 +308,7 @@ export default function AuthModal({ close, data, header }) {
   const setVerificationStep = (payload) => {
     setNow(Date.now())
     setVerificationPayload(payload)
+    setPendingProfileBootstrap(payload)
     setStep(AUTH_STEP.VERIFY_EMAIL_CODE)
     setForm((prev) => ({
       ...prev,
@@ -479,6 +484,7 @@ export default function AuthModal({ close, data, header }) {
           verificationPayload.displayName || verificationPayload.username,
         username: verificationPayload.username,
       })
+      clearPendingProfileBootstrap()
 
       toast.success('Your account was created successfully')
       if (typeof data?.onSuccess === 'function') {
