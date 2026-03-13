@@ -592,12 +592,11 @@ export default function AuthModal({ close, data, header }) {
     <Container
       header={{
         ...header,
-        title: modalTitle,
       }}
       className="w-full sm:w-[460px]"
       close={close}
     >
-      <div className="flex w-full flex-col p-4">
+      <div className="flex w-full flex-col p-2.5">
         {isVerificationStep ? (
           <form onSubmit={handleVerifyCode} className="space-y-4">
             <div className={MODAL_FIELD.infoBox}>

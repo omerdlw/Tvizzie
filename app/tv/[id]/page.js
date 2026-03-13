@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { getTvComputedData } from '@/components/tv/utils'
 import { TMDB_IMG } from '@/lib/constants'
+import { getServerAppUrl } from '@/lib/utils/server-url'
 import { TmdbService } from '@/services/tmdb.service'
 
 import TvDetailClient from './client'
@@ -76,9 +77,7 @@ export default async function TvDetailPage({ params }) {
   let imdbVotes = null
   if (imdbId) {
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-      const imdbRes = await fetch(`${baseUrl}/api/imdb-rating/${imdbId}`, {
+      const imdbRes = await fetch(await getServerAppUrl(`/api/imdb-rating/${imdbId}`), {
         next: { revalidate: 86400 },
       })
       if (imdbRes.ok) {

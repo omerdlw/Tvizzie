@@ -1,4 +1,4 @@
-import { TMDB_API_URL } from '@/lib/constants/index'
+import { API_URL } from '@/lib/constants'
 import { EVENT_TYPES, globalEvents } from '@/lib/events'
 
 import { ApiError } from './types'
@@ -446,6 +446,6 @@ export class ApiClient {
 }
 
 export const apiClient = new ApiClient({
-  baseURL: TMDB_API_URL,
+  baseURL: API_URL,
   timeout: 30000,
 })
