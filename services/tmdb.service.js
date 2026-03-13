@@ -5,6 +5,10 @@ const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY
 
 const tmdbClient = new ApiClient({
   baseURL: TMDB_API_URL,
+  emitCriticalErrorEvents: false,
+  emitForbiddenEvents: false,
+  emitUnauthorizedEvents: false,
+  eventSource: 'tmdb',
   timeout: 15000,
 })
 

@@ -16,6 +16,10 @@ const HTTP_STATUS = {
 export class ApiClient {
   constructor(config = {}) {
     this.baseURL = config.baseURL || ''
+    this.eventSource = config.eventSource || 'api'
+    this.emitUnauthorizedEvents = config.emitUnauthorizedEvents ?? true
+    this.emitForbiddenEvents = config.emitForbiddenEvents ?? true
+    this.emitCriticalErrorEvents = config.emitCriticalErrorEvents ?? true
     this.timeout = config.timeout || 30000
     this.headers = config.headers || { 'Content-Type': 'application/json' }
     this.interceptors = { request: [], response: [], error: [] }
@@ -255,16 +259,29 @@ export class ApiClient {
           retriesLeft > 0 && this.retryConfig.retryOn.includes(response.status)
 
         if (!options.silent) {
-          if (response.status === HTTP_STATUS.UNAUTHORIZED)
-            globalEvents.emit(EVENT_TYPES.API_UNAUTHORIZED)
-          else if (response.status === HTTP_STATUS.FORBIDDEN)
-            globalEvents.emit(EVENT_TYPES.API_FORBIDDEN)
-
-          if (options.critical && !willRetryResponse) {
-            globalEvents.emit(EVENT_TYPES.API_ERROR, {
+          if (
+            response.status === HTTP_STATUS.UNAUTHORIZED &&
+            this.emitUnauthorizedEvents
+          ) {
+            globalEvents.emit(EVENT_TYPES.API_UNAUTHORIZED, {
+              source: this.eventSource,
               status: response.status,
               message: errorMessage,
-              isCritical: true,
+            })
+          } else if (
+            response.status === HTTP_STATUS.FORBIDDEN &&
+            this.emitForbiddenEvents
+          ) {
+            globalEvents.emit(EVENT_TYPES.API_FORBIDDEN, {
+              source: this.eventSource,
+              status: response.status,
+              message: errorMessage,
+            })
+          }
+
+          if (options.critical && !willRetryResponse) {
+            this._emitCriticalError(options, response.status, errorMessage, {
+              source: this.eventSource,
               retry:
                 options.retryCallback ||
                 (() =>
@@ -338,14 +355,16 @@ export class ApiClient {
           options,
           normalizedError.status || 0,
           normalizedError.message || 'Network error',
-          this._createRetryHandler(
-            endpoint,
-            options,
-            retriesLeft,
-            delay,
-            attempt,
-            onRetry
-          )
+          {
+            retry: this._createRetryHandler(
+              endpoint,
+              options,
+              retriesLeft,
+              delay,
+              attempt,
+              onRetry
+            ),
+          }
         )
       }
 
@@ -369,14 +388,20 @@ export class ApiClient {
       )
   }
 
-  _emitCriticalError(options, status, message, retry) {
-    if (options.silent || !options.critical) return
+  _emitCriticalError(options, status, message, metadata = {}) {
+    if (
+      options.silent ||
+      !options.critical ||
+      !this.emitCriticalErrorEvents
+    )
+      return
 
     globalEvents.emit(EVENT_TYPES.API_ERROR, {
+      source: metadata.source || this.eventSource,
       isCritical: true,
       message,
       status,
-      retry,
+      retry: metadata.retry,
     })
   }
 
@@ -447,5 +472,6 @@ export class ApiClient {
 
 export const apiClient = new ApiClient({
   baseURL: API_URL,
+  eventSource: 'app',
   timeout: 30000,
 })

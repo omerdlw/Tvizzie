@@ -340,7 +340,9 @@ export function AuthProvider({ children, config = {} }) {
   useEffect(() => {
     if (!mergedConfig.clearSessionOnUnauthorized) return undefined
 
-    return globalEvents.subscribe(EVENT_TYPES.API_UNAUTHORIZED, () => {
+    return globalEvents.subscribe(EVENT_TYPES.API_UNAUTHORIZED, (eventData) => {
+      if (eventData?.source && eventData.source !== 'app') return
+
       clearSession()
       emitAuthEvent(EVENT_TYPES.AUTH_SIGN_OUT, {
         source: 'api-unauthorized',

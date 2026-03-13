@@ -15,7 +15,9 @@ export function NotificationListener() {
     const unsubscribers = []
 
     unsubscribers.push(
-      globalEvents.subscribe(EVENT_TYPES.API_UNAUTHORIZED, () => {
+      globalEvents.subscribe(EVENT_TYPES.API_UNAUTHORIZED, (eventData) => {
+        if (eventData?.source && eventData.source !== 'app') return
+
         showNotification(CRITICAL_TYPES.SESSION_EXPIRED, {
           message: 'Your session has expired Please sign in again',
         })
