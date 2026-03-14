@@ -1266,7 +1266,7 @@ export default function ProfileEditClient() {
           </section>
         </div>
       )}
-      <div style={{ height: navHeight }}></div>
+      <div className="shrink-0" style={{ height: navHeight }} />
     </div>
   )
 }

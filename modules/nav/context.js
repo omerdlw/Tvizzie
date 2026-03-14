@@ -28,6 +28,7 @@ export function NavigationProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [expanded, setExpanded] = useState(false)
   const [navHeight, setNavHeight] = useState(0)
+  const [dismissedConfirmationKey, setDismissedConfirmationKey] = useState(null)
   const config = NAV_CONFIG
 
   const { batch, register, unregister } = useNavRegistry()
@@ -125,19 +126,38 @@ export function NavigationProvider({ children }) {
     setExpanded((prev) => !prev)
   }, [])
 
+  const dismissConfirmation = useCallback((key) => {
+    if (!key) return
+    setDismissedConfirmationKey(key)
+  }, [])
+
+  const clearDismissedConfirmation = useCallback(() => {
+    setDismissedConfirmationKey(null)
+  }, [])
+
   const stateValue = useMemo(
     () => ({
+      dismissedConfirmationKey,
       expandedParents,
       searchQuery,
       navHeight,
       expanded,
       config,
     }),
-    [expandedParents, searchQuery, navHeight, expanded, config]
+    [
+      dismissedConfirmationKey,
+      expandedParents,
+      searchQuery,
+      navHeight,
+      expanded,
+      config,
+    ]
   )
 
   const actionsValue = useMemo(
     () => ({
+      clearDismissedConfirmation,
+      dismissConfirmation,
       expandParentForPath,
       isParentExpanded,
       setSearchQuery,
@@ -149,6 +169,8 @@ export function NavigationProvider({ children }) {
       toggle,
     }),
     [
+      clearDismissedConfirmation,
+      dismissConfirmation,
       expandParentForPath,
       isParentExpanded,
       toggleParent,

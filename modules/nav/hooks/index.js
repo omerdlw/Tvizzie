@@ -9,6 +9,7 @@ export { useNavigationExpanded } from './use-navigation-expanded'
 
 export { useActionComponent } from './use-action-component'
 export { useActionHeight } from './use-action-height'
+export { useElementHeight } from './use-element-height'
 export { useNavBadge } from './use-nav-badge'
 export { useNavHeight } from './use-nav-height'
 

@@ -24,7 +24,6 @@ export default function Nav() {
     setIsHovered,
     setExpanded,
     activeIndex,
-    statusState,
     expanded,
     pathname,
     navigate,
@@ -32,6 +31,7 @@ export default function Nav() {
 
   const [isStackHovered, setIsStackHovered] = useState(false)
   const [containerHeight, setContainerHeight] = useState(0)
+  const [cardContentHeight, setCardContentHeight] = useState(0)
   const { isOpen, hasControls } = useControlsState()
   const { isOpen: isModalOpen } = useModal()
   const [focusedIndex, setFocusedIndex] = useState(-1)
@@ -42,6 +42,7 @@ export default function Nav() {
 
   const handleKeyDown = useCallback(
     (e) => {
+      if (activeItem?.isOverlay) return
       if (!expanded) return
       const { key } = e
       if (key === 'Escape') return e.preventDefault() || setExpanded(false)
@@ -64,7 +65,7 @@ export default function Nav() {
           )
         )
     },
-    [expanded, navigationItems, focusedIndex, navigate, setExpanded]
+    [activeItem?.isOverlay, expanded, navigationItems, focusedIndex, navigate, setExpanded]
   )
 
   useEffect(() => {
@@ -79,20 +80,32 @@ export default function Nav() {
     if (navRef.current) navRef.current.dataset.path = pathname
 
     let currentActionHeight = actionHeight
+    let currentCardHeight = Math.max(
+      STYLES.animation.baseCardHeight,
+      cardContentHeight + STYLES.animation.cardChromeHeight
+    )
     if (isPathChange) {
       currentActionHeight = 0
       setActionHeight(0)
+      currentCardHeight = STYLES.animation.baseCardHeight
+      setCardContentHeight(0)
     }
 
     const h =
-      STYLES.animation.baseCardHeight +
+      currentCardHeight +
       (activeItemHasAction && currentActionHeight > 0
         ? currentActionHeight + STYLES.animation.actionGap
         : 0)
 
     setContainerHeight(h)
     setNavHeight(h + 16)
-  }, [pathname, actionHeight, activeItemHasAction, setNavHeight])
+  }, [
+    pathname,
+    actionHeight,
+    activeItemHasAction,
+    cardContentHeight,
+    setNavHeight,
+  ])
 
   useEffect(() => {
     if (expanded) {
@@ -103,7 +116,10 @@ export default function Nav() {
     }
   }, [expanded, activeIndex])
 
-  useClickOutside(navRef, () => setExpanded(false))
+  useClickOutside(navRef, () => {
+    if (activeItem?.isOverlay) return
+    setExpanded(false)
+  })
 
   return (
     <MotionConfig transition={STYLES.animation.transition}>
@@ -112,12 +128,15 @@ export default function Nav() {
         transition={{ ease: EASING.EASE_OUT, duration: DURATION.SNAPPY }}
         style={{
           zIndex: Z_INDEX.NAV_BACKDROP,
-          pointerEvents: expanded || statusState?.isOverlay ? 'auto' : 'none',
+          pointerEvents: expanded || activeItem?.isOverlay ? 'auto' : 'none',
         }}
-        onClick={() => setExpanded(false)}
+        onClick={() => {
+          if (activeItem?.isOverlay) return
+          setExpanded(false)
+        }}
         initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
         animate={
-          expanded || statusState?.isOverlay
+          expanded || activeItem?.isOverlay
             ? { opacity: 1, backdropFilter: 'blur(24px)', display: 'block' }
             : {
                 opacity: 0,
@@ -182,6 +201,7 @@ export default function Nav() {
                   }}
                   onClick={() => {
                     if (link.type === 'COUNTDOWN') return
+                    if (link.isOverlay) return
 
                     expanded
                       ? link.isParent
@@ -190,6 +210,7 @@ export default function Nav() {
                       : isTop && setExpanded(true)
                   }}
                   onActionHeightChange={isTop ? setActionHeight : null}
+                  onContentHeightChange={isTop ? setCardContentHeight : null}
                   totalItems={navigationItems.length}
                   isStackHovered={isStackHovered}
                   expanded={expanded}

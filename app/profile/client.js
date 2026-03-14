@@ -16,7 +16,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import AuthModal from '@/components/modals/auth-modal'
 import AuthVerificationModal from '@/components/modals/auth-verification-modal'
-import ConfirmationModal from '@/components/modals/confirmation-modal'
 import FollowListModal from '@/components/modals/follow-list-modal'
 import ListEditorModal from '@/components/modals/list-editor-modal'
 import ProfileAction from '@/components/nav-actions/profile-action'
@@ -116,6 +115,7 @@ export default function ProfilePage({
   const [followerCount, setFollowerCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [listDeleteConfirmation, setListDeleteConfirmation] = useState(null)
   const [tabSorts, setTabSorts] = useState({
     favorites: 'newest',
     watchlist: 'newest',
@@ -291,26 +291,27 @@ export default function ProfilePage({
 
   function handleDeleteList(list) {
     if (!isOwner) return
-    openModal('CONFIRMATION_MODAL', 'bottom', {
-      data: {
-        confirmText: 'Delete List',
-        description:
-          'This removes the list and all items inside it from your profile',
-        isDestructive: true,
-        onConfirm: async () => {
-          try {
-            await deleteUserList({
-              listId: list.id,
-              userId: auth.user.id,
-            })
-            toast.success(`"${list.title}" was deleted`)
-            if (activeListId === list.id) {
-              updateQuery({ list: null, tab: 'lists' })
-            }
-          } catch (error) {
-            toast.error(error?.message || 'The list could not be deleted')
+    setListDeleteConfirmation({
+      title: 'Delete List?',
+      confirmText: 'Delete List',
+      description: 'This removes the list and all items inside it from your profile',
+      isDestructive: true,
+      onCancel: () => setListDeleteConfirmation(null),
+      onConfirm: async () => {
+        try {
+          await deleteUserList({
+            listId: list.id,
+            userId: auth.user.id,
+          })
+          setListDeleteConfirmation(null)
+          toast.success(`"${list.title}" was deleted`)
+          if (activeListId === list.id) {
+            updateQuery({ list: null, tab: 'lists' })
           }
-        },
+        } catch (error) {
+          toast.error(error?.message || 'The list could not be deleted')
+          throw error
+        }
       },
     })
   }
@@ -472,13 +473,13 @@ export default function ProfilePage({
       overlayOpacity: 0.8,
     },
     modal: {
-      CONFIRMATION_MODAL: ConfirmationModal,
       LIST_EDITOR_MODAL: ListEditorModal,
       FOLLOW_LIST_MODAL: FollowListModal,
       AUTH_MODAL: AuthModal,
       AUTH_VERIFICATION_MODAL: AuthVerificationModal,
     },
     nav: {
+      confirmation: listDeleteConfirmation,
       description: navDescription,
       icon: getAvatarUrl(profile),
       isLoading: isPageLoading,

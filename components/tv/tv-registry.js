@@ -6,7 +6,6 @@ import { useState } from 'react'
 
 import AuthModal from '@/components/modals/auth-modal'
 import AuthVerificationModal from '@/components/modals/auth-verification-modal'
-import ConfirmationModal from '@/components/modals/confirmation-modal'
 import ImagePreviewModal from '@/components/modals/image-preview'
 import VideoPreviewModal from '@/components/modals/video-preview-modal'
 import ReviewAction from '@/components/nav-actions/review-action'
@@ -54,6 +53,7 @@ export function TvRegistry({
       icon: show?.poster_path
         ? `${TMDB_IMG}/original${show.poster_path}`
         : undefined,
+      confirmation: reviewState?.confirmation || null,
       isLoading,
       actions: [
         {
@@ -91,7 +91,6 @@ export function TvRegistry({
     modal: {
       PREVIEW_MODAL: ImagePreviewModal,
       VIDEO_PREVIEW_MODAL: VideoPreviewModal,
-      CONFIRMATION_MODAL: ConfirmationModal,
       AUTH_MODAL: AuthModal,
       AUTH_VERIFICATION_MODAL: AuthVerificationModal,
     },

@@ -35,7 +35,7 @@ export const useNavigation = () => {
     setSearchQuery,
     setIsHovered
   )
-  const activeItemHasAction = !!activeItem?.action
+  const activeItemHasAction = !!activeItem?.action || !!activeItem?.isConfirmation
 
   return {
     navigationItems: displayItems,

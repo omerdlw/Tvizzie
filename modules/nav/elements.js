@@ -4,20 +4,36 @@ import { DURATION, EASING } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Iconify from '@/ui/icon'
 
-export const Description = ({ text, style }) => {
+export const Description = ({ text, style, maxLines = 1 }) => {
   const { className, opacity, ...restStyle } = style || {}
   const defaultOpacity = opacity ?? 0.7
+  const isMultiline = Number(maxLines) > 1
 
   return (
     <div className="relative h-auto w-full">
       <AnimatePresence mode="wait">
         <motion.p
-          className={cn('truncate text-sm', className)}
+          className={cn(
+            'text-sm',
+            isMultiline
+              ? 'overflow-hidden whitespace-normal break-words'
+              : 'truncate',
+            className
+          )}
           transition={{
             ease: EASING.SMOOTH,
             duration: DURATION.FAST,
           }}
-          style={restStyle}
+          style={
+            isMultiline
+              ? {
+                  ...restStyle,
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: maxLines,
+                  display: '-webkit-box',
+                }
+              : restStyle
+          }
           animate={{ opacity: defaultOpacity, y: 0 }}
           initial={{ opacity: 0, y: 8 }}
           exit={{ opacity: 0, y: -8 }}

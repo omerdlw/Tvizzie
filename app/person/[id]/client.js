@@ -5,7 +5,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import { STYLES as PAGE_STYLES } from '@/app/constants'
-import ConfirmationModal from '@/components/modals/confirmation-modal'
 import ImagePreviewModal from '@/components/modals/image-preview'
 import PersonAction from '@/components/nav-actions/person-action'
 import SearchAction from '@/components/nav-actions/search-action'
@@ -140,7 +139,6 @@ export default function PersonDetailClient({ person }) {
     loading: { isLoading: false },
     modal: {
       PREVIEW_MODAL: ImagePreviewModal,
-      CONFIRMATION_MODAL: ConfirmationModal,
     },
   })
 

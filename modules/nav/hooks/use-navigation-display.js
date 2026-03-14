@@ -1,17 +1,35 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import React from 'react'
 
 import { usePathname } from 'next/navigation'
 
 import MediaAction from '../components/media-action'
 import { useNavigationContext } from '../context'
+import { getNavConfirmationKey } from '../utils'
 import { useNavigationCountdown } from './use-navigation-countdown'
 import { useNavigationItems } from './use-navigation-items'
 import { useNavigationStatus } from './use-navigation-status'
 
 const hasItemChild = (item) => Boolean(item.children)
+
+function toSearchableText(value) {
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => toSearchableText(entry)).join(' ')
+  }
+
+  if (React.isValidElement(value)) {
+    return toSearchableText(value.props?.children)
+  }
+
+  return ''
+}
 
 function flattenNavigationItems(items, expandedParents) {
   const flattenedItems = []
@@ -48,9 +66,9 @@ function filterBySearchQuery(items, searchQuery) {
 
   return items.filter(
     (item) =>
-      item.name?.toLowerCase().includes(loweredQuery) ||
-      item.title?.toLowerCase().includes(loweredQuery) ||
-      item.description?.toLowerCase().includes(loweredQuery)
+      toSearchableText(item.name).toLowerCase().includes(loweredQuery) ||
+      toSearchableText(item.title).toLowerCase().includes(loweredQuery) ||
+      toSearchableText(item.description).toLowerCase().includes(loweredQuery)
   )
 }
 
@@ -108,11 +126,41 @@ function resolveBaseActiveItem(rawItems, navigationItems, pathname, isNotFoundPa
 function withStatusOverlay(item, statusState) {
   if (!item || !statusState) return item
 
+  const showStatusActions =
+    statusState.type === 'APP_ERROR' || statusState.type === 'API_ERROR'
+
   return {
     ...item,
     ...statusState,
     isStatus: true,
+    action: showStatusActions ? statusState.action : null,
+    actions: showStatusActions ? statusState.actions : null,
+  }
+}
+
+function withConfirmationOverlay(item) {
+  if (!item?.confirmation) return item
+
+  return {
+    ...item,
+    ...item.confirmation,
+    title: item.confirmation.title ?? item.title ?? item.name,
+    description: item.confirmation.description ?? item.description,
+    icon: item.confirmation.icon ?? item.icon,
+    isConfirmation: true,
+    isOverlay: true,
+    actions: null,
     action: null,
+  }
+}
+
+function withMask(item) {
+  if (!item?.mask) return item
+
+  return {
+    ...item,
+    isMasked: true,
+    actions: null,
   }
 }
 
@@ -173,7 +221,13 @@ function hasDisplayResultChanged(current, previous) {
 export const useNavigationDisplay = () => {
   const pathname = usePathname()
   const { rawItems } = useNavigationItems()
-  const { expanded, expandedParents, searchQuery } = useNavigationContext()
+  const {
+    expanded,
+    expandedParents,
+    searchQuery,
+    dismissedConfirmationKey,
+    clearDismissedConfirmation,
+  } = useNavigationContext()
   const statusState = useNavigationStatus()
   const { isVideo, countdownItem, toggleBackgroundVideo } =
     useNavigationCountdown()
@@ -230,7 +284,25 @@ export const useNavigationDisplay = () => {
       return withStatusOverlay(baseActiveItem, statusState)
     }
 
-    return withMediaAction(baseActiveItem, isVideo, toggleBackgroundVideo)
+    const enhancedItem = withMediaAction(
+      baseActiveItem,
+      isVideo,
+      toggleBackgroundVideo
+    )
+
+    const confirmationKey = getNavConfirmationKey(enhancedItem)
+    const shouldHideConfirmation =
+      confirmationKey && confirmationKey === dismissedConfirmationKey
+
+    if (enhancedItem?.confirmation && !shouldHideConfirmation) {
+      return withConfirmationOverlay(enhancedItem)
+    }
+
+    if (enhancedItem?.mask) {
+      return withMask(enhancedItem)
+    }
+
+    return enhancedItem
   }, [
     pathname,
     navigationItems,
@@ -240,7 +312,16 @@ export const useNavigationDisplay = () => {
     countdownItem,
     isVideo,
     toggleBackgroundVideo,
+    dismissedConfirmationKey,
   ])
+
+  useEffect(() => {
+    if (statusState?.isOverlay) return
+
+    if (!getNavConfirmationKey(activeItem)) {
+      clearDismissedConfirmation()
+    }
+  }, [activeItem, clearDismissedConfirmation, statusState])
 
   const result = useMemo(
     () => ({

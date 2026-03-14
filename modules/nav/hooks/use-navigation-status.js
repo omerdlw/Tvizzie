@@ -57,19 +57,17 @@ const getStatusTheme = (type) => {
   }
 }
 
-const ErrorActions = ({ onRetry, onRefresh, onInfo }) => (
+const ErrorActions = ({ onRetry, onRefresh }) => (
   <div className="mt-2.5 flex items-center gap-2">
-    {onRetry && (
-      <Button
-        className="center bg-error/20 text-error hover:bg-error/30 w-full cursor-pointer rounded-[20px] px-4 py-2 text-sm transition-colors"
-        onClick={(e) => {
-          e.stopPropagation()
-          onRetry()
-        }}
-      >
-        Retry
-      </Button>
-    )}
+    <Button
+      className="center bg-error/20 text-error hover:bg-error/30 w-full cursor-pointer rounded-[20px] px-4 py-2 text-sm transition-colors"
+      onClick={(e) => {
+        e.stopPropagation()
+        onRetry()
+      }}
+    >
+      Retry
+    </Button>
     <Button
       className="center bg-error/20 text-error hover:bg-error/30 w-full cursor-pointer rounded-[20px] px-4 py-2 text-sm transition-colors"
       onClick={(e) => {
@@ -79,17 +77,72 @@ const ErrorActions = ({ onRetry, onRefresh, onInfo }) => (
     >
       Refresh
     </Button>
-    <Button
-      className="center bg-error/20 text-error hover:bg-error/30 w-full cursor-pointer rounded-[20px] px-4 py-2 text-sm transition-colors"
-      onClick={(e) => {
-        e.stopPropagation()
-        onInfo()
-      }}
-    >
-      Info
-    </Button>
   </div>
 )
+
+function getErrorStatusActions({ onInfo }) {
+  return [
+    {
+      key: 'status-info',
+      icon: 'solar:info-circle-bold',
+      tooltip: 'Info',
+      order: 100,
+      visible: typeof onInfo === 'function',
+      onClick: (event) => {
+        event.stopPropagation()
+        onInfo?.()
+      },
+    },
+  ]
+}
+
+function createErrorStatus({
+  clearStatus,
+  description,
+  icon,
+  info,
+  onRetry,
+  style,
+  title,
+  type,
+}) {
+  const retryHandler =
+    typeof onRetry === 'function'
+      ? () => {
+          clearStatus()
+          onRetry()
+        }
+      : () => {
+          window.location.reload()
+        }
+
+  return {
+    type,
+    isOverlay: true,
+    title,
+    description,
+    icon,
+    style,
+    action: () => (
+      <ErrorActions
+        onRetry={retryHandler}
+        onRefresh={() => window.location.reload()}
+      />
+    ),
+    actions: getErrorStatusActions({
+      onInfo: () => {
+        if (typeof info === 'function') {
+          info()
+          return
+        }
+
+        alert(String(info || 'No detailed error information available'))
+      },
+    }),
+    hideSettings: true,
+    hideScroll: true,
+  }
+}
 
 export const useNavigationStatus = () => {
   const [status, setStatus] = useState(null)
@@ -190,26 +243,18 @@ export const useNavigationStatus = () => {
             ? `${errors.length} requests failed`
             : errors[0].message || 'An error occurred during the request'
 
-          updateStatus({
-            type: 'API_ERROR',
-            isOverlay: true,
+          updateStatus(createErrorStatus({
+            clearStatus,
             title,
             description,
             icon: 'solar:danger-triangle-bold',
+            info: () => alert(JSON.stringify(errors, null, 2)),
+            onRetry: () => {
+              errors.forEach((err) => err.retry?.())
+            },
             style: getStatusTheme('API_ERROR'),
-            action: () => (
-              <ErrorActions
-                onRetry={() => {
-                  clearStatus()
-                  errors.forEach((err) => err.retry?.())
-                }}
-                onRefresh={() => window.location.reload()}
-                onInfo={() => alert(JSON.stringify(errors, null, 2))}
-              />
-            ),
-            hideSettings: true,
-            hideScroll: true,
-          })
+            type: 'API_ERROR',
+          }))
         }, 300)
       }
     )
@@ -222,47 +267,31 @@ export const useNavigationStatus = () => {
         const description =
           error?.message || message || 'An unexpected error occurred'
 
-        updateStatus({
-          type: 'APP_ERROR',
-          isOverlay: true,
+        updateStatus(createErrorStatus({
+          clearStatus,
           title,
           description,
           icon: 'solar:danger-triangle-bold',
+          info:
+            error?.stack ||
+            error?.message ||
+            message ||
+            'No detailed error information available',
+          onRetry: resetError
+            ? () => {
+                resetError()
+                if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                  clearTimer(offlineDispatchTimeout)
+                  offlineDispatchTimeout.current = setTimeout(() => {
+                    offlineDispatchTimeout.current = null
+                    window.dispatchEvent(new Event('offline'))
+                  }, 0)
+                }
+              }
+            : undefined,
           style: getStatusTheme('APP_ERROR'),
-          action: () => (
-            <ErrorActions
-              onRetry={
-                resetError
-                  ? () => {
-                      clearStatus()
-                      resetError()
-                      if (
-                        typeof navigator !== 'undefined' &&
-                        !navigator.onLine
-                      ) {
-                        clearTimer(offlineDispatchTimeout)
-                        offlineDispatchTimeout.current = setTimeout(() => {
-                          offlineDispatchTimeout.current = null
-                          window.dispatchEvent(new Event('offline'))
-                        }, 0)
-                      }
-                    }
-                  : null
-              }
-              onRefresh={() => window.location.reload()}
-              onInfo={() =>
-                alert(
-                  error?.stack ||
-                    error?.message ||
-                    message ||
-                    'No detailed error information available'
-                )
-              }
-            />
-          ),
-          hideSettings: true,
-          hideScroll: true,
-        })
+          type: 'APP_ERROR',
+        }))
       }
     )
 
@@ -300,18 +329,18 @@ export const useNavigationStatus = () => {
         const user = eventData?.user || null
 
         clearTimer(statusClearTimeout)
-        updateStatus({
-          type: 'ACCOUNT_DELETE',
-          isOverlay: true,
+        updateStatus(createErrorStatus({
+          clearStatus,
           title: user?.name || user?.email || 'Account',
           description: 'Deleting account',
           icon:
             user?.avatarUrl ||
             `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'account'}`,
+          info: 'Account deletion is in progress.',
+          onRetry: () => window.location.reload(),
           style: getStatusTheme('ACCOUNT_DELETE'),
-          hideSettings: true,
-          hideScroll: true,
-        })
+          type: 'ACCOUNT_DELETE',
+        }))
       }
     )
 

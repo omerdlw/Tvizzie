@@ -21,6 +21,8 @@ export const navPlugin = createPlugin({
       path: itemPath,
       action: navConfig.action,
       actions: navConfig.actions,
+      confirmation: navConfig.confirmation,
+      mask: navConfig.mask,
     }
 
     if (itemPath) {

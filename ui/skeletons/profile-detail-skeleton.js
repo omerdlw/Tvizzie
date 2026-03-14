@@ -99,7 +99,7 @@ export function ProfileDetailSkeleton({ className }) {
         </div>
       </section>
 
-      <div style={{ height: navHeight }} />
+      <div className="shrink-0" style={{ height: navHeight }} />
     </div>
   )
 }

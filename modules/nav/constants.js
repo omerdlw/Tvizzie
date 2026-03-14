@@ -7,6 +7,7 @@ const DEFAULT_DIMENSIONS = {
   collapsedY: -8,
   expandedY: -78,
   cardHeight: 74,
+  cardChromeHeight: 24,
   actionGap: 10,
 }
 
@@ -21,6 +22,7 @@ export const STYLES = Object.freeze({
       scale: 1,
     }),
     baseCardHeight: DEFAULT_DIMENSIONS.cardHeight,
+    cardChromeHeight: DEFAULT_DIMENSIONS.cardChromeHeight,
     actionGap: DEFAULT_DIMENSIONS.actionGap,
     transition: Object.freeze({
       ease: EASING.EMPHASIZED,

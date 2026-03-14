@@ -23,6 +23,7 @@ const STYLES = Object.freeze({
 
 export default function MovieDetailClient({ movie, rating, imdbVotes }) {
   const [reviewState, setReviewState] = useState({
+    confirmation: null,
     isActive: false,
     isSubmitting: false,
     ownComment: false,

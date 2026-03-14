@@ -97,7 +97,7 @@ export default function Page() {
           mediaType="tv"
         />
       )}
-      <div style={{ height: navHeight }} />
+      <div className="shrink-0" style={{ height: navHeight }} />
     </div>
   )
 }

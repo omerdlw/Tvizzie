@@ -1,5 +1,4 @@
 import { Suspense, forwardRef, memo, useMemo, useRef, useState } from 'react'
-import React from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -15,12 +14,14 @@ import {
 import {
   useActionComponent,
   useActionHeight,
+  useElementHeight,
   useNavBadge,
 } from '@/modules/nav/hooks'
 import Icon, { default as Iconify } from '@/ui/icon'
 import { NavItemSkeleton } from '@/ui/skeletons/nav-skeleton'
 
 import { NavActionsContainer } from './actions'
+import ConfirmationAction from './components/confirmation-action'
 import { getNavCardProps } from './constants'
 import { Icon as BadgeIcon, Description, Title } from './elements'
 import { resolveNavVisualStyle } from './utils'
@@ -29,6 +30,7 @@ const Item = memo(
   forwardRef(function Item(
     {
       onActionHeightChange,
+      onContentHeightChange,
       isStackHovered,
       onMouseEnter,
       onMouseLeave,
@@ -52,6 +54,7 @@ const Item = memo(
     )
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge)
     const actionContainerRef = useRef(null)
+    const contentContainerRef = useRef(null)
     const pathname = usePathname()
     const router = useRouter()
     const { isVideo, isPlaying } = useBackgroundState()
@@ -59,11 +62,25 @@ const Item = memo(
     const showVideoIcon = isActive && isVideo && link.type !== 'COUNTDOWN'
 
     const ActionComponent = useActionComponent(link, pathname)
+    const actionNode = useMemo(() => {
+      if (link.isConfirmation) {
+        return <ConfirmationAction item={link} />
+      }
+
+      return ActionComponent
+    }, [ActionComponent, link])
+
     useActionHeight(
       onActionHeightChange,
       actionContainerRef,
-      ActionComponent,
+      actionNode,
       isTop
+    )
+    useElementHeight(
+      onContentHeightChange,
+      contentContainerRef,
+      isTop,
+      `${link.path || link.name || 'item'}:${link.isLoading ? 'loading' : link.isMasked ? 'mask' : link.isConfirmation ? 'confirmation' : 'standard'}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}`
     )
 
     return (
@@ -105,9 +122,44 @@ const Item = memo(
             </div>
           )}
           {link.isLoading ? (
-            <NavItemSkeleton />
+            <div ref={contentContainerRef}>
+              <NavItemSkeleton />
+            </div>
+          ) : link.isMasked ? (
+            <div ref={contentContainerRef} className="relative w-full">
+              {link.mask}
+            </div>
+          ) : link.isConfirmation ? (
+            <div
+              ref={contentContainerRef}
+              className="flex w-full flex-col gap-4 px-1 py-1"
+            >
+              {link.icon ? (
+                <div className="self-start">
+                  <BadgeIcon
+                    isStackHovered={false}
+                    icon={link.icon}
+                    style={itemStyle.icon}
+                  />
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-1.5">
+                <Title text={link.title || link.name} style={itemStyle.title} />
+                {link.description ? (
+                  <Description
+                    text={link.description}
+                    style={itemStyle.description}
+                    maxLines={6}
+                  />
+                ) : null}
+              </div>
+            </div>
           ) : (
-            <div className="relative flex h-auto w-full items-center space-x-3">
+            <div
+              ref={contentContainerRef}
+              className="relative flex h-auto w-full items-center space-x-3"
+            >
               <div className="center relative">
                 {link?.icon ? (
                   <div
@@ -238,9 +290,9 @@ const Item = memo(
               </div>
             </div>
           )}
-          {ActionComponent && (
+          {actionNode && (
             <div ref={actionContainerRef} onClick={(e) => e.stopPropagation()}>
-              <Suspense>{ActionComponent}</Suspense>
+              <Suspense>{actionNode}</Suspense>
             </div>
           )}
         </motion.div>

@@ -99,6 +99,7 @@ export default function TvDetailClient({ show, imdbRatings, computed }) {
   }, [])
 
   const [reviewState, setReviewState] = useState({
+    confirmation: null,
     isActive: false,
     isSubmitting: false,
     ownComment: false,

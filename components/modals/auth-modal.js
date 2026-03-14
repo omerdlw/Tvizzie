@@ -14,7 +14,7 @@ import {
 } from '@/services/profile.service'
 import { Button, Input } from '@/ui/elements'
 
-import { MODAL_BUTTON, MODAL_FIELD } from './constants'
+import { MODAL_BUTTON } from './constants'
 
 const AUTH_MODE = {
   SIGN_IN: 'sign-in',

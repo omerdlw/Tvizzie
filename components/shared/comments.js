@@ -77,7 +77,7 @@ function CommentCard({
   comment,
   isOwnComment = false,
   onEdit,
-  onDelete,
+  onDeleteRequest,
   onLike,
   currentUserId,
 }) {
@@ -95,8 +95,6 @@ function CommentCard({
   const username = comment.user?.username
   const avatarSeed = comment.user?.id || comment.id
   const timestamp = comment.updatedAt || comment.createdAt
-
-  const { openModal } = useModal()
 
   return (
     <div
@@ -154,20 +152,7 @@ function CommentCard({
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        openModal('CONFIRMATION_MODAL', 'bottom', {
-                          header: {
-                            title: 'Delete Review?',
-                          },
-                          data: {
-                            confirmText: 'Delete',
-                            description:
-                              'Are you sure you want to delete this review? This action cannot be undone',
-                            isDestructive: true,
-                            onConfirm: onDelete,
-                          },
-                        })
-                      }}
+                      onClick={onDeleteRequest}
                       title="Delete Review"
                       disabled={isSpoiler && !isSpoilerVisible}
                       className="text-error hover:text-error/80 text-[11px] font-semibold tracking-[0.14em] uppercase transition disabled:opacity-40"
@@ -253,6 +238,7 @@ export default function MediaComments({
   const [hasHydratedDraft, setHasHydratedDraft] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [navConfirmation, setNavConfirmation] = useState(null)
   const lastStateRef = useRef(null)
   const formStateRef = useRef({ commentText, rating, isSpoiler })
 
@@ -463,8 +449,11 @@ export default function MediaComments({
       setRating(null)
       setIsSpoiler(false)
       setIsEditing(false)
+      setNavConfirmation(null)
+      return true
     } catch (error) {
       toast.error(error?.message || 'Failed to delete comment')
+      return false
     }
   }
 
@@ -497,6 +486,7 @@ export default function MediaComments({
       const hasOwnComment = !!ownComment
 
       const currentState = {
+        confirmation: navConfirmation,
         isActive,
         isSubmitting,
         ownComment: hasOwnComment,
@@ -505,6 +495,7 @@ export default function MediaComments({
       const prevState = lastStateRef.current
       const isStateModified =
         !prevState ||
+        prevState.confirmation !== currentState.confirmation ||
         prevState.isActive !== currentState.isActive ||
         prevState.isSubmitting !== currentState.isSubmitting ||
         prevState.ownComment !== currentState.ownComment
@@ -524,6 +515,7 @@ export default function MediaComments({
     isEditing,
     isSubmitting,
     ownComment,
+    navConfirmation,
     onReviewStateChange,
     handleSubmit,
   ])
@@ -721,7 +713,22 @@ export default function MediaComments({
                       })
                     }, 50)
                   }}
-                  onDelete={handleDelete}
+                  onDeleteRequest={() => {
+                    setNavConfirmation({
+                      title: 'Delete Review?',
+                      description:
+                        'Are you sure you want to delete this review?',
+                      confirmText: 'Delete',
+                      isDestructive: true,
+                      onCancel: () => setNavConfirmation(null),
+                      onConfirm: async () => {
+                        const isDeleted = await handleDelete()
+                        if (!isDeleted) {
+                          throw new Error('review-delete-failed')
+                        }
+                      },
+                    })
+                  }}
                   onLike={() => handleLike(comment.id)}
                   key={comment.id}
                 />

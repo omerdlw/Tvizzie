@@ -89,7 +89,7 @@ export function useNavActions({ activeItem } = {}) {
 
   return useMemo(() => {
     if (activeItem?.path === 'not-found') return []
-    if (activeItem?.isStatus) return []
+    if (activeItem?.isMasked || activeItem?.isConfirmation) return []
 
     let extendedActions = []
 
@@ -101,6 +101,17 @@ export function useNavActions({ activeItem } = {}) {
         key: action.key || `action-${index}`,
         ...action,
       }))
+    }
+
+    if (activeItem?.isStatus) {
+      const statusAllowsActions =
+        activeItem?.type === 'APP_ERROR' || activeItem?.type === 'API_ERROR'
+
+      if (!statusAllowsActions) return []
+
+      return extendedActions
+        .filter((action) => action.visible !== false)
+        .sort((a, b) => (b.order || 0) - (a.order || 0))
     }
 
     const allActions = [...defaultActions, ...extendedActions]

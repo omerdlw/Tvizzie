@@ -18,6 +18,8 @@ export const useNavigationLayout = ({
 
   const displayItems = useMemo(() => {
     const items = [...navigationItems]
+    const shouldShowOverlayStack =
+      activeItem?.isStatus || activeItem?.isConfirmation
 
     let activeIdx = items.findIndex(
       (item) => item.isDataSource && item.isSelected
@@ -62,7 +64,7 @@ export const useNavigationLayout = ({
           ]
         : items
 
-    if (pathname === '/' || isHovered) {
+    if (pathname === '/' || isHovered || shouldShowOverlayStack) {
       return reordered.slice(0, MAX_VISIBLE_STACKED_CARDS)
     }
 
