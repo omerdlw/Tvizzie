@@ -8,10 +8,10 @@ import { SmoothScrollProvider } from '@/components/layout/smooth-scroll'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { NAV_CONFIG } from '@/config/nav.config'
 import {
+  PROJECT_CONFIG,
   isProjectFeatureEnabled,
   isRegistryDebugPanelEnabled,
   isRegistryHistoryCaptureEnabled,
-  PROJECT_CONFIG,
 } from '@/config/project.config'
 import { SettingsProvider } from '@/contexts/settings-context'
 import { pipe } from '@/lib/utils/pipe'
@@ -29,8 +29,8 @@ import { NavigationProvider } from '@/modules/nav/context'
 import { NotificationContainer } from '@/modules/notification'
 import { NotificationProvider } from '@/modules/notification/context'
 import { NotificationListener } from '@/modules/notification/listener'
-import { RegistryDebugPanel } from '@/modules/registry/debug-panel'
 import { RegistryProvider } from '@/modules/registry/context'
+import { RegistryDebugPanel } from '@/modules/registry/debug-panel'
 import { TransitionProvider } from '@/modules/transition'
 
 const APP_AUTH_CONFIG = {

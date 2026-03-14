@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 
@@ -36,6 +37,7 @@ export default function Nav() {
   const { isOpen: isModalOpen } = useModal()
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const [actionHeight, setActionHeight] = useState(0)
+  const [portalTarget, setPortalTarget] = useState(null)
   const navRef = useRef(null)
 
   const showControlsButton = hasControls
@@ -121,7 +123,12 @@ export default function Nav() {
     setExpanded(false)
   })
 
-  return (
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    setPortalTarget(document.body)
+  }, [])
+
+  const navContent = (
     <MotionConfig transition={STYLES.animation.transition}>
       <motion.div
         className="fixed inset-0 cursor-pointer"
@@ -226,4 +233,8 @@ export default function Nav() {
       </div>
     </MotionConfig>
   )
+
+  if (!portalTarget) return null
+
+  return createPortal(navContent, portalTarget)
 }

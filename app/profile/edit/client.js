@@ -259,6 +259,7 @@ export default function ProfileEditClient() {
   const [emailFlow, setEmailFlow] = useState(INITIAL_EMAIL_FLOW)
   const [passwordFlow, setPasswordFlow] = useState(INITIAL_PASSWORD_FLOW)
   const [deleteFlow, setDeleteFlow] = useState(INITIAL_DELETE_FLOW)
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null)
   const { navHeight } = useNavHeight()
 
   const [form, setForm] = useState({
@@ -407,6 +408,7 @@ export default function ProfileEditClient() {
       FOLLOW_LIST_MODAL: FollowListModal,
     },
     nav: {
+      confirmation: deleteConfirmation,
       title: auth?.isAuthenticated ? 'Edit Profile' : 'Profile',
       icon: avatarPreview,
       description: auth?.isAuthenticated
@@ -861,40 +863,55 @@ export default function ProfileEditClient() {
       return
     }
 
-    setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }))
-    globalEvents.emit(EVENT_TYPES.AUTH_ACCOUNT_DELETE_START, {
-      user: auth.user || null,
+    setDeleteConfirmation({
+      title: 'Delete Account?',
+      description:
+        'This action permanently deletes your account and signs you out.',
+      icon: 'solar:danger-triangle-bold',
+      confirmText: 'Delete Account',
+      cancelText: 'Cancel',
+      isDestructive: true,
+      onCancel: () => setDeleteConfirmation(null),
+      onConfirm: async () => {
+        setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }))
+        globalEvents.emit(EVENT_TYPES.AUTH_ACCOUNT_DELETE_START, {
+          user: auth.user || null,
+        })
+
+        try {
+          const reauthSession = await reauthenticateWithPassword(currentPassword)
+          const accessToken = await resolveAccessToken(reauthSession)
+
+          if (!accessToken) {
+            throw new Error('Authentication token could not be resolved')
+          }
+
+          await deleteAccountRequest({
+            accessToken,
+            currentPassword,
+          })
+
+          setDeleteConfirmation(null)
+
+          await auth.signOut({
+            reason: 'delete-account',
+            skipAdapter: true,
+          })
+
+          toast.success('Account deleted')
+          router.replace('/')
+        } catch (error) {
+          globalEvents.emit(EVENT_TYPES.AUTH_ACCOUNT_DELETE_END, {
+            status: 'failure',
+          })
+          setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }))
+          toast.error(
+            resolveSecurityErrorMessage(error, 'Account could not be deleted')
+          )
+          throw error
+        }
+      },
     })
-
-    try {
-      const reauthSession = await reauthenticateWithPassword(currentPassword)
-      const accessToken = await resolveAccessToken(reauthSession)
-
-      if (!accessToken) {
-        throw new Error('Authentication token could not be resolved')
-      }
-
-      await deleteAccountRequest({
-        accessToken,
-        currentPassword,
-      })
-
-      await auth.signOut({
-        reason: 'delete-account',
-        skipAdapter: true,
-      })
-
-      toast.success('Account deleted')
-      router.replace('/')
-    } catch (error) {
-      globalEvents.emit(EVENT_TYPES.AUTH_ACCOUNT_DELETE_END, {
-        status: 'failure',
-      })
-      setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }))
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Account could not be deleted')
-      )
-    }
   }
 
   if (!auth.isReady || isLoading) return <ProfileDetailSkeleton />
