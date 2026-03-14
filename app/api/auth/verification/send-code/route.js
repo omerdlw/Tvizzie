@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server'
 
-import { sendSignUpVerificationCode } from '@/lib/auth/email-sender.server'
+import { requireAuthenticatedRequest } from '@/lib/auth/authenticated-request.server'
+import { sendVerificationCodeEmail } from '@/lib/auth/email-sender.server'
+import { writeAuthAuditLog } from '@/lib/auth/audit-log.server'
 import { createEmailVerificationChallenge } from '@/lib/auth/email-verification.server'
+import {
+  getFirebaseAdminAuth,
+  getFirebaseAdminFirestore,
+} from '@/lib/auth/firebase-admin.server'
+import { getRequestContext } from '@/lib/auth/request-context.server'
 
 const EMAIL_DOMAIN_PATTERNS = [
   /^gmail\.com$/i,
@@ -13,16 +20,14 @@ const EMAIL_DOMAIN_PATTERNS = [
   /^protonmail\.[a-z.]+$/i,
   /^icloud\.com$/i,
 ]
-
-function getIpAddress(request) {
-  const forwardedFor = request.headers.get('x-forwarded-for')
-
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
-  }
-
-  return request.headers.get('x-real-ip') || ''
+const PURPOSES = {
+  EMAIL_CHANGE: 'email-change',
+  PASSWORD_CHANGE: 'password-change',
+  PASSWORD_RESET: 'password-reset',
+  SIGN_UP: 'sign-up',
 }
+const FRESH_AUTH_WINDOW_MS = 5 * 60 * 1000
+const USERS_COLLECTION = 'users'
 
 function validateAllowedEmailDomain(value) {
   const email = String(value || '')
@@ -47,24 +52,138 @@ function validateAllowedEmailDomain(value) {
   return email
 }
 
-export async function POST(request) {
+async function assertPasswordResetEligibility(email) {
   try {
-    const body = await request.json()
-    const email = validateAllowedEmailDomain(body?.email)
-    const purpose = String(body?.purpose || 'sign-up')
+    const adminAuth = getFirebaseAdminAuth()
+    const adminDb = getFirebaseAdminFirestore()
+    const userRecord = await adminAuth.getUserByEmail(email)
+    const providerIds = (userRecord?.providerData || [])
+      .map((provider) => String(provider?.providerId || '').trim())
+      .filter(Boolean)
+
+    if (!providerIds.includes('password')) {
+      throw new Error('This account does not have email/password sign-in enabled')
+    }
+
+    const userId = String(userRecord?.uid || '').trim()
+
+    if (!userId) {
+      throw new Error('No account found with this email address')
+    }
+
+    const profileSnapshot = await adminDb.collection(USERS_COLLECTION).doc(userId).get()
+
+    if (!profileSnapshot.exists) {
+      throw new Error('No account found with this email address')
+    }
+
+    const profileData = profileSnapshot.data() || {}
+    const profileEmail = String(profileData?.email || '')
       .trim()
       .toLowerCase()
+    const profileId = String(profileData?.id || '').trim()
+
+    if (
+      profileEmail !== email ||
+      (profileId && profileId !== userId)
+    ) {
+      throw new Error('No account found with this email address')
+    }
+  } catch (error) {
+    if (String(error?.code || '').trim() === 'auth/user-not-found') {
+      throw new Error('No account found with this email address')
+    }
+
+    throw error
+  }
+}
+
+async function assertSignUpEligibility(email) {
+  try {
+    const adminAuth = getFirebaseAdminAuth()
+    await adminAuth.getUserByEmail(email)
+    throw new Error('This email address is already in use')
+  } catch (error) {
+    if (String(error?.code || '').trim() === 'auth/user-not-found') {
+      return
+    }
+
+    throw error
+  }
+}
+
+function hasPasswordProvider(userRecord) {
+  const providerIds = (userRecord?.providerData || [])
+    .map((provider) => String(provider?.providerId || '').trim())
+    .filter(Boolean)
+
+  return providerIds.includes('password')
+}
+
+export async function POST(request) {
+  const requestContext = getRequestContext(request)
+  let email = null
+  let purpose = 'sign-up'
+  let userId = null
+
+  try {
+    const body = await request.json()
+    purpose = String(body?.purpose || 'sign-up')
+      .trim()
+      .toLowerCase()
+
+    if (
+      purpose === PURPOSES.PASSWORD_CHANGE ||
+      purpose === PURPOSES.EMAIL_CHANGE
+    ) {
+      const authContext = await requireAuthenticatedRequest(request, {
+        requireRecentAuthMs: FRESH_AUTH_WINDOW_MS,
+      })
+
+      userId = authContext.userId
+
+      if (!hasPasswordProvider(authContext.userRecord)) {
+        throw new Error(
+          'This account does not have email/password sign-in enabled'
+        )
+      }
+
+      if (purpose === PURPOSES.PASSWORD_CHANGE) {
+        email = authContext.email
+      } else {
+        email = validateAllowedEmailDomain(body?.email)
+
+        if (email === authContext.email) {
+          throw new Error('New email must be different from current email')
+        }
+
+        await assertSignUpEligibility(email)
+      }
+    } else {
+      email = validateAllowedEmailDomain(body?.email)
+
+      if (purpose === PURPOSES.PASSWORD_RESET) {
+        await assertPasswordResetEligibility(email)
+      }
+
+      if (purpose === PURPOSES.SIGN_UP) {
+        await assertSignUpEligibility(email)
+      }
+    }
 
     const challenge = createEmailVerificationChallenge({
       email,
       purpose,
-      ipAddress: getIpAddress(request),
+      userId,
+      ipAddress: requestContext.ipAddress,
+      deviceId: requestContext.deviceId,
     })
 
-    await sendSignUpVerificationCode({
+    await sendVerificationCodeEmail({
       email,
       code: challenge.code,
       expiresAt: challenge.expiresAt,
+      purpose,
     })
 
     return NextResponse.json({
@@ -86,13 +205,41 @@ export async function POST(request) {
       ? 429
       : providerConfigError || providerAuthError
         ? 502
+      : message.includes('already in use')
+        ? 409
+      : message.includes('Authorization token is required') ||
+          message.includes('Invalid or expired authentication token') ||
+          message.includes('Authentication token has been revoked') ||
+          message.includes('Recent authentication is required')
+        ? 401
       : message.includes('required') ||
           message.includes('invalid') ||
+          message.includes('not found') ||
           message.includes('expired') ||
+          message.includes('must be') ||
+          message.includes('Unsupported verification purpose') ||
+          message.includes('email/password sign-in enabled') ||
           message.includes('supported email domains') ||
           message.includes('Enter a valid email address')
         ? 400
         : 500
+
+    await writeAuthAuditLog({
+      request,
+      eventType: 'failed-attempt',
+      status: status === 429 ? 'blocked' : 'failure',
+      email,
+      provider: 'password',
+      metadata: {
+        action: 'verification-send-code',
+        message,
+        purpose,
+        status,
+        source: 'api/auth/verification/send-code',
+      },
+    }).catch((auditError) => {
+      console.error('[AuthAudit] send-code failed-attempt log failed:', auditError)
+    })
 
     return NextResponse.json({ error: message }, { status })
   }

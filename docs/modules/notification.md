@@ -16,9 +16,9 @@ export default function MyComponent() {
   const toast = useToast()
 
   const handleSave = () => {
-    toast.success('Ayarlar başarıyla kaydedildi.')
-    toast.error('Veriler sunucuya gönderilirken bir hata oluştu.')
-    toast.info('Yeni güncellemeler arka planda indiriliyor...')
+    toast.success('Ayarlar başarıyla kaydedildi')
+    toast.error('Veriler sunucuya gönderilirken bir hata oluştu')
+    toast.info('Yeni güncellemeler arka planda indiriliyor')
     toast.warning('Bu işlemi geri alamazsınız!', {
       duration: 10000, 
     })
@@ -51,9 +51,9 @@ toast.error('İşlem Başarısız', {
 Eğer sabit kalıpların (`success`, `info` vb.) dışına çıkıp tamamen kendi ikon ve tasarımınızla bir bildirim oluşturmak isterseniz `toast.show` metodunu kullanabilirsiniz:
 
 ```javascript
-toast.show('premium-upgrade', 'Tebrikler, yükseltme tamamlandı!', {
+toast.show('premium-upgrade', 'Tebrikler, yükseltme tamamlandı', {
   title: 'Premium Hesap Aktif', 
-  description: 'Artık tüm özelliklere sınırsız erişiminiz var.',
+  description: 'Artık tüm özelliklere sınırsız erişiminiz var',
   icon: 'solar:star-bold', // İstediğiniz Iconify veya Solar ikonu
   colorClass: 'text-purple-500', // İkon ve Başlık için CSS veya Tailwind rengi
   duration: 6000,
@@ -75,7 +75,7 @@ export default function DashboardPage() {
       onMount: {
         type: 'success', // Toast tipi: success, error, warning, info
         message: 'Hoş geldiniz!',
-        description: 'Son girişinizden bu yana 3 yeni mesajınız var.',
+        description: 'Son girişinizden bu yana 3 yeni mesajınız var',
         duration: 5000, // 5 saniye
         actions: [
           {
@@ -98,7 +98,7 @@ useRegistry({
     onMount: {
       type: 'welcome-back', 
       title: 'Harika!',
-      message: 'Sizi yeniden aramızda görmek çok güzel.',
+      message: 'Sizi yeniden aramızda görmek çok güzel',
       icon: 'solar:hand-heart-bold',
       colorClass: 'text-pink-500'
     }

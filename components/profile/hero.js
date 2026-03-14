@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils/index'
 import Icon from '@/ui/icon'
 
-const TABS = [
+const DEFAULT_TABS = [
   { key: 'favorites', icon: 'solar:heart-bold', label: 'Favorites' },
   { key: 'watchlist', icon: 'solar:bookmark-bold', label: 'Watchlist' },
   { key: 'lists', icon: 'solar:clipboard-list-bold', label: 'Lists' },
@@ -30,6 +30,8 @@ export function ProfileHero({
   profile,
   activeTab,
   onTabChange,
+  tabs = DEFAULT_TABS,
+  contentCountByTab = null,
   onFollowersClick,
   onFollowingClick,
   favoritesCount = 0,
@@ -47,11 +49,13 @@ export function ProfileHero({
   }
 
   const contentCount =
-    activeTab === 'favorites'
-      ? favoritesCount
-      : activeTab === 'watchlist'
-        ? watchlistCount
-        : listsCount
+    contentCountByTab && Number.isFinite(contentCountByTab?.[activeTab])
+      ? contentCountByTab[activeTab]
+      : activeTab === 'favorites'
+        ? favoritesCount
+        : activeTab === 'watchlist'
+          ? watchlistCount
+          : listsCount
 
   const topName = profile?.displayName || profile?.username || 'Profile'
   const subName = profile?.username ? `@${profile.username}` : null
@@ -106,7 +110,7 @@ export function ProfileHero({
         </div>
       </div>
       <div className="mt-10 flex w-full items-center border-t border-white/10 sm:mt-16">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
@@ -121,7 +125,7 @@ export function ProfileHero({
             {activeTab === tab.key && (
               <div className="absolute inset-x-0 top-0 h-[2px] bg-white" />
             )}
-            <Icon icon={tab.icon} size={14} />
+            {tab.icon ? <Icon icon={tab.icon} size={14} /> : null}
             <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}

@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from 'react'
 
-import {
-  clearPendingProfileBootstrap,
-  setPendingProfileBootstrap,
-} from '@/lib/auth/pending-profile.client'
 import { useAuth } from '@/modules/auth'
 import Container from '@/modules/modal/container'
+import { useModal } from '@/modules/modal/context'
 import { useToast } from '@/modules/notification/hooks'
 import {
   ensureUserProfile,
@@ -16,7 +13,6 @@ import {
   validateUsername,
 } from '@/services/profile.service'
 import { Button, Input } from '@/ui/elements'
-import Icon from '@/ui/icon'
 
 import { MODAL_BUTTON, MODAL_FIELD } from './constants'
 
@@ -25,9 +21,9 @@ const AUTH_MODE = {
   SIGN_UP: 'sign-up',
 }
 
-const AUTH_STEP = {
-  CREDENTIALS: 'credentials',
-  VERIFY_EMAIL_CODE: 'verify-email-code',
+const AUTH_PURPOSE = {
+  PASSWORD_RESET: 'password-reset',
+  SIGN_UP: 'sign-up',
 }
 
 const EMAIL_DOMAIN_PATTERNS = [
@@ -59,14 +55,24 @@ const AUTH_ERROR_MESSAGES = {
   PROFILE_EMAIL_MISSING:
     'No sign-in email was found for this username. Please contact support',
   USERNAME_TAKEN: 'This username is already taken',
-  CODE_INVALID: 'The verification code is invalid',
-  CODE_EXPIRED: 'The verification code has expired',
-  CODE_ATTEMPTS_EXHAUSTED: 'Too many invalid code attempts. Request a new code',
-  CODE_REQUIRED: 'Verification code must be 6 digits',
-  CODE_ALREADY_USED:
-    'This verification code has already been used. Request a new code',
   LINK_WITH_PASSWORD_REQUIRED:
     'This Google account matches an existing email/password account. Sign in once with your password to link Google',
+  GOOGLE_LINK_REQUIRED:
+    'Google sign-in is available only for accounts linked from profile settings',
+  GOOGLE_EMAIL_MISMATCH:
+    'Google account email must match your current account email',
+  GOOGLE_GMAIL_REQUIRED:
+    'Google sign-in is available only for gmail.com accounts',
+  GOOGLE_EXPECTED_EMAIL_REQUIRED:
+    'Google sign-in could not be validated. Please try again from the same account email.',
+  GOOGLE_PREFLIGHT_NOT_FOUND: 'No account found. Please sign up first',
+  GOOGLE_PREFLIGHT_GOOGLE_NOT_LINKED: 'Link Google from profile settings first',
+  GOOGLE_PREFLIGHT_PASSWORD_NOT_LINKED:
+    'This account does not have email/password sign-in enabled',
+  GOOGLE_PREFLIGHT_PROFILE_MISMATCH:
+    'Account integrity check failed. Please contact support',
+  GOOGLE_PREFLIGHT_GMAIL_REQUIRED:
+    'Google sign-in is available only for gmail.com accounts',
 }
 
 const AUTH_ERROR_MESSAGE_PATTERNS = [
@@ -84,17 +90,6 @@ const AUTH_ERROR_MESSAGE_PATTERNS = [
     'auth/network-request-failed',
     AUTH_ERROR_MESSAGES['auth/network-request-failed'],
   ],
-  ['Verification code is invalid', AUTH_ERROR_MESSAGES.CODE_INVALID],
-  ['Verification code has expired', AUTH_ERROR_MESSAGES.CODE_EXPIRED],
-  [
-    'Verification code attempts are exhausted',
-    AUTH_ERROR_MESSAGES.CODE_ATTEMPTS_EXHAUSTED,
-  ],
-  ['Verification code must be 6 digits', AUTH_ERROR_MESSAGES.CODE_REQUIRED],
-  [
-    'Verification code has already been used',
-    AUTH_ERROR_MESSAGES.CODE_ALREADY_USED,
-  ],
 ]
 
 function resolveMode(value) {
@@ -111,6 +106,14 @@ function normalizeEmail(value) {
   return String(value || '')
     .trim()
     .toLowerCase()
+}
+
+function isEmailIdentifier(value) {
+  return String(value || '').includes('@')
+}
+
+function isGmailEmail(value) {
+  return normalizeEmail(value).endsWith('@gmail.com')
 }
 
 function resolveAuthErrorMessage(error, fallbackMessage) {
@@ -188,29 +191,44 @@ function validateAllowedEmailDomain(value) {
   return email
 }
 
-function isEmailIdentifier(value) {
-  return String(value || '').includes('@')
-}
-
-function formatVerificationExpiry(expiresAt) {
-  if (!expiresAt) {
-    return null
-  }
-
-  const date = new Date(expiresAt)
-
-  if (Number.isNaN(date.getTime())) {
-    return null
-  }
-
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
+async function preflightGoogleSignIn(email) {
+  const response = await fetch('/api/auth/provider/google/preflight', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+    }),
   })
+
+  const payload = await response
+    .json()
+    .catch(() => ({ error: 'Google sign-in check failed' }))
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.error || payload?.message || 'Google sign-in check failed'
+    )
+  }
+
+  if (payload?.allowed) {
+    return payload
+  }
+
+  const reason = String(payload?.reason || '')
+    .trim()
+    .toUpperCase()
+    .replace(/-/g, '_')
+  const error = new Error(payload?.message || 'Google sign-in is not allowed')
+  error.code = reason
+    ? `GOOGLE_PREFLIGHT_${reason}`
+    : 'GOOGLE_PREFLIGHT_BLOCKED'
+
+  throw error
 }
 
-async function sendVerificationCodeRequest(email) {
+async function requestVerificationCode({ email, purpose }) {
   const response = await fetch('/api/auth/verification/send-code', {
     method: 'POST',
     headers: {
@@ -218,7 +236,7 @@ async function sendVerificationCodeRequest(email) {
     },
     body: JSON.stringify({
       email,
-      purpose: 'sign-up',
+      purpose,
     }),
   })
 
@@ -233,40 +251,12 @@ async function sendVerificationCodeRequest(email) {
   return payload
 }
 
-async function verifyCodeRequest({ challengeToken, code, email }) {
-  const response = await fetch('/api/auth/verification/verify-code', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      challengeToken,
-      code,
-      email,
-      purpose: 'sign-up',
-    }),
-  })
-
-  const payload = await response
-    .json()
-    .catch(() => ({ error: 'Verification failed' }))
-
-  if (!response.ok) {
-    throw new Error(payload?.error || 'Verification failed')
-  }
-
-  return payload
-}
-
 export default function AuthModal({ close, data, header }) {
   const auth = useAuth()
   const toast = useToast()
+  const { openModal } = useModal()
   const [mode, setMode] = useState(resolveMode(data?.mode))
-  const [step, setStep] = useState(AUTH_STEP.CREDENTIALS)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [verificationPayload, setVerificationPayload] = useState(null)
-  const [now, setNow] = useState(Date.now())
   const [form, setForm] = useState({
     identifier: data?.email || '',
     displayName: '',
@@ -274,48 +264,58 @@ export default function AuthModal({ close, data, header }) {
     email: data?.email || '',
     password: '',
     confirmPassword: '',
-    verificationCode: '',
   })
+  const [isGoogleSignInEligible, setIsGoogleSignInEligible] = useState(false)
 
   const isSignUp = mode === AUTH_MODE.SIGN_UP
-  const isVerificationStep = step === AUTH_STEP.VERIFY_EMAIL_CODE
-  const resendRemainingMs = Math.max(
-    0,
-    Number(verificationPayload?.resendAvailableAt || 0) - now
-  )
-  const resendRemainingSeconds = Math.ceil(resendRemainingMs / 1000)
-  const canResendCode = resendRemainingMs <= 0
-  const codeExpiryLabel = formatVerificationExpiry(
-    verificationPayload?.expiresAt || null
-  )
 
   useEffect(() => {
-    if (!isVerificationStep || !verificationPayload?.resendAvailableAt) {
-      return
+    let ignore = false
+
+    async function resolveGoogleEligibility() {
+      if (isSignUp) {
+        setIsGoogleSignInEligible(false)
+        return
+      }
+
+      const identifier = String(form.identifier || '').trim()
+      if (!identifier) {
+        setIsGoogleSignInEligible(false)
+        return
+      }
+
+      if (isEmailIdentifier(identifier)) {
+        setIsGoogleSignInEligible(isGmailEmail(identifier))
+        return
+      }
+
+      try {
+        const username = validateUsername(identifier)
+        const userId = await getUserIdByUsername(username)
+
+        if (!userId) {
+          if (!ignore) setIsGoogleSignInEligible(false)
+          return
+        }
+
+        const profile = await getUserProfile(userId)
+        if (!ignore) {
+          setIsGoogleSignInEligible(isGmailEmail(profile?.email))
+        }
+      } catch {
+        if (!ignore) setIsGoogleSignInEligible(false)
+      }
     }
 
-    const intervalId = window.setInterval(() => {
-      setNow(Date.now())
-    }, 1000)
+    resolveGoogleEligibility()
 
     return () => {
-      window.clearInterval(intervalId)
+      ignore = true
     }
-  }, [isVerificationStep, verificationPayload?.resendAvailableAt])
+  }, [form.identifier, isSignUp])
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const setVerificationStep = (payload) => {
-    setNow(Date.now())
-    setVerificationPayload(payload)
-    setPendingProfileBootstrap(payload)
-    setStep(AUTH_STEP.VERIFY_EMAIL_CODE)
-    setForm((prev) => ({
-      ...prev,
-      verificationCode: '',
-    }))
   }
 
   const resolveSignInEmail = async (identifier) => {
@@ -374,24 +374,6 @@ export default function AuthModal({ close, data, header }) {
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    if (isSubmitting || isResending) return
-
-    setIsSubmitting(true)
-    try {
-      const session = await auth.signIn({ provider: 'google' })
-      toast.success('Signed in successfully')
-      if (typeof data?.onSuccess === 'function') {
-        data.onSuccess(session)
-      }
-      close({ success: true, session, method: 'google' })
-    } catch (error) {
-      toast.error(resolveAuthErrorMessage(error, 'Google sign-in failed'))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   const handleSignIn = async () => {
     const password = String(form.password || '')
 
@@ -413,23 +395,127 @@ export default function AuthModal({ close, data, header }) {
     })
   }
 
+  const handleLinkedGoogleSignIn = async () => {
+    if (isSubmitting || isSignUp) return
+
+    setIsSubmitting(true)
+    try {
+      const { email } = await resolveSignInEmail(form.identifier)
+      if (!isGmailEmail(email)) {
+        throw createError('GOOGLE_GMAIL_REQUIRED')
+      }
+
+      await preflightGoogleSignIn(email)
+
+      const session = await auth.signIn({
+        provider: 'google',
+        requireLinkedPassword: true,
+        expectedEmail: email,
+      })
+
+      toast.success('Signed in successfully')
+      if (typeof data?.onSuccess === 'function') {
+        data.onSuccess(session)
+      }
+      close({ success: true, session, method: 'google' })
+    } catch (error) {
+      toast.error(resolveAuthErrorMessage(error, 'Google sign-in failed'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSignUp = async () => {
     const pendingPayload = await createPendingSignUpPayload()
-    const challenge = await sendVerificationCodeRequest(pendingPayload.email)
 
-    setVerificationStep({
-      ...pendingPayload,
-      challengeToken: challenge.challengeToken,
-      expiresAt: challenge.expiresAt,
-      resendAvailableAt: challenge.resendAvailableAt,
+    const verification = await openModal('AUTH_VERIFICATION_MODAL', 'bottom', {
+      header: {
+        title: 'Verify your email',
+        description: 'Complete account creation',
+      },
+      data: {
+        purpose: AUTH_PURPOSE.SIGN_UP,
+        email: pendingPayload.email,
+      },
     })
 
-    toast.success('Verification code sent to your email')
+    if (!verification?.success) {
+      return
+    }
+
+    const session = await auth.signUp({
+      displayName: pendingPayload.displayName,
+      email: pendingPayload.email,
+      password: pendingPayload.password,
+    })
+
+    await ensureUserProfile(session.user, {
+      displayName: pendingPayload.displayName || pendingPayload.username,
+      username: pendingPayload.username,
+    })
+
+    toast.success('Your account was created successfully')
+    if (typeof data?.onSuccess === 'function') {
+      data.onSuccess(session)
+    }
+    close({
+      success: true,
+      session,
+      method: 'email-sign-up',
+    })
+  }
+
+  const handleRequestPasswordReset = async () => {
+    if (isSubmitting || isSignUp) return
+
+    setIsSubmitting(true)
+    try {
+      const { email } = await resolveSignInEmail(form.identifier)
+      const challenge = await requestVerificationCode({
+        email,
+        purpose: AUTH_PURPOSE.PASSWORD_RESET,
+      })
+
+      const verification = await openModal(
+        'AUTH_VERIFICATION_MODAL',
+        'bottom',
+        {
+          header: {
+            title: 'Reset your password',
+            description: 'Email verification',
+            label: 'Security',
+          },
+          data: {
+            autoSendOnOpen: false,
+            initialChallenge: challenge,
+            purpose: AUTH_PURPOSE.PASSWORD_RESET,
+            email,
+          },
+        }
+      )
+
+      if (!verification?.success) {
+        return
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        identifier: email,
+        password: '',
+        confirmPassword: '',
+      }))
+    } catch (error) {
+      toast.error(
+        resolveAuthErrorMessage(error, 'Password reset request failed')
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCredentialsSubmit = async (event) => {
     event.preventDefault()
-    if (isSubmitting || isResending) return
+    if (isSubmitting) return
 
     setIsSubmitting(true)
     try {
@@ -450,132 +536,16 @@ export default function AuthModal({ close, data, header }) {
     }
   }
 
-  const handleVerifyCode = async (event) => {
-    event.preventDefault()
-    if (isSubmitting || isResending) return
-
-    const code = String(form.verificationCode || '').trim()
-
-    if (!verificationPayload?.email || !verificationPayload?.challengeToken) {
-      toast.error('Verification session was not found. Start again')
-      setStep(AUTH_STEP.CREDENTIALS)
-      return
-    }
-
-    if (!/^\d{6}$/.test(code)) {
-      toast.error(AUTH_ERROR_MESSAGES.CODE_REQUIRED)
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      await verifyCodeRequest({
-        challengeToken: verificationPayload.challengeToken,
-        code,
-        email: verificationPayload.email,
-      })
-
-      const session = await auth.signUp({
-        displayName: verificationPayload.displayName,
-        email: verificationPayload.email,
-        password: verificationPayload.password,
-      })
-
-      await ensureUserProfile(session.user, {
-        displayName:
-          verificationPayload.displayName || verificationPayload.username,
-        username: verificationPayload.username,
-      })
-      clearPendingProfileBootstrap()
-
-      toast.success('Your account was created successfully')
-      if (typeof data?.onSuccess === 'function') {
-        data.onSuccess(session)
-      }
-      close({
-        success: true,
-        session,
-        method: 'email-sign-up',
-      })
-    } catch (error) {
-      toast.error(
-        resolveAuthErrorMessage(error, 'Verification failed. Please try again')
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleResendVerificationCode = async () => {
-    if (isSubmitting || isResending) return
-
-    if (!verificationPayload?.email) {
-      toast.error('Verification session was not found. Start again')
-      setStep(AUTH_STEP.CREDENTIALS)
-      return
-    }
-
-    if (!canResendCode) {
-      toast.error(
-        `Please wait ${resendRemainingSeconds} second${resendRemainingSeconds === 1 ? '' : 's'} before requesting a new code`
-      )
-      return
-    }
-
-    setIsResending(true)
-    try {
-      const challenge = await sendVerificationCodeRequest(
-        verificationPayload.email
-      )
-
-      setVerificationPayload((prev) =>
-        prev
-          ? {
-              ...prev,
-              challengeToken: challenge.challengeToken,
-              expiresAt: challenge.expiresAt,
-              resendAvailableAt: challenge.resendAvailableAt,
-            }
-          : prev
-      )
-      setNow(Date.now())
-
-      toast.success('A new verification code has been sent')
-    } catch (error) {
-      toast.error(
-        resolveAuthErrorMessage(error, 'Verification code could not be resent')
-      )
-    } finally {
-      setIsResending(false)
-    }
-  }
-
-  const backToCredentials = () => {
-    if (isSubmitting || isResending) return
-
-    setStep(AUTH_STEP.CREDENTIALS)
-    setVerificationPayload(null)
-    setForm((prev) => ({
-      ...prev,
-      verificationCode: '',
-      password: '',
-      confirmPassword: '',
-    }))
-  }
-
   const toggleMode = () => {
-    if (isSubmitting || isResending) return
+    if (isSubmitting) return
 
     setMode((prev) =>
       prev === AUTH_MODE.SIGN_UP ? AUTH_MODE.SIGN_IN : AUTH_MODE.SIGN_UP
     )
-    setStep(AUTH_STEP.CREDENTIALS)
-    setVerificationPayload(null)
     setForm((prev) => ({
       ...prev,
       password: '',
       confirmPassword: '',
-      verificationCode: '',
     }))
   }
 
@@ -588,198 +558,138 @@ export default function AuthModal({ close, data, header }) {
       close={close}
     >
       <div className="flex w-full flex-col p-2.5">
-        {isVerificationStep ? (
-          <form onSubmit={handleVerifyCode} className="space-y-4">
-            <div className={MODAL_FIELD.infoBox}>
-              <p className="text-[11px] font-semibold tracking-[0.15em] text-white/50 uppercase">
-                Verification Email
-              </p>
-              <p className="mt-1 break-all">
-                {verificationPayload?.email || 'Unknown email'}
-              </p>
-              {codeExpiryLabel ? (
-                <p className="mt-1 text-xs text-white/50">
-                  Code expires at {codeExpiryLabel}
-                </p>
-              ) : null}
-            </div>
-
-            <Input
-              value={form.verificationCode}
-              onChange={(event) =>
-                updateField(
-                  'verificationCode',
-                  event.target.value.replace(/[^0-9]/g, '').slice(0, 6)
-                )
-              }
-              placeholder="Verification Code"
-              autoComplete="one-time-code"
-              inputMode="numeric"
-              className={{
-                input: `${MODAL_FIELD.input} py-2 text-center font-semibold`,
-              }}
-            />
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || isResending}
-              className={MODAL_BUTTON.primary}
+        <div className="space-y-4 mt-2">
+          <div className="flex w-full items-center justify-between gap-3 px-4">
+            <button
+              type="button"
+              onClick={toggleMode}
+              disabled={isSubmitting}
+              className="cursor-pointer text-[10px] font-semibold tracking-[0.12em] text-white/50 uppercase transition hover:text-white disabled:opacity-50"
             >
-              {isSubmitting ? 'Verifying your code' : 'Verify Code'}
-            </Button>
-
-            <div className="flex flex-col gap-2">
-              <Button
+              {isSignUp ? 'Sign In' : 'Sign Up'}
+            </button>
+            {!isSignUp ? (
+              <button
+                className="cursor-pointer text-[10px] font-semibold tracking-[0.12em] text-white/50 uppercase transition hover:text-white disabled:opacity-50"
+                disabled={isSubmitting}
+                onClick={handleRequestPasswordReset}
                 type="button"
-                onClick={handleResendVerificationCode}
-                disabled={isSubmitting || isResending || !canResendCode}
-                className={MODAL_BUTTON.secondary}
               >
-                {isResending
-                  ? 'Sending'
-                  : canResendCode
-                    ? 'Resend Code'
-                    : `Resend Code (${resendRemainingSeconds}s)`}
-              </Button>
-              <Button
-                type="button"
-                onClick={backToCredentials}
-                disabled={isSubmitting || isResending}
-                className={MODAL_BUTTON.secondary}
-              >
-                Go Back
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <div className="space-y-4">
-              <form onSubmit={handleCredentialsSubmit} className="space-y-4">
-                {isSignUp ? (
-                  <>
-                    <Input
-                      value={form.username}
-                      onChange={(event) =>
-                        updateField('username', event.target.value)
-                      }
-                      placeholder="Username"
-                      autoComplete="username"
-                      className={{
-                        input: MODAL_FIELD.input,
-                      }}
-                    />
-                    <Input
-                      value={form.displayName}
-                      onChange={(event) =>
-                        updateField('displayName', event.target.value)
-                      }
-                      placeholder="Display name (optional)"
-                      autoComplete="name"
-                      className={{
-                        input: MODAL_FIELD.input,
-                      }}
-                    />
-                    <Input
-                      type="email"
-                      value={form.email}
-                      onChange={(event) =>
-                        updateField('email', event.target.value)
-                      }
-                      placeholder="Email address"
-                      autoComplete="email"
-                      className={{
-                        input: MODAL_FIELD.input,
-                      }}
-                    />
-                  </>
-                ) : (
+                Forgot Password?
+              </button>
+            ) : null}
+          </div>
+          <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+            <div className="flex flex-col rounded-[20px] border border-white/5 bg-white/5 mx-2">
+              {isSignUp ? (
+                <>
                   <Input
-                    value={form.identifier}
+                    value={form.username}
                     onChange={(event) =>
-                      updateField('identifier', event.target.value)
+                      updateField('username', event.target.value)
                     }
-                    placeholder="Username or email"
+                    placeholder="Username"
                     autoComplete="username"
                     className={{
-                      input: MODAL_FIELD.input,
+                      input:
+                        'w-full border-b border-white/5 bg-transparent p-3',
                     }}
                   />
-                )}
-
+                  <Input
+                    value={form.displayName}
+                    onChange={(event) =>
+                      updateField('displayName', event.target.value)
+                    }
+                    placeholder="Display name (optional)"
+                    autoComplete="name"
+                    className={{
+                      input:
+                        'w-full border-b border-white/5 bg-transparent p-3',
+                    }}
+                  />
+                  <Input
+                    type="email"
+                    value={form.email}
+                    onChange={(event) =>
+                      updateField('email', event.target.value)
+                    }
+                    placeholder="Email address"
+                    autoComplete="email"
+                    className={{
+                      input:
+                        'w-full border-b border-white/5 bg-transparent p-3',
+                    }}
+                  />
+                </>
+              ) : (
                 <Input
-                  type="password"
-                  value={form.password}
+                  value={form.identifier}
                   onChange={(event) =>
-                    updateField('password', event.target.value)
+                    updateField('identifier', event.target.value)
                   }
-                  placeholder="Password"
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  placeholder="Username or email"
+                  autoComplete="username"
                   className={{
-                    input: MODAL_FIELD.input,
+                    input: 'w-full border-b border-white/5 bg-transparent p-3',
                   }}
                 />
+              )}
 
-                {isSignUp && (
-                  <Input
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={(event) =>
-                      updateField('confirmPassword', event.target.value)
-                    }
-                    placeholder="Confirm password"
-                    autoComplete="new-password"
-                    className={{
-                      input: MODAL_FIELD.input,
-                    }}
-                  />
-                )}
+              <Input
+                type="password"
+                value={form.password}
+                onChange={(event) =>
+                  updateField('password', event.target.value)
+                }
+                placeholder="Password"
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                className={{
+                  input: `w-full ${isSignUp && 'border-b border-white/5'} bg-transparent p-3`,
+                }}
+              />
 
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || isResending}
-                  className={MODAL_BUTTON.primary}
-                >
-                  {isSubmitting
-                    ? isSignUp
-                      ? 'Sending code'
-                      : 'Signing in'
-                    : isSignUp
-                      ? 'Continue'
-                      : 'Sign In'}
-                </Button>
-              </form>
-
-              <div className="flex justify-center pt-1">
-                <button
-                  type="button"
-                  onClick={toggleMode}
-                  disabled={isSubmitting || isResending}
-                  className="text-[11px] font-semibold tracking-[0.12em] text-white/55 uppercase transition hover:text-white disabled:opacity-50"
-                >
-                  {isSignUp
-                    ? 'Already have an account? Sign In'
-                    : "Don't have an account? Sign Up"}
-                </button>
-              </div>
-
-              <div className="flex items-center gap-3 px-1">
-                <span className="h-px flex-1 bg-white/10" />
-                <span className="text-[10px] font-semibold tracking-[0.2em] text-white/35 uppercase">
-                  or
-                </span>
-                <span className="h-px flex-1 bg-white/10" />
-              </div>
-              <Button
-                onClick={handleGoogleSignIn}
-                disabled={isSubmitting || isResending}
-                className={MODAL_BUTTON.primary}
-              >
-                <Icon icon="logos:google-icon" size={16} />
-                Continue with Google
-              </Button>
+              {isSignUp ? (
+                <Input
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={(event) =>
+                    updateField('confirmPassword', event.target.value)
+                  }
+                  placeholder="Confirm password"
+                  autoComplete="new-password"
+                  className={{
+                    input: 'w-full bg-transparent p-3',
+                  }}
+                />
+              ) : null}
             </div>
-          </>
-        )}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className={MODAL_BUTTON.primary}
+            >
+              {isSubmitting
+                ? isSignUp
+                  ? 'Continuing'
+                  : 'Signing in'
+                : isSignUp
+                  ? 'Continue'
+                  : 'Sign In'}
+            </Button>
+          </form>
+          {!isSignUp && isGoogleSignInEligible ? (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={handleLinkedGoogleSignIn}
+                disabled={isSubmitting}
+                className="text-[11px] font-semibold tracking-[0.12em] text-white/45 uppercase transition hover:text-white disabled:opacity-50"
+              >
+                Sign In with Linked Google
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
     </Container>
   )

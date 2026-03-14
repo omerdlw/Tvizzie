@@ -1,12 +1,15 @@
 const ADAPTER_METHOD_NAMES = [
   'confirmPasswordReset',
   'getSession',
+  'linkProvider',
   'onAuthStateChange',
   'refreshSession',
+  'reauthenticate',
   'requestPasswordReset',
   'signIn',
   'signOut',
   'signUp',
+  'unlinkProvider',
   'updateProfile',
 ]
 

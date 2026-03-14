@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react'
 
+import { logAuthAuditEvent } from '@/lib/auth/audit.client'
 import { EVENT_TYPES, globalEvents } from '@/lib/events'
 import { apiClient } from '@/modules/api'
 
@@ -48,6 +49,38 @@ function createAdapterContext(config, storage, session) {
     config,
     storage,
   }
+}
+
+function resolveAuthProvider(payload = {}, session = null) {
+  const providerFromPayload =
+    payload?.provider || payload?.strategy || payload?.authProvider || null
+  const normalizedProvider = String(providerFromPayload || '')
+    .trim()
+    .toLowerCase()
+
+  if (normalizedProvider) {
+    return normalizedProvider
+  }
+
+  const providerIds = Array.isArray(session?.metadata?.providerIds)
+    ? session.metadata.providerIds
+    : []
+
+  if (providerIds.includes('google.com')) {
+    return 'google'
+  }
+
+  return 'password'
+}
+
+function resolveSignInIdentifier(payload = {}) {
+  return (
+    payload?.email ||
+    payload?.identifier ||
+    payload?.username ||
+    payload?.userId ||
+    null
+  )
 }
 
 export function AuthProvider({ children, config = {} }) {
@@ -422,6 +455,8 @@ export function AuthProvider({ children, config = {} }) {
         'Active auth adapter does not implement signIn',
         'Authentication adapter is not configured'
       )
+      const provider = resolveAuthProvider(credentials)
+      const identifier = resolveSignInIdentifier(credentials)
 
       setLoadingState()
 
@@ -433,9 +468,31 @@ export function AuthProvider({ children, config = {} }) {
         const resolvedSession = applySession(nextSession)
 
         emitSessionEvent(EVENT_TYPES.AUTH_SIGN_IN, resolvedSession)
+        logAuthAuditEvent({
+          eventType: 'sign-in',
+          status: 'success',
+          userId: resolvedSession?.user?.id || null,
+          email: resolvedSession?.user?.email || identifier || null,
+          provider,
+          metadata: {
+            source: 'auth-context',
+          },
+        })
 
         return resolvedSession
       } catch (error) {
+        logAuthAuditEvent({
+          eventType: 'failed-attempt',
+          status: 'failure',
+          email: identifier || null,
+          provider,
+          metadata: {
+            action: 'sign-in',
+            code: error?.code || null,
+            message: error?.message || 'Sign in failed',
+            source: 'auth-context',
+          },
+        })
         throw setAuthError(error, 'Sign in failed')
       }
     },
@@ -484,7 +541,7 @@ export function AuthProvider({ children, config = {} }) {
   )
 
   const signOut = useCallback(
-    async ({ skipAdapter = false } = {}) => {
+    async ({ skipAdapter = false, reason = 'logout' } = {}) => {
       const adapter = adapterRef.current
       const previousSession = sessionRef.current
       let signOutError = null
@@ -502,6 +559,7 @@ export function AuthProvider({ children, config = {} }) {
       clearSession({ preserveError: Boolean(signOutError) })
       emitAuthEvent(EVENT_TYPES.AUTH_SIGN_OUT, {
         previousSession,
+        reason,
         user: null,
         session: null,
       })
@@ -543,6 +601,158 @@ export function AuthProvider({ children, config = {} }) {
         return resolvedSession?.user || null
       } catch (error) {
         throw setAuthError(error, 'Profile update failed')
+      }
+    },
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
+  )
+
+  const reauthenticate = useCallback(
+    async (payload) => {
+      const adapter = getAdapterWithMethod(
+        'reauthenticate',
+        'Active auth adapter does not implement reauthenticate',
+        'Reauthentication is not supported by the current auth adapter'
+      )
+
+      setLoadingState()
+
+      try {
+        const nextSession = await adapter.reauthenticate(
+          payload,
+          getAdapterContext()
+        )
+        const resolvedSession = applySession(nextSession)
+
+        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession, {
+          action: 'reauthenticate',
+        })
+
+        return resolvedSession
+      } catch (error) {
+        throw setAuthError(error, 'Reauthentication failed')
+      }
+    },
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
+  )
+
+  const linkProvider = useCallback(
+    async (payload) => {
+      const adapter = getAdapterWithMethod(
+        'linkProvider',
+        'Active auth adapter does not implement linkProvider',
+        'Provider linking is not supported by the current auth adapter'
+      )
+      const provider = resolveAuthProvider(payload)
+
+      setLoadingState()
+
+      try {
+        const nextSession = await adapter.linkProvider(
+          payload,
+          getAdapterContext()
+        )
+        const resolvedSession = applySession(nextSession)
+
+        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession)
+        logAuthAuditEvent({
+          eventType: 'link-provider',
+          status: 'success',
+          userId: resolvedSession?.user?.id || null,
+          email: resolvedSession?.user?.email || null,
+          provider,
+          metadata: {
+            source: 'auth-context',
+          },
+        })
+
+        return resolvedSession
+      } catch (error) {
+        logAuthAuditEvent({
+          eventType: 'failed-attempt',
+          status: 'failure',
+          userId: sessionRef.current?.user?.id || null,
+          email: sessionRef.current?.user?.email || null,
+          provider,
+          metadata: {
+            action: 'link-provider',
+            code: error?.code || null,
+            message: error?.message || 'Provider linking failed',
+            source: 'auth-context',
+          },
+        })
+        throw setAuthError(error, 'Provider linking failed')
+      }
+    },
+    [
+      applySession,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterWithMethod,
+      setAuthError,
+      setLoadingState,
+    ]
+  )
+
+  const unlinkProvider = useCallback(
+    async (payload) => {
+      const adapter = getAdapterWithMethod(
+        'unlinkProvider',
+        'Active auth adapter does not implement unlinkProvider',
+        'Provider unlinking is not supported by the current auth adapter'
+      )
+      const provider = resolveAuthProvider(payload)
+
+      setLoadingState()
+
+      try {
+        const nextSession = await adapter.unlinkProvider(
+          payload,
+          getAdapterContext()
+        )
+        const resolvedSession = applySession(nextSession)
+
+        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession)
+        logAuthAuditEvent({
+          eventType: 'unlink-provider',
+          status: 'success',
+          userId: resolvedSession?.user?.id || null,
+          email: resolvedSession?.user?.email || null,
+          provider,
+          metadata: {
+            source: 'auth-context',
+          },
+        })
+
+        return resolvedSession
+      } catch (error) {
+        logAuthAuditEvent({
+          eventType: 'failed-attempt',
+          status: 'failure',
+          userId: sessionRef.current?.user?.id || null,
+          email: sessionRef.current?.user?.email || null,
+          provider,
+          metadata: {
+            action: 'unlink-provider',
+            code: error?.code || null,
+            message: error?.message || 'Provider unlinking failed',
+            source: 'auth-context',
+          },
+        })
+        throw setAuthError(error, 'Provider unlinking failed')
       }
     },
     [
@@ -635,6 +845,9 @@ export function AuthProvider({ children, config = {} }) {
     () => ({
       requestPasswordReset,
       confirmPasswordReset,
+      reauthenticate,
+      linkProvider,
+      unlinkProvider,
       updateProfile,
       refreshSession,
       initialize,
@@ -646,6 +859,9 @@ export function AuthProvider({ children, config = {} }) {
     [
       requestPasswordReset,
       confirmPasswordReset,
+      reauthenticate,
+      linkProvider,
+      unlinkProvider,
       updateProfile,
       refreshSession,
       initialize,

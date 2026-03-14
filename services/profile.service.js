@@ -621,3 +621,28 @@ export async function deleteUsernameMapping(username) {
   if (!username) return
   await deleteDoc(getUsernameDocRef(username))
 }
+
+export async function syncUserProfileEmail({ userId, email }) {
+  if (!userId) {
+    throw new Error('Authenticated user is required to sync email')
+  }
+
+  const normalizedEmail = String(email || '')
+    .trim()
+    .toLowerCase()
+
+  if (!normalizedEmail || !normalizedEmail.includes('@')) {
+    throw new Error('Enter a valid email address')
+  }
+
+  await setDoc(
+    getUserDocRef(userId),
+    {
+      email: normalizedEmail,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  )
+
+  return getUserProfile(userId)
+}

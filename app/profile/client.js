@@ -15,10 +15,10 @@ import { doc } from 'firebase/firestore'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import AuthModal from '@/components/modals/auth-modal'
+import AuthVerificationModal from '@/components/modals/auth-verification-modal'
 import ConfirmationModal from '@/components/modals/confirmation-modal'
 import FollowListModal from '@/components/modals/follow-list-modal'
 import ListEditorModal from '@/components/modals/list-editor-modal'
-import ProfileEditorModal from '@/components/modals/profile-editor-modal'
 import ProfileAction from '@/components/nav-actions/profile-action'
 import { ProfileHero } from '@/components/profile/hero'
 import { ListCard } from '@/components/profile/list-card'
@@ -349,16 +349,7 @@ export default function ProfilePage({
 
   const handleEditProfile = () => {
     if (!isOwner) return
-    openModal(
-      'PROFILE_EDITOR_MODAL',
-      { desktop: 'center', mobile: 'bottom' },
-      {
-        data: {
-          profile,
-          authActions: auth,
-        },
-      }
-    )
+    router.push('/profile/edit')
   }
 
   const handleOpenFollowList = useCallback(
@@ -484,8 +475,8 @@ export default function ProfilePage({
       CONFIRMATION_MODAL: ConfirmationModal,
       LIST_EDITOR_MODAL: ListEditorModal,
       FOLLOW_LIST_MODAL: FollowListModal,
-      PROFILE_EDITOR_MODAL: ProfileEditorModal,
       AUTH_MODAL: AuthModal,
+      AUTH_VERIFICATION_MODAL: AuthVerificationModal,
     },
     nav: {
       description: navDescription,

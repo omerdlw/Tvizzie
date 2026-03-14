@@ -11,6 +11,7 @@ import { hexToRgba } from '@/lib/utils/index'
 import { Button } from '@/ui/elements/index'
 
 const STATUS_PRIORITY = {
+  ACCOUNT_DELETE: 115,
   LOGIN: 110,
   LOGOUT: 110,
   APP_ERROR: 100,
@@ -20,7 +21,7 @@ const STATUS_PRIORITY = {
 }
 
 const STATUS_TYPES = {
-  ERROR: ['APP_ERROR', 'API_ERROR'],
+  ERROR: ['ACCOUNT_DELETE', 'APP_ERROR', 'API_ERROR'],
   SUCCESS: ['LOGIN', 'ONLINE'],
   WARNING: ['LOGOUT', 'OFFLINE'],
 }
@@ -107,13 +108,21 @@ export const useNavigationStatus = () => {
   }, [])
 
   const scheduleStatusClear = useCallback(
-    (duration = 4500) => {
+    ({ duration = 4500, clearWhen = [] } = {}) => {
       clearTimer(statusClearTimeout)
+
+      const clearTypes = Array.isArray(clearWhen)
+        ? clearWhen.filter(Boolean)
+        : []
+
       statusClearTimeout.current = setTimeout(() => {
         statusClearTimeout.current = null
-        setStatus((current) =>
-          current?.type === 'LOGIN' || current?.type === 'LOGOUT' ? null : current
-        )
+
+        setStatus((current) => {
+          if (!current) return current
+          if (clearTypes.length === 0) return null
+          return clearTypes.includes(current.type) ? null : current
+        })
       }, duration)
     },
     [clearTimer]
@@ -135,7 +144,11 @@ export const useNavigationStatus = () => {
 
   useEffect(() => {
     setStatus((prev) => {
-      if (prev && STATUS_TYPES.ERROR.includes(prev.type)) {
+      if (
+        prev &&
+        STATUS_TYPES.ERROR.includes(prev.type) &&
+        prev.type !== 'ACCOUNT_DELETE'
+      ) {
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
           clearTimer(offlineDispatchTimeout)
           offlineDispatchTimeout.current = setTimeout(() => {
@@ -256,23 +269,60 @@ export const useNavigationStatus = () => {
     const unsubscribeSignOut = globalEvents.subscribe(
       EVENT_TYPES.AUTH_SIGN_OUT,
       (eventData) => {
-        const user = eventData?.previousSession?.user
-        if (!user) return
+        const isAccountDelete = eventData?.reason === 'delete-account'
+        const user = eventData?.previousSession?.user || null
+
+        if (!user && !isAccountDelete) return
 
         updateStatus({
-          type: 'LOGOUT',
+          type: isAccountDelete ? 'ACCOUNT_DELETE' : 'LOGOUT',
           isOverlay: true,
-          title: user.name || user.email || 'User',
-          description: 'Logging out',
+          title: user?.name || user?.email || 'Account',
+          description: isAccountDelete ? 'Deleting account' : 'Logging out',
           icon:
-            user.avatarUrl ||
-            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id || 'default'}`,
-          style: getStatusTheme('LOGOUT'),
+            user?.avatarUrl ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'account'}`,
+          style: getStatusTheme(isAccountDelete ? 'ACCOUNT_DELETE' : 'LOGOUT'),
           hideSettings: true,
           hideScroll: true,
         })
 
-        scheduleStatusClear(4500)
+        scheduleStatusClear({
+          duration: 4500,
+          clearWhen: [isAccountDelete ? 'ACCOUNT_DELETE' : 'LOGOUT'],
+        })
+      }
+    )
+
+    const unsubscribeAccountDeleteStart = globalEvents.subscribe(
+      EVENT_TYPES.AUTH_ACCOUNT_DELETE_START,
+      (eventData) => {
+        const user = eventData?.user || null
+
+        clearTimer(statusClearTimeout)
+        updateStatus({
+          type: 'ACCOUNT_DELETE',
+          isOverlay: true,
+          title: user?.name || user?.email || 'Account',
+          description: 'Deleting account',
+          icon:
+            user?.avatarUrl ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'account'}`,
+          style: getStatusTheme('ACCOUNT_DELETE'),
+          hideSettings: true,
+          hideScroll: true,
+        })
+      }
+    )
+
+    const unsubscribeAccountDeleteEnd = globalEvents.subscribe(
+      EVENT_TYPES.AUTH_ACCOUNT_DELETE_END,
+      (eventData) => {
+        if (eventData?.status !== 'failure') return
+        clearTimer(statusClearTimeout)
+        setStatus((current) =>
+          current?.type === 'ACCOUNT_DELETE' ? null : current
+        )
       }
     )
 
@@ -295,7 +345,10 @@ export const useNavigationStatus = () => {
           hideScroll: true,
         })
 
-        scheduleStatusClear(4500)
+        scheduleStatusClear({
+          duration: 4500,
+          clearWhen: ['LOGIN'],
+        })
       }
     )
 
@@ -347,6 +400,8 @@ export const useNavigationStatus = () => {
       unsubscribeApiError()
       unsubscribeSignOut()
       unsubscribeSignIn()
+      unsubscribeAccountDeleteStart()
+      unsubscribeAccountDeleteEnd()
       clearTimer(batchTimeout)
       clearTimer(statusClearTimeout)
       clearTimer(onlineResetTimeout)

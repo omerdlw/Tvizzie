@@ -61,22 +61,39 @@ function normalizePositionConfig(positionInput, config = {}) {
   return { resolvedPosition, responsivePosition }
 }
 
+function createModalStateFromStack(modalStack = []) {
+  const activeModal = modalStack[modalStack.length - 1] || null
+
+  return {
+    position: activeModal?.position || MODAL_POSITIONS.CENTER,
+    responsivePosition: activeModal?.responsivePosition || null,
+    description: activeModal?.description || null,
+    label: activeModal?.label || null,
+    modalType: activeModal?.modalType || null,
+    activeModalId: activeModal?.id || null,
+    isOpen: modalStack.length > 0,
+    chrome: activeModal?.chrome || MODAL_CHROME.PANEL,
+    title: activeModal?.title || null,
+    props: activeModal?.props || {},
+    modalStack,
+  }
+}
+
 const INITIAL_STATE = {
-  position: MODAL_POSITIONS.CENTER,
-  responsivePosition: null,
-  description: null,
-  label: null,
-  modalType: null,
-  isOpen: false,
-  chrome: MODAL_CHROME.PANEL,
-  title: null,
-  props: {},
+  ...createModalStateFromStack([]),
 }
 
 export const ModalProvider = ({ children }) => {
   const [modalState, setModalState] = useState(INITIAL_STATE)
-  const resolveRef = useRef(null)
-  const onCloseRef = useRef(null)
+  const modalStackRef = useRef([])
+  const resolveMapRef = useRef(new Map())
+  const onCloseMapRef = useRef(new Map())
+  const modalIdRef = useRef(0)
+
+  const syncModalStack = useCallback((nextStack) => {
+    modalStackRef.current = nextStack
+    setModalState(createModalStateFromStack(nextStack))
+  }, [])
 
   const openModal = useCallback(
     (modalType, position = MODAL_POSITIONS.CENTER, config = {}) => {
@@ -93,9 +110,9 @@ export const ModalProvider = ({ children }) => {
         label: header?.label ?? resolvedConfig.label ?? null,
       }
 
-      onCloseRef.current = onClose || null
-
-      setModalState({
+      const modalId = ++modalIdRef.current
+      const modalEntry = {
+        id: modalId,
         position: resolvedPosition,
         responsivePosition,
         description: resolvedHeader.description,
@@ -103,32 +120,63 @@ export const ModalProvider = ({ children }) => {
         label: resolvedHeader.label,
         chrome: chrome || MODAL_CHROME.PANEL,
         props: data ?? resolvedConfig,
-        isOpen: true,
         modalType,
-      })
+      }
+
+      syncModalStack([...modalStackRef.current, modalEntry])
 
       return new Promise((resolve) => {
-        resolveRef.current = resolve
+        resolveMapRef.current.set(modalId, resolve)
+        onCloseMapRef.current.set(modalId, onClose || null)
       })
     },
-    []
+    [syncModalStack]
   )
 
-  const closeModal = useCallback((result = null) => {
-    if (onCloseRef.current) {
-      try {
-        onCloseRef.current(result)
-      } catch {} // eslint-disable-line no-empty
-      onCloseRef.current = null
-    }
+  const closeModal = useCallback(
+    (result = null, targetModalId = null) => {
+      const currentStack = modalStackRef.current
+      if (!currentStack.length) {
+        return
+      }
 
-    if (resolveRef.current) {
-      resolveRef.current(result)
-      resolveRef.current = null
-    }
+      const modalIdToClose =
+        targetModalId || currentStack[currentStack.length - 1]?.id || null
 
-    setModalState((prevState) => ({ ...prevState, isOpen: false }))
-  }, [])
+      if (!modalIdToClose) {
+        return
+      }
+
+      const closedModal = currentStack.find(
+        (modalEntry) => modalEntry.id === modalIdToClose
+      )
+
+      if (!closedModal) {
+        return
+      }
+
+      const nextStack = currentStack.filter(
+        (modalEntry) => modalEntry.id !== modalIdToClose
+      )
+
+      syncModalStack(nextStack)
+
+      const onClose = onCloseMapRef.current.get(modalIdToClose)
+      if (typeof onClose === 'function') {
+        try {
+          onClose(result)
+        } catch {} // eslint-disable-line no-empty
+      }
+      onCloseMapRef.current.delete(modalIdToClose)
+
+      const resolve = resolveMapRef.current.get(modalIdToClose)
+      if (typeof resolve === 'function') {
+        resolve(result)
+      }
+      resolveMapRef.current.delete(modalIdToClose)
+    },
+    [syncModalStack]
+  )
 
   const actionsValue = useMemo(
     () => ({ openModal, closeModal }),

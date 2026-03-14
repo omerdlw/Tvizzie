@@ -9,11 +9,15 @@ import {
 } from './constants'
 
 export default function ProfileAction({
+  mode = 'default',
   isOwner = false,
   isAuthenticated = false,
   onSignIn,
   isNotFound = false,
   onEditProfile,
+  onSave,
+  saveLabel = 'Save',
+  isSaveLoading = false,
   isFollowing = false,
   onFollow,
   isLoading = false,
@@ -26,6 +30,27 @@ export default function ProfileAction({
     tone: isFollowing ? 'danger' : 'primary',
     className: 'disabled:cursor-not-allowed disabled:opacity-60',
   })
+
+  const saveActionClass = navActionClass({
+    tone: 'primary',
+    className: 'disabled:cursor-not-allowed disabled:opacity-60',
+  })
+
+  if (mode === 'save') {
+    return (
+      <div className={NAV_ACTION_LAYOUT.row}>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isSaveLoading}
+          className={saveActionClass}
+        >
+          <Icon icon="solar:check-circle-bold" size={NAV_ACTION_ICON.default} />
+          {isSaveLoading ? 'Saving' : saveLabel}
+        </button>
+      </div>
+    )
+  }
 
   if (isNotFound) {
     return (

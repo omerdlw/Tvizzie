@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { MotionConfig, useReducedMotion } from 'framer-motion'
 
 import { SmoothScrollProvider } from '@/components/layout/smooth-scroll'
-import ProfileBootstrapper from '@/components/profile/bootstrapper'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { NAV_CONFIG } from '@/config/nav.config'
 import {
@@ -79,7 +78,6 @@ export const AppProviders = ({ children }) => {
       }
     >
       <ComposedProviders>
-        <ProfileBootstrapper />
         <NotificationContainer />
         <NotificationListener />
         <GlobalErrorListener />
