@@ -1,0 +1,38 @@
+export const SEARCH_TYPES = Object.freeze({
+  ALL: 'all',
+  MOVIE: 'movie',
+  PERSON: 'person',
+  USER: 'user',
+})
+
+export const SEARCH_LIMITS = Object.freeze({
+  MAX_RESULTS: 6,
+  MEDIA_RESULTS: 6,
+  USER_RESULTS: 6,
+})
+
+export const SEARCH_TAB_ITEMS = Object.freeze([
+  { key: SEARCH_TYPES.ALL, label: 'All' },
+  { key: SEARCH_TYPES.MOVIE, label: 'Movies' },
+  { key: SEARCH_TYPES.PERSON, label: 'People' },
+  { key: SEARCH_TYPES.USER, label: 'Users' },
+])
+
+export const SEARCH_STYLES = Object.freeze({
+  action: Object.freeze({
+    active: 'bg-white/5 text-white border border-white/5',
+    muted:
+      'bg-transparent text-white/70 border border-transparent hover:border-white/5 hover:bg-white/5 hover:text-white',
+  }),
+  input:
+'surface-muted! rounded-[12px] flex w-full text-sm items-center p-2 pl-4 transition-colors duration-(--motion-duration-fast)',
+  tabButton:
+    'relative rounded-[12px] shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
+  tabList: 'hide-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1',
+  resultItem:
+    'group flex rounded-[12px] cursor-pointer items-center justify-between transition-all p-1 duration-(--motion-duration-fast) hover:bg-white/5',
+  thumbnail:
+    'relative h-20 w-16 rounded-[8px] shrink-0 overflow-hidden',
+  metaBadge:
+    'flex w-fit items-center gap-1 rounded-[6px] text-white/70 bg-white/5',
+})

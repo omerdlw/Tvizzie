@@ -1,0 +1,209 @@
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+@import 'tailwindcss';
+@plugin 'tailwindcss-animate';
+
+@theme {
+  --color-white: #fff;
+  --color-black: #000;
+  --color-primary: #fff;
+  --color-error: #E10300;
+  --color-warning: #FCAD28;
+  --color-success: #22c55e;
+  --color-info: #3b82f6;
+  --color-background: var(--color-white);
+  --color-text: var(--color-white);
+  --font-zuume: var(--font-zuume);
+  --animate-spin: spin var(--motion-duration-hero) var(--motion-easing-linear)
+    infinite;
+  --animate-pulse: pulse var(--motion-duration-pulse)
+    var(--motion-easing-ease-in-out) infinite;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href],
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
+@utility error-classes {
+  @apply !border !border-error/10 !bg-error/10 !text-error hover:!border-error/20 hover:!bg-error/20;
+}
+
+@utility success-classes {
+  @apply !border !border-success/10 !bg-success/10 !text-success hover:!border-success/20 hover:!bg-success/20;
+}
+
+@utility info-classes {
+  @apply !border !border-info/10 !bg-info/10 !text-info hover:!border-info/20 hover:!bg-info/20;
+}
+
+@utility warning-classes {
+  @apply !border !border-warning/10 !bg-warning/10 !text-warning hover:!border-warning/20 hover:!bg-warning/20;
+}
+
+@utility surface-muted {
+  @apply border border-white/5 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white active:border-white/10 active:bg-white/10 active:text-white focus-within:border-white/10 focus-within:bg-white/10 focus-within:text-white;
+}
+
+@utility surface-active {
+  @apply border border-white/10 bg-white/10 text-white hover:border-white/5 hover:bg-white/5;
+}
+
+@utility surface-error {
+  @apply !border-error/10 !bg-error/10;
+}
+
+@utility surface-success {
+  @apply !border-success/10 !bg-success/10;
+}
+
+@utility surface-info {
+  @apply !border-info/10 !bg-info/10;
+}
+
+@utility surface-warning {
+  @apply !border-warning/10 !bg-warning/10;
+}
+
+@utility surface-icon-error {
+  @apply bg-error/10 text-error;
+}
+
+@utility surface-icon-success {
+  @apply bg-success/10 text-success;
+}
+
+@utility surface-icon-info {
+  @apply bg-info/10 text-info;
+}
+
+@utility surface-icon-warning {
+  @apply bg-warning/10 text-warning;
+}
+
+* {
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  outline: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+@layer utilities {
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin var(--motion-duration-hero) var(--motion-easing-linear)
+      infinite;
+  }
+
+  @keyframes status-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: -200% 50%;
+    }
+  }
+
+  @keyframes auth-poster-drift-slow {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+      transform: translate3d(-2.5%, -1.4%, 0);
+    }
+  }
+
+  @keyframes auth-poster-drift-medium {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+      transform: translate3d(2.25%, 1.2%, 0);
+    }
+  }
+
+  @keyframes auth-poster-drift-reverse {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+      transform: translate3d(1.75%, -1.3%, 0);
+    }
+  }
+
+  .animate-status-gradient {
+    background-size: 200% auto !important;
+    animation: status-gradient var(--motion-duration-ambient)
+      var(--motion-easing-linear) infinite !important;
+  }
+
+  .auth-poster-drift-slow {
+    animation: auth-poster-drift-slow 36s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .auth-poster-drift-medium {
+    animation: auth-poster-drift-medium 32s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .auth-poster-drift-reverse {
+    animation: auth-poster-drift-reverse 34s ease-in-out infinite;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--motion-duration-reduced-motion) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--motion-duration-reduced-motion) !important;
+  }
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+      [type='file']
+    ):not([type='color']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
