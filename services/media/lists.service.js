@@ -47,6 +47,20 @@ const LIST_ROW_SELECT = [
   'user_id',
 ].join(',')
 const LIST_ITEM_PREVIEW_SELECT = ['added_at', 'payload'].join(',')
+const INFRA_V2_CLIENT_ENABLED =
+  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
+
+function resolveRpcRow(data) {
+  if (Array.isArray(data)) {
+    return data[0] || null
+  }
+
+  if (data && typeof data === 'object') {
+    return data
+  }
+
+  return null
+}
 
 function slugifyListTitle(value) {
   const trMap = {
@@ -210,9 +224,13 @@ async function fetchUserLists(userId, options = {}) {
     return []
   }
 
+  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null
   const payload = await requestApiJson('/api/collections', {
     query: {
-      limitCount: resolveLimitCount(options.limitCount, 0, 200) || null,
+      activeTab: options.activeTab || null,
+      cursor: options.cursor || null,
+      limit: resolvedLimitCount,
+      limitCount: resolvedLimitCount,
       resource: 'lists',
       userId,
     },
@@ -245,13 +263,18 @@ async function fetchListBySlug(userId, slug) {
   return payload?.data || null
 }
 
-async function fetchLikedLists(userId) {
+async function fetchLikedLists(userId, options = {}) {
   if (!userId) {
     return []
   }
 
+  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null
   const payload = await requestApiJson('/api/collections', {
     query: {
+      activeTab: options.activeTab || null,
+      cursor: options.cursor || null,
+      limit: resolvedLimitCount,
+      limitCount: resolvedLimitCount,
       resource: 'liked-lists',
       userId,
     },
@@ -260,14 +283,19 @@ async function fetchLikedLists(userId) {
   return Array.isArray(payload?.data) ? payload.data : []
 }
 
-async function fetchListItems(userId, listId) {
+async function fetchListItems(userId, listId, options = {}) {
   if (!userId || !listId) {
     return []
   }
 
+  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null
   const payload = await requestApiJson('/api/collections', {
     query: {
+      activeTab: options.activeTab || null,
+      cursor: options.cursor || null,
+      limit: resolvedLimitCount,
       listId,
+      limitCount: resolvedLimitCount,
       resource: 'list-items',
       userId,
     },
@@ -425,7 +453,7 @@ export function subscribeToLikedLists(userId, callback, options = {}) {
   }
 
   return createPollingSubscription(
-    () => fetchLikedLists(userId),
+    () => fetchLikedLists(userId, options),
     callback,
     {
       ...options,
@@ -447,6 +475,41 @@ export async function fetchProfileLikedLists({
     return paginateByCursor([], cursor, pageSize)
   }
 
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const targetCount = resolveLimitCount(pageSize, 36, 500)
+    let currentCursor = cursor || null
+    let hasMore = true
+    const items = []
+
+    while (hasMore && items.length < targetCount) {
+      const batchLimit = Math.min(50, Math.max(1, targetCount - items.length))
+      const payload = await requestApiJson('/api/collections', {
+        query: {
+          activeTab: 'likes',
+          cursor: currentCursor,
+          limit: batchLimit,
+          resource: 'liked-lists',
+          userId,
+        },
+      })
+
+      const batch = Array.isArray(payload?.data) ? payload.data : []
+      items.push(...batch)
+      hasMore = payload?.pageInfo?.hasMore === true
+      currentCursor = payload?.pageInfo?.cursor || null
+
+      if (cursor) {
+        break
+      }
+    }
+
+    return {
+      hasMore,
+      items,
+      nextCursor: hasMore ? currentCursor : null,
+    }
+  }
+
   const items = await fetchLikedLists(userId)
 
   return paginateByCursor(items, cursor, pageSize)
@@ -459,7 +522,7 @@ export function subscribeToUserListItems(
   options = {}
 ) {
   return createPollingSubscription(
-    () => fetchListItems(userId, listId),
+    () => fetchListItems(userId, listId, options),
     callback,
     {
       ...options,
@@ -784,6 +847,53 @@ export async function toggleUserListItem({ userId, listId, media }) {
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId)
   const nowIso = new Date().toISOString()
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const mediaPayload = createMediaPayload(media, userId, {
+      addedAt: nowIso,
+      position: Number.isFinite(Number(media?.position))
+        ? Number(media.position)
+        : null,
+      updatedAt: nowIso,
+    })
+    const rpcResult = await client.rpc('collection_toggle_list_item_v2', {
+      p_backdrop_path: mediaPayload.backdrop_path || null,
+      p_entity_id: mediaPayload.entityId || null,
+      p_entity_type: mediaPayload.entityType || null,
+      p_list_id: listId,
+      p_media_key: mediaPayload.mediaKey,
+      p_payload: mediaPayload,
+      p_position: Number.isFinite(Number(mediaPayload.position))
+        ? Number(mediaPayload.position)
+        : null,
+      p_poster_path: mediaPayload.poster_path || null,
+      p_title: mediaPayload.title || null,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'List item could not be updated')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+    const isInList = rpcRow?.is_in_list === true
+
+    if (!isInList) {
+      return {
+        isInList: false,
+        mediaKey,
+      }
+    }
+
+    return {
+      isInList: true,
+      item: {
+        ...mediaPayload,
+        addedAt: nowIso,
+        updatedAt: nowIso,
+      },
+      mediaKey: mediaPayload.mediaKey,
+    }
+  }
+
   const [listResult, itemResult] = await Promise.all([
     client
       .from('lists')
@@ -909,6 +1019,61 @@ export async function toggleListLike({ ownerId, listId, userId }) {
   }
 
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const listResult = await client
+      .from('lists')
+      .select('slug,title,payload')
+      .eq('id', listId)
+      .eq('user_id', ownerId)
+      .maybeSingle()
+
+    assertSupabaseResult(listResult, 'List could not be loaded')
+
+    if (!listResult.data) {
+      throw new Error('List not found')
+    }
+
+    const rpcResult = await client.rpc('collection_toggle_list_like_v2', {
+      p_list_id: listId,
+      p_owner_id: ownerId,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'List like state could not be updated')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+    const isNowLiked = rpcRow?.is_liked === true
+
+    if (isNowLiked) {
+      fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
+        listOwnerId: ownerId,
+        listId,
+      })
+
+      fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {
+        dedupeKey: buildCanonicalActivityDedupeKey({
+          actorUserId: userId,
+          subjectId: listId,
+          subjectType: 'list',
+        }),
+        listId,
+        listSlug: listResult.data.slug || listId,
+        listTitle: listResult.data.title || 'Untitled List',
+        ownerUsername: listResult.data?.payload?.ownerSnapshot?.username || ownerId,
+        subjectId: listId,
+        subjectPoster:
+          listResult.data?.payload?.coverUrl ||
+          listResult.data?.payload?.previewItems?.[0]?.poster_path ||
+          null,
+        subjectTitle: listResult.data.title || 'Untitled List',
+        subjectType: 'list',
+      })
+    }
+
+    return isNowLiked
+  }
+
   const [listResult, likeResult] = await Promise.all([
     client
       .from('lists')

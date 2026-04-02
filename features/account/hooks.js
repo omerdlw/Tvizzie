@@ -31,6 +31,9 @@ import {
   showAccountErrorToast,
 } from './account-hook-utils'
 
+const INFRA_V2_CLIENT_ENABLED =
+  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
+
 export function useAccountResolvedUser({
   authUserId,
   username,
@@ -62,6 +65,7 @@ export function useAccountSubscription({ resolvedUserId, initialProfile = null }
 }
 
 export function useAccountCollections({
+  activeTab = null,
   authIsAuthenticated,
   authIsReady,
   canViewPrivateContent,
@@ -192,6 +196,17 @@ export function useAccountCollections({
       listsPreviewLimit > 0 ||
       watchedPreviewLimit > 0 ||
       watchlistPreviewLimit > 0
+    const normalizedActiveTab = String(activeTab || '').trim().toLowerCase()
+    const shouldScopeCollections =
+      INFRA_V2_CLIENT_ENABLED && Boolean(normalizedActiveTab)
+    const shouldSubscribeLikes =
+      !shouldScopeCollections || normalizedActiveTab === 'likes'
+    const shouldSubscribeLists =
+      !shouldScopeCollections || normalizedActiveTab === 'lists'
+    const shouldSubscribeWatched =
+      !shouldScopeCollections || normalizedActiveTab === 'watched'
+    const shouldSubscribeWatchlist =
+      !shouldScopeCollections || normalizedActiveTab === 'watchlist'
 
     if (!resolvedUserId) {
       setLikes([])
@@ -266,10 +281,10 @@ export function useAccountCollections({
     setCollectionCounts(initialCollectionCounts)
     setIsLoadingCollections(!hasInitialCollectionSnapshot)
     const resolvedOnce = {
-      likes: hasSeededLikes,
-      lists: hasSeededLists,
-      watched: hasSeededWatched,
-      watchlist: hasSeededWatchlist,
+      likes: shouldSubscribeLikes ? hasSeededLikes : true,
+      lists: shouldSubscribeLists ? hasSeededLists : true,
+      watched: shouldSubscribeWatched ? hasSeededWatched : true,
+      watchlist: shouldSubscribeWatchlist ? hasSeededWatchlist : true,
     }
     let countsResolved = hasInitialCollectionSnapshot || !shouldLoadPreviewOnly
 
@@ -323,116 +338,128 @@ export function useAccountCollections({
       countsResolved = true
       resolveLoadingState()
 
-      unsubscribeLikes = subscribeToUserLikes(
-        resolvedUserId,
-        (nextLikes) => {
-          setLikes(nextLikes)
-          if (shouldLoadPreviewOnly) {
-            setCollectionCounts((current) => ({
-              ...current,
-              likes: Math.max(current?.likes ?? 0, nextLikes.length),
-            }))
-          }
-          resolveStream('likes')
-        },
-        {
-          fetchOnSubscribe: !hasSeededLikes,
-          limitCount: likesPreviewLimit,
-          onError: (error) => {
-            setLikes([])
-            setCollectionCounts((current) => ({
-              ...current,
-              likes: 0,
-            }))
-            showAccountErrorToast(toast, error, 'Likes could not be loaded')
+      if (shouldSubscribeLikes) {
+        unsubscribeLikes = subscribeToUserLikes(
+          resolvedUserId,
+          (nextLikes) => {
+            setLikes(nextLikes)
+            if (shouldLoadPreviewOnly) {
+              setCollectionCounts((current) => ({
+                ...current,
+                likes: Math.max(current?.likes ?? 0, nextLikes.length),
+              }))
+            }
             resolveStream('likes')
           },
-        }
-      )
-
-      unsubscribeWatched = subscribeToUserWatched(
-        resolvedUserId,
-        (nextWatched) => {
-          setWatched(nextWatched)
-          if (shouldLoadPreviewOnly) {
-            setCollectionCounts((current) => ({
-              ...current,
-              watched: Math.max(current?.watched ?? 0, nextWatched.length),
-            }))
+          {
+            activeTab: normalizedActiveTab || null,
+            fetchOnSubscribe: !hasSeededLikes,
+            limitCount: likesPreviewLimit,
+            onError: (error) => {
+              setLikes([])
+              setCollectionCounts((current) => ({
+                ...current,
+                likes: 0,
+              }))
+              showAccountErrorToast(toast, error, 'Likes could not be loaded')
+              resolveStream('likes')
+            },
           }
-          resolveStream('watched')
-        },
-        {
-          fetchOnSubscribe: !hasSeededWatched,
-          limitCount: watchedPreviewLimit,
-          onError: (error) => {
-            setWatched([])
-            setCollectionCounts((current) => ({
-              ...current,
-              watched: 0,
-            }))
-            showAccountErrorToast(toast, error, 'Watched could not be loaded')
+        )
+      }
+
+      if (shouldSubscribeWatched) {
+        unsubscribeWatched = subscribeToUserWatched(
+          resolvedUserId,
+          (nextWatched) => {
+            setWatched(nextWatched)
+            if (shouldLoadPreviewOnly) {
+              setCollectionCounts((current) => ({
+                ...current,
+                watched: Math.max(current?.watched ?? 0, nextWatched.length),
+              }))
+            }
             resolveStream('watched')
           },
-        }
-      )
-
-      unsubscribeWatchlist = subscribeToUserWatchlist(
-        resolvedUserId,
-        (nextWatchlist) => {
-          setWatchlist(nextWatchlist)
-          if (shouldLoadPreviewOnly) {
-            setCollectionCounts((current) => ({
-              ...current,
-              watchlist: Math.max(
-                current?.watchlist ?? 0,
-                nextWatchlist.length
-              ),
-            }))
+          {
+            activeTab: normalizedActiveTab || null,
+            fetchOnSubscribe: !hasSeededWatched,
+            limitCount: watchedPreviewLimit,
+            onError: (error) => {
+              setWatched([])
+              setCollectionCounts((current) => ({
+                ...current,
+                watched: 0,
+              }))
+              showAccountErrorToast(toast, error, 'Watched could not be loaded')
+              resolveStream('watched')
+            },
           }
-          resolveStream('watchlist')
-        },
-        {
-          fetchOnSubscribe: !hasSeededWatchlist,
-          limitCount: watchlistPreviewLimit,
-          onError: (error) => {
-            setWatchlist([])
-            setCollectionCounts((current) => ({
-              ...current,
-              watchlist: 0,
-            }))
-            showAccountErrorToast(toast, error, 'Watchlist could not be loaded')
+        )
+      }
+
+      if (shouldSubscribeWatchlist) {
+        unsubscribeWatchlist = subscribeToUserWatchlist(
+          resolvedUserId,
+          (nextWatchlist) => {
+            setWatchlist(nextWatchlist)
+            if (shouldLoadPreviewOnly) {
+              setCollectionCounts((current) => ({
+                ...current,
+                watchlist: Math.max(
+                  current?.watchlist ?? 0,
+                  nextWatchlist.length
+                ),
+              }))
+            }
             resolveStream('watchlist')
           },
-        }
-      )
-
-      unsubscribeLists = subscribeToUserLists(
-        resolvedUserId,
-        (nextLists) => {
-          setLists(nextLists)
-          if (shouldLoadPreviewOnly) {
-            setCollectionCounts((current) => ({
-              ...current,
-              lists: Math.max(current?.lists ?? 0, nextLists.length),
-            }))
+          {
+            activeTab: normalizedActiveTab || null,
+            fetchOnSubscribe: !hasSeededWatchlist,
+            limitCount: watchlistPreviewLimit,
+            onError: (error) => {
+              setWatchlist([])
+              setCollectionCounts((current) => ({
+                ...current,
+                watchlist: 0,
+              }))
+              showAccountErrorToast(toast, error, 'Watchlist could not be loaded')
+              resolveStream('watchlist')
+            },
           }
-          resolveStream('lists')
-        },
-        {
-          fetchOnSubscribe: !hasSeededLists,
-          limitCount: listsPreviewLimit,
-          onError: (error) => {
-            setLists([])
-            setCollectionCounts((current) => ({
-              ...current,
-              lists: 0,
-            }))
-            showAccountErrorToast(toast, error, 'Lists could not be loaded')
+        )
+      }
+
+      if (shouldSubscribeLists) {
+        unsubscribeLists = subscribeToUserLists(
+          resolvedUserId,
+          (nextLists) => {
+            setLists(nextLists)
+            if (shouldLoadPreviewOnly) {
+              setCollectionCounts((current) => ({
+                ...current,
+                lists: Math.max(current?.lists ?? 0, nextLists.length),
+              }))
+            }
             resolveStream('lists')
           },
-        }
-      )
+          {
+            activeTab: normalizedActiveTab || null,
+            fetchOnSubscribe: !hasSeededLists,
+            limitCount: listsPreviewLimit,
+            onError: (error) => {
+              setLists([])
+              setCollectionCounts((current) => ({
+                ...current,
+                lists: 0,
+              }))
+              showAccountErrorToast(toast, error, 'Lists could not be loaded')
+              resolveStream('lists')
+            },
+          }
+        )
+      }
     }
 
     subscribe().catch((error) => {
@@ -469,18 +496,22 @@ export function useAccountCollections({
     hasInitialCollectionSnapshot,
     hasSeededLikes,
     hasSeededLists,
+    hasSeededWatched,
     hasSeededWatchlist,
     initialCollectionCounts,
     initialCollections,
     initialLikes,
     initialLists,
+    initialWatched,
     initialWatchlist,
+    activeTab,
     isOwner,
     isPrivateProfile,
     likesPreviewLimit,
     resolvedUserId,
     toast,
     listsPreviewLimit,
+    watchedPreviewLimit,
     watchlistPreviewLimit,
   ])
 
@@ -752,6 +783,7 @@ export function useAccountListItems({
         setIsLoadingListItems(false)
       },
       {
+        activeTab,
         onError: (error) => {
           setListItems([])
           showAccountErrorToast(toast, error, 'List items could not be loaded')
@@ -884,6 +916,7 @@ export function useAccountPageData({
     watched,
     watchlist,
   } = useAccountCollections({
+    activeTab,
     authIsAuthenticated: auth.isAuthenticated,
     authIsReady: auth.isReady && isAuthSessionReady,
     canViewPrivateContent,

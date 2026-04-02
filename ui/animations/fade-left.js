@@ -27,7 +27,7 @@ export function FadeLeft({
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, amount: 0.2 }}
+      viewport={{ once, amount: 'some' }}
       style={{ willChange: 'transform, opacity' }}
     >
       {children}

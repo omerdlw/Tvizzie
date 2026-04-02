@@ -6,7 +6,11 @@ import {
   createPollingSubscription,
   invalidatePollingSubscriptions,
 } from '@/services/core/polling-subscription.service'
+import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary-v2.service'
 import { requestApiJson } from '@/services/core/api-request.service'
+
+const INFRA_V2_CLIENT_ENABLED =
+  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
 
 export const FOLLOW_STATUSES = Object.freeze({
   ACCEPTED: 'accepted',
@@ -70,35 +74,55 @@ function refreshFollowUserSubscriptions(userId) {
     return
   }
 
+  const keys = [
+    getFollowersSubscriptionKey(userId, FOLLOW_STATUSES.ACCEPTED),
+    getFollowersSubscriptionKey(userId, FOLLOW_STATUSES.PENDING),
+    getFollowingSubscriptionKey(userId, FOLLOW_STATUSES.ACCEPTED),
+    getFollowingSubscriptionKey(userId, FOLLOW_STATUSES.PENDING),
+  ]
+
+  if (!INFRA_V2_CLIENT_ENABLED) {
+    keys.push(getUserAccountSubscriptionKey(userId))
+  }
+
   invalidatePollingSubscriptions(
-    [
-      getFollowersSubscriptionKey(userId, FOLLOW_STATUSES.ACCEPTED),
-      getFollowersSubscriptionKey(userId, FOLLOW_STATUSES.PENDING),
-      getFollowingSubscriptionKey(userId, FOLLOW_STATUSES.ACCEPTED),
-      getFollowingSubscriptionKey(userId, FOLLOW_STATUSES.PENDING),
-      getUserAccountSubscriptionKey(userId),
-    ],
+    keys,
     { refetch: true }
   )
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    scheduleAccountSummaryRefresh(userId)
+  }
 }
 
 function refreshFollowSubscriptions({ followerId, followingId, status = null }) {
   const relationshipStatuses = status
     ? [status]
     : [FOLLOW_STATUSES.ACCEPTED, FOLLOW_STATUSES.PENDING]
+  const keys = [
+    ...relationshipStatuses.flatMap((currentStatus) => [
+      getFollowersSubscriptionKey(followingId, currentStatus),
+      getFollowingSubscriptionKey(followerId, currentStatus),
+    ]),
+    getRelationshipSubscriptionKey(followerId, followingId),
+  ]
+
+  if (!INFRA_V2_CLIENT_ENABLED) {
+    keys.push(
+      getUserAccountSubscriptionKey(followerId),
+      getUserAccountSubscriptionKey(followingId)
+    )
+  }
 
   invalidatePollingSubscriptions(
-    [
-      ...relationshipStatuses.flatMap((currentStatus) => [
-        getFollowersSubscriptionKey(followingId, currentStatus),
-        getFollowingSubscriptionKey(followerId, currentStatus),
-      ]),
-      getRelationshipSubscriptionKey(followerId, followingId),
-      getUserAccountSubscriptionKey(followerId),
-      getUserAccountSubscriptionKey(followingId),
-    ],
+    keys,
     { refetch: true }
   )
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    scheduleAccountSummaryRefresh(followerId)
+    scheduleAccountSummaryRefresh(followingId)
+  }
 }
 
 export async function followUser(followerId, followingId) {
@@ -313,6 +337,12 @@ export function subscribeToFollowRelationship(viewerId, targetId, callback) {
         livePayload.followingId === viewerId
 
       if (!matchesDirectRelationship && !matchesInverseRelationship) {
+        return
+      }
+
+      if (INFRA_V2_CLIENT_ENABLED) {
+        invalidatePollingSubscriptions([subscriptionKey], { refetch: true })
+        scheduleAccountSummaryRefresh(viewerId)
         return
       }
 

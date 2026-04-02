@@ -17,8 +17,10 @@ import { useToast } from '@/modules/notification/hooks'
 import { Button } from '@/ui/elements'
 
 const PURPOSES = Object.freeze({
+  ACCOUNT_DELETE: 'account-delete',
   PASSWORD_CHANGE: 'password-change',
   PASSWORD_SET: 'password-set',
+  PROVIDER_LINK: 'provider-link',
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
 })
@@ -84,9 +86,9 @@ function OtpBoxes({
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'flex h-15 items-center justify-center bg-white/5 border border-white/5 text-lg font-semibold text-white transition-colors',
+                'center h-15 rounded-[12px] bg-white/5 border border-white/5 text-lg font-semibold text-white transition-colors',
                 hasError && digit && 'error-classes',
-                isActive && !digit && 'border-white/10 /70',
+                isActive && !digit && 'border-white/10 bg-white/10',
                 digit && !hasError && 'success-classes'
               )}
             >
@@ -111,6 +113,9 @@ export default function AuthVerificationForm({
   const codeInputRef = useRef(null)
   const lastAutoSubmittedCodeRef = useRef('')
   const resetErrorTimeoutRef = useRef(null)
+  const submitInFlightRef = useRef(false)
+  const completedRef = useRef(false)
+  const activeSubmissionKeyRef = useRef('')
 
   const purpose = String(data?.purpose || '')
     .trim()
@@ -125,8 +130,10 @@ export default function AuthVerificationForm({
     initialChallenge?.challengeToken || ''
   ).trim()
   const hasValidVerificationEmail =
+    purpose === PURPOSES.ACCOUNT_DELETE ||
     purpose === PURPOSES.PASSWORD_CHANGE ||
     purpose === PURPOSES.PASSWORD_SET ||
+    purpose === PURPOSES.PROVIDER_LINK ||
     (email && email.includes('@'))
 
   const [isSending, setIsSending] = useState(false)
@@ -158,7 +165,6 @@ export default function AuthVerificationForm({
   const isCodeExpired = Boolean(expiresAt) && codeRemainingMs <= 0
   const [isCodeFocused, setIsCodeFocused] = useState(false)
   const [hasCodeError, setHasCodeError] = useState(false)
-  const shouldAutoVerifyOnPaste = true
   const shouldShowRememberDevice =
     purpose === PURPOSES.SIGN_IN && data?.allowRememberDevice !== false
 
@@ -195,6 +201,8 @@ export default function AuthVerificationForm({
         setNow(Date.now())
         setHasCodeError(false)
         lastAutoSubmittedCodeRef.current = ''
+        completedRef.current = false
+        activeSubmissionKeyRef.current = ''
 
         if (!isInitial) {
           toast.success('A new verification code has been sent', {
@@ -293,8 +301,16 @@ export default function AuthVerificationForm({
   const submitVerification = useCallback(
     async (codeValue = code) => {
       const normalizedCode = normalizeOtpValue(codeValue)
+      const submissionKey = `${challengeToken}:${normalizedCode}`
 
-      if (isSubmitting || isSending) return
+      if (
+        completedRef.current ||
+        submitInFlightRef.current ||
+        isSubmitting ||
+        isSending
+      ) {
+        return
+      }
       if (isCodeExpired) {
         toast.error('Verification code has expired. Request a new code')
         return
@@ -309,7 +325,12 @@ export default function AuthVerificationForm({
         toast.error('Verification code must be 6 digits')
         return
       }
+      if (activeSubmissionKeyRef.current === submissionKey) {
+        return
+      }
 
+      activeSubmissionKeyRef.current = submissionKey
+      submitInFlightRef.current = true
       setIsSubmitting(true)
 
       try {
@@ -321,6 +342,7 @@ export default function AuthVerificationForm({
           purpose,
         })
 
+        completedRef.current = true
         toast.success('Verification completed successfully')
         closeVerification(close, {
           success: true,
@@ -338,6 +360,13 @@ export default function AuthVerificationForm({
           error,
           'Verification could not be completed'
         )
+        const shouldIgnoreAlreadyUsedAfterSuccess =
+          completedRef.current &&
+          resolvedMessage.includes('already used')
+
+        if (shouldIgnoreAlreadyUsedAfterSuccess) {
+          return
+        }
 
         if (resolvedMessage === 'Verification code is invalid') {
           setHasCodeError(true)
@@ -360,6 +389,13 @@ export default function AuthVerificationForm({
           id: `auth-verification-submit-${purpose}`,
         })
       } finally {
+        if (
+          !completedRef.current &&
+          activeSubmissionKeyRef.current === submissionKey
+        ) {
+          activeSubmissionKeyRef.current = ''
+        }
+        submitInFlightRef.current = false
         setIsSubmitting(false)
       }
     },
@@ -429,13 +465,6 @@ export default function AuthVerificationForm({
         hasError={hasCodeError}
         inputRef={codeInputRef}
         isFocused={isCodeFocused}
-        onPasteComplete={(pastedCode) => {
-          if (!shouldAutoVerifyOnPaste) {
-            return
-          }
-
-          void submitVerification(pastedCode)
-        }}
         setIsFocused={setIsCodeFocused}
         setCode={setCode}
       />
@@ -457,7 +486,7 @@ export default function AuthVerificationForm({
           type="button"
           onClick={() => void sendCode({ isInitial: false })}
           disabled={isSubmitting || isSending || !canResendCode}
-          className="h-11 w-full flex-auto border border-white/5 hover:border-white/10 bg-white/5 px-6 text-[11px] font-bold tracking-widest text-white/70 uppercase transition hover:bg-white/70 hover:text-white active:scale-95"
+          className="h-11 surface-muted w-full flex-auto rounded-[12px] px-6 text-[11px] font-bold tracking-widest uppercase transition"
         >
           {isSending ? (
             'Sending'

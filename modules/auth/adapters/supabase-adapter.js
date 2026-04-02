@@ -72,10 +72,15 @@ function isIgnorableLogoutError(error) {
 }
 
 function toAdapterError(error, fallbackMessage) {
+  const message = normalizeValue(
+    error?.message ||
+      error?.msg ||
+      error?.error_description ||
+      error?.error
+  )
+
   const normalized = new Error(
-    normalizeValue(error?.message || error?.msg || error?.error_description) ||
-      fallbackMessage ||
-      'Supabase auth failed'
+    message || fallbackMessage || 'Supabase auth failed'
   )
 
   normalized.name = error?.name || 'SupabaseAuthError'

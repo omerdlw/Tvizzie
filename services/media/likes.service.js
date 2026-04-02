@@ -10,6 +10,7 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/services/core/polling-subscription.service'
+import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary-v2.service'
 import {
   assertSupabaseResult,
   getSupabaseClient,
@@ -35,6 +36,20 @@ const LIKE_ROW_SELECT = [
   'updated_at',
   'user_id',
 ].join(',')
+const INFRA_V2_CLIENT_ENABLED =
+  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
+
+function resolveRpcRow(data) {
+  if (Array.isArray(data)) {
+    return data[0] || null
+  }
+
+  if (data && typeof data === 'object') {
+    return data
+  }
+
+  return null
+}
 
 function buildLikeRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage likes')
@@ -78,6 +93,21 @@ function getFavoriteShowcaseSubscriptionKey(userId) {
 function getUserAccountSubscriptionKey(userId) {
   return buildPollingSubscriptionKey('account:user', {
     userId,
+  })
+}
+
+function refreshAccountSummary(userId) {
+  if (!userId) {
+    return
+  }
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    scheduleAccountSummaryRefresh(userId)
+    return
+  }
+
+  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
+    refetch: true,
   })
 }
 
@@ -151,9 +181,13 @@ async function fetchLikes(userId, options = {}) {
     return []
   }
 
+  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null
   const payload = await requestApiJson('/api/collections', {
     query: {
-      limitCount: resolveLimitCount(options.limitCount, 0, 200) || null,
+      activeTab: options.activeTab || null,
+      cursor: options.cursor || null,
+      limit: resolvedLimitCount,
+      limitCount: resolvedLimitCount,
       resource: 'likes',
       userId,
     },
@@ -273,9 +307,7 @@ export async function updateFavoriteShowcase({ items = [], userId }) {
   const showcase = await writeFavoriteShowcase(userId, items)
 
   primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), showcase)
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  refreshAccountSummary(userId)
 
   return showcase
 }
@@ -283,6 +315,50 @@ export async function updateFavoriteShowcase({ items = [], userId }) {
 export async function toggleUserLike({ media, userId }) {
   const likeRef = buildLikeRef(userId, media)
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const row = createMediaRow(media, userId)
+    const rpcResult = await client.rpc('collection_toggle_like_v2', {
+      p_backdrop_path: row.backdrop_path || null,
+      p_entity_id: row.entity_id || null,
+      p_entity_type: row.entity_type || null,
+      p_media_key: row.media_key,
+      p_payload: row.payload || {},
+      p_poster_path: row.poster_path || null,
+      p_title: row.title || null,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'Like could not be updated')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+    const isLiked = rpcRow?.is_liked === true
+
+    if (!isLiked) {
+      await removeLikeFromShowcase(userId, likeRef.id)
+    }
+
+    const nextResult = {
+      isLiked,
+      like: isLiked ? normalizeMediaPayload(row.payload || {}, row) : null,
+      mediaKey: likeRef.id,
+    }
+
+    primePollingSubscription(
+      getLikeStatusSubscriptionKey({ media, userId }),
+      nextResult
+    )
+    invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
+      refetch: true,
+    })
+    invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+      refetch: true,
+    })
+    refreshAccountSummary(userId)
+
+    return nextResult
+  }
+
   const existing = await client
     .from('likes')
     .select('media_key')
@@ -309,9 +385,7 @@ export async function toggleUserLike({ media, userId }) {
     invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
       refetch: true,
     })
-    invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-      refetch: true,
-    })
+    refreshAccountSummary(userId)
 
     return {
       isLiked: false,
@@ -344,9 +418,7 @@ export async function toggleUserLike({ media, userId }) {
   invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
     refetch: true,
   })
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  refreshAccountSummary(userId)
 
   return nextResult
 }
@@ -356,6 +428,40 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
 
   const resolvedMediaKey = mediaKey || getLikeDocRef(userId, media).id
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const rpcResult = await client.rpc('collection_remove_like_v2', {
+      p_media_key: resolvedMediaKey,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'Like could not be removed')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+
+    if (rpcRow?.removed) {
+      await removeLikeFromShowcase(userId, resolvedMediaKey)
+    }
+
+    invalidatePollingSubscription(getLikeStatusSubscriptionKey({ media, userId }), {
+      payload: {
+        isLiked: false,
+        like: null,
+      },
+    })
+    invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
+      refetch: true,
+    })
+    invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
+      refetch: true,
+    })
+    refreshAccountSummary(userId)
+
+    return {
+      mediaKey: resolvedMediaKey,
+    }
+  }
+
   const result = await client
     .from('likes')
     .delete()
@@ -371,9 +477,7 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
   invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
     refetch: true,
   })
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  refreshAccountSummary(userId)
 
   return {
     mediaKey: resolvedMediaKey,

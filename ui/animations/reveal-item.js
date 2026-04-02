@@ -22,7 +22,7 @@ export function RevealItem({
         scale: 1,
         transitionEnd: { transform: 'none', willChange: 'auto' },
       }}
-      viewport={{ once, amount: 0.2 }}
+      viewport={{ once, amount: 'some' }}
       transition={{ duration, ease: EASING.STANDARD, delay }}
       className={className}
       style={{ willChange: 'transform, opacity' }}

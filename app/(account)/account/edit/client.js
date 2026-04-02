@@ -101,7 +101,9 @@ export default function Client({ initialSnapshot = null }) {
     () => getCurrentPathWithSearch(pathname, searchParams),
     [pathname, searchParams]
   )
-  const currentAuthEmail = normalizeEmail(profile?.email || '')
+  const currentAuthEmail = normalizeEmail(
+    profile?.email || auth?.user?.email || ''
+  )
   const heroProfile = useMemo(
     () => ({
       ...profile,

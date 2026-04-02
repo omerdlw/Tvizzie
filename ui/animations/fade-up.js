@@ -24,7 +24,7 @@ export function FadeUp({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, amount: 0.2 }}
+      viewport={{ once, amount: 'some' }}
       transition={{ duration, ease: EASING.STANDARD, delay }}
       variants={FADE_UP_VARIANTS}
       className={className}

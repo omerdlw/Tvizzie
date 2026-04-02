@@ -10,6 +10,7 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/services/core/polling-subscription.service'
+import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary-v2.service'
 import {
   assertSupabaseResult,
   getSupabaseClient,
@@ -19,6 +20,7 @@ import {
   createMediaPayload,
   ensureUserId,
   normalizeMediaPayload,
+  resolveLimitCount,
 } from '@/services/core/supabase-media-utils.service'
 import {
   ACTIVITY_EVENT_TYPES,
@@ -33,6 +35,20 @@ const WATCHED_ROW_SELECT = [
   'payload',
   'watch_count',
 ].join(',')
+const INFRA_V2_CLIENT_ENABLED =
+  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
+
+function resolveRpcRow(data) {
+  if (Array.isArray(data)) {
+    return data[0] || null
+  }
+
+  if (data && typeof data === 'object') {
+    return data
+  }
+
+  return null
+}
 
 function createWatchedRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watched items')
@@ -88,6 +104,21 @@ function getUserAccountSubscriptionKey(userId) {
   })
 }
 
+function refreshAccountSummary(userId) {
+  if (!userId) {
+    return
+  }
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    scheduleAccountSummaryRefresh(userId)
+    return
+  }
+
+  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
+    refetch: true,
+  })
+}
+
 async function fetchWatchedStatus({ media, userId }) {
   if (!userId || !media) {
     return {
@@ -113,13 +144,18 @@ async function fetchWatchedStatus({ media, userId }) {
   }
 }
 
-async function fetchWatchedList(userId) {
+async function fetchWatchedList(userId, options = {}) {
   if (!userId) {
     return []
   }
 
+  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null
   const payload = await requestApiJson('/api/collections', {
     query: {
+      activeTab: options.activeTab || null,
+      cursor: options.cursor || null,
+      limit: resolvedLimitCount,
+      limitCount: resolvedLimitCount,
       resource: 'watched',
       userId,
     },
@@ -156,7 +192,7 @@ export function subscribeToUserWatched(userId, callback, options = {}) {
   }
 
   return createPollingSubscription(
-    () => fetchWatchedList(userId),
+    () => fetchWatchedList(userId, options),
     callback,
     {
       ...options,
@@ -186,6 +222,89 @@ export async function markUserWatched({
   const watchedAtIso = watchedAtValue.toISOString()
   const watchedRef = createWatchedRef(userId, media)
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const mediaPayload = createMediaPayload(media, userId, {
+      addedAt: watchedAtIso,
+      updatedAt: new Date().toISOString(),
+    })
+    const watchedPayload = {
+      ...mediaPayload,
+      firstWatchedAt: watchedAtIso,
+      lastWatchedAt: watchedAtIso,
+      sourceLastAction,
+      watchCount: 1,
+    }
+    const rpcResult = await client.rpc('collection_mark_watched_v2', {
+      p_backdrop_path: mediaPayload.backdrop_path || null,
+      p_entity_id: mediaPayload.entityId || null,
+      p_entity_type: mediaPayload.entityType || null,
+      p_last_watched_at: watchedAtIso,
+      p_media_key: watchedRef.id,
+      p_payload: watchedPayload,
+      p_poster_path: mediaPayload.poster_path || null,
+      p_source_last_action: sourceLastAction || 'watched',
+      p_title: mediaPayload.title || null,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'Watched item could not be saved')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+    const isNew = rpcRow?.is_new === true
+    const watchCount = Number(rpcRow?.watch_count || 1)
+    const wasRemovedFromWatchlist = rpcRow?.was_removed_from_watchlist === true
+
+    if (isNew) {
+      fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHED_MARKED, {
+        dedupeKey: buildCanonicalActivityDedupeKey({
+          actorUserId: userId,
+          subjectId: mediaSnapshot.entityId,
+          subjectType: mediaSnapshot.entityType,
+        }),
+        subjectId: mediaSnapshot.entityId,
+        subjectPoster: media?.poster_path || media?.posterPath || null,
+        subjectTitle: media?.title || media?.name || 'Untitled',
+        subjectType: mediaSnapshot.entityType,
+        watchedAt: watchedAtIso,
+      })
+    }
+
+    primePollingSubscription(getWatchedStatusSubscriptionKey({ media, userId }), {
+      isWatched: true,
+      watched: {
+        ...normalizeMediaPayload(media, {
+          entity_id: mediaSnapshot.entityId,
+          entity_type: mediaSnapshot.entityType,
+        }),
+        firstWatchedAt: watchedAtIso,
+        lastWatchedAt: watchedAtIso,
+        sourceLastAction,
+        watchCount,
+      },
+    })
+    invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
+      refetch: true,
+    })
+    invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
+      refetch: true,
+    })
+    invalidatePollingSubscription(getWatchlistStatusSubscriptionKey({ media, userId }), {
+      payload: {
+        isInWatchlist: false,
+        item: null,
+      },
+    })
+    refreshAccountSummary(userId)
+
+    return {
+      isAlreadyWatched: !isNew,
+      mediaKey: watchedRef.id,
+      wasRemovedFromWatchlist,
+      watchCount,
+    }
+  }
+
   const [profileResult, watchedResult] = await Promise.all([
     client
       .from('profiles')
@@ -307,9 +426,7 @@ export async function markUserWatched({
       item: null,
     },
   })
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  refreshAccountSummary(userId)
 
   return {
     isAlreadyWatched,
@@ -324,6 +441,34 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
 
   const resolvedMediaKey = mediaKey || getWatchedDocRef(userId, media).id
   const client = getSupabaseClient()
+
+  if (INFRA_V2_CLIENT_ENABLED) {
+    const rpcResult = await client.rpc('collection_remove_watched_v2', {
+      p_media_key: resolvedMediaKey,
+      p_user_id: userId,
+    })
+
+    assertSupabaseResult(rpcResult, 'Watched item could not be removed')
+
+    const rpcRow = resolveRpcRow(rpcResult.data)
+    const wasRemoved = rpcRow?.removed === true
+
+    primePollingSubscription(getWatchedStatusSubscriptionKey({ media, userId }), {
+      isWatched: false,
+      watched: null,
+    })
+    invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
+      refetch: true,
+    })
+    refreshAccountSummary(userId)
+
+    return {
+      isWatched: false,
+      mediaKey: resolvedMediaKey,
+      wasRemoved,
+    }
+  }
+
   const [profileResult, watchedResult] = await Promise.all([
     client
       .from('profiles')
@@ -383,9 +528,7 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
     refetch: true,
   })
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  refreshAccountSummary(userId)
 
   return {
     isWatched: false,
