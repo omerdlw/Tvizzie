@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server'
 
-import { hasPasswordProvider } from '@/lib/auth/servers/account/account-deletion.server'
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { validateStrongPassword } from '@/lib/auth/servers/security/password-security.server'
-import { verifyPasswordResetProofToken } from '@/lib/auth/servers/verification/password-reset-proof.server'
+import { hasPasswordProvider } from '@/core/auth/servers/account/account-deletion.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server'
+import { verifyPasswordResetProofToken } from '@/core/auth/servers/verification/password-reset-proof.server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { clearAuthCookies } from '@/lib/auth/servers/session/session.server'
-import { createAdminAuthFacade } from '@/lib/auth/servers/session/supabase-admin-auth.server'
-import { clearStepUpCookie } from '@/lib/auth/servers/security/step-up.server'
-import { createAdminClient } from '@/lib/supabase/admin'
+} from '@/core/auth/servers/security/rate-limit.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { clearAuthCookies } from '@/core/auth/servers/session/session.server'
+import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server'
+import { clearStepUpCookie } from '@/core/auth/servers/security/step-up.server'
+import { createAdminClient } from '@/core/clients/supabase/admin'
 
 const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges'
 

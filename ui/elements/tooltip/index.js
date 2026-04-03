@@ -4,7 +4,7 @@ import { forwardRef } from 'react'
 
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
-import { DURATION, EASING, Z_INDEX } from '@/lib/constants'
+import { DURATION, EASING, Z_INDEX } from '@/core/constants'
 
 import { cn, resolveSlotClasses } from '../utils'
 

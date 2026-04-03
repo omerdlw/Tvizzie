@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { getTrending } from '@/lib/tmdb/server'
+import { getTrending } from '@/core/clients/tmdb/server'
 
 export async function GET() {
   try {

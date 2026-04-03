@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 
 import Client from '../../client'
-import { getUsernameAccountListsRouteData } from '@/services/account/account-route-data.server'
+import { getUsernameAccountListsRouteData } from '@/core/services/account/account-route-data.server'
 
 export default async function Page({ params }) {
   const { page, username } = await params

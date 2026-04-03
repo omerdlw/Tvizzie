@@ -1,9 +1,9 @@
 'use client'
 
 import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/lib/constants'
-import { resolveExplicitMediaType } from '@/lib/media'
-import { cn } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { resolveExplicitMediaType } from '@/core/utils/media'
+import { cn } from '@/core/utils'
 
 export default function MediaPosterCard({
   item,

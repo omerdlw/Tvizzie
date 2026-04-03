@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { getCollectionResource } from '@/services/browser/browser-data.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 
 const DEFAULT_COLLECTION_LIMIT = 24
 const MAX_COLLECTION_LIMIT = 50
@@ -124,16 +124,19 @@ export async function GET(request) {
     const pageLimit = shouldPaginate ? normalizeLimit(limit || limitCount) : null
     const offset = shouldPaginate ? decodeCursor(cursor) : 0
     const fetchLimitCount = shouldPaginate ? offset + pageLimit + 1 : limitCount
-    const rawData = await getCollectionResource({
-      resource,
-      userId,
-      viewerId: authContext?.userId || null,
-      limitCount: fetchLimitCount,
-      media,
-      listId,
-      slug,
-      strict: true,
+    const payload = await invokeInternalEdgeFunction('collections-read', {
+      body: {
+        resource,
+        userId,
+        viewerId: authContext?.userId || null,
+        limitCount: fetchLimitCount,
+        media,
+        listId,
+        slug,
+        strict: true,
+      },
     })
+    const rawData = payload?.data ?? null
 
     if (!Array.isArray(rawData) || !shouldPaginate) {
       return NextResponse.json({

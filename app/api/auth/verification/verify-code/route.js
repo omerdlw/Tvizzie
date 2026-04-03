@@ -1,26 +1,26 @@
 import { NextResponse } from 'next/server'
 
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
 import {
   PURPOSES,
   assertVerificationPurpose,
   verifyEmailVerificationChallenge,
-} from '@/lib/auth/servers/verification/email-verification.server'
+} from '@/core/auth/servers/verification/email-verification.server'
 import {
   assertPendingSignIn,
   clearPendingSignInCookie,
   setTrustedLoginDeviceCookie,
-} from '@/lib/auth/servers/verification/login-verification.server'
-import { createPasswordResetProofToken } from '@/lib/auth/servers/verification/password-reset-proof.server'
-import { createSignUpProofToken } from '@/lib/auth/servers/verification/signup-proof.server'
-import { applySessionCookies, createCsrfToken } from '@/lib/auth/servers/session/session.server'
+} from '@/core/auth/servers/verification/login-verification.server'
+import { createPasswordResetProofToken } from '@/core/auth/servers/verification/password-reset-proof.server'
+import { createSignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server'
+import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/session/session.server'
 import {
   getRequestContext,
   setDeviceIdCookie,
-} from '@/lib/auth/servers/session/request-context.server'
-import { assertRecentReauth } from '@/lib/auth/servers/security/recent-reauth.server'
-import { createStepUpToken, setStepUpCookie } from '@/lib/auth/servers/security/step-up.server'
+} from '@/core/auth/servers/session/request-context.server'
+import { assertRecentReauth } from '@/core/auth/servers/security/recent-reauth.server'
+import { createStepUpToken, setStepUpCookie } from '@/core/auth/servers/security/step-up.server'
 
 function normalizeEmail(value) {
   return String(value || '')

@@ -7,8 +7,8 @@ import {
   calculateAge,
   getBackgroundMovieCandidates,
 } from '@/features/person/utils'
-import { TMDB_IMG } from '@/lib/constants'
-import { TmdbService } from '@/services/tmdb/tmdb.service'
+import { TMDB_IMG } from '@/core/constants'
+import { TmdbService } from '@/core/services/tmdb/tmdb.service'
 import PersonView from './view'
 
 function getMovieBackdropSrc(credit) {

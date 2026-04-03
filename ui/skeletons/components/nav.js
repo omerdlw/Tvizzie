@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 
 const SkeletonBlock = ({ className }) => <div className={className} />
 

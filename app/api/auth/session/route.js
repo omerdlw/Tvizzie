@@ -3,20 +3,20 @@ import { NextResponse } from 'next/server'
 import {
   clearAuthRouteNoticeCookie,
   setAuthRouteNoticeCookie,
-} from '@/lib/auth/servers/notice/auth-route-notice.server'
-import { AUTH_ROUTE_NOTICE } from '@/lib/auth/route-notice'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
+} from '@/core/auth/servers/notice/auth-route-notice.server'
+import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
 import {
   clearAuthCookies,
   isTransientSessionError,
   serializeSessionState,
-} from '@/lib/auth/servers/session/session.server'
-import { clearRecentReauthCookie } from '@/lib/auth/servers/security/recent-reauth.server'
+} from '@/core/auth/servers/session/session.server'
+import { clearRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server'
 import {
   clearStepUpCookie,
   listStepUpPurposes,
   readStepUpFromRequest,
-} from '@/lib/auth/servers/security/step-up.server'
+} from '@/core/auth/servers/security/step-up.server'
 
 export async function GET(request) {
   try {

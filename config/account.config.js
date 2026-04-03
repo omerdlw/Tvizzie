@@ -1,8 +1,8 @@
 import {
   clearPendingAccountBootstrap,
   getPendingAccountBootstrap,
-} from '@/lib/auth/clients/pending-account.client'
-import { createAccountAdapter, createAccountClient } from '@/modules/account'
+} from '@/core/auth/clients/pending-account.client'
+import { createAccountAdapter, createAccountClient } from '@/core/modules/account'
 import {
   ensureUserAccount,
   getUserAccount,
@@ -14,7 +14,7 @@ import {
   syncUserAccountEmail,
   updateUserAccount,
   validateUsername,
-} from '@/services/account/account.service'
+} from '@/core/services/account/account.service'
 
 function isFreshEmailPasswordSession(user) {
   const providerIds = Array.isArray(user?.metadata?.providerIds)

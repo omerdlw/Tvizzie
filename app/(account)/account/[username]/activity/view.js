@@ -1,4 +1,4 @@
-import AccountActivityFeed from '@/features/account/activity-feed'
+import AccountActivityFeed from '@/features/account/sections/activity-feed'
 import AccountPageShell from '@/features/account/page-shell'
 import AccountSectionState from '@/features/account/section-state'
 import Registry from './registry'
@@ -16,7 +16,7 @@ export default function ActivityView({
   handleOpenFollowList,
   handleSignInRequest,
   hasMore,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFeedLoading,
   isFollowLoading,
   isOwner,
@@ -32,7 +32,7 @@ export default function ActivityView({
   profile,
   resolveError,
   resolvedUserId,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   watchlistCount,
@@ -47,7 +47,7 @@ export default function ActivityView({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -57,7 +57,7 @@ export default function ActivityView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -76,7 +76,7 @@ export default function ActivityView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

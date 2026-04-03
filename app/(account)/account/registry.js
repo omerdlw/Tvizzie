@@ -1,12 +1,12 @@
 'use client'
 
-import AccountBioMask from '@/features/navigation/masks/account-bio-mask'
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
 } from '@/features/account/account-registry-config'
-import { useRegistry } from '@/modules/registry'
+import { useRegistry } from '@/core/modules/registry'
 
 const ACCOUNT_OVERVIEW_REGISTRY_SOURCE = 'account-overview'
 
@@ -17,7 +17,7 @@ export default function Registry({
   handleFollow = noopAccountRegistryHandler,
   handleOpenFollowList = noopAccountRegistryHandler,
   handleSignInRequest = noopAccountRegistryHandler,
-  isBioMaskOpen = false,
+  isBioSurfaceOpen = false,
   isFollowLoading = false,
   isOwner = false,
   isPageLoading = false,
@@ -28,14 +28,13 @@ export default function Registry({
   profile = null,
   registrySource = ACCOUNT_OVERVIEW_REGISTRY_SOURCE,
   resolveError = null,
-  setIsBioMaskOpen = noopAccountRegistryHandler,
+  setIsBioSurfaceOpen = noopAccountRegistryHandler,
   unfollowConfirmation = null,
   username,
 }) {
   useRegistry(
     buildAccountPageState({
       authIsAuthenticated: auth.isAuthenticated,
-      dismissMask: () => setIsBioMaskOpen(false),
       handleEditProfile,
       followState,
       handleFollow,
@@ -50,14 +49,13 @@ export default function Registry({
       isSectionSaveLoading: false,
       itemRemoveConfirmation,
       listDeleteConfirmation: null,
-      maskDismissible: true,
       navDescription,
-      navMask:
-        isBioMaskOpen && profile?.description ? (
-          <AccountBioMask
+      navSurface:
+        isBioSurfaceOpen && profile?.description ? (
+          <AccountBioSurface
             title={profile?.displayName || 'About'}
             description={profile.description}
-            onClose={() => setIsBioMaskOpen(false)}
+            onClose={() => setIsBioSurfaceOpen(false)}
           />
         ) : undefined,
       navRegistrySource: registrySource,

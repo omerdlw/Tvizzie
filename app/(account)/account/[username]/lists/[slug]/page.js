@@ -1,4 +1,4 @@
-import { getUsernameAccountListDetailRouteData } from '@/services/account/account-route-data.server'
+import { getUsernameAccountListDetailRouteData } from '@/core/services/account/account-route-data.server'
 
 import Client from './client'
 

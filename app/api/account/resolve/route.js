@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { getAccountIdByUsername } from '@/services/browser/browser-data.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 
 function normalizeValue(value) {
   return String(value || '').trim()
@@ -10,7 +10,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const username = normalizeValue(searchParams.get('username'))
-    const userId = await getAccountIdByUsername(username)
+    const payload = await invokeInternalEdgeFunction('account-read', {
+      body: {
+        resource: 'resolve',
+        username,
+      },
+    })
+    const userId = payload?.userId || null
 
     return NextResponse.json({
       userId,

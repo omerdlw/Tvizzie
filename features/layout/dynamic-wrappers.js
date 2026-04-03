@@ -1,3 +1,3 @@
 'use client'
 
-export { default as DynamicNav } from '@/modules/nav'
+export { default as DynamicNav } from '@/core/modules/nav'

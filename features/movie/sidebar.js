@@ -5,8 +5,8 @@ import { useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { formatCurrency, getImagePlaceholderDataUrl } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { formatCurrency, getImagePlaceholderDataUrl } from '@/core/utils'
 import Tooltip from '@/ui/elements/tooltip'
 import Icon from '@/ui/icon'
 

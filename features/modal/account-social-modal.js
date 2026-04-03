@@ -5,10 +5,10 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
 import { EmptyState } from '@/features/shared/empty-state'
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/lib/utils'
-import { useAuth, useAuthSessionReady } from '@/modules/auth'
-import Container from '@/modules/modal/container'
-import { useToast } from '@/modules/notification/hooks'
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils'
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
+import Container from '@/core/modules/modal/container'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   FOLLOW_STATUSES,
   acceptFollowRequest,
@@ -17,7 +17,7 @@ import {
   subscribeToFollowers,
   subscribeToFollowing,
   unfollowUser,
-} from '@/services/social/follows.service'
+} from '@/core/services/social/follows.service'
 import { Button } from '@/ui/elements'
 
 const TABS = Object.freeze({

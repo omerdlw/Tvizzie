@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 import AccountSectionHeading from './section-heading'
 import { ACCOUNT_SECTION_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from './utils'
 

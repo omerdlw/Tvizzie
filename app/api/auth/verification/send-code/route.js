@@ -1,26 +1,26 @@
 import { NextResponse } from 'next/server'
 
-import { hasPasswordProvider } from '@/lib/auth/servers/account/account-deletion.server'
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
-import { sendVerificationCodeEmail } from '@/lib/auth/servers/verification/email-sender.server'
+import { hasPasswordProvider } from '@/core/auth/servers/account/account-deletion.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
+import { sendVerificationCodeEmail } from '@/core/auth/servers/verification/email-sender.server'
 import {
   EMAIL_ACCOUNT_STATES,
   resolveEmailAccountState,
-} from '@/lib/auth/servers/account/account-state.server'
+} from '@/core/auth/servers/account/account-state.server'
 import {
   PURPOSES,
   assertVerificationPurpose,
   createEmailVerificationChallenge,
-} from '@/lib/auth/servers/verification/email-verification.server'
-import { assertPendingSignIn } from '@/lib/auth/servers/verification/login-verification.server'
+} from '@/core/auth/servers/verification/email-verification.server'
+import { assertPendingSignIn } from '@/core/auth/servers/verification/login-verification.server'
 import {
   lookupAccountByEmail,
   lookupPasswordAccountByEmail,
-} from '@/lib/auth/servers/verification/password-account.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { assertRecentReauth } from '@/lib/auth/servers/security/recent-reauth.server'
+} from '@/core/auth/servers/verification/password-account.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { assertRecentReauth } from '@/core/auth/servers/security/recent-reauth.server'
 
 const EMAIL_DOMAIN_PATTERNS = [
   /^gmail\.com$/i,

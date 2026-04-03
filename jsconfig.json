@@ -6,7 +6,8 @@
     "checkJs": false,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/core/*": ["./core/*"]
     }
   }
 }

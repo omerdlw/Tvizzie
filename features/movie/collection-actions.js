@@ -9,25 +9,25 @@ import {
   buildAuthHref,
   getCurrentPathWithSearch,
 } from '@/features/auth'
-import { resolveExplicitMediaType } from '@/lib/media'
-import { cn } from '@/lib/utils'
-import { useAuth, useAuthSessionReady } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useToast } from '@/modules/notification/hooks'
+import { resolveExplicitMediaType } from '@/core/utils/media'
+import { cn } from '@/core/utils'
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   ensureLegacyFavoritesBackfilled,
   subscribeToLikeStatus,
   toggleUserLike,
-} from '@/services/media/likes.service'
+} from '@/core/services/media/likes.service'
 import {
   markUserWatched,
   removeUserWatchedItem,
   subscribeToWatchedStatus,
-} from '@/services/media/watched.service'
+} from '@/core/services/media/watched.service'
 import {
   subscribeToWatchlistStatus,
   toggleUserWatchlistItem,
-} from '@/services/media/watchlist.service'
+} from '@/core/services/media/watchlist.service'
 import Icon from '@/ui/icon'
 
 const FROSTED_BACKDROP_STYLE = {

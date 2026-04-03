@@ -11,7 +11,7 @@ import {
   getMovieComputedData,
 } from '@/features/movie/utils'
 import { PageGradientShell } from '@/features/layout/page-gradient-backdrop'
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/lib/constants'
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants'
 import { FadeLeft, FadeUp } from '@/ui/animations'
 import Icon from '@/ui/icon'
 

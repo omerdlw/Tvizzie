@@ -1,12 +1,12 @@
 'use client'
 
-import AccountBioMask from '@/features/navigation/masks/account-bio-mask'
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
 } from '@/features/account/account-registry-config'
-import { useRegistry } from '@/modules/registry'
+import { useRegistry } from '@/core/modules/registry'
 
 const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail'
 
@@ -20,7 +20,7 @@ export default function Registry({
   handleOpenFollowList = noopAccountRegistryHandler,
   handleSignInRequest = noopAccountRegistryHandler,
   handleToggleLike = noopAccountRegistryHandler,
-  isBioMaskOpen = false,
+  isBioSurfaceOpen = false,
   isFollowLoading = false,
   isLiked = false,
   isLikeLoading = false,
@@ -36,7 +36,7 @@ export default function Registry({
   resolveError = null,
   reviewState,
   showProfileFollowAction = false,
-  setIsBioMaskOpen = noopAccountRegistryHandler,
+  setIsBioSurfaceOpen = noopAccountRegistryHandler,
   unfollowConfirmation = null,
   username,
 }) {
@@ -45,7 +45,6 @@ export default function Registry({
   useRegistry(
     buildAccountPageState({
       authIsAuthenticated: auth.isAuthenticated,
-      dismissMask: () => setIsBioMaskOpen(false),
       followState,
       handleEditProfile,
       handleFollow,
@@ -60,14 +59,13 @@ export default function Registry({
       isSectionSaveLoading: false,
       itemRemoveConfirmation,
       listDeleteConfirmation,
-      maskDismissible: true,
       navDescription: list?.title ? `Lists / ${list.title}` : 'List',
-      navMask:
-        isBioMaskOpen && profile?.description ? (
-          <AccountBioMask
+      navSurface:
+        isBioSurfaceOpen && profile?.description ? (
+          <AccountBioSurface
             title={profile?.displayName || 'About'}
             description={profile.description}
-            onClose={() => setIsBioMaskOpen(false)}
+            onClose={() => setIsBioSurfaceOpen(false)}
           />
         ) : undefined,
       navRegistrySource: registrySource,

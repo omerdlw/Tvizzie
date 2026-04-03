@@ -1,24 +1,24 @@
 import { NextResponse } from 'next/server'
 
-import { assertPasswordProviderLinked } from '@/lib/auth/servers/account/account-deletion.server'
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
+import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
 import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
-} from '@/lib/auth/servers/security/password-security.server'
+} from '@/core/auth/servers/security/password-security.server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { clearAuthCookies } from '@/lib/auth/servers/session/session.server'
+} from '@/core/auth/servers/security/rate-limit.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { clearAuthCookies } from '@/core/auth/servers/session/session.server'
 import {
   assertRecentReauth,
   clearRecentReauthCookie,
-} from '@/lib/auth/servers/security/recent-reauth.server'
-import { assertStepUp, clearStepUpCookie } from '@/lib/auth/servers/security/step-up.server'
+} from '@/core/auth/servers/security/recent-reauth.server'
+import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server'
 
 function normalizeEmail(value) {
   return String(value || '')

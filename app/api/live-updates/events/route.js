@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { publishUserEvent } from '@/lib/live-updates/user-events.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { publishUserEvent } from '@/core/services/realtime/user-events.server'
 
 export const runtime = 'nodejs'
 

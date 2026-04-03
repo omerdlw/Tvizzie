@@ -1,4 +1,4 @@
-import { subscribeToUnreadCount } from '@/services/notifications/notifications.service'
+import { subscribeToUnreadCount } from '@/core/services/notifications/notifications.service'
 
 export const NAV_CONFIG = {
   items: {

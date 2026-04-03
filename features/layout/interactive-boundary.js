@@ -1,25 +1,25 @@
 'use client'
 
-import { pipe } from '@/lib/utils/pipe'
+import { pipe } from '@/core/utils/pipe'
 import { ACCOUNT_CONFIG } from '@/config/account.config'
 import { AUTH_CONFIG } from '@/config/auth.config'
 import { isProjectFeatureEnabled } from '@/config/project.config'
 import NotificationsModal from '@/features/modal/notifications-modal'
 import AccountNavRegistry from '@/features/navigation/account-nav-registry'
-import { AccountProvider } from '@/modules/account'
-import { AuthProvider } from '@/modules/auth'
-import { ContextMenuGlobal, ContextMenuProvider } from '@/modules/context-menu'
-import { CountdownOverlay, CountdownProvider } from '@/modules/countdown'
-import { GlobalErrorListener } from '@/modules/error-boundary/listener'
-import { ModalProvider } from '@/modules/modal/context'
-import { NotificationContainer } from '@/modules/notification'
-import { NotificationProvider } from '@/modules/notification/context'
+import { AccountProvider } from '@/core/modules/account'
+import { AuthProvider } from '@/core/modules/auth'
+import { ContextMenuGlobal, ContextMenuProvider } from '@/core/modules/context-menu'
+import { CountdownOverlay, CountdownProvider } from '@/core/modules/countdown'
+import { GlobalErrorListener } from '@/core/modules/error-boundary/listener'
+import { ModalProvider } from '@/core/modules/modal/context'
+import { NotificationContainer } from '@/core/modules/notification'
+import { NotificationProvider } from '@/core/modules/notification/context'
 import {
   NotificationListener,
   NotificationBadgeListener,
-} from '@/modules/notification/listener'
-import { useRegistry } from '@/modules/registry'
-import { SettingsProvider } from '@/modules/settings'
+} from '@/core/modules/notification/listener'
+import { useRegistry } from '@/core/modules/registry'
+import { SettingsProvider } from '@/core/modules/settings'
 
 const APP_AUTH_CONFIG = {
   ...AUTH_CONFIG,

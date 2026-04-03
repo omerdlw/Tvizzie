@@ -4,17 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { buildListCreatorHref } from '@/features/account/list-creator-utils'
-import { TMDB_IMG } from '@/lib/constants'
-import { cn } from '@/lib/utils'
-import { useAuthSessionReady } from '@/modules/auth'
-import Container from '@/modules/modal/container'
-import { useToast } from '@/modules/notification/hooks'
+import { buildListCreatorHref } from '@/features/account/lists/list-creator-utils'
+import { TMDB_IMG } from '@/core/constants'
+import { cn } from '@/core/utils'
+import { useAuthSessionReady } from '@/core/modules/auth'
+import Container from '@/core/modules/modal/container'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   getUserListMemberships,
   subscribeToUserLists,
   toggleUserListItem,
-} from '@/services/media/lists.service'
+} from '@/core/services/media/lists.service'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon'
 

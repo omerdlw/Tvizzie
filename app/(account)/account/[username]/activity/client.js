@@ -9,9 +9,9 @@ import {
   useAccountSectionPage,
   useSeededFeedState,
 } from '@/features/account/section-client-hooks'
-import { logDataError } from '@/lib/data/errors'
-import { useAuth } from '@/modules/auth'
-import { fetchAccountActivityFeed } from '@/services/activity/activity.service'
+import { logDataError } from '@/core/utils/errors'
+import { useAuth } from '@/core/modules/auth'
+import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service'
 import ActivityView from './view'
 
 export default function Client({
@@ -38,7 +38,7 @@ export default function Client({
     handleFollow,
     handleOpenFollowList,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -52,7 +52,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -192,7 +192,7 @@ export default function Client({
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
       hasMore={hasMore}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFeedLoading={isFeedLoading}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
@@ -208,7 +208,7 @@ export default function Client({
       profile={profile}
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       watchlistCount={watchlistCount}

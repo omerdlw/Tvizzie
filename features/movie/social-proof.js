@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { isProjectFeatureEnabled } from '@/config/project.config'
 import MediaSocialProofModal from '@/features/modal/media-social-proof-modal'
-import { useAuth } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useRegistry } from '@/modules/registry'
-import { subscribeToMediaSocialProof } from '@/services/media/social-proof.service'
+import { useAuth } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useRegistry } from '@/core/modules/registry'
+import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service'
 import Icon from '@/ui/icon'
 
 const EMPTY_SOCIAL_PROOF = Object.freeze({

@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Carousel from '@/features/shared/carousel'
 import MediaCard from '@/features/shared/media-card'
 import SegmentedControl from '@/features/shared/segmented-control'
-import { TMDB_IMG } from '@/lib/constants'
-import { useModal } from '@/modules/modal/context'
+import { TMDB_IMG } from '@/core/constants'
+import { useModal } from '@/core/modules/modal/context'
 
 const TABS = Object.freeze([
   {

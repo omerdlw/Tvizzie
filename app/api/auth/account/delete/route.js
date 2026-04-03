@@ -3,19 +3,19 @@ import { NextResponse } from 'next/server'
 import {
   assertPasswordProviderLinked,
   hasPasswordProvider,
-  purgeAccountData,
-} from '@/lib/auth/servers/account/account-deletion.server'
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
-import { verifyPasswordWithIdentityToolkit } from '@/lib/auth/servers/security/password-security.server'
+} from '@/core/auth/servers/account/account-deletion.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
+import { verifyPasswordWithIdentityToolkit } from '@/core/auth/servers/security/password-security.server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { clearAuthCookies } from '@/lib/auth/servers/session/session.server'
-import { assertStepUp, clearStepUpCookie } from '@/lib/auth/servers/security/step-up.server'
+} from '@/core/auth/servers/security/rate-limit.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { clearAuthCookies } from '@/core/auth/servers/session/session.server'
+import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 
 function normalizeEmail(value) {
   return String(value || '')
@@ -121,11 +121,19 @@ export async function POST(request) {
       })
     }
 
-    await purgeAccountData({
-      userId,
-    })
+    const deleteResult = await invokeInternalEdgeFunction(
+      'account-delete-orchestrator',
+      {
+        body: {
+          deleteAuthUser: true,
+          userId,
+        },
+      }
+    )
 
-    await authContext.adminAuth.deleteUser(userId)
+    if (deleteResult?.ok !== true) {
+      throw new Error('Account deletion could not be completed')
+    }
 
     await writeAuthAuditLog({
       request,

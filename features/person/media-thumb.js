@@ -4,8 +4,8 @@ import { useState } from 'react'
 
 import Image from 'next/image'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { canUseNextImageOptimization, cn } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { canUseNextImageOptimization, cn } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 function resolvePosterSrc(poster) {

@@ -6,13 +6,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import ListPreviewComposition from '@/features/shared/list-preview-composition'
-import { TMDB_IMG } from '@/lib/constants'
+import { TMDB_IMG } from '@/core/constants'
 import {
   canUseNextImageOptimization,
   cn,
   formatDate,
   getUserAvatarUrl,
-} from '@/lib/utils'
+} from '@/core/utils'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon'
 

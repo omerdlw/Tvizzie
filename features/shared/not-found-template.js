@@ -1,8 +1,8 @@
 'use client'
 
 import NotFoundAction from '@/features/navigation/actions/not-found-action'
-import { useRegistry } from '@/modules/registry'
-import { FullscreenState } from '@/ui/fullscreen-state'
+import { useRegistry } from '@/core/modules/registry'
+import { FullscreenState } from '@/ui/states/fullscreen-state'
 
 export default function NotFoundTemplate({ description }) {
   useRegistry({

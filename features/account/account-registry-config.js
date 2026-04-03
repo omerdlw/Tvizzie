@@ -8,7 +8,7 @@ import ReviewEditorModal from '@/features/modal/review-editor-modal'
 import AccountAction from '@/features/navigation/actions/account-action'
 import ReviewAction from '@/features/navigation/actions/review-action'
 import Icon from '@/ui/icon'
-import { getUserAvatarUrl } from '@/lib/utils'
+import { getUserAvatarUrl } from '@/core/utils'
 
 const ACCOUNT_LOADING_NAV_PRIORITY = 190
 const ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS = 8000
@@ -117,7 +117,7 @@ export function buildAccountPageState({
   listDeleteConfirmation,
   navDescription,
   navActionOverride,
-  navMask,
+  navSurface,
   navRegistrySource,
   onSaveSectionOrder,
   pendingFollowRequestCount,
@@ -196,14 +196,14 @@ export function buildAccountPageState({
             source: navRegistrySource,
           }
         : undefined,
-      surface: navMask,
+      surface: navSurface,
       title: profile?.isPrivate ? (
         <span key="title-icon" className="flex min-w-0 items-center gap-0.5">
           <span key="title" className="truncate">{accountTitle}</span>
           <Icon key="icon" icon="solar:lock-keyhole-bold" className="mb-0.5" size={14} />
         </span>
       ) : accountTitle,
-      action: navMask
+      action: navSurface
         ? null
         : shouldUseNavActionOverride
           ? navActionOverride

@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 const SOCIAL_LINKS = [

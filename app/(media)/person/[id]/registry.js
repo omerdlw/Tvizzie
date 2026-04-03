@@ -5,8 +5,8 @@ import { useState } from 'react'
 import ImagePreviewModal from '@/features/modal/image-preview-modal'
 import PersonAction from '@/features/navigation/actions/person-action'
 import SearchAction from '@/features/navigation/actions/search-action'
-import { TMDB_IMG } from '@/lib/constants'
-import { useRegistry } from '@/modules/registry'
+import { TMDB_IMG } from '@/core/constants'
+import { useRegistry } from '@/core/modules/registry'
 
 function getNavDescription(person, age) {
   const ageLabel =

@@ -1,7 +1,7 @@
 'use client'
 
 import NotFoundTemplate from '../shared/not-found-template'
-import AccountProfileLayout from './profile-layout'
+import AccountProfileLayout from './profile/profile-layout'
 import { ACCOUNT_SECTION_SHELL_CLASS } from './utils'
 import AccountRouteSkeleton from '@/ui/skeletons/views/account'
 

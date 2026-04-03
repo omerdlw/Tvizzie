@@ -1,6 +1,6 @@
-import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { createUserEventStream } from '@/lib/live-updates/user-events.server'
-import { isTransientSessionError } from '@/lib/auth/servers/session/session.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { createUserEventStream } from '@/core/services/realtime/user-events.server'
+import { isTransientSessionError } from '@/core/auth/servers/session/session.server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

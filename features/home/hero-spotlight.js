@@ -7,8 +7,8 @@ import Link from 'next/link'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
-import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
-import { getImagePlaceholderDataUrl } from '@/lib/utils'
+import { DURATION, EASING, TMDB_IMG } from '@/core/constants'
+import { getImagePlaceholderDataUrl } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 const HERO_COUNT = 5

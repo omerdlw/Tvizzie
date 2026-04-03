@@ -12,8 +12,8 @@ import {
   resolveVerificationErrorMessage,
   resolveVerificationTimestamp,
 } from '@/features/auth/utils'
-import { cn } from '@/lib/utils'
-import { useToast } from '@/modules/notification/hooks'
+import { cn } from '@/core/utils'
+import { useToast } from '@/core/modules/notification/hooks'
 import { Button } from '@/ui/elements'
 
 const PURPOSES = Object.freeze({
@@ -370,7 +370,6 @@ export default function AuthVerificationForm({
 
         if (resolvedMessage === 'Verification code is invalid') {
           setHasCodeError(true)
-          lastAutoSubmittedCodeRef.current = ''
 
           if (resetErrorTimeoutRef.current) {
             window.clearTimeout(resetErrorTimeoutRef.current)

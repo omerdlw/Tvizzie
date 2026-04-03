@@ -4,7 +4,7 @@
 
 @theme {
   --color-white: #fff;
-  --color-black: #0A0A0A;
+  --color-black: #000;
   --color-primary: #fff;
   --color-error: #E10300;
   --color-warning: #FCAD28;
@@ -55,11 +55,11 @@
 }
 
 @utility surface-muted {
-  @apply border border-white/5 bg-white/5 text-white/70 hover:border-black/10 hover:bg-white/70 hover:text-black;
+  @apply border border-white/5 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white;
 }
 
 @utility surface-active {
-  @apply border border-black/10 bg-white text-black hover:border-white/5;
+  @apply border border-white/10 bg-white text-black;
 }
 
 @utility surface-error {
@@ -97,7 +97,6 @@
 * {
   -ms-overflow-style: none;
   box-sizing: border-box;
-  border-radius: 0px !important;
   scrollbar-width: none;
   outline: none;
 }

@@ -1,17 +1,11 @@
 import { NextResponse } from 'next/server'
 
-import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { publishUserEvent } from '@/lib/live-updates/user-events.server'
-import {
-  deleteUserNotification,
-  getNotificationList,
-  getUnreadNotificationCount,
-  markAllUserNotificationsAsRead,
-  markNotificationAsRead,
-} from '@/services/browser/browser-data.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { publishUserEvent } from '@/core/services/realtime/user-events.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 import {
   NOTIFICATION_TYPE_SET,
-} from '@/services/notifications/notifications.constants'
+} from '@/core/services/notifications/notifications.constants'
 
 function normalizeValue(value) {
   return String(value || '').trim()
@@ -23,25 +17,39 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const resource = normalizeValue(searchParams.get('resource'))
     const limitCount = searchParams.get('limitCount')
+    const validTypes = [...NOTIFICATION_TYPE_SET]
 
     if (resource === 'unread-count') {
-      const data = await getUnreadNotificationCount(
-        authContext.userId,
-        NOTIFICATION_TYPE_SET
-      )
+      const payload = await invokeInternalEdgeFunction('notifications-control', {
+        body: {
+          action: 'unread-count',
+          userId: authContext.userId,
+          validTypes,
+        },
+      })
+      const data = Number(payload?.data || 0)
 
       return NextResponse.json({ data })
     }
 
-    const data = await getNotificationList(
-      authContext.userId,
-      NOTIFICATION_TYPE_SET,
-      limitCount
-    )
+    const payload = await invokeInternalEdgeFunction('notifications-control', {
+      body: {
+        action: 'list',
+        limitCount,
+        userId: authContext.userId,
+        validTypes,
+      },
+    })
+    const data = Array.isArray(payload?.data) ? payload.data : []
+
     return NextResponse.json({ data })
   } catch (error) {
     const message = String(error?.message || 'Notifications could not be loaded')
-    const status = message.includes('Authentication session is required') ? 401 : 500
+    const status = message.includes('Authentication session is required')
+      ? 401
+      : Number.isFinite(Number(error?.status))
+        ? Number(error.status)
+        : 500
 
     return NextResponse.json({ error: message }, { status })
   }
@@ -55,7 +63,12 @@ export async function PATCH(request) {
     const notificationId = normalizeValue(body?.notificationId)
 
     if (action === 'mark-all-read') {
-      await markAllUserNotificationsAsRead(authContext.userId)
+      await invokeInternalEdgeFunction('notifications-control', {
+        body: {
+          action: 'mark-all-read',
+          userId: authContext.userId,
+        },
+      })
       publishUserEvent(authContext.userId, 'notifications', {
         reason: 'mark-all-read',
       })
@@ -69,7 +82,13 @@ export async function PATCH(request) {
       )
     }
 
-    await markNotificationAsRead(authContext.userId, notificationId)
+    await invokeInternalEdgeFunction('notifications-control', {
+      body: {
+        action: 'mark-read',
+        notificationId,
+        userId: authContext.userId,
+      },
+    })
     publishUserEvent(authContext.userId, 'notifications', {
       notificationId,
       reason: 'mark-read',
@@ -77,7 +96,11 @@ export async function PATCH(request) {
     return NextResponse.json({ success: true })
   } catch (error) {
     const message = String(error?.message || 'Notification update failed')
-    const status = message.includes('Authentication session is required') ? 401 : 500
+    const status = message.includes('Authentication session is required')
+      ? 401
+      : Number.isFinite(Number(error?.status))
+        ? Number(error.status)
+        : 500
 
     return NextResponse.json({ error: message }, { status })
   }
@@ -96,7 +119,13 @@ export async function DELETE(request) {
       )
     }
 
-    await deleteUserNotification(authContext.userId, notificationId)
+    await invokeInternalEdgeFunction('notifications-control', {
+      body: {
+        action: 'delete',
+        notificationId,
+        userId: authContext.userId,
+      },
+    })
     publishUserEvent(authContext.userId, 'notifications', {
       notificationId,
       reason: 'delete',
@@ -104,7 +133,11 @@ export async function DELETE(request) {
     return NextResponse.json({ success: true })
   } catch (error) {
     const message = String(error?.message || 'Notification delete failed')
-    const status = message.includes('Authentication session is required') ? 401 : 500
+    const status = message.includes('Authentication session is required')
+      ? 401
+      : Number.isFinite(Number(error?.status))
+        ? Number(error.status)
+        : 500
 
     return NextResponse.json({ error: message }, { status })
   }

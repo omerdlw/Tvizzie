@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server'
 
-import { ACTIVITY_EVENT_TYPES } from '@/services/activity/activity-events.constants'
-import { NOTIFICATION_EVENT_TYPES } from '@/services/notifications/notification-events.constants'
-import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { readSessionFromRequest } from '@/lib/auth/servers/session/session.server'
-import { processActivityEvent } from '@/lib/activity/event-processor.server'
-import { publishUserEvent } from '@/lib/live-updates/user-events.server'
-import { processNotificationEvent } from '@/lib/notifications/event-processor.server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
-  getAccountProfileByUserId,
-  getFollowResource,
-} from '@/services/browser/browser-data.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { readSessionFromRequest } from '@/core/auth/servers/session/session.server'
+import { publishUserEvent } from '@/core/services/realtime/user-events.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
+import { getFollowResource } from '@/core/services/browser/browser-data.server'
 
 export const runtime = 'nodejs'
-
-const FOLLOW_STATUSES = Object.freeze({
-  ACCEPTED: 'accepted',
-  PENDING: 'pending',
-  REJECTED: 'rejected',
-})
 
 function normalizeValue(value) {
   return String(value || '').trim()
@@ -52,135 +39,6 @@ function resolveWriteStatusCode(message) {
   }
 
   return 500
-}
-
-async function getExistingFollow(admin, followerId, followingId) {
-  const result = await admin
-    .from('follows')
-    .select('*')
-    .eq('follower_id', followerId)
-    .eq('following_id', followingId)
-    .maybeSingle()
-
-  if (result.error) {
-    throw new Error(result.error.message || 'Follow relationship could not be loaded')
-  }
-
-  return result.data || null
-}
-
-async function saveFollowRelationship(admin, {
-  followerId,
-  followerProfile,
-  followingId,
-  followingProfile,
-  status,
-  createdAt = null,
-}) {
-  const nowIso = new Date().toISOString()
-  const existing = await getExistingFollow(admin, followerId, followingId)
-  const basePayload = {
-    follower_avatar_url: followerProfile?.avatarUrl || null,
-    follower_display_name: followerProfile?.displayName || 'Anonymous User',
-    follower_username: followerProfile?.username || null,
-    following_avatar_url: followingProfile?.avatarUrl || null,
-    following_display_name: followingProfile?.displayName || 'Anonymous User',
-    following_username: followingProfile?.username || null,
-    responded_at:
-      status === FOLLOW_STATUSES.ACCEPTED || status === FOLLOW_STATUSES.REJECTED
-        ? nowIso
-        : null,
-    status,
-    updated_at: nowIso,
-  }
-  const result = existing
-    ? await admin
-        .from('follows')
-        .update({
-          ...basePayload,
-          created_at: createdAt || nowIso,
-        })
-        .eq('follower_id', followerId)
-        .eq('following_id', followingId)
-    : await admin.from('follows').insert({
-        ...basePayload,
-        created_at: createdAt || nowIso,
-        follower_id: followerId,
-        following_id: followingId,
-      })
-
-  if (result.error) {
-    throw new Error(result.error.message || 'Follow relationship could not be updated')
-  }
-}
-
-async function deleteFollowRelationship(admin, followerId, followingId) {
-  const result = await admin
-    .from('follows')
-    .delete()
-    .eq('follower_id', followerId)
-    .eq('following_id', followingId)
-
-  if (result.error) {
-    throw new Error(result.error.message || 'Follow relationship could not be removed')
-  }
-}
-
-function resolveActivitySubjectId(row = {}) {
-  const payload = row?.payload && typeof row.payload === 'object' ? row.payload : {}
-  const subject =
-    payload?.subject && typeof payload.subject === 'object' ? payload.subject : {}
-  const nestedPayload =
-    payload?.payload && typeof payload.payload === 'object' ? payload.payload : {}
-
-  return normalizeValue(
-    subject?.id || nestedPayload?.subjectId || nestedPayload?.followingId
-  )
-}
-
-async function deleteFollowActivityEntries(admin, { followerId, followingId }) {
-  const existingActivities = await admin
-    .from('activity')
-    .select('id, payload')
-    .eq('user_id', followerId)
-    .eq('event_type', ACTIVITY_EVENT_TYPES.FOLLOW_CREATED)
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  if (existingActivities.error) {
-    throw new Error(existingActivities.error.message || 'Follow activity could not be loaded')
-  }
-
-  const activityIds = (existingActivities.data || [])
-    .filter((row) => resolveActivitySubjectId(row) === followingId)
-    .map((row) => row.id)
-    .filter(Boolean)
-
-  if (activityIds.length === 0) {
-    return
-  }
-
-  const deleteResult = await admin.from('activity').delete().in('id', activityIds)
-
-  if (deleteResult.error) {
-    throw new Error(deleteResult.error.message || 'Follow activity could not be removed')
-  }
-}
-
-async function createAcceptedFollowActivity({ actorUserId, subjectProfile, subjectUserId }) {
-  await processActivityEvent({
-    actorUserId,
-    eventType: ACTIVITY_EVENT_TYPES.FOLLOW_CREATED,
-    payload: {
-      dedupeKey: `follow-created:${subjectUserId}:accepted`,
-      status: FOLLOW_STATUSES.ACCEPTED,
-      subjectDisplayName:
-        subjectProfile?.displayName || subjectProfile?.username || 'Account',
-      subjectId: subjectUserId,
-      subjectType: 'user',
-      subjectUsername: subjectProfile?.username || null,
-    },
-  })
 }
 
 function publishFollowChange({
@@ -262,71 +120,34 @@ export async function POST(request) {
       )
     }
 
-    const [followerProfile, followingProfile] = await Promise.all([
-      getAccountProfileByUserId(followerId),
-      getAccountProfileByUserId(followingId),
-    ])
-
-    if (!followerProfile || !followingProfile) {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 400 }
-      )
-    }
-
-    const status = followingProfile.isPrivate
-      ? FOLLOW_STATUSES.PENDING
-      : FOLLOW_STATUSES.ACCEPTED
-    const admin = createAdminClient()
-
-    await saveFollowRelationship(admin, {
-      followerId,
-      followerProfile,
-      followingId,
-      followingProfile,
-      status,
-    })
-
-    await processNotificationEvent({
-      actorUserId: followerId,
-      eventType: NOTIFICATION_EVENT_TYPES.FOLLOW_CREATED,
-      payload: {
-        followerId,
-        followingId,
-        status,
+    const result = await invokeInternalEdgeFunction('follow-control', {
+      body: {
+        action: 'follow',
+        actorUserId: followerId,
+        targetUserId: followingId,
       },
     })
-
-    if (status === FOLLOW_STATUSES.ACCEPTED) {
-      await createAcceptedFollowActivity({
-        actorUserId: followerId,
-        subjectProfile: followingProfile,
-        subjectUserId: followingId,
-      })
-    } else {
-      await deleteFollowActivityEntries(admin, {
-        followerId,
-        followingId,
-      })
-    }
 
     publishFollowChange({
       followerId,
       followingId,
       reason: 'follow',
-      status,
+      status: normalizeValue(result?.status) || null,
     })
 
     return NextResponse.json({
-      status,
       success: true,
+      status: result?.status || null,
     })
   } catch (error) {
     const message = normalizeErrorMessage(error, 'Follow action failed')
+    const status = Number.isFinite(Number(error?.status))
+      ? Number(error.status)
+      : resolveWriteStatusCode(message)
 
     return NextResponse.json(
       { error: message },
-      { status: resolveWriteStatusCode(message) }
+      { status }
     )
   }
 }
@@ -339,13 +160,6 @@ export async function PATCH(request) {
     const requesterId = normalizeValue(body?.requesterId)
     const userId = authContext.userId
 
-    if (!requesterId) {
-      return NextResponse.json(
-        { error: 'requesterId is required' },
-        { status: 400 }
-      )
-    }
-
     if (action !== 'accept' && action !== 'reject') {
       return NextResponse.json(
         { error: 'Unsupported follow action' },
@@ -353,86 +167,41 @@ export async function PATCH(request) {
       )
     }
 
-    const admin = createAdminClient()
-    const existing = await getExistingFollow(admin, requesterId, userId)
-
-    if (!existing || existing.status !== FOLLOW_STATUSES.PENDING) {
+    if (!requesterId) {
       return NextResponse.json(
-        { error: 'Follow request has already been resolved' },
+        { error: 'requesterId is required' },
         { status: 400 }
       )
     }
 
-    const [requesterProfile, ownerProfile] = await Promise.all([
-      getAccountProfileByUserId(requesterId),
-      getAccountProfileByUserId(userId),
-    ])
-
-    if (!requesterProfile || !ownerProfile) {
-      return NextResponse.json(
-        { error: 'Account not found' },
-        { status: 400 }
-      )
-    }
-
-    const status =
-      action === 'accept'
-        ? FOLLOW_STATUSES.ACCEPTED
-        : FOLLOW_STATUSES.REJECTED
-
-    await saveFollowRelationship(admin, {
-      followerId: requesterId,
-      followerProfile: requesterProfile,
-      followingId: userId,
-      followingProfile: ownerProfile,
-      status,
-      createdAt: existing.created_at || null,
-    })
-
-    if (status === FOLLOW_STATUSES.ACCEPTED) {
-      await deleteFollowActivityEntries(admin, {
-        followerId: requesterId,
-        followingId: userId,
-      })
-
-      await createAcceptedFollowActivity({
-        actorUserId: requesterId,
-        subjectProfile: ownerProfile,
-        subjectUserId: userId,
-      })
-
-      await processNotificationEvent({
+    const result = await invokeInternalEdgeFunction('follow-control', {
+      body: {
+        action,
         actorUserId: userId,
-        eventType: NOTIFICATION_EVENT_TYPES.FOLLOW_ACCEPTED,
-        payload: {
-          acceptorId: userId,
-          requesterId,
-        },
-      })
-    } else {
-      await deleteFollowActivityEntries(admin, {
-        followerId: requesterId,
-        followingId: userId,
-      })
-    }
+        requesterId,
+      },
+    })
 
     publishFollowChange({
       followerId: requesterId,
       followingId: userId,
       reason: action,
-      status,
+      status: normalizeValue(result?.status) || null,
     })
 
     return NextResponse.json({
-      status,
       success: true,
+      status: result?.status || null,
     })
   } catch (error) {
     const message = normalizeErrorMessage(error, 'Follow request could not be updated')
+    const status = Number.isFinite(Number(error?.status))
+      ? Number(error.status)
+      : resolveWriteStatusCode(message)
 
     return NextResponse.json(
       { error: message },
-      { status: resolveWriteStatusCode(message) }
+      { status }
     )
   }
 }
@@ -443,7 +212,6 @@ export async function DELETE(request) {
     const body = await request.json().catch(() => ({}))
     const action = normalizeValue(body?.action)
     const userId = authContext.userId
-    const admin = createAdminClient()
 
     if (action === 'unfollow' || action === 'cancel-request') {
       const followingId = normalizeValue(body?.followingId)
@@ -455,14 +223,13 @@ export async function DELETE(request) {
         )
       }
 
-      await deleteFollowRelationship(admin, userId, followingId)
-
-      if (action === 'cancel-request') {
-        await deleteFollowActivityEntries(admin, {
-          followerId: userId,
-          followingId,
-        })
-      }
+      await invokeInternalEdgeFunction('follow-control', {
+        body: {
+          action,
+          actorUserId: userId,
+          targetUserId: followingId,
+        },
+      })
 
       publishFollowChange({
         followerId: userId,
@@ -483,7 +250,13 @@ export async function DELETE(request) {
         )
       }
 
-      await deleteFollowRelationship(admin, followerId, userId)
+      await invokeInternalEdgeFunction('follow-control', {
+        body: {
+          action,
+          actorUserId: userId,
+          requesterId: followerId,
+        },
+      })
 
       publishFollowChange({
         followerId,
@@ -500,10 +273,13 @@ export async function DELETE(request) {
     )
   } catch (error) {
     const message = normalizeErrorMessage(error, 'Follow relationship could not be removed')
+    const status = Number.isFinite(Number(error?.status))
+      ? Number(error.status)
+      : resolveWriteStatusCode(message)
 
     return NextResponse.json(
       { error: message },
-      { status: resolveWriteStatusCode(message) }
+      { status }
     )
   }
 }

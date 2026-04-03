@@ -1,6 +1,6 @@
-import AccountMediaGridPage from '@/features/account/media-grid-page'
+import AccountMediaGridPage from '@/features/account/sections/media-grid-page'
 import AccountPageShell from '@/features/account/page-shell'
-import AccountProfileMediaActions from '@/features/account/profile-media-actions'
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
 import AccountSectionState from '@/features/account/section-state'
 import Registry from './registry'
 
@@ -16,7 +16,7 @@ export default function WatchlistView({
   handleOpenFollowList,
   handleRequestRemoveWatchlistItem,
   handleSignInRequest,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFollowLoading,
   isOwner,
   isPageLoading,
@@ -28,7 +28,7 @@ export default function WatchlistView({
   profile,
   resolveError,
   resolvedUserId,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   watchlistCount,
@@ -42,7 +42,7 @@ export default function WatchlistView({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -51,7 +51,7 @@ export default function WatchlistView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -70,7 +70,7 @@ export default function WatchlistView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

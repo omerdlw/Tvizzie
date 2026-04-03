@@ -9,9 +9,9 @@ import VideoPreviewModal from '@/features/modal/video-preview-modal'
 import ReviewAction from '@/features/navigation/actions/review-action'
 import SearchAction from '@/features/navigation/actions/search-action'
 import WatchProvidersAction from '@/features/navigation/actions/watch-providers-action'
-import WatchProvidersMask from '@/features/navigation/masks/watch-providers-mask'
-import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
-import { useRegistry } from '@/modules/registry'
+import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface'
+import { DURATION, EASING, TMDB_IMG } from '@/core/constants'
+import { useRegistry } from '@/core/modules/registry'
 import Icon from '@/ui/icon/index'
 
 export default function Registry({
@@ -41,7 +41,7 @@ export default function Registry({
 
   const navSurface =
     !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
-      <WatchProvidersMask
+      <WatchProvidersSurface
         providers={movie?.['watch/providers']}
         videos={movie?.videos}
       />

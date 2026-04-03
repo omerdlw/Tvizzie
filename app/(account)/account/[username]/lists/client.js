@@ -4,9 +4,9 @@ import { useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/list-creator-utils'
+import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/lists/list-creator-utils'
 import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { useAuth } from '@/modules/auth'
+import { useAuth } from '@/core/modules/auth'
 import ListsView from './view'
 
 export default function Client({
@@ -31,7 +31,7 @@ export default function Client({
     handleFollow,
     handleOpenFollowList,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -45,7 +45,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -75,7 +75,7 @@ export default function Client({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -90,7 +90,7 @@ export default function Client({
       profile={profile}
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       watchlistCount={watchlistCount}

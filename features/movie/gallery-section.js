@@ -2,8 +2,8 @@
 
 import Carousel from '@/features/shared/carousel'
 import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/lib/constants'
-import { useModal } from '@/modules/modal/context'
+import { TMDB_IMG } from '@/core/constants'
+import { useModal } from '@/core/modules/modal/context'
 
 export default function GallerySection({ images }) {
   const { openModal } = useModal()

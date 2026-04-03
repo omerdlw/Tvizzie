@@ -1,7 +1,7 @@
 'use client'
 
 import { buildAccountEditState } from '@/features/account/account-registry-config'
-import { useRegistry } from '@/modules/registry'
+import { useRegistry } from '@/core/modules/registry'
 
 const ACCOUNT_EDIT_REGISTRY_SOURCE = 'account-edit'
 

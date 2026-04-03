@@ -2,27 +2,27 @@
 
 import { PROFILE_TABS, getMediaTitle } from './utils'
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth'
-import { logDataError } from '@/lib/data/errors'
-import { getUserAvatarUrl } from '@/lib/utils'
+import { logDataError } from '@/core/utils/errors'
+import { getUserAvatarUrl } from '@/core/utils'
 import {
   useAccountProfile,
   useResolvedAccountUser as useModuleResolvedAccountUser,
-} from '@/modules/account'
-import { useAuthSessionReady } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useToast } from '@/modules/notification/hooks'
-import { FOLLOW_STATUSES, cancelFollowRequest, followUser, subscribeToFollowRelationship, subscribeToFollowers, subscribeToFollowing, unfollowUser } from '@/services/social/follows.service'
+} from '@/core/modules/account'
+import { useAuthSessionReady } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useToast } from '@/core/modules/notification/hooks'
+import { FOLLOW_STATUSES, cancelFollowRequest, followUser, subscribeToFollowRelationship, subscribeToFollowers, subscribeToFollowing, unfollowUser } from '@/core/services/social/follows.service'
 import {
   ensureLegacyFavoritesBackfilled,
   getLikeDocRef,
   removeUserLike,
   subscribeToUserLikes,
-} from '@/services/media/likes.service'
-import { deleteUserList, subscribeToUserListItems, subscribeToUserLists, toggleUserListItem } from '@/services/media/lists.service'
-import { getAccountSocialProof } from '@/services/media/social-proof.service'
-import { updateUserMediaPosition } from '@/services/media/user-media.service'
-import { subscribeToUserWatched } from '@/services/media/watched.service'
-import { getWatchlistDocRef, removeUserWatchlistItem, subscribeToUserWatchlist } from '@/services/media/watchlist.service'
+} from '@/core/services/media/likes.service'
+import { deleteUserList, subscribeToUserListItems, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service'
+import { getAccountSocialProof } from '@/core/services/media/social-proof.service'
+import { updateUserMediaPosition } from '@/core/services/media/user-media.service'
+import { subscribeToUserWatched } from '@/core/services/media/watched.service'
+import { getWatchlistDocRef, removeUserWatchlistItem, subscribeToUserWatchlist } from '@/core/services/media/watchlist.service'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -518,6 +518,7 @@ export function useAccountCollections({
     likes,
     lists,
     setLikes,
+    setLists,
     setWatched,
     setWatchlist,
     watched,
@@ -908,6 +909,7 @@ export function useAccountPageData({
     likes,
     lists,
     setLikes,
+    setLists,
     setWatched,
     setWatchlist,
     watched,
@@ -969,6 +971,7 @@ export function useAccountPageData({
     resolveError,
     resolvedUserId,
     setLikes,
+    setLists,
     setListItems,
     setWatched,
     setWatchlist,
@@ -1087,6 +1090,7 @@ export function useAccountPageActions({
   resolvedUserId,
   selectedList,
   setLikes,
+  setLists,
   setListItems,
   setWatchlist,
   updateQuery,
@@ -1143,6 +1147,15 @@ export function useAccountPageActions({
         isDestructive: true,
         onCancel: () => setListDeleteConfirmation(null),
         onConfirm: async () => {
+          let previousLists = null
+
+          if (typeof setLists === 'function') {
+            setLists((currentLists) => {
+              previousLists = currentLists
+              return currentLists.filter((current) => current?.id !== targetList.id)
+            })
+          }
+
           try {
             await deleteUserList({
               listId: targetList.id,
@@ -1155,13 +1168,24 @@ export function useAccountPageActions({
               updateQuery({ list: null, tab: 'lists' })
             }
           } catch (error) {
+            if (previousLists && typeof setLists === 'function') {
+              setLists(previousLists)
+            }
             toast.error(error?.message || 'The list could not be deleted')
             throw error
           }
         },
       })
     },
-    [activeListId, auth.user?.id, isOwner, selectedList, toast, updateQuery]
+    [
+      activeListId,
+      auth.user?.id,
+      isOwner,
+      selectedList,
+      setLists,
+      toast,
+      updateQuery,
+    ]
   )
 
   const handleConfirmUnfollow = useCallback(async () => {
@@ -1293,6 +1317,7 @@ export function useAccountPageActions({
           media: item,
           userId: auth.user.id,
         })
+        setItemRemoveConfirmation(null)
         toast.success(`${getMediaTitle(item)} was removed from the list`)
       } catch (error) {
         toast.error(error?.message || 'The item could not be removed')
@@ -1300,6 +1325,23 @@ export function useAccountPageActions({
       }
     },
     [auth.user?.id, isOwner, selectedList, toast]
+  )
+
+  const handleRequestRemoveListItem = useCallback(
+    (item) => {
+      if (!isOwner) return
+
+      setItemRemoveConfirmation({
+        title: 'Remove List Item?',
+        description: `${getMediaTitle(item)} will be removed from this list.`,
+        confirmText: 'Remove',
+        confirmLoadingText: 'Removing',
+        isDestructive: true,
+        onCancel: () => setItemRemoveConfirmation(null),
+        onConfirm: () => handleRemoveListItem(item),
+      })
+    },
+    [handleRemoveListItem, isOwner]
   )
 
   const handleRemoveLike = useCallback(
@@ -1458,6 +1500,7 @@ export function useAccountPageActions({
     handleOpenFollowList,
     handleRemoveLike,
     handleRequestRemoveLike,
+    handleRequestRemoveListItem,
     handleRequestRemoveWatchlistItem,
     handleRemoveListItem,
     handleRemoveWatchlistItem,

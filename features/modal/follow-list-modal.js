@@ -10,10 +10,10 @@ import {
   cn,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/lib/utils'
-import { useAuth, useAuthSessionReady } from '@/modules/auth'
-import Container from '@/modules/modal/container'
-import { useToast } from '@/modules/notification/hooks'
+} from '@/core/utils'
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
+import Container from '@/core/modules/modal/container'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   FOLLOW_STATUSES,
   acceptFollowRequest,
@@ -22,7 +22,7 @@ import {
   removeFollower,
   subscribeToFollowers,
   subscribeToFollowing,
-} from '@/services/social/follows.service'
+} from '@/core/services/social/follows.service'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon'
 

@@ -1,4 +1,4 @@
-import { getCurrentEditableAccountSnapshot } from '@/services/account/current-account-snapshot.server'
+import { getCurrentEditableAccountSnapshot } from '@/core/services/account/current-account-snapshot.server'
 
 import Client from './client'
 

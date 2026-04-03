@@ -1,63 +1,29 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { isPermissionDeniedError } from '@/lib/data/errors'
+import { isPermissionDeniedError } from '@/core/utils/errors'
 import { getRatingStats } from '@/features/reviews/utils'
-import { useAccountProfile } from '@/modules/account'
-import { useAuth } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useToast } from '@/modules/notification/hooks'
+import { useAccountProfile } from '@/core/modules/account'
+import { useAuth } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
-} from '@/services/core/polling-subscription.service'
+} from '@/core/services/shared/polling-subscription.service'
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
   toggleListLike,
-} from '@/services/media/lists.service'
+} from '@/core/services/media/lists.service'
 import {
   deleteListReview,
-  getReviewValidationError,
   subscribeToListReviews,
   toggleStoredReviewLike,
-  upsertListReview,
-} from '@/services/media/reviews.service'
-import { useReviewNavState } from '@/features/reviews/use-review-nav-state'
+} from '@/core/services/media/reviews.service'
 import ListView from './view'
-
-function getReviewActionLabels({ ownReview, reviewText, rating }) {
-  const hasText = reviewText.trim().length > 0
-  const hasRating = rating !== null
-
-  if (ownReview) {
-    if (!hasText && hasRating) {
-      return {
-        loadingLabel: 'Updating Rating',
-        submitLabel: 'Update Rating',
-      }
-    }
-
-    return {
-      loadingLabel: 'Updating Review',
-      submitLabel: 'Update Review',
-    }
-  }
-
-  if (!hasText && hasRating) {
-    return {
-      loadingLabel: 'Saving Rating',
-      submitLabel: 'Save Rating',
-    }
-  }
-
-  return {
-    loadingLabel: 'Publishing Review',
-    submitLabel: 'Publish Review',
-  }
-}
 
 export default function Client({
   initialCollections = null,
@@ -80,28 +46,10 @@ export default function Client({
   const [reviews, setReviews] = useState(
     Array.isArray(initialListReviews) ? initialListReviews : []
   )
-  const [reviewText, setReviewText] = useState('')
-  const [rating, setRating] = useState(null)
-  const [isSpoiler, setIsSpoiler] = useState(false)
   const [isLikeLoading, setIsLikeLoading] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isEditingReview, setIsEditingReview] = useState(false)
-  const [reviewState, setReviewState] = useState({
-    confirmation: null,
-    isActive: false,
-    isSubmitting: false,
-    ownReview: false,
-    submitReview: null,
-  })
-
-  const formStateRef = useRef({ reviewText: '', rating: null, isSpoiler: false })
   const { profile: userProfile } = useAccountProfile({
     resolvedUserId: auth.user?.id || null,
   })
-
-  useEffect(() => {
-    formStateRef.current = { reviewText, rating, isSpoiler }
-  }, [reviewText, rating, isSpoiler])
 
   const {
     canViewProfileCollections,
@@ -114,8 +62,9 @@ export default function Client({
     handleEditProfile,
     handleFollow,
     handleOpenFollowList,
+    handleRequestRemoveListItem,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -129,7 +78,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -160,13 +109,6 @@ export default function Client({
   useEffect(() => {
     setReviews(hasSeededListReviews ? initialListReviews : [])
   }, [hasSeededListReviews, initialListReviews])
-
-  useEffect(() => {
-    setIsEditingReview(false)
-    setReviewText('')
-    setRating(null)
-    setIsSpoiler(false)
-  }, [list?.id])
 
   useEffect(() => {
     if (!resolvedUserId || !hasSeededList) {
@@ -309,16 +251,6 @@ export default function Client({
     return reviews.find((review) => review.user?.id === auth.user.id) || null
   }, [auth.user?.id, reviews])
 
-  useEffect(() => {
-    if (!ownReview) {
-      return
-    }
-
-    setReviewText(ownReview.content || '')
-    setRating(ownReview.rating ?? null)
-    setIsSpoiler(Boolean(ownReview.isSpoiler))
-  }, [ownReview])
-
   const handleToggleLike = useCallback(async () => {
     if (!auth.isAuthenticated || !auth.user?.id || !list?.id || !resolvedUserId) {
       handleSignInRequest()
@@ -340,11 +272,24 @@ export default function Client({
     }
   }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast])
 
-  const handleSubmitReview = useCallback(
-    async (event) => {
-      event?.preventDefault()
+  const buildReviewModalUser = useCallback(
+    (review = null) => {
+      if (!auth.user?.id) {
+        return null
+      }
 
-      if (!auth.isAuthenticated) {
+      return {
+        ...(review?.user || {}),
+        ...(userProfile || {}),
+        id: auth.user.id,
+      }
+    },
+    [auth.user?.id, userProfile]
+  )
+
+  const openReviewEditorModal = useCallback(
+    (review = null) => {
+      if (!auth.isAuthenticated || !auth.user?.id) {
         handleSignInRequest()
         return
       }
@@ -353,63 +298,66 @@ export default function Client({
         return
       }
 
-      const {
-        reviewText: currentText,
-        rating: currentRating,
-        isSpoiler: currentIsSpoiler,
-      } = formStateRef.current
+      const targetReview = review || ownReview || null
+      const reviewIdentity = targetReview?.docPath || targetReview?.id || null
+      const ownerUsername =
+        list?.ownerSnapshot?.username || profile?.username || username || resolvedUserId
 
-      const normalizedReview = currentText.trim()
-      const validationError = getReviewValidationError({
-        content: normalizedReview,
-        rating: currentRating,
-      })
-      const isRatingOnly = !normalizedReview && currentRating !== null
-
-      if (validationError) {
-        toast.error(validationError)
-        return
-      }
-
-      try {
-        setIsSubmitting(true)
-        await upsertListReview({
-          content: normalizedReview,
-          isSpoiler: normalizedReview ? currentIsSpoiler : false,
-          list,
+      openModal('REVIEW_EDITOR_MODAL', 'center', {
+        data: {
+          list: {
+            coverUrl:
+              list?.poster_path ||
+              list?.posterPath ||
+              list?.coverUrl ||
+              listItems?.[0]?.poster_path ||
+              null,
+            id: list.id,
+            ownerId: resolvedUserId,
+            ownerSnapshot: {
+              id: resolvedUserId,
+              username: ownerUsername,
+            },
+            previewItems: Array.isArray(list?.previewItems) ? list.previewItems : [],
+            slug: list.slug || list.id,
+            title: list.title || 'Untitled List',
+          },
           listId: list.id,
+          onSuccess: reviewIdentity
+            ? (updatedReview) => {
+                setReviews((current) =>
+                  current.map((item) =>
+                    (item.docPath || item.id) === reviewIdentity
+                      ? { ...item, ...updatedReview }
+                      : item
+                  )
+                )
+              }
+            : null,
           ownerId: resolvedUserId,
-          rating: currentRating,
-          user: userProfile || auth.user,
-        })
-
-        toast.success(
-          ownReview
-            ? isRatingOnly
-              ? 'Your rating was updated'
-              : 'Your review was updated'
-            : isRatingOnly
-              ? 'Your rating was saved'
-              : 'Your review was published'
-        )
-        setIsEditingReview(false)
-      } catch (error) {
-        toast.error(error?.message || 'Review could not be saved')
-      } finally {
-        setIsSubmitting(false)
-      }
+          review: targetReview,
+          user: buildReviewModalUser(targetReview),
+        },
+      })
     },
     [
       auth.isAuthenticated,
-      auth.user,
+      auth.user?.id,
+      buildReviewModalUser,
       handleSignInRequest,
       list,
+      listItems,
+      openModal,
       ownReview,
+      profile?.username,
       resolvedUserId,
-      toast,
-      userProfile,
+      username,
     ]
   )
+
+  const handleOpenReviewComposer = useCallback(() => {
+    openReviewEditorModal()
+  }, [openReviewEditorModal])
 
   const handleDeleteReview = useCallback(async () => {
     if (!ownReview || !resolvedUserId || !list?.id || !auth.user?.id) {
@@ -423,10 +371,6 @@ export default function Client({
         userId: auth.user.id,
       })
       toast.success('Your review was deleted')
-      setReviewText('')
-      setRating(null)
-      setIsSpoiler(false)
-      setIsEditingReview(false)
       return true
     } catch (error) {
       toast.error(error?.message || 'Review could not be deleted')
@@ -477,55 +421,10 @@ export default function Client({
 
   const handleEditReview = useCallback(
     (review) => {
-      openModal('REVIEW_EDITOR_MODAL', 'center', {
-        data: {
-          onSuccess: (updatedReview) => {
-            setReviews((current) =>
-              current.map((item) =>
-                (item.docPath || item.id) === (review.docPath || review.id)
-                  ? { ...item, ...updatedReview }
-                  : item
-              )
-            )
-          },
-          review,
-          user: auth.user?.id
-            ? {
-                ...(review.user || {}),
-                ...(userProfile || {}),
-                id: auth.user.id,
-              }
-            : null,
-        },
-      })
+      openReviewEditorModal(review)
     },
-    [auth.user?.id, openModal, userProfile]
+    [openReviewEditorModal]
   )
-
-  const reviewValidationError = getReviewValidationError({
-    content: reviewText,
-    rating,
-  })
-  const { loadingLabel, submitLabel } = getReviewActionLabels({
-    ownReview,
-    rating,
-    reviewText,
-  })
-
-  useReviewNavState({
-    canSubmit: !reviewValidationError,
-    handleSubmit: handleSubmitReview,
-    isEditing: isEditingReview,
-    isSpoiler,
-    isSubmitting,
-    loadingLabel,
-    navConfirmation: null,
-    onReviewStateChange: setReviewState,
-    ownReview,
-    rating,
-    reviewText,
-    submitLabel,
-  })
 
   const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false
   const requiresFollowForProfileInteractions =
@@ -547,18 +446,17 @@ export default function Client({
       handleFollow={handleFollow}
       handleLikeReview={handleLikeReview}
       handleOpenFollowList={handleOpenFollowList}
+      handleRemoveListItem={handleRequestRemoveListItem}
       handleSignInRequest={handleSignInRequest}
-      handleSubmitReview={handleSubmitReview}
+      handleOpenReviewComposer={handleOpenReviewComposer}
       handleToggleLike={handleToggleLike}
-      isBioMaskOpen={isBioMaskOpen}
-      isEditingReview={isEditingReview}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isLiked={isLiked}
       isLikeLoading={isLikeLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
       isResolvingProfile={isResolvingProfile}
-      isSpoiler={isSpoiler}
       itemRemoveConfirmation={itemRemoveConfirmation}
       likeCount={likeCount}
       list={list}
@@ -568,19 +466,12 @@ export default function Client({
       ownReview={ownReview}
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
-      rating={rating}
       ratingStats={ratingStats}
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
       reviews={reviews}
-      reviewState={reviewState}
-      reviewText={reviewText}
       handleEditReview={handleEditReview}
-      setIsBioMaskOpen={setIsBioMaskOpen}
-      setIsEditingReview={setIsEditingReview}
-      setIsSpoiler={setIsSpoiler}
-      setRating={setRating}
-      setReviewText={setReviewText}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       userProfile={userProfile}

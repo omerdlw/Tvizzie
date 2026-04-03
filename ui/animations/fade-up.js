@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-import { DURATION, EASING } from '@/lib/constants'
+import { DURATION, EASING } from '@/core/constants'
 
 const FADE_UP_VARIANTS = {
   visible: {

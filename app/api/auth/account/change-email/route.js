@@ -1,25 +1,21 @@
 import { NextResponse } from 'next/server'
 
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
-import {
-  getGoogleIdentity,
-  GOOGLE_PROVIDER_ID,
-  unlinkIdentityWithAccessToken,
-} from '@/lib/auth/servers/providers/google-provider.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
-import { clearAuthCookies } from '@/lib/auth/servers/session/session.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { clearStepUpCookie, assertStepUp } from '@/lib/auth/servers/security/step-up.server'
-import { createAdminClient } from '@/lib/supabase/admin'
+} from '@/core/auth/servers/security/rate-limit.server'
+import { clearAuthCookies } from '@/core/auth/servers/session/session.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { clearStepUpCookie, assertStepUp } from '@/core/auth/servers/security/step-up.server'
+import { createAdminClient } from '@/core/clients/supabase/admin'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 import {
   assertRecentReauth,
   clearRecentReauthCookie,
-} from '@/lib/auth/servers/security/recent-reauth.server'
+} from '@/core/auth/servers/security/recent-reauth.server'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -27,30 +23,6 @@ function normalizeEmail(value) {
   return String(value || '')
     .trim()
     .toLowerCase()
-}
-
-function getGoogleProviderEmail(userRecord) {
-  const providerRecord = (userRecord?.providerData || []).find(
-    (provider) => provider?.providerId === GOOGLE_PROVIDER_ID
-  )
-
-  return normalizeEmail(providerRecord?.email)
-}
-
-async function getRawAuthUser(userId) {
-  const normalizedUserId = String(userId || '').trim()
-
-  if (!normalizedUserId) {
-    throw new Error('User ID is required')
-  }
-
-  const result = await createAdminClient().auth.admin.getUserById(normalizedUserId)
-
-  if (result.error) {
-    throw new Error(result.error.message || 'User could not be loaded')
-  }
-
-  return result.data?.user || null
 }
 
 async function syncProfileEmail({ userId, email }) {
@@ -65,16 +37,16 @@ async function syncProfileEmail({ userId, email }) {
     throw new Error('Enter a valid email address')
   }
 
-  const result = await createAdminClient()
-    .from('profiles')
-    .update({
+  const result = await invokeInternalEdgeFunction('account-profile-write', {
+    body: {
+      action: 'sync-email',
       email: normalizedEmail,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', normalizedUserId)
+      userId: normalizedUserId,
+    },
+  })
 
-  if (result.error) {
-    throw new Error(result.error.message || 'Profile email could not be synced')
+  if (result?.ok !== true) {
+    throw new Error('Profile email could not be synced')
   }
 }
 
@@ -166,9 +138,6 @@ export async function POST(request) {
   let nextEmail = null
   let challengeJti = null
   let sessionJti = null
-  let googleProviderEmail = null
-  let googleProviderDetached = false
-  let googleProviderCleanupRequired = false
   let serverSessionRevocationFailed = false
 
   try {
@@ -214,19 +183,7 @@ export async function POST(request) {
       requestContext,
     })
 
-    const [, rawAuthUser] = await Promise.all([
-      assertEmailAvailable(authContext.adminAuth, nextEmail),
-      getRawAuthUser(userId),
-    ])
-    const googleIdentity = getGoogleIdentity(rawAuthUser)
-    googleProviderEmail = normalizeEmail(
-      googleIdentity?.identity_data?.email ||
-        googleIdentity?.email ||
-        getGoogleProviderEmail(authContext.userRecord)
-    )
-    googleProviderCleanupRequired = Boolean(googleIdentity) && (
-      !googleProviderEmail || googleProviderEmail !== nextEmail
-    )
+    await assertEmailAvailable(authContext.adminAuth, nextEmail)
 
     let emailUpdated = false
 
@@ -241,22 +198,6 @@ export async function POST(request) {
         userId,
         email: nextEmail,
       })
-
-      if (googleProviderCleanupRequired) {
-        try {
-          await unlinkIdentityWithAccessToken({
-            accessToken: authContext.accessToken,
-            identityId: googleIdentity?.identity_id,
-            fallbackMessage: 'Google provider cleanup failed after email change',
-          })
-          googleProviderDetached = true
-        } catch (cleanupError) {
-          throw new Error(
-            cleanupError?.message ||
-              'Google provider cleanup failed after email change'
-          )
-        }
-      }
     } catch (mutationError) {
       if (emailUpdated) {
         await rollbackEmailChange({
@@ -294,10 +235,10 @@ export async function POST(request) {
       metadata: {
         action: 'email-change-complete',
         challengeJti,
-        googleProviderCleanupRequired,
-        googleProviderDetached,
-        googleProviderEmailMismatch: googleProviderCleanupRequired,
-        googleProviderEmail: googleProviderEmail || null,
+        googleProviderCleanupRequired: false,
+        googleProviderDetached: false,
+        googleProviderEmailMismatch: false,
+        googleProviderEmail: null,
         previousEmail,
         sessionJti,
         serverSessionRevocationFailed,

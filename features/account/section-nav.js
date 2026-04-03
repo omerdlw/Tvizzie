@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 import { ACCOUNT_ROUTE_SHELL_CLASS } from './utils'
 
 const SECTION_ITEMS = [

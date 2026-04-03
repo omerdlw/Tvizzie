@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 
 import { getMovieComputedData } from '@/features/movie/utils'
-import { TMDB_IMG } from '@/lib/constants'
-import { getMovieBase, getMovieSecondary } from '@/lib/tmdb/server'
+import { TMDB_IMG } from '@/core/constants'
+import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server'
 
 import Client from './client'
 

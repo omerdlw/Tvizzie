@@ -1,5 +1,5 @@
-import { TMDB_IMG } from '@/lib/constants'
-import { formatRuntime, uniqueBy } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { formatRuntime, uniqueBy } from '@/core/utils'
 
 const MAX_CAST = 14
 const MAX_WRITERS = 10

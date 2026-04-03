@@ -5,7 +5,7 @@ import { forwardRef, useMemo } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { ChevronDown } from 'lucide-react'
 
-import { Z_INDEX } from '@/lib/constants'
+import { Z_INDEX } from '@/core/constants'
 
 import Checkbox from '../checkbox'
 import {

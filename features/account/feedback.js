@@ -1,6 +1,6 @@
 'use client'
 
-import { EVENT_TYPES, globalEvents } from '@/lib/events'
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events'
 
 const DEFAULT_PRIORITY = 112
 const DEFAULT_THEME_TYPE = 'LOGIN'

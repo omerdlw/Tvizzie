@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server'
 
-import { isReservedAccountSegment } from '@/lib/account/route-segments'
-import { writeAuthAuditLog } from '@/lib/auth/servers/audit/audit-log.server'
-import { ensurePasswordAccountProfile } from '@/lib/auth/servers/account/account-bootstrap.server'
+import { isReservedAccountSegment } from '@/features/account/route-segments'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { ensurePasswordAccountProfile } from '@/core/auth/servers/account/account-bootstrap.server'
 import {
   EMAIL_ACCOUNT_STATES,
   resolveEmailAccountState,
-} from '@/lib/auth/servers/account/account-state.server'
-import { validateStrongPassword } from '@/lib/auth/servers/security/password-security.server'
+} from '@/core/auth/servers/account/account-state.server'
+import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
-import { verifySignUpProofToken } from '@/lib/auth/servers/verification/signup-proof.server'
-import { createAdminAuthFacade } from '@/lib/auth/servers/session/supabase-admin-auth.server'
-import { createAdminClient } from '@/lib/supabase/admin'
+} from '@/core/auth/servers/security/rate-limit.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
+import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server'
+import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server'
+import { createAdminClient } from '@/core/clients/supabase/admin'
 
 const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges'
 const USERNAME_MIN_LENGTH = 3

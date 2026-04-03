@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { fetchAccountActivityFeedServer } from '@/services/account/account-feed.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 
 function normalizeValue(value) {
   return String(value || '').trim()
@@ -21,12 +21,14 @@ export async function GET(request) {
   try {
     const authContext = await requireSessionRequest(request).catch(() => null)
     const { searchParams } = new URL(request.url)
-    const result = await fetchAccountActivityFeedServer({
+    const result = await invokeInternalEdgeFunction('account-activity-feed', {
+      body: {
       cursor: searchParams.get('cursor'),
       pageSize: normalizePageSize(searchParams.get('pageSize'), 20),
       scope: normalizeValue(searchParams.get('scope')) || 'user',
       userId: normalizeValue(searchParams.get('userId')),
       viewerId: authContext?.userId || null,
+      },
     })
 
     return NextResponse.json(result)

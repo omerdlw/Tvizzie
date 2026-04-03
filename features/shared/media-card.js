@@ -5,7 +5,7 @@ import { forwardRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { cn, getImagePlaceholderDataUrl } from '@/lib/utils'
+import { cn, getImagePlaceholderDataUrl } from '@/core/utils'
 import Tooltip from '@/ui/elements/tooltip'
 import Icon from '@/ui/icon'
 

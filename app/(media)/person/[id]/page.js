@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { getPersonBase, getPersonSecondary } from '@/lib/tmdb/server'
+import { TMDB_IMG } from '@/core/constants'
+import { getPersonBase, getPersonSecondary } from '@/core/clients/tmdb/server'
 import Client from './client'
 
 export async function generateMetadata({ params }) {

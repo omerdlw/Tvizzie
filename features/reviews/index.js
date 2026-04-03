@@ -2,11 +2,11 @@
 
 import { useCallback } from 'react'
 
-import { AuthGate } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
+import { AuthGate } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { Button } from '@/ui/elements'
 
 import ReviewAuthFallback from './parts/review-auth-fallback'
-import ReviewComposer from './parts/review-composer'
 import ReviewHeader from './parts/review-header'
 import ReviewList from './parts/review-list'
 import { useMediaReviews } from './use-media-reviews'
@@ -24,25 +24,14 @@ export default function MediaReviews({
     handleDelete,
     handleLike,
     handleSignInRequest,
-    handleSubmit,
-    isEditing,
     isLoading,
-    isSpoiler,
     loadError,
-    mediaTypeLabel,
     navHeight,
-    normalizedReviewLength,
     ownReview,
     applyOptimisticReviewUpdate,
-    rating,
     ratingStats,
-    reviewText,
     reviews,
-    setIsEditing,
-    setIsSpoiler,
     setNavConfirmation,
-    setRating,
-    setReviewText,
     sortedReviews,
     userProfile,
   } = useMediaReviews({
@@ -55,25 +44,67 @@ export default function MediaReviews({
   })
   const { openModal } = useModal()
 
-  const handleEditReview = useCallback(
-    (review) => {
+  const buildReviewUser = useCallback(
+    (review = null) => {
+      if (!currentUserId) {
+        return null
+      }
+
+      return {
+        ...(review?.user || {}),
+        ...(userProfile || {}),
+        id: currentUserId,
+      }
+    },
+    [currentUserId, userProfile]
+  )
+
+  const openReviewModal = useCallback(
+    (review = null) => {
+      if (!currentUserId) {
+        handleSignInRequest()
+        return
+      }
+
+      const targetReview = review || ownReview || null
+
       openModal('REVIEW_EDITOR_MODAL', 'center', {
         data: {
-          onSuccess: (updatedReview) => {
-            applyOptimisticReviewUpdate(review, updatedReview)
+          media: {
+            entityId,
+            entityType,
+            posterPath,
+            title,
           },
-          review,
-          user: currentUserId
-            ? {
-                ...(review.user || {}),
-                ...(userProfile || {}),
-                id: currentUserId,
+          onSuccess: targetReview
+            ? (updatedReview) => {
+                applyOptimisticReviewUpdate(targetReview, updatedReview)
               }
             : null,
+          review: targetReview,
+          user: buildReviewUser(targetReview),
         },
       })
     },
-    [applyOptimisticReviewUpdate, currentUserId, openModal, userProfile]
+    [
+      applyOptimisticReviewUpdate,
+      buildReviewUser,
+      currentUserId,
+      entityId,
+      entityType,
+      handleSignInRequest,
+      openModal,
+      ownReview,
+      posterPath,
+      title,
+    ]
+  )
+
+  const handleEditReview = useCallback(
+    (review) => {
+      openReviewModal(review)
+    },
+    [openReviewModal]
   )
 
   const handleDeleteRequest = useCallback(() => {
@@ -108,23 +139,25 @@ export default function MediaReviews({
       <AuthGate
         fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}
       >
-        {(!ownReview || isEditing) && (
-          <ReviewComposer
-            isEditing={isEditing}
-            isSpoiler={isSpoiler}
-            mediaTypeLabel={mediaTypeLabel}
-            normalizedReviewLength={normalizedReviewLength}
-            onSubmit={handleSubmit}
-            ownReview={ownReview}
-            rating={rating}
-            reviewText={reviewText}
-            setIsEditing={setIsEditing}
-            setIsSpoiler={setIsSpoiler}
-            setRating={setRating}
-            setReviewText={setReviewText}
-            title={title}
-          />
-        )}
+        <div className="flex items-center justify-between gap-3 border border-white/5 bg-white/5 p-3 sm:p-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white">
+              {ownReview ? 'Update your review' : 'Rate or review this title'}
+            </p>
+            <p className="text-xs text-white/70">
+              {ownReview
+                ? 'Open the review modal to edit your score or text.'
+                : 'Share your rating and thoughts from the review modal.'}
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="h-10 shrink-0 px-4 text-[11px] font-semibold tracking-widest uppercase"
+            onClick={() => openReviewModal()}
+          >
+            {ownReview ? 'Edit Review' : 'Add Review'}
+          </Button>
+        </div>
       </AuthGate>
 
       <ReviewList

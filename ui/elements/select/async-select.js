@@ -5,7 +5,7 @@ import { forwardRef, useEffect, useState } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { Check, ChevronDown, Loader2 } from 'lucide-react'
 
-import { Z_INDEX } from '@/lib/constants'
+import { Z_INDEX } from '@/core/constants'
 
 import Input from '../input'
 import { cn, resolveNestedClassName, resolveSlotClasses } from '../utils'

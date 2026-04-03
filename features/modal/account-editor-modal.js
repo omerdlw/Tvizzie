@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 
-import { useAccountClient } from '@/modules/account'
-import Container from '@/modules/modal/container'
-import { useToast } from '@/modules/notification/hooks'
+import { useAccountClient } from '@/core/modules/account'
+import Container from '@/core/modules/modal/container'
+import { useToast } from '@/core/modules/notification/hooks'
 import { Button, Input, Textarea } from '@/ui/elements'
 
 export default function AccountEditorModal({ close, data, header }) {

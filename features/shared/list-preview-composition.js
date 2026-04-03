@@ -1,7 +1,7 @@
 'use client'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { cn } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { cn } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 function getPreviewImage(item) {

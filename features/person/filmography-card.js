@@ -1,5 +1,5 @@
 import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/lib/constants'
+import { TMDB_IMG } from '@/core/constants'
 
 function getCreditRole(credit) {
   if (credit?.character) {

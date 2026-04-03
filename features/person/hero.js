@@ -4,8 +4,8 @@ import { useState } from 'react'
 
 import Image from 'next/image'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { getImagePlaceholderDataUrl } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { getImagePlaceholderDataUrl } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 function resolveProfileImage(path) {

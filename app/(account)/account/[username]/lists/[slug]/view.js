@@ -1,13 +1,14 @@
 import AccountPageShell from '@/features/account/page-shell'
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils'
 import AccountSectionState from '@/features/account/section-state'
 import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback'
-import ReviewComposer from '@/features/reviews/parts/review-composer'
 import ReviewHeader from '@/features/reviews/parts/review-header'
 import ReviewList from '@/features/reviews/parts/review-list'
 import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/lib/constants'
-import { AuthGate } from '@/modules/auth'
+import { TMDB_IMG } from '@/core/constants'
+import { AuthGate } from '@/core/modules/auth'
+import { Button } from '@/ui/elements'
 import Registry from './registry'
 
 const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`
@@ -24,7 +25,11 @@ function getPosterUrl(item) {
   return null
 }
 
-function ListDetailMediaGrid({ items = [] }) {
+function ListDetailMediaGrid({
+  isOwner = false,
+  items = [],
+  onRemoveItem = null,
+}) {
   if (items.length === 0) {
     return (
       <div className="border border-white/5  px-4 py-5 text-sm text-white">
@@ -49,6 +54,15 @@ function ListDetailMediaGrid({ items = [] }) {
             imageAlt={title}
             imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
             fallbackIconClassName="text-white/50"
+            topOverlay={
+              isOwner && typeof onRemoveItem === 'function' ? (
+                <AccountProfileMediaActions
+                  media={item}
+                  onRemoveItem={onRemoveItem}
+                  removeLabel={`Remove ${title} from this list`}
+                />
+              ) : null
+            }
             tooltipText={title}
           />
         )
@@ -62,7 +76,6 @@ function ListDetailMediaGrid({ items = [] }) {
 export default function ListView({
   auth,
   canShowList,
-  requiresFollowForProfileInteractions = false,
   followerCount,
   followingCount,
   followState,
@@ -74,18 +87,17 @@ export default function ListView({
   handleFollow,
   handleLikeReview,
   handleOpenFollowList,
+  handleOpenReviewComposer,
+  handleRemoveListItem,
   handleSignInRequest,
-  handleSubmitReview,
   handleToggleLike,
-  isBioMaskOpen,
-  isEditingReview,
+  isBioSurfaceOpen,
   isFollowLoading,
   isLiked,
   isLikeLoading,
   isOwner,
   isPageLoading,
   isResolvingProfile,
-  isSpoiler,
   itemRemoveConfirmation,
   likeCount,
   list,
@@ -95,18 +107,11 @@ export default function ListView({
   ownReview,
   pendingFollowRequestCount,
   profile,
-  rating,
   ratingStats,
   resolveError,
   resolvedUserId,
   reviews,
-  reviewState,
-  reviewText,
-  setIsBioMaskOpen,
-  setIsEditingReview,
-  setIsSpoiler,
-  setRating,
-  setReviewText,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   userProfile,
@@ -123,7 +128,7 @@ export default function ListView({
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
       handleToggleLike={handleToggleLike}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isLiked={isLiked}
       isLikeLoading={isLikeLoading}
@@ -136,9 +141,8 @@ export default function ListView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      reviewState={reviewState}
       showProfileFollowAction={!isOwner}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -157,7 +161,7 @@ export default function ListView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}
@@ -184,7 +188,11 @@ export default function ListView({
           </header>
 
             <div className={`${LIST_SECTION_SHELL_CLASS} pb-12`}>
-              <ListDetailMediaGrid items={listItems} />
+              <ListDetailMediaGrid
+                isOwner={isOwner}
+                items={listItems}
+                onRemoveItem={handleRemoveListItem}
+              />
             </div>
 
             <div className={`${LIST_SECTION_SHELL_CLASS} pb-20 pt-4`}>
@@ -202,23 +210,25 @@ export default function ListView({
                     />
                   }
                 >
-                  {(!ownReview || isEditingReview) && (
-                    <ReviewComposer
-                      isEditing={isEditingReview}
-                      isSpoiler={isSpoiler}
-                      mediaTypeLabel="List"
-                      normalizedReviewLength={reviewText.trim().length}
-                      onSubmit={handleSubmitReview}
-                      ownReview={ownReview}
-                      rating={rating}
-                      reviewText={reviewText}
-                      setIsEditing={setIsEditingReview}
-                      setIsSpoiler={setIsSpoiler}
-                      setRating={setRating}
-                      setReviewText={setReviewText}
-                      title={list.title}
-                    />
-                  )}
+                  <div className="flex items-center justify-between gap-3 border border-white/5 bg-white/5 p-3 sm:p-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white">
+                        {ownReview ? 'Update your list review' : 'Rate or review this list'}
+                      </p>
+                      <p className="text-xs text-white/70">
+                        {ownReview
+                          ? 'Open the review modal to edit your score or text.'
+                          : 'Share your rating and thoughts from the review modal.'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      className="h-10 shrink-0 px-4 text-[11px] font-semibold tracking-widest uppercase"
+                      onClick={handleOpenReviewComposer}
+                    >
+                      {ownReview ? 'Edit Review' : 'Add Review'}
+                    </Button>
+                  </div>
                 </AuthGate>
               )}
               <ReviewList

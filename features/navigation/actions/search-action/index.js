@@ -4,10 +4,10 @@ import { startTransition, useEffect, useState } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 
-import { DURATION, EASING } from '@/lib/constants'
-import { useDebounce } from '@/lib/hooks'
-import { cn } from '@/lib/utils'
-import { useNavigation } from '@/modules/nav/hooks'
+import { DURATION, EASING } from '@/core/constants'
+import { useDebounce } from '@/core/hooks'
+import { cn } from '@/core/utils'
+import { useNavigation } from '@/core/modules/nav/hooks'
 import { Input } from '@/ui/elements'
 import Icon from '@/ui/icon'
 

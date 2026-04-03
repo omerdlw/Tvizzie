@@ -1,5 +1,5 @@
 import Client from './client'
-import { getUsernameAccountActivityRouteData } from '@/services/account/account-route-data.server'
+import { getUsernameAccountActivityRouteData } from '@/core/services/account/account-route-data.server'
 
 export default async function Page({ params, searchParams }) {
   const { username } = await params

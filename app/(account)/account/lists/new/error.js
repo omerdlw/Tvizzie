@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 
-import { FullscreenState } from '@/ui/fullscreen-state'
+import { FullscreenState } from '@/ui/states/fullscreen-state'
 
 export default function Error({ error, reset }) {
   useEffect(() => {

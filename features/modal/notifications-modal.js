@@ -3,24 +3,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
-import Container from '@/modules/modal/container'
-import { useAuth, useAuthSessionReady } from '@/modules/auth'
+import Container from '@/core/modules/modal/container'
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
 import {
   NOTIFICATION_TYPES,
   deleteNotification,
   markAllAsRead,
   markAsRead,
   subscribeToNotifications,
-} from '@/services/notifications/notifications.service'
+} from '@/core/services/notifications/notifications.service'
 import {
   applyAvatarFallback,
   cn,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/lib/utils'
+} from '@/core/utils'
 import { Button } from '@/ui/elements'
 import Icon from '@/ui/icon'
-import { Spinner } from '@/ui/spinner/index'
+import { Spinner } from '@/ui/loadings/spinner'
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return ''

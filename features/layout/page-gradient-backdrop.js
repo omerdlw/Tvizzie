@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@/lib/utils'
-import { useNavHeight } from '@/modules/nav/hooks'
+import { cn } from '@/core/utils'
+import { useNavHeight } from '@/core/modules/nav/hooks'
 
 export const PAGE_GRADIENT_BACKDROP_CLASS =
   'pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.14)_20vh,rgba(0,0,0,0.38)_42vh,rgba(0,0,0,0.78)_58vh,#0A0A0A_70vh,#0A0A0A_100%)]'

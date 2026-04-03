@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Carousel from '@/features/shared/carousel'
 import MediaCard from '@/features/shared/media-card'
 import SegmentedControl from '@/features/shared/segmented-control'
-import { useModal } from '@/modules/modal/context'
+import { useModal } from '@/core/modules/modal/context'
 import Icon from '@/ui/icon'
 
 function getAvailableTypes(videos) {

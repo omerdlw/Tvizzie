@@ -1,8 +1,8 @@
 'use client'
 
-import { getUserAvatarUrl } from '@/lib/utils'
+import { getUserAvatarUrl } from '@/core/utils'
 import AccountAction from '@/features/navigation/actions/account-action'
-import { useRegistry } from '@/modules/registry'
+import { useRegistry } from '@/core/modules/registry'
 
 export default function Registry({
   authIsAuthenticated,

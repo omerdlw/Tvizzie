@@ -1,5 +1,5 @@
-import { FullscreenState } from '@/ui/fullscreen-state'
-import { Spinner } from '@/ui/spinner/index'
+import { FullscreenState } from '@/ui/states/fullscreen-state'
+import { Spinner } from '@/ui/loadings/spinner'
 
 export function Skeleton() {
   return (

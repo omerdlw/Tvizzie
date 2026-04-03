@@ -4,10 +4,10 @@ import { useEffect } from 'react'
 
 import { usePathname } from 'next/navigation'
 
-import { useBackgroundActions } from '@/modules/background/context'
-import { ModuleError } from '@/modules/error-boundary'
-import { useNavHeight } from '@/modules/nav/hooks'
-import { Transition, TransitionWrapper } from '@/modules/transition'
+import { useBackgroundActions } from '@/core/modules/background/context'
+import { ModuleError } from '@/core/modules/error-boundary'
+import { useNavHeight } from '@/core/modules/nav/hooks'
+import { Transition, TransitionWrapper } from '@/core/modules/transition'
 
 export default function Template({ children }) {
   const { resetBackground } = useBackgroundActions()

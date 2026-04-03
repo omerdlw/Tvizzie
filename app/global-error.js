@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react'
 
-import { FullscreenState } from '@/ui/fullscreen-state'
-import { EVENT_TYPES, globalEvents } from '@/lib/events'
-import { getErrorReporter } from '@/modules/error-boundary/reporter'
+import { FullscreenState } from '@/ui/states/fullscreen-state'
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events'
+import { getErrorReporter } from '@/core/modules/error-boundary/reporter'
 
 export default function GlobalError({ error, reset }) {
   useEffect(() => {

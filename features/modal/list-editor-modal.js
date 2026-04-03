@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 
-import Container from '@/modules/modal/container'
-import { useToast } from '@/modules/notification/hooks'
-import { createUserList, updateUserList } from '@/services/media/lists.service'
+import Container from '@/core/modules/modal/container'
+import { useToast } from '@/core/modules/notification/hooks'
+import { createUserList, updateUserList } from '@/core/services/media/lists.service'
 import { Button, Input, Textarea } from '@/ui/elements'
 
 export default function ListEditorModal({ close, data, header }) {

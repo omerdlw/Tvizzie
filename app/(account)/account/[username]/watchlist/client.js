@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { useAuth } from '@/modules/auth'
+import { useAuth } from '@/core/modules/auth'
 import WatchlistView from './view'
 
 export default function Client({
@@ -23,7 +23,7 @@ export default function Client({
     handleOpenFollowList,
     handleRequestRemoveWatchlistItem,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -35,7 +35,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
     watchlist,
@@ -62,7 +62,7 @@ export default function Client({
       handleOpenFollowList={handleOpenFollowList}
       handleRequestRemoveWatchlistItem={handleRequestRemoveWatchlistItem}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -74,7 +74,7 @@ export default function Client({
       profile={profile}
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       watchlistCount={watchlistCount}

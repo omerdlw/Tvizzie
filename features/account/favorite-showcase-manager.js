@@ -1,6 +1,6 @@
 'use client'
 
-import { MediaGrid } from '@/features/account/media-grid'
+import { MediaGrid } from '@/features/account/sections/media-grid'
 import Icon from '@/ui/icon'
 import { Button } from '@/ui/elements'
 import AccountSectionLayout from './section-layout'

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 
-import { assertPasswordProviderLinked } from '@/lib/auth/servers/account/account-deletion.server'
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/lib/auth/servers/security/csrf.server'
-import { verifyPasswordWithIdentityToolkit } from '@/lib/auth/servers/security/password-security.server'
+import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
+import { verifyPasswordWithIdentityToolkit } from '@/core/auth/servers/security/password-security.server'
 import {
   createRecentReauthToken,
   setRecentReauthCookie,
-} from '@/lib/auth/servers/security/recent-reauth.server'
+} from '@/core/auth/servers/security/recent-reauth.server'
 
 function normalizeEmail(value) {
   return String(value || '')

@@ -6,8 +6,8 @@ import Image from 'next/image'
 
 import PersonBio from '@/features/person/bio'
 import SocialLinks from '@/features/person/social-links'
-import { TMDB_IMG } from '@/lib/constants'
-import { getImagePlaceholderDataUrl } from '@/lib/utils'
+import { TMDB_IMG } from '@/core/constants'
+import { getImagePlaceholderDataUrl } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 function getProfileImage(path) {

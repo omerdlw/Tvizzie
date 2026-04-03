@@ -1,7 +1,7 @@
 'use client'
 
 import AuthGoogleAction from '@/features/navigation/actions/auth-google-action'
-import { useRegistry } from '@/modules/registry'
+import { useRegistry } from '@/core/modules/registry'
 
 export default function Registry({
   authIsReady,

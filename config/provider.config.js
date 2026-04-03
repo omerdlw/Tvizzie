@@ -16,7 +16,7 @@ function resolveProvider(value, allowedValues = [], fallback) {
 
 export function getDataProvider() {
   return resolveProvider(
-    process.env.NEXT_PUBLIC_DATA_PROVIDER || process.env.DATA_PROVIDER,
+    process.env.DATA_PROVIDER,
     ['supabase'],
     'supabase'
   )
@@ -24,7 +24,7 @@ export function getDataProvider() {
 
 export function getAuthProvider() {
   return resolveProvider(
-    process.env.NEXT_PUBLIC_AUTH_PROVIDER || process.env.AUTH_PROVIDER,
+    process.env.AUTH_PROVIDER,
     ['supabase'],
     'supabase'
   )
@@ -32,7 +32,7 @@ export function getAuthProvider() {
 
 export function getRealtimeMode() {
   return resolveProvider(
-    process.env.NEXT_PUBLIC_REALTIME_MODE || process.env.REALTIME_MODE,
+    process.env.REALTIME_MODE,
     ['polling', 'realtime'],
     'polling'
   )

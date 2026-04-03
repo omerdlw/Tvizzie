@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import MediaPosterCard from '@/features/shared/media-poster-card'
-import { DURATION } from '@/lib/constants'
-import { cn } from '@/lib/utils'
-import { TmdbService } from '@/services/tmdb/tmdb.service'
+import { DURATION } from '@/core/constants'
+import { cn } from '@/core/utils'
+import { TmdbService } from '@/core/services/tmdb/tmdb.service'
 import Icon from '@/ui/icon'
 
 const STAGGER_CONTAINER = {

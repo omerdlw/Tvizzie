@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { getPreferredMovieBackground } from '@/features/movie/utils'
-import { TMDB_IMG } from '@/lib/constants'
+import { TMDB_IMG } from '@/core/constants'
 
 import MovieView from './view'
 

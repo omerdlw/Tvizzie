@@ -1,8 +1,9 @@
 'use client'
 
 import { normalizeEmail } from './utils'
-import AuthVerificationSurface from '@/features/navigation/surfaces/auth-verification-surface'
-import { isPermissionDeniedError } from '@/lib/data/errors'
+import AuthVerificationForm from '@/features/auth/auth-verification-form'
+import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface'
+import { isPermissionDeniedError } from '@/core/utils/errors'
 
 export function filterCollectionItems(items, itemToRemove) {
   const removedItemId = String(
@@ -65,6 +66,7 @@ export async function openAuthVerificationPrompt({
       data: {
         autoSendOnOpen,
         email: verificationEmail,
+        formComponent: AuthVerificationForm,
         initialChallenge,
         purpose,
       },

@@ -26,12 +26,12 @@ import {
   normalizeOptionalText,
   normalizeProviderIds,
 } from '@/features/account/utils'
-import { logDataError } from '@/lib/data/errors'
-import { useAccount } from '@/modules/account'
-import { useAuth } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useNavigationActions } from '@/modules/nav/context'
-import { useToast } from '@/modules/notification/hooks'
+import { logDataError } from '@/core/utils/errors'
+import { useAccount } from '@/core/modules/account'
+import { useAuth } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useNavigationActions } from '@/core/modules/nav/context'
+import { useToast } from '@/core/modules/notification/hooks'
 
 import AccountEditView from './view'
 

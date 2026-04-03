@@ -1,9 +1,9 @@
 import FavoriteShowcaseManager from '@/features/account/favorite-showcase-manager'
-import AccountMediaGridPage from '@/features/account/media-grid-page'
+import AccountMediaGridPage from '@/features/account/sections/media-grid-page'
 import AccountPageShell from '@/features/account/page-shell'
-import AccountPaginatedListGrid from '@/features/account/paginated-list-grid'
-import AccountProfileMediaActions from '@/features/account/profile-media-actions'
-import AccountReviewFeed from '@/features/account/review-feed'
+import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid'
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
+import AccountReviewFeed from '@/features/account/sections/review-feed'
 import AccountSectionState from '@/features/account/section-state'
 import Registry from './registry'
 
@@ -25,7 +25,7 @@ export default function LikesView({
   handleSignInRequest,
   handleToggleShowcase,
   hasMoreReviews,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFollowLoading,
   isLikedListsLoading,
   isOwner,
@@ -47,7 +47,7 @@ export default function LikesView({
   resolvedUserId,
   reviews,
   reviewsError,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   showcaseMap,
   unfollowConfirmation,
   username,
@@ -65,7 +65,7 @@ export default function LikesView({
       handleOpenFollowList={handleOpenFollowList}
       handleSegmentChange={handleSegmentChange}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -74,7 +74,7 @@ export default function LikesView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -93,7 +93,7 @@ export default function LikesView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

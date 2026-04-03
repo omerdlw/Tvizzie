@@ -1,10 +1,10 @@
-import AccountActivityFeed from '@/features/account/activity-feed'
-import AccountFavoritesSection from '@/features/account/favorites-section'
+import AccountActivityFeed from '@/features/account/sections/activity-feed'
+import AccountFavoritesSection from '@/features/account/profile/favorites-section'
 import AccountPageShell from '@/features/account/page-shell'
-import AccountProfileMediaActions from '@/features/account/profile-media-actions'
-import AccountReviewFeed from '@/features/account/review-feed'
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
+import AccountReviewFeed from '@/features/account/sections/review-feed'
 import AccountSectionState from '@/features/account/section-state'
-import AccountWatchlistSection from '@/features/account/watchlist-section'
+import AccountWatchlistSection from '@/features/account/sections/watchlist-section'
 import Registry from './registry'
 
 const OVERVIEW_MEDIA_LIMIT = 5
@@ -36,7 +36,7 @@ export default function AccountView({
   handleSignInRequest,
   hasMoreAuthoredReviews,
   hasMoreActivityItems,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFollowLoading,
   isOwner,
   isPageLoading,
@@ -51,7 +51,7 @@ export default function AccountView({
   profileHandle,
   resolveError,
   resolvedUserId,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   watched,
@@ -74,7 +74,7 @@ export default function AccountView({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -84,7 +84,7 @@ export default function AccountView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -103,7 +103,7 @@ export default function AccountView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

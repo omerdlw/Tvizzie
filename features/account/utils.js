@@ -1,12 +1,12 @@
-import { createCsrfHeaders } from '@/lib/auth/clients/csrf.client'
-import { getUserAvatarUrl } from '@/lib/utils'
-import { FOLLOW_STATUSES } from '@/services/social/follows.service'
+import { createCsrfHeaders } from '@/core/auth/clients/csrf.client'
+import { getUserAvatarUrl } from '@/core/utils'
+import { FOLLOW_STATUSES } from '@/core/services/social/follows.service'
 
 export {
   ACCOUNT_ROUTE_MAX_WIDTH_CLASS,
   ACCOUNT_ROUTE_SHELL_CLASS,
   ACCOUNT_SECTION_SHELL_CLASS,
-} from '@/lib/constants'
+} from '@/core/constants'
 
 export const EDIT_TABS = [
   { key: 'general', icon: 'solar:user-circle-bold', label: 'General Info' },

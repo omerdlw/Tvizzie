@@ -5,16 +5,10 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { AnimatePresence, motion } from 'framer-motion'
-
-import { DURATION, EASING, TMDB_IMG } from '@/lib/constants'
+import { TMDB_IMG } from '@/core/constants'
 import Icon from '@/ui/icon'
 
 const MAX_VISIBLE = 6
-const FROSTED_BACKDROP_STYLE = {
-  WebkitBackdropFilter: 'blur(12px)',
-  backdropFilter: 'blur(12px)',
-}
 
 function PersonCard({
   person,
@@ -31,7 +25,7 @@ function PersonCard({
     <Link
       href={`/person/${person.id}`}
       onDragStart={(event) => event.preventDefault()}
-      className="surface-muted group flex items-center gap-2 p-1 pr-4 backdrop-blur-sm rounded-[16px] transition-all duration-(--motion-duration-normal)"
+      className="surface-muted group flex items-center gap-2 p-1 pr-4 backdrop-blur-sm! rounded-[16px] transition-all duration-(--motion-duration-normal)"
     >
       <div className="relative h-20 w-16 shrink-0 overflow-hidden">
         {imageSrc ? (
@@ -94,37 +88,16 @@ export default function CastSection({ cast, headerAction = null }) {
         )}
       </div>
 
-      <motion.div layout className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <AnimatePresence>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {visibleCast.map((member, index) => (
-            <motion.div
-              key={member.id}
-              layout
-              initial={{ scale: 0.9, y: 10 }}
-              animate={{
-                scale: 1,
-                y: 0,
-                transitionEnd: { transform: 'none' },
-              }}
-              exit={{ scale: 0.9, y: 10 }}
-              transition={{
-                duration: DURATION.FAST,
-                ease: EASING.STANDARD,
-                delay:
-                  index >= MAX_VISIBLE
-                    ? (index - MAX_VISIBLE) * DURATION.STAGGER
-                    : 0,
-              }}
-            >
-              <PersonCard
+            <PersonCard
+                key={index}
                 person={member}
                 imagePriority={index < 4}
                 imageFetchPriority={index < 4 ? 'high' : undefined}
               />
-            </motion.div>
           ))}
-        </AnimatePresence>
-      </motion.div>
+      </div>
     </section>
   )
 }

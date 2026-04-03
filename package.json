@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:supabase:smoke": "node scripts/supabase-smoke.mjs",
     "test:auth:signup-smoke": "node scripts/auth-signup-complete-smoke.mjs",
     "test:auth:smoke": "node scripts/supabase-auth-smoke.mjs"
   },

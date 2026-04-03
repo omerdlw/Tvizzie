@@ -6,8 +6,8 @@ import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/lib/utils'
-import Container from '@/modules/modal/container'
+} from '@/core/utils'
+import Container from '@/core/modules/modal/container'
 import Icon from '@/ui/icon'
 
 function buildUserActionMap(socialProof) {

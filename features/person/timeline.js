@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { motion } from 'framer-motion'
 
-import { DURATION, EASING } from '@/lib/constants'
+import { DURATION, EASING } from '@/core/constants'
 
 import MediaThumb from './media-thumb'
 import { getTimelineCredits } from './utils'

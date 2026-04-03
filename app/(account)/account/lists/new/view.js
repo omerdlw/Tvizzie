@@ -3,8 +3,8 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 
-import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/lib/constants'
-import { cn, formatYear } from '@/lib/utils'
+import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/core/constants'
+import { cn, formatYear } from '@/core/utils'
 import { Button, Input, Textarea } from '@/ui/elements'
 import Icon from '@/ui/icon'
 
@@ -182,9 +182,7 @@ export default function ListCreatorView({
   )
 
   return (
-    <main className="relative min-h-screen overflow-hidden  text-white">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgb(229, 9, 20),transparent_30%),radial-gradient(circle_at_85%_18%,rgb(255, 255, 255),transparent_25%),linear-gradient(180deg,#090909_0%,#020202_100%)]" />
-
+    <main className="relative min-h-screen overflow-hidden text-white">
       <div
         className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-4 pb-20 pt-8 sm:px-8 sm:pb-24 sm:pt-10`}
       >

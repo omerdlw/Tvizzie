@@ -17,10 +17,10 @@ import {
   getCurrentPathWithSearch,
 } from '@/features/auth'
 import { useAccountEditData } from '@/features/account/hooks'
-import { useAuth } from '@/modules/auth'
-import { useToast } from '@/modules/notification/hooks'
-import { createUserListWithItems } from '@/services/media/lists.service'
-import { TmdbService } from '@/services/tmdb/tmdb.service'
+import { useAuth } from '@/core/modules/auth'
+import { useToast } from '@/core/modules/notification/hooks'
+import { createUserListWithItems } from '@/core/services/media/lists.service'
+import { TmdbService } from '@/core/services/tmdb/tmdb.service'
 import AccountRouteSkeleton from '@/ui/skeletons/views/account'
 
 import Registry from './registry'

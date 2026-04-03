@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import { ReactLenis } from 'lenis/react'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION } from '@/core/constants'
 
 function isReloadNavigation() {
   if (typeof window === 'undefined') return false

@@ -16,9 +16,9 @@ import {
 } from './utils'
 import { clearAccountFeedback, emitAccountFeedback } from './feedback'
 import { AUTH_ROUTES, buildAuthHref, requestVerificationCode } from '@/features/auth'
-import { logAuthAuditEvent } from '@/lib/auth/clients/audit.client'
-import { useAccountClient } from '@/modules/account'
-import { useAuthSessionReady } from '@/modules/auth'
+import { logAuthAuditEvent } from '@/core/auth/clients/audit.client'
+import { useAccountClient } from '@/core/modules/account'
+import { useAuthSessionReady } from '@/core/modules/auth'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 

@@ -3,15 +3,15 @@ import { NextResponse } from 'next/server'
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/lib/auth/servers/security/rate-limit.server'
+} from '@/core/auth/servers/security/rate-limit.server'
 import {
   EMAIL_ACCOUNT_STATES,
   resolveEmailAccountState,
-} from '@/lib/auth/servers/account/account-state.server'
-import { getRequestContext } from '@/lib/auth/servers/session/request-context.server'
+} from '@/core/auth/servers/account/account-state.server'
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
 import {
   lookupPasswordAccountByEmail,
-} from '@/lib/auth/servers/verification/password-account.server'
+} from '@/core/auth/servers/verification/password-account.server'
 
 const INTENTS = Object.freeze({
   PASSWORD_RESET: 'password-reset',

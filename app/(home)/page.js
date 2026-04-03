@@ -4,7 +4,7 @@ import {
   discoverContent,
   getTrending,
   getGenres,
-} from '@/lib/tmdb/server'
+} from '@/core/clients/tmdb/server'
 
 export default async function Page() {
   const [dailyTrendingResponse, weeklyTrendingResponse, discoverResponse, genresResponse] =

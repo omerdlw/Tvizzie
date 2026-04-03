@@ -1,2 +1,0 @@
--- Canonical auth naming is now defined directly in foundational migrations.
--- Kept as a no-op migration placeholder for migration history continuity.

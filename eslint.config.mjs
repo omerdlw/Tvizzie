@@ -179,6 +179,7 @@ export default [
       'react-hooks/exhaustive-deps': 'warn',
       'import/no-unresolved': 'error',
       'local/convention': 'error',
+      'no-alert': 'error',
       'no-unused-vars': 'warn',
       'react/react-in-jsx-scope': 'off',
       'react/display-name': 'off',
@@ -203,7 +204,7 @@ export default [
     },
   },
   {
-    files: ['modules/**/*.{js,mjs,cjs,jsx,tsx,ts}'],
+    files: ['core/modules/**/*.{js,mjs,cjs,jsx,tsx,ts}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -218,8 +219,8 @@ export default [
               message: 'Modules cannot depend on feature layer code.',
             },
             {
-              group: ['@/services', '@/services/*'],
-              message: 'Modules cannot depend on project service layer code.',
+              group: ['@/core/services', '@/core/services/*'],
+              message: 'Core modules cannot depend on project service layer code.',
             },
           ],
         },
@@ -228,9 +229,9 @@ export default [
   },
   {
     files: [
-      'modules/nav/item.js',
-      'modules/nav/hooks/use-navigation-display.js',
-      'modules/nav/hooks/use-navigation-status.js',
+      'core/modules/nav/item.js',
+      'core/modules/nav/hooks/use-navigation-display.js',
+      'core/modules/nav/hooks/use-navigation-status.js',
     ],
     rules: {
       'no-restricted-imports': [
@@ -242,8 +243,8 @@ export default [
               message: 'Modules cannot depend on app entrypoints.',
             },
             {
-              group: ['@/services', '@/services/*'],
-              message: 'Modules cannot depend on project service layer code.',
+              group: ['@/core/services', '@/core/services/*'],
+              message: 'Core modules cannot depend on project service layer code.',
             },
           ],
         },
@@ -251,7 +252,7 @@ export default [
     },
   },
   {
-    files: ['services/**/*.{js,mjs,cjs,jsx,tsx,ts}'],
+    files: ['core/services/**/*.{js,mjs,cjs,jsx,tsx,ts}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -266,8 +267,32 @@ export default [
               message: 'Services cannot depend on feature layer code.',
             },
             {
-              group: ['@/modules', '@/modules/*'],
-              message: 'Services cannot depend on module layer code.',
+              group: ['@/core/modules', '@/core/modules/*'],
+              message: 'Core services cannot depend on module layer code.',
+            },
+            {
+              group: ['@/ui', '@/ui/*'],
+              message: 'Services cannot depend on UI layer code.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['core/services/account/account.service.js'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app', '@/app/*'],
+              message: 'Services cannot depend on app entrypoints.',
+            },
+            {
+              group: ['@/core/modules', '@/core/modules/*'],
+              message: 'Core services cannot depend on module layer code.',
             },
             {
               group: ['@/ui', '@/ui/*'],
@@ -294,11 +319,11 @@ export default [
               message: 'UI cannot depend on feature layer code.',
             },
             {
-              group: ['@/modules', '@/modules/*'],
+              group: ['@/core/modules', '@/core/modules/*'],
               message: 'UI cannot depend on module layer code.',
             },
             {
-              group: ['@/services', '@/services/*'],
+              group: ['@/core/services', '@/core/services/*'],
               message: 'UI cannot depend on service layer code.',
             },
           ],
@@ -307,7 +332,14 @@ export default [
     },
   },
   {
-    files: ['lib/**/*.{js,mjs,cjs,jsx,tsx,ts}'],
+    files: [
+      'core/auth/**/*.{js,mjs,cjs,jsx,tsx,ts}',
+      'core/clients/**/*.{js,mjs,cjs,jsx,tsx,ts}',
+      'core/constants/**/*.{js,mjs,cjs,jsx,tsx,ts}',
+      'core/hooks/**/*.{js,mjs,cjs,jsx,tsx,ts}',
+      'core/utils/**/*.{js,mjs,cjs,jsx,tsx,ts}',
+      'core/index.js',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -322,12 +354,40 @@ export default [
               message: 'Lib cannot depend on feature layer code.',
             },
             {
-              group: ['@/modules', '@/modules/*'],
-              message: 'Lib cannot depend on module layer code.',
+              group: ['@/core/modules', '@/core/modules/*'],
+              message: 'Core foundational layer cannot depend on module layer code.',
             },
             {
-              group: ['@/services', '@/services/*'],
-              message: 'Lib cannot depend on service layer code.',
+              group: ['@/core/services', '@/core/services/*'],
+              message: 'Core foundational layer cannot depend on service layer code.',
+            },
+            {
+              group: ['@/ui', '@/ui/*'],
+              message: 'Lib cannot depend on UI layer code.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['core/auth/servers/account/account-bootstrap.server.js'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app', '@/app/*'],
+              message: 'Lib cannot depend on app entrypoints.',
+            },
+            {
+              group: ['@/core/modules', '@/core/modules/*'],
+              message: 'Core foundational layer cannot depend on module layer code.',
+            },
+            {
+              group: ['@/core/services', '@/core/services/*'],
+              message: 'Core foundational layer cannot depend on service layer code.',
             },
             {
               group: ['@/ui', '@/ui/*'],

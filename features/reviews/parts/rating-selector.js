@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 const SCORES = [1, 2, 3, 4, 5, 0.5, 1.5, 2.5, 3.5, 4.5]

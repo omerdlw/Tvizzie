@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { processActivityEvent } from '@/lib/activity/event-processor.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { processActivityEvent } from '@/core/services/activity/event-processor.server'
 
 export const runtime = 'nodejs'
 

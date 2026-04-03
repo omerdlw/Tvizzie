@@ -11,16 +11,16 @@ import {
 import {
   isPermissionDeniedError,
   logDataError,
-} from '@/lib/data/errors'
-import { useAuth } from '@/modules/auth'
-import { useModal } from '@/modules/modal/context'
-import { useToast } from '@/modules/notification/hooks'
+} from '@/core/utils/errors'
+import { useAuth } from '@/core/modules/auth'
+import { useModal } from '@/core/modules/modal/context'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   deleteStoredReview,
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
-} from '@/services/media/reviews.service'
-import { subscribeToUserWatched } from '@/services/media/watched.service'
+} from '@/core/services/media/reviews.service'
+import { subscribeToUserWatched } from '@/core/services/media/watched.service'
 import ReviewsView from './view'
 
 export default function Client({
@@ -35,6 +35,7 @@ export default function Client({
   const { openModal } = useModal()
   const toast = useToast()
   const [watchedItems, setWatchedItems] = useState([])
+  const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null)
   const {
     canViewProfileCollections,
     canViewPrivateContent,
@@ -45,7 +46,7 @@ export default function Client({
     handleFollow,
     handleOpenFollowList,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -60,7 +61,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -277,30 +278,38 @@ export default function Client({
   )
 
   const handleDeleteReview = useCallback(
-    async (review) => {
-      if (!auth.user?.id || !isOwner || typeof window === 'undefined') {
+    (review) => {
+      if (!auth.user?.id || !isOwner) {
         return
       }
 
-      if (!window.confirm('Delete this review?')) {
-        return
-      }
+      setReviewDeleteConfirmation({
+        title: 'Delete Review?',
+        description: 'This review will be permanently removed from your profile.',
+        confirmText: 'Delete',
+        confirmLoadingText: 'Deleting',
+        isDestructive: true,
+        onCancel: () => setReviewDeleteConfirmation(null),
+        onConfirm: async () => {
+          try {
+            await deleteStoredReview({
+              review,
+              userId: auth.user.id,
+            })
 
-      try {
-        await deleteStoredReview({
-          review,
-          userId: auth.user.id,
-        })
-
-        setReviews((current) =>
-          current.filter(
-            (item) => (item.docPath || item.id) !== (review.docPath || review.id)
-          )
-        )
-        toast.success('Your review was deleted')
-      } catch (error) {
-        toast.error(error?.message || 'Review could not be deleted')
-      }
+            setReviews((current) =>
+              current.filter(
+                (item) => (item.docPath || item.id) !== (review.docPath || review.id)
+              )
+            )
+            setReviewDeleteConfirmation(null)
+            toast.success('Your review was deleted')
+          } catch (error) {
+            toast.error(error?.message || 'Review could not be deleted')
+            throw error
+          }
+        },
+      })
     },
     [auth.user?.id, isOwner, setReviews, toast]
   )
@@ -321,13 +330,13 @@ export default function Client({
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
       hasMore={hasMore}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFeedLoading={isFeedLoading}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
       isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
+      itemRemoveConfirmation={reviewDeleteConfirmation || itemRemoveConfirmation}
       likeCount={likeCount}
       likes={likes}
       listCount={listCount}
@@ -337,7 +346,7 @@ export default function Client({
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
       reviews={reviews}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       watchedItems={watchedItems}

@@ -13,14 +13,14 @@ import {
 import { InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary'
 import { NAV_CONFIG } from '@/config/nav.config'
 import { SmoothScrollProvider } from '@/features/layout/smooth-scroll'
-import { pipe } from '@/lib/utils/pipe'
-import { BackgroundOverlay, BackgroundProvider } from '@/modules/background'
-import { GlobalError } from '@/modules/error-boundary'
-import { LoadingOverlay, LoadingProvider } from '@/modules/loading'
-import { NavigationProvider } from '@/modules/nav/context'
-import { RegistryProvider } from '@/modules/registry/context'
-import { RegistryDebugPanel } from '@/modules/registry/debug-panel'
-import { TransitionProvider } from '@/modules/transition'
+import { pipe } from '@/core/utils/pipe'
+import { BackgroundOverlay, BackgroundProvider } from '@/core/modules/background'
+import { GlobalError } from '@/core/modules/error-boundary'
+import { LoadingOverlay, LoadingProvider } from '@/core/modules/loading'
+import { NavigationProvider } from '@/core/modules/nav/context'
+import { RegistryProvider } from '@/core/modules/registry/context'
+import { RegistryDebugPanel } from '@/core/modules/registry/debug-panel'
+import { TransitionProvider } from '@/core/modules/transition'
 
 const CoreShellProviders = pipe(
   [RegistryProvider, { enableHistory: isRegistryHistoryCaptureEnabled() }],

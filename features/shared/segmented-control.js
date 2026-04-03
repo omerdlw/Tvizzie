@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 
 const DRAG_THRESHOLD = 4
 

@@ -12,16 +12,16 @@ import {
 import {
   isPermissionDeniedError,
   logDataError,
-} from '@/lib/data/errors'
-import { useAuth } from '@/modules/auth'
-import { useToast } from '@/modules/notification/hooks'
-import { fetchProfileLikedLists } from '@/services/media/lists.service'
-import { updateFavoriteShowcase } from '@/services/media/likes.service'
+} from '@/core/utils/errors'
+import { useAuth } from '@/core/modules/auth'
+import { useToast } from '@/core/modules/notification/hooks'
+import { fetchProfileLikedLists } from '@/core/services/media/lists.service'
+import { updateFavoriteShowcase } from '@/core/services/media/likes.service'
 import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
-} from '@/services/media/reviews.service'
-import { subscribeToUserWatched } from '@/services/media/watched.service'
+} from '@/core/services/media/reviews.service'
+import { subscribeToUserWatched } from '@/core/services/media/watched.service'
 import LikesView from './view'
 
 const LIKE_SEGMENTS = new Set(['films', 'reviews', 'lists'])
@@ -65,7 +65,7 @@ export default function Client({
     handleOpenFollowList,
     handleRequestRemoveLike,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -80,7 +80,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -465,7 +465,7 @@ export default function Client({
       handleSignInRequest={handleSignInRequest}
       handleToggleShowcase={handleToggleShowcase}
       hasMoreReviews={hasMoreReviews}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isLikedListsLoading={isLikedListsLoading}
       isOwner={isOwner}
@@ -487,7 +487,7 @@ export default function Client({
       reviews={reviews}
       reviewsError={reviewsError}
       loadReviews={loadReviews}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       showcaseMap={showcaseMap}
       unfollowConfirmation={unfollowConfirmation}
       username={username}

@@ -1,4 +1,4 @@
-import AccountPaginatedListGrid from '@/features/account/paginated-list-grid'
+import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid'
 import AccountPageShell from '@/features/account/page-shell'
 import AccountSectionState from '@/features/account/section-state'
 import Icon from '@/ui/icon'
@@ -53,7 +53,7 @@ export default function ListsView({
   handleFollow,
   handleOpenFollowList,
   handleSignInRequest,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFollowLoading,
   isOwner,
   isPageLoading,
@@ -68,7 +68,7 @@ export default function ListsView({
   profile,
   resolveError,
   resolvedUserId,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   watchlistCount,
@@ -81,7 +81,7 @@ export default function ListsView({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -92,7 +92,7 @@ export default function ListsView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -111,7 +111,7 @@ export default function ListsView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

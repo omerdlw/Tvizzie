@@ -1,6 +1,6 @@
 'use client'
 
-import { getReviewMinLength } from '@/services/media/reviews.service'
+import { getReviewMinLength } from '@/core/services/media/reviews.service'
 import { Textarea } from '@/ui/elements'
 import Icon from '@/ui/icon'
 

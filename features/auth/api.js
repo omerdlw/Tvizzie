@@ -1,6 +1,6 @@
 'use client'
 
-import { createCsrfHeaders } from '@/lib/auth/clients/csrf.client'
+import { createCsrfHeaders } from '@/core/auth/clients/csrf.client'
 
 export async function assertPasswordAccountStatus({
   email,

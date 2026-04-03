@@ -17,13 +17,14 @@ import {
   resolveSignInEmail,
   validatePassword,
 } from '@/features/auth'
-import { consumeAuthRouteNoticeCookie } from '@/lib/auth/clients/auth-route-notice.client'
-import { AUTH_ROUTE_NOTICE } from '@/lib/auth/route-notice'
-import AuthVerificationSurface from '@/features/navigation/surfaces/auth-verification-surface'
-import { EVENT_TYPES, globalEvents } from '@/lib/events'
-import { useAuth } from '@/modules/auth'
-import { useNavigationActions } from '@/modules/nav/context'
-import { useToast } from '@/modules/notification/hooks'
+import AuthVerificationForm from '@/features/auth/auth-verification-form'
+import { consumeAuthRouteNoticeCookie } from '@/core/auth/clients/auth-route-notice.client'
+import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice'
+import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface'
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events'
+import { useAuth } from '@/core/modules/auth'
+import { useNavigationActions } from '@/core/modules/nav/context'
+import { useToast } from '@/core/modules/notification/hooks'
 import Registry from './registry'
 import View from './view'
 
@@ -160,6 +161,7 @@ export default function Client() {
         autoSendOnOpen: true,
         email: signInResult.email || '',
         forceNewCodeOnOpen: true,
+        formComponent: AuthVerificationForm,
         purpose: AUTH_PURPOSE.SIGN_IN,
         rememberDevice,
       },
@@ -356,6 +358,7 @@ export default function Client() {
           purpose: AUTH_PURPOSE.PASSWORD_RESET,
           email,
           autoSendOnOpen: true,
+          formComponent: AuthVerificationForm,
         },
       })
 

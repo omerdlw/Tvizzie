@@ -5,7 +5,7 @@ import { forwardRef } from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { ChevronDown } from 'lucide-react'
 
-import { Z_INDEX } from '@/lib/constants'
+import { Z_INDEX } from '@/core/constants'
 import Icon from '@/ui/icon/index'
 
 import { cn, resolveSlotClasses } from '../utils'

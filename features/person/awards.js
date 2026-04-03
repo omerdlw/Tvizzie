@@ -6,12 +6,12 @@ import Link from 'next/link'
 
 import { motion } from 'framer-motion'
 
-import { DURATION, EASING } from '@/lib/constants'
-import { cn } from '@/lib/utils'
-import { TmdbService } from '@/services/tmdb/tmdb.service'
+import { DURATION, EASING } from '@/core/constants'
+import { cn } from '@/core/utils'
+import { TmdbService } from '@/core/services/tmdb/tmdb.service'
 
 import MediaThumb from './media-thumb'
-import { Spinner } from '@/ui/spinner/index'
+import { Spinner } from '@/ui/loadings/spinner'
 
 const FADE_UP = {
   hidden: { y: 16 },

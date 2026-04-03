@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { searchContent } from '@/lib/tmdb/server'
+import { searchContent } from '@/core/clients/tmdb/server'
 
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams

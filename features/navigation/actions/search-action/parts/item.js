@@ -3,12 +3,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { TMDB_IMG } from '@/lib/constants'
+import { TMDB_IMG } from '@/core/constants'
 import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-} from '@/lib/utils'
+} from '@/core/utils'
 import Icon from '@/ui/icon'
 
 import { SEARCH_STYLES, SEARCH_TYPES } from '../constants'

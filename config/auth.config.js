@@ -1,4 +1,4 @@
-import { createSupabaseAuthAdapter } from '@/modules/auth'
+import { createSupabaseAuthAdapter } from '@/core/modules/auth'
 
 const SUPABASE_ADAPTER = createSupabaseAuthAdapter({
   oauthDefaultNextPath: '/account',

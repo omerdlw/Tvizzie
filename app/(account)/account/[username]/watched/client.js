@@ -8,13 +8,13 @@ import {
 } from '@/features/account/account-hook-utils'
 import { useAccountSectionPage } from '@/features/account/section-client-hooks'
 import { getMediaTitle } from '@/features/account/utils'
-import { logDataError } from '@/lib/data/errors'
-import { useAuth } from '@/modules/auth'
-import { useToast } from '@/modules/notification/hooks'
+import { logDataError } from '@/core/utils/errors'
+import { useAuth } from '@/core/modules/auth'
+import { useToast } from '@/core/modules/notification/hooks'
 import {
   removeUserWatchedItem,
   subscribeToUserWatched,
-} from '@/services/media/watched.service'
+} from '@/core/services/media/watched.service'
 import WatchedView from './view'
 
 export default function Client({
@@ -36,7 +36,7 @@ export default function Client({
     handleFollow,
     handleOpenFollowList,
     handleSignInRequest,
-    isBioMaskOpen,
+    isBioSurfaceOpen,
     isFollowLoading,
     isOwner,
     isPageLoading,
@@ -48,7 +48,7 @@ export default function Client({
     profile,
     resolveError,
     resolvedUserId,
-    setIsBioMaskOpen,
+    setIsBioSurfaceOpen,
     unfollowConfirmation,
     watchlistCount,
   } = useAccountSectionPage({
@@ -187,7 +187,7 @@ export default function Client({
       handleOpenFollowList={handleOpenFollowList}
       handleRequestRemoveWatchedItem={handleRequestRemoveWatchedItem}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={
@@ -203,7 +203,7 @@ export default function Client({
       profile={profile}
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       watchedItems={watchedItems}

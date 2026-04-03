@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/core/utils'
 
 export function EmptyState({ action, description, title, className }) {
   return (

@@ -17,12 +17,13 @@ import {
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
 } from '@/features/auth'
-import { AUTH_ROUTE_NOTICE } from '@/lib/auth/route-notice'
-import AuthVerificationSurface from '@/features/navigation/surfaces/auth-verification-surface'
-import { setPendingAccountBootstrap } from '@/lib/auth/clients/pending-account.client'
-import { useAuth } from '@/modules/auth'
-import { useNavigationActions } from '@/modules/nav/context'
-import { useToast } from '@/modules/notification/hooks'
+import AuthVerificationForm from '@/features/auth/auth-verification-form'
+import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice'
+import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface'
+import { setPendingAccountBootstrap } from '@/core/auth/clients/pending-account.client'
+import { useAuth } from '@/core/modules/auth'
+import { useNavigationActions } from '@/core/modules/nav/context'
+import { useToast } from '@/core/modules/notification/hooks'
 import Registry from './registry'
 import SignUpView from './view'
 
@@ -167,6 +168,7 @@ export default function Client() {
           email: pendingPayload.email,
           autoSendOnOpen: true,
           forceNewCodeOnOpen: true,
+          formComponent: AuthVerificationForm,
         },
       })
 

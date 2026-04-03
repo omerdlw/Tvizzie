@@ -1,5 +1,5 @@
 import AccountPageShell from '@/features/account/page-shell'
-import AccountReviewFeed from '@/features/account/review-feed'
+import AccountReviewFeed from '@/features/account/sections/review-feed'
 import AccountSectionState from '@/features/account/section-state'
 import Registry from './registry'
 
@@ -18,7 +18,7 @@ export default function ReviewsView({
   handleOpenFollowList,
   handleSignInRequest,
   hasMore,
-  isBioMaskOpen,
+  isBioSurfaceOpen,
   isFeedLoading,
   isFollowLoading,
   isOwner,
@@ -34,7 +34,7 @@ export default function ReviewsView({
   resolveError,
   resolvedUserId,
   reviews,
-  setIsBioMaskOpen,
+  setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
   watchedItems,
@@ -48,7 +48,7 @@ export default function ReviewsView({
       handleFollow={handleFollow}
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
-      isBioMaskOpen={isBioMaskOpen}
+      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
@@ -57,7 +57,7 @@ export default function ReviewsView({
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioMaskOpen={setIsBioMaskOpen}
+      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -76,7 +76,7 @@ export default function ReviewsView({
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioMaskOpen(true)}
+      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

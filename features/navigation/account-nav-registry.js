@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo } from 'react'
 
-import { useCurrentAccount } from '@/modules/account'
-import { useNavRegistry } from '@/modules/registry'
+import { useCurrentAccount } from '@/core/modules/account'
+import { useNavRegistry } from '@/core/modules/registry'
 import { buildAccountChildren } from './account-nav-links'
 
 const ACCOUNT_NAV_KEY = '/account'

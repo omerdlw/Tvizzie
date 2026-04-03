@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { requireSessionRequest } from '@/lib/auth/servers/session/authenticated-request.server'
-import { fetchProfileReviewFeedServer } from '@/services/media/reviews.server'
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server'
 
 const REVIEW_MODES = new Set(['authored', 'liked'])
 
@@ -25,18 +25,24 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const authContext = await requireSessionRequest(request).catch(() => null)
-    const result = await fetchProfileReviewFeedServer({
-      cursor: searchParams.get('cursor'),
-      mode: normalizeMode(searchParams.get('mode')),
-      pageSize: Math.min(
-        normalizePositiveInteger(searchParams.get('pageSize'), 20),
-        100
-      ),
-      userId: normalizeValue(searchParams.get('userId')),
-      viewerId: authContext?.userId || null,
+    const result = await invokeInternalEdgeFunction('account-reviews-feed', {
+      body: {
+        cursor: searchParams.get('cursor'),
+        mode: normalizeMode(searchParams.get('mode')),
+        pageSize: Math.min(
+          normalizePositiveInteger(searchParams.get('pageSize'), 20),
+          100
+        ),
+        userId: normalizeValue(searchParams.get('userId')),
+        viewerId: authContext?.userId || null,
+      },
     })
 
-    return NextResponse.json(result)
+    return NextResponse.json({
+      hasMore: result?.hasMore === true,
+      items: Array.isArray(result?.items) ? result.items : [],
+      nextCursor: result?.nextCursor ?? null,
+    })
   } catch (error) {
     const status = Number.isFinite(Number(error?.status))
       ? Number(error.status)

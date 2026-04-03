@@ -1,9 +1,7 @@
-import HomeDiscover from '@/features/home/discover'
-import HeroSpotlight from '@/features/home/hero-spotlight'
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop'
+
 import Carousel from '@/features/shared/carousel'
 import MediaPosterCard from '@/features/shared/media-poster-card'
-import { HOME_PAGE_MAX_WIDTH_CLASS } from '@/lib/constants'
+import { HOME_PAGE_MAX_WIDTH_CLASS } from '@/core/constants'
 
 function getUniqueMediaItems(items = []) {
   const seen = new Set()

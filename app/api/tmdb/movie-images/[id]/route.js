@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { getMovieImages } from '@/lib/tmdb/server'
+import { getMovieImages } from '@/core/clients/tmdb/server'
 
 export async function GET(_request, { params }) {
   const resolvedParams = await params

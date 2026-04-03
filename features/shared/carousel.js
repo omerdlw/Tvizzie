@@ -2,8 +2,8 @@
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useDraggableScroll } from '@/lib/hooks'
-import { cn } from '@/lib/utils'
+import { useDraggableScroll } from '@/core/hooks'
+import { cn } from '@/core/utils'
 import Icon from '@/ui/icon'
 
 const SCROLL_STEP = 2

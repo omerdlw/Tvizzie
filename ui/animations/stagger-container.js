@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-import { DURATION } from '@/lib/constants'
+import { DURATION } from '@/core/constants'
 
 const STAGGER_CONTAINER_VARIANTS = {
   visible: {

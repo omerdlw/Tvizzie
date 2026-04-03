@@ -1,9 +1,9 @@
 import ReactDOM from 'react-dom'
 
 import { DynamicNav } from '@/features/layout/dynamic-wrappers'
-import { MOTION_CSS_VARIABLES } from '@/lib/constants'
-import { getSiteUrl } from '@/lib/utils/site-url'
-import { cn } from '@/lib/utils'
+import { MOTION_CSS_VARIABLES } from '@/core/constants'
+import { getSiteUrl } from '@/core/utils/site-url'
+import { cn } from '@/core/utils'
 
 import { geist, zuume } from '../fonts'
 import './globals.css'

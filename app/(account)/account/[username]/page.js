@@ -1,8 +1,8 @@
-import { isReservedAccountSegment } from '@/lib/account/route-segments'
+import { isReservedAccountSegment } from '@/features/account/route-segments'
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,
-} from '@/services/account/account-route-data.server'
+} from '@/core/services/account/account-route-data.server'
 
 import Client from './client'
 

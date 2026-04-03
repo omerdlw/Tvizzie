@@ -116,7 +116,7 @@ export async function fetchUsers(query) {
 }
 
 export async function fetchMedia(query, type) {
-  const { TmdbService } = await import('@/services/tmdb/tmdb.service')
+  const { TmdbService } = await import('@/core/services/tmdb/tmdb.service')
 
   if (type !== SEARCH_TYPES.MOVIE && type !== SEARCH_TYPES.PERSON) {
     return []

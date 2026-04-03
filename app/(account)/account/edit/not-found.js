@@ -1,4 +1,4 @@
-import { FullscreenState } from '@/ui/fullscreen-state'
+import { FullscreenState } from '@/ui/states/fullscreen-state'
 
 export default function NotFound() {
   return (

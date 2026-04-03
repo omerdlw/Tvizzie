@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { getGenres } from '@/lib/tmdb/server'
+import { getGenres } from '@/core/clients/tmdb/server'
 
 export async function GET() {
   const response = await getGenres()

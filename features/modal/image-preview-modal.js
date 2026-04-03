@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { TMDB_IMG } from '@/lib/constants'
-import { Spinner } from '@/ui/spinner/index'
+import { TMDB_IMG } from '@/core/constants'
+import { Spinner } from '@/ui/loadings/spinner'
 
 function getAspectRatio(data) {
   const aspectRatio = Number(data?.aspect_ratio)
