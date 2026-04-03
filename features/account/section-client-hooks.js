@@ -8,8 +8,8 @@ import { getFollowState } from '@/features/account/utils'
 
 function noop() {}
 
-const IS_SOCIAL_FOLLOWS_V2_ENABLED =
-  isProjectFeatureEnabled('social_follows_v2')
+const IS_SOCIAL_FOLLOWS_ENABLED =
+  isProjectFeatureEnabled('social_follows')
 
 function scheduleDeferredTask(task) {
   if (typeof window === 'undefined') {
@@ -225,7 +225,7 @@ export function useAccountSectionPage({
     initialProfile,
     initialResolvedUserId,
     initialResolveError,
-    isSocialFollowsV2: IS_SOCIAL_FOLLOWS_V2_ENABLED,
+    isSocialFollowsEnabled: IS_SOCIAL_FOLLOWS_ENABLED,
     username,
   })
   const {
@@ -251,8 +251,10 @@ export function useAccountSectionPage({
   const pageActions = useAccountPageActions({
     activeListId,
     auth,
+    canViewPrivateContent,
     followRelationship,
     isOwner,
+    isPrivateProfile,
     profile,
     resolvedUserId,
     selectedList,

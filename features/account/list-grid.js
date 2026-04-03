@@ -5,7 +5,7 @@ import AccountSectionLayout from './section-layout'
 
 export default function AccountListGrid({
   emptyMessage = 'No lists yet',
-  icon = 'solar:list-heart-bold',
+  icon = 'solar:list-broken',
   isLoading = false,
   lists = [],
   loadError = null,

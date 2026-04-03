@@ -5,7 +5,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeTimestamp } from '@/services/core/data-utils'
 import { cache } from 'react'
 
-const ACCEPTED_FOLLOW_STATUS = 'accepted'
 const EMPTY_EDITABLE_ACCOUNT_COUNTS = Object.freeze({
   followers: 0,
   following: 0,
@@ -29,8 +28,30 @@ const ACCOUNT_PROFILE_SELECT = [
   'updated_at',
   'username',
   'username_lower',
-  'watched_count',
 ].join(',')
+
+const COUNTER_SELECT = [
+  'follower_count',
+  'following_count',
+  'likes_count',
+  'lists_count',
+  'watched_count',
+  'watchlist_count',
+].join(',')
+
+function normalizeValue(value) {
+  return String(value || '').trim()
+}
+
+function normalizeCount(value, fallback = 0) {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed)) {
+    return fallback
+  }
+
+  return Math.max(0, Math.floor(parsed))
+}
 
 function normalizeFavoriteShowcaseItems(value = []) {
   return value
@@ -97,16 +118,14 @@ function normalizeAccountData(
       String(displayName).toLowerCase(),
     id: id || data.id || null,
     isPrivate,
-    followerCount: Number.isFinite(
-      Number(data.follower_count ?? data.followerCount)
-    )
-      ? Number(data.follower_count ?? data.followerCount)
-      : 0,
-    followingCount: Number.isFinite(
-      Number(data.following_count ?? data.followingCount)
-    )
-      ? Number(data.following_count ?? data.followingCount)
-      : 0,
+    followerCount: normalizeCount(
+      data.follower_count ?? data.followerCount,
+      0
+    ),
+    followingCount: normalizeCount(
+      data.following_count ?? data.followingCount,
+      0
+    ),
     updatedAt: normalizeTimestamp(data.updated_at || data.updatedAt),
     username: data.username || null,
     usernameLower:
@@ -120,22 +139,16 @@ function normalizeAccountData(
           lastActivityAt: normalizeTimestamp(
             data.last_activity_at || data.lastActivityAt
           ),
-          likesCount: Number.isFinite(Number(data.likes_count ?? data.likesCount))
-            ? Number(data.likes_count ?? data.likesCount)
-            : 0,
-          listsCount: Number.isFinite(Number(data.lists_count ?? data.listsCount))
-            ? Number(data.lists_count ?? data.listsCount)
-            : 0,
-          watchedCount: Number.isFinite(
-            Number(data.watched_count ?? data.watchedCount)
-          )
-            ? Number(data.watched_count ?? data.watchedCount)
-            : 0,
-          watchlistCount: Number.isFinite(
-            Number(data.watchlist_count ?? data.watchlistCount)
-          )
-            ? Number(data.watchlist_count ?? data.watchlistCount)
-            : 0,
+          likesCount: normalizeCount(data.likes_count ?? data.likesCount, 0),
+          listsCount: normalizeCount(data.lists_count ?? data.listsCount, 0),
+          watchedCount: normalizeCount(
+            data.watched_count ?? data.watchedCount,
+            0
+          ),
+          watchlistCount: normalizeCount(
+            data.watchlist_count ?? data.watchlistCount,
+            0
+          ),
         }
       : {
           favoriteShowcase: [],
@@ -149,15 +162,16 @@ function normalizeAccountData(
 }
 
 async function getUserIdByUsername(username) {
-  if (!username) {
+  const normalizedUsername = normalizeValue(username).toLowerCase()
+
+  if (!normalizedUsername) {
     return null
   }
 
-  const admin = createAdminClient()
-  const result = await admin
+  const result = await createAdminClient()
     .from('usernames')
     .select('user_id')
-    .eq('username_lower', String(username).trim().toLowerCase())
+    .eq('username_lower', normalizedUsername)
     .maybeSingle()
 
   if (result.error) {
@@ -167,53 +181,148 @@ async function getUserIdByUsername(username) {
   return result.data?.user_id || null
 }
 
-const getUserAccount = cache(async (
-  userId,
-  { includeEmail = false, includePrivateDetails = false } = {}
-) => {
-  if (!userId) {
+async function loadProfileCounters(userId) {
+  const normalizedUserId = normalizeValue(userId)
+
+  if (!normalizedUserId) {
     return null
   }
 
   const admin = createAdminClient()
-  const [
-    result,
-    followerCount,
-    followingCount,
-    likesCount,
-    listsCount,
-    watchlistCount,
-  ] = await Promise.all([
-    admin
-      .from('profiles')
-      .select(ACCOUNT_PROFILE_SELECT)
-      .eq('id', userId)
-      .maybeSingle(),
-    countFollowCollection(userId, 'followers'),
-    countFollowCollection(userId, 'following'),
-    countRows('likes', (query) => query.eq('user_id', userId)),
-    countRows('lists', (query) => query.eq('user_id', userId)),
-    countRows('watchlist', (query) => query.eq('user_id', userId)),
-  ])
+  const countersResult = await admin
+    .from('profile_counters')
+    .select(COUNTER_SELECT)
+    .eq('user_id', normalizedUserId)
+    .maybeSingle()
 
-  if (result.error) {
-    throw new Error(result.error.message || 'Account lookup failed')
+  if (countersResult.error) {
+    throw new Error(countersResult.error.message || 'Profile counters could not be loaded')
   }
 
-  if (!result.data) {
+  if (countersResult.data) {
+    return countersResult.data
+  }
+
+  const refreshResult = await admin
+    .rpc('refresh_profile_counters', {
+      p_user_id: normalizedUserId,
+    })
+    .maybeSingle()
+
+  if (refreshResult.error) {
     return null
   }
 
+  return refreshResult.data || null
+}
+
+async function loadListsCount(userId) {
+  const normalizedUserId = normalizeValue(userId)
+
+  if (!normalizedUserId) {
+    return 0
+  }
+
+  const result = await createAdminClient()
+    .from('lists')
+    .select('*', {
+      count: 'exact',
+      head: true,
+    })
+    .eq('user_id', normalizedUserId)
+
+  if (result.error) {
+    throw new Error(result.error.message || 'List count could not be loaded')
+  }
+
+  return normalizeCount(result.count, 0)
+}
+
+async function loadFollowCountsFallback(userId) {
+  const normalizedUserId = normalizeValue(userId)
+
+  if (!normalizedUserId) {
+    return {
+      follower_count: 0,
+      following_count: 0,
+    }
+  }
+
+  const admin = createAdminClient()
+  const [followersResult, followingResult] = await Promise.all([
+    admin
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', normalizedUserId)
+      .eq('status', 'accepted'),
+    admin
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', normalizedUserId)
+      .eq('status', 'accepted'),
+  ])
+
+  if (followersResult.error || followingResult.error) {
+    throw new Error('Follow counters could not be loaded')
+  }
+
+  return {
+    follower_count: normalizeCount(followersResult.count, 0),
+    following_count: normalizeCount(followingResult.count, 0),
+  }
+}
+
+const getAccountProfile = cache(async (
+  userId,
+  { includeEmail = false, includePrivateDetails = false } = {}
+) => {
+  const normalizedUserId = normalizeValue(userId)
+
+  if (!normalizedUserId) {
+    return null
+  }
+
+  const admin = createAdminClient()
+  const profileResult = await admin
+    .from('profiles')
+    .select(ACCOUNT_PROFILE_SELECT)
+    .eq('id', normalizedUserId)
+    .maybeSingle()
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message || 'Account lookup failed')
+  }
+
+  if (!profileResult.data) {
+    return null
+  }
+
+  const [counters, listsCount, followCounts] = await Promise.all([
+    loadProfileCounters(normalizedUserId).catch(() => null),
+    loadListsCount(normalizedUserId).catch(() => null),
+    loadFollowCountsFallback(normalizedUserId).catch(() => null),
+  ])
+
   return normalizeAccountData(
     {
-      ...result.data,
-      follower_count: followerCount,
-      following_count: followingCount,
-      likes_count: likesCount,
-      lists_count: listsCount,
-      watchlist_count: watchlistCount,
+      ...profileResult.data,
+      follower_count:
+        Number.isFinite(Number(followCounts?.follower_count))
+          ? Number(followCounts.follower_count)
+          : Number(counters?.follower_count ?? 0),
+      following_count:
+        Number.isFinite(Number(followCounts?.following_count))
+          ? Number(followCounts.following_count)
+          : Number(counters?.following_count ?? 0),
+      likes_count: counters?.likes_count ?? 0,
+      lists_count:
+        listsCount === null || listsCount === undefined
+          ? counters?.lists_count ?? 0
+          : listsCount,
+      watched_count: counters?.watched_count ?? 0,
+      watchlist_count: counters?.watchlist_count ?? 0,
     },
-    result.data.id,
+    profileResult.data.id,
     {
       includeEmail,
       includePrivateDetails,
@@ -221,40 +330,9 @@ const getUserAccount = cache(async (
   )
 })
 
-async function countRows(tableName, configureQuery) {
-  const admin = createAdminClient()
-  let query = admin.from(tableName).select('*', {
-    count: 'exact',
-    head: true,
-  })
-
-  if (typeof configureQuery === 'function') {
-    query = configureQuery(query)
-  }
-
-  const result = await query
-
-  if (result.error) {
-    throw new Error(result.error.message || `${tableName} count failed`)
-  }
-
-  return Number(result.count) || 0
-}
-
-async function countFollowCollection(userId, direction) {
-  const baseColumn = direction === 'followers' ? 'following_id' : 'follower_id'
-
-  return countRows('follows', (query) =>
-    query.eq(baseColumn, userId).eq('status', ACCEPTED_FOLLOW_STATUS)
-  )
-}
-
-export async function getAccountSnapshotByUserId(
-  userId,
-  options = {}
-) {
+export async function getAccountSnapshotByUserId(userId, options = {}) {
   try {
-    const profile = await getUserAccount(userId, options)
+    const profile = await getAccountProfile(userId, options)
 
     if (!profile) {
       return {
@@ -266,7 +344,7 @@ export async function getAccountSnapshotByUserId(
 
     return {
       profile,
-      resolvedUserId: userId,
+      resolvedUserId: normalizeValue(userId),
       resolveError: null,
     }
   } catch {
@@ -278,10 +356,7 @@ export async function getAccountSnapshotByUserId(
   }
 }
 
-export async function getAccountSnapshotByUsername(
-  username,
-  options = {}
-) {
+export async function getAccountSnapshotByUsername(username, options = {}) {
   try {
     const userId = await getUserIdByUsername(username)
 
@@ -293,7 +368,7 @@ export async function getAccountSnapshotByUsername(
       }
     }
 
-    const profile = await getUserAccount(userId, options)
+    const profile = await getAccountProfile(userId, options)
 
     if (!profile) {
       return {
@@ -318,7 +393,9 @@ export async function getAccountSnapshotByUsername(
 }
 
 export async function getEditableAccountSnapshotByUserId(userId) {
-  if (!userId) {
+  const normalizedUserId = normalizeValue(userId)
+
+  if (!normalizedUserId) {
     return {
       counts: EMPTY_EDITABLE_ACCOUNT_COUNTS,
       profile: null,
@@ -328,7 +405,7 @@ export async function getEditableAccountSnapshotByUserId(userId) {
   }
 
   try {
-    const profile = await getUserAccount(userId, {
+    const profile = await getAccountProfile(normalizedUserId, {
       includeEmail: true,
       includePrivateDetails: true,
     })
@@ -344,22 +421,22 @@ export async function getEditableAccountSnapshotByUserId(userId) {
 
     return {
       counts: {
-        followers: Number(profile?.followerCount || 0),
-        following: Number(profile?.followingCount || 0),
-        likes: Number(profile?.likesCount || 0),
-        lists: Number(profile?.listsCount || 0),
-        watched: Number(profile?.watchedCount || 0),
-        watchlist: Number(profile?.watchlistCount || 0),
+        followers: normalizeCount(profile.followerCount, 0),
+        following: normalizeCount(profile.followingCount, 0),
+        likes: normalizeCount(profile.likesCount, 0),
+        lists: normalizeCount(profile.listsCount, 0),
+        watched: normalizeCount(profile.watchedCount, 0),
+        watchlist: normalizeCount(profile.watchlistCount, 0),
       },
       profile,
-      resolvedUserId: userId,
+      resolvedUserId: normalizedUserId,
       resolveError: null,
     }
   } catch {
     return {
       counts: EMPTY_EDITABLE_ACCOUNT_COUNTS,
       profile: null,
-      resolvedUserId: userId,
+      resolvedUserId: normalizedUserId,
       resolveError: null,
     }
   }

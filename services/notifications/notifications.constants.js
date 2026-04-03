@@ -1,4 +1,9 @@
-export {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_TYPE_SET,
-} from '@/lib/constants/notifications'
+export const NOTIFICATION_TYPES = Object.freeze({
+  FOLLOW_REQUEST: 'FOLLOW_REQUEST',
+  FOLLOW_ACCEPTED: 'FOLLOW_ACCEPTED',
+  NEW_FOLLOWER: 'NEW_FOLLOWER',
+  REVIEW_LIKE: 'REVIEW_LIKE',
+  LIST_LIKE: 'LIST_LIKE',
+})
+
+export const NOTIFICATION_TYPE_SET = new Set(Object.values(NOTIFICATION_TYPES))

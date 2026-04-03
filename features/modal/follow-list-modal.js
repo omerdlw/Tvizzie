@@ -38,6 +38,24 @@ async function hydrateFollowUsers(list) {
     .filter((item) => item.id && item.displayName && item.username)
 }
 
+function resolveFollowCollectionError(error, activeTab) {
+  const status = Number(error?.status || 0)
+
+  if (status === 403) {
+    return activeTab === 'requests'
+      ? 'You are not allowed to view pending follow requests.'
+      : 'This profile is private.'
+  }
+
+  if (status === 401) {
+    return 'Your session has expired. Please sign in again.'
+  }
+
+  return activeTab === 'requests'
+    ? 'Pending follow requests could not be loaded.'
+    : 'This follow list could not be loaded.'
+}
+
 function FollowRow({
   close,
   followLabel = null,
@@ -166,6 +184,7 @@ export default function FollowListModal({ close, data, header }) {
   }, [type])
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [actionState, setActionState] = useState({
     kind: null,
     userId: null,
@@ -180,12 +199,14 @@ export default function FollowListModal({ close, data, header }) {
     if (!userId || !activeTab) {
       setUsers([])
       setLoading(false)
+      setLoadError(null)
       return undefined
     }
 
     if (activeTab === 'requests' && !canManageRequests) {
       setUsers([])
       setLoading(false)
+      setLoadError(null)
       return undefined
     }
 
@@ -196,10 +217,13 @@ export default function FollowListModal({ close, data, header }) {
     ) {
       setUsers([])
       setLoading(true)
+      setLoadError(null)
       return undefined
     }
 
+    setUsers([])
     setLoading(true)
+    setLoadError(null)
     const subscribe =
       activeTab === 'following' ? subscribeToFollowing : subscribeToFollowers
     const status =
@@ -213,8 +237,18 @@ export default function FollowListModal({ close, data, header }) {
         const hydrated = await hydrateFollowUsers(list)
         setUsers(hydrated)
         setLoading(false)
+        setLoadError(null)
       },
-      { status }
+      {
+        emitCachedPayloadOnSubscribe: false,
+        refreshOnSubscribe: true,
+        status,
+        onError: (error) => {
+          setUsers([])
+          setLoadError(error)
+          setLoading(false)
+        },
+      }
     )
 
     return () => unsubscribe()
@@ -246,7 +280,11 @@ export default function FollowListModal({ close, data, header }) {
 
         setFollowingStatusMap(nextStatusMap)
       },
-      { status: null }
+      {
+        emitCachedPayloadOnSubscribe: false,
+        refreshOnSubscribe: true,
+        status: null,
+      }
     )
   }, [auth.user?.id, isAuthSessionReady, isOwnFollowersList])
 
@@ -344,6 +382,9 @@ export default function FollowListModal({ close, data, header }) {
     activeTab === 'requests'
       ? 'No pending requests right now'
       : 'This list is currently empty'
+  const loadErrorMessage = loadError
+    ? resolveFollowCollectionError(loadError, activeTab)
+    : null
 
   return (
     <Container
@@ -361,6 +402,12 @@ export default function FollowListModal({ close, data, header }) {
               />
             ))}
           </div>
+        ) : loadErrorMessage ? (
+          <EmptyState
+            className="min-h-[220px] border border-white/5 "
+            title="Unavailable"
+            description={loadErrorMessage}
+          />
         ) : users.length === 0 ? (
           <EmptyState
             className="min-h-[220px] border border-white/5 "

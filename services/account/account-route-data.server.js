@@ -8,7 +8,6 @@ import { fetchAccountActivityFeedServer } from '@/services/account/account-feed.
 import {
   getCollectionResource,
   getAccountIdByUsername,
-  getAccountProfileByUsername,
   getAccountProfileByUserId,
 } from '@/services/browser/browser-data.server'
 import {
@@ -70,6 +69,12 @@ async function safeLoad(load, fallback) {
   }
 }
 
+async function delay(ms) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 function createInitialCollections({
   counts = null,
   lists = [],
@@ -119,6 +124,43 @@ function createInitialListFeed(items = [], resolvedUserId = null, extras = null)
   }
 }
 
+function normalizeCollectionResourceValue(result, fallback = []) {
+  if (result && typeof result === 'object' && Object.hasOwn(result, 'data')) {
+    return result.data
+  }
+
+  return result ?? fallback
+}
+
+async function loadCollectionResource(input = {}, fallback = []) {
+  const maxAttempts = 3
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const result = await getCollectionResource({
+        ...input,
+        strict: true,
+      })
+      return normalizeCollectionResourceValue(result, fallback)
+    } catch (error) {
+      if (attempt >= maxAttempts) {
+        return fallback
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          `[account-route-data] Collection retry ${attempt}/${maxAttempts - 1} failed for "${input?.resource || 'unknown'}"`,
+          error
+        )
+      }
+
+      await delay(140 * attempt)
+    }
+  }
+
+  return fallback
+}
+
 export async function getCurrentAccountOverviewRouteData() {
   const sessionContext = await getViewerSessionContext()
   const viewerId = sessionContext?.userId || null
@@ -162,24 +204,22 @@ export async function getCurrentAccountOverviewRouteData() {
         }),
       { hasMore: false, items: [] }
     ),
-    safeLoad(
-      () =>
-        getCollectionResource({
-          limitCount: OVERVIEW_WATCHED_LIMIT,
-          resource: 'watched',
-          userId: snapshot.resolvedUserId,
-          viewerId,
-        }),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_WATCHED_LIMIT,
+        resource: 'watched',
+        userId: snapshot.resolvedUserId,
+        viewerId,
+      },
       []
     ),
-    safeLoad(
-      () =>
-        getCollectionResource({
-          limitCount: OVERVIEW_WATCHLIST_LIMIT,
-          resource: 'watchlist',
-          userId: snapshot.resolvedUserId,
-          viewerId,
-        }),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_WATCHLIST_LIMIT,
+        resource: 'watchlist',
+        userId: snapshot.resolvedUserId,
+        viewerId,
+      },
       []
     ),
   ])
@@ -287,24 +327,22 @@ export async function getUsernameAccountOverviewRouteData(username) {
         }),
       { hasMore: false, items: [] }
     ),
-    safeLoad(
-      () =>
-        getCollectionResource({
-          limitCount: OVERVIEW_WATCHED_LIMIT,
-          resource: 'watched',
-          userId: snapshot.initialResolvedUserId,
-          viewerId: snapshot.viewerId,
-        }),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_WATCHED_LIMIT,
+        resource: 'watched',
+        userId: snapshot.initialResolvedUserId,
+        viewerId: snapshot.viewerId,
+      },
       []
     ),
-    safeLoad(
-      () =>
-        getCollectionResource({
-          limitCount: OVERVIEW_WATCHLIST_LIMIT,
-          resource: 'watchlist',
-          userId: snapshot.initialResolvedUserId,
-          viewerId: snapshot.viewerId,
-        }),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_WATCHLIST_LIMIT,
+        resource: 'watchlist',
+        userId: snapshot.initialResolvedUserId,
+        viewerId: snapshot.viewerId,
+      },
       []
     ),
   ])
@@ -340,13 +378,12 @@ export async function getUsernameAccountListsRouteData(username) {
     }
   }
 
-  const lists = await safeLoad(
-    () =>
-      getCollectionResource({
-        resource: 'lists',
-        userId: snapshot.initialResolvedUserId,
-        viewerId: snapshot.viewerId,
-      }),
+  const lists = await loadCollectionResource(
+    {
+      resource: 'lists',
+      userId: snapshot.initialResolvedUserId,
+      viewerId: snapshot.viewerId,
+    },
     []
   )
 
@@ -375,13 +412,12 @@ export async function getUsernameAccountWatchlistRouteData(username) {
     }
   }
 
-  const watchlist = await safeLoad(
-    () =>
-      getCollectionResource({
-        resource: 'watchlist',
-        userId: snapshot.initialResolvedUserId,
-        viewerId: snapshot.viewerId,
-      }),
+  const watchlist = await loadCollectionResource(
+    {
+      resource: 'watchlist',
+      userId: snapshot.initialResolvedUserId,
+      viewerId: snapshot.viewerId,
+    },
     []
   )
 
@@ -410,13 +446,12 @@ export async function getUsernameAccountWatchedRouteData(username) {
     }
   }
 
-  const watched = await safeLoad(
-    () =>
-      getCollectionResource({
-        resource: 'watched',
-        userId: snapshot.initialResolvedUserId,
-        viewerId: snapshot.viewerId,
-      }),
+  const watched = await loadCollectionResource(
+    {
+      resource: 'watched',
+      userId: snapshot.initialResolvedUserId,
+      viewerId: snapshot.viewerId,
+    },
     []
   )
 
@@ -536,24 +571,22 @@ export async function getUsernameAccountLikesRouteData(
 
   const [likes, likedLists, reviewFeed] = await Promise.all([
     normalizedSegment === 'films'
-      ? safeLoad(
-        () =>
-          getCollectionResource({
-            resource: 'likes',
-            userId: snapshot.initialResolvedUserId,
-            viewerId: snapshot.viewerId,
-          }),
+      ? loadCollectionResource(
+        {
+          resource: 'likes',
+          userId: snapshot.initialResolvedUserId,
+          viewerId: snapshot.viewerId,
+        },
         []
       )
       : Promise.resolve([]),
     normalizedSegment === 'lists'
-      ? safeLoad(
-        () =>
-          getCollectionResource({
-            resource: 'liked-lists',
-            userId: snapshot.initialResolvedUserId,
-            viewerId: snapshot.viewerId,
-          }),
+      ? loadCollectionResource(
+        {
+          resource: 'liked-lists',
+          userId: snapshot.initialResolvedUserId,
+          viewerId: snapshot.viewerId,
+        },
         []
       )
       : Promise.resolve([]),
@@ -609,27 +642,25 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
     }
   }
 
-  const list = await safeLoad(
-    () =>
-      getCollectionResource({
-        resource: 'list-by-slug',
-        slug,
-        userId: snapshot.initialResolvedUserId,
-        viewerId: snapshot.viewerId,
-      }),
+  const list = await loadCollectionResource(
+    {
+      resource: 'list-by-slug',
+      slug,
+      userId: snapshot.initialResolvedUserId,
+      viewerId: snapshot.viewerId,
+    },
     null
   )
 
   const [listItems, listReviews] = await Promise.all([
     list?.id
-      ? safeLoad(
-        () =>
-          getCollectionResource({
-            listId: list.id,
-            resource: 'list-items',
-            userId: snapshot.initialResolvedUserId,
-            viewerId: snapshot.viewerId,
-          }),
+      ? loadCollectionResource(
+        {
+          listId: list.id,
+          resource: 'list-items',
+          userId: snapshot.initialResolvedUserId,
+          viewerId: snapshot.viewerId,
+        },
         []
       )
       : Promise.resolve([]),

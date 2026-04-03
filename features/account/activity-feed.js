@@ -20,7 +20,7 @@ const EVENT_META = Object.freeze({
   },
   LIST_CREATED: {
     action: 'created',
-    icon: 'solar:list-heart-bold',
+    icon: 'solar:list-broken',
   },
   LIST_LIKED: {
     action: 'liked',
@@ -123,7 +123,7 @@ function CompactRating({ rating }) {
 
         return (
           <span key={index} className="relative size-4 shrink-0">
-            <span className="absolute inset-0 text-white/5">
+            <span className="absolute inset-0 text-white/20">
               <Icon icon="solar:star-bold" size={16} />
             </span>
             <span

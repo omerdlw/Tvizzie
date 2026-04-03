@@ -10,7 +10,7 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/services/core/polling-subscription.service'
-import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary-v2.service'
+import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary.service'
 import {
   assertSupabaseResult,
   getSupabaseClient,
@@ -27,21 +27,6 @@ import {
   fireActivityEvent,
 } from '@/services/activity/activity-events.service'
 import { buildCanonicalActivityDedupeKey } from '@/lib/activity/canonical-key'
-
-const WATCHLIST_ROW_SELECT = [
-  'added_at',
-  'backdrop_path',
-  'entity_id',
-  'entity_type',
-  'media_key',
-  'payload',
-  'poster_path',
-  'title',
-  'updated_at',
-  'user_id',
-].join(',')
-const INFRA_V2_CLIENT_ENABLED =
-  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
 
 function resolveRpcRow(data) {
   if (Array.isArray(data)) {
@@ -91,25 +76,12 @@ function getUserWatchlistSubscriptionKey(userId, options = {}) {
   })
 }
 
-function getUserAccountSubscriptionKey(userId) {
-  return buildPollingSubscriptionKey('account:user', {
-    userId,
-  })
-}
-
 function refreshAccountSummary(userId) {
   if (!userId) {
     return
   }
 
-  if (INFRA_V2_CLIENT_ENABLED) {
-    scheduleAccountSummaryRefresh(userId)
-    return
-  }
-
-  invalidatePollingSubscription(getUserAccountSubscriptionKey(userId), {
-    refetch: true,
-  })
+  scheduleAccountSummaryRefresh(userId)
 }
 
 async function fetchWatchlistStatus({ media, userId }) {
@@ -192,130 +164,47 @@ export function subscribeToUserWatchlist(userId, callback, options = {}) {
 export async function toggleUserWatchlistItem({ media, userId }) {
   const watchlistRef = createWatchlistRef(userId, media)
   const client = getSupabaseClient()
-
-  if (INFRA_V2_CLIENT_ENABLED) {
-    const row = createMediaRow(media, userId)
-    const rpcResult = await client.rpc('collection_toggle_watchlist_v2', {
-      p_backdrop_path: row.backdrop_path || null,
-      p_entity_id: row.entity_id || null,
-      p_entity_type: row.entity_type || null,
-      p_media_key: row.media_key,
-      p_payload: row.payload || {},
-      p_poster_path: row.poster_path || null,
-      p_title: row.title || null,
-      p_user_id: userId,
-    })
-
-    assertSupabaseResult(rpcResult, 'Watchlist item could not be updated')
-
-    const rpcRow = resolveRpcRow(rpcResult.data)
-    const isInWatchlist = rpcRow?.is_in_watchlist === true
-
-    if (isInWatchlist) {
-      const mediaSnapshot = assertMovieMedia(
-        media,
-        'Only movies are supported in watchlist'
-      )
-
-      fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
-        dedupeKey: buildCanonicalActivityDedupeKey({
-          actorUserId: userId,
-          subjectId: mediaSnapshot.entityId,
-          subjectType: mediaSnapshot.entityType,
-        }),
-        subjectId: mediaSnapshot.entityId,
-        subjectPoster: media?.posterPath || media?.poster_path || null,
-        subjectTitle: media?.title || media?.name || 'Untitled',
-        subjectType: mediaSnapshot.entityType,
-      })
-    }
-
-    const nextResult = {
-      isInWatchlist,
-      item: isInWatchlist
-        ? normalizeMediaPayload(row.payload || {}, row)
-        : null,
-      mediaKey: watchlistRef.id,
-    }
-
-    primePollingSubscription(
-      getWatchlistStatusSubscriptionKey({ media, userId }),
-      nextResult
-    )
-    invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
-      refetch: true,
-    })
-    refreshAccountSummary(userId)
-
-    return nextResult
-  }
-
-  const existing = await client
-    .from('watchlist')
-    .select('media_key')
-    .eq('user_id', userId)
-    .eq('media_key', watchlistRef.id)
-    .maybeSingle()
-
-  assertSupabaseResult(existing, 'Watchlist state could not be loaded')
-
-  if (existing.data) {
-    const removeResult = await client
-      .from('watchlist')
-      .delete()
-      .eq('user_id', userId)
-      .eq('media_key', watchlistRef.id)
-
-    assertSupabaseResult(removeResult, 'Watchlist item could not be removed')
-
-    primePollingSubscription(
-      getWatchlistStatusSubscriptionKey({ media, userId }),
-      {
-        isInWatchlist: false,
-        item: null,
-      }
-    )
-    invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
-      refetch: true,
-    })
-    refreshAccountSummary(userId)
-
-    return {
-      isInWatchlist: false,
-      item: null,
-      mediaKey: watchlistRef.id,
-    }
-  }
-
   const row = createMediaRow(media, userId)
-  const upsertResult = await client
-    .from('watchlist')
-    .upsert(row, { onConflict: 'user_id,media_key' })
-    .select(WATCHLIST_ROW_SELECT)
-    .single()
-
-  assertSupabaseResult(upsertResult, 'Watchlist item could not be saved')
-
-  const mediaSnapshot = assertMovieMedia(
-    media,
-    'Only movies are supported in watchlist'
-  )
-
-  fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
-    dedupeKey: buildCanonicalActivityDedupeKey({
-      actorUserId: userId,
-      subjectId: mediaSnapshot.entityId,
-      subjectType: mediaSnapshot.entityType,
-    }),
-    subjectId: mediaSnapshot.entityId,
-    subjectPoster: media?.posterPath || media?.poster_path || null,
-    subjectTitle: media?.title || media?.name || 'Untitled',
-    subjectType: mediaSnapshot.entityType,
+  const rpcResult = await client.rpc('collection_toggle_watchlist', {
+    p_backdrop_path: row.backdrop_path || null,
+    p_entity_id: row.entity_id || null,
+    p_entity_type: row.entity_type || null,
+    p_media_key: row.media_key,
+    p_payload: row.payload || {},
+    p_poster_path: row.poster_path || null,
+    p_title: row.title || null,
+    p_user_id: userId,
   })
 
+  assertSupabaseResult(rpcResult, 'Watchlist item could not be updated')
+
+  const rpcRow = resolveRpcRow(rpcResult.data)
+  const isInWatchlist = rpcRow?.is_in_watchlist === true
+
+  if (isInWatchlist) {
+    const mediaSnapshot = assertMovieMedia(
+      media,
+      'Only movies are supported in watchlist'
+    )
+
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
+      dedupeKey: buildCanonicalActivityDedupeKey({
+        actorUserId: userId,
+        subjectId: mediaSnapshot.entityId,
+        subjectType: mediaSnapshot.entityType,
+      }),
+      subjectId: mediaSnapshot.entityId,
+      subjectPoster: media?.posterPath || media?.poster_path || null,
+      subjectTitle: media?.title || media?.name || 'Untitled',
+      subjectType: mediaSnapshot.entityType,
+    })
+  }
+
   const nextResult = {
-    isInWatchlist: true,
-    item: normalizeMediaPayload(upsertResult.data?.payload || {}, upsertResult.data || {}),
+    isInWatchlist,
+    item: isInWatchlist
+      ? normalizeMediaPayload(row.payload || {}, row)
+      : null,
     mediaKey: watchlistRef.id,
   }
 
@@ -340,39 +229,19 @@ export async function removeUserWatchlistItem({
 
   const resolvedMediaKey = mediaKey || getWatchlistDocRef(userId, media).id
   const client = getSupabaseClient()
+  const rpcResult = await client.rpc('collection_remove_watchlist', {
+    p_media_key: resolvedMediaKey,
+    p_user_id: userId,
+  })
 
-  if (INFRA_V2_CLIENT_ENABLED) {
-    const rpcResult = await client.rpc('collection_remove_watchlist_v2', {
-      p_media_key: resolvedMediaKey,
-      p_user_id: userId,
-    })
+  assertSupabaseResult(rpcResult, 'Watchlist item could not be removed')
 
-    assertSupabaseResult(rpcResult, 'Watchlist item could not be removed')
-
-    invalidatePollingSubscription(getWatchlistStatusSubscriptionKey({ media, userId }), {
-      payload: {
-        isInWatchlist: false,
-        item: null,
-      },
-    })
-    invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
-      refetch: true,
-    })
-    refreshAccountSummary(userId)
-
-    return {
-      mediaKey: resolvedMediaKey,
-    }
-  }
-
-  const result = await client
-    .from('watchlist')
-    .delete()
-    .eq('user_id', userId)
-    .eq('media_key', resolvedMediaKey)
-
-  assertSupabaseResult(result, 'Watchlist item could not be removed')
-
+  invalidatePollingSubscription(getWatchlistStatusSubscriptionKey({ media, userId }), {
+    payload: {
+      isInWatchlist: false,
+      item: null,
+    },
+  })
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   })

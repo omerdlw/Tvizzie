@@ -18,7 +18,7 @@ function getPreviewImage(item) {
 
 export default function ListPreviewComposition({
   className = '',
-  emptyIcon = 'solar:list-heart-bold',
+  emptyIcon = 'solar:list-broken',
   imageClassName = 'h-full w-full object-cover',
   items = [],
 }) {

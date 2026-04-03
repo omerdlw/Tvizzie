@@ -178,6 +178,26 @@ async function withQueryTimeout(
   return result
 }
 
+async function executeCollectionQuery(
+  query,
+  {
+    fallbackValue = { data: [], error: null },
+    label = 'Collection query',
+    strict = false,
+    timeoutMs = 4000,
+  } = {}
+) {
+  if (strict) {
+    return query
+  }
+
+  return withQueryTimeout(query, {
+    fallbackValue,
+    label,
+    timeoutMs,
+  })
+}
+
 function normalizeMediaPayload(payload = {}, row = {}) {
   const entityId = normalizeValue(payload.entityId || row.entity_id || payload.id || '')
   const entityType = normalizeEntityType(
@@ -674,6 +694,7 @@ export async function getCollectionResource({
   media = null,
   listId = null,
   slug = null,
+  strict = false,
 }) {
   const admin = createAdminClient()
   const requiresProtectedAccess =
@@ -715,9 +736,10 @@ export async function getCollectionResource({
       query = query.limit(resolvedLimitCount)
     }
 
-    const result = await withQueryTimeout(query, {
+    const result = await executeCollectionQuery(query, {
       label: `Likes for user ${userId}`,
       fallbackValue: { data: [], error: null },
+      strict,
     })
 
     if (result?.timedOut) {
@@ -743,9 +765,10 @@ export async function getCollectionResource({
       query = query.limit(resolvedLimitCount)
     }
 
-    const result = await withQueryTimeout(query, {
+    const result = await executeCollectionQuery(query, {
       label: `Watchlist for user ${userId}`,
       fallbackValue: { data: [], error: null },
+      strict,
     })
 
     if (result?.timedOut) {
@@ -771,9 +794,10 @@ export async function getCollectionResource({
       query = query.limit(resolvedLimitCount)
     }
 
-    const result = await withQueryTimeout(query, {
+    const result = await executeCollectionQuery(query, {
       label: `Lists for user ${userId}`,
       fallbackValue: { data: [], error: null },
+      strict,
     })
 
     if (result?.timedOut) {
@@ -792,12 +816,27 @@ export async function getCollectionResource({
   }
 
   if (resource === 'list-items') {
-    const result = await admin
+    let query = admin
       .from('list_items')
       .select(LIST_ITEM_SELECT)
       .eq('user_id', userId)
       .eq('list_id', listId)
       .order('added_at', { ascending: false })
+    const resolvedLimitCount = resolveLimitCount(limitCount, 0, 200)
+
+    if (resolvedLimitCount > 0) {
+      query = query.limit(resolvedLimitCount)
+    }
+
+    const result = await executeCollectionQuery(query, {
+      label: `List items for list ${listId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    })
+
+    if (result?.timedOut) {
+      return []
+    }
 
     assertResult(result, 'List items could not be loaded')
 
@@ -843,10 +882,26 @@ export async function getCollectionResource({
   }
 
   if (resource === 'liked-lists') {
-    const likesResult = await admin
+    let likesQuery = admin
       .from('list_likes')
-      .select('list_id')
+      .select('list_id,created_at')
       .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    const resolvedLimitCount = resolveLimitCount(limitCount, 0, 200)
+
+    if (resolvedLimitCount > 0) {
+      likesQuery = likesQuery.limit(resolvedLimitCount)
+    }
+
+    const likesResult = await executeCollectionQuery(likesQuery, {
+      label: `Liked lists for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    })
+
+    if (likesResult?.timedOut) {
+      return []
+    }
 
     assertResult(likesResult, 'Liked lists could not be loaded')
 
@@ -971,11 +1026,26 @@ export async function getCollectionResource({
   }
 
   if (resource === 'watched') {
-    const result = await admin
+    let query = admin
       .from('watched')
       .select(WATCHED_SELECT)
       .eq('user_id', userId)
       .order('last_watched_at', { ascending: false })
+    const resolvedLimitCount = resolveLimitCount(limitCount, 0, 200)
+
+    if (resolvedLimitCount > 0) {
+      query = query.limit(resolvedLimitCount)
+    }
+
+    const result = await executeCollectionQuery(query, {
+      label: `Watched for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    })
+
+    if (result?.timedOut) {
+      return []
+    }
 
     assertResult(result, 'Watched list could not be loaded')
 
@@ -993,6 +1063,7 @@ export async function getFollowResource({
   targetId = null,
   viewerId = null,
   status = null,
+  strict = false,
 }) {
   const client = await createServerClient()
 
@@ -1025,11 +1096,12 @@ export async function getFollowResource({
       query = query.eq('status', normalizedStatus)
     }
 
-    const result = await withQueryTimeout(
+    const result = await executeCollectionQuery(
       query.order('created_at', { ascending: false }),
       {
         label: `${direction} for user ${userId}`,
         fallbackValue: { data: [], error: null },
+        strict,
       }
     )
 
@@ -1050,33 +1122,34 @@ export async function getFollowResource({
     }
 
     const targetProfile = await getAccountProfileByUserId(targetId)
+    const runRelationshipQuery = (queryPromise, label) =>
+      executeCollectionQuery(queryPromise, {
+        fallbackValue: { data: null, error: null },
+        label,
+        strict,
+        timeoutMs: 2500,
+      })
     const [outboundResult, inboundResult] = await Promise.all([
       viewerId && viewerId !== targetId
-        ? withQueryTimeout(
+        ? runRelationshipQuery(
             client
               .from('follows')
               .select(FOLLOW_SELECT)
               .eq('follower_id', viewerId)
               .eq('following_id', targetId)
               .maybeSingle(),
-            {
-              label: `Outbound follow check ${viewerId} -> ${targetId}`,
-              fallbackValue: { data: null, error: null },
-            }
+            `Outbound follow check ${viewerId} -> ${targetId}`
           )
         : Promise.resolve({ data: null, error: null }),
       viewerId && viewerId !== targetId
-        ? withQueryTimeout(
+        ? runRelationshipQuery(
             client
               .from('follows')
               .select(FOLLOW_SELECT)
               .eq('follower_id', targetId)
               .eq('following_id', viewerId)
               .maybeSingle(),
-            {
-              label: `Inbound follow check ${targetId} -> ${viewerId}`,
-              fallbackValue: { data: null, error: null },
-            }
+            `Inbound follow check ${targetId} -> ${viewerId}`
           )
         : Promise.resolve({ data: null, error: null }),
     ])

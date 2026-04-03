@@ -92,6 +92,10 @@ export default function Client({
     initialResolveError,
     username,
   })
+  const shouldForcePrivateRefresh =
+    !isOwner &&
+    isPrivateProfile === true &&
+    canViewPrivateContent
   const {
     applyFeedResult: applyReviewFeedResult,
     cursor: reviewsCursor,
@@ -115,16 +119,20 @@ export default function Client({
     setItems: setLikedLists,
     syncFeed: syncLikedListsFeed,
   } = useSeededFeedState(initialLikedLists)
-  const hasSeededReviewFeed = hasMatchingSeededFeed({
-    expectedValue: 'liked',
-    initialFeed: initialReviewFeed,
-    resolvedUserId,
-  })
-  const hasSeededLikedLists = hasMatchingSeededFeed({
-    expectedValue: 'liked-lists',
-    initialFeed: initialLikedLists,
-    resolvedUserId,
-  })
+  const hasSeededReviewFeed =
+    !shouldForcePrivateRefresh &&
+    hasMatchingSeededFeed({
+      expectedValue: 'liked',
+      initialFeed: initialReviewFeed,
+      resolvedUserId,
+    })
+  const hasSeededLikedLists =
+    !shouldForcePrivateRefresh &&
+    hasMatchingSeededFeed({
+      expectedValue: 'liked-lists',
+      initialFeed: initialLikedLists,
+      resolvedUserId,
+    })
   const shouldBlockReviewLoad = shouldBlockAccountFeedLoad({
     canViewPrivateContent,
     hasSeededFeed: hasSeededReviewFeed,
@@ -313,9 +321,16 @@ export default function Client({
       return undefined
     }
 
-    const unsubscribe = subscribeToUserWatched(resolvedUserId, setWatchedItems, {
-      onError: () => setWatchedItems([]),
-    })
+    const unsubscribe = subscribeToUserWatched(
+      resolvedUserId,
+      setWatchedItems,
+      {
+        emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+        fetchOnSubscribe: true,
+        refreshOnSubscribe: shouldForcePrivateRefresh,
+        onError: () => setWatchedItems([]),
+      }
+    )
 
     return unsubscribe
   }, [
@@ -325,6 +340,7 @@ export default function Client({
     isPrivateProfile,
     isViewerReady,
     resolvedUserId,
+    shouldForcePrivateRefresh,
   ])
 
   useEffect(() => {

@@ -164,7 +164,7 @@ export default function LikesView({
           <AccountPaginatedListGrid
             currentPage={currentPage}
             emptyMessage="No liked lists yet"
-            icon="solar:list-heart-bold"
+            icon="solar:list-broken"
             isLoading={isLikedListsLoading}
             lists={likedLists}
             loadError={likedListsError}

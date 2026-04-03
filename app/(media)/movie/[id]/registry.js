@@ -99,7 +99,6 @@ export default function Registry({
           </span>
         ) : undefined,
       icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,
-      isLoading,
       surface: navSurface,
       title:
         movie?.title || movie?.original_title || (isLoading ? '' : undefined),

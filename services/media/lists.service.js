@@ -19,7 +19,6 @@ import {
   createMediaPayload,
   ensureUserId,
   normalizeMediaPayload,
-  paginateByCursor,
   resolveLimitCount,
 } from '@/services/core/supabase-media-utils.service'
 import { getUserAccount } from '@/services/account/account.service'
@@ -47,8 +46,6 @@ const LIST_ROW_SELECT = [
   'user_id',
 ].join(',')
 const LIST_ITEM_PREVIEW_SELECT = ['added_at', 'payload'].join(',')
-const INFRA_V2_CLIENT_ENABLED =
-  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
 
 function resolveRpcRow(data) {
   if (Array.isArray(data)) {
@@ -472,47 +469,45 @@ export async function fetchProfileLikedLists({
   userId,
 }) {
   if (!userId) {
-    return paginateByCursor([], cursor, pageSize)
-  }
-
-  if (INFRA_V2_CLIENT_ENABLED) {
-    const targetCount = resolveLimitCount(pageSize, 36, 500)
-    let currentCursor = cursor || null
-    let hasMore = true
-    const items = []
-
-    while (hasMore && items.length < targetCount) {
-      const batchLimit = Math.min(50, Math.max(1, targetCount - items.length))
-      const payload = await requestApiJson('/api/collections', {
-        query: {
-          activeTab: 'likes',
-          cursor: currentCursor,
-          limit: batchLimit,
-          resource: 'liked-lists',
-          userId,
-        },
-      })
-
-      const batch = Array.isArray(payload?.data) ? payload.data : []
-      items.push(...batch)
-      hasMore = payload?.pageInfo?.hasMore === true
-      currentCursor = payload?.pageInfo?.cursor || null
-
-      if (cursor) {
-        break
-      }
-    }
-
     return {
-      hasMore,
-      items,
-      nextCursor: hasMore ? currentCursor : null,
+      hasMore: false,
+      items: [],
+      nextCursor: null,
     }
   }
 
-  const items = await fetchLikedLists(userId)
+  const targetCount = resolveLimitCount(pageSize, 36, 500)
+  let currentCursor = cursor || null
+  let hasMore = true
+  const items = []
 
-  return paginateByCursor(items, cursor, pageSize)
+  while (hasMore && items.length < targetCount) {
+    const batchLimit = Math.min(50, Math.max(1, targetCount - items.length))
+    const payload = await requestApiJson('/api/collections', {
+      query: {
+        activeTab: 'likes',
+        cursor: currentCursor,
+        limit: batchLimit,
+        resource: 'liked-lists',
+        userId,
+      },
+    })
+
+    const batch = Array.isArray(payload?.data) ? payload.data : []
+    items.push(...batch)
+    hasMore = payload?.pageInfo?.hasMore === true
+    currentCursor = payload?.pageInfo?.cursor || null
+
+    if (cursor) {
+      break
+    }
+  }
+
+  return {
+    hasMore,
+    items,
+    nextCursor: hasMore ? currentCursor : null,
+  }
 }
 
 export function subscribeToUserListItems(
@@ -847,156 +842,39 @@ export async function toggleUserListItem({ userId, listId, media }) {
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId)
   const nowIso = new Date().toISOString()
   const client = getSupabaseClient()
+  const mediaPayload = createMediaPayload(media, userId, {
+    addedAt: nowIso,
+    position: Number.isFinite(Number(media?.position))
+      ? Number(media.position)
+      : null,
+    updatedAt: nowIso,
+  })
+  const rpcResult = await client.rpc('collection_toggle_list_item', {
+    p_backdrop_path: mediaPayload.backdrop_path || null,
+    p_entity_id: mediaPayload.entityId || null,
+    p_entity_type: mediaPayload.entityType || null,
+    p_list_id: listId,
+    p_media_key: mediaPayload.mediaKey,
+    p_payload: mediaPayload,
+    p_position: Number.isFinite(Number(mediaPayload.position))
+      ? Number(mediaPayload.position)
+      : null,
+    p_poster_path: mediaPayload.poster_path || null,
+    p_title: mediaPayload.title || null,
+    p_user_id: userId,
+  })
 
-  if (INFRA_V2_CLIENT_ENABLED) {
-    const mediaPayload = createMediaPayload(media, userId, {
-      addedAt: nowIso,
-      position: Number.isFinite(Number(media?.position))
-        ? Number(media.position)
-        : null,
-      updatedAt: nowIso,
-    })
-    const rpcResult = await client.rpc('collection_toggle_list_item_v2', {
-      p_backdrop_path: mediaPayload.backdrop_path || null,
-      p_entity_id: mediaPayload.entityId || null,
-      p_entity_type: mediaPayload.entityType || null,
-      p_list_id: listId,
-      p_media_key: mediaPayload.mediaKey,
-      p_payload: mediaPayload,
-      p_position: Number.isFinite(Number(mediaPayload.position))
-        ? Number(mediaPayload.position)
-        : null,
-      p_poster_path: mediaPayload.poster_path || null,
-      p_title: mediaPayload.title || null,
-      p_user_id: userId,
-    })
+  assertSupabaseResult(rpcResult, 'List item could not be updated')
 
-    assertSupabaseResult(rpcResult, 'List item could not be updated')
+  const rpcRow = resolveRpcRow(rpcResult.data)
+  const isInList = rpcRow?.is_in_list === true
 
-    const rpcRow = resolveRpcRow(rpcResult.data)
-    const isInList = rpcRow?.is_in_list === true
-
-    if (!isInList) {
-      return {
-        isInList: false,
-        mediaKey,
-      }
-    }
-
-    return {
-      isInList: true,
-      item: {
-        ...mediaPayload,
-        addedAt: nowIso,
-        updatedAt: nowIso,
-      },
-      mediaKey: mediaPayload.mediaKey,
-    }
-  }
-
-  const [listResult, itemResult] = await Promise.all([
-    client
-      .from('lists')
-      .select('id,payload')
-      .eq('id', listId)
-      .eq('user_id', userId)
-      .maybeSingle(),
-    client
-      .from('list_items')
-      .select('media_key')
-      .eq('list_id', listId)
-      .eq('user_id', userId)
-      .eq('media_key', mediaKey)
-      .maybeSingle(),
-  ])
-
-  assertSupabaseResult(listResult, 'List could not be loaded')
-  assertSupabaseResult(itemResult, 'List item state could not be loaded')
-
-  if (!listResult.data) {
-    throw new Error('List not found')
-  }
-
-  const listPayload =
-    listResult.data.payload && typeof listResult.data.payload === 'object'
-      ? listResult.data.payload
-      : {}
-  const currentCount = Number(listPayload.itemsCount || 0)
-  const nextPosition = currentCount + 1
-
-  if (itemResult.data) {
-    const deleteResult = await client
-      .from('list_items')
-      .delete()
-      .eq('list_id', listId)
-      .eq('user_id', userId)
-      .eq('media_key', mediaKey)
-
-    assertSupabaseResult(deleteResult, 'List item could not be removed')
-
-    const updateResult = await client
-      .from('lists')
-      .update({
-        payload: {
-          ...listPayload,
-          itemsCount: Math.max(0, currentCount - 1),
-        },
-        updated_at: nowIso,
-      })
-      .eq('id', listId)
-      .eq('user_id', userId)
-
-    assertSupabaseResult(updateResult, 'List counters could not be updated')
-
-    await syncUserListDerivedState({ userId, listId })
-
+  if (!isInList) {
     return {
       isInList: false,
       mediaKey,
     }
   }
-
-  const mediaPayload = createMediaPayload(media, userId, {
-    addedAt: nowIso,
-    position: nextPosition,
-    updatedAt: nowIso,
-  })
-  const insertResult = await client
-    .from('list_items')
-    .insert({
-      list_id: listId,
-      user_id: userId,
-      media_key: mediaPayload.mediaKey,
-      entity_id: mediaPayload.entityId,
-      entity_type: mediaPayload.entityType,
-      title: mediaPayload.title,
-      poster_path: mediaPayload.poster_path,
-      backdrop_path: mediaPayload.backdrop_path,
-      position: Number.isFinite(Number(mediaPayload.position))
-        ? Number(mediaPayload.position)
-        : null,
-      payload: mediaPayload,
-      added_at: nowIso,
-      updated_at: nowIso,
-    })
-
-  assertSupabaseResult(insertResult, 'List item could not be added')
-
-  const updateResult = await client
-    .from('lists')
-    .update({
-      payload: {
-        ...listPayload,
-        itemsCount: currentCount + 1,
-      },
-      updated_at: nowIso,
-    })
-    .eq('id', listId)
-    .eq('user_id', userId)
-
-  assertSupabaseResult(updateResult, 'List counters could not be updated')
-
-  await syncUserListDerivedState({ userId, listId })
 
   return {
     isInList: true,
@@ -1019,133 +897,29 @@ export async function toggleListLike({ ownerId, listId, userId }) {
   }
 
   const client = getSupabaseClient()
-
-  if (INFRA_V2_CLIENT_ENABLED) {
-    const listResult = await client
-      .from('lists')
-      .select('slug,title,payload')
-      .eq('id', listId)
-      .eq('user_id', ownerId)
-      .maybeSingle()
-
-    assertSupabaseResult(listResult, 'List could not be loaded')
-
-    if (!listResult.data) {
-      throw new Error('List not found')
-    }
-
-    const rpcResult = await client.rpc('collection_toggle_list_like_v2', {
-      p_list_id: listId,
-      p_owner_id: ownerId,
-      p_user_id: userId,
-    })
-
-    assertSupabaseResult(rpcResult, 'List like state could not be updated')
-
-    const rpcRow = resolveRpcRow(rpcResult.data)
-    const isNowLiked = rpcRow?.is_liked === true
-
-    if (isNowLiked) {
-      fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
-        listOwnerId: ownerId,
-        listId,
-      })
-
-      fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {
-        dedupeKey: buildCanonicalActivityDedupeKey({
-          actorUserId: userId,
-          subjectId: listId,
-          subjectType: 'list',
-        }),
-        listId,
-        listSlug: listResult.data.slug || listId,
-        listTitle: listResult.data.title || 'Untitled List',
-        ownerUsername: listResult.data?.payload?.ownerSnapshot?.username || ownerId,
-        subjectId: listId,
-        subjectPoster:
-          listResult.data?.payload?.coverUrl ||
-          listResult.data?.payload?.previewItems?.[0]?.poster_path ||
-          null,
-        subjectTitle: listResult.data.title || 'Untitled List',
-        subjectType: 'list',
-      })
-    }
-
-    return isNowLiked
-  }
-
-  const [listResult, likeResult] = await Promise.all([
-    client
-      .from('lists')
-      .select('likes_count,payload')
-      .eq('id', listId)
-      .eq('user_id', ownerId)
-      .maybeSingle(),
-    client
-      .from('list_likes')
-      .select('list_id, user_id')
-      .eq('list_id', listId)
-      .eq('user_id', userId)
-      .maybeSingle(),
-  ])
+  const listResult = await client
+    .from('lists')
+    .select('slug,title,payload')
+    .eq('id', listId)
+    .eq('user_id', ownerId)
+    .maybeSingle()
 
   assertSupabaseResult(listResult, 'List could not be loaded')
-  assertSupabaseResult(likeResult, 'List like state could not be loaded')
 
   if (!listResult.data) {
     throw new Error('List not found')
   }
 
-  const listPayload =
-    listResult.data.payload && typeof listResult.data.payload === 'object'
-      ? listResult.data.payload
-      : {}
-  const currentLikes = Array.isArray(listPayload.likes) ? listPayload.likes : []
-  const hasLiked = Boolean(likeResult.data)
-  const isNowLiked = !hasLiked
-  const nextLikes = isNowLiked
-    ? Array.from(new Set([...currentLikes, userId]))
-    : currentLikes.filter((id) => id !== userId)
+  const rpcResult = await client.rpc('collection_toggle_list_like', {
+    p_list_id: listId,
+    p_owner_id: ownerId,
+    p_user_id: userId,
+  })
 
-  if (hasLiked) {
-    const deleteResult = await client
-      .from('list_likes')
-      .delete()
-      .eq('list_id', listId)
-      .eq('user_id', userId)
+  assertSupabaseResult(rpcResult, 'List like state could not be updated')
 
-    assertSupabaseResult(deleteResult, 'List like could not be removed')
-  } else {
-    const insertResult = await client
-      .from('list_likes')
-      .insert({
-        list_id: listId,
-        user_id: userId,
-        created_at: new Date().toISOString(),
-      })
-
-    assertSupabaseResult(insertResult, 'List like could not be added')
-  }
-
-  const nextLikesCount = Math.max(
-    0,
-    Number(listResult.data.likes_count || currentLikes.length || 0) +
-      (hasLiked ? -1 : 1)
-  )
-  const updateResult = await client
-    .from('lists')
-    .update({
-      likes_count: nextLikesCount,
-      payload: {
-        ...listPayload,
-        likes: nextLikes,
-      },
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', listId)
-    .eq('user_id', ownerId)
-
-  assertSupabaseResult(updateResult, 'List like state could not be updated')
+  const rpcRow = resolveRpcRow(rpcResult.data)
+  const isNowLiked = rpcRow?.is_liked === true
 
   if (isNowLiked) {
     fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
@@ -1158,14 +932,16 @@ export async function toggleListLike({ ownerId, listId, userId }) {
         actorUserId: userId,
         subjectId: listId,
         subjectType: 'list',
-      }),
+        }),
       listId,
       listSlug: listResult.data.slug || listId,
       listTitle: listResult.data.title || 'Untitled List',
-      ownerUsername: listPayload?.ownerSnapshot?.username || ownerId,
+      ownerUsername: listResult.data?.payload?.ownerSnapshot?.username || ownerId,
       subjectId: listId,
       subjectPoster:
-        listPayload.coverUrl || listPayload?.previewItems?.[0]?.poster_path || null,
+        listResult.data?.payload?.coverUrl ||
+        listResult.data?.payload?.previewItems?.[0]?.poster_path ||
+        null,
       subjectTitle: listResult.data.title || 'Untitled List',
       subjectType: 'list',
     })

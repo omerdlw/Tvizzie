@@ -1,7 +1,7 @@
--- Tvizzie infra v2 transactional primitives
+-- Tvizzie infra transactional primitives
 -- Atomic write RPCs for collection and follow mutation paths.
 
-create or replace function public.assert_infra_v2_actor(p_user_id uuid)
+create or replace function public.assert_infra_actor(p_user_id uuid)
 returns void
 language plpgsql
 stable
@@ -26,7 +26,7 @@ begin
 end;
 $$;
 
-create or replace function public.profile_counter_apply_delta_v2(
+create or replace function public.profile_counter_apply_delta(
   p_user_id uuid,
   p_likes_delta integer default 0,
   p_lists_delta integer default 0,
@@ -35,26 +35,26 @@ create or replace function public.profile_counter_apply_delta_v2(
   p_follower_delta integer default 0,
   p_following_delta integer default 0
 )
-returns public.profile_counters_v2
+returns public.profile_counters
 language plpgsql
 volatile
 security definer
 set search_path = ''
 as $$
 declare
-  v_row public.profile_counters_v2;
+  v_row public.profile_counters;
 begin
   if p_user_id is null then
     raise exception 'USER_ID_REQUIRED';
   end if;
 
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
-  insert into public.profile_counters_v2 (user_id, updated_at)
+  insert into public.profile_counters (user_id, updated_at)
   values (p_user_id, timezone('utc', now()))
   on conflict (user_id) do nothing;
 
-  update public.profile_counters_v2
+  update public.profile_counters
   set likes_count = greatest(0, likes_count + coalesce(p_likes_delta, 0)),
       lists_count = greatest(0, lists_count + coalesce(p_lists_delta, 0)),
       watched_count = greatest(0, watched_count + coalesce(p_watched_delta, 0)),
@@ -68,14 +68,14 @@ begin
   if not found then
     select *
     into v_row
-    from public.refresh_profile_counters_v2(p_user_id);
+    from public.refresh_profile_counters(p_user_id);
   end if;
 
   return v_row;
 end;
 $$;
 
-create or replace function public.collection_toggle_like_v2(
+create or replace function public.collection_toggle_like(
   p_user_id uuid,
   p_media_key text,
   p_entity_id text default null,
@@ -99,10 +99,10 @@ as $$
 declare
   v_existing boolean := false;
   v_now timestamptz := timezone('utc', now());
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -125,7 +125,7 @@ begin
     where user_id = p_user_id
       and media_key = v_media_key;
 
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_likes_delta := -1
     );
@@ -164,7 +164,7 @@ begin
           payload = excluded.payload,
           updated_at = excluded.updated_at;
 
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_likes_delta := 1
     );
@@ -178,7 +178,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_remove_like_v2(
+create or replace function public.collection_remove_like(
   p_user_id uuid,
   p_media_key text
 )
@@ -199,9 +199,9 @@ declare
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
   v_likes_count integer := 0;
   v_updated_at timestamptz := v_now;
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -217,7 +217,7 @@ begin
   get diagnostics v_deleted = row_count;
 
   if v_deleted > 0 then
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_likes_delta := -1
     );
@@ -230,7 +230,7 @@ begin
     into
       v_likes_count,
       v_updated_at
-    from public.profile_counters_v2 pc
+    from public.profile_counters pc
     where pc.user_id = p_user_id;
   end if;
 
@@ -242,7 +242,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_toggle_watchlist_v2(
+create or replace function public.collection_toggle_watchlist(
   p_user_id uuid,
   p_media_key text,
   p_entity_id text default null,
@@ -266,10 +266,10 @@ as $$
 declare
   v_existing boolean := false;
   v_now timestamptz := timezone('utc', now());
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -292,7 +292,7 @@ begin
     where user_id = p_user_id
       and media_key = v_media_key;
 
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_watchlist_delta := -1
     );
@@ -331,7 +331,7 @@ begin
           payload = excluded.payload,
           updated_at = excluded.updated_at;
 
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_watchlist_delta := 1
     );
@@ -345,7 +345,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_remove_watchlist_v2(
+create or replace function public.collection_remove_watchlist(
   p_user_id uuid,
   p_media_key text
 )
@@ -366,9 +366,9 @@ declare
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
   v_watchlist_count integer := 0;
   v_updated_at timestamptz := v_now;
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -384,7 +384,7 @@ begin
   get diagnostics v_deleted = row_count;
 
   if v_deleted > 0 then
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_watchlist_delta := -1
     );
@@ -397,7 +397,7 @@ begin
     into
       v_watchlist_count,
       v_updated_at
-    from public.profile_counters_v2 pc
+    from public.profile_counters pc
     where pc.user_id = p_user_id;
   end if;
 
@@ -409,7 +409,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_mark_watched_v2(
+create or replace function public.collection_mark_watched(
   p_user_id uuid,
   p_media_key text,
   p_entity_id text default null,
@@ -445,9 +445,9 @@ declare
   v_watchlist_deleted integer := 0;
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
   v_payload jsonb;
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -525,7 +525,7 @@ begin
     and media_key = v_media_key;
   get diagnostics v_watchlist_deleted = row_count;
 
-  v_counters := public.profile_counter_apply_delta_v2(
+  v_counters := public.profile_counter_apply_delta(
     p_user_id,
     p_watched_delta := case when v_is_new then 1 else 0 end,
     p_watchlist_delta := case when v_watchlist_deleted > 0 then -1 else 0 end
@@ -542,7 +542,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_remove_watched_v2(
+create or replace function public.collection_remove_watched(
   p_user_id uuid,
   p_media_key text
 )
@@ -563,9 +563,9 @@ declare
   v_media_key text := nullif(trim(coalesce(p_media_key, '')), '');
   v_watched_count integer := 0;
   v_updated_at timestamptz := v_now;
-  v_counters public.profile_counters_v2;
+  v_counters public.profile_counters;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if v_media_key is null then
     raise exception 'MEDIA_KEY_REQUIRED';
@@ -581,7 +581,7 @@ begin
   get diagnostics v_deleted = row_count;
 
   if v_deleted > 0 then
-    v_counters := public.profile_counter_apply_delta_v2(
+    v_counters := public.profile_counter_apply_delta(
       p_user_id,
       p_watched_delta := -1
     );
@@ -594,7 +594,7 @@ begin
     into
       v_watched_count,
       v_updated_at
-    from public.profile_counters_v2 pc
+    from public.profile_counters pc
     where pc.user_id = p_user_id;
   end if;
 
@@ -606,7 +606,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_toggle_list_item_v2(
+create or replace function public.collection_toggle_list_item(
   p_user_id uuid,
   p_list_id uuid,
   p_media_key text,
@@ -637,7 +637,7 @@ declare
   v_items_count integer := 0;
   v_preview_items jsonb := '[]'::jsonb;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if p_list_id is null then
     raise exception 'LIST_ID_REQUIRED';
@@ -755,7 +755,7 @@ begin
 end;
 $$;
 
-create or replace function public.collection_toggle_list_like_v2(
+create or replace function public.collection_toggle_list_like(
   p_owner_id uuid,
   p_list_id uuid,
   p_user_id uuid
@@ -777,7 +777,7 @@ declare
   v_next_likes jsonb := '[]'::jsonb;
   v_likes_count integer := 0;
 begin
-  perform public.assert_infra_v2_actor(p_user_id);
+  perform public.assert_infra_actor(p_user_id);
 
   if p_owner_id is null or p_list_id is null or p_user_id is null then
     raise exception 'OWNER_ID_LIST_ID_AND_USER_ID_REQUIRED';
@@ -858,7 +858,7 @@ begin
 end;
 $$;
 
-create or replace function public.follow_upsert_v2(
+create or replace function public.follow_upsert(
   p_follower_id uuid,
   p_following_id uuid,
   p_status text,
@@ -887,7 +887,7 @@ declare
   v_prev_accepted boolean := false;
   v_next_accepted boolean := false;
 begin
-  perform public.assert_infra_v2_actor(p_follower_id);
+  perform public.assert_infra_actor(p_follower_id);
 
   if p_follower_id is null or p_following_id is null then
     raise exception 'FOLLOW_IDS_REQUIRED';
@@ -970,21 +970,21 @@ begin
 
   if not v_prev_accepted and v_next_accepted then
     accepted_delta := 1;
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_follower_id,
       p_following_delta := 1
     );
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_following_id,
       p_follower_delta := 1
     );
   elsif v_prev_accepted and not v_next_accepted then
     accepted_delta := -1;
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_follower_id,
       p_following_delta := -1
     );
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_following_id,
       p_follower_delta := -1
     );
@@ -996,7 +996,7 @@ begin
 end;
 $$;
 
-create or replace function public.follow_delete_v2(
+create or replace function public.follow_delete(
   p_actor_id uuid,
   p_follower_id uuid,
   p_following_id uuid
@@ -1016,7 +1016,7 @@ declare
   v_now timestamptz := timezone('utc', now());
   v_role text := coalesce(auth.role(), '');
 begin
-  perform public.assert_infra_v2_actor(p_actor_id);
+  perform public.assert_infra_actor(p_actor_id);
 
   if p_follower_id is null or p_following_id is null then
     raise exception 'FOLLOW_IDS_REQUIRED';
@@ -1054,11 +1054,11 @@ begin
   was_accepted := v_existing.status = 'accepted';
 
   if was_accepted then
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_follower_id,
       p_following_delta := -1
     );
-    perform public.profile_counter_apply_delta_v2(
+    perform public.profile_counter_apply_delta(
       p_following_id,
       p_follower_delta := -1
     );
@@ -1069,27 +1069,27 @@ begin
 end;
 $$;
 
-revoke all on function public.assert_infra_v2_actor(uuid) from public, anon, authenticated;
-revoke all on function public.profile_counter_apply_delta_v2(uuid, integer, integer, integer, integer, integer, integer) from public, anon, authenticated;
-revoke all on function public.collection_toggle_like_v2(uuid, text, text, text, text, text, text, jsonb) from public, anon, authenticated;
-revoke all on function public.collection_remove_like_v2(uuid, text) from public, anon, authenticated;
-revoke all on function public.collection_toggle_watchlist_v2(uuid, text, text, text, text, text, text, jsonb) from public, anon, authenticated;
-revoke all on function public.collection_remove_watchlist_v2(uuid, text) from public, anon, authenticated;
-revoke all on function public.collection_mark_watched_v2(uuid, text, text, text, text, text, text, jsonb, timestamptz, text) from public, anon, authenticated;
-revoke all on function public.collection_remove_watched_v2(uuid, text) from public, anon, authenticated;
-revoke all on function public.collection_toggle_list_item_v2(uuid, uuid, text, text, text, text, text, text, jsonb, integer) from public, anon, authenticated;
-revoke all on function public.collection_toggle_list_like_v2(uuid, uuid, uuid) from public, anon, authenticated;
-revoke all on function public.follow_upsert_v2(uuid, uuid, text, text, text, text, text, text, text, timestamptz) from public, anon, authenticated;
-revoke all on function public.follow_delete_v2(uuid, uuid, uuid) from public, anon, authenticated;
+revoke all on function public.assert_infra_actor(uuid) from public, anon, authenticated;
+revoke all on function public.profile_counter_apply_delta(uuid, integer, integer, integer, integer, integer, integer) from public, anon, authenticated;
+revoke all on function public.collection_toggle_like(uuid, text, text, text, text, text, text, jsonb) from public, anon, authenticated;
+revoke all on function public.collection_remove_like(uuid, text) from public, anon, authenticated;
+revoke all on function public.collection_toggle_watchlist(uuid, text, text, text, text, text, text, jsonb) from public, anon, authenticated;
+revoke all on function public.collection_remove_watchlist(uuid, text) from public, anon, authenticated;
+revoke all on function public.collection_mark_watched(uuid, text, text, text, text, text, text, jsonb, timestamptz, text) from public, anon, authenticated;
+revoke all on function public.collection_remove_watched(uuid, text) from public, anon, authenticated;
+revoke all on function public.collection_toggle_list_item(uuid, uuid, text, text, text, text, text, text, jsonb, integer) from public, anon, authenticated;
+revoke all on function public.collection_toggle_list_like(uuid, uuid, uuid) from public, anon, authenticated;
+revoke all on function public.follow_upsert(uuid, uuid, text, text, text, text, text, text, text, timestamptz) from public, anon, authenticated;
+revoke all on function public.follow_delete(uuid, uuid, uuid) from public, anon, authenticated;
 
-grant execute on function public.profile_counter_apply_delta_v2(uuid, integer, integer, integer, integer, integer, integer) to service_role;
-grant execute on function public.collection_toggle_like_v2(uuid, text, text, text, text, text, text, jsonb) to authenticated, service_role;
-grant execute on function public.collection_remove_like_v2(uuid, text) to authenticated, service_role;
-grant execute on function public.collection_toggle_watchlist_v2(uuid, text, text, text, text, text, text, jsonb) to authenticated, service_role;
-grant execute on function public.collection_remove_watchlist_v2(uuid, text) to authenticated, service_role;
-grant execute on function public.collection_mark_watched_v2(uuid, text, text, text, text, text, text, jsonb, timestamptz, text) to authenticated, service_role;
-grant execute on function public.collection_remove_watched_v2(uuid, text) to authenticated, service_role;
-grant execute on function public.collection_toggle_list_item_v2(uuid, uuid, text, text, text, text, text, text, jsonb, integer) to authenticated, service_role;
-grant execute on function public.collection_toggle_list_like_v2(uuid, uuid, uuid) to authenticated, service_role;
-grant execute on function public.follow_upsert_v2(uuid, uuid, text, text, text, text, text, text, text, timestamptz) to service_role;
-grant execute on function public.follow_delete_v2(uuid, uuid, uuid) to service_role;
+grant execute on function public.profile_counter_apply_delta(uuid, integer, integer, integer, integer, integer, integer) to service_role;
+grant execute on function public.collection_toggle_like(uuid, text, text, text, text, text, text, jsonb) to authenticated, service_role;
+grant execute on function public.collection_remove_like(uuid, text) to authenticated, service_role;
+grant execute on function public.collection_toggle_watchlist(uuid, text, text, text, text, text, text, jsonb) to authenticated, service_role;
+grant execute on function public.collection_remove_watchlist(uuid, text) to authenticated, service_role;
+grant execute on function public.collection_mark_watched(uuid, text, text, text, text, text, text, jsonb, timestamptz, text) to authenticated, service_role;
+grant execute on function public.collection_remove_watched(uuid, text) to authenticated, service_role;
+grant execute on function public.collection_toggle_list_item(uuid, uuid, text, text, text, text, text, text, jsonb, integer) to authenticated, service_role;
+grant execute on function public.collection_toggle_list_like(uuid, uuid, uuid) to authenticated, service_role;
+grant execute on function public.follow_upsert(uuid, uuid, text, text, text, text, text, text, text, timestamptz) to service_role;
+grant execute on function public.follow_delete(uuid, uuid, uuid) to service_role;

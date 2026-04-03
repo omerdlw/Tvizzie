@@ -8,7 +8,6 @@ export default function Registry({ heroBackdropPath, isLoading = false }) {
   useRegistry({
     nav: {
       action: <SearchAction />,
-      isLoading,
     },
     loading: { isLoading },
     ...(heroBackdropPath

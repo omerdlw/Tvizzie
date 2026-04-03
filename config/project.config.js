@@ -21,7 +21,7 @@ const BASE_PROJECT_CONFIG = {
     countdown: false,
     supabase: true,
     media_social_proof: true,
-    social_follows_v2: true,
+    social_follows: true,
   },
   debug: {
     registry: {

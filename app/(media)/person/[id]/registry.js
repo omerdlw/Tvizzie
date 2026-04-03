@@ -37,7 +37,6 @@ export default function Registry({
       title,
       description: isLoading ? undefined : description,
       icon,
-      isLoading,
       actions: [
         {
           key: 'search-overlay',

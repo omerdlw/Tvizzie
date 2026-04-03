@@ -1,4 +1,6 @@
 const SUBSCRIPTION_CACHE_TTL_MS = 10000
+const SHARED_ENTRY_RETRY_BASE_MS = 700
+const SHARED_ENTRY_RETRY_MAX_ATTEMPTS = 2
 
 const sharedSubscriptionRegistry = new Map()
 
@@ -44,6 +46,13 @@ function clearEntryCleanup(entry) {
   }
 }
 
+function clearEntryRetry(entry) {
+  if (entry.retryTimer) {
+    clearTimeout(entry.retryTimer)
+    entry.retryTimer = null
+  }
+}
+
 function emitSharedPayload(entry, payload) {
   entry.subscribers.forEach((subscriber) => {
     subscriber.callback(payload)
@@ -60,6 +69,7 @@ function emitSharedError(entry, error) {
 
 function scheduleEntryCleanup(entry) {
   clearEntryCleanup(entry)
+  clearEntryRetry(entry)
   entry.cleanupTimer = setTimeout(() => {
     if (entry.subscribers.size > 0 || entry.inFlight) {
       return
@@ -88,6 +98,7 @@ async function runSharedEntry(entry, options = {}) {
     return entry?.inFlightPromise || undefined
   }
 
+  clearEntryRetry(entry)
   entry.inFlight = true
   entry.inFlightPromise = (async () => {
     try {
@@ -100,6 +111,7 @@ async function runSharedEntry(entry, options = {}) {
       entry.lastPayload = payload
       entry.lastPayloadSignature = nextSignature
       entry.lastResolvedAt = Date.now()
+      entry.retryAttempt = 0
 
       if (hasChanged || options.forceEmit === true) {
         emitSharedPayload(entry, payload)
@@ -108,6 +120,27 @@ async function runSharedEntry(entry, options = {}) {
       return payload
     } catch (error) {
       emitSharedError(entry, error)
+
+      const canRetry =
+        entry.subscribers.size > 0 &&
+        entry.retryAttempt < SHARED_ENTRY_RETRY_MAX_ATTEMPTS
+
+      if (canRetry) {
+        entry.retryAttempt += 1
+        const retryDelayMs =
+          SHARED_ENTRY_RETRY_BASE_MS * Math.max(1, entry.retryAttempt)
+
+        entry.retryTimer = setTimeout(() => {
+          if (entry.subscribers.size === 0) {
+            return
+          }
+
+          void runSharedEntry(entry, {
+            forceEmit: false,
+          }).catch(() => {})
+        }, retryDelayMs)
+      }
+
       throw error
     } finally {
       entry.inFlight = false
@@ -133,11 +166,15 @@ function createSharedEntry(key, fetcher) {
     lastPayload: undefined,
     lastPayloadSignature: '',
     lastResolvedAt: 0,
+    retryAttempt: 0,
+    retryTimer: null,
     subscribers: new Set(),
   }
 }
 
 function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}) {
+  const shouldEmitCachedPayloadOnSubscribe =
+    options.emitCachedPayloadOnSubscribe !== false
   const subscriber = {
     callback,
     onError: options.onError,
@@ -153,7 +190,9 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
   clearEntryCleanup(entry)
   entry.subscribers.add(subscriber)
 
-  if (entry.hasPayload) {
+  const hadPayloadOnSubscribe = entry.hasPayload
+
+  if (hadPayloadOnSubscribe && shouldEmitCachedPayloadOnSubscribe) {
     callback(entry.lastPayload)
   }
 
@@ -168,7 +207,9 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
     // and share the same first fetch rather than triggering redundant ones.
     Promise.resolve().then(() => {
       void runSharedEntry(entry, {
-        forceEmit: !entry.hasPayload,
+        forceEmit:
+          !hadPayloadOnSubscribe ||
+          !shouldEmitCachedPayloadOnSubscribe,
       }).catch(() => {})
     })
   }
@@ -178,6 +219,7 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
 
     if (entry.subscribers.size === 0) {
       scheduleEntryCleanup(entry)
+      entry.retryAttempt = 0
     }
   }
 }

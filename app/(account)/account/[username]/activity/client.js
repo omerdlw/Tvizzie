@@ -64,6 +64,10 @@ export default function Client({
     initialResolveError,
     username,
   })
+  const shouldForcePrivateRefresh =
+    !isOwner &&
+    isPrivateProfile === true &&
+    canViewPrivateContent
   const {
     applyFeedResult,
     cursor,
@@ -76,12 +80,14 @@ export default function Client({
     setIsFeedLoading,
     syncFeed,
   } = useSeededFeedState(initialActivityFeed)
-  const hasSeededActivityFeed = hasMatchingSeededFeed({
-    expectedValue: activeScope,
-    initialFeed: initialActivityFeed,
-    resolvedUserId,
-    valueKey: 'scope',
-  })
+  const hasSeededActivityFeed =
+    !shouldForcePrivateRefresh &&
+    hasMatchingSeededFeed({
+      expectedValue: activeScope,
+      initialFeed: initialActivityFeed,
+      resolvedUserId,
+      valueKey: 'scope',
+    })
   const shouldBlockFeedLoad = shouldBlockAccountFeedLoad({
     canViewPrivateContent,
     hasSeededFeed: hasSeededActivityFeed,

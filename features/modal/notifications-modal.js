@@ -259,7 +259,7 @@ export default function NotificationsModal({ close, header, data }) {
           {notifications.length > 0 && hasUnread ? (
               <Button
                 onClick={handleMarkAllRead}
-                className="w-full text-sm p-4 border-none! hover:surface-warning"
+                className="w-full text-sm p-4 border-b border-dashed border-white/10 hover:surface-warning"
               >
                 Mark all as read
               </Button>

@@ -20,6 +20,24 @@ function clearCleanupTimer(path, source) {
   navCleanupTimeouts.delete(cleanupKey)
 }
 
+function getLoadingFallback(config) {
+  const loading = config?.loading
+  if (!loading || typeof loading !== 'object' || Array.isArray(loading)) {
+    return undefined
+  }
+
+  const { payload } = splitRegistryConfig(loading)
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return undefined
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(payload, 'isLoading')) {
+    return undefined
+  }
+
+  return payload.isLoading
+}
+
 export const navPlugin = createPlugin({
   name: 'nav',
   apply: (config, { register, unregister, pathname }) => {
@@ -52,6 +70,15 @@ export const navPlugin = createPlugin({
       actions: navConfig.actions,
       confirmation: navConfig.confirmation,
       surface: navConfig.surface ?? fallbackSurface,
+    }
+
+    const resolvedIsLoading =
+      navConfig.isLoading !== undefined
+        ? navConfig.isLoading
+        : getLoadingFallback(config)
+
+    if (resolvedIsLoading !== undefined) {
+      navItem.isLoading = resolvedIsLoading
     }
 
     if (itemPath) {

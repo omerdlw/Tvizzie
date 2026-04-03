@@ -69,7 +69,7 @@ function ListPreviewStack({ list }) {
           ))
         ) : (
           <div className="center absolute left-0 bottom-0 h-16 w-12 border border-dashed border-white/5 text-white/50">
-            <Icon icon="solar:list-heart-bold" size={16} />
+            <Icon icon="solar:list-broken" size={16} />
           </div>
         )}
       </div>

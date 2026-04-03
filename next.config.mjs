@@ -4,12 +4,6 @@ const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
-const INFRA_V2_ENABLED = String(
-  process.env.INFRA_V2_ENABLED || process.env.NEXT_PUBLIC_INFRA_V2_ENABLED || ''
-)
-  .trim()
-  .toLowerCase() === 'true'
-
 const SUPABASE_ORIGIN = String(process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
 const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   ? SUPABASE_ORIGIN.replace(/^https:\/\//i, 'wss://')
@@ -96,7 +90,6 @@ const NEXT_CONFIG = {
   poweredByHeader: false,
   env: {
     BUILD_DATE: new Date().toISOString().split('T')[0],
-    NEXT_PUBLIC_INFRA_V2_ENABLED: INFRA_V2_ENABLED ? 'true' : 'false',
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -150,28 +143,6 @@ const NEXT_CONFIG = {
         headers: STATIC_CACHE_HEADERS,
       },
     ]
-  },
-  async rewrites() {
-    if (!INFRA_V2_ENABLED) {
-      return []
-    }
-
-    return {
-      beforeFiles: [
-        {
-          source: '/api/account/:path*',
-          destination: '/api-v2/account/:path*',
-        },
-        {
-          source: '/api/collections',
-          destination: '/api-v2/collections',
-        },
-        {
-          source: '/api/follows',
-          destination: '/api-v2/follows',
-        },
-      ],
-    }
   },
 }
 

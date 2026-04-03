@@ -23,57 +23,92 @@ export async function requestApiJson(
     cache = 'no-store',
     // Fail fast to avoid "page takes forever" UX when the network/API stalls.
     timeoutMs = 15000,
+    retryCount = method === 'GET' ? 1 : 0,
+    retryDelayMs = 120,
   } = {}
 ) {
   const requestHeaders = {
     Accept: 'application/json',
     ...headers,
   }
-  const controller = new AbortController()
-  const timeoutId = Number.isFinite(Number(timeoutMs)) && timeoutMs > 0
-    ? setTimeout(() => controller.abort(), timeoutMs)
-    : null
 
-  let response
-  try {
-    response = await fetch(buildUrl(path, query), {
-      method,
-      cache,
-      credentials: 'include',
-      signal: controller.signal,
-      headers:
-        body === undefined
-          ? requestHeaders
-          : {
-              ...requestHeaders,
-              'Content-Type': 'application/json',
-            },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
-  } catch (error) {
-    if (timeoutId) clearTimeout(timeoutId)
+  const maxAttempts = Math.max(1, Number(retryCount) + 1)
+  const retriableStatusCodes = new Set([408, 425, 429, 500, 502, 503, 504])
+  const url = buildUrl(path, query)
 
-    // `fetch` abort surfaces as an `AbortError` in browsers/undici.
-    if (error?.name === 'AbortError') {
-      const timedOut = new Error('Request timed out')
-      timedOut.status = 408
-      timedOut.code = 'ETIMEDOUT'
-      throw timedOut
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const controller = new AbortController()
+    const timeoutId = Number.isFinite(Number(timeoutMs)) && timeoutMs > 0
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : null
+
+    try {
+      const response = await fetch(url, {
+        method,
+        cache,
+        credentials: 'include',
+        signal: controller.signal,
+        headers:
+          body === undefined
+            ? requestHeaders
+            : {
+                ...requestHeaders,
+                'Content-Type': 'application/json',
+              },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+      const payload = await response
+        .json()
+        .catch(() => ({ error: 'Request failed' }))
+
+      if (!response.ok) {
+        const error = new Error(payload?.error || 'Request failed')
+        error.status = response.status
+        error.data = payload
+
+        const canRetry =
+          attempt < maxAttempts && retriableStatusCodes.has(response.status)
+
+        if (!canRetry) {
+          throw error
+        }
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.max(0, Number(retryDelayMs) || 0))
+        )
+        continue
+      }
+
+      return payload
+    } catch (error) {
+      const isTimeoutAbort = error?.name === 'AbortError'
+      const normalizedError = isTimeoutAbort
+        ? Object.assign(new Error('Request timed out'), {
+            status: 408,
+            code: 'ETIMEDOUT',
+          })
+        : error
+      const retriableNetworkError =
+        normalizedError?.code === 'ETIMEDOUT' ||
+        normalizedError?.code === 'ECONNRESET' ||
+        normalizedError?.code === 'UND_ERR_CONNECT_TIMEOUT'
+      const canRetry =
+        attempt < maxAttempts &&
+        (
+          retriableNetworkError ||
+          retriableStatusCodes.has(Number(normalizedError?.status))
+        )
+
+      if (!canRetry) {
+        throw normalizedError
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.max(0, Number(retryDelayMs) || 0))
+      )
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId)
     }
-
-    throw error
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId)
   }
-
-  const payload = await response.json().catch(() => ({ error: 'Request failed' }))
-
-  if (!response.ok) {
-    const error = new Error(payload?.error || 'Request failed')
-    error.status = response.status
-    error.data = payload
-    throw error
-  }
-
-  return payload
+  throw new Error('Request failed')
 }

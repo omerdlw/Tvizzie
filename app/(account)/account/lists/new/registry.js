@@ -4,8 +4,6 @@ import { getUserAvatarUrl } from '@/lib/utils'
 import AccountAction from '@/features/navigation/actions/account-action'
 import { useRegistry } from '@/modules/registry'
 
-const ACCOUNT_LISTS_NEW_REGISTRY_SOURCE = 'account-lists-new'
-
 export default function Registry({
   authIsAuthenticated,
   authIsReady,
@@ -13,26 +11,30 @@ export default function Registry({
   isSaving,
   onSave,
   profile,
-  registrySource = ACCOUNT_LISTS_NEW_REGISTRY_SOURCE,
   saveDisabled,
 }) {
   useRegistry({
+    loading: {
+      isLoading: !authIsReady || isLoading,
+      registry: {
+        source: 'account-lists-new',
+      },
+    },
     nav: {
       title: 'Create List',
       description: 'Search titles and publish a list in one flow',
       icon: getUserAvatarUrl(profile),
-      isLoading: !authIsReady || isLoading,
       registry: {
         priority: 190,
-        source: registrySource,
+        source: 'account-lists-new',
       },
       action: authIsAuthenticated ? (
         <AccountAction
-          mode="save"
-          onSave={onSave}
           isSaveDisabled={saveDisabled}
-          saveLabel="Create List"
           isSaveLoading={isSaving}
+          saveLabel="Create List"
+          onSave={onSave}
+          mode="save"
         />
       ) : null,
     },

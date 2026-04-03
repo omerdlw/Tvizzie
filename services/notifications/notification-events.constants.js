@@ -1,4 +1,10 @@
-export {
-  NOTIFICATION_EVENT_TYPES,
-  NOTIFICATION_EVENT_TYPE_SET,
-} from '@/lib/constants/notification-events'
+export const NOTIFICATION_EVENT_TYPES = Object.freeze({
+  FOLLOW_CREATED: 'FOLLOW_CREATED',
+  FOLLOW_ACCEPTED: 'FOLLOW_ACCEPTED',
+  REVIEW_LIKED: 'REVIEW_LIKED',
+  LIST_LIKED: 'LIST_LIKED',
+})
+
+export const NOTIFICATION_EVENT_TYPE_SET = new Set(
+  Object.values(NOTIFICATION_EVENT_TYPES)
+)

@@ -6,11 +6,11 @@ import {
   createPollingSubscription,
   invalidatePollingSubscriptions,
 } from '@/services/core/polling-subscription.service'
-import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary-v2.service'
+import { scheduleAccountSummaryRefresh } from '@/services/core/account-summary.service'
 import { requestApiJson } from '@/services/core/api-request.service'
 
-const INFRA_V2_CLIENT_ENABLED =
-  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
+const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 8000
+const PENDING_RELATIONSHIP_MAX_POLLS = 30
 
 export const FOLLOW_STATUSES = Object.freeze({
   ACCEPTED: 'accepted',
@@ -31,12 +31,6 @@ function createEmptyRelationshipState() {
     outboundStatus: null,
     showFollowBack: false,
   }
-}
-
-function getUserAccountSubscriptionKey(userId) {
-  return buildPollingSubscriptionKey('account:user', {
-    userId,
-  })
 }
 
 function getFollowersSubscriptionKey(userId, status = FOLLOW_STATUSES.ACCEPTED) {
@@ -81,18 +75,12 @@ function refreshFollowUserSubscriptions(userId) {
     getFollowingSubscriptionKey(userId, FOLLOW_STATUSES.PENDING),
   ]
 
-  if (!INFRA_V2_CLIENT_ENABLED) {
-    keys.push(getUserAccountSubscriptionKey(userId))
-  }
-
   invalidatePollingSubscriptions(
     keys,
     { refetch: true }
   )
 
-  if (INFRA_V2_CLIENT_ENABLED) {
-    scheduleAccountSummaryRefresh(userId)
-  }
+  scheduleAccountSummaryRefresh(userId)
 }
 
 function refreshFollowSubscriptions({ followerId, followingId, status = null }) {
@@ -107,22 +95,13 @@ function refreshFollowSubscriptions({ followerId, followingId, status = null }) 
     getRelationshipSubscriptionKey(followerId, followingId),
   ]
 
-  if (!INFRA_V2_CLIENT_ENABLED) {
-    keys.push(
-      getUserAccountSubscriptionKey(followerId),
-      getUserAccountSubscriptionKey(followingId)
-    )
-  }
-
   invalidatePollingSubscriptions(
     keys,
     { refetch: true }
   )
 
-  if (INFRA_V2_CLIENT_ENABLED) {
-    scheduleAccountSummaryRefresh(followerId)
-    scheduleAccountSummaryRefresh(followingId)
-  }
+  scheduleAccountSummaryRefresh(followerId)
+  scheduleAccountSummaryRefresh(followingId)
 }
 
 export async function followUser(followerId, followingId) {
@@ -315,45 +294,100 @@ async function fetchFollowRelationshipState(viewerId, targetId) {
   return payload?.data || createEmptyRelationshipState()
 }
 
+function refreshRelationshipSubscription(subscriptionKey, viewerId) {
+  if (!subscriptionKey) {
+    return
+  }
+
+  invalidatePollingSubscriptions([subscriptionKey], {
+    clearCache: false,
+    refetch: true,
+  })
+  if (viewerId) {
+    scheduleAccountSummaryRefresh(viewerId)
+  }
+}
+
 export function subscribeToFollowRelationship(viewerId, targetId, callback) {
-  const subscriptionKey = getRelationshipSubscriptionKey(viewerId, targetId)
+  const normalizedViewerId = String(viewerId || '').trim() || null
+  const normalizedTargetId = String(targetId || '').trim() || null
+  const subscriptionKey = getRelationshipSubscriptionKey(
+    normalizedViewerId,
+    normalizedTargetId
+  )
+  let latestRelationship = null
   const unsubscribeData = createPollingSubscription(
-    () => fetchFollowRelationshipState(viewerId, targetId),
-    callback,
+    () => fetchFollowRelationshipState(normalizedViewerId, normalizedTargetId),
+    (relationship) => {
+      latestRelationship = relationship
+      callback(relationship)
+    },
     {
       subscriptionKey,
     }
   )
   const unsubscribeLive = subscribeToUserLiveEvent(
-    viewerId,
+    normalizedViewerId,
     'follows',
     (payload) => {
       const livePayload = normalizeLiveFollowPayload(payload)
       const matchesDirectRelationship =
-        livePayload.followerId === viewerId &&
-        livePayload.followingId === targetId
+        livePayload.followerId === normalizedViewerId &&
+        livePayload.followingId === normalizedTargetId
       const matchesInverseRelationship =
-        livePayload.followerId === targetId &&
-        livePayload.followingId === viewerId
+        livePayload.followerId === normalizedTargetId &&
+        livePayload.followingId === normalizedViewerId
 
       if (!matchesDirectRelationship && !matchesInverseRelationship) {
         return
       }
 
-      if (INFRA_V2_CLIENT_ENABLED) {
-        invalidatePollingSubscriptions([subscriptionKey], { refetch: true })
-        scheduleAccountSummaryRefresh(viewerId)
+      refreshRelationshipSubscription(subscriptionKey, normalizedViewerId)
+    }
+  )
+  let fallbackTimer = null
+  let fallbackPollCount = 0
+  let disposed = false
+
+  function scheduleFallbackPoll() {
+    if (
+      disposed ||
+      typeof window === 'undefined' ||
+      !normalizedViewerId ||
+      !normalizedTargetId
+    ) {
+      return
+    }
+
+    fallbackTimer = window.setTimeout(() => {
+      if (disposed) return
+
+      const outboundStatus = String(latestRelationship?.outboundStatus || '')
+        .trim()
+        .toLowerCase()
+
+      if (outboundStatus !== FOLLOW_STATUSES.PENDING) {
         return
       }
 
-      invalidatePollingSubscriptions(
-        [subscriptionKey, getUserAccountSubscriptionKey(viewerId)],
-        { refetch: true }
-      )
-    }
-  )
+      fallbackPollCount += 1
+
+      if (fallbackPollCount > PENDING_RELATIONSHIP_MAX_POLLS) {
+        return
+      }
+
+      refreshRelationshipSubscription(subscriptionKey, normalizedViewerId)
+      scheduleFallbackPoll()
+    }, PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS)
+  }
+
+  scheduleFallbackPoll()
 
   return () => {
+    disposed = true
+    if (fallbackTimer) {
+      window.clearTimeout(fallbackTimer)
+    }
     unsubscribeLive()
     unsubscribeData()
   }

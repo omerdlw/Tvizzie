@@ -19,6 +19,17 @@ export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
 
 export function noopAccountRegistryHandler() {}
 
+function buildAccountLoadingState({ isLoading = false, navRegistrySource }) {
+  return {
+    isLoading,
+    registry: navRegistrySource
+      ? {
+          source: navRegistrySource,
+        }
+      : undefined,
+  }
+}
+
 export function buildAccountEditState({
   activeTab,
   authIsAuthenticated,
@@ -32,10 +43,16 @@ export function buildAccountEditState({
   navRegistrySource,
   setActiveTab,
 }) {
+  const loadingState = buildAccountLoadingState({
+    isLoading,
+    navRegistrySource,
+  })
+
   return {
     modal: {
       FOLLOW_LIST_MODAL: FollowListModal,
     },
+    loading: loadingState,
     nav: {
       confirmation: deleteConfirmation,
       title: authIsAuthenticated ? 'Edit Account' : 'Account',
@@ -47,7 +64,6 @@ export function buildAccountEditState({
             ? 'Update your public account details'
             : 'Manage account security and providers'
           : 'Sign in to see your account',
-      isLoading,
       registry: navRegistrySource
         ? {
             priority: ACCOUNT_LOADING_NAV_PRIORITY,
@@ -123,6 +139,14 @@ export function buildAccountPageState({
     isSectionOrderDirty &&
     typeof onSaveSectionOrder === 'function'
   const canManageRequests = Boolean(isOwner && profile?.isPrivate === true)
+  const isPrivateProfile = Boolean(profile?.isPrivate)
+  const isFollowingProfile = followState === 'following'
+  const shouldForceProfileFollowAction =
+    !isOwner && isPrivateProfile && !isFollowingProfile
+  const shouldShowProfileFollowAction =
+    Boolean(showProfileFollowAction || shouldForceProfileFollowAction)
+  const shouldUseNavActionOverride =
+    !shouldForceProfileFollowAction && Boolean(navActionOverride)
 
   const accountNavActions = []
 
@@ -143,6 +167,11 @@ export function buildAccountPageState({
     }
   }
 
+  const loadingState = buildAccountLoadingState({
+    isLoading: isPageLoading,
+    navRegistrySource,
+  })
+
   return {
     modal: {
       LIST_EDITOR_MODAL: ListEditorModal,
@@ -151,13 +180,13 @@ export function buildAccountPageState({
       ACCOUNT_SOCIAL_MODAL: AccountSocialModal,
       REVIEW_EDITOR_MODAL: ReviewEditorModal,
     },
+    loading: loadingState,
     nav: {
       actions: accountNavActions,
       confirmation:
         itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
       description: navDescription,
       icon: getUserAvatarUrl(profile),
-      isLoading: isPageLoading,
       registry: navRegistrySource
         ? {
             cleanupDelayMs: isPageLoading
@@ -176,7 +205,7 @@ export function buildAccountPageState({
       ) : accountTitle,
       action: navMask
         ? null
-        : navActionOverride
+        : shouldUseNavActionOverride
           ? navActionOverride
           : showSectionSaveAction ? (
               <AccountAction
@@ -199,7 +228,7 @@ export function buildAccountPageState({
                   onFollow={handleFollow}
                   onSignIn={handleSignInRequest}
                   onEditProfile={handleEditProfile}
-                  showProfileFollowAction={showProfileFollowAction}
+                  showProfileFollowAction={shouldShowProfileFollowAction}
                   onDeleteList={onDeleteList}
                   onEditList={onEditList}
                   onToggleLike={onToggleLike}

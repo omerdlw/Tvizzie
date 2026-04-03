@@ -40,6 +40,7 @@ export default function Client({
     isFollowLoading,
     isOwner,
     isPageLoading,
+    isPrivateProfile,
     isResolvingProfile,
     likeCount,
     listCount,
@@ -73,6 +74,9 @@ export default function Client({
   )
   const [loadError, setLoadError] = useState(null)
   const [watchedItems, setWatchedItems] = useState(initialWatched)
+  const shouldForceWatchedRefresh =
+    !isOwner &&
+    isPrivateProfile === true
 
   useEffect(() => {
     if (!resolvedUserId || !canViewProfileCollections) {
@@ -82,9 +86,11 @@ export default function Client({
       return undefined
     }
 
-    setWatchedItems(initialWatched)
+    setWatchedItems(shouldForceWatchedRefresh ? [] : initialWatched)
     setLoadError(null)
-    setIsWatchedLoading(!hasInitialWatchedSnapshot)
+    setIsWatchedLoading(
+      shouldForceWatchedRefresh || !hasInitialWatchedSnapshot
+    )
 
     return subscribeToUserWatched(
       resolvedUserId,
@@ -94,9 +100,10 @@ export default function Client({
         setIsWatchedLoading(false)
       },
       {
-        fetchOnSubscribe: !hasInitialWatchedSnapshot,
+        emitCachedPayloadOnSubscribe: !shouldForceWatchedRefresh,
+        fetchOnSubscribe: true,
+        refreshOnSubscribe: shouldForceWatchedRefresh,
         onError: (error) => {
-          setWatchedItems([])
           setIsWatchedLoading(false)
           logDataError('[Account] Watched could not be loaded:', error)
           setLoadError('Watched could not be loaded right now.')
@@ -108,7 +115,10 @@ export default function Client({
     canViewProfileCollections,
     hasInitialWatchedSnapshot,
     initialWatched,
+    isPrivateProfile,
+    isOwner,
     resolvedUserId,
+    shouldForceWatchedRefresh,
     toast,
   ])
 

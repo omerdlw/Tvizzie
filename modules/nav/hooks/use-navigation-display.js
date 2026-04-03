@@ -16,6 +16,43 @@ function hasChildren(item) {
   return Array.isArray(item?.children) && item.children.length > 0
 }
 
+function normalizePath(value) {
+  const normalized = String(value || '').trim()
+
+  if (!normalized) {
+    return ''
+  }
+
+  if (normalized === '/') {
+    return '/'
+  }
+
+  return normalized.replace(/\/+$/, '')
+}
+
+function isSamePath(left, right) {
+  return normalizePath(left) === normalizePath(right)
+}
+
+function isPathPrefix(candidatePath, pathname) {
+  const normalizedCandidate = normalizePath(candidatePath)
+  const normalizedPathname = normalizePath(pathname)
+
+  if (!normalizedCandidate || !normalizedPathname) {
+    return false
+  }
+
+  if (normalizedCandidate === normalizedPathname) {
+    return true
+  }
+
+  if (normalizedCandidate === '/') {
+    return normalizedPathname.startsWith('/')
+  }
+
+  return normalizedPathname.startsWith(`${normalizedCandidate}/`)
+}
+
 function isNotFoundItem(item) {
   return item?.isNotFound || item?.path === 'not-found'
 }
@@ -47,11 +84,14 @@ function flattenNavigationItems(
   pathname,
   exposeAllChildren = false
 ) {
+  const normalizedPathname = normalizePath(pathname)
+
   return items.map((item) => {
     const isParent = hasChildren(item)
     const activeChild =
       isParent && !exposeAllChildren
-        ? item.children.find((child) => child.path === pathname) || null
+        ? item.children.find((child) => isSamePath(child.path, normalizedPathname)) ||
+          null
         : null
 
     return {
@@ -118,6 +158,8 @@ function resolveActiveIndex({
   pathname,
   countdownItem,
 }) {
+  const normalizedPathname = normalizePath(pathname)
+
   if (countdownItem) {
     return 0
   }
@@ -133,7 +175,7 @@ function resolveActiveIndex({
   if (activeItem) {
     const matchedActiveIndex = navigationItems.findIndex(
       (item) =>
-        (item.path && item.path === activeItem.path) ||
+        (item.path && isSamePath(item.path, activeItem.path)) ||
         (item.name && item.name === activeItem.name)
     )
 
@@ -142,7 +184,9 @@ function resolveActiveIndex({
     }
   }
 
-  const matchedIndex = navigationItems.findIndex((item) => item.path === pathname)
+  const matchedIndex = navigationItems.findIndex((item) =>
+    isSamePath(item.path, normalizedPathname)
+  )
   return Math.max(0, matchedIndex)
 }
 
@@ -152,6 +196,7 @@ function resolveBaseActiveItem({
   pathname,
   isNotFoundPage,
 }) {
+  const normalizedPathname = normalizePath(pathname)
   const selectedDataSource = navigationItems.find(
     (item) => item.isDataSource && item.isSelected
   )
@@ -165,17 +210,36 @@ function resolveBaseActiveItem({
   }
 
   const matchedNavigationItem = navigationItems.find(
-    (item) => item.path === pathname
+    (item) => isSamePath(item.path, normalizedPathname)
   )
 
   if (matchedNavigationItem) {
     return matchedNavigationItem
   }
 
-  const matchedRawItem = rawItems.find((item) => item.path === pathname)
+  const matchedRawItem = rawItems.find((item) =>
+    isSamePath(item.path, normalizedPathname)
+  )
 
   if (matchedRawItem) {
     return matchedRawItem
+  }
+
+  const prefixMatchedRawItem = rawItems
+    .filter((item) => isPathPrefix(item.path, normalizedPathname))
+    .sort(
+      (left, right) =>
+        normalizePath(right.path).length - normalizePath(left.path).length
+    )[0]
+
+  if (prefixMatchedRawItem) {
+    return (
+      navigationItems.find(
+        (entry) =>
+          isSamePath(entry?.path, prefixMatchedRawItem.path) ||
+          (entry?.name && entry.name === prefixMatchedRawItem.name)
+      ) || prefixMatchedRawItem
+    )
   }
 
   for (const item of rawItems) {
@@ -183,14 +247,16 @@ function resolveBaseActiveItem({
       continue
     }
 
-    const matchedChild = item.children.find((child) => child.path === pathname)
+    const matchedChild = item.children.find((child) =>
+      isSamePath(child.path, normalizedPathname)
+    )
 
     if (matchedChild) {
       return (
         navigationItems.find(
           (entry) =>
             (entry?.name && entry.name === item.name) ||
-            (entry?.path && entry.path === item.path)
+            (entry?.path && isSamePath(entry.path, item.path))
         ) || {
           ...item,
           activeChild: matchedChild,

@@ -124,7 +124,7 @@ export default function ListsView({
         <AccountPaginatedListGrid
           currentPage={currentPage}
           emptyMessage="No lists yet"
-          icon="solar:list-heart-bold"
+          icon="solar:list-broken"
           lists={lists}
           pageBasePath={`/account/${username}/lists`}
           renderActions={(list) =>

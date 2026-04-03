@@ -61,6 +61,7 @@ export default function Client({
   )
 
   const {
+    canViewPrivateContent,
     canViewProfileCollections,
     favoriteShowcase,
     followerCount,
@@ -75,6 +76,7 @@ export default function Client({
     isFollowLoading,
     isOwner,
     isPageLoading,
+    isPrivateProfile,
     isViewerReady,
     pendingFollowRequestCount,
     profile,
@@ -101,14 +103,20 @@ export default function Client({
     initialResolveError,
     username,
   })
+  const shouldForcePrivateRefresh =
+    !isOwner &&
+    isPrivateProfile === true &&
+    canViewPrivateContent
   const profileHandle = profile?.username || username || null
   const hasSeededReviewFeedForUser =
+    !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
       expectedValue: 'authored',
       initialFeed: initialReviewFeed,
       resolvedUserId,
     })
   const hasSeededActivityFeedForUser =
+    !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
       initialFeed: initialActivityFeed,
       resolvedUserId,

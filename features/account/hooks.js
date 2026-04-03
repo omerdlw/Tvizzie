@@ -31,9 +31,6 @@ import {
   showAccountErrorToast,
 } from './account-hook-utils'
 
-const INFRA_V2_CLIENT_ENABLED =
-  process.env.NEXT_PUBLIC_INFRA_V2_ENABLED === 'true'
-
 export function useAccountResolvedUser({
   authUserId,
   username,
@@ -181,6 +178,15 @@ export function useAccountCollections({
   const hasSeededLists = hasUsableSeedItems(initialLists, 'lists')
   const hasSeededWatched = hasUsableSeedItems(initialWatched, 'watched')
   const hasSeededWatchlist = hasUsableSeedItems(initialWatchlist, 'watchlist')
+  const shouldForcePrivateRefresh =
+    !isOwner &&
+    isPrivateProfile === true &&
+    canViewPrivateContent
+  const shouldUseSeededLikes = hasSeededLikes && !shouldForcePrivateRefresh
+  const shouldUseSeededLists = hasSeededLists && !shouldForcePrivateRefresh
+  const shouldUseSeededWatched = hasSeededWatched && !shouldForcePrivateRefresh
+  const shouldUseSeededWatchlist =
+    hasSeededWatchlist && !shouldForcePrivateRefresh
   const [likes, setLikes] = useState(initialLikes)
   const [watched, setWatched] = useState(initialWatched)
   const [watchlist, setWatchlist] = useState(initialWatchlist)
@@ -197,8 +203,9 @@ export function useAccountCollections({
       watchedPreviewLimit > 0 ||
       watchlistPreviewLimit > 0
     const normalizedActiveTab = String(activeTab || '').trim().toLowerCase()
-    const shouldScopeCollections =
-      INFRA_V2_CLIENT_ENABLED && Boolean(normalizedActiveTab)
+    // Always scope subscriptions by active account tab to avoid cross-tab cache pollution
+    // (e.g. Activity -> Likes showing empty collections due to shared key reuse).
+    const shouldScopeCollections = Boolean(normalizedActiveTab)
     const shouldSubscribeLikes =
       !shouldScopeCollections || normalizedActiveTab === 'likes'
     const shouldSubscribeLists =
@@ -279,28 +286,30 @@ export function useAccountCollections({
     setWatchlist(initialWatchlist)
     setLists(initialLists)
     setCollectionCounts(initialCollectionCounts)
-    setIsLoadingCollections(!hasInitialCollectionSnapshot)
     const resolvedOnce = {
-      likes: shouldSubscribeLikes ? hasSeededLikes : true,
-      lists: shouldSubscribeLists ? hasSeededLists : true,
-      watched: shouldSubscribeWatched ? hasSeededWatched : true,
-      watchlist: shouldSubscribeWatchlist ? hasSeededWatchlist : true,
+      likes: shouldSubscribeLikes ? shouldUseSeededLikes : true,
+      lists: shouldSubscribeLists ? shouldUseSeededLists : true,
+      watched: shouldSubscribeWatched ? shouldUseSeededWatched : true,
+      watchlist: shouldSubscribeWatchlist ? shouldUseSeededWatchlist : true,
     }
     let countsResolved = hasInitialCollectionSnapshot || !shouldLoadPreviewOnly
+    const areAllStreamsResolved = () =>
+      resolvedOnce.likes &&
+      resolvedOnce.watched &&
+      resolvedOnce.watchlist &&
+      resolvedOnce.lists
+
+    setIsLoadingCollections(
+      !hasInitialCollectionSnapshot || !areAllStreamsResolved()
+    )
 
     const resolveLoadingState = () => {
       if (hasInitialCollectionSnapshot) {
-        setIsLoadingCollections(false)
+        setIsLoadingCollections(!areAllStreamsResolved())
         return
       }
 
-      if (
-        countsResolved &&
-        resolvedOnce.likes &&
-        resolvedOnce.watched &&
-        resolvedOnce.watchlist &&
-        resolvedOnce.lists
-      ) {
+      if (countsResolved && areAllStreamsResolved()) {
         setIsLoadingCollections(false)
       }
     }
@@ -353,14 +362,12 @@ export function useAccountCollections({
           },
           {
             activeTab: normalizedActiveTab || null,
-            fetchOnSubscribe: !hasSeededLikes,
+            emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededLikes,
+            refreshOnSubscribe:
+              shouldForcePrivateRefresh || normalizedActiveTab === 'likes',
             limitCount: likesPreviewLimit,
             onError: (error) => {
-              setLikes([])
-              setCollectionCounts((current) => ({
-                ...current,
-                likes: 0,
-              }))
               showAccountErrorToast(toast, error, 'Likes could not be loaded')
               resolveStream('likes')
             },
@@ -383,14 +390,12 @@ export function useAccountCollections({
           },
           {
             activeTab: normalizedActiveTab || null,
-            fetchOnSubscribe: !hasSeededWatched,
+            emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededWatched,
+            refreshOnSubscribe:
+              shouldForcePrivateRefresh || normalizedActiveTab === 'watched',
             limitCount: watchedPreviewLimit,
             onError: (error) => {
-              setWatched([])
-              setCollectionCounts((current) => ({
-                ...current,
-                watched: 0,
-              }))
               showAccountErrorToast(toast, error, 'Watched could not be loaded')
               resolveStream('watched')
             },
@@ -416,14 +421,13 @@ export function useAccountCollections({
           },
           {
             activeTab: normalizedActiveTab || null,
-            fetchOnSubscribe: !hasSeededWatchlist,
+            emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+            fetchOnSubscribe:
+              shouldForcePrivateRefresh || !shouldUseSeededWatchlist,
+            refreshOnSubscribe:
+              shouldForcePrivateRefresh || normalizedActiveTab === 'watchlist',
             limitCount: watchlistPreviewLimit,
             onError: (error) => {
-              setWatchlist([])
-              setCollectionCounts((current) => ({
-                ...current,
-                watchlist: 0,
-              }))
               showAccountErrorToast(toast, error, 'Watchlist could not be loaded')
               resolveStream('watchlist')
             },
@@ -446,14 +450,12 @@ export function useAccountCollections({
           },
           {
             activeTab: normalizedActiveTab || null,
-            fetchOnSubscribe: !hasSeededLists,
+            emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededLists,
+            refreshOnSubscribe:
+              shouldForcePrivateRefresh || normalizedActiveTab === 'lists',
             limitCount: listsPreviewLimit,
             onError: (error) => {
-              setLists([])
-              setCollectionCounts((current) => ({
-                ...current,
-                lists: 0,
-              }))
               showAccountErrorToast(toast, error, 'Lists could not be loaded')
               resolveStream('lists')
             },
@@ -464,16 +466,6 @@ export function useAccountCollections({
 
     subscribe().catch((error) => {
       if (!isMounted) return
-      setLikes([])
-      setWatched([])
-      setWatchlist([])
-      setLists([])
-      setCollectionCounts({
-        likes: 0,
-        lists: 0,
-        watched: 0,
-        watchlist: 0,
-      })
       showAccountErrorToast(toast, error, 'Collections could not be loaded')
       countsResolved = true
       resolveStream('likes')
@@ -513,6 +505,11 @@ export function useAccountCollections({
     listsPreviewLimit,
     watchedPreviewLimit,
     watchlistPreviewLimit,
+    shouldForcePrivateRefresh,
+    shouldUseSeededLikes,
+    shouldUseSeededLists,
+    shouldUseSeededWatched,
+    shouldUseSeededWatchlist,
   ])
 
   return {
@@ -581,7 +578,7 @@ export function useAccountRelationshipData({
     return () => {
       unsubRelationship()
     }
-  }, [authIsReady, authUserId, canManageRequests, isOwner, resolvedUserId])
+  }, [authIsReady, authUserId, isOwner, resolvedUserId])
 
   useEffect(() => {
     if (!resolvedUserId) {
@@ -634,7 +631,7 @@ export function useAccountRelationshipData({
       },
       {
         onError: () => {
-          setFollowerCount(0)
+          setFollowerCount(publicFollowerCount)
         },
       }
     )
@@ -646,7 +643,7 @@ export function useAccountRelationshipData({
       },
       {
         onError: () => {
-          setFollowingCount(0)
+          setFollowingCount(publicFollowingCount)
         },
       }
     )
@@ -698,7 +695,7 @@ export function useAccountSocialProof({
   authUserId,
   canViewPrivateContent,
   isOwner,
-  isSocialFollowsV2,
+  isSocialFollowsEnabled,
   resolvedUserId,
 }) {
   const [profileSocialProof, setProfileSocialProof] = useState(null)
@@ -707,7 +704,7 @@ export function useAccountSocialProof({
     let ignore = false
 
     if (
-      !isSocialFollowsV2 ||
+      !isSocialFollowsEnabled ||
       !authUserId ||
       !resolvedUserId ||
       isOwner ||
@@ -741,7 +738,7 @@ export function useAccountSocialProof({
     authUserId,
     canViewPrivateContent,
     isOwner,
-    isSocialFollowsV2,
+    isSocialFollowsEnabled,
     resolvedUserId,
   ])
 
@@ -817,7 +814,7 @@ export function useAccountPageData({
   initialProfile = null,
   initialResolvedUserId = null,
   initialResolveError = null,
-  isSocialFollowsV2,
+  isSocialFollowsEnabled,
   username,
 }) {
   const isAuthSessionReady = useAuthSessionReady(
@@ -862,7 +859,7 @@ export function useAccountPageData({
   } = useAccountRelationshipData({
     authIsReady: auth.isReady && isAuthSessionReady,
     authUserId: auth.user?.id || null,
-    canManageRequests: Boolean(isOwner && isSocialFollowsV2 && isPrivateProfile),
+    canManageRequests: Boolean(isOwner && isSocialFollowsEnabled && isPrivateProfile),
     isOwner,
     isPrivateProfile,
     isProfileLoaded: Boolean(profile),
@@ -940,7 +937,7 @@ export function useAccountPageData({
     authUserId: auth.user?.id || null,
     canViewPrivateContent,
     isOwner,
-    isSocialFollowsV2,
+    isSocialFollowsEnabled,
     resolvedUserId,
   })
 
@@ -1082,8 +1079,10 @@ export function useAccountPageQueryState({ activeTabProp }) {
 export function useAccountPageActions({
   activeListId,
   auth,
+  canViewPrivateContent = false,
   followRelationship,
   isOwner,
+  isPrivateProfile = false,
   profile,
   resolvedUserId,
   selectedList,
@@ -1258,6 +1257,10 @@ export function useAccountPageActions({
         return
       }
 
+      if (isPrivateProfile && !isOwner && !canViewPrivateContent) {
+        return
+      }
+
       const canManageRequests =
         isOwner &&
         profile?.isPrivate === true
@@ -1270,7 +1273,14 @@ export function useAccountPageActions({
         },
       })
     },
-    [isOwner, openModal, profile, resolvedUserId]
+    [
+      canViewPrivateContent,
+      isOwner,
+      isPrivateProfile,
+      openModal,
+      profile,
+      resolvedUserId,
+    ]
   )
 
   const handleRemoveListItem = useCallback(

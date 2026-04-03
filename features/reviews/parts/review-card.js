@@ -141,7 +141,7 @@ function ReviewVisual({
   src,
 }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-28 w-20 shrink-0 overflow-hidden sm:h-32 sm:w-22'
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
     : 'relative size-14 shrink-0 overflow-hidden'
 
   return (
@@ -149,7 +149,7 @@ function ReviewVisual({
       {isAccountVariant && isListSubject ? (
         <ListPreviewComposition
           className=""
-          emptyIcon="solar:list-heart-bold"
+          emptyIcon="solar:list-broken"
           items={previewItems}
         />
       ) : src ? (
@@ -158,7 +158,7 @@ function ReviewVisual({
           src={src}
           alt={alt}
           fill
-          sizes={isAccountVariant ? '(max-width: 640px) 80px, 88px' : '56px'}
+          sizes={isAccountVariant ? '(max-width: 640px) 64px, 72px' : '56px'}
           quality={isAccountVariant ? 78 : 82}
           unoptimized={!canUseNextImageOptimization(src)}
         />
@@ -271,7 +271,7 @@ export default function ReviewCard({
   const contentClass = cn(
     'flex min-w-0 flex-1 flex-col',
     isAccountVariant
-      ? 'min-h-28 justify-between gap-3 self-stretch sm:min-h-32'
+      ? 'gap-1.5 self-stretch'
       : 'gap-3'
   )
   const revealSpoiler = () => setIsSpoilerVisible(true)
@@ -287,7 +287,8 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-white/5 py-6 last:border-b-0 sm:py-7',
+        'relative border-b border-white/5 last:border-b-0',
+        isAccountVariant ? 'py-4 sm:py-5' : 'py-6 sm:py-7',
         isSpoilerHidden && 'cursor-pointer',
         className
       )}
@@ -378,6 +379,12 @@ export default function ReviewCard({
                     </p>
                   ))}
 
+                {!hasText && hasRating && (
+                  <p className="min-w-0 text-sm leading-6 text-white/72 italic">
+                    Rated without review
+                  </p>
+                )}
+
                 <ReviewLikeButton
                   disabled={isLikeDisabled}
                   hasLiked={hasLiked}
@@ -423,7 +430,7 @@ export default function ReviewCard({
                         <Icon
                           icon={
                             review.subjectType === 'list'
-                              ? 'solar:list-heart-bold'
+                              ? 'solar:list-broken'
                               : 'solar:clapperboard-play-bold'
                           }
                           size={14}

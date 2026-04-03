@@ -443,7 +443,7 @@ export default function CollectionActions({ media }) {
       />
 
       <ActionButton
-        icon="solar:list-heart-bold"
+        icon="solar:list-broken"
         label="Add To List"
         onClick={handleOpenListPicker}
         palette="neutral"

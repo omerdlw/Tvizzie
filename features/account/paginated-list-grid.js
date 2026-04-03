@@ -40,7 +40,7 @@ function getPaginationItems(currentPage, totalPages) {
 export default function AccountPaginatedListGrid({
   currentPage = 1,
   emptyMessage = 'No lists yet',
-  icon = 'solar:list-heart-bold',
+  icon = 'solar:list-broken',
   isLoading = false,
   lists = [],
   loadError = null,

@@ -1,15 +1,16 @@
 # File Structure
 
 This document is a developer-facing snapshot of the repository as it exists today.
-Last updated: 2026-03-29
+Last updated: 2026-04-03
 
 ## Snapshot
 
 - The codebase is a Next.js App Router application with `home`, `auth`, `movie`, `person`, and `account` surfaces.
 - Route files are still concentrated in `app/` and commonly use the route-local split `page.js` + `view.js` + `client.js` + `registry.js`.
-- The repository currently contains 526 tracked source/static files when common build folders are excluded.
-- File distribution across the main source roots is currently: `app` 135, `features` 107, `modules` 95, `lib` 59, `services` 34, `ui` 27.
-- The earlier empty TV API stub, empty feature placeholders, and tracked `.DS_Store` files have been removed.
+- The repository currently contains 587 tracked source/static files when common build folders are excluded.
+- File distribution across the main source roots is currently: `app` 138, `features` 109, `modules` 95, `lib` 60, `services` 35, `ui` 29.
+- No empty files currently exist under `app`, `features`, `modules`, `lib`, `services`, `ui`, or `config`.
+- Activity/notification event and notification type constants were moved out of `lib/constants/*` and are now defined in `services/activity` and `services/notifications`.
 
 ## Current Structural Notes
 
@@ -25,6 +26,7 @@ Last updated: 2026-03-29
 - `app/(account)/account/*/loading.js` files now call their route registry directly; the old shared `loading-registry` wrapper has been removed.
 - Redirect-only likes subroutes no longer keep unused `client/view/registry/loading` files behind them.
 - `services/` is no longer flat. It is now grouped by concern: `account`, `activity`, `browser`, `core`, `media`, `notifications`, `realtime`, `social`, and `tmdb`.
+- `services/activity/activity-events.constants.js`, `services/notifications/notification-events.constants.js`, and `services/notifications/notifications.constants.js` now hold the canonical event/type definitions used by both client and server paths.
 - `lib/auth/servers/` is no longer a single crowded directory. It is now grouped into `account`, `audit`, `notice`, `providers`, `security`, `session`, and `verification`.
 - The primary structural pressure points are still `app/(account)/account/`, `features/account/`, `modules/nav/`, and `modules/registry/`.
 
@@ -37,236 +39,732 @@ Last updated: 2026-03-29
 - `services/`: integration and data access layer, now grouped by domain instead of living as a single flat directory.
 - `ui/`: reusable visual primitives, select/input/button controls, icons, animations, skeletons, and loading indicators.
 - `config/`: project-wide config for auth, account, navigation, providers, and static project settings.
-- `scripts/`: manual smoke-test utilities.
 - `supabase/`: SQL migrations for the Supabase backend.
 - `fonts/`, `public/`: static assets and bundled font files.
 
+
 ## Source-Focused Tree
 
-Generated from project root with the usual exclusions: `.git`, `node_modules`, `.next`, `dist`, `build`, and `coverage`.
+Generated from project root with exclusions: `.git`, `node_modules`, `.next`, `dist`, `build`, `coverage`, `supabase`, and `fonts`.
 
 ```text
 .
-├── app/
-│   ├── (home)/
-│   ├── (auth)/
-│   │   ├── sign-in/
-│   │   └── sign-up/
-│   ├── (media)/
-│   │   ├── movie/[id]/
-│   │   └── person/[id]/
-│   ├── (account)/
-│   │   └── account/
-│   │       ├── edit/
-│   │       ├── lists/
-│   │       │   ├── new/
-│   │       ├── [username]/
-│   │       │   ├── activity/
-│   │       │   ├── likes/
-│   │       │   │   ├── lists/
-│   │       │   │   ├── page/[page]/page.js
-│   │       │   │   └── reviews/
-│   │       │   ├── lists/
-│   │       │   │   ├── [slug]/
-│   │       │   │   └── page/[page]/page.js
-│   │       │   ├── reviews/
-│   │       │   ├── watchlist/
-│   │       │   │   └── page/[page]/page.js
-│   │       │   ├── client.js
-│   │       │   ├── error.js
-│   │       │   ├── loading.js
-│   │       │   ├── not-found.js
-│   │       │   ├── page.js
-│   │       │   └── registry.js
-│   │       ├── client.js
-│   │       ├── error.js
-│   │       ├── loading.js
-│   │       ├── not-found.js
-│   │       ├── page.js
-│   │       ├── registry.js
-│   │       └── view.js
-│   ├── api/
-│   │   ├── account/
-│   │   ├── activity/events/route.js
-│   │   ├── auth/
-│   │   │   ├── account/
-│   │   │   ├── audit/route.js
-│   │   │   ├── password-reset/complete/route.js
-│   │   │   ├── session/route.js
-│   │   │   ├── sign-up/complete/route.js
-│   │   │   └── verification/
-│   │   ├── collections/route.js
-│   │   ├── follows/route.js
-│   │   ├── live-updates/
-│   │   ├── notifications/
-│   │   ├── person/[id]/awards/route.js
-│   │   ├── reviews/route.js
-│   │   ├── social-proof/route.js
-│   │   └── tmdb/
-│   │       ├── discover/route.js
-│   │       ├── genres/route.js
-│   │       ├── movie-images/[id]/route.js
-│   │       └── search/route.js
-│   ├── error.js
-│   ├── global-error.js
-│   ├── globals.css
-│   ├── layout.js
-│   ├── manifest.js
-│   ├── not-found.js
-│   ├── providers.js
-│   ├── sign-in-template/page.js
-│   └── template.js
-├── features/
-│   ├── account/
-│   │   ├── account-registry-config.js
-│   │   ├── account-hook-utils.js
-│   │   ├── account-security-hooks.js
-│   │   ├── activity-feed.js
-│   │   ├── favorite-showcase-manager.js
-│   │   ├── favorites-section.js
-│   │   ├── feedback.js
-│   │   ├── hero.js
-│   │   ├── hooks.js
-│   │   ├── list-card.js
-│   │   ├── list-creator-utils.js
-│   │   ├── media-grid-page.js
-│   │   ├── page-shell.js
-│   │   ├── profile-layout.js
-│   │   ├── review-feed.js
-│   │   ├── section-client-hooks.js
-│   │   ├── section-nav.js
-│   │   ├── section-state.js
-│   │   ├── utils.js
-│   │   └── watchlist-section.js
-│   ├── auth/
-│   ├── home/
-│   ├── layout/
-│   ├── modal/
-│   ├── movie/
-│   ├── navigation/
-│   │   ├── actions/
-│   │   │   └── search-action/
-│   │   │       ├── parts/item.js
-│   │   │       ├── constants.js
-│   │   │       ├── index.js
-│   │   │       └── utils.js
-│   │   ├── masks/
-│   │   └── surfaces/
-│   ├── person/
-│   ├── reviews/
-│   │   └── parts/
-│   ├── shared/
-│   └── README.md
-├── modules/
-│   ├── account/
-│   ├── api/
-│   ├── auth/
-│   │   └── adapters/
-│   ├── background/
-│   ├── context-menu/
-│   ├── countdown/
-│   ├── error-boundary/
-│   ├── loading/
-│   ├── modal/
-│   ├── nav/
-│   │   └── hooks/
-│   ├── notification/
-│   ├── registry/
-│   │   └── plugins/
-│   ├── settings/
-│   └── transition/
-├── lib/
-│   ├── activity/
-│   ├── auth/
-│   │   ├── clients/
-│   │   └── servers/
-│   │       ├── account/
-│   │       ├── audit/
-│   │       ├── notice/
-│   │       ├── providers/
-│   │       ├── security/
-│   │       ├── session/
-│   │       └── verification/
-│   ├── constants/
-│   ├── data/
-│   ├── events/
-│   ├── hooks/
-│   ├── live-updates/
-│   ├── notifications/
-│   ├── supabase/
-│   ├── tmdb/
-│   ├── utils/
-│   ├── index.js
-│   └── media.js
-├── services/
-│   ├── account/
-│   │   ├── account-feed.server.js
-│   │   ├── account-route-data.server.js
-│   │   ├── account.server.js
-│   │   ├── account.service.js
-│   │   └── current-account-snapshot.server.js
-│   ├── activity/
-│   ├── browser/
-│   ├── core/
-│   ├── media/
-│   ├── notifications/
-│   ├── realtime/
-│   ├── social/
-│   └── tmdb/
-├── ui/
-│   ├── animations/
-│   ├── elements/
-│   │   ├── button/
-│   │   ├── checkbox/
-│   │   ├── input/
-│   │   ├── popover/
-│   │   ├── select/
-│   │   ├── switch/
-│   │   ├── textarea/
-│   │   ├── tooltip/
-│   │   ├── index.js
-│   │   └── utils.js
-│   ├── icon/
-│   ├── loadings/spinner/
-│   ├── skeletons/
-│   │   ├── components/nav.js
-│   │   └── views/
-│   └── spinner/
-├── config/
-│   ├── account.config.js
-│   ├── auth.config.js
-│   ├── nav.config.js
-│   ├── project.config.js
-│   └── provider.config.js
-├── scripts/
-│   ├── auth-signup-complete-smoke.mjs
-│   └── supabase-auth-smoke.mjs
-├── supabase/
-│   └── migrations/
-│       ├── 20260327_tvizzie_init_supabase.sql
-│       ├── 20260327_auth_support_tables.sql
-│       ├── 20260327_fix_claim_username_user_id_conflict.sql
-│       ├── 20260328_add_signup_completed_at_to_auth_challenges.sql
-│       ├── 20260329_harden_auth_support_rls_and_functions.sql
-│       └── 20260329_reduce_disk_io_hot_path_indexes.sql
-├── fonts/
-│   ├── index.js
-│   └── zuume/
-├── public/
-│   ├── apple-icon.svg
-│   ├── icon.svg
-│   └── images/
-├── ARCHITECTURE.md
-├── FILE_STRUCTURE.md
-├── eslint.config.mjs
-├── jsconfig.json
-├── next.config.mjs
-├── package.json
-├── postcss.config.mjs
-├── proxy.js
-├── react-doctor.config.json
-├── tailwind.config.js
-└── vercel.json
+.DS_Store
+.agents
+.agents/.DS_Store
+.agents/skills
+.agents/skills/supabase-postgres-best-practices
+.agents/skills/supabase-postgres-best-practices/AGENTS.md
+.agents/skills/supabase-postgres-best-practices/CLAUDE.md
+.agents/skills/supabase-postgres-best-practices/README.md
+.agents/skills/supabase-postgres-best-practices/SKILL.md
+.agents/skills/supabase-postgres-best-practices/references
+.agents/skills/supabase-postgres-best-practices/references/_contributing.md
+.agents/skills/supabase-postgres-best-practices/references/_sections.md
+.agents/skills/supabase-postgres-best-practices/references/_template.md
+.agents/skills/supabase-postgres-best-practices/references/advanced-full-text-search.md
+.agents/skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md
+.agents/skills/supabase-postgres-best-practices/references/conn-idle-timeout.md
+.agents/skills/supabase-postgres-best-practices/references/conn-limits.md
+.agents/skills/supabase-postgres-best-practices/references/conn-pooling.md
+.agents/skills/supabase-postgres-best-practices/references/conn-prepared-statements.md
+.agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md
+.agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md
+.agents/skills/supabase-postgres-best-practices/references/data-pagination.md
+.agents/skills/supabase-postgres-best-practices/references/data-upsert.md
+.agents/skills/supabase-postgres-best-practices/references/lock-advisory.md
+.agents/skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md
+.agents/skills/supabase-postgres-best-practices/references/lock-short-transactions.md
+.agents/skills/supabase-postgres-best-practices/references/lock-skip-locked.md
+.agents/skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md
+.agents/skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md
+.agents/skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md
+.agents/skills/supabase-postgres-best-practices/references/query-composite-indexes.md
+.agents/skills/supabase-postgres-best-practices/references/query-covering-indexes.md
+.agents/skills/supabase-postgres-best-practices/references/query-index-types.md
+.agents/skills/supabase-postgres-best-practices/references/query-missing-indexes.md
+.agents/skills/supabase-postgres-best-practices/references/query-partial-indexes.md
+.agents/skills/supabase-postgres-best-practices/references/schema-constraints.md
+.agents/skills/supabase-postgres-best-practices/references/schema-data-types.md
+.agents/skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md
+.agents/skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md
+.agents/skills/supabase-postgres-best-practices/references/schema-partitioning.md
+.agents/skills/supabase-postgres-best-practices/references/schema-primary-keys.md
+.agents/skills/supabase-postgres-best-practices/references/security-privileges.md
+.agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md
+.agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md
+.agents/skills/vercel-react-view-transitions
+.agents/skills/vercel-react-view-transitions/AGENTS.md
+.agents/skills/vercel-react-view-transitions/README.md
+.agents/skills/vercel-react-view-transitions/SKILL.md
+.agents/skills/vercel-react-view-transitions/references
+.agents/skills/vercel-react-view-transitions/references/css-recipes.md
+.agents/skills/vercel-react-view-transitions/references/implementation.md
+.agents/skills/vercel-react-view-transitions/references/nextjs.md
+.agents/skills/vercel-react-view-transitions/references/patterns.md
+.agents/skills/web-design-guidelines
+.agents/skills/web-design-guidelines/SKILL.md
+.env
+.gitattributes
+.gitignore
+.prettierrc
+ARCHITECTURE.md
+FILE_STRUCTURE.md
+app
+app/(account)
+app/(account)/account
+app/(account)/account/[username]
+app/(account)/account/[username]/activity
+app/(account)/account/[username]/activity/client.js
+app/(account)/account/[username]/activity/loading.js
+app/(account)/account/[username]/activity/page.js
+app/(account)/account/[username]/activity/registry.js
+app/(account)/account/[username]/activity/view.js
+app/(account)/account/[username]/client.js
+app/(account)/account/[username]/error.js
+app/(account)/account/[username]/likes
+app/(account)/account/[username]/likes/client.js
+app/(account)/account/[username]/likes/lists
+app/(account)/account/[username]/likes/lists/page
+app/(account)/account/[username]/likes/lists/page.js
+app/(account)/account/[username]/likes/lists/page/[page]
+app/(account)/account/[username]/likes/lists/page/[page]/page.js
+app/(account)/account/[username]/likes/loading.js
+app/(account)/account/[username]/likes/page
+app/(account)/account/[username]/likes/page.js
+app/(account)/account/[username]/likes/page/[page]
+app/(account)/account/[username]/likes/page/[page]/page.js
+app/(account)/account/[username]/likes/registry.js
+app/(account)/account/[username]/likes/reviews
+app/(account)/account/[username]/likes/reviews/page.js
+app/(account)/account/[username]/likes/view.js
+app/(account)/account/[username]/lists
+app/(account)/account/[username]/lists/[slug]
+app/(account)/account/[username]/lists/[slug]/client.js
+app/(account)/account/[username]/lists/[slug]/loading.js
+app/(account)/account/[username]/lists/[slug]/page.js
+app/(account)/account/[username]/lists/[slug]/registry.js
+app/(account)/account/[username]/lists/[slug]/view.js
+app/(account)/account/[username]/lists/client.js
+app/(account)/account/[username]/lists/loading.js
+app/(account)/account/[username]/lists/page
+app/(account)/account/[username]/lists/page.js
+app/(account)/account/[username]/lists/page/[page]
+app/(account)/account/[username]/lists/page/[page]/page.js
+app/(account)/account/[username]/lists/registry.js
+app/(account)/account/[username]/lists/view.js
+app/(account)/account/[username]/loading.js
+app/(account)/account/[username]/not-found.js
+app/(account)/account/[username]/page.js
+app/(account)/account/[username]/registry.js
+app/(account)/account/[username]/reviews
+app/(account)/account/[username]/reviews/client.js
+app/(account)/account/[username]/reviews/loading.js
+app/(account)/account/[username]/reviews/page.js
+app/(account)/account/[username]/reviews/registry.js
+app/(account)/account/[username]/reviews/view.js
+app/(account)/account/[username]/watched
+app/(account)/account/[username]/watched/client.js
+app/(account)/account/[username]/watched/loading.js
+app/(account)/account/[username]/watched/page
+app/(account)/account/[username]/watched/page.js
+app/(account)/account/[username]/watched/page/[page]
+app/(account)/account/[username]/watched/page/[page]/page.js
+app/(account)/account/[username]/watched/registry.js
+app/(account)/account/[username]/watched/view.js
+app/(account)/account/[username]/watchlist
+app/(account)/account/[username]/watchlist/client.js
+app/(account)/account/[username]/watchlist/loading.js
+app/(account)/account/[username]/watchlist/page
+app/(account)/account/[username]/watchlist/page.js
+app/(account)/account/[username]/watchlist/page/[page]
+app/(account)/account/[username]/watchlist/page/[page]/page.js
+app/(account)/account/[username]/watchlist/registry.js
+app/(account)/account/[username]/watchlist/view.js
+app/(account)/account/client.js
+app/(account)/account/edit
+app/(account)/account/edit/client.js
+app/(account)/account/edit/error.js
+app/(account)/account/edit/loading.js
+app/(account)/account/edit/not-found.js
+app/(account)/account/edit/page.js
+app/(account)/account/edit/registry.js
+app/(account)/account/edit/view.js
+app/(account)/account/error.js
+app/(account)/account/lists
+app/(account)/account/lists/new
+app/(account)/account/lists/new/client.js
+app/(account)/account/lists/new/error.js
+app/(account)/account/lists/new/loading.js
+app/(account)/account/lists/new/page.js
+app/(account)/account/lists/new/registry.js
+app/(account)/account/lists/new/view.js
+app/(account)/account/loading.js
+app/(account)/account/not-found.js
+app/(account)/account/page.js
+app/(account)/account/registry.js
+app/(account)/account/view.js
+app/(auth)
+app/(auth)/sign-in
+app/(auth)/sign-in/client.js
+app/(auth)/sign-in/page.js
+app/(auth)/sign-in/registry.js
+app/(auth)/sign-in/view.js
+app/(auth)/sign-up
+app/(auth)/sign-up/client.js
+app/(auth)/sign-up/page.js
+app/(auth)/sign-up/registry.js
+app/(auth)/sign-up/view.js
+app/(home)
+app/(home)/client.js
+app/(home)/loading.js
+app/(home)/page.js
+app/(home)/registry.js
+app/(home)/view.js
+app/(media)
+app/(media)/movie
+app/(media)/movie/[id]
+app/(media)/movie/[id]/client.js
+app/(media)/movie/[id]/error.js
+app/(media)/movie/[id]/loading.js
+app/(media)/movie/[id]/not-found.js
+app/(media)/movie/[id]/page.js
+app/(media)/movie/[id]/registry.js
+app/(media)/movie/[id]/view.js
+app/(media)/person
+app/(media)/person/[id]
+app/(media)/person/[id]/client.js
+app/(media)/person/[id]/error.js
+app/(media)/person/[id]/loading.js
+app/(media)/person/[id]/not-found.js
+app/(media)/person/[id]/page.js
+app/(media)/person/[id]/registry.js
+app/(media)/person/[id]/view.js
+app/.DS_Store
+app/api
+app/api/account
+app/api/account/activity
+app/api/account/activity/route.js
+app/api/account/profile
+app/api/account/profile/route.js
+app/api/account/resolve
+app/api/account/resolve/route.js
+app/api/account/reviews
+app/api/account/reviews/route.js
+app/api/account/search
+app/api/account/search/route.js
+app/api/activity
+app/api/activity/events
+app/api/activity/events/route.js
+app/api/auth
+app/api/auth/account
+app/api/auth/account/change-email
+app/api/auth/account/change-email/route.js
+app/api/auth/account/change-password
+app/api/auth/account/change-password/route.js
+app/api/auth/account/delete
+app/api/auth/account/delete/route.js
+app/api/auth/account/password-status
+app/api/auth/account/password-status/route.js
+app/api/auth/account/reauthenticate
+app/api/auth/account/reauthenticate/route.js
+app/api/auth/account/set-password
+app/api/auth/account/set-password/route.js
+app/api/auth/audit
+app/api/auth/audit/route.js
+app/api/auth/password-reset
+app/api/auth/password-reset/complete
+app/api/auth/password-reset/complete/route.js
+app/api/auth/session
+app/api/auth/session/route.js
+app/api/auth/sign-up
+app/api/auth/sign-up/complete
+app/api/auth/sign-up/complete/route.js
+app/api/auth/verification
+app/api/auth/verification/send-code
+app/api/auth/verification/send-code/route.js
+app/api/auth/verification/verify-code
+app/api/auth/verification/verify-code/route.js
+app/api/collections
+app/api/collections/route.js
+app/api/follows
+app/api/follows/route.js
+app/api/live-updates
+app/api/live-updates/events
+app/api/live-updates/events/route.js
+app/api/live-updates/route.js
+app/api/notifications
+app/api/notifications/events
+app/api/notifications/events/route.js
+app/api/notifications/route.js
+app/api/person
+app/api/person/[id]
+app/api/person/[id]/awards
+app/api/person/[id]/awards/route.js
+app/api/reviews
+app/api/reviews/route.js
+app/api/social-proof
+app/api/social-proof/route.js
+app/api/tmdb
+app/api/tmdb/discover
+app/api/tmdb/discover/route.js
+app/api/tmdb/genres
+app/api/tmdb/genres/route.js
+app/api/tmdb/movie-images
+app/api/tmdb/movie-images/[id]
+app/api/tmdb/movie-images/[id]/route.js
+app/api/tmdb/search
+app/api/tmdb/search/route.js
+app/api/tmdb/trending
+app/api/tmdb/trending/route.js
+app/auth
+app/auth/callback
+app/auth/callback/route.js
+app/error.js
+app/global-error.js
+app/globals.css
+app/layout.js
+app/manifest.js
+app/not-found.js
+app/providers.js
+app/sign-in-template
+app/sign-in-template/page.js
+app/template.js
+config
+config/account.config.js
+config/auth.config.js
+config/nav.config.js
+config/project.config.js
+config/provider.config.js
+eslint.config.mjs
+features
+features/.DS_Store
+features/README.md
+features/account
+features/account/account-hook-utils.js
+features/account/account-registry-config.js
+features/account/account-security-hooks.js
+features/account/activity-feed.js
+features/account/favorite-showcase-manager.js
+features/account/favorites-section.js
+features/account/feedback.js
+features/account/hero.js
+features/account/hooks.js
+features/account/list-card.js
+features/account/list-creator-utils.js
+features/account/list-grid.js
+features/account/media-grid-page.js
+features/account/media-grid.js
+features/account/page-shell.js
+features/account/paginated-list-grid.js
+features/account/profile-layout.js
+features/account/profile-media-actions.js
+features/account/review-feed.js
+features/account/section-client-hooks.js
+features/account/section-heading.js
+features/account/section-layout.js
+features/account/section-nav.js
+features/account/section-state.js
+features/account/utils.js
+features/account/watchlist-section.js
+features/auth
+features/auth/api.js
+features/auth/auth-verification-form.js
+features/auth/constants.js
+features/auth/index.js
+features/auth/page-shell.js
+features/auth/poster.js
+features/auth/styles.js
+features/auth/utils.js
+features/auth/workflows.js
+features/home
+features/home/discover.js
+features/home/hero-spotlight.js
+features/layout
+features/layout/dynamic-wrappers.js
+features/layout/interactive-boundary.js
+features/layout/page-gradient-backdrop.js
+features/layout/smooth-scroll.js
+features/modal
+features/modal/account-editor-modal.js
+features/modal/account-social-modal.js
+features/modal/follow-list-modal.js
+features/modal/image-preview-modal.js
+features/modal/list-editor-modal.js
+features/modal/list-picker-modal.js
+features/modal/media-social-proof-modal.js
+features/modal/notifications-modal.js
+features/modal/review-editor-modal.js
+features/modal/video-preview-modal.js
+features/movie
+features/movie/cast-section.js
+features/movie/collection-actions.js
+features/movie/gallery-section.js
+features/movie/images-section.js
+features/movie/recommendation-card.js
+features/movie/sidebar.js
+features/movie/social-proof.js
+features/movie/utils.js
+features/movie/videos-section.js
+features/navigation
+features/navigation/account-nav-links.js
+features/navigation/account-nav-registry.js
+features/navigation/actions
+features/navigation/actions/account-action.js
+features/navigation/actions/auth-google-action.js
+features/navigation/actions/container.js
+features/navigation/actions/media-action.js
+features/navigation/actions/not-found-action.js
+features/navigation/actions/person-action.js
+features/navigation/actions/review-action.js
+features/navigation/actions/search-action
+features/navigation/actions/search-action/constants.js
+features/navigation/actions/search-action/index.js
+features/navigation/actions/search-action/parts
+features/navigation/actions/search-action/parts/item.js
+features/navigation/actions/search-action/utils.js
+features/navigation/actions/styles.js
+features/navigation/actions/watch-providers-action.js
+features/navigation/masks
+features/navigation/masks/account-bio-mask.js
+features/navigation/masks/watch-providers-mask.js
+features/navigation/surfaces
+features/navigation/surfaces/auth-verification-surface.js
+features/navigation/surfaces/confirmation-surface.js
+features/person
+features/person/awards.js
+features/person/bio.js
+features/person/filmography-card.js
+features/person/gallery.js
+features/person/hero.js
+features/person/media-thumb.js
+features/person/sidebar.js
+features/person/social-links.js
+features/person/timeline.js
+features/person/utils.js
+features/reviews
+features/reviews/index.js
+features/reviews/parts
+features/reviews/parts/rating-selector.js
+features/reviews/parts/rating-stars.js
+features/reviews/parts/review-auth-fallback.js
+features/reviews/parts/review-card.js
+features/reviews/parts/review-composer.js
+features/reviews/parts/review-header.js
+features/reviews/parts/review-list.js
+features/reviews/use-media-reviews.js
+features/reviews/use-review-nav-state.js
+features/reviews/utils.js
+features/shared
+features/shared/carousel.js
+features/shared/empty-state.js
+features/shared/list-preview-composition.js
+features/shared/media-card.js
+features/shared/media-poster-card.js
+features/shared/not-found-template.js
+features/shared/segmented-control.js
+jsconfig.json
+lib
+lib/.DS_Store
+lib/account
+lib/account/route-segments.js
+lib/activity
+lib/activity/canonical-key.js
+lib/activity/event-processor.server.js
+lib/auth
+lib/auth/capabilities.js
+lib/auth/clients
+lib/auth/clients/audit.client.js
+lib/auth/clients/auth-route-notice.client.js
+lib/auth/clients/csrf.client.js
+lib/auth/clients/pending-account.client.js
+lib/auth/clients/pending-provider-link.client.js
+lib/auth/oauth-callback.js
+lib/auth/route-notice.js
+lib/auth/servers
+lib/auth/servers/account
+lib/auth/servers/account/account-bootstrap.server.js
+lib/auth/servers/account/account-deletion.server.js
+lib/auth/servers/account/account-state.server.js
+lib/auth/servers/audit
+lib/auth/servers/audit/audit-log.server.js
+lib/auth/servers/notice
+lib/auth/servers/notice/auth-route-notice.server.js
+lib/auth/servers/providers
+lib/auth/servers/providers/google-auth-intent.server.js
+lib/auth/servers/providers/google-provider.server.js
+lib/auth/servers/security
+lib/auth/servers/security/csrf.server.js
+lib/auth/servers/security/password-security.server.js
+lib/auth/servers/security/rate-limit.server.js
+lib/auth/servers/security/recent-reauth.server.js
+lib/auth/servers/security/step-up.server.js
+lib/auth/servers/session
+lib/auth/servers/session/authenticated-request.server.js
+lib/auth/servers/session/request-context.server.js
+lib/auth/servers/session/revocation.server.js
+lib/auth/servers/session/session.server.js
+lib/auth/servers/session/supabase-admin-auth.server.js
+lib/auth/servers/verification
+lib/auth/servers/verification/email-sender.server.js
+lib/auth/servers/verification/email-verification.server.js
+lib/auth/servers/verification/login-verification.server.js
+lib/auth/servers/verification/password-account.server.js
+lib/auth/servers/verification/password-reset-proof.server.js
+lib/auth/servers/verification/signup-proof.server.js
+lib/constants
+lib/constants/index.js
+lib/data
+lib/data/errors.js
+lib/events
+lib/events/index.js
+lib/hooks
+lib/hooks/index.js
+lib/hooks/use-click-outside.js
+lib/hooks/use-debounce.js
+lib/hooks/use-delayed-ready.js
+lib/hooks/use-draggable-scroll.js
+lib/hooks/use-os.js
+lib/hooks/use-scroll-to-top.js
+lib/index.js
+lib/live-updates
+lib/live-updates/user-events.server.js
+lib/media.js
+lib/notifications
+lib/notifications/event-processor.server.js
+lib/supabase
+lib/supabase/admin.js
+lib/supabase/client.js
+lib/supabase/constants.js
+lib/supabase/proxy.js
+lib/supabase/server.js
+lib/tmdb
+lib/tmdb/server.js
+lib/utils
+lib/utils/client-utils.js
+lib/utils/index.js
+lib/utils/pipe.js
+lib/utils/server-url.js
+lib/utils/site-url.js
+modules
+modules/account
+modules/account/adapters
+modules/account/adapters/create-adapter.js
+modules/account/adapters/index.js
+modules/account/client.js
+modules/account/config.js
+modules/account/context.js
+modules/account/hooks.js
+modules/account/index.js
+modules/api
+modules/api/cache.js
+modules/api/index.js
+modules/auth
+modules/auth/adapters
+modules/auth/adapters/api-adapter.js
+modules/auth/adapters/create-adapter.js
+modules/auth/adapters/index.js
+modules/auth/adapters/supabase-adapter.js
+modules/auth/config.js
+modules/auth/context.js
+modules/auth/guards.js
+modules/auth/index.js
+modules/auth/session-ready.js
+modules/auth/storage.js
+modules/auth/utils.js
+modules/background
+modules/background/context.js
+modules/background/index.js
+modules/context-menu
+modules/context-menu/context.js
+modules/context-menu/index.js
+modules/countdown
+modules/countdown/config.js
+modules/countdown/context.js
+modules/countdown/gate.js
+modules/countdown/index.js
+modules/error-boundary
+modules/error-boundary/core.js
+modules/error-boundary/index.js
+modules/error-boundary/integrations.js
+modules/error-boundary/listener.js
+modules/error-boundary/reporter.js
+modules/loading
+modules/loading/context.js
+modules/loading/index.js
+modules/modal
+modules/modal/config.js
+modules/modal/container.js
+modules/modal/context.js
+modules/modal/header.js
+modules/modal/index.js
+modules/modal/title.js
+modules/modal/utils.js
+modules/nav
+modules/nav/context.js
+modules/nav/elements.js
+modules/nav/events.js
+modules/nav/guards.js
+modules/nav/hooks
+modules/nav/hooks.js
+modules/nav/hooks/use-action-component.js
+modules/nav/hooks/use-action-height.js
+modules/nav/hooks/use-element-height.js
+modules/nav/hooks/use-nav-badge.js
+modules/nav/hooks/use-nav-height.js
+modules/nav/hooks/use-navigation-core.js
+modules/nav/hooks/use-navigation-countdown.js
+modules/nav/hooks/use-navigation-display.js
+modules/nav/hooks/use-navigation-effects.js
+modules/nav/hooks/use-navigation-expanded.js
+modules/nav/hooks/use-navigation-items.js
+modules/nav/hooks/use-navigation-layout.js
+modules/nav/hooks/use-navigation-status.js
+modules/nav/hooks/use-navigation.js
+modules/nav/index.js
+modules/nav/item.js
+modules/nav/utils.js
+modules/notification
+modules/notification/config.js
+modules/notification/context.js
+modules/notification/hooks.js
+modules/notification/index.js
+modules/notification/listener.js
+modules/notification/overlay.js
+modules/registry
+modules/registry/context.js
+modules/registry/debug-panel.js
+modules/registry/index.js
+modules/registry/injector.js
+modules/registry/plugins
+modules/registry/plugins/background.plugin.js
+modules/registry/plugins/context-menu.plugin.js
+modules/registry/plugins/create-plugin.js
+modules/registry/plugins/guard.plugin.js
+modules/registry/plugins/index.js
+modules/registry/plugins/loading.plugin.js
+modules/registry/plugins/modal.plugin.js
+modules/registry/plugins/nav.plugin.js
+modules/registry/plugins/notification.plugin.js
+modules/registry/plugins/registry-meta.js
+modules/registry/plugins/title.plugin.js
+modules/registry/use-registry.js
+modules/settings
+modules/settings/config.js
+modules/settings/context.js
+modules/settings/index.js
+modules/settings/modal.js
+modules/settings/storage.js
+modules/settings/utils.js
+modules/transition
+modules/transition/context.js
+modules/transition/index.js
+modules/transition/presets.js
+next.config.mjs
+package.json
+postcss.config.mjs
+proxy.js
+public
+public/apple-icon.svg
+public/icon.svg
+public/images
+public/images/default-avatar.svg
+public/images/noise.webp
+services
+services/.DS_Store
+services/account
+services/account/account-feed.server.js
+services/account/account-route-data.server.js
+services/account/account.server.js
+services/account/account.service.js
+services/account/current-account-snapshot.server.js
+services/activity
+services/activity/activity-events.constants.js
+services/activity/activity-events.service.js
+services/activity/activity.service.js
+services/browser
+services/browser/browser-data.server.js
+services/browser/browser-reviews.server.js
+services/browser/browser-social-proof.server.js
+services/core
+services/core/account-summary.service.js
+services/core/api-request.service.js
+services/core/data-utils.js
+services/core/media-key.service.js
+services/core/polling-subscription.service.js
+services/core/supabase-data.service.js
+services/core/supabase-media-utils.service.js
+services/media
+services/media/favorites.service.js
+services/media/likes.service.js
+services/media/lists.service.js
+services/media/reviews.server.js
+services/media/reviews.service.js
+services/media/social-proof.service.js
+services/media/user-media.service.js
+services/media/watched.service.js
+services/media/watchlist.service.js
+services/notifications
+services/notifications/notification-events.constants.js
+services/notifications/notification-events.service.js
+services/notifications/notifications.constants.js
+services/notifications/notifications.service.js
+services/realtime
+services/realtime/live-updates.service.js
+services/social
+services/social/follows.service.js
+services/tmdb
+services/tmdb/tmdb.service.js
+skills-lock.json
+tailwind.config.js
+ui
+ui/animations
+ui/animations/fade-left.js
+ui/animations/fade-up.js
+ui/animations/index.js
+ui/animations/reveal-item.js
+ui/animations/stagger-container.js
+ui/elements
+ui/elements/button
+ui/elements/button/index.js
+ui/elements/checkbox
+ui/elements/checkbox/index.js
+ui/elements/index.js
+ui/elements/input
+ui/elements/input/index.js
+ui/elements/popover
+ui/elements/popover/index.js
+ui/elements/select
+ui/elements/select/async-select.js
+ui/elements/select/combobox.js
+ui/elements/select/default-select.js
+ui/elements/select/index.js
+ui/elements/select/multi-select.js
+ui/elements/select/searchable-select.js
+ui/elements/switch
+ui/elements/switch/index.js
+ui/elements/textarea
+ui/elements/textarea/index.js
+ui/elements/tooltip
+ui/elements/tooltip/index.js
+ui/elements/utils.js
+ui/fullscreen-state.js
+ui/icon
+ui/icon/index.js
+ui/loadings
+ui/loadings/spinner
+ui/loadings/spinner/index.js
+ui/skeletons
+ui/skeletons/components
+ui/skeletons/components/nav.js
+ui/skeletons/views
+ui/skeletons/views/account.js
+ui/skeletons/views/home.js
+ui/skeletons/views/movie.js
+ui/skeletons/views/person.js
+ui/spinner
+ui/spinner/index.js
+vercel.json
 ```
 
 ## Hotspots To Keep In Mind

@@ -1,7 +1,7 @@
--- Tvizzie infra v2 foundations
+-- Tvizzie infra foundations
 -- Auth revocation primitives, O(1) auth identity lookup RPC, and account counters model.
 
-create table if not exists public.auth_revocation_state_v2 (
+create table if not exists public.auth_revocation_state (
   user_id uuid primary key references auth.users(id) on delete cascade,
   revoke_before timestamptz not null,
   exempt_session_jti text,
@@ -9,22 +9,22 @@ create table if not exists public.auth_revocation_state_v2 (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create index if not exists auth_revocation_state_v2_revoke_before_idx
-  on public.auth_revocation_state_v2(revoke_before desc);
+create index if not exists auth_revocation_state_revoke_before_idx
+  on public.auth_revocation_state(revoke_before desc);
 
-alter table public.auth_revocation_state_v2 enable row level security;
-revoke all on table public.auth_revocation_state_v2 from anon, authenticated;
+alter table public.auth_revocation_state enable row level security;
+revoke all on table public.auth_revocation_state from anon, authenticated;
 
-drop policy if exists "No direct access to auth_revocation_state_v2" on public.auth_revocation_state_v2;
-create policy "No direct access to auth_revocation_state_v2"
-  on public.auth_revocation_state_v2
+drop policy if exists "No direct access to auth_revocation_state" on public.auth_revocation_state;
+create policy "No direct access to auth_revocation_state"
+  on public.auth_revocation_state
   as restrictive
   for all
   to anon, authenticated
   using (false)
   with check (false);
 
-create or replace function public.auth_get_user_by_email_v2(p_email text)
+create or replace function public.auth_get_user_by_email(p_email text)
 returns table (
   id uuid,
   email text,
@@ -74,7 +74,7 @@ as $$
   limit 1;
 $$;
 
-create or replace function public.auth_is_session_revoked_v2(
+create or replace function public.auth_is_session_revoked(
   p_user_id uuid,
   p_session_jti text,
   p_iat timestamptz
@@ -86,7 +86,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_state public.auth_revocation_state_v2%rowtype;
+  v_state public.auth_revocation_state%rowtype;
 begin
   if p_user_id is null then
     return false;
@@ -94,7 +94,7 @@ begin
 
   select *
   into v_state
-  from public.auth_revocation_state_v2
+  from public.auth_revocation_state
   where user_id = p_user_id;
 
   if not found then
@@ -114,7 +114,7 @@ begin
 end;
 $$;
 
-create or replace function public.auth_set_revocation_state_v2(
+create or replace function public.auth_set_revocation_state(
   p_user_id uuid,
   p_revoke_before timestamptz default timezone('utc', now()),
   p_exempt_session_jti text default null,
@@ -126,7 +126,7 @@ volatile
 security definer
 set search_path = ''
 as $$
-  insert into public.auth_revocation_state_v2 (
+  insert into public.auth_revocation_state (
     user_id,
     revoke_before,
     exempt_session_jti,
@@ -147,14 +147,14 @@ as $$
         updated_at = excluded.updated_at;
 $$;
 
-revoke all on function public.auth_get_user_by_email_v2(text) from public, anon, authenticated;
-revoke all on function public.auth_is_session_revoked_v2(uuid, text, timestamptz) from public, anon, authenticated;
-revoke all on function public.auth_set_revocation_state_v2(uuid, timestamptz, text, text) from public, anon, authenticated;
-grant execute on function public.auth_get_user_by_email_v2(text) to service_role;
-grant execute on function public.auth_is_session_revoked_v2(uuid, text, timestamptz) to service_role;
-grant execute on function public.auth_set_revocation_state_v2(uuid, timestamptz, text, text) to service_role;
+revoke all on function public.auth_get_user_by_email(text) from public, anon, authenticated;
+revoke all on function public.auth_is_session_revoked(uuid, text, timestamptz) from public, anon, authenticated;
+revoke all on function public.auth_set_revocation_state(uuid, timestamptz, text, text) from public, anon, authenticated;
+grant execute on function public.auth_get_user_by_email(text) to service_role;
+grant execute on function public.auth_is_session_revoked(uuid, text, timestamptz) to service_role;
+grant execute on function public.auth_set_revocation_state(uuid, timestamptz, text, text) to service_role;
 
-create table if not exists public.profile_counters_v2 (
+create table if not exists public.profile_counters (
   user_id uuid primary key references public.profiles(id) on delete cascade,
   likes_count integer not null default 0,
   lists_count integer not null default 0,
@@ -165,33 +165,33 @@ create table if not exists public.profile_counters_v2 (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-alter table public.profile_counters_v2 enable row level security;
-revoke all on table public.profile_counters_v2 from anon, authenticated;
+alter table public.profile_counters enable row level security;
+revoke all on table public.profile_counters from anon, authenticated;
 
-drop policy if exists "No direct access to profile_counters_v2" on public.profile_counters_v2;
-create policy "No direct access to profile_counters_v2"
-  on public.profile_counters_v2
+drop policy if exists "No direct access to profile_counters" on public.profile_counters;
+create policy "No direct access to profile_counters"
+  on public.profile_counters
   as restrictive
   for all
   to anon, authenticated
   using (false)
   with check (false);
 
-create or replace function public.refresh_profile_counters_v2(p_user_id uuid)
-returns public.profile_counters_v2
+create or replace function public.refresh_profile_counters(p_user_id uuid)
+returns public.profile_counters
 language plpgsql
 volatile
 security definer
 set search_path = ''
 as $$
 declare
-  v_row public.profile_counters_v2;
+  v_row public.profile_counters;
 begin
   if p_user_id is null then
     raise exception 'p_user_id is required';
   end if;
 
-  insert into public.profile_counters_v2 (
+  insert into public.profile_counters (
     user_id,
     likes_count,
     lists_count,
@@ -225,5 +225,5 @@ begin
 end;
 $$;
 
-revoke all on function public.refresh_profile_counters_v2(uuid) from public, anon, authenticated;
-grant execute on function public.refresh_profile_counters_v2(uuid) to service_role;
+revoke all on function public.refresh_profile_counters(uuid) from public, anon, authenticated;
+grant execute on function public.refresh_profile_counters(uuid) to service_role;

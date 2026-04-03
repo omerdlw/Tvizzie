@@ -72,6 +72,10 @@ export default function Client({
     initialResolveError,
     username,
   })
+  const shouldForcePrivateRefresh =
+    !isOwner &&
+    isPrivateProfile === true &&
+    canViewPrivateContent
   const {
     applyFeedResult,
     cursor,
@@ -85,11 +89,13 @@ export default function Client({
     setItems: setReviews,
     syncFeed,
   } = useSeededFeedState(initialReviewFeed)
-  const hasSeededReviewFeed = hasMatchingSeededFeed({
-    expectedValue: 'authored',
-    initialFeed: initialReviewFeed,
-    resolvedUserId,
-  })
+  const hasSeededReviewFeed =
+    !shouldForcePrivateRefresh &&
+    hasMatchingSeededFeed({
+      expectedValue: 'authored',
+      initialFeed: initialReviewFeed,
+      resolvedUserId,
+    })
   const shouldBlockFeedLoad = shouldBlockAccountFeedLoad({
     canViewPrivateContent,
     hasSeededFeed: hasSeededReviewFeed,
@@ -186,9 +192,16 @@ export default function Client({
       return undefined
     }
 
-    const unsubscribe = subscribeToUserWatched(resolvedUserId, setWatchedItems, {
-      onError: () => setWatchedItems([]),
-    })
+    const unsubscribe = subscribeToUserWatched(
+      resolvedUserId,
+      setWatchedItems,
+      {
+        emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+        fetchOnSubscribe: true,
+        refreshOnSubscribe: shouldForcePrivateRefresh,
+        onError: () => setWatchedItems([]),
+      }
+    )
 
     return unsubscribe
   }, [
@@ -198,6 +211,7 @@ export default function Client({
     isPrivateProfile,
     isViewerReady,
     resolvedUserId,
+    shouldForcePrivateRefresh,
   ])
 
   const handleLike = useCallback(

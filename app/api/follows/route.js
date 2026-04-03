@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-import { ACTIVITY_EVENT_TYPES } from '@/lib/constants/activity-events'
-import { NOTIFICATION_EVENT_TYPES } from '@/lib/constants/notification-events'
+import { ACTIVITY_EVENT_TYPES } from '@/services/activity/activity-events.constants'
+import { NOTIFICATION_EVENT_TYPES } from '@/services/notifications/notification-events.constants'
 import { requireAuthenticatedRequest } from '@/lib/auth/servers/session/authenticated-request.server'
 import { readSessionFromRequest } from '@/lib/auth/servers/session/session.server'
 import { processActivityEvent } from '@/lib/activity/event-processor.server'
@@ -210,6 +210,7 @@ export async function GET(request) {
     const status = normalizeValue(searchParams.get('status'))
     const data = await getFollowResource({
       resource,
+      strict: true,
       userId,
       targetId,
       viewerId: sessionContext?.userId || null,
