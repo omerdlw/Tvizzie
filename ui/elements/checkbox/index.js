@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { forwardRef } from 'react'
+import { forwardRef } from 'react';
 
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
-import { Check } from 'lucide-react'
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+import { Check } from 'lucide-react';
 
-import { cn, resolveSlotClasses } from '../utils'
+import { cn, resolveSlotClasses } from '../utils';
 
 const Checkbox = forwardRef(
   (
@@ -23,16 +23,12 @@ const Checkbox = forwardRef(
     },
     ref
   ) => {
-    const isChecked = checked !== undefined ? checked : undefined
-    const classes = resolveSlotClasses(className, classNames)
+    const isChecked = checked !== undefined ? checked : undefined;
+    const classes = resolveSlotClasses(className, classNames);
 
     return (
       <label
-        className={cn(
-          classes.wrapper,
-          'inline-flex cursor-pointer items-center',
-          disabled && 'cursor-not-allowed '
-        )}
+        className={cn(classes.wrapper, 'inline-flex cursor-pointer items-center', disabled && 'cursor-not-allowed')}
         htmlFor={id}
       >
         <CheckboxPrimitive.Root
@@ -42,31 +38,20 @@ const Checkbox = forwardRef(
           defaultChecked={defaultChecked}
           onCheckedChange={onCheckedChange}
           disabled={disabled}
-          className={cn(
-            classes.box,
-            classes.root,
-            isChecked && classes.boxActive,
-            'center'
-          )}
+          className={cn(classes.box, classes.root, isChecked && classes.boxActive, 'center')}
           {...props}
         >
-          <CheckboxPrimitive.Indicator
-            className={cn('center', classes.indicator)}
-          >
+          <CheckboxPrimitive.Indicator className={cn('center', classes.indicator)}>
             {checkIcon || <Check size={16} />}
           </CheckboxPrimitive.Indicator>
         </CheckboxPrimitive.Root>
 
-        {children && (
-          <span className={cn(classes.label, isChecked && classes.labelActive)}>
-            {children}
-          </span>
-        )}
+        {children && <span className={cn(classes.label, isChecked && classes.labelActive)}>{children}</span>}
       </label>
-    )
+    );
   }
-)
+);
 
-Checkbox.displayName = 'Checkbox'
+Checkbox.displayName = 'Checkbox';
 
-export default Checkbox
+export default Checkbox;

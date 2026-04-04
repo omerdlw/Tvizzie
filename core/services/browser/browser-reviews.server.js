@@ -1,10 +1,10 @@
-import 'server-only'
+import 'server-only';
 
-import { createClient as createServerClient } from '@/core/clients/supabase/server'
-import { buildMediaItemKey } from '@/core/services/shared/media-key.service'
-import { normalizeTimestamp } from '@/core/services/shared/data-utils'
+import { createClient as createServerClient } from '@/core/clients/supabase/server';
+import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { normalizeTimestamp } from '@/core/services/shared/data-utils';
 
-const REVIEW_LIMIT = 120
+const REVIEW_LIMIT = 120;
 const MEDIA_REVIEW_SELECT = [
   'content',
   'created_at',
@@ -14,7 +14,7 @@ const MEDIA_REVIEW_SELECT = [
   'rating',
   'updated_at',
   'user_id',
-].join(',')
+].join(',');
 const LIST_REVIEW_SELECT = [
   'content',
   'created_at',
@@ -24,23 +24,23 @@ const LIST_REVIEW_SELECT = [
   'rating',
   'updated_at',
   'user_id',
-].join(',')
+].join(',');
 
 function createListReviewLikeKey(ownerId, listId) {
-  return `list:${ownerId}:${listId}`
+  return `list:${ownerId}:${listId}`;
 }
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject.subjectType === 'list') {
-    return `users/${subject.subjectOwnerId}/lists/${subject.subjectId}/reviews/${userId}`
+    return `users/${subject.subjectOwnerId}/lists/${subject.subjectId}/reviews/${userId}`;
   }
 
-  return `media_items/${subject.subjectKey}/reviews/${userId}`
+  return `media_items/${subject.subjectKey}/reviews/${userId}`;
 }
 
 function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
-  const payload = row.payload && typeof row.payload === 'object' ? row.payload : {}
-  const user = payload.user && typeof payload.user === 'object' ? payload.user : {}
+  const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
+  const user = payload.user && typeof payload.user === 'object' ? payload.user : {};
   const subject = {
     subjectHref: payload.subjectHref || null,
     subjectId: payload.subjectId || null,
@@ -52,8 +52,8 @@ function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
     subjectTitle: payload.subjectTitle || payload.title || 'Untitled',
     subjectType: payload.subjectType || null,
     ...subjectOverrides,
-  }
-  const reviewUserId = row.user_id || payload.authorId || user.id || null
+  };
+  const reviewUserId = row.user_id || payload.authorId || user.id || null;
 
   return {
     authorId: reviewUserId,
@@ -64,10 +64,7 @@ function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
     isSpoiler: Boolean(row.is_spoiler || payload.isSpoiler),
     likes,
     mediaKey: row.media_key || subject.subjectKey || null,
-    rating:
-      row.rating === null || row.rating === undefined
-        ? payload.rating ?? null
-        : Number(row.rating),
+    rating: row.rating === null || row.rating === undefined ? (payload.rating ?? null) : Number(row.rating),
     reviewUserId,
     subjectHref: subject.subjectHref,
     subjectId: subject.subjectId,
@@ -85,61 +82,61 @@ function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
       name: user.name || 'Anonymous User',
       username: user.username || null,
     },
-  }
+  };
 }
 
 function buildLikesMap(rows = []) {
-  const map = new Map()
+  const map = new Map();
 
   rows.forEach((row) => {
-    const key = `${row.media_key}:${row.review_user_id}`
-    const current = map.get(key) || []
+    const key = `${row.media_key}:${row.review_user_id}`;
+    const current = map.get(key) || [];
 
-    current.push(row.user_id)
-    map.set(key, current)
-  })
+    current.push(row.user_id);
+    map.set(key, current);
+  });
 
-  return map
+  return map;
 }
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {
-    throw new Error(result.error.message || fallbackMessage)
+    throw new Error(result.error.message || fallbackMessage);
   }
 
-  return result
+  return result;
 }
 
 function resolveLimitCount(value) {
-  const parsed = Number(value)
+  const parsed = Number(value);
 
   if (!Number.isFinite(parsed) || parsed <= 0) {
-    return REVIEW_LIMIT
+    return REVIEW_LIMIT;
   }
 
-  return Math.max(1, Math.min(Math.floor(parsed), REVIEW_LIMIT))
+  return Math.max(1, Math.min(Math.floor(parsed), REVIEW_LIMIT));
 }
 
 async function fetchReviewLikes(client, mediaKeys = []) {
   if (!Array.isArray(mediaKeys) || mediaKeys.length === 0) {
-    return new Map()
+    return new Map();
   }
 
-  const uniqueKeys = [...new Set(mediaKeys.filter(Boolean))]
-  const likesRows = []
+  const uniqueKeys = [...new Set(mediaKeys.filter(Boolean))];
+  const likesRows = [];
 
   for (let index = 0; index < uniqueKeys.length; index += 100) {
-    const chunk = uniqueKeys.slice(index, index + 100)
+    const chunk = uniqueKeys.slice(index, index + 100);
     const result = await client
       .from('review_likes')
       .select('media_key, review_user_id, user_id')
-      .in('media_key', chunk)
+      .in('media_key', chunk);
 
-    assertResult(result, 'Review likes could not be loaded')
-    likesRows.push(...(result.data || []))
+    assertResult(result, 'Review likes could not be loaded');
+    likesRows.push(...(result.data || []));
   }
 
-  return buildLikesMap(likesRows)
+  return buildLikesMap(likesRows);
 }
 
 async function loadListSubject(client, { ownerId, listId }) {
@@ -148,9 +145,9 @@ async function loadListSubject(client, { ownerId, listId }) {
     .select('id,user_id,slug,title,poster_path,payload')
     .eq('id', listId)
     .eq('user_id', ownerId)
-    .maybeSingle()
+    .maybeSingle();
 
-  assertResult(listResult, 'List reviews could not be loaded')
+  assertResult(listResult, 'List reviews could not be loaded');
 
   if (!listResult.data) {
     return {
@@ -163,16 +160,12 @@ async function loadListSubject(client, { ownerId, listId }) {
       subjectSlug: listId,
       subjectTitle: 'Untitled List',
       subjectType: 'list',
-    }
+    };
   }
 
-  const payload =
-    listResult.data.payload && typeof listResult.data.payload === 'object'
-      ? listResult.data.payload
-      : {}
-  const ownerUsername =
-    payload?.ownerSnapshot?.username || listResult.data.user_id || ownerId
-  const slug = listResult.data.slug || listResult.data.id
+  const payload = listResult.data.payload && typeof listResult.data.payload === 'object' ? listResult.data.payload : {};
+  const ownerUsername = payload?.ownerSnapshot?.username || listResult.data.user_id || ownerId;
+  const slug = listResult.data.slug || listResult.data.id;
 
   return {
     subjectHref: `/account/${ownerUsername}/lists/${slug}`,
@@ -184,63 +177,51 @@ async function loadListSubject(client, { ownerId, listId }) {
     subjectSlug: slug,
     subjectTitle: listResult.data.title || 'Untitled List',
     subjectType: 'list',
-  }
+  };
 }
 
-export async function getMediaReviewsResource({
-  entityId,
-  entityType,
-  limitCount = REVIEW_LIMIT,
-}) {
+export async function getMediaReviewsResource({ entityId, entityType, limitCount = REVIEW_LIMIT }) {
   if (!entityId || !entityType) {
-    return []
+    return [];
   }
 
-  const client = await createServerClient()
-  const mediaKey = buildMediaItemKey(entityType, entityId)
+  const client = await createServerClient();
+  const mediaKey = buildMediaItemKey(entityType, entityId);
   const result = await client
     .from('media_reviews')
     .select(MEDIA_REVIEW_SELECT)
     .eq('media_key', mediaKey)
     .order('updated_at', { ascending: false })
-    .limit(resolveLimitCount(limitCount))
+    .limit(resolveLimitCount(limitCount));
 
-  assertResult(result, 'Media reviews could not be loaded')
+  assertResult(result, 'Media reviews could not be loaded');
 
-  const likesMap = await fetchReviewLikes(client, [mediaKey])
+  const likesMap = await fetchReviewLikes(client, [mediaKey]);
 
   return (result.data || []).map((row) =>
     normalizeReviewRow(row, {}, likesMap.get(`${mediaKey}:${row.user_id}`) || [])
-  )
+  );
 }
 
-export async function getListReviewsResource({
-  listId,
-  ownerId,
-  limitCount = REVIEW_LIMIT,
-}) {
+export async function getListReviewsResource({ listId, ownerId, limitCount = REVIEW_LIMIT }) {
   if (!listId || !ownerId) {
-    return []
+    return [];
   }
 
-  const client = await createServerClient()
-  const subject = await loadListSubject(client, { listId, ownerId })
+  const client = await createServerClient();
+  const subject = await loadListSubject(client, { listId, ownerId });
   const result = await client
     .from('list_reviews')
     .select(LIST_REVIEW_SELECT)
     .eq('list_id', listId)
     .order('updated_at', { ascending: false })
-    .limit(resolveLimitCount(limitCount))
+    .limit(resolveLimitCount(limitCount));
 
-  assertResult(result, 'List reviews could not be loaded')
+  assertResult(result, 'List reviews could not be loaded');
 
-  const likesMap = await fetchReviewLikes(client, [subject.subjectKey])
+  const likesMap = await fetchReviewLikes(client, [subject.subjectKey]);
 
   return (result.data || []).map((row) =>
-    normalizeReviewRow(
-      row,
-      subject,
-      likesMap.get(`${subject.subjectKey}:${row.user_id}`) || []
-    )
-  )
+    normalizeReviewRow(row, subject, likesMap.get(`${subject.subjectKey}:${row.user_id}`) || [])
+  );
 }

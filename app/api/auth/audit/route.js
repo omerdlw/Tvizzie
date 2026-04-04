@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
 
 export async function POST(request) {
   try {
-    const body = await request.json()
+    const body = await request.json();
 
     await writeAuthAuditLog({
       request,
@@ -14,15 +14,12 @@ export async function POST(request) {
       email: body?.email || null,
       provider: body?.provider || null,
       metadata: body?.metadata || null,
-    })
+    });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[AuthAudit] Failed to persist audit log:', error)
+    console.error('[AuthAudit] Failed to persist audit log:', error);
 
-    return NextResponse.json(
-      { success: false, error: 'Audit log could not be persisted' },
-      { status: 202 }
-    )
+    return NextResponse.json({ success: false, error: 'Audit log could not be persisted' }, { status: 202 });
   }
 }

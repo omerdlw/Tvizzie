@@ -1,44 +1,44 @@
-'use client'
+'use client';
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react';
 
-import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/core/constants'
-import { cn } from '@/core/utils'
-import { Button } from '@/ui/elements'
-import Icon from '@/ui/icon'
-import AccountSectionLayout from '../section-layout'
+import MediaCard from '@/features/shared/media-card';
+import { TMDB_IMG } from '@/core/constants';
+import { cn } from '@/core/utils';
+import { Button } from '@/ui/elements';
+import Icon from '@/ui/icon';
+import AccountSectionLayout from '../section-layout';
 
-const OVERVIEW_ROW_CARD_LIMIT = 5
+const OVERVIEW_ROW_CARD_LIMIT = 5;
 
 function getFavoriteType(item) {
-  const explicitType = item?.media_type || item?.entityType
+  const explicitType = item?.media_type || item?.entityType;
 
   if (explicitType === 'movie') {
-    return explicitType
+    return explicitType;
   }
 
-  return null
+  return null;
 }
 
 function getFavoriteTitle(item) {
-  return item?.title || item?.original_title || 'Untitled'
+  return item?.title || item?.original_title || 'Untitled';
 }
 
 function getFavoriteYear(item) {
-  return item?.release_date?.slice?.(0, 4) || null
+  return item?.release_date?.slice?.(0, 4) || null;
 }
 
 function getFavoritePoster(item) {
   if (item?.poster_path_full) {
-    return item.poster_path_full
+    return item.poster_path_full;
   }
 
   if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`
+    return `${TMDB_IMG}/w342${item.poster_path}`;
   }
 
-  return null
+  return null;
 }
 
 export default function AccountFavoritesSection({
@@ -53,21 +53,21 @@ export default function AccountFavoritesSection({
   titleHref = null,
   summaryLabel = null,
 }) {
-  const [pendingItemId, setPendingItemId] = useState(null)
+  const [pendingItemId, setPendingItemId] = useState(null);
 
   const cards = useMemo(
     () =>
       items
         .map((item) => {
-          const mediaType = getFavoriteType(item)
-          const detailId = item?.entityId || item?.id
+          const mediaType = getFavoriteType(item);
+          const detailId = item?.entityId || item?.id;
 
           if (!detailId || mediaType !== 'movie') {
-            return null
+            return null;
           }
 
-          const title = getFavoriteTitle(item)
-          const year = getFavoriteYear(item)
+          const title = getFavoriteTitle(item);
+          const year = getFavoriteYear(item);
 
           return {
             href: `/${mediaType}/${detailId}`,
@@ -76,11 +76,11 @@ export default function AccountFavoritesSection({
             imageSrc: getFavoritePoster(item),
             item,
             tooltipText: year ? `${title} (${year})` : title,
-          }
+          };
         })
         .filter(Boolean),
     [items]
-  )
+  );
 
   return (
     <AccountSectionLayout
@@ -106,7 +106,6 @@ export default function AccountFavoritesSection({
                 imageSrc={card.imageSrc}
                 imageAlt={card.imageAlt}
                 href={card.href}
-                fallbackIconClassName="text-white/50"
                 topOverlay={
                   typeof renderOverlay === 'function' ? (
                     renderOverlay(card.item)
@@ -117,21 +116,19 @@ export default function AccountFavoritesSection({
                         variant="destructive-icon"
                         disabled={pendingItemId === card.id}
                         onClick={async (event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
+                          event.preventDefault();
+                          event.stopPropagation();
 
                           if (pendingItemId === card.id) {
-                            return
+                            return;
                           }
 
-                          setPendingItemId(card.id)
+                          setPendingItemId(card.id);
 
                           try {
-                            await onRemoveItem(card.item)
+                            await onRemoveItem(card.item);
                           } finally {
-                            setPendingItemId((currentId) =>
-                              currentId === card.id ? null : currentId
-                            )
+                            setPendingItemId((currentId) => (currentId === card.id ? null : currentId));
                           }
                         }}
                       >
@@ -150,10 +147,8 @@ export default function AccountFavoritesSection({
           ))}
         </div>
       ) : (
-        <div className="border border-white/5 p-4 text-sm text-white/70">
-          {emptyMessage}
-        </div>
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">{emptyMessage}</div>
       )}
     </AccountSectionLayout>
-  )
+  );
 }

@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+} from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_REVIEWS_REGISTRY_SOURCE = 'account-reviews'
+const ACCOUNT_REVIEWS_REGISTRY_SOURCE = 'account-reviews';
 
 export default function Registry({
   auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
@@ -65,7 +65,7 @@ export default function Registry({
       unfollowConfirmation,
       username,
     })
-  )
+  );
 
-  return null
+  return null;
 }

@@ -1,24 +1,24 @@
-'use client'
+'use client';
 
-import React from 'react'
+import React from 'react';
 
-import { usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation';
 
-import { apiCache } from '@/core/modules/api'
+import { apiCache } from '@/core/modules/api';
 
-import { ErrorBoundaryCore } from './core'
+import { ErrorBoundaryCore } from './core';
 
-export { GlobalErrorListener } from './listener'
-export { getErrorReporter } from './reporter'
-export { createConsoleHandler, createSentryHandler } from './integrations'
+export { GlobalErrorListener } from './listener';
+export { getErrorReporter } from './reporter';
+export { createConsoleHandler, createSentryHandler } from './integrations';
 
 export function GlobalError({ children, onReset }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const handleReset = () => {
-    apiCache.clear()
-    onReset?.()
-  }
+    apiCache.clear();
+    onReset?.();
+  };
 
   return (
     <ErrorBoundaryCore
@@ -30,7 +30,7 @@ export function GlobalError({ children, onReset }) {
     >
       {children}
     </ErrorBoundaryCore>
-  )
+  );
 }
 
 export function ModuleError({ children, name, onReset }) {
@@ -43,17 +43,13 @@ export function ModuleError({ children, name, onReset }) {
     >
       {children}
     </ErrorBoundaryCore>
-  )
+  );
 }
 
 export function ComponentError({ children, message, onReset }) {
   return (
-    <ErrorBoundaryCore
-      message={message || 'Component failed to load'}
-      variant="inline"
-      onReset={onReset}
-    >
+    <ErrorBoundaryCore message={message || 'Component failed to load'} variant="inline" onReset={onReset}>
       {children}
     </ErrorBoundaryCore>
-  )
+  );
 }

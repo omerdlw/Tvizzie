@@ -1,15 +1,15 @@
-import ReactDOM from 'react-dom'
+import ReactDOM from 'react-dom';
 
-import { DynamicNav } from '@/features/layout/dynamic-wrappers'
-import { MOTION_CSS_VARIABLES } from '@/core/constants'
-import { getSiteUrl } from '@/core/utils/site-url'
-import { cn } from '@/core/utils'
+import { DynamicNav } from '@/features/layout/dynamic-wrappers';
+import { MOTION_CSS_VARIABLES } from '@/core/constants';
+import { getSiteUrl } from '@/core/utils/site-url';
+import { cn } from '@/core/utils';
 
-import { geist, zuume } from '../fonts'
-import './globals.css'
-import { AppProviders } from './providers'
+import { geist, zuume } from '../fonts';
+import './globals.css';
+import { AppProviders } from './providers';
 
-const SITE_URL = getSiteUrl()
+const SITE_URL = getSiteUrl();
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -39,13 +39,13 @@ export const metadata = {
     url: SITE_URL,
     type: 'website',
   },
-}
+};
 
 function ResourceHints() {
-  ReactDOM.preconnect('https://image.tmdb.org')
-  ReactDOM.prefetchDNS('https://image.tmdb.org')
+  ReactDOM.preconnect('https://image.tmdb.org');
+  ReactDOM.prefetchDNS('https://image.tmdb.org');
 
-  return null
+  return null;
 }
 
 export default function RootLayout({ children }) {
@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
       <body
         suppressHydrationWarning
         className={cn(
-          'h-auto w-full bg-black fill-white font-normal text-white antialiased',
+          'h-auto w-full bg-white fill-black font-normal text-black antialiased',
           geist.className,
           zuume.variable
         )}
@@ -67,5 +67,5 @@ export default function RootLayout({ children }) {
         </AppProviders>
       </body>
     </html>
-  )
+  );
 }

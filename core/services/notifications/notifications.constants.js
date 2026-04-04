@@ -4,6 +4,6 @@ export const NOTIFICATION_TYPES = Object.freeze({
   NEW_FOLLOWER: 'NEW_FOLLOWER',
   REVIEW_LIKE: 'REVIEW_LIKE',
   LIST_LIKE: 'LIST_LIKE',
-})
+});
 
-export const NOTIFICATION_TYPE_SET = new Set(Object.values(NOTIFICATION_TYPES))
+export const NOTIFICATION_TYPE_SET = new Set(Object.values(NOTIFICATION_TYPES));

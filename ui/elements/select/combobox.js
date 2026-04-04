@@ -1,19 +1,14 @@
-'use client'
+'use client';
 
-import { forwardRef, useMemo, useState } from 'react'
+import { forwardRef, useMemo, useState } from 'react';
 
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { Check } from 'lucide-react'
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { Check } from 'lucide-react';
 
-import { Z_INDEX } from '@/core/constants'
+import { Z_INDEX } from '@/core/constants';
 
-import Input from '../input'
-import {
-  cn,
-  filterOptions,
-  resolveNestedClassName,
-  resolveSlotClasses,
-} from '../utils'
+import Input from '../input';
+import { cn, filterOptions, resolveNestedClassName, resolveSlotClasses } from '../utils';
 
 const Combobox = forwardRef(
   (
@@ -30,44 +25,39 @@ const Combobox = forwardRef(
     },
     ref
   ) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [inputValue, setInputValue] = useState('')
-    const classes = resolveSlotClasses(className, classNames)
-    const inputClassName = resolveNestedClassName(
-      classes,
-      'input',
-      externalClasses.input || {}
-    )
+    const [isOpen, setIsOpen] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const classes = resolveSlotClasses(className, classNames);
+    const inputClassName = resolveNestedClassName(classes, 'input', externalClasses.input || {});
 
-    const selectedOption = options.find((opt) => opt.value === value)
+    const selectedOption = options.find((opt) => opt.value === value);
 
-    const displayValue =
-      !isOpen && selectedOption ? selectedOption.label : inputValue
+    const displayValue = !isOpen && selectedOption ? selectedOption.label : inputValue;
 
     const filteredOptions = useMemo(() => {
-      return filterOptions(options, inputValue, filterFn)
-    }, [options, inputValue, filterFn])
+      return filterOptions(options, inputValue, filterFn);
+    }, [options, inputValue, filterFn]);
 
     const handleSelect = (selectedValue) => {
-      const option = options.find((opt) => opt.value === selectedValue)
-      onChange?.(selectedValue)
-      setInputValue(option?.label || '')
-      setIsOpen(false)
-    }
+      const option = options.find((opt) => opt.value === selectedValue);
+      onChange?.(selectedValue);
+      setInputValue(option?.label || '');
+      setIsOpen(false);
+    };
 
     const handleInputChange = (e) => {
-      setInputValue(e.target.value)
+      setInputValue(e.target.value);
       if (!isOpen) {
-        setIsOpen(true)
+        setIsOpen(true);
       }
-    }
+    };
 
     const handleOpenChange = (open) => {
-      setIsOpen(open)
+      setIsOpen(open);
       if (!open && selectedOption) {
-        setInputValue(selectedOption.label)
+        setInputValue(selectedOption.label);
       }
-    }
+    };
 
     return (
       <PopoverPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -91,11 +81,7 @@ const Combobox = forwardRef(
         </PopoverPrimitive.Trigger>
 
         <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content
-            className={cn(classes.menu)}
-            align="start"
-            style={{ zIndex: Z_INDEX.SELECT }}
-          >
+          <PopoverPrimitive.Content className={cn(classes.menu)} align="start" style={{ zIndex: Z_INDEX.SELECT }}>
             <div className={cn(classes.optionsList)}>
               {filteredOptions.length === 0 ? (
                 <div className={cn(classes.noResults)}>No results found</div>
@@ -111,9 +97,7 @@ const Combobox = forwardRef(
                     )}
                   >
                     <span>{option.label}</span>
-                    {value === option.value && (
-                      <Check size={16} className={cn(classes.indicator)} />
-                    )}
+                    {value === option.value && <Check size={16} className={cn(classes.indicator)} />}
                   </div>
                 ))
               )}
@@ -121,10 +105,10 @@ const Combobox = forwardRef(
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
-    )
+    );
   }
-)
+);
 
-Combobox.displayName = 'Combobox'
+Combobox.displayName = 'Combobox';
 
-export default Combobox
+export default Combobox;

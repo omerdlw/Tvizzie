@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { forwardRef } from 'react'
+import { forwardRef } from 'react';
 
-import * as PopoverPrimitive from '@radix-ui/react-popover'
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 
-import Button from '../button'
-import { cn, resolveSlotClasses } from '../utils'
+import Button from '../button';
+import { cn, resolveSlotClasses } from '../utils';
 
 const Popover = forwardRef(
   (
@@ -23,25 +23,17 @@ const Popover = forwardRef(
     },
     ref
   ) => {
-    const classes = resolveSlotClasses(className, classNames)
+    const classes = resolveSlotClasses(className, classNames);
     const {
       children: triggerChildren,
       className: triggerClassName,
       classNames: triggerClassNames,
       ...restTriggerProps
-    } = triggerProps
-    const triggerClasses = resolveSlotClasses(
-      triggerClassName,
-      triggerClassNames
-    )
+    } = triggerProps;
+    const triggerClasses = resolveSlotClasses(triggerClassName, triggerClassNames);
 
     return (
-      <PopoverPrimitive.Root
-        open={open}
-        defaultOpen={defaultOpen}
-        onOpenChange={onOpenChange}
-        modal={modal}
-      >
+      <PopoverPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} modal={modal}>
         <PopoverPrimitive.Trigger asChild>
           <Button className={triggerClasses} {...restTriggerProps}>
             {triggerChildren}
@@ -58,16 +50,14 @@ const Popover = forwardRef(
             {...props}
           >
             {children}
-            {classes.arrow && (
-              <PopoverPrimitive.Arrow className={cn(classes.arrow)} />
-            )}
+            {classes.arrow && <PopoverPrimitive.Arrow className={cn(classes.arrow)} />}
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
-    )
+    );
   }
-)
+);
 
-Popover.displayName = 'Popover'
+Popover.displayName = 'Popover';
 
-export default Popover
+export default Popover;

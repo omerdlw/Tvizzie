@@ -1,22 +1,22 @@
-import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountSectionState from '@/features/account/section-state'
-import Icon from '@/ui/icon'
-import Registry from './registry'
-import { Button } from '@/ui/elements/index'
+import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountSectionState from '@/features/account/section-state';
+import Icon from '@/ui/icon';
+import Registry from './registry';
+import { Button } from '@/ui/elements/index';
 
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
   const handleEditClick = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    onEdit(list)
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    onEdit(list);
+  };
 
   const handleDeleteClick = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    onDelete(list)
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    onDelete(list);
+  };
 
   return (
     <div className="flex items-center gap-1.5">
@@ -24,7 +24,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         type="button"
         aria-label={`Edit ${list.title}`}
         onClick={handleEditClick}
-        className="center size-9 border border-white/5  text-white transition hover:border-white/10 hover:bg-white/5"
+        className="center size-9 border border-[#0284c7] text-[#0f172a] transition"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
@@ -37,7 +37,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </Button>
     </div>
-  )
+  );
 }
 
 export default function ListsView({
@@ -96,7 +96,7 @@ export default function ListsView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -128,13 +128,7 @@ export default function ListsView({
           lists={lists}
           pageBasePath={`/account/${username}/lists`}
           renderActions={(list) =>
-            isOwner ? (
-              <ListCardOwnerActions
-                list={list}
-                onDelete={handleDeleteList}
-                onEdit={handleEditList}
-              />
-            ) : null
+            isOwner ? <ListCardOwnerActions list={list} onDelete={handleDeleteList} onEdit={handleEditList} /> : null
           }
           title="Lists"
         />
@@ -142,5 +136,5 @@ export default function ListsView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

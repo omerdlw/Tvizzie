@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import AccountClient from '../client'
-import Registry from './registry'
+import AccountClient from '../client';
+import Registry from './registry';
 
 export default function Client({
   username,
@@ -23,5 +23,5 @@ export default function Client({
       initialReviewFeed={initialReviewFeed}
       RegistryComponent={Registry}
     />
-  )
+  );
 }

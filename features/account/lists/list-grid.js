@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import AccountListCard from './list-card'
-import AccountSectionLayout from '../section-layout'
+import AccountListCard from './list-card';
+import AccountSectionLayout from '../section-layout';
 
 export default function AccountListGrid({
   emptyMessage = 'No lists yet',
@@ -15,8 +15,7 @@ export default function AccountListGrid({
   title,
   titleHref = null,
 }) {
-  const resolvedSummaryLabel =
-    summaryLabel === null ? `${lists.length} total` : summaryLabel
+  const resolvedSummaryLabel = summaryLabel === null ? `${lists.length} total` : summaryLabel;
 
   return (
     <AccountSectionLayout
@@ -26,25 +25,21 @@ export default function AccountListGrid({
       title={title}
       titleHref={titleHref}
     >
-        {isLoading && lists.length === 0 ? (
-          <div className="border border-white/5 p-4 text-sm text-white/70">
-            Loading lists...
-          </div>
-        ) : lists.length === 0 ? (
-        <div className="border border-white/5 p-4 text-sm text-white/70">
-            {loadError || emptyMessage}
-          </div>
-        ) : (
-          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {lists.map((list) => (
-              <AccountListCard
-                key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
-                list={list}
-                renderActions={renderActions}
-              />
-            ))}
-          </div>
-        )}
+      {isLoading && lists.length === 0 ? (
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">Loading lists...</div>
+      ) : lists.length === 0 ? (
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">{loadError || emptyMessage}</div>
+      ) : (
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {lists.map((list) => (
+            <AccountListCard
+              key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
+              list={list}
+              renderActions={renderActions}
+            />
+          ))}
+        </div>
+      )}
     </AccountSectionLayout>
-  )
+  );
 }

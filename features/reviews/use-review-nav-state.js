@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react';
 
 export function useReviewNavState({
   canSubmit = true,
@@ -16,27 +16,25 @@ export function useReviewNavState({
   reviewText,
   submitLabel = null,
 }) {
-  const lastStateRef = useRef(null)
+  const lastStateRef = useRef(null);
 
   useEffect(() => {
     if (!onReviewStateChange) {
-      return
+      return;
     }
 
-    const normalizedReviewText = reviewText.trim()
-    const hasText = normalizedReviewText.length > 0
-    const effectiveIsSpoiler = hasText && isSpoiler
-    const existingReview =
-      ownReview && typeof ownReview === 'object' ? ownReview : null
-    const existingText = existingReview?.content || ''
-    const existingHasText = existingText.trim().length > 0
-    const existingSpoiler =
-      existingHasText && Boolean(existingReview?.isSpoiler)
+    const normalizedReviewText = reviewText.trim();
+    const hasText = normalizedReviewText.length > 0;
+    const effectiveIsSpoiler = hasText && isSpoiler;
+    const existingReview = ownReview && typeof ownReview === 'object' ? ownReview : null;
+    const existingText = existingReview?.content || '';
+    const existingHasText = existingText.trim().length > 0;
+    const existingSpoiler = existingHasText && Boolean(existingReview?.isSpoiler);
     const isChanged = existingReview
       ? normalizedReviewText !== existingText ||
         rating !== (existingReview.rating ?? null) ||
         effectiveIsSpoiler !== existingSpoiler
-      : hasText || rating !== null
+      : hasText || rating !== null;
 
     const currentState = {
       canSubmit,
@@ -46,9 +44,9 @@ export function useReviewNavState({
       loadingLabel,
       ownReview: Boolean(ownReview),
       submitLabel,
-    }
+    };
 
-    const previousState = lastStateRef.current
+    const previousState = lastStateRef.current;
     const isModified =
       !previousState ||
       previousState.canSubmit !== currentState.canSubmit ||
@@ -57,18 +55,18 @@ export function useReviewNavState({
       previousState.isSubmitting !== currentState.isSubmitting ||
       previousState.loadingLabel !== currentState.loadingLabel ||
       previousState.ownReview !== currentState.ownReview ||
-      previousState.submitLabel !== currentState.submitLabel
+      previousState.submitLabel !== currentState.submitLabel;
 
     if (!isModified) {
-      return
+      return;
     }
 
-    lastStateRef.current = currentState
+    lastStateRef.current = currentState;
 
     onReviewStateChange({
       ...currentState,
       submitReview: handleSubmit,
-    })
+    });
   }, [
     handleSubmit,
     isEditing,
@@ -82,5 +80,5 @@ export function useReviewNavState({
     rating,
     reviewText,
     submitLabel,
-  ])
+  ]);
 }

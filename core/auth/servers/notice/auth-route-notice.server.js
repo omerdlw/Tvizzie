@@ -1,16 +1,13 @@
-import { AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/core/auth/route-notice'
-import {
-  AUTH_COOKIE_PATH,
-  isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server'
+import { AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/core/auth/route-notice';
+import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from '@/core/auth/servers/session/session.server';
 
-const AUTH_ROUTE_NOTICE_MAX_AGE_SECONDS = 60
+const AUTH_ROUTE_NOTICE_MAX_AGE_SECONDS = 60;
 
 export function setAuthRouteNoticeCookie(response, notice) {
-  const normalizedNotice = normalizeAuthRouteNotice(notice)
+  const normalizedNotice = normalizeAuthRouteNotice(notice);
 
   if (!normalizedNotice) {
-    return
+    return;
   }
 
   response.cookies.set(AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizedNotice, {
@@ -19,7 +16,7 @@ export function setAuthRouteNoticeCookie(response, notice) {
     path: AUTH_COOKIE_PATH,
     sameSite: 'lax',
     secure: isSecureCookieEnvironment(),
-  })
+  });
 }
 
 export function clearAuthRouteNoticeCookie(response) {
@@ -29,5 +26,5 @@ export function clearAuthRouteNoticeCookie(response) {
     path: AUTH_COOKIE_PATH,
     sameSite: 'lax',
     secure: isSecureCookieEnvironment(),
-  })
+  });
 }

@@ -1,81 +1,73 @@
-'use client'
+'use client';
 
-import { isBrowser, isObject, isString } from '@/core/utils'
+import { isBrowser, isObject, isString } from '@/core/utils';
 
-import {
-  DEFAULT_SETTINGS_STORAGE_KEY,
-  DEFAULT_COOKIE_ATTRIBUTES,
-  SETTINGS_STORAGE_TARGETS,
-} from './config'
-import {
-  createPersistedSettingsSnapshot,
-  createCookieSettingsSnapshot,
-  mergeSettingsObjects,
-} from './utils'
+import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_COOKIE_ATTRIBUTES, SETTINGS_STORAGE_TARGETS } from './config';
+import { createPersistedSettingsSnapshot, createCookieSettingsSnapshot, mergeSettingsObjects } from './utils';
 
-let storageInstanceCount = 0
+let storageInstanceCount = 0;
 
 function parseStoredSettings(rawValue) {
   if (!rawValue || !isString(rawValue)) {
-    return {}
+    return {};
   }
 
   try {
-    const parsed = JSON.parse(rawValue)
-    return isObject(parsed) ? parsed : {}
+    const parsed = JSON.parse(rawValue);
+    return isObject(parsed) ? parsed : {};
   } catch (error) {
-    console.error('[settings] Failed to parse settings payload:', error)
-    return {}
+    console.error('[settings] Failed to parse settings payload:', error);
+    return {};
   }
 }
 
 function serializeStoredSettings(value) {
-  return JSON.stringify(isObject(value) ? value : {})
+  return JSON.stringify(isObject(value) ? value : {});
 }
 
 function getCookieValue(cookieString, key) {
-  const cookies = String(cookieString || '').split(';')
-  const prefix = `${encodeURIComponent(key)}=`
+  const cookies = String(cookieString || '').split(';');
+  const prefix = `${encodeURIComponent(key)}=`;
 
   for (const cookie of cookies) {
-    const normalizedCookie = cookie.trim()
+    const normalizedCookie = cookie.trim();
 
     if (normalizedCookie.startsWith(prefix)) {
-      return normalizedCookie.slice(prefix.length)
+      return normalizedCookie.slice(prefix.length);
     }
   }
 
-  return null
+  return null;
 }
 
 function serializeCookie(key, value, attributes = {}) {
-  const cookieParts = [`${encodeURIComponent(key)}=${value}`]
+  const cookieParts = [`${encodeURIComponent(key)}=${value}`];
 
   if (attributes.path) {
-    cookieParts.push(`Path=${attributes.path}`)
+    cookieParts.push(`Path=${attributes.path}`);
   }
 
   if (attributes.domain) {
-    cookieParts.push(`Domain=${attributes.domain}`)
+    cookieParts.push(`Domain=${attributes.domain}`);
   }
 
   if (attributes.sameSite) {
-    cookieParts.push(`SameSite=${attributes.sameSite}`)
+    cookieParts.push(`SameSite=${attributes.sameSite}`);
   }
 
   if (attributes.secure) {
-    cookieParts.push('Secure')
+    cookieParts.push('Secure');
   }
 
   if (Number.isFinite(attributes.maxAge)) {
-    cookieParts.push(`Max-Age=${Math.max(0, Math.floor(attributes.maxAge))}`)
+    cookieParts.push(`Max-Age=${Math.max(0, Math.floor(attributes.maxAge))}`);
   }
 
   if (attributes.expires instanceof Date) {
-    cookieParts.push(`Expires=${attributes.expires.toUTCString()}`)
+    cookieParts.push(`Expires=${attributes.expires.toUTCString()}`);
   }
 
-  return cookieParts.join('; ')
+  return cookieParts.join('; ');
 }
 
 export function createLocalStorageDriver({
@@ -86,104 +78,90 @@ export function createLocalStorageDriver({
 } = {}) {
   const resolveStorage = () => {
     if (storage) {
-      return storage
+      return storage;
     }
 
     if (!isBrowser()) {
-      return null
+      return null;
     }
 
     try {
-      return window.localStorage
+      return window.localStorage;
     } catch (error) {
-      console.error('[settings] localStorage is unavailable:', error)
-      return null
+      console.error('[settings] localStorage is unavailable:', error);
+      return null;
     }
-  }
+  };
 
   const readFromStorageKey = (resolvedStorage, storageKey) => {
     try {
-      return parseStoredSettings(resolvedStorage.getItem(storageKey))
+      return parseStoredSettings(resolvedStorage.getItem(storageKey));
     } catch (error) {
-      console.error(
-        `[settings] Failed to read localStorage (${storageKey}):`,
-        error
-      )
-      return {}
+      console.error(`[settings] Failed to read localStorage (${storageKey}):`, error);
+      return {};
     }
-  }
+  };
 
   return {
     name: SETTINGS_STORAGE_TARGETS.LOCAL_STORAGE,
     key,
     isAvailable() {
-      return Boolean(resolveStorage())
+      return Boolean(resolveStorage());
     },
     read() {
-      const resolvedStorage = resolveStorage()
+      const resolvedStorage = resolveStorage();
 
       if (!resolvedStorage) {
-        return {}
+        return {};
       }
 
-      const legacySnapshots = legacyKeys.map((legacyKey) =>
-        readFromStorageKey(resolvedStorage, legacyKey)
-      )
-      const currentSnapshot = readFromStorageKey(resolvedStorage, key)
+      const legacySnapshots = legacyKeys.map((legacyKey) => readFromStorageKey(resolvedStorage, legacyKey));
+      const currentSnapshot = readFromStorageKey(resolvedStorage, key);
 
-      return mergeSettingsObjects(...legacySnapshots, currentSnapshot)
+      return mergeSettingsObjects(...legacySnapshots, currentSnapshot);
     },
     write(snapshot, context = {}) {
-      const resolvedStorage = resolveStorage()
+      const resolvedStorage = resolveStorage();
 
       if (!resolvedStorage) {
-        return false
+        return false;
       }
 
       try {
-        const payload = createPersistedSettingsSnapshot(
-          snapshot,
-          context.definitions
-        )
-        resolvedStorage.setItem(key, serializeStoredSettings(payload))
+        const payload = createPersistedSettingsSnapshot(snapshot, context.definitions);
+        resolvedStorage.setItem(key, serializeStoredSettings(payload));
 
         if (cleanupLegacyKeys) {
           legacyKeys.forEach((legacyKey) => {
-            resolvedStorage.removeItem(legacyKey)
-          })
+            resolvedStorage.removeItem(legacyKey);
+          });
         }
 
-        return true
+        return true;
       } catch (error) {
-        console.error(
-          `[settings] Failed to write localStorage (${key}):`,
-          error
-        )
-        return false
+        console.error(`[settings] Failed to write localStorage (${key}):`, error);
+        return false;
       }
     },
     clear() {
-      const resolvedStorage = resolveStorage()
+      const resolvedStorage = resolveStorage();
 
       if (!resolvedStorage) {
-        return false
+        return false;
       }
 
       try {
-        resolvedStorage.removeItem(key)
+        resolvedStorage.removeItem(key);
         legacyKeys.forEach((legacyKey) => {
-          resolvedStorage.removeItem(legacyKey)
-        })
-        return true
+          resolvedStorage.removeItem(legacyKey);
+        });
+        return true;
       } catch (error) {
-        console.error(
-          `[settings] Failed to clear localStorage (${key}):`,
-          error
-        )
-        return false
+        console.error(`[settings] Failed to clear localStorage (${key}):`, error);
+        return false;
       }
     },
-  }
+  };
 }
 
 export function createCookieDriver({
@@ -194,119 +172,111 @@ export function createCookieDriver({
 } = {}) {
   const resolveCookieString = () => {
     if (isString(cookieSource)) {
-      return cookieSource
+      return cookieSource;
     }
 
     if (!isBrowser()) {
-      return ''
+      return '';
     }
 
-    return document.cookie || ''
-  }
+    return document.cookie || '';
+  };
 
   const cookieAttributes = {
     ...DEFAULT_COOKIE_ATTRIBUTES,
     ...(isObject(attributes) ? attributes : {}),
-  }
+  };
 
   if (cookieAttributes.secure === undefined && isBrowser()) {
-    cookieAttributes.secure = window.location.protocol === 'https:'
+    cookieAttributes.secure = window.location.protocol === 'https:';
   }
 
   const clearCookie = () => {
     if (!isBrowser()) {
-      return false
+      return false;
     }
 
     try {
       document.cookie = serializeCookie(key, '', {
         ...cookieAttributes,
         maxAge: 0,
-      })
-      return true
+      });
+      return true;
     } catch (error) {
-      console.error(`[settings] Failed to clear cookie (${key}):`, error)
-      return false
+      console.error(`[settings] Failed to clear cookie (${key}):`, error);
+      return false;
     }
-  }
+  };
 
   return {
     name: SETTINGS_STORAGE_TARGETS.COOKIE,
     key,
     isAvailable() {
-      return isBrowser() && typeof document.cookie === 'string'
+      return isBrowser() && typeof document.cookie === 'string';
     },
     read() {
-      const rawCookieValue = getCookieValue(resolveCookieString(), key)
+      const rawCookieValue = getCookieValue(resolveCookieString(), key);
 
       if (!rawCookieValue) {
-        return {}
+        return {};
       }
 
       try {
-        return parseStoredSettings(decodeURIComponent(rawCookieValue))
+        return parseStoredSettings(decodeURIComponent(rawCookieValue));
       } catch (error) {
-        console.error(`[settings] Failed to read cookie (${key}):`, error)
-        return {}
+        console.error(`[settings] Failed to read cookie (${key}):`, error);
+        return {};
       }
     },
     write(snapshot, context = {}) {
       if (!isBrowser()) {
-        return false
+        return false;
       }
 
       try {
         const payload =
           typeof select === 'function'
             ? select(snapshot, context)
-            : createCookieSettingsSnapshot(snapshot, context.definitions)
+            : createCookieSettingsSnapshot(snapshot, context.definitions);
 
         if (!isObject(payload) || Object.keys(payload).length === 0) {
-          return clearCookie()
+          return clearCookie();
         }
 
-        document.cookie = serializeCookie(
-          key,
-          encodeURIComponent(serializeStoredSettings(payload)),
-          cookieAttributes
-        )
+        document.cookie = serializeCookie(key, encodeURIComponent(serializeStoredSettings(payload)), cookieAttributes);
 
-        return true
+        return true;
       } catch (error) {
-        console.error(`[settings] Failed to write cookie (${key}):`, error)
-        return false
+        console.error(`[settings] Failed to write cookie (${key}):`, error);
+        return false;
       }
     },
     clear: clearCookie,
-  }
+  };
 }
 
-export function createSettingsStorage({
-  key = DEFAULT_SETTINGS_STORAGE_KEY,
-  drivers,
-  sync = true,
-} = {}) {
+export function createSettingsStorage({ key = DEFAULT_SETTINGS_STORAGE_KEY, drivers, sync = true } = {}) {
   const resolvedDrivers =
     Array.isArray(drivers) && drivers.length > 0
       ? drivers
-      : [createLocalStorageDriver({ key }), createCookieDriver({ key })]
+      : [createLocalStorageDriver({ key }), createCookieDriver({ key })];
 
-  const instanceId = `settings-storage-${storageInstanceCount + 1}`
-  storageInstanceCount += 1
-  const changeEventName = `settings:changed:${key}`
+  const instanceId = `settings-storage-${storageInstanceCount + 1}`;
+  storageInstanceCount += 1;
+  const changeEventName = `settings:changed:${key}`;
 
   const getActiveDrivers = (targets) =>
     resolvedDrivers.filter((driver) => {
       if (!driver || typeof driver !== 'object') {
-        return false
+        return false;
       }
 
       if (targets?.length && !targets.includes(driver.name)) {
-        return false
+        return false;
       }
 
-      return typeof driver.isAvailable !== 'function' || driver.isAvailable()
-    })
+      return typeof driver.isAvailable !== 'function' || driver.isAvailable();
+    });
 
   const notifyChange = (reason) => {
     if (
@@ -315,7 +285,7 @@ export function createSettingsStorage({
       typeof window.dispatchEvent !== 'function' ||
       typeof window.CustomEvent !== 'function'
     ) {
-      return
+      return;
     }
 
     window.dispatchEvent(
@@ -326,8 +296,8 @@ export function createSettingsStorage({
           reason,
         },
       })
-    )
-  }
+    );
+  };
 
   const api = {
     key,
@@ -335,97 +305,88 @@ export function createSettingsStorage({
     read(context = {}) {
       const snapshots = getActiveDrivers(context.targets).map((driver) => {
         try {
-          return driver.read(context)
+          return driver.read(context);
         } catch (error) {
-          console.error(
-            `[settings] Failed to read ${driver.name} (${key}):`,
-            error
-          )
-          return {}
+          console.error(`[settings] Failed to read ${driver.name} (${key}):`, error);
+          return {};
         }
-      })
+      });
 
-      return mergeSettingsObjects(...snapshots.reverse())
+      return mergeSettingsObjects(...snapshots.reverse());
     },
     write(snapshot, context = {}) {
       const results = getActiveDrivers(context.targets).map((driver) => {
         try {
-          return driver.write(snapshot, context)
+          return driver.write(snapshot, context);
         } catch (error) {
-          console.error(
-            `[settings] Failed to write ${driver.name} (${key}):`,
-            error
-          )
-          return false
+          console.error(`[settings] Failed to write ${driver.name} (${key}):`, error);
+          return false;
         }
-      })
+      });
 
-      const hasWritten = results.some(Boolean)
+      const hasWritten = results.some(Boolean);
 
       if (hasWritten) {
-        notifyChange('write')
+        notifyChange('write');
       }
 
-      return hasWritten
+      return hasWritten;
     },
     clear(context = {}) {
       const results = getActiveDrivers(context.targets).map((driver) => {
         try {
-          return driver.clear(context)
+          return driver.clear(context);
         } catch (error) {
-          console.error(
-            `[settings] Failed to clear ${driver.name} (${key}):`,
-            error
-          )
-          return false
+          console.error(`[settings] Failed to clear ${driver.name} (${key}):`, error);
+          return false;
         }
-      })
+      });
 
-      const hasCleared = results.some(Boolean)
+      const hasCleared = results.some(Boolean);
 
       if (hasCleared) {
-        notifyChange('clear')
+        notifyChange('clear');
       }
 
-      return hasCleared
+      return hasCleared;
     },
     subscribe(listener) {
       if (!sync || !isBrowser() || typeof listener !== 'function') {
-        return () => {}
+        return () => {};
       }
 
       const handleStorage = (event) => {
         if (event.key && event.key !== key) {
-          return
+          return;
         }
 
         listener(api.read(), {
           type: 'storage',
           key,
           reason: 'storage',
-        })
-      }
+        });
+      };
 
       const handleCustom = (event) => {
         if (event.detail?.key !== key) {
-          return
+          return;
         }
 
         listener(api.read(), {
           type: 'custom',
           ...event.detail,
-        })
-      }
+        });
+      };
 
-      window.addEventListener('storage', handleStorage)
-      window.addEventListener(changeEventName, handleCustom)
+      window.addEventListener('storage', handleStorage);
+      window.addEventListener(changeEventName, handleCustom);
 
       return () => {
-        window.removeEventListener('storage', handleStorage)
-        window.removeEventListener(changeEventName, handleCustom)
-      }
+        window.removeEventListener('storage', handleStorage);
+        window.removeEventListener(changeEventName, handleCustom);
+      };
     },
-  }
+  };
 
-  return api
+  return api;
 }

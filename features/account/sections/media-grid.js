@@ -1,39 +1,29 @@
-'use client'
+'use client';
 
-import { Reorder, useDragControls } from 'framer-motion'
+import { Reorder, useDragControls } from 'framer-motion';
 
-import MediaPosterCard from '@/features/shared/media-poster-card'
-import { getMediaTitle } from '@/features/account/utils'
-import { DURATION } from '@/core/constants'
-import Icon from '@/ui/icon/index'
+import MediaPosterCard from '@/features/shared/media-poster-card';
+import { getMediaTitle } from '@/features/account/utils';
+import { DURATION } from '@/core/constants';
+import Icon from '@/ui/icon/index';
 
 function ReorderableListItem({ item, renderEditAction }) {
-  const controls = useDragControls()
+  const controls = useDragControls();
 
   return (
-    <Reorder.Item
-      as="div"
-      value={item}
-      dragListener={false}
-      dragControls={controls}
-      className="relative w-full"
-    >
-      <div className="flex w-full items-center gap-2 border border-white/5  px-4 py-3">
+    <Reorder.Item as="div" value={item} dragListener={false} dragControls={controls} className="relative w-full">
+      <div className="flex w-full items-center gap-2 border border-[#0284c7] px-4 py-3">
         <div
           onPointerDown={(e) => controls.start(e)}
-          className="center size-8 shrink-0 cursor-grab text-white/60 transition hover:text-white active:cursor-grabbing"
+          className="center size-8 shrink-0 cursor-grab text-[#475569] transition"
         >
           <Icon icon="solar:reorder-bold" size={18} />
         </div>
-        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
-          {getMediaTitle(item)}
-        </p>
-        {typeof renderEditAction === 'function' ? (
-          <div className="shrink-0">{renderEditAction(item)}</div>
-        ) : null}
+        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-[#0f172a]">{getMediaTitle(item)}</p>
+        {typeof renderEditAction === 'function' ? <div className="shrink-0">{renderEditAction(item)}</div> : null}
       </div>
     </Reorder.Item>
-  )
+  );
 }
 
 export function MediaGrid({
@@ -60,7 +50,7 @@ export function MediaGrid({
           />
         ))}
       </Reorder.Group>
-    )
+    );
   }
 
   return (
@@ -76,5 +66,5 @@ export function MediaGrid({
         </div>
       ))}
     </div>
-  )
+  );
 }

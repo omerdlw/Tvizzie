@@ -1,114 +1,113 @@
-'use client'
+'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react';
 
-import { usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation';
 
-import { useNavigationContext } from '../context'
-import MediaAction from '../actions/media-action'
-import { getNavConfirmationKey } from '../utils'
-import { useNavigationCountdown } from './use-navigation-countdown'
-import { useNavigationItems } from './use-navigation-items'
-import { useNavigationStatus } from './use-navigation-status'
+import { useNavigationContext } from '../context';
+import MediaAction from '../actions/media-action';
+import { getNavConfirmationKey } from '../utils';
+import { useNavigationCountdown } from './use-navigation-countdown';
+import { useNavigationItems } from './use-navigation-items';
+import { useNavigationStatus } from './use-navigation-status';
 
 function hasChildren(item) {
-  return Array.isArray(item?.children) && item.children.length > 0
+  return Array.isArray(item?.children) && item.children.length > 0;
 }
 
 function normalizePath(value) {
-  const normalized = String(value || '').trim()
+  const normalized = String(value || '').trim();
 
   if (!normalized) {
-    return ''
+    return '';
   }
 
   if (normalized === '/') {
-    return '/'
+    return '/';
   }
 
-  return normalized.replace(/\/+$/, '')
+  return normalized.replace(/\/+$/, '');
 }
 
 function isSamePath(left, right) {
-  return normalizePath(left) === normalizePath(right)
+  return normalizePath(left) === normalizePath(right);
 }
 
 function isPathPrefix(candidatePath, pathname) {
-  const normalizedCandidate = normalizePath(candidatePath)
-  const normalizedPathname = normalizePath(pathname)
+  const normalizedCandidate = normalizePath(candidatePath);
+  const normalizedPathname = normalizePath(pathname);
 
   if (!normalizedCandidate || !normalizedPathname) {
-    return false
+    return false;
   }
 
   if (normalizedCandidate === normalizedPathname) {
-    return true
+    return true;
   }
 
   if (normalizedCandidate === '/') {
-    return normalizedPathname.startsWith('/')
+    return normalizedPathname.startsWith('/');
   }
 
-  return normalizedPathname.startsWith(`${normalizedCandidate}/`)
+  return normalizedPathname.startsWith(`${normalizedCandidate}/`);
 }
 
 function isNotFoundItem(item) {
-  return item?.isNotFound || item?.path === 'not-found'
+  return item?.isNotFound || item?.path === 'not-found';
 }
 
 function toSearchableText(value) {
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
+    return String(value);
   }
 
   if (Array.isArray(value)) {
-    return value.map(toSearchableText).join(' ')
+    return value.map(toSearchableText).join(' ');
   }
 
   if (React.isValidElement(value)) {
-    return toSearchableText(value.props?.children)
+    return toSearchableText(value.props?.children);
   }
 
   if (value && typeof value === 'object') {
-    return Object.values(value).map(toSearchableText).join(' ')
+    return Object.values(value).map(toSearchableText).join(' ');
   }
 
-  return ''
+  return '';
 }
 
-function flattenNavigationItems(
-  items,
-  expandedParents,
-  pathname,
-  exposeAllChildren = false
-) {
-  const normalizedPathname = normalizePath(pathname)
+function flattenNavigationItems(items, expandedParents, pathname, exposeAllChildren = false) {
+  const normalizedPathname = normalizePath(pathname);
 
   return items.map((item) => {
-    const isParent = hasChildren(item)
+    const isParent = hasChildren(item);
+    const normalizedItemPath = normalizePath(item?.path);
     const activeChild =
       isParent && !exposeAllChildren
-        ? item.children.find((child) => isSamePath(child.path, normalizedPathname)) ||
-          null
-        : null
+        ? item.children.find((child) => isSamePath(child.path, normalizedPathname)) || null
+        : null;
+    const isParentPathActive =
+      isParent &&
+      normalizedItemPath &&
+      (isSamePath(normalizedItemPath, normalizedPathname) ||
+        (normalizedItemPath !== '/' && normalizedPathname.startsWith(`${normalizedItemPath}/`)));
 
     return {
       ...item,
       isParent,
       hasActiveChild: Boolean(activeChild),
       activeChild,
-      isExpanded:
-        isParent && (expandedParents.has(item.name) || Boolean(activeChild)),
-    }
-  })
+      isExpanded: isParent && (expandedParents.has(item.name) || Boolean(activeChild) || Boolean(isParentPathActive)),
+    };
+  });
 }
 
 function filterNavigationItems(items, searchQuery) {
-  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
   if (!normalizedQuery) {
-    return items
+    return items;
   }
 
   return items.filter((item) => {
@@ -116,8 +115,8 @@ function filterNavigationItems(items, searchQuery) {
       toSearchableText(item.name).toLowerCase().includes(normalizedQuery) ||
       toSearchableText(item.title).toLowerCase().includes(normalizedQuery) ||
       toSearchableText(item.description).toLowerCase().includes(normalizedQuery)
-    )
-  })
+    );
+  });
 }
 
 function buildNavigationItems({
@@ -130,106 +129,74 @@ function buildNavigationItems({
   countdownItem,
 }) {
   if (countdownItem) {
-    return [countdownItem]
+    return [countdownItem];
   }
 
-  const baseItems = isNotFoundPage
-    ? rawItems.filter((item) => item.path === '/' || isNotFoundItem(item))
-    : rawItems
+  const baseItems = isNotFoundPage ? rawItems.filter((item) => item.path === '/' || isNotFoundItem(item)) : rawItems;
 
-  const flattenedItems = flattenNavigationItems(
-    baseItems,
-    expandedParents,
-    pathname,
-    expanded && Boolean(searchQuery)
-  )
+  const flattenedItems = flattenNavigationItems(baseItems, expandedParents, pathname, expanded && Boolean(searchQuery));
 
   if (expanded && searchQuery) {
-    return filterNavigationItems(flattenedItems, searchQuery)
+    return filterNavigationItems(flattenedItems, searchQuery);
   }
 
-  return flattenedItems
+  return flattenedItems;
 }
 
-function resolveActiveIndex({
-  navigationItems,
-  activeItem,
-  pathname,
-  countdownItem,
-}) {
-  const normalizedPathname = normalizePath(pathname)
+function resolveActiveIndex({ navigationItems, activeItem, pathname, countdownItem }) {
+  const normalizedPathname = normalizePath(pathname);
 
   if (countdownItem) {
-    return 0
+    return 0;
   }
 
-  const selectedDataSourceIndex = navigationItems.findIndex(
-    (item) => item.isDataSource && item.isSelected
-  )
+  const selectedDataSourceIndex = navigationItems.findIndex((item) => item.isDataSource && item.isSelected);
 
   if (selectedDataSourceIndex !== -1) {
-    return selectedDataSourceIndex
+    return selectedDataSourceIndex;
   }
 
   if (activeItem) {
     const matchedActiveIndex = navigationItems.findIndex(
-      (item) =>
-        (item.path && isSamePath(item.path, activeItem.path)) ||
-        (item.name && item.name === activeItem.name)
-    )
+      (item) => (item.path && isSamePath(item.path, activeItem.path)) || (item.name && item.name === activeItem.name)
+    );
 
     if (matchedActiveIndex !== -1) {
-      return matchedActiveIndex
+      return matchedActiveIndex;
     }
   }
 
-  const matchedIndex = navigationItems.findIndex((item) =>
-    isSamePath(item.path, normalizedPathname)
-  )
-  return Math.max(0, matchedIndex)
+  const matchedIndex = navigationItems.findIndex((item) => isSamePath(item.path, normalizedPathname));
+  return Math.max(0, matchedIndex);
 }
 
-function resolveBaseActiveItem({
-  rawItems,
-  navigationItems,
-  pathname,
-  isNotFoundPage,
-}) {
-  const normalizedPathname = normalizePath(pathname)
-  const selectedDataSource = navigationItems.find(
-    (item) => item.isDataSource && item.isSelected
-  )
+function resolveBaseActiveItem({ rawItems, navigationItems, pathname, isNotFoundPage }) {
+  const normalizedPathname = normalizePath(pathname);
+  const selectedDataSource = navigationItems.find((item) => item.isDataSource && item.isSelected);
 
   if (selectedDataSource) {
-    return selectedDataSource
+    return selectedDataSource;
   }
 
   if (isNotFoundPage) {
-    return rawItems.find((item) => isNotFoundItem(item)) || rawItems[0] || null
+    return rawItems.find((item) => isNotFoundItem(item)) || rawItems[0] || null;
   }
 
-  const matchedNavigationItem = navigationItems.find(
-    (item) => isSamePath(item.path, normalizedPathname)
-  )
+  const matchedNavigationItem = navigationItems.find((item) => isSamePath(item.path, normalizedPathname));
 
   if (matchedNavigationItem) {
-    return matchedNavigationItem
+    return matchedNavigationItem;
   }
 
-  const matchedRawItem = rawItems.find((item) =>
-    isSamePath(item.path, normalizedPathname)
-  )
+  const matchedRawItem = rawItems.find((item) => isSamePath(item.path, normalizedPathname));
 
   if (matchedRawItem) {
-    return matchedRawItem
+    return matchedRawItem;
   }
 
   const prefixMatchedRawItem = rawItems
     .filter((item) => isPathPrefix(item.path, normalizedPathname))
-    .sort(
-      (left, right) =>
-        normalizePath(right.path).length - normalizePath(left.path).length
-    )[0]
+    .sort((left, right) => normalizePath(right.path).length - normalizePath(left.path).length)[0];
 
   if (prefixMatchedRawItem) {
     return (
@@ -238,24 +205,20 @@ function resolveBaseActiveItem({
           isSamePath(entry?.path, prefixMatchedRawItem.path) ||
           (entry?.name && entry.name === prefixMatchedRawItem.name)
       ) || prefixMatchedRawItem
-    )
+    );
   }
 
   for (const item of rawItems) {
     if (!hasChildren(item)) {
-      continue
+      continue;
     }
 
-    const matchedChild = item.children.find((child) =>
-      isSamePath(child.path, normalizedPathname)
-    )
+    const matchedChild = item.children.find((child) => isSamePath(child.path, normalizedPathname));
 
     if (matchedChild) {
       return (
         navigationItems.find(
-          (entry) =>
-            (entry?.name && entry.name === item.name) ||
-            (entry?.path && isSamePath(entry.path, item.path))
+          (entry) => (entry?.name && entry.name === item.name) || (entry?.path && isSamePath(entry.path, item.path))
         ) || {
           ...item,
           activeChild: matchedChild,
@@ -263,20 +226,19 @@ function resolveBaseActiveItem({
           isExpanded: true,
           isParent: true,
         }
-      )
+      );
     }
   }
 
-  return rawItems[0] || null
+  return rawItems[0] || null;
 }
 
 function applyStatusOverlay(item, statusState) {
   if (!item || !statusState) {
-    return item
+    return item;
   }
 
-  const showStatusActions =
-    statusState.type === 'APP_ERROR' || statusState.type === 'API_ERROR'
+  const showStatusActions = statusState.type === 'APP_ERROR' || statusState.type === 'API_ERROR';
 
   return {
     ...item,
@@ -289,12 +251,12 @@ function applyStatusOverlay(item, statusState) {
     isStatus: true,
     action: showStatusActions ? statusState.action : null,
     actions: showStatusActions ? statusState.actions : null,
-  }
+  };
 }
 
 function applyConfirmationOverlay(item) {
   if (!item?.confirmation) {
-    return item
+    return item;
   }
 
   return {
@@ -307,75 +269,67 @@ function applyConfirmationOverlay(item) {
     isOverlay: true,
     actions: null,
     action: null,
-  }
+  };
 }
 
 function isSurfaceDescriptor(value) {
-  return (
-    value != null &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    !React.isValidElement(value)
-  )
+  return value != null && typeof value === 'object' && !Array.isArray(value) && !React.isValidElement(value);
 }
 
 function resolveInlineSurface(item) {
-  const surface = item?.surface
+  const surface = item?.surface;
 
   if (surface === undefined) {
-    return null
+    return null;
   }
 
   if (!isSurfaceDescriptor(surface)) {
     return {
       content: surface,
       showAction: undefined,
-    }
+    };
   }
 
-  const component =
-    typeof surface.component === 'function' ? surface.component : null
-  const content =
-    surface.content ?? surface.node ?? surface.element ?? null
+  const component = typeof surface.component === 'function' ? surface.component : null;
+  const content = surface.content ?? surface.node ?? surface.element ?? null;
 
   if (!component && content == null) {
-    return null
+    return null;
   }
 
   return {
     component,
     content: component ? null : content,
-    props:
-      surface.props && typeof surface.props === 'object' ? surface.props : {},
+    props: surface.props && typeof surface.props === 'object' ? surface.props : {},
     action: surface.action ?? null,
     showAction: surface.showAction,
     dismissible: surface.dismissible ?? true,
     onClose: typeof surface.onClose === 'function' ? surface.onClose : null,
-  }
+  };
 }
 
 function resolveSurfaceAction(item, surfaceEntry) {
   if (surfaceEntry?.action != null) {
-    return surfaceEntry.action
+    return surfaceEntry.action;
   }
 
   if (surfaceEntry?.showAction === true) {
-    return item.action ?? null
+    return item.action ?? null;
   }
 
   if (surfaceEntry?.showAction === false) {
-    return null
+    return null;
   }
 
-  return item.action ?? null
+  return item.action ?? null;
 }
 
 function applySurface(item, surfaceEntry, closeSurface) {
-  const surfaceComponent = surfaceEntry?.component ?? null
-  const surfaceContent = surfaceEntry?.content ?? null
+  const surfaceComponent = surfaceEntry?.component ?? null;
+  const surfaceContent = surfaceEntry?.content ?? null;
 
   if (!item || (!surfaceComponent && surfaceContent == null)) {
-    return item
+    return item;
   }
 
   return {
@@ -390,11 +344,11 @@ function applySurface(item, surfaceEntry, closeSurface) {
       typeof closeSurface === 'function'
         ? closeSurface
         : (result = null) => {
-            surfaceEntry?.onClose?.(result)
+            surfaceEntry?.onClose?.(result);
           },
     actions: null,
     action: resolveSurfaceAction(item, surfaceEntry),
-  }
+  };
 }
 
 function resolveActionNode(action, showMediaAction) {
@@ -404,39 +358,39 @@ function resolveActionNode(action, showMediaAction) {
         {action}
         {showMediaAction && <MediaAction />}
       </div>
-    )
+    );
   }
 
   if (typeof action === 'function') {
-    const ActionComponent = action
+    const ActionComponent = action;
 
     return (
       <div className="flex flex-col gap-2">
         <ActionComponent />
         {showMediaAction && <MediaAction />}
       </div>
-    )
+    );
   }
 
-  return showMediaAction ? <MediaAction /> : null
+  return showMediaAction ? <MediaAction /> : null;
 }
 
 function applyMediaAction(item, isVideo, toggleBackgroundVideo) {
   if (!item || item.isParent || !isVideo) {
-    return item
+    return item;
   }
 
-  const showMediaAction = item.mediaAction !== false
+  const showMediaAction = item.mediaAction !== false;
 
   return {
     ...item,
     action: resolveActionNode(item.action, showMediaAction),
     onClick: (event) => {
-      event?.preventDefault?.()
-      event?.stopPropagation?.()
-      toggleBackgroundVideo()
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      toggleBackgroundVideo();
     },
-  }
+  };
 }
 
 function resolveActiveItem({
@@ -458,58 +412,53 @@ function resolveActiveItem({
     navigationItems,
     pathname,
     isNotFoundPage,
-  })
+  });
 
   if (!baseActiveItem) {
-    return countdownItem || null
+    return countdownItem || null;
   }
 
   if (surfaceState?.isSurfaceOpen) {
     return applySurface(baseActiveItem, surfaceState.activeSurfaceEntry, (result) =>
       closeSurface(result, surfaceState.activeSurfaceId)
-    )
+    );
   }
 
   if (statusState?.isOverlay) {
-    return applyStatusOverlay(baseActiveItem, statusState)
+    return applyStatusOverlay(baseActiveItem, statusState);
   }
 
   if (countdownItem) {
-    return countdownItem
+    return countdownItem;
   }
 
   if (statusState) {
-    return applyStatusOverlay(baseActiveItem, statusState)
+    return applyStatusOverlay(baseActiveItem, statusState);
   }
 
-  const itemWithMediaAction = applyMediaAction(
-    baseActiveItem,
-    isVideo,
-    toggleBackgroundVideo
-  )
+  const itemWithMediaAction = applyMediaAction(baseActiveItem, isVideo, toggleBackgroundVideo);
 
   const itemWithConfirmation = guardConfirmation
     ? {
         ...itemWithMediaAction,
         confirmation: guardConfirmation,
       }
-    : itemWithMediaAction
+    : itemWithMediaAction;
 
-  const confirmationKey = getNavConfirmationKey(itemWithConfirmation)
-  const isConfirmationDismissed =
-    confirmationKey && confirmationKey === dismissedConfirmationKey
+  const confirmationKey = getNavConfirmationKey(itemWithConfirmation);
+  const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
 
   if (itemWithConfirmation?.confirmation && !isConfirmationDismissed) {
-    return applyConfirmationOverlay(itemWithConfirmation)
+    return applyConfirmationOverlay(itemWithConfirmation);
   }
 
-  const inlineSurface = resolveInlineSurface(itemWithMediaAction)
+  const inlineSurface = resolveInlineSurface(itemWithMediaAction);
 
   if (inlineSurface) {
-    return applySurface(itemWithMediaAction, inlineSurface)
+    return applySurface(itemWithMediaAction, inlineSurface);
   }
 
-  return itemWithMediaAction
+  return itemWithMediaAction;
 }
 
 function hasActiveItemChanged(currentItem, previousItem) {
@@ -525,7 +474,7 @@ function hasActiveItemChanged(currentItem, previousItem) {
     currentItem?.surfaceContent !== previousItem?.surfaceContent ||
     currentItem?.surfaceProps !== previousItem?.surfaceProps ||
     currentItem?.action !== previousItem?.action
-  )
+  );
 }
 
 function hasDisplayResultChanged(currentResult, previousResult) {
@@ -534,13 +483,13 @@ function hasDisplayResultChanged(currentResult, previousResult) {
     currentResult.activeIndex !== previousResult.activeIndex ||
     currentResult.statusState !== previousResult.statusState ||
     hasActiveItemChanged(currentResult.activeItem, previousResult.activeItem)
-  )
+  );
 }
 
 export function useNavigationDisplay() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
-  const { rawItems } = useNavigationItems()
+  const { rawItems } = useNavigationItems();
   const {
     expanded,
     expandedParents,
@@ -552,7 +501,7 @@ export function useNavigationDisplay() {
     activeSurfaceId,
     activeSurfaceEntry,
     isSurfaceOpen,
-  } = useNavigationContext()
+  } = useNavigationContext();
   const surfaceState = useMemo(
     () => ({
       activeSurfaceId,
@@ -560,14 +509,13 @@ export function useNavigationDisplay() {
       isSurfaceOpen,
     }),
     [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen]
-  )
-  const statusState = useNavigationStatus()
-  const { isVideo, countdownItem, toggleBackgroundVideo } =
-    useNavigationCountdown()
+  );
+  const statusState = useNavigationStatus();
+  const { isVideo, countdownItem, toggleBackgroundVideo } = useNavigationCountdown();
 
   const isNotFoundPage = useMemo(() => {
-    return rawItems.some((item) => isNotFoundItem(item))
-  }, [rawItems])
+    return rawItems.some((item) => isNotFoundItem(item));
+  }, [rawItems]);
 
   const navigationItems = useMemo(() => {
     return buildNavigationItems({
@@ -578,16 +526,8 @@ export function useNavigationDisplay() {
       searchQuery,
       isNotFoundPage,
       countdownItem,
-    })
-  }, [
-    rawItems,
-    expanded,
-    expandedParents,
-    pathname,
-    searchQuery,
-    isNotFoundPage,
-    countdownItem,
-  ])
+    });
+  }, [rawItems, expanded, expandedParents, pathname, searchQuery, isNotFoundPage, countdownItem]);
 
   const activeItem = useMemo(() => {
     return resolveActiveItem({
@@ -603,7 +543,7 @@ export function useNavigationDisplay() {
       dismissedConfirmationKey,
       guardConfirmation,
       closeSurface,
-    })
+    });
   }, [
     rawItems,
     navigationItems,
@@ -617,7 +557,7 @@ export function useNavigationDisplay() {
     dismissedConfirmationKey,
     guardConfirmation,
     closeSurface,
-  ])
+  ]);
 
   const activeIndex = useMemo(() => {
     return resolveActiveIndex({
@@ -625,18 +565,18 @@ export function useNavigationDisplay() {
       activeItem,
       pathname,
       countdownItem,
-    })
-  }, [navigationItems, activeItem, pathname, countdownItem])
+    });
+  }, [navigationItems, activeItem, pathname, countdownItem]);
 
   useEffect(() => {
     if (statusState?.isOverlay) {
-      return
+      return;
     }
 
     if (!getNavConfirmationKey(activeItem)) {
-      clearDismissedConfirmation()
+      clearDismissedConfirmation();
     }
-  }, [activeItem, clearDismissedConfirmation, statusState])
+  }, [activeItem, clearDismissedConfirmation, statusState]);
 
   const result = useMemo(() => {
     return {
@@ -644,19 +584,19 @@ export function useNavigationDisplay() {
       activeItem,
       activeIndex,
       statusState,
-    }
-  }, [navigationItems, activeItem, activeIndex, statusState])
+    };
+  }, [navigationItems, activeItem, activeIndex, statusState]);
 
-  const lastResultRef = useRef(null)
+  const lastResultRef = useRef(null);
 
   return useMemo(() => {
-    const previousResult = lastResultRef.current
+    const previousResult = lastResultRef.current;
 
     if (!previousResult || hasDisplayResultChanged(result, previousResult)) {
-      lastResultRef.current = result
-      return result
+      lastResultRef.current = result;
+      return result;
     }
 
-    return previousResult
-  }, [result])
+    return previousResult;
+  }, [result]);
 }

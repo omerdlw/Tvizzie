@@ -1,27 +1,24 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
   useAccountSectionPage,
   useSeededFeedState,
-} from '@/features/account/section-client-hooks'
-import {
-  isPermissionDeniedError,
-  logDataError,
-} from '@/core/utils/errors'
-import { useAuth } from '@/core/modules/auth'
-import { useModal } from '@/core/modules/modal/context'
-import { useToast } from '@/core/modules/notification/hooks'
+} from '@/features/account/section-client-hooks';
+import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
+import { useAuth } from '@/core/modules/auth';
+import { useModal } from '@/core/modules/modal/context';
+import { useToast } from '@/core/modules/notification/hooks';
 import {
   deleteStoredReview,
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service'
-import { subscribeToUserWatched } from '@/core/services/media/watched.service'
-import ReviewsView from './view'
+} from '@/core/services/media/reviews.service';
+import { subscribeToUserWatched } from '@/core/services/media/watched.service';
+import ReviewsView from './view';
 
 export default function Client({
   initialCollections = null,
@@ -31,11 +28,11 @@ export default function Client({
   initialReviewFeed = null,
   username,
 }) {
-  const auth = useAuth()
-  const { openModal } = useModal()
-  const toast = useToast()
-  const [watchedItems, setWatchedItems] = useState([])
-  const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null)
+  const auth = useAuth();
+  const { openModal } = useModal();
+  const toast = useToast();
+  const [watchedItems, setWatchedItems] = useState([]);
+  const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const {
     canViewProfileCollections,
     canViewPrivateContent,
@@ -72,11 +69,8 @@ export default function Client({
     initialResolvedUserId,
     initialResolveError,
     username,
-  })
-  const shouldForcePrivateRefresh =
-    !isOwner &&
-    isPrivateProfile === true &&
-    canViewPrivateContent
+  });
+  const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const {
     applyFeedResult,
     cursor,
@@ -89,14 +83,14 @@ export default function Client({
     setIsFeedLoading,
     setItems: setReviews,
     syncFeed,
-  } = useSeededFeedState(initialReviewFeed)
+  } = useSeededFeedState(initialReviewFeed);
   const hasSeededReviewFeed =
     !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
       expectedValue: 'authored',
       initialFeed: initialReviewFeed,
       resolvedUserId,
-    })
+    });
   const shouldBlockFeedLoad = shouldBlockAccountFeedLoad({
     canViewPrivateContent,
     hasSeededFeed: hasSeededReviewFeed,
@@ -104,61 +98,61 @@ export default function Client({
     isPrivateProfile,
     isViewerReady,
     resolvedUserId,
-  })
+  });
 
   useEffect(() => {
     if (!hasSeededReviewFeed) {
-      return
+      return;
     }
 
-    syncFeed(initialReviewFeed)
-  }, [hasSeededReviewFeed, initialReviewFeed, syncFeed])
+    syncFeed(initialReviewFeed);
+  }, [hasSeededReviewFeed, initialReviewFeed, syncFeed]);
   const editableReviewUser = useMemo(() => {
     if (!isOwner || !auth.user?.id) {
-      return null
+      return null;
     }
 
     return {
       ...(profile || {}),
       ...(auth.user || {}),
       id: auth.user.id,
-    }
-  }, [auth.user, isOwner, profile])
+    };
+  }, [auth.user, isOwner, profile]);
 
   const loadReviews = useCallback(
     async ({ append = false } = {}) => {
       if (shouldBlockFeedLoad) {
-        resetFeed()
-        return
+        resetFeed();
+        return;
       }
 
       if (!append && hasSeededReviewFeed) {
-        setIsFeedLoading(false)
-        return
+        setIsFeedLoading(false);
+        return;
       }
 
-      setIsFeedLoading(true)
-      setFeedError(null)
+      setIsFeedLoading(true);
+      setFeedError(null);
 
       try {
         const result = await fetchProfileReviewFeed({
           cursor: append ? cursor : null,
           mode: 'authored',
           userId: resolvedUserId,
-        })
+        });
 
-        applyFeedResult(result, { append })
+        applyFeedResult(result, { append });
       } catch (error) {
         if (!append) {
-          resetFeed()
+          resetFeed();
         }
 
         if (!isPermissionDeniedError(error)) {
-          logDataError('[Account] Reviews could not be loaded:', error)
-          setFeedError('Reviews could not be loaded right now.')
+          logDataError('[Account] Reviews could not be loaded:', error);
+          setFeedError('Reviews could not be loaded right now.');
         }
       } finally {
-        setIsFeedLoading(false)
+        setIsFeedLoading(false);
       }
     },
     [
@@ -171,40 +165,36 @@ export default function Client({
       setIsFeedLoading,
       shouldBlockFeedLoad,
     ]
-  )
+  );
 
   useEffect(() => {
-    loadReviews()
-  }, [auth.user?.id, isViewerReady, loadReviews])
+    loadReviews();
+  }, [auth.user?.id, isViewerReady, loadReviews]);
 
   useEffect(() => {
     if (!canViewProfileCollections) {
-      setWatchedItems([])
-      return undefined
+      setWatchedItems([]);
+      return undefined;
     }
 
     if (!isViewerReady || !resolvedUserId) {
-      setWatchedItems([])
-      return undefined
+      setWatchedItems([]);
+      return undefined;
     }
 
     if (!isOwner && isPrivateProfile && !canViewPrivateContent) {
-      setWatchedItems([])
-      return undefined
+      setWatchedItems([]);
+      return undefined;
     }
 
-    const unsubscribe = subscribeToUserWatched(
-      resolvedUserId,
-      setWatchedItems,
-      {
-        emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
-        fetchOnSubscribe: true,
-        refreshOnSubscribe: shouldForcePrivateRefresh,
-        onError: () => setWatchedItems([]),
-      }
-    )
+    const unsubscribe = subscribeToUserWatched(resolvedUserId, setWatchedItems, {
+      emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
+      fetchOnSubscribe: true,
+      refreshOnSubscribe: shouldForcePrivateRefresh,
+      onError: () => setWatchedItems([]),
+    });
 
-    return unsubscribe
+    return unsubscribe;
   }, [
     canViewProfileCollections,
     canViewPrivateContent,
@@ -213,49 +203,49 @@ export default function Client({
     isViewerReady,
     resolvedUserId,
     shouldForcePrivateRefresh,
-  ])
+  ]);
 
   const handleLike = useCallback(
     async (review) => {
       if (!auth.isAuthenticated || !auth.user?.id) {
-        handleSignInRequest()
-        return
+        handleSignInRequest();
+        return;
       }
 
       try {
         const nextLikedState = await toggleStoredReviewLike({
           review,
           userId: auth.user.id,
-        })
+        });
 
         setReviews((current) =>
           current.map((item) => {
             if ((item.docPath || item.id) !== (review.docPath || review.id)) {
-              return item
+              return item;
             }
 
-            const currentLikes = Array.isArray(item.likes) ? item.likes : []
+            const currentLikes = Array.isArray(item.likes) ? item.likes : [];
             const nextLikes = nextLikedState
               ? Array.from(new Set([...currentLikes, auth.user.id]))
-              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id)
+              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id);
 
             return {
               ...item,
               likes: nextLikes,
-            }
+            };
           })
-        )
+        );
       } catch (error) {
-        toast.error(error?.message || 'Review could not be updated')
+        toast.error(error?.message || 'Review could not be updated');
       }
     },
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, setReviews, toast]
-  )
+  );
 
   const handleEditReview = useCallback(
     (review) => {
       if (!editableReviewUser) {
-        return
+        return;
       }
 
       openModal('REVIEW_EDITOR_MODAL', 'center', {
@@ -263,24 +253,22 @@ export default function Client({
           onSuccess: (updatedReview) => {
             setReviews((current) =>
               current.map((item) =>
-                (item.docPath || item.id) === (review.docPath || review.id)
-                  ? { ...item, ...updatedReview }
-                  : item
+                (item.docPath || item.id) === (review.docPath || review.id) ? { ...item, ...updatedReview } : item
               )
-            )
+            );
           },
           review,
           user: editableReviewUser,
         },
-      })
+      });
     },
     [editableReviewUser, openModal, setReviews]
-  )
+  );
 
   const handleDeleteReview = useCallback(
     (review) => {
       if (!auth.user?.id || !isOwner) {
-        return
+        return;
       }
 
       setReviewDeleteConfirmation({
@@ -295,24 +283,22 @@ export default function Client({
             await deleteStoredReview({
               review,
               userId: auth.user.id,
-            })
+            });
 
             setReviews((current) =>
-              current.filter(
-                (item) => (item.docPath || item.id) !== (review.docPath || review.id)
-              )
-            )
-            setReviewDeleteConfirmation(null)
-            toast.success('Your review was deleted')
+              current.filter((item) => (item.docPath || item.id) !== (review.docPath || review.id))
+            );
+            setReviewDeleteConfirmation(null);
+            toast.success('Your review was deleted');
           } catch (error) {
-            toast.error(error?.message || 'Review could not be deleted')
-            throw error
+            toast.error(error?.message || 'Review could not be deleted');
+            throw error;
           }
         },
-      })
+      });
     },
     [auth.user?.id, isOwner, setReviews, toast]
-  )
+  );
 
   return (
     <ReviewsView
@@ -352,5 +338,5 @@ export default function Client({
       watchedItems={watchedItems}
       watchlistCount={watchlistCount}
     />
-  )
+  );
 }

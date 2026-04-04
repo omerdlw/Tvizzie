@@ -1,11 +1,11 @@
-import FavoriteShowcaseManager from '@/features/account/favorite-showcase-manager'
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid'
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
-import AccountReviewFeed from '@/features/account/sections/review-feed'
-import AccountSectionState from '@/features/account/section-state'
-import Registry from './registry'
+import FavoriteShowcaseManager from '@/features/account/favorite-showcase-manager';
+import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid';
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
+import AccountReviewFeed from '@/features/account/sections/review-feed';
+import AccountSectionState from '@/features/account/section-state';
+import Registry from './registry';
 
 export default function LikesView({
   activeSegment,
@@ -78,7 +78,7 @@ export default function LikesView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -124,12 +124,8 @@ export default function LikesView({
                 <AccountProfileMediaActions
                   extraActions={[
                     {
-                      disabled:
-                        !showcaseMap.has(item.mediaKey) &&
-                        favoriteShowcase.length >= 5,
-                      icon: showcaseMap.has(item.mediaKey)
-                        ? 'solar:star-bold'
-                        : 'solar:star-linear',
+                      disabled: !showcaseMap.has(item.mediaKey) && favoriteShowcase.length >= 5,
+                      icon: showcaseMap.has(item.mediaKey) ? 'solar:star-bold' : 'solar:star-linear',
                       label: showcaseMap.has(item.mediaKey)
                         ? 'Remove from favorites showcase'
                         : 'Add to favorites showcase',
@@ -176,5 +172,5 @@ export default function LikesView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

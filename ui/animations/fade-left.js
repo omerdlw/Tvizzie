@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants'
+import { DURATION, EASING } from '@/core/constants';
 
 const FADE_LEFT_VARIANTS = {
   visible: {
@@ -11,15 +11,9 @@ const FADE_LEFT_VARIANTS = {
     transitionEnd: { transform: 'none', willChange: 'auto' },
   },
   hidden: { opacity: 0, x: -32 },
-}
+};
 
-export function FadeLeft({
-  children,
-  className = '',
-  delay = 0,
-  duration = DURATION.SLOWER,
-  once = true,
-}) {
+export function FadeLeft({ children, className = '', delay = 0, duration = DURATION.SLOWER, once = true }) {
   return (
     <motion.div
       transition={{ duration, ease: EASING.STANDARD, delay }}
@@ -32,5 +26,5 @@ export function FadeLeft({
     >
       {children}
     </motion.div>
-  )
+  );
 }

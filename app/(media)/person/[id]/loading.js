@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { Skeleton } from '@/ui/skeletons/views/person'
-import Registry from './registry'
+import { Skeleton } from '@/ui/skeletons/views/person';
+import Registry from './registry';
 
 export default function Loading() {
   return (
@@ -9,5 +9,5 @@ export default function Loading() {
       <Registry isLoading={true} />
       <Skeleton />
     </>
-  )
+  );
 }

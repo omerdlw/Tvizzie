@@ -1,54 +1,46 @@
-'use client'
+'use client';
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react';
 
-import Image from 'next/image'
+import Image from 'next/image';
 
-import { TMDB_IMG } from '@/core/constants'
-import { Spinner } from '@/ui/loadings/spinner'
+import { TMDB_IMG } from '@/core/constants';
+import { Spinner } from '@/ui/loadings/spinner';
 
 function getAspectRatio(data) {
-  const aspectRatio = Number(data?.aspect_ratio)
+  const aspectRatio = Number(data?.aspect_ratio);
   if (Number.isFinite(aspectRatio) && aspectRatio > 0) {
-    return aspectRatio
+    return aspectRatio;
   }
 
-  const width = Number(data?.width)
-  const height = Number(data?.height)
-  if (
-    Number.isFinite(width) &&
-    Number.isFinite(height) &&
-    width > 0 &&
-    height > 0
-  ) {
-    return width / height
+  const width = Number(data?.width);
+  const height = Number(data?.height);
+  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+    return width / height;
   }
 
-  return 16 / 9
+  return 16 / 9;
 }
 
 export default function ImagePreviewModal({ data }) {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const filePath = data?.file_path
+  const [isLoaded, setIsLoaded] = useState(false);
+  const filePath = data?.file_path;
 
   const aspectRatio = useMemo(() => {
-    const rawRatio = getAspectRatio(data)
-    return Math.min(Math.max(rawRatio, 0.35), 3)
-  }, [data])
+    const rawRatio = getAspectRatio(data);
+    return Math.min(Math.max(rawRatio, 0.35), 3);
+  }, [data]);
 
-  if (!filePath) return null
+  if (!filePath) return null;
 
-  const isPortrait = aspectRatio < 1
-  const frameWidthClass = isPortrait
-    ? 'w-[min(92vw,560px)]'
-    : 'w-[min(92vw,1200px)]'
+  const isPortrait = aspectRatio < 1;
+  const frameWidthClass = isPortrait ? 'w-[min(92vw,560px)]' : 'w-[min(92vw,1200px)]';
 
   return (
-    <div className={`relative max-h-[85vh] overflow-auto rounded-[16px] bg-white/10 ${frameWidthClass}`}>
-      <div
-        className="relative h-auto w-full"
-        style={{ aspectRatio: String(aspectRatio) }}
-      >
+    <div
+      className={`relative max-h-[85vh] overflow-auto rounded-[16px] border border-[#14b8a6] bg-[#99f6e4] ${frameWidthClass}`}
+    >
+      <div className="relative h-auto w-full" style={{ aspectRatio: String(aspectRatio) }}>
         <Image
           src={`${TMDB_IMG}/original${filePath}`}
           className={`object-contain transition duration-[var(--motion-duration-fast)] ${
@@ -60,10 +52,12 @@ export default function ImagePreviewModal({ data }) {
           alt={data?.name || 'Preview image'}
           fill
         />
-        {!isLoaded && <div className="absolute inset-0 center animate-pulse /40">
-          <Spinner size={40} />
-        </div>}
+        {!isLoaded && (
+          <div className="center absolute inset-0 animate-pulse bg-[#dbeafe]">
+            <Spinner size={40} />
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

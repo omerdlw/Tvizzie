@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { cn } from '@/core/utils'
-import AccountSectionHeading from './section-heading'
-import { ACCOUNT_SECTION_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from './utils'
+import { cn } from '@/core/utils';
+import AccountSectionHeading from './section-heading';
+import { ACCOUNT_SECTION_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from './utils';
 
 export default function AccountSectionLayout({
   action = null,
@@ -18,12 +18,7 @@ export default function AccountSectionLayout({
 }) {
   return (
     <section className={ACCOUNT_SECTION_CLASS}>
-      <div
-        className={cn(
-          `${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`,
-          className
-        )}
-      >
+      <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
         <AccountSectionHeading
           action={action}
           icon={icon}
@@ -34,12 +29,8 @@ export default function AccountSectionLayout({
           titleHref={titleHref}
         />
 
-        {contentClassName ? (
-          <div className={contentClassName}>{children}</div>
-        ) : (
-          children
-        )}
+        {contentClassName ? <div className={contentClassName}>{children}</div> : children}
       </div>
     </section>
-  )
+  );
 }

@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
-import AccountHero from './hero'
-import AccountSectionNav from '../section-nav'
+import AccountHero from './hero';
+import AccountSectionNav from '../section-nav';
+import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 
 export default function AccountProfileLayout({
   activeSection = 'overview',
@@ -17,7 +18,7 @@ export default function AccountProfileLayout({
   watchedCount = null,
   watchlistCount = 0,
 }) {
-  const profileHandle = username || profile?.username || null
+  const profileHandle = username || profile?.username || null;
 
   return (
     <div>
@@ -40,6 +41,7 @@ export default function AccountProfileLayout({
         />
       </div>
       <main>{children}</main>
+      <NavHeightSpacer />
     </div>
-  )
+  );
 }

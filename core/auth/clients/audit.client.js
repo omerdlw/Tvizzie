@@ -1,58 +1,50 @@
-const AUDIT_ENDPOINT = '/api/auth/audit'
+const AUDIT_ENDPOINT = '/api/auth/audit';
 
-const SENSITIVE_FIELD_PATTERNS = [/password/i, /token/i, /secret/i, /code/i]
+const SENSITIVE_FIELD_PATTERNS = [/password/i, /token/i, /secret/i, /code/i];
 
 function sanitizeMetadata(value, depth = 0) {
   if (depth > 3) {
-    return '[depth-limited]'
+    return '[depth-limited]';
   }
 
   if (Array.isArray(value)) {
-    return value.slice(0, 25).map((item) => sanitizeMetadata(item, depth + 1))
+    return value.slice(0, 25).map((item) => sanitizeMetadata(item, depth + 1));
   }
 
   if (value && typeof value === 'object') {
-    const nextObject = {}
+    const nextObject = {};
 
     for (const [key, currentValue] of Object.entries(value)) {
-      const isSensitive = SENSITIVE_FIELD_PATTERNS.some((pattern) =>
-        pattern.test(key)
-      )
+      const isSensitive = SENSITIVE_FIELD_PATTERNS.some((pattern) => pattern.test(key));
 
-      nextObject[key] = isSensitive
-        ? '[redacted]'
-        : sanitizeMetadata(currentValue, depth + 1)
+      nextObject[key] = isSensitive ? '[redacted]' : sanitizeMetadata(currentValue, depth + 1);
     }
 
-    return nextObject
+    return nextObject;
   }
 
   if (typeof value === 'string') {
-    return value.slice(0, 400)
+    return value.slice(0, 400);
   }
 
-  if (
-    typeof value === 'number' ||
-    typeof value === 'boolean' ||
-    value === null
-  ) {
-    return value
+  if (typeof value === 'number' || typeof value === 'boolean' || value === null) {
+    return value;
   }
 
-  return String(value || '')
+  return String(value || '');
 }
 
 export function logAuthAuditEvent(payload = {}) {
   if (typeof window === 'undefined') {
-    return
+    return;
   }
 
   const eventType = String(payload?.eventType || '')
     .trim()
-    .toLowerCase()
+    .toLowerCase();
 
   if (!eventType) {
-    return
+    return;
   }
 
   const body = JSON.stringify({
@@ -62,16 +54,13 @@ export function logAuthAuditEvent(payload = {}) {
     provider: payload?.provider || null,
     status: payload?.status || 'success',
     userId: payload?.userId || null,
-  })
+  });
 
   try {
-    if (
-      typeof navigator !== 'undefined' &&
-      typeof navigator.sendBeacon === 'function'
-    ) {
-      const blob = new Blob([body], { type: 'application/json' })
-      navigator.sendBeacon(AUDIT_ENDPOINT, blob)
-      return
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      const blob = new Blob([body], { type: 'application/json' });
+      navigator.sendBeacon(AUDIT_ENDPOINT, blob);
+      return;
     }
 
     fetch(AUDIT_ENDPOINT, {
@@ -81,7 +70,7 @@ export function logAuthAuditEvent(payload = {}) {
       },
       keepalive: true,
       body,
-    }).catch(() => null)
+    }).catch(() => null);
   } catch {
     // Audit logging should never break user flows.
   }

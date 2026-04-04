@@ -1,15 +1,8 @@
-'use client'
+'use client';
 
-import { Icon as IconifyIcon } from '@iconify-icon/react'
+import { Icon as IconifyIcon } from '@iconify-icon/react';
 
-export default function Icon({
-  className = 'center',
-  onClick,
-  size = 20,
-  color,
-  icon,
-  ...props
-}) {
+export default function Icon({ className = 'center', onClick, size = 20, color, icon, ...props }) {
   return (
     <IconifyIcon
       className={className}
@@ -20,5 +13,5 @@ export default function Icon({
       icon={icon}
       {...props}
     />
-  )
+  );
 }

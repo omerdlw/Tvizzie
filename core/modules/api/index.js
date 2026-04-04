@@ -1,1 +1,1 @@
-export { apiCache } from './cache'
+export { apiCache } from './cache';

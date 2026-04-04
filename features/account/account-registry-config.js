@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import FollowListModal from '@/features/modal/follow-list-modal'
-import AccountSocialModal from '@/features/modal/account-social-modal'
-import ListEditorModal from '@/features/modal/list-editor-modal'
-import ListPickerModal from '@/features/modal/list-picker-modal'
-import ReviewEditorModal from '@/features/modal/review-editor-modal'
-import AccountAction from '@/features/navigation/actions/account-action'
-import ReviewAction from '@/features/navigation/actions/review-action'
-import Icon from '@/ui/icon'
-import { getUserAvatarUrl } from '@/core/utils'
+import FollowListModal from '@/features/modal/follow-list-modal';
+import AccountSocialModal from '@/features/modal/account-social-modal';
+import ListEditorModal from '@/features/modal/list-editor-modal';
+import ListPickerModal from '@/features/modal/list-picker-modal';
+import ReviewEditorModal from '@/features/modal/review-editor-modal';
+import AccountAction from '@/features/navigation/actions/account-action';
+import ReviewAction from '@/features/navigation/actions/review-action';
+import Icon from '@/ui/icon';
+import { getUserAvatarUrl } from '@/core/utils';
 
-const ACCOUNT_LOADING_NAV_PRIORITY = 190
-const ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS = 8000
+const ACCOUNT_LOADING_NAV_PRIORITY = 190;
+const ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS = 8000;
 
 export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
   isAuthenticated: false,
-})
+});
 
 export function noopAccountRegistryHandler() {}
 
@@ -27,7 +27,7 @@ function buildAccountLoadingState({ isLoading = false, navRegistrySource }) {
           source: navRegistrySource,
         }
       : undefined,
-  }
+  };
 }
 
 export function buildAccountEditState({
@@ -46,7 +46,7 @@ export function buildAccountEditState({
   const loadingState = buildAccountLoadingState({
     isLoading,
     navRegistrySource,
-  })
+  });
 
   return {
     modal: {
@@ -96,7 +96,7 @@ export function buildAccountEditState({
         />
       ),
     },
-  }
+  };
 }
 
 export function buildAccountPageState({
@@ -133,22 +133,16 @@ export function buildAccountPageState({
   isLikeLoading,
   reviewState,
 }) {
-  const accountTitle = String(profile?.displayName || '').trim() || 'Account'
-  const showSectionSaveAction =
-    isSectionEditing &&
-    isSectionOrderDirty &&
-    typeof onSaveSectionOrder === 'function'
-  const canManageRequests = Boolean(isOwner && profile?.isPrivate === true)
-  const isPrivateProfile = Boolean(profile?.isPrivate)
-  const isFollowingProfile = followState === 'following'
-  const shouldForceProfileFollowAction =
-    !isOwner && isPrivateProfile && !isFollowingProfile
-  const shouldShowProfileFollowAction =
-    Boolean(showProfileFollowAction || shouldForceProfileFollowAction)
-  const shouldUseNavActionOverride =
-    !shouldForceProfileFollowAction && Boolean(navActionOverride)
+  const accountTitle = String(profile?.displayName || '').trim() || 'Account';
+  const showSectionSaveAction = isSectionEditing && isSectionOrderDirty && typeof onSaveSectionOrder === 'function';
+  const canManageRequests = Boolean(isOwner && profile?.isPrivate === true);
+  const isPrivateProfile = Boolean(profile?.isPrivate);
+  const isFollowingProfile = followState === 'following';
+  const shouldForceProfileFollowAction = !isOwner && isPrivateProfile && !isFollowingProfile;
+  const shouldShowProfileFollowAction = Boolean(showProfileFollowAction || shouldForceProfileFollowAction);
+  const shouldUseNavActionOverride = !shouldForceProfileFollowAction && Boolean(navActionOverride);
 
-  const accountNavActions = []
+  const accountNavActions = [];
 
   if (authIsAuthenticated && profile) {
     if (isOwner) {
@@ -159,10 +153,10 @@ export function buildAccountPageState({
           tooltip: 'Edit Profile',
           order: 25,
           onClick: (event) => {
-            event.stopPropagation()
-            handleEditProfile()
+            event.stopPropagation();
+            handleEditProfile();
           },
-        })
+        });
       }
     }
   }
@@ -170,7 +164,7 @@ export function buildAccountPageState({
   const loadingState = buildAccountLoadingState({
     isLoading: isPageLoading,
     navRegistrySource,
-  })
+  });
 
   return {
     modal: {
@@ -183,15 +177,12 @@ export function buildAccountPageState({
     loading: loadingState,
     nav: {
       actions: accountNavActions,
-      confirmation:
-        itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
+      confirmation: itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
       description: navDescription,
       icon: getUserAvatarUrl(profile),
       registry: navRegistrySource
         ? {
-            cleanupDelayMs: isPageLoading
-              ? ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS
-              : 0,
+            cleanupDelayMs: isPageLoading ? ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS : 0,
             priority: ACCOUNT_LOADING_NAV_PRIORITY,
             source: navRegistrySource,
           }
@@ -199,48 +190,42 @@ export function buildAccountPageState({
       surface: navSurface,
       title: profile?.isPrivate ? (
         <span key="title-icon" className="flex min-w-0 items-center gap-0.5">
-          <span key="title" className="truncate">{accountTitle}</span>
+          <span key="title" className="truncate">
+            {accountTitle}
+          </span>
           <Icon key="icon" icon="solar:lock-keyhole-bold" className="mb-0.5" size={14} />
         </span>
-      ) : accountTitle,
-      action: navSurface
-        ? null
-        : shouldUseNavActionOverride
-          ? navActionOverride
-          : showSectionSaveAction ? (
-              <AccountAction
-                mode="save"
-                onSave={onSaveSectionOrder}
-                isSaveLoading={isSectionSaveLoading}
-              />
-            ) : reviewState?.isActive ? (
-                <ReviewAction reviewState={reviewState} />
-              ) : (
-                <AccountAction
-                  isOwner={isOwner}
-                  isAuthenticated={authIsAuthenticated}
-                  canManageRequests={canManageRequests}
-                  followState={followState}
-                  guestMode="sign-up"
-                  inboxCount={pendingFollowRequestCount}
-                  isFollowLoading={isFollowLoading}
-                  onOpenInbox={() => handleOpenFollowList('requests')}
-                  onFollow={handleFollow}
-                  onSignIn={handleSignInRequest}
-                  onEditProfile={handleEditProfile}
-                  showProfileFollowAction={shouldShowProfileFollowAction}
-                  onDeleteList={onDeleteList}
-                  onEditList={onEditList}
-                  onToggleLike={onToggleLike}
-                  isLiked={isLiked}
-                  isLikeLoading={isLikeLoading}
-                  isNotFound={
-                    !profile &&
-                    !isResolvingProfile &&
-                    (Boolean(username) || Boolean(resolveError))
-                  }
-                />
-              ),
+      ) : (
+        accountTitle
+      ),
+      action: navSurface ? null : shouldUseNavActionOverride ? (
+        navActionOverride
+      ) : showSectionSaveAction ? (
+        <AccountAction mode="save" onSave={onSaveSectionOrder} isSaveLoading={isSectionSaveLoading} />
+      ) : reviewState?.isActive ? (
+        <ReviewAction reviewState={reviewState} />
+      ) : (
+        <AccountAction
+          isOwner={isOwner}
+          isAuthenticated={authIsAuthenticated}
+          canManageRequests={canManageRequests}
+          followState={followState}
+          guestMode="sign-up"
+          inboxCount={pendingFollowRequestCount}
+          isFollowLoading={isFollowLoading}
+          onOpenInbox={() => handleOpenFollowList('requests')}
+          onFollow={handleFollow}
+          onSignIn={handleSignInRequest}
+          onEditProfile={handleEditProfile}
+          showProfileFollowAction={shouldShowProfileFollowAction}
+          onDeleteList={onDeleteList}
+          onEditList={onEditList}
+          onToggleLike={onToggleLike}
+          isLiked={isLiked}
+          isLikeLoading={isLikeLoading}
+          isNotFound={!profile && !isResolvingProfile && (Boolean(username) || Boolean(resolveError))}
+        />
+      ),
     },
-  }
+  };
 }

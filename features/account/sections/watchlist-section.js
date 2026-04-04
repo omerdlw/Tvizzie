@@ -1,44 +1,44 @@
-'use client'
+'use client';
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react';
 
-import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/core/constants'
-import { cn } from '@/core/utils'
-import { Button } from '@/ui/elements'
-import Icon from '@/ui/icon'
-import AccountSectionLayout from '../section-layout'
+import MediaCard from '@/features/shared/media-card';
+import { TMDB_IMG } from '@/core/constants';
+import { cn } from '@/core/utils';
+import { Button } from '@/ui/elements';
+import Icon from '@/ui/icon';
+import AccountSectionLayout from '../section-layout';
 
-const OVERVIEW_ROW_CARD_LIMIT = 5
+const OVERVIEW_ROW_CARD_LIMIT = 5;
 
 function getWatchlistType(item) {
-  const explicitType = item?.media_type || item?.entityType
+  const explicitType = item?.media_type || item?.entityType;
 
   if (explicitType === 'movie') {
-    return explicitType
+    return explicitType;
   }
 
-  return null
+  return null;
 }
 
 function getWatchlistTitle(item) {
-  return item?.title || item?.original_title || 'Untitled'
+  return item?.title || item?.original_title || 'Untitled';
 }
 
 function getWatchlistYear(item) {
-  return item?.release_date?.slice?.(0, 4) || null
+  return item?.release_date?.slice?.(0, 4) || null;
 }
 
 function getWatchlistPoster(item) {
   if (item?.poster_path_full) {
-    return item.poster_path_full
+    return item.poster_path_full;
   }
 
   if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`
+    return `${TMDB_IMG}/w342${item.poster_path}`;
   }
 
-  return null
+  return null;
 }
 
 export default function AccountWatchlistSection({
@@ -54,21 +54,21 @@ export default function AccountWatchlistSection({
   titleHref = null,
   username,
 }) {
-  const [pendingItemId, setPendingItemId] = useState(null)
+  const [pendingItemId, setPendingItemId] = useState(null);
 
   const cards = useMemo(
     () =>
       items
         .map((item) => {
-          const mediaType = getWatchlistType(item)
-          const detailId = item?.entityId || item?.id
+          const mediaType = getWatchlistType(item);
+          const detailId = item?.entityId || item?.id;
 
           if (!detailId || mediaType !== 'movie') {
-            return null
+            return null;
           }
 
-          const title = getWatchlistTitle(item)
-          const year = getWatchlistYear(item)
+          const title = getWatchlistTitle(item);
+          const year = getWatchlistYear(item);
 
           return {
             href: `/${mediaType}/${detailId}`,
@@ -77,11 +77,11 @@ export default function AccountWatchlistSection({
             imageSrc: getWatchlistPoster(item),
             item,
             tooltipText: year ? `${title} (${year})` : title,
-          }
+          };
         })
         .filter(Boolean),
     [items]
-  )
+  );
 
   return (
     <AccountSectionLayout
@@ -107,7 +107,6 @@ export default function AccountWatchlistSection({
                 imageSrc={card.imageSrc}
                 imageAlt={card.imageAlt}
                 imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
-                fallbackIconClassName="text-white/50"
                 topOverlay={
                   typeof renderOverlay === 'function' ? (
                     renderOverlay(card.item)
@@ -118,21 +117,19 @@ export default function AccountWatchlistSection({
                         aria-label={`Remove ${card.imageAlt} from ${title.toLowerCase()}`}
                         disabled={pendingItemId === card.id}
                         onClick={async (event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
+                          event.preventDefault();
+                          event.stopPropagation();
 
                           if (pendingItemId === card.id) {
-                            return
+                            return;
                           }
 
-                          setPendingItemId(card.id)
+                          setPendingItemId(card.id);
 
                           try {
-                            await onRemoveItem(card.item)
+                            await onRemoveItem(card.item);
                           } finally {
-                            setPendingItemId((currentId) =>
-                              currentId === card.id ? null : currentId
-                            )
+                            setPendingItemId((currentId) => (currentId === card.id ? null : currentId));
                           }
                         }}
                       >
@@ -151,10 +148,8 @@ export default function AccountWatchlistSection({
           ))}
         </div>
       ) : (
-        <div className="border border-white/5 p-4 text-sm text-white/70">
-          {emptyMessage}
-        </div>
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">{emptyMessage}</div>
       )}
     </AccountSectionLayout>
-  )
+  );
 }

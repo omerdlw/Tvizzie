@@ -1,18 +1,13 @@
-import js from '@eslint/js'
-import pluginImport from 'eslint-plugin-import'
-import pluginReact from 'eslint-plugin-react'
-import pluginReactHooks from 'eslint-plugin-react-hooks'
-import globals from 'globals'
+import js from '@eslint/js';
+import pluginImport from 'eslint-plugin-import';
+import pluginReact from 'eslint-plugin-react';
+import pluginReactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 
-const CAMEL_CASE_REGEX = /^[a-z][A-Za-z0-9]*$/
-const PASCAL_CASE_REGEX = /^[A-Z][A-Za-z0-9]*$/
-const SCREAMING_SNAKE_CASE_REGEX = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/
-const STATIC_GLOBAL_CONST_TYPES = new Set([
-  'ArrayExpression',
-  'Literal',
-  'ObjectExpression',
-  'TemplateLiteral',
-])
+const CAMEL_CASE_REGEX = /^[a-z][A-Za-z0-9]*$/;
+const PASCAL_CASE_REGEX = /^[A-Z][A-Za-z0-9]*$/;
+const SCREAMING_SNAKE_CASE_REGEX = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
+const STATIC_GLOBAL_CONST_TYPES = new Set(['ArrayExpression', 'Literal', 'ObjectExpression', 'TemplateLiteral']);
 const SPECIAL_EXPORT_CONST_NAMES = new Set([
   'config',
   'runtime',
@@ -24,27 +19,16 @@ const SPECIAL_EXPORT_CONST_NAMES = new Set([
   'fetchCache',
   'preferredRegion',
   'maxDuration',
-])
-const SPECIAL_EXPORT_FUNCTION_NAMES = new Set([
-  'DELETE',
-  'GET',
-  'HEAD',
-  'OPTIONS',
-  'PATCH',
-  'POST',
-  'PUT',
-])
+]);
+const SPECIAL_EXPORT_FUNCTION_NAMES = new Set(['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT']);
 function isTopLevelConst(node) {
-  const declaration = node.parent
-  if (!declaration || declaration.type !== 'VariableDeclaration') return false
-  if (declaration.kind !== 'const') return false
+  const declaration = node.parent;
+  if (!declaration || declaration.type !== 'VariableDeclaration') return false;
+  if (declaration.kind !== 'const') return false;
 
-  const parent =
-    declaration.parent?.type === 'ExportNamedDeclaration'
-      ? declaration.parent.parent
-      : declaration.parent
+  const parent = declaration.parent?.type === 'ExportNamedDeclaration' ? declaration.parent.parent : declaration.parent;
 
-  return parent?.type === 'Program'
+  return parent?.type === 'Program';
 }
 
 function reportNamingViolation(context, node, expectedStyle) {
@@ -54,7 +38,7 @@ function reportNamingViolation(context, node, expectedStyle) {
     data: {
       name: node.name,
     },
-  })
+  });
 }
 
 const NAMING_CONVENTION_PLUGIN = {
@@ -67,62 +51,56 @@ const NAMING_CONVENTION_PLUGIN = {
       create(context) {
         return {
           ClassDeclaration(node) {
-            if (!node.id || PASCAL_CASE_REGEX.test(node.id.name)) return
-            reportNamingViolation(context, node.id, 'PascalCase')
+            if (!node.id || PASCAL_CASE_REGEX.test(node.id.name)) return;
+            reportNamingViolation(context, node.id, 'PascalCase');
           },
           FunctionDeclaration(node) {
-            if (!node.id) return
-            if (SPECIAL_EXPORT_FUNCTION_NAMES.has(node.id.name)) return
+            if (!node.id) return;
+            if (SPECIAL_EXPORT_FUNCTION_NAMES.has(node.id.name)) return;
 
             if (PASCAL_CASE_REGEX.test(node.id.name)) {
-              return
+              return;
             }
 
             if (!CAMEL_CASE_REGEX.test(node.id.name)) {
-              reportNamingViolation(context, node.id, 'camelCase')
+              reportNamingViolation(context, node.id, 'camelCase');
             }
           },
           VariableDeclarator(node) {
-            if (node.id.type !== 'Identifier' || node.id.name === '$') return
+            if (node.id.type !== 'Identifier' || node.id.name === '$') return;
 
-            const { name } = node.id
-            const { init } = node
+            const { name } = node.id;
+            const { init } = node;
 
-            if (!init) return
+            if (!init) return;
 
             if (isTopLevelConst(node) && SPECIAL_EXPORT_CONST_NAMES.has(name)) {
-              return
+              return;
             }
 
-            if (
-              init.type === 'ArrowFunctionExpression' ||
-              init.type === 'FunctionExpression'
-            ) {
+            if (init.type === 'ArrowFunctionExpression' || init.type === 'FunctionExpression') {
               if (PASCAL_CASE_REGEX.test(name)) {
-                return
+                return;
               }
 
               if (!CAMEL_CASE_REGEX.test(name)) {
-                reportNamingViolation(context, node.id, 'camelCase')
+                reportNamingViolation(context, node.id, 'camelCase');
               }
-              return
+              return;
             }
 
             if (init.type === 'ClassExpression') {
               if (!PASCAL_CASE_REGEX.test(name)) {
-                reportNamingViolation(context, node.id, 'PascalCase')
+                reportNamingViolation(context, node.id, 'PascalCase');
               }
-              return
+              return;
             }
 
-            if (
-              isTopLevelConst(node) &&
-              STATIC_GLOBAL_CONST_TYPES.has(init.type)
-            ) {
+            if (isTopLevelConst(node) && STATIC_GLOBAL_CONST_TYPES.has(init.type)) {
               if (!SCREAMING_SNAKE_CASE_REGEX.test(name)) {
-                reportNamingViolation(context, node.id, 'SCREAMING_SNAKE_CASE')
+                reportNamingViolation(context, node.id, 'SCREAMING_SNAKE_CASE');
               }
-              return
+              return;
             }
 
             if (
@@ -130,14 +108,14 @@ const NAMING_CONVENTION_PLUGIN = {
               !PASCAL_CASE_REGEX.test(name) &&
               !SCREAMING_SNAKE_CASE_REGEX.test(name)
             ) {
-              reportNamingViolation(context, node.id, 'camelCase')
+              reportNamingViolation(context, node.id, 'camelCase');
             }
           },
-        }
+        };
       },
     },
   },
-}
+};
 
 export default [
   js.configs.recommended,
@@ -401,4 +379,4 @@ export default [
   {
     ignores: ['node_modules/', '.next/', 'out/', 'build/'],
   },
-]
+];

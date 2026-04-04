@@ -1,53 +1,47 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
-import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server'
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
-import { verifyPasswordWithIdentityToolkit } from '@/core/auth/servers/security/password-security.server'
-import {
-  createRecentReauthToken,
-  setRecentReauthCookie,
-} from '@/core/auth/servers/security/recent-reauth.server'
+import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server';
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
+import { verifyPasswordWithIdentityToolkit } from '@/core/auth/servers/security/password-security.server';
+import { createRecentReauthToken, setRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server';
 
 function normalizeEmail(value) {
   return String(value || '')
     .trim()
-    .toLowerCase()
+    .toLowerCase();
 }
 
 function normalizePassword(value) {
-  return String(value || '')
+  return String(value || '');
 }
 
 export async function POST(request) {
   try {
-    const body = await request.json().catch(() => ({}))
-    const currentPassword = normalizePassword(body?.currentPassword)
+    const body = await request.json().catch(() => ({}));
+    const currentPassword = normalizePassword(body?.currentPassword);
 
     if (!currentPassword) {
-      return NextResponse.json(
-        { error: 'currentPassword is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'currentPassword is required' }, { status: 400 });
     }
 
-    assertCsrfRequest(request)
+    assertCsrfRequest(request);
 
     const authContext = await requireSessionRequest(request, {
       allowBearerFallback: true,
-    })
+    });
 
-    assertPasswordProviderLinked(authContext.userRecord)
+    assertPasswordProviderLinked(authContext.userRecord);
 
     await verifyPasswordWithIdentityToolkit({
       email: normalizeEmail(authContext.email),
       password: currentPassword,
-    })
+    });
 
     const response = NextResponse.json({
       ok: true,
       verifiedAt: new Date().toISOString(),
-    })
+    });
 
     setRecentReauthCookie(
       response,
@@ -56,11 +50,11 @@ export async function POST(request) {
         sessionJti: authContext.sessionJti,
         userId: authContext.userId,
       })
-    )
+    );
 
-    return response
+    return response;
   } catch (error) {
-    const message = String(error?.message || 'Reauthentication failed')
+    const message = String(error?.message || 'Reauthentication failed');
     const status = message.includes('Invalid CSRF token')
       ? 403
       : message.includes('Authentication session is required') ||
@@ -72,8 +66,8 @@ export async function POST(request) {
             message.includes('disabled') ||
             message.includes('email/password sign-in enabled')
           ? 400
-          : 500
+          : 500;
 
-    return NextResponse.json({ error: message }, { status })
+    return NextResponse.json({ error: message }, { status });
   }
 }

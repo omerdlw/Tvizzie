@@ -1,57 +1,55 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 function warnFallbackSecret() {
-  const key = '__tvizzie_password_reset_proof_secret_fallback_warned__'
+  const key = '__tvizzie_password_reset_proof_secret_fallback_warned__';
 
   if (globalThis[key]) {
-    return
+    return;
   }
 
-  globalThis[key] = true
+  globalThis[key] = true;
   console.warn(
     '[Auth] PASSWORD_RESET_PROOF_SECRET is missing. Falling back to EMAIL_VERIFICATION_SECRET. Configure PASSWORD_RESET_PROOF_SECRET explicitly.'
-  )
+  );
 }
 
 function getSecret() {
-  const secret = normalizeValue(process.env.PASSWORD_RESET_PROOF_SECRET)
+  const secret = normalizeValue(process.env.PASSWORD_RESET_PROOF_SECRET);
 
   if (secret) {
-    return secret
+    return secret;
   }
 
-  const fallbackSecret = normalizeValue(process.env.EMAIL_VERIFICATION_SECRET)
+  const fallbackSecret = normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
 
   if (!fallbackSecret) {
     throw new Error(
       'PASSWORD_RESET_PROOF_SECRET is missing on the server and EMAIL_VERIFICATION_SECRET fallback is unavailable'
-    )
+    );
   }
 
-  warnFallbackSecret()
-  return fallbackSecret
+  warnFallbackSecret();
+  return fallbackSecret;
 }
 
 function signPayload(encodedPayload) {
-  return createHmac('sha256', getSecret())
-    .update(encodedPayload)
-    .digest('base64url')
+  return createHmac('sha256', getSecret()).update(encodedPayload).digest('base64url');
 }
 
 function encodePayload(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString('base64url')
+  return Buffer.from(JSON.stringify(payload)).toString('base64url');
 }
 
 function decodePayload(value) {
-  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'))
+  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
 }
 
 export function createPasswordResetProofToken({
@@ -60,12 +58,12 @@ export function createPasswordResetProofToken({
   email,
   expiresAt = Date.now() + 10 * 60 * 1000,
 }) {
-  const normalizedChallengeJti = normalizeValue(challengeJti)
-  const normalizedChallengeKey = normalizeValue(challengeKey)
-  const normalizedEmail = normalizeEmail(email)
+  const normalizedChallengeJti = normalizeValue(challengeJti);
+  const normalizedChallengeKey = normalizeValue(challengeKey);
+  const normalizedEmail = normalizeEmail(email);
 
   if (!normalizedChallengeJti || !normalizedChallengeKey || !normalizedEmail) {
-    throw new Error('Password reset proof requires challenge, key, and email')
+    throw new Error('Password reset proof requires challenge, key, and email');
   }
 
   const payload = {
@@ -74,59 +72,56 @@ export function createPasswordResetProofToken({
     email: normalizedEmail,
     exp: Math.floor(Number(expiresAt) / 1000),
     jti: randomBytes(12).toString('hex'),
-  }
+  };
 
-  const encodedPayload = encodePayload(payload)
-  const signature = signPayload(encodedPayload)
+  const encodedPayload = encodePayload(payload);
+  const signature = signPayload(encodedPayload);
 
-  return `${encodedPayload}.${signature}`
+  return `${encodedPayload}.${signature}`;
 }
 
 export function verifyPasswordResetProofToken(token, { email } = {}) {
-  const normalizedToken = normalizeValue(token)
-  const [encodedPayload, signature] = normalizedToken.split('.')
+  const normalizedToken = normalizeValue(token);
+  const [encodedPayload, signature] = normalizedToken.split('.');
 
   if (!encodedPayload || !signature) {
-    throw new Error('Password reset verification is invalid')
+    throw new Error('Password reset verification is invalid');
   }
 
-  const expectedSignature = signPayload(encodedPayload)
-  const expectedBuffer = Buffer.from(expectedSignature)
-  const receivedBuffer = Buffer.from(signature)
+  const expectedSignature = signPayload(encodedPayload);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const receivedBuffer = Buffer.from(signature);
 
-  if (
-    expectedBuffer.length !== receivedBuffer.length ||
-    !timingSafeEqual(expectedBuffer, receivedBuffer)
-  ) {
-    throw new Error('Password reset verification is invalid')
+  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
+    throw new Error('Password reset verification is invalid');
   }
 
-  let payload = null
+  let payload = null;
 
   try {
-    payload = decodePayload(encodedPayload)
+    payload = decodePayload(encodedPayload);
   } catch {
-    throw new Error('Password reset verification is invalid')
+    throw new Error('Password reset verification is invalid');
   }
 
-  const expiresAtMs = Number(payload?.exp) * 1000
+  const expiresAtMs = Number(payload?.exp) * 1000;
 
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
-    throw new Error('Password reset verification has expired')
+    throw new Error('Password reset verification has expired');
   }
 
-  const expectedEmail = normalizeEmail(email)
-  const payloadEmail = normalizeEmail(payload?.email)
+  const expectedEmail = normalizeEmail(email);
+  const payloadEmail = normalizeEmail(payload?.email);
 
   if (expectedEmail && payloadEmail !== expectedEmail) {
-    throw new Error('Password reset verification is invalid')
+    throw new Error('Password reset verification is invalid');
   }
 
-  const challengeJti = normalizeValue(payload?.challengeJti)
-  const challengeKey = normalizeValue(payload?.challengeKey)
+  const challengeJti = normalizeValue(payload?.challengeJti);
+  const challengeKey = normalizeValue(payload?.challengeKey);
 
   if (!challengeJti || !challengeKey || !payloadEmail) {
-    throw new Error('Password reset verification is invalid')
+    throw new Error('Password reset verification is invalid');
   }
 
   return {
@@ -134,5 +129,5 @@ export function verifyPasswordResetProofToken(token, { email } = {}) {
     challengeKey,
     email: payloadEmail,
     expiresAt: new Date(expiresAtMs).toISOString(),
-  }
+  };
 }

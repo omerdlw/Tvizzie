@@ -1,18 +1,16 @@
-import createBundleAnalyzer from '@next/bundle-analyzer'
+import createBundleAnalyzer from '@next/bundle-analyzer';
 
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
-})
+});
 
-const SUPABASE_ORIGIN = String(process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
+const SUPABASE_ORIGIN = String(process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   ? SUPABASE_ORIGIN.replace(/^https:\/\//i, 'wss://')
-  : ''
+  : '';
 
 const CSP_HEADER_KEY =
-  process.env.CSP_ENFORCE === 'true'
-    ? 'Content-Security-Policy'
-    : 'Content-Security-Policy-Report-Only'
+  process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
 const CSP_VALUE = [
   "default-src 'self'",
   [
@@ -55,7 +53,7 @@ const CSP_VALUE = [
   "base-uri 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-].join('; ')
+].join('; ');
 
 const SECURITY_HEADERS = [
   { key: CSP_HEADER_KEY, value: CSP_VALUE },
@@ -75,14 +73,14 @@ const SECURITY_HEADERS = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()',
   },
-]
+];
 
 const STATIC_CACHE_HEADERS = [
   {
     key: 'Cache-Control',
     value: 'public, max-age=31536000, immutable',
   },
-]
+];
 
 const NEXT_CONFIG = {
   compress: true,
@@ -142,8 +140,8 @@ const NEXT_CONFIG = {
         source: '/images/:path*',
         headers: STATIC_CACHE_HEADERS,
       },
-    ]
+    ];
   },
-}
+};
 
-export default withBundleAnalyzer(NEXT_CONFIG)
+export default withBundleAnalyzer(NEXT_CONFIG);

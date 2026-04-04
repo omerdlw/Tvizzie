@@ -1,14 +1,14 @@
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server'
-import { createUserEventStream } from '@/core/services/realtime/user-events.server'
-import { isTransientSessionError } from '@/core/auth/servers/session/session.server'
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { createUserEventStream } from '@/core/services/realtime/user-events.server';
+import { isTransientSessionError } from '@/core/auth/servers/session/session.server';
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    const authContext = await requireAuthenticatedRequest(request)
-    const stream = createUserEventStream(authContext.userId)
+    const authContext = await requireAuthenticatedRequest(request);
+    const stream = createUserEventStream(authContext.userId);
 
     return new Response(stream, {
       headers: {
@@ -17,12 +17,11 @@ export async function GET(request) {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'X-Accel-Buffering': 'no',
       },
-    })
+    });
   } catch (error) {
     if (isTransientSessionError(error)) {
-      return new Response('Service temporarily unavailable', { status: 503 })
+      return new Response('Service temporarily unavailable', { status: 503 });
     }
-    return new Response('Authentication required', { status: 401 })
+    return new Response('Authentication required', { status: 401 });
   }
 }
-

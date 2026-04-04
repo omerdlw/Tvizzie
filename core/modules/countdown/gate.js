@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useCountdownState } from './context'
+import { useCountdownState } from './context';
 
 export function CountdownGate({ children }) {
-  const { isEnabled } = useCountdownState()
+  const { isEnabled } = useCountdownState();
 
-  if (isEnabled) return null
+  if (isEnabled) return null;
 
-  return <>{children}</>
+  return <>{children}</>;
 }

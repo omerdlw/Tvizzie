@@ -4,4 +4,4 @@ export const DEFAULT_COUNTDOWN = {
   videoWidth: 'w-[60%]',
   announcement: '',
   videoCorp: 0,
-}
+};

@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { createClient } from '@/core/clients/supabase/client'
+import { createClient } from '@/core/clients/supabase/client';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 export function getSupabaseClient() {
-  return createClient()
+  return createClient();
 }
 
 export function normalizeSupabaseError(error, fallbackMessage) {
@@ -15,32 +15,32 @@ export function normalizeSupabaseError(error, fallbackMessage) {
     normalizeValue(error?.message) ||
     normalizeValue(error?.error_description) ||
     normalizeValue(fallbackMessage) ||
-    'Supabase request failed'
-  const normalized = new Error(message)
+    'Supabase request failed';
+  const normalized = new Error(message);
 
-  normalized.name = error?.name || 'SupabaseError'
-  normalized.code = normalizeValue(error?.code || '') || null
-  normalized.status = Number(error?.status) || 0
-  normalized.data = error || null
+  normalized.name = error?.name || 'SupabaseError';
+  normalized.code = normalizeValue(error?.code || '') || null;
+  normalized.status = Number(error?.status) || 0;
+  normalized.data = error || null;
 
-  return normalized
+  return normalized;
 }
 
 export function assertSupabaseResult(result, fallbackMessage) {
   if (result?.error) {
-    throw normalizeSupabaseError(result.error, fallbackMessage)
+    throw normalizeSupabaseError(result.error, fallbackMessage);
   }
 
-  return result
+  return result;
 }
 
 export function toIsoTimestamp(value) {
-  if (!value) return null
-  const date = value instanceof Date ? value : new Date(value)
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return null
+    return null;
   }
 
-  return date.toISOString()
+  return date.toISOString();
 }

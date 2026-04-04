@@ -1,12 +1,12 @@
-import { FullscreenState } from '@/ui/states/fullscreen-state'
-import { Spinner } from '@/ui/loadings/spinner'
+import { FullscreenState } from '@/ui/states/fullscreen-state';
+import { Spinner } from '@/ui/loadings/spinner';
 
 export function Skeleton() {
   return (
-    <FullscreenState>
+    <FullscreenState className="h-screen w-screen" contentClassName="h-screen w-screen">
       <Spinner size={50} />
     </FullscreenState>
-  )
+  );
 }
 
-export default Skeleton
+export default Skeleton;

@@ -1,8 +1,8 @@
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
-import AccountSectionState from '@/features/account/section-state'
-import Registry from './registry'
+import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
+import AccountSectionState from '@/features/account/section-state';
+import Registry from './registry';
 
 export default function WatchlistView({
   auth,
@@ -55,7 +55,7 @@ export default function WatchlistView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -102,5 +102,5 @@ export default function WatchlistView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

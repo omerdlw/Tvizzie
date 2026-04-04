@@ -1,13 +1,12 @@
-import Client from './client'
-import { getUsernameAccountActivityRouteData } from '@/core/services/account/account-route-data.server'
+import Client from './client';
+import { getUsernameAccountActivityRouteData } from '@/core/services/account/account-route-data.server';
 
 export default async function Page({ params, searchParams }) {
-  const { username } = await params
-  const scope =
-    (await searchParams)?.scope === 'following' ? 'following' : 'user'
+  const { username } = await params;
+  const scope = (await searchParams)?.scope === 'following' ? 'following' : 'user';
   const routeData = await getUsernameAccountActivityRouteData(username, {
     scope,
-  })
+  });
 
-  return <Client {...routeData} />
+  return <Client {...routeData} />;
 }

@@ -1,24 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
-import { getTrending } from '@/core/clients/tmdb/server'
+import { getTrending } from '@/core/clients/tmdb/server';
 
 export async function GET() {
   try {
-    const response = await getTrending('day', 'movie')
+    const response = await getTrending('day', 'movie');
 
     if (!response.data?.results) {
-      return NextResponse.json({ poster: null })
+      return NextResponse.json({ poster: null });
     }
 
     const candidates = response.data.results.filter(
       (movie) => movie.poster_path && movie.backdrop_path && movie.vote_average > 5
-    )
+    );
 
     if (candidates.length === 0) {
-      return NextResponse.json({ poster: null })
+      return NextResponse.json({ poster: null });
     }
 
-    const pick = candidates[Math.floor(Math.random() * candidates.length)]
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
 
     return NextResponse.json({
       poster: {
@@ -30,8 +30,8 @@ export async function GET() {
         rating: pick.vote_average ? pick.vote_average.toFixed(1) : null,
         overview: pick.overview || '',
       },
-    })
+    });
   } catch {
-    return NextResponse.json({ poster: null })
+    return NextResponse.json({ poster: null });
   }
 }

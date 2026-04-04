@@ -1,117 +1,109 @@
-'use client'
+'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 
-import { useRegistryState, REGISTRY_TYPES } from '../registry/context'
+import { useRegistryState, REGISTRY_TYPES } from '../registry/context';
 
-const LoadingActionsContext = createContext(null)
-const LoadingStateContext = createContext(null)
+const LoadingActionsContext = createContext(null);
+const LoadingStateContext = createContext(null);
 
 export function LoadingProvider({ children }) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [skeleton, setSkeleton] = useState(null)
-  const [minDuration, setMinDuration] = useState(0)
+  const [isLoading, setIsLoading] = useState(false);
+  const [skeleton, setSkeleton] = useState(null);
+  const [minDuration, setMinDuration] = useState(0);
 
-  const startTimeRef = useRef(null)
-  const stopTimerRef = useRef(null)
+  const startTimeRef = useRef(null);
+  const stopTimerRef = useRef(null);
 
-  const { get } = useRegistryState()
-  const registryLoading = get(REGISTRY_TYPES.LOADING, 'page-loading')
+  const { get } = useRegistryState();
+  const registryLoading = get(REGISTRY_TYPES.LOADING, 'page-loading');
 
   const clearStopTimer = useCallback(() => {
-    if (!stopTimerRef.current) return
-    clearTimeout(stopTimerRef.current)
-    stopTimerRef.current = null
-  }, [])
+    if (!stopTimerRef.current) return;
+    clearTimeout(stopTimerRef.current);
+    stopTimerRef.current = null;
+  }, []);
 
   const resetState = useCallback(() => {
-    clearStopTimer()
-    setIsLoading(false)
-    setSkeleton(null)
-    setMinDuration(0)
-    startTimeRef.current = null
-  }, [clearStopTimer])
+    clearStopTimer();
+    setIsLoading(false);
+    setSkeleton(null);
+    setMinDuration(0);
+    startTimeRef.current = null;
+  }, [clearStopTimer]);
 
   const startLoading = useCallback(
     (options = {}) => {
-      clearStopTimer()
+      clearStopTimer();
 
-      const duration = options.minDuration || 0
+      const duration = options.minDuration || 0;
 
-      startTimeRef.current = Date.now()
-      setIsLoading(true)
-      setMinDuration(duration)
+      startTimeRef.current = Date.now();
+      setIsLoading(true);
+      setMinDuration(duration);
 
       if (options.skeleton) {
-        setSkeleton(options.skeleton)
+        setSkeleton(options.skeleton);
       }
     },
     [clearStopTimer]
-  )
+  );
 
   const stopLoading = useCallback(() => {
-    const startTime = startTimeRef.current
+    const startTime = startTimeRef.current;
 
     if (!startTime || minDuration === 0) {
-      resetState()
-      return
+      resetState();
+      return;
     }
 
-    const elapsed = Date.now() - startTime
-    const remaining = minDuration - elapsed
+    const elapsed = Date.now() - startTime;
+    const remaining = minDuration - elapsed;
 
     if (remaining <= 0) {
-      resetState()
-      return
+      resetState();
+      return;
     }
 
-    clearStopTimer()
+    clearStopTimer();
 
     stopTimerRef.current = setTimeout(() => {
-      resetState()
-    }, remaining)
-  }, [clearStopTimer, minDuration, resetState])
+      resetState();
+    }, remaining);
+  }, [clearStopTimer, minDuration, resetState]);
 
   const setLoading = useCallback(
     (value) => {
-      if (value) startLoading()
-      else stopLoading()
+      if (value) startLoading();
+      else stopLoading();
     },
     [startLoading, stopLoading]
-  )
+  );
 
-  const setIsLoadingAction = setLoading
+  const setIsLoadingAction = setLoading;
 
   useEffect(() => {
     return () => {
-      clearStopTimer()
-    }
-  }, [clearStopTimer])
+      clearStopTimer();
+    };
+  }, [clearStopTimer]);
 
   useEffect(() => {
     if (!registryLoading) {
-      resetState()
-      return
+      resetState();
+      return;
     }
 
     if (registryLoading.isLoading) {
-      startLoading(registryLoading)
+      startLoading(registryLoading);
     } else {
-      stopLoading()
+      stopLoading();
     }
 
     if (registryLoading.skeleton) {
-      setSkeleton(registryLoading.skeleton)
+      setSkeleton(registryLoading.skeleton);
     }
-  }, [registryLoading, resetState, startLoading, stopLoading])
+  }, [registryLoading, resetState, startLoading, stopLoading]);
 
   const stateValue = useMemo(
     () => ({
@@ -120,7 +112,7 @@ export function LoadingProvider({ children }) {
       minDuration,
     }),
     [isLoading, skeleton, minDuration]
-  )
+  );
 
   const actionsValue = useMemo(
     () => ({
@@ -131,25 +123,23 @@ export function LoadingProvider({ children }) {
       setSkeleton,
     }),
     [startLoading, stopLoading, setIsLoadingAction, setLoading]
-  )
+  );
 
   return (
     <LoadingActionsContext.Provider value={actionsValue}>
-      <LoadingStateContext.Provider value={stateValue}>
-        {children}
-      </LoadingStateContext.Provider>
+      <LoadingStateContext.Provider value={stateValue}>{children}</LoadingStateContext.Provider>
     </LoadingActionsContext.Provider>
-  )
+  );
 }
 
 export function useLoadingState() {
-  const ctx = useContext(LoadingStateContext)
-  if (!ctx) throw new Error('useLoadingState must be within LoadingProvider')
-  return ctx
+  const ctx = useContext(LoadingStateContext);
+  if (!ctx) throw new Error('useLoadingState must be within LoadingProvider');
+  return ctx;
 }
 
 export function useLoadingActions() {
-  const ctx = useContext(LoadingActionsContext)
-  if (!ctx) throw new Error('useLoadingActions must be within LoadingProvider')
-  return ctx
+  const ctx = useContext(LoadingActionsContext);
+  if (!ctx) throw new Error('useLoadingActions must be within LoadingProvider');
+  return ctx;
 }

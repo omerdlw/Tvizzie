@@ -1,36 +1,33 @@
-'use client'
+'use client';
 
-import { useMemo } from 'react'
+import { useMemo } from 'react';
 
-import {
-  useBackgroundActions,
-  useBackgroundState,
-} from '@/core/modules/background/context'
-import { useCountdownState } from '@/core/modules/countdown'
+import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
+import { useCountdownState } from '@/core/modules/countdown';
 
 function padCountdownValue(value) {
-  return String(value ?? 0).padStart(2, '0')
+  return String(value ?? 0).padStart(2, '0');
 }
 
 function createCountdownTitle(timeLeft = {}) {
-  const days = Number(timeLeft.days) || 0
-  const hours = Number(timeLeft.hours) || 0
-  const minutes = Number(timeLeft.minutes) || 0
+  const days = Number(timeLeft.days) || 0;
+  const hours = Number(timeLeft.hours) || 0;
+  const minutes = Number(timeLeft.minutes) || 0;
 
-  const dayPrefix = days > 0 ? `${padCountdownValue(days)} days ` : ''
+  const dayPrefix = days > 0 ? `${padCountdownValue(days)} days ` : '';
 
-  return `${dayPrefix}${padCountdownValue(hours)} hours ${padCountdownValue(minutes)} minutes`
+  return `${dayPrefix}${padCountdownValue(hours)} hours ${padCountdownValue(minutes)} minutes`;
 }
 
 export function useNavigationCountdown() {
-  const { isEnabled, timeLeft, config } = useCountdownState()
+  const { isEnabled, timeLeft, config } = useCountdownState();
 
-  const { isVideo, isPlaying } = useBackgroundState()
-  const { toggleVideo } = useBackgroundActions()
+  const { isVideo, isPlaying } = useBackgroundState();
+  const { toggleVideo } = useBackgroundActions();
 
   const countdownItem = useMemo(() => {
     if (!isEnabled) {
-      return null
+      return null;
     }
 
     return {
@@ -50,12 +47,12 @@ export function useNavigationCountdown() {
       hideScroll: true,
       action: null,
       children: null,
-    }
-  }, [config?.announcement, isEnabled, isPlaying, timeLeft, toggleVideo])
+    };
+  }, [config?.announcement, isEnabled, isPlaying, timeLeft, toggleVideo]);
 
   return {
     isVideo,
     countdownItem,
     toggleBackgroundVideo: toggleVideo,
-  }
+  };
 }

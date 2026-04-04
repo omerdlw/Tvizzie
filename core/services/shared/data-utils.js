@@ -1,20 +1,20 @@
 export function normalizeTimestamp(value) {
-  if (!value) return null
+  if (!value) return null;
 
   if (typeof value?.toDate === 'function') {
-    return value.toDate().toISOString()
+    return value.toDate().toISOString();
   }
 
-  const parsedDate = new Date(value)
+  const parsedDate = new Date(value);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return null
+    return null;
   }
 
-  return parsedDate.toISOString()
+  return parsedDate.toISOString();
 }
 
 export function cleanString(value) {
-  if (value === undefined || value === null) return ''
-  return String(value).trim()
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
 }

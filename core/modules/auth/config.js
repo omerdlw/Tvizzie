@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 export const AUTH_STATUS = Object.freeze({
   AUTHENTICATED: 'authenticated',
@@ -7,7 +7,7 @@ export const AUTH_STATUS = Object.freeze({
   LOADING: 'loading',
   ERROR: 'error',
   IDLE: 'idle',
-})
+});
 
 export const DEFAULT_AUTH_CONFIG = Object.freeze({
   clearSessionOnUnauthorized: true,
@@ -20,7 +20,7 @@ export const DEFAULT_AUTH_CONFIG = Object.freeze({
   adapter: null,
   enabled: true,
   debug: false,
-})
+});
 
 export const DEFAULT_AUTH_STATE = Object.freeze({
   lastUpdatedAt: null,
@@ -30,4 +30,4 @@ export const DEFAULT_AUTH_STATE = Object.freeze({
   isReady: false,
   error: null,
   user: null,
-})
+});

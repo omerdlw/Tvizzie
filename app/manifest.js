@@ -20,5 +20,5 @@ export default function manifest() {
         type: 'image/svg+xml',
       },
     ],
-  }
+  };
 }

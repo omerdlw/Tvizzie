@@ -1,67 +1,60 @@
-'use client'
+'use client';
 
-const STORAGE_KEY = 'tvizzie:pending-provider-link'
-const PENDING_PROVIDER_TTL_MS = 10 * 60 * 1000
+const STORAGE_KEY = 'tvizzie:pending-provider-link';
+const PENDING_PROVIDER_TTL_MS = 10 * 60 * 1000;
 
 function canUseSessionStorage() {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.sessionStorage !== 'undefined'
-  )
+  return typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
 }
 
 function normalizeEmail(value) {
   return String(value || '')
     .trim()
-    .toLowerCase()
+    .toLowerCase();
 }
 
 function readPendingProviderLink() {
   if (!canUseSessionStorage()) {
-    return null
+    return null;
   }
 
   try {
-    const rawValue = window.sessionStorage.getItem(STORAGE_KEY)
+    const rawValue = window.sessionStorage.getItem(STORAGE_KEY);
 
     if (!rawValue) {
-      return null
+      return null;
     }
 
-    const payload = JSON.parse(rawValue)
+    const payload = JSON.parse(rawValue);
 
     if (!payload?.provider || !payload?.email) {
-      window.sessionStorage.removeItem(STORAGE_KEY)
-      return null
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      return null;
     }
 
-    if (
-      payload.expiresAt &&
-      Number(payload.expiresAt) > 0 &&
-      Number(payload.expiresAt) <= Date.now()
-    ) {
-      window.sessionStorage.removeItem(STORAGE_KEY)
-      return null
+    if (payload.expiresAt && Number(payload.expiresAt) > 0 && Number(payload.expiresAt) <= Date.now()) {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      return null;
     }
 
-    return payload
+    return payload;
   } catch {
-    window.sessionStorage.removeItem(STORAGE_KEY)
-    return null
+    window.sessionStorage.removeItem(STORAGE_KEY);
+    return null;
   }
 }
 
 export function setPendingGoogleProviderLink(payload = {}) {
   if (!canUseSessionStorage()) {
-    return
+    return;
   }
 
-  const email = normalizeEmail(payload.email)
-  const idToken = String(payload.idToken || '').trim()
+  const email = normalizeEmail(payload.email);
+  const idToken = String(payload.idToken || '').trim();
 
   if (!email || !idToken) {
-    window.sessionStorage.removeItem(STORAGE_KEY)
-    return
+    window.sessionStorage.removeItem(STORAGE_KEY);
+    return;
   }
 
   window.sessionStorage.setItem(
@@ -73,29 +66,27 @@ export function setPendingGoogleProviderLink(payload = {}) {
       idToken: idToken || null,
       provider: 'google.com',
     })
-  )
+  );
 }
 
 export function getPendingProviderLink(email = null) {
-  const payload = readPendingProviderLink()
+  const payload = readPendingProviderLink();
 
   if (!payload) {
-    return null
+    return null;
   }
 
   if (!email) {
-    return payload
+    return payload;
   }
 
-  return normalizeEmail(email) === normalizeEmail(payload.email)
-    ? payload
-    : null
+  return normalizeEmail(email) === normalizeEmail(payload.email) ? payload : null;
 }
 
 export function clearPendingProviderLink() {
   if (!canUseSessionStorage()) {
-    return
+    return;
   }
 
-  window.sessionStorage.removeItem(STORAGE_KEY)
+  window.sessionStorage.removeItem(STORAGE_KEY);
 }

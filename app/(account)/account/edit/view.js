@@ -1,30 +1,23 @@
-import { cn } from '@/core/utils'
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants'
-import AccountHero from '@/features/account/profile/hero'
-import AccountRouteSkeleton from '@/ui/skeletons/views/account'
-import Icon from '@/ui/icon'
-import Registry from './registry'
+import { cn } from '@/core/utils';
+import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import AccountHero from '@/features/account/profile/hero';
+import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import Icon from '@/ui/icon';
+import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'w-full px-3 py-2.5 text-sm surface-muted outline-none transition-colors disabled:cursor-not-allowed'
-const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y`
-const BUTTON_BASE_CLASSES =
-  'surface-muted px-3 py-2.5'
+  'w-full px-3 py-2.5 text-sm border border-[#0284c7] bg-[#dbeafe] text-black/70 outline-none transition-colors disabled:cursor-not-allowed';
+const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y`;
+const BUTTON_BASE_CLASSES = 'border border-[#0284c7] bg-[#dbeafe] text-black/70 px-3 py-2.5';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-11 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors active:scale-95 disabled:cursor-not-allowed '
+  'inline-flex h-11 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors  disabled:cursor-not-allowed ';
 
-function ActionButton({
-  children,
-  className,
-  tone = 'default',
-  icon = null,
-  ...props
-}) {
+function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
     <button
       className={cn(
         BUTTON_FRAME_CLASSES,
-        tone === 'danger' ? 'error-classes' : BUTTON_BASE_CLASSES,
+        tone === 'danger' ? 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]' : BUTTON_BASE_CLASSES,
         className
       )}
       {...props}
@@ -32,61 +25,41 @@ function ActionButton({
       {icon ? <Icon icon={icon} size={16} /> : null}
       {children}
     </button>
-  )
+  );
 }
 
 function StatusState({ title, description }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="w-full max-w-xl border border-white/5 p-6 text-center">
-        <p className="text-[11px] font-semibold tracking-widest text-white uppercase">
-          Account Editor
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">
-          {title}
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-white">{description}</p>
+      <div className="w-full max-w-xl border border-[#0284c7] p-6 text-center">
+        <p className="text-[11px] font-semibold tracking-widest text-[#0f172a] uppercase">Account Editor</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[#0f172a]">{title}</h1>
+        <p className="mt-3 text-sm leading-6 text-[#0f172a]">{description}</p>
       </div>
     </div>
-  )
+  );
 }
 
-function SectionCard({
-  title,
-  description,
-  children,
-  className,
-  contentClassName,
-}) {
+function SectionCard({ title, description, children, className, contentClassName }) {
   return (
     <section className={className}>
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-white">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
-            {description}
-          </p>
-        ) : null}
+        <h2 className="text-xl font-semibold tracking-tight text-[#0f172a]">{title}</h2>
+        {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/70">{description}</p> : null}
       </div>
-      <div className={cn('mt-5 flex flex-col gap-3', contentClassName)}>
-        {children}
-      </div>
+      <div className={cn('mt-5 flex flex-col gap-3', contentClassName)}>{children}</div>
     </section>
-  )
+  );
 }
 
 function Field({ label, hint, children, className }) {
   return (
     <label className={cn('flex flex-col gap-2', className)}>
-      <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">
-        {label}
-      </span>
+      <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">{label}</span>
       {children}
-      {hint ? <span className="text-xs leading-5 text-white/70">{hint}</span> : null}
+      {hint ? <span className="text-xs leading-5 text-black/70">{hint}</span> : null}
     </label>
-  )
+  );
 }
 
 export default function AccountEditView(props) {
@@ -127,7 +100,7 @@ export default function AccountEditView(props) {
     setEmailFlow,
     setPasswordFlow,
     setDeleteFlow,
-  } = props
+  } = props;
 
   const editRegistry = (
     <Registry
@@ -142,7 +115,7 @@ export default function AccountEditView(props) {
       isSaving={isSaving}
       setActiveTab={setActiveTab}
     />
-  )
+  );
 
   if (!auth.isReady || isLoading) {
     return (
@@ -150,7 +123,7 @@ export default function AccountEditView(props) {
         {editRegistry}
         <AccountRouteSkeleton variant="edit" />
       </>
-    )
+    );
   }
 
   if (!auth.isAuthenticated) {
@@ -159,17 +132,15 @@ export default function AccountEditView(props) {
         {editRegistry}
         <AccountRouteSkeleton variant="edit" />
       </>
-    )
+    );
   }
 
   if (!profile) {
     return (
       <>
         {editRegistry}
-        <main className="relative min-h-screen overflow-hidden  text-white">
-          <div
-            className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}
-          >
+        <main className="relative min-h-screen overflow-hidden text-[#0f172a]">
+          <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}>
             <StatusState
               title="Account data unavailable"
               description="We could not load your editable profile data right now."
@@ -177,13 +148,13 @@ export default function AccountEditView(props) {
           </div>
         </main>
       </>
-    )
+    );
   }
 
   return (
     <>
       {editRegistry}
-      <main className="relative min-h-screen overflow-hidden  text-white">
+      <main className="relative min-h-screen overflow-hidden text-[#0f172a]">
         <AccountHero
           profile={heroProfile}
           likesCount={likesCount}
@@ -194,41 +165,25 @@ export default function AccountEditView(props) {
           watchlistCount={watchlistCount}
         />
 
-        <div
-          className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}
-        >
+        <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}>
           {activeTab === 'general' ? (
-            <form
-              ref={formRef}
-              onSubmit={handleAccountSubmit}
-              className="flex flex-col gap-6"
-            >
+            <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col gap-6">
               <div className="grid gap-3 xl:grid-cols-2">
-                <SectionCard
-                  title="General Info"
-                  description="Update how your account appears across Tvizzie."
-                >
+                <SectionCard title="General Info" description="Update how your account appears across Tvizzie.">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="Display Name">
                       <input
                         value={form.displayName}
-                        onChange={(event) =>
-                          handleChange('displayName', event.target.value)
-                        }
+                        onChange={(event) => handleChange('displayName', event.target.value)}
                         placeholder="Your name"
                         className={INPUT_BASE_CLASSES}
                       />
                     </Field>
 
-                    <Field
-                      label="Username"
-                      hint="Used in your public profile URL."
-                    >
+                    <Field label="Username" hint="Used in your public profile URL.">
                       <input
                         value={form.username}
-                        onChange={(event) =>
-                          handleChange('username', event.target.value)
-                        }
+                        onChange={(event) => handleChange('username', event.target.value)}
                         placeholder="username"
                         spellCheck={false}
                         className={INPUT_BASE_CLASSES}
@@ -236,15 +191,10 @@ export default function AccountEditView(props) {
                     </Field>
                   </div>
 
-                  <Field
-                    label="Bio"
-                    hint="Short and readable profile summary."
-                  >
+                  <Field label="Bio" hint="Short and readable profile summary.">
                     <textarea
                       value={form.description}
-                      onChange={(event) =>
-                        handleChange('description', event.target.value)
-                      }
+                      onChange={(event) => handleChange('description', event.target.value)}
                       placeholder="Write something about yourself"
                       rows={6}
                       className={TEXTAREA_BASE_CLASSES}
@@ -260,9 +210,7 @@ export default function AccountEditView(props) {
                   <Field label="Avatar URL">
                     <input
                       value={form.avatarUrl}
-                      onChange={(event) =>
-                        handleChange('avatarUrl', event.target.value)
-                      }
+                      onChange={(event) => handleChange('avatarUrl', event.target.value)}
                       placeholder="https://"
                       spellCheck={false}
                       className={INPUT_BASE_CLASSES}
@@ -272,9 +220,7 @@ export default function AccountEditView(props) {
                   <Field label="Banner URL">
                     <input
                       value={form.bannerUrl}
-                      onChange={(event) =>
-                        handleChange('bannerUrl', event.target.value)
-                      }
+                      onChange={(event) => handleChange('bannerUrl', event.target.value)}
                       placeholder="https://"
                       spellCheck={false}
                       className={INPUT_BASE_CLASSES}
@@ -283,15 +229,8 @@ export default function AccountEditView(props) {
 
                   <div className="grid gap-3 sm:grid-cols-[112px_minmax(0,1fr)]">
                     <div>
-                      <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/90 uppercase">
-                        Avatar
-                      </p>
-                      <div
-                        className={cn(
-                          'overflow-hidden border border-white/8',
-                          'aspect-square'
-                        )}
-                      >
+                      <p className="mb-2 text-[10px] font-semibold tracking-widest text-[#0f172a] uppercase">Avatar</p>
+                      <div className={cn('overflow-hidden border border-[#0ea5e9]', 'aspect-square')}>
                         <img
                           src={avatarPreview}
                           alt={`${heroDisplayName} avatar preview`}
@@ -301,15 +240,8 @@ export default function AccountEditView(props) {
                     </div>
 
                     <div>
-                      <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/90 uppercase">
-                        Banner
-                      </p>
-                      <div
-                        className={cn(
-                          'overflow-hidden border border-white/8',
-                          'aspect-[16/7]'
-                        )}
-                      >
+                      <p className="mb-2 text-[10px] font-semibold tracking-widest text-[#0f172a] uppercase">Banner</p>
+                      <div className={cn('overflow-hidden border border-[#0ea5e9]', 'aspect-[16/7]')}>
                         {bannerPreview ? (
                           <img
                             src={bannerPreview}
@@ -317,7 +249,7 @@ export default function AccountEditView(props) {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="h-full w-full bg-white/5" />
+                          <div className="h-full w-full bg-[#dbeafe]" />
                         )}
                       </div>
                     </div>
@@ -333,27 +265,24 @@ export default function AccountEditView(props) {
                 <button
                   type="button"
                   onClick={() => handleChange('isPrivate', !form.isPrivate)}
-                  className="flex w-full items-center justify-between gap-3 border border-white/10 p-4 text-left"
+                  className="flex w-full items-center justify-between gap-3 border border-[#0ea5e9] p-4 text-left"
                 >
                   <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">
+                    <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">
                       {form.isPrivate ? 'Private profile' : 'Public profile'}
                     </span>
-                    <span className="text-xs leading-5 text-white/70">
+                    <span className="text-xs leading-5 text-black/70">
                       {form.isPrivate
                         ? 'Only approved followers can inspect your collections.'
                         : 'Anyone can inspect your collections and profile activity.'}
                     </span>
                   </div>
 
-                  <span
-                    className="flex h-6 w-11 border border-white/20 p-0.5"
-                    aria-hidden="true"
-                  >
+                  <span className="flex h-6 w-11 border border-[#38bdf8] p-0.5" aria-hidden="true">
                     <span
                       className={cn(
-                        'h-full w-5  transition-transform',
-                        form.isPrivate ? 'translate-x-5' : 'translate-x-0 '
+                        'h-full w-5 transition-transform',
+                        form.isPrivate ? 'translate-x-5' : 'translate-x-0'
                       )}
                     />
                   </span>
@@ -367,9 +296,8 @@ export default function AccountEditView(props) {
                   title="Enable Password Sign-In"
                   description="Set a password to unlock email updates and sensitive account operations."
                 >
-                  <div className="border border-white/8 p-4 text-sm leading-6 text-white">
-                    Email/password sign-in is not linked yet. Complete the set
-                    password flow below to continue.
+                  <div className="border border-[#0ea5e9] p-4 text-sm leading-6 text-[#0f172a]">
+                    Email/password sign-in is not linked yet. Complete the set password flow below to continue.
                   </div>
                 </SectionCard>
               ) : null}
@@ -476,11 +404,7 @@ export default function AccountEditView(props) {
 
                 <ActionButton
                   type="button"
-                  onClick={
-                    isPasswordLinked
-                      ? handleCompletePasswordChange
-                      : handleSetPassword
-                  }
+                  onClick={isPasswordLinked ? handleCompletePasswordChange : handleSetPassword}
                   disabled={passwordFlow.isSubmitting}
                   className="w-full sm:w-fit"
                 >
@@ -547,5 +471,5 @@ export default function AccountEditView(props) {
         </div>
       </main>
     </>
-  )
+  );
 }

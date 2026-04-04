@@ -1,20 +1,16 @@
 const BASE_HEADERS: Record<string, string> = {
-  "Cache-Control": "no-store",
-  "Content-Type": "application/json",
-}
+  'Cache-Control': 'no-store',
+  'Content-Type': 'application/json',
+};
 
-export function jsonResponse(
-  status: number,
-  payload: unknown,
-  extraHeaders: Record<string, string> = {}
-): Response {
+export function jsonResponse(status: number, payload: unknown, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       ...BASE_HEADERS,
       ...extraHeaders,
     },
-  })
+  });
 }
 
 export function errorResponse(
@@ -30,5 +26,5 @@ export function errorResponse(
       ...extraPayload,
     },
     extraHeaders
-  )
+  );
 }

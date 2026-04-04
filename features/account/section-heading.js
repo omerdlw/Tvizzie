@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
+import Link from 'next/link';
 
-import Icon from '@/ui/icon'
+import Icon from '@/ui/icon';
 
 export default function AccountSectionHeading({
   action = null,
@@ -14,10 +14,8 @@ export default function AccountSectionHeading({
   title,
   titleHref = null,
 }) {
-  const titleClassName =
-    'text-xs font-semibold tracking-widest uppercase text-white/70 hover:text-white hover:underline hover:cursor-pointer transition'
-  const summaryClassName =
-    'text-xs font-semibold tracking-widest text-white/50 uppercase hover:text-white/70'
+  const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-black/70    transition';
+  const summaryClassName = 'text-xs font-semibold tracking-widest text-[#475569] uppercase ';
 
   return (
     <div className={`flex w-full flex-col gap-6 ${className}`}>
@@ -29,9 +27,7 @@ export default function AccountSectionHeading({
               {title}
             </Link>
           ) : (
-            <h2 className={titleClassName}>
-              {title}
-            </h2>
+            <h2 className={titleClassName}>{title}</h2>
           )}
         </div>
         <div className="flex shrink-0 items-center justify-end gap-3 text-right">
@@ -45,16 +41,14 @@ export default function AccountSectionHeading({
 
           {action}
           {showSeeMore && titleHref ? (
-            <Link
-              href={titleHref}
-              className={summaryClassName}>
+            <Link href={titleHref} className={summaryClassName}>
               See more
             </Link>
           ) : null}
         </div>
       </div>
 
-      {showDivider ? <div className="h-px bg-white/10" /> : null}
+      {showDivider ? <div className="h-px bg-[#bfdbfe]" /> : null}
     </div>
-  )
+  );
 }

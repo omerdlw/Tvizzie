@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 
 import {
   STEP_UP_COOKIE_NAME,
@@ -7,66 +7,62 @@ import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server'
+} from '@/core/auth/servers/session/session.server';
 
-const PURPOSE_SEPARATOR = ':'
+const PURPOSE_SEPARATOR = ':';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizePurpose(value) {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 function warnFallbackSecret() {
-  const key = '__tvizzie_step_up_secret_fallback_warned__'
+  const key = '__tvizzie_step_up_secret_fallback_warned__';
 
   if (globalThis[key]) {
-    return
+    return;
   }
 
-  globalThis[key] = true
+  globalThis[key] = true;
   console.warn(
     '[Auth] STEP_UP_SECRET is missing. Falling back to EMAIL_VERIFICATION_SECRET. Configure STEP_UP_SECRET explicitly.'
-  )
+  );
 }
 
 function getSecret() {
-  const secret = normalizeValue(process.env.STEP_UP_SECRET)
+  const secret = normalizeValue(process.env.STEP_UP_SECRET);
 
   if (secret) {
-    return secret
+    return secret;
   }
 
-  const fallbackSecret = normalizeValue(process.env.EMAIL_VERIFICATION_SECRET)
+  const fallbackSecret = normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
 
   if (!fallbackSecret) {
-    throw new Error(
-      'STEP_UP_SECRET is missing on the server and EMAIL_VERIFICATION_SECRET fallback is unavailable'
-    )
+    throw new Error('STEP_UP_SECRET is missing on the server and EMAIL_VERIFICATION_SECRET fallback is unavailable');
   }
 
-  warnFallbackSecret()
-  return fallbackSecret
+  warnFallbackSecret();
+  return fallbackSecret;
 }
 
 function signPayload(encodedPayload) {
-  return createHmac('sha256', getSecret())
-    .update(encodedPayload)
-    .digest('base64url')
+  return createHmac('sha256', getSecret()).update(encodedPayload).digest('base64url');
 }
 
 function encodePayload(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString('base64url')
+  return Buffer.from(JSON.stringify(payload)).toString('base64url');
 }
 
 function decodePayload(value) {
-  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'))
+  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
 }
 
 export function createStepUpToken({
@@ -76,12 +72,12 @@ export function createStepUpToken({
   userId,
   expiresAt = Date.now() + STEP_UP_MAX_AGE_MS,
 }) {
-  const normalizedPurpose = normalizePurpose(purpose)
-  const normalizedUserId = normalizeValue(userId)
-  const normalizedEmail = normalizeEmail(email)
+  const normalizedPurpose = normalizePurpose(purpose);
+  const normalizedUserId = normalizeValue(userId);
+  const normalizedEmail = normalizeEmail(email);
 
   if (!normalizedPurpose || !normalizedUserId) {
-    throw new Error('Step-up purpose and userId are required')
+    throw new Error('Step-up purpose and userId are required');
   }
 
   const payload = {
@@ -90,45 +86,42 @@ export function createStepUpToken({
     email: normalizedEmail || null,
     purpose: normalizedPurpose,
     userId: normalizedUserId,
-  }
+  };
 
-  const encodedPayload = encodePayload(payload)
-  const signature = signPayload(encodedPayload)
+  const encodedPayload = encodePayload(payload);
+  const signature = signPayload(encodedPayload);
 
-  return `${encodedPayload}.${signature}`
+  return `${encodedPayload}.${signature}`;
 }
 
 export function verifyStepUpToken(token) {
-  const normalizedToken = normalizeValue(token)
-  const [encodedPayload, signature] = normalizedToken.split('.')
+  const normalizedToken = normalizeValue(token);
+  const [encodedPayload, signature] = normalizedToken.split('.');
 
   if (!encodedPayload || !signature) {
-    throw new Error('Invalid step-up token')
+    throw new Error('Invalid step-up token');
   }
 
-  const expectedSignature = signPayload(encodedPayload)
-  const expectedBuffer = Buffer.from(expectedSignature)
-  const receivedBuffer = Buffer.from(signature)
+  const expectedSignature = signPayload(encodedPayload);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const receivedBuffer = Buffer.from(signature);
 
-  if (
-    expectedBuffer.length !== receivedBuffer.length ||
-    !timingSafeEqual(expectedBuffer, receivedBuffer)
-  ) {
-    throw new Error('Invalid step-up token')
+  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
+    throw new Error('Invalid step-up token');
   }
 
-  let payload = null
+  let payload = null;
 
   try {
-    payload = decodePayload(encodedPayload)
+    payload = decodePayload(encodedPayload);
   } catch {
-    throw new Error('Invalid step-up token')
+    throw new Error('Invalid step-up token');
   }
 
-  const expiresAtMs = Number(payload?.exp) * 1000
+  const expiresAtMs = Number(payload?.exp) * 1000;
 
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
-    throw new Error('Step-up verification expired')
+    throw new Error('Step-up verification expired');
   }
 
   return {
@@ -137,52 +130,52 @@ export function verifyStepUpToken(token) {
     expiresAt: new Date(expiresAtMs).toISOString(),
     purpose: normalizePurpose(payload?.purpose),
     userId: normalizeValue(payload?.userId) || null,
-  }
+  };
 }
 
 export function readStepUpFromRequest(request) {
-  const token = getCookieValue(request, STEP_UP_COOKIE_NAME)
+  const token = getCookieValue(request, STEP_UP_COOKIE_NAME);
 
   if (!token) {
-    return null
+    return null;
   }
 
-  return verifyStepUpToken(token)
+  return verifyStepUpToken(token);
 }
 
 export function listStepUpPurposes(stepUpPayload = null) {
-  const purpose = normalizePurpose(stepUpPayload?.purpose)
-  return purpose ? [purpose] : []
+  const purpose = normalizePurpose(stepUpPayload?.purpose);
+  return purpose ? [purpose] : [];
 }
 
 export function assertStepUp(request, { purpose, userId, email = null }) {
-  const stepUp = readStepUpFromRequest(request)
-  const expectedPurpose = normalizePurpose(purpose)
-  const expectedUserId = normalizeValue(userId)
-  const expectedEmail = normalizeEmail(email)
+  const stepUp = readStepUpFromRequest(request);
+  const expectedPurpose = normalizePurpose(purpose);
+  const expectedUserId = normalizeValue(userId);
+  const expectedEmail = normalizeEmail(email);
 
   if (!stepUp) {
-    throw new Error('Step-up verification is required')
+    throw new Error('Step-up verification is required');
   }
 
   if (stepUp.userId !== expectedUserId) {
-    throw new Error('Step-up verification is invalid')
+    throw new Error('Step-up verification is invalid');
   }
 
   const purposeList = stepUp.purpose
     .split(PURPOSE_SEPARATOR)
     .map((item) => normalizePurpose(item))
-    .filter(Boolean)
+    .filter(Boolean);
 
   if (!purposeList.includes(expectedPurpose)) {
-    throw new Error('Step-up verification is invalid')
+    throw new Error('Step-up verification is invalid');
   }
 
   if (expectedEmail && stepUp.email !== expectedEmail) {
-    throw new Error('Step-up verification is invalid')
+    throw new Error('Step-up verification is invalid');
   }
 
-  return stepUp
+  return stepUp;
 }
 
 export function setStepUpCookie(response, token) {
@@ -192,7 +185,7 @@ export function setStepUpCookie(response, token) {
     path: AUTH_COOKIE_PATH,
     sameSite: 'strict',
     secure: isSecureCookieEnvironment(),
-  })
+  });
 }
 
 export function clearStepUpCookie(response) {
@@ -202,5 +195,5 @@ export function clearStepUpCookie(response) {
     path: AUTH_COOKIE_PATH,
     sameSite: 'strict',
     secure: isSecureCookieEnvironment(),
-  })
+  });
 }

@@ -1,19 +1,14 @@
-'use client'
+'use client';
 
-import { forwardRef, useMemo, useState } from 'react'
+import { forwardRef, useMemo, useState } from 'react';
 
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { Check, ChevronDown } from 'lucide-react'
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { Check, ChevronDown } from 'lucide-react';
 
-import { Z_INDEX } from '@/core/constants'
+import { Z_INDEX } from '@/core/constants';
 
-import Input from '../input'
-import {
-  cn,
-  filterOptions,
-  resolveNestedClassName,
-  resolveSlotClasses,
-} from '../utils'
+import Input from '../input';
+import { cn, filterOptions, resolveNestedClassName, resolveSlotClasses } from '../utils';
 
 const SearchableSelect = forwardRef(
   (
@@ -31,26 +26,22 @@ const SearchableSelect = forwardRef(
     },
     ref
   ) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [searchQuery, setSearchQuery] = useState('')
-    const classes = resolveSlotClasses(className, classNames)
-    const inputClassName = resolveNestedClassName(
-      classes,
-      'input',
-      externalClasses.input || {}
-    )
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const classes = resolveSlotClasses(className, classNames);
+    const inputClassName = resolveNestedClassName(classes, 'input', externalClasses.input || {});
 
-    const selectedOption = options.find((opt) => opt.value === value)
+    const selectedOption = options.find((opt) => opt.value === value);
 
     const filteredOptions = useMemo(() => {
-      return filterOptions(options, searchQuery, filterFn)
-    }, [options, searchQuery, filterFn])
+      return filterOptions(options, searchQuery, filterFn);
+    }, [options, searchQuery, filterFn]);
 
     const handleSelect = (selectedValue) => {
-      onChange?.(selectedValue)
-      setIsOpen(false)
-      setSearchQuery('')
-    }
+      onChange?.(selectedValue);
+      setIsOpen(false);
+      setSearchQuery('');
+    };
 
     return (
       <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -67,11 +58,7 @@ const SearchableSelect = forwardRef(
         </PopoverPrimitive.Trigger>
 
         <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content
-            className={cn(classes.menu)}
-            align="start"
-            style={{ zIndex: Z_INDEX.SELECT }}
-          >
+          <PopoverPrimitive.Content className={cn(classes.menu)} align="start" style={{ zIndex: Z_INDEX.SELECT }}>
             <div className={cn(classes.searchWrapper)}>
               <Input
                 type="text"
@@ -98,9 +85,7 @@ const SearchableSelect = forwardRef(
                     )}
                   >
                     <span>{option.label}</span>
-                    {value === option.value && (
-                      <Check size={16} className={cn(classes.indicator)} />
-                    )}
+                    {value === option.value && <Check size={16} className={cn(classes.indicator)} />}
                   </div>
                 ))
               )}
@@ -108,10 +93,10 @@ const SearchableSelect = forwardRef(
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
-    )
+    );
   }
-)
+);
 
-SearchableSelect.displayName = 'SearchableSelect'
+SearchableSelect.displayName = 'SearchableSelect';
 
-export default SearchableSelect
+export default SearchableSelect;

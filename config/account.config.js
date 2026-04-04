@@ -1,8 +1,5 @@
-import {
-  clearPendingAccountBootstrap,
-  getPendingAccountBootstrap,
-} from '@/core/auth/clients/pending-account.client'
-import { createAccountAdapter, createAccountClient } from '@/core/modules/account'
+import { clearPendingAccountBootstrap, getPendingAccountBootstrap } from '@/core/auth/clients/pending-account.client';
+import { createAccountAdapter, createAccountClient } from '@/core/modules/account';
 import {
   ensureUserAccount,
   getUserAccount,
@@ -14,32 +11,30 @@ import {
   syncUserAccountEmail,
   updateUserAccount,
   validateUsername,
-} from '@/core/services/account/account.service'
+} from '@/core/services/account/account.service';
 
 function isFreshEmailPasswordSession(user) {
-  const providerIds = Array.isArray(user?.metadata?.providerIds)
-    ? user.metadata.providerIds
-    : []
-  const createdAt = Date.parse(user?.metadata?.creationTime || '')
-  const lastSignInAt = Date.parse(user?.metadata?.lastSignInTime || '')
+  const providerIds = Array.isArray(user?.metadata?.providerIds) ? user.metadata.providerIds : [];
+  const createdAt = Date.parse(user?.metadata?.creationTime || '');
+  const lastSignInAt = Date.parse(user?.metadata?.lastSignInTime || '');
 
   if (!providerIds.includes('password')) {
-    return false
+    return false;
   }
 
   if (Number.isNaN(createdAt) || Number.isNaN(lastSignInAt)) {
-    return false
+    return false;
   }
 
-  return Math.abs(lastSignInAt - createdAt) <= 60 * 1000
+  return Math.abs(lastSignInAt - createdAt) <= 60 * 1000;
 }
 
 function resolveBootstrapPayload(user = null) {
   if (!isFreshEmailPasswordSession(user)) {
-    return null
+    return null;
   }
 
-  return getPendingAccountBootstrap(user)
+  return getPendingAccountBootstrap(user);
 }
 
 export const ACCOUNT_ADAPTER = createAccountAdapter({
@@ -53,9 +48,9 @@ export const ACCOUNT_ADAPTER = createAccountAdapter({
   syncAccountEmail: syncUserAccountEmail,
   updateAccount: updateUserAccount,
   validateUsername,
-})
+});
 
-export const ACCOUNT_CLIENT = createAccountClient(ACCOUNT_ADAPTER)
+export const ACCOUNT_CLIENT = createAccountClient(ACCOUNT_ADAPTER);
 
 export const ACCOUNT_CONFIG = {
   adapter: ACCOUNT_ADAPTER,
@@ -65,4 +60,4 @@ export const ACCOUNT_CONFIG = {
     clearPayload: clearPendingAccountBootstrap,
     resolvePayload: resolveBootstrapPayload,
   },
-}
+};

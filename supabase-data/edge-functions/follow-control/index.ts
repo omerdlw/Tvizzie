@@ -1,91 +1,81 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
-import { assertMethod, errorResponse, jsonResponse, mapErrorToStatus, readJsonBody } from "../_shared/http.ts"
-import { assertInternalAccess } from "../_shared/internal.ts"
-import { normalizeValue } from "../_shared/normalize.ts"
-import { createAdminClient } from "../_shared/supabase.ts"
+import { assertMethod, errorResponse, jsonResponse, mapErrorToStatus, readJsonBody } from '../_shared/http.ts';
+import { assertInternalAccess } from '../_shared/internal.ts';
+import { normalizeValue } from '../_shared/normalize.ts';
+import { createAdminClient } from '../_shared/supabase.ts';
 
-type FollowAction =
-  | "follow"
-  | "accept"
-  | "reject"
-  | "unfollow"
-  | "cancel-request"
-  | "remove-follower"
+type FollowAction = 'follow' | 'accept' | 'reject' | 'unfollow' | 'cancel-request' | 'remove-follower';
 
 type FollowControlRequest = {
-  action?: FollowAction
-  actorUserId?: string
-  requesterId?: string
-  targetUserId?: string
-}
+  action?: FollowAction;
+  actorUserId?: string;
+  requesterId?: string;
+  targetUserId?: string;
+};
 
 type ProfileRow = {
-  avatar_url: string | null
-  display_name: string | null
-  id: string
-  is_private: boolean | null
-  username: string | null
-}
+  avatar_url: string | null;
+  display_name: string | null;
+  id: string;
+  is_private: boolean | null;
+  username: string | null;
+};
 
-const FOLLOW_STATUS_PENDING = "pending"
-const FOLLOW_STATUS_ACCEPTED = "accepted"
-const FOLLOW_STATUS_REJECTED = "rejected"
+const FOLLOW_STATUS_PENDING = 'pending';
+const FOLLOW_STATUS_ACCEPTED = 'accepted';
+const FOLLOW_STATUS_REJECTED = 'rejected';
 
-const NOTIFICATION_FOLLOW_REQUEST = "FOLLOW_REQUEST"
-const NOTIFICATION_FOLLOW_ACCEPTED = "FOLLOW_ACCEPTED"
-const NOTIFICATION_NEW_FOLLOWER = "NEW_FOLLOWER"
+const NOTIFICATION_FOLLOW_REQUEST = 'FOLLOW_REQUEST';
+const NOTIFICATION_FOLLOW_ACCEPTED = 'FOLLOW_ACCEPTED';
+const NOTIFICATION_NEW_FOLLOWER = 'NEW_FOLLOWER';
 
-const ACTIVITY_EVENT_FOLLOW_CREATED = "FOLLOW_CREATED"
+const ACTIVITY_EVENT_FOLLOW_CREATED = 'FOLLOW_CREATED';
 
 function normalizeAction(value: unknown): FollowAction {
-  const action = normalizeValue(value).toLowerCase()
+  const action = normalizeValue(value).toLowerCase();
 
   if (
-    action === "follow" ||
-    action === "accept" ||
-    action === "reject" ||
-    action === "unfollow" ||
-    action === "cancel-request" ||
-    action === "remove-follower"
+    action === 'follow' ||
+    action === 'accept' ||
+    action === 'reject' ||
+    action === 'unfollow' ||
+    action === 'cancel-request' ||
+    action === 'remove-follower'
   ) {
-    return action
+    return action;
   }
 
-  throw new Error("Invalid follow action")
+  throw new Error('Invalid follow action');
 }
 
 async function getProfile(admin: ReturnType<typeof createAdminClient>, userId: string) {
   const result = await admin
-    .from("profiles")
-    .select("avatar_url,display_name,id,is_private,username")
-    .eq("id", userId)
-    .maybeSingle()
+    .from('profiles')
+    .select('avatar_url,display_name,id,is_private,username')
+    .eq('id', userId)
+    .maybeSingle();
 
   if (result.error) {
-    throw new Error(result.error.message || "Profile could not be loaded")
+    throw new Error(result.error.message || 'Profile could not be loaded');
   }
 
-  return (result.data || null) as ProfileRow | null
+  return (result.data || null) as ProfileRow | null;
 }
 
-async function getExistingFollow(
-  admin: ReturnType<typeof createAdminClient>,
-  followerId: string,
-  followingId: string
-) {
+async function getExistingFollow(admin: ReturnType<typeof createAdminClient>, followerId: string, followingId: string) {
   const result = await admin
-    .from("follows")
-    .select("created_at,status")
-    .eq("follower_id", followerId)
-    .eq("following_id", followingId)
-    .maybeSingle()
+    .from('follows')
+    .select('created_at,status')
+    .eq('follower_id', followerId)
+    .eq('following_id', followingId)
+    .maybeSingle();
 
   if (result.error) {
-    throw new Error(result.error.message || "Follow relationship could not be loaded")
+    throw new Error(result.error.message || 'Follow relationship could not be loaded');
   }
 
-  return result.data || null
+  return result.data || null;
 }
 
 async function saveFollowRelationship(
@@ -98,49 +88,46 @@ async function saveFollowRelationship(
     status,
     createdAt,
   }: {
-    followerId: string
-    followerProfile: ProfileRow
-    followingId: string
-    followingProfile: ProfileRow
-    status: string
-    createdAt?: string | null
+    followerId: string;
+    followerProfile: ProfileRow;
+    followingId: string;
+    followingProfile: ProfileRow;
+    status: string;
+    createdAt?: string | null;
   }
 ) {
-  const nowIso = new Date().toISOString()
-  const existing = await getExistingFollow(admin, followerId, followingId)
+  const nowIso = new Date().toISOString();
+  const existing = await getExistingFollow(admin, followerId, followingId);
   const payload = {
     follower_avatar_url: followerProfile.avatar_url || null,
-    follower_display_name: followerProfile.display_name || "Anonymous User",
+    follower_display_name: followerProfile.display_name || 'Anonymous User',
     follower_username: followerProfile.username || null,
     following_avatar_url: followingProfile.avatar_url || null,
-    following_display_name: followingProfile.display_name || "Anonymous User",
+    following_display_name: followingProfile.display_name || 'Anonymous User',
     following_username: followingProfile.username || null,
-    responded_at:
-      status === FOLLOW_STATUS_ACCEPTED || status === FOLLOW_STATUS_REJECTED
-        ? nowIso
-        : null,
+    responded_at: status === FOLLOW_STATUS_ACCEPTED || status === FOLLOW_STATUS_REJECTED ? nowIso : null,
     status,
     updated_at: nowIso,
-  }
+  };
 
   const result = existing
     ? await admin
-        .from("follows")
+        .from('follows')
         .update({
           ...payload,
           created_at: normalizeValue(createdAt || existing.created_at) || nowIso,
         })
-        .eq("follower_id", followerId)
-        .eq("following_id", followingId)
-    : await admin.from("follows").insert({
+        .eq('follower_id', followerId)
+        .eq('following_id', followingId)
+    : await admin.from('follows').insert({
         ...payload,
         created_at: nowIso,
         follower_id: followerId,
         following_id: followingId,
-      })
+      });
 
   if (result.error) {
-    throw new Error(result.error.message || "Follow relationship could not be saved")
+    throw new Error(result.error.message || 'Follow relationship could not be saved');
   }
 }
 
@@ -149,28 +136,20 @@ async function deleteFollowRelationship(
   followerId: string,
   followingId: string
 ) {
-  const result = await admin
-    .from("follows")
-    .delete()
-    .eq("follower_id", followerId)
-    .eq("following_id", followingId)
+  const result = await admin.from('follows').delete().eq('follower_id', followerId).eq('following_id', followingId);
 
   if (result.error) {
-    throw new Error(result.error.message || "Follow relationship could not be deleted")
+    throw new Error(result.error.message || 'Follow relationship could not be deleted');
   }
 }
 
 function resolveActivitySubjectId(payload: Record<string, unknown>) {
   const subject =
-    payload.subject && typeof payload.subject === "object"
-      ? (payload.subject as Record<string, unknown>)
-      : {}
+    payload.subject && typeof payload.subject === 'object' ? (payload.subject as Record<string, unknown>) : {};
   const nestedPayload =
-    payload.payload && typeof payload.payload === "object"
-      ? (payload.payload as Record<string, unknown>)
-      : {}
+    payload.payload && typeof payload.payload === 'object' ? (payload.payload as Record<string, unknown>) : {};
 
-  return normalizeValue(subject.id || nestedPayload.subjectId || nestedPayload.followingId)
+  return normalizeValue(subject.id || nestedPayload.subjectId || nestedPayload.followingId);
 }
 
 async function deleteFollowActivityEntries(
@@ -179,41 +158,39 @@ async function deleteFollowActivityEntries(
     followerId,
     followingId,
   }: {
-    followerId: string
-    followingId: string
+    followerId: string;
+    followingId: string;
   }
 ) {
   const result = await admin
-    .from("activity")
-    .select("id,payload")
-    .eq("user_id", followerId)
-    .eq("event_type", ACTIVITY_EVENT_FOLLOW_CREATED)
-    .order("created_at", { ascending: false })
-    .limit(50)
+    .from('activity')
+    .select('id,payload')
+    .eq('user_id', followerId)
+    .eq('event_type', ACTIVITY_EVENT_FOLLOW_CREATED)
+    .order('created_at', { ascending: false })
+    .limit(50);
 
   if (result.error) {
-    throw new Error(result.error.message || "Follow activity could not be loaded")
+    throw new Error(result.error.message || 'Follow activity could not be loaded');
   }
 
   const activityIds = (result.data || [])
     .filter((row) => {
-      const payload = row.payload && typeof row.payload === "object"
-        ? (row.payload as Record<string, unknown>)
-        : {}
+      const payload = row.payload && typeof row.payload === 'object' ? (row.payload as Record<string, unknown>) : {};
 
-      return resolveActivitySubjectId(payload) === followingId
+      return resolveActivitySubjectId(payload) === followingId;
     })
     .map((row) => row.id)
-    .filter(Boolean)
+    .filter(Boolean);
 
   if (activityIds.length === 0) {
-    return
+    return;
   }
 
-  const deleteResult = await admin.from("activity").delete().in("id", activityIds)
+  const deleteResult = await admin.from('activity').delete().in('id', activityIds);
 
   if (deleteResult.error) {
-    throw new Error(deleteResult.error.message || "Follow activity could not be deleted")
+    throw new Error(deleteResult.error.message || 'Follow activity could not be deleted');
   }
 }
 
@@ -225,18 +202,18 @@ async function createAcceptedFollowActivity(
     subjectUserId,
     subjectProfile,
   }: {
-    actorUserId: string
-    actorProfile: ProfileRow
-    subjectUserId: string
-    subjectProfile: ProfileRow
+    actorUserId: string;
+    actorProfile: ProfileRow;
+    subjectUserId: string;
+    subjectProfile: ProfileRow;
   }
 ) {
-  const nowIso = new Date().toISOString()
-  const dedupeKey = `follow-created:${subjectUserId}:accepted`
+  const nowIso = new Date().toISOString();
+  const dedupeKey = `follow-created:${subjectUserId}:accepted`;
   const payload = {
     actor: {
       avatarUrl: actorProfile.avatar_url || null,
-      displayName: actorProfile.display_name || "Someone",
+      displayName: actorProfile.display_name || 'Someone',
       id: actorUserId,
       username: actorProfile.username || null,
     },
@@ -244,9 +221,9 @@ async function createAcceptedFollowActivity(
     payload: {
       dedupeKey,
       status: FOLLOW_STATUS_ACCEPTED,
-      subjectDisplayName: subjectProfile.display_name || subjectProfile.username || "Account",
+      subjectDisplayName: subjectProfile.display_name || subjectProfile.username || 'Account',
       subjectId: subjectUserId,
-      subjectType: "user",
+      subjectType: 'user',
       subjectUsername: subjectProfile.username || null,
     },
     subject: {
@@ -256,53 +233,53 @@ async function createAcceptedFollowActivity(
       ownerUsername: subjectProfile.username || null,
       poster: null,
       slug: null,
-      title: subjectProfile.display_name || subjectProfile.username || "Account",
-      type: "user",
+      title: subjectProfile.display_name || subjectProfile.username || 'Account',
+      type: 'user',
     },
-    visibility: actorProfile.is_private === true ? "followers" : "public",
-  }
+    visibility: actorProfile.is_private === true ? 'followers' : 'public',
+  };
 
   const existing = await admin
-    .from("activity")
-    .select("id")
-    .eq("user_id", actorUserId)
-    .eq("dedupe_key", dedupeKey)
-    .maybeSingle()
+    .from('activity')
+    .select('id')
+    .eq('user_id', actorUserId)
+    .eq('dedupe_key', dedupeKey)
+    .maybeSingle();
 
   if (existing.error) {
-    throw new Error(existing.error.message || "Activity could not be loaded")
+    throw new Error(existing.error.message || 'Activity could not be loaded');
   }
 
   const result = existing.data
     ? await admin
-        .from("activity")
+        .from('activity')
         .update({
           dedupe_key: dedupeKey,
           event_type: ACTIVITY_EVENT_FOLLOW_CREATED,
           payload,
           updated_at: nowIso,
         })
-        .eq("id", existing.data.id)
-    : await admin.from("activity").insert({
+        .eq('id', existing.data.id)
+    : await admin.from('activity').insert({
         created_at: nowIso,
         dedupe_key: dedupeKey,
         event_type: ACTIVITY_EVENT_FOLLOW_CREATED,
         payload,
         updated_at: nowIso,
         user_id: actorUserId,
-      })
+      });
 
   if (result.error) {
-    throw new Error(result.error.message || "Activity could not be saved")
+    throw new Error(result.error.message || 'Activity could not be saved');
   }
 
   await admin
-    .from("profiles")
+    .from('profiles')
     .update({
       last_activity_at: nowIso,
       updated_at: nowIso,
     })
-    .eq("id", actorUserId)
+    .eq('id', actorUserId);
 }
 
 async function createFollowNotification(
@@ -315,46 +292,44 @@ async function createFollowNotification(
     href,
     metadata,
   }: {
-    actorUserId: string
-    actorProfile: ProfileRow
-    recipientUserId: string
-    eventType: string
-    href: string | null
-    metadata: Record<string, unknown>
+    actorUserId: string;
+    actorProfile: ProfileRow;
+    recipientUserId: string;
+    eventType: string;
+    href: string | null;
+    metadata: Record<string, unknown>;
   }
 ) {
   if (!recipientUserId || recipientUserId === actorUserId) {
-    return
+    return;
   }
 
-  const nowIso = new Date().toISOString()
+  const nowIso = new Date().toISOString();
   const actor = {
     avatarUrl: actorProfile.avatar_url || null,
-    displayName: actorProfile.display_name || "Someone",
+    displayName: actorProfile.display_name || 'Someone',
     id: actorUserId,
     username: actorProfile.username || null,
-  }
+  };
 
-  const result = await admin
-    .from("notifications")
-    .insert({
-      actor_user_id: actorUserId,
-      body: "",
-      created_at: nowIso,
-      event_type: eventType,
-      href,
-      metadata: {
-        actor,
-        payload: metadata,
-      },
-      read: false,
-      title: `${actor.displayName} sent an update`,
-      updated_at: nowIso,
-      user_id: recipientUserId,
-    })
+  const result = await admin.from('notifications').insert({
+    actor_user_id: actorUserId,
+    body: '',
+    created_at: nowIso,
+    event_type: eventType,
+    href,
+    metadata: {
+      actor,
+      payload: metadata,
+    },
+    read: false,
+    title: `${actor.displayName} sent an update`,
+    updated_at: nowIso,
+    user_id: recipientUserId,
+  });
 
   if (result.error) {
-    throw new Error(result.error.message || "Notification could not be created")
+    throw new Error(result.error.message || 'Notification could not be created');
   }
 }
 
@@ -364,30 +339,28 @@ async function runFollow(
     actorUserId,
     targetUserId,
   }: {
-    actorUserId: string
-    targetUserId: string
+    actorUserId: string;
+    targetUserId: string;
   }
 ) {
   if (!targetUserId) {
-    throw new Error("targetUserId is required")
+    throw new Error('targetUserId is required');
   }
 
   if (actorUserId === targetUserId) {
-    throw new Error("You cannot follow yourself")
+    throw new Error('You cannot follow yourself');
   }
 
   const [actorProfile, targetProfile] = await Promise.all([
     getProfile(admin, actorUserId),
     getProfile(admin, targetUserId),
-  ])
+  ]);
 
   if (!actorProfile || !targetProfile) {
-    throw new Error("Account not found")
+    throw new Error('Account not found');
   }
 
-  const status = targetProfile.is_private === true
-    ? FOLLOW_STATUS_PENDING
-    : FOLLOW_STATUS_ACCEPTED
+  const status = targetProfile.is_private === true ? FOLLOW_STATUS_PENDING : FOLLOW_STATUS_ACCEPTED;
 
   await saveFollowRelationship(admin, {
     followerId: actorUserId,
@@ -395,15 +368,12 @@ async function runFollow(
     followingId: targetUserId,
     followingProfile: targetProfile,
     status,
-  })
+  });
 
   await createFollowNotification(admin, {
     actorProfile,
     actorUserId,
-    eventType:
-      status === FOLLOW_STATUS_PENDING
-        ? NOTIFICATION_FOLLOW_REQUEST
-        : NOTIFICATION_NEW_FOLLOWER,
+    eventType: status === FOLLOW_STATUS_PENDING ? NOTIFICATION_FOLLOW_REQUEST : NOTIFICATION_NEW_FOLLOWER,
     href: actorProfile.username ? `/account/${actorProfile.username}` : null,
     metadata: {
       followerId: actorUserId,
@@ -411,7 +381,7 @@ async function runFollow(
       status,
     },
     recipientUserId: targetUserId,
-  })
+  });
 
   if (status === FOLLOW_STATUS_ACCEPTED) {
     await createAcceptedFollowActivity(admin, {
@@ -419,18 +389,18 @@ async function runFollow(
       actorUserId,
       subjectProfile: targetProfile,
       subjectUserId: targetUserId,
-    })
+    });
   } else {
     await deleteFollowActivityEntries(admin, {
       followerId: actorUserId,
       followingId: targetUserId,
-    })
+    });
   }
 
   return {
     ok: true,
     status,
-  }
+  };
 }
 
 async function runResolveRequest(
@@ -440,29 +410,27 @@ async function runResolveRequest(
     actorUserId,
     requesterId,
   }: {
-    action: "accept" | "reject"
-    actorUserId: string
-    requesterId: string
+    action: 'accept' | 'reject';
+    actorUserId: string;
+    requesterId: string;
   }
 ) {
-  const existing = await getExistingFollow(admin, requesterId, actorUserId)
+  const existing = await getExistingFollow(admin, requesterId, actorUserId);
 
   if (!existing || normalizeValue(existing.status).toLowerCase() !== FOLLOW_STATUS_PENDING) {
-    throw new Error("Follow request has already been resolved")
+    throw new Error('Follow request has already been resolved');
   }
 
   const [requesterProfile, ownerProfile] = await Promise.all([
     getProfile(admin, requesterId),
     getProfile(admin, actorUserId),
-  ])
+  ]);
 
   if (!requesterProfile || !ownerProfile) {
-    throw new Error("Account not found")
+    throw new Error('Account not found');
   }
 
-  const status = action === "accept"
-    ? FOLLOW_STATUS_ACCEPTED
-    : FOLLOW_STATUS_REJECTED
+  const status = action === 'accept' ? FOLLOW_STATUS_ACCEPTED : FOLLOW_STATUS_REJECTED;
 
   await saveFollowRelationship(admin, {
     createdAt: normalizeValue(existing.created_at) || null,
@@ -471,12 +439,12 @@ async function runResolveRequest(
     followingId: actorUserId,
     followingProfile: ownerProfile,
     status,
-  })
+  });
 
   await deleteFollowActivityEntries(admin, {
     followerId: requesterId,
     followingId: actorUserId,
-  })
+  });
 
   if (status === FOLLOW_STATUS_ACCEPTED) {
     await createAcceptedFollowActivity(admin, {
@@ -484,7 +452,7 @@ async function runResolveRequest(
       actorUserId: requesterId,
       subjectProfile: ownerProfile,
       subjectUserId: actorUserId,
-    })
+    });
 
     await createFollowNotification(admin, {
       actorProfile: ownerProfile,
@@ -496,13 +464,13 @@ async function runResolveRequest(
         requesterId,
       },
       recipientUserId: requesterId,
-    })
+    });
   }
 
   return {
     ok: true,
     status,
-  }
+  };
 }
 
 async function runDeleteFollow(
@@ -513,70 +481,70 @@ async function runDeleteFollow(
     requesterId,
     targetUserId,
   }: {
-    action: "unfollow" | "cancel-request" | "remove-follower"
-    actorUserId: string
-    requesterId: string | null
-    targetUserId: string | null
+    action: 'unfollow' | 'cancel-request' | 'remove-follower';
+    actorUserId: string;
+    requesterId: string | null;
+    targetUserId: string | null;
   }
 ) {
-  if (action === "remove-follower") {
-    const followerId = normalizeValue(requesterId)
+  if (action === 'remove-follower') {
+    const followerId = normalizeValue(requesterId);
 
     if (!followerId) {
-      throw new Error("requesterId is required")
+      throw new Error('requesterId is required');
     }
 
-    await deleteFollowRelationship(admin, followerId, actorUserId)
+    await deleteFollowRelationship(admin, followerId, actorUserId);
 
     return {
       ok: true,
-      status: "removed",
-    }
+      status: 'removed',
+    };
   }
 
-  const followingId = normalizeValue(targetUserId)
+  const followingId = normalizeValue(targetUserId);
 
   if (!followingId) {
-    throw new Error("targetUserId is required")
+    throw new Error('targetUserId is required');
   }
 
-  await deleteFollowRelationship(admin, actorUserId, followingId)
+  await deleteFollowRelationship(admin, actorUserId, followingId);
 
-  if (action === "cancel-request") {
+  if (action === 'cancel-request') {
     await deleteFollowActivityEntries(admin, {
       followerId: actorUserId,
       followingId,
-    })
+    });
   }
 
   return {
     ok: true,
-    status: "removed",
-  }
+    status: 'removed',
+  };
 }
 
 Deno.serve(async (request: Request) => {
   try {
-    assertMethod(request, ["POST"])
-    assertInternalAccess(request)
+    assertMethod(request, ['POST']);
+    assertInternalAccess(request);
 
-    const payload = await readJsonBody<FollowControlRequest>(request)
-    const action = normalizeAction(payload.action)
-    const actorUserId = normalizeValue(payload.actorUserId)
+    const payload = await readJsonBody<FollowControlRequest>(request);
+    const action = normalizeAction(payload.action);
+    const actorUserId = normalizeValue(payload.actorUserId);
 
     if (!actorUserId) {
-      throw new Error("actorUserId is required")
+      throw new Error('actorUserId is required');
     }
 
-    const admin = createAdminClient()
+    const admin = createAdminClient();
 
     const result =
-      action === "follow"
+      action === 'follow'
         ? await runFollow(admin, {
             actorUserId,
             targetUserId: normalizeValue(payload.targetUserId),
           })
-        : action === "accept" || action === "reject"
+        : action === 'accept' || action === 'reject'
           ? await runResolveRequest(admin, {
               action,
               actorUserId,
@@ -587,17 +555,17 @@ Deno.serve(async (request: Request) => {
               actorUserId,
               requesterId: normalizeValue(payload.requesterId) || null,
               targetUserId: normalizeValue(payload.targetUserId) || null,
-            })
+            });
 
-    return jsonResponse(200, result)
+    return jsonResponse(200, result);
   } catch (error) {
-    const status = mapErrorToStatus(error)
-    const message = normalizeValue((error as Error)?.message) || "follow-control failed"
+    const status = mapErrorToStatus(error);
+    const message = normalizeValue((error as Error)?.message) || 'follow-control failed';
 
     if (status === 405) {
-      return errorResponse(405, "Method not allowed")
+      return errorResponse(405, 'Method not allowed');
     }
 
-    return errorResponse(status, message)
+    return errorResponse(status, message);
   }
-})
+});

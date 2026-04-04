@@ -1,25 +1,21 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
-import Icon from '@/ui/icon'
+import Icon from '@/ui/icon';
 
-import { NAV_ACTION_STYLES, getNavActionClass } from './styles'
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 
-export default function NotFoundAction({
-  homeLabel = 'Return Home',
-  backLabel = 'Back',
-  className = '',
-}) {
-  const router = useRouter()
+export default function NotFoundAction({ homeLabel = 'Return Home', backLabel = 'Back', className = '' }) {
+  const router = useRouter();
 
-  const [canGoBack, setCanGoBack] = useState(false)
+  const [canGoBack, setCanGoBack] = useState(false);
 
   useEffect(() => {
-    setCanGoBack(window.history.length > 1)
-  }, [])
+    setCanGoBack(window.history.length > 1);
+  }, []);
 
   return (
     <div className={`${NAV_ACTION_STYLES.row} ${className}`.trim()}>
@@ -38,7 +34,7 @@ export default function NotFoundAction({
         <button
           type="button"
           onClick={() => {
-            router.back()
+            router.back();
           }}
           className={getNavActionClass({
             className: 'min-w-0 flex-1 whitespace-nowrap',
@@ -49,5 +45,5 @@ export default function NotFoundAction({
         </button>
       )}
     </div>
-  )
+  );
 }

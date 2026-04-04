@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants'
+import { DURATION, EASING } from '@/core/constants';
 
 export function RevealItem({
   children,
@@ -29,5 +29,5 @@ export function RevealItem({
     >
       {children}
     </motion.div>
-  )
+  );
 }

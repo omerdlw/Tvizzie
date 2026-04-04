@@ -1,36 +1,31 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server'
-import {
-  EMAIL_ACCOUNT_STATES,
-  resolveEmailAccountState,
-} from '@/core/auth/servers/account/account-state.server'
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
-import {
-  lookupPasswordAccountByEmail,
-} from '@/core/auth/servers/verification/password-account.server'
+} from '@/core/auth/servers/security/rate-limit.server';
+import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { lookupPasswordAccountByEmail } from '@/core/auth/servers/verification/password-account.server';
 
 const INTENTS = Object.freeze({
   PASSWORD_RESET: 'password-reset',
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
-})
+});
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizeIntent(value) {
-  const normalizedIntent = normalizeValue(value).toLowerCase()
+  const normalizedIntent = normalizeValue(value).toLowerCase();
 
   if (Object.values(INTENTS).includes(normalizedIntent)) {
-    return normalizedIntent
+    return normalizedIntent;
   }
 
-  return INTENTS.SIGN_IN
+  return INTENTS.SIGN_IN;
 }
 
 function createStatusPayload({
@@ -55,23 +50,20 @@ function createStatusPayload({
       : Array.isArray(lookup?.signInMethods)
         ? lookup.signInMethods
         : [],
-  }
+  };
 }
 
 function resolveLookupError(intent, code) {
   if (code === 'auth/user-not-found') {
     return {
       allowedIntent: intent === INTENTS.SIGN_UP ? INTENTS.SIGN_UP : null,
-      messageCode:
-        intent === INTENTS.SIGN_UP
-          ? 'SIGNUP_ALLOWED'
-          : 'ACCOUNT_NOT_FOUND',
+      messageCode: intent === INTENTS.SIGN_UP ? 'SIGNUP_ALLOWED' : 'ACCOUNT_NOT_FOUND',
       error:
         intent === INTENTS.SIGN_UP
           ? 'This email can be used to create a new account'
           : 'No account was found with this email address',
       status: intent === INTENTS.SIGN_UP ? 200 : 404,
-    }
+    };
   }
 
   if (code === 'auth/password-sign-in-disabled') {
@@ -83,7 +75,7 @@ function resolveLookupError(intent, code) {
           ? 'Password reset is not available for this account'
           : 'This account does not have email/password sign-in enabled',
       status: 409,
-    }
+    };
   }
 
   if (code === 'auth/password-reset-unavailable') {
@@ -92,7 +84,7 @@ function resolveLookupError(intent, code) {
       messageCode: 'PASSWORD_RESET_UNAVAILABLE',
       error: 'Password reset is not available for this account',
       status: 409,
-    }
+    };
   }
 
   return {
@@ -100,16 +92,16 @@ function resolveLookupError(intent, code) {
     messageCode: 'ACCOUNT_STATUS_UNRESOLVED',
     error: 'Account status could not be resolved',
     status: 500,
-  }
+  };
 }
 
 export async function POST(request) {
-  const requestContext = getRequestContext(request)
+  const requestContext = getRequestContext(request);
 
   try {
-    const body = await request.json().catch(() => ({}))
-    const email = normalizeValue(body?.email)
-    const intent = normalizeIntent(body?.intent)
+    const body = await request.json().catch(() => ({}));
+    const email = normalizeValue(body?.email);
+    const intent = normalizeIntent(body?.intent);
 
     await enforceSlidingWindowRateLimit({
       namespace: `auth:account:password-status:${intent}`,
@@ -120,21 +112,19 @@ export async function POST(request) {
         { id: 'device', value: requestContext.deviceId || 'unknown', limit: 25 },
       ],
       message: 'Too many account lookup requests',
-    })
+    });
 
     const lookup =
       intent === INTENTS.SIGN_UP
         ? null
         : await lookupPasswordAccountByEmail(email, {
             requireProfile: intent === INTENTS.PASSWORD_RESET,
-          })
+          });
 
     if (intent === INTENTS.SIGN_UP) {
-      const accountState = await resolveEmailAccountState(email)
+      const accountState = await resolveEmailAccountState(email);
 
-      if (
-        accountState.state === EMAIL_ACCOUNT_STATES.EXISTING_GOOGLE_ONLY
-      ) {
+      if (accountState.state === EMAIL_ACCOUNT_STATES.EXISTING_GOOGLE_ONLY) {
         return NextResponse.json(
           {
             ...createStatusPayload({
@@ -147,17 +137,13 @@ export async function POST(request) {
               messageCode: 'GOOGLE_ACCOUNT_EXISTS',
             }),
             code: 'SIGNUP_GOOGLE_ACCOUNT_EXISTS',
-            error:
-              'This email is already used by a Google-linked Tvizzie account. Continue with Google to sign in.',
+            error: 'This email is already used by a Google-linked Tvizzie account. Continue with Google to sign in.',
           },
           { status: 409 }
-        )
+        );
       }
 
-      if (
-        accountState.state ===
-        EMAIL_ACCOUNT_STATES.EXISTING_PASSWORD_ACCOUNT
-      ) {
+      if (accountState.state === EMAIL_ACCOUNT_STATES.EXISTING_PASSWORD_ACCOUNT) {
         return NextResponse.json(
           {
             ...createStatusPayload({
@@ -173,37 +159,31 @@ export async function POST(request) {
             error: 'This email address is already in use. Sign in instead.',
           },
           { status: 409 }
-        )
+        );
       }
 
       return NextResponse.json(
         createStatusPayload({
           email: accountState.email,
           lookup: accountState.lookup,
-          accountExists:
-            accountState.state ===
-            EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN,
+          accountExists: accountState.state === EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN,
           accountState: accountState.state,
-          passwordEnabled:
-            accountState.state ===
-            EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN,
+          passwordEnabled: accountState.state === EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN,
           allowedIntent: INTENTS.SIGN_UP,
           messageCode:
-            accountState.state ===
-            EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN
+            accountState.state === EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN
               ? 'SIGNUP_RECOVERY_ALLOWED'
               : 'SIGNUP_ALLOWED',
           signInMethods:
-            accountState.state ===
-            EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN
+            accountState.state === EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN
               ? accountState.lookup?.signInMethods
               : [],
         })
-      )
+      );
     }
 
     if (!lookup.eligible) {
-      const resolvedError = resolveLookupError(intent, lookup.code)
+      const resolvedError = resolveLookupError(intent, lookup.code);
 
       return NextResponse.json(
         {
@@ -221,7 +201,7 @@ export async function POST(request) {
           error: resolvedError.error,
         },
         { status: resolvedError.status }
-      )
+      );
     }
 
     return NextResponse.json(
@@ -231,22 +211,18 @@ export async function POST(request) {
         accountExists: Boolean(lookup.exists),
         accountState: null,
         passwordEnabled: Boolean(lookup.supportsPasswordAuth),
-        allowedIntent:
-          intent === INTENTS.PASSWORD_RESET ? INTENTS.PASSWORD_RESET : INTENTS.SIGN_IN,
-        messageCode:
-          intent === INTENTS.PASSWORD_RESET
-            ? 'PASSWORD_RESET_ALLOWED'
-            : 'SIGNIN_ALLOWED',
+        allowedIntent: intent === INTENTS.PASSWORD_RESET ? INTENTS.PASSWORD_RESET : INTENTS.SIGN_IN,
+        messageCode: intent === INTENTS.PASSWORD_RESET ? 'PASSWORD_RESET_ALLOWED' : 'SIGNIN_ALLOWED',
       })
-    )
+    );
   } catch (error) {
-    const message = String(error?.message || 'Account status could not be resolved')
+    const message = String(error?.message || 'Account status could not be resolved');
     const status = isSlidingWindowRateLimitError(error)
       ? 429
       : message.includes('Enter a valid email address')
         ? 400
-        : 500
+        : 500;
 
-    return NextResponse.json({ error: message }, { status })
+    return NextResponse.json({ error: message }, { status });
   }
 }

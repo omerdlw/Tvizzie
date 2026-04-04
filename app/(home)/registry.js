@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import SearchAction from '@/features/navigation/actions/search-action'
-import { DURATION, EASING, TMDB_IMG } from '@/core/constants'
-import { useRegistry } from '@/core/modules/registry'
+import SearchAction from '@/features/navigation/actions/search-action';
+import { DURATION, EASING, TMDB_IMG } from '@/core/constants';
+import { useRegistry } from '@/core/modules/registry';
 
 export default function Registry({ heroBackdropPath, isLoading = false }) {
   useRegistry({
@@ -28,7 +28,7 @@ export default function Registry({ heroBackdropPath, isLoading = false }) {
           },
         }
       : {}),
-  })
+  });
 
-  return null
+  return null;
 }

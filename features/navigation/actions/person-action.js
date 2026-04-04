@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import Icon from '@/ui/icon'
-import { getNavActionClass, NAV_ACTION_STYLES } from './styles'
+import Icon from '@/ui/icon';
+import { getNavActionClass, NAV_ACTION_STYLES } from './styles';
 
 export default function PersonAction({ activeView, setActiveView }) {
-  const toggle = (view) => setActiveView(activeView === view ? 'main' : view)
+  const toggle = (view) => setActiveView(activeView === view ? 'main' : view);
 
   return (
     <div className={NAV_ACTION_STYLES.row}>
@@ -23,10 +23,7 @@ export default function PersonAction({ activeView, setActiveView }) {
           </>
         ) : (
           <>
-            <Icon
-              icon="solar:sort-by-time-bold"
-              size={NAV_ACTION_STYLES.icon}
-            />
+            <Icon icon="solar:sort-by-time-bold" size={NAV_ACTION_STYLES.icon} />
             Timeline
           </>
         )}
@@ -53,5 +50,5 @@ export default function PersonAction({ activeView, setActiveView }) {
         )}
       </button>
     </div>
-  )
+  );
 }

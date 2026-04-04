@@ -1,97 +1,87 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 
-import Carousel from '@/features/shared/carousel'
-import MediaCard from '@/features/shared/media-card'
-import SegmentedControl from '@/features/shared/segmented-control'
-import { useModal } from '@/core/modules/modal/context'
-import Icon from '@/ui/icon'
+import Carousel from '@/features/shared/carousel';
+import MediaCard from '@/features/shared/media-card';
+import SegmentedControl from '@/features/shared/segmented-control';
+import { useModal } from '@/core/modules/modal/context';
+import Icon from '@/ui/icon';
 
 function getAvailableTypes(videos) {
-  return [...new Set((videos || []).map((video) => video.type).filter(Boolean))]
-}
-
-function getSegmentItems(types) {
-  return types.map((type) => ({
-    key: type,
-    label: type.endsWith('s') ? type : `${type}s`,
-  }))
+  return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
 }
 
 export default function VideosSection({ videos }) {
-  const { openModal } = useModal()
-  const availableTypes = useMemo(() => getAvailableTypes(videos), [videos])
-  const [activeType, setActiveType] = useState(() => availableTypes[0] || null)
+  const { openModal } = useModal();
+
+  const availableTypes = useMemo(() => getAvailableTypes(videos), [videos]);
+  const [activeType, setActiveType] = useState(null);
 
   useEffect(() => {
     if (!availableTypes.length) {
-      setActiveType(null)
-      return
+      setActiveType(null);
+      return;
     }
 
-    if (!availableTypes.includes(activeType)) {
-      setActiveType(availableTypes[0])
-    }
-  }, [activeType, availableTypes])
+    setActiveType((current) => (current && availableTypes.includes(current) ? current : availableTypes[0]));
+  }, [availableTypes]);
+
+  const items = useMemo(
+    () =>
+      availableTypes.map((type) => ({
+        key: type,
+        label: type.endsWith('s') ? type : `${type}s`,
+      })),
+    [availableTypes]
+  );
 
   const filteredVideos = useMemo(() => {
     if (!activeType) {
-      return []
+      return [];
     }
 
-    return (videos || []).filter((video) => video.type === activeType)
-  }, [videos, activeType])
-
-  const handleTypeChange = useCallback((type) => {
-    setActiveType(type)
-  }, [])
+    return videos.filter((video) => video.type === activeType);
+  }, [videos, activeType]);
 
   if (!videos?.length) {
-    return null
+    return null;
   }
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <SegmentedControl
-        items={getSegmentItems(availableTypes)}
-        value={activeType}
-        onChange={handleTypeChange}
-      />
-      <Carousel gap="gap-3">
-        {filteredVideos.map((video) => {
-          const thumbnailUrl = `https://img.youtube.com/vi/${video.key}/hqdefault.jpg`
+      <SegmentedControl items={items} value={activeType} onChange={setActiveType} />
 
-          return (
-            <MediaCard
-              key={video.id}
-              className="w-72"
-              aspectClass="aspect-video"
-              imageSrc={thumbnailUrl}
-              imageAlt={video.name}
-              imageSizes="288px"
-              imageClassName="object-cover transition-transform duration-(--motion-duration-normal) group-hover:scale-105"
-              fallbackIcon="solar:video-library-bold"
-              fallbackIconSize={24}
-              overlay={
-                <>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="center size-8 backdrop-blur-sm border border-white/10 bg-black/70 text-white transition-transform duration-(--motion-duration-normal) group-hover:scale-110">
-                      <Icon icon="solar:play-bold" size={16} />
-                    </div>
+      <Carousel gap="gap-3">
+        {filteredVideos.map((video) => (
+          <MediaCard
+            key={video.id}
+            className="w-72"
+            aspectClass="aspect-video"
+            imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
+            imageAlt={video.name}
+            imageSizes="288px"
+            fallbackIcon="solar:video-library-bold"
+            fallbackIconSize={24}
+            overlay={
+              <>
+                <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
+                  <div className="center size-8 rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md">
+                    <Icon icon="solar:play-bold" size={16} />
                   </div>
-                  <div className="absolute inset-x-0 bottom-0 truncate p-2 text-xs font-semibold leading-snug text-white  drop-shadow-sm drop-shadow-white/40">
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
+                  <span className="line-clamp-1 text-[11px] font-bold tracking-tight uppercase text-white/90 drop-shadow-sm transition-colors group-hover:text-white">
                     {video.name}
-                  </div>
-                </>
-              }
-              onClick={() =>
-                openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })
-              }
-            />
-          )
-        })}
+                  </span>
+                </div>
+              </>
+            }
+            onClick={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
+          />
+        ))}
       </Carousel>
     </section>
-  )
+  );
 }

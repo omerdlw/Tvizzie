@@ -397,10 +397,6 @@ core/modules/settings/index.js
 core/modules/settings/modal.js
 core/modules/settings/storage.js
 core/modules/settings/utils.js
-core/modules/transition
-core/modules/transition/context.js
-core/modules/transition/index.js
-core/modules/transition/presets.js
 core/services
 core/services/account
 core/services/account/account-feed.server.js
@@ -549,7 +545,7 @@ features/navigation/actions/search-action/parts
 features/navigation/actions/search-action/parts/item.js
 features/navigation/actions/search-action/utils.js
 features/navigation/actions/styles.js
-features/navigation/actions/watch-providers-action.js
+features/navigation/actions/movie-action.js
 features/navigation/surfaces
 features/navigation/surfaces/account-bio-surface.js
 features/navigation/surfaces/auth-verification-surface.js

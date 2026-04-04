@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   AUTH_PURPOSE,
@@ -13,16 +13,16 @@ import {
   normalizeProviderDescriptors,
   resolveSecurityErrorMessage,
   validatePassword,
-} from './utils'
-import { clearAccountFeedback, emitAccountFeedback } from './feedback'
-import { AUTH_ROUTES, buildAuthHref, requestVerificationCode } from '@/features/auth'
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client'
-import { useAccountClient } from '@/core/modules/account'
-import { useAuthSessionReady } from '@/core/modules/auth'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+} from './utils';
+import { clearAccountFeedback, emitAccountFeedback } from './feedback';
+import { AUTH_ROUTES, buildAuthHref, requestVerificationCode } from '@/features/auth';
+import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
+import { useAccountClient } from '@/core/modules/account';
+import { useAuthSessionReady } from '@/core/modules/auth';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { openAuthVerificationPrompt, showAccountErrorToast } from './account-hook-utils'
+import { openAuthVerificationPrompt, showAccountErrorToast } from './account-hook-utils';
 
 export function useAccountCredentialActions({
   auth,
@@ -41,17 +41,15 @@ export function useAccountCredentialActions({
   const reauthenticateWithPassword = useCallback(
     async (password) => {
       if (typeof auth?.reauthenticate !== 'function') {
-        throw new Error(
-          'Reauthentication is not supported by this auth adapter'
-        )
+        throw new Error('Reauthentication is not supported by this auth adapter');
       }
 
       return auth.reauthenticate({
         password: String(password || ''),
-      })
+      });
     },
     [auth]
-  )
+  );
 
   const openVerificationModal = useCallback(
     async ({
@@ -72,45 +70,45 @@ export function useAccountCredentialActions({
         purpose,
         title,
         toast,
-      })
+      });
     },
     [openModal, openSurface, toast]
-  )
+  );
 
   const handleCompleteEmailChange = useCallback(async () => {
     if (emailFlow.isSubmitting) {
-      return
+      return;
     }
     if (!canUsePasswordSecurity || !auth.user?.id) {
-      toast.error('Email/password sign-in must be enabled for this action')
-      return
+      toast.error('Email/password sign-in must be enabled for this action');
+      return;
     }
 
-    const nextEmail = normalizeEmail(emailFlow.newEmail)
-    const currentPassword = String(emailFlow.currentPassword || '')
+    const nextEmail = normalizeEmail(emailFlow.newEmail);
+    const currentPassword = String(emailFlow.currentPassword || '');
 
     if (!nextEmail || !EMAIL_PATTERN.test(nextEmail)) {
-      toast.error('Please provide a valid email address')
-      return
+      toast.error('Please provide a valid email address');
+      return;
     }
 
     if (nextEmail === currentAuthEmail) {
-      toast.error('New email must be different from current email')
-      return
+      toast.error('New email must be different from current email');
+      return;
     }
 
     if (!currentPassword) {
-      toast.error('Current password is required')
-      return
+      toast.error('Current password is required');
+      return;
     }
 
-    setEmailFlow((prev) => ({ ...prev, isSubmitting: true }))
+    setEmailFlow((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      await reauthenticateWithPassword(currentPassword)
+      await reauthenticateWithPassword(currentPassword);
       const initialChallenge = await requestVerificationCode({
         email: nextEmail,
         purpose: AUTH_PURPOSE.EMAIL_CHANGE,
-      })
+      });
 
       const verification = await openVerificationModal({
         autoSendOnOpen: false,
@@ -119,31 +117,31 @@ export function useAccountCredentialActions({
         initialChallenge,
         purpose: AUTH_PURPOSE.EMAIL_CHANGE,
         title: 'Email verification',
-      })
+      });
 
       if (!verification?.success) {
-        setEmailFlow((prev) => ({ ...prev, isSubmitting: false }))
-        return
+        setEmailFlow((prev) => ({ ...prev, isSubmitting: false }));
+        return;
       }
 
-      emitAccountFeedback('email-change', 'start')
+      emitAccountFeedback('email-change', 'start');
 
       const result = await completeEmailChangeRequest({
         newEmail: nextEmail,
-      })
+      });
 
       if (result?.nextAction === 'signed_out') {
         await auth.signOut({
           reason: 'email-change',
-        })
+        });
       }
 
       if (typeof setLinkedProviderIdsOverride === 'function') {
-        setLinkedProviderIdsOverride(null)
+        setLinkedProviderIdsOverride(null);
       }
 
       if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-        setLinkedProviderDescriptorsOverride(null)
+        setLinkedProviderDescriptorsOverride(null);
       }
 
       logAuthAuditEvent({
@@ -155,22 +153,22 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'success',
         userId: auth.user.id,
-      })
+      });
 
-      emitAccountFeedback('email-change', 'success')
-      setEmailFlow(INITIAL_EMAIL_FLOW)
-      toast.success('Email updated successfully. Please sign in again')
+      emitAccountFeedback('email-change', 'success');
+      setEmailFlow(INITIAL_EMAIL_FLOW);
+      toast.success('Email updated successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(
           buildAuthHref(AUTH_ROUTES.SIGN_IN, {
             email: nextEmail,
           })
-        )
+        );
       }
     } catch (error) {
-      setEmailFlow((prev) => ({ ...prev, isSubmitting: false }))
-      clearAccountFeedback('email-change')
+      setEmailFlow((prev) => ({ ...prev, isSubmitting: false }));
+      clearAccountFeedback('email-change');
       logAuthAuditEvent({
         email: currentAuthEmail || null,
         eventType: 'failed-attempt',
@@ -182,10 +180,8 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'failure',
         userId: auth.user?.id || null,
-      })
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Email could not be updated')
-      )
+      });
+      toast.error(resolveSecurityErrorMessage(error, 'Email could not be updated'));
     }
   }, [
     auth,
@@ -198,67 +194,65 @@ export function useAccountCredentialActions({
     setLinkedProviderDescriptorsOverride,
     setLinkedProviderIdsOverride,
     toast,
-  ])
+  ]);
 
   const handleCompletePasswordChange = useCallback(async () => {
     if (passwordFlow.isSubmitting) {
-      return
+      return;
     }
     if (!canUsePasswordSecurity) {
-      toast.error('Email/password sign-in must be enabled for this action')
-      return
+      toast.error('Email/password sign-in must be enabled for this action');
+      return;
     }
 
-    const currentPassword = String(passwordFlow.currentPassword || '')
-    let newPassword = ''
-    const confirmPassword = String(passwordFlow.confirmPassword || '')
+    const currentPassword = String(passwordFlow.currentPassword || '');
+    let newPassword = '';
+    const confirmPassword = String(passwordFlow.confirmPassword || '');
 
     if (!currentPassword) {
-      toast.error('Current password is required')
-      return
+      toast.error('Current password is required');
+      return;
     }
 
     try {
-      newPassword = validatePassword(passwordFlow.newPassword)
+      newPassword = validatePassword(passwordFlow.newPassword);
     } catch (error) {
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Password does not meet requirements')
-      )
-      return
+      toast.error(resolveSecurityErrorMessage(error, 'Password does not meet requirements'));
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match')
-      return
+      toast.error('New password and confirmation do not match');
+      return;
     }
 
-    setPasswordFlow((prev) => ({ ...prev, isSubmitting: true }))
+    setPasswordFlow((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      await reauthenticateWithPassword(currentPassword)
+      await reauthenticateWithPassword(currentPassword);
 
       const verification = await openVerificationModal({
         description: 'Verify your current email',
         email: currentAuthEmail,
         purpose: AUTH_PURPOSE.PASSWORD_CHANGE,
         title: 'Password verification',
-      })
+      });
 
       if (!verification?.success) {
-        setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }))
-        return
+        setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
+        return;
       }
 
-      emitAccountFeedback('password-change', 'start')
+      emitAccountFeedback('password-change', 'start');
 
       const result = await completePasswordChangeRequest({
         currentPassword,
         newPassword,
-      })
+      });
 
       if (result?.nextAction === 'signed_out') {
         await auth.signOut({
           reason: 'password-change',
-        })
+        });
       }
 
       logAuthAuditEvent({
@@ -270,22 +264,22 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'success',
         userId: auth.user?.id || null,
-      })
+      });
 
-      emitAccountFeedback('password-change', 'success')
-      setPasswordFlow(INITIAL_PASSWORD_FLOW)
-      toast.success('Password updated successfully. Please sign in again')
+      emitAccountFeedback('password-change', 'success');
+      setPasswordFlow(INITIAL_PASSWORD_FLOW);
+      toast.success('Password updated successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(
           buildAuthHref(AUTH_ROUTES.SIGN_IN, {
             email: currentAuthEmail || '',
           })
-        )
+        );
       }
     } catch (error) {
-      setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }))
-      clearAccountFeedback('password-change')
+      setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
+      clearAccountFeedback('password-change');
       logAuthAuditEvent({
         email: currentAuthEmail || null,
         eventType: 'failed-attempt',
@@ -297,10 +291,8 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'failure',
         userId: auth.user?.id || null,
-      })
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Password could not be updated')
-      )
+      });
+      toast.error(resolveSecurityErrorMessage(error, 'Password could not be updated'));
     }
   }, [
     auth,
@@ -311,41 +303,39 @@ export function useAccountCredentialActions({
     reauthenticateWithPassword,
     setPasswordFlow,
     toast,
-  ])
+  ]);
 
   const handleSetPassword = useCallback(async () => {
     if (passwordFlow.isSubmitting) {
-      return
+      return;
     }
 
     if (canUsePasswordSecurity) {
-      toast.error('Email/password sign-in is already linked to this account')
-      return
+      toast.error('Email/password sign-in is already linked to this account');
+      return;
     }
 
     if (!auth.user?.id) {
-      toast.error('Authentication session is required')
-      return
+      toast.error('Authentication session is required');
+      return;
     }
 
-    let newPassword = ''
-    const confirmPassword = String(passwordFlow.confirmPassword || '')
+    let newPassword = '';
+    const confirmPassword = String(passwordFlow.confirmPassword || '');
 
     try {
-      newPassword = validatePassword(passwordFlow.newPassword)
+      newPassword = validatePassword(passwordFlow.newPassword);
     } catch (error) {
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Password does not meet requirements')
-      )
-      return
+      toast.error(resolveSecurityErrorMessage(error, 'Password does not meet requirements'));
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match')
-      return
+      toast.error('New password and confirmation do not match');
+      return;
     }
 
-    setPasswordFlow((prev) => ({ ...prev, isSubmitting: true }))
+    setPasswordFlow((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
       const verification = await openVerificationModal({
@@ -353,31 +343,31 @@ export function useAccountCredentialActions({
         email: currentAuthEmail,
         purpose: AUTH_PURPOSE.PASSWORD_SET,
         title: 'Set password verification',
-      })
+      });
 
       if (!verification?.success) {
-        setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }))
-        return
+        setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
+        return;
       }
 
-      emitAccountFeedback('password-set', 'start')
+      emitAccountFeedback('password-set', 'start');
 
       const result = await completePasswordSetRequest({
         newPassword,
-      })
+      });
 
       if (result?.nextAction === 'signed_out') {
         await auth.signOut({
           reason: 'password-set',
-        })
+        });
       }
 
       if (typeof setLinkedProviderIdsOverride === 'function') {
-        setLinkedProviderIdsOverride(null)
+        setLinkedProviderIdsOverride(null);
       }
 
       if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-        setLinkedProviderDescriptorsOverride(null)
+        setLinkedProviderDescriptorsOverride(null);
       }
 
       logAuthAuditEvent({
@@ -389,22 +379,22 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'success',
         userId: auth.user?.id || null,
-      })
+      });
 
-      emitAccountFeedback('password-set', 'success')
-      setPasswordFlow(INITIAL_PASSWORD_FLOW)
-      toast.success('Password added successfully. Please sign in again')
+      emitAccountFeedback('password-set', 'success');
+      setPasswordFlow(INITIAL_PASSWORD_FLOW);
+      toast.success('Password added successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(
           buildAuthHref(AUTH_ROUTES.SIGN_IN, {
             email: currentAuthEmail || '',
           })
-        )
+        );
       }
     } catch (error) {
-      setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }))
-      clearAccountFeedback('password-set')
+      setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
+      clearAccountFeedback('password-set');
       logAuthAuditEvent({
         email: currentAuthEmail || null,
         eventType: 'failed-attempt',
@@ -416,10 +406,8 @@ export function useAccountCredentialActions({
         provider: 'password',
         status: 'failure',
         userId: auth.user?.id || null,
-      })
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Password could not be set')
-      )
+      });
+      toast.error(resolveSecurityErrorMessage(error, 'Password could not be set'));
     }
   }, [
     auth,
@@ -431,14 +419,14 @@ export function useAccountCredentialActions({
     setLinkedProviderIdsOverride,
     setPasswordFlow,
     toast,
-  ])
+  ]);
 
   return {
     handleCompleteEmailChange,
     handleCompletePasswordChange,
     handleSetPassword,
     reauthenticateWithPassword,
-  }
+  };
 }
 
 export function useAccountDeleteAction({
@@ -453,8 +441,8 @@ export function useAccountDeleteAction({
   setDeleteFlow,
   toast,
 }) {
-  const router = useRouter()
-  const deleteRequestLockRef = useRef(false)
+  const router = useRouter();
+  const deleteRequestLockRef = useRef(false);
 
   const openVerificationModal = useCallback(
     async ({ purpose, email, title, description }) => {
@@ -466,48 +454,47 @@ export function useAccountDeleteAction({
         purpose,
         title,
         toast,
-      })
+      });
     },
     [openModal, openSurface, toast]
-  )
+  );
 
   const handleDeleteAccount = useCallback(async () => {
     if (deleteFlow.isSubmitting || deleteRequestLockRef.current) {
-      return
+      return;
     }
 
-    const currentPassword = String(deleteFlow.currentPassword || '')
-    const confirmText = String(deleteFlow.confirmText || '').trim()
+    const currentPassword = String(deleteFlow.currentPassword || '');
+    const confirmText = String(deleteFlow.confirmText || '').trim();
 
     if (isPasswordLinked && !currentPassword) {
-      toast.error('Current password is required')
-      return
+      toast.error('Current password is required');
+      return;
     }
 
     if (confirmText !== 'DELETE') {
-      toast.error('Type DELETE to confirm account deletion')
-      return
+      toast.error('Type DELETE to confirm account deletion');
+      return;
     }
 
     setDeleteConfirmation({
       cancelText: 'Cancel',
       confirmText: 'Delete Account',
-      description:
-        'This action permanently deletes your account and signs you out',
+      description: 'This action permanently deletes your account and signs you out',
       icon: 'solar:danger-triangle-bold',
       isDestructive: true,
       onCancel: () => setDeleteConfirmation(null),
       onConfirm: async () => {
         if (deleteRequestLockRef.current) {
-          return
+          return;
         }
 
-        deleteRequestLockRef.current = true
-        setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }))
+        deleteRequestLockRef.current = true;
+        setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }));
 
         try {
           if (isPasswordLinked) {
-            await reauthenticateWithPassword(currentPassword)
+            await reauthenticateWithPassword(currentPassword);
           }
 
           const verification = await openVerificationModal({
@@ -515,44 +502,42 @@ export function useAccountDeleteAction({
             email: currentAuthEmail,
             purpose: AUTH_PURPOSE.ACCOUNT_DELETE,
             title: 'Delete account verification',
-          })
+          });
 
           if (!verification?.success) {
-            setDeleteConfirmation(null)
-            setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }))
-            return
+            setDeleteConfirmation(null);
+            setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+            return;
           }
 
-          emitAccountFeedback('account-delete', 'start')
+          emitAccountFeedback('account-delete', 'start');
 
           const result = await deleteAccountRequest({
             currentPassword: isPasswordLinked ? currentPassword : '',
-          })
+          });
 
-          setDeleteConfirmation(null)
+          setDeleteConfirmation(null);
 
           if (result?.nextAction === 'signed_out') {
             await auth.signOut({
               reason: 'delete-account',
-            })
+            });
           }
 
-          emitAccountFeedback('account-delete', 'success')
-          toast.success('Account deleted')
-          router.replace('/')
+          emitAccountFeedback('account-delete', 'success');
+          toast.success('Account deleted');
+          router.replace('/');
         } catch (error) {
-          clearAccountFeedback('account-delete')
-          setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }))
-          toast.error(
-            resolveSecurityErrorMessage(error, 'Account could not be deleted')
-          )
-          throw error
+          clearAccountFeedback('account-delete');
+          setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+          toast.error(resolveSecurityErrorMessage(error, 'Account could not be deleted'));
+          throw error;
         } finally {
-          deleteRequestLockRef.current = false
+          deleteRequestLockRef.current = false;
         }
       },
       title: 'Delete Account?',
-    })
+    });
   }, [
     auth,
     currentAuthEmail,
@@ -564,9 +549,9 @@ export function useAccountDeleteAction({
     setDeleteConfirmation,
     setDeleteFlow,
     toast,
-  ])
+  ]);
 
-  return { handleDeleteAccount }
+  return { handleDeleteAccount };
 }
 
 export function useAccountGoogleLinking({
@@ -577,7 +562,7 @@ export function useAccountGoogleLinking({
   supportsGoogleLinking,
   toast,
 }) {
-  const [isLinkingGoogle, setIsLinkingGoogle] = useState(false)
+  const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
 
   const updateLinkedProvidersFromSession = useCallback(
     (session) => {
@@ -585,20 +570,20 @@ export function useAccountGoogleLinking({
         session?.metadata?.providerIds ||
         session?.user?.metadata?.providerIds ||
         auth?.user?.metadata?.providerIds ||
-        []
+        [];
       const providerDescriptors = normalizeProviderDescriptors(
         session?.metadata?.providerDescriptors ||
           session?.user?.metadata?.providerDescriptors ||
           auth?.user?.metadata?.providerDescriptors ||
           []
-      )
+      );
 
       if (Array.isArray(providerIds)) {
-        setLinkedProviderIdsOverride(providerIds)
+        setLinkedProviderIdsOverride(providerIds);
       }
 
       if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-        setLinkedProviderDescriptorsOverride(providerDescriptors)
+        setLinkedProviderDescriptorsOverride(providerDescriptors);
       }
     },
     [
@@ -607,43 +592,41 @@ export function useAccountGoogleLinking({
       setLinkedProviderDescriptorsOverride,
       setLinkedProviderIdsOverride,
     ]
-  )
+  );
 
   const handleLinkGoogle = useCallback(async () => {
     if (isLinkingGoogle || isSaving || !supportsGoogleLinking) {
-      return
+      return;
     }
 
-    setIsLinkingGoogle(true)
+    setIsLinkingGoogle(true);
     try {
-      emitAccountFeedback('google-link', 'start')
+      emitAccountFeedback('google-link', 'start');
       const session = await auth.linkProvider({
         googleAuthIntent: 'link',
         provider: 'google',
-      })
-      updateLinkedProvidersFromSession(session)
-      emitAccountFeedback('google-link', 'success')
-      toast.success('Google account linked successfully')
+      });
+      updateLinkedProvidersFromSession(session);
+      emitAccountFeedback('google-link', 'success');
+      toast.success('Google account linked successfully');
     } catch (error) {
-      clearAccountFeedback('google-link')
+      clearAccountFeedback('google-link');
       try {
         if (typeof auth.refreshSession === 'function') {
-          const refreshedSession = await auth.refreshSession()
-          updateLinkedProvidersFromSession(refreshedSession)
+          const refreshedSession = await auth.refreshSession();
+          updateLinkedProvidersFromSession(refreshedSession);
         } else {
-          setLinkedProviderIdsOverride(null)
+          setLinkedProviderIdsOverride(null);
         }
       } catch {
         if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-          setLinkedProviderDescriptorsOverride(null)
+          setLinkedProviderDescriptorsOverride(null);
         }
-        setLinkedProviderIdsOverride(null)
+        setLinkedProviderIdsOverride(null);
       }
-      toast.error(
-        resolveSecurityErrorMessage(error, 'Google account could not be linked')
-      )
+      toast.error(resolveSecurityErrorMessage(error, 'Google account could not be linked'));
     } finally {
-      setIsLinkingGoogle(false)
+      setIsLinkingGoogle(false);
     }
   }, [
     auth,
@@ -654,12 +637,12 @@ export function useAccountGoogleLinking({
     supportsGoogleLinking,
     toast,
     updateLinkedProvidersFromSession,
-  ])
+  ]);
 
   return {
     handleLinkGoogle,
     isLinkingGoogle,
-  }
+  };
 }
 
 export function useAccountSecurityActions({
@@ -682,25 +665,21 @@ export function useAccountSecurityActions({
   supportsGoogleLinking,
   toast,
 }) {
-  const {
-    handleCompleteEmailChange,
-    handleCompletePasswordChange,
-    handleSetPassword,
-    reauthenticateWithPassword,
-  } = useAccountCredentialActions({
-    auth,
-    canUsePasswordSecurity,
-    currentAuthEmail,
-    emailFlow,
-    openModal,
-    openSurface,
-    passwordFlow,
-    setEmailFlow,
-    setLinkedProviderDescriptorsOverride,
-    setLinkedProviderIdsOverride,
-    setPasswordFlow,
-    toast,
-  })
+  const { handleCompleteEmailChange, handleCompletePasswordChange, handleSetPassword, reauthenticateWithPassword } =
+    useAccountCredentialActions({
+      auth,
+      canUsePasswordSecurity,
+      currentAuthEmail,
+      emailFlow,
+      openModal,
+      openSurface,
+      passwordFlow,
+      setEmailFlow,
+      setLinkedProviderDescriptorsOverride,
+      setLinkedProviderIdsOverride,
+      setPasswordFlow,
+      toast,
+    });
 
   const { handleDeleteAccount } = useAccountDeleteAction({
     auth,
@@ -713,7 +692,7 @@ export function useAccountSecurityActions({
     setDeleteConfirmation,
     setDeleteFlow,
     toast,
-  })
+  });
 
   const { handleLinkGoogle, isLinkingGoogle } = useAccountGoogleLinking({
     auth,
@@ -722,7 +701,7 @@ export function useAccountSecurityActions({
     setLinkedProviderIdsOverride,
     supportsGoogleLinking,
     toast,
-  })
+  });
 
   return {
     handleCompleteEmailChange,
@@ -731,18 +710,15 @@ export function useAccountSecurityActions({
     handleLinkGoogle,
     handleSetPassword,
     isLinkingGoogle,
-  }
+  };
 }
 
 function normalizeEditableCount(value) {
-  return Number.isFinite(Number(value)) ? Number(value) : 0
+  return Number.isFinite(Number(value)) ? Number(value) : 0;
 }
 
 function normalizeEditableAccountCounts(snapshot = null) {
-  const counts =
-    snapshot?.counts && typeof snapshot.counts === 'object'
-      ? snapshot.counts
-      : {}
+  const counts = snapshot?.counts && typeof snapshot.counts === 'object' ? snapshot.counts : {};
 
   return {
     followers: normalizeEditableCount(counts.followers),
@@ -750,26 +726,22 @@ function normalizeEditableAccountCounts(snapshot = null) {
     likes: normalizeEditableCount(counts.likes),
     lists: normalizeEditableCount(counts.lists),
     watchlist: normalizeEditableCount(counts.watchlist),
-  }
+  };
 }
 
 export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
-  const accountClient = useAccountClient()
-  const isAuthSessionReady = useAuthSessionReady(
-    auth.isAuthenticated ? auth.user?.id || null : null
-  )
-  const initialProfile = initialSnapshot?.profile || null
-  const initialCounts = normalizeEditableAccountCounts(initialSnapshot)
-  const [profile, setProfile] = useState(initialProfile)
-  const [likesCount, setLikesCount] = useState(initialCounts.likes)
-  const [watchedCount, setWatchedCount] = useState(
-    Number(initialProfile?.watchedCount || 0)
-  )
-  const [watchlistCount, setWatchlistCount] = useState(initialCounts.watchlist)
-  const [listsCount, setListsCount] = useState(initialCounts.lists)
-  const [followerCount, setFollowerCount] = useState(initialCounts.followers)
-  const [followingCount, setFollowingCount] = useState(initialCounts.following)
-  const [isLoading, setIsLoading] = useState(!initialProfile)
+  const accountClient = useAccountClient();
+  const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
+  const initialProfile = initialSnapshot?.profile || null;
+  const initialCounts = normalizeEditableAccountCounts(initialSnapshot);
+  const [profile, setProfile] = useState(initialProfile);
+  const [likesCount, setLikesCount] = useState(initialCounts.likes);
+  const [watchedCount, setWatchedCount] = useState(Number(initialProfile?.watchedCount || 0));
+  const [watchlistCount, setWatchlistCount] = useState(initialCounts.watchlist);
+  const [listsCount, setListsCount] = useState(initialCounts.lists);
+  const [followerCount, setFollowerCount] = useState(initialCounts.followers);
+  const [followingCount, setFollowingCount] = useState(initialCounts.following);
+  const [isLoading, setIsLoading] = useState(!initialProfile);
   const [form, setForm] = useState({
     avatarUrl: initialProfile?.avatarUrl || '',
     bannerUrl: initialProfile?.bannerUrl || '',
@@ -777,25 +749,21 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     displayName: initialProfile?.displayName || '',
     isPrivate: initialProfile?.isPrivate === true,
     username: initialProfile?.username || '',
-  })
-  const [
-    linkedProviderDescriptorsOverride,
-    setLinkedProviderDescriptorsOverride,
-  ] = useState(null)
-  const [linkedProviderIdsOverride, setLinkedProviderIdsOverride] =
-    useState(null)
+  });
+  const [linkedProviderDescriptorsOverride, setLinkedProviderDescriptorsOverride] = useState(null);
+  const [linkedProviderIdsOverride, setLinkedProviderIdsOverride] = useState(null);
 
   const applySnapshot = useCallback((snapshot) => {
-    const nextProfile = snapshot?.profile || null
-    const nextCounts = normalizeEditableAccountCounts(snapshot)
+    const nextProfile = snapshot?.profile || null;
+    const nextCounts = normalizeEditableAccountCounts(snapshot);
 
-    setProfile(nextProfile)
-    setLikesCount(nextCounts.likes)
-    setWatchedCount(Number(nextProfile?.watchedCount || 0))
-    setWatchlistCount(nextCounts.watchlist)
-    setListsCount(nextCounts.lists)
-    setFollowerCount(nextCounts.followers)
-    setFollowingCount(nextCounts.following)
+    setProfile(nextProfile);
+    setLikesCount(nextCounts.likes);
+    setWatchedCount(Number(nextProfile?.watchedCount || 0));
+    setWatchlistCount(nextCounts.watchlist);
+    setListsCount(nextCounts.lists);
+    setFollowerCount(nextCounts.followers);
+    setFollowingCount(nextCounts.following);
     setForm({
       avatarUrl: nextProfile?.avatarUrl || '',
       bannerUrl: nextProfile?.bannerUrl || '',
@@ -803,57 +771,55 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
       displayName: nextProfile?.displayName || '',
       isPrivate: nextProfile?.isPrivate === true,
       username: nextProfile?.username || '',
-    })
-    setIsLoading(false)
-  }, [])
+    });
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     if (!auth.isReady) {
-      return undefined
+      return undefined;
     }
 
     if (auth.isAuthenticated && auth.user?.id && !isAuthSessionReady) {
-      setIsLoading(!initialProfile)
-      return undefined
+      setIsLoading(!initialProfile);
+      return undefined;
     }
 
     if (!auth.isAuthenticated || !auth.user?.id) {
-      setProfile(null)
-      setLikesCount(0)
-      setWatchedCount(0)
-      setWatchlistCount(0)
-      setListsCount(0)
-      setFollowerCount(0)
-      setFollowingCount(0)
-      setIsLoading(false)
-      setLinkedProviderDescriptorsOverride(null)
-      setLinkedProviderIdsOverride(null)
-      return undefined
+      setProfile(null);
+      setLikesCount(0);
+      setWatchedCount(0);
+      setWatchlistCount(0);
+      setListsCount(0);
+      setFollowerCount(0);
+      setFollowingCount(0);
+      setIsLoading(false);
+      setLinkedProviderDescriptorsOverride(null);
+      setLinkedProviderIdsOverride(null);
+      return undefined;
     }
 
-    const canUseInitialSnapshot =
-      initialSnapshot?.profile?.id &&
-      initialSnapshot.profile.id === auth.user.id
+    const canUseInitialSnapshot = initialSnapshot?.profile?.id && initialSnapshot.profile.id === auth.user.id;
 
     if (canUseInitialSnapshot) {
-      applySnapshot(initialSnapshot)
-      return undefined
+      applySnapshot(initialSnapshot);
+      return undefined;
     }
 
-    let ignore = false
+    let ignore = false;
 
     async function load() {
-      setIsLoading(true)
+      setIsLoading(true);
 
       try {
-        const nextProfile = await accountClient.getAccount(auth.user.id)
+        const nextProfile = await accountClient.getAccount(auth.user.id);
 
         if (ignore) {
-          return
+          return;
         }
 
-        setProfile(nextProfile)
-        setWatchedCount(Number(nextProfile?.watchedCount || 0))
+        setProfile(nextProfile);
+        setWatchedCount(Number(nextProfile?.watchedCount || 0));
         setForm((prev) => ({
           ...prev,
           avatarUrl: nextProfile?.avatarUrl || '',
@@ -862,25 +828,25 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
           displayName: nextProfile?.displayName || '',
           isPrivate: nextProfile?.isPrivate === true,
           username: nextProfile?.username || '',
-        }))
+        }));
       } catch (error) {
         if (!ignore) {
-          setProfile(null)
-          setWatchedCount(0)
-          showAccountErrorToast(toast, error, 'Profile could not be loaded')
+          setProfile(null);
+          setWatchedCount(0);
+          showAccountErrorToast(toast, error, 'Profile could not be loaded');
         }
       } finally {
         if (!ignore) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
     }
 
-    load()
+    load();
 
     return () => {
-      ignore = true
-    }
+      ignore = true;
+    };
   }, [
     accountClient,
     applySnapshot,
@@ -891,11 +857,11 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     initialSnapshot,
     isAuthSessionReady,
     toast,
-  ])
+  ]);
 
   useEffect(() => {
-    setLinkedProviderIdsOverride(null)
-  }, [auth.user?.id])
+    setLinkedProviderIdsOverride(null);
+  }, [auth.user?.id]);
 
   return {
     followerCount,
@@ -912,5 +878,5 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     setLinkedProviderIdsOverride,
     watchedCount,
     watchlistCount,
-  }
+  };
 }

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { useAuth } from '@/core/modules/auth'
-import WatchlistView from './view'
+import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { useAuth } from '@/core/modules/auth';
+import WatchlistView from './view';
 
 export default function Client({
   currentPage = 1,
@@ -12,7 +12,7 @@ export default function Client({
   initialResolveError = null,
   username,
 }) {
-  const auth = useAuth()
+  const auth = useAuth();
   const {
     canViewProfileCollections,
     followerCount,
@@ -47,7 +47,7 @@ export default function Client({
     initialResolvedUserId,
     initialResolveError,
     username,
-  })
+  });
 
   return (
     <WatchlistView
@@ -80,5 +80,5 @@ export default function Client({
       watchlistCount={watchlistCount}
       watchlist={watchlist}
     />
-  )
+  );
 }

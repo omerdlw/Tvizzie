@@ -1,38 +1,36 @@
-import 'server-only'
+import 'server-only';
 
 import {
   NOTIFICATION_EVENT_TYPE_SET,
   NOTIFICATION_EVENT_TYPES,
-} from '@/core/services/notifications/notification-events.constants'
-import { publishUserEvent } from '@/core/services/realtime/user-events.server'
-import { NOTIFICATION_TYPES } from '@/core/services/notifications/notifications.constants'
-import { createAdminClient } from '@/core/clients/supabase/admin'
+} from '@/core/services/notifications/notification-events.constants';
+import { publishUserEvent } from '@/core/services/realtime/user-events.server';
+import { NOTIFICATION_TYPES } from '@/core/services/notifications/notifications.constants';
+import { createAdminClient } from '@/core/clients/supabase/admin';
 
-const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'username'].join(',')
+const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'username'].join(',');
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function createActorSnapshot(userId, profile = {}) {
   return {
     avatarUrl: profile?.avatar_url || null,
-    displayName:
-      profile?.display_name || profile?.name || profile?.email || 'Someone',
+    displayName: profile?.display_name || profile?.name || profile?.email || 'Someone',
     id: userId || null,
     username: profile?.username || null,
-  }
+  };
 }
 
 function buildSubject(payload = {}) {
-  const subjectType = normalizeValue(payload.subjectType).toLowerCase()
-  const subjectId = normalizeValue(payload.subjectId)
-  const subjectTitle = normalizeValue(payload.subjectTitle) || 'Untitled'
+  const subjectType = normalizeValue(payload.subjectType).toLowerCase();
+  const subjectId = normalizeValue(payload.subjectId);
+  const subjectTitle = normalizeValue(payload.subjectTitle) || 'Untitled';
 
   if (subjectType === 'list') {
-    const ownerUsername =
-      normalizeValue(payload.subjectOwnerUsername || payload.ownerUsername)
-    const slug = normalizeValue(payload.subjectSlug || payload.listSlug || payload.listId || subjectId)
+    const ownerUsername = normalizeValue(payload.subjectOwnerUsername || payload.ownerUsername);
+    const slug = normalizeValue(payload.subjectSlug || payload.listSlug || payload.listId || subjectId);
 
     return {
       href: ownerUsername && slug ? `/account/${ownerUsername}/lists/${slug}` : null,
@@ -42,11 +40,11 @@ function buildSubject(payload = {}) {
       slug: slug || null,
       title: normalizeValue(payload.listTitle || subjectTitle) || 'Untitled List',
       type: 'list',
-    }
+    };
   }
 
   if (subjectType === 'user') {
-    const username = normalizeValue(payload.subjectUsername)
+    const username = normalizeValue(payload.subjectUsername);
 
     return {
       href: username ? `/account/${username}` : null,
@@ -56,7 +54,7 @@ function buildSubject(payload = {}) {
       slug: null,
       title: normalizeValue(payload.subjectDisplayName || subjectTitle) || 'Account',
       type: 'user',
-    }
+    };
   }
 
   return {
@@ -67,35 +65,32 @@ function buildSubject(payload = {}) {
     slug: null,
     title: subjectTitle,
     type: subjectType || null,
-  }
+  };
 }
 
 function mapEventToNotification(eventType, payload = {}, actor = {}) {
   if (eventType === NOTIFICATION_EVENT_TYPES.FOLLOW_CREATED) {
-    const targetUserId = normalizeValue(payload.followingId)
+    const targetUserId = normalizeValue(payload.followingId);
 
     if (!targetUserId) {
-      return null
+      return null;
     }
 
-    const status = normalizeValue(payload.status).toLowerCase()
+    const status = normalizeValue(payload.status).toLowerCase();
 
     return {
       body: '',
-      eventType:
-        status === 'pending'
-          ? NOTIFICATION_TYPES.FOLLOW_REQUEST
-          : NOTIFICATION_TYPES.NEW_FOLLOWER,
+      eventType: status === 'pending' ? NOTIFICATION_TYPES.FOLLOW_REQUEST : NOTIFICATION_TYPES.NEW_FOLLOWER,
       href: actor?.username ? `/account/${actor.username}` : null,
       userId: targetUserId,
-    }
+    };
   }
 
   if (eventType === NOTIFICATION_EVENT_TYPES.FOLLOW_ACCEPTED) {
-    const requesterId = normalizeValue(payload.requesterId)
+    const requesterId = normalizeValue(payload.requesterId);
 
     if (!requesterId) {
-      return null
+      return null;
     }
 
     return {
@@ -103,132 +98,122 @@ function mapEventToNotification(eventType, payload = {}, actor = {}) {
       eventType: NOTIFICATION_TYPES.FOLLOW_ACCEPTED,
       href: actor?.username ? `/account/${actor.username}` : null,
       userId: requesterId,
-    }
+    };
   }
 
   if (eventType === NOTIFICATION_EVENT_TYPES.REVIEW_LIKED) {
-    const reviewOwnerId = normalizeValue(payload.reviewOwnerId)
+    const reviewOwnerId = normalizeValue(payload.reviewOwnerId);
 
     if (!reviewOwnerId) {
-      return null
+      return null;
     }
 
-    const subject = buildSubject(payload)
+    const subject = buildSubject(payload);
 
     return {
       body: '',
       eventType: NOTIFICATION_TYPES.REVIEW_LIKE,
       href: subject.href || null,
       userId: reviewOwnerId,
-    }
+    };
   }
 
   if (eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED) {
-    const listOwnerId = normalizeValue(payload.listOwnerId)
+    const listOwnerId = normalizeValue(payload.listOwnerId);
 
     if (!listOwnerId) {
-      return null
+      return null;
     }
 
     const subject = buildSubject({
       ...payload,
       subjectId: payload.listId || payload.subjectId,
       subjectType: 'list',
-    })
+    });
 
     return {
       body: '',
       eventType: NOTIFICATION_TYPES.LIST_LIKE,
       href: subject.href || null,
       userId: listOwnerId,
-    }
+    };
   }
 
-  return null
+  return null;
 }
 
 async function getUserProfile(admin, userId) {
-  const normalizedUserId = normalizeValue(userId)
+  const normalizedUserId = normalizeValue(userId);
 
   if (!normalizedUserId) {
-    return null
+    return null;
   }
 
-  const result = await admin
-    .from('profiles')
-    .select(ACTOR_PROFILE_SELECT)
-    .eq('id', normalizedUserId)
-    .maybeSingle()
+  const result = await admin.from('profiles').select(ACTOR_PROFILE_SELECT).eq('id', normalizedUserId).maybeSingle();
 
   if (result.error) {
-    throw new Error(result.error.message || 'Actor profile could not be loaded')
+    throw new Error(result.error.message || 'Actor profile could not be loaded');
   }
 
-  return result.data || null
+  return result.data || null;
 }
 
-export async function processNotificationEvent({
-  actorUserId,
-  eventType,
-  payload = {},
-}) {
-  const normalizedActorUserId = normalizeValue(actorUserId)
-  const normalizedEventType = normalizeValue(eventType)
+export async function processNotificationEvent({ actorUserId, eventType, payload = {} }) {
+  const normalizedActorUserId = normalizeValue(actorUserId);
+  const normalizedEventType = normalizeValue(eventType);
 
   if (!normalizedActorUserId || !normalizedEventType) {
-    return { delivered: false, reason: 'invalid-event-input' }
+    return { delivered: false, reason: 'invalid-event-input' };
   }
 
   if (!NOTIFICATION_EVENT_TYPE_SET.has(normalizedEventType)) {
-    return { delivered: false, reason: 'unsupported-event-type' }
+    return { delivered: false, reason: 'unsupported-event-type' };
   }
 
-  const admin = createAdminClient()
-  const actorProfile = await getUserProfile(admin, normalizedActorUserId)
-  const actor = createActorSnapshot(normalizedActorUserId, actorProfile || {})
-  const mapped = mapEventToNotification(normalizedEventType, payload, actor)
+  const admin = createAdminClient();
+  const actorProfile = await getUserProfile(admin, normalizedActorUserId);
+  const actor = createActorSnapshot(normalizedActorUserId, actorProfile || {});
+  const mapped = mapEventToNotification(normalizedEventType, payload, actor);
 
   if (!mapped || !mapped.userId || mapped.userId === normalizedActorUserId) {
     return {
       delivered: false,
       reason: 'notification-target-missing',
-    }
+    };
   }
 
-  const nowIso = new Date().toISOString()
-  const subject = buildSubject(payload)
-  const title = `${actor.displayName} sent an update`
+  const nowIso = new Date().toISOString();
+  const subject = buildSubject(payload);
+  const title = `${actor.displayName} sent an update`;
 
-  const result = await admin
-    .from('notifications')
-    .insert({
-      user_id: mapped.userId,
-      actor_user_id: normalizedActorUserId,
-      event_type: mapped.eventType,
-      title,
-      body: mapped.body || '',
-      href: mapped.href || null,
-      metadata: {
-        actor,
-        payload: {
-          ...payload,
-          subject,
-        },
+  const result = await admin.from('notifications').insert({
+    user_id: mapped.userId,
+    actor_user_id: normalizedActorUserId,
+    event_type: mapped.eventType,
+    title,
+    body: mapped.body || '',
+    href: mapped.href || null,
+    metadata: {
+      actor,
+      payload: {
+        ...payload,
+        subject,
       },
-      read: false,
-      created_at: nowIso,
-      updated_at: nowIso,
-    })
+    },
+    read: false,
+    created_at: nowIso,
+    updated_at: nowIso,
+  });
 
   if (result.error) {
-    throw new Error(result.error.message || 'Notification could not be created')
+    throw new Error(result.error.message || 'Notification could not be created');
   }
 
   publishUserEvent(mapped.userId, 'notifications', {
     reason: 'created',
-  })
+  });
 
   return {
     delivered: true,
-  }
+  };
 }

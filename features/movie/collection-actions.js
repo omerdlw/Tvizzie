@@ -1,68 +1,56 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  AUTH_ROUTES,
-  buildAuthHref,
-  getCurrentPathWithSearch,
-} from '@/features/auth'
-import { resolveExplicitMediaType } from '@/core/utils/media'
-import { cn } from '@/core/utils'
-import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
-import { useModal } from '@/core/modules/modal/context'
-import { useToast } from '@/core/modules/notification/hooks'
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { resolveExplicitMediaType } from '@/core/utils/media';
+import { cn } from '@/core/utils';
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
+import { useModal } from '@/core/modules/modal/context';
+import { useToast } from '@/core/modules/notification/hooks';
 import {
   ensureLegacyFavoritesBackfilled,
   subscribeToLikeStatus,
   toggleUserLike,
-} from '@/core/services/media/likes.service'
+} from '@/core/services/media/likes.service';
 import {
   markUserWatched,
   removeUserWatchedItem,
   subscribeToWatchedStatus,
-} from '@/core/services/media/watched.service'
-import {
-  subscribeToWatchlistStatus,
-  toggleUserWatchlistItem,
-} from '@/core/services/media/watchlist.service'
-import Icon from '@/ui/icon'
-
-const FROSTED_BACKDROP_STYLE = {
-  WebkitBackdropFilter: 'blur(12px)',
-  backdropFilter: 'blur(12px)',
-}
+} from '@/core/services/media/watched.service';
+import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/services/media/watchlist.service';
+import Icon from '@/ui/icon';
 
 function getMediaSnapshot(media) {
   return {
-    backdropPath: media?.backdrop_path || media?.backdropPath || null,
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
+    title: media?.title || media?.original_title || 'Untitled',
+    posterPath: media?.poster_path || media?.posterPath || null,
+    backdropPath: media?.backdrop_path || media?.backdropPath || null,
+    release_date: media?.release_date || null,
     first_air_date: null,
     name: '',
-    posterPath: media?.poster_path || media?.posterPath || null,
-    release_date: media?.release_date || null,
-    title: media?.title || media?.original_title || 'Untitled',
     vote_average: media?.vote_average ?? null,
-  }
+  };
 }
 
 function getActionPalette(palette, active) {
   if (!active) {
-    return 'surface-muted'
+    return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
   }
 
   if (palette === 'like') {
-    return 'success-classes'
+    return 'border border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10';
   }
 
-  if (palette === 'watchlist') {
-    return 'info-classes'
+  if (palette === 'watched' || palette === 'watchlist') {
+    return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
   }
 
-  return 'info-classes'
+  return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
 }
 
 function ActionButton({
@@ -73,7 +61,7 @@ function ActionButton({
   loading = false,
   loadingLabel = 'Loading',
   onClick,
-  palette = 'neutral',
+  palette,
 }) {
   return (
     <button
@@ -81,7 +69,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group flex w-full rounded-[12px] cursor-pointer items-center backdrop-blur-sm justify-center gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase  transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed',
+        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed',
         getActionPalette(palette, active)
       )}
     >
@@ -89,243 +77,284 @@ function ActionButton({
         <span>{loadingLabel}</span>
       ) : (
         <>
-          <Icon
-            icon={icon}
-            size={16}
-            className="transition-transform group-hover:scale-110"
-          />
+          <Icon icon={icon} size={16} className="transition-transform" />
           <span>{label}</span>
         </>
       )}
     </button>
-  )
+  );
 }
 
 export default function CollectionActions({ media }) {
-  const auth = useAuth()
-  const isAuthSessionReady = useAuthSessionReady(
-    auth.isAuthenticated ? auth.user?.id || null : null
-  )
-  const toast = useToast()
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const { openModal } = useModal()
+  const auth = useAuth();
+  const toast = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { openModal } = useModal();
 
-  const [isLiked, setIsLiked] = useState(false)
-  const [isInWatchlist, setIsInWatchlist] = useState(false)
-  const [isWatched, setIsWatched] = useState(false)
-  const [isLoadingLike, setIsLoadingLike] = useState(true)
-  const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(true)
-  const [isLoadingWatched, setIsLoadingWatched] = useState(true)
-  const [isSubmittingLike, setIsSubmittingLike] = useState(false)
-  const [isSubmittingWatchlist, setIsSubmittingWatchlist] = useState(false)
-  const [isSubmittingWatched, setIsSubmittingWatched] = useState(false)
-  const [likeIntent, setLikeIntent] = useState(null)
-  const [watchlistIntent, setWatchlistIntent] = useState(null)
-  const [watchedIntent, setWatchedIntent] = useState(null)
+  const userId = auth.user?.id || null;
+  const isSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
+  const title = media?.title || media?.original_title || 'This movie';
 
-  const userId = auth.user?.id || null
-  const title = media?.title || media?.original_title || 'This movie'
-  const currentPath = useMemo(
-    () => getCurrentPathWithSearch(pathname, searchParams),
-    [pathname, searchParams]
-  )
-  const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media])
+  const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
+
+  const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media]);
+
+  const [state, setState] = useState({
+    liked: false,
+    watchlist: false,
+    watched: false,
+    loadingLike: true,
+    loadingWatchlist: true,
+    loadingWatched: true,
+    submittingLike: false,
+    submittingWatchlist: false,
+    submittingWatched: false,
+    likeIntent: null,
+    watchlistIntent: null,
+    watchedIntent: null,
+  });
 
   useEffect(() => {
-    if (!auth.isReady) {
-      setIsLoadingLike(true)
-      setIsLoadingWatchlist(true)
-      setIsLoadingWatched(true)
-      return
-    }
-
-    if (userId && !isAuthSessionReady) {
-      setIsLoadingLike(true)
-      setIsLoadingWatchlist(true)
-      setIsLoadingWatched(true)
-      return
+    if (!auth.isReady || (userId && !isSessionReady)) {
+      setState((prev) => ({
+        ...prev,
+        loadingLike: true,
+        loadingWatchlist: true,
+        loadingWatched: true,
+      }));
+      return;
     }
 
     if (!userId) {
-      setIsLiked(false)
-      setIsInWatchlist(false)
-      setIsWatched(false)
-      setIsLoadingLike(false)
-      setIsLoadingWatchlist(false)
-      setIsLoadingWatched(false)
-      return
+      setState((prev) => ({
+        ...prev,
+        liked: false,
+        watchlist: false,
+        watched: false,
+        loadingLike: false,
+        loadingWatchlist: false,
+        loadingWatched: false,
+      }));
+      return;
     }
 
-    let isMounted = true
+    let active = true;
+    let unsubLike = () => {};
+    let unsubWatchlist = () => {};
+    let unsubWatched = () => {};
 
-    setIsLoadingLike(true)
-    setIsLoadingWatchlist(true)
-    setIsLoadingWatched(true)
+    setState((prev) => ({
+      ...prev,
+      loadingLike: true,
+      loadingWatchlist: true,
+      loadingWatched: true,
+    }));
 
-    let unsubscribeLike = () => {}
-    let unsubscribeWatchlist = () => {}
-    let unsubscribeWatched = () => {}
+    async function init() {
+      await ensureLegacyFavoritesBackfilled(userId);
 
-    async function subscribe() {
-      await ensureLegacyFavoritesBackfilled(userId)
-
-      if (!isMounted) {
-        return
+      if (!active) {
+        return;
       }
 
-      unsubscribeLike = subscribeToLikeStatus(
+      unsubLike = subscribeToLikeStatus(
         { media: mediaSnapshot, userId },
-        (nextIsLiked) => {
-          setIsLiked(nextIsLiked)
-          setIsLoadingLike(false)
+        (liked) => {
+          setState((prev) => ({ ...prev, liked, loadingLike: false }));
         },
-        {
-          onError: () => setIsLoadingLike(false),
-        }
-      )
+        { onError: () => setState((prev) => ({ ...prev, loadingLike: false })) }
+      );
 
-      unsubscribeWatchlist = subscribeToWatchlistStatus(
+      unsubWatchlist = subscribeToWatchlistStatus(
         { media: mediaSnapshot, userId },
-        (nextIsInWatchlist) => {
-          setIsInWatchlist(nextIsInWatchlist)
-          setIsLoadingWatchlist(false)
+        (watchlist) => {
+          setState((prev) => ({ ...prev, watchlist, loadingWatchlist: false }));
         },
-        {
-          onError: () => setIsLoadingWatchlist(false),
-        }
-      )
+        { onError: () => setState((prev) => ({ ...prev, loadingWatchlist: false })) }
+      );
 
-      unsubscribeWatched = subscribeToWatchedStatus(
+      unsubWatched = subscribeToWatchedStatus(
         { media: mediaSnapshot, userId },
-        (nextIsWatched) => {
-          setIsWatched(nextIsWatched)
-          setIsLoadingWatched(false)
+        (watched) => {
+          setState((prev) => ({ ...prev, watched, loadingWatched: false }));
         },
-        {
-          onError: () => setIsLoadingWatched(false),
-        }
-      )
+        { onError: () => setState((prev) => ({ ...prev, loadingWatched: false })) }
+      );
     }
 
-    subscribe().catch(() => {
-      if (isMounted) {
-        setIsLoadingLike(false)
-        setIsLoadingWatchlist(false)
-        setIsLoadingWatched(false)
+    init().catch(() => {
+      if (!active) {
+        return;
       }
-    })
+
+      setState((prev) => ({
+        ...prev,
+        loadingLike: false,
+        loadingWatchlist: false,
+        loadingWatched: false,
+      }));
+    });
 
     return () => {
-      isMounted = false
-      unsubscribeLike()
-      unsubscribeWatchlist()
-      unsubscribeWatched()
-    }
-  }, [auth.isReady, isAuthSessionReady, mediaSnapshot, userId])
+      active = false;
+      unsubLike();
+      unsubWatchlist();
+      unsubWatched();
+    };
+  }, [auth.isReady, isSessionReady, mediaSnapshot, userId]);
 
-  const redirectToSignIn = useCallback(() => {
+  async function ensureSignedIn() {
+    if (auth.isAuthenticated && userId) {
+      return userId;
+    }
+
     router.push(
       buildAuthHref(AUTH_ROUTES.SIGN_IN, {
         next: currentPath,
       })
-    )
-  }, [currentPath, router])
+    );
 
-  const ensureSignedIn = useCallback(async () => {
-    if (auth.isAuthenticated && userId) {
-      return userId
+    return null;
+  }
+
+  async function handleLikeClick() {
+    if (state.submittingLike) {
+      return;
     }
 
-    redirectToSignIn()
-    return null
-  }, [auth.isAuthenticated, redirectToSignIn, userId])
-
-  const handleLikeClick = useCallback(async () => {
-    if (isSubmittingLike) {
-      return
-    }
-
-    const resolvedUserId = await ensureSignedIn()
+    const resolvedUserId = await ensureSignedIn();
     if (!resolvedUserId) {
-      return
+      return;
     }
 
-    setIsSubmittingLike(true)
-    setLikeIntent(isLiked ? 'remove' : 'add')
+    const intent = state.liked ? 'remove' : 'add';
+
+    setState((prev) => ({
+      ...prev,
+      submittingLike: true,
+      likeIntent: intent,
+    }));
 
     try {
-      const result = await toggleUserLike({
-        media: mediaSnapshot,
-        userId: resolvedUserId,
-      })
-      setIsLiked(result.isLiked)
+      const result = await toggleUserLike({ media: mediaSnapshot, userId: resolvedUserId });
 
-      toast.success(
-        result.isLiked
-          ? `${title} was added to your likes`
-          : `${title} was removed from your likes`
-      )
+      setState((prev) => ({
+        ...prev,
+        liked: result.isLiked,
+      }));
+
+      toast.success(result.isLiked ? `${title} was added to your likes` : `${title} was removed from your likes`);
     } catch (error) {
-      toast.error(error?.message || 'Like could not be updated')
+      toast.error(error?.message || 'Like could not be updated');
     } finally {
-      setIsSubmittingLike(false)
-      setLikeIntent(null)
+      setState((prev) => ({
+        ...prev,
+        submittingLike: false,
+        likeIntent: null,
+      }));
     }
-  }, [
-    ensureSignedIn,
-    isLiked,
-    isSubmittingLike,
-    mediaSnapshot,
-    title,
-    toast,
-  ])
+  }
 
-  const handleWatchlistClick = useCallback(async () => {
-    if (isSubmittingWatchlist) {
-      return
+  async function handleWatchlistClick() {
+    if (state.submittingWatchlist) {
+      return;
     }
 
-    const resolvedUserId = await ensureSignedIn()
+    const resolvedUserId = await ensureSignedIn();
     if (!resolvedUserId) {
-      return
+      return;
     }
 
-    setIsSubmittingWatchlist(true)
-    setWatchlistIntent(isInWatchlist ? 'remove' : 'add')
+    const intent = state.watchlist ? 'remove' : 'add';
+
+    setState((prev) => ({
+      ...prev,
+      submittingWatchlist: true,
+      watchlistIntent: intent,
+    }));
 
     try {
-      const result = await toggleUserWatchlistItem({
-        media: mediaSnapshot,
-        userId: resolvedUserId,
-      })
-      setIsInWatchlist(result.isInWatchlist)
+      const result = await toggleUserWatchlistItem({ media: mediaSnapshot, userId: resolvedUserId });
+
+      setState((prev) => ({
+        ...prev,
+        watchlist: result.isInWatchlist,
+      }));
 
       toast.success(
-        result.isInWatchlist
-          ? `${title} was added to your watchlist`
-          : `${title} was removed from your watchlist`
-      )
+        result.isInWatchlist ? `${title} was added to your watchlist` : `${title} was removed from your watchlist`
+      );
     } catch (error) {
-      toast.error(error?.message || 'Watchlist could not be updated')
+      toast.error(error?.message || 'Watchlist could not be updated');
     } finally {
-      setIsSubmittingWatchlist(false)
-      setWatchlistIntent(null)
+      setState((prev) => ({
+        ...prev,
+        submittingWatchlist: false,
+        watchlistIntent: null,
+      }));
     }
-  }, [
-    ensureSignedIn,
-    isInWatchlist,
-    isSubmittingWatchlist,
-    mediaSnapshot,
-    title,
-    toast,
-  ])
+  }
 
-  const handleOpenListPicker = useCallback(async () => {
-    const resolvedUserId = await ensureSignedIn()
+  async function handleWatchedClick() {
+    if (state.submittingWatched) {
+      return;
+    }
+
+    const resolvedUserId = await ensureSignedIn();
     if (!resolvedUserId) {
-      return
+      return;
+    }
+
+    const intent = state.watched ? 'remove' : 'add';
+
+    setState((prev) => ({
+      ...prev,
+      submittingWatched: true,
+      watchedIntent: intent,
+    }));
+
+    try {
+      if (state.watched) {
+        await removeUserWatchedItem({ media: mediaSnapshot, userId: resolvedUserId });
+
+        setState((prev) => ({
+          ...prev,
+          watched: false,
+        }));
+
+        toast.success(`${title} was removed from watched`);
+      } else {
+        const result = await markUserWatched({ media: mediaSnapshot, userId: resolvedUserId });
+
+        setState((prev) => ({
+          ...prev,
+          watched: true,
+          watchlist: result.wasRemovedFromWatchlist ? false : prev.watchlist,
+        }));
+
+        toast.success(
+          result.wasRemovedFromWatchlist
+            ? `${title} was marked watched and removed from your watchlist`
+            : `${title} was marked as watched`
+        );
+      }
+    } catch (error) {
+      toast.error(error?.message || 'Watched state could not be updated');
+    } finally {
+      setState((prev) => ({
+        ...prev,
+        submittingWatched: false,
+        watchedIntent: null,
+      }));
+    }
+  }
+
+  async function handleOpenListPicker() {
+    const resolvedUserId = await ensureSignedIn();
+    if (!resolvedUserId) {
+      return;
     }
 
     openModal('LIST_PICKER_MODAL', 'bottom', {
@@ -333,121 +362,47 @@ export default function CollectionActions({ media }) {
         media: mediaSnapshot,
         userId: resolvedUserId,
       },
-    })
-  }, [ensureSignedIn, mediaSnapshot, openModal])
-
-  const handleWatchedClick = useCallback(async () => {
-    if (isSubmittingWatched) {
-      return
-    }
-
-    const resolvedUserId = await ensureSignedIn()
-    if (!resolvedUserId) {
-      return
-    }
-
-    setIsSubmittingWatched(true)
-    setWatchedIntent(isWatched ? 'remove' : 'add')
-
-    try {
-      if (isWatched) {
-        await removeUserWatchedItem({
-          media: mediaSnapshot,
-          userId: resolvedUserId,
-        })
-        setIsWatched(false)
-        toast.success(`${title} was removed from watched`)
-      } else {
-        const result = await markUserWatched({
-          media: mediaSnapshot,
-          userId: resolvedUserId,
-        })
-        setIsWatched(true)
-
-        if (result.wasRemovedFromWatchlist) {
-          setIsInWatchlist(false)
-        }
-
-        toast.success(
-          result.wasRemovedFromWatchlist
-            ? `${title} was marked watched and removed from your watchlist`
-            : `${title} was marked as watched`
-        )
-      }
-    } catch (error) {
-      toast.error(error?.message || 'Watched state could not be updated')
-    } finally {
-      setIsSubmittingWatched(false)
-      setWatchedIntent(null)
-    }
-  }, [
-    ensureSignedIn,
-    isSubmittingWatched,
-    isWatched,
-    mediaSnapshot,
-    title,
-    toast,
-  ])
+    });
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <ActionButton
-        active={isLiked}
-        disabled={isLoadingLike || isSubmittingLike}
-        icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}
-        label={isLiked ? 'Liked' : 'Like'}
-        loading={isLoadingLike || isSubmittingLike}
-        loadingLabel={
-          isLoadingLike
-            ? 'Checking'
-            : likeIntent === 'remove'
-              ? 'Removing'
-              : 'Adding'
-        }
+        active={state.liked}
+        disabled={state.loadingLike || state.submittingLike}
+        icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+        label={state.liked ? 'Liked' : 'Like'}
+        loading={state.loadingLike || state.submittingLike}
+        loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
         onClick={handleLikeClick}
         palette="like"
       />
 
-      <ActionButton
-        active={isWatched}
-        disabled={isLoadingWatched || isSubmittingWatched}
-        icon={isWatched ? 'solar:eye-bold' : 'solar:eye-linear'}
-        label={isWatched ? 'Unwatch' : 'Mark Watched'}
-        loading={isLoadingWatched || isSubmittingWatched}
-        loadingLabel={
-          isLoadingWatched
-            ? 'Checking'
-            : watchedIntent === 'remove'
-              ? 'Removing'
-              : 'Saving'
-        }
-        onClick={handleWatchedClick}
-        palette="neutral"
-      />
+      <div className="grid grid-cols-1 gap-2 min-[460px]:grid-cols-2">
+        <ActionButton
+          active={state.watched}
+          disabled={state.loadingWatched || state.submittingWatched}
+          icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
+          label={state.watched ? 'Unwatch' : 'Mark Watched'}
+          loading={state.loadingWatched || state.submittingWatched}
+          loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
+          onClick={handleWatchedClick}
+          palette="watched"
+        />
 
-      <ActionButton
-        active={isInWatchlist}
-        disabled={isLoadingWatchlist || isSubmittingWatchlist}
-        icon={isInWatchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-        label={isInWatchlist ? 'In Watchlist' : 'Watchlist'}
-        loading={isLoadingWatchlist || isSubmittingWatchlist}
-        loadingLabel={
-          isLoadingWatchlist
-            ? 'Checking'
-            : watchlistIntent === 'remove'
-              ? 'Removing'
-              : 'Adding'
-        }
-        onClick={handleWatchlistClick}
-        palette="watchlist"
-      />
+        <ActionButton
+          active={state.watchlist}
+          disabled={state.loadingWatchlist || state.submittingWatchlist}
+          icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+          label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+          loading={state.loadingWatchlist || state.submittingWatchlist}
+          loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
+          onClick={handleWatchlistClick}
+          palette="watchlist"
+        />
+      </div>
 
-      <ActionButton
-        icon="solar:list-broken"
-        label="Add To List"
-        onClick={handleOpenListPicker}
-        palette="neutral"
-      />
+      <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
     </div>
-  )
+  );
 }

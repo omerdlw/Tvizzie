@@ -1,31 +1,37 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react';
 
-import { usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation';
 
-import { useBackgroundActions } from '@/core/modules/background/context'
-import { ModuleError } from '@/core/modules/error-boundary'
-import { useNavHeight } from '@/core/modules/nav/hooks'
-import { Transition, TransitionWrapper } from '@/core/modules/transition'
+import { useBackgroundActions } from '@/core/modules/background/context';
+import { ModuleError } from '@/core/modules/error-boundary';
+
+function isMoviePath(pathname = '') {
+  return pathname.startsWith('/movie/');
+}
 
 export default function Template({ children }) {
-  const { resetBackground } = useBackgroundActions()
-  const { navHeight } = useNavHeight()
-  const pathname = usePathname()
+  const { resetBackground } = useBackgroundActions();
+  const pathname = usePathname();
+  const previousPathnameRef = useRef(pathname);
 
   useEffect(() => {
-    resetBackground()
-  }, [resetBackground])
+    const previousPathname = previousPathnameRef.current;
+    previousPathnameRef.current = pathname;
+
+    if (!previousPathname || previousPathname === pathname) {
+      return;
+    }
+
+    if (isMoviePath(previousPathname) && isMoviePath(pathname)) {
+      resetBackground();
+    }
+  }, [pathname, resetBackground]);
 
   return (
     <ModuleError>
-      <div className="contents" key="template-root">
-        <TransitionWrapper key="template-transition">
-          <Transition key={pathname}>{children}</Transition>
-        </TransitionWrapper>
-        <div key="nav-spacer" style={{ height: navHeight, flexShrink: 0 }}></div>
-      </div>
+      <div className="contents">{children}</div>
     </ModuleError>
-  )
+  );
 }

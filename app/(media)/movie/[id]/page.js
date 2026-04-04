@@ -1,33 +1,31 @@
-import { notFound } from 'next/navigation'
+import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/features/movie/utils'
-import { TMDB_IMG } from '@/core/constants'
-import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server'
+import { getMovieComputedData } from '@/features/movie/utils';
+import { TMDB_IMG } from '@/core/constants';
+import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server';
 
-import Client from './client'
+import Client from './client';
 
 export async function generateMetadata({ params }) {
-  const resolvedParams = await params
-  const { id } = resolvedParams
-  const response = await getMovieBase(id)
-  const movie = response?.data
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
+  const response = await getMovieBase(id);
+  const movie = response?.data;
 
   if (!movie) {
-    return { title: 'Movie Not Found' }
+    return { title: 'Movie Not Found' };
   }
 
   const title = movie.release_date
     ? `${movie.title} (${movie.release_date.split('-')[0]}) - Tvizzie`
-    : `${movie.title} - Tvizzie`
+    : `${movie.title} - Tvizzie`;
 
-  let description = movie.overview || `Details for ${movie.title}`
+  let description = movie.overview || `Details for ${movie.title}`;
   if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '')
+    description = description.substring(0, 150).replace(/\s+\S*$/, '');
   }
 
-  const imageUrl = movie.backdrop_path
-    ? `${TMDB_IMG}/w1280${movie.backdrop_path}`
-    : undefined
+  const imageUrl = movie.backdrop_path ? `${TMDB_IMG}/w1280${movie.backdrop_path}` : undefined;
 
   return {
     title,
@@ -44,30 +42,22 @@ export async function generateMetadata({ params }) {
       description,
       images: imageUrl ? [imageUrl] : [],
     },
-  }
+  };
 }
 
 export default async function Page({ params }) {
-  const resolvedParams = await params
-  const { id } = resolvedParams
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
-  const response = await getMovieBase(id)
-  const movie = response?.data
+  const response = await getMovieBase(id);
+  const movie = response?.data;
 
   if (!movie || response.status === 404) {
-    notFound()
+    notFound();
   }
 
-  const computed = getMovieComputedData(movie)
-  const secondaryDataPromise = getMovieSecondary(id).then(
-    (secondaryResponse) => secondaryResponse?.data || {}
-  )
+  const computed = getMovieComputedData(movie);
+  const secondaryDataPromise = getMovieSecondary(id).then((secondaryResponse) => secondaryResponse?.data || {});
 
-  return (
-    <Client
-      computed={computed}
-      movie={movie}
-      secondaryDataPromise={secondaryDataPromise}
-    />
-  )
+  return <Client key={movie.id} computed={computed} movie={movie} secondaryDataPromise={secondaryDataPromise} />;
 }

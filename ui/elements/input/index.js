@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { forwardRef } from 'react'
+import { forwardRef } from 'react';
 
-import { cn, resolveSlotClasses } from '../utils'
+import { cn, resolveSlotClasses } from '../utils';
 
 const Input = forwardRef(
   (
@@ -18,7 +18,7 @@ const Input = forwardRef(
     },
     ref
   ) => {
-    const classes = resolveSlotClasses(className, classNames)
+    const classes = resolveSlotClasses(className, classNames);
 
     return (
       <div className={cn(classes.wrapper)}>
@@ -28,21 +28,15 @@ const Input = forwardRef(
           type={type}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
-          className={cn(
-            'min-w-0 flex-1 bg-transparent',
-            classes.input,
-            classes.root
-          )}
+          className={cn('min-w-0 flex-1 bg-transparent', classes.input, classes.root)}
           {...props}
         />
-        {rightIcon && (
-          <span className={cn('shrink-0', classes.rightIcon)}>{rightIcon}</span>
-        )}
+        {rightIcon && <span className={cn('shrink-0', classes.rightIcon)}>{rightIcon}</span>}
       </div>
-    )
+    );
   }
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = 'Input';
 
-export default Input
+export default Input;

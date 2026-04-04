@@ -1,9 +1,7 @@
-import NotFoundTemplate from '@/features/shared/not-found-template'
+import NotFoundTemplate from '@/features/shared/not-found-template';
 
 export default function NotFound() {
   return (
-    <NotFoundTemplate
-      description="We couldn't find this movie. It may have been removed, or the link may be invalid"
-    />
-  )
+    <NotFoundTemplate description="We couldn't find this movie. It may have been removed, or the link may be invalid" />
+  );
 }

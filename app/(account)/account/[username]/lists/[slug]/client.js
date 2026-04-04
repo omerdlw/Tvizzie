@@ -1,29 +1,29 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { isPermissionDeniedError } from '@/core/utils/errors'
-import { getRatingStats } from '@/features/reviews/utils'
-import { useAccountProfile } from '@/core/modules/account'
-import { useAuth } from '@/core/modules/auth'
-import { useModal } from '@/core/modules/modal/context'
-import { useToast } from '@/core/modules/notification/hooks'
+import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { isPermissionDeniedError } from '@/core/utils/errors';
+import { getRatingStats } from '@/features/reviews/utils';
+import { useAccountProfile } from '@/core/modules/account';
+import { useAuth } from '@/core/modules/auth';
+import { useModal } from '@/core/modules/modal/context';
+import { useToast } from '@/core/modules/notification/hooks';
 import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service'
+} from '@/core/services/shared/polling-subscription.service';
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
   toggleListLike,
-} from '@/core/services/media/lists.service'
+} from '@/core/services/media/lists.service';
 import {
   deleteListReview,
   subscribeToListReviews,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service'
-import ListView from './view'
+} from '@/core/services/media/reviews.service';
+import ListView from './view';
 
 export default function Client({
   initialCollections = null,
@@ -36,20 +36,16 @@ export default function Client({
   slug,
   username,
 }) {
-  const auth = useAuth()
-  const { openModal } = useModal()
-  const toast = useToast()
-  const [list, setList] = useState(initialList)
-  const [listItems, setListItems] = useState(
-    Array.isArray(initialListItems) ? initialListItems : []
-  )
-  const [reviews, setReviews] = useState(
-    Array.isArray(initialListReviews) ? initialListReviews : []
-  )
-  const [isLikeLoading, setIsLikeLoading] = useState(false)
+  const auth = useAuth();
+  const { openModal } = useModal();
+  const toast = useToast();
+  const [list, setList] = useState(initialList);
+  const [listItems, setListItems] = useState(Array.isArray(initialListItems) ? initialListItems : []);
+  const [reviews, setReviews] = useState(Array.isArray(initialListReviews) ? initialListReviews : []);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
   const { profile: userProfile } = useAccountProfile({
     resolvedUserId: auth.user?.id || null,
-  })
+  });
 
   const {
     canViewProfileCollections,
@@ -91,28 +87,26 @@ export default function Client({
     initialResolveError,
     selectedList: list,
     username,
-  })
-  const hasSeededList = Boolean(initialList?.id) && initialList.slug === slug
-  const hasSeededListItems =
-    hasSeededList && Array.isArray(initialListItems)
-  const hasSeededListReviews =
-    hasSeededList && Array.isArray(initialListReviews)
+  });
+  const hasSeededList = Boolean(initialList?.id) && initialList.slug === slug;
+  const hasSeededListItems = hasSeededList && Array.isArray(initialListItems);
+  const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews);
 
   useEffect(() => {
-    setList(hasSeededList ? initialList : null)
-  }, [hasSeededList, initialList])
+    setList(hasSeededList ? initialList : null);
+  }, [hasSeededList, initialList]);
 
   useEffect(() => {
-    setListItems(hasSeededListItems ? initialListItems : [])
-  }, [hasSeededListItems, initialListItems])
+    setListItems(hasSeededListItems ? initialListItems : []);
+  }, [hasSeededListItems, initialListItems]);
 
   useEffect(() => {
-    setReviews(hasSeededListReviews ? initialListReviews : [])
-  }, [hasSeededListReviews, initialListReviews])
+    setReviews(hasSeededListReviews ? initialListReviews : []);
+  }, [hasSeededListReviews, initialListReviews]);
 
   useEffect(() => {
     if (!resolvedUserId || !hasSeededList) {
-      return
+      return;
     }
 
     primePollingSubscription(
@@ -124,12 +118,12 @@ export default function Client({
       }),
       initialList,
       { emit: false }
-    )
-  }, [hasSeededList, initialList, resolvedUserId, slug])
+    );
+  }, [hasSeededList, initialList, resolvedUserId, slug]);
 
   useEffect(() => {
     if (!resolvedUserId || !initialList?.id || !hasSeededListItems) {
-      return
+      return;
     }
 
     primePollingSubscription(
@@ -141,12 +135,12 @@ export default function Client({
       }),
       initialListItems,
       { emit: false }
-    )
-  }, [hasSeededListItems, initialList?.id, initialListItems, resolvedUserId])
+    );
+  }, [hasSeededListItems, initialList?.id, initialListItems, resolvedUserId]);
 
   useEffect(() => {
     if (!resolvedUserId || !initialList?.id || !hasSeededListReviews) {
-      return
+      return;
     }
 
     primePollingSubscription(
@@ -156,162 +150,140 @@ export default function Client({
       }),
       initialListReviews,
       { emit: false }
-    )
-  }, [hasSeededListReviews, initialList?.id, initialListReviews, resolvedUserId])
+    );
+  }, [hasSeededListReviews, initialList?.id, initialListReviews, resolvedUserId]);
 
   useEffect(() => {
     if (!resolvedUserId || !canViewProfileCollections) {
-      setList(null)
-      return undefined
+      setList(null);
+      return undefined;
     }
 
     return subscribeToUserListBySlug(
       resolvedUserId,
       slug,
       (nextList) => {
-        setList(nextList)
+        setList(nextList);
       },
       {
         fetchOnSubscribe: !hasSeededList,
         onError: (error) => {
           if (!hasSeededList) {
-            setList(null)
+            setList(null);
           }
 
           if (!isPermissionDeniedError(error)) {
-            toast.error(error?.message || 'List could not be loaded')
+            toast.error(error?.message || 'List could not be loaded');
           }
         },
       }
-    )
-  }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug, toast])
+    );
+  }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug, toast]);
 
   useEffect(() => {
     if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
-      setListItems([])
-      return undefined
+      setListItems([]);
+      return undefined;
     }
 
-    return subscribeToUserListItems(
-      resolvedUserId,
-      list.id,
-      setListItems,
-      {
-        fetchOnSubscribe: !hasSeededListItems,
-        onError: (error) => {
-          if (!hasSeededListItems) {
-            setListItems([])
-          }
+    return subscribeToUserListItems(resolvedUserId, list.id, setListItems, {
+      fetchOnSubscribe: !hasSeededListItems,
+      onError: (error) => {
+        if (!hasSeededListItems) {
+          setListItems([]);
+        }
 
-          if (!isPermissionDeniedError(error)) {
-            toast.error(error?.message || 'List items could not be loaded')
-          }
-        },
-      }
-    )
-  }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId, toast])
+        if (!isPermissionDeniedError(error)) {
+          toast.error(error?.message || 'List items could not be loaded');
+        }
+      },
+    });
+  }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId, toast]);
 
   useEffect(() => {
     if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
-      setReviews([])
-      return undefined
+      setReviews([]);
+      return undefined;
     }
 
-    return subscribeToListReviews(
-      { list, ownerId: resolvedUserId, listId: list.id },
-      setReviews,
-      {
-        fetchOnSubscribe: !hasSeededListReviews,
-        liveUserId: auth.user?.id || null,
-        onError: (error) => {
-          if (!hasSeededListReviews) {
-            setReviews([])
-          }
+    return subscribeToListReviews({ list, ownerId: resolvedUserId, listId: list.id }, setReviews, {
+      fetchOnSubscribe: !hasSeededListReviews,
+      liveUserId: auth.user?.id || null,
+      onError: (error) => {
+        if (!hasSeededListReviews) {
+          setReviews([]);
+        }
 
-          if (!isPermissionDeniedError(error)) {
-            toast.error(error?.message || 'List reviews could not be loaded')
-          }
-        },
-      }
-    )
-  }, [
-    auth.user?.id,
-    canViewProfileCollections,
-    hasSeededListReviews,
-    list,
-    resolvedUserId,
-    toast,
-  ])
+        if (!isPermissionDeniedError(error)) {
+          toast.error(error?.message || 'List reviews could not be loaded');
+        }
+      },
+    });
+  }, [auth.user?.id, canViewProfileCollections, hasSeededListReviews, list, resolvedUserId, toast]);
 
   const ownReview = useMemo(() => {
     if (!auth.user?.id) {
-      return null
+      return null;
     }
 
-    return reviews.find((review) => review.user?.id === auth.user.id) || null
-  }, [auth.user?.id, reviews])
+    return reviews.find((review) => review.user?.id === auth.user.id) || null;
+  }, [auth.user?.id, reviews]);
 
   const handleToggleLike = useCallback(async () => {
     if (!auth.isAuthenticated || !auth.user?.id || !list?.id || !resolvedUserId) {
-      handleSignInRequest()
-      return
+      handleSignInRequest();
+      return;
     }
 
-    setIsLikeLoading(true)
+    setIsLikeLoading(true);
 
     try {
       await toggleListLike({
         listId: list.id,
         ownerId: resolvedUserId,
         userId: auth.user.id,
-      })
+      });
     } catch (error) {
-      toast.error(error?.message || 'List could not be updated')
+      toast.error(error?.message || 'List could not be updated');
     } finally {
-      setIsLikeLoading(false)
+      setIsLikeLoading(false);
     }
-  }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast])
+  }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast]);
 
   const buildReviewModalUser = useCallback(
     (review = null) => {
       if (!auth.user?.id) {
-        return null
+        return null;
       }
 
       return {
         ...(review?.user || {}),
         ...(userProfile || {}),
         id: auth.user.id,
-      }
+      };
     },
     [auth.user?.id, userProfile]
-  )
+  );
 
   const openReviewEditorModal = useCallback(
     (review = null) => {
       if (!auth.isAuthenticated || !auth.user?.id) {
-        handleSignInRequest()
-        return
+        handleSignInRequest();
+        return;
       }
 
       if (!list?.id || !resolvedUserId) {
-        return
+        return;
       }
 
-      const targetReview = review || ownReview || null
-      const reviewIdentity = targetReview?.docPath || targetReview?.id || null
-      const ownerUsername =
-        list?.ownerSnapshot?.username || profile?.username || username || resolvedUserId
+      const targetReview = review || ownReview || null;
+      const reviewIdentity = targetReview?.docPath || targetReview?.id || null;
+      const ownerUsername = list?.ownerSnapshot?.username || profile?.username || username || resolvedUserId;
 
       openModal('REVIEW_EDITOR_MODAL', 'center', {
         data: {
           list: {
-            coverUrl:
-              list?.poster_path ||
-              list?.posterPath ||
-              list?.coverUrl ||
-              listItems?.[0]?.poster_path ||
-              null,
+            coverUrl: list?.poster_path || list?.posterPath || list?.coverUrl || listItems?.[0]?.poster_path || null,
             id: list.id,
             ownerId: resolvedUserId,
             ownerSnapshot: {
@@ -327,18 +299,16 @@ export default function Client({
             ? (updatedReview) => {
                 setReviews((current) =>
                   current.map((item) =>
-                    (item.docPath || item.id) === reviewIdentity
-                      ? { ...item, ...updatedReview }
-                      : item
+                    (item.docPath || item.id) === reviewIdentity ? { ...item, ...updatedReview } : item
                   )
-                )
+                );
               }
             : null,
           ownerId: resolvedUserId,
           review: targetReview,
           user: buildReviewModalUser(targetReview),
         },
-      })
+      });
     },
     [
       auth.isAuthenticated,
@@ -353,15 +323,15 @@ export default function Client({
       resolvedUserId,
       username,
     ]
-  )
+  );
 
   const handleOpenReviewComposer = useCallback(() => {
-    openReviewEditorModal()
-  }, [openReviewEditorModal])
+    openReviewEditorModal();
+  }, [openReviewEditorModal]);
 
   const handleDeleteReview = useCallback(async () => {
     if (!ownReview || !resolvedUserId || !list?.id || !auth.user?.id) {
-      return false
+      return false;
     }
 
     try {
@@ -369,67 +339,66 @@ export default function Client({
         listId: list.id,
         ownerId: resolvedUserId,
         userId: auth.user.id,
-      })
-      toast.success('Your review was deleted')
-      return true
+      });
+      toast.success('Your review was deleted');
+      return true;
     } catch (error) {
-      toast.error(error?.message || 'Review could not be deleted')
-      return false
+      toast.error(error?.message || 'Review could not be deleted');
+      return false;
     }
-  }, [auth.user?.id, list?.id, ownReview, resolvedUserId, toast])
+  }, [auth.user?.id, list?.id, ownReview, resolvedUserId, toast]);
 
   const handleLikeReview = useCallback(
     async (review) => {
       if (!auth.isAuthenticated || !auth.user?.id) {
-        handleSignInRequest()
-        return
+        handleSignInRequest();
+        return;
       }
 
       try {
         const nextLikedState = await toggleStoredReviewLike({
           review,
           userId: auth.user.id,
-        })
+        });
 
         setReviews((current) =>
           current.map((item) => {
             if ((item.docPath || item.id) !== (review.docPath || review.id)) {
-              return item
+              return item;
             }
 
-            const currentLikes = Array.isArray(item.likes) ? item.likes : []
+            const currentLikes = Array.isArray(item.likes) ? item.likes : [];
             const nextLikes = nextLikedState
               ? Array.from(new Set([...currentLikes, auth.user.id]))
-              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id)
+              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id);
 
             return {
               ...item,
               likes: nextLikes,
-            }
+            };
           })
-        )
+        );
       } catch (error) {
-        toast.error(error?.message || 'Review could not be updated')
+        toast.error(error?.message || 'Review could not be updated');
       }
     },
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, toast]
-  )
+  );
 
   const handleDeleteRequest = useCallback(() => {
-    handleDeleteReview()
-  }, [handleDeleteReview])
+    handleDeleteReview();
+  }, [handleDeleteReview]);
 
   const handleEditReview = useCallback(
     (review) => {
-      openReviewEditorModal(review)
+      openReviewEditorModal(review);
     },
     [openReviewEditorModal]
-  )
+  );
 
-  const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false
-  const requiresFollowForProfileInteractions =
-    !isOwner && isPrivateProfile && !canViewPrivateContent
-  const ratingStats = getRatingStats(reviews)
+  const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false;
+  const requiresFollowForProfileInteractions = !isOwner && isPrivateProfile && !canViewPrivateContent;
+  const ratingStats = getRatingStats(reviews);
 
   return (
     <ListView
@@ -477,5 +446,5 @@ export default function Client({
       userProfile={userProfile}
       watchlistCount={watchlistCount}
     />
-  )
+  );
 }

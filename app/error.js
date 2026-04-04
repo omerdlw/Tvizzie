@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
+import { useEffect } from 'react';
 
-import { FullscreenState } from '@/ui/states/fullscreen-state'
-import { EVENT_TYPES, globalEvents } from '@/core/constants/events'
-import { getErrorReporter } from '@/core/modules/error-boundary/reporter'
+import { FullscreenState } from '@/ui/states/fullscreen-state';
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
+import { getErrorReporter } from '@/core/modules/error-boundary/reporter';
 
 export default function Error({ error, reset }) {
   useEffect(() => {
     getErrorReporter().captureError(error, {
       source: 'Nextjs-App-Error-File',
-    })
+    });
 
     globalEvents.emit(EVENT_TYPES.APP_ERROR, {
       message: error?.message || 'A page-level error occurred',
       resetError: reset,
       error,
-    })
-  }, [error, reset])
+    });
+  }, [error, reset]);
 
-  return <FullscreenState />
+  return <FullscreenState />;
 }

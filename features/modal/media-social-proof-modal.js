@@ -1,40 +1,36 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
+import Link from 'next/link';
 
-import {
-  applyAvatarFallback,
-  getUserAvatarFallbackUrl,
-  getUserAvatarUrl,
-} from '@/core/utils'
-import Container from '@/core/modules/modal/container'
-import Icon from '@/ui/icon'
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import Container from '@/core/modules/modal/container';
+import Icon from '@/ui/icon';
 
 function buildUserActionMap(socialProof) {
-  const userMap = new Map()
+  const userMap = new Map();
 
   const attachAction = (users = [], action) => {
     users.forEach((user) => {
-      if (!user?.id) return
+      if (!user?.id) return;
 
       const existing = userMap.get(user.id) || {
         actions: [],
         user,
-      }
+      };
 
       if (!existing.actions.includes(action)) {
-        existing.actions.push(action)
+        existing.actions.push(action);
       }
 
-      userMap.set(user.id, existing)
-    })
-  }
+      userMap.set(user.id, existing);
+    });
+  };
 
-  attachAction(socialProof?.likes?.users, 'Like')
-  attachAction(socialProof?.watchlist?.users, 'Watchlist')
-  attachAction(socialProof?.reviews?.users, 'Review')
+  attachAction(socialProof?.likes?.users, 'Like');
+  attachAction(socialProof?.watchlist?.users, 'Watchlist');
+  attachAction(socialProof?.reviews?.users, 'Review');
 
-  return Array.from(userMap.values())
+  return Array.from(userMap.values());
 }
 
 function formatActionSummary(actions = []) {
@@ -42,75 +38,61 @@ function formatActionSummary(actions = []) {
     Review: 'Review',
     Like: 'Liked',
     Watchlist: 'Watchlist',
-  }
-  const phrases = actions.map((action) => actionMap[action] || action)
+  };
+  const phrases = actions.map((action) => actionMap[action] || action);
 
-  if (phrases.length === 0) return ''
+  if (phrases.length === 0) return '';
 
-  return phrases.join(' · ')
+  return phrases.join(' · ');
 }
 
 export default function MediaSocialProofModal({ close, data, header }) {
-  const userActions = buildUserActionMap(data?.socialProof)
+  const userActions = buildUserActionMap(data?.socialProof);
 
   return (
-    <Container
-      header={header}
-      className="h-screen w-full sm:h-screen sm:w-[420px]"
-      close={close}
-    >
+    <Container header={header} className="h-screen w-full sm:h-screen sm:w-[420px]" close={close}>
       <div className="flex h-full flex-col">
-        <div className="border-b border-white/5 px-5 py-4">
-          <p className="text-[11px] font-semibold tracking-widest text-white uppercase">
+        <div className={`border-b border-[#f59e0b] px-5 py-4`}>
+          <p className={`text-[11px] font-semibold tracking-widest text-[#1d4ed8] uppercase`}>
             People you follow engaged with this title
           </p>
-          <p className="mt-2 text-sm text-white">
-            {(data?.summaryParts || []).join(' · ')}
-          </p>
+          <p className={`mt-2 text-sm text-[#0f172a]`}>{(data?.summaryParts || []).join(' · ')}</p>
         </div>
 
         <div className="scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto">
           {userActions.map(({ actions, user }) => {
-            const avatarSrc = getUserAvatarUrl(user)
-            const avatarFallbackSrc = getUserAvatarFallbackUrl(user)
+            const avatarSrc = getUserAvatarUrl(user);
+            const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
             return (
               <Link
                 key={user.id}
                 href={`/account/${user.username || user.id}`}
                 onClick={close}
-                className="flex items-center gap-3 border-b border-white/5 px-5 py-4 transition hover:"
+                className={`flex items-center gap-3 border-b border-[#f59e0b] px-5 py-4 transition`}
               >
-                <div className="size-12 shrink-0 overflow-hidden   border border-white/5">
+                <div className={`size-12 shrink-0 overflow-hidden border border-[#f97316]`}>
                   <img
                     src={avatarSrc}
                     alt={user.displayName}
                     className="h-full w-full object-cover"
-                    onError={(event) =>
-                      applyAvatarFallback(event, avatarFallbackSrc)
-                    }
+                    onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
                   />
                 </div>
 
                 <div className="min-w-0 flex-1 -space-y-0.5">
-                  <p className="mt-0.5 truncate text-sm text-white">
-                    @{user.username || 'user'}
-                  </p>
-                  <p className="mt-1.5 truncate text-[12px] font-medium text-white">
+                  <p className={`mt-0.5 truncate text-sm text-[#0f172a]`}>@{user.username || 'user'}</p>
+                  <p className={`mt-1.5 truncate text-[12px] font-medium text-black/70`}>
                     {formatActionSummary(actions)}
                   </p>
                 </div>
 
-                <Icon
-                  icon="solar:alt-arrow-right-linear"
-                  size={18}
-                  className="shrink-0 text-white"
-                />
+                <Icon icon="solar:alt-arrow-right-linear" size={18} className={`shrink-0 text-[#7c2d12]`} />
               </Link>
-            )
+            );
           })}
         </div>
       </div>
     </Container>
-  )
+  );
 }

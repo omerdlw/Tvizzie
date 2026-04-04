@@ -1,33 +1,27 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react';
 
-import { useCurrentAccount } from '@/core/modules/account'
-import { useNavRegistry } from '@/core/modules/registry'
-import { buildAccountChildren } from './account-nav-links'
+import { useCurrentAccount } from '@/core/modules/account';
+import { useNavRegistry } from '@/core/modules/registry';
+import { buildAccountChildren } from './account-nav-links';
 
-const ACCOUNT_NAV_KEY = '/account'
-const ACCOUNT_CHILDREN_SOURCE = 'account-children'
-const ACCOUNT_CHILDREN_PRIORITY = 150
+const ACCOUNT_NAV_KEY = '/account';
+const ACCOUNT_CHILDREN_SOURCE = 'account-children';
+const ACCOUNT_CHILDREN_PRIORITY = 150;
 
 export default function AccountNavRegistry() {
-  const currentAccount = useCurrentAccount()
-  const { register, unregister } = useNavRegistry()
-  const resolvedUsername = useMemo(
-    () => String(currentAccount?.username || '').trim(),
-    [currentAccount?.username]
-  )
-  const children = useMemo(
-    () => buildAccountChildren(resolvedUsername),
-    [resolvedUsername]
-  )
+  const currentAccount = useCurrentAccount();
+  const { register, unregister } = useNavRegistry();
+  const resolvedUsername = useMemo(() => String(currentAccount?.username || '').trim(), [currentAccount?.username]);
+  const children = useMemo(() => buildAccountChildren(resolvedUsername), [resolvedUsername]);
 
   useEffect(() => {
-    const hasRoutableChildren = children.some((child) => Boolean(child.path))
+    const hasRoutableChildren = children.some((child) => Boolean(child.path));
 
     if (!hasRoutableChildren) {
-      unregister(ACCOUNT_NAV_KEY, { source: ACCOUNT_CHILDREN_SOURCE })
-      return undefined
+      unregister(ACCOUNT_NAV_KEY, { source: ACCOUNT_CHILDREN_SOURCE });
+      return undefined;
     }
 
     register(
@@ -39,12 +33,12 @@ export default function AccountNavRegistry() {
         priority: ACCOUNT_CHILDREN_PRIORITY,
         source: ACCOUNT_CHILDREN_SOURCE,
       }
-    )
+    );
 
     return () => {
-      unregister(ACCOUNT_NAV_KEY, { source: ACCOUNT_CHILDREN_SOURCE })
-    }
-  }, [children, register, unregister])
+      unregister(ACCOUNT_NAV_KEY, { source: ACCOUNT_CHILDREN_SOURCE });
+    };
+  }, [children, register, unregister]);
 
-  return null
+  return null;
 }

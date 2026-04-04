@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { forwardRef } from 'react'
+import { forwardRef } from 'react';
 
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
-import { DURATION, EASING, Z_INDEX } from '@/core/constants'
+import { DURATION, EASING, Z_INDEX } from '@/core/constants';
 
-import { cn, resolveSlotClasses } from '../utils'
+import { cn, resolveSlotClasses } from '../utils';
 
 const Tooltip = forwardRef(
   (
@@ -24,15 +24,11 @@ const Tooltip = forwardRef(
     },
     ref
   ) => {
-    const classes = resolveSlotClasses(className, classNames)
+    const classes = resolveSlotClasses(className, classNames);
 
     return (
       <TooltipPrimitive.Provider delayDuration={delayMs}>
-        <TooltipPrimitive.Root
-          open={open}
-          defaultOpen={defaultOpen}
-          onOpenChange={onOpenChange}
-        >
+        <TooltipPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
           <TooltipPrimitive.Trigger asChild className={cn(classes.trigger)}>
             {children}
           </TooltipPrimitive.Trigger>
@@ -46,7 +42,7 @@ const Tooltip = forwardRef(
                 'animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-(--z-tooltip) font-medium',
                 DURATION.CLASS.FAST,
                 EASING.CLASS.STANDARD,
-                'bg-white py-1 px-2 font-semibold text-xs rounded-[8px] text-black!',
+                'rounded-[8px] bg-black/80 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm',
                 classes.content,
                 classes.root
               )}
@@ -55,17 +51,15 @@ const Tooltip = forwardRef(
               {...props}
             >
               {text}
-              {classes.arrow && (
-                <TooltipPrimitive.Arrow className={cn(classes.arrow)} />
-              )}
+              {classes.arrow && <TooltipPrimitive.Arrow className={cn(classes.arrow)} />}
             </TooltipPrimitive.Content>
           </TooltipPrimitive.Portal>
         </TooltipPrimitive.Root>
       </TooltipPrimitive.Provider>
-    )
+    );
   }
-)
+);
 
-Tooltip.displayName = 'Tooltip'
+Tooltip.displayName = 'Tooltip';
 
-export default Tooltip
+export default Tooltip;

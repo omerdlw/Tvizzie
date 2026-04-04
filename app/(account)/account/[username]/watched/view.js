@@ -1,8 +1,8 @@
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
-import AccountSectionState from '@/features/account/section-state'
-import Registry from './registry'
+import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
+import AccountSectionState from '@/features/account/section-state';
+import Registry from './registry';
 
 export default function WatchedView({
   auth,
@@ -56,7 +56,7 @@ export default function WatchedView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -105,5 +105,5 @@ export default function WatchedView({
         />
       )}
     </AccountPageShell>
-  )
+  );
 }

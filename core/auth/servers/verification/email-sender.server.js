@@ -1,10 +1,10 @@
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
 
-const BREVO_DEFAULT_HOST = 'smtp-relay.brevo.com'
-const BREVO_DEFAULT_PORT = 587
+const BREVO_DEFAULT_HOST = 'smtp-relay.brevo.com';
+const BREVO_DEFAULT_PORT = 587;
 
 function normalizeEnvValue(value) {
-  let normalized = String(value || '').trim()
+  let normalized = String(value || '').trim();
 
   // Handle accidental nested quoting like "\"value\"" from copy/paste.
   for (let index = 0; index < 3; index += 1) {
@@ -12,63 +12,49 @@ function normalizeEnvValue(value) {
       (normalized.startsWith('"') && normalized.endsWith('"')) ||
       (normalized.startsWith("'") && normalized.endsWith("'"))
     ) {
-      normalized = normalized.slice(1, -1).trim()
-      continue
+      normalized = normalized.slice(1, -1).trim();
+      continue;
     }
 
-    break
+    break;
   }
 
-  return normalized
-    .replace(/\\"/g, '"')
-    .replace(/\\'/g, "'")
-    .replace(/\\r/g, '\r')
-    .replace(/\\n/g, '\n')
+  return normalized.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\r/g, '\r').replace(/\\n/g, '\n');
 }
 
 function resolveProvider() {
-  const explicitProvider = normalizeEnvValue(
-    process.env.EMAIL_PROVIDER
-  ).toLowerCase()
+  const explicitProvider = normalizeEnvValue(process.env.EMAIL_PROVIDER).toLowerCase();
 
   if (explicitProvider) {
-    return explicitProvider
+    return explicitProvider;
   }
 
   if (process.env.BREVO_SMTP_KEY || process.env.BREVO_SMTP_LOGIN) {
-    return 'brevo'
+    return 'brevo';
   }
 
-  return 'smtp'
+  return 'smtp';
 }
 
 function toNumber(value, fallback) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function resolveBrevoConfig() {
-  const host =
-    normalizeEnvValue(process.env.BREVO_SMTP_HOST) || BREVO_DEFAULT_HOST
+  const host = normalizeEnvValue(process.env.BREVO_SMTP_HOST) || BREVO_DEFAULT_HOST;
   const port = toNumber(
-    normalizeEnvValue(process.env.BREVO_SMTP_PORT) ||
-      normalizeEnvValue(process.env.SMTP_PORT),
+    normalizeEnvValue(process.env.BREVO_SMTP_PORT) || normalizeEnvValue(process.env.SMTP_PORT),
     BREVO_DEFAULT_PORT
-  )
-  const user =
-    normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) ||
-    normalizeEnvValue(process.env.SMTP_USER)
-  const pass =
-    normalizeEnvValue(process.env.BREVO_SMTP_KEY) ||
-    normalizeEnvValue(process.env.SMTP_PASS)
-  const from =
-    normalizeEnvValue(process.env.BREVO_SMTP_FROM) ||
-    normalizeEnvValue(process.env.SMTP_FROM)
+  );
+  const user = normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) || normalizeEnvValue(process.env.SMTP_USER);
+  const pass = normalizeEnvValue(process.env.BREVO_SMTP_KEY) || normalizeEnvValue(process.env.SMTP_PASS);
+  const from = normalizeEnvValue(process.env.BREVO_SMTP_FROM) || normalizeEnvValue(process.env.SMTP_FROM);
 
   if (!host || !port || !user || !pass || !from) {
     throw new Error(
       'Brevo SMTP configuration is incomplete. Set BREVO_SMTP_LOGIN, BREVO_SMTP_KEY, and BREVO_SMTP_FROM'
-    )
+    );
   }
 
   return {
@@ -77,26 +63,24 @@ function resolveBrevoConfig() {
     host,
     port,
     secure: port === 465,
-  }
+  };
 }
 
 function resolveTransportConfig() {
-  const provider = resolveProvider()
+  const provider = resolveProvider();
 
   if (provider === 'brevo') {
-    return resolveBrevoConfig()
+    return resolveBrevoConfig();
   }
 
-  const host = normalizeEnvValue(process.env.SMTP_HOST)
-  const port = toNumber(normalizeEnvValue(process.env.SMTP_PORT), 587)
-  const user = normalizeEnvValue(process.env.SMTP_USER)
-  const pass = normalizeEnvValue(process.env.SMTP_PASS)
-  const from = normalizeEnvValue(process.env.SMTP_FROM)
+  const host = normalizeEnvValue(process.env.SMTP_HOST);
+  const port = toNumber(normalizeEnvValue(process.env.SMTP_PORT), 587);
+  const user = normalizeEnvValue(process.env.SMTP_USER);
+  const pass = normalizeEnvValue(process.env.SMTP_PASS);
+  const from = normalizeEnvValue(process.env.SMTP_FROM);
 
   if (!host || !port || !user || !pass || !from) {
-    throw new Error(
-      'SMTP configuration is incomplete. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM'
-    )
+    throw new Error('SMTP configuration is incomplete. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM');
   }
 
   return {
@@ -105,7 +89,7 @@ function resolveTransportConfig() {
     host,
     port,
     secure: port === 465,
-  }
+  };
 }
 
 const VERIFICATION_PURPOSES = {
@@ -116,40 +100,37 @@ const VERIFICATION_PURPOSES = {
   PROVIDER_LINK: 'provider-link',
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
-}
+};
 
 function resolveVerificationCopy(purpose) {
   if (purpose === VERIFICATION_PURPOSES.ACCOUNT_DELETE) {
     return {
-      description:
-        'Use this one-time code to confirm permanent deletion of your Tvizzie account',
+      description: 'Use this one-time code to confirm permanent deletion of your Tvizzie account',
       heading: 'Confirm account deletion',
       label: 'Account Deletion Code',
       subjectSuffix: 'account deletion',
       title: 'Tvizzie Account Deletion Code',
-    }
+    };
   }
 
   if (purpose === VERIFICATION_PURPOSES.EMAIL_CHANGE) {
     return {
-      description:
-        'Use this one-time code to verify and complete your new Tvizzie email address',
+      description: 'Use this one-time code to verify and complete your new Tvizzie email address',
       heading: 'Confirm your new email',
       label: 'Email Change Code',
       subjectSuffix: 'email change',
       title: 'Tvizzie Email Change Code',
-    }
+    };
   }
 
   if (purpose === VERIFICATION_PURPOSES.PASSWORD_CHANGE) {
     return {
-      description:
-        'Use this one-time code to confirm your Tvizzie password change',
+      description: 'Use this one-time code to confirm your Tvizzie password change',
       heading: 'Confirm your password change',
       label: 'Password Change Code',
       subjectSuffix: 'password change',
       title: 'Tvizzie Password Change Code',
-    }
+    };
   }
 
   if (purpose === VERIFICATION_PURPOSES.PASSWORD_RESET) {
@@ -159,56 +140,48 @@ function resolveVerificationCopy(purpose) {
       label: 'Password Reset Code',
       subjectSuffix: 'password reset',
       title: 'Tvizzie Password Reset Code',
-    }
+    };
   }
 
   if (purpose === VERIFICATION_PURPOSES.PROVIDER_LINK) {
     return {
-      description:
-        'Use this one-time code to confirm linked provider changes on your Tvizzie account',
+      description: 'Use this one-time code to confirm linked provider changes on your Tvizzie account',
       heading: 'Confirm provider change',
       label: 'Provider Change Code',
       subjectSuffix: 'provider change',
       title: 'Tvizzie Provider Change Code',
-    }
+    };
   }
 
   if (purpose === VERIFICATION_PURPOSES.SIGN_IN) {
     return {
-      description:
-        'Use this one-time code to finish signing in to your Tvizzie account',
+      description: 'Use this one-time code to finish signing in to your Tvizzie account',
       heading: 'Confirm your sign in',
       label: 'Login Code',
       subjectSuffix: 'login',
       title: 'Tvizzie Login Code',
-    }
+    };
   }
 
   return {
-    description:
-      'Use this one-time code to finish creating your Tvizzie account',
+    description: 'Use this one-time code to finish creating your Tvizzie account',
     heading: 'Verify your email',
     label: 'Verification Code',
     subjectSuffix: 'sign-up',
     title: 'Tvizzie Verification Code',
-  }
+  };
 }
 
-export async function sendVerificationCodeEmail({
-  email,
-  code,
-  expiresAt,
-  purpose = VERIFICATION_PURPOSES.SIGN_UP,
-}) {
-  const transportConfig = resolveTransportConfig()
+export async function sendVerificationCodeEmail({ email, code, expiresAt, purpose = VERIFICATION_PURPOSES.SIGN_UP }) {
+  const transportConfig = resolveTransportConfig();
   const transporter = nodemailer.createTransport({
     auth: transportConfig.auth,
     host: transportConfig.host,
     port: transportConfig.port,
     secure: transportConfig.secure,
-  })
+  });
 
-  const expiryDate = new Date(expiresAt)
+  const expiryDate = new Date(expiresAt);
   const expiresAtLabel = expiryDate.toLocaleString('en-US', {
     hour12: false,
     month: 'short',
@@ -217,16 +190,16 @@ export async function sendVerificationCodeEmail({
     hour: '2-digit',
     minute: '2-digit',
     timeZoneName: 'short',
-  })
-  const normalizedCode = String(code || '').trim()
-  const codeWithSpacing = normalizedCode.split('').join(' ')
+  });
+  const normalizedCode = String(code || '').trim();
+  const codeWithSpacing = normalizedCode.split('').join(' ');
   const copy = resolveVerificationCopy(
     String(purpose || '')
       .trim()
       .toLowerCase()
-  )
+  );
 
-  const subject = `${normalizedCode} is your Tvizzie ${copy.subjectSuffix} code`
+  const subject = `${normalizedCode} is your Tvizzie ${copy.subjectSuffix} code`;
   const text = [
     copy.title,
     '',
@@ -236,7 +209,7 @@ export async function sendVerificationCodeEmail({
     '',
     'Never share this code with anyone',
     'If you did not request this code, you can ignore this email',
-  ].join('\n')
+  ].join('\n');
 
   const html = `
     <!doctype html>
@@ -287,7 +260,7 @@ export async function sendVerificationCodeEmail({
         </table>
       </body>
     </html>
-  `
+  `;
 
   try {
     await transporter.sendMail({
@@ -297,20 +270,14 @@ export async function sendVerificationCodeEmail({
       subject,
       text,
       to: email,
-    })
+    });
   } catch (error) {
-    const message = String(error?.message || '')
-    if (
-      message.includes('Invalid login') ||
-      message.includes('BadCredentials') ||
-      message.includes('535')
-    ) {
-      throw new Error(
-        'Email provider authentication failed. Verify Brevo SMTP credentials'
-      )
+    const message = String(error?.message || '');
+    if (message.includes('Invalid login') || message.includes('BadCredentials') || message.includes('535')) {
+      throw new Error('Email provider authentication failed. Verify Brevo SMTP credentials');
     }
 
-    throw error
+    throw error;
   }
 }
 
@@ -320,5 +287,5 @@ export async function sendSignUpVerificationCode({ email, code, expiresAt }) {
     email,
     expiresAt,
     purpose: VERIFICATION_PURPOSES.SIGN_UP,
-  })
+  });
 }

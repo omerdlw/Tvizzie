@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import NotFoundAction from '@/features/navigation/actions/not-found-action'
-import { useRegistry } from '@/core/modules/registry'
-import { FullscreenState } from '@/ui/states/fullscreen-state'
+import NotFoundAction from '@/features/navigation/actions/not-found-action';
+import { useRegistry } from '@/core/modules/registry';
+import { FullscreenState } from '@/ui/states/fullscreen-state';
 
 export default function NotFoundTemplate({ description }) {
   useRegistry({
@@ -13,11 +13,11 @@ export default function NotFoundTemplate({ description }) {
       isNotFound: true,
       title: '404',
     },
-  })
+  });
 
   return (
-    <FullscreenState>
+    <FullscreenState className="h-screen w-screen" contentClassName="h-screen w-screen">
       <p className="text-center">{description}</p>
     </FullscreenState>
-  )
+  );
 }

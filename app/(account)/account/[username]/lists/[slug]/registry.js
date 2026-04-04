@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+} from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail'
+const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
 
 export default function Registry({
   auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
@@ -40,7 +40,7 @@ export default function Registry({
   unfollowConfirmation = null,
   username,
 }) {
-  const canLikeList = Boolean(list) && !showProfileFollowAction
+  const canLikeList = Boolean(list) && !showProfileFollowAction;
 
   useRegistry(
     buildAccountPageState({
@@ -83,7 +83,7 @@ export default function Registry({
       reviewState,
       showProfileFollowAction,
     })
-  )
+  );
 
-  return null
+  return null;
 }

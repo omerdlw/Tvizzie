@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
 export function createAuthStorage() {
   return {
     clear() {},
     read() {
-      return null
+      return null;
     },
     write() {},
-  }
+  };
 }

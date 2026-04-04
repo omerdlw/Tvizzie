@@ -1,87 +1,78 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 
-import { getPreferredMovieBackground } from '@/features/movie/utils'
-import {
-  calculateAge,
-  getBackgroundMovieCandidates,
-} from '@/features/person/utils'
-import { TMDB_IMG } from '@/core/constants'
-import { TmdbService } from '@/core/services/tmdb/tmdb.service'
-import PersonView from './view'
+import { getPreferredMovieBackground } from '@/features/movie/utils';
+import { calculateAge, getBackgroundMovieCandidates } from '@/features/person/utils';
+import { TMDB_IMG } from '@/core/constants';
+import { TmdbService } from '@/core/services/tmdb/tmdb.service';
+import PersonView from './view';
 
 function getMovieBackdropSrc(credit) {
-  return credit?.backdrop_path ? `${TMDB_IMG}/w1280${credit.backdrop_path}` : null
+  return credit?.backdrop_path ? `${TMDB_IMG}/original${credit.backdrop_path}` : null;
 }
 
 function getFallbackBackgroundImage(person) {
-  const candidates = getBackgroundMovieCandidates(person)
+  const candidates = getBackgroundMovieCandidates(person);
 
-  return candidates.map(getMovieBackdropSrc).find(Boolean) || null
+  return candidates.map(getMovieBackdropSrc).find(Boolean) || null;
 }
 
 async function resolvePersonBackgroundImage(person) {
-  const candidates = getBackgroundMovieCandidates(person)
+  const candidates = getBackgroundMovieCandidates(person);
 
   if (!candidates.length) {
-    return null
+    return null;
   }
 
   const results = await Promise.all(
     candidates.map(async (credit) => {
       try {
-        const response = await TmdbService.getMovieImages(credit.id)
+        const response = await TmdbService.getMovieImages(credit.id);
 
-        return getPreferredMovieBackground(response?.data) || getMovieBackdropSrc(credit)
+        return getPreferredMovieBackground(response?.data) || getMovieBackdropSrc(credit);
       } catch {
-        return getMovieBackdropSrc(credit)
+        return getMovieBackdropSrc(credit);
       }
     })
-  )
+  );
 
-  return results.find(Boolean) || null
+  return results.find(Boolean) || null;
 }
 
 export default function Client({ person, secondaryDataPromise }) {
-  const [activeView, setActiveView] = useState('main')
-  const fallbackBackgroundImage = useMemo(
-    () => getFallbackBackgroundImage(person),
-    [person]
-  )
-  const [backgroundImage, setBackgroundImage] = useState(fallbackBackgroundImage)
-  const age = useMemo(
-    () => calculateAge(person?.birthday, person?.deathday),
-    [person?.birthday, person?.deathday]
-  )
+  const [activeView, setActiveView] = useState('main');
+  const fallbackBackgroundImage = useMemo(() => getFallbackBackgroundImage(person), [person]);
+  const [backgroundImage, setBackgroundImage] = useState(fallbackBackgroundImage);
+  const age = useMemo(() => calculateAge(person?.birthday, person?.deathday), [person?.birthday, person?.deathday]);
 
   useEffect(() => {
-    let isCurrent = true
+    let isCurrent = true;
 
-    setBackgroundImage(fallbackBackgroundImage)
+    setBackgroundImage(fallbackBackgroundImage);
 
     void (async () => {
       try {
-        const secondaryPerson = await Promise.resolve(secondaryDataPromise)
+        const secondaryPerson = await Promise.resolve(secondaryDataPromise);
         const nextBackgroundImage = await resolvePersonBackgroundImage({
           ...person,
           ...secondaryPerson,
-        })
+        });
 
         if (isCurrent) {
-          setBackgroundImage(nextBackgroundImage || fallbackBackgroundImage)
+          setBackgroundImage(nextBackgroundImage || fallbackBackgroundImage);
         }
       } catch {
         if (isCurrent) {
-          setBackgroundImage(fallbackBackgroundImage)
+          setBackgroundImage(fallbackBackgroundImage);
         }
       }
-    })()
+    })();
 
     return () => {
-      isCurrent = false
-    }
-  }, [fallbackBackgroundImage, person, secondaryDataPromise])
+      isCurrent = false;
+    };
+  }, [fallbackBackgroundImage, person, secondaryDataPromise]);
 
   return (
     <PersonView
@@ -92,5 +83,5 @@ export default function Client({ person, secondaryDataPromise }) {
       age={age}
       backgroundImage={backgroundImage}
     />
-  )
+  );
 }

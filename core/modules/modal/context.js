@@ -1,22 +1,10 @@
-'use client'
+'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-  useMemo,
-  useRef,
-} from 'react'
+import { createContext, useCallback, useContext, useState, useMemo, useRef } from 'react';
 
-import Modal from '@/core/modules/modal'
-import {
-  MODAL_BREAKPOINTS,
-  MODAL_POSITIONS,
-  MODAL_PRESETS,
-  MODAL_CHROME,
-} from '@/core/modules/modal/config'
-import { resolveModalHeader } from '@/core/modules/modal/header'
+import Modal from '@/core/modules/modal';
+import { MODAL_BREAKPOINTS, MODAL_POSITIONS, MODAL_PRESETS, MODAL_CHROME } from '@/core/modules/modal/config';
+import { resolveModalHeader } from '@/core/modules/modal/header';
 
 const FALLBACK_MODAL_STATE = Object.freeze({
   position: MODAL_POSITIONS.CENTER,
@@ -28,57 +16,54 @@ const FALLBACK_MODAL_STATE = Object.freeze({
   title: null,
   props: {},
   modalStack: [],
-})
+});
 
 const FALLBACK_MODAL_ACTIONS = Object.freeze({
   openModal: async () => null,
   closeModal: () => {},
-})
+});
 
-const ModalActionsContext = createContext(FALLBACK_MODAL_ACTIONS)
-const ModalStateContext = createContext(FALLBACK_MODAL_STATE)
+const ModalActionsContext = createContext(FALLBACK_MODAL_ACTIONS);
+const ModalStateContext = createContext(FALLBACK_MODAL_STATE);
 
 function isPlainObject(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function getResponsivePosition(position, responsivePosition) {
   if (!isPlainObject(responsivePosition) || typeof window === 'undefined') {
-    return position
+    return position;
   }
 
-  const isMobileViewport = window.matchMedia(
-    `(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`
-  ).matches
+  const isMobileViewport = window.matchMedia(`(max-width: ${MODAL_BREAKPOINTS.MOBILE_MAX_WIDTH}px)`).matches;
 
   if (isMobileViewport && responsivePosition.mobile) {
-    return responsivePosition.mobile
+    return responsivePosition.mobile;
   }
 
   if (!isMobileViewport && responsivePosition.desktop) {
-    return responsivePosition.desktop
+    return responsivePosition.desktop;
   }
 
-  return position
+  return position;
 }
 
 function normalizePositionConfig(positionInput, config = {}) {
-  const basePosition =
-    typeof positionInput === 'string' ? positionInput : MODAL_POSITIONS.CENTER
+  const basePosition = typeof positionInput === 'string' ? positionInput : MODAL_POSITIONS.CENTER;
 
   const responsivePosition =
     (isPlainObject(config.responsivePosition) && config.responsivePosition) ||
     (isPlainObject(positionInput) && positionInput) ||
-    null
+    null;
 
   return {
     position: getResponsivePosition(basePosition, responsivePosition),
     responsivePosition,
-  }
+  };
 }
 
 function createModalState(modalStack = []) {
-  const activeModal = modalStack[modalStack.length - 1] || null
+  const activeModal = modalStack[modalStack.length - 1] || null;
 
   return {
     position: activeModal?.position || MODAL_POSITIONS.CENTER,
@@ -90,38 +75,35 @@ function createModalState(modalStack = []) {
     title: activeModal?.title || null,
     props: activeModal?.props || {},
     modalStack,
-  }
+  };
 }
 
-const INITIAL_STATE = createModalState([])
+const INITIAL_STATE = createModalState([]);
 
 export function ModalProvider({ children }) {
-  const [modalState, setModalState] = useState(INITIAL_STATE)
+  const [modalState, setModalState] = useState(INITIAL_STATE);
 
-  const modalStackRef = useRef([])
-  const resolveMapRef = useRef(new Map())
-  const onCloseMapRef = useRef(new Map())
-  const modalIdRef = useRef(0)
+  const modalStackRef = useRef([]);
+  const resolveMapRef = useRef(new Map());
+  const onCloseMapRef = useRef(new Map());
+  const modalIdRef = useRef(0);
 
   const syncModalStack = useCallback((nextStack) => {
-    modalStackRef.current = nextStack
-    setModalState(createModalState(nextStack))
-  }, [])
+    modalStackRef.current = nextStack;
+    setModalState(createModalState(nextStack));
+  }, []);
 
   const openModal = useCallback(
     (modalType, positionInput = MODAL_POSITIONS.CENTER, config = {}) => {
       const resolvedConfig = {
         ...(MODAL_PRESETS[modalType] || {}),
         ...config,
-      }
+      };
 
-      const { position, responsivePosition } = normalizePositionConfig(
-        positionInput,
-        resolvedConfig
-      )
+      const { position, responsivePosition } = normalizePositionConfig(positionInput, resolvedConfig);
 
-      const resolvedHeader = resolveModalHeader(modalType, resolvedConfig)
-      const modalId = ++modalIdRef.current
+      const resolvedHeader = resolveModalHeader(modalType, resolvedConfig);
+      const modalId = ++modalIdRef.current;
 
       const modalEntry = {
         id: modalId,
@@ -131,60 +113,59 @@ export function ModalProvider({ children }) {
         title: resolvedHeader.title,
         chrome: resolvedConfig.chrome || MODAL_CHROME.PANEL,
         props: resolvedConfig.data ?? resolvedConfig,
-      }
+      };
 
-      syncModalStack([...modalStackRef.current, modalEntry])
+      syncModalStack([...modalStackRef.current, modalEntry]);
 
       return new Promise((resolve) => {
-        resolveMapRef.current.set(modalId, resolve)
-        onCloseMapRef.current.set(modalId, resolvedConfig.onClose || null)
-      })
+        resolveMapRef.current.set(modalId, resolve);
+        onCloseMapRef.current.set(modalId, resolvedConfig.onClose || null);
+      });
     },
     [syncModalStack]
-  )
+  );
 
   const closeModal = useCallback(
     (result = null, targetModalId = null) => {
-      const currentStack = modalStackRef.current
+      const currentStack = modalStackRef.current;
 
       if (currentStack.length === 0) {
-        return
+        return;
       }
 
-      const modalId =
-        targetModalId || currentStack[currentStack.length - 1]?.id || null
+      const modalId = targetModalId || currentStack[currentStack.length - 1]?.id || null;
 
       if (!modalId) {
-        return
+        return;
       }
 
-      const modalToClose = currentStack.find((entry) => entry.id === modalId)
+      const modalToClose = currentStack.find((entry) => entry.id === modalId);
 
       if (!modalToClose) {
-        return
+        return;
       }
 
-      const nextStack = currentStack.filter((entry) => entry.id !== modalId)
-      syncModalStack(nextStack)
+      const nextStack = currentStack.filter((entry) => entry.id !== modalId);
+      syncModalStack(nextStack);
 
-      const onClose = onCloseMapRef.current.get(modalId)
+      const onClose = onCloseMapRef.current.get(modalId);
       if (typeof onClose === 'function') {
         try {
-          onClose(result)
+          onClose(result);
         } catch (error) {
-          console.error('Modal onClose handler failed:', error)
+          console.error('Modal onClose handler failed:', error);
         }
       }
-      onCloseMapRef.current.delete(modalId)
+      onCloseMapRef.current.delete(modalId);
 
-      const resolve = resolveMapRef.current.get(modalId)
+      const resolve = resolveMapRef.current.get(modalId);
       if (typeof resolve === 'function') {
-        resolve(result)
+        resolve(result);
       }
-      resolveMapRef.current.delete(modalId)
+      resolveMapRef.current.delete(modalId);
     },
     [syncModalStack]
-  )
+  );
 
   const actionsValue = useMemo(
     () => ({
@@ -192,7 +173,7 @@ export function ModalProvider({ children }) {
       closeModal,
     }),
     [openModal, closeModal]
-  )
+  );
 
   return (
     <ModalActionsContext.Provider value={actionsValue}>
@@ -201,22 +182,22 @@ export function ModalProvider({ children }) {
         {children}
       </ModalStateContext.Provider>
     </ModalActionsContext.Provider>
-  )
+  );
 }
 
 export function useModalActions() {
-  const context = useContext(ModalActionsContext)
-  return context
+  const context = useContext(ModalActionsContext);
+  return context;
 }
 
 export function useModalState() {
-  const context = useContext(ModalStateContext)
-  return context
+  const context = useContext(ModalStateContext);
+  return context;
 }
 
 export function useModal() {
-  const actions = useModalActions()
-  const state = useModalState()
+  const actions = useModalActions();
+  const state = useModalState();
 
-  return useMemo(() => ({ ...actions, ...state }), [actions, state])
+  return useMemo(() => ({ ...actions, ...state }), [actions, state]);
 }

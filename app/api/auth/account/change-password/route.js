@@ -1,33 +1,30 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
-import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server'
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server'
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server'
-import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server'
+import { assertPasswordProviderLinked } from '@/core/auth/servers/account/account-deletion.server';
+import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
+import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
 import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
-} from '@/core/auth/servers/security/password-security.server'
+} from '@/core/auth/servers/security/password-security.server';
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server'
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server'
-import { clearAuthCookies } from '@/core/auth/servers/session/session.server'
-import {
-  assertRecentReauth,
-  clearRecentReauthCookie,
-} from '@/core/auth/servers/security/recent-reauth.server'
-import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server'
+} from '@/core/auth/servers/security/rate-limit.server';
+import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
+import { assertRecentReauth, clearRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server';
+import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server';
 
 function normalizeEmail(value) {
   return String(value || '')
     .trim()
-    .toLowerCase()
+    .toLowerCase();
 }
 
 function normalizePassword(value) {
-  return String(value || '')
+  return String(value || '');
 }
 
 async function enforcePasswordChangeRateLimit({ userId, requestContext }) {
@@ -41,73 +38,70 @@ async function enforcePasswordChangeRateLimit({ userId, requestContext }) {
         { id: 'device', value: requestContext.deviceId, limit: 12 },
       ],
       message: 'Too many password change attempts',
-    })
+    });
   } catch (error) {
     if (!isSlidingWindowRateLimitError(error)) {
-      throw error
+      throw error;
     }
 
     if (error.dimension === 'user') {
-      throw new Error('Too many password change attempts for this account')
+      throw new Error('Too many password change attempts for this account');
     }
 
     if (error.dimension === 'device') {
-      throw new Error('Too many password change attempts from this device')
+      throw new Error('Too many password change attempts from this device');
     }
 
-    throw new Error('Too many password change attempts from this network')
+    throw new Error('Too many password change attempts from this network');
   }
 }
 
 export async function POST(request) {
-  const requestContext = getRequestContext(request)
-  let email = null
-  let userId = null
-  let challengeJti = null
-  let sessionJti = null
+  const requestContext = getRequestContext(request);
+  let email = null;
+  let userId = null;
+  let challengeJti = null;
+  let sessionJti = null;
 
   try {
-    const body = await request.json().catch(() => ({}))
-    const currentPassword = normalizePassword(body?.currentPassword)
-    const newPassword = validateStrongPassword(body?.newPassword)
+    const body = await request.json().catch(() => ({}));
+    const currentPassword = normalizePassword(body?.currentPassword);
+    const newPassword = validateStrongPassword(body?.newPassword);
 
     if (!currentPassword) {
-      return NextResponse.json(
-        { error: 'currentPassword is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'currentPassword is required' }, { status: 400 });
     }
 
-    assertCsrfRequest(request)
+    assertCsrfRequest(request);
 
     const authContext = await requireSessionRequest(request, {
       allowBearerFallback: true,
-    })
+    });
 
-    userId = authContext.userId
-    sessionJti = authContext.sessionJti || null
-    email = normalizeEmail(authContext.email)
+    userId = authContext.userId;
+    sessionJti = authContext.sessionJti || null;
+    email = normalizeEmail(authContext.email);
     assertRecentReauth(request, {
       sessionJti,
       userId,
-    })
-    assertPasswordProviderLinked(authContext.userRecord)
+    });
+    assertPasswordProviderLinked(authContext.userRecord);
 
     const stepUp = assertStepUp(request, {
       purpose: 'password-change',
       userId,
-    })
-    challengeJti = stepUp?.challengeJti || null
+    });
+    challengeJti = stepUp?.challengeJti || null;
 
     await enforcePasswordChangeRateLimit({
       requestContext,
       userId,
-    })
+    });
 
     await verifyPasswordWithIdentityToolkit({
       email,
       password: currentPassword,
-    })
+    });
 
     await authContext.adminAuth.updateUser(userId, {
       appMetadata: {
@@ -115,8 +109,8 @@ export async function POST(request) {
         tvz_password_enabled: true,
       },
       password: newPassword,
-    })
-    await authContext.adminAuth.revokeRefreshTokens(userId)
+    });
+    await authContext.adminAuth.revokeRefreshTokens(userId);
 
     await writeAuthAuditLog({
       request,
@@ -134,23 +128,20 @@ export async function POST(request) {
         stepUpPurpose: 'password-change',
       },
     }).catch((auditError) => {
-      console.error(
-        '[AuthAudit] password-change success log failed:',
-        auditError
-      )
-    })
+      console.error('[AuthAudit] password-change success log failed:', auditError);
+    });
 
     const response = NextResponse.json({
       ok: true,
       nextAction: 'signed_out',
       messageCode: 'PASSWORD_CHANGED',
-    })
-    clearAuthCookies(response, request)
-    clearRecentReauthCookie(response)
-    clearStepUpCookie(response)
-    return response
+    });
+    clearAuthCookies(response, request);
+    clearRecentReauthCookie(response);
+    clearStepUpCookie(response);
+    return response;
   } catch (error) {
-    const message = String(error?.message || 'Password could not be changed')
+    const message = String(error?.message || 'Password could not be changed');
     const status = message.includes('Too many')
       ? 429
       : message.includes('Invalid CSRF token')
@@ -168,7 +159,7 @@ export async function POST(request) {
               message.includes('must contain') ||
               message.includes('at least')
             ? 400
-            : 500
+            : 500;
 
     await writeAuthAuditLog({
       request,
@@ -188,11 +179,8 @@ export async function POST(request) {
         stepUpPurpose: 'password-change',
       },
     }).catch((auditError) => {
-      console.error(
-        '[AuthAudit] password-change failure log failed:',
-        auditError
-      )
-    })
+      console.error('[AuthAudit] password-change failure log failed:', auditError);
+    });
 
     await writeAuthAuditLog({
       request,
@@ -212,12 +200,9 @@ export async function POST(request) {
         stepUpPurpose: 'password-change',
       },
     }).catch((auditError) => {
-      console.error(
-        '[AuthAudit] failed-attempt password-change log failed:',
-        auditError
-      )
-    })
+      console.error('[AuthAudit] failed-attempt password-change log failed:', auditError);
+    });
 
-    return NextResponse.json({ error: message }, { status })
+    return NextResponse.json({ error: message }, { status });
   }
 }

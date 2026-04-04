@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants'
-import { cn } from '@/core/utils'
+import { DURATION, EASING } from '@/core/constants';
+import { cn } from '@/core/utils';
 
-import { NOTIFICATION_CONFIG } from './config'
+import { NOTIFICATION_CONFIG } from './config';
 
 export function NotificationOverlay({ notification, onDismiss, type }) {
   const config = {
     ...(NOTIFICATION_CONFIG[type] || {}),
     ...notification,
-  }
+  };
 
-  const dismissible = config.dismissible
+  const dismissible = config.dismissible;
 
   return (
     <motion.div
@@ -24,7 +24,7 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
       whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
       onDragEnd={(e, { offset, velocity }) => {
         if (offset.x > 100 || velocity.x > 500) {
-          onDismiss()
+          onDismiss();
         }
       }}
       initial={{ x: 50, scale: 0.95 }}
@@ -36,17 +36,13 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
       }}
       transition={EASING.SPRING_CONFIG.NOTIFICATION}
       className={cn(
-        'pointer-events-auto w-full max-w-md min-w-xs rounded-[16px]',
-        ' border-[1.5px] border-white/10 hover:border-white/15',
-        'bg-black/50 backdrop-blur-2xl',
+        'pointer-events-auto w-full max-w-md min-w-xs rounded-[16px] border-[1.5px] bg-white!',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}
     >
       <div className="flex flex-col space-y-2 p-4">
-        <p className="text-sm font-semibold">
-              {notification.description || notification.message}
-        </p>
+        <p className="text-sm font-semibold">{notification.description || notification.message}</p>
         {notification.actions && (
           <div className="flex gap-2">
             {notification.actions.map((action, index) => (
@@ -54,11 +50,13 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
                 key={index}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
-                  e.stopPropagation()
-                  action.onClick?.()
-                  if (action.dismiss) onDismiss()
+                  e.stopPropagation();
+                  action.onClick?.();
+                  if (action.dismiss) onDismiss();
                 }}
-                className="w-full  bg-white/5 border border-white/5 hover:border-white/10 p-2 text-sm font-semibold transition-colors hover:bg-white/70"
+                className={
+                  'w-full border border-black/5 bg-black/5 text-sm font-semibold transition-colors hover:border-black/10 hover:bg-black/10'
+                }
               >
                 {action.label}
               </button>
@@ -67,5 +65,5 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
         )}
       </div>
     </motion.div>
-  )
+  );
 }

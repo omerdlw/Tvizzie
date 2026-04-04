@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import { useCallback } from 'react'
+import { useCallback } from 'react';
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
-import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/lists/list-creator-utils'
-import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { useAuth } from '@/core/modules/auth'
-import ListsView from './view'
+import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/lists/list-creator-utils';
+import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { useAuth } from '@/core/modules/auth';
+import ListsView from './view';
 
 export default function Client({
   currentPage = 1,
@@ -17,8 +17,8 @@ export default function Client({
   initialResolveError = null,
   username,
 }) {
-  const auth = useAuth()
-  const router = useRouter()
+  const auth = useAuth();
+  const router = useRouter();
 
   const {
     canViewProfileCollections,
@@ -56,10 +56,10 @@ export default function Client({
     initialResolvedUserId,
     initialResolveError,
     username,
-  })
+  });
   const handleOpenListCreator = useCallback(() => {
-    router.push(ACCOUNT_LIST_CREATOR_PATH)
-  }, [router])
+    router.push(ACCOUNT_LIST_CREATOR_PATH);
+  }, [router]);
 
   return (
     <ListsView
@@ -95,5 +95,5 @@ export default function Client({
       username={username}
       watchlistCount={watchlistCount}
     />
-  )
+  );
 }

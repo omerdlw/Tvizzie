@@ -1,43 +1,37 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
-import { buildListCreatorHref } from '@/features/account/lists/list-creator-utils'
-import { TMDB_IMG } from '@/core/constants'
-import { cn } from '@/core/utils'
-import { useAuthSessionReady } from '@/core/modules/auth'
-import Container from '@/core/modules/modal/container'
-import { useToast } from '@/core/modules/notification/hooks'
-import {
-  getUserListMemberships,
-  subscribeToUserLists,
-  toggleUserListItem,
-} from '@/core/services/media/lists.service'
-import { Button } from '@/ui/elements'
-import Icon from '@/ui/icon'
+import { buildListCreatorHref } from '@/features/account/lists/list-creator-utils';
+import { TMDB_IMG } from '@/core/constants';
+import { cn } from '@/core/utils';
+import { useAuthSessionReady } from '@/core/modules/auth';
+import Container from '@/core/modules/modal/container';
+import { useToast } from '@/core/modules/notification/hooks';
+import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
+import { Button } from '@/ui/elements';
+import Icon from '@/ui/icon';
 
 function getMediaTitle(media = {}) {
-  return media?.title || media?.name || 'this title'
+  return media?.title || media?.name || 'this title';
 }
 
 function getPreviewImage(item) {
   if (item?.poster_path_full) {
-    return item.poster_path_full
+    return item.poster_path_full;
   }
 
   if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`
+    return `${TMDB_IMG}/w342${item.poster_path}`;
   }
 
-  return null
+  return null;
 }
 
 function ListPreviewStack({ list }) {
-  const previewItems = Array.isArray(list?.previewItems)
-    ? list.previewItems.slice(0, 4)
-    : []
+  const previewItems = Array.isArray(list?.previewItems) ? list.previewItems.slice(0, 4) : [];
 
   return (
     <div className="hidden md:flex">
@@ -46,7 +40,7 @@ function ListPreviewStack({ list }) {
           previewItems.map((item, index) => (
             <div
               key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="absolute bottom-0 overflow-hidden border border-white/5 rounded-[8px]"
+              className={`absolute bottom-0 overflow-hidden rounded-[8px] border border-[#f97316]`}
               style={{
                 height: `${68 - index * 4}px`,
                 left: `${index * 14}px`,
@@ -58,78 +52,80 @@ function ListPreviewStack({ list }) {
                 <img
                   src={getPreviewImage(item)}
                   alt={item.title || item.name || 'Poster'}
-                  className="h-full w-full object-cover rounded-[8px]"
+                  className="h-full w-full rounded-[8px] object-cover"
                 />
               ) : (
-                <div className="center h-full w-full text-white/50 rounded-[8px]">
+                <div className={`center h-full w-full rounded-[8px] text-black/70`}>
                   <Icon icon="solar:videocamera-record-bold" size={14} />
                 </div>
               )}
             </div>
           ))
         ) : (
-          <div className="center absolute left-0 bottom-0 h-16 w-12 border border-dashed border-white/5 text-white/50">
+          <div
+            className={`center absolute bottom-0 left-0 h-16 w-12 border border-dashed border-[#f97316] bg-[#ffedd5] text-black/70`}
+          >
             <Icon icon="solar:list-broken" size={16} />
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export default function ListPickerModal({ close, data, header }) {
-  const router = useRouter()
-  const toast = useToast()
-  const userId = data?.userId || null
-  const isAuthSessionReady = useAuthSessionReady(userId)
-  const media = data?.media || null
-  const [lists, setLists] = useState([])
-  const [memberships, setMemberships] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [savingListIds, setSavingListIds] = useState([])
+  const router = useRouter();
+  const toast = useToast();
+  const userId = data?.userId || null;
+  const isAuthSessionReady = useAuthSessionReady(userId);
+  const media = data?.media || null;
+  const [lists, setLists] = useState([]);
+  const [memberships, setMemberships] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [savingListIds, setSavingListIds] = useState([]);
 
-  const mediaTitle = useMemo(() => getMediaTitle(media), [media])
-  const isAnyListSaving = savingListIds.length > 0
+  const mediaTitle = useMemo(() => getMediaTitle(media), [media]);
+  const isAnyListSaving = savingListIds.length > 0;
 
   useEffect(() => {
     if (!userId) {
-      setLists([])
-      setIsLoading(false)
-      return undefined
+      setLists([]);
+      setIsLoading(false);
+      return undefined;
     }
 
     if (!isAuthSessionReady) {
-      setLists([])
-      setIsLoading(true)
-      return undefined
+      setLists([]);
+      setIsLoading(true);
+      return undefined;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     const unsubscribe = subscribeToUserLists(
       userId,
       (nextLists) => {
-        setLists(nextLists)
-        setIsLoading(false)
+        setLists(nextLists);
+        setIsLoading(false);
       },
       {
         onError: (error) => {
-          toast.error(error?.message || 'Lists are temporarily unavailable')
-          setIsLoading(false)
+          toast.error(error?.message || 'Lists are temporarily unavailable');
+          setIsLoading(false);
         },
       }
-    )
+    );
 
-    return () => unsubscribe()
-  }, [isAuthSessionReady, toast, userId])
+    return () => unsubscribe();
+  }, [isAuthSessionReady, toast, userId]);
 
   useEffect(() => {
-    let ignore = false
+    let ignore = false;
 
     async function loadMemberships() {
       if (!userId || !isAuthSessionReady || !media || lists.length === 0) {
-        setMemberships({})
-        return
+        setMemberships({});
+        return;
       }
 
       try {
@@ -137,66 +133,62 @@ export default function ListPickerModal({ close, data, header }) {
           listIds: lists.map((list) => list.id),
           media,
           userId,
-        })
+        });
 
         if (!ignore) {
-          setMemberships(nextMemberships)
+          setMemberships(nextMemberships);
         }
       } catch (error) {
         if (!ignore) {
-          toast.error(error?.message || 'List memberships could not be loaded')
+          toast.error(error?.message || 'List memberships could not be loaded');
         }
       }
     }
 
-    loadMemberships()
+    loadMemberships();
 
     return () => {
-      ignore = true
-    }
-  }, [isAuthSessionReady, lists, media, toast, userId])
+      ignore = true;
+    };
+  }, [isAuthSessionReady, lists, media, toast, userId]);
 
   const handleOpenCreator = useCallback(() => {
-    close()
-    router.push(buildListCreatorHref(media))
-  }, [close, media, router])
+    close();
+    router.push(buildListCreatorHref(media));
+  }, [close, media, router]);
 
   async function handleToggleList(listId) {
     if (savingListIds.includes(listId) || !userId || !media) {
-      return
+      return;
     }
 
-    setSavingListIds((prev) => [...prev, listId])
+    setSavingListIds((prev) => [...prev, listId]);
 
     try {
-      const result = await toggleUserListItem({ listId, media, userId })
+      const result = await toggleUserListItem({ listId, media, userId });
 
       setMemberships((prev) => ({
         ...prev,
         [listId]: result.isInList,
-      }))
+      }));
 
       toast.success(
-        result.isInList
-          ? `${mediaTitle} was added to the list`
-          : `${mediaTitle} was removed from the list`
-      )
+        result.isInList ? `${mediaTitle} was added to the list` : `${mediaTitle} was removed from the list`
+      );
     } catch (error) {
-      toast.error(error?.message || 'The list could not be updated')
+      toast.error(error?.message || 'The list could not be updated');
     } finally {
-      setSavingListIds((prev) => prev.filter((id) => id !== listId))
+      setSavingListIds((prev) => prev.filter((id) => id !== listId));
     }
   }
 
   return (
-    <Container
-      className="w-full sm:w-[660px] max-h-[72dvh]"
-      header={header}
-      close={close}
-    >
+    <Container className="max-h-[72dvh] w-full sm:w-[660px]" header={header} close={close}>
       <section className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-3 pt-2 px-2">
-          <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-white/70 ml-2 uppercase">
+        <div className="flex items-center justify-between gap-3 px-2 pt-2">
+          <div
+            className={`ml-2 flex items-center gap-2 text-[11px] font-bold tracking-widest text-[#1d4ed8] uppercase`}
+          >
             <Icon icon="solar:list-bold" size={14} />
             Your Lists
           </div>
@@ -205,7 +197,7 @@ export default function ListPickerModal({ close, data, header }) {
             type="button"
             onClick={handleOpenCreator}
             disabled={isAnyListSaving}
-            className="h-8 w-auto shrink-0 px-3 rounded-[8px] text-xs"
+            className="h-8 w-auto shrink-0 rounded-[8px] px-3 text-xs"
           >
             Create New List
           </Button>
@@ -214,30 +206,28 @@ export default function ListPickerModal({ close, data, header }) {
         <div
           data-lenis-prevent
           data-lenis-prevent-wheel
-          className="min-h-0 max-h-[56dvh] w-full flex-1 overflow-y-auto overscroll-contain space-y-2 p-2"
+          className="max-h-[56dvh] min-h-0 w-full flex-1 space-y-2 overflow-y-auto overscroll-contain p-2"
         >
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map((item) => (
                 <div
                   key={item}
-                  className="h-28 animate-pulse rounded-[8px] border border-dashed border-white/5 bg-white/5"
+                  className={`h-28 animate-pulse rounded-[8px] border border-dashed border-[#f97316] bg-[#ffedd5]`}
                 />
               ))}
             </div>
           ) : lists.length === 0 ? (
-            <div className="flex min-h-40 rounded-[8px] flex-col items-center justify-center border border-dashed border-white/5 bg-white/5 text-center">
-              <p className="text-xs font-semibold tracking-wider text-white/70 uppercase">
-                No Lists Yet
-              </p>
-              <p className="text-sm text-white/70">
-                Create your first list with the button above
-              </p>
+            <div
+              className={`flex min-h-40 flex-col items-center justify-center rounded-[8px] border border-dashed border-[#f97316] bg-[#ffedd5] text-center`}
+            >
+              <p className={`text-xs font-semibold tracking-wider text-black/70 uppercase`}>No Lists Yet</p>
+              <p className={`text-sm text-black/70`}>Create your first list with the button above</p>
             </div>
           ) : (
             lists.map((list) => {
-              const isActive = !!memberships[list.id]
-              const isListSaving = savingListIds.includes(list.id)
+              const isActive = !!memberships[list.id];
+              const isListSaving = savingListIds.includes(list.id);
 
               return (
                 <button
@@ -246,49 +236,39 @@ export default function ListPickerModal({ close, data, header }) {
                   onClick={() => handleToggleList(list.id)}
                   disabled={isListSaving}
                   className={cn(
-                    'relative w-full cursor-pointer border p-2 text-left transition disabled:cursor-not-allowed rounded-[8px]',
+                    'relative w-full cursor-pointer rounded-[8px] border p-2 text-left transition disabled:cursor-not-allowed',
                     isActive
-                      ? 'success-classes'
-                      : 'border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/5',
+                      ? 'border border-[#15803d] bg-[#bbf7d0] text-[#14532d]'
+                      : `border border-[#14b8a6] bg-[#99f6e4]`,
                     'grid grid-cols-1 items-start gap-3 md:grid-cols-[88px_minmax(0,1fr)] md:gap-5'
                   )}
                 >
                   <ListPreviewStack list={list} />
-                  <div className="w-full pr-24 pt-9 md:pt-3">
+                  <div className="w-full pt-9 pr-24 md:pt-3">
                     <div className="flex flex-col gap-1">
-                      <p className="truncate text-[1.05rem] leading-tight font-bold text-white">
-                        {list.title}
-                      </p>
+                      <p className={`truncate text-[1.05rem] leading-tight font-bold text-[#0f172a]`}>{list.title}</p>
                       {list.description ? (
-                        <p className="line-clamp-2 max-w-xl text-sm text-white/70">
-                          {list.description}
-                        </p>
+                        <p className={`line-clamp-2 max-w-xl text-sm text-black/70`}>{list.description}</p>
                       ) : null}
                     </div>
                   </div>
                   <span
                     className={cn(
-                      'px-3 py-1 text-[11px] rounded-[4px] font-bold center tracking-wider uppercase',
+                      'center rounded-[4px] px-3 py-1 text-[11px] font-bold tracking-wider uppercase',
                       'absolute top-1.5 right-1.5',
                       isActive
-                        ? 'success-classes'
-                        : 'border border-white/5 bg-white/5 text-white/70',
+                        ? 'border border-[#15803d] bg-[#bbf7d0] text-[#14532d]'
+                        : 'border border-[#c2410c] bg-[#fdba74] text-[#7c2d12]'
                     )}
                   >
-                    {isListSaving ? (
-                      'Saving'
-                    ) : isActive ? (
-                      'Selected'
-                    ) : (
-                      'Add'
-                    )}
+                    {isListSaving ? 'Saving' : isActive ? 'Selected' : 'Add'}
                   </span>
                 </button>
-              )
+              );
             })
           )}
         </div>
       </section>
     </Container>
-  )
+  );
 }

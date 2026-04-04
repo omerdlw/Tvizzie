@@ -1,16 +1,16 @@
-import AccountActivityFeed from '@/features/account/sections/activity-feed'
-import AccountFavoritesSection from '@/features/account/profile/favorites-section'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions'
-import AccountReviewFeed from '@/features/account/sections/review-feed'
-import AccountSectionState from '@/features/account/section-state'
-import AccountWatchlistSection from '@/features/account/sections/watchlist-section'
-import Registry from './registry'
+import AccountActivityFeed from '@/features/account/sections/activity-feed';
+import AccountFavoritesSection from '@/features/account/profile/favorites-section';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
+import AccountReviewFeed from '@/features/account/sections/review-feed';
+import AccountSectionState from '@/features/account/section-state';
+import AccountWatchlistSection from '@/features/account/sections/watchlist-section';
+import Registry from './registry';
 
-const OVERVIEW_MEDIA_LIMIT = 5
+const OVERVIEW_MEDIA_LIMIT = 5;
 
 function buildSectionHref(username, suffix = '') {
-  return username ? `/account/${username}${suffix}` : null
+  return username ? `/account/${username}${suffix}` : null;
 }
 
 export default function AccountView({
@@ -60,11 +60,11 @@ export default function AccountView({
   watchlist,
   RegistryComponent = Registry,
 }) {
-  const shouldShowFavorites = favoriteShowcase.length > 0
-  const shouldShowWatched = watched.length > 0
-  const shouldShowWatchlist = watchlist.length > 0
-  const shouldShowActivity = activityItems.length > 0
-  const shouldShowReviews = authoredReviews.length > 0
+  const shouldShowFavorites = favoriteShowcase.length > 0;
+  const shouldShowWatched = watched.length > 0;
+  const shouldShowWatchlist = watchlist.length > 0;
+  const shouldShowActivity = activityItems.length > 0;
+  const shouldShowReviews = authoredReviews.length > 0;
 
   const pageRegistry = (
     <RegistryComponent
@@ -88,7 +88,7 @@ export default function AccountView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -199,5 +199,5 @@ export default function AccountView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

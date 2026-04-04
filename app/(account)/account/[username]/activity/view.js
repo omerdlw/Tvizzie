@@ -1,7 +1,7 @@
-import AccountActivityFeed from '@/features/account/sections/activity-feed'
-import AccountPageShell from '@/features/account/page-shell'
-import AccountSectionState from '@/features/account/section-state'
-import Registry from './registry'
+import AccountActivityFeed from '@/features/account/sections/activity-feed';
+import AccountPageShell from '@/features/account/page-shell';
+import AccountSectionState from '@/features/account/section-state';
+import Registry from './registry';
 
 export default function ActivityView({
   activeScope,
@@ -61,7 +61,7 @@ export default function ActivityView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -87,11 +87,7 @@ export default function ActivityView({
     >
       {canShowActivity ? (
         <AccountActivityFeed
-          emptyMessage={
-            activeScope === 'following'
-              ? 'No following activity yet'
-              : 'No activity yet'
-          }
+          emptyMessage={activeScope === 'following' ? 'No following activity yet' : 'No activity yet'}
           hasMore={hasMore}
           icon="solar:bolt-bold"
           isLoading={isFeedLoading}
@@ -105,5 +101,5 @@ export default function ActivityView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

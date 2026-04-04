@@ -1,103 +1,99 @@
-'use client'
+'use client';
 
-const eventSourceRegistry = new Map()
+const eventSourceRegistry = new Map();
 
-const MAX_CONSECUTIVE_ERRORS = 5
-const BASE_RETRY_DELAY_MS = 2000
-const MAX_RETRY_DELAY_MS = 30000
+const MAX_CONSECUTIVE_ERRORS = 5;
+const BASE_RETRY_DELAY_MS = 2000;
+const MAX_RETRY_DELAY_MS = 30000;
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function dispatchEvent(entry, eventType, payload) {
-  const listeners = entry.listeners.get(eventType)
+  const listeners = entry.listeners.get(eventType);
 
   if (!listeners?.size) {
-    return
+    return;
   }
 
   listeners.forEach((listener) => {
-    listener(payload)
-  })
+    listener(payload);
+  });
 }
 
 function scheduleReconnect(entry) {
   if (entry.reconnectTimer || !entry.listeners.size) {
-    return
+    return;
   }
 
-  const delay = Math.min(
-    BASE_RETRY_DELAY_MS * Math.pow(2, entry.errorCount - 1),
-    MAX_RETRY_DELAY_MS
-  )
+  const delay = Math.min(BASE_RETRY_DELAY_MS * Math.pow(2, entry.errorCount - 1), MAX_RETRY_DELAY_MS);
 
   entry.reconnectTimer = setTimeout(() => {
-    entry.reconnectTimer = null
-    entry.source = null
-    attachEntrySource(entry)
-  }, delay)
+    entry.reconnectTimer = null;
+    entry.source = null;
+    attachEntrySource(entry);
+  }, delay);
 }
 
 function attachEntrySource(entry) {
   if (entry.source || typeof window === 'undefined' || typeof EventSource !== 'function') {
-    return
+    return;
   }
 
   if (entry.errorCount >= MAX_CONSECUTIVE_ERRORS) {
     entry.reconnectTimer = setTimeout(() => {
-      entry.reconnectTimer = null
-      entry.errorCount = 0
-      entry.source = null
-      attachEntrySource(entry)
-    }, MAX_RETRY_DELAY_MS)
-    return
+      entry.reconnectTimer = null;
+      entry.errorCount = 0;
+      entry.source = null;
+      attachEntrySource(entry);
+    }, MAX_RETRY_DELAY_MS);
+    return;
   }
 
-  const source = new EventSource('/api/live-updates')
-  entry.source = source
-
-  ;['follows', 'notifications', 'reviews', 'ready', 'ping'].forEach((eventType) => {
+  const source = new EventSource('/api/live-updates');
+  entry.source = source;
+  ['follows', 'notifications', 'reviews', 'ready', 'ping'].forEach((eventType) => {
     source.addEventListener(eventType, (event) => {
-      entry.errorCount = 0
-      const payload = JSON.parse(event?.data || '{}')
-      dispatchEvent(entry, eventType, payload)
-    })
-  })
+      entry.errorCount = 0;
+      const payload = JSON.parse(event?.data || '{}');
+      dispatchEvent(entry, eventType, payload);
+    });
+  });
 
   source.onerror = () => {
-    entry.errorCount = (entry.errorCount || 0) + 1
+    entry.errorCount = (entry.errorCount || 0) + 1;
 
-    source.close()
-    entry.source = null
+    source.close();
+    entry.source = null;
 
-    dispatchEvent(entry, 'error', null)
-    scheduleReconnect(entry)
-  }
+    dispatchEvent(entry, 'error', null);
+    scheduleReconnect(entry);
+  };
 }
 
 function detachEntrySource(entry) {
   if (entry.reconnectTimer) {
-    clearTimeout(entry.reconnectTimer)
-    entry.reconnectTimer = null
+    clearTimeout(entry.reconnectTimer);
+    entry.reconnectTimer = null;
   }
 
   if (entry.source) {
-    entry.source.close()
-    entry.source = null
+    entry.source.close();
+    entry.source = null;
   }
 
-  entry.errorCount = 0
+  entry.errorCount = 0;
 }
 
 function ensureEntry(userId) {
-  const normalizedUserId = normalizeValue(userId)
+  const normalizedUserId = normalizeValue(userId);
 
   if (!normalizedUserId) {
-    return null
+    return null;
   }
 
-  let entry = eventSourceRegistry.get(normalizedUserId)
+  let entry = eventSourceRegistry.get(normalizedUserId);
 
   if (!entry) {
     entry = {
@@ -106,42 +102,41 @@ function ensureEntry(userId) {
       reconnectTimer: null,
       source: null,
       userId: normalizedUserId,
-    }
-    eventSourceRegistry.set(normalizedUserId, entry)
+    };
+    eventSourceRegistry.set(normalizedUserId, entry);
   }
 
-  attachEntrySource(entry)
-  return entry
+  attachEntrySource(entry);
+  return entry;
 }
 
 export function subscribeToUserLiveEvent(userId, eventType, callback) {
-  const normalizedEventType = normalizeValue(eventType)
-  const entry = ensureEntry(userId)
+  const normalizedEventType = normalizeValue(eventType);
+  const entry = ensureEntry(userId);
 
   if (!entry || !normalizedEventType || typeof callback !== 'function') {
-    return () => {}
+    return () => {};
   }
 
-  let listeners = entry.listeners.get(normalizedEventType)
+  let listeners = entry.listeners.get(normalizedEventType);
 
   if (!listeners) {
-    listeners = new Set()
-    entry.listeners.set(normalizedEventType, listeners)
+    listeners = new Set();
+    entry.listeners.set(normalizedEventType, listeners);
   }
 
-  listeners.add(callback)
+  listeners.add(callback);
 
   return () => {
-    listeners.delete(callback)
+    listeners.delete(callback);
 
     if (listeners.size === 0) {
-      entry.listeners.delete(normalizedEventType)
+      entry.listeners.delete(normalizedEventType);
     }
 
     if (entry.listeners.size === 0) {
-      detachEntrySource(entry)
-      eventSourceRegistry.delete(entry.userId)
+      detachEntrySource(entry);
+      eventSourceRegistry.delete(entry.userId);
     }
-  }
+  };
 }
-

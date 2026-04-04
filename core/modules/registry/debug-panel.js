@@ -1,146 +1,137 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useState, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 
-import { useRegistryHistory } from './context'
+import { useRegistryHistory } from './context';
 
 function formatTimestamp(timestamp) {
-  if (!timestamp) return '--:--:--'
+  if (!timestamp) return '--:--:--';
 
   try {
     return new Intl.DateTimeFormat('tr-TR', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-    }).format(new Date(timestamp))
+    }).format(new Date(timestamp));
   } catch {
-    return '--:--:--'
+    return '--:--:--';
   }
 }
 
 function formatPayload(payload) {
-  if (!payload || typeof payload !== 'object') return ''
+  if (!payload || typeof payload !== 'object') return '';
 
   if (payload.kind === 'object') {
-    const keys = Array.isArray(payload.keys) ? payload.keys : []
-    return `{${keys.join(', ')}}`
+    const keys = Array.isArray(payload.keys) ? payload.keys : [];
+    return `{${keys.join(', ')}}`;
   }
 
   if (payload.kind === 'array') {
-    return `array(${payload.size ?? 0})`
+    return `array(${payload.size ?? 0})`;
   }
 
   if (payload.kind === 'string') {
-    return payload.value || 'string'
+    return payload.value || 'string';
   }
 
-  return payload.kind || ''
+  return payload.kind || '';
 }
 
 function formatEntry(entry) {
-  const parts = [entry.action]
+  const parts = [entry.action];
 
-  if (entry.type) parts.push(entry.type)
-  if (entry.key) parts.push(entry.key)
-  if (entry.source) parts.push(entry.source)
+  if (entry.type) parts.push(entry.type);
+  if (entry.key) parts.push(entry.key);
+  if (entry.source) parts.push(entry.source);
   if (Number.isFinite(Number(entry.priority))) {
-    parts.push(`priority:${Number(entry.priority)}`)
+    parts.push(`priority:${Number(entry.priority)}`);
   }
   if (Number.isFinite(Number(entry.count))) {
-    parts.push(`count:${Number(entry.count)}`)
+    parts.push(`count:${Number(entry.count)}`);
   }
 
-  return parts.join(' | ')
+  return parts.join(' | ');
 }
 
 function formatBatchOperation(operation, index) {
-  const parts = [String(index + 1), operation.action || 'unknown']
+  const parts = [String(index + 1), operation.action || 'unknown'];
 
-  if (operation.type) parts.push(operation.type)
-  if (operation.key) parts.push(operation.key)
-  if (operation.source) parts.push(operation.source)
+  if (operation.type) parts.push(operation.type);
+  if (operation.key) parts.push(operation.key);
+  if (operation.source) parts.push(operation.source);
   if (Number.isFinite(Number(operation.priority))) {
-    parts.push(`priority:${Number(operation.priority)}`)
+    parts.push(`priority:${Number(operation.priority)}`);
   }
   if (Number.isFinite(Number(operation.expiresAt))) {
-    parts.push(`expiresAt:${Number(operation.expiresAt)}`)
+    parts.push(`expiresAt:${Number(operation.expiresAt)}`);
   }
 
-  return parts.join(' | ')
+  return parts.join(' | ');
 }
 
 async function copyText(text) {
-  if (
-    typeof navigator !== 'undefined' &&
-    navigator.clipboard &&
-    typeof navigator.clipboard.writeText === 'function'
-  ) {
-    await navigator.clipboard.writeText(text)
-    return true
+  if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    await navigator.clipboard.writeText(text);
+    return true;
   }
 
   if (typeof document === 'undefined') {
-    return false
+    return false;
   }
 
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.setAttribute('readonly', '')
-  textarea.style.position = 'fixed'
-  textarea.style.left = '-9999px'
-  document.body.appendChild(textarea)
-  textarea.select()
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
 
-  const copySucceeded = document.execCommand('copy')
-  document.body.removeChild(textarea)
-  return copySucceeded
+  const copySucceeded = document.execCommand('copy');
+  document.body.removeChild(textarea);
+  return copySucceeded;
 }
 
 export function RegistryDebugPanel({ limit = 120 }) {
-  const copyResetTimerRef = useRef(null)
-  const [copyState, setCopyState] = useState('idle')
-  const [isOpen, setIsOpen] = useState(false)
-  const { clearHistory, enabled, history } = useRegistryHistory(limit)
+  const copyResetTimerRef = useRef(null);
+  const [copyState, setCopyState] = useState('idle');
+  const [isOpen, setIsOpen] = useState(false);
+  const { clearHistory, enabled, history } = useRegistryHistory(limit);
 
   const items = useMemo(() => {
-    return [...history].reverse()
-  }, [history])
+    return [...history].reverse();
+  }, [history]);
 
-  const jsonText = useMemo(() => JSON.stringify(history, null, 2), [history])
+  const jsonText = useMemo(() => JSON.stringify(history, null, 2), [history]);
 
   const handleCopy = useCallback(async () => {
-    const succeeded = await copyText(jsonText)
-    setCopyState(succeeded ? 'copied' : 'failed')
+    const succeeded = await copyText(jsonText);
+    setCopyState(succeeded ? 'copied' : 'failed');
 
     if (copyResetTimerRef.current) {
-      clearTimeout(copyResetTimerRef.current)
+      clearTimeout(copyResetTimerRef.current);
     }
 
     copyResetTimerRef.current = setTimeout(() => {
-      setCopyState('idle')
-      copyResetTimerRef.current = null
-    }, 2000)
-  }, [jsonText])
+      setCopyState('idle');
+      copyResetTimerRef.current = null;
+    }, 2000);
+  }, [jsonText]);
 
   useEffect(() => {
     return () => {
-      if (!copyResetTimerRef.current) return
-      clearTimeout(copyResetTimerRef.current)
-      copyResetTimerRef.current = null
-    }
-  }, [])
+      if (!copyResetTimerRef.current) return;
+      clearTimeout(copyResetTimerRef.current);
+      copyResetTimerRef.current = null;
+    };
+  }, []);
 
-  const copyLabel =
-    copyState === 'copied'
-      ? 'Copied'
-      : copyState === 'failed'
-        ? 'Copy Failed'
-        : 'Copy JSON'
+  const copyLabel = copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy Failed' : 'Copy JSON';
 
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-[1500] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2">
       <button
-        className="pointer-events-auto  border border-white/5  px-3 py-2 text-left text-xs font-medium text-white"
+        className="pointer-events-auto border border-[#0284c7] px-3 py-2 text-left text-xs font-medium text-[#0f172a]"
         onClick={() => setIsOpen((prev) => !prev)}
         type="button"
       >
@@ -148,21 +139,19 @@ export function RegistryDebugPanel({ limit = 120 }) {
       </button>
 
       {isOpen && (
-        <div className="pointer-events-auto overflow-hidden  border border-white/5  text-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-            <span className="text-[11px] font-semibold tracking-wide">
-              REGISTRY
-            </span>
+        <div className="pointer-events-auto overflow-hidden border border-[#0284c7] text-[#0f172a] shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#0284c7] px-3 py-2">
+            <span className="text-[11px] font-semibold tracking-wide">REGISTRY</span>
             <div className="flex items-center gap-1.5">
               <button
-                className=" border border-white/5 px-2 py-1 text-[10px] font-medium text-white"
+                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium text-[#0f172a]"
                 onClick={handleCopy}
                 type="button"
               >
                 {copyLabel}
               </button>
               <button
-                className=" border border-white/5 px-2 py-1 text-[10px] font-medium text-white"
+                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium text-[#0f172a]"
                 onClick={clearHistory}
                 type="button"
               >
@@ -173,74 +162,53 @@ export function RegistryDebugPanel({ limit = 120 }) {
 
           <div className="pointer-events-auto max-h-[70vh] overflow-auto overscroll-contain px-2 py-2">
             {items.length === 0 ? (
-              <div className="  px-2 py-3 text-center text-xs text-white">
+              <div className="px-2 py-3 text-center text-xs text-[#0f172a]">
                 {enabled ? 'Log bos' : 'Log kapali (captureHistory=false)'}
               </div>
             ) : (
               items.map((entry, index) => {
-                const payloadText = formatPayload(entry.payload)
+                const payloadText = formatPayload(entry.payload);
 
                 return (
-                  <div
-                    key={`${entry.timestamp || 0}-${index}`}
-                    className="mb-2   px-2 py-2 select-text"
-                  >
-                    <div className="mb-1 text-[10px] text-white">
-                      {formatTimestamp(entry.timestamp)}
-                    </div>
+                  <div key={`${entry.timestamp || 0}-${index}`} className="mb-2 px-2 py-2 select-text">
+                    <div className="mb-1 text-[10px] text-[#0f172a]">{formatTimestamp(entry.timestamp)}</div>
                     <div className="overflow-auto">
-                      <div className="text-[11px] leading-4 break-words">
-                        {formatEntry(entry)}
-                      </div>
+                      <div className="text-[11px] leading-4 break-words">{formatEntry(entry)}</div>
                     </div>
-                    {payloadText && (
-                      <div className="mt-1 text-[10px] break-words text-white">
-                        {payloadText}
+                    {payloadText && <div className="mt-1 text-[10px] break-words text-[#0f172a]">{payloadText}</div>}
+                    {Array.isArray(entry.operations) && entry.operations.length > 0 && (
+                      <div className="mt-2 border border-[#0284c7] p-1">
+                        <div className="mb-1 text-[10px] text-[#0f172a]">operations</div>
+                        <div className="max-h-28 overflow-auto pr-1">
+                          {entry.operations.map((operation, operationIndex) => {
+                            const operationPayloadText = formatPayload(operation.payload);
+
+                            return (
+                              <div
+                                key={`${entry.timestamp || 0}-${index}-${operationIndex}`}
+                                className="mb-1 px-1.5 py-1"
+                              >
+                                <div className="text-[10px] leading-4 break-words">
+                                  {formatBatchOperation(operation, operationIndex)}
+                                </div>
+                                {operationPayloadText && (
+                                  <div className="mt-1 text-[10px] leading-4 break-words text-[#0f172a]">
+                                    {operationPayloadText}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
-                    {Array.isArray(entry.operations) &&
-                      entry.operations.length > 0 && (
-                        <div className="mt-2  border border-white/5  p-1">
-                          <div className="mb-1 text-[10px] text-white">
-                            operations
-                          </div>
-                          <div className="max-h-28 overflow-auto pr-1">
-                            {entry.operations.map(
-                              (operation, operationIndex) => {
-                                const operationPayloadText = formatPayload(
-                                  operation.payload
-                                )
-
-                                return (
-                                  <div
-                                    key={`${entry.timestamp || 0}-${index}-${operationIndex}`}
-                                    className="mb-1   px-1.5 py-1"
-                                  >
-                                    <div className="text-[10px] leading-4 break-words">
-                                      {formatBatchOperation(
-                                        operation,
-                                        operationIndex
-                                      )}
-                                    </div>
-                                    {operationPayloadText && (
-                                      <div className="mt-1 text-[10px] leading-4 break-words text-white">
-                                        {operationPayloadText}
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              }
-                            )}
-                          </div>
-                        </div>
-                      )}
                   </div>
-                )
+                );
               })
             )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

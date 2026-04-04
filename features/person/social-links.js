@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
-import { cn } from '@/core/utils'
-import Icon from '@/ui/icon'
+import { cn } from '@/core/utils';
+import { Tooltip } from '@/ui/elements/index';
+import Icon from '@/ui/icon';
 
 const SOCIAL_LINKS = [
   {
@@ -46,38 +47,34 @@ const SOCIAL_LINKS = [
     getUrl: (id) => `https://www.wikidata.org/wiki/${id}`,
     label: 'Wikidata',
   },
-]
+];
 
-export default function SocialLinks({
-  externalIds,
-  className = '',
-  linkClassName = '',
-}) {
-  if (!externalIds) return null
+export default function SocialLinks({ externalIds, className = '', linkClassName = '' }) {
+  if (!externalIds) return null;
 
-  const availableLinks = SOCIAL_LINKS.filter(
-    (link) => externalIds[link.key] && externalIds[link.key] !== ''
-  )
+  const availableLinks = SOCIAL_LINKS.filter((link) => externalIds[link.key] && externalIds[link.key] !== '');
 
-  if (!availableLinks.length) return null
+  if (!availableLinks.length) return null;
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
       {availableLinks.map((link) => (
-        <a
-          key={link.key}
-          href={link.getUrl(externalIds[link.key])}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={link.label}
-          className={cn(
-            'center size-10 bg-black/20 hover:bg-black/50 backdrop-blur-sm rounded-[12px] border border-white/10  text-white/50 transition-all duration-[var(--motion-duration-normal)] hover: hover:text-white',
-            linkClassName
-          )}
-        >
-          <Icon icon={link.icon} size={20} />
-        </a>
+        <Tooltip className="bg-white text-black" key={link.key} text={link.label}>
+          <a
+            key={link.key}
+            href={link.getUrl(externalIds[link.key])}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={link.label}
+            className={cn(
+              'center size-10 rounded-[12px] border border-black/10 bg-primary/70 text-black/70 backdrop-blur-md transition-all duration-[var(--motion-duration-normal)] hover:border-black/20 hover:bg-white hover:text-black',
+              linkClassName
+            )}
+          >
+            <Icon icon={link.icon} size={20} />
+          </a>
+        </Tooltip>
       ))}
     </div>
-  )
+  );
 }

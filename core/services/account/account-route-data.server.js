@@ -1,78 +1,75 @@
-import 'server-only'
+import 'server-only';
 
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import { readSessionFromRequest } from '@/core/auth/servers/session/session.server'
-import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server'
+import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
+import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server';
 import {
   getCollectionResource,
   getAccountIdByUsername,
   getAccountProfileByUserId,
-} from '@/core/services/browser/browser-data.server'
-import {
-  fetchListReviewFeedServer,
-  fetchProfileReviewFeedServer,
-} from '@/core/services/media/reviews.server'
-import { getCurrentEditableAccountSnapshot } from '@/core/services/account/current-account-snapshot.server'
+} from '@/core/services/browser/browser-data.server';
+import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
+import { getCurrentEditableAccountSnapshot } from '@/core/services/account/current-account-snapshot.server';
 
-const OVERVIEW_ACTIVITY_LIMIT = 5
-const OVERVIEW_REVIEW_LIMIT = 3
-const OVERVIEW_WATCHED_LIMIT = 12
-const OVERVIEW_WATCHLIST_LIMIT = 12
+const OVERVIEW_ACTIVITY_LIMIT = 5;
+const OVERVIEW_REVIEW_LIMIT = 3;
+const OVERVIEW_WATCHED_LIMIT = 12;
+const OVERVIEW_WATCHLIST_LIMIT = 12;
 
 function buildCookieRequest(cookieStore) {
   return {
     cookies: {
       get(name) {
-        return cookieStore.get(name)
+        return cookieStore.get(name);
       },
     },
     headers: {
       get(name) {
         if (String(name || '').toLowerCase() !== 'cookie') {
-          return ''
+          return '';
         }
 
         return cookieStore
           .getAll()
           .map((cookie) => `${cookie.name}=${cookie.value}`)
-          .join('; ')
+          .join('; ');
       },
     },
-  }
+  };
 }
 
 function buildSignInHref(nextPath) {
-  const params = new URLSearchParams()
+  const params = new URLSearchParams();
 
   if (nextPath) {
-    params.set('next', nextPath)
+    params.set('next', nextPath);
   }
 
-  const query = params.toString()
-  return query ? `/sign-in?${query}` : '/sign-in'
+  const query = params.toString();
+  return query ? `/sign-in?${query}` : '/sign-in';
 }
 
 async function getViewerSessionContext() {
-  const cookieStore = await cookies()
-  const request = buildCookieRequest(cookieStore)
+  const cookieStore = await cookies();
+  const request = buildCookieRequest(cookieStore);
 
-  return readSessionFromRequest(request).catch(() => null)
+  return readSessionFromRequest(request).catch(() => null);
 }
 
 async function safeLoad(load, fallback) {
   try {
-    return await load()
+    return await load();
   } catch {
-    return fallback
+    return fallback;
   }
 }
 
 async function delay(ms) {
   await new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
+    setTimeout(resolve, ms);
+  });
 }
 
 function createInitialCollections({
@@ -83,20 +80,20 @@ function createInitialCollections({
   watched = [],
   watchlist = [],
 }) {
-  const normalizedLikes = Array.isArray(likes) ? likes : []
-  const normalizedLists = Array.isArray(lists) ? lists : []
-  const normalizedWatched = Array.isArray(watched) ? watched : []
-  const normalizedWatchlist = Array.isArray(watchlist) ? watchlist : []
+  const normalizedLikes = Array.isArray(likes) ? likes : [];
+  const normalizedLists = Array.isArray(lists) ? lists : [];
+  const normalizedWatched = Array.isArray(watched) ? watched : [];
+  const normalizedWatchlist = Array.isArray(watchlist) ? watchlist : [];
   const resolveCount = (value, items = []) => {
-    const parsed = Number(value)
-    const listLength = Array.isArray(items) ? items.length : 0
+    const parsed = Number(value);
+    const listLength = Array.isArray(items) ? items.length : 0;
 
     if (!Number.isFinite(parsed)) {
-      return listLength
+      return listLength;
     }
 
-    return Math.max(0, Math.floor(parsed), listLength)
-  }
+    return Math.max(0, Math.floor(parsed), listLength);
+  };
 
   return {
     counts: {
@@ -110,12 +107,12 @@ function createInitialCollections({
     userId: resolvedUserId,
     watched: normalizedWatched,
     watchlist: normalizedWatchlist,
-  }
+  };
 }
 
 function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
   if (!feed || !resolvedUserId) {
-    return null
+    return null;
   }
 
   return {
@@ -125,67 +122,67 @@ function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
     nextCursor: feed.nextCursor ?? null,
     userId: resolvedUserId,
     ...(extras && typeof extras === 'object' ? extras : {}),
-  }
+  };
 }
 
 function createInitialListFeed(items = [], resolvedUserId = null, extras = null) {
   if (!resolvedUserId) {
-    return null
+    return null;
   }
 
   return {
     items: Array.isArray(items) ? items : [],
     userId: resolvedUserId,
     ...(extras && typeof extras === 'object' ? extras : {}),
-  }
+  };
 }
 
 function normalizeCollectionResourceValue(result, fallback = []) {
   if (result && typeof result === 'object' && Object.hasOwn(result, 'data')) {
-    return result.data
+    return result.data;
   }
 
-  return result ?? fallback
+  return result ?? fallback;
 }
 
 async function loadCollectionResource(input = {}, fallback = []) {
-  const maxAttempts = 2
+  const maxAttempts = 2;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       const result = await getCollectionResource({
         ...input,
         strict: false,
-      })
-      return normalizeCollectionResourceValue(result, fallback)
+      });
+      return normalizeCollectionResourceValue(result, fallback);
     } catch (error) {
       if (attempt >= maxAttempts) {
-        return fallback
+        return fallback;
       }
 
       if (process.env.NODE_ENV !== 'production') {
         console.warn(
           `[account-route-data] Collection retry ${attempt}/${maxAttempts - 1} failed for "${input?.resource || 'unknown'}"`,
           error
-        )
+        );
       }
 
-      await delay(140 * attempt)
+      await delay(140 * attempt);
     }
   }
 
-  return fallback
+  return fallback;
 }
 
 export async function getCurrentAccountOverviewRouteData() {
-  const sessionContext = await getViewerSessionContext()
-  const viewerId = sessionContext?.userId || null
+  const sessionContext = await getViewerSessionContext();
+  const viewerId = sessionContext?.userId || null;
 
   if (!viewerId) {
-    redirect(buildSignInHref('/account'))
+    redirect(buildSignInHref('/account'));
   }
 
-  const snapshot = await getCurrentEditableAccountSnapshot()
+  const snapshot = await getCurrentEditableAccountSnapshot();
 
   if (!snapshot?.resolvedUserId) {
     return {
@@ -197,7 +194,7 @@ export async function getCurrentAccountOverviewRouteData() {
       initialResolvedUserId: null,
       initialReviewFeed: null,
       username: null,
-    }
+    };
   }
 
   const [activityFeed, reviewFeed, watched, watchlist] = await Promise.all([
@@ -238,7 +235,7 @@ export async function getCurrentAccountOverviewRouteData() {
       },
       []
     ),
-  ])
+  ]);
 
   return {
     initialActivityFeed: createInitialFeed(activityFeed, snapshot.resolvedUserId),
@@ -254,35 +251,35 @@ export async function getCurrentAccountOverviewRouteData() {
     initialResolvedUserId: snapshot.resolvedUserId,
     initialReviewFeed: createInitialFeed(reviewFeed, snapshot.resolvedUserId),
     username: snapshot.profile?.username || null,
-  }
+  };
 }
 
 export async function redirectCurrentAccountSection(sectionKey) {
-  const normalizedSectionKey = String(sectionKey || '').trim().toLowerCase()
-  const sectionPath = normalizedSectionKey
-    ? `/account/${normalizedSectionKey}`
-    : '/account'
-  const sessionContext = await getViewerSessionContext()
-  const viewerId = sessionContext?.userId || null
+  const normalizedSectionKey = String(sectionKey || '')
+    .trim()
+    .toLowerCase();
+  const sectionPath = normalizedSectionKey ? `/account/${normalizedSectionKey}` : '/account';
+  const sessionContext = await getViewerSessionContext();
+  const viewerId = sessionContext?.userId || null;
 
   if (!viewerId) {
-    redirect(buildSignInHref(sectionPath))
+    redirect(buildSignInHref(sectionPath));
   }
 
-  const snapshot = await getCurrentEditableAccountSnapshot()
-  const username = snapshot?.profile?.username || null
+  const snapshot = await getCurrentEditableAccountSnapshot();
+  const username = snapshot?.profile?.username || null;
 
   if (username && normalizedSectionKey) {
-    redirect(`/account/${username}/${normalizedSectionKey}`)
+    redirect(`/account/${username}/${normalizedSectionKey}`);
   }
 
-  redirect('/account')
+  redirect('/account');
 }
 
 export async function getUsernameAccountSnapshot(username) {
-  const sessionContext = await getViewerSessionContext()
-  const viewerId = sessionContext?.userId || null
-  const resolvedUserId = await getAccountIdByUsername(username)
+  const sessionContext = await getViewerSessionContext();
+  const viewerId = sessionContext?.userId || null;
+  const resolvedUserId = await getAccountIdByUsername(username);
 
   if (!resolvedUserId) {
     return {
@@ -291,10 +288,10 @@ export async function getUsernameAccountSnapshot(username) {
       initialResolveError: 'Account not found',
       initialResolvedUserId: null,
       viewerId,
-    }
+    };
   }
 
-  const profile = await getAccountProfileByUserId(resolvedUserId, { viewerId })
+  const profile = await getAccountProfileByUserId(resolvedUserId, { viewerId });
 
   return {
     initialCounts: {
@@ -307,11 +304,11 @@ export async function getUsernameAccountSnapshot(username) {
     initialResolveError: profile ? null : 'Account not found',
     initialResolvedUserId: profile ? resolvedUserId : null,
     viewerId,
-  }
+  };
 }
 
 export async function getUsernameAccountOverviewRouteData(username) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -320,7 +317,7 @@ export async function getUsernameAccountOverviewRouteData(username) {
       initialCollections: null,
       initialReviewFeed: null,
       username,
-    }
+    };
   }
 
   const [activityFeed, reviewFeed, watched, watchlist] = await Promise.all([
@@ -361,37 +358,31 @@ export async function getUsernameAccountOverviewRouteData(username) {
       },
       []
     ),
-  ])
+  ]);
 
   return {
     ...snapshot,
-    initialActivityFeed: createInitialFeed(
-      activityFeed,
-      snapshot.initialResolvedUserId
-    ),
+    initialActivityFeed: createInitialFeed(activityFeed, snapshot.initialResolvedUserId),
     initialCollections: createInitialCollections({
       counts: snapshot.initialCounts,
       resolvedUserId: snapshot.initialResolvedUserId,
       watched,
       watchlist,
     }),
-    initialReviewFeed: createInitialFeed(
-      reviewFeed,
-      snapshot.initialResolvedUserId
-    ),
+    initialReviewFeed: createInitialFeed(reviewFeed, snapshot.initialResolvedUserId),
     username,
-  }
+  };
 }
 
 export async function getUsernameAccountListsRouteData(username) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
       ...snapshot,
       initialCollections: null,
       username,
-    }
+    };
   }
 
   const lists = await loadCollectionResource(
@@ -401,7 +392,7 @@ export async function getUsernameAccountListsRouteData(username) {
       viewerId: snapshot.viewerId,
     },
     []
-  )
+  );
 
   return {
     ...snapshot,
@@ -414,18 +405,18 @@ export async function getUsernameAccountListsRouteData(username) {
       resolvedUserId: snapshot.initialResolvedUserId,
     }),
     username,
-  }
+  };
 }
 
 export async function getUsernameAccountWatchlistRouteData(username) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
       ...snapshot,
       initialCollections: null,
       username,
-    }
+    };
   }
 
   const watchlist = await loadCollectionResource(
@@ -435,7 +426,7 @@ export async function getUsernameAccountWatchlistRouteData(username) {
       viewerId: snapshot.viewerId,
     },
     []
-  )
+  );
 
   return {
     ...snapshot,
@@ -448,18 +439,18 @@ export async function getUsernameAccountWatchlistRouteData(username) {
       watchlist,
     }),
     username,
-  }
+  };
 }
 
 export async function getUsernameAccountWatchedRouteData(username) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
       ...snapshot,
       initialCollections: null,
       username,
-    }
+    };
   }
 
   const watched = await loadCollectionResource(
@@ -469,7 +460,7 @@ export async function getUsernameAccountWatchedRouteData(username) {
       viewerId: snapshot.viewerId,
     },
     []
-  )
+  );
 
   return {
     ...snapshot,
@@ -482,15 +473,12 @@ export async function getUsernameAccountWatchedRouteData(username) {
       watched,
     }),
     username,
-  }
+  };
 }
 
-export async function getUsernameAccountActivityRouteData(
-  username,
-  { scope = 'user' } = {}
-) {
-  const snapshot = await getUsernameAccountSnapshot(username)
-  const normalizedScope = scope === 'following' ? 'following' : 'user'
+export async function getUsernameAccountActivityRouteData(username, { scope = 'user' } = {}) {
+  const snapshot = await getUsernameAccountSnapshot(username);
+  const normalizedScope = scope === 'following' ? 'following' : 'user';
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -498,7 +486,7 @@ export async function getUsernameAccountActivityRouteData(
       initialActivityFeed: null,
       initialCollections: null,
       username,
-    }
+    };
   }
 
   const activityFeed = await safeLoad(
@@ -509,27 +497,23 @@ export async function getUsernameAccountActivityRouteData(
         viewerId: snapshot.viewerId,
       }),
     { hasMore: false, items: [], nextCursor: null }
-  )
+  );
 
   return {
     ...snapshot,
-    initialActivityFeed: createInitialFeed(
-      activityFeed,
-      snapshot.initialResolvedUserId,
-      {
-        scope: normalizedScope,
-      }
-    ),
+    initialActivityFeed: createInitialFeed(activityFeed, snapshot.initialResolvedUserId, {
+      scope: normalizedScope,
+    }),
     initialCollections: createInitialCollections({
       counts: snapshot.initialCounts,
       resolvedUserId: snapshot.initialResolvedUserId,
     }),
     username,
-  }
+  };
 }
 
 export async function getUsernameAccountReviewsRouteData(username) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -537,7 +521,7 @@ export async function getUsernameAccountReviewsRouteData(username) {
       initialCollections: null,
       initialReviewFeed: null,
       username,
-    }
+    };
   }
 
   const reviewFeed = await safeLoad(
@@ -548,7 +532,7 @@ export async function getUsernameAccountReviewsRouteData(username) {
         viewerId: snapshot.viewerId,
       }),
     { hasMore: false, items: [], nextCursor: null }
-  )
+  );
 
   return {
     ...snapshot,
@@ -556,24 +540,16 @@ export async function getUsernameAccountReviewsRouteData(username) {
       counts: snapshot.initialCounts,
       resolvedUserId: snapshot.initialResolvedUserId,
     }),
-    initialReviewFeed: createInitialFeed(
-      reviewFeed,
-      snapshot.initialResolvedUserId,
-      {
-        mode: 'authored',
-      }
-    ),
+    initialReviewFeed: createInitialFeed(reviewFeed, snapshot.initialResolvedUserId, {
+      mode: 'authored',
+    }),
     username,
-  }
+  };
 }
 
-export async function getUsernameAccountLikesRouteData(
-  username,
-  { segment = 'films' } = {}
-) {
-  const snapshot = await getUsernameAccountSnapshot(username)
-  const normalizedSegment =
-    segment === 'reviews' || segment === 'lists' ? segment : 'films'
+export async function getUsernameAccountLikesRouteData(username, { segment = 'films' } = {}) {
+  const snapshot = await getUsernameAccountSnapshot(username);
+  const normalizedSegment = segment === 'reviews' || segment === 'lists' ? segment : 'films';
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -582,42 +558,42 @@ export async function getUsernameAccountLikesRouteData(
       initialLikedLists: null,
       initialReviewFeed: null,
       username,
-    }
+    };
   }
 
   const [likes, likedLists, reviewFeed] = await Promise.all([
     normalizedSegment === 'films'
       ? loadCollectionResource(
-        {
-          resource: 'likes',
-          userId: snapshot.initialResolvedUserId,
-          viewerId: snapshot.viewerId,
-        },
-        []
-      )
+          {
+            resource: 'likes',
+            userId: snapshot.initialResolvedUserId,
+            viewerId: snapshot.viewerId,
+          },
+          []
+        )
       : Promise.resolve([]),
     normalizedSegment === 'lists'
       ? loadCollectionResource(
-        {
-          resource: 'liked-lists',
-          userId: snapshot.initialResolvedUserId,
-          viewerId: snapshot.viewerId,
-        },
-        []
-      )
+          {
+            resource: 'liked-lists',
+            userId: snapshot.initialResolvedUserId,
+            viewerId: snapshot.viewerId,
+          },
+          []
+        )
       : Promise.resolve([]),
     normalizedSegment === 'reviews'
       ? safeLoad(
-        () =>
-          fetchProfileReviewFeedServer({
-            mode: 'liked',
-            userId: snapshot.initialResolvedUserId,
-            viewerId: snapshot.viewerId,
-          }),
-        { hasMore: false, items: [], nextCursor: null }
-      )
+          () =>
+            fetchProfileReviewFeedServer({
+              mode: 'liked',
+              userId: snapshot.initialResolvedUserId,
+              viewerId: snapshot.viewerId,
+            }),
+          { hasMore: false, items: [], nextCursor: null }
+        )
       : Promise.resolve(null),
-  ])
+  ]);
 
   return {
     ...snapshot,
@@ -626,26 +602,18 @@ export async function getUsernameAccountLikesRouteData(
       resolvedUserId: snapshot.initialResolvedUserId,
       ...(normalizedSegment === 'films' ? { likes } : {}),
     }),
-    initialLikedLists: createInitialListFeed(
-      likedLists,
-      snapshot.initialResolvedUserId,
-      {
-        mode: 'liked-lists',
-      }
-    ),
-    initialReviewFeed: createInitialFeed(
-      reviewFeed,
-      snapshot.initialResolvedUserId,
-      {
-        mode: 'liked',
-      }
-    ),
+    initialLikedLists: createInitialListFeed(likedLists, snapshot.initialResolvedUserId, {
+      mode: 'liked-lists',
+    }),
+    initialReviewFeed: createInitialFeed(reviewFeed, snapshot.initialResolvedUserId, {
+      mode: 'liked',
+    }),
     username,
-  }
+  };
 }
 
 export async function getUsernameAccountListDetailRouteData(username, slug) {
-  const snapshot = await getUsernameAccountSnapshot(username)
+  const snapshot = await getUsernameAccountSnapshot(username);
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -655,7 +623,7 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
       initialListItems: [],
       initialListReviews: [],
       username,
-    }
+    };
   }
 
   const list = await loadCollectionResource(
@@ -666,32 +634,32 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
       viewerId: snapshot.viewerId,
     },
     null
-  )
+  );
 
   const [listItems, listReviews] = await Promise.all([
     list?.id
       ? loadCollectionResource(
-        {
-          listId: list.id,
-          resource: 'list-items',
-          userId: snapshot.initialResolvedUserId,
-          viewerId: snapshot.viewerId,
-        },
-        []
-      )
+          {
+            listId: list.id,
+            resource: 'list-items',
+            userId: snapshot.initialResolvedUserId,
+            viewerId: snapshot.viewerId,
+          },
+          []
+        )
       : Promise.resolve([]),
     list?.id
       ? safeLoad(
-        () =>
-          fetchListReviewFeedServer({
-            listId: list.id,
-            ownerId: snapshot.initialResolvedUserId,
-            viewerId: snapshot.viewerId,
-          }),
-        []
-      )
+          () =>
+            fetchListReviewFeedServer({
+              listId: list.id,
+              ownerId: snapshot.initialResolvedUserId,
+              viewerId: snapshot.viewerId,
+            }),
+          []
+        )
       : Promise.resolve([]),
-  ])
+  ]);
 
   return {
     ...snapshot,
@@ -703,5 +671,5 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
     initialListItems: Array.isArray(listItems) ? listItems : [],
     initialListReviews: Array.isArray(listReviews) ? listReviews : [],
     username,
-  }
+  };
 }

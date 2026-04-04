@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { EVENT_TYPES, globalEvents } from '@/core/constants/events'
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 
-const DEFAULT_PRIORITY = 112
-const DEFAULT_THEME_TYPE = 'LOGIN'
+const DEFAULT_PRIORITY = 112;
+const DEFAULT_THEME_TYPE = 'LOGIN';
 
 const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
   'account-delete': Object.freeze({
@@ -54,14 +54,20 @@ const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
     successTitle: 'Password Added',
     title: 'Setting Password',
   }),
-})
+});
 
 function resolveFlowConfig(flow) {
-  return ACCOUNT_FEEDBACK_CONFIG[String(flow || '').trim().toLowerCase()] || {}
+  return (
+    ACCOUNT_FEEDBACK_CONFIG[
+      String(flow || '')
+        .trim()
+        .toLowerCase()
+    ] || {}
+  );
 }
 
 export function emitAccountFeedback(flow, phase, overrides = {}) {
-  const config = resolveFlowConfig(flow)
+  const config = resolveFlowConfig(flow);
 
   globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
     flow,
@@ -74,22 +80,18 @@ export function emitAccountFeedback(flow, phase, overrides = {}) {
         .toUpperCase(),
     title:
       overrides.title ||
-      (phase === 'success'
-        ? config.successTitle || config.title || 'Account'
-        : config.title || 'Account'),
+      (phase === 'success' ? config.successTitle || config.title || 'Account' : config.title || 'Account'),
     description:
       overrides.description ??
-      (phase === 'success'
-        ? config.successDescription || config.description || ''
-        : config.description || ''),
+      (phase === 'success' ? config.successDescription || config.description || '' : config.description || ''),
     icon: overrides.icon || config.icon || 'solar:user-circle-bold',
     themeType: overrides.themeType || config.themeType || DEFAULT_THEME_TYPE,
     priority: overrides.priority ?? config.priority ?? DEFAULT_PRIORITY,
     ...(overrides.duration != null ? { duration: overrides.duration } : {}),
     ...(overrides.isOverlay != null ? { isOverlay: overrides.isOverlay } : {}),
-  })
+  });
 }
 
 export function clearAccountFeedback(flow) {
-  emitAccountFeedback(flow, 'clear')
+  emitAccountFeedback(flow, 'clear');
 }

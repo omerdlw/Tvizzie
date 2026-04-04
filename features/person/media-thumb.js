@@ -1,47 +1,42 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 
-import Image from 'next/image'
+import Image from 'next/image';
 
-import { TMDB_IMG } from '@/core/constants'
-import { canUseNextImageOptimization, cn } from '@/core/utils'
-import Icon from '@/ui/icon'
+import { TMDB_IMG } from '@/core/constants';
+import { canUseNextImageOptimization, cn } from '@/core/utils';
+import Icon from '@/ui/icon';
 
 function resolvePosterSrc(poster) {
-  const value = String(poster || '').trim()
+  const value = String(poster || '').trim();
 
   if (!value) {
-    return null
+    return null;
   }
 
   if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value
+    return value;
   }
 
   if (value.startsWith('/')) {
-    return `${TMDB_IMG}/w185${value}`
+    return `${TMDB_IMG}/w185${value}`;
   }
 
-  return value
+  return value;
 }
 
 export default function MediaThumb({ poster, alt, className = '' }) {
-  const [hasError, setHasError] = useState(false)
-  const src = hasError ? null : resolvePosterSrc(poster)
-  const shouldOptimize = canUseNextImageOptimization(src)
+  const [hasError, setHasError] = useState(false);
+  const src = hasError ? null : resolvePosterSrc(poster);
+  const shouldOptimize = canUseNextImageOptimization(src);
 
   return (
-    <div
-      className={cn(
-        'relative aspect-2/3 w-20 shrink-0 overflow-hidden border border-white/5 ',
-        className
-      )}
-    >
+    <div className={cn('relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-[8px] sm:w-20', className)}>
       {src ? (
         <Image
           fill
-          sizes="80px"
+          sizes="(max-width: 640px) 64px, 80px"
           src={src}
           alt={alt || 'Poster'}
           quality={72}
@@ -51,9 +46,9 @@ export default function MediaThumb({ poster, alt, className = '' }) {
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center">
-          <Icon icon="solar:clapperboard-bold" size={18} className="text-white" />
+          <Icon icon="solar:clapperboard-bold" size={18} className="text-black/70" />
         </div>
       )}
     </div>
-  )
+  );
 }

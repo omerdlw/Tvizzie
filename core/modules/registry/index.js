@@ -8,8 +8,8 @@ export {
   useRegistryState,
   REGISTRY_TYPES,
   useNavRegistry,
-} from './context'
+} from './context';
 
-export { RegistryInjector } from './injector'
-export { RegistryDebugPanel } from './debug-panel'
-export { useRegistry } from './use-registry'
+export { RegistryInjector } from './injector';
+export { RegistryDebugPanel } from './debug-panel';
+export { useRegistry } from './use-registry';

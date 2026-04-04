@@ -1,1 +1,1 @@
-export { createAccountAdapter } from './create-adapter'
+export { createAccountAdapter } from './create-adapter';

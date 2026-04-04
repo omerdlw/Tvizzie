@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/core/constants'
-import { resolveExplicitMediaType } from '@/core/utils/media'
-import { cn } from '@/core/utils'
+import MediaCard from '@/features/shared/media-card';
+import { TMDB_IMG } from '@/core/constants';
+import { resolveExplicitMediaType } from '@/core/utils/media';
+import { cn } from '@/core/utils';
 
 export default function MediaPosterCard({
   item,
@@ -14,26 +14,23 @@ export default function MediaPosterCard({
   imageFetchPriority,
   fallbackMediaType = 'movie',
 }) {
-  const mediaType = resolveExplicitMediaType(item, fallbackMediaType)
+  const mediaType = resolveExplicitMediaType(item, fallbackMediaType);
 
   if (mediaType !== 'movie') {
-    return null
+    return null;
   }
 
-  const detailId = item.entityId || item.id
-  const title =
-    item.title || item.original_title || item.name || item.original_name
-  const resolvedTitle = title || 'Untitled'
-  const year = item.release_date?.slice(0, 4)
-  const href = `/movie/${detailId}`
+  const detailId = item.entityId || item.id;
+  const title = item.title || item.original_title || item.name || item.original_name;
+  const resolvedTitle = title || 'Untitled';
+  const year = item.release_date?.slice(0, 4);
+  const href = `/movie/${detailId}`;
   const imageSrc = item.poster_path_full
     ? item.poster_path_full
     : item.poster_path
       ? `${TMDB_IMG}/w342${item.poster_path}`
-      : null
-  const tooltipText = year
-    ? `${resolvedTitle} (${year})`
-    : resolvedTitle
+      : null;
+  const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
 
   return (
     <MediaCard
@@ -46,8 +43,7 @@ export default function MediaPosterCard({
       imageLoading={imageLoading}
       imagePriority={imagePriority}
       imageFetchPriority={imageFetchPriority}
-      fallbackIconClassName="text-white/50"
       tooltipText={tooltipText}
     />
-  )
+  );
 }

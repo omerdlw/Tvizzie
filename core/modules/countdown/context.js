@@ -1,16 +1,8 @@
-'use client'
+'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 
-import { DEFAULT_COUNTDOWN } from './config'
+import { DEFAULT_COUNTDOWN } from './config';
 
 const FALLBACK_COUNTDOWN_STATE = Object.freeze({
   isEnabled: false,
@@ -21,24 +13,23 @@ const FALLBACK_COUNTDOWN_STATE = Object.freeze({
     seconds: 0,
   },
   config: DEFAULT_COUNTDOWN,
-})
+});
 
 const FALLBACK_COUNTDOWN_ACTIONS = Object.freeze({
   setConfig: () => {},
-})
+});
 
-const CountdownStateContext = createContext(FALLBACK_COUNTDOWN_STATE)
-const CountdownActionsContext = createContext(FALLBACK_COUNTDOWN_ACTIONS)
+const CountdownStateContext = createContext(FALLBACK_COUNTDOWN_STATE);
+const CountdownActionsContext = createContext(FALLBACK_COUNTDOWN_ACTIONS);
 
 export function CountdownProvider({ children, config: providerConfig = {} }) {
   const resolvedProviderConfig = useMemo(
-    () =>
-      providerConfig && typeof providerConfig === 'object' ? providerConfig : {},
+    () => (providerConfig && typeof providerConfig === 'object' ? providerConfig : {}),
     [providerConfig]
-  )
-  const countdownEnabled = resolvedProviderConfig.enabled === true
+  );
+  const countdownEnabled = resolvedProviderConfig.enabled === true;
 
-  const [configOverrides, setConfigState] = useState({})
+  const [configOverrides, setConfigState] = useState({});
   const config = useMemo(
     () => ({
       ...DEFAULT_COUNTDOWN,
@@ -46,23 +37,23 @@ export function CountdownProvider({ children, config: providerConfig = {} }) {
       ...configOverrides,
     }),
     [configOverrides, resolvedProviderConfig]
-  )
+  );
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
-  })
+  });
 
-  const intervalRef = useRef(null)
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (!countdownEnabled) return
+    if (!countdownEnabled) return;
 
     const tick = () => {
-      const now = new Date()
-      const diff = config.targetDate - now
+      const now = new Date();
+      const diff = config.targetDate - now;
 
       if (diff > 0) {
         setTimeLeft({
@@ -70,24 +61,24 @@ export function CountdownProvider({ children, config: providerConfig = {} }) {
           hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((diff / (1000 * 60)) % 60),
           seconds: Math.floor((diff / 1000) % 60),
-        })
+        });
       } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-        if (intervalRef.current) clearInterval(intervalRef.current)
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        if (intervalRef.current) clearInterval(intervalRef.current);
       }
-    }
+    };
 
-    tick()
-    intervalRef.current = setInterval(tick, 1000)
+    tick();
+    intervalRef.current = setInterval(tick, 1000);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [countdownEnabled, config.targetDate])
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [countdownEnabled, config.targetDate]);
 
   const setConfig = useCallback((newConfig) => {
-    setConfigState((prev) => ({ ...prev, ...newConfig }))
-  }, [])
+    setConfigState((prev) => ({ ...prev, ...newConfig }));
+  }, []);
 
   const stateValue = useMemo(
     () => ({
@@ -96,28 +87,26 @@ export function CountdownProvider({ children, config: providerConfig = {} }) {
       config,
     }),
     [countdownEnabled, timeLeft, config]
-  )
+  );
 
   const actionsValue = useMemo(
     () => ({
       setConfig,
     }),
     [setConfig]
-  )
+  );
 
   return (
     <CountdownActionsContext.Provider value={actionsValue}>
-      <CountdownStateContext.Provider value={stateValue}>
-        {children}
-      </CountdownStateContext.Provider>
+      <CountdownStateContext.Provider value={stateValue}>{children}</CountdownStateContext.Provider>
     </CountdownActionsContext.Provider>
-  )
+  );
 }
 
 export function useCountdownState() {
-  return useContext(CountdownStateContext)
+  return useContext(CountdownStateContext);
 }
 
 export function useCountdownActions() {
-  return useContext(CountdownActionsContext)
+  return useContext(CountdownActionsContext);
 }

@@ -1,39 +1,39 @@
 export function normalizeValue(value: unknown): string {
-  return String(value ?? "").trim()
+  return String(value ?? '').trim();
 }
 
 export function normalizeLower(value: unknown): string {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 export function normalizeEmail(value: unknown): string {
-  return normalizeLower(value)
+  return normalizeLower(value);
 }
 
 export function cleanString(value: unknown): string {
-  return normalizeValue(value)
+  return normalizeValue(value);
 }
 
 export function normalizeBoolean(value: unknown, fallback = false): boolean {
-  if (typeof value === "boolean") {
-    return value
+  if (typeof value === 'boolean') {
+    return value;
   }
 
-  const normalized = normalizeLower(value)
+  const normalized = normalizeLower(value);
 
   if (!normalized) {
-    return fallback
+    return fallback;
   }
 
-  if (["1", "true", "yes", "on"].includes(normalized)) {
-    return true
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
   }
 
-  if (["0", "false", "no", "off"].includes(normalized)) {
-    return false
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
   }
 
-  return fallback
+  return fallback;
 }
 
 export function normalizeInteger(
@@ -43,41 +43,41 @@ export function normalizeInteger(
     min,
     max,
   }: {
-    fallback: number
-    min?: number
-    max?: number
+    fallback: number;
+    min?: number;
+    max?: number;
   }
 ): number {
-  const parsed = Number(value)
+  const parsed = Number(value);
 
   if (!Number.isFinite(parsed)) {
-    return fallback
+    return fallback;
   }
 
-  let resolved = Math.floor(parsed)
+  let resolved = Math.floor(parsed);
 
   if (Number.isFinite(min)) {
-    resolved = Math.max(resolved, Number(min))
+    resolved = Math.max(resolved, Number(min));
   }
 
   if (Number.isFinite(max)) {
-    resolved = Math.min(resolved, Number(max))
+    resolved = Math.min(resolved, Number(max));
   }
 
-  return resolved
+  return resolved;
 }
 
 export function isValidHttpUrl(value: unknown): boolean {
-  const normalized = normalizeValue(value)
+  const normalized = normalizeValue(value);
 
   if (!normalized) {
-    return false
+    return false;
   }
 
   try {
-    const parsed = new URL(normalized)
-    return parsed.protocol === "http:" || parsed.protocol === "https:"
+    const parsed = new URL(normalized);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
   } catch {
-    return false
+    return false;
   }
 }

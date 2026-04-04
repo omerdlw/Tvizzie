@@ -1,47 +1,37 @@
-'use client'
+'use client';
 
-import { normalizeEmail } from './utils'
-import AuthVerificationForm from '@/features/auth/auth-verification-form'
-import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface'
-import { isPermissionDeniedError } from '@/core/utils/errors'
+import { normalizeEmail } from './utils';
+import AuthVerificationForm from '@/features/auth/auth-verification-form';
+import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
+import { isPermissionDeniedError } from '@/core/utils/errors';
 
 export function filterCollectionItems(items, itemToRemove) {
-  const removedItemId = String(
-    itemToRemove?.entityId || itemToRemove?.id || ''
-  ).trim()
-  const removedMediaType = String(
-    itemToRemove?.media_type || itemToRemove?.entityType || ''
-  )
+  const removedItemId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
+  const removedMediaType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
     .trim()
-    .toLowerCase()
+    .toLowerCase();
 
   return items.filter((currentItem) => {
     if (itemToRemove?.mediaKey && currentItem?.mediaKey) {
-      return currentItem.mediaKey !== itemToRemove.mediaKey
+      return currentItem.mediaKey !== itemToRemove.mediaKey;
     }
 
-    const currentItemId = String(
-      currentItem?.entityId || currentItem?.id || ''
-    ).trim()
-    const currentMediaType = String(
-      currentItem?.media_type || currentItem?.entityType || ''
-    )
+    const currentItemId = String(currentItem?.entityId || currentItem?.id || '').trim();
+    const currentMediaType = String(currentItem?.media_type || currentItem?.entityType || '')
       .trim()
-      .toLowerCase()
+      .toLowerCase();
 
-    return (
-      currentItemId !== removedItemId || currentMediaType !== removedMediaType
-    )
-  })
+    return currentItemId !== removedItemId || currentMediaType !== removedMediaType;
+  });
 }
 
 export function showAccountErrorToast(toast, error, fallbackMessage) {
   if (isPermissionDeniedError(error)) {
-    return false
+    return false;
   }
 
-  toast.error(error?.message || fallbackMessage)
-  return true
+  toast.error(error?.message || fallbackMessage);
+  return true;
 }
 
 export async function openAuthVerificationPrompt({
@@ -55,7 +45,7 @@ export async function openAuthVerificationPrompt({
   title,
   toast,
 }) {
-  const verificationEmail = normalizeEmail(email)
+  const verificationEmail = normalizeEmail(email);
 
   try {
     const config = {
@@ -70,28 +60,28 @@ export async function openAuthVerificationPrompt({
         initialChallenge,
         purpose,
       },
-    }
+    };
 
     if (typeof openSurface === 'function') {
-      return openSurface(AuthVerificationSurface, config)
+      return openSurface(AuthVerificationSurface, config);
     }
 
     if (typeof openModal === 'function') {
-      return openModal('AUTH_VERIFICATION_MODAL', 'bottom', config)
+      return openModal('AUTH_VERIFICATION_MODAL', 'bottom', config);
     }
 
-    const error = new Error('Verification prompt is unavailable')
+    const error = new Error('Verification prompt is unavailable');
 
     return {
       error,
       success: false,
-    }
+    };
   } catch (error) {
-    toast.error(error?.message || 'Verification prompt is unavailable')
+    toast.error(error?.message || 'Verification prompt is unavailable');
 
     return {
       error,
       success: false,
-    }
+    };
   }
 }

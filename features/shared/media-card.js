@@ -1,34 +1,31 @@
-'use client'
+'use client';
 
-import { forwardRef, useState } from 'react'
+import { forwardRef, useState } from 'react';
 
-import Image from 'next/image'
-import Link from 'next/link'
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { cn, getImagePlaceholderDataUrl } from '@/core/utils'
-import Tooltip from '@/ui/elements/tooltip'
-import Icon from '@/ui/icon'
+import { cn, getImagePlaceholderDataUrl } from '@/core/utils';
+import Tooltip from '@/ui/elements/tooltip';
+import Icon from '@/ui/icon';
 
-const CardWrapper = forwardRef(function CardWrapper(
-  { href, onClick, className, children, onKeyDown, ...props },
-  ref
-) {
-  const isClickable = typeof onClick === 'function'
+const CardWrapper = forwardRef(function CardWrapper({ href, onClick, className, children, onKeyDown, ...props }, ref) {
+  const isClickable = typeof onClick === 'function';
 
-  const handleClick = (event) => onClick?.(event)
+  const handleClick = (event) => onClick?.(event);
 
   const handleKeyDown = (event) => {
-    onKeyDown?.(event)
+    onKeyDown?.(event);
 
     if (!isClickable) {
-      return
+      return;
     }
 
     if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      onClick(event)
+      event.preventDefault();
+      onClick(event);
     }
-  }
+  };
 
   if (href) {
     return (
@@ -42,7 +39,7 @@ const CardWrapper = forwardRef(function CardWrapper(
       >
         {children}
       </Link>
-    )
+    );
   }
 
   return (
@@ -58,8 +55,8 @@ const CardWrapper = forwardRef(function CardWrapper(
     >
       {children}
     </div>
-  )
-})
+  );
+});
 
 export default function MediaCard({
   href,
@@ -78,9 +75,9 @@ export default function MediaCard({
   imageQuality = 82,
   onImageError,
   imageClassName,
-  imageBaseClassName = 'object-cover transition-transform duration-(--motion-duration-normal) hover:scale-105',
+  imageBaseClassName = 'object-cover transition-transform duration-(--motion-duration-normal) ',
   fallbackIcon = 'solar:gallery-bold',
-  fallbackIconClassName = 'text-white/50',
+  fallbackIconClassName = 'text-[#0f172a]',
   fallbackIconSize = 20,
   fallbackContent,
   overlay,
@@ -88,26 +85,18 @@ export default function MediaCard({
   tooltipText,
   title,
 }) {
-  const [hasError, setHasError] = useState(false)
-  const hasImage = Boolean(imageSrc) && !hasError
-  const resolvedTooltipText = String(tooltipText || '').trim()
+  const [hasError, setHasError] = useState(false);
+  const hasImage = Boolean(imageSrc) && !hasError;
+  const resolvedTooltipText = String(tooltipText || '').trim();
 
   const cardNode = (
     <CardWrapper
       href={href}
       onClick={onClick}
-      className={cn('group flex shrink-0 flex-col bg-white/5 border border-white/5 hover:border-white/20 rounded-[14px] overflow-hidden', className)}
+      className={cn('group flex shrink-0 flex-col overflow-hidden rounded-[14px] transition ease-in-out', className)}
     >
-      <div
-        className={cn(
-          'relative w-full overflow-hidden',
-          aspectClass,
-          frameClassName
-        )}
-      >
-        <div
-          className={cn('relative h-full w-full overflow-hidden', innerClassName)}
-        >
+      <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
+        <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>
           {hasImage ? (
             <Image
               src={imageSrc}
@@ -120,23 +109,17 @@ export default function MediaCard({
               fetchPriority={imageFetchPriority}
               quality={imageQuality}
               placeholder="blur"
-              blurDataURL={getImagePlaceholderDataUrl(
-                imageSrc || imageAlt || title
-              )}
+              blurDataURL={getImagePlaceholderDataUrl(imageSrc || imageAlt || title)}
               onError={() => {
-                setHasError(true)
-                onImageError?.()
+                setHasError(true);
+                onImageError?.();
               }}
               className={cn(imageBaseClassName, imageClassName)}
             />
           ) : (
             fallbackContent || (
-              <div className="center h-full w-full">
-                <Icon
-                  icon={fallbackIcon}
-                  size={fallbackIconSize}
-                  className={fallbackIconClassName}
-                />
+              <div className="center bg-primary h-full w-full">
+                <Icon icon={fallbackIcon} size={fallbackIconSize} className={fallbackIconClassName} />
               </div>
             )
           )}
@@ -146,19 +129,15 @@ export default function MediaCard({
 
       {footer}
     </CardWrapper>
-  )
+  );
 
   if (!resolvedTooltipText) {
-    return cardNode
+    return cardNode;
   }
 
   return (
-    <Tooltip
-      text={resolvedTooltipText}
-      position="top"
-      delayMs={40}
-    >
+    <Tooltip text={resolvedTooltipText} position="top" delayMs={40}>
       {cardNode}
     </Tooltip>
-  )
+  );
 }

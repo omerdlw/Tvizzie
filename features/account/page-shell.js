@@ -1,24 +1,22 @@
-'use client'
+'use client';
 
-import NotFoundTemplate from '../shared/not-found-template'
-import AccountProfileLayout from './profile/profile-layout'
-import { ACCOUNT_SECTION_SHELL_CLASS } from './utils'
-import AccountRouteSkeleton from '@/ui/skeletons/views/account'
+import NotFoundTemplate from '../shared/not-found-template';
+import AccountProfileLayout from './profile/profile-layout';
+import { ACCOUNT_SECTION_SHELL_CLASS } from './utils';
+import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 
 const DEFAULT_NOT_FOUND_DESCRIPTION =
-  "We couldn't load this account. It may have been removed, or the link may be invalid."
+  "We couldn't load this account. It may have been removed, or the link may be invalid.";
 
-export function AccountNotFoundState({
-  description = DEFAULT_NOT_FOUND_DESCRIPTION,
-}) {
-  return <NotFoundTemplate description={description} />
+export function AccountNotFoundState({ description = DEFAULT_NOT_FOUND_DESCRIPTION }) {
+  return <NotFoundTemplate description={description} />;
 }
 
 function AccountPageLoadingContent() {
   return (
-    <section className="relative  text-white">
+    <section className="relative text-[#0f172a]">
       <div className={`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-5`}>
-        <div className="h-6 w-40 animate-pulse rounded-full /6" />
+        <div className="h-6 w-40 animate-pulse rounded-full bg-[#e2e8f0]" />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="aspect-[3/4] animate-pulse" />
           <div className="aspect-[3/4] animate-pulse" />
@@ -26,7 +24,7 @@ function AccountPageLoadingContent() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 export default function AccountPageShell({
@@ -54,7 +52,7 @@ export default function AccountPageShell({
         {registry}
         <AccountRouteSkeleton variant={skeletonVariant} />
       </>
-    )
+    );
   }
 
   if (!resolvedUserId || !profile) {
@@ -63,7 +61,7 @@ export default function AccountPageShell({
         {registry}
         <AccountNotFoundState />
       </>
-    )
+    );
   }
 
   return (
@@ -85,5 +83,5 @@ export default function AccountPageShell({
         {isLoading ? loadingContent || <AccountPageLoadingContent /> : children}
       </AccountProfileLayout>
     </>
-  )
+  );
 }

@@ -1,28 +1,28 @@
-'use client'
+'use client';
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react';
 
-import { useNotificationActions, TOAST_TYPES } from './context'
+import { useNotificationActions, TOAST_TYPES } from './context';
 
 const DURATIONS = {
   SHORT: 3000,
   DEFAULT: 4000,
   LONG: 5000,
-}
+};
 
 function generateToastId() {
-  return `toast_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+  return `toast_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 export function useToast() {
-  const { showNotification } = useNotificationActions()
+  const { showNotification } = useNotificationActions();
 
   const createToast = useCallback(
     (type, message, options = {}) => {
-      const { action, actions, dedupeKey, duration, ...rest } = options
+      const { action, actions, dedupeKey, duration, ...rest } = options;
 
-      const finalActions = actions || (action ? [action] : undefined)
-      const resolvedId = dedupeKey || rest.id || generateToastId()
+      const finalActions = actions || (action ? [action] : undefined);
+      const resolvedId = dedupeKey || rest.id || generateToastId();
 
       return showNotification(type, {
         id: resolvedId,
@@ -30,10 +30,10 @@ export function useToast() {
         duration,
         actions: finalActions,
         ...rest,
-      })
+      });
     },
     [showNotification]
-  )
+  );
 
   return useMemo(
     () => ({
@@ -60,5 +60,5 @@ export function useToast() {
       show: (type, msg, opts = {}) => createToast(type, msg, opts),
     }),
     [createToast]
-  )
+  );
 }

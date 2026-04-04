@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-export { DEFAULT_AUTH_CONFIG, AUTH_STATUS } from './config'
-export { useAuthActions, AuthProvider, useAuthState, useAuth } from './context'
-export { useAuthSessionReady } from './session-ready'
-export { useAuthorization, AnonymousGate, AuthGate } from './guards'
+export { DEFAULT_AUTH_CONFIG, AUTH_STATUS } from './config';
+export { useAuthActions, AuthProvider, useAuthState, useAuth } from './context';
+export { useAuthSessionReady } from './session-ready';
+export { useAuthorization, AnonymousGate, AuthGate } from './guards';
 
 export {
   mergeUserIntoSession,
@@ -16,10 +16,6 @@ export {
   hasAnyRole,
   canAccess,
   hasRole,
-} from './utils'
+} from './utils';
 
-export {
-  createSupabaseAuthAdapter,
-  createApiAuthAdapter,
-  createAuthAdapter,
-} from './adapters'
+export { createSupabaseAuthAdapter, createApiAuthAdapter, createAuthAdapter } from './adapters';

@@ -1,22 +1,22 @@
-const SECTION_KEYS = ['card', 'icon', 'title', 'description']
-const confirmationIds = new WeakMap()
-let confirmationIdCounter = 0
+const SECTION_KEYS = ['card', 'icon', 'title', 'description'];
+const confirmationIds = new WeakMap();
+let confirmationIdCounter = 0;
 
 function isObjectLike(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function toObject(value) {
-  return isObjectLike(value) ? value : {}
+  return isObjectLike(value) ? value : {};
 }
 
 function getLegacyCardStyle(style) {
-  const legacyCardStyle = {}
+  const legacyCardStyle = {};
 
-  if (style?.background) legacyCardStyle.background = style.background
-  if (style?.borderColor) legacyCardStyle.borderColor = style.borderColor
+  if (style?.background) legacyCardStyle.background = style.background;
+  if (style?.borderColor) legacyCardStyle.borderColor = style.borderColor;
 
-  return legacyCardStyle
+  return legacyCardStyle;
 }
 
 function mergeSection(baseStyle, stateStyle, hoverStyle, section) {
@@ -24,23 +24,18 @@ function mergeSection(baseStyle, stateStyle, hoverStyle, section) {
     ...toObject(baseStyle?.[section]),
     ...toObject(stateStyle?.[section]),
     ...toObject(hoverStyle?.[section]),
-  }
+  };
 }
 
-export function resolveNavVisualStyle(
-  style,
-  { isActive = false, isHovered = false } = {}
-) {
-  const baseStyle = toObject(style)
-  const stateStyle = isActive
-    ? toObject(baseStyle.active)
-    : toObject(baseStyle.inactive)
-  const hoverStyle = isHovered ? toObject(baseStyle.hover) : {}
+export function resolveNavVisualStyle(style, { isActive = false, isHovered = false } = {}) {
+  const baseStyle = toObject(style);
+  const stateStyle = isActive ? toObject(baseStyle.active) : toObject(baseStyle.inactive);
+  const hoverStyle = isHovered ? toObject(baseStyle.hover) : {};
 
   const sections = SECTION_KEYS.reduce(
     (acc, section) => {
-      acc[section] = mergeSection(baseStyle, stateStyle, hoverStyle, section)
-      return acc
+      acc[section] = mergeSection(baseStyle, stateStyle, hoverStyle, section);
+      return acc;
     },
     {
       card: {},
@@ -48,60 +43,52 @@ export function resolveNavVisualStyle(
       title: {},
       description: {},
     }
-  )
+  );
 
   sections.card = {
     ...getLegacyCardStyle(baseStyle),
     ...sections.card,
-  }
+  };
 
   return {
     ...sections,
-    scale:
-      stateStyle?.card?.scale ?? hoverStyle?.card?.scale ?? baseStyle?.scale,
-  }
+    scale: stateStyle?.card?.scale ?? hoverStyle?.card?.scale ?? baseStyle?.scale,
+  };
 }
 
 function normalizeConfirmationValue(value) {
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
+    return String(value);
   }
-  return ''
+  return '';
 }
 
 function getConfirmationInstanceId(confirmation) {
-  if (!confirmation || typeof confirmation !== 'object') return 'primitive'
+  if (!confirmation || typeof confirmation !== 'object') return 'primitive';
 
-  const existingId = confirmationIds.get(confirmation)
-  if (existingId) return existingId
+  const existingId = confirmationIds.get(confirmation);
+  if (existingId) return existingId;
 
-  confirmationIdCounter += 1
-  const nextId = `confirmation-${confirmationIdCounter}`
-  confirmationIds.set(confirmation, nextId)
-  return nextId
+  confirmationIdCounter += 1;
+  const nextId = `confirmation-${confirmationIdCounter}`;
+  confirmationIds.set(confirmation, nextId);
+  return nextId;
 }
 
 export function getNavConfirmationKey(item) {
-  const confirmation = item?.confirmation
+  const confirmation = item?.confirmation;
 
-  if (!confirmation) return null
+  if (!confirmation) return null;
 
   return [
     getConfirmationInstanceId(confirmation),
     item?.path || item?.name || 'nav',
     normalizeConfirmationValue(confirmation.title ?? item?.title ?? item?.name),
-    normalizeConfirmationValue(
-      confirmation.description ?? item?.description ?? ''
-    ),
+    normalizeConfirmationValue(confirmation.description ?? item?.description ?? ''),
     normalizeConfirmationValue(confirmation.confirmText ?? 'Confirm'),
     normalizeConfirmationValue(confirmation.cancelText ?? 'Cancel'),
-    normalizeConfirmationValue(
-      confirmation.tone ||
-        (confirmation.isDestructive ? 'destructive' : 'default')
-    ),
-    normalizeConfirmationValue(
-      typeof confirmation.icon === 'string' ? confirmation.icon : ''
-    ),
-  ].join('::')
+    normalizeConfirmationValue(confirmation.tone || (confirmation.isDestructive ? 'destructive' : 'default')),
+    normalizeConfirmationValue(typeof confirmation.icon === 'string' ? confirmation.icon : ''),
+  ].join('::');
 }

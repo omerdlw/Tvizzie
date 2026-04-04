@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { getReviewMinLength } from '@/core/services/media/reviews.service'
-import { Textarea } from '@/ui/elements'
-import Icon from '@/ui/icon'
+import { getReviewMinLength } from '@/core/services/media/reviews.service';
+import { Textarea } from '@/ui/elements';
+import Icon from '@/ui/icon';
 
-import RatingSelector from './rating-selector'
+import RatingSelector from './rating-selector';
 
-const REVIEW_MIN_LENGTH = getReviewMinLength()
+const REVIEW_MIN_LENGTH = getReviewMinLength();
 
 export default function ReviewComposer({
   normalizedReviewLength,
@@ -22,13 +22,9 @@ export default function ReviewComposer({
   rating,
   title,
 }) {
-  const hasText = reviewText.trim().length > 0
-  const isSpoilerDisabled = !hasText
-  const heading = ownReview
-    ? hasText
-      ? 'Update Your Review'
-      : 'Update Your Rating'
-    : 'Rate or Review'
+  const hasText = reviewText.trim().length > 0;
+  const isSpoilerDisabled = !hasText;
+  const heading = ownReview ? (hasText ? 'Update Your Review' : 'Update Your Rating') : 'Rate or Review';
 
   return (
     <form id="review-form" onSubmit={onSubmit}>
@@ -36,25 +32,23 @@ export default function ReviewComposer({
         <div className="flex h-full flex-col gap-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold tracking-wide text-white/70 uppercase">
-                {heading}
-              </h3>
+              <h3 className="text-sm font-semibold tracking-wide text-black/70 uppercase">{heading}</h3>
               {ownReview && isEditing && (
                 <button
                   type="button"
-                  className="text-error hover:text-error/70 cursor-pointer text-[11px] font-semibold tracking-widest uppercase transition"
+                  className="cursor-pointer text-[11px] font-semibold tracking-widest text-[#b91c1c] uppercase transition"
                   onClick={() => {
-                    setIsEditing(false)
-                    setReviewText(ownReview.content || '')
-                    setRating(ownReview.rating ?? null)
-                    setIsSpoiler(Boolean(ownReview.isSpoiler))
+                    setIsEditing(false);
+                    setReviewText(ownReview.content || '');
+                    setRating(ownReview.rating ?? null);
+                    setIsSpoiler(Boolean(ownReview.isSpoiler));
                   }}
                 >
                   Cancel
                 </button>
               )}
             </div>
-            <div className="text-[11px] font-semibold tracking-widest text-white/70 uppercase">
+            <div className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
               {hasText && `${normalizedReviewLength}/${REVIEW_MIN_LENGTH}+ chars`}
             </div>
           </div>
@@ -62,15 +56,15 @@ export default function ReviewComposer({
           <Textarea
             maxLength={800}
             value={reviewText}
-            className="surface-muted! min-h-[190px] w-full resize-none p-4 leading-normal transition outline-none placeholder:text-white/50 focus:border-white/10 focus:/70 focus:text-white"
+            className="min-h-[190px] w-full resize-none border border-[#0284c7] bg-[#dbeafe] p-4 leading-normal text-[#0f172a] transition outline-none placeholder:text-[#64748b]"
             placeholder={`Add your thoughts about ${title} (optional)`}
             onChange={(event) => {
-              const nextValue = event.target.value
+              const nextValue = event.target.value;
 
-              setReviewText(nextValue)
+              setReviewText(nextValue);
 
               if (nextValue.trim().length === 0) {
-                setIsSpoiler(false)
+                setIsSpoiler(false);
               }
             }}
           />
@@ -80,7 +74,7 @@ export default function ReviewComposer({
           <RatingSelector value={rating} onChange={setRating} />
 
           <label
-            className={`flex items-center gap-3 surface-muted p-4 transition ${
+            className={`flex items-center gap-3 border border-[#0284c7] bg-[#dbeafe] p-4 transition ${
               isSpoilerDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
             }`}
           >
@@ -89,28 +83,24 @@ export default function ReviewComposer({
                 type="checkbox"
                 disabled={isSpoilerDisabled}
                 checked={isSpoiler}
-                className="peer size-5 cursor-pointer appearance-none border border-white/5 bg-white/5 transition-all checked:border-white/5 checked: hover:border-white/10 disabled:cursor-not-allowed"
+                className="peer size-5 cursor-pointer appearance-none border border-[#0284c7] bg-[#bfdbfe] transition-all checked:border-[#0369a1] checked:bg-[#7dd3fc] disabled:cursor-not-allowed"
                 onChange={(event) => setIsSpoiler(event.target.checked)}
               />
               <Icon
                 icon="material-symbols:check-rounded"
                 size={15}
-                className="pointer-events-none invisible absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white transition peer-checked:visible"
+                className="pointer-events-none invisible absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#0c4a6e] transition peer-checked:visible"
               />
             </div>
             <div className="flex flex-col -space-y-0.5">
-              <span className="text-sm font-semibold text-white/70">
-                Contains Spoilers
-              </span>
-              <span className="text-[11px] text-white/50">
-                {hasText
-                  ? 'Hide parts of your review'
-                  : 'Available after you add review text'}
+              <span className="text-sm font-semibold text-black/70">Contains Spoilers</span>
+              <span className="text-[11px] text-[#64748b]">
+                {hasText ? 'Hide parts of your review' : 'Available after you add review text'}
               </span>
             </div>
           </label>
         </aside>
       </div>
     </form>
-  )
+  );
 }

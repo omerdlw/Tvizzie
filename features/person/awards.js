@@ -1,53 +1,32 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 
-import Link from 'next/link'
+import { motion, useReducedMotion } from 'framer-motion';
+import Link from 'next/link';
 
-import { motion } from 'framer-motion'
+import { cn } from '@/core/utils';
+import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 
-import { DURATION, EASING } from '@/core/constants'
-import { cn } from '@/core/utils'
-import { TmdbService } from '@/core/services/tmdb/tmdb.service'
-
-import MediaThumb from './media-thumb'
-import { Spinner } from '@/ui/loadings/spinner'
-
-const FADE_UP = {
-  hidden: { y: 16 },
-  visible: { y: 0 },
-}
-
-const STAGGER = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: DURATION.CASCADE,
-      delayChildren: DURATION.STAGGER,
-    },
-  },
-}
+import MediaThumb from './media-thumb';
+import { Spinner } from '@/ui/loadings/spinner';
 
 function isWinType(type = '') {
-  const normalizedType = String(type).trim().toLowerCase()
+  const normalizedType = String(type).trim().toLowerCase();
 
-  return (
-    normalizedType.includes('win') ||
-    normalizedType.includes('winner') ||
-    normalizedType.includes('kazan')
-  )
+  return normalizedType.includes('win') || normalizedType.includes('winner') || normalizedType.includes('kazan');
 }
 
 function sortAwardsByYear(left, right) {
   if (left[0] === '—') {
-    return 1
+    return 1;
   }
 
   if (right[0] === '—') {
-    return -1
+    return -1;
   }
 
-  return Number(right[0]) - Number(left[0])
+  return Number(right[0]) - Number(left[0]);
 }
 
 function buildAwardsTimeline(organizations = []) {
@@ -64,200 +43,203 @@ function buildAwardsTimeline(organizations = []) {
         poster: category.poster || null,
       }))
     )
-  )
+  );
 
   const grouped = awards.reduce((accumulator, award) => {
     if (!accumulator[award.year]) {
-      accumulator[award.year] = []
+      accumulator[award.year] = [];
     }
 
-    accumulator[award.year].push(award)
-    return accumulator
-  }, {})
+    accumulator[award.year].push(award);
+    return accumulator;
+  }, {});
 
   return Object.entries(grouped)
     .sort(sortAwardsByYear)
     .map(([year, entries]) => [
       year,
       entries.sort((left, right) => {
-        const rankDifference =
-          Number(!isWinType(left.type)) - Number(!isWinType(right.type))
+        const rankDifference = Number(!isWinType(left.type)) - Number(!isWinType(right.type));
 
         if (rankDifference !== 0) {
-          return rankDifference
+          return rankDifference;
         }
 
-        return (
-          left.organization.localeCompare(right.organization) ||
-          left.category.localeCompare(right.category)
-        )
+        return left.organization.localeCompare(right.organization) || left.category.localeCompare(right.category);
       }),
-    ])
+    ]);
 }
 
 function AwardsState({ message, variant = 'empty' }) {
   return (
     <div className="flex w-full justify-center py-20">
-      <p className={cn('text-sm font-medium text-white', variant === 'error' && 'text-white/70')}>
-        {message}
-      </p>
+      <p className={cn('text-sm font-medium text-black/70', variant === 'error' && 'text-error')}>{message}</p>
     </div>
-  )
+  );
 }
 
 export default function PersonAwards({ personId }) {
-  const [awardsData, setAwardsData] = useState(null)
-  const [status, setStatus] = useState('loading')
-  const [errorMessage, setErrorMessage] = useState(null)
+  const reduceMotion = useReducedMotion();
+  const [awardsData, setAwardsData] = useState(null);
+  const [status, setStatus] = useState('loading');
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
-    let isCurrent = true
+    let isCurrent = true;
 
-    setStatus('loading')
-    setErrorMessage(null)
+    setStatus('loading');
+    setErrorMessage(null);
 
     void (async () => {
       try {
-        const response = await TmdbService.getPersonAwards(personId)
+        const response = await TmdbService.getPersonAwards(personId);
 
         if (!isCurrent) {
-          return
+          return;
         }
 
         if (response?.error || !response?.data) {
-          setAwardsData(null)
-          setErrorMessage('Awards are temporarily unavailable')
-          setStatus('error')
-          return
+          setAwardsData(null);
+          setErrorMessage('Awards are temporarily unavailable');
+          setStatus('error');
+          return;
         }
 
-        setAwardsData(response.data)
-        setStatus('ready')
+        setAwardsData(response.data);
+        setStatus('ready');
       } catch {
         if (isCurrent) {
-          setAwardsData(null)
-          setErrorMessage('Awards are temporarily unavailable')
-          setStatus('error')
+          setAwardsData(null);
+          setErrorMessage('Awards are temporarily unavailable');
+          setStatus('error');
         }
       }
-    })()
+    })();
 
     return () => {
-      isCurrent = false
-    }
-  }, [personId])
+      isCurrent = false;
+    };
+  }, [personId]);
 
-  const awardsTimeline = useMemo(
-    () => buildAwardsTimeline(awardsData?.organizations || []),
-    [awardsData]
-  )
+  const awardsTimeline = useMemo(() => buildAwardsTimeline(awardsData?.organizations || []), [awardsData]);
 
   if (status === 'loading') {
     return (
-      <div className="flex w-full justify-center mt-20">
+      <div className="mt-20 flex w-full justify-center">
         <Spinner size={50} />
       </div>
-    )
+    );
   }
 
   if (status === 'error') {
-    return <AwardsState message={errorMessage} variant="error" />
+    return <AwardsState message={errorMessage} variant="error" />;
   }
 
   if (!awardsTimeline.length) {
-    return <AwardsState message="No awards information found" />
+    return <AwardsState message="No awards information found" />;
   }
 
-  const stats = awardsData?.stats
+  const stats = awardsData?.stats;
 
   return (
-    <motion.div
-      className="flex w-full max-w-4xl flex-col gap-10"
-      variants={STAGGER}
-      initial="hidden"
-      animate="visible"
-    >
-      <div className="flex items-end justify-between border-b border-white/10">
-        <h2 className="font-serif text-3xl font-light tracking-wide text-white uppercase">
-          Awards
-        </h2>
+    <section className="flex w-full flex-col gap-3">
+      <div className="flex items-end justify-between gap-3">
+        <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Awards</h2>
         {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
-          <div className="text-sm font-semibold text-white/70">
+          <div className="text-xs font-semibold text-black/60 sm:text-sm">
             {stats.totalNominations} Nominations
             {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
           </div>
         )}
       </div>
 
-      <div className="flex w-full max-w-3xl flex-col">
-        {awardsTimeline.map(([year, entries]) => (
+      <div className="flex w-full flex-col">
+        {awardsTimeline.map(([year, entries], yearIndex) => (
           <motion.div
             key={year}
-            variants={FADE_UP}
-            transition={{ duration: DURATION.MEDIUM, ease: EASING.STANDARD }}
+            className="mt-4 first:mt-0"
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: reduceMotion ? 0 : yearIndex * 0.04,
+              duration: reduceMotion ? 0.14 : 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
-            <div className="mb-2 mt-6 flex items-center gap-3">
-              <span className="w-12 shrink-0 text-right text-sm font-bold text-white">
+            <div className="mb-2 flex items-center gap-2 sm:gap-3">
+              <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
                 {year}
               </span>
-              <div className="h-px flex-1 bg-white/10" />
+              <div className="h-px flex-1 bg-black/15" />
             </div>
 
-            <div className="ml-16 flex flex-col">
-              {entries.map((entry) => {
-                const isInteractive = Boolean(entry.projectId)
-                const title = entry.project || entry.category
+            <div className="ml-0 flex flex-col sm:ml-16">
+              {entries.map((entry, entryIndex) => {
+                const isInteractive = Boolean(entry.projectId);
+                const title = entry.project || entry.category;
                 const detail = entry.project
                   ? `${entry.organization} / ${entry.type} · ${entry.category}`
-                  : `${entry.organization} / ${entry.type}`
+                  : `${entry.organization} / ${entry.type}`;
 
                 const rowClassName = cn(
-                  "group flex items-end gap-3 p-1 transition-colors border border-transparent",
-                  isInteractive ? 'group hover:border-white/10' : 'cursor-default'
-                )
+                  'group flex items-end gap-2.5 rounded-[12px] border border-transparent p-1.5 transition-colors sm:gap-3',
+                  isInteractive ? 'hover:border-black/10 hover:bg-primary/35' : 'cursor-default'
+                );
 
                 const content = (
                   <>
-                    <MediaThumb
-                      poster={entry.poster}
-                      alt={title}
-                    />
+                    <MediaThumb poster={entry.poster} alt={title} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-lg font-bold text-white uppercase">
+                        <span className="truncate text-sm font-semibold tracking-tight text-black sm:text-lg">
                           {title}
                         </span>
                       </div>
 
-                      <span className="truncate text-sm text-white">
-                        {detail}
-                      </span>
+                      <span className="truncate text-[11px] text-black/60 sm:text-sm">{detail}</span>
                     </div>
                   </>
-                )
+                );
 
                 if (isInteractive) {
                   return (
-                    <Link
+                    <motion.div
                       key={entry.key}
-                      href={`/movie/${entry.projectId}`}
-                      className={rowClassName}
+                      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: reduceMotion ? 0 : yearIndex * 0.04 + entryIndex * 0.018,
+                        duration: reduceMotion ? 0.14 : 0.26,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
                     >
-                      {content}
-                    </Link>
-                  )
+                      <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+                        {content}
+                      </Link>
+                    </motion.div>
+                  );
                 }
 
                 return (
-                  <div key={entry.key} className={rowClassName}>
+                  <motion.div
+                    key={entry.key}
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: reduceMotion ? 0 : yearIndex * 0.04 + entryIndex * 0.018,
+                      duration: reduceMotion ? 0.14 : 0.26,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className={rowClassName}
+                  >
                     {content}
-                  </div>
-                )
+                  </motion.div>
+                );
               })}
             </div>
           </motion.div>
         ))}
       </div>
-    </motion.div>
-  )
+    </section>
+  );
 }

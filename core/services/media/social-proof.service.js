@@ -1,21 +1,19 @@
-'use client'
+'use client';
 
-import {
-  createMediaSnapshot,
-} from '@/core/services/shared/media-key.service'
-import { isMovieMediaType } from '@/core/utils/media'
+import { createMediaSnapshot } from '@/core/services/shared/media-key.service';
+import { isMovieMediaType } from '@/core/utils/media';
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
-} from '@/core/services/shared/polling-subscription.service'
-import { requestApiJson } from '@/core/services/shared/api-request.service'
+} from '@/core/services/shared/polling-subscription.service';
+import { requestApiJson } from '@/core/services/shared/api-request.service';
 
 function createEmptyProofGroup() {
   return {
     count: 0,
     previewUsers: [],
     users: [],
-  }
+  };
 }
 
 function createEmptyMediaSocialProof() {
@@ -23,15 +21,15 @@ function createEmptyMediaSocialProof() {
     reviews: createEmptyProofGroup(),
     likes: createEmptyProofGroup(),
     watchlist: createEmptyProofGroup(),
-  }
+  };
 }
 
 async function fetchMediaSocialProof({ media, viewerId }) {
   if (!viewerId || !media) {
-    return createEmptyMediaSocialProof()
+    return createEmptyMediaSocialProof();
   }
 
-  const mediaSnapshot = createMediaSnapshot(media)
+  const mediaSnapshot = createMediaSnapshot(media);
 
   if (
     !isMovieMediaType(mediaSnapshot.entityType) ||
@@ -39,7 +37,7 @@ async function fetchMediaSocialProof({ media, viewerId }) {
     !mediaSnapshot.entityId ||
     !mediaSnapshot.title
   ) {
-    return createEmptyMediaSocialProof()
+    return createEmptyMediaSocialProof();
   }
 
   const payload = await requestApiJson('/api/social-proof', {
@@ -47,28 +45,20 @@ async function fetchMediaSocialProof({ media, viewerId }) {
       entityId: mediaSnapshot.entityId,
       entityType: mediaSnapshot.entityType,
     },
-  })
+  });
 
-  return payload?.data || createEmptyMediaSocialProof()
+  return payload?.data || createEmptyMediaSocialProof();
 }
 
-export function subscribeToMediaSocialProof(
-  { media, viewerId },
-  callback,
-  options = {}
-) {
-  return createPollingSubscription(
-    () => fetchMediaSocialProof({ media, viewerId }),
-    callback,
-    {
-      ...options,
-      subscriptionKey: buildPollingSubscriptionKey('social-proof:media', {
-        entityId: media?.entityId ?? media?.id ?? null,
-        entityType: media?.entityType ?? media?.media_type ?? null,
-        viewerId,
-      }),
-    }
-  )
+export function subscribeToMediaSocialProof({ media, viewerId }, callback, options = {}) {
+  return createPollingSubscription(() => fetchMediaSocialProof({ media, viewerId }), callback, {
+    ...options,
+    subscriptionKey: buildPollingSubscriptionKey('social-proof:media', {
+      entityId: media?.entityId ?? media?.id ?? null,
+      entityType: media?.entityType ?? media?.media_type ?? null,
+      viewerId,
+    }),
+  });
 }
 
 function createEmptyProfileSocialProof() {
@@ -78,20 +68,16 @@ function createEmptyProfileSocialProof() {
       count: 0,
       titles: [],
     },
-  }
+  };
 }
 
-export async function getAccountSocialProof({
-  canViewPrivateContent = false,
-  targetUserId,
-  viewerId,
-}) {
+export async function getAccountSocialProof({ canViewPrivateContent = false, targetUserId, viewerId }) {
   if (!viewerId || !targetUserId || viewerId === targetUserId) {
-    return createEmptyProfileSocialProof()
+    return createEmptyProfileSocialProof();
   }
 
   if (!canViewPrivateContent) {
-    return createEmptyProfileSocialProof()
+    return createEmptyProfileSocialProof();
   }
 
   const payload = await requestApiJson('/api/social-proof', {
@@ -100,7 +86,7 @@ export async function getAccountSocialProof({
       resource: 'account',
       targetUserId,
     },
-  })
+  });
 
-  return payload?.data || createEmptyProfileSocialProof()
+  return payload?.data || createEmptyProfileSocialProof();
 }

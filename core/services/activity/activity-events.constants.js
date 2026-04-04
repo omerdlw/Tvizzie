@@ -6,8 +6,6 @@ export const ACTIVITY_EVENT_TYPES = Object.freeze({
   LIST_LIKED: 'LIST_LIKED',
   FOLLOW_CREATED: 'FOLLOW_CREATED',
   FOLLOW_ACCEPTED: 'FOLLOW_ACCEPTED',
-})
+});
 
-export const ACTIVITY_EVENT_TYPE_SET = new Set(
-  Object.values(ACTIVITY_EVENT_TYPES)
-)
+export const ACTIVITY_EVENT_TYPE_SET = new Set(Object.values(ACTIVITY_EVENT_TYPES));

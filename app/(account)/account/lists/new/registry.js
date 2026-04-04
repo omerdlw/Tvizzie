@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { getUserAvatarUrl } from '@/core/utils'
-import AccountAction from '@/features/navigation/actions/account-action'
-import { useRegistry } from '@/core/modules/registry'
+import { getUserAvatarUrl } from '@/core/utils';
+import AccountAction from '@/features/navigation/actions/account-action';
+import { useRegistry } from '@/core/modules/registry';
 
 export default function Registry({
   authIsAuthenticated,
@@ -38,7 +38,7 @@ export default function Registry({
         />
       ) : null,
     },
-  })
+  });
 
-  return null
+  return null;
 }

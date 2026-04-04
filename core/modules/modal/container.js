@@ -1,51 +1,38 @@
-'use client'
+'use client';
 
-import { cn } from '@/core/utils'
-import { MODAL_POSITIONS } from '@/core/modules/modal/config'
-import { ModalTitle } from '@/core/modules/modal/title'
+import { cn } from '@/core/utils';
+import { MODAL_POSITIONS } from '@/core/modules/modal/config';
+import { ModalTitle } from '@/core/modules/modal/title';
 
-const HEIGHT_CONSTRAINT_PATTERN = /(^|\s)(?:[\w-]+:)*(?:h|max-h)-/
+const HEIGHT_CONSTRAINT_PATTERN = /(^|\s)(?:[\w-]+:)*(?:h|max-h)-/;
 
 function hasHeightConstraint(className) {
-  return (
-    typeof className === 'string' && HEIGHT_CONSTRAINT_PATTERN.test(className)
-  )
+  return typeof className === 'string' && HEIGHT_CONSTRAINT_PATTERN.test(className);
 }
 
 function isSideModal(position) {
-  return position === MODAL_POSITIONS.LEFT || position === MODAL_POSITIONS.RIGHT
+  return position === MODAL_POSITIONS.LEFT || position === MODAL_POSITIONS.RIGHT;
 }
 
 function getContainerClassName({ className, position }) {
-  const sideModal = isSideModal(position)
-  const usesExplicitHeightConstraint = hasHeightConstraint(className)
+  const sideModal = isSideModal(position);
+  const usesExplicitHeightConstraint = hasHeightConstraint(className);
 
   return cn(
     'flex min-h-0 flex-col overflow-hidden bg-transparent',
-    sideModal
-      ? 'h-full max-h-full'
-      : usesExplicitHeightConstraint
-        ? null
-        : 'max-h-[70dvh]',
+    sideModal ? 'h-full max-h-full' : usesExplicitHeightConstraint ? null : 'max-h-[70dvh]',
     className
-  )
+  );
 }
 
 export default function Container({ children, className, header, close }) {
-  const position = header?.position
-  const shouldRenderEmbeddedTitle = Boolean(
-    header?.renderInside && header?.title
-  )
+  const position = header?.position;
+  const shouldRenderEmbeddedTitle = Boolean(header?.renderInside && header?.title);
 
   return (
     <div className={getContainerClassName({ className, position })}>
       {shouldRenderEmbeddedTitle && (
-        <ModalTitle
-          title={header.title}
-          close={close}
-          titleId={header.titleId}
-          placement="embedded"
-        />
+        <ModalTitle title={header.title} close={close} titleId={header.titleId} placement="embedded" />
       )}
       <div
         data-lenis-prevent
@@ -55,5 +42,5 @@ export default function Container({ children, className, header, close }) {
         {children}
       </div>
     </div>
-  )
+  );
 }

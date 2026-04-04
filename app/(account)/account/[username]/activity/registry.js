@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import AccountAction from '@/features/navigation/actions/account-action'
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
+import AccountAction from '@/features/navigation/actions/account-action';
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+} from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_ACTIVITY_REGISTRY_SOURCE = 'account-activity'
+const ACCOUNT_ACTIVITY_REGISTRY_SOURCE = 'account-activity';
 
 export default function Registry({
   activeScope = 'user',
@@ -44,7 +44,7 @@ export default function Registry({
       key: 'following',
       label: 'Following',
     },
-  ]
+  ];
 
   useRegistry(
     buildAccountPageState({
@@ -64,12 +64,7 @@ export default function Registry({
       itemRemoveConfirmation,
       listDeleteConfirmation: null,
       navActionOverride: canShowActivity ? (
-        <AccountAction
-          mode="tab-switch"
-          activeTab={activeScope}
-          tabs={scopeTabs}
-          onTabChange={onScopeChange}
-        />
+        <AccountAction mode="tab-switch" activeTab={activeScope} tabs={scopeTabs} onTabChange={onScopeChange} />
       ) : null,
       navDescription: 'Activity Feed',
       navSurface:
@@ -88,7 +83,7 @@ export default function Registry({
       unfollowConfirmation,
       username,
     })
-  )
+  );
 
-  return null
+  return null;
 }

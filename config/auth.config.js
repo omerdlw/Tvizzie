@@ -1,8 +1,8 @@
-import { createSupabaseAuthAdapter } from '@/core/modules/auth'
+import { createSupabaseAuthAdapter } from '@/core/modules/auth';
 
 const SUPABASE_ADAPTER = createSupabaseAuthAdapter({
   oauthDefaultNextPath: '/account',
-})
+});
 
 export const AUTH_CONFIG = {
   clearSessionOnUnauthorized: true,
@@ -13,4 +13,4 @@ export const AUTH_CONFIG = {
   refreshLeewayMs: 60 * 1000,
   enabled: true,
   adapter: SUPABASE_ADAPTER,
-}
+};

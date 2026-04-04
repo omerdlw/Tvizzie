@@ -1,75 +1,64 @@
-const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local'
-const LEGACY_AUTH_OAUTH_CALLBACK_PATH = '/auth/callback'
+const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';
+const LEGACY_AUTH_OAUTH_CALLBACK_PATH = '/auth/callback';
 
-export const AUTH_OAUTH_CALLBACK_PATH = '/auth/oauth-callback'
-export const AUTH_DEFAULT_POST_LOGIN_PATH = '/account'
+export const AUTH_OAUTH_CALLBACK_PATH = '/auth/oauth-callback';
+export const AUTH_DEFAULT_POST_LOGIN_PATH = '/account';
 
-const BLOCKED_NEXT_PATHS = new Set([
-  '/sign-in',
-  '/sign-up',
-  AUTH_OAUTH_CALLBACK_PATH,
-  LEGACY_AUTH_OAUTH_CALLBACK_PATH,
-])
+const BLOCKED_NEXT_PATHS = new Set(['/sign-in', '/sign-up', AUTH_OAUTH_CALLBACK_PATH, LEGACY_AUTH_OAUTH_CALLBACK_PATH]);
 
-const GOOGLE_AUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up'])
+const GOOGLE_AUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizeOrigin(origin) {
-  const normalizedOrigin = normalizeValue(origin)
+  const normalizedOrigin = normalizeValue(origin);
 
   if (!normalizedOrigin) {
-    return ''
+    return '';
   }
 
   try {
-    return new URL(normalizedOrigin).origin
+    return new URL(normalizedOrigin).origin;
   } catch {
-    return ''
+    return '';
   }
 }
 
-export function sanitizeAuthNextPath(
-  nextPath,
-  fallback = AUTH_DEFAULT_POST_LOGIN_PATH
-) {
-  const rawValue = normalizeValue(nextPath)
+export function sanitizeAuthNextPath(nextPath, fallback = AUTH_DEFAULT_POST_LOGIN_PATH) {
+  const rawValue = normalizeValue(nextPath);
 
   if (!rawValue) {
-    return fallback
+    return fallback;
   }
 
   if (!rawValue.startsWith('/') || rawValue.startsWith('//')) {
-    return fallback
+    return fallback;
   }
 
   try {
-    const parsed = new URL(rawValue, REDIRECT_BASE_ORIGIN)
-    const normalizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`
+    const parsed = new URL(rawValue, REDIRECT_BASE_ORIGIN);
+    const normalizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
 
-    if (
-      parsed.origin !== REDIRECT_BASE_ORIGIN ||
-      BLOCKED_NEXT_PATHS.has(parsed.pathname)
-    ) {
-      return fallback
+    if (parsed.origin !== REDIRECT_BASE_ORIGIN || BLOCKED_NEXT_PATHS.has(parsed.pathname)) {
+      return fallback;
     }
 
-    return normalizedPath
+    return normalizedPath;
   } catch {
-    return fallback
+    return fallback;
   }
 }
 
 export function normalizeGoogleAuthIntent(value, fallback = 'sign-in') {
-  const normalizedIntent = normalizeValue(value).toLowerCase()
+  const normalizedIntent = normalizeValue(value).toLowerCase();
 
   if (GOOGLE_AUTH_INTENTS.has(normalizedIntent)) {
-    return normalizedIntent
+    return normalizedIntent;
   }
 
-  return fallback
+  return fallback;
 }
 
 export function buildGoogleOAuthCallbackUrl({
@@ -77,21 +66,18 @@ export function buildGoogleOAuthCallbackUrl({
   nextPath = AUTH_DEFAULT_POST_LOGIN_PATH,
   origin,
 } = {}) {
-  const normalizedOrigin = normalizeOrigin(origin)
+  const normalizedOrigin = normalizeOrigin(origin);
 
   if (!normalizedOrigin) {
-    return ''
+    return '';
   }
 
-  const url = new URL(AUTH_OAUTH_CALLBACK_PATH, normalizedOrigin)
-  const normalizedIntent = normalizeGoogleAuthIntent(intent)
+  const url = new URL(AUTH_OAUTH_CALLBACK_PATH, normalizedOrigin);
+  const normalizedIntent = normalizeGoogleAuthIntent(intent);
 
-  url.searchParams.set(
-    'next',
-    sanitizeAuthNextPath(nextPath, AUTH_DEFAULT_POST_LOGIN_PATH)
-  )
-  url.searchParams.set('intent', normalizedIntent)
-  url.searchParams.set('provider', 'google')
+  url.searchParams.set('next', sanitizeAuthNextPath(nextPath, AUTH_DEFAULT_POST_LOGIN_PATH));
+  url.searchParams.set('intent', normalizedIntent);
+  url.searchParams.set('provider', 'google');
 
-  return url.toString()
+  return url.toString();
 }

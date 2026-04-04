@@ -1,23 +1,18 @@
-'use client'
+'use client';
 
-import { startTransition, useEffect, useState } from 'react'
+import { startTransition, useEffect, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants'
-import { useDebounce } from '@/core/hooks'
-import { cn } from '@/core/utils'
-import { useNavigation } from '@/core/modules/nav/hooks'
-import { Input } from '@/ui/elements'
-import Icon from '@/ui/icon'
+import { DURATION, EASING } from '@/core/constants';
+import { useDebounce } from '@/core/hooks';
+import { cn } from '@/core/utils';
+import { useNavigation } from '@/core/modules/nav/hooks';
+import { Input } from '@/ui/elements';
+import Icon from '@/ui/icon';
 
-import {
-  SEARCH_LIMITS,
-  SEARCH_STYLES,
-  SEARCH_TAB_ITEMS,
-  SEARCH_TYPES,
-} from './constants'
-import SearchResultItem from './parts/item'
+import { SEARCH_LIMITS, SEARCH_STYLES, SEARCH_TAB_ITEMS, SEARCH_TYPES } from './constants';
+import SearchResultItem from './parts/item';
 import {
   fetchAllMedia,
   fetchMedia,
@@ -27,169 +22,163 @@ import {
   limitMediaResults,
   mergeAllResults,
   navActionClass,
-} from './utils'
+} from './utils';
 
 export default function SearchAction() {
-  const [query, setQuery] = useState('')
-  const [searchType, setSearchType] = useState(SEARCH_TYPES.ALL)
-  const [isManualTab, setIsManualTab] = useState(false)
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
-  const [imageErrors, setImageErrors] = useState({})
+  const [query, setQuery] = useState('');
+  const [searchType, setSearchType] = useState(SEARCH_TYPES.ALL);
+  const [isManualTab, setIsManualTab] = useState(false);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
 
-  const debouncedQuery = useDebounce(query, 500)
-  const { expanded, navigate, setExpanded } = useNavigation()
+  const debouncedQuery = useDebounce(query, 500);
+  const { expanded, navigate, setExpanded } = useNavigation();
 
   const handleImageError = (key) => {
     setImageErrors((prev) => ({
       ...prev,
       [key]: true,
-    }))
-  }
+    }));
+  };
 
   const handleSelect = (item) => {
-    const path = getDetailPath(item)
+    const path = getDetailPath(item);
 
-    if (!path) return
+    if (!path) return;
 
     if (typeof document !== 'undefined') {
-      document.activeElement?.blur?.()
+      document.activeElement?.blur?.();
     }
 
-    setExpanded(false)
-    setQuery('')
-    setResults([])
-    navigate(path)
-  }
+    setExpanded(false);
+    setQuery('');
+    setResults([]);
+    navigate(path);
+  };
 
   useEffect(() => {
     if (!debouncedQuery?.trim()) {
-      setResults([])
-      setSearchType(SEARCH_TYPES.ALL)
-      setIsManualTab(false)
-      setLoading(false)
-      return
+      setResults([]);
+      setSearchType(SEARCH_TYPES.ALL);
+      setIsManualTab(false);
+      setLoading(false);
+      return;
     }
 
-    let isCancelled = false
+    let isCancelled = false;
 
     async function runSearch() {
-      setLoading(true)
+      setLoading(true);
 
       try {
-        const normalizedQuery = debouncedQuery.trim().toLowerCase()
-        let nextSearchType = isManualTab ? searchType : SEARCH_TYPES.ALL
+        const normalizedQuery = debouncedQuery.trim().toLowerCase();
+        let nextSearchType = isManualTab ? searchType : SEARCH_TYPES.ALL;
 
-        let userResults = []
-        let mediaResults = []
+        let userResults = [];
+        let mediaResults = [];
 
         if (!isManualTab) {
           const [fetchedUsers, fetchedMedia] = await Promise.all([
             fetchUsers(debouncedQuery),
             fetchAllMedia(debouncedQuery),
-          ])
+          ]);
 
-          userResults = fetchedUsers
-          mediaResults = fetchedMedia
+          userResults = fetchedUsers;
+          mediaResults = fetchedMedia;
 
           nextSearchType = inferSearchType({
             normalizedQuery,
             userResults,
             mediaResults,
-          })
+          });
 
           if (!isCancelled) {
             startTransition(() => {
-              setSearchType(nextSearchType)
-            })
+              setSearchType(nextSearchType);
+            });
           }
         }
 
         if (nextSearchType === SEARCH_TYPES.USER) {
           if (!userResults.length) {
-            userResults = await fetchUsers(debouncedQuery)
+            userResults = await fetchUsers(debouncedQuery);
           }
 
           if (!isCancelled) {
             startTransition(() => {
-              setResults(userResults.slice(0, SEARCH_LIMITS.MAX_RESULTS))
-            })
+              setResults(userResults.slice(0, SEARCH_LIMITS.MAX_RESULTS));
+            });
           }
 
-          return
+          return;
         }
 
         if (nextSearchType === SEARCH_TYPES.ALL) {
           if (!userResults.length) {
-            userResults = await fetchUsers(debouncedQuery)
+            userResults = await fetchUsers(debouncedQuery);
           }
 
           if (!mediaResults.length) {
-            mediaResults = await fetchAllMedia(debouncedQuery)
+            mediaResults = await fetchAllMedia(debouncedQuery);
           }
 
           if (!isCancelled) {
             startTransition(() => {
-              setResults(mergeAllResults(userResults, mediaResults))
-            })
+              setResults(mergeAllResults(userResults, mediaResults));
+            });
           }
 
-          return
+          return;
         }
 
-        const typedMediaResults = await fetchMedia(
-          debouncedQuery,
-          nextSearchType
-        )
+        const typedMediaResults = await fetchMedia(debouncedQuery, nextSearchType);
 
         if (!isCancelled) {
           startTransition(() => {
-            setResults(limitMediaResults(typedMediaResults))
-          })
+            setResults(limitMediaResults(typedMediaResults));
+          });
         }
       } catch {
         if (!isCancelled) {
           startTransition(() => {
-            setResults([])
-          })
+            setResults([]);
+          });
         }
       } finally {
         if (!isCancelled) {
-          setLoading(false)
+          setLoading(false);
         }
       }
     }
 
-    runSearch()
+    runSearch();
 
     return () => {
-      isCancelled = true
-    }
-  }, [debouncedQuery, isManualTab, searchType])
+      isCancelled = true;
+    };
+  }, [debouncedQuery, isManualTab, searchType]);
 
   useEffect(() => {
     if (!expanded) {
-      setQuery('')
-      setIsFocused(false)
+      setQuery('');
     }
-  }, [expanded])
+  }, [expanded]);
 
   return (
     <motion.div className="mt-2.5 w-full" layout="position">
       <Input
         classNames={{
-          input:
-            'w-full bg-transparent text-white placeholder-white/50 outline-none',
+          input: 'w-full placeholder:text-black/60 outline-none',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,
           }),
-          leftIcon: 'center mr-2 shrink-0',
+          leftIcon: 'mr-2 center shrink-0',
         }}
         leftIcon={
           <Icon
-            className={`${isFocused || query ? 'text-white/70' : 'text-white/50'} transition-colors duration-(--motion-duration-normal)`}
+            className={`${query ? 'text-black' : 'text-black/60'} transition-colors duration-(--motion-duration-normal)`}
             icon="solar:magnifer-linear"
             size={16}
           />
@@ -198,11 +187,9 @@ export default function SearchAction() {
         value={query}
         spellCheck={false}
         onChange={(event) => {
-          setQuery(event.target.value)
-          setIsManualTab(false)
+          setQuery(event.target.value);
+          setIsManualTab(false);
         }}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         rightIcon={
           <AnimatePresence mode="wait">
             {loading ? (
@@ -219,7 +206,7 @@ export default function SearchAction() {
               <motion.button
                 key="clear"
                 type="button"
-                className="center shrink-0 cursor-pointer text-white/50 hover:text-white"
+                className={`center text-error shrink-0 cursor-pointer`}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.8 }}
@@ -265,7 +252,7 @@ export default function SearchAction() {
           >
             <div className={SEARCH_STYLES.tabList}>
               {SEARCH_TAB_ITEMS.map((item) => {
-                const isActive = searchType === item.key
+                const isActive = searchType === item.key;
 
                 return (
                   <button
@@ -280,18 +267,18 @@ export default function SearchAction() {
                       'group'
                     )}
                     onClick={() => {
-                      setSearchType(item.key)
-                      setIsManualTab(true)
+                      setSearchType(item.key);
+                      setIsManualTab(true);
                     }}
                   >
                     <span className="relative">{item.label}</span>
                   </button>
-                )
+                );
               })}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  )
+  );
 }

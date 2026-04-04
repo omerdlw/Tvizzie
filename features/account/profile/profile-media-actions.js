@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react';
 
-import ListPickerModal from '@/features/modal/list-picker-modal'
-import { useModal } from '@/core/modules/modal/context'
-import { useRegistry } from '@/core/modules/registry'
-import { Button } from '@/ui/elements'
-import Icon from '@/ui/icon'
+import ListPickerModal from '@/features/modal/list-picker-modal';
+import { useModal } from '@/core/modules/modal/context';
+import { useRegistry } from '@/core/modules/registry';
+import { Button } from '@/ui/elements';
+import Icon from '@/ui/icon';
 
 export default function AccountProfileMediaActions({
   extraActions = [],
@@ -15,22 +15,22 @@ export default function AccountProfileMediaActions({
   removeLabel = 'Remove item',
   userId = null,
 }) {
-  const { openModal } = useModal()
-  const [isRemoving, setIsRemoving] = useState(false)
+  const { openModal } = useModal();
+  const [isRemoving, setIsRemoving] = useState(false);
 
   useRegistry({
     modal: {
       LIST_PICKER_MODAL: ListPickerModal,
     },
-  })
+  });
 
   const handleOpenListPicker = useCallback(
     (event) => {
-      event.preventDefault()
-      event.stopPropagation()
+      event.preventDefault();
+      event.stopPropagation();
 
       if (!userId || !media) {
-        return
+        return;
       }
 
       openModal('LIST_PICKER_MODAL', 'bottom', {
@@ -38,30 +38,30 @@ export default function AccountProfileMediaActions({
           media,
           userId,
         },
-      })
+      });
     },
     [media, openModal, userId]
-  )
+  );
 
   const handleRemove = useCallback(
     async (event) => {
-      event.preventDefault()
-      event.stopPropagation()
+      event.preventDefault();
+      event.stopPropagation();
 
       if (isRemoving || typeof onRemoveItem !== 'function') {
-        return
+        return;
       }
 
-      setIsRemoving(true)
+      setIsRemoving(true);
 
       try {
-        await onRemoveItem(media)
+        await onRemoveItem(media);
       } finally {
-        setIsRemoving(false)
+        setIsRemoving(false);
       }
     },
     [isRemoving, media, onRemoveItem]
-  )
+  );
 
   return (
     <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2">
@@ -70,12 +70,12 @@ export default function AccountProfileMediaActions({
           key={`${action.label || action.icon || 'media-action'}-${index}`}
           type="button"
           aria-label={action.label}
-          className="center size-8 rounded-[8px] border-2 border-transparent hover:border-white backdrop-blur-lg transition disabled:cursor-default bg-black/50 text-white"
+          className="center size-8 rounded-[8px] border-2 border-transparent bg-[#bfdbfe] text-[#0f172a] backdrop-blur-lg transition disabled:cursor-default"
           disabled={Boolean(action.disabled)}
           onClick={(event) => {
-            event.preventDefault()
-            event.stopPropagation()
-            action.onClick?.(media)
+            event.preventDefault();
+            event.stopPropagation();
+            action.onClick?.(media);
           }}
         >
           <Icon icon={action.icon} size={12} />
@@ -86,7 +86,7 @@ export default function AccountProfileMediaActions({
         <button
           type="button"
           aria-label="Add to list"
-          className="center size-8 rounded-[8px] border-2 border-transparent hover:border-white backdrop-blur-lg transition disabled:cursor-default bg-black/50 text-white"
+          className="center size-8 rounded-[8px] border-2 border-transparent bg-[#bfdbfe] text-[#0f172a] backdrop-blur-lg transition disabled:cursor-default"
           onClick={handleOpenListPicker}
         >
           <Icon icon="solar:list-check-minimalistic-bold" size={12} />
@@ -95,18 +95,14 @@ export default function AccountProfileMediaActions({
 
       {typeof onRemoveItem === 'function' ? (
         <Button
-          className="center size-8 rounded-[8px] border-2 border-transparent hover:border-white backdrop-blur-lg transition disabled:cursor-default bg-black/50 text-error"
+          className="center size-8 rounded-[8px] border-2 border-transparent bg-[#bfdbfe] text-[#b91c1c] backdrop-blur-lg transition disabled:cursor-default"
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}
         >
-          <Icon
-            icon="solar:trash-bin-trash-bold"
-            size={16}
-            className={isRemoving ? 'animate-pulse' : ''}
-          />
+          <Icon icon="solar:trash-bin-trash-bold" size={16} className={isRemoving ? 'animate-pulse' : ''} />
         </Button>
       ) : null}
     </div>
-  )
+  );
 }

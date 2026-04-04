@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useState } from 'react';
 
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { Check, ChevronDown, Loader2 } from 'lucide-react'
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { Check, ChevronDown, Loader2 } from 'lucide-react';
 
-import { Z_INDEX } from '@/core/constants'
+import { Z_INDEX } from '@/core/constants';
 
-import Input from '../input'
-import { cn, resolveNestedClassName, resolveSlotClasses } from '../utils'
+import Input from '../input';
+import { cn, resolveNestedClassName, resolveSlotClasses } from '../utils';
 
 const AsyncSelect = forwardRef(
   (
@@ -26,53 +26,49 @@ const AsyncSelect = forwardRef(
     },
     ref
   ) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [searchQuery, setSearchQuery] = useState('')
-    const [options, setOptions] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
-    const classes = resolveSlotClasses(className, classNames)
-    const inputClassName = resolveNestedClassName(
-      classes,
-      'input',
-      externalClasses.input || {}
-    )
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [options, setOptions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const classes = resolveSlotClasses(className, classNames);
+    const inputClassName = resolveNestedClassName(classes, 'input', externalClasses.input || {});
 
-    const selectedOption = options.find((opt) => opt.value === value)
+    const selectedOption = options.find((opt) => opt.value === value);
 
     useEffect(() => {
-      if (!isOpen || !loadOptions) return
+      if (!isOpen || !loadOptions) return;
 
-      let isCancelled = false
+      let isCancelled = false;
       const timeoutId = setTimeout(async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         try {
-          const results = await loadOptions(searchQuery)
+          const results = await loadOptions(searchQuery);
           if (!isCancelled) {
-            setOptions(results || [])
+            setOptions(results || []);
           }
         } catch (error) {
-          console.error('Error loading options:', error)
+          console.error('Error loading options:', error);
           if (!isCancelled) {
-            setOptions([])
+            setOptions([]);
           }
         } finally {
           if (!isCancelled) {
-            setIsLoading(false)
+            setIsLoading(false);
           }
         }
-      }, debounceMs)
+      }, debounceMs);
 
       return () => {
-        isCancelled = true
-        clearTimeout(timeoutId)
-      }
-    }, [isOpen, searchQuery, loadOptions, debounceMs])
+        isCancelled = true;
+        clearTimeout(timeoutId);
+      };
+    }, [isOpen, searchQuery, loadOptions, debounceMs]);
 
     const handleSelect = (selectedValue) => {
-      onChange?.(selectedValue)
-      setIsOpen(false)
-      setSearchQuery('')
-    }
+      onChange?.(selectedValue);
+      setIsOpen(false);
+      setSearchQuery('');
+    };
 
     return (
       <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -89,11 +85,7 @@ const AsyncSelect = forwardRef(
         </PopoverPrimitive.Trigger>
 
         <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content
-            className={cn(classes.menu)}
-            align="start"
-            style={{ zIndex: Z_INDEX.SELECT }}
-          >
+          <PopoverPrimitive.Content className={cn(classes.menu)} align="start" style={{ zIndex: Z_INDEX.SELECT }}>
             <div className={cn(classes.searchWrapper)}>
               <Input
                 type="text"
@@ -127,9 +119,7 @@ const AsyncSelect = forwardRef(
                     )}
                   >
                     <span>{option.label}</span>
-                    {value === option.value && (
-                      <Check size={16} className={cn(classes.indicator)} />
-                    )}
+                    {value === option.value && <Check size={16} className={cn(classes.indicator)} />}
                   </div>
                 ))
               )}
@@ -137,10 +127,10 @@ const AsyncSelect = forwardRef(
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
-    )
+    );
   }
-)
+);
 
-AsyncSelect.displayName = 'AsyncSelect'
+AsyncSelect.displayName = 'AsyncSelect';
 
-export default AsyncSelect
+export default AsyncSelect;

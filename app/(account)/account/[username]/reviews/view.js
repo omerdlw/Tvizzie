@@ -1,7 +1,7 @@
-import AccountPageShell from '@/features/account/page-shell'
-import AccountReviewFeed from '@/features/account/sections/review-feed'
-import AccountSectionState from '@/features/account/section-state'
-import Registry from './registry'
+import AccountPageShell from '@/features/account/page-shell';
+import AccountReviewFeed from '@/features/account/sections/review-feed';
+import AccountSectionState from '@/features/account/section-state';
+import Registry from './registry';
 
 export default function ReviewsView({
   auth,
@@ -61,7 +61,7 @@ export default function ReviewsView({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
-  )
+  );
 
   return (
     <AccountPageShell
@@ -107,5 +107,5 @@ export default function ReviewsView({
         <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
-  )
+  );
 }

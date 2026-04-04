@@ -1,26 +1,15 @@
-'use client'
+'use client';
 
-import { MediaGrid } from '@/features/account/sections/media-grid'
-import Icon from '@/ui/icon'
-import { Button } from '@/ui/elements'
-import AccountSectionLayout from './section-layout'
+import { MediaGrid } from '@/features/account/sections/media-grid';
+import Icon from '@/ui/icon';
+import { Button } from '@/ui/elements';
+import AccountSectionLayout from './section-layout';
 
-export default function FavoriteShowcaseManager({
-  items = [],
-  isSaving = false,
-  onRemoveItem,
-  onReorder,
-}) {
+export default function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, onReorder }) {
   return (
-    <AccountSectionLayout
-      icon="solar:star-bold"
-      summaryLabel={`${items.length}/5 selected`}
-      title="Favorites Showcase"
-    >
+    <AccountSectionLayout icon="solar:star-bold" summaryLabel={`${items.length}/5 selected`} title="Favorites Showcase">
       {items.length === 0 ? (
-        <div className="border border-white/5 p-4 text-sm text-white/70">
-          No showcase titles selected yet.
-        </div>
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">No showcase titles selected yet.</div>
       ) : (
         <MediaGrid
           items={items}
@@ -39,5 +28,5 @@ export default function FavoriteShowcaseManager({
         />
       )}
     </AccountSectionLayout>
-  )
+  );
 }

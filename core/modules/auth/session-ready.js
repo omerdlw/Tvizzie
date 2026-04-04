@@ -1,27 +1,27 @@
-'use client'
+'use client';
 
-import { useMemo } from 'react'
+import { useMemo } from 'react';
 
-import { useAuthState } from './context'
+import { useAuthState } from './context';
 
 export function useAuthSessionReady(expectedUserId = null) {
-  const authState = useAuthState()
+  const authState = useAuthState();
 
   return useMemo(() => {
-    const userId = authState?.session?.user?.id || authState?.user?.id || null
+    const userId = authState?.session?.user?.id || authState?.user?.id || null;
 
     if (!expectedUserId) {
-      return Boolean(authState?.isReady)
+      return Boolean(authState?.isReady);
     }
 
     if (!authState?.isReady) {
-      return false
+      return false;
     }
 
     if (!userId) {
-      return false
+      return false;
     }
 
-    return String(userId) === String(expectedUserId)
-  }, [authState, expectedUserId])
+    return String(userId) === String(expectedUserId);
+  }, [authState, expectedUserId]);
 }

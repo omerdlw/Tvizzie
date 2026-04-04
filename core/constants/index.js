@@ -19,7 +19,7 @@ const DURATION_VALUES = Object.freeze({
   PULSE: 2,
   AMBIENT: 8,
   REDUCED_MOTION: 0.00001,
-})
+});
 
 const EASING_VALUES = Object.freeze({
   STANDARD: [0.25, 0.1, 0.25, 1],
@@ -31,49 +31,32 @@ const EASING_VALUES = Object.freeze({
   EASE_IN: [0.4, 0, 1, 1],
   LINEAR: 'linear',
   SPRING: 'spring',
-})
+});
 
-const toCssDuration = (seconds) => `${seconds * 1000}ms`
-const toCssEasing = (easing) =>
-  Array.isArray(easing) ? `cubic-bezier(${easing.join(', ')})` : easing
+const toCssDuration = (seconds) => `${seconds * 1000}ms`;
+const toCssEasing = (easing) => (Array.isArray(easing) ? `cubic-bezier(${easing.join(', ')})` : easing);
 
 const DURATION_VARIABLES = Object.freeze(
   Object.fromEntries(
-    Object.entries(DURATION_VALUES).map(([key]) => [
-      key,
-      `--motion-duration-${key.toLowerCase().replace(/_/g, '-')}`,
-    ])
+    Object.entries(DURATION_VALUES).map(([key]) => [key, `--motion-duration-${key.toLowerCase().replace(/_/g, '-')}`])
   )
-)
+);
 
 const EASING_VARIABLES = Object.freeze(
   Object.fromEntries(
     Object.entries(EASING_VALUES)
       .filter(([, value]) => value !== EASING_VALUES.SPRING)
-      .map(([key]) => [
-        key,
-        `--motion-easing-${key.toLowerCase().replace(/_/g, '-')}`,
-      ])
+      .map(([key]) => [key, `--motion-easing-${key.toLowerCase().replace(/_/g, '-')}`])
   )
-)
+);
 
 const DURATION_CLASSES = Object.freeze(
-  Object.fromEntries(
-    Object.entries(DURATION_VARIABLES).map(([key, variable]) => [
-      key,
-      `duration-[var(${variable})]`,
-    ])
-  )
-)
+  Object.fromEntries(Object.entries(DURATION_VARIABLES).map(([key, variable]) => [key, `duration-[var(${variable})]`]))
+);
 
 const EASING_CLASSES = Object.freeze(
-  Object.fromEntries(
-    Object.entries(EASING_VARIABLES).map(([key, variable]) => [
-      key,
-      `ease-[var(${variable})]`,
-    ])
-  )
-)
+  Object.fromEntries(Object.entries(EASING_VARIABLES).map(([key, variable]) => [key, `ease-[var(${variable})]`]))
+);
 
 export const DURATION = Object.freeze({
   ...DURATION_VALUES,
@@ -82,7 +65,7 @@ export const DURATION = Object.freeze({
   RATIO: Object.freeze({
     EXIT: 0.6,
   }),
-})
+});
 
 export const EASING = Object.freeze({
   ...EASING_VALUES,
@@ -105,7 +88,7 @@ export const EASING = Object.freeze({
       duration: DURATION_VALUES.NORMAL,
     }),
   }),
-})
+});
 
 export const MOTION_CSS_VARIABLES = Object.freeze({
   '--default-transition-duration': toCssDuration(DURATION.NORMAL),
@@ -138,7 +121,7 @@ export const MOTION_CSS_VARIABLES = Object.freeze({
   '--motion-easing-ease-out': toCssEasing(EASING.EASE_OUT),
   '--motion-easing-ease-in': toCssEasing(EASING.EASE_IN),
   '--motion-easing-linear': toCssEasing(EASING.LINEAR),
-})
+});
 
 export const Z_INDEX = {
   DEBUG_OVERLAY: 9999,
@@ -155,43 +138,41 @@ export const Z_INDEX = {
   SELECT: 120,
   MODAL: 100,
   NAV: 100,
-}
+};
 
 export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
-    icon: 'surface-icon-error',
-    description: 'text-error',
-    surface: 'surface-error',
-    title: 'text-white',
+    icon: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
+    description: 'text-[#7f1d1d]',
+    surface: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
+    title: 'text-[#0f172a]',
   }),
   info: Object.freeze({
-    surface: 'surface-info',
-    icon: 'surface-icon-info',
-    title: 'text-white',
-    description: 'text-info',
+    surface: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
+    icon: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
+    title: 'text-[#0f172a]',
+    description: 'text-[#0c4a6e]',
   }),
   success: Object.freeze({
-    surface: 'surface-success',
-    icon: 'surface-icon-success',
-    title: 'text-white',
-    description: 'text-success',
+    surface: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
+    icon: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
+    title: 'text-[#0f172a]',
+    description: 'text-[#14532d]',
   }),
   warning: Object.freeze({
-    surface: 'surface-warning',
-    icon: 'surface-icon-warning',
-    title: 'text-white',
-    description: 'text-warning',
+    surface: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
+    icon: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
+    title: 'text-[#0f172a]',
+    description: 'text-[#78350f]',
   }),
-})
+});
 
-export const API_URL = ''
-export const AUTH_API_URL = ''
-export const TMDB_API_URL = 'https://api.themoviedb.org/3'
-export const TMDB_IMG = 'https://image.tmdb.org/t/p'
-export const PAGE_SHELL_MAX_WIDTH_CLASS = 'max-w-6xl'
-export const HOME_PAGE_MAX_WIDTH_CLASS = 'max-w-screen-2xl'
-export const ACCOUNT_ROUTE_MAX_WIDTH_CLASS = PAGE_SHELL_MAX_WIDTH_CLASS
-export const ACCOUNT_ROUTE_SHELL_CLASS =
-  `mx-auto box-border w-full ${ACCOUNT_ROUTE_MAX_WIDTH_CLASS}`
-export const ACCOUNT_SECTION_SHELL_CLASS =
-  `${ACCOUNT_ROUTE_SHELL_CLASS} px-4 py-8 sm:px-8 sm:py-10`
+export const API_URL = '';
+export const AUTH_API_URL = '';
+export const TMDB_API_URL = 'https://api.themoviedb.org/3';
+export const TMDB_IMG = 'https://image.tmdb.org/t/p';
+export const PAGE_SHELL_MAX_WIDTH_CLASS = 'max-w-6xl';
+export const HOME_PAGE_MAX_WIDTH_CLASS = 'max-w-screen-2xl';
+export const ACCOUNT_ROUTE_MAX_WIDTH_CLASS = PAGE_SHELL_MAX_WIDTH_CLASS;
+export const ACCOUNT_ROUTE_SHELL_CLASS = `mx-auto box-border w-full ${ACCOUNT_ROUTE_MAX_WIDTH_CLASS}`;
+export const ACCOUNT_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} px-4 py-8 sm:px-8 sm:py-10`;

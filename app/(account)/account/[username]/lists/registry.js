@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import AccountAction from '@/features/navigation/actions/account-action'
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
+import AccountAction from '@/features/navigation/actions/account-action';
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+} from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_LISTS_REGISTRY_SOURCE = 'account-lists'
+const ACCOUNT_LISTS_REGISTRY_SOURCE = 'account-lists';
 
 export default function Registry({
   auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
@@ -77,7 +77,7 @@ export default function Registry({
       unfollowConfirmation,
       username,
     })
-  )
+  );
 
-  return null
+  return null;
 }

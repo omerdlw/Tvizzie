@@ -1,57 +1,44 @@
-'use client'
+'use client';
 
-import { useCallback } from 'react'
+import { useCallback } from 'react';
 
-import { useElementHeight } from './use-element-height'
+import { useElementHeight } from './use-element-height';
 
 function parsePixelValue(value) {
-  const parsed = Number.parseFloat(value)
-  return Number.isFinite(parsed) ? parsed : 0
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function getActionMargins(containerRef) {
   if (typeof window === 'undefined') {
-    return 0
+    return 0;
   }
 
-  const container = containerRef?.current
-  const actionRoot = container?.firstElementChild
+  const container = containerRef?.current;
+  const actionRoot = container?.firstElementChild;
 
   if (!actionRoot) {
-    return 0
+    return 0;
   }
 
-  const computedStyle = window.getComputedStyle(actionRoot)
+  const computedStyle = window.getComputedStyle(actionRoot);
 
-  return (
-    parsePixelValue(computedStyle.marginTop) +
-    parsePixelValue(computedStyle.marginBottom)
-  )
+  return parsePixelValue(computedStyle.marginTop) + parsePixelValue(computedStyle.marginBottom);
 }
 
-export function useActionHeight(
-  onHeightChange,
-  containerRef,
-  actionNode,
-  isTopItem
-) {
+export function useActionHeight(onHeightChange, containerRef, actionNode, isTopItem) {
   const handleHeightChange = useCallback(
     (contentHeight) => {
       if (!onHeightChange) {
-        return
+        return;
       }
 
-      onHeightChange(contentHeight + getActionMargins(containerRef))
+      onHeightChange(contentHeight + getActionMargins(containerRef));
     },
     [containerRef, onHeightChange]
-  )
+  );
 
-  const shouldMeasure = isTopItem && Boolean(actionNode)
+  const shouldMeasure = isTopItem && Boolean(actionNode);
 
-  useElementHeight(
-    handleHeightChange,
-    containerRef,
-    shouldMeasure,
-    actionNode
-  )
+  useElementHeight(handleHeightChange, containerRef, shouldMeasure, actionNode);
 }

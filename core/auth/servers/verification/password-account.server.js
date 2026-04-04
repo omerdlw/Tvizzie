@@ -1,32 +1,29 @@
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server'
-import {
-  resolveAuthCapabilities,
-  resolveProviderIds,
-} from '@/core/auth/capabilities'
-import { createAdminClient } from '@/core/clients/supabase/admin'
+import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
+import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
+import { createAdminClient } from '@/core/clients/supabase/admin';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 export async function lookupAccountByEmail(email) {
-  const normalizedEmail = normalizeEmail(email)
+  const normalizedEmail = normalizeEmail(email);
 
   if (!normalizedEmail || !normalizedEmail.includes('@')) {
-    throw new Error('Enter a valid email address')
+    throw new Error('Enter a valid email address');
   }
 
-  let userRecord = null
+  let userRecord = null;
 
   try {
-    userRecord = await createAdminAuthFacade().getUserByEmail(normalizedEmail)
+    userRecord = await createAdminAuthFacade().getUserByEmail(normalizedEmail);
   } catch (error) {
-    const code = normalizeValue(error?.code)
-    const message = normalizeValue(error?.message).toLowerCase()
+    const code = normalizeValue(error?.code);
+    const message = normalizeValue(error?.message).toLowerCase();
 
     if (code === 'auth/user-not-found' || message.includes('user not found')) {
       return {
@@ -36,22 +33,22 @@ export async function lookupAccountByEmail(email) {
         providerIds: [],
         supportsPasswordAuth: false,
         userId: null,
-      }
+      };
     }
 
-    throw error
+    throw error;
   }
 
-  const userId = normalizeValue(userRecord?.uid)
+  const userId = normalizeValue(userRecord?.uid);
   const providerIds = resolveProviderIds({
     providerData: userRecord?.providerData || [],
     appMetadata: userRecord?.app_metadata || {},
-  })
+  });
   const authCapabilities = resolveAuthCapabilities({
     providerIds,
     email: normalizedEmail,
-  })
-  const supportsPasswordAuth = authCapabilities.passwordEnabled
+  });
+  const supportsPasswordAuth = authCapabilities.passwordEnabled;
 
   return {
     code: null,
@@ -62,17 +59,14 @@ export async function lookupAccountByEmail(email) {
     signInMethods: providerIds,
     supportsPasswordAuth,
     userId: userId || null,
-  }
+  };
 }
 
-export async function lookupPasswordAccountByEmail(
-  email,
-  { requireProfile = false } = {}
-) {
-  const lookup = await lookupAccountByEmail(email)
-  const normalizedEmail = lookup.email
-  const userId = lookup.userId
-  const supportsPasswordAuth = lookup.supportsPasswordAuth
+export async function lookupPasswordAccountByEmail(email, { requireProfile = false } = {}) {
+  const lookup = await lookupAccountByEmail(email);
+  const normalizedEmail = lookup.email;
+  const userId = lookup.userId;
+  const supportsPasswordAuth = lookup.supportsPasswordAuth;
 
   if (!userId) {
     return {
@@ -84,7 +78,7 @@ export async function lookupPasswordAccountByEmail(
       supportsPasswordAuth: false,
       providerIds: [],
       userId: null,
-    }
+    };
   }
 
   if (!supportsPasswordAuth) {
@@ -99,7 +93,7 @@ export async function lookupPasswordAccountByEmail(
       providerIds: lookup.providerIds,
       signInMethods: lookup.signInMethods,
       userId: userId || null,
-    }
+    };
   }
 
   if (!requireProfile) {
@@ -114,21 +108,17 @@ export async function lookupPasswordAccountByEmail(
       providerIds: lookup.providerIds,
       signInMethods: lookup.signInMethods,
       userId,
-    }
+    };
   }
 
-  const admin = createAdminClient()
-  const profileResult = await admin
-    .from('profiles')
-    .select('id, email')
-    .eq('id', userId)
-    .maybeSingle()
+  const admin = createAdminClient();
+  const profileResult = await admin.from('profiles').select('id, email').eq('id', userId).maybeSingle();
 
   if (profileResult.error) {
-    throw new Error(profileResult.error.message || 'Profile could not be loaded')
+    throw new Error(profileResult.error.message || 'Profile could not be loaded');
   }
 
-  const profileData = profileResult.data || null
+  const profileData = profileResult.data || null;
 
   if (!profileData) {
     return {
@@ -142,13 +132,12 @@ export async function lookupPasswordAccountByEmail(
       providerIds: lookup.providerIds,
       signInMethods: lookup.signInMethods,
       userId,
-    }
+    };
   }
 
-  const profileEmail = normalizeEmail(profileData?.email)
-  const profileId = normalizeValue(profileData?.id)
-  const profileEligible =
-    profileEmail === normalizedEmail && (!profileId || profileId === userId)
+  const profileEmail = normalizeEmail(profileData?.email);
+  const profileId = normalizeValue(profileData?.id);
+  const profileEligible = profileEmail === normalizedEmail && (!profileId || profileId === userId);
 
   return {
     code: profileEligible ? null : 'auth/password-reset-unavailable',
@@ -161,5 +150,5 @@ export async function lookupPasswordAccountByEmail(
     providerIds: lookup.providerIds,
     signInMethods: lookup.signInMethods,
     userId,
-  }
+  };
 }

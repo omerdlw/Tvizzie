@@ -1,51 +1,51 @@
-'use client'
+'use client';
 
-import { useMemo } from 'react'
+import { useMemo } from 'react';
 
-import { useNavRegistry } from '@/core/modules/registry/context'
+import { useNavRegistry } from '@/core/modules/registry/context';
 
-import { useNavigationContext } from '../context'
+import { useNavigationContext } from '../context';
 
 function getConfigItemKeys(items) {
-  return Object.values(items || {}).map((item) => item.path || item.name)
+  return Object.values(items || {}).map((item) => item.path || item.name);
 }
 
 function orderNavigationItems(registeredItems, orderedKeys) {
-  const orderedItems = []
-  const includedKeys = new Set()
+  const orderedItems = [];
+  const includedKeys = new Set();
 
   orderedKeys.forEach((key) => {
-    const item = registeredItems[key]
+    const item = registeredItems[key];
 
     if (!item) {
-      return
+      return;
     }
 
-    orderedItems.push(item)
-    includedKeys.add(key)
-  })
+    orderedItems.push(item);
+    includedKeys.add(key);
+  });
 
   Object.entries(registeredItems).forEach(([key, item]) => {
     if (includedKeys.has(key)) {
-      return
+      return;
     }
 
-    orderedItems.push(item)
-  })
+    orderedItems.push(item);
+  });
 
-  return orderedItems
+  return orderedItems;
 }
 
 export function useNavigationItems() {
-  const { config } = useNavigationContext()
-  const { getAll } = useNavRegistry()
+  const { config } = useNavigationContext();
+  const { getAll } = useNavRegistry();
 
   const rawItems = useMemo(() => {
-    const registeredItems = getAll()
-    const orderedKeys = getConfigItemKeys(config?.items)
+    const registeredItems = getAll();
+    const orderedKeys = getConfigItemKeys(config?.items);
 
-    return orderNavigationItems(registeredItems, orderedKeys)
-  }, [getAll, config?.items])
+    return orderNavigationItems(registeredItems, orderedKeys);
+  }, [getAll, config?.items]);
 
-  return { rawItems }
+  return { rawItems };
 }

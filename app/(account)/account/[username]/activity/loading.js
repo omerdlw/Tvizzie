@@ -1,17 +1,13 @@
-'use client'
+'use client';
 
-import AccountRouteSkeleton from '@/ui/skeletons/views/account'
-import Registry from './registry'
+import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import Registry from './registry';
 
 export default function AccountLoading() {
   return (
     <>
-      <Registry
-        isPageLoading={true}
-        isResolvingProfile={true}
-        registrySource="account-activity-loading"
-      />
+      <Registry isPageLoading={true} isResolvingProfile={true} registrySource="account-activity-loading" />
       <AccountRouteSkeleton variant="reviews" />
     </>
-  )
+  );
 }

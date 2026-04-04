@@ -1,261 +1,242 @@
-'use client'
+'use client';
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react';
 
-import Image from 'next/image'
-import Link from 'next/link'
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { TMDB_IMG } from '@/core/constants'
-import { formatCurrency, getImagePlaceholderDataUrl } from '@/core/utils'
-import Tooltip from '@/ui/elements/tooltip'
-import Icon from '@/ui/icon'
+import { TMDB_IMG } from '@/core/constants';
+import { cn, formatCurrency, getImagePlaceholderDataUrl } from '@/core/utils';
+import Tooltip from '@/ui/elements/tooltip';
+import Icon from '@/ui/icon';
 
-const MAX_VISIBLE_PERSONS = 2
-
-function createSidebarRow(id, icon, content, length) {
-  return { id, icon, content, length }
-}
+const MAX_VISIBLE_PERSONS = 2;
+const COMMUNITY_REVIEWS_SELECTOR = '[data-community-reviews="true"]';
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-start gap-2 py-1.5 text-sm">
-      <Icon
-        className="mt-0.5 shrink-0 text-white/70"
-        icon={icon}
-        size={18}
-      />
-      <div className="flex-1 leading-relaxed">{children}</div>
+    <div className="flex items-start gap-2 py-1.5 text-sm text-black">
+      <Icon className="mt-0.5 shrink-0 text-black/70" icon={icon} size={18} />
+      <div className="flex-1 leading-relaxed font-medium">{children}</div>
     </div>
-  )
+  );
+}
+
+function PersonLink({ person }) {
+  return (
+    <Link href={`/person/${person.id}`} className="text-black/70 transition-colors">
+      {person.name}
+    </Link>
+  );
 }
 
 function PersonsDisplay({ persons, label }) {
   if (!persons?.length) {
-    return null
+    return null;
   }
 
-  const visiblePersons = persons.slice(0, MAX_VISIBLE_PERSONS)
-  const overflowPersons = persons.slice(MAX_VISIBLE_PERSONS)
+  const visible = persons.slice(0, MAX_VISIBLE_PERSONS);
+  const hidden = persons.slice(MAX_VISIBLE_PERSONS);
 
   return (
     <div className="flex min-w-0 items-center gap-1.5">
       <span className="shrink-0">{label}</span>
+
       <div className="flex flex-wrap items-center gap-1">
-        {visiblePersons.map((person, index) => (
+        {visible.map((person, index) => (
           <div key={person.id} className="flex items-center gap-1">
-            <Link
-              href={`/person/${person.id}`}
-              className="cursor-pointer text-white/70 transition-colors hover:text-white"
-            >
-              {person.name}
-            </Link>
-            {index === 0 && persons.length > 1 && (
-              <span className="text-white">,</span>
-            )}
+            <PersonLink person={person} />
+            {index < visible.length - 1 && <span className="text-black/60">,</span>}
           </div>
         ))}
 
-        {overflowPersons.length > 0 && (
-          <Tooltip
-            text={overflowPersons.map((person) => person.name).join(', ')}
-            position="top"
-          >
-            <span className="shrink-0 cursor-help text-xs font-bold text-white transition-colors hover:text-white">
-              +{overflowPersons.length}
+        {hidden.length > 0 && (
+          <Tooltip text={hidden.map((person) => person.name).join(', ')} position="top">
+            <span className="shrink-0 cursor-help text-xs font-bold text-black/70 transition-colors">
+              +{hidden.length}
             </span>
           </Tooltip>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default function Sidebar({
-  item,
-  director,
-  writers,
-  creators,
-  certification,
-  topContent,
-}) {
-  const hasBudget = item.budget > 0
-  const hasRevenue = item.revenue > 0
-  const episodeRuntime =
-    item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null
+function createRow(id, icon, content) {
+  return { id, icon, content };
+}
+
+export default function Sidebar({ item, director, writers, creators, certification, topContent }) {
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isCommunityReviewsVisible, setIsCommunityReviewsVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+    const handleDesktopChange = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    handleDesktopChange();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleDesktopChange);
+    } else {
+      mediaQuery.addListener(handleDesktopChange);
+    }
+
+    let observer = null;
+    let mutationObserver = null;
+
+    const bindObserver = () => {
+      if (observer) {
+        return true;
+      }
+
+      const target = document.querySelector(COMMUNITY_REVIEWS_SELECTOR);
+
+      if (!target) {
+        setIsCommunityReviewsVisible(false);
+        return false;
+      }
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsCommunityReviewsVisible(entry.isIntersecting);
+        },
+        {
+          threshold: 0.08,
+          rootMargin: '0px 0px -18% 0px',
+        }
+      );
+
+      observer.observe(target);
+      return true;
+    };
+
+    if (!bindObserver()) {
+      mutationObserver = new MutationObserver(() => {
+        if (bindObserver()) {
+          mutationObserver?.disconnect();
+        }
+      });
+
+      mutationObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleDesktopChange);
+      } else {
+        mediaQuery.removeListener(handleDesktopChange);
+      }
+
+      observer?.disconnect();
+      mutationObserver?.disconnect();
+    };
+  }, []);
+
+  const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
-    item.spoken_languages?.find(
-      (language) => language.iso_639_1 === item.original_language
-    )?.english_name || item.original_language
-  const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null
+    item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)?.english_name ||
+    item.original_language;
+  const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
+  const shouldCollapseDetails = isDesktop && isCommunityReviewsVisible;
 
-  const rows = useMemo(() => {
-    const nextRows = []
+  const personGroups = [
+    {
+      id: 'writers',
+      label: 'Written by',
+      icon: 'solar:pen-bold',
+      persons: writers,
+    },
+    {
+      id: 'creators',
+      label: 'Created by',
+      icon: 'solar:pen-bold',
+      persons: creators,
+    },
+  ];
 
-    if (director) {
-      const text = `Directed by ${director.name}`
+  const rows = [
+    director &&
+      createRow(
+        'director',
+        'solar:camera-minimalistic-bold',
+        <>
+          <span className="mr-1">Directed by</span>
+          <PersonLink person={director} />
+        </>
+      ),
 
-      nextRows.push(
-        createSidebarRow(
-          'director',
-          'solar:camera-minimalistic-bold',
-          <>
-            <span className="mr-1">Directed by</span>
-            <Link
-              href={`/person/${director.id}`}
-              className="cursor-pointer text-white/70 transition-colors hover:text-white"
-            >
-              {director.name}
-            </Link>
-          </>,
-          text.length
-        )
-      )
-    }
+    ...personGroups
+      .filter((group) => group.persons?.length)
+      .map((group) => {
+        return createRow(group.id, group.icon, <PersonsDisplay persons={group.persons} label={group.label} />);
+      }),
 
-    if (writers?.length) {
-      const label = 'Written by'
-      const names = writers
-        .slice(0, MAX_VISIBLE_PERSONS)
-        .map((person) => person.name)
-        .join(', ')
-      const overflow =
-        writers.length > MAX_VISIBLE_PERSONS
-          ? ` +${writers.length - MAX_VISIBLE_PERSONS}`
-          : ''
+    certification &&
+      createRow(
+        'certification',
+        'solar:shield-bold',
+        <>
+          Rated <span className="text-black/70">{certification}</span>
+        </>
+      ),
 
-      nextRows.push(
-        createSidebarRow(
-          'writers',
-          'solar:pen-bold',
-          <PersonsDisplay persons={writers} label={label} />,
-          `${label} ${names}${overflow}`.length
-        )
-      )
-    }
+    originalLanguageName &&
+      createRow(
+        'language',
+        'solar:globus-bold',
+        <>
+          Original Language: <span className="text-black/70">{originalLanguageName}</span>
+        </>
+      ),
 
-    if (creators?.length) {
-      const label = 'Created by'
-      const names = creators
-        .slice(0, MAX_VISIBLE_PERSONS)
-        .map((person) => person.name)
-        .join(', ')
-      const overflow =
-        creators.length > MAX_VISIBLE_PERSONS
-          ? ` +${creators.length - MAX_VISIBLE_PERSONS}`
-          : ''
+    item.status &&
+      createRow(
+        'status',
+        'solar:info-circle-bold',
+        <>
+          Status: <span className="text-black/70">{item.status}</span>
+        </>
+      ),
 
-      nextRows.push(
-        createSidebarRow(
-          'creators',
-          'solar:pen-bold',
-          <PersonsDisplay persons={creators} label={label} />,
-          `${label} ${names}${overflow}`.length
-        )
-      )
-    }
+    episodeRuntime &&
+      createRow(
+        'runtime',
+        'solar:clock-circle-bold',
+        <>
+          ~<span className="text-black/70">{episodeRuntime}</span> min / episode
+        </>
+      ),
 
-    if (certification) {
-      nextRows.push(
-        createSidebarRow(
-          'certification',
-          'solar:shield-bold',
-          <>
-            Rated <span className="text-white/70">{certification}</span>
-          </>,
-          `Rated ${certification}`.length
-        )
-      )
-    }
+    item.budget > 0 &&
+      createRow(
+        'budget',
+        'solar:dollar-bold',
+        <>
+          Budget: <span className="text-black/70">{formatCurrency(item.budget)}</span>
+        </>
+      ),
 
-    if (originalLanguageName) {
-      nextRows.push(
-        createSidebarRow(
-          'language',
-          'solar:globus-bold',
-          <>
-            Original Language:{' '}
-            <span className="text-white/70">{originalLanguageName}</span>
-          </>,
-          `Original Language: ${originalLanguageName}`.length
-        )
-      )
-    }
-
-    if (item.status) {
-      nextRows.push(
-        createSidebarRow(
-          'status',
-          'solar:info-circle-bold',
-          <>
-            Status: <span className="text-white/70">{item.status}</span>
-          </>,
-          `Status: ${item.status}`.length
-        )
-      )
-    }
-
-    if (episodeRuntime) {
-      nextRows.push(
-        createSidebarRow(
-          'runtime',
-          'solar:clock-circle-bold',
-          <>
-            ~<span className="text-white/70">{episodeRuntime}</span> min /
-            episode
-          </>,
-          `~${episodeRuntime} min / episode`.length
-        )
-      )
-    }
-
-    if (hasBudget) {
-      const budget = formatCurrency(item.budget)
-
-      nextRows.push(
-        createSidebarRow(
-          'budget',
-          'solar:dollar-bold',
-          <>
-            Budget: <span className="text-white/70">{budget}</span>
-          </>,
-          `Budget: ${budget}`.length
-        )
-      )
-    }
-
-    if (hasRevenue) {
-      const revenue = formatCurrency(item.revenue)
-
-      nextRows.push(
-        createSidebarRow(
-          'revenue',
-          'solar:graph-up-bold',
-          <>
-            Revenue: <span className="text-white/70">{revenue}</span>
-          </>,
-          `Revenue: ${revenue}`.length
-        )
-      )
-    }
-
-    return nextRows.sort((a, b) => b.length - a.length)
-  }, [
-    creators,
-    director,
-    certification,
-    writers,
-    originalLanguageName,
-    item.status,
-    item.budget,
-    item.revenue,
-    episodeRuntime,
-    hasBudget,
-    hasRevenue,
-  ])
+    item.revenue > 0 &&
+      createRow(
+        'revenue',
+        'solar:graph-up-bold',
+        <>
+          Revenue: <span className="text-black/70">{formatCurrency(item.revenue)}</span>
+        </>
+      ),
+  ].filter(Boolean);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[16px] lg:h-[600px] lg:w-[400px]">
+      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[14px] lg:h-[600px] lg:w-[400px]">
         {posterSrc ? (
           <Image
             fill
@@ -265,13 +246,11 @@ export default function Sidebar({
             sizes="(max-width: 1024px) 100vw, 400px"
             quality={88}
             placeholder="blur"
-            blurDataURL={getImagePlaceholderDataUrl(
-              `${item?.id || item?.title || item?.name}-${item?.poster_path}`
-            )}
+            blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
             className="object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-white/5 text-white/55">
+          <div className="flex h-full w-full items-center justify-center border border-[#0284c7] bg-[#dbeafe] text-black/70">
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}
@@ -279,7 +258,15 @@ export default function Sidebar({
 
       {topContent}
 
-      <div className="flex flex-col gap-1 px-2">
+      <div
+        className={cn(
+          'flex flex-col gap-1 transition-all duration-300 ease-out',
+          shouldCollapseDetails
+            ? 'pointer-events-none max-h-0 -translate-y-1 overflow-hidden opacity-0'
+            : 'max-h-[32rem] translate-y-0 opacity-100'
+        )}
+        aria-hidden={shouldCollapseDetails}
+      >
         {rows.map((row) => (
           <SidebarRow key={row.id} icon={row.icon}>
             {row.content}
@@ -287,5 +274,5 @@ export default function Sidebar({
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { ACCOUNT_SECTION_KEYS } from '@/features/account/route-segments'
+import { ACCOUNT_SECTION_KEYS } from '@/features/account/route-segments';
 
 const ACCOUNT_NAV_CHILDREN = Object.freeze([
   {
@@ -37,35 +37,33 @@ const ACCOUNT_NAV_CHILDREN = Object.freeze([
     description: 'Open your lists',
     icon: 'solar:list-bold',
   },
-])
+]);
 
 export function buildAccountChildPath(username, key) {
-  const normalizedUsername = String(username || '').trim()
+  const normalizedUsername = String(username || '').trim();
 
   if (!key) {
-    return null
+    return null;
   }
 
   if (!normalizedUsername) {
-    return null
+    return null;
   }
 
-  return `/account/${normalizedUsername}/${key}`
+  return `/account/${normalizedUsername}/${key}`;
 }
 
 export function buildAccountChildren(username = null) {
   if (!String(username || '').trim()) {
-    return []
+    return [];
   }
 
-  return ACCOUNT_NAV_CHILDREN
-    .filter((item) => ACCOUNT_SECTION_KEYS.includes(item.key))
-    .map((item) => ({
-      name: `account-${item.key}`,
-      path: buildAccountChildPath(username, item.key),
-      title: item.title,
-      description: item.description,
-      icon: item.icon,
-      accountSectionKey: item.key,
-    }))
+  return ACCOUNT_NAV_CHILDREN.filter((item) => ACCOUNT_SECTION_KEYS.includes(item.key)).map((item) => ({
+    name: `account-${item.key}`,
+    path: buildAccountChildPath(username, item.key),
+    title: item.title,
+    description: item.description,
+    icon: item.icon,
+    accountSectionKey: item.key,
+  }));
 }

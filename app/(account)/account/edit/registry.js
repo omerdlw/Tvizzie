@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { buildAccountEditState } from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+import { buildAccountEditState } from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_EDIT_REGISTRY_SOURCE = 'account-edit'
+const ACCOUNT_EDIT_REGISTRY_SOURCE = 'account-edit';
 
 export default function Registry(props) {
   useRegistry(
@@ -11,7 +11,7 @@ export default function Registry(props) {
       navRegistrySource: ACCOUNT_EDIT_REGISTRY_SOURCE,
       ...props,
     })
-  )
+  );
 
-  return null
+  return null;
 }

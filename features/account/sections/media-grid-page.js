@@ -1,98 +1,98 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react';
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import MediaCard from '@/features/shared/media-card'
-import { TMDB_IMG } from '@/core/constants'
-import { cn } from '@/core/utils'
-import Icon from '@/ui/icon'
-import AccountSectionLayout from '../section-layout'
+import MediaCard from '@/features/shared/media-card';
+import { TMDB_IMG } from '@/core/constants';
+import { cn } from '@/core/utils';
+import Icon from '@/ui/icon';
+import AccountSectionLayout from '../section-layout';
 
-const ITEMS_PER_PAGE = 36
+const ITEMS_PER_PAGE = 36;
 
 function getMediaType(item) {
-  const explicitType = item?.media_type || item?.entityType
+  const explicitType = item?.media_type || item?.entityType;
 
   if (explicitType === 'movie') {
-    return explicitType
+    return explicitType;
   }
 
-  return null
+  return null;
 }
 
 function getMediaTitle(item) {
-  return item?.title || item?.original_title || 'Untitled'
+  return item?.title || item?.original_title || 'Untitled';
 }
 
 function getMediaYear(item) {
-  return item?.release_date?.slice?.(0, 4) || null
+  return item?.release_date?.slice?.(0, 4) || null;
 }
 
 function getMediaPoster(item) {
   if (item?.poster_path_full) {
-    return item.poster_path_full
+    return item.poster_path_full;
   }
 
   if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`
+    return `${TMDB_IMG}/w342${item.poster_path}`;
   }
 
-  return null
+  return null;
 }
 
 export function buildAccountCollectionPageHref(basePath, pageNumber) {
   if (!basePath) {
-    return ''
+    return '';
   }
 
   if (basePath.includes('?')) {
-    const [pathname, search = ''] = basePath.split('?')
-    const params = new URLSearchParams(search)
+    const [pathname, search = ''] = basePath.split('?');
+    const params = new URLSearchParams(search);
 
     if (pageNumber <= 1) {
-      params.delete('page')
+      params.delete('page');
     } else {
-      params.set('page', String(pageNumber))
+      params.set('page', String(pageNumber));
     }
 
-    const query = params.toString()
-    return query ? `${pathname}?${query}` : pathname
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   }
 
   if (pageNumber <= 1) {
-    return basePath
+    return basePath;
   }
 
-  return `${basePath}/page/${pageNumber}`
+  return `${basePath}/page/${pageNumber}`;
 }
 
 function getPaginationItems(currentPage, totalPages) {
   if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1)
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
   }
 
-  const items = [1]
-  const start = Math.max(2, currentPage - 1)
-  const end = Math.min(totalPages - 1, currentPage + 1)
+  const items = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
 
   if (start > 2) {
-    items.push('start-ellipsis')
+    items.push('start-ellipsis');
   }
 
   for (let page = start; page <= end; page += 1) {
-    items.push(page)
+    items.push(page);
   }
 
   if (end < totalPages - 1) {
-    items.push('end-ellipsis')
+    items.push('end-ellipsis');
   }
 
-  items.push(totalPages)
+  items.push(totalPages);
 
-  return items
+  return items;
 }
 
 export default function AccountMediaGridPage({
@@ -105,20 +105,20 @@ export default function AccountMediaGridPage({
   renderOverlay = null,
   title,
 }) {
-  const router = useRouter()
+  const router = useRouter();
 
   const cards = useMemo(() => {
     return items
       .map((item) => {
-        const mediaType = getMediaType(item)
-        const detailId = item?.entityId || item?.id
+        const mediaType = getMediaType(item);
+        const detailId = item?.entityId || item?.id;
 
         if (!detailId || mediaType !== 'movie') {
-          return null
+          return null;
         }
 
-        const mediaTitle = getMediaTitle(item)
-        const year = getMediaYear(item)
+        const mediaTitle = getMediaTitle(item);
+        const year = getMediaYear(item);
 
         return {
           href: `/${mediaType}/${detailId}`,
@@ -127,24 +127,24 @@ export default function AccountMediaGridPage({
           imageSrc: getMediaPoster(item),
           item,
           tooltipText: year ? `${mediaTitle} (${year})` : mediaTitle,
-        }
+        };
       })
-      .filter(Boolean)
-  }, [items])
+      .filter(Boolean);
+  }, [items]);
 
-  const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0
-  const activePage = totalPages ? Math.min(currentPage, totalPages) : 1
-  const pageStart = (activePage - 1) * ITEMS_PER_PAGE
-  const visibleCards = cards.slice(pageStart, pageStart + ITEMS_PER_PAGE)
-  const paginationItems = getPaginationItems(activePage, totalPages)
+  const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0;
+  const activePage = totalPages ? Math.min(currentPage, totalPages) : 1;
+  const pageStart = (activePage - 1) * ITEMS_PER_PAGE;
+  const visibleCards = cards.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+  const paginationItems = getPaginationItems(activePage, totalPages);
 
   useEffect(() => {
     if (!totalPages || currentPage <= totalPages || !pageBasePath) {
-      return
+      return;
     }
 
-    router.replace(buildAccountCollectionPageHref(pageBasePath, totalPages))
-  }, [currentPage, pageBasePath, router, totalPages])
+    router.replace(buildAccountCollectionPageHref(pageBasePath, totalPages));
+  }, [currentPage, pageBasePath, router, totalPages]);
 
   return (
     <AccountSectionLayout
@@ -152,20 +152,13 @@ export default function AccountMediaGridPage({
       summaryLabel={
         cards.length === 0
           ? '0 items'
-          : `${pageStart + 1}-${Math.min(
-              pageStart + ITEMS_PER_PAGE,
-              cards.length
-            )} of ${cards.length}`
+          : `${pageStart + 1}-${Math.min(pageStart + ITEMS_PER_PAGE, cards.length)} of ${cards.length}`
       }
       title={title}
-      action={
-        typeof renderHeaderAction === 'function' ? renderHeaderAction() : null
-      }
+      action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
       {cards.length === 0 ? (
-        <div className="border border-white/5 p-4 text-sm text-white/70">
-          {emptyMessage}
-        </div>
+        <div className="border border-[#0284c7] p-4 text-sm text-black/70">{emptyMessage}</div>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
@@ -177,12 +170,7 @@ export default function AccountMediaGridPage({
                 imageSrc={card.imageSrc}
                 imageAlt={card.imageAlt}
                 imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-                fallbackIconClassName="text-white/50"
-                topOverlay={
-                  typeof renderOverlay === 'function'
-                    ? renderOverlay(card.item)
-                    : null
-                }
+                topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
                 tooltipText={card.tooltipText}
               />
             ))}
@@ -193,7 +181,7 @@ export default function AccountMediaGridPage({
               {activePage > 1 ? (
                 <Link
                   href={buildAccountCollectionPageHref(pageBasePath, activePage - 1)}
-                  className="center size-12 surface-muted text-xs font-semibold transition"
+                  className="center size-12 border border-[#0284c7] bg-[#dbeafe] text-xs font-semibold text-black/70 transition"
                 >
                   <Icon size={16} icon="solar:skip-previous-bold" />
                 </Link>
@@ -208,14 +196,14 @@ export default function AccountMediaGridPage({
                     className={cn(
                       'center size-12 border text-xs font-semibold transition',
                       item === activePage
-                        ? 'surface-active'
-                        : 'surface-muted'
+                        ? 'border border-[#0ea5e9] bg-[#bae6fd] text-[#0c4a6e]'
+                        : 'border border-[#0284c7] bg-[#dbeafe] text-black/70'
                     )}
                   >
                     {item}
                   </Link>
                 ) : (
-                  <span key={`${item}-${index}`} className="text-xs text-white">
+                  <span key={`${item}-${index}`} className="text-xs text-[#0f172a]">
                     ...
                   </span>
                 )
@@ -224,7 +212,7 @@ export default function AccountMediaGridPage({
               {activePage < totalPages ? (
                 <Link
                   href={buildAccountCollectionPageHref(pageBasePath, activePage + 1)}
-                  className="center size-12 surface-muted text-xs font-semibold transition"
+                  className="center size-12 border border-[#0284c7] bg-[#dbeafe] text-xs font-semibold text-black/70 transition"
                 >
                   <Icon size={16} icon="solar:skip-next-bold" />
                 </Link>
@@ -234,5 +222,5 @@ export default function AccountMediaGridPage({
         </>
       )}
     </AccountSectionLayout>
-  )
+  );
 }

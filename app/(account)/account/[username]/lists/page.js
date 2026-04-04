@@ -1,9 +1,9 @@
-import Client from './client'
-import { getUsernameAccountListsRouteData } from '@/core/services/account/account-route-data.server'
+import Client from './client';
+import { getUsernameAccountListsRouteData } from '@/core/services/account/account-route-data.server';
 
 export default async function Page({ params }) {
-  const { username } = await params
-  const routeData = await getUsernameAccountListsRouteData(username)
+  const { username } = await params;
+  const routeData = await getUsernameAccountListsRouteData(username);
 
-  return <Client {...routeData} />
+  return <Client {...routeData} />;
 }

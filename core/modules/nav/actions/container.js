@@ -1,18 +1,15 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { useAuth, useAuthSessionReady } from '@/core/modules/auth'
-import {
-  useBackgroundActions,
-  useBackgroundState,
-} from '@/core/modules/background/context'
-import { useModal } from '@/core/modules/modal/context'
-import { useNavigationState } from '@/core/modules/nav/context'
-import { useToast } from '@/core/modules/notification/hooks'
-import Tooltip from '@/ui/elements/tooltip'
-import Icon from '@/ui/icon'
+import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
+import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
+import { useModal } from '@/core/modules/modal/context';
+import { useNavigationState } from '@/core/modules/nav/context';
+import { useToast } from '@/core/modules/notification/hooks';
+import Tooltip from '@/ui/elements/tooltip';
+import Icon from '@/ui/icon';
 
 const ACTION_KEYS = Object.freeze({
   NOTIFICATIONS: 'notifications',
@@ -20,7 +17,7 @@ const ACTION_KEYS = Object.freeze({
   SCROLL_TOP: 'scroll-top',
   TOGGLE_MUTE: 'toggle-mute',
   SETTINGS: 'settings',
-})
+});
 
 const ACTION_ORDER = Object.freeze({
   NOTIFICATIONS: -10,
@@ -28,47 +25,47 @@ const ACTION_ORDER = Object.freeze({
   TOGGLE_MUTE: 10,
   SCROLL_TOP: 20,
   LOGOUT: 30,
-})
+});
 
 function stopPropagation(event) {
-  event.stopPropagation()
+  event.stopPropagation();
 }
 
 function byOrderDesc(a, b) {
-  return (b.order || 0) - (a.order || 0)
+  return (b.order || 0) - (a.order || 0);
 }
 
 function normalizeActions(actions) {
-  if (!actions) return []
+  if (!actions) return [];
 
-  const actionList = Array.isArray(actions) ? actions : [actions]
+  const actionList = Array.isArray(actions) ? actions : [actions];
 
   return actionList.map((action, index) => ({
     key: action.key || `action-${index}`,
     ...action,
-  }))
+  }));
 }
 
 function getVisibleActions(actions) {
-  return actions.filter((action) => action.visible !== false)
+  return actions.filter((action) => action.visible !== false);
 }
 
 function filterContextActions(actions, activeItem) {
   return actions.filter((action) => {
     if (action.key === ACTION_KEYS.LOGOUT && activeItem?.hideLogout) {
-      return false
+      return false;
     }
 
     if (action.key === ACTION_KEYS.SETTINGS && activeItem?.hideSettings) {
-      return false
+      return false;
     }
 
     if (action.key === ACTION_KEYS.SCROLL_TOP && activeItem?.hideScroll) {
-      return false
+      return false;
     }
 
-    return true
-  })
+    return true;
+  });
 }
 
 function isActionlessRoute(activeItem) {
@@ -78,33 +75,29 @@ function isActionlessRoute(activeItem) {
     activeItem?.isMasked ||
     activeItem?.isSurface ||
     activeItem?.isConfirmation
-  )
+  );
 }
 
 function isStatusActionAllowed(activeItem) {
-  return activeItem?.type === 'APP_ERROR' || activeItem?.type === 'API_ERROR'
+  return activeItem?.type === 'APP_ERROR' || activeItem?.type === 'API_ERROR';
 }
 
 function useDefaultNavActions() {
-  const router = useRouter()
-  const toast = useToast()
-  const { openModal } = useModal()
-  const { config } = useNavigationState()
-  const { isVideo, videoElement } = useBackgroundState()
-  const { toggleMute } = useBackgroundActions()
-  const { isAuthenticated, isReady, signOut, user } = useAuth()
-  const isAuthSessionReady = useAuthSessionReady(
-    isAuthenticated ? user?.id || null : null
-  )
-  const [unreadCount, setUnreadCount] = useState(0)
-  const isSignedIn = Boolean(isAuthenticated)
-  const canOpenNotifications = Boolean(isAuthenticated && user?.id)
+  const router = useRouter();
+  const toast = useToast();
+  const { openModal } = useModal();
+  const { config } = useNavigationState();
+  const { isVideo, videoElement } = useBackgroundState();
+  const { toggleMute } = useBackgroundActions();
+  const { isAuthenticated, isReady, signOut, user } = useAuth();
+  const isAuthSessionReady = useAuthSessionReady(isAuthenticated ? user?.id || null : null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const isSignedIn = Boolean(isAuthenticated);
+  const canOpenNotifications = Boolean(isAuthenticated && user?.id);
 
-  const isMuted = !!videoElement?.muted
-  const unreadBadge =
-    unreadCount > 0 ? (unreadCount > 99 ? '99+' : `${unreadCount}`) : null
-  const subscribeToUnreadCount =
-    config?.integrations?.notifications?.subscribeToUnreadCount
+  const isMuted = !!videoElement?.muted;
+  const unreadBadge = unreadCount > 0 ? (unreadCount > 99 ? '99+' : `${unreadCount}`) : null;
+  const subscribeToUnreadCount = config?.integrations?.notifications?.subscribeToUnreadCount;
 
   useEffect(() => {
     if (
@@ -114,20 +107,14 @@ function useDefaultNavActions() {
       !user?.id ||
       typeof subscribeToUnreadCount !== 'function'
     ) {
-      setUnreadCount(0)
-      return undefined
+      setUnreadCount(0);
+      return undefined;
     }
 
     return subscribeToUnreadCount(user.id, (count) => {
-      setUnreadCount(count)
-    })
-  }, [
-    isAuthenticated,
-    isAuthSessionReady,
-    isReady,
-    subscribeToUnreadCount,
-    user?.id,
-  ])
+      setUnreadCount(count);
+    });
+  }, [isAuthenticated, isAuthSessionReady, isReady, subscribeToUnreadCount, user?.id]);
 
   return useMemo(
     () => [
@@ -139,12 +126,12 @@ function useDefaultNavActions() {
         order: ACTION_ORDER.NOTIFICATIONS,
         badge: unreadBadge,
         onClick: (event) => {
-          stopPropagation(event)
+          stopPropagation(event);
           openModal('NOTIFICATIONS_MODAL', 'left', {
             data: {
               userId: user?.id || null,
             },
-          })
+          });
         },
       },
       {
@@ -154,13 +141,13 @@ function useDefaultNavActions() {
         visible: isSignedIn,
         order: ACTION_ORDER.LOGOUT,
         onClick: async (event) => {
-          stopPropagation(event)
+          stopPropagation(event);
 
           try {
-            await signOut()
-            router.replace('/')
+            await signOut();
+            router.replace('/');
           } catch (error) {
-            toast.error(error?.message || 'Could not sign out')
+            toast.error(error?.message || 'Could not sign out');
           }
         },
       },
@@ -171,8 +158,8 @@ function useDefaultNavActions() {
         visible: Boolean(isVideo),
         order: ACTION_ORDER.TOGGLE_MUTE,
         onClick: (event) => {
-          stopPropagation(event)
-          toggleMute()
+          stopPropagation(event);
+          toggleMute();
         },
       },
       {
@@ -182,8 +169,8 @@ function useDefaultNavActions() {
         visible: false,
         order: ACTION_ORDER.SETTINGS,
         onClick: (event) => {
-          stopPropagation(event)
-          openModal('SETTINGS_MODAL', 'center')
+          stopPropagation(event);
+          openModal('SETTINGS_MODAL', 'center');
         },
       },
     ],
@@ -200,64 +187,62 @@ function useDefaultNavActions() {
       signOut,
       user?.id,
     ]
-  )
+  );
 }
 
 export function useNavActions({ activeItem } = {}) {
-  const defaultActions = useDefaultNavActions()
+  const defaultActions = useDefaultNavActions();
 
   return useMemo(() => {
     if (isActionlessRoute(activeItem)) {
-      return []
+      return [];
     }
 
-    const extendedActions = normalizeActions(activeItem?.actions)
+    const extendedActions = normalizeActions(activeItem?.actions);
 
     if (activeItem?.isStatus) {
       if (!isStatusActionAllowed(activeItem)) {
-        return []
+        return [];
       }
 
-      return getVisibleActions(extendedActions).sort(byOrderDesc)
+      return getVisibleActions(extendedActions).sort(byOrderDesc);
     }
 
-    return filterContextActions(
-      getVisibleActions([...defaultActions, ...extendedActions]),
-      activeItem
-    ).sort(byOrderDesc)
-  }, [activeItem, defaultActions])
+    return filterContextActions(getVisibleActions([...defaultActions, ...extendedActions]), activeItem).sort(
+      byOrderDesc
+    );
+  }, [activeItem, defaultActions]);
 }
 
 export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <button
-        className="center cursor-pointer rounded-full bg-transparent p-1 text-white/70 hover:bg-white/20 transition-all hover: hover:text-white relative"
+        className={`center relative cursor-pointer rounded-full border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
         onClick={action.onClick}
         type="button"
       >
         <Icon icon={action.icon} size={16} />
         {action.badge ? (
-          <span className="absolute -top-1 -right-1 center h-4 min-w-4 bg-info rounded-full text-[10px] font-semibold leading-none text-white">
+          <span
+            className={`center absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold`}
+          >
             {action.badge}
           </span>
         ) : null}
       </button>
     </Tooltip>
-  )
+  );
 }
 
 export function NavActionsContainer({ activeItem }) {
-  const actions = useNavActions({ activeItem })
+  const actions = useNavActions({ activeItem });
 
   return (
-    <div className="mr-2 flex shrink-0 items-center gap-1">
+    <div className={`mr-2 flex shrink-0 items-center gap-1`}>
       {actions.map((action, index) => (
-        <NavAction
-          key={`${action.key || action.icon || 'nav-action'}-${index}`}
-          action={action}
-        />
+        <NavAction key={`${action.key || action.icon || 'nav-action'}-${index}`} action={action} />
       ))}
     </div>
-  )
+  );
 }

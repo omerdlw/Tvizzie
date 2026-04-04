@@ -1,37 +1,28 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice'
-import {
-  normalizeGoogleAuthIntent,
-  sanitizeAuthNextPath,
-} from '@/core/auth/oauth-callback'
-import { createClient as createSupabaseClient } from '@/core/clients/supabase/client'
+import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
+import { normalizeGoogleAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
+import { createClient as createSupabaseClient } from '@/core/clients/supabase/client';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
-function buildRouteNoticeRedirect({
-  includeNext = true,
-  nextPath,
-  notice,
-  origin,
-  pathname,
-}) {
-  const redirectUrl = new URL(pathname, origin)
+function buildRouteNoticeRedirect({ includeNext = true, nextPath, notice, origin, pathname }) {
+  const redirectUrl = new URL(pathname, origin);
 
   if (includeNext && nextPath) {
-    redirectUrl.searchParams.set('next', nextPath)
+    redirectUrl.searchParams.set('next', nextPath);
   }
 
   if (notice) {
-    redirectUrl.searchParams.set('notice', notice)
+    redirectUrl.searchParams.set('notice', notice);
   }
 
-  return redirectUrl.toString()
+  return redirectUrl.toString();
 }
 
 function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
@@ -41,7 +32,7 @@ function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
       notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
       origin,
       pathname: '/sign-up',
-    })
+    });
   }
 
   if (intent === 'sign-in') {
@@ -50,7 +41,7 @@ function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
       notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
       origin,
       pathname: '/sign-in',
-    })
+    });
   }
 
   return buildRouteNoticeRedirect({
@@ -59,34 +50,29 @@ function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
     notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
     origin,
     pathname: nextPath,
-  })
+  });
 }
 
-export default function OAuthCallbackPage() {
-  const searchParams = useSearchParams()
+function OAuthCallbackContent() {
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function finalizeOAuthSession() {
-      const origin = window.location.origin
-      const nextPath = sanitizeAuthNextPath(searchParams.get('next'))
-      const intent = normalizeGoogleAuthIntent(
-        searchParams.get('intent'),
-        'sign-in'
-      )
-      const code = normalizeValue(searchParams.get('code'))
-      const providerError = normalizeValue(
-        searchParams.get('error') || searchParams.get('error_description')
-      )
+      const origin = window.location.origin;
+      const nextPath = sanitizeAuthNextPath(searchParams.get('next'));
+      const intent = normalizeGoogleAuthIntent(searchParams.get('intent'), 'sign-in');
+      const code = normalizeValue(searchParams.get('code'));
+      const providerError = normalizeValue(searchParams.get('error') || searchParams.get('error_description'));
 
       const redirectTo = (url) => {
         if (cancelled) {
-          return
+          return;
         }
 
-        window.location.replace(url)
-      }
+        window.location.replace(url);
+      };
 
       if (providerError) {
         redirectTo(
@@ -95,24 +81,24 @@ export default function OAuthCallbackPage() {
             nextPath,
             origin,
           })
-        )
-        return
+        );
+        return;
       }
 
-      const supabase = createSupabaseClient()
-      const sessionResult = await supabase.auth.getSession()
+      const supabase = createSupabaseClient();
+      const sessionResult = await supabase.auth.getSession();
 
       if (!sessionResult.error && sessionResult.data?.session?.user?.id) {
-        redirectTo(new URL(nextPath, origin).toString())
-        return
+        redirectTo(new URL(nextPath, origin).toString());
+        return;
       }
 
       if (code) {
-        const exchangeResult = await supabase.auth.exchangeCodeForSession(code)
+        const exchangeResult = await supabase.auth.exchangeCodeForSession(code);
 
         if (!exchangeResult.error && exchangeResult.data?.session?.user?.id) {
-          redirectTo(new URL(nextPath, origin).toString())
-          return
+          redirectTo(new URL(nextPath, origin).toString());
+          return;
         }
       }
 
@@ -122,15 +108,23 @@ export default function OAuthCallbackPage() {
           nextPath,
           origin,
         })
-      )
+      );
     }
 
-    void finalizeOAuthSession()
+    void finalizeOAuthSession();
 
     return () => {
-      cancelled = true
-    }
-  }, [searchParams])
+      cancelled = true;
+    };
+  }, [searchParams]);
 
-  return null
+  return null;
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={null}>
+      <OAuthCallbackContent />
+    </Suspense>
+  );
 }

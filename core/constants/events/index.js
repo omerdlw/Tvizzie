@@ -1,85 +1,83 @@
 class EventEmitter {
   constructor() {
-    this.events = {}
-    this.debugMode = false
+    this.events = {};
+    this.debugMode = false;
   }
 
   setDebugMode(enabled) {
-    this.debugMode = Boolean(enabled)
+    this.debugMode = Boolean(enabled);
   }
 
   subscribe(event, callback) {
     if (typeof event !== 'string' || !event) {
-      return () => {}
+      return () => {};
     }
 
     if (typeof callback !== 'function') {
-      return () => {}
+      return () => {};
     }
 
     if (!this.events[event]) {
-      this.events[event] = []
+      this.events[event] = [];
     }
 
-    this.events[event].push(callback)
+    this.events[event].push(callback);
 
     if (this.debugMode) {
-      console.debug(
-        `[Events] Subscribed to ${event}, total: ${this.events[event].length}`
-      )
+      console.debug(`[Events] Subscribed to ${event}, total: ${this.events[event].length}`);
     }
 
     const unsubscribe = () => {
-      this.events[event] = this.events[event].filter((cb) => cb !== callback)
+      this.events[event] = this.events[event].filter((cb) => cb !== callback);
 
       if (this.debugMode) {
-        console.debug(`[Events] Unsubscribed from ${event}`)
+        console.debug(`[Events] Unsubscribed from ${event}`);
       }
-    }
+    };
 
-    return unsubscribe
+    return unsubscribe;
   }
 
   emit(event, data) {
-    if (typeof event !== 'string' || !event) return
+    if (typeof event !== 'string' || !event) return;
 
     if (this.debugMode) {
-      console.debug(`[Events] Emitting ${event}`, data)
+      console.debug(`[Events] Emitting ${event}`, data);
     }
 
     if (this.events[event]) {
       this.events[event].forEach((callback) => {
         try {
-          callback(data)
+          callback(data);
         } catch (error) {
-          console.error(`[Events] Error in listener for ${event}:`, error)
+          console.error(`[Events] Error in listener for ${event}:`, error);
         }
-      })
+      });
     }
   }
 
   unsubscribeAll(event) {
     if (event) {
-      delete this.events[event]
+      delete this.events[event];
     } else {
-      this.events = {}
+      this.events = {};
     }
   }
 
   hasListeners(event) {
-    return Boolean(this.events[event]?.length)
+    return Boolean(this.events[event]?.length);
   }
 
   getListenerCount(event) {
-    return this.events[event]?.length || 0
+    return this.events[event]?.length || 0;
   }
 
   getAllEvents() {
-    return Object.keys(this.events)
+    return Object.keys(this.events);
   }
 }
 
-export const globalEvents = new EventEmitter()
+export const globalEvents = new EventEmitter();
 
 export const EVENT_TYPES = {
   API_UNAUTHORIZED: 'API_UNAUTHORIZED',
@@ -119,4 +117,4 @@ export const EVENT_TYPES = {
 
   TRANSITION_START: 'TRANSITION_START',
   TRANSITION_END: 'TRANSITION_END',
-}
+};

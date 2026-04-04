@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 
-import { DURATION } from '@/core/constants'
+import { DURATION } from '@/core/constants';
 
 const STAGGER_CONTAINER_VARIANTS = {
   visible: {
@@ -12,17 +12,12 @@ const STAGGER_CONTAINER_VARIANTS = {
     },
   },
   hidden: {},
-}
+};
 
 export function StaggerContainer({ children, className = '' }) {
   return (
-    <motion.div
-      variants={STAGGER_CONTAINER_VARIANTS}
-      className={className}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div variants={STAGGER_CONTAINER_VARIANTS} className={className} initial="hidden" animate="visible">
       {children}
     </motion.div>
-  )
+  );
 }

@@ -1,63 +1,55 @@
-import { resolveAuthCapabilities } from '@/core/auth/capabilities'
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client'
+import { resolveAuthCapabilities } from '@/core/auth/capabilities';
+import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import {
   buildGoogleOAuthCallbackUrl,
   normalizeGoogleAuthIntent,
   sanitizeAuthNextPath,
-} from '@/core/auth/oauth-callback'
-import {
-  createClient as createSupabaseClient,
-  terminateBrowserSession,
-} from '@/core/clients/supabase/client'
+} from '@/core/auth/oauth-callback';
+import { createClient as createSupabaseClient, terminateBrowserSession } from '@/core/clients/supabase/client';
 
-import { createAuthAdapter } from './create-adapter'
+import { createAuthAdapter } from './create-adapter';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase()
+  return normalizeValue(value).toLowerCase();
 }
 
 function resolveProviderKey(payload = {}) {
-  const provider =
-    payload?.provider || payload?.strategy || payload?.authProvider || null
+  const provider = payload?.provider || payload?.strategy || payload?.authProvider || null;
 
-  return normalizeValue(provider).toLowerCase()
+  return normalizeValue(provider).toLowerCase();
 }
 
 function resolveNextPath(payload = {}) {
-  return sanitizeAuthNextPath(payload?.nextPath || payload?.next, '/account')
+  return sanitizeAuthNextPath(payload?.nextPath || payload?.next, '/account');
 }
 
 function createRedirectResult() {
   return {
     requiresRedirect: true,
-  }
+  };
 }
 
 function isManualLinkingDisabledError(error) {
-  const message = normalizeValue(
-    error?.message || error?.msg || error?.error_description || ''
-  ).toLowerCase()
-  const code = normalizeValue(error?.code || error?.error_code).toLowerCase()
+  const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
+  const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
   if (!message && !code) {
-    return false
+    return false;
   }
 
   return (
     message.includes('manual linking is disabled') ||
     (code === 'validation_failed' && message.includes('manual linking'))
-  )
+  );
 }
 
 function isIgnorableLogoutError(error) {
-  const message = normalizeValue(
-    error?.message || error?.msg || error?.error_description || ''
-  ).toLowerCase()
-  const code = normalizeValue(error?.code || error?.error_code).toLowerCase()
+  const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
+  const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
   return (
     code === 'bad_jwt' ||
@@ -68,31 +60,24 @@ function isIgnorableLogoutError(error) {
     message.includes('invalid number of segments') ||
     message.includes('session not found') ||
     message.includes('refresh token not found')
-  )
+  );
 }
 
 function toAdapterError(error, fallbackMessage) {
-  const message = normalizeValue(
-    error?.message ||
-      error?.msg ||
-      error?.error_description ||
-      error?.error
-  )
+  const message = normalizeValue(error?.message || error?.msg || error?.error_description || error?.error);
 
-  const normalized = new Error(
-    message || fallbackMessage || 'Supabase auth failed'
-  )
+  const normalized = new Error(message || fallbackMessage || 'Supabase auth failed');
 
-  normalized.name = error?.name || 'SupabaseAuthError'
-  normalized.code = normalizeValue(error?.code || error?.error_code) || null
-  normalized.status = Number(error?.status) || 0
-  normalized.data = error || null
+  normalized.name = error?.name || 'SupabaseAuthError';
+  normalized.code = normalizeValue(error?.code || error?.error_code) || null;
+  normalized.status = Number(error?.status) || 0;
+  normalized.data = error || null;
 
-  return normalized
+  return normalized;
 }
 
 function normalizeAuthCapabilityState(value = {}, email = null) {
-  const providerIds = Array.isArray(value?.providerIds) ? value.providerIds : []
+  const providerIds = Array.isArray(value?.providerIds) ? value.providerIds : [];
 
   return {
     ...resolveAuthCapabilities({
@@ -100,24 +85,21 @@ function normalizeAuthCapabilityState(value = {}, email = null) {
       email,
     }),
     ...(value && typeof value === 'object' ? value : {}),
-  }
+  };
 }
 
 function normalizeSessionFromApi(payload = {}) {
-  const status = normalizeValue(payload?.status).toLowerCase()
+  const status = normalizeValue(payload?.status).toLowerCase();
 
   if (status !== 'authenticated' || !payload?.user?.id) {
-    return null
+    return null;
   }
 
-  const capabilities = normalizeAuthCapabilityState(
-    payload?.capabilities,
-    payload?.user?.email || null
-  )
+  const capabilities = normalizeAuthCapabilityState(payload?.capabilities, payload?.user?.email || null);
   const metadata = {
     ...(payload?.user?.metadata || {}),
     authCapabilities: capabilities,
-  }
+  };
 
   return {
     capabilities,
@@ -128,55 +110,51 @@ function normalizeSessionFromApi(payload = {}) {
       ...payload.user,
       metadata,
     },
-  }
+  };
 }
 
 async function fetchCanonicalSession() {
   const response = await fetch('/api/auth/session', {
     cache: 'no-store',
     credentials: 'include',
-  })
+  });
 
-  const payload = await response
-    .json()
-    .catch(() => ({ status: 'anonymous', user: null }))
+  const payload = await response.json().catch(() => ({ status: 'anonymous', user: null }));
 
   if (!response.ok) {
-    throw toAdapterError(payload, 'Session could not be loaded')
+    throw toAdapterError(payload, 'Session could not be loaded');
   }
 
-  return normalizeSessionFromApi(payload)
+  return normalizeSessionFromApi(payload);
 }
 
 function getClient(providedClient = null) {
-  return providedClient || createSupabaseClient()
+  return providedClient || createSupabaseClient();
 }
 
 export function createSupabaseAuthAdapter(options = {}) {
-  const {
-    client: providedClient = null,
-    getOAuthRedirectUrl = null,
-    oauthDefaultNextPath = '/account',
-  } = options
+  const { client: providedClient = null, getOAuthRedirectUrl = null, oauthDefaultNextPath = '/account' } = options;
 
   async function signInWithGoogle(payload = {}) {
-    const client = getClient(providedClient)
-    const nextPath = resolveNextPath(payload) || oauthDefaultNextPath
-    const fallbackRedirect = `${window.location.origin}${nextPath}`
-    const googleAuthIntent = normalizeGoogleAuthIntent(payload?.googleAuthIntent)
+    const client = getClient(providedClient);
+    const nextPath = resolveNextPath(payload) || oauthDefaultNextPath;
+    const fallbackRedirect = `${window.location.origin}${nextPath}`;
+    const googleAuthIntent = normalizeGoogleAuthIntent(payload?.googleAuthIntent);
     const callbackRedirect = buildGoogleOAuthCallbackUrl({
       intent: googleAuthIntent,
       nextPath,
       origin: window.location.origin,
-    })
+    });
     const redirectTo =
       typeof getOAuthRedirectUrl === 'function'
         ? getOAuthRedirectUrl({
             intent: googleAuthIntent,
             nextPath,
             provider: 'google',
-          }) || callbackRedirect || fallbackRedirect
-        : callbackRedirect || fallbackRedirect
+          }) ||
+          callbackRedirect ||
+          fallbackRedirect
+        : callbackRedirect || fallbackRedirect;
 
     const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
@@ -184,93 +162,91 @@ export function createSupabaseAuthAdapter(options = {}) {
         redirectTo,
         skipBrowserRedirect: true,
       },
-    })
+    });
 
     if (error) {
-      const normalizedError = toAdapterError(error, 'Google sign-in failed')
+      const normalizedError = toAdapterError(error, 'Google sign-in failed');
 
       if (googleAuthIntent === 'link' && isManualLinkingDisabledError(error)) {
-        normalizedError.code = 'GOOGLE_LINK_MANUAL_LINKING_DISABLED'
+        normalizedError.code = 'GOOGLE_LINK_MANUAL_LINKING_DISABLED';
         normalizedError.message =
-          'Google linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.'
+          'Google linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.';
       }
 
-      throw normalizedError
+      throw normalizedError;
     }
 
     if (data?.url && typeof window !== 'undefined') {
-      window.location.assign(data.url)
+      window.location.assign(data.url);
     }
 
-    return createRedirectResult()
+    return createRedirectResult();
   }
 
   async function signUpWithGoogle(payload = {}) {
-    return signInWithGoogle(payload)
+    return signInWithGoogle(payload);
   }
 
   return createAuthAdapter({
     name: 'supabase',
 
     async getSession() {
-      return fetchCanonicalSession()
+      return fetchCanonicalSession();
     },
 
     async refreshSession() {
-      const client = getClient(providedClient)
-      const { error } = await client.auth.getSession()
+      const client = getClient(providedClient);
+      const { error } = await client.auth.getSession();
 
       if (error) {
-        throw toAdapterError(error, 'Session refresh failed')
+        throw toAdapterError(error, 'Session refresh failed');
       }
 
-      return fetchCanonicalSession()
+      return fetchCanonicalSession();
     },
 
     async signIn(payload = {}) {
-      const providerKey = resolveProviderKey(payload)
+      const providerKey = resolveProviderKey(payload);
 
       if (providerKey === 'google') {
-        return signInWithGoogle(payload)
+        return signInWithGoogle(payload);
       }
 
-      const client = getClient(providedClient)
+      const client = getClient(providedClient);
       const { error } = await client.auth.signInWithPassword({
         email: normalizeEmail(payload.email),
         password: String(payload.password || ''),
-      })
+      });
 
       if (error) {
-        throw toAdapterError(error, 'Sign in failed')
+        throw toAdapterError(error, 'Sign in failed');
       }
 
-      return fetchCanonicalSession()
+      return fetchCanonicalSession();
     },
 
     async signUp(payload = {}) {
-      const providerKey = resolveProviderKey(payload)
+      const providerKey = resolveProviderKey(payload);
 
       if (providerKey === 'google') {
-        return signUpWithGoogle(payload)
+        return signUpWithGoogle(payload);
       }
 
-      throw new Error(
-        'Password sign-up must be completed through the application email verification flow'
-      )
+      throw new Error('Password sign-up must be completed through the application email verification flow');
     },
 
     async signOut(adapterContext = {}, options = {}) {
-      void adapterContext
+      void adapterContext;
 
-      const mode = normalizeValue(options?.mode).toLowerCase()
+      const mode = normalizeValue(options?.mode).toLowerCase();
 
       if (mode === 'local-purge') {
         await terminateBrowserSession({
           clearServer: true,
           performNetworkSignOut: false,
-        })
+        });
 
-        return null
+        return null;
       }
 
       try {
@@ -278,46 +254,45 @@ export function createSupabaseAuthAdapter(options = {}) {
           clearServer: true,
           performNetworkSignOut: true,
           scope: mode === 'local' ? 'local' : 'global',
-        })
+        });
       } catch (error) {
         if (isIgnorableLogoutError(error)) {
-          return null
+          return null;
         }
 
-        throw toAdapterError(error, 'Sign out failed')
+        throw toAdapterError(error, 'Sign out failed');
       }
 
-      return null
+      return null;
     },
 
     async updateProfile(payload = {}) {
-      const client = getClient(providedClient)
-      const profilePatch = {}
+      const client = getClient(providedClient);
+      const profilePatch = {};
 
       if (payload.displayName !== undefined) {
-        profilePatch.display_name = normalizeValue(payload.displayName) || null
-        profilePatch.full_name = normalizeValue(payload.displayName) || null
-        profilePatch.name = normalizeValue(payload.displayName) || null
+        profilePatch.display_name = normalizeValue(payload.displayName) || null;
+        profilePatch.full_name = normalizeValue(payload.displayName) || null;
+        profilePatch.name = normalizeValue(payload.displayName) || null;
       }
 
       if (payload.avatarUrl !== undefined || payload.photoURL !== undefined) {
-        profilePatch.avatar_url =
-          normalizeValue(payload.avatarUrl || payload.photoURL) || null
+        profilePatch.avatar_url = normalizeValue(payload.avatarUrl || payload.photoURL) || null;
       }
 
       const { error } = await client.auth.updateUser({
         data: profilePatch,
-      })
+      });
 
       if (error) {
-        throw toAdapterError(error, 'Profile update failed')
+        throw toAdapterError(error, 'Profile update failed');
       }
 
-      return fetchCanonicalSession()
+      return fetchCanonicalSession();
     },
 
     async reauthenticate(payload = {}, adapterContext = {}) {
-      void adapterContext
+      void adapterContext;
 
       const response = await fetch('/api/auth/account/reauthenticate', {
         method: 'POST',
@@ -329,91 +304,85 @@ export function createSupabaseAuthAdapter(options = {}) {
         body: JSON.stringify({
           currentPassword: String(payload.password || ''),
         }),
-      })
+      });
 
-      const result = await response
-        .json()
-        .catch(() => ({ error: 'Reauthentication failed' }))
+      const result = await response.json().catch(() => ({ error: 'Reauthentication failed' }));
 
       if (!response.ok) {
-        throw toAdapterError(result, 'Reauthentication failed')
+        throw toAdapterError(result, 'Reauthentication failed');
       }
 
-      const nextSession = await fetchCanonicalSession()
+      const nextSession = await fetchCanonicalSession();
 
-      return nextSession || adapterContext?.session || null
+      return nextSession || adapterContext?.session || null;
     },
 
     async linkProvider(payload = {}) {
-      const providerKey = resolveProviderKey(payload)
+      const providerKey = resolveProviderKey(payload);
 
       if (providerKey !== 'google') {
-        throw new Error('Only Google provider linking is currently supported')
+        throw new Error('Only Google provider linking is currently supported');
       }
 
-      return signInWithGoogle(payload)
+      return signInWithGoogle(payload);
     },
 
     async unlinkProvider(payload = {}) {
-      const providerKey = resolveProviderKey(payload)
+      const providerKey = resolveProviderKey(payload);
 
       if (providerKey !== 'google') {
-        throw new Error('Only Google provider unlinking is currently supported')
+        throw new Error('Only Google provider unlinking is currently supported');
       }
 
-      const error = new Error(
-        'Google unlink is currently disabled while account linking is being stabilized.'
-      )
-      error.code = 'GOOGLE_UNLINK_DISABLED'
-      throw error
+      const error = new Error('Google unlink is currently disabled while account linking is being stabilized.');
+      error.code = 'GOOGLE_UNLINK_DISABLED';
+      throw error;
     },
 
     async requestPasswordReset(payload = {}) {
-      void payload
+      void payload;
 
-      throw new Error(
-        'Password reset requests must be completed through the application email verification flow'
-      )
+      throw new Error('Password reset requests must be completed through the application email verification flow');
     },
 
     async confirmPasswordReset(payload = {}) {
-      const client = getClient(providedClient)
+      const client = getClient(providedClient);
       const { error } = await client.auth.updateUser({
         password: String(payload.newPassword || payload.password || ''),
-      })
+      });
 
       if (error) {
-        throw toAdapterError(error, 'Password reset confirmation failed')
+        throw toAdapterError(error, 'Password reset confirmation failed');
       }
 
-      return fetchCanonicalSession()
+      return fetchCanonicalSession();
     },
 
     onAuthStateChange(callback) {
-      const client = getClient(providedClient)
+      const client = getClient(providedClient);
       const {
         data: { subscription },
       } = client.auth.onAuthStateChange((event, session) => {
         if (!session) {
           if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-            callback(null)
+            callback(null);
           }
 
-          return
+          return;
         }
 
         Promise.resolve(fetchCanonicalSession())
           .then((nextSession) => {
-            callback(nextSession)
+            callback(nextSession);
           })
           .catch(() => {
-            callback(null)
-          })
-      })
+            callback(null);
+          });
+      });
 
       return () => {
-        subscription?.unsubscribe?.()
-      }
+        subscription?.unsubscribe?.();
+      };
     },
-  })
+  });
 }

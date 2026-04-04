@@ -1,54 +1,50 @@
-import { timingSafeEqual } from 'crypto'
+import { timingSafeEqual } from 'crypto';
 
 import {
   CSRF_COOKIE_NAME,
   createCsrfToken,
   getCookieValue,
   setCsrfCookie,
-} from '@/core/auth/servers/session/session.server'
+} from '@/core/auth/servers/session/session.server';
 
 function normalizeValue(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
 function toBuffer(value) {
-  return Buffer.from(normalizeValue(value))
+  return Buffer.from(normalizeValue(value));
 }
 
 export function getCsrfTokenFromCookie(request) {
-  return getCookieValue(request, CSRF_COOKIE_NAME)
+  return getCookieValue(request, CSRF_COOKIE_NAME);
 }
 
 export function getCsrfTokenFromHeader(request) {
-  return normalizeValue(
-    request?.headers?.get?.('x-csrf-token') || request?.headers?.get?.('X-CSRF-Token')
-  )
+  return normalizeValue(request?.headers?.get?.('x-csrf-token') || request?.headers?.get?.('X-CSRF-Token'));
 }
 
 export function ensureCsrfCookie(response, csrfToken = '') {
-  const normalizedToken = normalizeValue(csrfToken) || createCsrfToken()
-  setCsrfCookie(response, normalizedToken)
-  return normalizedToken
+  const normalizedToken = normalizeValue(csrfToken) || createCsrfToken();
+  setCsrfCookie(response, normalizedToken);
+  return normalizedToken;
 }
 
 export function validateCsrfRequest(request) {
-  const cookieToken = getCsrfTokenFromCookie(request)
-  const headerToken = getCsrfTokenFromHeader(request)
+  const cookieToken = getCsrfTokenFromCookie(request);
+  const headerToken = getCsrfTokenFromHeader(request);
 
   if (!cookieToken || !headerToken) {
-    return false
+    return false;
   }
 
-  const expected = toBuffer(cookieToken)
-  const received = toBuffer(headerToken)
+  const expected = toBuffer(cookieToken);
+  const received = toBuffer(headerToken);
 
-  return (
-    expected.length === received.length && timingSafeEqual(expected, received)
-  )
+  return expected.length === received.length && timingSafeEqual(expected, received);
 }
 
 export function assertCsrfRequest(request) {
   if (!validateCsrfRequest(request)) {
-    throw new Error('Invalid CSRF token')
+    throw new Error('Invalid CSRF token');
   }
 }

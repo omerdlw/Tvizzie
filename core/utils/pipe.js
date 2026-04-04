@@ -7,5 +7,5 @@ export function pipe(...providers) {
         </AccumulatedProviders>
       ),
     ({ children }) => <>{children}</>
-  )
+  );
 }

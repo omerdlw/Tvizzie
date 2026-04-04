@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import AccountAction from '@/features/navigation/actions/account-action'
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface'
+import AccountAction from '@/features/navigation/actions/account-action';
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config'
-import { useRegistry } from '@/core/modules/registry'
+} from '@/features/account/account-registry-config';
+import { useRegistry } from '@/core/modules/registry';
 
-const ACCOUNT_LIKES_REGISTRY_SOURCE = 'account-likes'
+const ACCOUNT_LIKES_REGISTRY_SOURCE = 'account-likes';
 
 export default function Registry({
   activeSegment = 'films',
@@ -39,7 +39,7 @@ export default function Registry({
     { key: 'films', label: 'Films' },
     { key: 'reviews', label: 'Reviews' },
     { key: 'lists', label: 'Lists' },
-  ]
+  ];
 
   useRegistry(
     buildAccountPageState({
@@ -83,7 +83,7 @@ export default function Registry({
       unfollowConfirmation,
       username,
     })
-  )
+  );
 
-  return null
+  return null;
 }

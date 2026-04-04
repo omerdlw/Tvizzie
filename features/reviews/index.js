@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import { useCallback } from 'react'
+import { useCallback } from 'react';
 
-import { AuthGate } from '@/core/modules/auth'
-import { useModal } from '@/core/modules/modal/context'
-import { Button } from '@/ui/elements'
+import { AuthGate } from '@/core/modules/auth';
+import { useModal } from '@/core/modules/modal/context';
+import { Button } from '@/ui/elements';
 
-import ReviewAuthFallback from './parts/review-auth-fallback'
-import ReviewHeader from './parts/review-header'
-import ReviewList from './parts/review-list'
-import { useMediaReviews } from './use-media-reviews'
+import ReviewAuthFallback from './parts/review-auth-fallback';
+import ReviewHeader from './parts/review-header';
+import ReviewList from './parts/review-list';
+import { useMediaReviews } from './use-media-reviews';
 
 export default function MediaReviews({
   entityId,
@@ -41,32 +41,32 @@ export default function MediaReviews({
     onReviewStateChange,
     posterPath,
     title,
-  })
-  const { openModal } = useModal()
+  });
+  const { openModal } = useModal();
 
   const buildReviewUser = useCallback(
     (review = null) => {
       if (!currentUserId) {
-        return null
+        return null;
       }
 
       return {
         ...(review?.user || {}),
         ...(userProfile || {}),
         id: currentUserId,
-      }
+      };
     },
     [currentUserId, userProfile]
-  )
+  );
 
   const openReviewModal = useCallback(
     (review = null) => {
       if (!currentUserId) {
-        handleSignInRequest()
-        return
+        handleSignInRequest();
+        return;
       }
 
-      const targetReview = review || ownReview || null
+      const targetReview = review || ownReview || null;
 
       openModal('REVIEW_EDITOR_MODAL', 'center', {
         data: {
@@ -78,13 +78,13 @@ export default function MediaReviews({
           },
           onSuccess: targetReview
             ? (updatedReview) => {
-                applyOptimisticReviewUpdate(targetReview, updatedReview)
+                applyOptimisticReviewUpdate(targetReview, updatedReview);
               }
             : null,
           review: targetReview,
           user: buildReviewUser(targetReview),
         },
-      })
+      });
     },
     [
       applyOptimisticReviewUpdate,
@@ -98,14 +98,14 @@ export default function MediaReviews({
       posterPath,
       title,
     ]
-  )
+  );
 
   const handleEditReview = useCallback(
     (review) => {
-      openReviewModal(review)
+      openReviewModal(review);
     },
     [openReviewModal]
-  )
+  );
 
   const handleDeleteRequest = useCallback(() => {
     setNavConfirmation({
@@ -115,44 +115,42 @@ export default function MediaReviews({
       isDestructive: true,
       onCancel: () => setNavConfirmation(null),
       onConfirm: async () => {
-        const isDeleted = await handleDelete()
+        const isDeleted = await handleDelete();
 
         if (!isDeleted) {
-          throw new Error('review-delete-failed')
+          throw new Error('review-delete-failed');
         }
       },
-    })
-  }, [handleDelete, setNavConfirmation])
+    });
+  }, [handleDelete, setNavConfirmation]);
 
-  const backdropExtension = Math.max(0, Math.round(navHeight || 0))
+  const backdropExtension = Math.max(0, Math.round(navHeight || 0));
 
   return (
-    <section className="relative mx-auto mt-12 flex w-full flex-col gap-6 pt-12 md:mt-16 md:pt-20 lg:pt-24">
+    <section
+      data-community-reviews="true"
+      className="relative isolate z-0 mt-12 flex w-full flex-col gap-6 overflow-hidden md:mt-16"
+    >
       <div
-        className="pointer-events-none absolute top-0 bottom-0 left-1/2 -z-10 w-screen -translate-x-1/2 "
+        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(250,249,245,0)_0%,rgba(250,249,245,0.84)_12%,#faf9f5_34%,#faf9f5_100%)]"
         style={{ bottom: -backdropExtension }}
       />
-      <div className="pointer-events-none absolute bottom-full left-1/2 -z-10 h-150 w-screen -translate-x-1/2 bg-linear-to-t from-black to-transparent" />
-
       <ReviewHeader ratingStats={ratingStats} totalReviews={reviews.length} />
-
-      <AuthGate
-        fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}
-      >
-        <div className="flex items-center justify-between gap-3 border border-white/5 bg-white/5 p-3 sm:p-4">
+      <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
+        <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-[#0f172a]">
               {ownReview ? 'Update your review' : 'Rate or review this title'}
             </p>
-            <p className="text-xs text-white/70">
+            <p className="text-xs text-black/70">
               {ownReview
                 ? 'Open the review modal to edit your score or text.'
                 : 'Share your rating and thoughts from the review modal.'}
             </p>
           </div>
           <Button
+            className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 rounded-[14px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
             type="button"
-            className="h-10 shrink-0 px-4 text-[11px] font-semibold tracking-widest uppercase"
             onClick={() => openReviewModal()}
           >
             {ownReview ? 'Edit Review' : 'Add Review'}
@@ -171,5 +169,5 @@ export default function MediaReviews({
         userProfile={userProfile}
       />
     </section>
-  )
+  );
 }

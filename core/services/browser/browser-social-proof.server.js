@@ -1,25 +1,22 @@
-import 'server-only'
+import 'server-only';
 
-import { createClient as createServerClient } from '@/core/clients/supabase/server'
-import { buildMediaItemKey } from '@/core/services/shared/media-key.service'
+import { createClient as createServerClient } from '@/core/clients/supabase/server';
+import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 
-const PREVIEW_LIMIT = 3
-const SHARED_TITLES_LIMIT = 2
-const FOLLOWING_SELECT = [
-  'following_avatar_url',
-  'following_display_name',
-  'following_id',
-  'following_username',
-].join(',')
-const SOCIAL_PROOF_SELECT = ['user_id'].join(',')
-const SHARED_LIKES_SELECT = ['media_key', 'title'].join(',')
+const PREVIEW_LIMIT = 3;
+const SHARED_TITLES_LIMIT = 2;
+const FOLLOWING_SELECT = ['following_avatar_url', 'following_display_name', 'following_id', 'following_username'].join(
+  ','
+);
+const SOCIAL_PROOF_SELECT = ['user_id'].join(',');
+const SHARED_LIKES_SELECT = ['media_key', 'title'].join(',');
 
 function createEmptyProofGroup() {
   return {
     count: 0,
     previewUsers: [],
     users: [],
-  }
+  };
 }
 
 function createEmptyMediaSocialProof() {
@@ -27,7 +24,7 @@ function createEmptyMediaSocialProof() {
     reviews: createEmptyProofGroup(),
     likes: createEmptyProofGroup(),
     watchlist: createEmptyProofGroup(),
-  }
+  };
 }
 
 function createEmptyProfileSocialProof() {
@@ -37,135 +34,128 @@ function createEmptyProfileSocialProof() {
       count: 0,
       titles: [],
     },
-  }
+  };
 }
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {
-    throw new Error(result.error.message || fallbackMessage)
+    throw new Error(result.error.message || fallbackMessage);
   }
 
-  return result
+  return result;
 }
 
 function normalizeSocialUser(user = {}) {
   if (!user?.id) {
-    return null
+    return null;
   }
 
   return {
     avatarUrl: user.avatarUrl || null,
-    displayName:
-      user.displayName || user.name || user.email || user.username || 'User',
+    displayName: user.displayName || user.name || user.email || user.username || 'User',
     id: user.id,
     username: user.username || null,
-  }
+  };
 }
 
 function buildPreviewUsers(records, followProfileMap) {
-  const previews = []
-  const seen = new Set()
+  const previews = [];
+  const seen = new Set();
 
   records.forEach((record) => {
-    const followProfile = followProfileMap.get(record.userId)
+    const followProfile = followProfileMap.get(record.userId);
     const normalized = normalizeSocialUser({
       ...record.user,
       ...followProfile,
       id: record.userId,
-    })
+    });
 
     if (!normalized || seen.has(normalized.id)) {
-      return
+      return;
     }
 
-    previews.push(normalized)
-    seen.add(normalized.id)
-  })
+    previews.push(normalized);
+    seen.add(normalized.id);
+  });
 
-  return previews.slice(0, PREVIEW_LIMIT)
+  return previews.slice(0, PREVIEW_LIMIT);
 }
 
 function buildUsers(records, followProfileMap) {
-  const users = []
-  const seen = new Set()
+  const users = [];
+  const seen = new Set();
 
   records.forEach((record) => {
-    const followProfile = followProfileMap.get(record.userId)
+    const followProfile = followProfileMap.get(record.userId);
     const normalized = normalizeSocialUser({
       ...record.user,
       ...followProfile,
       id: record.userId,
-    })
+    });
 
     if (!normalized || seen.has(normalized.id)) {
-      return
+      return;
     }
 
-    users.push(normalized)
-    seen.add(normalized.id)
-  })
+    users.push(normalized);
+    seen.add(normalized.id);
+  });
 
-  return users
+  return users;
 }
 
 function buildProofGroup(recordsMap, followProfileMap) {
-  const records = Array.from(recordsMap.values())
+  const records = Array.from(recordsMap.values());
 
   return {
     count: records.length,
     previewUsers: buildPreviewUsers(records, followProfileMap),
     users: buildUsers(records, followProfileMap),
-  }
+  };
 }
 
 function buildLikeMap(rows = []) {
-  const map = new Map()
+  const map = new Map();
 
   rows.forEach((row) => {
-    const mediaKey = row.media_key
+    const mediaKey = row.media_key;
 
     if (!mediaKey) {
-      return
+      return;
     }
 
-    map.set(mediaKey, row)
-  })
+    map.set(mediaKey, row);
+  });
 
-  return map
+  return map;
 }
 
-export async function getMediaSocialProofResource({
-  entityId,
-  entityType,
-  viewerId,
-}) {
+export async function getMediaSocialProofResource({ entityId, entityType, viewerId }) {
   if (!viewerId || !entityId || !entityType) {
-    return createEmptyMediaSocialProof()
+    return createEmptyMediaSocialProof();
   }
 
-  const client = await createServerClient()
+  const client = await createServerClient();
   const followingResult = await client
     .from('follows')
     .select(FOLLOWING_SELECT)
     .eq('follower_id', viewerId)
-    .eq('status', 'accepted')
+    .eq('status', 'accepted');
 
-  assertResult(followingResult, 'Following list could not be loaded')
+  assertResult(followingResult, 'Following list could not be loaded');
 
-  const followingRows = followingResult.data || []
-  const followingIds = followingRows
-    .map((row) => row.following_id)
-    .filter(Boolean)
+  const followingRows = followingResult.data || [];
+  const followingIds = followingRows.map((row) => row.following_id).filter(Boolean);
 
   if (followingIds.length === 0) {
-    return createEmptyMediaSocialProof()
+    return createEmptyMediaSocialProof();
   }
 
-  const followProfileMap = new Map()
+  const followProfileMap = new Map();
 
   followingRows.forEach((row) => {
     if (!row.following_id) {
-      return
+      return;
     }
 
     followProfileMap.set(row.following_id, {
@@ -173,64 +163,50 @@ export async function getMediaSocialProofResource({
       displayName: row.following_display_name || null,
       id: row.following_id,
       username: row.following_username || null,
-    })
-  })
+    });
+  });
 
-  const mediaKey = buildMediaItemKey(entityType, entityId)
+  const mediaKey = buildMediaItemKey(entityType, entityId);
   const [likesResult, watchlistResult, reviewsResult] = await Promise.all([
-    client
-      .from('likes')
-      .select(SOCIAL_PROOF_SELECT)
-      .eq('media_key', mediaKey)
-      .in('user_id', followingIds),
-    client
-      .from('watchlist')
-      .select(SOCIAL_PROOF_SELECT)
-      .eq('media_key', mediaKey)
-      .in('user_id', followingIds),
-    client
-      .from('media_reviews')
-      .select(SOCIAL_PROOF_SELECT)
-      .eq('media_key', mediaKey)
-      .in('user_id', followingIds),
-  ])
+    client.from('likes').select(SOCIAL_PROOF_SELECT).eq('media_key', mediaKey).in('user_id', followingIds),
+    client.from('watchlist').select(SOCIAL_PROOF_SELECT).eq('media_key', mediaKey).in('user_id', followingIds),
+    client.from('media_reviews').select(SOCIAL_PROOF_SELECT).eq('media_key', mediaKey).in('user_id', followingIds),
+  ]);
 
-  assertResult(likesResult, 'Media social proof could not be loaded')
-  assertResult(watchlistResult, 'Media social proof could not be loaded')
-  assertResult(reviewsResult, 'Media social proof could not be loaded')
+  assertResult(likesResult, 'Media social proof could not be loaded');
+  assertResult(watchlistResult, 'Media social proof could not be loaded');
+  assertResult(reviewsResult, 'Media social proof could not be loaded');
 
   const categoryState = {
     likes: new Map(),
     reviews: new Map(),
     watchlist: new Map(),
-  }
+  };
 
-  ;(likesResult.data || []).forEach((row) => {
+  (likesResult.data || []).forEach((row) => {
     categoryState.likes.set(row.user_id, {
       user: null,
       userId: row.user_id,
-    })
-  })
-
-  ;(watchlistResult.data || []).forEach((row) => {
+    });
+  });
+  (watchlistResult.data || []).forEach((row) => {
     categoryState.watchlist.set(row.user_id, {
       user: null,
       userId: row.user_id,
-    })
-  })
-
-  ;(reviewsResult.data || []).forEach((row) => {
+    });
+  });
+  (reviewsResult.data || []).forEach((row) => {
     categoryState.reviews.set(row.user_id, {
       user: null,
       userId: row.user_id,
-    })
-  })
+    });
+  });
 
   return {
     reviews: buildProofGroup(categoryState.reviews, followProfileMap),
     likes: buildProofGroup(categoryState.likes, followProfileMap),
     watchlist: buildProofGroup(categoryState.watchlist, followProfileMap),
-  }
+  };
 }
 
 async function withQueryTimeout(
@@ -238,61 +214,48 @@ async function withQueryTimeout(
   { timeoutMs = 4000, fallbackValue = { data: [], error: null }, label = 'Query' } = {}
 ) {
   const timeoutPromise = new Promise((resolve) =>
-    setTimeout(
-      () => resolve({ ...fallbackValue, timedOut: true, label }),
-      timeoutMs
-    )
-  )
+    setTimeout(() => resolve({ ...fallbackValue, timedOut: true, label }), timeoutMs)
+  );
 
-  const result = await Promise.race([promise, timeoutPromise])
+  const result = await Promise.race([promise, timeoutPromise]);
 
   if (result?.timedOut) {
-    console.warn(`[Supabase Social Proof ${label} Timeout] After ${timeoutMs}ms. Returning fallback.`)
-    return result
+    console.warn(`[Supabase Social Proof ${label} Timeout] After ${timeoutMs}ms. Returning fallback.`);
+    return result;
   }
 
-  return result
+  return result;
 }
 
-export async function getAccountSocialProofResource({
-  canViewPrivateContent = false,
-  targetUserId,
-  viewerId,
-}) {
+export async function getAccountSocialProofResource({ canViewPrivateContent = false, targetUserId, viewerId }) {
   if (!viewerId || !targetUserId || viewerId === targetUserId) {
-    return createEmptyProfileSocialProof()
+    return createEmptyProfileSocialProof();
   }
 
   if (!canViewPrivateContent) {
-    return createEmptyProfileSocialProof()
+    return createEmptyProfileSocialProof();
   }
 
-  const client = await createServerClient()
+  const client = await createServerClient();
 
   // 1. Fetch viewer's follower IDs (the set we intersect with)
   const viewerFollowersResult = await withQueryTimeout(
-    client
-      .from('follows')
-      .select('follower_id')
-      .eq('following_id', viewerId)
-      .eq('status', 'accepted'),
+    client.from('follows').select('follower_id').eq('following_id', viewerId).eq('status', 'accepted'),
     {
       label: `Viewer followers check for ${viewerId}`,
       fallbackValue: { data: [], error: null },
     }
-  )
+  );
 
   if (viewerFollowersResult.timedOut) {
-    return createEmptyProfileSocialProof()
+    return createEmptyProfileSocialProof();
   }
 
-  assertResult(viewerFollowersResult, 'Social proof could not be loaded')
+  assertResult(viewerFollowersResult, 'Social proof could not be loaded');
 
-  const viewerFollowerIds = (viewerFollowersResult.data || []).map(
-    (row) => row.follower_id
-  )
+  const viewerFollowerIds = (viewerFollowersResult.data || []).map((row) => row.follower_id);
 
-  let mutualFollowersCount = 0
+  let mutualFollowersCount = 0;
 
   if (viewerFollowerIds.length > 0) {
     // 2. Query target's followers that are in viewer's follower list (intersection at DB level)
@@ -308,24 +271,21 @@ export async function getAccountSocialProofResource({
         fallbackValue: { data: [], count: 0, error: null },
         timeoutMs: 3000,
       }
-    )
+    );
 
     if (mutualFollowersResult.timedOut) {
-      mutualFollowersCount = 0
+      mutualFollowersCount = 0;
     } else {
-      assertResult(mutualFollowersResult, 'Social proof could not be loaded')
-      mutualFollowersCount = mutualFollowersResult.count || 0
+      assertResult(mutualFollowersResult, 'Social proof could not be loaded');
+      mutualFollowersCount = mutualFollowersResult.count || 0;
     }
   }
 
   // 3. Fetch viewer's liked media keys
-  const viewerLikesResult = await withQueryTimeout(
-    client.from('likes').select('media_key').eq('user_id', viewerId),
-    {
-      label: `Viewer likes check for ${viewerId}`,
-      fallbackValue: { data: [], error: null },
-    }
-  )
+  const viewerLikesResult = await withQueryTimeout(client.from('likes').select('media_key').eq('user_id', viewerId), {
+    label: `Viewer likes check for ${viewerId}`,
+    fallbackValue: { data: [], error: null },
+  });
 
   if (viewerLikesResult.timedOut) {
     return {
@@ -334,17 +294,15 @@ export async function getAccountSocialProofResource({
         count: 0,
         titles: [],
       },
-    }
+    };
   }
 
-  assertResult(viewerLikesResult, 'Social proof could not be loaded')
+  assertResult(viewerLikesResult, 'Social proof could not be loaded');
 
-  const viewerLikesKeys = (viewerLikesResult.data || []).map(
-    (row) => row.media_key
-  )
+  const viewerLikesKeys = (viewerLikesResult.data || []).map((row) => row.media_key);
 
-  let sharedCount = 0
-  let sharedTitles = []
+  let sharedCount = 0;
+  let sharedTitles = [];
 
   if (viewerLikesKeys.length > 0) {
     // 4. Find shared likes using the intersection of media keys
@@ -359,19 +317,19 @@ export async function getAccountSocialProofResource({
         fallbackValue: { data: [], count: 0, error: null },
         timeoutMs: 3000,
       }
-    )
+    );
 
     if (sharedLikesResult.timedOut) {
-      sharedCount = 0
-      sharedTitles = []
+      sharedCount = 0;
+      sharedTitles = [];
     } else {
-      assertResult(sharedLikesResult, 'Social proof could not be loaded')
+      assertResult(sharedLikesResult, 'Social proof could not be loaded');
 
-      sharedCount = sharedLikesResult.count || 0
+      sharedCount = sharedLikesResult.count || 0;
       sharedTitles = (sharedLikesResult.data || [])
         .slice(0, SHARED_TITLES_LIMIT)
         .map((item) => item.title)
-        .filter(Boolean)
+        .filter(Boolean);
     }
   }
 
@@ -381,5 +339,5 @@ export async function getAccountSocialProofResource({
       count: sharedCount,
       titles: sharedTitles,
     },
-  }
+  };
 }

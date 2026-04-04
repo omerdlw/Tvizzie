@@ -1,21 +1,15 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  filterCollectionItems,
-  showAccountErrorToast,
-} from '@/features/account/account-hook-utils'
-import { useAccountSectionPage } from '@/features/account/section-client-hooks'
-import { getMediaTitle } from '@/features/account/utils'
-import { logDataError } from '@/core/utils/errors'
-import { useAuth } from '@/core/modules/auth'
-import { useToast } from '@/core/modules/notification/hooks'
-import {
-  removeUserWatchedItem,
-  subscribeToUserWatched,
-} from '@/core/services/media/watched.service'
-import WatchedView from './view'
+import { filterCollectionItems, showAccountErrorToast } from '@/features/account/account-hook-utils';
+import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { getMediaTitle } from '@/features/account/utils';
+import { logDataError } from '@/core/utils/errors';
+import { useAuth } from '@/core/modules/auth';
+import { useToast } from '@/core/modules/notification/hooks';
+import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
+import WatchedView from './view';
 
 export default function Client({
   currentPage = 1,
@@ -25,8 +19,8 @@ export default function Client({
   initialResolveError = null,
   username,
 }) {
-  const auth = useAuth()
-  const toast = useToast()
+  const auth = useAuth();
+  const toast = useToast();
   const {
     canViewProfileCollections,
     followerCount,
@@ -59,58 +53,52 @@ export default function Client({
     initialResolvedUserId,
     initialResolveError,
     username,
-  })
+  });
   const hasInitialWatchedSnapshot =
     Boolean(initialCollections?.userId && resolvedUserId) &&
     initialCollections.userId === resolvedUserId &&
-    Array.isArray(initialCollections?.watched)
+    Array.isArray(initialCollections?.watched);
   const initialWatched = useMemo(
     () => (hasInitialWatchedSnapshot ? initialCollections.watched : []),
     [hasInitialWatchedSnapshot, initialCollections]
-  )
-  const [itemRemoveConfirmation, setItemRemoveConfirmation] = useState(null)
-  const [isWatchedLoading, setIsWatchedLoading] = useState(
-    !hasInitialWatchedSnapshot
-  )
-  const [loadError, setLoadError] = useState(null)
-  const [watchedItems, setWatchedItems] = useState(initialWatched)
-  const shouldForceWatchedRefresh =
-    !isOwner &&
-    isPrivateProfile === true
+  );
+  const [itemRemoveConfirmation, setItemRemoveConfirmation] = useState(null);
+  const [isWatchedLoading, setIsWatchedLoading] = useState(!hasInitialWatchedSnapshot);
+  const [loadError, setLoadError] = useState(null);
+  const [watchedItems, setWatchedItems] = useState(initialWatched);
+  const shouldForceWatchedRefresh = !isOwner && isPrivateProfile === true;
 
   useEffect(() => {
     if (!resolvedUserId || !canViewProfileCollections) {
-      setWatchedItems([])
-      setLoadError(null)
-      setIsWatchedLoading(false)
-      return undefined
+      setWatchedItems([]);
+      setLoadError(null);
+      setIsWatchedLoading(false);
+      return undefined;
     }
 
-    setWatchedItems(shouldForceWatchedRefresh ? [] : initialWatched)
-    setLoadError(null)
-    setIsWatchedLoading(
-      shouldForceWatchedRefresh || !hasInitialWatchedSnapshot
-    )
+    setWatchedItems(shouldForceWatchedRefresh ? [] : initialWatched);
+    setLoadError(null);
+    setIsWatchedLoading(shouldForceWatchedRefresh || !hasInitialWatchedSnapshot);
 
     return subscribeToUserWatched(
       resolvedUserId,
       (nextItems) => {
-        setWatchedItems(nextItems)
-        setLoadError(null)
-        setIsWatchedLoading(false)
+        setWatchedItems(nextItems);
+        setLoadError(null);
+        setIsWatchedLoading(false);
       },
       {
         emitCachedPayloadOnSubscribe: !shouldForceWatchedRefresh,
         fetchOnSubscribe: true,
         refreshOnSubscribe: shouldForceWatchedRefresh,
         onError: (error) => {
-          setIsWatchedLoading(false)
-          logDataError('[Account] Watched could not be loaded:', error)
-          setLoadError('Watched could not be loaded right now.')
-          showAccountErrorToast(toast, error, 'Watched could not be loaded')
+          setIsWatchedLoading(false);
+          logDataError('[Account] Watched could not be loaded:', error);
+          setLoadError('Watched could not be loaded right now.');
+          showAccountErrorToast(toast, error, 'Watched could not be loaded');
         },
       }
-    )
+    );
   }, [
     canViewProfileCollections,
     hasInitialWatchedSnapshot,
@@ -120,45 +108,45 @@ export default function Client({
     resolvedUserId,
     shouldForceWatchedRefresh,
     toast,
-  ])
+  ]);
 
   const handleRemoveWatchedItem = useCallback(
     async (item) => {
       if (!isOwner || !auth.user?.id) {
-        return
+        return;
       }
 
-      let previousItems = null
+      let previousItems = null;
 
       setWatchedItems((currentItems) => {
-        previousItems = currentItems
-        return filterCollectionItems(currentItems, item)
-      })
+        previousItems = currentItems;
+        return filterCollectionItems(currentItems, item);
+      });
 
       try {
         await removeUserWatchedItem({
           media: item,
           mediaKey: item?.mediaKey || null,
           userId: auth.user.id,
-        })
-        setItemRemoveConfirmation(null)
-        toast.success(`${getMediaTitle(item)} was removed from watched`)
+        });
+        setItemRemoveConfirmation(null);
+        toast.success(`${getMediaTitle(item)} was removed from watched`);
       } catch (error) {
         if (previousItems) {
-          setWatchedItems(previousItems)
+          setWatchedItems(previousItems);
         }
 
-        toast.error(error?.message || 'The item could not be removed')
-        throw error
+        toast.error(error?.message || 'The item could not be removed');
+        throw error;
       }
     },
     [auth.user?.id, isOwner, toast]
-  )
+  );
 
   const handleRequestRemoveWatchedItem = useCallback(
     (item) => {
       if (!isOwner) {
-        return
+        return;
       }
 
       setItemRemoveConfirmation({
@@ -169,10 +157,10 @@ export default function Client({
         isDestructive: true,
         onCancel: () => setItemRemoveConfirmation(null),
         onConfirm: () => handleRemoveWatchedItem(item),
-      })
+      });
     },
     [handleRemoveWatchedItem, isOwner]
-  )
+  );
 
   return (
     <WatchedView
@@ -190,10 +178,7 @@ export default function Client({
       isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
-      isPageLoading={
-        isPageLoading ||
-        (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0)
-      }
+      isPageLoading={isPageLoading || (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0)}
       isResolvingProfile={isResolvingProfile}
       itemRemoveConfirmation={itemRemoveConfirmation}
       likeCount={likeCount}
@@ -209,5 +194,5 @@ export default function Client({
       watchedItems={watchedItems}
       watchlistCount={watchlistCount}
     />
-  )
+  );
 }

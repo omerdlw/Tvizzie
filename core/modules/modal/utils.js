@@ -1,9 +1,9 @@
-import { DURATION, EASING } from '@/core/constants'
+import { DURATION, EASING } from '@/core/constants';
 
-import { ANIMATION_CONFIGS, MODAL_POSITIONS } from './config'
+import { ANIMATION_CONFIGS, MODAL_POSITIONS } from './config';
 
-const SPRING_TRANSITION = ANIMATION_CONFIGS.SPRING
-const SMOOTH_TRANSITION = ANIMATION_CONFIGS.SMOOTH
+const SPRING_TRANSITION = ANIMATION_CONFIGS.SPRING;
+const SMOOTH_TRANSITION = ANIMATION_CONFIGS.SMOOTH;
 
 function createCenterVariant() {
   return {
@@ -18,7 +18,7 @@ function createCenterVariant() {
       opacity: 0,
       transition: SPRING_TRANSITION,
     },
-  }
+  };
 }
 
 function createDirectionalVariant(axis, hiddenValue) {
@@ -34,7 +34,7 @@ function createDirectionalVariant(axis, hiddenValue) {
       opacity: 0,
       transition: SMOOTH_TRANSITION,
     },
-  }
+  };
 }
 
 const POSITION_VARIANTS = Object.freeze({
@@ -43,12 +43,10 @@ const POSITION_VARIANTS = Object.freeze({
   [MODAL_POSITIONS.BOTTOM]: createDirectionalVariant('y', '100%'),
   [MODAL_POSITIONS.LEFT]: createDirectionalVariant('x', '-100%'),
   [MODAL_POSITIONS.RIGHT]: createDirectionalVariant('x', '100%'),
-})
+});
 
 export function getModalVariants(position) {
-  return (
-    POSITION_VARIANTS[position] || POSITION_VARIANTS[MODAL_POSITIONS.CENTER]
-  )
+  return POSITION_VARIANTS[position] || POSITION_VARIANTS[MODAL_POSITIONS.CENTER];
 }
 
 export const POSITION_CLASSES = Object.freeze({
@@ -57,7 +55,7 @@ export const POSITION_CLASSES = Object.freeze({
   [MODAL_POSITIONS.BOTTOM]: 'items-center justify-end',
   [MODAL_POSITIONS.LEFT]: 'items-start justify-start',
   [MODAL_POSITIONS.RIGHT]: 'items-end justify-start',
-})
+});
 
 export const BACKDROP_VARIANTS = Object.freeze({
   hidden: {
@@ -74,4 +72,4 @@ export const BACKDROP_VARIANTS = Object.freeze({
       ease: EASING.ACCENT,
     },
   },
-})
+});

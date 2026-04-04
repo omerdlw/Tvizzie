@@ -1,29 +1,23 @@
-'use client'
+'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-  useMemo,
-} from 'react'
+import { createContext, useCallback, useContext, useState, useMemo } from 'react';
 
-const ContextMenuContext = createContext(null)
+const ContextMenuContext = createContext(null);
 
 export function ContextMenuProvider({ children }) {
-  const [menuConfig, setMenuConfig] = useState(null)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isOpen, setIsOpen] = useState(false)
+  const [menuConfig, setMenuConfig] = useState(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isOpen, setIsOpen] = useState(false);
 
   const openMenu = useCallback((config, x, y) => {
-    setMenuConfig(config)
-    setPosition({ x, y })
-    setIsOpen(true)
-  }, [])
+    setMenuConfig(config);
+    setPosition({ x, y });
+    setIsOpen(true);
+  }, []);
 
   const closeMenu = useCallback(() => {
-    setIsOpen(false)
-  }, [])
+    setIsOpen(false);
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -34,19 +28,15 @@ export function ContextMenuProvider({ children }) {
       closeMenu,
     }),
     [menuConfig, position, isOpen, openMenu, closeMenu]
-  )
+  );
 
-  return (
-    <ContextMenuContext.Provider value={value}>
-      {children}
-    </ContextMenuContext.Provider>
-  )
+  return <ContextMenuContext.Provider value={value}>{children}</ContextMenuContext.Provider>;
 }
 
 export function useContextMenu() {
-  const context = useContext(ContextMenuContext)
+  const context = useContext(ContextMenuContext);
   if (!context) {
-    throw new Error('useContextMenu must be used within ContextMenuProvider')
+    throw new Error('useContextMenu must be used within ContextMenuProvider');
   }
-  return context
+  return context;
 }

@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { forwardRef, useState } from 'react'
+import { forwardRef, useState } from 'react';
 
-import * as Toggle from '@radix-ui/react-toggle'
+import * as Toggle from '@radix-ui/react-toggle';
 
-import { cn, resolveSlotClasses } from '../utils'
+import { cn, resolveSlotClasses } from '../utils';
 
 const SEMANTIC_VARIANT_CLASSES = Object.freeze({
-  danger: 'error-classes',
-  destructive: 'error-classes',
-  info: 'info-classes',
-  success: 'success-classes',
-  warning: 'warning-classes',
-})
+  danger: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
+  destructive: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
+  info: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
+  success: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
+  warning: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
+});
 
 const Button = forwardRef(
   (
@@ -30,13 +30,11 @@ const Button = forwardRef(
     },
     ref
   ) => {
-    const [isActive, setIsActive] = useState(defaultActive)
-    const classes = resolveSlotClasses(className, classNames)
-    const baseClasses =
-      'flex cursor-pointer items-center justify-center transition active:scale-95 disabled:cursor-not-allowed '
-    const semanticIconVariantClasses =
-      SEMANTIC_VARIANT_CLASSES[variant.replace(/-icon$/, '')] || null
-    const semanticVariantClasses = SEMANTIC_VARIANT_CLASSES[variant] || null
+    const [isActive, setIsActive] = useState(defaultActive);
+    const classes = resolveSlotClasses(className, classNames);
+    const baseClasses = 'flex cursor-pointer items-center justify-center transition disabled:cursor-not-allowed ';
+    const semanticIconVariantClasses = SEMANTIC_VARIANT_CLASSES[variant.replace(/-icon$/, '')] || null;
+    const semanticVariantClasses = SEMANTIC_VARIANT_CLASSES[variant] || null;
 
     if (semanticIconVariantClasses) {
       return (
@@ -45,17 +43,12 @@ const Button = forwardRef(
           type={type}
           onClick={onClick}
           disabled={disabled}
-          className={cn(
-            baseClasses,
-            semanticIconVariantClasses,
-            'size-9',
-            classes.root
-          )}
+          className={cn(baseClasses, semanticIconVariantClasses, 'size-9', classes.root)}
           {...props}
         >
           {children}
         </button>
-      )
+      );
     }
 
     if (semanticVariantClasses) {
@@ -75,16 +68,16 @@ const Button = forwardRef(
         >
           {children}
         </button>
-      )
+      );
     }
 
     if (variant === 'toggle') {
       const handleToggleChange = (pressed) => {
-        setIsActive(pressed)
+        setIsActive(pressed);
         if (onToggle) {
-          onToggle(pressed)
+          onToggle(pressed);
         }
-      }
+      };
 
       return (
         <Toggle.Root
@@ -92,16 +85,12 @@ const Button = forwardRef(
           pressed={isActive}
           onPressedChange={handleToggleChange}
           disabled={disabled}
-          className={cn(
-            classes.root,
-            classes.default,
-            isActive && classes.toggle
-          )}
+          className={cn(classes.root, classes.default, isActive && classes.toggle)}
           {...props}
         >
           {children}
         </Toggle.Root>
-      )
+      );
     }
 
     return (
@@ -115,10 +104,10 @@ const Button = forwardRef(
       >
         {children}
       </button>
-    )
+    );
   }
-)
+);
 
-Button.displayName = 'Button'
+Button.displayName = 'Button';
 
-export default Button
+export default Button;

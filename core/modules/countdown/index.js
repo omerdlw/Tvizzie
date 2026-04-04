@@ -1,17 +1,13 @@
-'use client'
+'use client';
 
-import { useRegistry } from '@/core/modules/registry'
+import { useRegistry } from '@/core/modules/registry';
 
-import { useCountdownState } from './context'
+import { useCountdownState } from './context';
 
-export {
-  useCountdownActions,
-  CountdownProvider,
-  useCountdownState,
-} from './context'
+export { useCountdownActions, CountdownProvider, useCountdownState } from './context';
 
 export function CountdownOverlay() {
-  const { isEnabled, config } = useCountdownState()
+  const { isEnabled, config } = useCountdownState();
 
   useRegistry(
     isEnabled
@@ -32,13 +28,12 @@ export function CountdownOverlay() {
               leftGradient: 3,
               filter: 'grayscale(100%)',
               rightGradient: 3,
-              },
-            noiseStyle: {
-              },
+            },
+            noiseStyle: {},
           },
         }
       : {}
-  )
+  );
 
-  return null
+  return null;
 }

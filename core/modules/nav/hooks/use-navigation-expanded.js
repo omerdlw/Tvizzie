@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useNavigationContext } from '../context'
+import { useNavigationContext } from '../context';
 
 export function useNavigationExpanded() {
   const {
@@ -14,7 +14,7 @@ export function useNavigationExpanded() {
     toggleParent,
     setSearchQuery,
     setNavHeight,
-  } = useNavigationContext()
+  } = useNavigationContext();
 
   return {
     expanded,
@@ -27,5 +27,5 @@ export function useNavigationExpanded() {
     toggleParent,
     setSearchQuery,
     setNavHeight,
-  }
+  };
 }

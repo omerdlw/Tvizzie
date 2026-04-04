@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
-import { getPreferredMovieBackground } from '@/features/movie/utils'
-import { TMDB_IMG } from '@/core/constants'
+import { getPreferredMovieBackground } from '@/features/movie/utils';
+import { TMDB_IMG } from '@/core/constants';
 
-import MovieView from './view'
+import MovieView from './view';
 
 function createReviewState() {
   return {
@@ -14,47 +14,74 @@ function createReviewState() {
     isSubmitting: false,
     ownReview: false,
     submitReview: null,
-  }
+  };
 }
 
-export default function Client({
-  computed,
-  movie,
-  secondaryDataPromise,
-}) {
-  const fallbackBackgroundImage = movie?.backdrop_path
-    ? `${TMDB_IMG}/w1280${movie.backdrop_path}`
-    : null
+function preloadBackgroundImage(source) {
+  return new Promise((resolve, reject) => {
+    if (!source) {
+      resolve(null);
+      return;
+    }
 
-  const [backgroundImage, setBackgroundImage] = useState(fallbackBackgroundImage)
-  const [reviewState, setReviewState] = useState(createReviewState)
+    const image = new window.Image();
+    image.decoding = 'async';
+    image.onload = () => resolve(source);
+    image.onerror = reject;
+    image.src = source;
+
+    if (image.complete) {
+      resolve(source);
+    }
+  });
+}
+
+export default function Client({ computed, movie, secondaryDataPromise }) {
+  const fallbackBackgroundImage = movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : null;
+
+  const [backgroundImage, setBackgroundImage] = useState(fallbackBackgroundImage);
+  const [reviewState, setReviewState] = useState(createReviewState);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
 
-    setBackgroundImage(fallbackBackgroundImage)
+    setBackgroundImage(fallbackBackgroundImage);
 
     void Promise.resolve(secondaryDataPromise)
-      .then((secondaryMovie) => {
+      .then(async (secondaryMovie) => {
         if (!isActive) {
-          return
+          return;
         }
 
-        setBackgroundImage(
-          getPreferredMovieBackground(secondaryMovie?.images) ||
-            fallbackBackgroundImage
-        )
+        const nextBackgroundImage = getPreferredMovieBackground(secondaryMovie?.images) || fallbackBackgroundImage;
+
+        if (!nextBackgroundImage || nextBackgroundImage === fallbackBackgroundImage) {
+          setBackgroundImage(fallbackBackgroundImage);
+          return;
+        }
+
+        try {
+          await preloadBackgroundImage(nextBackgroundImage);
+
+          if (isActive) {
+            setBackgroundImage(nextBackgroundImage);
+          }
+        } catch {
+          if (isActive) {
+            setBackgroundImage(fallbackBackgroundImage);
+          }
+        }
       })
       .catch(() => {
         if (isActive) {
-          setBackgroundImage(fallbackBackgroundImage)
+          setBackgroundImage(fallbackBackgroundImage);
         }
-      })
+      });
 
     return () => {
-      isActive = false
-    }
-  }, [fallbackBackgroundImage, secondaryDataPromise])
+      isActive = false;
+    };
+  }, [fallbackBackgroundImage, secondaryDataPromise]);
 
   return (
     <MovieView
@@ -65,5 +92,5 @@ export default function Client({
       secondaryDataPromise={secondaryDataPromise}
       setReviewState={setReviewState}
     />
-  )
+  );
 }

@@ -1,99 +1,70 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react';
 
-import { isProjectFeatureEnabled } from '@/config/project.config'
-import MediaSocialProofModal from '@/features/modal/media-social-proof-modal'
-import { useAuth } from '@/core/modules/auth'
-import { useModal } from '@/core/modules/modal/context'
-import { useRegistry } from '@/core/modules/registry'
-import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service'
-import Icon from '@/ui/icon'
+import { isProjectFeatureEnabled } from '@/config/project.config';
+import { useAuth } from '@/core/modules/auth';
+import { useModal } from '@/core/modules/modal/context';
+import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service';
+import Icon from '@/ui/icon';
 
 const EMPTY_SOCIAL_PROOF = Object.freeze({
   reviews: { count: 0, previewUsers: [], users: [] },
   likes: { count: 0, previewUsers: [], users: [] },
   watchlist: { count: 0, previewUsers: [], users: [] },
-})
-const IS_MEDIA_SOCIAL_PROOF_ENABLED =
-  isProjectFeatureEnabled('media_social_proof')
+});
 
-function buildSummaryParts(socialProof) {
-  const parts = []
+const IS_ENABLED = isProjectFeatureEnabled('media_social_proof');
 
-  if (socialProof.likes.count > 0) {
-    parts.push(`${socialProof.likes.count} likes`)
-  }
-
-  if (socialProof.watchlist.count > 0) {
-    parts.push(`${socialProof.watchlist.count} watchlist`)
-  }
-
-  if (socialProof.reviews.count > 0) {
-    parts.push(`${socialProof.reviews.count} reviews`)
-  }
-
-  return parts
+function getSummaryParts({ likes, watchlist, reviews }) {
+  return [
+    likes.count > 0 && `${likes.count} likes`,
+    watchlist.count > 0 && `${watchlist.count} watchlist`,
+    reviews.count > 0 && `${reviews.count} reviews`,
+  ].filter(Boolean);
 }
 
 export default function MediaSocialProof({ media, viewerId }) {
-  const auth = useAuth()
-  const { openModal } = useModal()
-  const [socialProof, setSocialProof] = useState(EMPTY_SOCIAL_PROOF)
-  const resolvedViewerId = viewerId || auth.user?.id || null
+  const auth = useAuth();
+  const { openModal } = useModal();
+  const [socialProof, setSocialProof] = useState(EMPTY_SOCIAL_PROOF);
 
-  useRegistry({
-    modal: {
-      MEDIA_SOCIAL_PROOF_MODAL: MediaSocialProofModal,
-    },
-  })
+  const resolvedViewerId = viewerId || auth.user?.id || null;
+  const summaryParts = getSummaryParts(socialProof);
 
   useEffect(() => {
-    if (!IS_MEDIA_SOCIAL_PROOF_ENABLED || !resolvedViewerId || !media) {
-      setSocialProof(EMPTY_SOCIAL_PROOF)
-      return
+    if (!IS_ENABLED || !media || !resolvedViewerId) {
+      setSocialProof(EMPTY_SOCIAL_PROOF);
+      return;
     }
 
-    return subscribeToMediaSocialProof(
-      { media, viewerId: resolvedViewerId },
-      setSocialProof
-    )
-  }, [media, resolvedViewerId])
+    return subscribeToMediaSocialProof({ media, viewerId: resolvedViewerId }, setSocialProof);
+  }, [media, resolvedViewerId]);
 
-  const summaryParts = useMemo(
-    () => buildSummaryParts(socialProof),
-    [socialProof]
-  )
-
-  if (
-    !IS_MEDIA_SOCIAL_PROOF_ENABLED ||
-    summaryParts.length === 0
-  ) {
-    return null
+  if (!IS_ENABLED || !summaryParts.length) {
+    return null;
   }
+
+  const handleOpenModal = () => {
+    openModal(
+      'MEDIA_SOCIAL_PROOF_MODAL',
+      { desktop: 'right', mobile: 'right' },
+      {
+        header: { title: 'Social activity' },
+        data: { socialProof, summaryParts },
+      }
+    );
+  };
 
   return (
     <button
       type="button"
       aria-label="Open social activity"
-      onClick={() =>
-        openModal(
-          'MEDIA_SOCIAL_PROOF_MODAL',
-          { desktop: 'right', mobile: 'right' },
-          {
-            header: { title: 'Social activity' },
-            data: { socialProof, summaryParts },
-          }
-        )
-      }
-      className="group inline-flex items-center gap-1 text-[11px] font-semibold tracking-widest text-white/70 uppercase transition-colors hover:text-white"
+      onClick={handleOpenModal}
+      className="group inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-colors hover:text-black"
     >
       <span>Social activity</span>
-      <Icon
-        icon="solar:alt-arrow-right-linear"
-        size={16}
-        className="shrink-0 text-white"
-      />
+      <Icon icon="solar:alt-arrow-right-linear" size={16} className="shrink-0" />
     </button>
-  )
+  );
 }

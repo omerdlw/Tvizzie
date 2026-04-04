@@ -1,19 +1,15 @@
 export function normalizeActivityKeyPart(value) {
-  return String(value || '').trim()
+  return String(value || '').trim();
 }
 
-export function buildCanonicalActivityDedupeKey({
-  actorUserId,
-  subjectId,
-  subjectType,
-}) {
-  const normalizedActorUserId = normalizeActivityKeyPart(actorUserId)
-  const normalizedSubjectType = normalizeActivityKeyPart(subjectType).toLowerCase()
-  const normalizedSubjectId = normalizeActivityKeyPart(subjectId)
+export function buildCanonicalActivityDedupeKey({ actorUserId, subjectId, subjectType }) {
+  const normalizedActorUserId = normalizeActivityKeyPart(actorUserId);
+  const normalizedSubjectType = normalizeActivityKeyPart(subjectType).toLowerCase();
+  const normalizedSubjectId = normalizeActivityKeyPart(subjectId);
 
   if (!normalizedActorUserId || !normalizedSubjectType || !normalizedSubjectId) {
-    return ''
+    return '';
   }
 
-  return `subject:${normalizedActorUserId}:${normalizedSubjectType}:${normalizedSubjectId}`
+  return `subject:${normalizedActorUserId}:${normalizedSubjectType}:${normalizedSubjectId}`;
 }
