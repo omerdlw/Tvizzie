@@ -1,4 +1,5 @@
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import { getUserAvatarUrl } from '@/core/utils';
 import { FOLLOW_STATUSES } from '@/core/services/social/follows.service';
 
@@ -32,14 +33,9 @@ export const PROFILE_TABS = [
   'liked_reviews',
   'liked_lists',
 ];
-
-export const LABEL_CLASS = 'text-[11px] font-medium tracking-widest text-[#0f172a] uppercase';
-export const INPUT_CLASS =
-  'h-12 w-full border-b border-[#0284c7] bg-transparent px-0 text-base text-[#0f172a] placeholder:text-[#0f172a] outline-none transition ';
-export const TEXTAREA_CLASS =
-  'min-h-[140px] border-b border-[#0284c7] bg-transparent px-0 py-3 text-base text-[#0f172a] outline-none transition placeholder:text-[#0f172a] ';
-export const SECURITY_CARD_CLASS = 'space-y-6  border border-[#0284c7]  p-5 sm:p-6';
-export const ACCOUNT_SECTION_CLASS = 'relative bg-transparent text-[#0f172a]';
+export const ACCOUNT_SECTION_KEYS = Object.freeze(['activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists']);
+export const RESERVED_ACCOUNT_SEGMENTS = new Set([...ACCOUNT_SECTION_KEYS, 'edit']);
+export const ACCOUNT_LIST_CREATOR_PATH = '/account/lists/new';
 
 export const INITIAL_EMAIL_FLOW = {
   currentPassword: '',
@@ -60,8 +56,153 @@ export const INITIAL_DELETE_FLOW = {
   isSubmitting: false,
 };
 
+const DEFAULT_ACCOUNT_FEEDBACK_PRIORITY = 112;
+const DEFAULT_ACCOUNT_FEEDBACK_THEME_TYPE = 'LOGIN';
+
+const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
+  'account-delete': Object.freeze({
+    description: 'Deleting account and removing active access',
+    icon: 'solar:danger-triangle-bold',
+    statusType: 'ACCOUNT_DELETE',
+    successDescription: 'Account deleted successfully',
+    successTitle: 'Account Deleted',
+    title: 'Deleting Account',
+  }),
+  'account-update': Object.freeze({
+    description: 'Saving profile changes',
+    icon: 'solar:user-circle-bold',
+    statusType: 'ACCOUNT_UPDATE',
+    successDescription: 'Profile changes saved',
+    successTitle: 'Account Updated',
+    title: 'Updating Account',
+  }),
+  'email-change': Object.freeze({
+    description: 'Applying secure account changes',
+    icon: 'solar:letter-bold',
+    statusType: 'EMAIL_CHANGE',
+    successDescription: 'Please sign in again with your new email',
+    successTitle: 'Email Updated',
+    title: 'Updating Email',
+  }),
+  'google-link': Object.freeze({
+    description: 'Preparing secure provider connection',
+    icon: 'flat-color-icons:google',
+    statusType: 'GOOGLE_LINK',
+    successDescription: 'Google sign-in is now linked to this account',
+    successTitle: 'Google Linked',
+    title: 'Linking Google',
+  }),
+  'password-change': Object.freeze({
+    description: 'Applying secure account changes',
+    icon: 'solar:shield-keyhole-bold',
+    statusType: 'PASSWORD_CHANGE',
+    successDescription: 'Please sign in again with your new password',
+    successTitle: 'Password Updated',
+    title: 'Updating Password',
+  }),
+  'password-set': Object.freeze({
+    description: 'Adding password sign-in to your account',
+    icon: 'solar:shield-keyhole-bold',
+    statusType: 'PASSWORD_SET',
+    successDescription: 'Please sign in again with your new password',
+    successTitle: 'Password Added',
+    title: 'Setting Password',
+  }),
+});
+
+const SEED_QUERY_PARAM_MAP = Object.freeze({
+  backdropPath: 'seedBackdropPath',
+  entityId: 'seedId',
+  entityType: 'seedType',
+  first_air_date: 'seedFirstAirDate',
+  name: 'seedName',
+  poster_path: 'seedPosterPath',
+  release_date: 'seedReleaseDate',
+  title: 'seedTitle',
+  vote_average: 'seedVoteAverage',
+});
+
+function resolveAccountFeedbackConfig(flow) {
+  return (
+    ACCOUNT_FEEDBACK_CONFIG[
+      String(flow || '')
+        .trim()
+        .toLowerCase()
+    ] || {}
+  );
+}
+
 export function getAvatarFallback(profile) {
   return getUserAvatarUrl(profile);
+}
+
+export function emitAccountFeedback(flow, phase, overrides = {}) {
+  const config = resolveAccountFeedbackConfig(flow);
+
+  globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
+    flow,
+    phase,
+    statusType:
+      overrides.statusType ||
+      config.statusType ||
+      String(flow || 'ACCOUNT_FEEDBACK')
+        .trim()
+        .toUpperCase(),
+    title:
+      overrides.title ||
+      (phase === 'success' ? config.successTitle || config.title || 'Account' : config.title || 'Account'),
+    description:
+      overrides.description ??
+      (phase === 'success' ? config.successDescription || config.description || '' : config.description || ''),
+    icon: overrides.icon || config.icon || 'solar:user-circle-bold',
+    themeType: overrides.themeType || config.themeType || DEFAULT_ACCOUNT_FEEDBACK_THEME_TYPE,
+    priority: overrides.priority ?? config.priority ?? DEFAULT_ACCOUNT_FEEDBACK_PRIORITY,
+    ...(overrides.duration != null ? { duration: overrides.duration } : {}),
+    ...(overrides.isOverlay != null ? { isOverlay: overrides.isOverlay } : {}),
+  });
+}
+
+export function clearAccountFeedback(flow) {
+  emitAccountFeedback(flow, 'clear');
+}
+
+export function buildListCreatorHref(seedMedia = null) {
+  if (!seedMedia) {
+    return ACCOUNT_LIST_CREATOR_PATH;
+  }
+
+  const entityType = seedMedia?.entityType || seedMedia?.media_type || 'movie';
+
+  if (entityType !== 'movie') {
+    return ACCOUNT_LIST_CREATOR_PATH;
+  }
+
+  const params = new URLSearchParams();
+  const normalizedMedia = {
+    backdropPath: seedMedia?.backdrop_path || seedMedia?.backdropPath || null,
+    entityId: seedMedia?.entityId ?? seedMedia?.id ?? null,
+    entityType,
+    first_air_date: null,
+    name: '',
+    poster_path: seedMedia?.poster_path || seedMedia?.posterPath || null,
+    release_date: seedMedia?.release_date || null,
+    title: seedMedia?.title || seedMedia?.original_title || '',
+    vote_average: seedMedia?.vote_average ?? null,
+  };
+
+  Object.entries(SEED_QUERY_PARAM_MAP).forEach(([field, queryKey]) => {
+    const value = normalizedMedia[field];
+
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+
+    params.set(queryKey, String(value));
+  });
+
+  const queryString = params.toString();
+
+  return queryString ? `${ACCOUNT_LIST_CREATOR_PATH}?${queryString}` : ACCOUNT_LIST_CREATOR_PATH;
 }
 
 export function normalizeProviderIds(value) {
@@ -92,6 +233,14 @@ export function normalizeEmail(value) {
 
 export function normalizeOptionalText(value) {
   return String(value || '').trim();
+}
+
+export function isReservedAccountSegment(value) {
+  return RESERVED_ACCOUNT_SEGMENTS.has(
+    String(value || '')
+      .trim()
+      .toLowerCase()
+  );
 }
 
 export function resolveSecurityErrorMessage(error, fallbackMessage) {

@@ -1135,3 +1135,10 @@ export async function deleteUserNotification(userId, notificationId) {
 
   assertResult(result, 'Notification could not be deleted');
 }
+
+export async function deleteAllUserNotifications(userId) {
+  const client = await createServerClient();
+  const result = await client.from('notifications').delete().eq('user_id', userId);
+
+  assertResult(result, 'Notifications could not be deleted');
+}

@@ -99,7 +99,6 @@ export default function Nav() {
     activeItemHasAction,
     activeItem,
     navigationItems,
-    toggleParent,
     setNavHeight,
     setIsHovered,
     setExpanded,
@@ -322,12 +321,9 @@ export default function Nav() {
                 }
 
                 if (link.isParent) {
-                  if (link.path && link.isExpanded) {
+                  if (link.path) {
                     navigate(link.path);
-                    return;
                   }
-
-                  toggleParent(link.name);
                   return;
                 }
 

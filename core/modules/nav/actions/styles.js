@@ -1,9 +1,9 @@
 import { cn } from '@/core/utils';
 
 export const NAV_ACTION_STYLES = {
-  base: 'center w-full rounded-[12px] gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border',
-  muted: 'border-black/10 bg-black/5 hover:bg-black/10 hover:border-black/15 text-black/70',
-  active: 'border-black/15 bg-black/10 hover:bg-black/5 hover:border-black/10',
+  base: 'center w-full rounded-[12px] gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider',
+  muted: 'border-black/5 bg-black/5 hover:bg-black/10 text-black/70',
+  active: 'border-black/10 bg-black/10 hover:bg-black/5',
   row: 'mt-2.5 flex w-full gap-2',
   icon: 16,
 };

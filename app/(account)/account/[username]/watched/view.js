@@ -1,7 +1,5 @@
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
-import AccountPageShell from '@/features/account/page-shell';
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
-import AccountSectionState from '@/features/account/section-state';
+import AccountWatchedFeed from '@/features/account/feeds/watched';
+import { AccountPageShell } from '@/features/account/profile/layout';
 import Registry from './registry';
 
 export default function WatchedView({
@@ -80,30 +78,16 @@ export default function WatchedView({
       watchedCount={profile?.watchedCount || 0}
       watchlistCount={watchlistCount}
     >
-      {!canShowWatchedGrid ? (
-        <AccountSectionState message="This profile is private." />
-      ) : loadError ? (
-        <AccountSectionState message={loadError} />
-      ) : (
-        <AccountMediaGridPage
-          currentPage={currentPage}
-          emptyMessage="No watched films yet"
-          icon="solar:eye-bold"
-          items={watchedItems}
-          pageBasePath={`/account/${username}/watched`}
-          renderOverlay={(item) =>
-            isOwner ? (
-              <AccountProfileMediaActions
-                media={item}
-                onRemoveItem={handleRequestRemoveWatchedItem}
-                removeLabel={`Remove ${item.title || item.name} from watched`}
-                userId={auth.user?.id || null}
-              />
-            ) : null
-          }
-          title="Watched"
-        />
-      )}
+      <AccountWatchedFeed
+        auth={auth}
+        canShowWatchedGrid={canShowWatchedGrid}
+        currentPage={currentPage}
+        isOwner={isOwner}
+        loadError={loadError}
+        watchedItems={watchedItems}
+        username={username}
+        onRemoveItem={handleRequestRemoveWatchedItem}
+      />
     </AccountPageShell>
   );
 }

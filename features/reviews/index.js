@@ -139,9 +139,7 @@ export default function MediaReviews({
       <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
         <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#0f172a]">
-              {ownReview ? 'Update your review' : 'Rate or review this title'}
-            </p>
+            <p className="text-sm font-semibold">{ownReview ? 'Update your review' : 'Rate or review this title'}</p>
             <p className="text-xs text-black/70">
               {ownReview
                 ? 'Open the review modal to edit your score or text.'

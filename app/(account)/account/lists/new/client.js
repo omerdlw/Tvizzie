@@ -5,7 +5,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransit
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
-import { useAccountEditData } from '@/features/account/hooks';
+import { useAccountEditData } from '@/features/account/hooks/edit-data';
 import { useAuth } from '@/core/modules/auth';
 import { useToast } from '@/core/modules/notification/hooks';
 import { createUserListWithItems } from '@/core/services/media/lists.service';
@@ -249,7 +249,7 @@ export default function Client({ initialSnapshot = null }) {
 
       try {
         const response = await TmdbService.searchContent(deferredSearchQuery, 'movie', 1);
-        const nextResults = (response?.data?.results || []).map(normalizeSearchResult).filter(Boolean).slice(0, 8);
+        const nextResults = (response?.data?.results || []).map(normalizeSearchResult).filter(Boolean);
 
         if (ignore) {
           return;
@@ -314,7 +314,7 @@ export default function Client({ initialSnapshot = null }) {
     <>
       {registry}
       <ListCreatorView
-        canSubmit={Boolean(draftTitle.trim())}
+        canSubmit={Boolean(draftTitle.trim()) && draftItems.length > 0}
         draftDescription={draftDescription}
         draftItems={draftItems}
         draftTitle={draftTitle}

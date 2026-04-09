@@ -1,4 +1,4 @@
-import { AccountNotFoundState } from '@/features/account/page-shell';
+import { AccountNotFoundState } from '@/features/account/profile/layout';
 
 export default function NotFound() {
   return (

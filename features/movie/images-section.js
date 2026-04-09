@@ -95,6 +95,17 @@ export default function ImagesSection({ images }) {
             imageSizes={currentTab.sizes}
             imagePriority={index < 3}
             fallbackIconSize={24}
+            {...(currentTab.key === 'backdrops'
+              ? {
+                  'data-backdrop-file-path': image.file_path || '',
+                  'data-context-menu-target': 'movie-backdrop-card',
+                }
+              : currentTab.key === 'posters'
+                ? {
+                    'data-poster-file-path': image.file_path || '',
+                    'data-context-menu-target': 'movie-poster-card',
+                  }
+                : {})}
           />
         ))}
       </Carousel>

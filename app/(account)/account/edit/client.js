@@ -5,9 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
-import { useAccountEditData, useAccountSecurityActions } from '@/features/account/hooks';
-import { clearAccountFeedback, emitAccountFeedback } from '@/features/account/feedback';
+import { useAccountSecurityActions } from '@/features/account/hooks/security-actions';
+import { useAccountEditData } from '@/features/account/hooks/edit-data';
 import {
+  clearAccountFeedback,
+  emitAccountFeedback,
   INITIAL_DELETE_FLOW,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
@@ -17,6 +19,7 @@ import {
   normalizeProviderIds,
 } from '@/features/account/utils';
 import { logDataError } from '@/core/utils/errors';
+import { uploadAccountMediaFile } from '@/core/services/account/account.service';
 import { useAccount } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -42,6 +45,10 @@ export default function Client({ initialSnapshot = null }) {
   const [passwordFlow, setPasswordFlow] = useState(INITIAL_PASSWORD_FLOW);
   const [deleteFlow, setDeleteFlow] = useState(INITIAL_DELETE_FLOW);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [mediaUploadState, setMediaUploadState] = useState({
+    avatar: false,
+    banner: false,
+  });
 
   const {
     followerCount,
@@ -112,10 +119,62 @@ export default function Client({ initialSnapshot = null }) {
       normalizeOptionalText(form.bannerUrl) !== normalizeOptionalText(profile.bannerUrl)
     );
   }, [form, profile]);
+  const isAnyMediaUploading = mediaUploadState.avatar || mediaUploadState.banner;
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
+
+  const handleMediaUpload = useCallback(
+    async (target, file) => {
+      if (!file) {
+        return;
+      }
+
+      const normalizedTarget = String(target || '').toLowerCase() === 'avatar' ? 'avatar' : 'banner';
+      const field = normalizedTarget === 'avatar' ? 'avatarUrl' : 'bannerUrl';
+      const label = normalizedTarget === 'avatar' ? 'Avatar' : 'Logo';
+
+      setMediaUploadState((prev) => ({
+        ...prev,
+        [normalizedTarget]: true,
+      }));
+
+      try {
+        const result = await uploadAccountMediaFile({
+          file,
+          target: normalizedTarget,
+        });
+
+        setForm((prev) => ({
+          ...prev,
+          [field]: result.url,
+        }));
+        toast.success(`${label} uploaded`);
+      } catch (error) {
+        toast.error(error?.message || `${label} could not be uploaded`);
+      } finally {
+        setMediaUploadState((prev) => ({
+          ...prev,
+          [normalizedTarget]: false,
+        }));
+      }
+    },
+    [setForm, toast]
+  );
+
+  const handleClearMedia = useCallback(
+    (target) => {
+      const normalizedTarget = String(target || '').toLowerCase() === 'avatar' ? 'avatar' : 'banner';
+      const field = normalizedTarget === 'avatar' ? 'avatarUrl' : 'bannerUrl';
+
+      setForm((prev) => ({
+        ...prev,
+        [field]: '',
+      }));
+    },
+    [setForm]
+  );
 
   const handleSignIn = useCallback(() => {
     router.push(
@@ -143,6 +202,11 @@ export default function Client({ initialSnapshot = null }) {
 
   const handleAccountSubmit = async (event) => {
     event.preventDefault();
+    if (isAnyMediaUploading) {
+      toast.error('Please wait for uploads to finish');
+      return;
+    }
+
     if (!auth.user?.id || !profile || isSaving) return;
 
     setIsSaving(true);
@@ -206,6 +270,7 @@ export default function Client({ initialSnapshot = null }) {
   return (
     <AccountEditView
       auth={auth}
+      currentAuthEmail={currentAuthEmail}
       isLoading={isLoading}
       profile={profile}
       activeTab={activeTab}
@@ -226,10 +291,14 @@ export default function Client({ initialSnapshot = null }) {
       bannerPreview={bannerPreview}
       heroDisplayName={heroDisplayName}
       isGeneralAccountDirty={isGeneralAccountDirty}
+      isAnyMediaUploading={isAnyMediaUploading}
+      mediaUploadState={mediaUploadState}
       canUsePasswordSecurity={canUsePasswordSecurity}
       isPasswordLinked={isPasswordLinked}
       formRef={formRef}
       handleChange={handleChange}
+      handleClearMedia={handleClearMedia}
+      handleMediaUpload={handleMediaUpload}
       handleSignIn={handleSignIn}
       handleSave={handleSave}
       setActiveTab={setActiveTab}

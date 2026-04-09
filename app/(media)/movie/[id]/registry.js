@@ -14,6 +14,10 @@ import { EASING, TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import Icon from '@/ui/icon/index';
 import MediaSocialProofModal from '@/features/modal/media-social-proof-modal';
+import {
+  createMovieBackgroundContextMenuItems,
+  createMoviePosterContextMenuItems,
+} from '@/features/movie/context-menu-actions';
 
 const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
   exitDurationFactor: 0.4,
@@ -41,8 +45,54 @@ const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
   },
 });
 
+const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
+const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';
+
+function renderMovieMetaDescription(parts = [], { compact = false } = {}) {
+  if (!Array.isArray(parts) || parts.length === 0) {
+    return null;
+  }
+
+  const iconSize = compact ? 10 : 14;
+  const containerClassName = ['flex items-center', compact ? 'gap-1' : 'gap-1.5'].join(' ');
+  const ratingClassName = [
+    'text-warning inline-flex items-center font-semibold leading-none',
+    compact ? 'gap-1 text-[11px]' : 'gap-1.5 text-sm',
+  ].join(' ');
+
+  return (
+    <span className={containerClassName}>
+      {parts.map((part, index) => {
+        const key = `${String(part)}-${index}`;
+
+        if (index === 0) {
+          return (
+            <span key={key} className={ratingClassName}>
+              <Icon icon="solar:star-bold" size={iconSize} className="text-warning shrink-0" />
+              {part}
+            </span>
+          );
+        }
+
+        return (
+          <Fragment key={key}>
+            <span aria-hidden="true">•</span>
+            <span>{part}</span>
+          </Fragment>
+        );
+      })}
+    </span>
+  );
+}
+
 export default function Registry({
   movie,
+  onSetMoviePoster,
+  onSetMovieBackground,
+  onResetMoviePoster,
+  onResetMovieBackground,
+  canResetMoviePoster = false,
+  canResetMovieBackground = false,
   runtimeText,
   year,
   rating,
@@ -62,6 +112,10 @@ export default function Registry({
   }, [reviewState?.isActive, isSearching]);
 
   const metaDescriptionParts = [rating, year, runtimeText].filter(Boolean);
+  const navDescription = renderMovieMetaDescription(metaDescriptionParts);
+  const contextMenuDescription = renderMovieMetaDescription(metaDescriptionParts, {
+    compact: true,
+  });
   const resolvedBackgroundImage =
     backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading = isLoading && !resolvedBackgroundImage;
@@ -97,27 +151,8 @@ export default function Registry({
         },
       ],
       confirmation: reviewState?.confirmation || null,
-      description:
-        metaDescriptionParts.length > 0 ? (
-          <span className="flex items-center gap-1.5">
-            {metaDescriptionParts.map((part, index) => (
-              <Fragment key={`${part}-${index}`}>
-                {index > 0 && <span key={`${part}-${index}`}>•</span>}
-                {index === 0 ? (
-                  <span
-                    key={`${part}-${index}`}
-                    className="text-warning inline-flex items-center gap-1.5 text-sm font-semibold"
-                  >
-                    <Icon key={`${part}-${index}`} icon="solar:star-bold" size={14} className="text-warning" />
-                    {part}
-                  </span>
-                ) : (
-                  <span key={index}>{part}</span>
-                )}
-              </Fragment>
-            ))}
-          </span>
-        ) : undefined,
+      contextMenuDescription: contextMenuDescription || undefined,
+      description: navDescription || undefined,
       icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,
       surface: navSurface,
       title: movie?.title || movie?.original_title || (isLoading ? '' : undefined),
@@ -144,6 +179,85 @@ export default function Registry({
                   opacity: 0,
                 },
               },
+        }
+      : {}),
+    ...(typeof onSetMovieBackground === 'function' ||
+    typeof onSetMoviePoster === 'function' ||
+    typeof onResetMovieBackground === 'function' ||
+    typeof onResetMoviePoster === 'function'
+      ? {
+          contextMenu: {
+            menus: [
+              ...(typeof onSetMovieBackground === 'function' || typeof onResetMovieBackground === 'function'
+                ? [
+                    {
+                      key: 'movie-backdrop-context-menu',
+                      target: MOVIE_BACKDROP_CONTEXT_TARGET,
+                      priority: 220,
+                      resolveContext: (_event, context) => {
+                        const target = context?.target;
+                        const backdropCard =
+                          target && typeof target.closest === 'function'
+                            ? target.closest(MOVIE_BACKDROP_CONTEXT_TARGET)
+                            : null;
+                        const filePath = backdropCard?.getAttribute('data-backdrop-file-path') || null;
+
+                        return {
+                          payload: {
+                            filePath,
+                            movieId: movie?.id || null,
+                          },
+                        };
+                      },
+                      items: (menuContext) => {
+                        const filePath = menuContext?.payload?.filePath;
+
+                        return createMovieBackgroundContextMenuItems({
+                          filePath,
+                          onSetMovieBackground,
+                          onResetMovieBackground,
+                          canResetBackground: canResetMovieBackground,
+                        });
+                      },
+                    },
+                  ]
+                : []),
+              ...(typeof onSetMoviePoster === 'function' || typeof onResetMoviePoster === 'function'
+                ? [
+                    {
+                      key: 'movie-poster-context-menu',
+                      target: MOVIE_POSTER_CONTEXT_TARGET,
+                      priority: 225,
+                      resolveContext: (_event, context) => {
+                        const target = context?.target;
+                        const posterCard =
+                          target && typeof target.closest === 'function'
+                            ? target.closest(MOVIE_POSTER_CONTEXT_TARGET)
+                            : null;
+                        const filePath = posterCard?.getAttribute('data-poster-file-path') || null;
+
+                        return {
+                          payload: {
+                            filePath,
+                            movieId: movie?.id || null,
+                          },
+                        };
+                      },
+                      items: (menuContext) => {
+                        const filePath = menuContext?.payload?.filePath;
+
+                        return createMoviePosterContextMenuItems({
+                          filePath,
+                          onSetMoviePoster,
+                          onResetMoviePoster,
+                          canResetPoster: canResetMoviePoster,
+                        });
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
         }
       : {}),
     loading: { isLoading },

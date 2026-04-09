@@ -178,7 +178,7 @@ function buildUpdatedReview({
   };
 }
 
-export default function ReviewEditorModal({ close, data }) {
+export default function ReviewEditorModal({ close, data, header }) {
   const toast = useToast();
   const { onSuccess, review = null, user = null } = data || {};
   const hasExistingReview = Boolean(review);
@@ -190,6 +190,7 @@ export default function ReviewEditorModal({ close, data }) {
   const [isSaving, setIsSaving] = useState(false);
 
   const hasText = reviewText.trim().length > 0;
+  const trimmedTextLength = reviewText.trim().length;
   const validationError = useMemo(
     () =>
       getReviewValidationError({
@@ -276,6 +277,7 @@ export default function ReviewEditorModal({ close, data }) {
   };
 
   const modalSubjectTitle = subjectContext?.subjectTitle || review?.subjectTitle || 'this title';
+  const formId = 'review-editor-form';
 
   const handleSpoilerToggle = () => {
     if (!hasText) {
@@ -286,98 +288,98 @@ export default function ReviewEditorModal({ close, data }) {
   };
 
   return (
-    <Container className="w-full sm:w-[620px]" close={close}>
-      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3 p-3 sm:p-4">
-        <div className="border border-[#f97316] bg-[#fef3c7] p-4 sm:p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-[#1d4ed8] uppercase">Your Rating</p>
-          </div>
-          <RatingSelector value={rating} onChange={setRating} />
-        </div>
-
-        <div className="border border-[#a855f7] bg-[#ede9fe] p-4 sm:p-5">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-[#1d4ed8] uppercase">Your Thoughts</p>
-            <span className="text-[10px] font-bold tracking-widest text-black/70 uppercase">
-              {hasText
-                ? `${reviewText.trim().length}/${REVIEW_MIN_LENGTH}+ chars`
-                : `Optional • ${REVIEW_MIN_LENGTH}+ if added`}
+    <Container
+      className="w-full sm:w-[640px]"
+      header={header}
+      close={close}
+      footer={{
+        left: (
+          <div className="flex flex-col">
+            <span className="text-xs text-black/70">
+              {hasText ? `${trimmedTextLength} characters` : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
             </span>
+            {validationError ? (
+              <span className="text-error text-xs">Please resolve validation before saving</span>
+            ) : null}
           </div>
-          <Textarea
-            maxLength={800}
-            value={reviewText}
-            className={{
-              textarea:
-                'min-h-[180px] w-full resize-none border border-[#0284c7] bg-[#bfdbfe] p-4 leading-normal text-[#0c4a6e] transition outline-none placeholder:text-[#0369a1]',
-            }}
-            placeholder={`Add your thoughts about ${modalSubjectTitle} (optional)`}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              setReviewText(nextValue);
+        ),
+        right: (
+          <>
+            <Button
+              type="button"
+              onClick={close}
+              className="bg-primary h-8 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form={formId}
+              disabled={isSaving || Boolean(validationError)}
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+            >
+              {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, rating, reviewText })}
+            </Button>
+          </>
+        ),
+      }}
+    >
+      <form id={formId} onSubmit={handleSubmit} className="flex w-full flex-col">
+        <section className="flex w-full items-center justify-start p-6">
+          <RatingSelector value={rating} onChange={setRating} />
+        </section>
+        <Textarea
+          maxLength={800}
+          value={reviewText}
+          className={{
+            wrapper: 'flex',
+            textarea:
+              'block min-h-[180px] w-full resize-none border-t border-black/10 p-3 text-sm leading-normal outline-none placeholder:text-black/60',
+          }}
+          placeholder={`Add your thoughts about ${modalSubjectTitle} (optional)`}
+          onChange={(event) => {
+            const nextValue = event.target.value;
+            setReviewText(nextValue);
 
-              if (!nextValue.trim()) {
-                setIsSpoiler(false);
-              }
-            }}
-          />
-        </div>
-
+            if (!nextValue.trim()) {
+              setIsSpoiler(false);
+            }
+          }}
+        />
         <button
           type="button"
           role="switch"
           aria-checked={hasText ? isSpoiler : false}
           disabled={!hasText}
           onClick={handleSpoilerToggle}
-          className={`flex w-full items-center justify-between gap-3 border p-3.5 text-left transition sm:p-4 ${
+          className={`flex w-full items-center justify-between overflow-hidden border-t p-4 text-left transition ${
             hasText
               ? isSpoiler
-                ? 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]'
-                : 'border-[#0284c7] bg-[#bfdbfe] '
-              : 'cursor-not-allowed border-[#0284c7] bg-[#dbeafe] opacity-65'
-          }`}
+                ? 'border-error bg-error/10 hover:bg-error/20 text-error'
+                : 'bg-primary border-black/10'
+              : 'cursor-not-allowed border-black/10 text-black/60'
+          } ${validationError ? '' : 'rounded-b-[16px] hover:bg-black/5'}`}
         >
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-[#0f172a]">Contains Spoilers</span>
-            <span className="text-[11px] text-black/70">
-              {hasText ? 'Enable to blur this review by default' : 'Spoiler option unlocks after writing review text'}
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-semibold">Contains spoilers</span>
+            <span className="text-xs text-black/70">
+              {hasText
+                ? 'Hide this review behind a spoiler warning'
+                : 'Spoiler option unlocks after writing review text'}
             </span>
           </div>
           <span
-            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition ${
-              hasText && isSpoiler
-                ? 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]'
-                : 'border-[#0284c7] bg-[#7dd3fc]'
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border p-px transition-all ${
+              hasText && isSpoiler ? 'border-error bg-error' : 'border-black/5 bg-black/5'
             }`}
           >
             <span
-              className={`absolute left-0.5 size-5 rounded-full bg-[#fef3c7] transition ${
-                hasText && isSpoiler ? 'bg-error translate-x-5' : ''
+              className={`bg-primary size-5 rounded-full transition-all ${
+                hasText && isSpoiler ? 'bg-error translate-x-5' : 'translate-x-0'
               }`}
             />
           </span>
         </button>
-
-        {validationError && (
-          <p className="border border-[#dc2626] bg-[#fecaca] px-3 py-2 text-xs text-[#7f1d1d]">{validationError}</p>
-        )}
-
-        <div className="mt-1 flex w-full flex-col gap-2 md:flex-row md:justify-end">
-          <Button
-            type="button"
-            onClick={close}
-            className="h-11 w-full flex-auto border border-[#9333ea] bg-[#e9d5ff] px-6 text-[11px] font-bold tracking-widest text-[#581c87] uppercase transition"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSaving || Boolean(validationError)}
-            className="center h-11 w-full flex-auto gap-2 border border-[#0284c7] bg-[#bae6fd] px-8 text-[11px] font-bold tracking-widest text-[#0c4a6e] uppercase transition"
-          >
-            {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, rating, reviewText })}
-          </Button>
-        </div>
       </form>
     </Container>
   );

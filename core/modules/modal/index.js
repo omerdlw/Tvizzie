@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -8,9 +8,8 @@ import { createPortal } from 'react-dom';
 import { Z_INDEX } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { ModuleError } from '@/core/modules/error-boundary';
-import { MODAL_BREAKPOINTS, MODAL_POSITIONS, MODAL_CHROME } from '@/core/modules/modal/config';
+import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_POSITIONS } from '@/core/modules/modal/config';
 import { useModal } from '@/core/modules/modal/context';
-import { ModalTitle } from '@/core/modules/modal/title';
 
 import { useModalRegistry } from '../registry/context';
 import { BACKDROP_VARIANTS, getModalVariants, POSITION_CLASSES } from './utils';
@@ -73,9 +72,7 @@ function trapFocus(event, elements) {
 
 function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModal, registry }) {
   const modalRef = useRef(null);
-  const shellRef = useRef(null);
   const focusableRef = useRef([]);
-  const [shellWidth, setShellWidth] = useState(null);
 
   const activePosition = useMemo(() => {
     return resolveActivePosition(entry.position, entry.responsivePosition, isMobileViewport);
@@ -90,10 +87,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   const isBottomModalPosition = activePosition === MODAL_POSITIONS.BOTTOM;
   const isCenterModal = activePosition === MODAL_POSITIONS.CENTER;
 
-  const shouldRenderAttachedTitle = Boolean(entry.title && !isLeftModal && !isRightModal);
-  const shouldRenderEmbeddedTitle = Boolean(entry.title && (isLeftModal || isRightModal));
-
-  const titlePlacement = isTopModalPosition ? 'attached-bottom' : 'attached-top';
   const titleId = `modal-title-${entry.id}`;
 
   const baseZIndex = Z_INDEX.MODAL + stackIndex * 2;
@@ -144,31 +137,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     };
   }, [closeModal, entry.id, isTopModal]);
 
-  useLayoutEffect(() => {
-    if (!shellRef.current || !shouldRenderAttachedTitle) {
-      setShellWidth(null);
-      return;
-    }
-
-    function updateWidth() {
-      const nextWidth = shellRef.current?.offsetWidth;
-      setShellWidth(Number.isFinite(nextWidth) ? nextWidth : null);
-    }
-
-    updateWidth();
-
-    if (typeof ResizeObserver !== 'function') {
-      return;
-    }
-
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(shellRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [entry.id, shouldRenderAttachedTitle]);
-
   if (!SpecificModalComponent) {
     return null;
   }
@@ -186,9 +154,9 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         isTopModal ? 'pointer-events-auto' : 'pointer-events-none'
       )}
     >
-      {isTopModal && (
+      {isTopModal ? (
         <motion.div
-          className={`fixed inset-0 bg-[#67e8f9] backdrop-blur-2xl`}
+          className="fixed inset-0 bg-white/60 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
           variants={BACKDROP_VARIANTS}
           initial="hidden"
@@ -196,14 +164,13 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
           exit="hidden"
           onClick={() => closeModal(null, entry.id)}
         />
-      )}
+      ) : null}
 
       <motion.div
         ref={modalRef}
         className={cn(
-          'relative flex max-w-full transform-gpu flex-col items-center',
-          !isCenterModal && 'w-full self-stretch sm:w-auto sm:self-auto',
-          shouldRenderAttachedTitle && isTopModalPosition && 'flex-col-reverse'
+          'relative flex max-w-full transform-gpu flex-col',
+          !isCenterModal && 'w-full self-stretch sm:w-auto sm:self-auto'
         )}
         style={{
           zIndex: modalZIndex,
@@ -214,36 +181,17 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         animate="visible"
         exit="exit"
       >
-        {shouldRenderAttachedTitle && (
-          <ModalTitle
-            title={entry.title}
-            close={(result) => closeModal(result, entry.id)}
-            titleId={titleId}
-            placement={titlePlacement}
-            className={isTopModalPosition ? '-mt-px' : '-mb-px'}
-            style={shellWidth ? { width: `${Math.round(shellWidth * 0.9)}px` } : undefined}
-          />
-        )}
-
         <div
-          ref={shellRef}
-          data-lenis-prevent
-          data-lenis-prevent-wheel
           className={cn(
             'relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden rounded-[16px] bg-[#fef3c7]'
+              ? 'overflow-hidden rounded-[16px] border border-black/10 bg-white/80'
               : 'overflow-visible rounded-[16px] border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isCenterModal && 'rounded-[16px] border border-[#f97316]',
-            isPanelChrome &&
-              isTopModalPosition &&
-              'w-full self-stretch rounded-t-none border-b border-[#f43f5e] sm:mt-2 sm:rounded-t-[16px] sm:border',
-            isPanelChrome &&
-              isBottomModalPosition &&
-              'w-full self-stretch rounded-b-none border-t border-[#c026d3] sm:mb-2 sm:rounded-b-[16px] sm:border',
+            isPanelChrome && isTopModalPosition && 'w-full self-stretch rounded-t-none sm:mt-2 sm:rounded-t-[16px]',
+            isPanelChrome && isBottomModalPosition && 'w-full self-stretch rounded-b-none sm:mb-2 sm:rounded-b-[16px]',
             isPanelChrome &&
               (isLeftModal || isRightModal) && [
-                'h-screen max-h-screen w-full self-stretch border border-[#f59e0b] sm:w-auto sm:self-auto',
+                'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
                 isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0',
               ]
           )}
@@ -252,9 +200,10 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             <SpecificModalComponent
               header={{
                 title: entry.title,
-                position: activePosition,
-                renderInside: shouldRenderEmbeddedTitle,
                 titleId,
+                position: activePosition,
+                actions: entry.headerActions,
+                showClose: entry.showClose,
               }}
               close={(result) => closeModal(result, entry.id)}
               data={entry.props}

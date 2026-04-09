@@ -8,6 +8,7 @@ import { EmptyState } from '@/features/shared/empty-state';
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
+import SegmentedControl from '@/features/shared/segmented-control';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   FOLLOW_STATUSES,
@@ -68,7 +69,7 @@ function SocialUserRow({ close, user, children }) {
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
   return (
-    <div className={`flex items-center justify-between gap-3 p-4 transition-colors`}>
+    <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4">
       <Link
         className="flex min-w-0 flex-1 items-center gap-2.5"
         href={`/account/${user.username || user.id}`}
@@ -81,8 +82,8 @@ function SocialUserRow({ close, user, children }) {
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
         />
         <div className="w-full">
-          <p className={`truncate text-sm font-semibold text-[#0f172a]`}>{user.displayName}</p>
-          <p className={`truncate text-[11px] text-black/70`}>@{user.username || 'user'}</p>
+          <p className={`truncate text-sm font-semibold`}>{user.displayName}</p>
+          <p className="truncate text-[11px] text-black/70">@{user.username || 'user'}</p>
         </div>
       </Link>
       {children}
@@ -317,82 +318,85 @@ export default function AccountSocialModal({ close, data, header }) {
   };
 
   return (
-    <Container className="max-h-[74vh] min-h-96 w-full sm:w-[500px]" header={header} close={close}>
+    <Container
+      className="max-h-[74vh] min-h-96 w-full sm:w-[500px]"
+      header={false}
+      close={close}
+      bodyClassName="p-0"
+      footer={{
+        left: (
+          <span className="text-xs text-black/70">
+            {list.length} {activeTab}
+          </span>
+        ),
+      }}
+    >
       <div className="flex h-full min-h-0 flex-col">
-        <div style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="grid gap-2">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={[
-                  'border border-transparent px-3 py-5 text-xs font-semibold tracking-wide uppercase transition',
-                  isActive ? `border-b-[#0284c7] text-[#0f172a]` : 'text-black/70',
-                ].join(' ')}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
+        <SegmentedControl
+          items={tabs}
+          value={activeTab}
+          onChange={setActiveTab}
+          className="w-full"
+          trackClassName="w-full h-11 m-1 p-1 border-none"
+          buttonClassName="flex-1 h-full justify-center tracking-wide uppercase text-[11px]"
+          activeClassName="text-white"
+          activeIndicatorClassName="bg-black"
+        />
         {isLoading ? (
           <div className="flex flex-col">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+            {Array.from({ length: 10 }, (_, index) => index + 1).map((item) => (
               <div
                 key={item}
-                className={`h-14 animate-pulse border border-b border-[#14b8a6] border-[#f59e0b] bg-[#99f6e4] last:border-none`}
-              />
+                className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                  <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+                  <div className="flex w-full flex-col gap-1.5">
+                    <div className="h-3 w-[60%] animate-pulse rounded-full bg-black/5" />
+                    <div className="h-2 w-[40%] animate-pulse rounded-full bg-black/5" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : activeErrorMessage ? (
           <EmptyState description={activeErrorMessage} className="h-full" />
         ) : list.length === 0 ? (
-          <EmptyState
-            title="Empty"
-            description={emptyDescription}
-            className={`h-full min-h-96 border border-[#14b8a6] bg-[#99f6e4]`}
-          />
+          <EmptyState title="Empty" description={emptyDescription} className="h-full min-h-96" />
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-96 flex-1 overflow-y-auto rounded-t-[12px]">
             {list.map((user) => (
               <SocialUserRow key={user.id} close={close} user={user}>
                 {activeTab === TABS.INBOX ? (
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="success"
                       onClick={() => handleAccept(user.id)}
                       disabled={actionState.userId === user.id}
-                      className="w-auto shrink-0 rounded-[10px] px-2 py-1 text-[11px]"
+                      className="border-success/15 bg-success/5 text-success hover:bg-success/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                     >
                       {actionState.userId === user.id && actionState.kind === 'accept' ? 'Accepting' : 'Accept'}
                     </Button>
                     <Button
-                      variant="destructive"
                       onClick={() => handleReject(user.id)}
                       disabled={actionState.userId === user.id}
-                      className="w-auto shrink-0 rounded-[10px] px-2 py-1 text-[11px]"
+                      className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                     >
                       {actionState.userId === user.id && actionState.kind === 'reject' ? 'Rejecting' : 'Reject'}
                     </Button>
                   </div>
                 ) : activeTab === TABS.FOLLOWING && isOwnProfile ? (
                   <Button
-                    variant="destructive"
                     onClick={() => handleUnfollow(user.id)}
                     disabled={actionState.userId === user.id}
-                    className="w-auto shrink-0 rounded-[10px] px-2 py-1 text-[11px]"
+                    className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                   >
                     {actionState.userId === user.id && actionState.kind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
                   </Button>
                 ) : activeTab === TABS.FOLLOWERS && isOwnProfile ? (
                   <Button
-                    variant="destructive"
                     onClick={() => handleRemoveFollower(user.id)}
                     disabled={actionState.userId === user.id}
-                    className="w-auto shrink-0 rounded-[10px] px-2 py-1 text-[11px]"
+                    className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                   >
                     {actionState.userId === user.id && actionState.kind === 'remove-follower' ? 'Removing' : 'Remove'}
                   </Button>

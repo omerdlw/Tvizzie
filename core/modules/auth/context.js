@@ -92,9 +92,28 @@ function isIgnorableSignOutError(error) {
     message.includes('invalid number of segments') ||
     message.includes('invalid or expired authentication token') ||
     message.includes('authentication token has been revoked') ||
-    message.includes('jwt expired')
+    message.includes('jwt expired') ||
+    message.includes('request timed out') ||
+    message.includes('timed out') ||
+    message.includes('timeout') ||
+    message.includes('network request failed') ||
+    message.includes('failed to fetch') ||
+    message.includes('fetch failed')
   );
 }
+
+const AUTH_FLOW_STATUS = Object.freeze({
+  login: Object.freeze({
+    priority: 110,
+    statusType: 'LOGIN',
+    themeType: 'LOGIN',
+  }),
+  logout: Object.freeze({
+    priority: 110,
+    statusType: 'LOGOUT',
+    themeType: 'LOGOUT',
+  }),
+});
 
 export function AuthProvider({ children, config = {} }) {
   const mergedConfig = useMemo(() => ({ ...DEFAULT_AUTH_CONFIG, ...config }), [config]);
@@ -116,6 +135,37 @@ export function AuthProvider({ children, config = {} }) {
       ...payload,
     });
   }, []);
+
+  const emitAuthFeedback = useCallback(
+    (flow, phase, overrides = {}) => {
+      const normalizedFlow = String(flow || '')
+        .trim()
+        .toLowerCase();
+      const normalizedPhase = String(phase || '')
+        .trim()
+        .toLowerCase();
+
+      if (!normalizedFlow || !normalizedPhase) {
+        return;
+      }
+
+      const config = AUTH_FLOW_STATUS[normalizedFlow] || null;
+
+      emitAuthEvent(EVENT_TYPES.AUTH_FEEDBACK, {
+        flow: normalizedFlow,
+        phase: normalizedPhase,
+        statusType: overrides.statusType || config?.statusType || normalizedFlow.trim().toUpperCase(),
+        themeType: overrides.themeType || config?.themeType || 'LOGIN',
+        priority: overrides.priority ?? config?.priority ?? 110,
+        ...(overrides.title != null ? { title: overrides.title } : {}),
+        ...(overrides.description != null ? { description: overrides.description } : {}),
+        ...(overrides.icon != null ? { icon: overrides.icon } : {}),
+        ...(overrides.duration != null ? { duration: overrides.duration } : {}),
+        ...(overrides.isOverlay != null ? { isOverlay: overrides.isOverlay } : {}),
+      });
+    },
+    [emitAuthEvent]
+  );
 
   const applySession = useCallback((nextSession, nextStatus = null) => {
     const normalizedSession = normalizeSession(nextSession);
@@ -408,16 +458,35 @@ export function AuthProvider({ children, config = {} }) {
       const identifier = resolveSignInIdentifier(credentials);
 
       setLoadingState();
+      emitAuthFeedback('login', 'start', {
+        description:
+          provider === 'google' ? 'Redirecting to Google sign-in' : 'Checking credentials and preparing session',
+        title: 'Signing In',
+      });
 
       try {
         const signInResult = await adapter.signIn(credentials, getAdapterContext());
 
         if (isPendingSignInResult(signInResult)) {
+          if (signInResult?.requiresVerification) {
+            emitAuthFeedback('login', 'clear');
+          }
+          if (signInResult?.requiresRedirect && typeof window !== 'undefined') {
+            window.setTimeout(() => {
+              emitAuthFeedback('login', 'clear');
+            }, 12000);
+          }
+
           clearSession();
           return signInResult;
         }
 
         const resolvedSession = applySession(signInResult);
+
+        if (!resolvedSession?.user) {
+          emitAuthFeedback('login', 'clear');
+          return resolvedSession;
+        }
 
         emitSessionEvent(EVENT_TYPES.AUTH_SIGN_IN, resolvedSession);
 
@@ -432,6 +501,8 @@ export function AuthProvider({ children, config = {} }) {
 
         return resolvedSession;
       } catch (error) {
+        emitAuthFeedback('login', 'failure');
+
         logAuthAuditEvent({
           eventType: 'failed-attempt',
           status: 'failure',
@@ -448,7 +519,16 @@ export function AuthProvider({ children, config = {} }) {
         throw setAuthError(error, 'Sign in failed');
       }
     },
-    [applySession, clearSession, emitSessionEvent, getAdapterContext, getAdapterMethod, setAuthError, setLoadingState]
+    [
+      applySession,
+      clearSession,
+      emitAuthFeedback,
+      emitSessionEvent,
+      getAdapterContext,
+      getAdapterMethod,
+      setAuthError,
+      setLoadingState,
+    ]
   );
 
   const signUp = useCallback(
@@ -487,6 +567,10 @@ export function AuthProvider({ children, config = {} }) {
         reason === 'delete-account';
 
       setLoadingState();
+      emitAuthFeedback('logout', 'start', {
+        description: 'Ending active session',
+        title: 'Signing Out',
+      });
 
       try {
         if (adapter?.signOut) {
@@ -496,6 +580,7 @@ export function AuthProvider({ children, config = {} }) {
         }
       } catch (error) {
         if (!isIgnorableSignOutError(error)) {
+          emitAuthFeedback('logout', 'failure');
           signOutError = setAuthError(error, 'Sign out failed');
         }
       }
@@ -509,13 +594,17 @@ export function AuthProvider({ children, config = {} }) {
         user: null,
       });
 
+      if (!previousSession?.user && reason !== 'delete-account') {
+        emitAuthFeedback('logout', 'clear');
+      }
+
       if (signOutError) {
         throw signOutError;
       }
 
       return true;
     },
-    [clearSession, emitAuthEvent, getAdapterContext, setAuthError, setLoadingState]
+    [clearSession, emitAuthEvent, emitAuthFeedback, getAdapterContext, setAuthError, setLoadingState]
   );
 
   const updateProfile = useCallback(

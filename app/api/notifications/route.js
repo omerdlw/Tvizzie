@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { deleteAllUserNotifications } from '@/core/services/browser/browser-data.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { NOTIFICATION_TYPE_SET } from '@/core/services/notifications/notifications.constants';
@@ -105,7 +106,16 @@ export async function DELETE(request) {
   try {
     const authContext = await requireAuthenticatedRequest(request);
     const { searchParams } = new URL(request.url);
+    const action = normalizeValue(searchParams.get('action'));
     const notificationId = normalizeValue(searchParams.get('notificationId'));
+
+    if (action === 'delete-all') {
+      await deleteAllUserNotifications(authContext.userId);
+      publishUserEvent(authContext.userId, 'notifications', {
+        reason: 'delete-all',
+      });
+      return NextResponse.json({ success: true });
+    }
 
     if (!notificationId) {
       return NextResponse.json({ error: 'notificationId is required' }, { status: 400 });

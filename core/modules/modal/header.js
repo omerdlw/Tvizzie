@@ -92,9 +92,11 @@ function resolveNotificationsHeader() {
   };
 }
 
-function resolveReviewEditorHeader() {
+function resolveReviewEditorHeader(config = {}) {
+  const hasExistingReview = Boolean(config?.data?.review);
+
   return {
-    title: null,
+    title: hasExistingReview ? 'Edit review' : 'Write review',
   };
 }
 
@@ -120,5 +122,7 @@ export function resolveModalHeader(modalType, config = {}) {
 
   return {
     title: header.title ?? config?.title ?? fallbackHeader.title ?? null,
+    actions: header.actions ?? config?.actions ?? fallbackHeader.actions ?? null,
+    showClose: header.showClose ?? config?.showClose ?? fallbackHeader.showClose ?? true,
   };
 }

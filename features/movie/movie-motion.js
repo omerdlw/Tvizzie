@@ -7,19 +7,29 @@ import { cn } from '@/core/utils';
 
 const SECTION_VIEWPORT = {
   once: true,
-  amount: 0.2,
-  margin: '0px 0px -12% 0px',
+  amount: 0.18,
+  margin: '0px 0px -10% 0px',
 };
 
 const REVEAL_TIMING = Object.freeze({
-  reducedDuration: 0.18,
-  defaultDuration: 0.64,
-  sidebarDuration: 0.72,
-  heroDuration: 0.66,
-  sectionDuration: 0.68,
+  reducedDuration: 0.22,
+  defaultDuration: 0.72,
+  sidebarDuration: 0.78,
+  heroDuration: 0.72,
+  sectionDuration: 0.76,
 });
 
-const REVEAL_BLUR = 7;
+const REVEAL_SYNC = Object.freeze({
+  delayScale: 0.9,
+  maxDelay: 0.68,
+  phaseLead: Object.freeze({
+    sidebar: 0.03,
+    hero: 0.08,
+    section: 0.12,
+  }),
+});
+
+const REVEAL_BLUR = 5;
 
 function buildAxisOffset(axis, distance) {
   if (axis === 'x') {
@@ -29,11 +39,58 @@ function buildAxisOffset(axis, distance) {
   return { y: distance };
 }
 
-function buildRevealTransition({ delay, duration, reduceMotion }) {
+function resolveSynchronizedDelay(delay, phase, reduceMotion) {
+  if (reduceMotion) {
+    return 0;
+  }
+
+  const lead = REVEAL_SYNC.phaseLead[phase] ?? 0;
+  const syncedDelay = lead + delay * REVEAL_SYNC.delayScale;
+
+  return Math.min(REVEAL_SYNC.maxDelay, Math.max(0, syncedDelay));
+}
+
+function buildRevealTransition({ delay, duration, phase, reduceMotion }) {
+  const syncedDelay = resolveSynchronizedDelay(delay, phase, reduceMotion);
+
+  if (reduceMotion) {
+    return {
+      duration: REVEAL_TIMING.reducedDuration,
+      delay: 0,
+      ease: EASING.EASE_OUT,
+    };
+  }
+
   return {
-    duration: reduceMotion ? REVEAL_TIMING.reducedDuration : duration,
-    delay: reduceMotion ? 0 : delay,
-    ease: EASING.SMOOTH,
+    opacity: {
+      duration: Math.max(0.34, duration * 0.9),
+      delay: syncedDelay,
+      ease: EASING.EASE_OUT,
+    },
+    filter: {
+      duration: Math.max(0.3, duration * 0.72),
+      delay: syncedDelay,
+      ease: EASING.EASE_OUT,
+    },
+    scale: {
+      duration: Math.max(0.36, duration * 0.98),
+      delay: syncedDelay,
+      ease: EASING.SMOOTH,
+    },
+    x: {
+      type: 'spring',
+      stiffness: 165,
+      damping: 32,
+      mass: 1,
+      delay: syncedDelay,
+    },
+    y: {
+      type: 'spring',
+      stiffness: 165,
+      damping: 32,
+      mass: 1,
+      delay: syncedDelay,
+    },
   };
 }
 
@@ -47,16 +104,18 @@ function MovieReveal({
   distance = 30,
   duration = REVEAL_TIMING.defaultDuration,
   once = true,
+  phase = 'section',
 }) {
   const reduceMotion = useReducedMotion();
   const motionDistance = direction * distance;
   const initial = reduceMotion
     ? { opacity: 0 }
-    : { opacity: 0, filter: `blur(${REVEAL_BLUR}px)`, ...buildAxisOffset(axis, motionDistance) };
+    : { opacity: 0, scale: 0.992, filter: `blur(${REVEAL_BLUR}px)`, ...buildAxisOffset(axis, motionDistance) };
   const target = reduceMotion
     ? { opacity: 1 }
     : {
         opacity: 1,
+        scale: 1,
         filter: 'blur(0px)',
         ...buildAxisOffset(axis, 0),
         transitionEnd: {
@@ -65,7 +124,7 @@ function MovieReveal({
           willChange: 'auto',
         },
       };
-  const transition = buildRevealTransition({ delay, duration, reduceMotion });
+  const transition = buildRevealTransition({ delay, duration, phase, reduceMotion });
   const style = reduceMotion ? undefined : { willChange: 'transform, opacity, filter' };
 
   if (animateOnView) {
@@ -99,6 +158,7 @@ export function MovieSidebarReveal({ children, className = '', delay = 0 }) {
       distance={34}
       delay={delay}
       duration={REVEAL_TIMING.sidebarDuration}
+      phase="sidebar"
     >
       {children}
     </MovieReveal>
@@ -107,22 +167,30 @@ export function MovieSidebarReveal({ children, className = '', delay = 0 }) {
 
 export function MovieHeroReveal({ children, className = '', delay = 0 }) {
   return (
-    <MovieReveal className={className} axis="y" distance={28} delay={delay} duration={REVEAL_TIMING.heroDuration}>
+    <MovieReveal
+      className={className}
+      axis="y"
+      distance={26}
+      delay={delay}
+      duration={REVEAL_TIMING.heroDuration}
+      phase="hero"
+    >
       {children}
     </MovieReveal>
   );
 }
 
-export function MovieSectionReveal({ children, className = '', delay = 0, once = true }) {
+export function MovieSectionReveal({ children, className = '', delay = 0, once = true, animateOnView = true }) {
   return (
     <MovieReveal
       className={className}
-      animateOnView={false}
+      animateOnView={animateOnView}
       axis="y"
-      distance={30}
+      distance={26}
       delay={delay}
       duration={REVEAL_TIMING.sectionDuration}
       once={once}
+      phase="section"
     >
       {children}
     </MovieReveal>
@@ -132,17 +200,17 @@ export function MovieSectionReveal({ children, className = '', delay = 0, once =
 export function MovieSectionSkeleton({ className = '' }) {
   return (
     <div className={cn('mt-20 flex w-full flex-col space-y-3 p-4', className)}>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
-      <div className="h-4 w-full animate-pulse rounded-[12px] bg-black/5"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
     </div>
   );
 }

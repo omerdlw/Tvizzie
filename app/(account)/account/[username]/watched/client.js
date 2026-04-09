@@ -2,14 +2,42 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { filterCollectionItems, showAccountErrorToast } from '@/features/account/account-hook-utils';
-import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { getMediaTitle } from '@/features/account/utils';
-import { logDataError } from '@/core/utils/errors';
+import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
 import WatchedView from './view';
+
+function showAccountLoadError(toast, error, fallbackMessage) {
+  if (isPermissionDeniedError(error)) {
+    return false;
+  }
+
+  toast.error(error?.message || fallbackMessage);
+  return true;
+}
+
+function removeCollectionItem(items, itemToRemove) {
+  const removedItemId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
+  const removedMediaType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
+    .trim()
+    .toLowerCase();
+
+  return items.filter((currentItem) => {
+    if (itemToRemove?.mediaKey && currentItem?.mediaKey) {
+      return currentItem.mediaKey !== itemToRemove.mediaKey;
+    }
+
+    const currentItemId = String(currentItem?.entityId || currentItem?.id || '').trim();
+    const currentMediaType = String(currentItem?.media_type || currentItem?.entityType || '')
+      .trim()
+      .toLowerCase();
+
+    return currentItemId !== removedItemId || currentMediaType !== removedMediaType;
+  });
+}
 
 export default function Client({
   currentPage = 1,
@@ -95,7 +123,7 @@ export default function Client({
           setIsWatchedLoading(false);
           logDataError('[Account] Watched could not be loaded:', error);
           setLoadError('Watched could not be loaded right now.');
-          showAccountErrorToast(toast, error, 'Watched could not be loaded');
+          showAccountLoadError(toast, error, 'Watched could not be loaded');
         },
       }
     );
@@ -120,7 +148,7 @@ export default function Client({
 
       setWatchedItems((currentItems) => {
         previousItems = currentItems;
-        return filterCollectionItems(currentItems, item);
+        return removeCollectionItem(currentItems, item);
       });
 
       try {

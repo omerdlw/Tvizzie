@@ -56,7 +56,7 @@ export default function ReviewComposer({
           <Textarea
             maxLength={800}
             value={reviewText}
-            className="min-h-[190px] w-full resize-none border border-[#0284c7] bg-[#dbeafe] p-4 leading-normal text-[#0f172a] transition outline-none placeholder:text-[#64748b]"
+            className="min-h-[190px] w-full resize-none border border-[#0284c7] bg-[#dbeafe] p-4 leading-normal transition outline-none placeholder:text-[#64748b]"
             placeholder={`Add your thoughts about ${title} (optional)`}
             onChange={(event) => {
               const nextValue = event.target.value;

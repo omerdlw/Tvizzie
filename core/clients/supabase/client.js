@@ -176,6 +176,8 @@ export async function terminateBrowserSession({
 
   const client = clientInstance || (performNetworkSignOut ? createClient() : null);
 
+  let signOutError = null;
+
   if (performNetworkSignOut && client?.auth?.signOut) {
     try {
       if (scope === 'local') {
@@ -185,7 +187,7 @@ export async function terminateBrowserSession({
       }
     } catch (error) {
       if (!isIgnorableSignOutError(error)) {
-        throw error;
+        signOutError = error;
       }
     }
   }
@@ -193,6 +195,10 @@ export async function terminateBrowserSession({
   await clearBrowserSupabaseAuthState({
     clearServer,
   });
+
+  if (signOutError) {
+    throw signOutError;
+  }
 }
 
 export async function forceClearBrowserSupabaseAuthState() {

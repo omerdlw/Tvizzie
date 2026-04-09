@@ -10,6 +10,8 @@ import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 
 const NOTIFICATION_LIMIT = 50;
+const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 3000;
+const NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
 
 async function fetchNotifications(userId, options = {}) {
   if (!userId) {
@@ -72,6 +74,8 @@ export function subscribeToNotifications(userId, callback, options = {}) {
 
   const unsubscribeData = createPollingSubscription(() => fetchNotifications(userId, options), callback, {
     ...options,
+    hiddenIntervalMs: options.hiddenIntervalMs ?? NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+    intervalMs: options.intervalMs ?? NOTIFICATION_SUBSCRIPTION_INTERVAL_MS,
     subscriptionKey: getNotificationsListSubscriptionKey(userId, options),
   });
 
@@ -93,6 +97,8 @@ export function subscribeToUnreadCount(userId, callback, options = {}) {
 
   const unsubscribeData = createPollingSubscription(() => fetchUnreadCount(userId), callback, {
     ...options,
+    hiddenIntervalMs: options.hiddenIntervalMs ?? NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+    intervalMs: options.intervalMs ?? NOTIFICATION_SUBSCRIPTION_INTERVAL_MS,
     subscriptionKey: getUnreadCountSubscriptionKey(userId),
   });
 
@@ -139,6 +145,19 @@ export async function deleteNotification(userId, notificationId) {
     method: 'DELETE',
     query: {
       notificationId,
+    },
+  });
+
+  refreshNotificationSubscriptions(userId);
+}
+
+export async function deleteAllNotifications(userId) {
+  if (!userId) return;
+
+  await requestApiJson('/api/notifications', {
+    method: 'DELETE',
+    query: {
+      action: 'delete-all',
     },
   });
 

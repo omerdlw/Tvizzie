@@ -8,9 +8,7 @@ function CloseButton({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={
-        'inline-flex size-7 shrink-0 cursor-pointer items-center justify-center text-[#9d174d] transition-colors'
-      }
+      className="bg-primary inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-black/10 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>
@@ -28,8 +26,8 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-2 border border-[#0284c7] bg-[#bfdbfe] px-3 py-2 backdrop-blur-xl',
-        placement === 'embedded' && 'w-full border-x-0 border-t-0 border-[#0284c7] bg-[#dbeafe] backdrop-blur-none!',
+        'bg-primary flex items-center justify-between gap-2 border border-black/10 px-3 py-2',
+        placement === 'embedded' && 'w-full border-x-0 border-t-0',
         isAttachedTop && 'max-w-full rounded-t-[30px] border-b-0',
         isAttachedBottom && 'max-w-full border-t-0',
         className
@@ -37,7 +35,7 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
       style={style}
     >
       <div className="min-w-0 flex-1 px-1 sm:px-2">
-        <h2 id={titleId} className={'text-base font-semibold tracking-wide text-[#0c4a6e]'}>
+        <h2 id={titleId} className="text-base font-semibold tracking-wide text-black">
           {title}
         </h2>
       </div>

@@ -2,8 +2,10 @@
 
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import Icon from '@/ui/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from './styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, WARNING_ACTION_TONE_CLASS } from '@/core/constants/index';
 
 const PROFILE_FOLLOW_ACTIONS = Object.freeze({
   follow: {
@@ -32,13 +34,13 @@ function actionClass({ tone = 'muted', className } = {}) {
   return getNavActionClass({
     variant:
       tone === 'danger'
-        ? 'border-[#b91c1c] bg-[#fecaca] text-[#7f1d1d]   '
+        ? DESTRUCTIVE_ACTION_TONE_CLASS
         : tone === 'success'
-          ? 'border-[#15803d] bg-[#bbf7d0] text-[#14532d]   '
+          ? SUCCESS_ACTION_TONE_CLASS
           : tone === 'info'
-            ? 'border-[#0369a1] bg-[#bae6fd] text-[#0c4a6e]   '
+            ? INFO_ACTION_TONE_CLASS
             : tone === 'warning'
-              ? 'border-[#a16207] bg-[#fef08a] text-[#713f12]   '
+              ? WARNING_ACTION_TONE_CLASS
               : tone === 'active'
                 ? NAV_ACTION_STYLES.active
                 : NAV_ACTION_STYLES.muted,
@@ -217,28 +219,6 @@ export default function AccountAction(props) {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className={NAV_ACTION_STYLES.row}>
-        <button
-          type="button"
-          onClick={() => {
-            if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
-              onSignIn();
-              return;
-            }
-
-            window.location.assign(guestHref);
-          }}
-          className={actionClass()}
-        >
-          <Icon icon={guestIcon} size={NAV_ACTION_STYLES.icon} />
-          {guestLabel}
-        </button>
-      </div>
-    );
-  }
-
   if (!isOwner && showProfileFollowAction && typeof onFollow === 'function') {
     const followAction = getProfileFollowAction(followState);
 
@@ -266,6 +246,28 @@ export default function AccountAction(props) {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className={NAV_ACTION_STYLES.row}>
+        <button
+          type="button"
+          onClick={() => {
+            if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
+              onSignIn();
+              return;
+            }
+
+            window.location.assign(guestHref);
+          }}
+          className={actionClass()}
+        >
+          <Icon icon={guestIcon} size={NAV_ACTION_STYLES.icon} />
+          {guestLabel}
+        </button>
+      </div>
+    );
+  }
+
   if (isOwner) {
     const showListActions = typeof onEditList === 'function' && typeof onDeleteList === 'function';
     const shouldShowInboxAction = canManageRequests && inboxCount > 0 && typeof onOpenInbox === 'function';
@@ -278,11 +280,11 @@ export default function AccountAction(props) {
       <div className={NAV_ACTION_STYLES.row}>
         {showListActions ? (
           <>
-            <button type="button" onClick={onEditList} className={actionClass()}>
+            <button type="button" onClick={() => onEditList?.()} className={actionClass()}>
               <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
               Edit List
             </button>
-            <button type="button" onClick={onDeleteList} className={actionClass({ tone: 'danger' })}>
+            <button type="button" onClick={() => onDeleteList?.()} className={actionClass({ tone: 'danger' })}>
               <Icon icon="solar:trash-bin-trash-bold" size={NAV_ACTION_STYLES.icon} />
               Delete List
             </button>

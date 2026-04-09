@@ -1,6 +1,6 @@
-import AccountActivityFeed from '@/features/account/sections/activity-feed';
-import AccountPageShell from '@/features/account/page-shell';
-import AccountSectionState from '@/features/account/section-state';
+import AccountActivityFeed from '@/features/account/feeds/activity';
+import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountSectionState } from '@/features/account/profile/section-wrapper';
 import Registry from './registry';
 
 export default function ActivityView({

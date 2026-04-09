@@ -124,7 +124,7 @@ export default function SegmentedControl({
               onClick={() => onChange?.(itemKey)}
               whileTap={reduceMotion ? undefined : { scale: 0.985 }}
               className={cn(
-                'relative isolate cursor-pointer overflow-hidden rounded-[9px] px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
+                'relative isolate cursor-pointer rounded-[9px] px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
                 isActive ? activeClassName : inactiveClassName,
                 buttonClassName,
                 typeof getButtonClassName === 'function' ? getButtonClassName(item, isActive) : null

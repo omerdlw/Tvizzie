@@ -108,8 +108,8 @@ export function Icon({ icon, isStackHovered, style }) {
     <motion.div
       className={cn(
         'center size-12 rounded-[12px] transition-colors duration-(--motion-duration-normal)',
-        'border border-black/5 bg-black/5',
-        isStackHovered && !hasCustomBackground && 'border-black/10 bg-black/10',
+        'bg-black/5',
+        isStackHovered && !hasCustomBackground && 'bg-black/10',
         isStackHovered && !hasCustomColor && 'text-black',
         className
       )}

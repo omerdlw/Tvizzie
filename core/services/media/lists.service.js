@@ -820,9 +820,21 @@ export async function toggleListLike({ ownerId, listId, userId }) {
   const isNowLiked = rpcRow?.is_liked === true;
 
   if (isNowLiked) {
+    const listOwnerUsername = listResult.data?.payload?.ownerSnapshot?.username || null;
+    const listTitle = listResult.data.title || listResult.data?.payload?.title || 'Untitled List';
+    const listSlug = listResult.data.slug || listId;
+
     fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
       listOwnerId: ownerId,
       listId,
+      listSlug,
+      listTitle,
+      subjectId: listId,
+      subjectOwnerId: ownerId,
+      subjectOwnerUsername: listOwnerUsername,
+      subjectSlug: listSlug,
+      subjectTitle: listTitle,
+      subjectType: 'list',
     });
 
     fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {

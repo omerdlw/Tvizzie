@@ -142,30 +142,44 @@ export const Z_INDEX = {
 
 export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
-    icon: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
-    description: 'text-[#7f1d1d]',
-    surface: 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
-    title: 'text-[#0f172a]',
+    icon: 'border border-white/10 bg-white/10 text-white/70',
+    description: 'text-white/70',
+    surface: 'border border-error bg-error text-white',
+    title: 'text-white',
   }),
   info: Object.freeze({
-    surface: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
-    icon: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
-    title: 'text-[#0f172a]',
-    description: 'text-[#0c4a6e]',
+    icon: 'border border-white/10 bg-white/10 text-white/70',
+    description: 'text-white/70',
+    surface: 'border border-info bg-info text-white',
+    title: 'text-white',
   }),
   success: Object.freeze({
-    surface: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
-    icon: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
-    title: 'text-[#0f172a]',
-    description: 'text-[#14532d]',
+    icon: 'border border-white/10 bg-white/10 text-white/70',
+    description: 'text-white/70',
+    surface: 'border border-success bg-success text-white',
+    title: 'text-white',
   }),
   warning: Object.freeze({
-    surface: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
-    icon: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
-    title: 'text-[#0f172a]',
-    description: 'text-[#78350f]',
+    icon: 'border border-white/10 bg-white/10 text-white/70',
+    description: 'text-white/70',
+    surface: 'border border-warning bg-warning text-white',
+    title: 'text-white',
   }),
 });
+
+export const DESTRUCTIVE_ACTION_TONE_CLASS =
+  'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-white hover:border-error';
+export const MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS =
+  'border border-black/15 bg-white text-error hover:border-error hover:bg-error hover:text-white';
+
+export const INFO_ACTION_TONE_CLASS =
+  'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-white hover:border-info';
+
+export const SUCCESS_ACTION_TONE_CLASS =
+  'border border-success/20 bg-success/20 text-success hover:bg-success hover:text-white hover:border-success';
+
+export const WARNING_ACTION_TONE_CLASS =
+  'border border-warning/20 bg-warning/20 text-warning hover:bg-warning hover:text-white hover:border-warning';
 
 export const API_URL = '';
 export const AUTH_API_URL = '';

@@ -5,7 +5,7 @@ import { MOTION_CSS_VARIABLES } from '@/core/constants';
 import { getSiteUrl } from '@/core/utils/site-url';
 import { cn } from '@/core/utils';
 
-import { geist, zuume } from '../fonts';
+import { geist, geistMono, zuume } from '../fonts';
 import './globals.css';
 import { AppProviders } from './providers';
 
@@ -55,6 +55,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={cn(
           'h-auto w-full bg-white fill-black font-normal text-black antialiased',
+          geistMono.variable,
           geist.className,
           zuume.variable
         )}

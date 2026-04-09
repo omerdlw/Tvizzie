@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
+import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '../context';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
+import { buildNavSignInHref, normalizeNavPathname } from '../utils';
 
 function blurActiveElement() {
   if (typeof document === 'undefined') return;
@@ -18,11 +20,33 @@ export function useNavigationCore() {
   const pathname = usePathname();
   const router = useRouter();
   const { clearGuardConfirmation, setGuardConfirmation } = useNavigationActions();
+  const { isAuthenticated, isReady } = useAuth();
   const previousPathRef = useRef(pathname);
 
   const cancelNavigation = useCallback(() => {
     clearGuardConfirmation();
   }, [clearGuardConfirmation]);
+
+  const resolveNavigationHref = useCallback(
+    (href) => {
+      const normalizedHref = typeof href === 'string' ? href.trim() : '';
+
+      if (!normalizedHref) {
+        return '';
+      }
+
+      if (!isReady || isAuthenticated) {
+        return normalizedHref;
+      }
+
+      if (normalizeNavPathname(normalizedHref) === '/account') {
+        return buildNavSignInHref(normalizedHref);
+      }
+
+      return normalizedHref;
+    },
+    [isAuthenticated, isReady]
+  );
 
   const openGuardConfirmation = useCallback(
     ({ href, from, message }) => {
@@ -49,27 +73,33 @@ export function useNavigationCore() {
 
   const navigate = useCallback(
     async (href, { force = false } = {}) => {
+      const targetHref = resolveNavigationHref(href);
+
+      if (!targetHref) {
+        return false;
+      }
+
       const from = pathname;
 
       if (!force) {
-        const guardResult = await checkGuards(href, from);
+        const guardResult = await checkGuards(targetHref, from);
 
         if (guardResult.blocked) {
           blurActiveElement();
-          openGuardConfirmation({ href, from, message: guardResult.message });
+          openGuardConfirmation({ href: targetHref, from, message: guardResult.message });
           return false;
         }
       }
 
       clearGuardConfirmation();
       blurActiveElement();
-      NAV_EVENT_HANDLERS.navigateStart(href, from);
-      router.push(href);
-      NAV_EVENT_HANDLERS.navigate(href, from);
+      NAV_EVENT_HANDLERS.navigateStart(targetHref, from);
+      router.push(targetHref);
+      NAV_EVENT_HANDLERS.navigate(targetHref, from);
 
       return true;
     },
-    [clearGuardConfirmation, openGuardConfirmation, pathname, router]
+    [clearGuardConfirmation, openGuardConfirmation, pathname, resolveNavigationHref, router]
   );
 
   useEffect(() => {

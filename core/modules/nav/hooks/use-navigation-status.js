@@ -13,6 +13,7 @@ import { Button } from '@/ui/elements';
 import { Spinner } from '@/ui/loadings/spinner';
 
 import NotFoundAction from '../actions/not-found-action';
+import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 
 const STATUS_PRIORITY = Object.freeze({
   ACCOUNT_DELETE: 115,
@@ -180,7 +181,7 @@ function ErrorActions({ onRetry, onRefresh }) {
   return (
     <div className="mt-2.5 flex items-center gap-2">
       <Button
-        className="center w-full cursor-pointer rounded-[12px] border border-[#dc2626] bg-[#fecaca] px-4 py-2 text-sm font-semibold text-[#7f1d1d]"
+        variant="destructive"
         onClick={(event) => {
           event.stopPropagation();
           onRetry();
@@ -190,7 +191,7 @@ function ErrorActions({ onRetry, onRefresh }) {
       </Button>
 
       <Button
-        className="center w-full cursor-pointer rounded-[12px] border border-[#dc2626] bg-[#fecaca] px-4 py-2 text-sm font-semibold text-[#7f1d1d]"
+        className={getNavActionClass({ tone: 'danger' })}
         onClick={(event) => {
           event.stopPropagation();
           onRefresh();
@@ -260,7 +261,7 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
 }
 
 function createProgressIcon() {
-  return <Spinner size={18} className={'text-[#0f766e]'} />;
+  return <Spinner size={24} />;
 }
 
 export function useNavigationStatus() {

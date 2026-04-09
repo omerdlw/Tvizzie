@@ -35,14 +35,14 @@ export default function ListPreviewComposition({
             {getPreviewImage(item) ? (
               <img src={getPreviewImage(item)} alt={item.title || item.name || 'Poster'} className={imageClassName} />
             ) : (
-              <div className="center h-full w-full text-[#0f172a]">
+              <div className="center h-full w-full">
                 <Icon icon="solar:videocamera-record-bold" size={16} />
               </div>
             )}
           </div>
         ))
       ) : (
-        <div className="center col-span-3 h-full w-full text-[#0f172a]">
+        <div className="center col-span-3 h-full w-full">
           <Icon icon={emptyIcon} size={20} />
         </div>
       )}

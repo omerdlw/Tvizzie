@@ -1,6 +1,7 @@
 'use client';
 
-import { isReservedAccountSegment } from '@/features/account/route-segments';
+import { isReservedAccountSegment } from '@/features/account/utils';
+import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import { isValidUrl } from '@/core/utils';
 import { isMovieMediaType } from '@/core/utils/media';
 import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
@@ -15,6 +16,8 @@ import { requestApiJson } from '@/core/services/shared/api-request.service';
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 24;
 const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
+const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
+const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
 
 function normalizeOptionalUrl(value) {
   const normalized = cleanString(value);
@@ -220,6 +223,8 @@ export function primeUserAccount(userId, profile) {
 export function subscribeToUserAccount(userId, callback, options = {}) {
   return createPollingSubscription(() => getUserAccount(userId), callback, {
     ...options,
+    hiddenIntervalMs: options.hiddenIntervalMs ?? ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+    intervalMs: options.intervalMs ?? ACCOUNT_SUBSCRIPTION_INTERVAL_MS,
     subscriptionKey: getUserAccountSubscriptionKey(userId),
   });
 }
@@ -232,6 +237,17 @@ export async function ensureUserAccount(user = {}, options = {}) {
 
   if (!identity.id) {
     throw new Error('Authenticated user is required to bootstrap an account');
+  }
+
+  const existingProfile = await getUserAccount(identity.id).catch(() => null);
+
+  if (existingProfile?.id) {
+    const normalizedExistingProfile = normalizeAccountSnapshot(existingProfile);
+
+    if (normalizedExistingProfile) {
+      primeUserAccount(identity.id, normalizedExistingProfile);
+      return normalizedExistingProfile;
+    }
   }
 
   const payload = await requestApiJson('/api/account/profile', {
@@ -281,6 +297,57 @@ export async function updateUserAccount({ userId, updates = {} }) {
 
   primeUserAccount(userId, profile);
   return profile;
+}
+
+function normalizeMediaTarget(value) {
+  const normalized = cleanString(value).toLowerCase();
+
+  if (normalized === 'avatar') {
+    return 'avatar';
+  }
+
+  if (normalized === 'logo' || normalized === 'banner') {
+    return 'banner';
+  }
+
+  throw new Error('Media target must be avatar or logo');
+}
+
+export async function uploadAccountMediaFile({ file, target = 'avatar' }) {
+  if (!file || typeof file !== 'object') {
+    throw new Error('Select an image file');
+  }
+
+  const normalizedTarget = normalizeMediaTarget(target);
+  const formData = new FormData();
+
+  formData.set('target', normalizedTarget);
+  formData.set('file', file);
+
+  const response = await fetch('/api/account/media', {
+    method: 'POST',
+    credentials: 'include',
+    headers: createCsrfHeaders(),
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => ({ error: 'Image upload failed' }));
+
+  if (!response.ok) {
+    throw new Error(payload?.error || 'Image upload failed');
+  }
+
+  const url = cleanString(payload?.url);
+
+  if (!url) {
+    throw new Error('Image upload returned an invalid URL');
+  }
+
+  return {
+    bucket: cleanString(payload?.bucket) || null,
+    path: cleanString(payload?.path) || null,
+    url,
+  };
 }
 
 export async function deleteUsernameMapping(username) {

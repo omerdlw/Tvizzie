@@ -131,7 +131,7 @@ export function RegistryDebugPanel({ limit = 120 }) {
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-[1500] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2">
       <button
-        className="pointer-events-auto border border-[#0284c7] px-3 py-2 text-left text-xs font-medium text-[#0f172a]"
+        className="pointer-events-auto border border-[#0284c7] px-3 py-2 text-left text-xs font-medium"
         onClick={() => setIsOpen((prev) => !prev)}
         type="button"
       >
@@ -139,19 +139,19 @@ export function RegistryDebugPanel({ limit = 120 }) {
       </button>
 
       {isOpen && (
-        <div className="pointer-events-auto overflow-hidden border border-[#0284c7] text-[#0f172a] shadow-2xl">
+        <div className="pointer-events-auto overflow-hidden border border-[#0284c7] shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#0284c7] px-3 py-2">
             <span className="text-[11px] font-semibold tracking-wide">REGISTRY</span>
             <div className="flex items-center gap-1.5">
               <button
-                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium text-[#0f172a]"
+                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium"
                 onClick={handleCopy}
                 type="button"
               >
                 {copyLabel}
               </button>
               <button
-                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium text-[#0f172a]"
+                className="border border-[#0284c7] px-2 py-1 text-[10px] font-medium"
                 onClick={clearHistory}
                 type="button"
               >
@@ -162,7 +162,7 @@ export function RegistryDebugPanel({ limit = 120 }) {
 
           <div className="pointer-events-auto max-h-[70vh] overflow-auto overscroll-contain px-2 py-2">
             {items.length === 0 ? (
-              <div className="px-2 py-3 text-center text-xs text-[#0f172a]">
+              <div className="px-2 py-3 text-center text-xs">
                 {enabled ? 'Log bos' : 'Log kapali (captureHistory=false)'}
               </div>
             ) : (
@@ -171,14 +171,14 @@ export function RegistryDebugPanel({ limit = 120 }) {
 
                 return (
                   <div key={`${entry.timestamp || 0}-${index}`} className="mb-2 px-2 py-2 select-text">
-                    <div className="mb-1 text-[10px] text-[#0f172a]">{formatTimestamp(entry.timestamp)}</div>
+                    <div className="mb-1 text-[10px]">{formatTimestamp(entry.timestamp)}</div>
                     <div className="overflow-auto">
                       <div className="text-[11px] leading-4 break-words">{formatEntry(entry)}</div>
                     </div>
-                    {payloadText && <div className="mt-1 text-[10px] break-words text-[#0f172a]">{payloadText}</div>}
+                    {payloadText && <div className="mt-1 text-[10px] break-words">{payloadText}</div>}
                     {Array.isArray(entry.operations) && entry.operations.length > 0 && (
                       <div className="mt-2 border border-[#0284c7] p-1">
-                        <div className="mb-1 text-[10px] text-[#0f172a]">operations</div>
+                        <div className="mb-1 text-[10px]">operations</div>
                         <div className="max-h-28 overflow-auto pr-1">
                           {entry.operations.map((operation, operationIndex) => {
                             const operationPayloadText = formatPayload(operation.payload);
@@ -192,9 +192,7 @@ export function RegistryDebugPanel({ limit = 120 }) {
                                   {formatBatchOperation(operation, operationIndex)}
                                 </div>
                                 {operationPayloadText && (
-                                  <div className="mt-1 text-[10px] leading-4 break-words text-[#0f172a]">
-                                    {operationPayloadText}
-                                  </div>
+                                  <div className="mt-1 text-[10px] leading-4 break-words">{operationPayloadText}</div>
                                 )}
                               </div>
                             );

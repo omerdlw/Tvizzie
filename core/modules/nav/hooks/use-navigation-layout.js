@@ -37,14 +37,14 @@ function isAncestorPath(candidatePath, activePath) {
   return normalizedActivePath.startsWith(`${normalizedCandidate}/`);
 }
 
-function removeAncestorDuplicates(items = []) {
+function removeAncestorDuplicates(items = [], activePath = '') {
   if (!Array.isArray(items) || items.length <= 1) {
     return items;
   }
 
-  const activePath = items[0]?.path;
+  const resolvedActivePath = activePath || items[0]?.path;
 
-  if (!activePath) {
+  if (!resolvedActivePath) {
     return items;
   }
 
@@ -53,7 +53,7 @@ function removeAncestorDuplicates(items = []) {
       return true;
     }
 
-    return !isAncestorPath(item?.path, activePath);
+    return !isAncestorPath(item?.path, resolvedActivePath);
   });
 }
 
@@ -167,7 +167,10 @@ export function useNavigationLayout({ isHovered, navigationItems, activeItem } =
       const expandedItemsBase = activeItem?.isChild
         ? reorderItemsWithParentSectionFirst(itemsWithActiveItem, activeItem)
         : reorderedItems;
-      const expandedItems = removeInactiveLoadingItems(expandedItemsBase, activeItem);
+      const expandedItems = removeAncestorDuplicates(
+        removeInactiveLoadingItems(expandedItemsBase, activeItem),
+        activeItem?.path || pathname
+      );
       const expandedActiveIndex = expandedItems.findIndex((item) => isSameItem(item, activeItem));
 
       return {

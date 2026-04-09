@@ -4,8 +4,8 @@ import { useCallback } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/lists/list-creator-utils';
-import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/utils';
+import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { useAuth } from '@/core/modules/auth';
 import ListsView from './view';
 

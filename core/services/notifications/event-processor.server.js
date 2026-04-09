@@ -142,6 +142,18 @@ function mapEventToNotification(eventType, payload = {}, actor = {}) {
   return null;
 }
 
+function resolveNotificationSubject(eventType, payload = {}) {
+  if (eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED) {
+    return buildSubject({
+      ...payload,
+      subjectId: payload.listId || payload.subjectId,
+      subjectType: 'list',
+    });
+  }
+
+  return buildSubject(payload);
+}
+
 async function getUserProfile(admin, userId) {
   const normalizedUserId = normalizeValue(userId);
 
@@ -183,7 +195,7 @@ export async function processNotificationEvent({ actorUserId, eventType, payload
   }
 
   const nowIso = new Date().toISOString();
-  const subject = buildSubject(payload);
+  const subject = resolveNotificationSubject(normalizedEventType, payload);
   const title = `${actor.displayName} sent an update`;
 
   const result = await admin.from('notifications').insert({

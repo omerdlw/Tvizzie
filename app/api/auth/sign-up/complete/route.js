@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { isReservedAccountSegment } from '@/features/account/route-segments';
+import { isReservedAccountSegment } from '@/features/account/utils';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
 import { ensurePasswordAccountProfile } from '@/core/auth/servers/account/account-bootstrap.server';
 import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';

@@ -121,36 +121,34 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
             className="flex max-w-3xl flex-col gap-3"
           >
             <div className="flex items-center gap-3">
-              <span className="rounded-full border border-[#0284c7] bg-[#dbeafe] px-3 py-1 text-[10px] font-bold tracking-widest text-[#0f172a] uppercase backdrop-blur-sm">
+              <span className="rounded-full border border-[#0284c7] bg-[#dbeafe] px-3 py-1 text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm">
                 Featured Movie
               </span>
 
               {rating && (
-                <span className="flex items-center gap-1.5 rounded-full border border-[#0284c7] bg-[#dbeafe] px-2.5 py-1 text-sm font-semibold text-[#0f172a] backdrop-blur-sm">
+                <span className="flex items-center gap-1.5 rounded-full border border-[#0284c7] bg-[#dbeafe] px-2.5 py-1 text-sm font-semibold backdrop-blur-sm">
                   <Icon icon="solar:star-bold" size={14} className="text-yellow-400" />
                   {rating}
                 </span>
               )}
 
               {year && (
-                <span className="rounded-full border border-[#0284c7] bg-[#dbeafe] px-2.5 py-1 text-sm text-[#0f172a] backdrop-blur-sm">
+                <span className="rounded-full border border-[#0284c7] bg-[#dbeafe] px-2.5 py-1 text-sm backdrop-blur-sm">
                   {year}
                 </span>
               )}
             </div>
 
-            <h1 className="font-zuume text-3xl leading-none font-bold tracking-wide text-[#0f172a] uppercase sm:text-4xl md:text-6xl lg:text-7xl">
+            <h1 className="font-zuume text-3xl leading-none font-bold tracking-wide uppercase sm:text-4xl md:text-6xl lg:text-7xl">
               {title}
             </h1>
 
-            {overview && (
-              <p className="max-w-2xl text-base leading-relaxed text-[#0f172a] sm:text-lg md:text-xl">{overview}</p>
-            )}
+            {overview && <p className="max-w-2xl text-base leading-relaxed sm:text-lg md:text-xl">{overview}</p>}
 
             <div className="flex items-center gap-3 pt-2">
               <Link
                 href={href}
-                className="group flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold tracking-widest text-[#0f172a] uppercase transition-all duration-300"
+                className="group flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold tracking-widest uppercase transition-all duration-300"
               >
                 <Icon icon="solar:play-bold" size={16} className="transition-transform" />
                 Watch Now
@@ -158,7 +156,7 @@ export default function HeroSpotlight({ items = [], onSlideChange }) {
 
               <button
                 type="button"
-                className="flex items-center gap-2.5 rounded-full border border-[#0284c7] bg-[#dbeafe] px-6 py-3 text-sm font-semibold tracking-widest text-[#0f172a] uppercase backdrop-blur-sm transition-all duration-300"
+                className="flex items-center gap-2.5 rounded-full border border-[#0284c7] bg-[#dbeafe] px-6 py-3 text-sm font-semibold tracking-widest uppercase backdrop-blur-sm transition-all duration-300"
               >
                 <Icon icon="solar:plus-bold" size={16} />
                 Add to List

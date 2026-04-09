@@ -39,7 +39,7 @@ function getMediaSnapshot(media) {
 
 function getActionPalette(palette, active) {
   if (!active) {
-    return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
+    return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80 text-black/70 hover:text-black';
   }
 
   if (palette === 'like') {
@@ -357,7 +357,7 @@ export default function CollectionActions({ media }) {
       return;
     }
 
-    openModal('LIST_PICKER_MODAL', 'bottom', {
+    openModal('LIST_PICKER_MODAL', 'center', {
       data: {
         media: mediaSnapshot,
         userId: resolvedUserId,
@@ -365,20 +365,25 @@ export default function CollectionActions({ media }) {
     });
   }
 
+  const showLikeAction = state.watched;
+  const showWatchlistAction = !state.watched;
+
   return (
     <div className="flex flex-col gap-2">
-      <ActionButton
-        active={state.liked}
-        disabled={state.loadingLike || state.submittingLike}
-        icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
-        label={state.liked ? 'Liked' : 'Like'}
-        loading={state.loadingLike || state.submittingLike}
-        loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
-        onClick={handleLikeClick}
-        palette="like"
-      />
+      {showLikeAction ? (
+        <ActionButton
+          active={state.liked}
+          disabled={state.loadingLike || state.submittingLike}
+          icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+          label={state.liked ? 'Liked' : 'Like'}
+          loading={state.loadingLike || state.submittingLike}
+          loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
+          onClick={handleLikeClick}
+          palette="like"
+        />
+      ) : null}
 
-      <div className="grid grid-cols-1 gap-2 min-[460px]:grid-cols-2">
+      <div className={cn('grid grid-cols-1 gap-2', showWatchlistAction ? 'min-[460px]:grid-cols-2' : '')}>
         <ActionButton
           active={state.watched}
           disabled={state.loadingWatched || state.submittingWatched}
@@ -390,16 +395,20 @@ export default function CollectionActions({ media }) {
           palette="watched"
         />
 
-        <ActionButton
-          active={state.watchlist}
-          disabled={state.loadingWatchlist || state.submittingWatchlist}
-          icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-          label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-          loading={state.loadingWatchlist || state.submittingWatchlist}
-          loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
-          onClick={handleWatchlistClick}
-          palette="watchlist"
-        />
+        {showWatchlistAction ? (
+          <ActionButton
+            active={state.watchlist}
+            disabled={state.loadingWatchlist || state.submittingWatchlist}
+            icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+            label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+            loading={state.loadingWatchlist || state.submittingWatchlist}
+            loadingLabel={
+              state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
+            }
+            onClick={handleWatchlistClick}
+            palette="watchlist"
+          />
+        ) : null}
       </div>
 
       <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />

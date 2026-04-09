@@ -46,7 +46,9 @@ This document defines the current developer-facing architecture rules for the re
 - Auth provider/project binding belongs in `config/auth.config.js`.
 - Account/profile runtime state for the signed-in user belongs in `modules/account/`.
 - Account/profile page composition belongs in `features/account/`.
-- Reusable account nav/registry composition belongs in `features/account/account-registry-config.js`.
+- Reusable account nav/registry composition belongs in `features/account/registry-config.js`.
+- Account feed entrypoints should be organized per account subpage in `features/account/feeds/<subpage>.js`.
+- Overview preview sections belong in `features/account/overview/*` and should not host subpage-specific mechanics.
 - Account data fetching, persistence, feeds, lists, likes, watchlist, and related backend operations belong in `services/account/`, `services/media/`, `services/social/`, and adjacent service folders.
 - Route preload and signed-in account snapshot resolution belong in `services/account/account-route-data.server.js` and `services/account/current-account-snapshot.server.js`, not in `app/`.
 - Route-specific account entrypoints belong in `app/(account)/account/**`.

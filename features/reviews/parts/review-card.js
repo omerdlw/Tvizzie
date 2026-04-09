@@ -98,7 +98,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
       <Button
         variant="destructive-icon"
         disabled={disabled}
-        className="size-8 rounded-[12px] border border-[#dc2626]/20 bg-[#fecaca]/70 text-[#991b1b] transition-colors hover:border-[#dc2626]/35 hover:bg-[#fecaca]"
+        className="size-8 rounded-[12px]"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -152,21 +152,23 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group inline-flex w-full items-center justify-between gap-3 border border-[#ca8a04] bg-[#fef3c7] px-4 py-3 text-left transition',
-        compact ? 'max-w-xl' : 'mt-2.5'
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[12px] border border-black/10 px-4 py-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-widest text-[#92400e] uppercase">
+        <span className="block text-[11px] font-semibold tracking-wider text-black/50 uppercase transition-colors group-hover:text-black/70">
           Spoiler warning
         </span>
-        <span className="mt-1 block text-sm leading-6 text-[#78350f]">
+        <span className="mt-1 block text-sm leading-6 text-black/70 transition-colors group-hover:text-black">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
 
-      <span className="shrink-0 text-xs font-semibold tracking-wide text-[#b91c1c] uppercase transition">Show</span>
+      <span className="shrink-0 rounded-lg bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-all group-hover:bg-black/10 group-hover:text-black">
+        Show
+      </span>
     </button>
   );
 }
@@ -259,7 +261,7 @@ export default function ReviewCard({
                     {showSubject && review.subjectHref && review.subjectTitle && (
                       <Link
                         href={review.subjectHref}
-                        className="block min-w-0 text-lg font-semibold tracking-tight text-[#0f172a] transition sm:text-xl"
+                        className="block min-w-0 text-lg font-semibold tracking-tight transition sm:text-xl"
                         style={{
                           display: '-webkit-box',
                           overflow: 'hidden',
@@ -290,7 +292,7 @@ export default function ReviewCard({
                     <SpoilerNotice compact onReveal={revealSpoiler} />
                   ) : (
                     <p
-                      className="min-w-0 text-sm leading-6 [overflow-wrap:anywhere] break-words text-[#0f172a]"
+                      className="min-w-0 text-sm leading-6 [overflow-wrap:anywhere] break-words"
                       style={{
                         display: '-webkit-box',
                         overflow: 'hidden',
@@ -306,12 +308,14 @@ export default function ReviewCard({
                   <p className="min-w-0 text-sm leading-6 text-[#475569] italic">Rated without review</p>
                 )}
 
-                <ReviewLikeButton
-                  disabled={isLikeDisabled}
-                  hasLiked={hasLiked}
-                  likesCount={likesCount}
-                  onClick={onLike}
-                />
+                {!isSpoilerHidden && (
+                  <ReviewLikeButton
+                    disabled={isLikeDisabled}
+                    hasLiked={hasLiked}
+                    likesCount={likesCount}
+                    onClick={onLike}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -320,7 +324,7 @@ export default function ReviewCard({
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-black/70 sm:text-sm">
                       {hasRating && <RatingStars rating={review.rating} />}
                       <span>{activityLabel}</span>
-                      <Link href={accountHref} className="font-semibold text-[#0f172a] transition-colors">
+                      <Link href={accountHref} className="font-semibold transition-colors">
                         {displayName}
                       </Link>
                       <span className="text-[#475569]">{formattedDate}</span>
@@ -330,7 +334,7 @@ export default function ReviewCard({
                       isSpoilerHidden ? (
                         <SpoilerNotice onReveal={revealSpoiler} />
                       ) : (
-                        <p className="mt-1.5 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-[#0f172a] sm:text-[15px] sm:leading-[1.65]">
+                        <p className="mt-1.5 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-[15px] sm:leading-[1.65]">
                           {review.content}
                         </p>
                       )
@@ -365,12 +369,14 @@ export default function ReviewCard({
                   {isOwnReview && <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />}
                 </div>
 
-                <ReviewLikeButton
-                  disabled={isLikeDisabled}
-                  hasLiked={hasLiked}
-                  likesCount={likesCount}
-                  onClick={onLike}
-                />
+                {!isSpoilerHidden && (
+                  <ReviewLikeButton
+                    disabled={isLikeDisabled}
+                    hasLiked={hasLiked}
+                    likesCount={likesCount}
+                    onClick={onLike}
+                  />
+                )}
               </>
             )}
           </div>

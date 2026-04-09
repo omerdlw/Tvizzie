@@ -8,6 +8,55 @@ import { ReactLenis } from 'lenis/react';
 
 import { DURATION } from '@/core/constants';
 
+const CONTEXT_MENU_VISIBILITY_EVENT = 'tvizzie:context-menu-visibility';
+const DETAIL_ROUTE_PREFIXES = ['/movie/', '/person/'];
+
+function premiumScrollEasing(value) {
+  return 1 - Math.pow(1 - value, 3.2);
+}
+
+function applyPremiumVirtualScroll(data) {
+  const event = data?.event;
+
+  if (event?.ctrlKey) {
+    return false;
+  }
+
+  const clampDelta = (delta, limit = 140) => {
+    if (!Number.isFinite(delta) || delta === 0) {
+      return 0;
+    }
+
+    return Math.sign(delta) * Math.min(Math.abs(delta), limit);
+  };
+
+  const normalizedX = clampDelta(data?.deltaX, 140);
+  const normalizedY = clampDelta(data?.deltaY, 160);
+  const isPrecisionInput = Math.max(Math.abs(normalizedX), Math.abs(normalizedY)) < 32;
+  const damping = isPrecisionInput ? 0.92 : 0.8;
+
+  data.deltaX = normalizedX * damping;
+  data.deltaY = normalizedY * damping;
+
+  return true;
+}
+
+const PREMIUM_SCROLL_OPTIONS = Object.freeze({
+  anchors: {
+    duration: DURATION.HERO,
+    easing: premiumScrollEasing,
+  },
+  duration: DURATION.SLOWER,
+  easing: premiumScrollEasing,
+  gestureOrientation: 'vertical',
+  lerp: 0.11,
+  smoothWheel: true,
+  stopInertiaOnNavigate: true,
+  touchMultiplier: 1.35,
+  virtualScroll: applyPremiumVirtualScroll,
+  wheelMultiplier: 0.9,
+});
+
 function isReloadNavigation() {
   if (typeof window === 'undefined') return false;
 
@@ -23,7 +72,7 @@ function isReloadNavigation() {
 function shouldResetForDetailRoute(prevPathname, nextPathname) {
   if (!prevPathname || prevPathname === nextPathname) return false;
 
-  return nextPathname.startsWith('/movie/');
+  return DETAIL_ROUTE_PREFIXES.some((prefix) => nextPathname.startsWith(prefix));
 }
 
 function forceScrollToTop(lenisRef) {
@@ -34,6 +83,37 @@ function forceScrollToTop(lenisRef) {
   });
 }
 
+function scheduleScrollTopReset(lenisRef, { framePasses = 3, timeoutDelays = [] } = {}) {
+  forceScrollToTop(lenisRef);
+
+  let rafId = 0;
+  let frameCount = 0;
+
+  const runFrame = () => {
+    forceScrollToTop(lenisRef);
+    frameCount += 1;
+
+    if (frameCount < framePasses) {
+      rafId = requestAnimationFrame(runFrame);
+    }
+  };
+
+  rafId = requestAnimationFrame(runFrame);
+
+  const timeoutIds = timeoutDelays.map((delay) =>
+    window.setTimeout(() => {
+      forceScrollToTop(lenisRef);
+    }, delay)
+  );
+
+  return () => {
+    cancelAnimationFrame(rafId);
+    timeoutIds.forEach((timeoutId) => {
+      window.clearTimeout(timeoutId);
+    });
+  };
+}
+
 export function SmoothScrollProvider({ children }) {
   const lenisRef = useRef(null);
   const pathname = usePathname();
@@ -42,33 +122,10 @@ export function SmoothScrollProvider({ children }) {
   useEffect(() => {
     if (!isReloadNavigation()) return;
 
-    let secondFrame = 0;
-
-    const resetScroll = () => {
-      window.scrollTo(0, 0);
-      lenisRef.current?.lenis?.scrollTo(0, {
-        immediate: true,
-        force: true,
-      });
-    };
-
-    const firstFrame = requestAnimationFrame(() => {
-      resetScroll();
-
-      secondFrame = requestAnimationFrame(() => {
-        resetScroll();
-      });
+    return scheduleScrollTopReset(lenisRef, {
+      framePasses: 2,
+      timeoutDelays: [120],
     });
-
-    const timeoutId = window.setTimeout(() => {
-      resetScroll();
-    }, 120);
-
-    return () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      window.clearTimeout(timeoutId);
-    };
   }, []);
 
   useEffect(() => {
@@ -77,51 +134,41 @@ export function SmoothScrollProvider({ children }) {
 
     if (!shouldResetForDetailRoute(previousPathname, pathname)) return;
 
-    let secondFrame = 0;
-    let thirdFrame = 0;
-
-    forceScrollToTop(lenisRef);
-
-    const firstFrame = requestAnimationFrame(() => {
-      forceScrollToTop(lenisRef);
-
-      secondFrame = requestAnimationFrame(() => {
-        forceScrollToTop(lenisRef);
-
-        thirdFrame = requestAnimationFrame(() => {
-          forceScrollToTop(lenisRef);
-        });
-      });
+    return scheduleScrollTopReset(lenisRef, {
+      framePasses: 4,
+      timeoutDelays: [120, 260],
     });
+  }, [pathname]);
 
-    const firstTimeoutId = window.setTimeout(() => {
-      forceScrollToTop(lenisRef);
-    }, 120);
+  useEffect(() => {
+    const handleContextMenuVisibility = (event) => {
+      const isOpen = Boolean(event?.detail?.isOpen);
+      const lenis = lenisRef.current?.lenis;
 
-    const secondTimeoutId = window.setTimeout(() => {
-      forceScrollToTop(lenisRef);
-    }, 260);
+      if (!lenis) {
+        return;
+      }
+
+      if (isOpen) {
+        lenis.stop();
+        return;
+      }
+
+      lenis.start();
+    };
+
+    window.addEventListener(CONTEXT_MENU_VISIBILITY_EVENT, handleContextMenuVisibility);
 
     return () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      cancelAnimationFrame(thirdFrame);
-      window.clearTimeout(firstTimeoutId);
-      window.clearTimeout(secondTimeoutId);
+      window.removeEventListener(CONTEXT_MENU_VISIBILITY_EVENT, handleContextMenuVisibility);
     };
-  }, [pathname]);
+  }, []);
 
   return (
     <ReactLenis
       ref={lenisRef}
       root
-      options={{
-        lerp: 0.2,
-        duration: DURATION.MODERATE,
-        smoothWheel: true,
-        wheelMultiplier: 1,
-        touchMultiplier: 2,
-      }}
+      options={PREMIUM_SCROLL_OPTIONS}
     >
       {children}
     </ReactLenis>

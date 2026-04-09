@@ -260,13 +260,7 @@ export default function Client() {
     await handleStartVerification();
   };
 
-  const registry = (
-    <Registry
-      authIsReady={auth.isReady}
-      isGoogleSubmitting={pendingAction === 'google'}
-      onGoogleSignUp={handleGoogleSignUp}
-    />
-  );
+  const registry = <Registry authIsReady={auth.isReady} />;
 
   if (!auth.isReady || (auth.isAuthenticated && !isBusy)) {
     return <>{registry}</>;

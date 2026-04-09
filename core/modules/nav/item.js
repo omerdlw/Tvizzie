@@ -1,7 +1,6 @@
 'use client';
 
 import { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
-import Link from 'next/link';
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -9,15 +8,16 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { DURATION, EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
+import { useAuth } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
 import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
-import Icon, { default as Iconify } from '@/ui/icon';
+import { default as Iconify } from '@/ui/icon';
 import { Skeleton } from '@/ui/skeletons/components/nav';
 
 import { NavActionsContainer } from './actions/container';
 import { Icon as BadgeIcon, Description, Title } from './elements';
 import ConfirmationSurface from './surfaces/confirmation-surface';
-import { resolveNavVisualStyle } from './utils';
+import { buildNavSignInHref, normalizeNavPathname, resolveNavVisualStyle } from './utils';
 
 const NAV_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 24,
@@ -46,7 +46,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   }),
 });
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, expandedLift = 0) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale) {
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
@@ -57,7 +57,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-xl',
+      'absolute inset-x-0 top-0 mx-auto h-auto w-full cursor-pointer rounded-[20px] border-[1.5px] p-2 backdrop-blur-xl',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -67,7 +67,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       willChange: expanded || position === 0 ? 'transform' : 'auto',
     },
     animate: {
-      y: expanded ? position * expandedOffsetY - expandedLift : position * collapsedOffsetY,
+      y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
       zIndex: NAV_CARD_LAYOUT.expanded.scale - position,
       opacity: 1,
@@ -140,23 +140,6 @@ function getActionNode(link, ActionComponent) {
   return ActionComponent;
 }
 
-function ParentArrow({ isExpanded, isHovered }) {
-  return (
-    <div className="absolute top-2 right-2 z-10 flex items-center">
-      <Icon
-        icon={
-          isExpanded
-            ? isHovered
-              ? 'solar:alt-arrow-up-bold'
-              : 'solar:alt-arrow-down-bold'
-            : 'solar:alt-arrow-right-bold'
-        }
-        size={16}
-      />
-    </div>
-  );
-}
-
 function VideoOverlayIcon({ icon }) {
   const isImageIcon = isImageIconSource(icon);
 
@@ -195,64 +178,6 @@ function Badge({ badge }) {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function InlineParentChildren({ items, activeChild }) {
-  if (!Array.isArray(items) || items.length === 0) {
-    return null;
-  }
-
-  const handleChildClick = (event, child) => {
-    event.stopPropagation();
-
-    if (typeof child?.onClick === 'function') {
-      event.preventDefault();
-      child.onClick(event);
-    }
-  };
-
-  return (
-    <div className="flex flex-auto flex-wrap items-center gap-1.5">
-      {items.map((child, index) => {
-        const key = `${child.path || child.name || 'parent-child'}-${index}`;
-        const isCurrent = child.path === activeChild?.path;
-        const className = cn(
-          'flex-auto border px-2.5 py-2 text-center text-[11px] rounded-[12px] leading-none transition-all duration-200',
-          isCurrent
-            ? 'border-black/20 bg-primary text-black'
-            : 'border-black/10 bg-white text-black/60 hover:bg-black/5'
-        );
-
-        if (child.path) {
-          return (
-            <Link
-              key={key}
-              href={child.path}
-              className={className}
-              onClick={(event) => {
-                handleChildClick(event, child);
-              }}
-            >
-              <span className="tracking-wide">{child.title || child.name}</span>
-            </Link>
-          );
-        }
-
-        return (
-          <button
-            key={key}
-            type="button"
-            className={className}
-            onClick={(event) => {
-              handleChildClick(event, child);
-            }}
-          >
-            <span className="tracking-wide">{child.title || child.name}</span>
-          </button>
-        );
-      })}
-    </div>
   );
 }
 
@@ -394,19 +319,15 @@ const Item = memo(
 
     const pathname = usePathname();
     const router = useRouter();
+    const { isAuthenticated, isReady } = useAuth();
 
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
     const ActionComponent = useActionComponent(link, pathname);
 
     const actionContainerRef = useRef(null);
     const contentContainerRef = useRef(null);
-    const inlineFooterRef = useRef(null);
 
     const showBorder = expanded ? isHovered : isHovered || isStackHovered;
-    const shouldInlineParentChildren = Boolean(
-      expanded && link.isParent && link.isExpanded && Array.isArray(link.children) && link.children.length > 0
-    );
-    const [inlineFooterHeight, setInlineFooterHeight] = useState(0);
 
     const itemStyle = useMemo(() => {
       return resolveNavVisualStyle(link.style, {
@@ -418,40 +339,8 @@ const Item = memo(
     const actionNode = useMemo(() => {
       return getActionNode(link, ActionComponent);
     }, [link, ActionComponent]);
-    const inlineChildrenNode = useMemo(() => {
-      if (!shouldInlineParentChildren) {
-        return null;
-      }
-
-      return <InlineParentChildren items={link.children} activeChild={link.activeChild} />;
-    }, [link.activeChild, link.children, shouldInlineParentChildren]);
-    const inlineFooterNode = useMemo(() => {
-      if (!shouldInlineParentChildren) {
-        return null;
-      }
-
-      if (!actionNode) {
-        return inlineChildrenNode;
-      }
-
-      return (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">{inlineChildrenNode}</div>
-          <div onClick={(event) => event.stopPropagation()}>
-            <Suspense>{actionNode}</Suspense>
-          </div>
-        </div>
-      );
-    }, [actionNode, inlineChildrenNode, shouldInlineParentChildren]);
     const cardProps = useMemo(() => {
-      const resolvedCardProps = getNavItemCardProps(
-        expanded,
-        position,
-        showBorder,
-        itemStyle.card,
-        itemStyle.scale,
-        shouldInlineParentChildren ? inlineFooterHeight : 0
-      );
+      const resolvedCardProps = getNavItemCardProps(expanded, position, showBorder, itemStyle.card, itemStyle.scale);
 
       if (!link.isSurface) {
         return resolvedCardProps;
@@ -461,20 +350,9 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [
-      expanded,
-      position,
-      showBorder,
-      itemStyle.card,
-      itemStyle.scale,
-      inlineFooterHeight,
-      link.isSurface,
-      shouldInlineParentChildren,
-    ]);
+    }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface]);
 
-    useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop && !shouldInlineParentChildren);
-
-    useElementHeight(setInlineFooterHeight, inlineFooterRef, shouldInlineParentChildren, inlineFooterNode);
+    useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop);
 
     useElementHeight(
       onContentHeightChange,
@@ -494,7 +372,12 @@ const Item = memo(
       setIsHovered(true);
 
       if (link.path) {
-        router.prefetch(link.path);
+        const targetPath =
+          isReady && !isAuthenticated && normalizeNavPathname(link.path) === '/account'
+            ? buildNavSignInHref(link.path)
+            : link.path;
+
+        router.prefetch(targetPath);
       }
 
       if (!expanded) {
@@ -536,8 +419,8 @@ const Item = memo(
           badge={badge}
           isActive={isActive}
           contentContainerRef={contentContainerRef}
-          footerNode={inlineFooterNode}
-          footerRef={inlineFooterRef}
+          footerNode={null}
+          footerRef={null}
         />
       );
     };
@@ -550,11 +433,9 @@ const Item = memo(
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        {!isTop && link.isParent && <ParentArrow isExpanded={link.isExpanded} isHovered={isHovered} />}
-
         {renderContent()}
 
-        {actionNode && !shouldInlineParentChildren && (
+        {actionNode && (
           <div ref={actionContainerRef} onClick={(event) => event.stopPropagation()}>
             <Suspense>{actionNode}</Suspense>
           </div>

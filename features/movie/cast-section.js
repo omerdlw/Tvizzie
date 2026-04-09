@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { TMDB_IMG } from '@/core/constants';
 import Icon from '@/ui/icon';
 
-const MAX_VISIBLE = 6;
+const MAX_VISIBLE = 8;
 
 function PersonCard({ person, priority = false, fetchPriority }) {
   const [imageError, setImageError] = useState(false);
@@ -107,11 +107,7 @@ export default function CastSection({ cast = [], headerAction = null }) {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <PersonCard
-                person={person}
-                priority={index < 4}
-                fetchPriority={index < 4 ? 'high' : undefined}
-              />
+              <PersonCard person={person} priority={index < 4} fetchPriority={index < 4 ? 'high' : undefined} />
             </motion.div>
           ))}
         </AnimatePresence>

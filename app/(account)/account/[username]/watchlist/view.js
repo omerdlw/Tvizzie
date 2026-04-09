@@ -1,7 +1,5 @@
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
-import AccountPageShell from '@/features/account/page-shell';
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
-import AccountSectionState from '@/features/account/section-state';
+import AccountWatchlistFeed from '@/features/account/feeds/watchlist';
+import { AccountPageShell } from '@/features/account/profile/layout';
 import Registry from './registry';
 
 export default function WatchlistView({
@@ -79,28 +77,15 @@ export default function WatchlistView({
       watchedCount={profile?.watchedCount || 0}
       watchlistCount={watchlistCount}
     >
-      {canShowWatchlistGrid ? (
-        <AccountMediaGridPage
-          currentPage={currentPage}
-          emptyMessage="No watchlist yet"
-          icon="solar:bookmark-bold"
-          items={watchlist}
-          pageBasePath={`/account/${username}/watchlist`}
-          renderOverlay={(item) =>
-            isOwner ? (
-              <AccountProfileMediaActions
-                media={item}
-                onRemoveItem={handleRequestRemoveWatchlistItem}
-                removeLabel={`Remove ${item.title || item.name} from watchlist`}
-                userId={auth.user?.id || null}
-              />
-            ) : null
-          }
-          title="Watchlist"
-        />
-      ) : (
-        <AccountSectionState message="This profile is private." />
-      )}
+      <AccountWatchlistFeed
+        auth={auth}
+        canShowWatchlistGrid={canShowWatchlistGrid}
+        currentPage={currentPage}
+        isOwner={isOwner}
+        onRemoveItem={handleRequestRemoveWatchlistItem}
+        username={username}
+        watchlist={watchlist}
+      />
     </AccountPageShell>
   );
 }

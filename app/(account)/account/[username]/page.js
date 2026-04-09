@@ -1,4 +1,4 @@
-import { isReservedAccountSegment } from '@/features/account/route-segments';
+import { isReservedAccountSegment } from '@/features/account/utils';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,

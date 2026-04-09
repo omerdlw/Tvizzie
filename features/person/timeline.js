@@ -58,11 +58,11 @@ export default function PersonTimeline({ person }) {
         <motion.div
           key={year}
           className="mt-4 first:mt-0"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
-            delay: reduceMotion ? 0 : yearIndex * 0.04,
-            duration: reduceMotion ? 0.14 : 0.32,
+            delay: reduceMotion ? 0 : yearIndex * 0.045,
+            duration: reduceMotion ? 0.16 : 0.36,
             ease: [0.22, 1, 0.36, 1],
           }}
         >
@@ -81,11 +81,11 @@ export default function PersonTimeline({ person }) {
               return (
                 <motion.div
                   key={`${credit.credit_id || credit.id}-${credit.media_type}`}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{
-                    delay: reduceMotion ? 0 : yearIndex * 0.04 + creditIndex * 0.018,
-                    duration: reduceMotion ? 0.14 : 0.26,
+                    delay: reduceMotion ? 0 : yearIndex * 0.045 + creditIndex * 0.02,
+                    duration: reduceMotion ? 0.16 : 0.3,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 >
@@ -100,7 +100,9 @@ export default function PersonTimeline({ person }) {
                           {title}
                         </span>
                       </div>
-                      {creditLabel && <span className="truncate text-[11px] text-black/70 sm:text-sm">{creditLabel}</span>}
+                      {creditLabel && (
+                        <span className="truncate text-[11px] text-black/70 sm:text-sm">{creditLabel}</span>
+                      )}
                     </div>
                   </Link>
                 </motion.div>

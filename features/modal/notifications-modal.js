@@ -7,6 +7,7 @@ import Container from '@/core/modules/modal/container';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import {
   NOTIFICATION_TYPES,
+  deleteAllNotifications,
   deleteNotification,
   markAllAsRead,
   markAsRead,
@@ -63,18 +64,20 @@ function getNotificationContent({ type, actor, payload }) {
   const listSubject =
     payload?.list && typeof payload.list === 'object'
       ? payload.list
-      : {
-          href: payload?.listHref || null,
-          title: payload?.listTitle || null,
-        };
+      : payload?.subject && typeof payload.subject === 'object'
+        ? payload.subject
+        : {
+            href: payload?.listHref || payload?.subjectHref || null,
+            title: payload?.listTitle || payload?.subjectTitle || null,
+          };
 
   const ActorComponent = ({ children }) =>
     actorLink ? (
-      <Link href={actorLink} className="font-semibold text-[#0f172a]">
+      <Link href={actorLink} className="font-semibold">
         {children}
       </Link>
     ) : (
-      <span className="font-semibold text-[#0f172a]">{children}</span>
+      <span className="font-semibold">{children}</span>
     );
 
   switch (type) {
@@ -101,11 +104,11 @@ function getNotificationContent({ type, actor, payload }) {
         <span className="text-sm text-black/70">
           <ActorComponent>{actorName}</ActorComponent> liked your review of{' '}
           {reviewSubject?.href ? (
-            <Link href={reviewSubject.href} className="font-semibold text-[#0f172a]">
+            <Link href={reviewSubject.href} className="font-semibold">
               {reviewSubject.title || 'a title'}
             </Link>
           ) : (
-            <span className="font-semibold text-[#0f172a]">{reviewSubject?.title || 'a title'}</span>
+            <span className="font-semibold">{reviewSubject?.title || 'a title'}</span>
           )}
           .
         </span>
@@ -115,11 +118,11 @@ function getNotificationContent({ type, actor, payload }) {
         <span className="text-sm text-black/70">
           <ActorComponent>{actorName}</ActorComponent> liked your list{' '}
           {listSubject?.href ? (
-            <Link href={listSubject.href} className="font-semibold text-[#0f172a]">
+            <Link href={listSubject.href} className="font-semibold">
               {listSubject.title || 'a list'}
             </Link>
           ) : (
-            <span className="font-semibold text-[#0f172a]">{listSubject?.title || 'a list'}</span>
+            <span className="font-semibold">{listSubject?.title || 'a list'}</span>
           )}
           .
         </span>
@@ -217,6 +220,20 @@ export default function NotificationsModal({ close, header, data }) {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (notifications.length === 0) return;
+    if (!userId) return;
+
+    const previous = notifications;
+    setNotifications([]);
+    try {
+      await deleteAllNotifications(userId);
+    } catch (error) {
+      setNotifications(previous);
+      console.error(error);
+    }
+  };
+
   return (
     <Container
       className={
@@ -224,23 +241,57 @@ export default function NotificationsModal({ close, header, data }) {
       }
       close={close}
       header={header}
+      bodyClassName="p-0"
+      footer={{
+        left: hasUnread ? (
+          <span className="text-sm opacity-70">{notifications.filter((item) => !item.read).length} unread</span>
+        ) : (
+          `${notifications.length} notifications`
+        ),
+        right:
+          notifications.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                onClick={handleDeleteAll}
+                className="h-8 rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
+              >
+                Clear all
+              </Button>
+              {hasUnread ? (
+                <Button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+                >
+                  Mark all as read
+                </Button>
+              ) : null}
+            </div>
+          ) : null,
+      }}
     >
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {notifications.length > 0 && hasUnread ? (
-            <Button
-              onClick={handleMarkAllRead}
-              className="w-full border-b border-dashed border-[#ca8a04] bg-[#fef08a] p-4 text-sm text-[#713f12]"
-            >
-              Mark all as read
-            </Button>
-          ) : null}
           {isLoading ? (
-            <div className={cn('center h-14 w-full border-b border-[#f59e0b]')}>
-              <Spinner size={30} />
+            <div className="flex flex-col">
+              {Array.from({ length: 100 }, (_, index) => index + 1).map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                    <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+                    <div className="flex w-full flex-col gap-1.5">
+                      <div className="h-3 w-[60%] animate-pulse rounded-full bg-black/5" />
+                      <div className="h-2 w-[40%] animate-pulse rounded-full bg-black/5" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : notifications.length === 0 ? (
-            <div className={cn('center h-14 w-full border-b border-[#f59e0b] text-sm text-black/70')}>
+            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
               You have no notifications yet
             </div>
           ) : (
@@ -253,8 +304,8 @@ export default function NotificationsModal({ close, header, data }) {
                   <div
                     key={notification.id}
                     className={cn(
-                      'relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-2 border-b border-[#f59e0b] p-2 transition last:border-none',
-                      !notification.read && 'border border-[#0ea5e9] bg-[#bfdbfe] text-[#0c4a6e]'
+                      'relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
+                      notification.read ? 'hover:bg-black/5' : 'bg-black/5 text-black hover:bg-black/10'
                     )}
                   >
                     <div className="center size-10 shrink-0 overflow-hidden">
@@ -262,16 +313,16 @@ export default function NotificationsModal({ close, header, data }) {
                         <img
                           src={actorAvatarSrc}
                           alt={notification.actor?.displayName || 'Avatar'}
-                          className="size-full object-cover"
+                          className="size-full rounded-[12px] object-cover"
                           loading="lazy"
                           onError={(event) => applyAvatarFallback(event, actorAvatarFallbackSrc)}
                         />
                       ) : (
-                        <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-[#7c2d12]" />
+                        <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
                       )}
                     </div>
 
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       {getNotificationContent(notification)}
                       <span className="text-[10px] tracking-widest text-black/70 uppercase">
                         {formatRelativeTime(notification.createdAt)}
@@ -281,19 +332,18 @@ export default function NotificationsModal({ close, header, data }) {
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
                       {!notification.read ? (
                         <Button
-                          variant="info-icon"
                           onClick={(event) => handleMarkRead(notification.id, event)}
                           title="Mark as read"
-                          className="size-7"
+                          className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 rounded-[8px] border transition"
                         >
                           <Icon icon="solar:check-read-bold" size={16} />
                         </Button>
                       ) : null}
                       <Button
-                        variant="destructive-icon"
                         onClick={(event) => handleDelete(notification.id, event)}
                         title="Delete notification"
-                        className="size-7"
+                        variant="destructive"
+                        className="size-7 rounded-[8px] transition"
                       >
                         <Icon icon="solar:trash-bin-trash-linear" size={16} />
                       </Button>

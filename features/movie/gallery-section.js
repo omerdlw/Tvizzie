@@ -29,6 +29,8 @@ export default function GallerySection({ images }) {
             fallbackIconSize={24}
             imageSizes="288px"
             className="w-72"
+            data-backdrop-file-path={image.file_path || ''}
+            data-context-menu-target="movie-backdrop-card"
           />
         ))}
       </Carousel>

@@ -18,6 +18,7 @@ export default function ListEditorModal({ close, data, header }) {
     title: initialData?.title || '',
     description: initialData?.description || '',
   });
+  const formId = 'list-editor-modal-form';
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -68,20 +69,47 @@ export default function ListEditorModal({ close, data, header }) {
   };
 
   return (
-    <Container className="w-full sm:w-[460px]" header={header} close={close}>
-      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6 p-2">
+    <Container
+      className="w-full sm:w-[460px]"
+      header={header}
+      close={close}
+      bodyClassName="p-4"
+      footer={{
+        left: isEditing ? 'Update list details' : 'Create a new list',
+        right: (
+          <>
+            <Button
+              type="button"
+              onClick={close}
+              className="bg-primary h-10 rounded-[10px] border border-black/15 px-4 text-xs font-semibold tracking-wide text-black uppercase transition hover:bg-black/5"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form={formId}
+              disabled={isSaving}
+              className="h-10 rounded-[10px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition hover:bg-black/70 disabled:cursor-not-allowed disabled:border-black/15 disabled:bg-black/15 disabled:text-black/60"
+            >
+              {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
+            </Button>
+          </>
+        ),
+      }}
+    >
+      <form id={formId} onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
         <div className="space-y-2">
-          <label className={`text-[10px] font-bold tracking-widest text-[#1d4ed8] uppercase`}>List Title</label>
+          <label className="text-xs font-semibold tracking-wide text-black/70 uppercase">List title</label>
           <Input
             value={form.title}
             onChange={(event) => handleChange('title', event.target.value)}
             placeholder="e.g. 90s Sci-Fi Essentials"
             className={{
               input:
-                'w-full border border-[#0ea5e9] bg-[#dbeafe] p-3 text-sm font-medium text-[#0c4a6e] transition-colors outline-none placeholder:text-[#0369a1]',
+                'bg-primary w-full rounded-[10px] border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/60',
             }}
           />
-          <label className={`text-[10px] font-bold tracking-widest text-[#1d4ed8] uppercase`}>Description</label>
+          <label className="text-xs font-semibold tracking-wide text-black/70 uppercase">Description</label>
           <Textarea
             value={form.description}
             onChange={(event) => handleChange('description', event.target.value)}
@@ -89,26 +117,9 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={200}
             className={{
               textarea:
-                'w-full border border-[#0ea5e9] bg-[#dbeafe] p-3 text-sm font-medium text-[#0c4a6e] transition-colors outline-none placeholder:text-[#0369a1]',
+                'bg-primary w-full rounded-[10px] border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/60',
             }}
           />
-        </div>
-
-        <div className="flex w-full flex-col gap-2 md:flex-row md:justify-end">
-          <Button
-            type="button"
-            onClick={close}
-            className={`h-11 w-full flex-auto border border-[#9333ea] bg-[#e9d5ff] px-6 text-[11px] font-bold tracking-widest text-[#581c87] uppercase transition`}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className={`center h-11 w-full flex-auto gap-2 border border-[#15803d] bg-[#bbf7d0] px-8 text-[11px] font-bold tracking-widest text-[#14532d] uppercase transition`}
-          >
-            {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update List' : 'Create List'}
-          </Button>
         </div>
       </form>
     </Container>

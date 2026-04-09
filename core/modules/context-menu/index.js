@@ -1,306 +1,463 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
-import { useContextMenuRegistry } from '@/core/modules/registry/context';
+import { useContextMenuRegistry, useNavRegistry } from '@/core/modules/registry/context';
 import Icon from '@/ui/icon';
 
 import { useContextMenu } from './context';
+import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';
 
-const DEFAULT_CLASS_NAMES = {
-  overlay: '',
-  content: '',
-  item: '',
-  itemIcon: '',
-  itemLabel: '',
-  itemDanger: '',
-  separator: '',
-};
+const MENU_SCREEN_MARGIN = 10;
 
-const CURRENT_PAGE_KEY = 'current-page';
-const GLOBAL_MENU_KEY = '*';
-
-function toArray(value) {
-  if (Array.isArray(value)) return value;
-  if (value === null || value === undefined || value === '') return [];
-  return [value];
-}
-
-function isObject(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function normalizeMenuCandidates(registryMenus) {
-  const entries = Object.entries(registryMenus || {});
-  const candidates = [];
-  let order = 0;
-
-  entries.forEach(([registryKey, rawConfig]) => {
-    if (!isObject(rawConfig)) return;
-
-    const { menus, ...sharedConfig } = rawConfig;
-    const sharedClassNames = sharedConfig.classNames || {};
-    const sharedHasItems = Array.isArray(sharedConfig.items) && sharedConfig.items.length > 0;
-
-    if (sharedHasItems) {
-      candidates.push({
-        registryKey,
-        config: sharedConfig,
-        order: order++,
-      });
-    }
-
-    const nestedMenus = toArray(menus).filter((menu) => isObject(menu));
-    nestedMenus.forEach((menu) => {
-      candidates.push({
-        registryKey,
-        config: {
-          ...sharedConfig,
-          ...menu,
-          classNames: {
-            ...sharedClassNames,
-            ...(menu.classNames || {}),
-          },
-        },
-        order: order++,
-      });
-    });
-
-    if (!sharedHasItems && nestedMenus.length === 0) {
-      candidates.push({
-        registryKey,
-        config: rawConfig,
-        order: order++,
-      });
-    }
-  });
-
-  return candidates;
-}
-
-function isPathAllowed(config, registryKey, pathname) {
-  if (!pathname) return true;
-
-  const explicitPath = config.path;
-  if (typeof explicitPath === 'string' && explicitPath) {
-    return explicitPath === pathname;
-  }
-
-  const explicitPaths = toArray(config.paths || config.pathnames).filter((path) => typeof path === 'string' && path);
-  if (explicitPaths.length > 0) {
-    return explicitPaths.includes(pathname);
-  }
-
-  const matcher = config.pathMatcher;
-  if (typeof matcher === 'function') {
-    try {
-      return Boolean(matcher(pathname));
-    } catch {
-      return false;
-    }
-  }
-
-  if (registryKey === pathname || registryKey === CURRENT_PAGE_KEY || registryKey === GLOBAL_MENU_KEY) {
-    return true;
-  }
-
-  return false;
-}
-
-function isWhenAllowed(config, event, pathname, targetElement) {
-  if (typeof config.when === 'function') {
-    try {
-      return Boolean(config.when(event, { pathname, target: targetElement }));
-    } catch {
-      return false;
-    }
-  }
-
-  if (config.when === undefined) return true;
-  return Boolean(config.when);
-}
-
-function getMatchDepth(sourceElement, matchedElement) {
-  let depth = 0;
-  let node = sourceElement;
-
-  while (node && node !== matchedElement) {
-    node = node.parentElement;
-    depth += 1;
-  }
-
-  return depth;
-}
-
-function getTargetScore(config, targetElement) {
-  const selectors = toArray(config.target).filter((selector) => typeof selector === 'string' && selector.trim());
-
-  if (selectors.length === 0) return 0;
-  if (!targetElement) return null;
-
-  let minDepth = Infinity;
-
-  selectors.forEach((selector) => {
-    let matchedElement = null;
-    try {
-      matchedElement = targetElement.closest(selector);
-    } catch {
-      matchedElement = null;
-    }
-
-    if (matchedElement) {
-      const depth = getMatchDepth(targetElement, matchedElement);
-      if (depth < minDepth) {
-        minDepth = depth;
-      }
-    }
-  });
-
-  if (minDepth === Infinity) return null;
-  return Math.max(0, 100 - minDepth);
-}
-
-function getRouteScore(config, registryKey, pathname) {
-  if (!pathname) return 0;
-
-  if (
-    config.path === pathname ||
-    toArray(config.paths || config.pathnames).includes(pathname) ||
-    registryKey === pathname
-  ) {
-    return 100;
-  }
-
-  if (registryKey === CURRENT_PAGE_KEY) return 70;
-  if (registryKey === GLOBAL_MENU_KEY) return 40;
-  return 10;
-}
-
-function resolveContextMenuConfig(registryMenus, pathname, event) {
-  const candidates = normalizeMenuCandidates(registryMenus);
-  const targetElement = event.target instanceof Element || event.target instanceof SVGElement ? event.target : null;
-
-  let winner = null;
-
-  candidates.forEach((candidate) => {
-    const { config, registryKey, order } = candidate;
-
-    if (config.enabled === false) return;
-    if (!Array.isArray(config.items) || config.items.length === 0) return;
-    if (!isPathAllowed(config, registryKey, pathname)) return;
-    if (!isWhenAllowed(config, event, pathname, targetElement)) return;
-
-    const targetScore = getTargetScore(config, targetElement);
-    if (targetScore === null) return;
-
-    const routeScore = getRouteScore(config, registryKey, pathname);
-    const priority = Number.isFinite(Number(config.priority)) ? Number(config.priority) : 0;
-    const score = priority * 10000 + routeScore * 100 + targetScore;
-
-    if (!winner || score > winner.score || (score === winner.score && order < winner.order)) {
-      winner = { config, score, order };
-    }
-  });
-
-  return winner?.config || null;
-}
-
-function ContextMenuItem({ item, classNames, onClose }) {
-  const handleClick = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      item.onClick?.(e);
-      onClose();
-    },
-    [item, onClose]
+function isImageIconSource(icon) {
+  return (
+    typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:image/'))
   );
+}
 
-  if (item.type === 'separator') {
-    return <div className={classNames.separator} />;
+function extractNodeText(value) {
+  if (value === null || value === undefined || typeof value === 'boolean') {
+    return '';
   }
 
-  const itemClassName = [classNames.item, item.danger && classNames.itemDanger].filter(Boolean).join(' ');
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value).trim();
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => extractNodeText(item))
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+  }
+
+  if (isValidElement(value)) {
+    return extractNodeText(value.props?.children);
+  }
+
+  return '';
+}
+
+function resolveHeaderValue(value, context, fallback = null) {
+  if (typeof value === 'function') {
+    try {
+      const resolved = value(context);
+      return resolved === undefined ? fallback : resolved;
+    } catch {
+      return fallback;
+    }
+  }
+
+  return value === undefined ? fallback : value;
+}
+
+function resolveContextMenuPageMeta(navItem, pathname = '') {
+  if (!isObject(navItem)) {
+    return null;
+  }
+
+  const title = navItem.contextMenuTitle ?? navItem.title ?? null;
+  const description = navItem.contextMenuDescription ?? navItem.description ?? null;
+  const eyebrow = navItem.contextMenuEyebrow ?? navItem.eyebrow ?? null;
+  const icon = navItem.contextMenuIcon ?? navItem.icon ?? null;
+  const path = typeof navItem.path === 'string' && navItem.path ? navItem.path : pathname;
+  const titleText = extractNodeText(title) || (typeof navItem.name === 'string' ? navItem.name : '') || '';
+  const descriptionText = extractNodeText(description);
+
+  if (!title && !description && !icon && !eyebrow) {
+    return null;
+  }
+
+  return {
+    description,
+    descriptionText,
+    eyebrow,
+    icon,
+    path,
+    title,
+    titleText,
+  };
+}
+
+function resolveMenuHeader(config, menuContext) {
+  if (config?.header === false || config?.showPageHeader === false) {
+    return null;
+  }
+
+  const resolvedHeader = resolveHeaderValue(config?.header, menuContext, null);
+  const headerSource = isObject(resolvedHeader)
+    ? resolvedHeader
+    : isObject(menuContext?.page)
+      ? menuContext.page
+      : null;
+
+  if (!headerSource) {
+    return null;
+  }
+
+  const title = resolveHeaderValue(headerSource.title, menuContext, null);
+  const description = resolveHeaderValue(headerSource.description, menuContext, null);
+  const icon = resolveHeaderValue(headerSource.icon, menuContext, null);
+  const eyebrow = resolveHeaderValue(headerSource.eyebrow, menuContext, null);
+
+  if (!title && !description && !icon && !eyebrow) {
+    return null;
+  }
+
+  return {
+    description,
+    eyebrow,
+    icon,
+    title,
+  };
+}
+
+function getActionableIndexes(items = []) {
+  const indexes = [];
+
+  items.forEach((item, index) => {
+    if (item?.type === 'action' && !item?.disabled) {
+      indexes.push(index);
+    }
+  });
+
+  return indexes;
+}
+
+function getNextActionableIndex(currentIndex, direction, indexes = []) {
+  if (!indexes.length) return -1;
+
+  const currentPointer = indexes.indexOf(currentIndex);
+
+  if (currentPointer === -1) {
+    return direction > 0 ? indexes[0] : indexes[indexes.length - 1];
+  }
+
+  const nextPointer = (currentPointer + direction + indexes.length) % indexes.length;
+  return indexes[nextPointer];
+}
+
+function invokeSafely(handler, ...args) {
+  if (typeof handler !== 'function') {
+    return undefined;
+  }
+
+  try {
+    return handler(...args);
+  } catch {
+    return undefined;
+  }
+}
+
+function ContextMenuHeaderIcon({ classNames, icon }) {
+  const iconClassName = [
+    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden rounded-[12px] bg-black/5 text-black/60',
+    classNames.headerIcon,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (isImageIconSource(icon)) {
+    return <div className={iconClassName} style={{ backgroundImage: `url(${icon})` }} />;
+  }
+
+  return <div className={iconClassName}>{typeof icon === 'string' ? <Icon icon={icon} size={20} /> : icon}</div>;
+}
+
+function ContextMenuHeader({ classNames, header }) {
+  if (!header) {
+    return null;
+  }
+
+  const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-black/10 pb-2', classNames.header]
+    .filter(Boolean)
+    .join(' ');
+  const eyebrowClassName = ['text-[11px] font-bold tracking- text-black/60 uppercase', classNames.headerEyebrow]
+    .filter(Boolean)
+    .join(' ');
+  const titleClassName = ['truncate text-sm font-semibold', classNames.headerTitle].filter(Boolean).join(' ');
+  const descriptionClassName = ['text-[11px] text-black/70', classNames.headerDescription].filter(Boolean).join(' ');
 
   return (
-    <button className={itemClassName} onClick={handleClick} type="button">
-      {item.icon && <Icon icon={item.icon} className={classNames.itemIcon} size={16} />}
-      <span className={classNames.itemLabel}>{item.label}</span>
+    <div className={containerClassName}>
+      {header.icon ? <ContextMenuHeaderIcon classNames={classNames} icon={header.icon} /> : null}
+      <div className="h-full w-full -space-y-1">
+        {header.eyebrow ? <div className={eyebrowClassName}>{header.eyebrow}</div> : null}
+        {header.title ? <div className={titleClassName}>{header.title}</div> : null}
+        {header.description ? <div className={descriptionClassName}>{header.description}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setButtonRef }) {
+  if (item.type === 'separator') {
+    const separatorClassName = ['my-1 h-px bg-black/10', classNames.separator].filter(Boolean).join(' ');
+
+    return <div className={separatorClassName} role="separator" />;
+  }
+
+  const itemClassName = [
+    'flex w-full items-center gap-2 rounded-[12px] px-2.5 py-2 text-left text-[13px] font-medium text-black/70 hover:text-black transition-colors hover:bg-black/5 focus-visible:outline-none data-[active=true]:bg-black/10 disabled:pointer-events-none disabled:opacity-50',
+    classNames.item,
+    item.className,
+    item.danger && 'text-error',
+    item.danger && classNames.itemDanger,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const itemIconClassName = ['shrink-0 text-black/65', classNames.itemIcon, item.itemIconClassName]
+    .filter(Boolean)
+    .join(' ');
+  const itemLabelClassName = ['grow truncate', classNames.itemLabel].filter(Boolean).join(' ');
+  const itemShortcutClassName = [
+    'ml-2 shrink-0 text-[10px] tracking-wide text-black/60 uppercase',
+    classNames.itemShortcut,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <button
+      ref={setButtonRef}
+      className={itemClassName}
+      data-active={isActive ? 'true' : undefined}
+      aria-disabled={item.disabled}
+      disabled={item.disabled}
+      role="menuitem"
+      type="button"
+      onMouseEnter={onHover}
+      onClick={(event) => onSelect(item, event)}
+    >
+      {item.icon ? <Icon icon={item.icon} className={itemIconClassName} size={16} /> : null}
+      <span className={itemLabelClassName}>{item.label}</span>
+      {item.shortcut ? <span className={itemShortcutClassName}>{item.shortcut}</span> : null}
     </button>
   );
 }
 
-function ContextMenuContent({ config, position, onClose }) {
+function ContextMenuContent({ config, items, menuContext, position, onClose }) {
   const menuRef = useRef(null);
-  const classNames = { ...DEFAULT_CLASS_NAMES, ...config.classNames };
+  const itemRefs = useRef([]);
+  const classNames = isObject(config.classNames) ? config.classNames : {};
+  const header = useMemo(() => resolveMenuHeader(config, menuContext), [config, menuContext]);
+  const actionableIndexes = useMemo(() => getActionableIndexes(items), [items]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  useEffect(() => {
+    setActiveIndex(-1);
+    itemRefs.current = [];
+  }, [items]);
 
   useEffect(() => {
     if (!menuRef.current) return;
 
-    const menu = menuRef.current;
-    const rect = menu.getBoundingClientRect();
+    const menuElement = menuRef.current;
+    const rect = menuElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let { x, y } = position;
+    let x = Number(position?.x) || 0;
+    let y = Number(position?.y) || 0;
 
-    if (x + rect.width > viewportWidth) {
-      x = viewportWidth - rect.width - 10;
-    }
-    if (y + rect.height > viewportHeight) {
-      y = viewportHeight - rect.height - 10;
+    if (x + rect.width > viewportWidth - MENU_SCREEN_MARGIN) {
+      x = viewportWidth - rect.width - MENU_SCREEN_MARGIN;
     }
 
-    menu.style.left = `${Math.max(10, x)}px`;
-    menu.style.top = `${Math.max(10, y)}px`;
-  }, [position]);
+    if (y + rect.height > viewportHeight - MENU_SCREEN_MARGIN) {
+      y = viewportHeight - rect.height - MENU_SCREEN_MARGIN;
+    }
+
+    menuElement.style.left = `${Math.max(MENU_SCREEN_MARGIN, x)}px`;
+    menuElement.style.top = `${Math.max(MENU_SCREEN_MARGIN, y)}px`;
+  }, [position, items]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    if (activeIndex < 0) {
+      menuRef.current?.focus({ preventScroll: true });
+      return;
+    }
+
+    itemRefs.current[activeIndex]?.focus({ preventScroll: true });
+  }, [activeIndex]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         onClose();
       }
     };
 
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleClickOutside, true);
+    document.addEventListener('keydown', handleEscape, true);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('keydown', handleEscape, true);
     };
   }, [onClose]);
 
+  useEffect(() => {
+    const preventScroll = (event) => {
+      event.preventDefault();
+    };
+
+    const preventScrollKeys = (event) => {
+      if (menuRef.current?.contains(event.target)) {
+        return;
+      }
+
+      if (
+        event.key === 'ArrowDown' ||
+        event.key === 'ArrowUp' ||
+        event.key === 'PageDown' ||
+        event.key === 'PageUp' ||
+        event.key === 'Home' ||
+        event.key === 'End' ||
+        event.key === ' ' ||
+        event.key === 'Spacebar'
+      ) {
+        event.preventDefault();
+      }
+    };
+
+    const listenerOptions = { capture: true, passive: false };
+
+    window.addEventListener('wheel', preventScroll, listenerOptions);
+    window.addEventListener('touchmove', preventScroll, listenerOptions);
+    document.addEventListener('keydown', preventScrollKeys, true);
+
+    return () => {
+      window.removeEventListener('wheel', preventScroll, true);
+      window.removeEventListener('touchmove', preventScroll, true);
+      document.removeEventListener('keydown', preventScrollKeys, true);
+    };
+  }, []);
+
+  const handleItemSelect = useCallback(
+    (item, event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (item.disabled) {
+        return;
+      }
+
+      const actionHandler = typeof item.onSelect === 'function' ? item.onSelect : item.onClick;
+      invokeSafely(actionHandler, event, menuContext);
+
+      if (item.closeOnSelect !== false) {
+        onClose();
+      }
+    },
+    [menuContext, onClose]
+  );
+
+  const handleMenuKeyDown = useCallback(
+    (event) => {
+      if (!actionableIndexes.length) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          onClose();
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setActiveIndex((current) => getNextActionableIndex(current, 1, actionableIndexes));
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setActiveIndex((current) => getNextActionableIndex(current, -1, actionableIndexes));
+        return;
+      }
+
+      if (event.key === 'Home') {
+        event.preventDefault();
+        setActiveIndex(actionableIndexes[0]);
+        return;
+      }
+
+      if (event.key === 'End') {
+        event.preventDefault();
+        setActiveIndex(actionableIndexes[actionableIndexes.length - 1]);
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (activeIndex >= 0) {
+          event.preventDefault();
+          itemRefs.current[activeIndex]?.click();
+        }
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    },
+    [actionableIndexes, activeIndex, onClose]
+  );
+
   return (
     <>
-      <div className={classNames.overlay} onClick={onClose} />
+      <div
+        className={['fixed inset-0', classNames.overlay].filter(Boolean).join(' ')}
+        onMouseDown={onClose}
+        style={{ zIndex: Z_INDEX.DEBUG_OVERLAY - 1 }}
+      />
       <div
         ref={menuRef}
-        className={classNames.content}
+        className={[
+          'max-w-[320px] min-w-[240px] overflow-hidden rounded-[16px] border border-black/10 bg-white/80 p-1 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
+          classNames.content,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        role="menu"
+        tabIndex={-1}
         style={{
+          left: position?.x || 0,
           position: 'fixed',
-          left: position.x,
-          top: position.y,
+          top: position?.y || 0,
           zIndex: Z_INDEX.DEBUG_OVERLAY,
         }}
+        onMouseLeave={() => setActiveIndex(-1)}
+        onKeyDown={handleMenuKeyDown}
       >
-        {config.items?.map((item, index) => (
+        <ContextMenuHeader classNames={classNames} header={header} />
+        {items.map((item, index) => (
           <ContextMenuItem
-            key={item.key || `separator-${index}`}
+            key={item.key || `menu-item-${index}`}
             item={item}
             classNames={classNames}
-            onClose={onClose}
+            isActive={index === activeIndex}
+            onHover={() => {
+              if (item.type === 'action' && !item.disabled) {
+                setActiveIndex(index);
+              }
+            }}
+            setButtonRef={(node) => {
+              itemRefs.current[index] = node;
+            }}
+            onSelect={handleItemSelect}
           />
         ))}
       </div>
@@ -309,47 +466,95 @@ function ContextMenuContent({ config, position, onClose }) {
 }
 
 export function ContextMenuRenderer() {
-  const { menuConfig, position, isOpen, closeMenu } = useContextMenu();
+  const { menuConfig, menuContext, menuItems, position, isOpen, closeMenu } = useContextMenu();
 
   if (!isOpen || !menuConfig) return null;
 
   if (typeof document === 'undefined') return null;
 
+  const resolvedItems =
+    Array.isArray(menuItems) && menuItems.length > 0 ? menuItems : resolveMenuItems(menuConfig, menuContext);
+
+  if (!resolvedItems.length) {
+    return null;
+  }
+
   return createPortal(
-    <ContextMenuContent config={menuConfig} position={position} onClose={closeMenu} />,
+    <ContextMenuContent
+      config={menuConfig}
+      items={resolvedItems}
+      menuContext={menuContext}
+      position={position}
+      onClose={closeMenu}
+    />,
     document.body
   );
 }
 
 export function useContextMenuListener() {
   const { getAll } = useContextMenuRegistry();
+  const { get: getNavItem } = useNavRegistry();
   const { openMenu } = useContextMenu();
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleContextMenu = (e) => {
+    const handleContextMenu = (event) => {
       const allMenus = getAll();
-      const config = resolveContextMenuConfig(allMenus, pathname, e);
+      const resolvedMenu = resolveContextMenu(allMenus, pathname, event);
 
-      if (config && config.items && config.items.length > 0) {
-        e.preventDefault();
-        if (typeof config.onOpen === 'function') {
-          try {
-            config.onOpen(e);
-          } catch (openError) {
-            void openError;
-          }
-        }
-        openMenu(config, e.clientX, e.clientY);
+      if (!resolvedMenu) {
+        return;
       }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      let nextContext = resolvedMenu.context;
+      const pageMeta = resolveContextMenuPageMeta(getNavItem(pathname), pathname);
+
+      if (pageMeta) {
+        nextContext = {
+          ...(isObject(nextContext) ? nextContext : {}),
+          page: pageMeta,
+        };
+      }
+
+      const onOpenResult = invokeSafely(resolvedMenu.config?.onOpen, event, nextContext);
+
+      if (onOpenResult === false) {
+        return;
+      }
+
+      if (isObject(onOpenResult)) {
+        nextContext = {
+          ...nextContext,
+          ...onOpenResult,
+        };
+      }
+
+      const nextItems = resolveMenuItems(resolvedMenu.config, nextContext);
+
+      if (!nextItems.length) {
+        return;
+      }
+
+      openMenu({
+        config: resolvedMenu.config,
+        context: nextContext,
+        items: nextItems,
+        position: {
+          x: event.clientX,
+          y: event.clientY,
+        },
+      });
     };
 
-    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('contextmenu', handleContextMenu, true);
 
     return () => {
-      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
     };
-  }, [getAll, openMenu, pathname]);
+  }, [getAll, getNavItem, openMenu, pathname]);
 }
 
 export function ContextMenuGlobal() {

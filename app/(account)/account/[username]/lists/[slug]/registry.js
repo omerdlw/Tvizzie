@@ -5,7 +5,7 @@ import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config';
+} from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';
 
 const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
@@ -29,6 +29,7 @@ export default function Registry({
   isResolvingProfile = false,
   itemRemoveConfirmation = null,
   list,
+  listItemsCount = 0,
   listDeleteConfirmation,
   pendingFollowRequestCount = 0,
   profile = null,
@@ -40,7 +41,10 @@ export default function Registry({
   unfollowConfirmation = null,
   username,
 }) {
-  const canLikeList = Boolean(list) && !showProfileFollowAction;
+  const canLikeList = Boolean(list);
+  const navCountsDescription = list
+    ? `${listItemsCount} items · ${list?.likesCount || 0} likes · ${list?.reviewsCount || 0} reviews`
+    : 'List';
 
   useRegistry(
     buildAccountPageState({
@@ -59,7 +63,7 @@ export default function Registry({
       isSectionSaveLoading: false,
       itemRemoveConfirmation,
       listDeleteConfirmation,
-      navDescription: list?.title ? `Lists / ${list.title}` : 'List',
+      navDescription: navCountsDescription,
       navSurface:
         isBioSurfaceOpen && profile?.description ? (
           <AccountBioSurface
@@ -77,7 +81,7 @@ export default function Registry({
       username,
       isLiked: canLikeList ? isLiked : false,
       isLikeLoading: canLikeList ? isLikeLoading : false,
-      onDeleteList: handleDeleteList,
+      onDeleteList: () => handleDeleteList(list),
       onEditList: () => handleEditList(list),
       onToggleLike: canLikeList ? handleToggleLike : null,
       reviewState,

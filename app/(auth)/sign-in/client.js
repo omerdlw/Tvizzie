@@ -411,14 +411,7 @@ export default function Client() {
     }
   };
 
-  const registry = (
-    <Registry
-      authIsReady={auth.isReady}
-      isGoogleSubmitting={isGoogleSubmitting}
-      isResetMode={isResetMode}
-      onGoogleSignIn={handleGoogleSignIn}
-    />
-  );
+  const registry = <Registry authIsReady={auth.isReady} isResetMode={isResetMode} />;
 
   if (!auth.isReady || (auth.isAuthenticated && !isSubmitting && !isPreparingReset && !resetFlow.isSubmitting)) {
     return <>{registry}</>;

@@ -4,21 +4,21 @@ import Icon from '@/ui/icon';
 
 export default function AccountBioSurface({ description = '', onClose = null, title = 'About' }) {
   return (
-    <section className={`rounded-[12px] border border-[#0369a1] bg-[#bae6fd] p-2`}>
-      <div className="flex items-start justify-between gap-3">
+    <section className={`bg-primary/40 rounded-[12px] border border-black/5`}>
+      <div className="flex items-center justify-between gap-3 border-b border-black/5 p-3">
         <div className="min-w-0">
-          <p className={`text-sm font-bold tracking-wide text-[#0c4a6e] uppercase`}>{title}</p>
+          <p className={`text-sm font-bold tracking-wide uppercase`}>{title}</p>
         </div>
         <button
           type="button"
           onClick={() => onClose?.()}
-          className={`center cursor-pointer rounded-full border border-[#be123c] bg-[#fecdd3] p-1 text-[#881337] transition-all`}
+          className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
           aria-label="Close bio"
         >
-          <Icon icon="material-symbols:close-rounded" size={24} />
+          <Icon icon="material-symbols:close-rounded" size={16} />
         </button>
       </div>
-      <p className={`text-sm leading-relaxed break-words whitespace-pre-wrap text-[#1e293b]`}>{description}</p>
+      <p className={`p-3 text-sm leading-relaxed text-pretty whitespace-pre-wrap text-[#1e293b]`}>{description}</p>
     </section>
   );
 }

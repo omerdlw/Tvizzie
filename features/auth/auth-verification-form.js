@@ -72,7 +72,7 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center h-15 rounded-[12px] border border-[#0284c7] bg-[#dbeafe] text-lg font-semibold text-[#0f172a] transition-colors',
+                'center h-15 rounded-[12px] border border-[#0284c7] bg-[#dbeafe] text-lg font-semibold transition-colors',
                 hasError && digit && 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
                 isActive && !digit && 'border-[#0284c7] bg-[#dbeafe]',
                 digit && !hasError && 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]'
@@ -392,13 +392,13 @@ export default function AuthVerificationForm({
       />
 
       {shouldShowRememberDevice ? (
-        <label className="mx-1 flex items-center gap-2 text-[11px] font-semibold tracking-widest text-[#0f172a] uppercase">
+        <label className="mx-1 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
           <input
             type="checkbox"
             checked={rememberDevice}
             onChange={(event) => setRememberDevice(event.target.checked)}
             disabled={isSubmitting || isSending}
-            className="size-4 border border-[#0284c7] text-[#0f172a] accent-[#0ea5e9]"
+            className="size-4 border border-[#0284c7] accent-[#0ea5e9]"
           />
           <span>Remember this device for 30 days</span>
         </label>

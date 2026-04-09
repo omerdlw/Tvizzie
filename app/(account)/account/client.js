@@ -8,7 +8,7 @@ import {
   hasMatchingSeededFeed,
   useAccountSectionPage,
   useDeferredPreviewFeed,
-} from '@/features/account/section-client-hooks';
+} from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -60,6 +60,7 @@ export default function Client({
     handleEditProfile,
     handleFollow,
     handleOpenFollowList,
+    handleRequestRemoveWatchedItem,
     handleRequestRemoveWatchlistItem,
     handleSignInRequest,
     isBioSurfaceOpen,
@@ -282,52 +283,57 @@ export default function Client({
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, reviewPreview, toast]
   );
 
+  const overviewModel = {
+    auth,
+    authoredReviews: reviewPreview.items,
+    authoredReviewsError: reviewPreview.feedError,
+    authoredReviewsLoading: reviewPreview.isFeedLoading,
+    canViewProfileCollections,
+    activityError: activityPreview.feedError,
+    activityItems: activityPreview.items,
+    activityLoading: activityPreview.isFeedLoading,
+    favoriteShowcase,
+    followerCount,
+    followingCount,
+    followState,
+    handleEditProfile,
+    handleEditReview,
+    handleFollow,
+    handleDeleteReview,
+    handleLikeReview,
+    handleOpenFollowList,
+    handleRequestRemoveWatchedItem,
+    handleRequestRemoveWatchlistItem,
+    handleSignInRequest,
+    hasMoreAuthoredReviews: reviewPreview.hasMore,
+    hasMoreActivityItems: activityPreview.hasMore,
+    isBioSurfaceOpen,
+    isFollowLoading,
+    isOwner,
+    isPageLoading: resolvedIsPageLoading,
+    isResolvingProfile,
+    itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+    likeCount,
+    likes,
+    listCount,
+    navDescription,
+    pendingFollowRequestCount,
+    profile,
+    profileHandle,
+    resolveError,
+    resolvedUserId,
+    setIsBioSurfaceOpen,
+    unfollowConfirmation,
+    username,
+    watched,
+    watchedCount,
+    watchlistCount,
+    watchlist,
+  };
+
   return (
     <AccountView
-      auth={auth}
-      authoredReviews={reviewPreview.items}
-      authoredReviewsError={reviewPreview.feedError}
-      authoredReviewsLoading={reviewPreview.isFeedLoading}
-      canViewProfileCollections={canViewProfileCollections}
-      activityError={activityPreview.feedError}
-      activityItems={activityPreview.items}
-      activityLoading={activityPreview.isFeedLoading}
-      favoriteShowcase={favoriteShowcase}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleEditReview={handleEditReview}
-      handleFollow={handleFollow}
-      handleDeleteReview={handleDeleteReview}
-      handleLikeReview={handleLikeReview}
-      handleOpenFollowList={handleOpenFollowList}
-      handleRequestRemoveWatchlistItem={handleRequestRemoveWatchlistItem}
-      handleSignInRequest={handleSignInRequest}
-      hasMoreAuthoredReviews={reviewPreview.hasMore}
-      hasMoreActivityItems={activityPreview.hasMore}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={resolvedIsPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={reviewDeleteConfirmation || itemRemoveConfirmation}
-      likeCount={likeCount}
-      likes={likes}
-      listCount={listCount}
-      navDescription={navDescription}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      profileHandle={profileHandle}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watched={watched}
-      watchedCount={watchedCount}
-      watchlistCount={watchlistCount}
-      watchlist={watchlist}
+      model={overviewModel}
       RegistryComponent={RegistryComponent}
     />
   );

@@ -12,26 +12,26 @@ import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
 import {
   MovieHeroReveal,
   MovieSectionReveal,
-  MovieSectionSkeleton,
   MovieSidebarReveal,
 } from '@/features/movie/movie-motion';
 import { getFilmographyCredits, getPersonLifeRange } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
 
 const HERO_REVEAL_TIMING = Object.freeze({
-  containerDelay: 0.12,
-  titleDelay: 0.18,
-  titleDuration: 0.54,
-  taglineDelay: 0.3,
-  overviewDelay: 0.42,
+  containerDelay: 0.14,
+  titleDelay: 0.22,
+  titleDuration: 0.6,
+  taglineDelay: 0.34,
+  overviewDelay: 0.48,
 });
 
 const SECTION_REVEAL_TIMING = Object.freeze({
-  gallery: 0.22,
-  filmography: 0.34,
-  timeline: 0.24,
-  awards: 0.24,
+  gallery: 0.26,
+  filmography: 0.36,
+  timeline: 0.28,
+  awards: 0.28,
 });
 
 function getBiographyExcerpt(biography, maxLength = 280) {
@@ -55,13 +55,13 @@ function PersonMainContent({ person }) {
   return (
     <>
       {person?.images?.profiles?.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery}>
+        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
           <PersonGallery images={person.images} />
         </MovieSectionReveal>
       ) : null}
 
       {movieCredits.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography}>
+        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography} animateOnView={false}>
           <section className="flex flex-col gap-3">
             <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
 
@@ -69,11 +69,11 @@ function PersonMainContent({ person }) {
               {movieCredits.map((credit, index) => (
                 <motion.div
                   key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    delay: reduceMotion ? 0 : index * 0.015,
-                    duration: reduceMotion ? 0.14 : 0.28,
+                    delay: reduceMotion ? 0 : index * 0.02,
+                    duration: reduceMotion ? 0.16 : 0.34,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 >
@@ -101,7 +101,7 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
 
   if (activeView === 'timeline') {
     return (
-      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.timeline}>
+      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.timeline} animateOnView={false}>
         <PersonTimeline person={mergedPerson} />
       </MovieSectionReveal>
     );
@@ -110,7 +110,17 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
   return <PersonMainContent person={mergedPerson} />;
 }
 
-export default function PersonView({ person, secondaryDataPromise, activeView, setActiveView, age, backgroundImage }) {
+export default function PersonView({
+  person,
+  secondaryDataPromise,
+  activeView,
+  setActiveView,
+  age,
+  backgroundImage,
+  onSetPersonPoster,
+  onResetPersonPoster,
+  canResetPersonPoster,
+}) {
   const reduceMotion = useReducedMotion();
   if (!person) return null;
 
@@ -122,9 +132,15 @@ export default function PersonView({ person, secondaryDataPromise, activeView, s
         duration: 0.12,
       }
     : {
-        duration: 0.34,
+        duration: 0.42,
         ease: [0.22, 1, 0.36, 1],
       };
+  const deferredFallback =
+    activeView === 'timeline' ? (
+      <PersonTimelineSkeleton className="mt-10" />
+    ) : (
+      <PersonSectionSkeleton className="mt-10" />
+    );
 
   return (
     <>
@@ -134,6 +150,9 @@ export default function PersonView({ person, secondaryDataPromise, activeView, s
         setActiveView={setActiveView}
         age={age}
         backgroundImage={backgroundImage}
+        onSetPersonPoster={onSetPersonPoster}
+        onResetPersonPoster={onResetPersonPoster}
+        canResetPersonPoster={canResetPersonPoster}
       />
 
       <PageGradientShell>
@@ -157,7 +176,7 @@ export default function PersonView({ person, secondaryDataPromise, activeView, s
                       delay={HERO_REVEAL_TIMING.titleDelay}
                       duration={HERO_REVEAL_TIMING.titleDuration}
                       startOnView={false}
-                      className="font-zuume text-6xl leading-none font-bold uppercase drop-shadow-sm drop-shadow-black/20 sm:text-7xl lg:text-8xl"
+                      className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
                     >
                       {person.name}
                     </TextAnimate>
@@ -166,7 +185,7 @@ export default function PersonView({ person, secondaryDataPromise, activeView, s
 
                 {heroMeta ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.taglineDelay} className="mt-4">
-                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase drop-shadow-sm drop-shadow-black/20 sm:text-sm">
+                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
                       {heroMeta}
                     </p>
                   </MovieHeroReveal>
@@ -174,26 +193,26 @@ export default function PersonView({ person, secondaryDataPromise, activeView, s
 
                 {biographyExcerpt ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <p className="max-w-[72ch] text-[15px] leading-6 text-pretty drop-shadow-sm drop-shadow-black/20 sm:text-base sm:leading-7">
+                    <p className="max-w-[72ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
                       {biographyExcerpt}
                     </p>
                   </MovieHeroReveal>
                 ) : null}
 
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence mode="wait">
                   <motion.div
                     key={`person-view-${activeView}`}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -14 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
                     transition={viewTransition}
                   >
                     {activeView === 'awards' ? (
-                      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards}>
+                      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards} animateOnView={false}>
                         <PersonAwards personId={person.id} />
                       </MovieSectionReveal>
                     ) : (
-                      <Suspense fallback={<MovieSectionSkeleton />}>
+                      <Suspense fallback={deferredFallback}>
                         <PersonDeferredContent
                           person={person}
                           secondaryDataPromise={secondaryDataPromise}

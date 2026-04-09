@@ -2,35 +2,35 @@ import { CRITICAL_TYPES, TOAST_TYPES } from './context';
 
 export const NOTIFICATION_CONFIG = {
   [CRITICAL_TYPES.OFFLINE]: {
-    colorClass: 'text-warning border-warning',
+    colorClass: 'border-warning bg-warning',
     dismissible: false,
   },
   [CRITICAL_TYPES.SESSION_EXPIRED]: {
-    colorClass: 'text-warning border-warning',
+    colorClass: 'border-warning bg-warning',
     dismissible: true,
   },
   [CRITICAL_TYPES.PERMISSION_DENIED]: {
-    colorClass: 'text-error border-error',
+    colorClass: 'border-error bg-error',
     dismissible: true,
   },
   [CRITICAL_TYPES.SERVER_ERROR]: {
-    colorClass: 'text-error border-error',
+    colorClass: 'border-error bg-error',
     dismissible: true,
   },
   [TOAST_TYPES.SUCCESS]: {
-    colorClass: 'text-success border-success',
+    colorClass: 'border-success bg-success',
     dismissible: true,
   },
   [TOAST_TYPES.ERROR]: {
-    colorClass: 'text-error border-error',
+    colorClass: 'border-error bg-error',
     dismissible: true,
   },
   [TOAST_TYPES.WARNING]: {
-    colorClass: 'text-error border-error',
+    colorClass: 'border-error bg-error',
     dismissible: true,
   },
   [TOAST_TYPES.INFO]: {
-    colorClass: 'text-info border-info',
+    colorClass: 'border-info bg-info',
     dismissible: true,
   },
 };

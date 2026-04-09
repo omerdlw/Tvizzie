@@ -92,3 +92,36 @@ export function getNavConfirmationKey(item) {
     normalizeConfirmationValue(typeof confirmation.icon === 'string' ? confirmation.icon : ''),
   ].join('::');
 }
+
+export function normalizeNavPathname(href) {
+  const normalizedHref = typeof href === 'string' ? href.trim() : '';
+
+  if (!normalizedHref) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(normalizedHref, 'https://tvizzie.local');
+    const normalizedPathname = parsed.pathname === '/' ? '/' : parsed.pathname.replace(/\/+$/, '');
+    return normalizedPathname || '/';
+  } catch {
+    const [rawPath] = normalizedHref.split('?');
+    const fallbackPathname = String(rawPath || '')
+      .trim()
+      .replace(/\/+$/, '');
+    return fallbackPathname || '/';
+  }
+}
+
+export function buildNavSignInHref(nextPath) {
+  const normalizedNext = typeof nextPath === 'string' ? nextPath.trim() : '';
+
+  if (!normalizedNext || !normalizedNext.startsWith('/') || normalizedNext.startsWith('//')) {
+    return '/sign-in';
+  }
+
+  const params = new URLSearchParams();
+  params.set('next', normalizedNext);
+
+  return `/sign-in?${params.toString()}`;
+}

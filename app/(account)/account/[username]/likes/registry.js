@@ -6,7 +6,7 @@ import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
   noopAccountRegistryHandler,
-} from '@/features/account/account-registry-config';
+} from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';
 
 const ACCOUNT_LIKES_REGISTRY_SOURCE = 'account-likes';

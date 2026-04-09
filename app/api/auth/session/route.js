@@ -18,6 +18,25 @@ import {
   readStepUpFromRequest,
 } from '@/core/auth/servers/security/step-up.server';
 
+function normalizeValue(value) {
+  return String(value || '').trim();
+}
+
+function shouldClearAuthCookiesForError(error) {
+  const errorCode = normalizeValue(error?.code).toUpperCase();
+
+  if (errorCode === 'GOOGLE_PASSWORD_LOGIN_REQUIRED' || errorCode === 'GOOGLE_PROVIDER_COLLISION') {
+    return true;
+  }
+
+  const message = normalizeValue(error?.message).toLowerCase();
+
+  return (
+    message.includes('invalid or expired authentication token') ||
+    message.includes('authentication token has been revoked')
+  );
+}
+
 export async function GET(request) {
   try {
     const authContext = await requireSessionRequest(request, {
@@ -46,7 +65,10 @@ export async function GET(request) {
       clearAuthRouteNoticeCookie(response);
     }
 
-    clearAuthCookies(response, request);
+    if (shouldClearAuthCookiesForError(error)) {
+      clearAuthCookies(response, request);
+    }
+
     clearRecentReauthCookie(response);
     clearStepUpCookie(response);
     return response;

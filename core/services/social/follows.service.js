@@ -9,8 +9,10 @@ import {
 import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 
-const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 8000;
-const PENDING_RELATIONSHIP_MAX_POLLS = 30;
+const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 2500;
+const PENDING_RELATIONSHIP_MAX_POLLS = 60;
+const FOLLOW_SUBSCRIPTION_INTERVAL_MS = 3000;
+const FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 9000;
 
 export const FOLLOW_STATUSES = Object.freeze({
   ACCEPTED: 'accepted',
@@ -222,6 +224,8 @@ export function subscribeToFollowers(userId, callback, options = {}) {
     callback,
     {
       ...options,
+      hiddenIntervalMs: options.hiddenIntervalMs ?? FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+      intervalMs: options.intervalMs ?? FOLLOW_SUBSCRIPTION_INTERVAL_MS,
       subscriptionKey,
     }
   );
@@ -234,8 +238,37 @@ export function subscribeToFollowers(userId, callback, options = {}) {
 
     refreshFollowUserSubscriptions(userId);
   });
+  const shouldUsePendingFallback = status === FOLLOW_STATUSES.PENDING && options.enablePendingFallback === true;
+  let fallbackTimer = null;
+  let fallbackPollCount = 0;
+  let disposed = false;
+
+  function schedulePendingFollowersFallbackPoll() {
+    if (disposed || typeof window === 'undefined' || !userId || !shouldUsePendingFallback) {
+      return;
+    }
+
+    fallbackTimer = window.setTimeout(() => {
+      if (disposed) return;
+
+      fallbackPollCount += 1;
+
+      if (fallbackPollCount > PENDING_RELATIONSHIP_MAX_POLLS) {
+        return;
+      }
+
+      refreshFollowUserSubscriptions(userId);
+      schedulePendingFollowersFallbackPoll();
+    }, PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS);
+  }
+
+  schedulePendingFollowersFallbackPoll();
 
   return () => {
+    disposed = true;
+    if (fallbackTimer) {
+      window.clearTimeout(fallbackTimer);
+    }
     unsubscribeLive();
     unsubscribeData();
   };
@@ -249,6 +282,8 @@ export function subscribeToFollowing(userId, callback, options = {}) {
     callback,
     {
       ...options,
+      hiddenIntervalMs: options.hiddenIntervalMs ?? FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+      intervalMs: options.intervalMs ?? FOLLOW_SUBSCRIPTION_INTERVAL_MS,
       subscriptionKey,
     }
   );
@@ -298,7 +333,7 @@ function refreshRelationshipSubscription(subscriptionKey, viewerId) {
   }
 }
 
-export function subscribeToFollowRelationship(viewerId, targetId, callback) {
+export function subscribeToFollowRelationship(viewerId, targetId, callback, options = {}) {
   const normalizedViewerId = String(viewerId || '').trim() || null;
   const normalizedTargetId = String(targetId || '').trim() || null;
   const subscriptionKey = getRelationshipSubscriptionKey(normalizedViewerId, normalizedTargetId);
@@ -310,6 +345,9 @@ export function subscribeToFollowRelationship(viewerId, targetId, callback) {
       callback(relationship);
     },
     {
+      ...options,
+      hiddenIntervalMs: options.hiddenIntervalMs ?? FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+      intervalMs: options.intervalMs ?? FOLLOW_SUBSCRIPTION_INTERVAL_MS,
       subscriptionKey,
     }
   );
@@ -329,20 +367,37 @@ export function subscribeToFollowRelationship(viewerId, targetId, callback) {
   let fallbackTimer = null;
   let fallbackPollCount = 0;
   let disposed = false;
+  const shouldUsePendingFallback = options.enablePendingFallback === true;
 
   function scheduleFallbackPoll() {
-    if (disposed || typeof window === 'undefined' || !normalizedViewerId || !normalizedTargetId) {
+    if (
+      !shouldUsePendingFallback ||
+      disposed ||
+      typeof window === 'undefined' ||
+      !normalizedViewerId ||
+      !normalizedTargetId
+    ) {
       return;
     }
 
     fallbackTimer = window.setTimeout(() => {
       if (disposed) return;
 
+      const isRelationshipLoaded =
+        latestRelationship?.isOutboundRelationshipLoaded === true ||
+        latestRelationship?.isInboundRelationshipLoaded === true;
       const outboundStatus = String(latestRelationship?.outboundStatus || '')
         .trim()
         .toLowerCase();
+      const inboundStatus = String(latestRelationship?.inboundStatus || '')
+        .trim()
+        .toLowerCase();
+      const shouldContinuePolling =
+        !isRelationshipLoaded ||
+        outboundStatus === FOLLOW_STATUSES.PENDING ||
+        inboundStatus === FOLLOW_STATUSES.PENDING;
 
-      if (outboundStatus !== FOLLOW_STATUSES.PENDING) {
+      if (!shouldContinuePolling) {
         return;
       }
 
@@ -369,8 +424,13 @@ export function subscribeToFollowRelationship(viewerId, targetId, callback) {
   };
 }
 
-export function subscribeToFollowStatus(followerId, followingId, callback) {
-  return subscribeToFollowRelationship(followerId, followingId, (relationship) => {
-    callback(relationship.outboundStatus === FOLLOW_STATUSES.ACCEPTED);
-  });
+export function subscribeToFollowStatus(followerId, followingId, callback, options = {}) {
+  return subscribeToFollowRelationship(
+    followerId,
+    followingId,
+    (relationship) => {
+      callback(relationship.outboundStatus === FOLLOW_STATUSES.ACCEPTED);
+    },
+    options
+  );
 }

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { EmptyState } from '@/features/shared/empty-state';
-import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
@@ -89,49 +89,53 @@ function FollowRow({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className={`truncate text-sm font-bold text-[#0f172a] transition-colors`}>{user.displayName}</h4>
+            <h4 className={`truncate text-sm font-bold transition-colors`}>{user.displayName}</h4>
             {showFollowAction ? (
               <Button
-                variant="info"
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                   onFollow?.();
                 }}
                 disabled={isFollowLoading || isFollowDisabled}
-                className={`h-8 border border-[#0284c7] bg-[#bae6fd] px-3 text-[10px] font-bold tracking-widest text-[#0c4a6e] uppercase`}
+                className="border-info/15 bg-info/5 text-info hover:bg-info/15 h-8 rounded-[10px] border px-3 text-[10px] font-semibold tracking-wide uppercase transition disabled:cursor-not-allowed disabled:bg-black/5"
               >
                 {isFollowLoading ? 'Updating' : followLabel}
               </Button>
             ) : null}
           </div>
-          <p className={`truncate text-[10px] tracking-wide text-black/70 uppercase`}>@{user.username || 'user'}</p>
+          <p className="truncate text-[10px] tracking-wide text-black/70 uppercase">@{user.username || 'user'}</p>
         </div>
       </Link>
 
       {isRequest ? (
         <div className="flex items-center gap-2">
-          <Button variant="success" onClick={onAccept} disabled={isActionDisabled} className="px-3 py-2">
+          <Button
+            onClick={onAccept}
+            disabled={isActionDisabled}
+            className="border-success/15 bg-success/5 text-success hover:bg-success/15 h-8 rounded-[10px] border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+          >
             {isAcceptLoading ? 'Accepting' : 'Accept'}
           </Button>
-          <Button variant="destructive" onClick={onReject} disabled={isActionDisabled}>
+          <Button
+            onClick={onReject}
+            disabled={isActionDisabled}
+            className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 rounded-[10px] border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+          >
             {isRejectLoading ? 'Rejecting' : 'Reject'}
           </Button>
         </div>
       ) : showRemoveAction ? (
-        <button
+        <Button
           type="button"
           onClick={onRemove}
           disabled={isActionLoading}
-          className={cn(
-            'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
-            'px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed'
-          )}
+          className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 rounded-[10px] border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
         >
           {isActionLoading ? 'Removing' : 'Remove'}
-        </button>
+        </Button>
       ) : (
-        <Icon icon="solar:alt-arrow-right-linear" size={16} className={'text-[#7c2d12]'} />
+        <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
       )}
     </div>
   );
@@ -328,23 +332,31 @@ export default function FollowListModal({ close, data, header }) {
   const loadErrorMessage = loadError ? resolveFollowCollectionError(loadError, activeTab) : null;
 
   return (
-    <Container className="max-h-[76vh] w-full sm:w-[460px]" header={header} close={close}>
-      <div className="flex h-full min-h-0 flex-col gap-2 p-2">
+    <Container
+      className="max-h-[76vh] w-full sm:w-[460px]"
+      header={header}
+      close={close}
+      bodyClassName="p-3"
+      footer={{
+        left: `${users.length} users`,
+      }}
+    >
+      <div className="flex h-full min-h-0 flex-col gap-2">
         {loading ? (
           <div className="flex flex-1 flex-col gap-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`h-16 animate-pulse border border-[#14b8a6] bg-[#99f6e4]`} />
+              <div key={i} className="h-16 animate-pulse rounded-[10px] border border-black/10 bg-black/5" />
             ))}
           </div>
         ) : loadErrorMessage ? (
           <EmptyState
-            className={`min-h-[220px] border border-[#22c55e] bg-[#dcfce7]`}
+            className="min-h-[220px] rounded-[10px] border border-black/10 bg-black/5"
             title="Unavailable"
             description={loadErrorMessage}
           />
         ) : users.length === 0 ? (
           <EmptyState
-            className={`min-h-[220px] border border-[#22c55e] bg-[#dcfce7]`}
+            className="min-h-[220px] rounded-[10px] border border-black/10 bg-black/5"
             title="No users found"
             description={emptyDescription}
           />

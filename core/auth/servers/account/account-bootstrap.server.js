@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { isReservedAccountSegment } from '@/features/account/route-segments';
+import { isReservedAccountSegment } from '@/features/account/utils';
 
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 24;

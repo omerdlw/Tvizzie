@@ -4,6 +4,16 @@ const SHARED_ENTRY_RETRY_MAX_ATTEMPTS = 2;
 
 const sharedSubscriptionRegistry = new Map();
 
+function normalizeIntervalMs(value) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return Math.floor(parsed);
+}
+
 function stableSerialize(value) {
   if (value === null || value === undefined) {
     return String(value);
@@ -49,6 +59,13 @@ function clearEntryRetry(entry) {
   }
 }
 
+function clearEntryPoll(entry) {
+  if (entry.pollTimer) {
+    clearTimeout(entry.pollTimer);
+    entry.pollTimer = null;
+  }
+}
+
 function emitSharedPayload(entry, payload) {
   entry.subscribers.forEach((subscriber) => {
     subscriber.callback(payload);
@@ -66,6 +83,7 @@ function emitSharedError(entry, error) {
 function scheduleEntryCleanup(entry) {
   clearEntryCleanup(entry);
   clearEntryRetry(entry);
+  clearEntryPoll(entry);
   entry.cleanupTimer = setTimeout(() => {
     if (entry.subscribers.size > 0 || entry.inFlight) {
       return;
@@ -89,12 +107,74 @@ function storeEntryPayload(entry, payload) {
   entry.lastResolvedAt = Date.now();
 }
 
+function resolveSubscriberPollInterval(subscriber, isHidden = false) {
+  if (!subscriber) {
+    return null;
+  }
+
+  if (isHidden) {
+    return subscriber.hiddenIntervalMs ?? subscriber.intervalMs ?? null;
+  }
+
+  return subscriber.intervalMs ?? null;
+}
+
+function resolveEntryPollInterval(entry) {
+  if (!entry || entry.subscribers.size === 0 || typeof window === 'undefined') {
+    return null;
+  }
+
+  const isHidden = typeof document !== 'undefined' && document.hidden === true;
+  let nextInterval = null;
+
+  entry.subscribers.forEach((subscriber) => {
+    const interval = normalizeIntervalMs(resolveSubscriberPollInterval(subscriber, isHidden));
+
+    if (!interval) {
+      return;
+    }
+
+    if (!nextInterval || interval < nextInterval) {
+      nextInterval = interval;
+    }
+  });
+
+  return nextInterval;
+}
+
+function scheduleEntryPoll(entry) {
+  clearEntryPoll(entry);
+
+  if (!entry || entry.subscribers.size === 0 || entry.inFlight) {
+    return;
+  }
+
+  const pollIntervalMs = resolveEntryPollInterval(entry);
+
+  if (!pollIntervalMs) {
+    return;
+  }
+
+  entry.pollTimer = setTimeout(() => {
+    entry.pollTimer = null;
+
+    if (entry.subscribers.size === 0) {
+      return;
+    }
+
+    void runSharedEntry(entry, {
+      forceEmit: false,
+    }).catch(() => {});
+  }, pollIntervalMs);
+}
+
 async function runSharedEntry(entry, options = {}) {
   if (!entry || entry.inFlight) {
     return entry?.inFlightPromise || undefined;
   }
 
   clearEntryRetry(entry);
+  clearEntryPoll(entry);
   entry.inFlight = true;
   entry.inFlightPromise = (async () => {
     try {
@@ -140,6 +220,8 @@ async function runSharedEntry(entry, options = {}) {
 
       if (entry.subscribers.size === 0) {
         scheduleEntryCleanup(entry);
+      } else {
+        scheduleEntryPoll(entry);
       }
     }
   })();
@@ -158,6 +240,7 @@ function createSharedEntry(key, fetcher) {
     lastPayload: undefined,
     lastPayloadSignature: '',
     lastResolvedAt: 0,
+    pollTimer: null,
     retryAttempt: 0,
     retryTimer: null,
     subscribers: new Set(),
@@ -168,6 +251,8 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
   const shouldEmitCachedPayloadOnSubscribe = options.emitCachedPayloadOnSubscribe !== false;
   const subscriber = {
     callback,
+    hiddenIntervalMs: normalizeIntervalMs(options.hiddenIntervalMs),
+    intervalMs: normalizeIntervalMs(options.intervalMs),
     onError: options.onError,
   };
   let entry = sharedSubscriptionRegistry.get(subscriptionKey);
@@ -199,6 +284,8 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
         forceEmit: !hadPayloadOnSubscribe || !shouldEmitCachedPayloadOnSubscribe,
       }).catch(() => {});
     });
+  } else {
+    scheduleEntryPoll(entry);
   }
 
   return () => {
@@ -207,6 +294,8 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
     if (entry.subscribers.size === 0) {
       scheduleEntryCleanup(entry);
       entry.retryAttempt = 0;
+    } else {
+      scheduleEntryPoll(entry);
     }
   };
 }
@@ -285,6 +374,10 @@ export function primePollingSubscription(subscriptionKey, payload, options = {})
 
   if (options.emit !== false && entry.subscribers.size > 0) {
     emitSharedPayload(entry, payload);
+  }
+
+  if (entry.subscribers.size > 0) {
+    scheduleEntryPoll(entry);
   }
 }
 

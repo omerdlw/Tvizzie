@@ -59,7 +59,13 @@ function isIgnorableLogoutError(error) {
     message.includes('token is malformed') ||
     message.includes('invalid number of segments') ||
     message.includes('session not found') ||
-    message.includes('refresh token not found')
+    message.includes('refresh token not found') ||
+    message.includes('request timed out') ||
+    message.includes('timed out') ||
+    message.includes('timeout') ||
+    message.includes('network request failed') ||
+    message.includes('failed to fetch') ||
+    message.includes('fetch failed')
   );
 }
 

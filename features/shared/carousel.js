@@ -122,34 +122,26 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           </div>
         ))}
       </div>
-      {scrollState.hasOverflow && (
+      {scrollState.canScrollLeft && (
         <button
           type="button"
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
-          disabled={!scrollState.canScrollLeft}
           className={cn(
-            'center absolute top-1/2 left-2 z-10 h-10 w-10 -translate-y-1/2 rounded-[14px] border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 md:left-[-16px] md:h-9 md:w-9',
-            scrollState.canScrollLeft
-              ? 'cursor-pointer hover:border-black/20 hover:bg-white hover:text-black'
-              : 'cursor-default opacity-35'
+            'center absolute top-1/2 left-2 z-10 h-10 w-10 -translate-y-1/2 cursor-pointer rounded-[14px] border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) hover:border-black/20 hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 focus-visible:outline-none md:left-[-16px] md:h-9 md:w-9'
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
         </button>
       )}
 
-      {scrollState.hasOverflow && (
+      {scrollState.canScrollRight && (
         <button
           type="button"
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
-          disabled={!scrollState.canScrollRight}
           className={cn(
-            'center absolute top-1/2 right-2 z-10 h-10 w-10 -translate-y-1/2 rounded-[14px] border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 md:right-[-16px] md:h-9 md:w-9',
-            scrollState.canScrollRight
-              ? 'cursor-pointer hover:border-black/20 hover:bg-white hover:text-black'
-              : 'cursor-default opacity-35'
+            'center absolute top-1/2 right-2 z-10 h-10 w-10 -translate-y-1/2 cursor-pointer rounded-[14px] border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) hover:border-black/20 hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 focus-visible:outline-none md:right-[-16px] md:h-9 md:w-9'
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />

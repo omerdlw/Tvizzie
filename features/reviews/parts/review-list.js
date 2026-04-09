@@ -28,7 +28,7 @@ export default function ReviewList({
   }
 
   if (sortedReviews.length === 0) {
-    return <div className="py-10 text-center text-sm leading-relaxed text-black/70">No ratings or reviews yet</div>;
+    return <div className="py-4 text-center text-sm leading-relaxed text-black/70">No ratings or reviews yet</div>;
   }
 
   return (

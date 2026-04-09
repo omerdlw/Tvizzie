@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError } from '@/core/utils/errors';
 import { getRatingStats } from '@/features/reviews/utils';
 import { useAccountProfile } from '@/core/modules/account';
@@ -43,6 +43,7 @@ export default function Client({
   const [listItems, setListItems] = useState(Array.isArray(initialListItems) ? initialListItems : []);
   const [reviews, setReviews] = useState(Array.isArray(initialListReviews) ? initialListReviews : []);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const { profile: userProfile } = useAccountProfile({
     resolvedUserId: auth.user?.id || null,
   });
@@ -235,13 +236,42 @@ export default function Client({
       return;
     }
 
+    const currentUserId = auth.user.id;
     setIsLikeLoading(true);
 
     try {
-      await toggleListLike({
+      const isNowLiked = await toggleListLike({
         listId: list.id,
         ownerId: resolvedUserId,
-        userId: auth.user.id,
+        userId: currentUserId,
+      });
+
+      setList((current) => {
+        if (!current) {
+          return current;
+        }
+
+        const currentLikes = Array.isArray(current.likes) ? current.likes : [];
+        const hasLike = currentLikes.includes(currentUserId);
+        const nextLikes = isNowLiked
+          ? Array.from(new Set([...currentLikes, currentUserId]))
+          : currentLikes.filter((likedUserId) => likedUserId !== currentUserId);
+        const baseLikesCount = Number.isFinite(Number(current.likesCount))
+          ? Number(current.likesCount)
+          : currentLikes.length;
+        const nextLikesCount = isNowLiked
+          ? hasLike
+            ? baseLikesCount
+            : baseLikesCount + 1
+          : hasLike
+            ? Math.max(0, baseLikesCount - 1)
+            : baseLikesCount;
+
+        return {
+          ...current,
+          likes: nextLikes,
+          likesCount: nextLikesCount,
+        };
       });
     } catch (error) {
       toast.error(error?.message || 'List could not be updated');
@@ -329,24 +359,40 @@ export default function Client({
     openReviewEditorModal();
   }, [openReviewEditorModal]);
 
-  const handleDeleteReview = useCallback(async () => {
-    if (!ownReview || !resolvedUserId || !list?.id || !auth.user?.id) {
-      return false;
-    }
+  const handleDeleteReview = useCallback(
+    async (review = null) => {
+      const targetReview = review || ownReview;
 
-    try {
-      await deleteListReview({
-        listId: list.id,
-        ownerId: resolvedUserId,
-        userId: auth.user.id,
-      });
-      toast.success('Your review was deleted');
-      return true;
-    } catch (error) {
-      toast.error(error?.message || 'Review could not be deleted');
-      return false;
-    }
-  }, [auth.user?.id, list?.id, ownReview, resolvedUserId, toast]);
+      if (!targetReview || !resolvedUserId || !list?.id || !auth.user?.id) {
+        return;
+      }
+
+      try {
+        await deleteListReview({
+          listId: list.id,
+          ownerId: resolvedUserId,
+          userId: auth.user.id,
+        });
+
+        const targetReviewId = targetReview.docPath || targetReview.id || null;
+
+        setReviews((current) =>
+          current.filter((item) => {
+            if (targetReviewId) {
+              return (item.docPath || item.id) !== targetReviewId;
+            }
+
+            return item?.user?.id !== auth.user.id;
+          })
+        );
+        toast.success('Your review was deleted');
+      } catch (error) {
+        toast.error(error?.message || 'Review could not be deleted');
+        throw error;
+      }
+    },
+    [auth.user?.id, list?.id, ownReview, resolvedUserId, toast]
+  );
 
   const handleLikeReview = useCallback(
     async (review) => {
@@ -385,9 +431,33 @@ export default function Client({
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, toast]
   );
 
-  const handleDeleteRequest = useCallback(() => {
-    handleDeleteReview();
-  }, [handleDeleteReview]);
+  const handleDeleteRequest = useCallback(
+    (review) => {
+      const targetReview = review || ownReview;
+
+      if (!targetReview || !auth.user?.id) {
+        return;
+      }
+
+      if (targetReview?.user?.id && targetReview.user.id !== auth.user.id) {
+        return;
+      }
+
+      setReviewDeleteConfirmation({
+        title: 'Delete Review?',
+        description: 'This review will be permanently removed from this list.',
+        confirmText: 'Delete',
+        confirmLoadingText: 'Deleting',
+        isDestructive: true,
+        onCancel: () => setReviewDeleteConfirmation(null),
+        onConfirm: async () => {
+          await handleDeleteReview(targetReview);
+          setReviewDeleteConfirmation(null);
+        },
+      });
+    },
+    [auth.user?.id, handleDeleteReview, ownReview]
+  );
 
   const handleEditReview = useCallback(
     (review) => {
@@ -426,7 +496,7 @@ export default function Client({
       isOwner={isOwner}
       isPageLoading={isPageLoading}
       isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
+      itemRemoveConfirmation={reviewDeleteConfirmation || itemRemoveConfirmation}
       likeCount={likeCount}
       list={list}
       listDeleteConfirmation={listDeleteConfirmation}

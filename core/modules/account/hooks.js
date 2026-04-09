@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useAccountClient } from './context';
 
+const ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS = 15000;
+const ACCOUNT_PROFILE_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
+
 export function useResolvedAccountUser({
   authUserId,
   username,
@@ -107,6 +110,8 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
       },
       {
         fetchOnSubscribe: !hasInitialProfile,
+        hiddenIntervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+        intervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS,
         onError,
       }
     );

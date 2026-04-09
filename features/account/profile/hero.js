@@ -22,7 +22,7 @@ const ACCOUNT_HERO_TOP_FADE_CLASS =
 const ACCOUNT_HERO_TINT_CLASS =
   'absolute inset-0 bg-[radial-gradient(90%_58%_at_50%_14%,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_34%,rgba(255,255,255,0)_64%),linear-gradient(180deg,rgba(6,10,16,0.14)_0%,rgba(6,10,16,0.04)_42%,rgba(6,10,16,0)_72%)]';
 const ACCOUNT_HERO_CENTER_GLOW_CLASS =
-  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 rounded-full bg-[#bfdbfe] blur-3xl sm:h-64 sm:w-64';
+  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 rounded-full bg-white/60 blur-3xl sm:h-64 sm:w-64';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -73,6 +73,7 @@ function HeroInlineMetric({ item, className = '', labelClassName = '', valueClas
 function HeroBioPreview({ description, onReadMore }) {
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const shouldShowReadMore = isOverflowing && typeof onReadMore === 'function';
 
   useEffect(() => {
     const textElement = textRef.current;
@@ -107,55 +108,51 @@ function HeroBioPreview({ description, onReadMore }) {
   }
 
   return (
-    <div className="mt-2.5 w-full max-w-[560px] sm:mt-3">
-      <p ref={textRef} className="line-clamp-3 text-sm leading-6 break-all text-[#0f172a]">
+    <div className="relative mt-2 w-full">
+      <p ref={textRef} className={cn('line-clamp-2 text-sm leading-6 wrap-break-word')}>
         {description}
       </p>
-      {isOverflowing && typeof onReadMore === 'function' ? (
-        <button
-          type="button"
-          onClick={onReadMore}
-          className="mt-1 inline text-sm font-medium whitespace-nowrap text-[#0f172a]"
-        >
-          Read me
-        </button>
+      {shouldShowReadMore ? (
+        <div className="absolute right-0 bottom-0 flex h-[24px] items-center justify-end bg-[linear-gradient(to_right,rgba(250,249,245,0)_0%,#faf9f5_40%,#faf9f5_100%)] pl-12">
+          <button className="text-sm font-semibold text-black/70 uppercase" type="button" onClick={onReadMore}>
+            More
+          </button>
+        </div>
       ) : null}
     </div>
   );
 }
 
-function HeroTextContent({ countsLabel, displayName, mobileStats, onReadMore, profile }) {
+function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
-    <div className="w-full max-w-[560px] text-left">
-      <div className="flex items-center gap-1">
-        <h1 className="min-w-0 text-[2rem] leading-none font-bold tracking-tight sm:text-[2.25rem] lg:text-[3.35rem]">
+    <div className="w-full min-w-0 text-left">
+      <div className="flex items-center gap-4">
+        <h1 className="font-zuume min-w-0 truncate text-[3.2rem] leading-none font-bold uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
           {displayName}
         </h1>
       </div>
 
-      <HeroBioPreview description={profile?.description} onReadMore={onReadMore} />
-
-      <div className="mt-4 flex flex-col gap-3 text-sm text-[#0f172a]">
+      <div className="mt-2 flex flex-col gap-0.5 text-sm">
         <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
           {mobileStats.map((item, index) => (
             <HeroInlineMetric
               key={`${item.label}-${item.value}-${index}`}
               item={item}
               className="inline-flex min-w-0 items-baseline gap-1.5 text-left whitespace-nowrap"
-              valueClassName="text-base font-semibold leading-none tracking-tight text-[#0f172a]"
-              labelClassName="truncate text-base leading-none text-[#0f172a]"
+              valueClassName="text-base font-semibold leading-none tracking-tight "
+              labelClassName="truncate text-base leading-none text-black/75"
             />
           ))}
         </div>
 
-        <div className="hidden flex-wrap items-center gap-x-6 gap-y-2 lg:flex lg:gap-x-7">
+        <div className="hidden items-center gap-x-6 gap-y-2 lg:flex lg:gap-x-7">
           {countsLabel.map((item, index) => (
             <HeroInlineMetric
               key={`${item.label}-${item.value}-${index}`}
               item={item}
-              className="inline-flex items-baseline gap-1.5 py-1 whitespace-nowrap"
-              valueClassName="text-base font-semibold leading-none tracking-tight text-[#0f172a]"
-              labelClassName="text-base leading-none text-[#0f172a]"
+              className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
+              valueClassName="text-base font-semibold leading-none tracking-tight "
+              labelClassName="text-base leading-none text-black/75"
             />
           ))}
         </div>
@@ -221,8 +218,12 @@ export default function AccountHero({
     createHeroCollectionMetaItem(resolvedWatchedCount, 'Watched', 'Watched', {
       href: profile?.username ? `/account/${profile.username}/watched` : null,
     }),
-    createHeroCollectionMetaItem(listsCount, 'List'),
-    createHeroCollectionMetaItem(likesCount, 'Like'),
+    createHeroCollectionMetaItem(listsCount, 'List', 'Lists', {
+      href: profile?.username ? `/account/${profile.username}/lists` : null,
+    }),
+    createHeroCollectionMetaItem(likesCount, 'Like', 'Likes', {
+      href: profile?.username ? `/account/${profile.username}/likes` : null,
+    }),
   ].filter(Boolean);
   const heroStats = [
     {
@@ -244,9 +245,7 @@ export default function AccountHero({
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
 
   return (
-    <section
-      className={`relative w-full overflow-hidden border-b border-[#0ea5e9] text-[#0f172a] ${ACCOUNT_HERO_HEIGHT_CLASS}`}
-    >
+    <section className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}>
       <div className="absolute inset-0">
         <img
           src={profile?.bannerUrl || DEFAULT_ACCOUNT_HERO_IMAGE}
@@ -261,37 +260,39 @@ export default function AccountHero({
       <div className={ACCOUNT_HERO_TOP_FADE_CLASS} />
       <div className={ACCOUNT_HERO_CENTER_GLOW_CLASS} />
       <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-11 lg:pb-12`}
+        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-20 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
-        <div className="grid w-full gap-y-4 sm:gap-y-5 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:items-end lg:gap-x-8 lg:gap-y-0">
-          <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32">
-            <img
-              className="h-full w-full rounded-full object-cover"
-              src={heroAvatarSrc}
-              alt={heroDisplayName}
-              onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
-            />
-          </div>
+        <div className="flex w-full flex-col gap-2 sm:gap-3">
+          <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
+            <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+              <img
+                className="h-full w-full rounded-full object-cover"
+                src={heroAvatarSrc}
+                alt={heroDisplayName}
+                onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
+              />
+            </div>
 
-          <div className="lg:col-start-2 lg:row-start-1 lg:self-end">
-            <HeroTextContent
-              countsLabel={heroCountItems}
-              displayName={heroDisplayName}
-              isPrivate={profile?.isPrivate}
-              mobileStats={mobileHeroStats}
-              onReadMore={onReadMore}
-              profile={profile}
-            />
-          </div>
+            <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
+              <HeroTextContent
+                countsLabel={heroCountItems}
+                displayName={heroDisplayName}
+                mobileStats={mobileHeroStats}
+              />
+            </div>
 
-          <div className="hidden lg:col-start-3 lg:row-start-1 lg:block lg:justify-self-end">
-            <HeroStatsGrid
-              stats={heroStats}
-              className="grid grid-cols-2 gap-6 text-center"
-              itemClassName="inline-flex min-w-0 items-baseline gap-1.5 py-1 whitespace-nowrap lg:flex-col lg:items-center lg:gap-0.5 lg:py-0"
-              valueClassName="text-base font-semibold leading-none tracking-tight text-[#0f172a] sm:text-lg lg:text-[2.4rem]"
-              labelClassName="text-base leading-none text-[#0f172a] lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
-            />
+            <div className="hidden lg:col-start-3 lg:row-start-2 lg:block lg:self-end lg:justify-self-end">
+              <HeroStatsGrid
+                stats={heroStats}
+                className="grid grid-cols-2 gap-6 text-center"
+                itemClassName="inline-flex min-w-0 items-baseline gap-1.5 py-1 whitespace-nowrap lg:flex-col lg:items-center lg:gap-0.5 lg:py-0"
+                valueClassName="text-base font-semibold leading-none tracking-tight sm:text-lg lg:text-[2.4rem]"
+                labelClassName="text-base leading-none text-black/75 lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
+              />
+            </div>
+          </div>
+          <div className="w-full lg:pl-[160px]">
+            <HeroBioPreview description={profile?.description} onReadMore={onReadMore} />
           </div>
         </div>
       </div>

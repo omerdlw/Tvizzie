@@ -5,6 +5,7 @@ const eventSourceRegistry = new Map();
 const MAX_CONSECUTIVE_ERRORS = 5;
 const BASE_RETRY_DELAY_MS = 2000;
 const MAX_RETRY_DELAY_MS = 30000;
+const LIVE_EVENT_TYPES = ['follows', 'notifications', 'reviews', 'account', 'ready', 'ping'];
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -53,10 +54,16 @@ function attachEntrySource(entry) {
 
   const source = new EventSource('/api/live-updates');
   entry.source = source;
-  ['follows', 'notifications', 'reviews', 'ready', 'ping'].forEach((eventType) => {
+  LIVE_EVENT_TYPES.forEach((eventType) => {
     source.addEventListener(eventType, (event) => {
       entry.errorCount = 0;
-      const payload = JSON.parse(event?.data || '{}');
+      let payload = {};
+
+      try {
+        payload = JSON.parse(event?.data || '{}');
+      } catch {
+        payload = {};
+      }
       dispatchEvent(entry, eventType, payload);
     });
   });

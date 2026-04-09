@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from 'next/link';
 
-import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/core/constants';
+import { TMDB_IMG } from '@/core/constants';
+import { useNavHeight } from '@/core/modules/nav/hooks';
 import { cn, formatYear } from '@/core/utils';
-import { Button, Input, Textarea } from '@/ui/elements';
+import { AccountSectionReveal } from '@/features/account/profile/layout';
+import MediaCard from '@/features/shared/media-card';
+import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 function getPosterSrc(item) {
@@ -30,60 +32,38 @@ function getItemMeta(item) {
   return `Movie ${year !== 'N/A' ? `• ${year}` : ''}`.trim();
 }
 
-function PanelHeader({ badge, title, meta = null }) {
-  return (
-    <div className="flex items-end justify-between gap-3 px-5 pt-5 sm:px-6 sm:pt-6">
-      <div className="min-w-0">
-        <p className="text-[11px] font-semibold tracking-widest text-[#0f172a] uppercase">{badge}</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#0f172a]">{title}</h2>
-      </div>
-      {meta ? <p className="shrink-0 text-sm font-medium tracking-tight text-[#0f172a]">{meta}</p> : null}
-    </div>
-  );
-}
-
-function SearchResultCard({ isAdded, item, onAdd }) {
+function SearchGridCard({ isAdded, item, onAdd }) {
   const posterSrc = getPosterSrc(item);
+  const title = getItemTitle(item);
+  const meta = getItemMeta(item);
 
   return (
-    <button
-      type="button"
-      onClick={() => onAdd(item)}
-      disabled={isAdded}
+    <MediaCard
+      onClick={isAdded ? undefined : () => onAdd(item)}
       className={cn(
-        'grid w-full grid-cols-[72px_minmax(0,1fr)_auto] gap-3 border p-3 text-left sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:p-4',
-        isAdded ? 'cursor-default border-[#f59e0b] bg-[#fef3c7]' : 'cursor-pointer border-[#f97316] bg-[#fff7ed]'
+        'w-full border bg-white transition-all',
+        isAdded
+          ? 'cursor-default border-black/25 opacity-75'
+          : 'cursor-pointer border-black/10 hover:border-black/30 hover:shadow-sm'
       )}
-    >
-      <div className="relative aspect-[2/3] overflow-hidden border border-[#fb923c] bg-[#ffedd5]">
-        {posterSrc ? (
-          <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[#0f172a]">
-            <Icon icon="solar:videocamera-record-bold" size={18} />
+      imageSrc={posterSrc}
+      imageAlt={title}
+      imageSizes="(max-width: 768px) 50vw, (max-width: 1200px) 20vw, 14vw"
+      tooltipText={meta}
+      topOverlay={
+        <div className="pointer-events-none absolute top-2 right-2">
+          <div
+            className={cn(
+              'flex items-center gap-1 rounded-[8px] border px-2 py-1 text-[10px] font-bold tracking-wider uppercase backdrop-blur',
+              isAdded ? 'border-black! bg-black text-white' : 'border-black/20 bg-white/80 text-black'
+            )}
+          >
+            <Icon icon={isAdded ? 'solar:check-read-bold' : 'solar:add-circle-linear'} size={13} />
+            {isAdded ? 'Added' : 'Add'}
           </div>
-        )}
-      </div>
-
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="truncate text-base font-semibold text-[#0f172a]">{getItemTitle(item)}</h3>
-          <span className="text-[11px] font-medium tracking-wide text-[#0f172a] uppercase">Movie</span>
         </div>
-        <p className="mt-1 text-xs font-medium tracking-wide text-[#0f172a] uppercase">{getItemMeta(item)}</p>
-        {item?.overview ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#0f172a]">{item.overview}</p> : null}
-      </div>
-
-      <div className="flex items-start">
-        <span
-          className={cn(
-            'inline-flex min-w-[84px] items-center justify-center border border-[#0284c7] bg-[#dbeafe] px-3 py-2 text-[10px] font-bold tracking-widest text-[#0f172a] uppercase'
-          )}
-        >
-          {isAdded ? 'Added' : 'Add'}
-        </span>
-      </div>
-    </button>
+      }
+    />
   );
 }
 
@@ -91,31 +71,63 @@ function DraftItemCard({ index, item, onRemove }) {
   const posterSrc = getPosterSrc(item);
 
   return (
-    <div className="grid grid-cols-[24px_56px_minmax(0,1fr)_auto] items-center gap-3 border border-[#22d3ee] bg-[#cffafe] p-2">
-      <span className="text-center text-[11px] font-medium tracking-wide text-[#0f172a]">{index + 1}</span>
+    <div className="group flex items-center gap-3 rounded-[12px] border border-black/10 bg-white/80 p-2.5 transition-all hover:border-black/20">
+      <span className="w-6 text-center text-[11px] font-bold tracking-widest text-black/40">{index + 1}</span>
 
-      <div className="relative aspect-[2/3] overflow-hidden border border-[#06b6d4] bg-[#a5f3fc]">
+      <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded-[8px] border border-black/10 bg-black/5">
         {posterSrc ? (
           <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-[#0f172a]">
-            <Icon icon="solar:videocamera-record-bold" size={16} />
+          <div className="flex h-full w-full items-center justify-center text-black/30">
+            <Icon icon="solar:videocamera-record-bold" size={14} />
           </div>
         )}
       </div>
 
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-[#0f172a]">{getItemTitle(item)}</p>
-        <p className="mt-1 text-[10px] font-medium tracking-wide text-[#0f172a] uppercase">{getItemMeta(item)}</p>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p className="truncate text-[14px] font-semibold text-black">{getItemTitle(item)}</p>
+        <p className="mt-0.5 text-[10px] font-bold tracking-widest text-black/50 uppercase">{getItemMeta(item)}</p>
       </div>
 
       <Button
         variant="destructive-icon"
         onClick={() => onRemove(item)}
-        className="size-9"
+        className="mr-1 size-8 shrink-0 rounded-[8px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         aria-label={`Remove ${getItemTitle(item)}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
+      </Button>
+    </div>
+  );
+}
+
+function MobileDraftRowItem({ item, onRemove }) {
+  const posterSrc = getPosterSrc(item);
+
+  return (
+    <div className="flex min-w-[180px] items-center gap-2 rounded-[12px] border border-black/10 bg-white/85 p-2">
+      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[8px] border border-black/10 bg-black/5">
+        {posterSrc ? (
+          <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-black/30">
+            <Icon icon="solar:videocamera-record-bold" size={12} />
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[12px] font-semibold text-black">{getItemTitle(item)}</p>
+        <p className="truncate text-[10px] font-bold tracking-widest text-black/50 uppercase">{getItemMeta(item)}</p>
+      </div>
+
+      <Button
+        variant="destructive-icon"
+        onClick={() => onRemove(item)}
+        className="size-7 shrink-0 rounded-[8px]"
+        aria-label={`Remove ${getItemTitle(item)}`}
+      >
+        <Icon icon="solar:trash-bin-trash-bold" size={14} />
       </Button>
     </div>
   );
@@ -126,7 +138,6 @@ export default function ListCreatorView({
   draftItems,
   draftTitle,
   isSearching,
-  listIndexHref,
   onDescriptionChange,
   onQuickAddTopResult,
   onRemoveDraftItem,
@@ -138,154 +149,188 @@ export default function ListCreatorView({
   searchResults,
   seededItemTitle,
 }) {
+  const { navHeight } = useNavHeight();
   const selectedKeys = useMemo(
     () => new Set(draftItems.map((item) => `${item.entityType}-${item.entityId}`)),
     [draftItems]
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white">
-      <div
-        className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-4 pt-8 pb-20 sm:px-8 sm:pt-10 sm:pb-24`}
-      >
-        <div className="flex flex-col gap-2">
-          <h1 className="font-zuume text-5xl leading-none tracking-tight text-[#0f172a] uppercase sm:text-6xl">
-            Create List
-          </h1>
-          {seededItemTitle ? (
-            <p className="text-sm leading-6 text-[#0f172a]">
-              Seeded with <span className="text-[#0f172a]">{seededItemTitle}</span>
-            </p>
-          ) : null}
-        </div>
+    <main className="h-screen w-screen overflow-hidden">
+      <AccountSectionReveal className="h-full min-h-0">
+        <div className="h-full min-h-0 w-full overflow-hidden border border-black/10 bg-white/55 shadow-sm backdrop-blur-md">
+          <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
+            <section className="flex min-h-0 flex-col overflow-hidden border-b border-black/10 lg:border-r lg:border-b-0">
+              <div className="border-b border-black/10 p-4 sm:p-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Title</label>
+                    <Input
+                      value={draftTitle}
+                      onChange={(event) => onTitleChange(event.target.value)}
+                      placeholder="90s Sci-Fi Essentials"
+                      className={{
+                        wrapper:
+                          'flex h-12 items-center rounded-[12px] border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
+                        input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
+                      }}
+                    />
+                  </div>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex flex-col gap-5">
-            <section className="border border-[#f59e0b] bg-[#fef3c7]">
-              <PanelHeader badge="List Details" title="Details" />
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Description</label>
+                    <Input
+                      value={draftDescription}
+                      onChange={(event) => onDescriptionChange(event.target.value)}
+                      placeholder="Optional"
+                      className={{
+                        wrapper:
+                          'flex h-12 items-center rounded-[12px] border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
+                        input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
+                      }}
+                    />
+                  </div>
+                </div>
 
-              <div className="grid gap-3 px-5 py-5 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-semibold tracking-widest text-[#0f172a] uppercase">Title</label>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">
+                      Search Movie
+                    </label>
+                    {seededItemTitle ? (
+                      <span className="truncate rounded-[8px] border border-black/10 bg-white px-2 py-1 text-[10px] font-bold tracking-widest text-black/70 uppercase">
+                        Seeded: {seededItemTitle}
+                      </span>
+                    ) : null}
+                  </div>
+
                   <Input
-                    value={draftTitle}
-                    onChange={(event) => onTitleChange(event.target.value)}
-                    placeholder="90s Sci-Fi Essentials"
-                    className={{
-                      wrapper: 'border border-[#38bdf8] bg-[#e0f2fe] px-4',
-                      input: 'h-12 text-sm text-[#0f172a] outline-none placeholder:text-[#475569]',
+                    value={searchQuery}
+                    onChange={(event) => onSearchChange(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        onQuickAddTopResult();
+                      }
                     }}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-semibold tracking-widest text-[#0f172a] uppercase">
-                    Description
-                  </label>
-                  <Textarea
-                    value={draftDescription}
-                    onChange={(event) => onDescriptionChange(event.target.value)}
-                    placeholder="Optional"
-                    maxHeight={220}
-                    className={{
-                      textarea:
-                        'min-h-[120px] w-full border border-[#0ea5e9] bg-[#dbeafe] px-4 py-3 text-sm text-[#0f172a] outline-none placeholder:text-[#475569]',
-                    }}
-                  />
-                </div>
-              </div>
-            </section>
-
-            <section className="border border-[#8b5cf6] bg-[#ede9fe]">
-              <PanelHeader badge="Quick Add" title="Quick Add" />
-
-              <div className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
-                <Input
-                  value={searchQuery}
-                  onChange={(event) => onSearchChange(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                      onQuickAddTopResult();
+                    placeholder="Search movies"
+                    autoFocus
+                    leftIcon={<Icon icon="solar:magnifer-linear" size={18} className="text-black/45" />}
+                    rightIcon={
+                      isSearching ? (
+                        <Icon icon="solar:spinner-bold" size={18} className="animate-spin text-black/40" />
+                      ) : null
                     }
-                  }}
-                  placeholder="Search movies"
-                  autoFocus
-                  leftIcon={<Icon icon="solar:magnifer-bold" size={16} />}
-                  rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="animate-spin" /> : null}
-                  className={{
-                    wrapper: 'border border-[#f97316] bg-[#ffedd5] px-4',
-                    input: 'h-13 text-sm text-[#0f172a] outline-none placeholder:text-[#475569]',
-                    leftIcon: 'flex shrink-0 items-center pr-3 text-[#0f172a]',
-                    rightIcon: 'flex shrink-0 items-center pl-3 text-[#0f172a]',
-                  }}
-                />
+                    className={{
+                      wrapper:
+                        'flex h-12 items-center rounded-[12px] border border-black/20 bg-white px-4 transition focus-within:border-black/20 hover:border-black/30',
+                      input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
+                      leftIcon: 'flex shrink-0 items-center pr-3',
+                      rightIcon: 'flex shrink-0 items-center pl-3',
+                    }}
+                  />
+                </div>
 
                 {searchError ? (
-                  <div className="border border-[#dc2626] bg-[#fecaca] px-4 py-3 text-sm text-[#7f1d1d]">
+                  <div className="mt-3 rounded-[12px] border border-[#dc2626]/25 bg-[#fecaca]/60 px-4 py-3 text-sm text-[#991b1b]">
                     {searchError}
                   </div>
                 ) : null}
+              </div>
 
-                <div className="space-y-2.5">
-                  {searchResults.length > 0 ? (
-                    searchResults.map((item) => (
-                      <SearchResultCard
+              <div
+                data-lenis-prevent
+                data-lenis-prevent-wheel
+                data-lenis-prevent-touch
+                className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain p-4 sm:p-5"
+                style={{ paddingBottom: `calc(${Math.max(0, Math.round(navHeight || 0))}px + 1rem)` }}
+              >
+                <div className="mb-4 border-b border-black/10 pb-4 lg:hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold tracking-widest text-black uppercase">Draft</p>
+                    <p className="text-xs font-semibold text-black/70">{draftItems.length} items</p>
+                  </div>
+
+                  <div className="mt-2 flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
+                    {draftItems.length > 0 ? (
+                      draftItems.map((item) => (
+                        <MobileDraftRowItem
+                          key={`mobile-${item.entityType}-${item.entityId}`}
+                          item={item}
+                          onRemove={onRemoveDraftItem}
+                        />
+                      ))
+                    ) : (
+                      <div className="flex h-14 min-w-[180px] items-center justify-center rounded-[12px] border border-dashed border-black/10 bg-white/60 px-3 text-xs text-black/55">
+                        No titles yet
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {searchResults.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                    {searchResults.map((item) => (
+                      <SearchGridCard
                         key={`${item.entityType}-${item.entityId}`}
                         item={item}
                         isAdded={selectedKeys.has(`${item.entityType}-${item.entityId}`)}
                         onAdd={onResultAdd}
                       />
-                    ))
-                  ) : (
-                    <div className="flex min-h-[220px] items-center justify-center border border-[#6366f1] bg-[#e0e7ff] px-6 text-center text-sm text-[#0f172a]">
-                      {searchQuery.trim()
-                        ? isSearching
-                          ? 'Searching...'
-                          : 'No results'
-                        : 'Search to start adding titles'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <aside className="flex flex-col gap-6 xl:sticky xl:top-6 xl:self-start">
-            <section className="border border-[#14b8a6] bg-[#ccfbf1]">
-              <PanelHeader badge="Draft" title="Draft" meta={`${draftItems.length}`} />
-
-              <div className="space-y-3 px-5 py-5 sm:px-6 sm:py-6">
-                {draftItems.length > 0 ? (
-                  <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
-                    {draftItems.map((item, index) => (
-                      <DraftItemCard
-                        key={`${item.entityType}-${item.entityId}`}
-                        index={index}
-                        item={item}
-                        onRemove={onRemoveDraftItem}
-                      />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex min-h-40 items-center justify-center border border-[#0ea5a4] bg-[#99f6e4] px-6 text-center text-sm text-[#0f172a]">
+                  <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 rounded-[12px] border border-dashed border-black/10 bg-white/60 px-6 text-center text-sm text-black/55 sm:min-h-[280px]">
+                    <Icon
+                      icon={searchQuery.trim() && !isSearching ? 'solar:ghost-smile-bold' : 'solar:magnifer-linear'}
+                      size={32}
+                      className="text-black/25"
+                    />
+                    {searchQuery.trim()
+                      ? isSearching
+                        ? 'Searching...'
+                        : 'No results found'
+                      : 'Search to start adding titles'}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <aside className="hidden min-h-0 flex-col border-t border-black/10 lg:flex lg:border-t-0">
+              <div className="border-b border-black/10 px-4 py-4 sm:px-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-bold tracking-widest text-black uppercase">Draft</p>
+                  <p className="text-xs font-semibold text-black/60">{draftItems.length} items</p>
+                </div>
+              </div>
+
+              <div
+                data-lenis-prevent
+                data-lenis-prevent-wheel
+                data-lenis-prevent-touch
+                className="min-h-0 flex-1 touch-pan-y space-y-2 overflow-y-auto overscroll-contain p-4 sm:p-5"
+                style={{ paddingBottom: `calc(${Math.max(0, Math.round(navHeight || 0))}px + 1rem)` }}
+              >
+                {draftItems.length > 0 ? (
+                  draftItems.map((item, index) => (
+                    <DraftItemCard
+                      key={`${item.entityType}-${item.entityId}`}
+                      index={index}
+                      item={item}
+                      onRemove={onRemoveDraftItem}
+                    />
+                  ))
+                ) : (
+                  <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-black/10 bg-white/60 px-5 text-center text-sm text-black/55 sm:min-h-[220px] sm:gap-3">
+                    <Icon icon="solar:box-minimalistic-bold" size={30} className="text-black/25" />
                     No titles yet
                   </div>
                 )}
-
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                  <Link
-                    href={listIndexHref}
-                    className="inline-flex h-11 items-center justify-center gap-2 border border-[#6d28d9] bg-[#ddd6fe] px-5 text-[11px] font-bold tracking-widest text-[#0f172a] uppercase disabled:cursor-not-allowed"
-                  >
-                    Cancel
-                  </Link>
-                </div>
               </div>
-            </section>
-          </aside>
+            </aside>
+          </div>
         </div>
-      </div>
+      </AccountSectionReveal>
     </main>
   );
 }

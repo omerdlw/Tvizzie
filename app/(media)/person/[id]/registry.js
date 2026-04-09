@@ -5,6 +5,7 @@ import { useState } from 'react';
 import ImagePreviewModal from '@/features/modal/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
+import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';
 import { EASING, TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 
@@ -34,6 +35,8 @@ const PERSON_BACKGROUND_ANIMATION = Object.freeze({
   },
 });
 
+const PERSON_POSTER_CONTEXT_TARGET = '[data-context-menu-target="person-poster-card"]';
+
 function getNavDescription(person, age) {
   const ageLabel =
     age !== null && age !== undefined ? `${age}${person?.deathday ? ' years lived' : ' years old'}` : null;
@@ -41,7 +44,17 @@ function getNavDescription(person, age) {
   return [person?.known_for_department, ageLabel].filter(Boolean).join(' • ');
 }
 
-export default function Registry({ person, activeView, setActiveView, age, backgroundImage, isLoading = false }) {
+export default function Registry({
+  person,
+  activeView,
+  setActiveView,
+  age,
+  backgroundImage,
+  onSetPersonPoster,
+  onResetPersonPoster,
+  canResetPersonPoster = false,
+  isLoading = false,
+}) {
   const [isSearching, setIsSearching] = useState(false);
   const title = person?.name || (isLoading ? '' : undefined);
   const description = getNavDescription(person, age) || undefined;
@@ -93,6 +106,44 @@ export default function Registry({ person, activeView, setActiveView, age, backg
                   opacity: 0,
                 },
               },
+        }
+      : {}),
+    ...(typeof onSetPersonPoster === 'function' || typeof onResetPersonPoster === 'function'
+      ? {
+          contextMenu: {
+            menus: [
+              {
+                key: 'person-poster-context-menu',
+                target: PERSON_POSTER_CONTEXT_TARGET,
+                priority: 225,
+                resolveContext: (_event, context) => {
+                  const target = context?.target;
+                  const posterCard =
+                    target && typeof target.closest === 'function'
+                      ? target.closest(PERSON_POSTER_CONTEXT_TARGET)
+                      : null;
+                  const filePath = posterCard?.getAttribute('data-poster-file-path') || null;
+
+                  return {
+                    payload: {
+                      filePath,
+                      personId: person?.id || null,
+                    },
+                  };
+                },
+                items: (menuContext) => {
+                  const filePath = menuContext?.payload?.filePath;
+
+                  return createMoviePosterContextMenuItems({
+                    filePath,
+                    onSetMoviePoster: onSetPersonPoster,
+                    onResetMoviePoster: onResetPersonPoster,
+                    canResetPoster: canResetPersonPoster,
+                  });
+                },
+              },
+            ],
+          },
         }
       : {}),
     loading: { isLoading },

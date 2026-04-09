@@ -1,15 +1,14 @@
 'use client';
 
-import AuthGoogleAction from '@/features/navigation/actions/auth-google-action';
 import { useRegistry } from '@/core/modules/registry';
 
-export default function Registry({ authIsReady, isGoogleSubmitting, onGoogleSignUp }) {
+export default function Registry({ authIsReady }) {
   useRegistry({
     nav: {
       title: 'Sign Up',
       description: 'Create your account',
       icon: 'solar:user-plus-bold',
-      action: <AuthGoogleAction isLoading={isGoogleSubmitting} onClick={onGoogleSignUp} />,
+      action: null,
     },
     loading: { isLoading: !authIsReady },
   });

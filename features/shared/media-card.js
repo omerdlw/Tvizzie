@@ -61,6 +61,7 @@ const CardWrapper = forwardRef(function CardWrapper({ href, onClick, className, 
 export default function MediaCard({
   href,
   onClick,
+  onContextMenu,
   className,
   aspectClass = 'aspect-2/3',
   frameClassName,
@@ -77,13 +78,14 @@ export default function MediaCard({
   imageClassName,
   imageBaseClassName = 'object-cover transition-transform duration-(--motion-duration-normal) ',
   fallbackIcon = 'solar:gallery-bold',
-  fallbackIconClassName = 'text-[#0f172a]',
+  fallbackIconClassName = '',
   fallbackIconSize = 20,
   fallbackContent,
   overlay,
   topOverlay,
   tooltipText,
   title,
+  ...props
 }) {
   const [hasError, setHasError] = useState(false);
   const hasImage = Boolean(imageSrc) && !hasError;
@@ -93,7 +95,9 @@ export default function MediaCard({
     <CardWrapper
       href={href}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       className={cn('group flex shrink-0 flex-col overflow-hidden rounded-[14px] transition ease-in-out', className)}
+      {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
         <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>

@@ -1,8 +1,20 @@
-export default function VideoPreviewModal({ data }) {
+'use client';
+
+import Container from '@/core/modules/modal/container';
+
+export default function VideoPreviewModal({ close, data }) {
   if (!data?.key) return null;
 
   return (
-    <div className="relative max-h-[85vh] w-[min(92vw,1200px)] overflow-auto">
+    <Container
+      className="relative max-h-[85vh] w-[min(92vw,1200px)]"
+      close={close}
+      header={false}
+      bodyClassName="p-0"
+      footer={{
+        left: data?.name || 'Video preview',
+      }}
+    >
       <div className="relative aspect-video h-auto w-full">
         <iframe
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -12,6 +24,6 @@ export default function VideoPreviewModal({ data }) {
           allowFullScreen
         />
       </div>
-    </div>
+    </Container>
   );
 }

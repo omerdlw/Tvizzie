@@ -14,7 +14,7 @@ export default function PersonBio({ biography }) {
   return (
     <div className="flex w-full flex-col gap-2">
       <p
-        className="text-pretty text-sm leading-relaxed text-black/70 transition-all duration-[var(--motion-duration-normal)]"
+        className="text-sm leading-relaxed text-pretty text-black/70 transition-all duration-[var(--motion-duration-normal)]"
         style={
           !expanded && isLong
             ? {

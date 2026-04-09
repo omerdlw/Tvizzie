@@ -7,9 +7,9 @@ import Link from 'next/link';
 
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
+import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
 
 import MediaThumb from './media-thumb';
-import { Spinner } from '@/ui/loadings/spinner';
 
 function isWinType(type = '') {
   const normalizedType = String(type).trim().toLowerCase();
@@ -124,11 +124,7 @@ export default function PersonAwards({ personId }) {
   const awardsTimeline = useMemo(() => buildAwardsTimeline(awardsData?.organizations || []), [awardsData]);
 
   if (status === 'loading') {
-    return (
-      <div className="mt-20 flex w-full justify-center">
-        <Spinner size={50} />
-      </div>
-    );
+    return <PersonAwardsSkeleton className="mt-10" />;
   }
 
   if (status === 'error') {
@@ -158,11 +154,11 @@ export default function PersonAwards({ personId }) {
           <motion.div
             key={year}
             className="mt-4 first:mt-0"
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18 }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              delay: reduceMotion ? 0 : yearIndex * 0.04,
-              duration: reduceMotion ? 0.14 : 0.32,
+              delay: reduceMotion ? 0 : yearIndex * 0.045,
+              duration: reduceMotion ? 0.16 : 0.36,
               ease: [0.22, 1, 0.36, 1],
             }}
           >
@@ -205,11 +201,11 @@ export default function PersonAwards({ personId }) {
                   return (
                     <motion.div
                       key={entry.key}
-                      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
-                        delay: reduceMotion ? 0 : yearIndex * 0.04 + entryIndex * 0.018,
-                        duration: reduceMotion ? 0.14 : 0.26,
+                        delay: reduceMotion ? 0 : yearIndex * 0.045 + entryIndex * 0.02,
+                        duration: reduceMotion ? 0.16 : 0.3,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                     >
@@ -223,11 +219,11 @@ export default function PersonAwards({ personId }) {
                 return (
                   <motion.div
                     key={entry.key}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{
-                      delay: reduceMotion ? 0 : yearIndex * 0.04 + entryIndex * 0.018,
-                      duration: reduceMotion ? 0.14 : 0.26,
+                      delay: reduceMotion ? 0 : yearIndex * 0.045 + entryIndex * 0.02,
+                      duration: reduceMotion ? 0.16 : 0.3,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                     className={rowClassName}

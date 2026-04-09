@@ -78,7 +78,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
   const headerIcon =
     meta?.isSending && !meta?.hasChallenge ? (
-      <Spinner size={24} className={'text-[#0f766e]'} />
+      <Spinner size={24} />
     ) : (
       'solar:shield-keyhole-bold'
     );
@@ -88,11 +88,9 @@ export default function AuthVerificationSurface({ close, data, header }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-verification-surface-title"
-      className={`flex flex-col gap-3 rounded-[12px] border border-[#8b5cf6] bg-[#ddd6fe] px-1 py-1`}
+      className={`flex flex-col gap-3`}
     >
-      <div
-        className={`relative flex h-auto w-full items-center space-x-3 rounded-[10px] border border-[#2563eb] bg-[#bfdbfe] px-2 py-2`}
-      >
+      <div className={`relative flex h-auto w-full items-center gap-2`}>
         <div className="center relative">
           <BadgeIcon icon={headerIcon} />
         </div>
@@ -100,7 +98,6 @@ export default function AuthVerificationSurface({ close, data, header }) {
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
           <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <Title text={resolvedHeader.title} style={{ className: '!normal-case !truncate' }} />
-
             {resolvedHeader.description ? <Description text={resolvedHeader.description} /> : null}
           </div>
 

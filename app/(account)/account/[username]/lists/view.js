@@ -1,44 +1,6 @@
-import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid';
-import AccountPageShell from '@/features/account/page-shell';
-import AccountSectionState from '@/features/account/section-state';
-import Icon from '@/ui/icon';
+import AccountListsFeed from '@/features/account/feeds/lists';
+import { AccountPageShell } from '@/features/account/profile/layout';
 import Registry from './registry';
-import { Button } from '@/ui/elements/index';
-
-function ListCardOwnerActions({ list, onDelete, onEdit }) {
-  const handleEditClick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onEdit(list);
-  };
-
-  const handleDeleteClick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onDelete(list);
-  };
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <button
-        type="button"
-        aria-label={`Edit ${list.title}`}
-        onClick={handleEditClick}
-        className="center size-9 border border-[#0284c7] text-[#0f172a] transition"
-      >
-        <Icon icon="solar:pen-bold" size={13} />
-      </button>
-      <Button
-        variant="destructive-icon"
-        aria-label={`Delete ${list.title}`}
-        onClick={handleDeleteClick}
-        className="size-9"
-      >
-        <Icon icon="solar:trash-bin-trash-bold" size={13} />
-      </Button>
-    </div>
-  );
-}
 
 export default function ListsView({
   auth,
@@ -120,21 +82,15 @@ export default function ListsView({
       watchedCount={profile?.watchedCount || 0}
       watchlistCount={watchlistCount}
     >
-      {canShowLists ? (
-        <AccountPaginatedListGrid
-          currentPage={currentPage}
-          emptyMessage="No lists yet"
-          icon="solar:list-broken"
-          lists={lists}
-          pageBasePath={`/account/${username}/lists`}
-          renderActions={(list) =>
-            isOwner ? <ListCardOwnerActions list={list} onDelete={handleDeleteList} onEdit={handleEditList} /> : null
-          }
-          title="Lists"
-        />
-      ) : (
-        <AccountSectionState message="This profile is private." />
-      )}
+      <AccountListsFeed
+        canShowLists={canShowLists}
+        currentPage={currentPage}
+        isOwner={isOwner}
+        lists={lists}
+        onDeleteList={handleDeleteList}
+        onEditList={handleEditList}
+        username={username}
+      />
     </AccountPageShell>
   );
 }

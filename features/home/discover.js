@@ -65,7 +65,7 @@ function getPageInfo(data) {
 
 function getGenreButtonClass(isActive) {
   return cn(
-    'shrink-0 border px-4 py-1.5 text-xs font-semibold tracking-wide text-[#0f172a] transition-colors duration-300',
+    'shrink-0 border px-4 py-1.5 text-xs font-semibold tracking-wide  transition-colors duration-300',
     isActive ? 'border-[#2563eb] bg-[#bfdbfe]' : 'border-[#0284c7] bg-[#dbeafe]'
   );
 }
@@ -283,8 +283,8 @@ export default function HomeDiscover({
       {showInitialLoading ? (
         <div className="flex h-[300px] w-full items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <Icon icon="solar:spinner-bold" size={32} className="animate-spin text-[#0f172a]" />
-            <p className="text-sm font-medium text-[#0f172a]">Loading movies...</p>
+            <Icon icon="solar:spinner-bold" size={32} className="animate-spin" />
+            <p className="text-sm font-medium">Loading movies...</p>
           </div>
         </div>
       ) : showGrid ? (
@@ -314,15 +314,15 @@ export default function HomeDiscover({
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="border border-[#0284c7] bg-[#bfdbfe] px-4 py-2">
                 <div className="flex items-center gap-3">
-                  <Icon icon="solar:spinner-bold" size={22} className="animate-spin text-[#0f172a]" />
-                  <span className="text-sm font-medium text-[#0f172a]">Updating...</span>
+                  <Icon icon="solar:spinner-bold" size={22} className="animate-spin" />
+                  <span className="text-sm font-medium">Updating...</span>
                 </div>
               </div>
             </div>
           )}
         </div>
       ) : showEmptyState ? (
-        <div className="flex h-[300px] w-full flex-col items-center justify-center gap-3 text-[#0f172a]">
+        <div className="flex h-[300px] w-full flex-col items-center justify-center gap-3">
           <Icon icon="solar:ghost-bold" size={48} />
           <p className="text-sm font-semibold tracking-wide">
             {status === 'error' ? 'Movies could not be loaded right now' : 'No results found'}
@@ -331,7 +331,7 @@ export default function HomeDiscover({
             <button
               type="button"
               onClick={() => setReloadKey((value) => value + 1)}
-              className="border border-[#0284c7] px-4 py-2 text-xs font-semibold tracking-widest text-[#0f172a] uppercase transition-colors"
+              className="border border-[#0284c7] px-4 py-2 text-xs font-semibold tracking-widest uppercase transition-colors"
             >
               Try Again
             </button>
@@ -339,7 +339,7 @@ export default function HomeDiscover({
         </div>
       ) : null}
 
-      {showInlineStatus && <p className="text-sm font-medium text-[#0f172a]">{errorMessage}</p>}
+      {showInlineStatus && <p className="text-sm font-medium">{errorMessage}</p>}
 
       {(canRevealMore || canRequestMore) && status !== 'loading' && showGrid && (
         <div className="mt-6 flex justify-center pb-4">
@@ -347,7 +347,7 @@ export default function HomeDiscover({
             type="button"
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="group flex items-center gap-2 rounded-full border border-[#0284c7] px-5 py-2.5 text-xs font-semibold tracking-wider text-[#0f172a] uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="group flex items-center gap-2 rounded-full border border-[#0284c7] px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoadingMore ? (
               <>

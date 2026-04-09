@@ -34,8 +34,8 @@ function HomeContentRow({ title, items = [] }) {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-widest text-[#0f172a] uppercase">{title}</h2>
-        <button className="text-xs font-medium text-[#0f172a] transition-colors">View All</button>
+        <h2 className="text-sm font-semibold tracking-widest uppercase">{title}</h2>
+        <button className="text-xs font-medium transition-colors">View All</button>
       </div>
       <Carousel
         gap="gap-3"

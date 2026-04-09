@@ -1,6 +1,6 @@
-import AccountPageShell from '@/features/account/page-shell';
-import AccountReviewFeed from '@/features/account/sections/review-feed';
-import AccountSectionState from '@/features/account/section-state';
+import { AccountPageShell } from '@/features/account/profile/layout';
+import AccountReviewFeed from '@/features/account/feeds/reviews';
+import { AccountSectionState } from '@/features/account/profile/section-wrapper';
 import Registry from './registry';
 
 export default function ReviewsView({

@@ -1,8 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { getPreferredMovieBackground } from '@/features/movie/utils';
+import {
+  clearPersonPosterPreference,
+  getPersonPosterPreferenceFilePath,
+  setPersonPosterPreference,
+} from '@/features/person/poster-preferences';
 import { calculateAge, getBackgroundMovieCandidates } from '@/features/person/utils';
 import { TMDB_IMG } from '@/core/constants';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
@@ -41,10 +46,50 @@ async function resolvePersonBackgroundImage(person) {
 }
 
 export default function Client({ person, secondaryDataPromise }) {
+  const personId = person?.id;
+  const fallbackPosterFilePath = person?.profile_path || null;
   const [activeView, setActiveView] = useState('main');
   const fallbackBackgroundImage = useMemo(() => getFallbackBackgroundImage(person), [person]);
   const [backgroundImage, setBackgroundImage] = useState(fallbackBackgroundImage);
+  const [posterFilePath, setPosterFilePath] = useState(fallbackPosterFilePath);
+  const [canResetPersonPoster, setCanResetPersonPoster] = useState(false);
   const age = useMemo(() => calculateAge(person?.birthday, person?.deathday), [person?.birthday, person?.deathday]);
+  const resolvedPerson = useMemo(
+    () => ({
+      ...person,
+      profile_path: posterFilePath || person?.profile_path || null,
+    }),
+    [person, posterFilePath]
+  );
+
+  const handleSetPersonPoster = useCallback(
+    ({ filePath }) => {
+      if (!personId || typeof filePath !== 'string' || !filePath.trim()) {
+        return;
+      }
+
+      setPersonPosterPreference(personId, filePath);
+      setCanResetPersonPoster(true);
+      setPosterFilePath(filePath);
+    },
+    [personId]
+  );
+
+  const handleResetPersonPoster = useCallback(() => {
+    if (!personId) {
+      return;
+    }
+
+    clearPersonPosterPreference(personId);
+    setCanResetPersonPoster(false);
+    setPosterFilePath(fallbackPosterFilePath || null);
+  }, [fallbackPosterFilePath, personId]);
+
+  useEffect(() => {
+    const preferredPosterFilePath = getPersonPosterPreferenceFilePath(personId);
+    setCanResetPersonPoster(Boolean(preferredPosterFilePath));
+    setPosterFilePath(preferredPosterFilePath || fallbackPosterFilePath || null);
+  }, [fallbackPosterFilePath, personId]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -76,12 +121,15 @@ export default function Client({ person, secondaryDataPromise }) {
 
   return (
     <PersonView
-      person={person}
+      person={resolvedPerson}
       secondaryDataPromise={secondaryDataPromise}
       activeView={activeView}
       setActiveView={setActiveView}
       age={age}
       backgroundImage={backgroundImage}
+      onSetPersonPoster={handleSetPersonPoster}
+      onResetPersonPoster={handleResetPersonPoster}
+      canResetPersonPoster={canResetPersonPoster}
     />
   );
 }

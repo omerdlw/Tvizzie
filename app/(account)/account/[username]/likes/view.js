@@ -1,10 +1,5 @@
-import FavoriteShowcaseManager from '@/features/account/favorite-showcase-manager';
-import AccountMediaGridPage from '@/features/account/sections/media-grid-page';
-import AccountPageShell from '@/features/account/page-shell';
-import AccountPaginatedListGrid from '@/features/account/lists/paginated-list-grid';
-import AccountProfileMediaActions from '@/features/account/profile/profile-media-actions';
-import AccountReviewFeed from '@/features/account/sections/review-feed';
-import AccountSectionState from '@/features/account/section-state';
+import AccountLikesFeed from '@/features/account/feeds/likes';
+import { AccountPageShell } from '@/features/account/profile/layout';
 import Registry from './registry';
 
 export default function LikesView({
@@ -102,75 +97,31 @@ export default function LikesView({
       watchedCount={profile?.watchedCount || 0}
       watchlistCount={watchlistCount}
     >
-      {isOwner && activeSegment === 'films' ? (
-        <FavoriteShowcaseManager
-          items={favoriteShowcase}
-          isSaving={isShowcaseSaving}
-          onRemoveItem={handleToggleShowcase}
-          onReorder={persistShowcase}
-        />
-      ) : null}
-
-      {canShowLikesGrid ? (
-        activeSegment === 'films' ? (
-          <AccountMediaGridPage
-            currentPage={currentPage}
-            emptyMessage="No liked films yet"
-            icon="solar:heart-bold"
-            items={likes}
-            pageBasePath={`/account/${username}/likes?segment=films`}
-            renderOverlay={(item) =>
-              isOwner ? (
-                <AccountProfileMediaActions
-                  extraActions={[
-                    {
-                      disabled: !showcaseMap.has(item.mediaKey) && favoriteShowcase.length >= 5,
-                      icon: showcaseMap.has(item.mediaKey) ? 'solar:star-bold' : 'solar:star-linear',
-                      label: showcaseMap.has(item.mediaKey)
-                        ? 'Remove from favorites showcase'
-                        : 'Add to favorites showcase',
-                      onClick: handleToggleShowcase,
-                    },
-                  ]}
-                  media={item}
-                  onRemoveItem={handleRequestRemoveLike}
-                  removeLabel={`Remove ${item.title || item.name} from likes`}
-                  userId={auth.user?.id || null}
-                />
-              ) : null
-            }
-            title="Films"
-          />
-        ) : activeSegment === 'reviews' ? (
-          <AccountReviewFeed
-            currentUserId={auth.user?.id || null}
-            emptyMessage="No liked reviews yet"
-            hasMore={hasMoreReviews}
-            icon="solar:chat-round-bold"
-            isLoading={isReviewsLoading}
-            items={reviews}
-            loadError={reviewsError}
-            onLike={handleLike}
-            onLoadMore={() => loadReviews({ append: true })}
-            showOwnActions={false}
-            title="Reviews"
-            watchedItems={watchedItems}
-          />
-        ) : (
-          <AccountPaginatedListGrid
-            currentPage={currentPage}
-            emptyMessage="No liked lists yet"
-            icon="solar:list-broken"
-            isLoading={isLikedListsLoading}
-            lists={likedLists}
-            loadError={likedListsError}
-            pageBasePath={`/account/${username}/likes?segment=lists`}
-            title="Lists"
-          />
-        )
-      ) : (
-        <AccountSectionState message="This profile is private." />
-      )}
+      <AccountLikesFeed
+        activeSegment={activeSegment}
+        auth={auth}
+        canShowLikesGrid={canShowLikesGrid}
+        currentPage={currentPage}
+        favoriteShowcase={favoriteShowcase}
+        handleLike={handleLike}
+        handleRequestRemoveLike={handleRequestRemoveLike}
+        handleToggleShowcase={handleToggleShowcase}
+        hasMoreReviews={hasMoreReviews}
+        isLikedListsLoading={isLikedListsLoading}
+        isOwner={isOwner}
+        isReviewsLoading={isReviewsLoading}
+        isShowcaseSaving={isShowcaseSaving}
+        likedLists={likedLists}
+        likedListsError={likedListsError}
+        likes={likes}
+        loadReviews={loadReviews}
+        persistShowcase={persistShowcase}
+        reviews={reviews}
+        reviewsError={reviewsError}
+        showcaseMap={showcaseMap}
+        username={username}
+        watchedItems={watchedItems}
+      />
     </AccountPageShell>
   );
 }

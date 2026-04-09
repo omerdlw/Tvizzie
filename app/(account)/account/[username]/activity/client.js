@@ -8,7 +8,7 @@ import {
   shouldBlockAccountFeedLoad,
   useAccountSectionPage,
   useSeededFeedState,
-} from '@/features/account/section-client-hooks';
+} from '@/features/account/hooks/section-page';
 import { logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';

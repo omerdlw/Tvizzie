@@ -4,6 +4,7 @@ import { pipe } from '@/core/utils/pipe';
 import { ACCOUNT_CONFIG } from '@/config/account.config';
 import { AUTH_CONFIG } from '@/config/auth.config';
 import { isProjectFeatureEnabled } from '@/config/project.config';
+import GlobalContextMenuRegistry from '@/features/layout/global-context-menu-registry';
 import NotificationsModal from '@/features/modal/notifications-modal';
 import AccountNavRegistry from '@/features/navigation/account-nav-registry';
 import { AccountProvider } from '@/core/modules/account';
@@ -59,6 +60,7 @@ export function InteractiveFeatureBoundary({ children }) {
   return (
     <InteractiveProviders>
       <AccountNavRegistry />
+      <GlobalContextMenuRegistry />
       <GlobalNotificationModalRegistry />
       <NotificationContainer />
       <NotificationListener />

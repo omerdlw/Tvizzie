@@ -26,6 +26,8 @@ const ACTION_ORDER = Object.freeze({
   SCROLL_TOP: 20,
   LOGOUT: 30,
 });
+const UNREAD_COUNT_SUBSCRIPTION_INTERVAL_MS = 15000;
+const UNREAD_COUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 
 function stopPropagation(event) {
   event.stopPropagation();
@@ -111,9 +113,16 @@ function useDefaultNavActions() {
       return undefined;
     }
 
-    return subscribeToUnreadCount(user.id, (count) => {
-      setUnreadCount(count);
-    });
+    return subscribeToUnreadCount(
+      user.id,
+      (count) => {
+        setUnreadCount(count);
+      },
+      {
+        hiddenIntervalMs: UNREAD_COUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+        intervalMs: UNREAD_COUNT_SUBSCRIPTION_INTERVAL_MS,
+      }
+    );
   }, [isAuthenticated, isAuthSessionReady, isReady, subscribeToUnreadCount, user?.id]);
 
   return useMemo(
@@ -145,9 +154,10 @@ function useDefaultNavActions() {
 
           try {
             await signOut();
-            router.replace('/');
           } catch (error) {
             toast.error(error?.message || 'Could not sign out');
+          } finally {
+            router.replace('/');
           }
         },
       },
@@ -225,7 +235,7 @@ export function NavAction({ action }) {
         <Icon icon={action.icon} size={16} />
         {action.badge ? (
           <span
-            className={`center absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold`}
+            className={`center bg-info absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold text-white!`}
           >
             {action.badge}
           </span>

@@ -1,7 +1,7 @@
 'use client';
 
 import Icon from '@/ui/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from './styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 
 export default function PersonAction({ activeView, setActiveView }) {
   const toggle = (view) => setActiveView(activeView === view ? 'main' : view);

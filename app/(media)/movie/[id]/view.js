@@ -51,10 +51,7 @@ function RelatedMoviesSection({ items, title, delay = 0 }) {
     <MovieSectionReveal className="mt-10" delay={delay}>
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">{title}</h2>
-        <Carousel
-          gap="gap-3"
-          itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]"
-        >
+        <Carousel gap="gap-3" itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]">
           {items.map((item, index) => (
             <RecommendationCard
               key={item.id}
@@ -69,7 +66,12 @@ function RelatedMoviesSection({ items, title, delay = 0 }) {
   );
 }
 
-function MovieGalleryDeferred({ secondaryDataPromise }) {
+function MovieGalleryDeferred({
+  onSetMovieBackground,
+  onResetMovieBackground,
+  canResetMovieBackground,
+  secondaryDataPromise,
+}) {
   const secondaryMovie = use(secondaryDataPromise);
   const galleryImages = getGalleryImages(secondaryMovie?.images);
 
@@ -79,12 +81,25 @@ function MovieGalleryDeferred({ secondaryDataPromise }) {
 
   return (
     <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery}>
-      <GallerySection images={galleryImages} />
+      <GallerySection
+        images={galleryImages}
+        onSetMovieBackground={onSetMovieBackground}
+        onResetMovieBackground={onResetMovieBackground}
+        canResetMovieBackground={canResetMovieBackground}
+      />
     </MovieSectionReveal>
   );
 }
 
-function MovieImagesDeferred({ secondaryDataPromise }) {
+function MovieImagesDeferred({
+  onSetMovieBackground,
+  onSetMoviePoster,
+  onResetMovieBackground,
+  onResetMoviePoster,
+  canResetMovieBackground,
+  canResetMoviePoster,
+  secondaryDataPromise,
+}) {
   const secondaryMovie = use(secondaryDataPromise);
 
   if (!secondaryMovie?.images) {
@@ -93,7 +108,15 @@ function MovieImagesDeferred({ secondaryDataPromise }) {
 
   return (
     <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.images}>
-      <ImagesSection images={secondaryMovie.images} />
+      <ImagesSection
+        images={secondaryMovie.images}
+        onSetMovieBackground={onSetMovieBackground}
+        onSetMoviePoster={onSetMoviePoster}
+        onResetMovieBackground={onResetMovieBackground}
+        onResetMoviePoster={onResetMoviePoster}
+        canResetMovieBackground={canResetMovieBackground}
+        canResetMoviePoster={canResetMoviePoster}
+      />
     </MovieSectionReveal>
   );
 }
@@ -122,7 +145,17 @@ function MovieRelatedDeferred({ secondaryDataPromise }) {
   );
 }
 
-function MovieSecondaryContent({ computed, movie, secondaryDataPromise }) {
+function MovieSecondaryContent({
+  computed,
+  movie,
+  onSetMovieBackground,
+  onSetMoviePoster,
+  onResetMovieBackground,
+  onResetMoviePoster,
+  canResetMovieBackground,
+  canResetMoviePoster,
+  secondaryDataPromise,
+}) {
   return (
     <>
       {computed.cast?.length > 0 ? (
@@ -132,11 +165,24 @@ function MovieSecondaryContent({ computed, movie, secondaryDataPromise }) {
       ) : null}
 
       <Suspense fallback={<MovieSectionSkeleton />}>
-        <MovieGalleryDeferred secondaryDataPromise={secondaryDataPromise} />
+        <MovieGalleryDeferred
+          onSetMovieBackground={onSetMovieBackground}
+          onResetMovieBackground={onResetMovieBackground}
+          canResetMovieBackground={canResetMovieBackground}
+          secondaryDataPromise={secondaryDataPromise}
+        />
       </Suspense>
 
       <Suspense fallback={<MovieSectionSkeleton />}>
-        <MovieImagesDeferred secondaryDataPromise={secondaryDataPromise} />
+        <MovieImagesDeferred
+          onSetMovieBackground={onSetMovieBackground}
+          onSetMoviePoster={onSetMoviePoster}
+          onResetMovieBackground={onResetMovieBackground}
+          onResetMoviePoster={onResetMoviePoster}
+          canResetMovieBackground={canResetMovieBackground}
+          canResetMoviePoster={canResetMoviePoster}
+          secondaryDataPromise={secondaryDataPromise}
+        />
       </Suspense>
 
       {movie.videos?.results?.length > 0 ? (
@@ -153,6 +199,12 @@ function MovieSecondaryContent({ computed, movie, secondaryDataPromise }) {
 }
 
 export default function MovieView({
+  onSetMoviePoster,
+  onSetMovieBackground,
+  onResetMoviePoster,
+  onResetMovieBackground,
+  canResetMoviePoster,
+  canResetMovieBackground,
   backgroundImage,
   computed,
   movie,
@@ -165,6 +217,12 @@ export default function MovieView({
   return (
     <>
       <Registry
+        onSetMoviePoster={onSetMoviePoster}
+        onSetMovieBackground={onSetMovieBackground}
+        onResetMoviePoster={onResetMoviePoster}
+        onResetMovieBackground={onResetMovieBackground}
+        canResetMoviePoster={canResetMoviePoster}
+        canResetMovieBackground={canResetMovieBackground}
         backgroundImage={backgroundImage}
         rating={rating}
         movie={movie}
@@ -200,7 +258,7 @@ export default function MovieView({
                       delay={HERO_REVEAL_TIMING.titleDelay}
                       duration={HERO_REVEAL_TIMING.titleDuration}
                       startOnView={false}
-                      className="font-zuume text-6xl leading-none font-bold uppercase drop-shadow-sm drop-shadow-black/20 sm:text-7xl lg:text-8xl"
+                      className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
                     >
                       {movie.title}
                     </TextAnimate>
@@ -210,7 +268,7 @@ export default function MovieView({
 
                 {movie.tagline ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.taglineDelay} className="mt-4">
-                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase drop-shadow-sm drop-shadow-black/20 sm:text-sm">
+                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
                       {movie.tagline}
                     </p>
                   </MovieHeroReveal>
@@ -218,13 +276,23 @@ export default function MovieView({
 
                 {movie.overview ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <p className="max-w-[70ch] text-[15px] leading-6 text-pretty drop-shadow-sm drop-shadow-black/20 sm:text-base sm:leading-7">
+                    <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
                       {movie.overview}
                     </p>
                   </MovieHeroReveal>
                 ) : null}
 
-                <MovieSecondaryContent computed={computed} movie={movie} secondaryDataPromise={secondaryDataPromise} />
+                <MovieSecondaryContent
+                  computed={computed}
+                  movie={movie}
+                  onSetMovieBackground={onSetMovieBackground}
+                  onSetMoviePoster={onSetMoviePoster}
+                  onResetMovieBackground={onResetMovieBackground}
+                  onResetMoviePoster={onResetMoviePoster}
+                  canResetMovieBackground={canResetMovieBackground}
+                  canResetMoviePoster={canResetMoviePoster}
+                  secondaryDataPromise={secondaryDataPromise}
+                />
 
                 <MovieSectionReveal delay={SECTION_REVEAL_TIMING.reviews}>
                   <MediaReviews

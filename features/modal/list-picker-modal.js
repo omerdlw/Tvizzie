@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { buildListCreatorHref } from '@/features/account/lists/list-creator-utils';
+import { buildListCreatorHref } from '@/features/account/utils';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { useAuthSessionReady } from '@/core/modules/auth';
@@ -34,58 +34,70 @@ function ListPreviewStack({ list }) {
   const previewItems = Array.isArray(list?.previewItems) ? list.previewItems.slice(0, 4) : [];
 
   return (
-    <div className="hidden md:flex">
-      <div className="relative flex h-20 w-22 items-end justify-start overflow-visible">
-        {previewItems.length > 0 ? (
-          previewItems.map((item, index) => (
-            <div
-              key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className={`absolute bottom-0 overflow-hidden rounded-[8px] border border-[#f97316]`}
-              style={{
-                height: `${68 - index * 4}px`,
-                left: `${index * 14}px`,
-                width: '46px',
-                zIndex: previewItems.length - index,
-              }}
-            >
-              {getPreviewImage(item) ? (
-                <img
-                  src={getPreviewImage(item)}
-                  alt={item.title || item.name || 'Poster'}
-                  className="h-full w-full rounded-[8px] object-cover"
-                />
-              ) : (
-                <div className={`center h-full w-full rounded-[8px] text-black/70`}>
-                  <Icon icon="solar:videocamera-record-bold" size={14} />
-                </div>
-              )}
-            </div>
-          ))
-        ) : (
+    <div className="relative flex h-[68px] w-[82px] shrink-0 items-end justify-start">
+      {previewItems.length > 0 ? (
+        previewItems.map((item, index) => (
           <div
-            className={`center absolute bottom-0 left-0 h-16 w-12 border border-dashed border-[#f97316] bg-[#ffedd5] text-black/70`}
+            key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
+            className="absolute bottom-0 overflow-hidden rounded-[8px] border-2 border-white bg-white shadow-sm ring-1 ring-black/5"
+            style={{
+              height: `${68 - index * 6}px`,
+              left: `${index * 12}px`,
+              width: '46px',
+              zIndex: previewItems.length - index,
+            }}
           >
-            <Icon icon="solar:list-broken" size={16} />
+            {getPreviewImage(item) ? (
+              <img
+                src={getPreviewImage(item)}
+                alt={item.title || item.name || 'Poster'}
+                className="h-full w-full rounded-[6px] object-cover"
+              />
+            ) : (
+              <div className="center h-full w-full rounded-[6px] bg-black/5 text-black/30">
+                <Icon icon="solar:videocamera-record-bold" size={14} />
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        ))
+      ) : (
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] rounded-[8px] border border-dashed border-black/20 bg-[#f8fafc] text-black/30 shadow-sm">
+          <Icon icon="solar:list-bold" size={20} />
+        </div>
+      )}
     </div>
   );
 }
 
-export default function ListPickerModal({ close, data, header }) {
+function getChangedListIds(lists, initialMemberships, draftMemberships) {
+  return lists
+    .map((list) => list.id)
+    .filter((listId) => Boolean(draftMemberships[listId]) !== Boolean(initialMemberships[listId]));
+}
+
+export default function ListPickerModal({ close, data }) {
   const router = useRouter();
   const toast = useToast();
   const userId = data?.userId || null;
   const isAuthSessionReady = useAuthSessionReady(userId);
   const media = data?.media || null;
   const [lists, setLists] = useState([]);
-  const [memberships, setMemberships] = useState({});
+  const [initialMemberships, setInitialMemberships] = useState({});
+  const [draftMemberships, setDraftMemberships] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [savingListIds, setSavingListIds] = useState([]);
+  const [isApplying, setIsApplying] = useState(false);
 
   const mediaTitle = useMemo(() => getMediaTitle(media), [media]);
-  const isAnyListSaving = savingListIds.length > 0;
+  const selectedCount = useMemo(
+    () => lists.filter((list) => Boolean(draftMemberships[list.id])).length,
+    [draftMemberships, lists]
+  );
+  const pendingListIds = useMemo(
+    () => getChangedListIds(lists, initialMemberships, draftMemberships),
+    [draftMemberships, initialMemberships, lists]
+  );
+  const pendingChangesCount = pendingListIds.length;
+  const hasPendingChanges = pendingChangesCount > 0;
 
   useEffect(() => {
     if (!userId) {
@@ -124,7 +136,8 @@ export default function ListPickerModal({ close, data, header }) {
 
     async function loadMemberships() {
       if (!userId || !isAuthSessionReady || !media || lists.length === 0) {
-        setMemberships({});
+        setInitialMemberships({});
+        setDraftMemberships({});
         return;
       }
 
@@ -136,7 +149,8 @@ export default function ListPickerModal({ close, data, header }) {
         });
 
         if (!ignore) {
-          setMemberships(nextMemberships);
+          setInitialMemberships(nextMemberships);
+          setDraftMemberships(nextMemberships);
         }
       } catch (error) {
         if (!ignore) {
@@ -157,112 +171,193 @@ export default function ListPickerModal({ close, data, header }) {
     router.push(buildListCreatorHref(media));
   }, [close, media, router]);
 
-  async function handleToggleList(listId) {
-    if (savingListIds.includes(listId) || !userId || !media) {
+  const handleToggleDraft = useCallback((listId) => {
+    setDraftMemberships((previous) => ({
+      ...previous,
+      [listId]: !previous[listId],
+    }));
+  }, []);
+
+  const handleApplyChanges = useCallback(async () => {
+    if (isApplying || !userId || !media || !hasPendingChanges) {
       return;
     }
 
-    setSavingListIds((prev) => [...prev, listId]);
+    setIsApplying(true);
 
-    try {
-      const result = await toggleUserListItem({ listId, media, userId });
+    const nextInitialMemberships = { ...initialMemberships };
+    const successfulListIds = [];
+    const failedListTitles = [];
 
-      setMemberships((prev) => ({
-        ...prev,
-        [listId]: result.isInList,
-      }));
+    for (const listId of pendingListIds) {
+      const targetState = Boolean(draftMemberships[listId]);
+      const targetList = lists.find((list) => list.id === listId);
 
-      toast.success(
-        result.isInList ? `${mediaTitle} was added to the list` : `${mediaTitle} was removed from the list`
-      );
-    } catch (error) {
-      toast.error(error?.message || 'The list could not be updated');
-    } finally {
-      setSavingListIds((prev) => prev.filter((id) => id !== listId));
+      try {
+        const firstAttempt = await toggleUserListItem({ listId, media, userId });
+        let resolvedState = Boolean(firstAttempt?.isInList);
+
+        if (resolvedState !== targetState) {
+          const secondAttempt = await toggleUserListItem({ listId, media, userId });
+          resolvedState = Boolean(secondAttempt?.isInList);
+        }
+
+        if (resolvedState !== targetState) {
+          failedListTitles.push(targetList?.title || 'Untitled list');
+          continue;
+        }
+
+        nextInitialMemberships[listId] = resolvedState;
+        successfulListIds.push(listId);
+      } catch {
+        failedListTitles.push(targetList?.title || 'Untitled list');
+      }
     }
-  }
+
+    setInitialMemberships(nextInitialMemberships);
+    setDraftMemberships((previous) => {
+      const next = { ...previous };
+      successfulListIds.forEach((listId) => {
+        next[listId] = nextInitialMemberships[listId];
+      });
+      return next;
+    });
+
+    if (failedListTitles.length > 0) {
+      if (successfulListIds.length > 0) {
+        toast.warning(
+          `${successfulListIds.length} changes applied, ${failedListTitles.length} failed. Retry to finish.`
+        );
+      } else {
+        toast.error('Changes could not be applied. Please try again.');
+      }
+      setIsApplying(false);
+      return;
+    }
+
+    toast.success(
+      successfulListIds.length === 1
+        ? `${mediaTitle} list selection was updated`
+        : `${successfulListIds.length} changes applied`
+    );
+    setIsApplying(false);
+    close({
+      memberships: nextInitialMemberships,
+      selectedListIds: Object.keys(nextInitialMemberships).filter((listId) => Boolean(nextInitialMemberships[listId])),
+    });
+  }, [
+    close,
+    draftMemberships,
+    hasPendingChanges,
+    initialMemberships,
+    isApplying,
+    lists,
+    media,
+    mediaTitle,
+    pendingListIds,
+    toast,
+    userId,
+  ]);
 
   return (
-    <Container className="max-h-[72dvh] w-full sm:w-[660px]" header={header} close={close}>
-      <section className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-3 px-2 pt-2">
-          <div
-            className={`ml-2 flex items-center gap-2 text-[11px] font-bold tracking-widest text-[#1d4ed8] uppercase`}
-          >
-            <Icon icon="solar:list-bold" size={14} />
-            Your Lists
+    <Container
+      className="max-h-[72dvh] w-full sm:w-[660px]"
+      header={false}
+      close={close}
+      bodyClassName="p-4"
+      footer={{
+        left: (
+          <span className="text-xs text-black/70">
+            {selectedCount} selected • {pendingChangesCount} pending
+          </span>
+        ),
+        right: (
+          <>
+            <Button
+              type="button"
+              onClick={close}
+              disabled={isApplying}
+              className="bg-primary h-8 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleApplyChanges}
+              disabled={isApplying || !hasPendingChanges}
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+            >
+              {isApplying ? 'Applying' : 'Apply changes'}
+            </Button>
+          </>
+        ),
+      }}
+    >
+      <section className="flex min-h-0 flex-col gap-3">
+        <div className="mb-1 flex items-center justify-between gap-3 px-1">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Your Lists</h2>
           </div>
           <Button
-            variant="info"
             type="button"
             onClick={handleOpenCreator}
-            disabled={isAnyListSaving}
-            className="h-8 w-auto shrink-0 rounded-[8px] px-3 text-xs"
+            disabled={isApplying}
+            className="bg-primary h-8 shrink-0 rounded-[12px] border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black uppercase transition hover:border-black/20 hover:bg-black/2 disabled:cursor-not-allowed"
           >
-            Create New List
+            Create new list
           </Button>
         </div>
 
-        <div
-          data-lenis-prevent
-          data-lenis-prevent-wheel
-          className="max-h-[56dvh] min-h-0 w-full flex-1 space-y-2 overflow-y-auto overscroll-contain p-2"
-        >
+        <div className="max-h-[56dvh] min-h-0 w-full flex-1 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
           {isLoading ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className={`h-28 animate-pulse rounded-[8px] border border-dashed border-[#f97316] bg-[#ffedd5]`}
-                />
+                <div key={item} className="h-24 animate-pulse rounded-[12px] border border-black/10 bg-black/5" />
               ))}
             </div>
           ) : lists.length === 0 ? (
-            <div
-              className={`flex min-h-40 flex-col items-center justify-center rounded-[8px] border border-dashed border-[#f97316] bg-[#ffedd5] text-center`}
-            >
-              <p className={`text-xs font-semibold tracking-wider text-black/70 uppercase`}>No Lists Yet</p>
-              <p className={`text-sm text-black/70`}>Create your first list with the button above</p>
+            <div className="flex min-h-40 flex-col items-center justify-center rounded-[12px] border border-dashed border-black/15 bg-black/2 text-center">
+              <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">No lists yet</p>
+              <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
             </div>
           ) : (
             lists.map((list) => {
-              const isActive = !!memberships[list.id];
-              const isListSaving = savingListIds.includes(list.id);
+              const isSelected = Boolean(draftMemberships[list.id]);
 
               return (
                 <button
                   type="button"
                   key={list.id}
-                  onClick={() => handleToggleList(list.id)}
-                  disabled={isListSaving}
+                  onClick={() => handleToggleDraft(list.id)}
                   className={cn(
-                    'relative w-full cursor-pointer rounded-[8px] border p-2 text-left transition disabled:cursor-not-allowed',
-                    isActive
-                      ? 'border border-[#15803d] bg-[#bbf7d0] text-[#14532d]'
-                      : `border border-[#14b8a6] bg-[#99f6e4]`,
-                    'grid grid-cols-1 items-start gap-3 md:grid-cols-[88px_minmax(0,1fr)] md:gap-5'
+                    'group flex w-full cursor-pointer items-center justify-between gap-4 rounded-[12px] border p-3 text-left transition-all',
+                    isSelected
+                      ? 'border-black bg-black/5 shadow-sm'
+                      : 'bg-primary border-black/10 hover:border-black/20 hover:bg-black/2'
                   )}
                 >
                   <ListPreviewStack list={list} />
-                  <div className="w-full pt-9 pr-24 md:pt-3">
-                    <div className="flex flex-col gap-1">
-                      <p className={`truncate text-[1.05rem] leading-tight font-bold text-[#0f172a]`}>{list.title}</p>
-                      {list.description ? (
-                        <p className={`line-clamp-2 max-w-xl text-sm text-black/70`}>{list.description}</p>
-                      ) : null}
+                  <div className="flex min-w-0 flex-1 flex-col py-1">
+                    <p className="truncate text-[15px] font-semibold text-black">{list.title}</p>
+                    {list.description ? (
+                      <p className="mt-1 line-clamp-2 max-w-[90%] text-sm leading-snug text-black/60">
+                        {list.description}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="flex shrink-0 items-center pr-2">
+                    <div
+                      className={cn(
+                        'flex size-[22px] items-center justify-center rounded-full border transition-all',
+                        isSelected
+                          ? 'border-black bg-black text-white'
+                          : 'border-black/20 text-black/20 group-hover:border-black/40 group-hover:text-black/40'
+                      )}
+                    >
+                      <Icon icon="material-symbols:check-rounded" size={14} />
                     </div>
                   </div>
-                  <span
-                    className={cn(
-                      'center rounded-[4px] px-3 py-1 text-[11px] font-bold tracking-wider uppercase',
-                      'absolute top-1.5 right-1.5',
-                      isActive
-                        ? 'border border-[#15803d] bg-[#bbf7d0] text-[#14532d]'
-                        : 'border border-[#c2410c] bg-[#fdba74] text-[#7c2d12]'
-                    )}
-                  >
-                    {isListSaving ? 'Saving' : isActive ? 'Selected' : 'Add'}
-                  </span>
                 </button>
               );
             })

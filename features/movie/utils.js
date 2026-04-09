@@ -54,12 +54,34 @@ export function getGalleryImages(images) {
     .slice(0, 20);
 }
 
-export function getPreferredMovieBackground(images) {
+export function createMovieBackdropImageUrl(filePath, size = 'original') {
+  if (typeof filePath !== 'string' || !filePath.trim()) {
+    return null;
+  }
+
+  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'original';
+  return `${TMDB_IMG}/${resolvedSize}${filePath}`;
+}
+
+export function createMoviePosterImageUrl(filePath, size = 'w780') {
+  if (typeof filePath !== 'string' || !filePath.trim()) {
+    return null;
+  }
+
+  const resolvedSize = typeof size === 'string' && size.trim() ? size.trim() : 'w780';
+  return `${TMDB_IMG}/${resolvedSize}${filePath}`;
+}
+
+export function getPreferredMovieBackgroundFilePath(images) {
   const bestImage = getGalleryImages(images)[0];
 
   if (!bestImage?.file_path) {
     return null;
   }
 
-  return `${TMDB_IMG}/original${bestImage.file_path}`;
+  return bestImage.file_path;
+}
+
+export function getPreferredMovieBackground(images) {
+  return createMovieBackdropImageUrl(getPreferredMovieBackgroundFilePath(images));
 }

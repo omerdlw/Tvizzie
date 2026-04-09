@@ -14,6 +14,8 @@ const FALLBACK_MODAL_STATE = Object.freeze({
   isOpen: false,
   chrome: MODAL_CHROME.PANEL,
   title: null,
+  headerActions: null,
+  showClose: true,
   props: {},
   modalStack: [],
 });
@@ -73,6 +75,8 @@ function createModalState(modalStack = []) {
     isOpen: modalStack.length > 0,
     chrome: activeModal?.chrome || MODAL_CHROME.PANEL,
     title: activeModal?.title || null,
+    headerActions: activeModal?.headerActions || null,
+    showClose: activeModal?.showClose ?? true,
     props: activeModal?.props || {},
     modalStack,
   };
@@ -111,6 +115,8 @@ export function ModalProvider({ children }) {
         position,
         responsivePosition,
         title: resolvedHeader.title,
+        headerActions: resolvedHeader.actions || null,
+        showClose: resolvedHeader.showClose ?? true,
         chrome: resolvedConfig.chrome || MODAL_CHROME.PANEL,
         props: resolvedConfig.data ?? resolvedConfig,
       };

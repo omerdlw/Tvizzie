@@ -1,6 +1,6 @@
 'use client';
 
-import { useAccountSectionPage } from '@/features/account/section-client-hooks';
+import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { useAuth } from '@/core/modules/auth';
 import WatchlistView from './view';
 

@@ -8,6 +8,8 @@ import { createAccountClient } from './client';
 import { DEFAULT_ACCOUNT_CONFIG, DEFAULT_ACCOUNT_STATE } from './config';
 
 const EMPTY_OBJECT = Object.freeze({});
+const CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 15000;
+const CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 const FALLBACK_ACCOUNT_ACTIONS = Object.freeze({
   clearError: () => {},
   ensureCurrentAccount: async () => null,
@@ -419,6 +421,8 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
             });
           },
           {
+            hiddenIntervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+            intervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS,
             onError: (error) => {
               if (ignore) {
                 return;
