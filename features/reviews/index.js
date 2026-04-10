@@ -1,15 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
-import { Button } from '@/ui/elements';
+import { Button, Select } from '@/ui/elements';
 
 import ReviewAuthFallback from './parts/review-auth-fallback';
 import ReviewHeader from './parts/review-header';
 import ReviewList from './parts/review-list';
 import { useMediaReviews } from './use-media-reviews';
+import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS, parseReviewSortMode, sortReviewsByMode } from './utils';
 
 export default function MediaReviews({
   entityId,
@@ -17,8 +21,24 @@ export default function MediaReviews({
   title,
   posterPath = null,
   backdropPath = null,
+  headerTitle = 'Community Reviews',
+  listMode = 'all',
+  allReviewsHref = null,
+  sectionClassName = 'mt-12 md:mt-16',
+  showBackdropGradient = true,
+  enableSortControl = false,
+  defaultSortMode = REVIEW_SORT_MODE.NEWEST,
+  useQuerySortMode = false,
   onReviewStateChange,
 }) {
+  const isRecentListMode = listMode === 'recent';
+  const isSortControlEnabled = enableSortControl && !isRecentListMode;
+  const [sortMode, setSortMode] = useState(defaultSortMode);
+  const reduceMotion = useReducedMotion();
+  const searchParams = useSearchParams();
+  const querySortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
+  const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
+
   const {
     currentUserId,
     handleDelete,
@@ -124,18 +144,35 @@ export default function MediaReviews({
     });
   }, [handleDelete, setNavConfirmation]);
 
+  const recentReviews = [...reviews].sort((first, second) => {
+    const firstTime = new Date(first.updatedAt || first.createdAt || 0).getTime();
+    const secondTime = new Date(second.updatedAt || second.createdAt || 0).getTime();
+    return secondTime - firstTime;
+  });
+  const sortedByModeReviews = useMemo(() => sortReviewsByMode(reviews, activeSortMode), [activeSortMode, reviews]);
+  const hasMoreThanRecentLimit = isRecentListMode && recentReviews.length > 5;
+  const shouldUseCustomSort = isSortControlEnabled || useQuerySortMode;
+  const listAnimationKey = shouldUseCustomSort ? `reviews-sort-${activeSortMode}` : 'reviews-default-order';
+  const displayedReviews = isRecentListMode
+    ? recentReviews.slice(0, 5)
+    : shouldUseCustomSort
+      ? sortedByModeReviews
+      : sortedReviews;
+
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
 
   return (
     <section
       data-community-reviews="true"
-      className="relative isolate z-0 mt-12 flex w-full flex-col gap-6 overflow-hidden md:mt-16"
+      className={`relative isolate z-0 flex w-full flex-col gap-6 overflow-hidden ${sectionClassName}`}
     >
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(250,249,245,0)_0%,rgba(250,249,245,0.84)_12%,#faf9f5_34%,#faf9f5_100%)]"
-        style={{ bottom: -backdropExtension }}
-      />
-      <ReviewHeader ratingStats={ratingStats} totalReviews={reviews.length} />
+      {showBackdropGradient ? (
+        <div
+          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(250,249,245,0)_0%,rgba(250,249,245,0.84)_12%,#faf9f5_34%,#faf9f5_100%)]"
+          style={{ bottom: -backdropExtension }}
+        />
+      ) : null}
+      <ReviewHeader ratingStats={ratingStats} title={headerTitle} totalReviews={reviews.length} />
       <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
         <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
@@ -155,17 +192,63 @@ export default function MediaReviews({
           </Button>
         </div>
       </AuthGate>
+      {isRecentListMode ? (
+        <div className="flex w-full items-center justify-between border-b border-black/10 py-5">
+          <span className="text-xs font-semibold tracking-wider text-black/70 uppercase">Recent reviews</span>
+          {hasMoreThanRecentLimit && allReviewsHref ? (
+            <Link
+              href={allReviewsHref}
+              className="text-xs font-semibold tracking-wider text-black/70 uppercase transition hover:text-black"
+            >
+              All reviews
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+      {isSortControlEnabled ? (
+        <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
+          <span className="text-[11px] font-semibold tracking-wider text-black/60 uppercase">Sort</span>
+          <Select
+            value={sortMode}
+            onChange={setSortMode}
+            options={REVIEW_SORT_OPTIONS}
+            classNames={{
+              trigger:
+                'bg-primary/40 inline-flex h-10 min-w-[290px] justify-between rounded-[12px] border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
+              menu: 'overflow-hidden rounded-[12px] border border-black/10 bg-[#faf9f5] p-1 shadow-lg',
+              optionsList: 'flex flex-col gap-1',
+              option:
+                'cursor-pointer rounded-[8px] px-3 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
+              optionActive: 'bg-black/5 text-black',
+              indicator: 'ml-auto text-black',
+              icon: 'text-black/60',
+            }}
+            aria-label="Sort reviews"
+          />
+        </div>
+      ) : null}
 
-      <ReviewList
-        currentUserId={currentUserId}
-        isLoading={isLoading}
-        loadError={loadError}
-        onDeleteRequest={handleDeleteRequest}
-        onEdit={handleEditReview}
-        onLike={handleLike}
-        sortedReviews={sortedReviews}
-        userProfile={userProfile}
-      />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={listAnimationKey}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, filter: 'blur(3px)' }}
+          animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(2px)' }}
+          transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: 'easeOut' }}
+          style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
+        >
+          <ReviewList
+            currentUserId={currentUserId}
+            isLoading={isLoading}
+            loadError={loadError}
+            onDeleteRequest={handleDeleteRequest}
+            onEdit={handleEditReview}
+            onLike={handleLike}
+            sortedReviews={displayedReviews}
+            userProfile={userProfile}
+          />
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }

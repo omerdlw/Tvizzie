@@ -191,7 +191,7 @@ function ErrorActions({ onRetry, onRefresh }) {
       </Button>
 
       <Button
-        className={getNavActionClass({ tone: 'danger' })}
+        variant="destructive"
         onClick={(event) => {
           event.stopPropagation();
           onRefresh();

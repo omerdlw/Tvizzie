@@ -1,7 +1,6 @@
 import { TMDB_IMG } from '@/core/constants';
 import { formatRuntime, uniqueBy } from '@/core/utils';
 
-const MAX_CAST = 14;
 const MAX_WRITERS = 10;
 const MAX_RECOMMENDATIONS = 14;
 const MAX_SIMILAR = 14;
@@ -18,7 +17,8 @@ export function getMovieComputedData(movie) {
     MAX_WRITERS
   );
 
-  const cast = uniqueBy(movie.credits?.cast || []).slice(0, MAX_CAST);
+  const cast = uniqueBy(movie.credits?.cast || []);
+  const crew = (movie.credits?.crew || []).filter((member) => member?.id && member?.name && member?.job);
   const recommendations = (movie.recommendations?.results || []).slice(0, MAX_RECOMMENDATIONS);
   const similar = (movie.similar?.results || []).slice(0, MAX_SIMILAR);
 
@@ -32,6 +32,7 @@ export function getMovieComputedData(movie) {
 
   return {
     cast,
+    crew,
     certification,
     director,
     genres: movie.genres?.map((genre) => genre.name) || [],

@@ -123,6 +123,6 @@ export function resolveModalHeader(modalType, config = {}) {
   return {
     title: header.title ?? config?.title ?? fallbackHeader.title ?? null,
     actions: header.actions ?? config?.actions ?? fallbackHeader.actions ?? null,
-    showClose: header.showClose ?? config?.showClose ?? fallbackHeader.showClose ?? true,
+    showClose: header.showClose ?? config?.showClose ?? fallbackHeader.showClose,
   };
 }

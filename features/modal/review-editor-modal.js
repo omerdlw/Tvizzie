@@ -290,7 +290,7 @@ export default function ReviewEditorModal({ close, data, header }) {
   return (
     <Container
       className="w-full sm:w-[640px]"
-      header={header}
+      header={<RatingSelector value={rating} onChange={setRating} />}
       close={close}
       footer={{
         left: (
@@ -325,16 +325,13 @@ export default function ReviewEditorModal({ close, data, header }) {
       }}
     >
       <form id={formId} onSubmit={handleSubmit} className="flex w-full flex-col">
-        <section className="flex w-full items-center justify-start p-6">
-          <RatingSelector value={rating} onChange={setRating} />
-        </section>
         <Textarea
           maxLength={800}
           value={reviewText}
           className={{
             wrapper: 'flex',
             textarea:
-              'block min-h-[180px] w-full resize-none border-t border-black/10 p-3 text-sm leading-normal outline-none placeholder:text-black/60',
+              'block min-h-[180px] w-full resize-none p-3 text-sm leading-normal outline-none placeholder:text-black/60',
           }}
           placeholder={`Add your thoughts about ${modalSubjectTitle} (optional)`}
           onChange={(event) => {
@@ -355,7 +352,7 @@ export default function ReviewEditorModal({ close, data, header }) {
           className={`flex w-full items-center justify-between overflow-hidden border-t p-4 text-left transition ${
             hasText
               ? isSpoiler
-                ? 'border-error bg-error/10 hover:bg-error/20 text-error'
+                ? 'bg-error/10 hover:bg-error/20 text-error'
                 : 'bg-primary border-black/10'
               : 'cursor-not-allowed border-black/10 text-black/60'
           } ${validationError ? '' : 'rounded-b-[16px] hover:bg-black/5'}`}

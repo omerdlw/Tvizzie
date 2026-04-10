@@ -32,6 +32,7 @@ export function useMediaReviews({
   title,
   posterPath = null,
   backdropPath = null,
+  limitCount,
   onReviewStateChange,
 }) {
   const { navHeight } = useNavHeight();
@@ -80,6 +81,7 @@ export function useMediaReviews({
           setIsLoading(false);
         },
         {
+          limitCount,
           liveUserId: currentUserId,
           onError: (error) => {
             if (!isMounted) return;
@@ -99,7 +101,7 @@ export function useMediaReviews({
       isMounted = false;
       unsubscribe();
     };
-  }, [currentUserId, media]);
+  }, [currentUserId, limitCount, media]);
 
   const ownReview = useMemo(() => {
     if (!currentUserId) {

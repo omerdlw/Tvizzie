@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useId, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/core/utils';
@@ -31,13 +31,74 @@ export default function SegmentedControl({
   renderSuffix,
 }) {
   const reduceMotion = useReducedMotion();
-  const indicatorId = useId().replace(/:/g, '');
   const scrollRef = useRef(null);
+  const itemRefs = useRef(new Map());
   const isPointerDownRef = useRef(false);
   const isDraggingRef = useRef(false);
   const suppressClickRef = useRef(false);
   const startXRef = useRef(0);
   const startScrollLeftRef = useRef(0);
+  const [indicator, setIndicator] = useState({
+    x: 0,
+    width: 0,
+    visible: false,
+  });
+
+  const updateIndicator = useCallback(() => {
+    const trackElement = scrollRef.current;
+    if (!trackElement) {
+      return;
+    }
+
+    const activeElement = itemRefs.current.get(value);
+    if (!activeElement) {
+      setIndicator((current) => (current.visible ? { ...current, visible: false } : current));
+      return;
+    }
+
+    const nextX = activeElement.offsetLeft - trackElement.scrollLeft;
+    const nextWidth = activeElement.offsetWidth;
+
+    setIndicator({
+      x: nextX,
+      width: nextWidth,
+      visible: true,
+    });
+  }, [value]);
+
+  useLayoutEffect(() => {
+    updateIndicator();
+  }, [updateIndicator, items, value]);
+
+  useEffect(() => {
+    const trackElement = scrollRef.current;
+    if (!trackElement) {
+      return undefined;
+    }
+
+    let frameId = null;
+    const requestUpdate = () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+      frameId = requestAnimationFrame(() => {
+        updateIndicator();
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(requestUpdate);
+    resizeObserver.observe(trackElement);
+    itemRefs.current.forEach((element) => {
+      resizeObserver.observe(element);
+    });
+
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+      resizeObserver.disconnect();
+    };
+  }, [items, updateIndicator]);
 
   const handleMouseDown = useCallback((event) => {
     const element = scrollRef.current;
@@ -102,6 +163,7 @@ export default function SegmentedControl({
     <div className={cn('flex items-center', className)}>
       <div
         ref={scrollRef}
+        onScroll={updateIndicator}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -109,10 +171,28 @@ export default function SegmentedControl({
         onClickCapture={handleClickCapture}
         onDragStart={(e) => e.preventDefault()}
         className={cn(
-          'hide-scrollbar flex items-center gap-1 overflow-x-auto rounded-[12px] border border-black/5 bg-black/5 p-0.5 select-none',
+          'hide-scrollbar relative flex items-center gap-1 overflow-x-auto rounded-[12px] border border-black/5 bg-black/5 p-0.5 select-none',
           trackClassName
         )}
       >
+        <motion.span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute top-0.5 bottom-0.5 left-0 z-0 rounded-[9px]',
+            activeIndicatorClassName
+          )}
+          initial={false}
+          animate={{
+            x: indicator.x,
+            width: indicator.width,
+            opacity: indicator.visible ? 1 : 0,
+          }}
+          transition={
+            reduceMotion
+              ? { duration: 0.12 }
+              : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+          }
+        />
         {items.map((item) => {
           const itemKey = getKey(item);
           const isActive = value === itemKey;
@@ -120,29 +200,23 @@ export default function SegmentedControl({
           return (
             <motion.button
               key={itemKey}
+              ref={(element) => {
+                if (element) {
+                  itemRefs.current.set(itemKey, element);
+                } else {
+                  itemRefs.current.delete(itemKey);
+                }
+              }}
               type="button"
               onClick={() => onChange?.(itemKey)}
               whileTap={reduceMotion ? undefined : { scale: 0.985 }}
               className={cn(
-                'relative isolate cursor-pointer rounded-[9px] px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
+                'relative z-10 isolate cursor-pointer rounded-[9px] px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
                 isActive ? activeClassName : inactiveClassName,
                 buttonClassName,
                 typeof getButtonClassName === 'function' ? getButtonClassName(item, isActive) : null
               )}
             >
-              {isActive && (
-                <motion.span
-                  layoutId={`segmented-control-indicator-${indicatorId}`}
-                  className={cn(
-                    'absolute inset-0 -z-10 rounded-[9px] shadow-[0_0_0_1px_rgba(15,23,42,0.08)]',
-                    activeIndicatorClassName
-                  )}
-                  transition={
-                    reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-                  }
-                />
-              )}
-
               <span className="relative z-10 inline-flex items-center gap-1">
                 {getLabel(item)}
                 {typeof renderSuffix === 'function' ? renderSuffix(item) : null}

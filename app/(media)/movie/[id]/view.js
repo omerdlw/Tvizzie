@@ -158,9 +158,9 @@ function MovieSecondaryContent({
 }) {
   return (
     <>
-      {computed.cast?.length > 0 ? (
+      {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
         <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.cast}>
-          <CastSection cast={computed.cast} />
+          <CastSection cast={computed.cast} crew={computed.crew} />
         </MovieSectionReveal>
       ) : null}
 
@@ -294,19 +294,23 @@ export default function MovieView({
                   secondaryDataPromise={secondaryDataPromise}
                 />
 
-                <MovieSectionReveal delay={SECTION_REVEAL_TIMING.reviews}>
-                  <MediaReviews
-                    entityId={movie.id}
-                    entityType="movie"
-                    title={movie.title}
-                    posterPath={movie.poster_path}
-                    backdropPath={movie.backdrop_path}
-                    onReviewStateChange={setReviewState}
-                  />
-                </MovieSectionReveal>
               </div>
             </div>
           </div>
+
+          <MovieSectionReveal className="w-full" delay={SECTION_REVEAL_TIMING.reviews}>
+            <MediaReviews
+              entityId={movie.id}
+              entityType="movie"
+              title={movie.title}
+              headerTitle="Recent Reviews"
+              listMode="recent"
+              allReviewsHref={`/movie/${movie.id}/reviews`}
+              posterPath={movie.poster_path}
+              backdropPath={movie.backdrop_path}
+              onReviewStateChange={setReviewState}
+            />
+          </MovieSectionReveal>
         </div>
         <NavHeightSpacer />
       </PageGradientShell>

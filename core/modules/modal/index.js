@@ -85,7 +85,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   const isRightModal = activePosition === MODAL_POSITIONS.RIGHT;
   const isTopModalPosition = activePosition === MODAL_POSITIONS.TOP;
   const isBottomModalPosition = activePosition === MODAL_POSITIONS.BOTTOM;
-  const isCenterModal = activePosition === MODAL_POSITIONS.CENTER;
 
   const titleId = `modal-title-${entry.id}`;
 
@@ -170,7 +169,8 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         ref={modalRef}
         className={cn(
           'relative flex max-w-full transform-gpu flex-col',
-          !isCenterModal && 'w-full self-stretch sm:w-auto sm:self-auto'
+          (isLeftModal || isRightModal || isTopModalPosition || isBottomModalPosition) &&
+            'w-full self-stretch sm:w-auto sm:self-auto'
         )}
         style={{
           zIndex: modalZIndex,
@@ -187,8 +187,8 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             isPanelChrome
               ? 'overflow-hidden rounded-[16px] border border-black/10 bg-white/80'
               : 'overflow-visible rounded-[16px] border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && 'w-full self-stretch rounded-t-none sm:mt-2 sm:rounded-t-[16px]',
-            isPanelChrome && isBottomModalPosition && 'w-full self-stretch rounded-b-none sm:mb-2 sm:rounded-b-[16px]',
+            isPanelChrome && isTopModalPosition && 'rounded-t-none',
+            isPanelChrome && isBottomModalPosition && 'rounded-b-none',
             isPanelChrome &&
               (isLeftModal || isRightModal) && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',

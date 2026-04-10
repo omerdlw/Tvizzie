@@ -1,5 +1,7 @@
 'use client';
 
+import { isValidElement } from 'react';
+
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
@@ -34,6 +36,19 @@ function resolveHeaderActions(actions, close) {
   return actions || null;
 }
 
+function hasSlotContent(value) {
+  return !(value === null || value === undefined || value === false || value === '');
+}
+
+function isHeaderConfig(value) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    !isValidElement(value)
+  );
+}
+
 function CloseButton({ close, label = 'Close modal' }) {
   if (typeof close !== 'function') {
     return null;
@@ -53,35 +68,49 @@ function CloseButton({ close, label = 'Close modal' }) {
 
 export default function Container({ children, className, bodyClassName, header = {}, footer, close }) {
   const isHeaderDisabled = header === false;
-  const headerConfig = !isHeaderDisabled && header && typeof header === 'object' ? header : {};
+  const headerConfig = !isHeaderDisabled && isHeaderConfig(header) ? header : {};
+  const hasCustomHeaderNode = !isHeaderDisabled && !isHeaderConfig(header) && hasSlotContent(header);
   const position = headerConfig?.position;
-  const showClose = headerConfig?.showClose !== false;
+  const showClose = headerConfig?.showClose === true;
   const headerActions = resolveHeaderActions(headerConfig?.actions, close);
-
-  const shouldRenderHeader = !isHeaderDisabled && (Boolean(headerConfig?.title) || Boolean(headerActions) || showClose);
-  const shouldRenderFooter = footer !== false;
+  const headerLeft =
+    hasCustomHeaderNode
+      ? null
+      : headerConfig?.left ??
+        (headerConfig?.title ? (
+          <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
+            {headerConfig.title}
+          </h2>
+        ) : null);
+  const headerCenter = hasCustomHeaderNode ? header : headerConfig?.center ?? null;
+  const headerRight =
+    hasCustomHeaderNode
+      ? null
+      : headerConfig?.right ??
+        (hasSlotContent(headerActions) || showClose ? (
+          <div className="flex items-center justify-end gap-2">
+            {headerActions}
+            {showClose ? <CloseButton close={close} /> : null}
+          </div>
+        ) : null);
+  const headerIsSticky = Boolean(headerConfig?.sticky);
+  const shouldRenderHeader =
+    !isHeaderDisabled && (hasSlotContent(headerLeft) || hasSlotContent(headerCenter) || hasSlotContent(headerRight));
 
   const footerConfig = footer && typeof footer === 'object' ? footer : {};
-  const footerLeft = footerConfig.left || null;
-  const footerRight = footerConfig.right || null;
+  const footerLeft = footerConfig.left ?? null;
+  const footerCenter = footerConfig.center ?? null;
+  const footerRight = footerConfig.right ?? null;
   const footerIsSticky = Boolean(footerConfig.sticky);
+  const shouldRenderFooter = footer !== false && (hasSlotContent(footerLeft) || hasSlotContent(footerCenter) || hasSlotContent(footerRight));
 
   return (
     <div className={getContainerClassName({ className, position })}>
       {shouldRenderHeader ? (
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0 flex-1">
-            {headerConfig?.title ? (
-              <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
-                {headerConfig.title}
-              </h2>
-            ) : null}
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            {headerActions}
-            {showClose ? <CloseButton close={close} /> : null}
-          </div>
+        <div className={cn('grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 py-3', headerIsSticky && 'sticky top-0 z-10')}>
+          <div className="min-w-0">{headerLeft}</div>
+          <div className="flex items-center justify-center">{headerCenter}</div>
+          <div className="min-w-0">{headerRight}</div>
         </div>
       ) : null}
 
@@ -99,11 +128,12 @@ export default function Container({ children, className, bodyClassName, header =
       {shouldRenderFooter ? (
         <div
           className={cn(
-            'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3',
+            'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 py-3',
             footerIsSticky && 'sticky bottom-0'
           )}
         >
           <div className="min-w-0">{footerLeft}</div>
+          <div className="flex items-center justify-center">{footerCenter}</div>
           <div className="flex items-center justify-end gap-2">{footerRight}</div>
         </div>
       ) : null}

@@ -17,6 +17,9 @@ const DefaultSelect = forwardRef(
       value,
       onChange,
       placeholder = 'Select',
+      side = 'bottom',
+      align = 'start',
+      sideOffset = 8,
       className,
       classNames = {},
       disabled = false,
@@ -57,7 +60,9 @@ const DefaultSelect = forwardRef(
           <SelectPrimitive.Content
             className={cn('min-w-(--radix-select-trigger-width)', classes.menu)}
             position="popper"
-            sideOffset={8}
+            side={side}
+            align={align}
+            sideOffset={sideOffset}
             style={{ zIndex: Z_INDEX.SELECT }}
           >
             <SelectPrimitive.Viewport className={cn(classes.optionsList)}>
@@ -74,7 +79,7 @@ const DefaultSelect = forwardRef(
                   {option.icon && <Icon icon={option.icon} size={14} className={cn(classes.optionIcon)} />}
                   <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
                   <SelectPrimitive.ItemIndicator className={cn(classes.indicator)}>
-                    <Icon icon="solar:check-read-bold" size={16} />
+                    <Icon icon="material-symbols:check-rounded" size={16} />
                   </SelectPrimitive.ItemIndicator>
                 </SelectPrimitive.Item>
               ))}

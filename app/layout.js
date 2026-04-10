@@ -7,6 +7,7 @@ import { cn } from '@/core/utils';
 
 import { geist, geistMono, zuume } from '../fonts';
 import './globals.css';
+import 'lenis/dist/lenis.css';
 import { AppProviders } from './providers';
 
 const SITE_URL = getSiteUrl();

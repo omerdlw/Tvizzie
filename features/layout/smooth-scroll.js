@@ -15,46 +15,18 @@ function premiumScrollEasing(value) {
   return 1 - Math.pow(1 - value, 3.2);
 }
 
-function applyPremiumVirtualScroll(data) {
-  const event = data?.event;
-
-  if (event?.ctrlKey) {
-    return false;
-  }
-
-  const clampDelta = (delta, limit = 140) => {
-    if (!Number.isFinite(delta) || delta === 0) {
-      return 0;
-    }
-
-    return Math.sign(delta) * Math.min(Math.abs(delta), limit);
-  };
-
-  const normalizedX = clampDelta(data?.deltaX, 140);
-  const normalizedY = clampDelta(data?.deltaY, 160);
-  const isPrecisionInput = Math.max(Math.abs(normalizedX), Math.abs(normalizedY)) < 32;
-  const damping = isPrecisionInput ? 0.92 : 0.8;
-
-  data.deltaX = normalizedX * damping;
-  data.deltaY = normalizedY * damping;
-
-  return true;
-}
-
 const PREMIUM_SCROLL_OPTIONS = Object.freeze({
   anchors: {
-    duration: DURATION.HERO,
+    duration: DURATION.MODERATE,
     easing: premiumScrollEasing,
   },
-  duration: DURATION.SLOWER,
-  easing: premiumScrollEasing,
   gestureOrientation: 'vertical',
-  lerp: 0.11,
+  lerp: 0.2,
+  overscroll: true,
   smoothWheel: true,
   stopInertiaOnNavigate: true,
-  touchMultiplier: 1.35,
-  virtualScroll: applyPremiumVirtualScroll,
-  wheelMultiplier: 0.9,
+  touchMultiplier: 1.25,
+  wheelMultiplier: 1,
 });
 
 function isReloadNavigation() {

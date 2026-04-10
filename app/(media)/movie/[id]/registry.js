@@ -1,7 +1,9 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import CastModal from '@/features/modal/cast-modal';
 import ImagePreviewModal from '@/features/modal/image-preview-modal';
 import ListPickerModal from '@/features/modal/list-picker-modal';
 import ReviewEditorModal from '@/features/modal/review-editor-modal';
@@ -10,6 +12,7 @@ import ReviewAction from '@/features/navigation/actions/review-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
+import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
 import { EASING, TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import Icon from '@/ui/icon/index';
@@ -102,6 +105,11 @@ export default function Registry({
 }) {
   const [isSearching, setIsSearching] = useState(false);
   const [isWatchProvidersVisible, setIsWatchProvidersVisible] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
+  const activeSortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
 
   useEffect(() => {
     if (!reviewState?.isActive && !isSearching) {
@@ -121,9 +129,23 @@ export default function Registry({
   const shouldResetBackgroundForLoading = isLoading && !resolvedBackgroundImage;
 
   const navSurface =
-    !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
+    !isMovieReviewsRoute && !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
       <WatchProvidersSurface providers={movie?.['watch/providers']} videos={movie?.videos} />
     ) : undefined;
+
+  const handleSortChange = (nextSortMode) => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    const resolvedSortMode = parseReviewSortMode(nextSortMode, REVIEW_SORT_MODE.NEWEST);
+
+    if (resolvedSortMode === REVIEW_SORT_MODE.NEWEST) {
+      params.delete('sort');
+    } else {
+      params.set('sort', resolvedSortMode);
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const navAction = reviewState?.isActive ? (
     <ReviewAction reviewState={reviewState} />
@@ -131,7 +153,13 @@ export default function Registry({
     <SearchAction />
   ) : (
     <div className="mt-2.5 flex w-full gap-2">
-      <MovieAction isActive={isWatchProvidersVisible} onToggle={() => setIsWatchProvidersVisible((value) => !value)} />
+      <MovieAction
+        mode={isMovieReviewsRoute ? 'sort' : 'watch'}
+        isActive={isWatchProvidersVisible}
+        onToggle={() => setIsWatchProvidersVisible((value) => !value)}
+        sortMode={activeSortMode}
+        onSortChange={handleSortChange}
+      />
     </div>
   );
 
@@ -262,6 +290,7 @@ export default function Registry({
       : {}),
     loading: { isLoading },
     modal: {
+      CAST_MODAL: CastModal,
       LIST_PICKER_MODAL: ListPickerModal,
       MEDIA_SOCIAL_PROOF_MODAL: MediaSocialProofModal,
       PREVIEW_MODAL: ImagePreviewModal,

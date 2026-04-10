@@ -105,11 +105,9 @@ export default function AccountReviewsFeed({
       titleHref={titleHref}
     >
       {items.length === 0 && !isLoading && !loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          {emptyMessage}
-        </div>
+        <div className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm">{emptyMessage}</div>
       ) : items.length === 0 && !isLoading && loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
+        <div className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
       ) : (
         <ReviewList
           currentUserId={currentUserId}
