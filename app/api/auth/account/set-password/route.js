@@ -1,17 +1,17 @@
-import { NextResponse } from 'next/server';
-
 import { hasPasswordProvider } from '@/core/auth/servers/account/account-deletion.server';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from '@/core/auth/servers/policy/auth-route-policy.server';
 import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
 import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server';
 import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+  AUTH_RATE_LIMIT_POLICY_KEYS,
+  enforceAuthRateLimit,
+} from '@/core/auth/servers/security/rate-limit-policies.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
+import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 
 function normalizeEmail(value) {
   return String(value || '')
@@ -19,37 +19,12 @@ function normalizeEmail(value) {
     .toLowerCase();
 }
 
-async function enforcePasswordSetRateLimit({ userId, requestContext }) {
-  try {
-    await enforceSlidingWindowRateLimit({
-      namespace: 'auth:password-set:complete',
-      windowMs: 15 * 60 * 1000,
-      dimensions: [
-        { id: 'user', value: userId, limit: 8 },
-        { id: 'ip', value: requestContext.ipAddress, limit: 20 },
-        { id: 'device', value: requestContext.deviceId, limit: 12 },
-      ],
-      message: 'Too many password setup attempts',
-    });
-  } catch (error) {
-    if (!isSlidingWindowRateLimitError(error)) {
-      throw error;
-    }
-
-    if (error.dimension === 'user') {
-      throw new Error('Too many password setup attempts for this account');
-    }
-
-    if (error.dimension === 'device') {
-      throw new Error('Too many password setup attempts from this device');
-    }
-
-    throw new Error('Too many password setup attempts from this network');
-  }
-}
-
 export async function POST(request) {
   const requestContext = getRequestContext(request);
+  const requestMeta = buildInternalRequestMeta({
+    request,
+    source: 'api/auth/account/set-password',
+  });
   let email = null;
   let userId = null;
   let challengeJti = null;
@@ -61,9 +36,7 @@ export async function POST(request) {
 
     assertCsrfRequest(request);
 
-    const authContext = await requireSessionRequest(request, {
-      allowBearerFallback: true,
-    });
+    const authContext = await requirePolicySession(request, AUTH_ROUTE_POLICY_KEYS.PASSWORD_SET_COMPLETE);
 
     userId = authContext.userId;
     sessionJti = authContext.sessionJti || null;
@@ -79,9 +52,12 @@ export async function POST(request) {
     });
     challengeJti = stepUp?.challengeJti || null;
 
-    await enforcePasswordSetRateLimit({
-      requestContext,
-      userId,
+    await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_SET_COMPLETE, {
+      dimensionValues: {
+        device: requestContext.deviceId,
+        ip: requestContext.ipAddress,
+        user: userId,
+      },
     });
 
     await authContext.adminAuth.updateUser(userId, {
@@ -100,6 +76,9 @@ export async function POST(request) {
       userId,
       email,
       provider: 'password',
+      requestId: requestMeta.requestId,
+      sessionJti,
+      outcome: 'completed',
       metadata: {
         action: 'password-set-complete',
         challengeJti,
@@ -112,11 +91,25 @@ export async function POST(request) {
       console.error('[AuthAudit] password-set success log failed:', auditError);
     });
 
-    const response = NextResponse.json({
-      ok: true,
-      nextAction: 'signed_out',
-      messageCode: 'PASSWORD_SET',
-    });
+    const response = createApiSuccessResponse(
+      {
+        messageCode: 'PASSWORD_SET',
+        nextAction: 'signed_out',
+      },
+      {
+        code: 'PASSWORD_SET',
+        legacyPayload: {
+          ok: true,
+          nextAction: 'signed_out',
+          messageCode: 'PASSWORD_SET',
+        },
+        requestMeta: {
+          ...requestMeta,
+          sessionId: sessionJti,
+          userId,
+        },
+      }
+    );
     clearAuthCookies(response, request);
     clearStepUpCookie(response);
     return response;
@@ -126,6 +119,10 @@ export async function POST(request) {
       ? 429
       : message.includes('Invalid CSRF token')
         ? 403
+        : message.includes('already deleted')
+          ? 410
+          : message.includes('pending deletion')
+            ? 409
         : message.includes('Authentication session is required') ||
             message.includes('Invalid or expired authentication token') ||
             message.includes('Authentication token has been revoked')
@@ -147,6 +144,9 @@ export async function POST(request) {
       userId,
       email,
       provider: 'password',
+      requestId: requestMeta.requestId,
+      sessionJti,
+      outcome: status === 429 ? 'blocked' : 'failed',
       metadata: {
         action: 'password-set-complete',
         challengeJti,
@@ -160,6 +160,20 @@ export async function POST(request) {
       console.error('[AuthAudit] password-set failure log failed:', auditError);
     });
 
-    return NextResponse.json({ error: message }, { status });
+    return createApiErrorResponse(
+      {
+        code: status === 429 ? 'RATE_LIMITED' : 'PASSWORD_SET_FAILED',
+        message,
+        retryable: status >= 500,
+      },
+      {
+        requestMeta: {
+          ...requestMeta,
+          sessionId: sessionJti,
+          userId,
+        },
+        status,
+      }
+    );
   }
 }

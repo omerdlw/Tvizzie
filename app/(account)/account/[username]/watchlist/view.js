@@ -1,5 +1,5 @@
 import AccountWatchlistFeed from '@/features/account/feeds/watchlist';
-import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountPageShell } from '@/features/account/shared/layout';
 import Registry from './registry';
 
 export default function WatchlistView({

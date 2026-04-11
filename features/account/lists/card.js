@@ -182,6 +182,17 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
   const previewSlots = useMemo(() => buildPreviewSlots(previewItems), [previewItems]);
   const listTitle = String(list?.title || '').trim() || 'Untitled List';
   const updatedLabel = formatListDate(list?.updatedAt || list?.createdAt);
+  const itemsCount = Number.isFinite(Number(list?.itemsCount))
+    ? Number(list.itemsCount)
+    : Array.isArray(list?.previewItems)
+      ? list.previewItems.length
+      : 0;
+  const likesCount = Number.isFinite(Number(list?.likesCount))
+    ? Number(list.likesCount)
+    : Array.isArray(list?.likes)
+      ? list.likes.length
+      : 0;
+  const reviewsCount = Number.isFinite(Number(list?.reviewsCount)) ? Number(list.reviewsCount) : 0;
 
   return (
     <motion.article
@@ -296,6 +307,20 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                 </div>
 
                 <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                      <Icon icon="solar:list-broken" size={14} />
+                      <span>{itemsCount}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                      <Icon icon="solar:heart-bold" size={14} />
+                      <span>{likesCount}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                      <Icon icon="solar:chat-round-bold" size={14} />
+                      <span>{reviewsCount}</span>
+                    </span>
+                  </div>
                   {typeof renderActions === 'function' ? (
                     <div
                       className="shrink-0"

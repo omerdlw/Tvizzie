@@ -24,9 +24,10 @@ import AccountView from './view';
 const PREVIEW_MEDIA_LIMIT = 12;
 const PREVIEW_REVIEW_LIMIT = 3;
 const PREVIEW_ACTIVITY_LIMIT = 5;
+const PREVIEW_LIST_LIMIT = 3;
 const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   likes: 1,
-  lists: 1,
+  lists: PREVIEW_LIST_LIMIT,
   watched: PREVIEW_MEDIA_LIMIT,
   watchlist: PREVIEW_MEDIA_LIMIT,
 });
@@ -82,6 +83,7 @@ export default function Client({
     likeCount,
     likes,
     listCount,
+    lists,
     isResolvingProfile,
     itemRemoveConfirmation,
   } = useAccountSectionPage({
@@ -316,6 +318,7 @@ export default function Client({
     likeCount,
     likes,
     listCount,
+    lists,
     navDescription,
     pendingFollowRequestCount,
     profile,

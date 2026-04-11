@@ -1,9 +1,9 @@
 import { cn } from '@/core/utils';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import { AccountSectionReveal } from '@/features/account/profile/layout';
-import { AccountSectionHeading } from '@/features/account/profile/section-wrapper';
+import { AccountSectionReveal } from '@/features/account/shared/layout';
+import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
-import AccountHero from '@/features/account/profile/hero';
+import AccountHero from '@/features/account/shared/hero';
 import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import Icon from '@/ui/icon';

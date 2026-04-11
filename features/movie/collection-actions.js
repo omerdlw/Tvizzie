@@ -98,6 +98,7 @@ export default function CollectionActions({ media }) {
   const title = media?.title || media?.original_title || 'This movie';
 
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
+  const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
 
   const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media]);
 
@@ -367,9 +368,27 @@ export default function CollectionActions({ media }) {
 
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
+  const canGoToMovie = Boolean(mediaSnapshot?.entityId) && isMovieReviewsRoute;
+
+  function handleGoToMovie() {
+    if (!mediaSnapshot?.entityId) {
+      return;
+    }
+
+    router.push(`/movie/${mediaSnapshot.entityId}`);
+  }
 
   return (
     <div className="flex flex-col gap-2">
+      {canGoToMovie ? (
+        <ActionButton
+          icon="solar:clapperboard-play-bold"
+          label="Go to Movie"
+          onClick={handleGoToMovie}
+          palette="neutral"
+        />
+      ) : null}
+
       {showLikeAction ? (
         <ActionButton
           active={state.liked}

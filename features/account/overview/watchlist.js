@@ -7,7 +7,7 @@ import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/const
 import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import AccountSectionLayout from '../profile/section-wrapper';
+import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 5;
 

@@ -72,10 +72,16 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center h-15 rounded-[12px] border border-[#0284c7] bg-[#dbeafe] text-lg font-semibold transition-colors',
-                hasError && digit && 'border border-[#dc2626] bg-[#fecaca] text-[#7f1d1d]',
-                isActive && !digit && 'border-[#0284c7] bg-[#dbeafe]',
-                digit && !hasError && 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]'
+                'center border-info bg-primary/40 hover:bg-primary/80 h-15 rounded-[12px] border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
+                hasError &&
+                  digit &&
+                  'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
+                isActive &&
+                  !digit &&
+                  'border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border',
+                digit &&
+                  !hasError &&
+                  'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border'
               )}
             >
               {digit || <span className="invisible">0</span>}
@@ -398,7 +404,7 @@ export default function AuthVerificationForm({
             checked={rememberDevice}
             onChange={(event) => setRememberDevice(event.target.checked)}
             disabled={isSubmitting || isSending}
-            className="size-4 border border-[#0284c7] accent-[#0ea5e9]"
+            className="size-4"
           />
           <span>Remember this device for 30 days</span>
         </label>
@@ -408,7 +414,7 @@ export default function AuthVerificationForm({
           type="button"
           onClick={() => void sendCode({ isInitial: false })}
           disabled={isSubmitting || isSending || !canResendCode}
-          className="h-11 w-full flex-auto rounded-[12px] border border-[#0284c7] bg-[#dbeafe] px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition"
+          className="h-11 w-full flex-auto rounded-[12px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition"
         >
           {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
         </Button>

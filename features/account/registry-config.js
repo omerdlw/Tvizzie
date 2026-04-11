@@ -166,8 +166,13 @@ export function buildAccountPageState({
   const isPrivateProfile = Boolean(profile?.isPrivate);
   const isFollowingProfile = followState === 'following';
   const shouldForceProfileFollowAction = !isOwner && isPrivateProfile && !isFollowingProfile;
-  const shouldShowProfileFollowAction = Boolean(showProfileFollowAction || shouldForceProfileFollowAction);
-  const shouldUseNavActionOverride = !shouldForceProfileFollowAction && Boolean(navActionOverride);
+  const hasNavActionOverride = Boolean(navActionOverride);
+  const shouldUseGuestFollowAction =
+    !authIsAuthenticated && !isOwner && Boolean(profile) && typeof handleFollow === 'function' && !hasNavActionOverride;
+  const shouldShowProfileFollowAction = Boolean(
+    showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction
+  );
+  const shouldUseNavActionOverride = !shouldForceProfileFollowAction && !shouldUseGuestFollowAction && hasNavActionOverride;
   const shouldShowToolbarFollowAction =
     !isOwner && !shouldShowProfileFollowAction && Boolean(profile) && typeof handleFollow === 'function';
 
@@ -221,6 +226,7 @@ export function buildAccountPageState({
     },
     loading: loadingState,
     nav: {
+      path: '/account',
       actions: accountNavActions,
       confirmation: itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
       description: navDescription,

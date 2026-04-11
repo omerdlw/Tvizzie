@@ -33,6 +33,7 @@ export default function Client({
   const toast = useToast();
   const [watchedItems, setWatchedItems] = useState([]);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const {
     canViewProfileCollections,
     canViewPrivateContent,
@@ -123,15 +124,21 @@ export default function Client({
     async ({ append = false } = {}) => {
       if (shouldBlockFeedLoad) {
         resetFeed();
+        setIsLoadingMore(false);
         return;
       }
 
       if (!append && hasSeededReviewFeed) {
         setIsFeedLoading(false);
+        setIsLoadingMore(false);
         return;
       }
 
-      setIsFeedLoading(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsFeedLoading(true);
+      }
       setFeedError(null);
 
       try {
@@ -152,7 +159,11 @@ export default function Client({
           setFeedError('Reviews could not be loaded right now.');
         }
       } finally {
-        setIsFeedLoading(false);
+        if (append) {
+          setIsLoadingMore(false);
+        } else {
+          setIsFeedLoading(false);
+        }
       }
     },
     [
@@ -318,6 +329,7 @@ export default function Client({
       hasMore={hasMore}
       isBioSurfaceOpen={isBioSurfaceOpen}
       isFeedLoading={isFeedLoading}
+      isLoadingMore={isLoadingMore}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}

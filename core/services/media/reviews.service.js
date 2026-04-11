@@ -39,6 +39,18 @@ function normalizeReviewContent(value) {
   return String(value || '').trim();
 }
 
+function unwrapReviewWriteResult(payload = {}) {
+  if (payload?.result && typeof payload.result === 'object') {
+    return payload.result;
+  }
+
+  if (payload && typeof payload === 'object') {
+    return payload;
+  }
+
+  return {};
+}
+
 function createListReviewLikeKey(ownerId, listId) {
   return `list:${ownerId}:${listId}`;
 }
@@ -317,21 +329,8 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
     throw new Error(validationError);
   }
 
-  const client = getSupabaseClient();
-  const existingResult = await client
-    .from('media_reviews')
-    .select('created_at,payload')
-    .eq('media_key', subjectMetadata.subjectKey)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  assertSupabaseResult(existingResult, 'Review state could not be loaded');
-
-  const existingPayload =
-    existingResult.data?.payload && typeof existingResult.data.payload === 'object' ? existingResult.data.payload : {};
   const nowIso = new Date().toISOString();
   const payload = {
-    ...existingPayload,
     authorId: user.id,
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
@@ -350,21 +349,22 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
       username: user.username || null,
     },
   };
-  const upsertResult = await client.from('media_reviews').upsert(
-    {
-      media_key: subjectMetadata.subjectKey,
-      user_id: user.id,
+  const writePayload = await requestApiJson('/api/reviews/write', {
+    method: 'POST',
+    body: {
+      action: 'upsert-media-review',
       content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      mediaKey: subjectMetadata.subjectKey,
+      payload: {
+        ...payload,
+        updatedAt: nowIso,
+      },
       rating: normalizedRating,
-      is_spoiler: normalizedContent ? Boolean(isSpoiler) : false,
-      payload,
-      created_at: existingResult.data?.created_at || nowIso,
-      updated_at: nowIso,
     },
-    { onConflict: 'media_key,user_id' }
-  );
-
-  assertSupabaseResult(upsertResult, 'Review could not be saved');
+  });
+  const writeResult = unwrapReviewWriteResult(writePayload);
+  const isCreated = writeResult?.created === true;
 
   fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
@@ -384,7 +384,7 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
     refetch: true,
   });
   fireReviewLiveEvent([user.id], {
-    action: existingResult.data ? 'updated' : 'created',
+    action: isCreated ? 'created' : 'updated',
     reviewOwnerId: user.id,
     subjectId: subjectMetadata.subjectId,
     subjectType: subjectMetadata.subjectType,
@@ -431,21 +431,8 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
     throw new Error(validationError);
   }
 
-  const client = getSupabaseClient();
-  const existingResult = await client
-    .from('list_reviews')
-    .select('created_at,payload')
-    .eq('list_id', listId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  assertSupabaseResult(existingResult, 'Review state could not be loaded');
-
-  const existingPayload =
-    existingResult.data?.payload && typeof existingResult.data.payload === 'object' ? existingResult.data.payload : {};
   const nowIso = new Date().toISOString();
   const payload = {
-    ...existingPayload,
     authorId: user.id,
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
@@ -468,23 +455,24 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
       username: user.username || null,
     },
   };
-  const upsertResult = await client.from('list_reviews').upsert(
-    {
-      list_id: listId,
-      user_id: user.id,
+  const writePayload = await requestApiJson('/api/reviews/write', {
+    method: 'POST',
+    body: {
+      action: 'upsert-list-review',
       content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      listId,
+      payload: {
+        ...payload,
+        updatedAt: nowIso,
+      },
       rating: normalizedRating,
-      is_spoiler: normalizedContent ? Boolean(isSpoiler) : false,
-      payload,
-      created_at: existingResult.data?.created_at || nowIso,
-      updated_at: nowIso,
     },
-    { onConflict: 'list_id,user_id' }
-  );
+  });
+  const writeResult = unwrapReviewWriteResult(writePayload);
+  const isCreated = writeResult?.created === true;
 
-  assertSupabaseResult(upsertResult, 'Review could not be saved');
-
-  if (!existingResult.data) {
+  if (isCreated) {
     await updateListReviewsCount({
       ownerId,
       listId,
@@ -514,7 +502,7 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
     refetch: true,
   });
   fireReviewLiveEvent([ownerId, user.id], {
-    action: existingResult.data ? 'updated' : 'created',
+    action: isCreated ? 'created' : 'updated',
     reviewOwnerId: user.id,
     subjectId: subjectMetadata.subjectId,
     subjectOwnerId: subjectMetadata.subjectOwnerId,
@@ -546,22 +534,29 @@ export async function deleteMediaReview({ media, userId }) {
 
   const mediaSnapshot = assertMovieMedia(media, 'Only movie reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
-  const client = getSupabaseClient();
-  const result = await client.from('media_reviews').delete().eq('media_key', mediaKey).eq('user_id', userId);
-
-  assertSupabaseResult(result, 'Review could not be deleted');
+  const writePayload = await requestApiJson('/api/reviews/write', {
+    method: 'POST',
+    body: {
+      action: 'delete-media-review',
+      mediaKey,
+    },
+  });
+  const writeResult = unwrapReviewWriteResult(writePayload);
+  const deleted = writeResult?.deleted !== false;
 
   invalidatePollingSubscription(getMediaReviewsSubscriptionKey(media), {
     refetch: true,
   });
-  fireReviewLiveEvent([userId], {
-    action: 'deleted',
-    reviewOwnerId: userId,
-    subjectId: mediaSnapshot.entityId,
-    subjectType: mediaSnapshot.entityType,
-  });
+  if (deleted) {
+    fireReviewLiveEvent([userId], {
+      action: 'deleted',
+      reviewOwnerId: userId,
+      subjectId: mediaSnapshot.entityId,
+      subjectType: mediaSnapshot.entityType,
+    });
+  }
 
-  return true;
+  return deleted;
 }
 
 export async function deleteListReview({ ownerId, listId, userId }) {
@@ -569,23 +564,19 @@ export async function deleteListReview({ ownerId, listId, userId }) {
     throw new Error('ownerId, listId, and userId are required');
   }
 
-  const client = getSupabaseClient();
-  const existingResult = await client
-    .from('list_reviews')
-    .select('list_id')
-    .eq('list_id', listId)
-    .eq('user_id', userId)
-    .maybeSingle();
+  const writePayload = await requestApiJson('/api/reviews/write', {
+    method: 'POST',
+    body: {
+      action: 'delete-list-review',
+      listId,
+    },
+  });
+  const writeResult = unwrapReviewWriteResult(writePayload);
+  const deleted = writeResult?.deleted === true;
 
-  assertSupabaseResult(existingResult, 'Review state could not be loaded');
-
-  if (!existingResult.data) {
+  if (!deleted) {
     return false;
   }
-
-  const deleteResult = await client.from('list_reviews').delete().eq('list_id', listId).eq('user_id', userId);
-
-  assertSupabaseResult(deleteResult, 'Review could not be deleted');
 
   await updateListReviewsCount({
     ownerId,
@@ -607,39 +598,18 @@ export async function deleteListReview({ ownerId, listId, userId }) {
   return true;
 }
 
-async function toggleReviewLikeByKey({ reviewKey, reviewUserId, userId }) {
-  const client = getSupabaseClient();
-  const existingResult = await client
-    .from('review_likes')
-    .select('media_key')
-    .eq('media_key', reviewKey)
-    .eq('review_user_id', reviewUserId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  assertSupabaseResult(existingResult, 'Review like state could not be loaded');
-
-  if (existingResult.data) {
-    const deleteResult = await client
-      .from('review_likes')
-      .delete()
-      .eq('media_key', reviewKey)
-      .eq('review_user_id', reviewUserId)
-      .eq('user_id', userId);
-
-    assertSupabaseResult(deleteResult, 'Review like could not be removed');
-    return false;
-  }
-
-  const insertResult = await client.from('review_likes').insert({
-    media_key: reviewKey,
-    review_user_id: reviewUserId,
-    user_id: userId,
-    created_at: new Date().toISOString(),
+async function toggleReviewLikeByKey({ reviewKey, reviewUserId }) {
+  const writePayload = await requestApiJson('/api/reviews/write', {
+    method: 'POST',
+    body: {
+      action: 'toggle-review-like',
+      reviewKey,
+      reviewUserId,
+    },
   });
+  const writeResult = unwrapReviewWriteResult(writePayload);
 
-  assertSupabaseResult(insertResult, 'Review like could not be added');
-  return true;
+  return writeResult?.isNowLiked === true;
 }
 
 export async function toggleReviewLike({ media, reviewUserId, userId }) {
@@ -656,7 +626,6 @@ export async function toggleReviewLike({ media, reviewUserId, userId }) {
   const isNowLiked = await toggleReviewLikeByKey({
     reviewKey: mediaKey,
     reviewUserId,
-    userId,
   });
 
   if (isNowLiked) {
@@ -695,7 +664,6 @@ export async function toggleListReviewLike({ ownerId, listId, reviewUserId, user
   const isNowLiked = await toggleReviewLikeByKey({
     reviewKey,
     reviewUserId,
-    userId,
   });
   const listContext = isNowLiked ? await getListReviewContext(ownerId, listId) : null;
 

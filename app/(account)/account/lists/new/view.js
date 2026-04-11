@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { TMDB_IMG } from '@/core/constants';
 import { useNavHeight } from '@/core/modules/nav/hooks';
 import { cn, formatYear } from '@/core/utils';
-import { AccountSectionReveal } from '@/features/account/profile/layout';
+import { AccountSectionReveal } from '@/features/account/shared/layout';
 import MediaCard from '@/features/shared/media-card';
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';

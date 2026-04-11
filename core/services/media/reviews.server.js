@@ -195,6 +195,18 @@ function paginateReviewItems(items = [], cursor = null, pageSize = 20) {
   };
 }
 
+function resolveReviewWindow({ cursor = null, pageSize = 20 } = {}) {
+  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.min(Math.floor(Number(pageSize)), 100)) : 20;
+  const offset = Number.isFinite(Number(cursor)) ? Math.max(0, Math.floor(Number(cursor))) : 0;
+  const fetchLimit = Math.min(Math.max(offset + normalizedPageSize * 2, normalizedPageSize * 2), 300);
+
+  return {
+    fetchLimit,
+    offset,
+    pageSize: normalizedPageSize,
+  };
+}
+
 async function canViewerAccessUserContent({ admin, ownerId, viewerId = null }) {
   if (!ownerId) {
     return false;
@@ -293,19 +305,21 @@ async function loadListSubjectMap(admin, listIds = []) {
   return listMap;
 }
 
-async function fetchAuthoredReviews(admin, userId) {
-  const [mediaResult, listResult] = await Promise.all([
-    admin
-      .from('media_reviews')
-      .select(MEDIA_REVIEW_SELECT)
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false }),
-    admin
-      .from('list_reviews')
-      .select(LIST_REVIEW_SELECT)
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false }),
-  ]);
+async function fetchAuthoredReviews(admin, userId, { fetchLimit = null } = {}) {
+  let mediaQuery = admin.from('media_reviews').select(MEDIA_REVIEW_SELECT).eq('user_id', userId).order('updated_at', {
+    ascending: false,
+  });
+  let listQuery = admin.from('list_reviews').select(LIST_REVIEW_SELECT).eq('user_id', userId).order('updated_at', {
+    ascending: false,
+  });
+
+  if (Number.isFinite(Number(fetchLimit)) && Number(fetchLimit) > 0) {
+    const resolvedLimit = Math.max(1, Math.min(Math.floor(Number(fetchLimit)), 300));
+    mediaQuery = mediaQuery.limit(resolvedLimit);
+    listQuery = listQuery.limit(resolvedLimit);
+  }
+
+  const [mediaResult, listResult] = await Promise.all([mediaQuery, listQuery]);
 
   if (mediaResult.error) {
     throw new Error(mediaResult.error.message || 'Reviews could not be loaded');
@@ -355,12 +369,16 @@ async function fetchAuthoredReviews(admin, userId) {
   return sortReviewsByUpdatedAtDesc([...mediaReviews, ...listReviews]);
 }
 
-async function fetchLikedReviews(admin, userId) {
-  const likesResult = await admin
-    .from('review_likes')
-    .select(REVIEW_LIKE_SELECT)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+async function fetchLikedReviews(admin, userId, { fetchLimit = null } = {}) {
+  let likesQuery = admin.from('review_likes').select(REVIEW_LIKE_SELECT).eq('user_id', userId).order('created_at', {
+    ascending: false,
+  });
+
+  if (Number.isFinite(Number(fetchLimit)) && Number(fetchLimit) > 0) {
+    likesQuery = likesQuery.limit(Math.max(1, Math.min(Math.floor(Number(fetchLimit)), 300)));
+  }
+
+  const likesResult = await likesQuery;
 
   if (likesResult.error) {
     throw new Error(likesResult.error.message || 'Liked reviews could not be loaded');
@@ -384,13 +402,21 @@ async function fetchLikedReviews(admin, userId) {
   const mediaReviewMap = new Map();
   const listReviewMap = new Map();
   const mediaKeys = [...new Set(mediaLikeRows.map((row) => row.media_key).filter(Boolean))];
+  const mediaReviewUserIds = [...new Set(mediaLikeRows.map((row) => row.review_user_id).filter(Boolean))];
   const listIds = [
     ...new Set(listLikeRows.map((row) => parseListReviewLikeKey(row.media_key)?.listId).filter(Boolean)),
   ];
+  const listReviewUserIds = [...new Set(listLikeRows.map((row) => row.review_user_id).filter(Boolean))];
 
   for (let index = 0; index < mediaKeys.length; index += 100) {
     const chunk = mediaKeys.slice(index, index + 100);
-    const reviewResult = await admin.from('media_reviews').select(MEDIA_REVIEW_SELECT).in('media_key', chunk);
+    let reviewQuery = admin.from('media_reviews').select(MEDIA_REVIEW_SELECT).in('media_key', chunk);
+
+    if (mediaReviewUserIds.length > 0) {
+      reviewQuery = reviewQuery.in('user_id', mediaReviewUserIds);
+    }
+
+    const reviewResult = await reviewQuery;
 
     if (reviewResult.error) {
       throw new Error(reviewResult.error.message || 'Liked reviews could not be loaded');
@@ -403,7 +429,13 @@ async function fetchLikedReviews(admin, userId) {
 
   for (let index = 0; index < listIds.length; index += 100) {
     const chunk = listIds.slice(index, index + 100);
-    const reviewResult = await admin.from('list_reviews').select(LIST_REVIEW_SELECT).in('list_id', chunk);
+    let reviewQuery = admin.from('list_reviews').select(LIST_REVIEW_SELECT).in('list_id', chunk);
+
+    if (listReviewUserIds.length > 0) {
+      reviewQuery = reviewQuery.in('user_id', listReviewUserIds);
+    }
+
+    const reviewResult = await reviewQuery;
 
     if (reviewResult.error) {
       throw new Error(reviewResult.error.message || 'Liked reviews could not be loaded');
@@ -487,9 +519,20 @@ export async function fetchProfileReviewFeedServer({
     throw error;
   }
 
-  const reviews = mode === 'liked' ? await fetchLikedReviews(admin, userId) : await fetchAuthoredReviews(admin, userId);
+  const reviewWindow = resolveReviewWindow({
+    cursor,
+    pageSize,
+  });
+  const reviews =
+    mode === 'liked'
+      ? await fetchLikedReviews(admin, userId, {
+          fetchLimit: reviewWindow.fetchLimit,
+        })
+      : await fetchAuthoredReviews(admin, userId, {
+          fetchLimit: reviewWindow.fetchLimit,
+        });
 
-  return paginateReviewItems(dedupeReviews(reviews).filter(isSupportedReviewItem), cursor, pageSize);
+  return paginateReviewItems(dedupeReviews(reviews).filter(isSupportedReviewItem), reviewWindow.offset, reviewWindow.pageSize);
 }
 
 export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = null }) {

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { isReservedAccountSegment } from '@/features/account/utils';
+import { ensureAccountLifecycle } from '@/core/auth/servers/account/account-lifecycle.server';
 
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 24;
@@ -90,6 +91,8 @@ export async function ensurePasswordAccountProfile({ avatarUrl = null, displayNa
   if (!profile?.id || !normalizeValue(profile?.username)) {
     throw new Error('Profile could not be bootstrapped');
   }
+
+  await ensureAccountLifecycle(normalizedUserId);
 
   return profile;
 }

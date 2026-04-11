@@ -2,14 +2,16 @@
 
 import AccountActivityOverview from '@/features/account/overview/activity';
 import AccountFavoritesOverview from '@/features/account/overview/favorites';
+import AccountListsOverview from '@/features/account/overview/lists';
 import AccountReviewsOverview from '@/features/account/overview/reviews';
 import AccountWatchedOverview from '@/features/account/overview/watched';
 import AccountWatchlistOverview from '@/features/account/overview/watchlist';
-import { AccountPageShell } from '@/features/account/profile/layout';
-import { AccountProfileMediaActions } from '@/features/account/profile/media-grid';
-import { AccountSectionState } from '@/features/account/profile/section-wrapper';
+import { AccountPageShell } from '@/features/account/shared/layout';
+import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 
 const OVERVIEW_MEDIA_LIMIT = 5;
+const OVERVIEW_LIST_LIMIT = 3;
 
 function buildSectionHref(username, suffix = '') {
   return username ? `/account/${username}${suffix}` : null;
@@ -52,6 +54,7 @@ export default function AccountOverviewFeed({
     likeCount = 0,
     likes = [],
     listCount = 0,
+    lists = [],
     navDescription,
     pendingFollowRequestCount,
     profile,
@@ -70,6 +73,7 @@ export default function AccountOverviewFeed({
   const shouldShowFavorites = favoriteShowcase.length > 0;
   const shouldShowWatched = watched.length > 0;
   const shouldShowWatchlist = watchlist.length > 0;
+  const shouldShowLists = lists.length > 0;
   const shouldShowActivity = activityItems.length > 0;
   const shouldShowReviews = authoredReviews.length > 0;
 
@@ -125,8 +129,6 @@ export default function AccountOverviewFeed({
             <AccountFavoritesOverview
               icon="solar:star-bold"
               items={favoriteShowcase.slice(0, OVERVIEW_MEDIA_LIMIT)}
-              showSeeMore={favoriteShowcase.length > OVERVIEW_MEDIA_LIMIT}
-              summaryLabel={`${favoriteShowcase.length} selected`}
               title="Favorites"
               titleHref={buildSectionHref(profileHandle, '/likes')}
             />
@@ -148,7 +150,6 @@ export default function AccountOverviewFeed({
                 ) : null
               }
               showSeeMore={watchedCount > OVERVIEW_MEDIA_LIMIT}
-              summaryLabel={`${watchedCount} titles`}
               title="Watched"
               titleHref={buildSectionHref(profileHandle, '/watched')}
             />
@@ -171,9 +172,19 @@ export default function AccountOverviewFeed({
                 ) : null
               }
               showSeeMore={watchlistCount > OVERVIEW_MEDIA_LIMIT}
-              summaryLabel={`${watchlistCount} titles`}
               title="Watchlist"
               titleHref={buildSectionHref(profileHandle, '/watchlist')}
+            />
+          ) : null}
+
+          {shouldShowLists ? (
+            <AccountListsOverview
+              icon="solar:list-broken"
+              items={lists.slice(0, OVERVIEW_LIST_LIMIT)}
+              ownerUsername={profileHandle}
+              showSeeMore={listCount > OVERVIEW_LIST_LIMIT}
+              title="Lists"
+              titleHref={buildSectionHref(profileHandle, '/lists')}
             />
           ) : null}
 

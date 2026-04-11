@@ -14,6 +14,7 @@ import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/
 import { getCurrentEditableAccountSnapshot } from '@/core/services/account/current-account-snapshot.server';
 
 const OVERVIEW_ACTIVITY_LIMIT = 5;
+const OVERVIEW_LISTS_LIMIT = 3;
 const OVERVIEW_REVIEW_LIMIT = 3;
 const OVERVIEW_WATCHED_LIMIT = 12;
 const OVERVIEW_WATCHLIST_LIMIT = 12;
@@ -197,7 +198,7 @@ export async function getCurrentAccountOverviewRouteData() {
     };
   }
 
-  const [activityFeed, reviewFeed, watched, watchlist] = await Promise.all([
+  const [activityFeed, reviewFeed, watched, watchlist, lists] = await Promise.all([
     safeLoad(
       () =>
         fetchAccountActivityFeedServer({
@@ -235,12 +236,22 @@ export async function getCurrentAccountOverviewRouteData() {
       },
       []
     ),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_LISTS_LIMIT,
+        resource: 'lists',
+        userId: snapshot.resolvedUserId,
+        viewerId,
+      },
+      []
+    ),
   ]);
 
   return {
     initialActivityFeed: createInitialFeed(activityFeed, snapshot.resolvedUserId),
     initialCollections: createInitialCollections({
       counts: snapshot.counts,
+      lists,
       resolvedUserId: snapshot.resolvedUserId,
       watched,
       watchlist,
@@ -320,7 +331,7 @@ export async function getUsernameAccountOverviewRouteData(username) {
     };
   }
 
-  const [activityFeed, reviewFeed, watched, watchlist] = await Promise.all([
+  const [activityFeed, reviewFeed, watched, watchlist, lists] = await Promise.all([
     safeLoad(
       () =>
         fetchAccountActivityFeedServer({
@@ -358,6 +369,15 @@ export async function getUsernameAccountOverviewRouteData(username) {
       },
       []
     ),
+    loadCollectionResource(
+      {
+        limitCount: OVERVIEW_LISTS_LIMIT,
+        resource: 'lists',
+        userId: snapshot.initialResolvedUserId,
+        viewerId: snapshot.viewerId,
+      },
+      []
+    ),
   ]);
 
   return {
@@ -365,6 +385,7 @@ export async function getUsernameAccountOverviewRouteData(username) {
     initialActivityFeed: createInitialFeed(activityFeed, snapshot.initialResolvedUserId),
     initialCollections: createInitialCollections({
       counts: snapshot.initialCounts,
+      lists,
       resolvedUserId: snapshot.initialResolvedUserId,
       watched,
       watchlist,

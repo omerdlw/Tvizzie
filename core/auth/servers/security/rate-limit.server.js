@@ -148,7 +148,7 @@ async function enforceEdgeRateLimit({ message, normalizedDimensions, normalizedN
     }),
     cache: 'no-store',
   });
-  let payload = await response.json().catch(() => ({}));
+  const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(normalizeValue(payload?.error) || `Rate-limit function failed with status ${response.status}`);

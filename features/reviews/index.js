@@ -13,7 +13,7 @@ import ReviewAuthFallback from './parts/review-auth-fallback';
 import ReviewHeader from './parts/review-header';
 import ReviewList from './parts/review-list';
 import { useMediaReviews } from './use-media-reviews';
-import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS, parseReviewSortMode, sortReviewsByMode } from './utils';
+import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS, getRatingStats, parseReviewSortMode, sortReviewsByMode } from './utils';
 
 export default function MediaReviews({
   entityId,
@@ -29,6 +29,8 @@ export default function MediaReviews({
   enableSortControl = false,
   defaultSortMode = REVIEW_SORT_MODE.NEWEST,
   useQuerySortMode = false,
+  useQueryUserFilter = false,
+  hideWhenEmpty = false,
   onReviewStateChange,
 }) {
   const isRecentListMode = listMode === 'recent';
@@ -38,6 +40,7 @@ export default function MediaReviews({
   const searchParams = useSearchParams();
   const querySortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
   const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
+  const queryReviewUser = String(searchParams?.get('user') || '').trim();
 
   const {
     currentUserId,
@@ -144,12 +147,50 @@ export default function MediaReviews({
     });
   }, [handleDelete, setNavConfirmation]);
 
-  const recentReviews = [...reviews].sort((first, second) => {
+  const filteredReviews = useMemo(() => {
+    if (!useQueryUserFilter || !queryReviewUser) {
+      return reviews;
+    }
+
+    const normalizedUser = queryReviewUser.toLowerCase();
+
+    return reviews.filter((review) => {
+      const username = String(review?.user?.username || '')
+        .trim()
+        .toLowerCase();
+      const userId = String(review?.user?.id || review?.reviewUserId || '')
+        .trim()
+        .toLowerCase();
+
+      return username === normalizedUser || userId === normalizedUser;
+    });
+  }, [queryReviewUser, reviews, useQueryUserFilter]);
+
+  const effectiveRatingStats = useMemo(() => {
+    if (!useQueryUserFilter || !queryReviewUser) {
+      return ratingStats;
+    }
+
+    return getRatingStats(filteredReviews);
+  }, [filteredReviews, queryReviewUser, ratingStats, useQueryUserFilter]);
+
+  const defaultOrderedReviews = useMemo(() => {
+    if (!useQueryUserFilter || !queryReviewUser) {
+      return sortedReviews;
+    }
+
+    return sortReviewsByMode(filteredReviews, REVIEW_SORT_MODE.NEWEST);
+  }, [filteredReviews, queryReviewUser, sortedReviews, useQueryUserFilter]);
+
+  const recentReviews = [...filteredReviews].sort((first, second) => {
     const firstTime = new Date(first.updatedAt || first.createdAt || 0).getTime();
     const secondTime = new Date(second.updatedAt || second.createdAt || 0).getTime();
     return secondTime - firstTime;
   });
-  const sortedByModeReviews = useMemo(() => sortReviewsByMode(reviews, activeSortMode), [activeSortMode, reviews]);
+  const sortedByModeReviews = useMemo(
+    () => sortReviewsByMode(filteredReviews, activeSortMode),
+    [activeSortMode, filteredReviews]
+  );
   const hasMoreThanRecentLimit = isRecentListMode && recentReviews.length > 5;
   const shouldUseCustomSort = isSortControlEnabled || useQuerySortMode;
   const listAnimationKey = shouldUseCustomSort ? `reviews-sort-${activeSortMode}` : 'reviews-default-order';
@@ -157,7 +198,9 @@ export default function MediaReviews({
     ? recentReviews.slice(0, 5)
     : shouldUseCustomSort
       ? sortedByModeReviews
-      : sortedReviews;
+      : defaultOrderedReviews;
+  const shouldHideRecentList = hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
+  const shouldShowComposer = !ownReview;
 
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
 
@@ -172,27 +215,30 @@ export default function MediaReviews({
           style={{ bottom: -backdropExtension }}
         />
       ) : null}
-      <ReviewHeader ratingStats={ratingStats} title={headerTitle} totalReviews={reviews.length} />
-      <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
-        <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{ownReview ? 'Update your review' : 'Rate or review this title'}</p>
-            <p className="text-xs text-black/70">
-              {ownReview
-                ? 'Open the review modal to edit your score or text.'
-                : 'Share your rating and thoughts from the review modal.'}
-            </p>
+      <ReviewHeader
+        ratingStats={effectiveRatingStats}
+        title={headerTitle}
+        totalReviews={filteredReviews.length}
+        onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
+      />
+      {shouldShowComposer ? (
+        <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
+          <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Rate or review this title</p>
+              <p className="text-xs text-black/70">Share your rating and thoughts from the review modal.</p>
+            </div>
+            <Button
+              className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 rounded-[14px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+              type="button"
+              onClick={() => openReviewModal()}
+            >
+              Add Review
+            </Button>
           </div>
-          <Button
-            className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 rounded-[14px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
-            type="button"
-            onClick={() => openReviewModal()}
-          >
-            {ownReview ? 'Edit Review' : 'Add Review'}
-          </Button>
-        </div>
-      </AuthGate>
-      {isRecentListMode ? (
+        </AuthGate>
+      ) : null}
+      {isRecentListMode && !shouldHideRecentList ? (
         <div className="flex w-full items-center justify-between border-b border-black/10 py-5">
           <span className="text-xs font-semibold tracking-wider text-black/70 uppercase">Recent reviews</span>
           {hasMoreThanRecentLimit && allReviewsHref ? (
@@ -228,27 +274,29 @@ export default function MediaReviews({
         </div>
       ) : null}
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={listAnimationKey}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, filter: 'blur(3px)' }}
-          animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(2px)' }}
-          transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: 'easeOut' }}
-          style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
-        >
-          <ReviewList
-            currentUserId={currentUserId}
-            isLoading={isLoading}
-            loadError={loadError}
-            onDeleteRequest={handleDeleteRequest}
-            onEdit={handleEditReview}
-            onLike={handleLike}
-            sortedReviews={displayedReviews}
-            userProfile={userProfile}
-          />
-        </motion.div>
-      </AnimatePresence>
+      {!shouldHideRecentList ? (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={listAnimationKey}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, filter: 'blur(3px)' }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(2px)' }}
+            transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: 'easeOut' }}
+            style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
+          >
+            <ReviewList
+              currentUserId={currentUserId}
+              isLoading={isLoading}
+              loadError={loadError}
+              onDeleteRequest={handleDeleteRequest}
+              onEdit={handleEditReview}
+              onLike={handleLike}
+              sortedReviews={displayedReviews}
+              userProfile={userProfile}
+            />
+          </motion.div>
+        </AnimatePresence>
+      ) : null}
     </section>
   );
 }

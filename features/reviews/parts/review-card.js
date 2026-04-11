@@ -61,6 +61,70 @@ function getFeedActivityLabel(review, { hasRating, hasText }) {
   return 'Logged by';
 }
 
+function appendQueryParam(href, key, value) {
+  const safeHref = String(href || '').trim();
+  const safeValue = String(value || '').trim();
+
+  if (!safeHref || !safeValue) {
+    return safeHref;
+  }
+
+  const [pathPart, hashPart = ''] = safeHref.split('#');
+  const [pathname, search = ''] = pathPart.split('?');
+  const params = new URLSearchParams(search);
+
+  params.set(key, safeValue);
+
+  const query = params.toString();
+  const withQuery = query ? `${pathname}?${query}` : pathname;
+
+  return hashPart ? `${withQuery}#${hashPart}` : withQuery;
+}
+
+function resolveMovieReviewsHref(review) {
+  const subjectId = String(review?.subjectId || '').trim();
+  const rawSubjectHref = String(review?.subjectHref || '').trim();
+  let baseHref = '';
+
+  if (subjectId) {
+    baseHref = `/movie/${subjectId}/reviews`;
+  } else if (rawSubjectHref) {
+    if (/^\/movie\/[^/?#]+\/reviews(?:[?#].*)?$/.test(rawSubjectHref)) {
+      baseHref = rawSubjectHref;
+    } else {
+      const movieMatch = rawSubjectHref.match(/^\/movie\/([^/?#]+)([?#].*)?$/);
+
+      if (movieMatch) {
+        const movieId = movieMatch[1];
+        const suffix = movieMatch[2] || '';
+        baseHref = `/movie/${movieId}/reviews${suffix}`;
+      }
+    }
+  }
+
+  if (!baseHref) {
+    return rawSubjectHref || null;
+  }
+
+  const reviewUser = String(review?.user?.username || review?.user?.id || review?.reviewUserId || '').trim();
+
+  return appendQueryParam(baseHref, 'user', reviewUser);
+}
+
+function resolveSubjectHref(review, isAccountVariant) {
+  const rawSubjectHref = String(review?.subjectHref || '').trim();
+
+  if (!isAccountVariant) {
+    return rawSubjectHref || null;
+  }
+
+  if (review?.subjectType === 'movie') {
+    return resolveMovieReviewsHref(review);
+  }
+
+  return rawSubjectHref || null;
+}
+
 function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, onClick }) {
   return (
     <button
@@ -206,6 +270,7 @@ export default function ReviewCard({
   const formattedDate = timestamp ? formatDate(timestamp) : 'Just now';
   const accountHref = `/account/${username || review.user?.id || review.id}`;
   const visualSrc = isAccountVariant ? getReviewPosterSrc(review) : getUserAvatarUrl(review.user);
+  const subjectHref = resolveSubjectHref(review, isAccountVariant);
   const previewItems = Array.isArray(review.subjectPreviewItems) ? review.subjectPreviewItems : [];
   const reviewSubjectKey = review.subjectKey || review.mediaKey || null;
   const hasLikedSubject = Boolean(
@@ -258,9 +323,9 @@ export default function ReviewCard({
               <>
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    {showSubject && review.subjectHref && review.subjectTitle && (
+                    {showSubject && subjectHref && review.subjectTitle && (
                       <Link
-                        href={review.subjectHref}
+                        href={subjectHref}
                         className="block min-w-0 text-lg font-semibold tracking-tight transition sm:text-xl"
                         style={{
                           display: '-webkit-box',
@@ -344,9 +409,9 @@ export default function ReviewCard({
                       </p>
                     )}
 
-                    {showSubject && review.subjectHref && review.subjectTitle && (
+                    {showSubject && subjectHref && review.subjectTitle && (
                       <Link
-                        href={review.subjectHref}
+                        href={subjectHref}
                         className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest text-[#1d4ed8] uppercase transition"
                       >
                         <Icon

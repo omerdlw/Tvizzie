@@ -1,5 +1,5 @@
 import AccountLikesFeed from '@/features/account/feeds/likes';
-import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountPageShell } from '@/features/account/shared/layout';
 import Registry from './registry';
 
 export default function LikesView({
@@ -26,6 +26,7 @@ export default function LikesView({
   isOwner,
   isPageLoading,
   isReviewsLoading,
+  isReviewsLoadingMore,
   isResolvingProfile,
   isShowcaseSaving,
   itemRemoveConfirmation,
@@ -110,6 +111,7 @@ export default function LikesView({
         isLikedListsLoading={isLikedListsLoading}
         isOwner={isOwner}
         isReviewsLoading={isReviewsLoading}
+        isReviewsLoadingMore={isReviewsLoadingMore}
         isShowcaseSaving={isShowcaseSaving}
         likedLists={likedLists}
         likedListsError={likedListsError}

@@ -1,5 +1,5 @@
 import AccountListsFeed from '@/features/account/feeds/lists';
-import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountPageShell } from '@/features/account/shared/layout';
 import Registry from './registry';
 
 export default function ListsView({

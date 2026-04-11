@@ -2,14 +2,49 @@
 
 import React, { useMemo } from 'react';
 
+function normalizePath(value) {
+  const normalized = String(value || '').trim();
+
+  if (!normalized) {
+    return '';
+  }
+
+  if (normalized === '/') {
+    return '/';
+  }
+
+  return normalized.replace(/\/+$/, '');
+}
+
+function matchesPathOrDescendant(pathname, path) {
+  const normalizedPathname = normalizePath(pathname);
+  const normalizedPath = normalizePath(path);
+
+  if (!normalizedPathname || !normalizedPath) {
+    return false;
+  }
+
+  if (normalizedPathname === normalizedPath) {
+    return true;
+  }
+
+  // Root path should only match itself, not every route.
+  if (normalizedPath === '/') {
+    return false;
+  }
+
+  return normalizedPathname.startsWith(`${normalizedPath}/`);
+}
+
 function shouldRenderAction({ action, isLoading, isOverlay, path, activeChild }, pathname) {
   if (!action) return false;
   if (isLoading) return false;
 
   const matchesActiveChild =
     activeChild?.path && typeof activeChild.path === 'string' ? pathname === activeChild.path : false;
+  const matchesPath = matchesPathOrDescendant(pathname, path);
 
-  if (!isOverlay && path && pathname !== path && !matchesActiveChild) {
+  if (!isOverlay && path && !matchesPath && !matchesActiveChild) {
     return false;
   }
 

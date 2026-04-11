@@ -13,6 +13,7 @@ import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
+import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { EASING, TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import Icon from '@/ui/icon/index';
@@ -109,6 +110,8 @@ export default function Registry({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
+  const reviewUserFilter = String(searchParams?.get('user') || '').trim();
+  const hasReviewUserFilter = Boolean(reviewUserFilter);
   const activeSortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
 
   useEffect(() => {
@@ -147,10 +150,32 @@ export default function Registry({
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
+  const handleShowAllReviews = () => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    params.delete('user');
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
+
   const navAction = reviewState?.isActive ? (
     <ReviewAction reviewState={reviewState} />
   ) : isSearching ? (
     <SearchAction />
+  ) : isMovieReviewsRoute && hasReviewUserFilter ? (
+    <div className="mt-2.5 flex w-full gap-2">
+      <button
+        type="button"
+        onClick={handleShowAllReviews}
+        className={getNavActionClass({
+          className: 'flex-1',
+          isActive: false,
+        })}
+      >
+        <Icon icon="solar:list-bold" size={16} />
+        Show All Reviews
+      </button>
+    </div>
   ) : (
     <div className="mt-2.5 flex w-full gap-2">
       <MovieAction

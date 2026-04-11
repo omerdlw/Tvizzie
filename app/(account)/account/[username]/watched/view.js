@@ -1,5 +1,5 @@
 import AccountWatchedFeed from '@/features/account/feeds/watched';
-import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountPageShell } from '@/features/account/shared/layout';
 import Registry from './registry';
 
 export default function WatchedView({

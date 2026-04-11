@@ -1,18 +1,18 @@
-import { NextResponse } from 'next/server';
-
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from '@/core/auth/servers/policy/auth-route-policy.server';
 import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
 import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+  AUTH_RATE_LIMIT_POLICY_KEYS,
+  enforceAuthRateLimit,
+} from '@/core/auth/servers/security/rate-limit-policies.server';
 import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { clearStepUpCookie, assertStepUp } from '@/core/auth/servers/security/step-up.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { assertRecentReauth, clearRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
+import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,7 +22,7 @@ function normalizeEmail(value) {
     .toLowerCase();
 }
 
-async function syncProfileEmail({ userId, email }) {
+async function syncProfileEmail({ userId, email, request = null, requestMeta = null }) {
   const normalizedUserId = String(userId || '').trim();
   const normalizedEmail = normalizeEmail(email);
 
@@ -40,6 +40,9 @@ async function syncProfileEmail({ userId, email }) {
       email: normalizedEmail,
       userId: normalizedUserId,
     },
+    request,
+    requestMeta,
+    source: 'account-profile-write',
   });
 
   if (result?.ok !== true) {
@@ -47,7 +50,7 @@ async function syncProfileEmail({ userId, email }) {
   }
 }
 
-async function rollbackEmailChange({ adminAuth, userId, previousEmail }) {
+async function rollbackEmailChange({ adminAuth, userId, previousEmail, request = null, requestMeta = null }) {
   const normalizedPreviousEmail = normalizeEmail(previousEmail);
 
   if (!normalizedPreviousEmail) {
@@ -61,6 +64,8 @@ async function rollbackEmailChange({ adminAuth, userId, previousEmail }) {
   await syncProfileEmail({
     userId,
     email: normalizedPreviousEmail,
+    request,
+    requestMeta,
   });
 }
 
@@ -78,35 +83,6 @@ async function signOutAuthSession(accessToken, scope = 'local') {
   }
 
   return true;
-}
-
-async function enforceEmailChangeRateLimit({ userId, requestContext }) {
-  try {
-    await enforceSlidingWindowRateLimit({
-      namespace: 'auth:email-change:complete',
-      windowMs: 15 * 60 * 1000,
-      dimensions: [
-        { id: 'user', value: userId, limit: 8 },
-        { id: 'ip', value: requestContext.ipAddress, limit: 20 },
-        { id: 'device', value: requestContext.deviceId, limit: 12 },
-      ],
-      message: 'Too many email change attempts',
-    });
-  } catch (error) {
-    if (!isSlidingWindowRateLimitError(error)) {
-      throw error;
-    }
-
-    if (error.dimension === 'user') {
-      throw new Error('Too many email change attempts for this account');
-    }
-
-    if (error.dimension === 'device') {
-      throw new Error('Too many email change attempts from this device');
-    }
-
-    throw new Error('Too many email change attempts from this network');
-  }
 }
 
 async function assertEmailAvailable(adminAuth, email) {
@@ -127,6 +103,10 @@ async function assertEmailAvailable(adminAuth, email) {
 
 export async function POST(request) {
   const requestContext = getRequestContext(request);
+  const requestMeta = buildInternalRequestMeta({
+    request,
+    source: 'api/auth/account/change-email',
+  });
   let userId = null;
   let previousEmail = null;
   let nextEmail = null;
@@ -139,14 +119,18 @@ export async function POST(request) {
     nextEmail = normalizeEmail(body?.newEmail);
 
     if (!nextEmail || !EMAIL_PATTERN.test(nextEmail)) {
-      return NextResponse.json({ error: 'newEmail must be a valid email address' }, { status: 400 });
+      return createApiErrorResponse(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'newEmail must be a valid email address',
+        },
+        { status: 400, requestMeta }
+      );
     }
 
     assertCsrfRequest(request);
 
-    const authContext = await requireSessionRequest(request, {
-      allowBearerFallback: true,
-    });
+    const authContext = await requirePolicySession(request, AUTH_ROUTE_POLICY_KEYS.EMAIL_CHANGE_COMPLETE);
 
     userId = authContext.userId;
     sessionJti = authContext.sessionJti || null;
@@ -163,12 +147,28 @@ export async function POST(request) {
     challengeJti = stepUp?.challengeJti || null;
 
     if (nextEmail === previousEmail) {
-      return NextResponse.json({ error: 'New email must be different from current email' }, { status: 400 });
+      return createApiErrorResponse(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'New email must be different from current email',
+        },
+        {
+          requestMeta: {
+            ...requestMeta,
+            sessionId: sessionJti,
+            userId,
+          },
+          status: 400,
+        }
+      );
     }
 
-    await enforceEmailChangeRateLimit({
-      userId,
-      requestContext,
+    await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.EMAIL_CHANGE_COMPLETE, {
+      dimensionValues: {
+        device: requestContext.deviceId,
+        ip: requestContext.ipAddress,
+        user: userId,
+      },
     });
 
     await assertEmailAvailable(authContext.adminAuth, nextEmail);
@@ -185,12 +185,24 @@ export async function POST(request) {
       await syncProfileEmail({
         userId,
         email: nextEmail,
+        request,
+        requestMeta: {
+          ...requestMeta,
+          sessionId: sessionJti,
+          userId,
+        },
       });
     } catch (mutationError) {
       if (emailUpdated) {
         await rollbackEmailChange({
           adminAuth: authContext.adminAuth,
           previousEmail,
+          request,
+          requestMeta: {
+            ...requestMeta,
+            sessionId: sessionJti,
+            userId,
+          },
           userId,
         }).catch((rollbackError) => {
           console.error('[Auth] email-change rollback failed:', rollbackError);
@@ -214,6 +226,9 @@ export async function POST(request) {
       userId,
       email: nextEmail,
       provider: 'password',
+      requestId: requestMeta.requestId,
+      sessionJti,
+      outcome: 'completed',
       metadata: {
         action: 'email-change-complete',
         challengeJti,
@@ -230,12 +245,27 @@ export async function POST(request) {
       console.error('[AuthAudit] email-change success log failed:', auditError);
     });
 
-    const response = NextResponse.json({
-      ok: true,
-      nextAction: 'signed_out',
-      messageCode: 'EMAIL_CHANGED',
-      email: nextEmail,
-    });
+    const response = createApiSuccessResponse(
+      {
+        email: nextEmail,
+        messageCode: 'EMAIL_CHANGED',
+        nextAction: 'signed_out',
+      },
+      {
+        code: 'EMAIL_CHANGED',
+        legacyPayload: {
+          ok: true,
+          nextAction: 'signed_out',
+          messageCode: 'EMAIL_CHANGED',
+          email: nextEmail,
+        },
+        requestMeta: {
+          ...requestMeta,
+          sessionId: sessionJti,
+          userId,
+        },
+      }
+    );
     clearAuthCookies(response, request);
     clearRecentReauthCookie(response);
     clearStepUpCookie(response);
@@ -246,6 +276,10 @@ export async function POST(request) {
       ? 429
       : message.includes('Invalid CSRF token')
         ? 403
+        : message.includes('already deleted')
+          ? 410
+          : message.includes('pending deletion')
+            ? 409
         : message.includes('Authentication session is required') ||
             message.includes('Invalid or expired authentication token') ||
             message.includes('Authentication token has been revoked') ||
@@ -268,6 +302,9 @@ export async function POST(request) {
       userId,
       email: nextEmail || previousEmail,
       provider: 'password',
+      requestId: requestMeta.requestId,
+      sessionJti,
+      outcome: status === 429 ? 'blocked' : 'failed',
       metadata: {
         action: 'email-change-complete',
         challengeJti,
@@ -289,6 +326,9 @@ export async function POST(request) {
       userId,
       email: nextEmail || previousEmail,
       provider: 'password',
+      requestId: requestMeta.requestId,
+      sessionJti,
+      outcome: status === 429 ? 'blocked' : 'failed',
       metadata: {
         action: 'email-change-complete',
         challengeJti,
@@ -303,6 +343,20 @@ export async function POST(request) {
       console.error('[AuthAudit] failed-attempt email-change log failed:', auditError);
     });
 
-    return NextResponse.json({ error: message }, { status });
+    return createApiErrorResponse(
+      {
+        code: status === 429 ? 'RATE_LIMITED' : 'EMAIL_CHANGE_FAILED',
+        message,
+        retryable: status >= 500,
+      },
+      {
+        requestMeta: {
+          ...requestMeta,
+          sessionId: sessionJti,
+          userId,
+        },
+        status,
+      }
+    );
   }
 }

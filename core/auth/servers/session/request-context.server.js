@@ -73,16 +73,27 @@ function resolveDeviceId(request, ipAddress) {
   return `fp_${createHash('sha256').update(fingerprintSeed).digest('hex').slice(0, 32)}`;
 }
 
+function resolveRequestId(request) {
+  return (
+    getHeader(request, 'x-request-id') ||
+    getHeader(request, 'x-correlation-id') ||
+    getHeader(request, 'x-vercel-id') ||
+    null
+  );
+}
+
 export function getRequestContext(request) {
   const ipAddress = getIpAddress(request);
   const deviceId = resolveDeviceId(request, ipAddress);
   const userAgent = getHeader(request, 'user-agent') || null;
+  const requestId = resolveRequestId(request);
 
   return {
     deviceHash: hashValue(deviceId),
     deviceId,
     ipAddress,
     ipHash: hashValue(ipAddress),
+    requestId,
     userAgent,
     userAgentHash: hashValue(userAgent),
   };

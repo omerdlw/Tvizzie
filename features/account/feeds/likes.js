@@ -4,8 +4,8 @@ import { Reorder, useDragControls } from 'framer-motion';
 
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/features/account/utils';
-import AccountSectionLayout, { AccountSectionState } from '@/features/account/profile/section-wrapper';
-import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/profile/media-grid';
+import AccountSectionLayout, { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountReviewsFeed from './reviews';
@@ -79,6 +79,7 @@ export default function AccountLikesFeed({
   isLikedListsLoading,
   isOwner,
   isReviewsLoading,
+  isReviewsLoadingMore = false,
   isShowcaseSaving,
   likedLists,
   likedListsError,
@@ -139,6 +140,7 @@ export default function AccountLikesFeed({
             hasMore={hasMoreReviews}
             icon="solar:chat-round-bold"
             isLoading={isReviewsLoading}
+            isLoadingMore={isReviewsLoadingMore}
             items={reviews}
             loadError={reviewsError}
             onLike={handleLike}

@@ -14,7 +14,7 @@ const SECTION_VIEWPORT = {
 const REVEAL_TIMING = Object.freeze({
   reducedDuration: 0.22,
   defaultDuration: 0.72,
-  sidebarDuration: 0.78,
+  sidebarDuration: 1.04,
   heroDuration: 0.72,
   sectionDuration: 0.76,
 });
@@ -52,6 +52,10 @@ function resolveSynchronizedDelay(delay, phase, reduceMotion) {
 
 function buildRevealTransition({ delay, duration, phase, reduceMotion }) {
   const syncedDelay = resolveSynchronizedDelay(delay, phase, reduceMotion);
+  const isSidebarPhase = phase === 'sidebar';
+  const springConfig = isSidebarPhase
+    ? { stiffness: 114, damping: 38, mass: 1.12 }
+    : { stiffness: 165, damping: 32, mass: 1 };
 
   if (reduceMotion) {
     return {
@@ -79,16 +83,12 @@ function buildRevealTransition({ delay, duration, phase, reduceMotion }) {
     },
     x: {
       type: 'spring',
-      stiffness: 165,
-      damping: 32,
-      mass: 1,
+      ...springConfig,
       delay: syncedDelay,
     },
     y: {
       type: 'spring',
-      stiffness: 165,
-      damping: 32,
-      mass: 1,
+      ...springConfig,
       delay: syncedDelay,
     },
   };
@@ -155,7 +155,7 @@ export function MovieSidebarReveal({ children, className = '', delay = 0 }) {
       className={className}
       axis="x"
       direction={-1}
-      distance={34}
+      distance={54}
       delay={delay}
       duration={REVEAL_TIMING.sidebarDuration}
       phase="sidebar"

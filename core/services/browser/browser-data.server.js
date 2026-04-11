@@ -944,7 +944,7 @@ export async function getFollowResource({
   status = null,
   strict = false,
 }) {
-  const client = await createServerClient();
+  const admin = createAdminClient();
 
   if (resource === 'followers' || resource === 'following') {
     const normalizedStatus = normalizeValue(status).toLowerCase() || null;
@@ -969,7 +969,7 @@ export async function getFollowResource({
 
     const direction = resource;
     const baseColumn = direction === 'followers' ? 'following_id' : 'follower_id';
-    let query = client.from('follows').select(FOLLOW_SELECT).eq(baseColumn, userId);
+    let query = admin.from('follows').select(FOLLOW_SELECT).eq(baseColumn, userId);
 
     if (normalizedStatus) {
       query = query.eq('status', normalizedStatus);
@@ -1006,7 +1006,7 @@ export async function getFollowResource({
     const [outboundResult, inboundResult] = await Promise.all([
       viewerId && viewerId !== targetId
         ? runRelationshipQuery(
-            client
+            admin
               .from('follows')
               .select(FOLLOW_SELECT)
               .eq('follower_id', viewerId)
@@ -1017,7 +1017,7 @@ export async function getFollowResource({
         : Promise.resolve({ data: null, error: null }),
       viewerId && viewerId !== targetId
         ? runRelationshipQuery(
-            client
+            admin
               .from('follows')
               .select(FOLLOW_SELECT)
               .eq('follower_id', targetId)

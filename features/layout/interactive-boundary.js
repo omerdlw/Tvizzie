@@ -5,6 +5,7 @@ import { ACCOUNT_CONFIG } from '@/config/account.config';
 import { AUTH_CONFIG } from '@/config/auth.config';
 import { isProjectFeatureEnabled } from '@/config/project.config';
 import GlobalContextMenuRegistry from '@/features/layout/global-context-menu-registry';
+import ObservabilityBootstrap from '@/features/layout/observability-bootstrap';
 import NotificationsModal from '@/features/modal/notifications-modal';
 import AccountNavRegistry from '@/features/navigation/account-nav-registry';
 import { AccountProvider } from '@/core/modules/account';
@@ -59,6 +60,7 @@ function GlobalNotificationModalRegistry() {
 export function InteractiveFeatureBoundary({ children }) {
   return (
     <InteractiveProviders>
+      <ObservabilityBootstrap />
       <AccountNavRegistry />
       <GlobalContextMenuRegistry />
       <GlobalNotificationModalRegistry />

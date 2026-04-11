@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-
 import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
+import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 
 export const runtime = 'nodejs';
@@ -32,8 +32,12 @@ function resolveStatusCode(message) {
 }
 
 export async function POST(request) {
+  const requestMeta = buildInternalRequestMeta({
+    request,
+    source: 'api/live-updates/events',
+  });
   try {
-    await requireAuthenticatedRequest(request);
+    const authContext = await requireAuthenticatedRequest(request);
     const body = await request.json().catch(() => ({}));
     const eventType = normalizeValue(body?.eventType);
     const payload = body?.payload && typeof body.payload === 'object' ? body.payload : {};
@@ -50,22 +54,45 @@ export async function POST(request) {
     }
 
     targetUserIds.forEach((userId) => {
-      publishUserEvent(userId, eventType, payload);
+      publishUserEvent(
+        userId,
+        eventType,
+        payload,
+        {
+          traceId: requestMeta.traceId,
+        }
+      );
     });
 
-    return NextResponse.json({
-      delivered: true,
-      eventType,
-      targetCount: targetUserIds.length,
-    });
+    return createApiSuccessResponse(
+      {
+        delivered: true,
+        eventType,
+        targetCount: targetUserIds.length,
+      },
+      {
+        legacyPayload: {
+          delivered: true,
+          eventType,
+          targetCount: targetUserIds.length,
+        },
+        requestMeta: {
+          ...requestMeta,
+          sessionId: authContext.sessionJti,
+          userId: authContext.userId,
+        },
+      }
+    );
   } catch (error) {
     const message = normalizeErrorMessage(error);
 
-    return NextResponse.json(
+    return createApiErrorResponse(
       {
-        error: message,
+        code: 'LIVE_EVENT_PUBLISH_FAILED',
+        message,
       },
       {
+        requestMeta,
         status: resolveStatusCode(message),
       }
     );

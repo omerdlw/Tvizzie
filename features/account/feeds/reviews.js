@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
-import AccountSectionLayout from '../profile/section-wrapper';
+import AccountSectionLayout from '../shared/section-wrapper';
 
 function buildLikedMediaKeySet(items = []) {
   return new Set(
@@ -76,6 +76,7 @@ export default function AccountReviewsFeed({
   hasMore = false,
   icon = 'solar:chat-round-bold',
   isLoading = false,
+  isLoadingMore = false,
   items = [],
   loadError = null,
   likes = [],
@@ -91,7 +92,8 @@ export default function AccountReviewsFeed({
   userProfile = null,
   watchedItems = [],
 }) {
-  const resolvedSummaryLabel = summaryLabel === null ? `${items.length} Content` : summaryLabel;
+  const listedReviewCount = Array.isArray(items) ? items.length : 0;
+  const resolvedSummaryLabel = summaryLabel === null ? `${listedReviewCount} Reviews` : summaryLabel;
   const likedMediaKeys = useMemo(() => buildLikedMediaKeySet(likes), [likes]);
   const watchedMediaKeys = useMemo(() => buildWatchedMediaKeySet(watchedItems), [watchedItems]);
   const rewatchMediaKeys = useMemo(() => buildRewatchMediaKeySet(watchedItems), [watchedItems]);
@@ -104,16 +106,16 @@ export default function AccountReviewsFeed({
       title={title}
       titleHref={titleHref}
     >
-      {items.length === 0 && !isLoading && !loadError ? (
+      {listedReviewCount === 0 && !isLoading && !loadError ? (
         <div className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm">{emptyMessage}</div>
-      ) : items.length === 0 && !isLoading && loadError ? (
+      ) : listedReviewCount === 0 && !isLoading && loadError ? (
         <div className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
       ) : (
         <ReviewList
           currentUserId={currentUserId}
           displayVariant="account"
-          isLoading={isLoading}
-          loadError={loadError}
+          isLoading={isLoading && listedReviewCount === 0}
+          loadError={listedReviewCount === 0 ? loadError : null}
           onDeleteRequest={onDeleteRequest || (() => {})}
           onEdit={onEdit || (() => {})}
           onLike={onLike}
@@ -130,10 +132,12 @@ export default function AccountReviewsFeed({
       {hasMore && typeof onLoadMore === 'function' ? (
         <div className="flex justify-center">
           <Button
+            type="button"
             onClick={onLoadMore}
+            disabled={isLoadingMore}
             className="border border-black/20 bg-white/65 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase backdrop-blur-sm transition"
           >
-            Load More
+            {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
         </div>
       ) : null}

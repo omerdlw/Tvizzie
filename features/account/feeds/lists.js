@@ -1,7 +1,7 @@
 'use client';
 
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
-import { AccountSectionState } from '@/features/account/profile/section-wrapper';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 

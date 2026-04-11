@@ -1,7 +1,7 @@
 'use client';
 
-import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/profile/media-grid';
-import { AccountSectionState } from '@/features/account/profile/section-wrapper';
+import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 
 export default function AccountWatchlistFeed({
   auth,

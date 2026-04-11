@@ -1,3 +1,5 @@
+import { isApiResultEnvelope, normalizeApiResultEnvelope } from '@/core/services/shared/api-result';
+
 function buildUrl(path, query = {}) {
   const params = new URLSearchParams();
 
@@ -71,6 +73,10 @@ export async function requestApiJson(
 
         await new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(retryDelayMs) || 0)));
         continue;
+      }
+
+      if (isApiResultEnvelope(payload)) {
+        return normalizeApiResultEnvelope(payload).data;
       }
 
       return payload;

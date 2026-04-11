@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import {
+  getAccountSocialProofResource,
+  getMediaSocialProofResource,
+} from '@/core/services/browser/browser-social-proof.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -9,28 +13,35 @@ function normalizeValue(value) {
 
 export async function GET(request) {
   try {
-    const authContext = await requireSessionRequest(request).catch(() => null);
+    const authContext = await resolveOptionalSessionRequest(request);
 
     const { searchParams } = new URL(request.url);
     const resource = normalizeValue(searchParams.get('resource'));
     const viewerId = authContext?.userId || null;
-    const payload = await invokeInternalEdgeFunction('social-proof-read', {
-      body:
+    const canViewPrivateContent = normalizeValue(searchParams.get('canViewPrivateContent')) === 'true';
+    const targetUserId = normalizeValue(searchParams.get('targetUserId'));
+    const entityId = normalizeValue(searchParams.get('entityId'));
+    const entityType = normalizeValue(searchParams.get('entityType'));
+    const cacheKey =
+      `social-proof|resource=${resource}|viewer=${viewerId || 'anon'}|target=${targetUserId}` +
+      `|canPrivate=${canViewPrivateContent}|entity=${entityType}:${entityId}`;
+    const data = await getOrLoadCachedValue({
+      cacheKey,
+      enabled: !viewerId,
+      ttlMs: 1500,
+      loader: () =>
         resource === 'account'
-          ? {
-              canViewPrivateContent: normalizeValue(searchParams.get('canViewPrivateContent')) === 'true',
-              resource: 'account',
-              targetUserId: normalizeValue(searchParams.get('targetUserId')),
+          ? getAccountSocialProofResource({
+              canViewPrivateContent,
+              targetUserId,
               viewerId,
-            }
-          : {
-              entityId: normalizeValue(searchParams.get('entityId')),
-              entityType: normalizeValue(searchParams.get('entityType')),
-              resource: 'media',
+            })
+          : getMediaSocialProofResource({
+              entityId,
+              entityType,
               viewerId,
-            },
+            }),
     });
-    const data = payload?.data || null;
 
     return NextResponse.json({ data });
   } catch (error) {

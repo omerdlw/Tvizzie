@@ -2,40 +2,15 @@
 
 import { useEffect, useMemo } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import AccountListCard from './card';
-import AccountSectionLayout from '../profile/section-wrapper';
-import { buildAccountCollectionPageHref } from '../profile/media-grid';
+import AccountSectionLayout from '../shared/section-wrapper';
+import AccountPagination from '../shared/pagination';
+import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
+import AccountInlineSectionState from '../shared/section-state';
 
 const ITEMS_PER_PAGE = 36;
-
-function getPaginationItems(currentPage, totalPages) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const items = [1];
-  const start = Math.max(2, currentPage - 1);
-  const end = Math.min(totalPages - 1, currentPage + 1);
-
-  if (start > 2) {
-    items.push('start-ellipsis');
-  }
-
-  for (let page = start; page <= end; page += 1) {
-    items.push(page);
-  }
-
-  if (end < totalPages - 1) {
-    items.push('end-ellipsis');
-  }
-
-  items.push(totalPages);
-
-  return items;
-}
 
 export default function AccountPaginatedListGrid({
   currentPage = 1,
@@ -56,8 +31,6 @@ export default function AccountPaginatedListGrid({
   const activePage = totalPages ? Math.min(currentPage, totalPages) : 1;
   const pageStart = (activePage - 1) * ITEMS_PER_PAGE;
   const visibleLists = useMemo(() => lists.slice(pageStart, pageStart + ITEMS_PER_PAGE), [lists, pageStart]);
-  const paginationItems = getPaginationItems(activePage, totalPages);
-
   useEffect(() => {
     if (!totalPages || currentPage <= totalPages || !pageBasePath) {
       return;
@@ -69,22 +42,19 @@ export default function AccountPaginatedListGrid({
   return (
     <AccountSectionLayout
       icon={icon}
-      summaryLabel={
-        lists.length === 0
-          ? '0 total'
-          : `${pageStart + 1}-${Math.min(pageStart + ITEMS_PER_PAGE, lists.length)} of ${lists.length}`
-      }
+      summaryLabel={formatPaginationSummaryLabel({
+        emptyLabel: '0 total',
+        pageSize: ITEMS_PER_PAGE,
+        startIndex: pageStart,
+        totalCount: lists.length,
+      })}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
       {isLoading && lists.length === 0 ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          Loading lists...
-        </div>
+        <AccountInlineSectionState>Loading lists...</AccountInlineSectionState>
       ) : lists.length === 0 ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          {loadError || emptyMessage}
-        </div>
+        <AccountInlineSectionState>{loadError || emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
@@ -100,28 +70,17 @@ export default function AccountPaginatedListGrid({
           </div>
 
           {totalPages > 1 ? (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {paginationItems.map((item, index) =>
-                typeof item === 'number' ? (
-                  <Link
-                    key={item}
-                    href={buildAccountCollectionPageHref(pageBasePath, item)}
-                    aria-current={item === activePage ? 'page' : undefined}
-                    className={
-                      item === activePage
-                        ? 'center size-12 border border-black/30 bg-white/90 text-xs font-semibold text-black shadow-sm transition'
-                        : 'center size-12 border border-black/15 bg-white/50 text-xs font-semibold transition'
-                    }
-                  >
-                    {item}
-                  </Link>
-                ) : (
-                  <span key={`${item}-${index}`} className="text-xs">
-                    ...
-                  </span>
-                )
-              )}
-            </div>
+            <AccountPagination
+              currentPage={activePage}
+              totalPages={totalPages}
+              showPrevNext={false}
+              getPageHref={(page) => buildAccountCollectionPageHref(pageBasePath, page)}
+              className="flex flex-wrap items-center justify-end gap-2"
+              pageClassName="center size-12 border text-xs font-semibold transition"
+              activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
+              inactivePageClassName="border-black/15 bg-white/50"
+              ellipsisClassName="text-xs"
+            />
           ) : null}
         </>
       )}

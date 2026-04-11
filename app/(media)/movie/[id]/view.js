@@ -80,7 +80,7 @@ function MovieGalleryDeferred({
   }
 
   return (
-    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery}>
+    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
       <GallerySection
         images={galleryImages}
         onSetMovieBackground={onSetMovieBackground}
@@ -107,7 +107,7 @@ function MovieImagesDeferred({
   }
 
   return (
-    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.images}>
+    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.images} animateOnView={false}>
       <ImagesSection
         images={secondaryMovie.images}
         onSetMovieBackground={onSetMovieBackground}
@@ -305,6 +305,7 @@ export default function MovieView({
               title={movie.title}
               headerTitle="Recent Reviews"
               listMode="recent"
+              hideWhenEmpty
               allReviewsHref={`/movie/${movie.id}/reviews`}
               posterPath={movie.poster_path}
               backdropPath={movie.backdrop_path}

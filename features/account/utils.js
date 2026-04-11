@@ -205,6 +205,50 @@ export function buildListCreatorHref(seedMedia = null) {
   return queryString ? `${ACCOUNT_LIST_CREATOR_PATH}?${queryString}` : ACCOUNT_LIST_CREATOR_PATH;
 }
 
+export function buildAccountCollectionPageHref(basePath, pageNumber) {
+  if (!basePath) {
+    return '';
+  }
+
+  if (basePath.includes('?')) {
+    const [pathname, search = ''] = basePath.split('?');
+    const params = new URLSearchParams(search);
+
+    if (pageNumber <= 1) {
+      params.delete('page');
+    } else {
+      params.set('page', String(pageNumber));
+    }
+
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }
+
+  if (pageNumber <= 1) {
+    return basePath;
+  }
+
+  return `${basePath}/page/${pageNumber}`;
+}
+
+export function formatPaginationSummaryLabel({
+  emptyLabel = '0 items',
+  pageSize,
+  startIndex,
+  totalCount,
+}) {
+  if (!Number.isFinite(totalCount) || totalCount <= 0) {
+    return emptyLabel;
+  }
+
+  const safeStart = Math.max(0, Number(startIndex) || 0);
+  const safeSize = Math.max(1, Number(pageSize) || 1);
+  const visibleFrom = safeStart + 1;
+  const visibleTo = Math.min(safeStart + safeSize, totalCount);
+
+  return `${visibleFrom}-${visibleTo} of ${totalCount}`;
+}
+
 export function normalizeProviderIds(value) {
   return Array.isArray(value) ? value : [];
 }

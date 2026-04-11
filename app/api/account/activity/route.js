@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -19,16 +20,28 @@ function normalizePageSize(value, fallback = 20) {
 
 export async function GET(request) {
   try {
-    const authContext = await requireSessionRequest(request).catch(() => null);
+    const authContext = await resolveOptionalSessionRequest(request);
     const { searchParams } = new URL(request.url);
-    const result = await invokeInternalEdgeFunction('account-activity-feed', {
-      body: {
-        cursor: searchParams.get('cursor'),
-        pageSize: normalizePageSize(searchParams.get('pageSize'), 20),
-        scope: normalizeValue(searchParams.get('scope')) || 'user',
-        userId: normalizeValue(searchParams.get('userId')),
-        viewerId: authContext?.userId || null,
-      },
+    const cursor = searchParams.get('cursor');
+    const pageSize = normalizePageSize(searchParams.get('pageSize'), 20);
+    const scope = normalizeValue(searchParams.get('scope')) || 'user';
+    const userId = normalizeValue(searchParams.get('userId'));
+    const viewerId = authContext?.userId || null;
+    const cacheKey = `account-activity|cursor=${cursor || ''}|pageSize=${pageSize}|scope=${scope}|user=${userId}|viewer=${
+      viewerId || 'anon'
+    }`;
+    const result = await getOrLoadCachedValue({
+      cacheKey,
+      enabled: !viewerId,
+      ttlMs: 2000,
+      loader: () =>
+        fetchAccountActivityFeedServer({
+          cursor,
+          pageSize,
+          scope,
+          userId,
+          viewerId,
+        }),
     });
 
     return NextResponse.json(result);

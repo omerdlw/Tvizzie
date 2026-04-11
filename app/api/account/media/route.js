@@ -11,7 +11,9 @@ import {
   isSlidingWindowRateLimitError,
 } from '@/core/auth/servers/security/rate-limit.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
+import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { executeWriteRollout } from '@/core/services/shared/write-rollout.server';
 
 const DEFAULT_MEDIA_BUCKET = 'profile-media';
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
@@ -251,22 +253,6 @@ async function enforceAccountMediaUploadRateLimit({ requestContext, userId }) {
   }
 }
 
-function shouldUseLegacyUploadFallback(error) {
-  const status = Number(error?.status || 0);
-  const message = normalizeValue(error?.message || '').toLowerCase();
-
-  if (status === 404 || status >= 500) {
-    return true;
-  }
-
-  return (
-    message.includes('account-media-upload') ||
-    message.includes('not deployed') ||
-    message.includes('timed out') ||
-    message.includes('storage bucket')
-  );
-}
-
 async function uploadWithLegacyAdminFlow({ fileBuffer, fileExtension, mimeType, target, userId }) {
   const adminClient = createAdminClient();
   const bucket = await ensureBucket(adminClient, resolveMediaBucket());
@@ -299,12 +285,78 @@ async function uploadWithLegacyAdminFlow({ fileBuffer, fileExtension, mimeType, 
   };
 }
 
+async function uploadWithEdgeFlow({ authContext, fileBuffer, fileExtension, fileSize, mimeType, request, requestMeta, target }) {
+  const prepareResult = await invokeInternalEdgeFunction('account-media-upload', {
+    body: {
+      action: 'prepare-upload',
+      contentLength: fileSize,
+      extension: fileExtension,
+      mimeType,
+      target,
+      userId: authContext.userId,
+    },
+    idempotencyKey: requestMeta?.idempotencyKey,
+    request,
+    requestMeta,
+    source: 'account-media-upload',
+  });
+  const preparedBucket = normalizeValue(prepareResult?.bucket);
+  const preparedPath = normalizeValue(prepareResult?.path);
+  const token = normalizeValue(prepareResult?.token);
+  const preparedUrl = normalizeValue(prepareResult?.url);
+
+  if (!preparedBucket || !preparedPath || !token) {
+    throw createHttpError('Image upload ticket is invalid', 500);
+  }
+
+  const uploadClient = createSignedUploadClient();
+  const uploadResult = await uploadClient.storage.from(preparedBucket).uploadToSignedUrl(preparedPath, token, fileBuffer, {
+    cacheControl: '31536000',
+    contentType: mimeType,
+  });
+
+  if (uploadResult.error) {
+    throw createHttpError(uploadResult.error.message || 'Image upload failed', 500);
+  }
+
+  const { data: { publicUrl = '' } = {} } = uploadClient.storage.from(preparedBucket).getPublicUrl(preparedPath);
+
+  return {
+    bucket: preparedBucket,
+    path: preparedPath,
+    url: preparedUrl || normalizeValue(publicUrl),
+  };
+}
+
+async function validateEdgeUploadTicket({ authContext, fileExtension, fileSize, mimeType, request, requestMeta, target }) {
+  await invokeInternalEdgeFunction('account-media-upload', {
+    body: {
+      action: 'prepare-upload',
+      contentLength: fileSize,
+      dryRun: true,
+      extension: fileExtension,
+      mimeType,
+      target,
+      userId: authContext.userId,
+    },
+    request,
+    requestMeta,
+    source: 'account-media-upload-shadow',
+    timeoutMs: 8000,
+  });
+}
+
 export async function POST(request) {
   try {
     assertCsrfRequest(request);
 
     const authContext = await requireSessionRequest(request, {
       allowBearerFallback: true,
+    });
+    const requestMeta = buildInternalRequestMeta({
+      authContext,
+      request,
+      source: 'api/account/media',
     });
     const requestContext = getRequestContext(request);
 
@@ -336,73 +388,58 @@ export async function POST(request) {
     const fileExtension = resolveFileExtension(mimeType);
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     assertMimeSignature(fileBuffer, mimeType);
-    let bucket = '';
-    let path = '';
-    let url = '';
-
-    try {
-      const prepareResult = await invokeInternalEdgeFunction('account-media-upload', {
-        body: {
-          action: 'prepare-upload',
-          contentLength: fileSize,
-          extension: fileExtension,
+    const writeResult = await executeWriteRollout({
+      domain: 'account',
+      endpoint: 'account-media-upload',
+      userId: authContext.userId,
+      requestId: requestMeta.requestId,
+      logger(entry) {
+        console.warn('[Rollout][account-media-upload]', entry);
+      },
+      edgeValidate: async () =>
+        validateEdgeUploadTicket({
+          authContext,
+          fileExtension,
+          fileSize,
+          mimeType,
+          request,
+          requestMeta,
+          target,
+        }),
+      edgeWrite: async () =>
+        uploadWithEdgeFlow({
+          authContext,
+          fileBuffer,
+          fileExtension,
+          fileSize,
+          mimeType,
+          request,
+          requestMeta,
+          target,
+        }),
+      legacyWrite: async () =>
+        uploadWithLegacyAdminFlow({
+          fileBuffer,
+          fileExtension,
           mimeType,
           target,
           userId: authContext.userId,
-        },
-      });
-      const preparedBucket = normalizeValue(prepareResult?.bucket);
-      const preparedPath = normalizeValue(prepareResult?.path);
-      const token = normalizeValue(prepareResult?.token);
-      const preparedUrl = normalizeValue(prepareResult?.url);
-
-      if (!preparedBucket || !preparedPath || !token) {
-        throw createHttpError('Image upload ticket is invalid', 500);
-      }
-
-      const uploadClient = createSignedUploadClient();
-      const uploadResult = await uploadClient.storage
-        .from(preparedBucket)
-        .uploadToSignedUrl(preparedPath, token, fileBuffer, {
-          cacheControl: '31536000',
-          contentType: mimeType,
-        });
-
-      if (uploadResult.error) {
-        throw createHttpError(uploadResult.error.message || 'Image upload failed', 500);
-      }
-
-      const { data: { publicUrl = '' } = {} } = uploadClient.storage.from(preparedBucket).getPublicUrl(preparedPath);
-
-      bucket = preparedBucket;
-      path = preparedPath;
-      url = preparedUrl || normalizeValue(publicUrl);
-    } catch (uploadPreparationError) {
-      if (!shouldUseLegacyUploadFallback(uploadPreparationError)) {
-        throw uploadPreparationError;
-      }
-
-      const fallbackResult = await uploadWithLegacyAdminFlow({
-        fileBuffer,
-        fileExtension,
-        mimeType,
-        target,
-        userId: authContext.userId,
-      });
-
-      bucket = fallbackResult.bucket;
-      path = fallbackResult.path;
-      url = fallbackResult.url;
-    }
+        }),
+    });
+    const bucket = normalizeValue(writeResult?.result?.bucket);
+    const path = normalizeValue(writeResult?.result?.path);
+    const url = normalizeValue(writeResult?.result?.url);
 
     if (!url) {
       throw createHttpError('Image upload succeeded but URL could not be generated', 500);
     }
 
     return NextResponse.json({
+      decision: writeResult?.decision || null,
       ok: true,
       bucket,
       path,
+      source: writeResult?.source || 'unknown',
       target,
       url,
     });

@@ -82,8 +82,12 @@ export function subscribeToNotifications(userId, callback, options = {}) {
   const unsubscribeLive = subscribeToUserLiveEvent(userId, 'notifications', () => {
     refreshNotificationSubscriptions(userId, options);
   });
+  const unsubscribeFollowLive = subscribeToUserLiveEvent(userId, 'follows', () => {
+    refreshNotificationSubscriptions(userId, options);
+  });
 
   return () => {
+    unsubscribeFollowLive();
     unsubscribeLive();
     unsubscribeData();
   };
@@ -105,8 +109,12 @@ export function subscribeToUnreadCount(userId, callback, options = {}) {
   const unsubscribeLive = subscribeToUserLiveEvent(userId, 'notifications', () => {
     refreshNotificationSubscriptions(userId, options);
   });
+  const unsubscribeFollowLive = subscribeToUserLiveEvent(userId, 'follows', () => {
+    refreshNotificationSubscriptions(userId, options);
+  });
 
   return () => {
+    unsubscribeFollowLive();
     unsubscribeLive();
     unsubscribeData();
   };

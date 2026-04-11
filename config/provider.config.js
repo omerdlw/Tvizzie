@@ -23,7 +23,13 @@ export function getAuthProvider() {
 }
 
 export function getRealtimeMode() {
-  return resolveProvider(process.env.REALTIME_MODE, ['polling', 'realtime'], 'polling');
+  const resolved = resolveProvider(process.env.REALTIME_MODE, ['polling', 'sse', 'realtime', 'dual_observe'], 'realtime');
+
+  if (resolved === 'polling') {
+    return 'realtime';
+  }
+
+  return resolved;
 }
 
 export function isSupabaseDataProvider() {
@@ -35,7 +41,8 @@ export function isSupabaseAuthProvider() {
 }
 
 export function isSupabaseRealtimeEnabled() {
-  return isSupabaseDataProvider() && getRealtimeMode() === 'realtime';
+  const mode = getRealtimeMode();
+  return isSupabaseDataProvider() && (mode === 'realtime' || mode === 'dual_observe');
 }
 
 export const PROVIDER_CONFIG = Object.freeze({

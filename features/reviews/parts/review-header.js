@@ -2,7 +2,9 @@
 
 import Icon from '@/ui/icon';
 
-export default function ReviewHeader({ ratingStats, title = 'Community Reviews', totalReviews }) {
+export default function ReviewHeader({ ratingStats, title = 'Community Reviews', totalReviews, onEditOwnReview = null }) {
+  const hasEditOwnReview = typeof onEditOwnReview === 'function';
+
   return (
     <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
       <div className="flex items-center gap-2">
@@ -23,6 +25,17 @@ export default function ReviewHeader({ ratingStats, title = 'Community Reviews',
             </span>
           </div>
         )}
+        {hasEditOwnReview ? (
+          <button
+            type="button"
+            onClick={onEditOwnReview}
+            className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
+            aria-label="Edit your review"
+            title="Edit your review"
+          >
+            <Icon icon="solar:pen-bold" size={16} />
+          </button>
+        ) : null}
       </div>
     </div>
   );

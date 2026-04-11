@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 
 import { isReservedAccountSegment } from '@/features/account/utils';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
 import { ensurePasswordAccountProfile } from '@/core/auth/servers/account/account-bootstrap.server';
 import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
 import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server';
 import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+  AUTH_RATE_LIMIT_POLICY_KEYS,
+  enforceAuthRateLimit,
+} from '@/core/auth/servers/security/rate-limit-policies.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server';
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
@@ -70,35 +71,6 @@ function createStatusPayload({ messageCode = 'SIGNUP_COMPLETED', recovered = fal
     recovered,
     userId,
   };
-}
-
-async function enforceSignUpCompleteRateLimit({ email, requestContext }) {
-  try {
-    await enforceSlidingWindowRateLimit({
-      namespace: 'auth:sign-up:complete',
-      windowMs: 15 * 60 * 1000,
-      dimensions: [
-        { id: 'email', value: email, limit: 6 },
-        { id: 'ip', value: requestContext.ipAddress, limit: 24 },
-        { id: 'device', value: requestContext.deviceId, limit: 12 },
-      ],
-      message: 'Too many sign-up attempts',
-    });
-  } catch (error) {
-    if (!isSlidingWindowRateLimitError(error)) {
-      throw error;
-    }
-
-    if (error.dimension === 'email') {
-      throw new Error('Too many sign-up attempts for this email');
-    }
-
-    if (error.dimension === 'device') {
-      throw new Error('Too many sign-up attempts from this device');
-    }
-
-    throw new Error('Too many sign-up attempts from this network');
-  }
 }
 
 async function assertSignUpChallenge({ challengeJti, challengeKey }) {
@@ -236,6 +208,7 @@ async function createOrRecoverPasswordUser({ email, password, username, displayN
 
 export async function POST(request) {
   const requestContext = getRequestContext(request);
+  const routePolicy = getAuthRoutePolicy(AUTH_ROUTE_POLICY_KEYS.SIGN_UP_COMPLETE);
   let email = null;
   let userId = null;
   let recovered = false;
@@ -252,9 +225,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'signUpProof, email, password, and username are required' }, { status: 400 });
     }
 
-    await enforceSignUpCompleteRateLimit({
-      email,
-      requestContext,
+    await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.SIGN_UP_COMPLETE, {
+      dimensionValues: {
+        device: requestContext.deviceId,
+        email,
+        ip: requestContext.ipAddress,
+      },
     });
 
     const proof = verifySignUpProofToken(signUpProof, { email });
@@ -294,6 +270,7 @@ export async function POST(request) {
         challengeKey: proof.challengeKey,
         challengeJti: proof.challengeJti,
         recovered,
+        authRoute: routePolicy.route,
         source: 'api/auth/sign-up/complete',
         username,
       },
@@ -337,6 +314,7 @@ export async function POST(request) {
       provider: 'password',
       metadata: {
         action: 'sign-up-complete',
+        authRoute: routePolicy.route,
         message,
         recovered,
         source: 'api/auth/sign-up/complete',
@@ -355,6 +333,7 @@ export async function POST(request) {
       provider: 'password',
       metadata: {
         action: 'sign-up-complete',
+        authRoute: routePolicy.route,
         message,
         recovered,
         source: 'api/auth/sign-up/complete',

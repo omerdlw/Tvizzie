@@ -1,6 +1,6 @@
-import { AccountPageShell } from '@/features/account/profile/layout';
+import { AccountPageShell } from '@/features/account/shared/layout';
 import AccountReviewFeed from '@/features/account/feeds/reviews';
-import { AccountSectionState } from '@/features/account/profile/section-wrapper';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import Registry from './registry';
 
 export default function ReviewsView({
@@ -20,6 +20,7 @@ export default function ReviewsView({
   hasMore,
   isBioSurfaceOpen,
   isFeedLoading,
+  isLoadingMore,
   isFollowLoading,
   isOwner,
   isPageLoading,
@@ -92,6 +93,7 @@ export default function ReviewsView({
           hasMore={hasMore}
           icon="solar:chat-round-bold"
           isLoading={isFeedLoading}
+          isLoadingMore={isLoadingMore}
           items={reviews}
           likes={likes}
           loadError={feedError}

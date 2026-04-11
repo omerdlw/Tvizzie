@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { getAccountIdByUsername } from '@/core/services/browser/browser-data.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -10,16 +11,15 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const username = normalizeValue(searchParams.get('username'));
-    const payload = await invokeInternalEdgeFunction('account-read', {
-      body: {
-        resource: 'resolve',
-        username,
-      },
+    const userId = await getOrLoadCachedValue({
+      cacheKey: `account-resolve|username=${username}`,
+      enabled: true,
+      ttlMs: 1500,
+      loader: () => getAccountIdByUsername(username),
     });
-    const userId = payload?.userId || null;
 
     return NextResponse.json({
-      userId,
+      userId: userId || null,
     });
   } catch (error) {
     return NextResponse.json(

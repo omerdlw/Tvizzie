@@ -63,3 +63,29 @@ export async function requireSessionRequest(request, { allowBearerFallback = tru
 export async function requireAuthenticatedRequest(request, options = {}) {
   return requireSessionRequest(request, options);
 }
+
+export async function resolveOptionalSessionRequest(
+  request,
+  { allowBearerFallback = true, requireRecentAuthMs = 0, skipSupabaseFallback = true } = {}
+) {
+  try {
+    const sessionContext = await readSessionFromRequest(request, {
+      allowBearer: allowBearerFallback,
+      skipSupabaseFallbackIfNoHint: true,
+      skipSupabaseFallback,
+    });
+
+    if (!sessionContext) {
+      return null;
+    }
+
+    assertRecentAuthentication(sessionContext.decodedToken, requireRecentAuthMs);
+    return sessionContext;
+  } catch (error) {
+    if (isTransientSessionError(error)) {
+      return null;
+    }
+
+    return null;
+  }
+}

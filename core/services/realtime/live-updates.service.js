@@ -1,5 +1,8 @@
 'use client';
 
+import { createClient as createSupabaseBrowserClient } from '@/core/clients/supabase/client';
+import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
+
 const eventSourceRegistry = new Map();
 
 const MAX_CONSECUTIVE_ERRORS = 5;
@@ -33,11 +36,29 @@ function scheduleReconnect(entry) {
   entry.reconnectTimer = setTimeout(() => {
     entry.reconnectTimer = null;
     entry.source = null;
-    attachEntrySource(entry);
+    entry.realtimeChannel = null;
+    attachEntrySources(entry);
   }, delay);
 }
 
-function attachEntrySource(entry) {
+function parseEventPayload(rawPayload = {}) {
+  if (!rawPayload || typeof rawPayload !== 'object') {
+    return {
+      payload: {},
+      type: 'unknown',
+    };
+  }
+
+  const type = normalizeValue(rawPayload.eventType || rawPayload.type || rawPayload.event || 'unknown');
+  const payload = rawPayload.payload && typeof rawPayload.payload === 'object' ? rawPayload.payload : rawPayload;
+
+  return {
+    payload,
+    type,
+  };
+}
+
+function attachSseSource(entry) {
   if (entry.source || typeof window === 'undefined' || typeof EventSource !== 'function') {
     return;
   }
@@ -47,13 +68,14 @@ function attachEntrySource(entry) {
       entry.reconnectTimer = null;
       entry.errorCount = 0;
       entry.source = null;
-      attachEntrySource(entry);
+      attachEntrySources(entry);
     }, MAX_RETRY_DELAY_MS);
     return;
   }
 
   const source = new EventSource('/api/live-updates');
   entry.source = source;
+
   LIVE_EVENT_TYPES.forEach((eventType) => {
     source.addEventListener(eventType, (event) => {
       entry.errorCount = 0;
@@ -64,6 +86,7 @@ function attachEntrySource(entry) {
       } catch {
         payload = {};
       }
+
       dispatchEvent(entry, eventType, payload);
     });
   });
@@ -74,9 +97,92 @@ function attachEntrySource(entry) {
     source.close();
     entry.source = null;
 
-    dispatchEvent(entry, 'error', null);
+    dispatchEvent(entry, 'error', {
+      provider: 'sse',
+    });
     scheduleReconnect(entry);
   };
+}
+
+function attachSupabaseRealtimeSource(entry) {
+  if (entry.realtimeChannel || typeof window === 'undefined') {
+    return;
+  }
+
+  let supabaseClient = null;
+
+  try {
+    supabaseClient = createSupabaseBrowserClient();
+  } catch {
+    supabaseClient = null;
+  }
+
+  if (!supabaseClient?.channel) {
+    return;
+  }
+
+  const channelName = `live-updates:${entry.userId}`;
+  const channel = supabaseClient.channel(channelName, {
+    config: {
+      broadcast: {
+        self: false,
+      },
+    },
+  });
+
+  channel
+    .on('broadcast', { event: 'live' }, (event) => {
+      const { payload, type } = parseEventPayload(event?.payload || {});
+
+      if (!LIVE_EVENT_TYPES.includes(type)) {
+        return;
+      }
+
+      entry.errorCount = 0;
+      dispatchEvent(entry, type, payload || {});
+    })
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        entry.errorCount = (entry.errorCount || 0) + 1;
+        dispatchEvent(entry, 'error', {
+          provider: 'realtime',
+          status,
+        });
+
+        try {
+          channel.unsubscribe();
+        } catch {
+          // no-op
+        }
+
+        entry.realtimeChannel = null;
+        scheduleReconnect(entry);
+      }
+    });
+
+  entry.realtimeChannel = channel;
+}
+
+function attachEntrySources(entry) {
+  const mode = getRealtimeTransportMode();
+
+  if (mode === 'realtime') {
+    attachSupabaseRealtimeSource(entry);
+
+    if (!entry.realtimeChannel) {
+      attachSseSource(entry);
+    }
+
+    return;
+  }
+
+  if (mode === 'dual_observe') {
+    attachSupabaseRealtimeSource(entry);
+    attachSseSource(entry);
+    return;
+  }
+
+  attachSseSource(entry);
 }
 
 function detachEntrySource(entry) {
@@ -88,6 +194,16 @@ function detachEntrySource(entry) {
   if (entry.source) {
     entry.source.close();
     entry.source = null;
+  }
+
+  if (entry.realtimeChannel) {
+    try {
+      entry.realtimeChannel.unsubscribe();
+    } catch {
+      // no-op
+    }
+
+    entry.realtimeChannel = null;
   }
 
   entry.errorCount = 0;
@@ -107,13 +223,14 @@ function ensureEntry(userId) {
       errorCount: 0,
       listeners: new Map(),
       reconnectTimer: null,
+      realtimeChannel: null,
       source: null,
       userId: normalizedUserId,
     };
     eventSourceRegistry.set(normalizedUserId, entry);
   }
 
-  attachEntrySource(entry);
+  attachEntrySources(entry);
   return entry;
 }
 

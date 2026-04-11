@@ -62,6 +62,45 @@ function getBearerToken(request) {
   return normalizeValue(header.slice(7));
 }
 
+function hasSessionCookieHint(request) {
+  const cookies = getRequestCookies(request);
+
+  if (!Array.isArray(cookies) || cookies.length === 0) {
+    return false;
+  }
+
+  for (const cookie of cookies) {
+    const cookieName = getCookieChunkBaseName(cookie?.name);
+
+    if (!cookieName) {
+      continue;
+    }
+
+    if (
+      cookieName === 'tvz_session' ||
+      cookieName === 'supabase-auth-token' ||
+      cookieName === 'sb-access-token' ||
+      cookieName === 'sb-refresh-token'
+    ) {
+      return true;
+    }
+
+    if (cookieName.startsWith('sb-') && cookieName.includes('auth-token')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasSessionHint(request, { allowBearer = true } = {}) {
+  if (allowBearer && getBearerToken(request)) {
+    return true;
+  }
+
+  return hasSessionCookieHint(request);
+}
+
 function getCookieHeaderValue(request) {
   return normalizeValue(request?.headers?.get?.('cookie'));
 }
@@ -784,7 +823,14 @@ export function isTransientSessionError(error) {
   return isTransientNetworkError(error) || message.includes('supabase session fetch timed out');
 }
 
-export async function readSessionFromRequest(request, { allowBearer = true } = {}) {
+export async function readSessionFromRequest(
+  request,
+  {
+    allowBearer = true,
+    skipSupabaseFallbackIfNoHint = true,
+    skipSupabaseFallback = false,
+  } = {}
+) {
   try {
     const bearerToken = allowBearer ? getBearerToken(request) : '';
 
@@ -796,6 +842,14 @@ export async function readSessionFromRequest(request, { allowBearer = true } = {
 
     if (cookieSession?.accessToken) {
       return buildAuthContextFromAccessToken(cookieSession.accessToken, 'session', cookieSession.user || null);
+    }
+
+    if (skipSupabaseFallback) {
+      return null;
+    }
+
+    if (skipSupabaseFallbackIfNoHint && !hasSessionHint(request, { allowBearer })) {
+      return null;
     }
 
     const supabase = createRequestSupabaseClient(request);

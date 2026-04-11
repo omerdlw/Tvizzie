@@ -153,10 +153,7 @@ export default function FollowListModal({ close, data, header }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [actionState, setActionState] = useState({
-    kind: null,
-    userId: null,
-  });
+  const [pendingActionByUserId, setPendingActionByUserId] = useState({});
   const [followingStatusMap, setFollowingStatusMap] = useState({});
   const isOwnFollowersList = activeTab === 'followers' && Boolean(auth.user?.id) && auth.user.id === userId;
 
@@ -239,7 +236,7 @@ export default function FollowListModal({ close, data, header }) {
   }, [auth.user?.id, isAuthSessionReady, isOwnFollowersList]);
 
   const handleAccept = async (requesterId) => {
-    if (!auth.user?.id || actionState.userId) return;
+    if (!auth.user?.id || pendingActionByUserId[requesterId]) return;
 
     const targetUser = users.find((user) => user.id === requesterId);
 
@@ -249,7 +246,10 @@ export default function FollowListModal({ close, data, header }) {
       return;
     }
 
-    setActionState({ kind: 'accept', userId: requesterId });
+    setPendingActionByUserId((current) => ({
+      ...current,
+      [requesterId]: 'accept',
+    }));
 
     try {
       await acceptFollowRequest(auth.user.id, requesterId);
@@ -264,12 +264,20 @@ export default function FollowListModal({ close, data, header }) {
         toast.error(error?.message || 'Request could not be accepted');
       }
     } finally {
-      setActionState({ kind: null, userId: null });
+      setPendingActionByUserId((current) => {
+        if (!current[requesterId]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[requesterId];
+        return next;
+      });
     }
   };
 
   const handleReject = async (requesterId) => {
-    if (!auth.user?.id || actionState.userId) return;
+    if (!auth.user?.id || pendingActionByUserId[requesterId]) return;
 
     const targetUser = users.find((user) => user.id === requesterId);
 
@@ -279,7 +287,10 @@ export default function FollowListModal({ close, data, header }) {
       return;
     }
 
-    setActionState({ kind: 'reject', userId: requesterId });
+    setPendingActionByUserId((current) => ({
+      ...current,
+      [requesterId]: 'reject',
+    }));
 
     try {
       await rejectFollowRequest(auth.user.id, requesterId);
@@ -294,14 +305,25 @@ export default function FollowListModal({ close, data, header }) {
         toast.error(error?.message || 'Request could not be rejected');
       }
     } finally {
-      setActionState({ kind: null, userId: null });
+      setPendingActionByUserId((current) => {
+        if (!current[requesterId]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[requesterId];
+        return next;
+      });
     }
   };
 
   const handleFollowBack = async (targetUserId) => {
-    if (!auth.user?.id || actionState.userId) return;
+    if (!auth.user?.id || pendingActionByUserId[targetUserId]) return;
 
-    setActionState({ kind: 'follow', userId: targetUserId });
+    setPendingActionByUserId((current) => ({
+      ...current,
+      [targetUserId]: 'follow',
+    }));
 
     try {
       await followUser(auth.user.id, targetUserId);
@@ -309,14 +331,25 @@ export default function FollowListModal({ close, data, header }) {
     } catch (error) {
       toast.error(error?.message || 'Follow state could not be updated');
     } finally {
-      setActionState({ kind: null, userId: null });
+      setPendingActionByUserId((current) => {
+        if (!current[targetUserId]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[targetUserId];
+        return next;
+      });
     }
   };
 
   const handleRemoveFollower = async (followerId) => {
-    if (!auth.user?.id || actionState.userId) return;
+    if (!auth.user?.id || pendingActionByUserId[followerId]) return;
 
-    setActionState({ kind: 'remove', userId: followerId });
+    setPendingActionByUserId((current) => ({
+      ...current,
+      [followerId]: 'remove',
+    }));
 
     try {
       await removeFollower(auth.user.id, followerId);
@@ -324,7 +357,15 @@ export default function FollowListModal({ close, data, header }) {
     } catch (error) {
       toast.error(error?.message || 'Follower could not be removed');
     } finally {
-      setActionState({ kind: null, userId: null });
+      setPendingActionByUserId((current) => {
+        if (!current[followerId]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[followerId];
+        return next;
+      });
     }
   };
 
@@ -372,6 +413,8 @@ export default function FollowListModal({ close, data, header }) {
                 const canFollowBack =
                   isOwnFollowersList && auth.user?.id !== user.id && followingStatus !== FOLLOW_STATUSES.ACCEPTED;
                 const followLabel = followingStatus === FOLLOW_STATUSES.PENDING ? 'Requested' : 'Follow';
+                const pendingKind = pendingActionByUserId[user.id] || null;
+                const isActionPending = Boolean(pendingKind);
 
                 return (
                   <FollowRow
@@ -379,14 +422,12 @@ export default function FollowListModal({ close, data, header }) {
                     close={close}
                     followLabel={followLabel}
                     isFollowDisabled={followingStatus === FOLLOW_STATUSES.PENDING}
-                    isActionLoading={actionState.userId === user.id && actionState.kind === 'remove'}
-                    isActionDisabled={
-                      actionState.userId === user.id && (actionState.kind === 'accept' || actionState.kind === 'reject')
-                    }
-                    isAcceptLoading={actionState.userId === user.id && actionState.kind === 'accept'}
-                    isFollowLoading={actionState.userId === user.id && actionState.kind === 'follow'}
+                    isActionLoading={pendingKind === 'remove'}
+                    isActionDisabled={isActionPending}
+                    isAcceptLoading={pendingKind === 'accept'}
+                    isFollowLoading={pendingKind === 'follow'}
                     isRequest={activeTab === 'requests'}
-                    isRejectLoading={actionState.userId === user.id && actionState.kind === 'reject'}
+                    isRejectLoading={pendingKind === 'reject'}
                     onAccept={() => handleAccept(user.id)}
                     onFollow={() => handleFollowBack(user.id)}
                     onRemove={() => handleRemoveFollower(user.id)}

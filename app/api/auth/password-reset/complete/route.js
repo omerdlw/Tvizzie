@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 
 import { hasPasswordProvider } from '@/core/auth/servers/account/account-deletion.server';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
 import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server';
 import { verifyPasswordResetProofToken } from '@/core/auth/servers/verification/password-reset-proof.server';
 import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+  AUTH_RATE_LIMIT_POLICY_KEYS,
+  enforceAuthRateLimit,
+} from '@/core/auth/servers/security/rate-limit-policies.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
@@ -48,37 +49,9 @@ async function assertPasswordResetTargetIntegrity({ userRecord, email }) {
   }
 }
 
-async function enforcePasswordResetCompleteRateLimit({ email, requestContext }) {
-  try {
-    await enforceSlidingWindowRateLimit({
-      namespace: 'auth:password-reset:complete',
-      windowMs: 15 * 60 * 1000,
-      dimensions: [
-        { id: 'email', value: email, limit: 6 },
-        { id: 'ip', value: requestContext.ipAddress, limit: 24 },
-        { id: 'device', value: requestContext.deviceId, limit: 12 },
-      ],
-      message: 'Too many password reset attempts',
-    });
-  } catch (error) {
-    if (!isSlidingWindowRateLimitError(error)) {
-      throw error;
-    }
-
-    if (error.dimension === 'email') {
-      throw new Error('Too many password reset attempts for this email');
-    }
-
-    if (error.dimension === 'device') {
-      throw new Error('Too many password reset attempts from this device');
-    }
-
-    throw new Error('Too many password reset attempts from this network');
-  }
-}
-
 export async function POST(request) {
   const requestContext = getRequestContext(request);
+  const routePolicy = getAuthRoutePolicy(AUTH_ROUTE_POLICY_KEYS.PASSWORD_RESET_COMPLETE);
   let email = null;
   let userId = null;
 
@@ -92,9 +65,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'passwordResetProof, email, and newPassword are required' }, { status: 400 });
     }
 
-    await enforcePasswordResetCompleteRateLimit({
-      email,
-      requestContext,
+    await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_RESET_COMPLETE, {
+      dimensionValues: {
+        device: requestContext.deviceId,
+        email,
+        ip: requestContext.ipAddress,
+      },
     });
 
     const adminAuth = createAdminAuthFacade();
@@ -170,6 +146,7 @@ export async function POST(request) {
       provider: 'password',
       metadata: {
         action: 'password-reset-complete',
+        authRoute: routePolicy.route,
         source: 'api/auth/password-reset/complete',
       },
     }).catch((auditError) => {
@@ -208,6 +185,7 @@ export async function POST(request) {
       provider: 'password',
       metadata: {
         action: 'password-reset-complete',
+        authRoute: routePolicy.route,
         message,
         source: 'api/auth/password-reset/complete',
         status,
@@ -225,6 +203,7 @@ export async function POST(request) {
       provider: 'password',
       metadata: {
         action: 'password-reset-complete',
+        authRoute: routePolicy.route,
         message,
         source: 'api/auth/password-reset/complete',
         status,

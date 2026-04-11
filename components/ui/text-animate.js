@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/core/utils';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 

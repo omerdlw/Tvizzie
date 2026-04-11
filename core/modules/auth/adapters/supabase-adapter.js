@@ -119,19 +119,57 @@ function normalizeSessionFromApi(payload = {}) {
   };
 }
 
-async function fetchCanonicalSession() {
-  const response = await fetch('/api/auth/session', {
-    cache: 'no-store',
-    credentials: 'include',
-  });
+const CANONICAL_SESSION_CACHE_TTL_MS = 1500;
+const CANONICAL_SESSION_STATE = {
+  expiresAt: 0,
+  inFlightPromise: null,
+  value: undefined,
+};
 
-  const payload = await response.json().catch(() => ({ status: 'anonymous', user: null }));
+function clearCanonicalSessionCache() {
+  CANONICAL_SESSION_STATE.expiresAt = 0;
+  CANONICAL_SESSION_STATE.inFlightPromise = null;
+  CANONICAL_SESSION_STATE.value = undefined;
+}
 
-  if (!response.ok) {
-    throw toAdapterError(payload, 'Session could not be loaded');
+async function fetchCanonicalSession({ force = false } = {}) {
+  const now = Date.now();
+
+  if (!force && CANONICAL_SESSION_STATE.value !== undefined && CANONICAL_SESSION_STATE.expiresAt > now) {
+    return CANONICAL_SESSION_STATE.value;
   }
 
-  return normalizeSessionFromApi(payload);
+  if (!force && CANONICAL_SESSION_STATE.inFlightPromise) {
+    return CANONICAL_SESSION_STATE.inFlightPromise;
+  }
+
+  const requestPromise = Promise.resolve()
+    .then(async () => {
+      const response = await fetch('/api/auth/session', {
+        cache: 'no-store',
+        credentials: 'include',
+      });
+      const payload = await response.json().catch(() => ({ status: 'anonymous', user: null }));
+
+      if (!response.ok) {
+        throw toAdapterError(payload, 'Session could not be loaded');
+      }
+
+      return normalizeSessionFromApi(payload);
+    })
+    .then((session) => {
+      CANONICAL_SESSION_STATE.value = session;
+      CANONICAL_SESSION_STATE.expiresAt = Date.now() + CANONICAL_SESSION_CACHE_TTL_MS;
+      CANONICAL_SESSION_STATE.inFlightPromise = null;
+      return session;
+    })
+    .catch((error) => {
+      CANONICAL_SESSION_STATE.inFlightPromise = null;
+      throw error;
+    });
+
+  CANONICAL_SESSION_STATE.inFlightPromise = requestPromise;
+  return requestPromise;
 }
 
 function getClient(providedClient = null) {
@@ -208,7 +246,8 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Session refresh failed');
       }
 
-      return fetchCanonicalSession();
+      clearCanonicalSessionCache();
+      return fetchCanonicalSession({ force: true });
     },
 
     async signIn(payload = {}) {
@@ -228,7 +267,8 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Sign in failed');
       }
 
-      return fetchCanonicalSession();
+      clearCanonicalSessionCache();
+      return fetchCanonicalSession({ force: true });
     },
 
     async signUp(payload = {}) {
@@ -252,6 +292,7 @@ export function createSupabaseAuthAdapter(options = {}) {
           performNetworkSignOut: false,
         });
 
+        clearCanonicalSessionCache();
         return null;
       }
 
@@ -263,12 +304,14 @@ export function createSupabaseAuthAdapter(options = {}) {
         });
       } catch (error) {
         if (isIgnorableLogoutError(error)) {
+          clearCanonicalSessionCache();
           return null;
         }
 
         throw toAdapterError(error, 'Sign out failed');
       }
 
+      clearCanonicalSessionCache();
       return null;
     },
 
@@ -294,7 +337,8 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Profile update failed');
       }
 
-      return fetchCanonicalSession();
+      clearCanonicalSessionCache();
+      return fetchCanonicalSession({ force: true });
     },
 
     async reauthenticate(payload = {}, adapterContext = {}) {
@@ -318,7 +362,8 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(result, 'Reauthentication failed');
       }
 
-      const nextSession = await fetchCanonicalSession();
+      clearCanonicalSessionCache();
+      const nextSession = await fetchCanonicalSession({ force: true });
 
       return nextSession || adapterContext?.session || null;
     },
@@ -361,7 +406,8 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Password reset confirmation failed');
       }
 
-      return fetchCanonicalSession();
+      clearCanonicalSessionCache();
+      return fetchCanonicalSession({ force: true });
     },
 
     onAuthStateChange(callback) {
@@ -371,13 +417,15 @@ export function createSupabaseAuthAdapter(options = {}) {
       } = client.auth.onAuthStateChange((event, session) => {
         if (!session) {
           if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+            clearCanonicalSessionCache();
             callback(null);
           }
 
           return;
         }
 
-        Promise.resolve(fetchCanonicalSession())
+        clearCanonicalSessionCache();
+        Promise.resolve(fetchCanonicalSession({ force: true }))
           .then((nextSession) => {
             callback(nextSession);
           })

@@ -37,6 +37,7 @@ export default function Client({
   const toast = useToast();
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
+  const [isReviewsLoadingMore, setIsReviewsLoadingMore] = useState(false);
   const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'films';
   const requestedPage = Number.parseInt(searchParams.get('page') || String(currentPage), 10);
   const resolvedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -233,15 +234,21 @@ export default function Client({
     async ({ append = false } = {}) => {
       if (shouldBlockReviewLoad) {
         resetReviews();
+        setIsReviewsLoadingMore(false);
         return;
       }
 
       if (!append && hasSeededReviewFeed) {
         setIsReviewsLoading(false);
+        setIsReviewsLoadingMore(false);
         return;
       }
 
-      setIsReviewsLoading(true);
+      if (append) {
+        setIsReviewsLoadingMore(true);
+      } else {
+        setIsReviewsLoading(true);
+      }
       setReviewsError(null);
 
       try {
@@ -262,7 +269,11 @@ export default function Client({
           setReviewsError('Liked reviews could not be loaded right now.');
         }
       } finally {
-        setIsReviewsLoading(false);
+        if (append) {
+          setIsReviewsLoadingMore(false);
+        } else {
+          setIsReviewsLoading(false);
+        }
       }
     },
     [
@@ -447,6 +458,7 @@ export default function Client({
       isOwner={isOwner}
       isPageLoading={isPageLoading}
       isReviewsLoading={isReviewsLoading}
+      isReviewsLoadingMore={isReviewsLoadingMore}
       isResolvingProfile={isResolvingProfile}
       isShowcaseSaving={isShowcaseSaving}
       itemRemoveConfirmation={itemRemoveConfirmation}

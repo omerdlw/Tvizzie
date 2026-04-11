@@ -41,12 +41,7 @@ function hasSlotContent(value) {
 }
 
 function isHeaderConfig(value) {
-  return (
-    value &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    !isValidElement(value)
-  );
+  return value && typeof value === 'object' && !Array.isArray(value) && !isValidElement(value);
 }
 
 function CloseButton({ close, label = 'Close modal' }) {
@@ -73,26 +68,24 @@ export default function Container({ children, className, bodyClassName, header =
   const position = headerConfig?.position;
   const showClose = headerConfig?.showClose === true;
   const headerActions = resolveHeaderActions(headerConfig?.actions, close);
-  const headerLeft =
-    hasCustomHeaderNode
-      ? null
-      : headerConfig?.left ??
-        (headerConfig?.title ? (
-          <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
-            {headerConfig.title}
-          </h2>
-        ) : null);
-  const headerCenter = hasCustomHeaderNode ? header : headerConfig?.center ?? null;
-  const headerRight =
-    hasCustomHeaderNode
-      ? null
-      : headerConfig?.right ??
-        (hasSlotContent(headerActions) || showClose ? (
-          <div className="flex items-center justify-end gap-2">
-            {headerActions}
-            {showClose ? <CloseButton close={close} /> : null}
-          </div>
-        ) : null);
+  const headerLeft = hasCustomHeaderNode
+    ? null
+    : (headerConfig?.left ??
+      (headerConfig?.title ? (
+        <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
+          {headerConfig.title}
+        </h2>
+      ) : null));
+  const headerCenter = hasCustomHeaderNode ? header : (headerConfig?.center ?? null);
+  const headerRight = hasCustomHeaderNode
+    ? null
+    : (headerConfig?.right ??
+      (hasSlotContent(headerActions) || showClose ? (
+        <div className="flex items-center justify-end gap-2">
+          {headerActions}
+          {showClose ? <CloseButton close={close} /> : null}
+        </div>
+      ) : null));
   const headerIsSticky = Boolean(headerConfig?.sticky);
   const shouldRenderHeader =
     !isHeaderDisabled && (hasSlotContent(headerLeft) || hasSlotContent(headerCenter) || hasSlotContent(headerRight));
@@ -102,14 +95,23 @@ export default function Container({ children, className, bodyClassName, header =
   const footerCenter = footerConfig.center ?? null;
   const footerRight = footerConfig.right ?? null;
   const footerIsSticky = Boolean(footerConfig.sticky);
-  const shouldRenderFooter = footer !== false && (hasSlotContent(footerLeft) || hasSlotContent(footerCenter) || hasSlotContent(footerRight));
+  const shouldRenderFooter =
+    footer !== false && (hasSlotContent(footerLeft) || hasSlotContent(footerCenter) || hasSlotContent(footerRight));
 
   return (
     <div className={getContainerClassName({ className, position })}>
       {shouldRenderHeader ? (
-        <div className={cn('grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 py-3', headerIsSticky && 'sticky top-0 z-10')}>
+        <div
+          className={cn(
+            hasSlotContent(headerCenter)
+              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+              : 'flex justify-between',
+            'items-center gap-3 px-4 py-3',
+            headerIsSticky && 'sticky top-0 z-10'
+          )}
+        >
           <div className="min-w-0">{headerLeft}</div>
-          <div className="flex items-center justify-center">{headerCenter}</div>
+          {hasSlotContent(headerCenter) && <div className="flex items-center justify-center">{headerCenter}</div>}
           <div className="min-w-0">{headerRight}</div>
         </div>
       ) : null}
@@ -128,13 +130,18 @@ export default function Container({ children, className, bodyClassName, header =
       {shouldRenderFooter ? (
         <div
           className={cn(
-            'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 py-3',
+            hasSlotContent(footerCenter)
+              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+              : 'flex justify-between',
+            'items-center gap-3 px-4 py-3',
             footerIsSticky && 'sticky bottom-0'
           )}
         >
           <div className="min-w-0">{footerLeft}</div>
-          <div className="flex items-center justify-center">{footerCenter}</div>
-          <div className="flex items-center justify-end gap-2">{footerRight}</div>
+          {hasSlotContent(footerCenter) && <div className="flex items-center justify-center">{footerCenter}</div>}
+          <div className={cn('flex items-center gap-2', hasSlotContent(footerCenter) ? 'w-full justify-end' : null)}>
+            {footerRight}
+          </div>
         </div>
       ) : null}
     </div>

@@ -76,12 +76,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
     };
   }, [data, header?.description, header?.title, meta?.codeExpiryLabel, meta?.isExpired, meta?.isSending]);
 
-  const headerIcon =
-    meta?.isSending && !meta?.hasChallenge ? (
-      <Spinner size={24} />
-    ) : (
-      'solar:shield-keyhole-bold'
-    );
+  const headerIcon = meta?.isSending && !meta?.hasChallenge ? <Spinner size={24} /> : 'solar:shield-keyhole-bold';
 
   return (
     <section
@@ -104,7 +99,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           <button
             type="button"
             onClick={() => closeSurface(close)}
-            className={`center cursor-pointer rounded-full border border-[#be123c] bg-[#fecdd3] p-1 text-[#881337] transition-all`}
+            className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
             aria-label="Close verification"
           >
             <Icon icon="material-symbols:close-rounded" size={24} />

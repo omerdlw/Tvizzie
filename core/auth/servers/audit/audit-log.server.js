@@ -21,6 +21,7 @@ const ALLOWED_EVENT_TYPES = new Set([
 ]);
 
 const SENSITIVE_FIELD_PATTERNS = [/password/i, /token/i, /secret/i, /code/i];
+const ALLOWED_AUDIT_ACTORS = new Set(['user', 'system', 'edge', 'admin']);
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -28,6 +29,26 @@ function normalizeValue(value) {
 
 function normalizeEventType(value) {
   return normalizeValue(value).toLowerCase();
+}
+
+function normalizeActor(value) {
+  const normalized = normalizeValue(value).toLowerCase();
+
+  if (!normalized || !ALLOWED_AUDIT_ACTORS.has(normalized)) {
+    return 'user';
+  }
+
+  return normalized;
+}
+
+function normalizeOutcome(value, fallbackStatus) {
+  const normalized = normalizeValue(value).toLowerCase();
+
+  if (!normalized) {
+    return normalizeValue(fallbackStatus).toLowerCase() || 'success';
+  }
+
+  return normalized.slice(0, 64);
 }
 
 function hashValue(value) {
@@ -95,6 +116,23 @@ function isUserIdForeignKeyViolation(error) {
   );
 }
 
+function readMetadataField(metadata, fieldNames = []) {
+  if (!metadata || typeof metadata !== 'object') {
+    return null;
+  }
+
+  for (const fieldName of fieldNames) {
+    const rawValue = metadata[fieldName];
+    const normalized = normalizeValue(rawValue);
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
+}
+
 export async function writeAuthAuditLog({
   request,
   eventType,
@@ -102,6 +140,10 @@ export async function writeAuthAuditLog({
   userId = null,
   email = null,
   provider = null,
+  actor = 'user',
+  requestId = null,
+  sessionJti = null,
+  outcome = null,
   metadata = null,
 }) {
   const normalizedEventType = normalizeEventType(eventType);
@@ -114,24 +156,38 @@ export async function writeAuthAuditLog({
   const normalizedUserId = normalizeValue(userId) || null;
   const normalizedEmail = normalizeValue(email).toLowerCase() || null;
   const normalizedProvider = normalizeValue(provider).toLowerCase() || null;
+  const normalizedActor = normalizeActor(actor);
   const requestContext = request ? getRequestContext(request) : null;
+  const normalizedRequestId =
+    normalizeValue(requestId) ||
+    requestContext?.requestId ||
+    readMetadataField(metadata, ['requestId', 'request_id']) ||
+    null;
+  const normalizedSessionJti =
+    normalizeValue(sessionJti) || readMetadataField(metadata, ['sessionJti', 'session_jti']) || null;
+  const normalizedOutcome = normalizeOutcome(outcome, normalizedStatus);
   const now = Date.now();
   const sanitizedMetadata = sanitizeMetadata(metadata);
   const insertPayload = {
+    actor: normalizedActor,
     created_at: new Date(now).toISOString(),
     email_hash: hashValue(normalizedEmail),
     email_masked: maskEmail(normalizedEmail),
     event_type: normalizedEventType,
     ip_hash: requestContext?.ipHash || null,
     metadata: sanitizedMetadata,
+    outcome: normalizedOutcome,
     provider: normalizedProvider,
+    request_id: normalizedRequestId,
     request_context: requestContext
       ? {
           device_hash: requestContext.deviceHash,
           ip_hash: requestContext.ipHash,
+          request_id: normalizedRequestId,
           user_agent_hash: requestContext.userAgentHash,
         }
       : null,
+    session_jti: normalizedSessionJti,
     status: normalizedStatus,
     user_id: normalizedUserId,
     user_id_hash: hashValue(normalizedUserId),

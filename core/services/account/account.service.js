@@ -18,6 +18,8 @@ const USERNAME_MAX_LENGTH = 24;
 const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
 const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
 const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
+const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
+const accountResolveRequestCache = new Map();
 
 function normalizeOptionalUrl(value) {
   const normalized = cleanString(value);
@@ -167,13 +169,48 @@ export async function getUserAccount(userId) {
 
 export async function getUserIdByUsername(username) {
   const normalizedUsername = validateUsername(username);
-  const payload = await requestApiJson('/api/account/resolve', {
-    query: {
-      username: normalizedUsername,
-    },
+  const now = Date.now();
+  const cachedEntry = accountResolveRequestCache.get(normalizedUsername);
+
+  if (cachedEntry?.value !== undefined && (cachedEntry?.expiresAt || 0) > now) {
+    return cachedEntry.value;
+  }
+
+  if (cachedEntry?.inFlightPromise) {
+    return cachedEntry.inFlightPromise;
+  }
+
+  const inFlightPromise = Promise.resolve()
+    .then(() =>
+      requestApiJson('/api/account/resolve', {
+        query: {
+          username: normalizedUsername,
+        },
+      })
+    )
+    .then((payload) => {
+      const userId = payload?.userId || null;
+
+      accountResolveRequestCache.set(normalizedUsername, {
+        expiresAt: Date.now() + ACCOUNT_RESOLVE_CACHE_TTL_MS,
+        inFlightPromise: null,
+        value: userId,
+      });
+
+      return userId;
+    })
+    .catch((error) => {
+      accountResolveRequestCache.delete(normalizedUsername);
+      throw error;
+    });
+
+  accountResolveRequestCache.set(normalizedUsername, {
+    expiresAt: now + ACCOUNT_RESOLVE_CACHE_TTL_MS,
+    inFlightPromise,
+    value: undefined,
   });
 
-  return payload?.userId || null;
+  return inFlightPromise;
 }
 
 export async function getUserAccountByUsername(username) {

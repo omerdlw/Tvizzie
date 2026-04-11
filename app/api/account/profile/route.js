@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireSessionRequest, resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
+import { getAccountProfileByUserId, getAccountProfileByUsername } from '@/core/services/browser/browser-data.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
@@ -350,7 +351,7 @@ function pruneProfileCache() {
 
 export async function GET(request) {
   try {
-    const authContext = await requireSessionRequest(request).catch(() => null);
+    const authContext = await resolveOptionalSessionRequest(request);
     const { searchParams } = new URL(request.url);
     const userId = normalizeValue(searchParams.get('userId'));
     const username = normalizeValue(searchParams.get('username'));
@@ -383,15 +384,13 @@ export async function GET(request) {
       });
     }
 
-    const loadProfilePromise = invokeInternalEdgeFunction('account-read', {
-      body: {
-        resource: 'profile',
-        userId: userId || null,
-        username: username || null,
-        viewerId: viewerId || null,
-      },
-    })
-      .then((payload) => payload?.profile || null)
+    const loadProfilePromise = (userId
+      ? getAccountProfileByUserId(userId, {
+          viewerId: viewerId || null,
+        })
+      : getAccountProfileByUsername(username, {
+          viewerId: viewerId || null,
+        }))
       .then((profileValue) => {
         profileRequestCache.set(cacheKey, {
           expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,

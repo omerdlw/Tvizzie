@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
-import AccountSectionLayout from '../profile/section-wrapper';
+import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 5;
 

@@ -1,0 +1,116 @@
+{
+  "config": {
+    "likesPerUser": 60,
+    "listCountPerUser": 10,
+    "listItemsPerList": 60,
+    "reviewsPerUser": 60,
+    "userCount": 20,
+    "watchedPerUser": 60,
+    "watchlistPerUser": 60
+  },
+  "createdAt": "2026-04-10T23:25:28.350Z",
+  "password": "TvizzieSeed!2026",
+  "runId": "social-20260410232447-b05136",
+  "users": [
+    {
+      "email": "seed.social.social-20260410232447-b05136.1@example.com",
+      "id": "95b796e2-b372-4299-bbd4-c492398677d6",
+      "username": "indigo_beacon_3967"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.2@example.com",
+      "id": "ab21cfe8-8d94-43b6-ac3e-3a8899534be3",
+      "username": "celestial_summit_9680"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.3@example.com",
+      "id": "b71f2180-c02d-453d-8b0e-78b7cba2c44e",
+      "username": "rapid_temple_7037"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.4@example.com",
+      "id": "5416cac7-f743-463f-b1d1-6a0c4a35d040",
+      "username": "crystal_meadow_2020"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.5@example.com",
+      "id": "85085139-dad6-4452-8d84-7fbb9dcb31a0",
+      "username": "opal_aurora_2916"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.6@example.com",
+      "id": "71a56cee-a092-4379-ba34-488c2c12c6ac",
+      "username": "wild_cipher_5624"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.7@example.com",
+      "id": "45307874-e530-4125-8f54-0d9246524b82",
+      "username": "obsidian_matrix_6171"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.8@example.com",
+      "id": "38c1664d-5fd1-44b8-8ba4-bfadcb31cac1",
+      "username": "misty_flux_3887"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.9@example.com",
+      "id": "42f29ba1-e210-4d40-b539-ad2a4b47650e",
+      "username": "solar_field_5975"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.10@example.com",
+      "id": "5e78da75-bab0-4b47-9462-2f16b95b124d",
+      "username": "vivid_vertex_507"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.11@example.com",
+      "id": "b72fdea4-1d4e-4b5a-9310-a7cedfccc344",
+      "username": "stellar_pulse_8017"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.12@example.com",
+      "id": "175ee365-b842-4a7b-810c-64f849a7e2e0",
+      "username": "ember_drift_7927"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.13@example.com",
+      "id": "aab99d73-e8f2-478e-a6aa-c9929b106075",
+      "username": "golden_flux_6447"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.14@example.com",
+      "id": "7e732fb7-5621-4a9c-95f9-13622d0d9b5f",
+      "username": "digital_mirage_7786"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.15@example.com",
+      "id": "fa730a17-1d63-47a9-86e2-3e47f3e7e946",
+      "username": "rapid_voyage_9496"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.16@example.com",
+      "id": "e14b637f-9a4e-4e08-869d-76aa7f69ec53",
+      "username": "sunset_cipher_5966"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.17@example.com",
+      "id": "3485e19c-431f-47e1-b732-63be98f20747",
+      "username": "celestial_glider_2797"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.18@example.com",
+      "id": "44a02d8c-3a13-4b90-9ad5-d7d37643b6f0",
+      "username": "ember_meadow_2196"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.19@example.com",
+      "id": "b9695102-f8a9-42b2-9fba-7792bbfabca1",
+      "username": "midnight_echo_7832"
+    },
+    {
+      "email": "seed.social.social-20260410232447-b05136.20@example.com",
+      "id": "14fcbc65-128d-4b58-b1b0-b5440ea8af52",
+      "username": "iron_cipher_2325"
+    }
+  ]
+}

@@ -66,6 +66,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
                   sectionClassName="mt-1 md:mt-2"
                   showBackdropGradient={false}
                   useQuerySortMode={true}
+                  useQueryUserFilter={true}
                   posterPath={movie.poster_path}
                   backdropPath={movie.backdrop_path}
                   onReviewStateChange={setReviewState}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
 const DEFAULT_COLLECTION_LIMIT = 24;
@@ -86,7 +87,7 @@ function isTabScopedOut({ activeTab, resource }) {
 
 export async function GET(request) {
   try {
-    const authContext = await requireSessionRequest(request).catch(() => null);
+    const authContext = await resolveOptionalSessionRequest(request);
     const { searchParams } = new URL(request.url);
     const activeTab = normalizeTab(searchParams.get('activeTab'));
     const cursor = normalizeValue(searchParams.get('cursor'));
@@ -115,17 +116,27 @@ export async function GET(request) {
     const pageLimit = shouldPaginate ? normalizeLimit(limit || limitCount) : null;
     const offset = shouldPaginate ? decodeCursor(cursor) : 0;
     const fetchLimitCount = shouldPaginate ? offset + pageLimit + 1 : limitCount;
-    const payload = await invokeInternalEdgeFunction('collections-read', {
-      body: {
-        resource,
-        userId,
-        viewerId: authContext?.userId || null,
-        limitCount: fetchLimitCount,
-        media,
-        listId,
-        slug,
-        strict: true,
-      },
+    const viewerId = authContext?.userId || null;
+    const cacheKey =
+      `collections|resource=${resource}|activeTab=${activeTab}|cursor=${cursor}|limit=${limit}|limitCount=${limitCount}` +
+      `|user=${userId}|list=${listId}|slug=${slug}|entity=${media.entityType}:${media.entityId}|viewer=${viewerId || 'anon'}`;
+    const payload = await getOrLoadCachedValue({
+      cacheKey,
+      enabled: !viewerId,
+      ttlMs: 2000,
+      loader: () =>
+        invokeInternalEdgeFunction('collections-read', {
+          body: {
+            resource,
+            userId,
+            viewerId,
+            limitCount: fetchLimitCount,
+            media,
+            listId,
+            slug,
+            strict: true,
+          },
+        }),
     });
     const rawData = payload?.data ?? null;
 

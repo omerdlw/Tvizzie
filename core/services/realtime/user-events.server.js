@@ -1,19 +1,35 @@
 import 'server-only';
 
+import { randomUUID } from 'crypto';
+import { publishUserRealtimeBroadcast } from '@/core/services/realtime/realtime-broadcast.server';
+
 const HEARTBEAT_INTERVAL_MS = 25000;
+const USER_SUBSCRIBERS_GLOBAL_KEY = '__tvizzie_user_live_subscribers__';
 
 const encoder = new TextEncoder();
-const userSubscribers = new Map();
+
+function getUserSubscribersStore() {
+  if (!globalThis[USER_SUBSCRIBERS_GLOBAL_KEY]) {
+    globalThis[USER_SUBSCRIBERS_GLOBAL_KEY] = new Map();
+  }
+
+  return globalThis[USER_SUBSCRIBERS_GLOBAL_KEY];
+}
+
+const userSubscribers = getUserSubscribersStore();
 
 function normalizeValue(value) {
   return String(value || '').trim();
 }
 
-function formatSseMessage(eventType, payload = {}) {
+function formatSseMessage(eventType, payload = {}, meta = {}) {
   return encoder.encode(
     `event: ${eventType}\ndata: ${JSON.stringify({
+      createdAt: new Date().toISOString(),
+      eventId: meta.eventId || `evt_${randomUUID()}`,
       ...payload,
       timestamp: Date.now(),
+      traceId: meta.traceId || null,
     })}\n\n`
   );
 }
@@ -58,16 +74,39 @@ function safeEnqueue(controller, chunk) {
   }
 }
 
-export function publishUserEvent(userId, eventType, payload = {}) {
+export function publishUserEvent(userId, eventType, payload = {}, meta = {}) {
   const normalizedUserId = normalizeValue(userId);
   const normalizedEventType = normalizeValue(eventType);
-  const subscribers = userSubscribers.get(normalizedUserId);
+  const normalizedPayload = {
+    createdAt: new Date().toISOString(),
+    eventId: meta.eventId || `evt_${randomUUID()}`,
+    ...payload,
+    timestamp: Date.now(),
+    traceId: meta.traceId || null,
+  };
 
-  if (!normalizedUserId || !normalizedEventType || !subscribers?.size) {
+  if (!normalizedUserId || !normalizedEventType) {
     return;
   }
 
-  const chunk = formatSseMessage(normalizedEventType, payload);
+  publishUserRealtimeBroadcast({
+    userId: normalizedUserId,
+    eventType: normalizedEventType,
+    payload: normalizedPayload,
+  }).catch((error) => {
+    console.error('[LiveUpdates] Realtime broadcast failed:', error);
+  });
+
+  const subscribers = userSubscribers.get(normalizedUserId);
+
+  if (!subscribers?.size) {
+    return;
+  }
+
+  const chunk = formatSseMessage(normalizedEventType, normalizedPayload, {
+    eventId: normalizedPayload.eventId,
+    traceId: normalizedPayload.traceId,
+  });
 
   subscribers.forEach((subscriber) => {
     if (!safeEnqueue(subscriber.controller, chunk)) {

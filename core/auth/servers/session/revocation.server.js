@@ -91,30 +91,6 @@ export async function assertSessionNotRevoked(authContext = null) {
   throw error;
 }
 
-async function invokeSessionControlFunction({
-  functionName,
-  internalToken,
-  normalizedUserId,
-  currentSessionJti,
-  reason,
-}) {
-  return fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      'x-infra-internal-token': internalToken,
-    },
-    body: JSON.stringify({
-      currentSessionJti: normalizeValue(currentSessionJti) || null,
-      reason: normalizeValue(reason) || null,
-      userId: normalizedUserId,
-    }),
-    cache: 'no-store',
-  });
-}
-
 export async function invokeSessionControl({ currentSessionJti = null, reason = null, userId }) {
   const normalizedUserId = normalizeValue(userId);
 
@@ -132,14 +108,22 @@ export async function invokeSessionControl({ currentSessionJti = null, reason = 
     throw new Error('INFRA_INTERNAL_TOKEN is required for session control');
   }
 
-  let response = await invokeSessionControlFunction({
-    functionName: SESSION_CONTROL_FUNCTION,
-    internalToken,
-    normalizedUserId,
-    currentSessionJti,
-    reason,
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/${SESSION_CONTROL_FUNCTION}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'x-infra-internal-token': internalToken,
+    },
+    body: JSON.stringify({
+      currentSessionJti: normalizeValue(currentSessionJti) || null,
+      reason: normalizeValue(reason) || null,
+      userId: normalizedUserId,
+    }),
+    cache: 'no-store',
   });
-  let payload = await response.json().catch(() => ({}));
+  const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(normalizeValue(payload?.error) || `Session control function failed with status ${response.status}`);

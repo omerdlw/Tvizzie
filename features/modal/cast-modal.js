@@ -149,14 +149,16 @@ export default function CastModal({ close, data, header }) {
       className={`max-h-[85vh] ${isEdgePosition ? 'w-full' : 'w-[min(94vw,980px)]'}`}
       close={close}
       header={resolvedHeader}
-      bodyClassName="p-0"
+      bodyClassName="p-0 bg-transparent"
     >
       {castEntries.length > 0 || crewEntries.length > 0 ? (
         <div ref={contentRef} className="relative overflow-hidden">
           {segmentedItems.length > 1 ? (
             <>
               <div aria-hidden="true" className="invisible">
-                {activeTab === 'cast' ? renderGrid(castEntries, 'cast-measure') : renderGrid(crewEntries, 'crew-measure')}
+                {activeTab === 'cast'
+                  ? renderGrid(castEntries, 'cast-measure')
+                  : renderGrid(crewEntries, 'crew-measure')}
               </div>
 
               <motion.div
@@ -164,9 +166,7 @@ export default function CastModal({ close, data, header }) {
                 initial={false}
                 animate={{ x: activeTab === 'cast' ? '0%' : '-100%' }}
                 transition={
-                  reduceMotion
-                    ? { duration: 0.14 }
-                    : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+                  reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
                 }
               >
                 {renderGrid(castEntries, 'cast')}
@@ -177,9 +177,7 @@ export default function CastModal({ close, data, header }) {
                 initial={false}
                 animate={{ x: activeTab === 'cast' ? '100%' : '0%' }}
                 transition={
-                  reduceMotion
-                    ? { duration: 0.14 }
-                    : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+                  reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
                 }
               >
                 {renderGrid(crewEntries, 'crew')}

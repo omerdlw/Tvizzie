@@ -7,7 +7,7 @@ import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import AccountSectionLayout from '../profile/section-wrapper';
+import AccountSectionLayout from '../shared/section-wrapper';
 
 const EVENT_META = Object.freeze({
   FOLLOW_ACCEPTED: {

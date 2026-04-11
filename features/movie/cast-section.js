@@ -191,7 +191,6 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <SegmentedControl value={activeTab} onChange={setActiveTab} items={segmentedItems} />
-
           {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
         </div>
       </div>

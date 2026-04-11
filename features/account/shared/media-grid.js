@@ -2,15 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import MediaCard from '@/features/shared/media-card';
 import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
-import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import AccountPagination from './pagination';
+import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
+import AccountInlineSectionState from './section-state';
 import AccountSectionLayout from './section-wrapper';
 
 const ITEMS_PER_PAGE = 36;
@@ -139,58 +140,6 @@ export function AccountProfileMediaActions({
   );
 }
 
-export function buildAccountCollectionPageHref(basePath, pageNumber) {
-  if (!basePath) {
-    return '';
-  }
-
-  if (basePath.includes('?')) {
-    const [pathname, search = ''] = basePath.split('?');
-    const params = new URLSearchParams(search);
-
-    if (pageNumber <= 1) {
-      params.delete('page');
-    } else {
-      params.set('page', String(pageNumber));
-    }
-
-    const query = params.toString();
-    return query ? `${pathname}?${query}` : pathname;
-  }
-
-  if (pageNumber <= 1) {
-    return basePath;
-  }
-
-  return `${basePath}/page/${pageNumber}`;
-}
-
-function getPaginationItems(currentPage, totalPages) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const items = [1];
-  const start = Math.max(2, currentPage - 1);
-  const end = Math.min(totalPages - 1, currentPage + 1);
-
-  if (start > 2) {
-    items.push('start-ellipsis');
-  }
-
-  for (let page = start; page <= end; page += 1) {
-    items.push(page);
-  }
-
-  if (end < totalPages - 1) {
-    items.push('end-ellipsis');
-  }
-
-  items.push(totalPages);
-
-  return items;
-}
-
 export default function AccountMediaGridPage({
   currentPage = 1,
   emptyMessage = 'No items yet',
@@ -232,7 +181,6 @@ export default function AccountMediaGridPage({
   const activePage = totalPages ? Math.min(currentPage, totalPages) : 1;
   const pageStart = (activePage - 1) * ITEMS_PER_PAGE;
   const visibleCards = cards.slice(pageStart, pageStart + ITEMS_PER_PAGE);
-  const paginationItems = getPaginationItems(activePage, totalPages);
 
   useEffect(() => {
     if (!totalPages || currentPage <= totalPages || !pageBasePath) {
@@ -245,18 +193,16 @@ export default function AccountMediaGridPage({
   return (
     <AccountSectionLayout
       icon={icon}
-      summaryLabel={
-        cards.length === 0
-          ? '0 items'
-          : `${pageStart + 1}-${Math.min(pageStart + ITEMS_PER_PAGE, cards.length)} of ${cards.length}`
-      }
+      summaryLabel={formatPaginationSummaryLabel({
+        pageSize: ITEMS_PER_PAGE,
+        startIndex: pageStart,
+        totalCount: cards.length,
+      })}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
       {cards.length === 0 ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          {emptyMessage}
-        </div>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
@@ -275,47 +221,19 @@ export default function AccountMediaGridPage({
           </div>
 
           {totalPages > 1 ? (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {activePage > 1 ? (
-                <Link
-                  href={buildAccountCollectionPageHref(pageBasePath, activePage - 1)}
-                  className="center size-12 border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition"
-                >
-                  <Icon size={16} icon="solar:skip-previous-bold" />
-                </Link>
-              ) : null}
-
-              {paginationItems.map((item, index) =>
-                typeof item === 'number' ? (
-                  <Link
-                    key={item}
-                    href={buildAccountCollectionPageHref(pageBasePath, item)}
-                    aria-current={item === activePage ? 'page' : undefined}
-                    className={cn(
-                      'center size-12 border text-xs font-semibold transition',
-                      item === activePage
-                        ? 'border-black/30 bg-white/90 text-black shadow-sm'
-                        : 'border-black/15 bg-white/50 text-black/70'
-                    )}
-                  >
-                    {item}
-                  </Link>
-                ) : (
-                  <span key={`${item}-${index}`} className="text-xs">
-                    ...
-                  </span>
-                )
-              )}
-
-              {activePage < totalPages ? (
-                <Link
-                  href={buildAccountCollectionPageHref(pageBasePath, activePage + 1)}
-                  className="center size-12 border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition"
-                >
-                  <Icon size={16} icon="solar:skip-next-bold" />
-                </Link>
-              ) : null}
-            </div>
+            <AccountPagination
+              currentPage={activePage}
+              totalPages={totalPages}
+              getPageHref={(page) => buildAccountCollectionPageHref(pageBasePath, page)}
+              hideDisabledNav
+              className="flex flex-wrap items-center justify-end gap-2"
+              pageClassName="center size-12 border text-xs font-semibold transition"
+              activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
+              inactivePageClassName="border-black/15 bg-white/50 text-black/70"
+              navClassName="center size-12 border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition"
+              ellipsisClassName="text-xs"
+              iconSize={16}
+            />
           ) : null}
         </>
       )}

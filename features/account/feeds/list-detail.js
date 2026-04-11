@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { AccountPageShell } from '@/features/account/profile/layout';
-import { AccountSectionReveal } from '@/features/account/profile/layout';
-import { AccountProfileMediaActions } from '@/features/account/profile/media-grid';
+import { AccountPageShell } from '@/features/account/shared/layout';
+import { AccountSectionReveal } from '@/features/account/shared/layout';
+import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import AccountPagination from '@/features/account/shared/pagination';
+import { formatPaginationSummaryLabel } from '@/features/account/utils';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
-import { AccountSectionState } from '@/features/account/profile/section-wrapper';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback';
 import ReviewHeader from '@/features/reviews/parts/review-header';
 import ReviewList from '@/features/reviews/parts/review-list';
@@ -14,39 +17,13 @@ import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { AuthGate } from '@/core/modules/auth';
 import { Button } from '@/ui/elements';
-import Icon from '@/ui/icon';
 
 const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`;
 const MOBILE_MEDIA_QUERY = '(max-width: 1023px)';
 const MAX_ROWS_PER_PAGE = 8;
 const MOBILE_ITEMS_PER_PAGE = 3 * MAX_ROWS_PER_PAGE;
 const DESKTOP_ITEMS_PER_PAGE = 6 * MAX_ROWS_PER_PAGE;
-
-function getPaginationItems(currentPage, totalPages) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const items = [1];
-  const start = Math.max(2, currentPage - 1);
-  const end = Math.min(totalPages - 1, currentPage + 1);
-
-  if (start > 2) {
-    items.push('start-ellipsis');
-  }
-
-  for (let page = start; page <= end; page += 1) {
-    items.push(page);
-  }
-
-  if (end < totalPages - 1) {
-    items.push('end-ellipsis');
-  }
-
-  items.push(totalPages);
-
-  return items;
-}
+const REVIEW_ITEMS_PER_PAGE = 36;
 
 function useResponsivePageSize() {
   const [isMobile, setIsMobile] = useState(false);
@@ -93,7 +70,6 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
     () => items.slice(pageStart, pageStart + itemsPerPage),
     [items, pageStart, itemsPerPage]
   );
-  const paginationItems = useMemo(() => getPaginationItems(safeCurrentPage, totalPages), [safeCurrentPage, totalPages]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -106,11 +82,7 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
   }, [currentPage, totalPages]);
 
   if (items.length === 0) {
-    return (
-      <div className="border border-black/15 bg-white/40 px-4 py-5 text-sm backdrop-blur-sm">
-        No titles in this list yet.
-      </div>
-    );
+    return <AccountInlineSectionState className="px-4 py-5">No titles in this list yet.</AccountInlineSectionState>;
   }
 
   return (
@@ -147,52 +119,26 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
       {totalPages > 1 ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-            {pageStart + 1}-{Math.min(pageStart + itemsPerPage, items.length)} of {items.length}
+            {formatPaginationSummaryLabel({
+              emptyLabel: '0 total',
+              pageSize: itemsPerPage,
+              startIndex: pageStart,
+              totalCount: items.length,
+            })}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCurrentPage((current) => Math.max(1, current - 1))}
-              disabled={safeCurrentPage === 1}
-              className="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Go to previous page"
-            >
-              <Icon size={15} icon="solar:skip-previous-bold" />
-            </button>
-
-            {paginationItems.map((item, index) =>
-              typeof item === 'number' ? (
-                <button
-                  type="button"
-                  key={item}
-                  onClick={() => setCurrentPage(item)}
-                  aria-current={item === safeCurrentPage ? 'page' : undefined}
-                  className={`center size-10 rounded-[10px] border text-xs font-semibold transition ${
-                    item === safeCurrentPage
-                      ? 'border-black/30 bg-white/90 text-black shadow-sm'
-                      : 'border-black/15 bg-white/50 text-black/70'
-                  }`}
-                >
-                  {item}
-                </button>
-              ) : (
-                <span key={`${item}-${index}`} className="px-1 text-xs text-black/50">
-                  ...
-                </span>
-              )
-            )}
-
-            <button
-              type="button"
-              onClick={() => setCurrentPage((current) => Math.min(totalPages, current + 1))}
-              disabled={safeCurrentPage === totalPages}
-              className="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Go to next page"
-            >
-              <Icon size={15} icon="solar:skip-next-bold" />
-            </button>
-          </div>
+          <AccountPagination
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="flex flex-wrap items-center gap-2"
+            pageClassName="center size-10 rounded-[10px] border text-xs font-semibold transition"
+            activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
+            inactivePageClassName="border-black/15 bg-white/50 text-black/70"
+            navClassName="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
+            ellipsisClassName="px-1 text-xs text-black/50"
+            iconSize={15}
+          />
         </div>
       ) : null}
     </div>
@@ -274,6 +220,24 @@ export default function AccountListDetailFeed({
       username={username}
     />
   ) : null;
+  const [currentReviewPage, setCurrentReviewPage] = useState(1);
+  const totalReviewPages = reviews.length ? Math.ceil(reviews.length / REVIEW_ITEMS_PER_PAGE) : 1;
+  const safeCurrentReviewPage = Math.min(currentReviewPage, totalReviewPages);
+  const reviewPageStart = (safeCurrentReviewPage - 1) * REVIEW_ITEMS_PER_PAGE;
+  const visibleReviews = useMemo(
+    () => reviews.slice(reviewPageStart, reviewPageStart + REVIEW_ITEMS_PER_PAGE),
+    [reviews, reviewPageStart]
+  );
+
+  useEffect(() => {
+    setCurrentReviewPage(1);
+  }, [list?.id]);
+
+  useEffect(() => {
+    if (currentReviewPage > totalReviewPages) {
+      setCurrentReviewPage(totalReviewPages);
+    }
+  }, [currentReviewPage, totalReviewPages]);
 
   return (
     <AccountPageShell
@@ -352,9 +316,37 @@ export default function AccountListDetailFeed({
                 onDeleteRequest={handleDeleteRequest}
                 onEdit={handleEditReview}
                 onLike={handleLikeReview}
-                sortedReviews={reviews}
+                sortedReviews={visibleReviews}
                 userProfile={userProfile}
               />
+
+              {totalReviewPages > 1 ? (
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                    {formatPaginationSummaryLabel({
+                      emptyLabel: '0 total',
+                      pageSize: REVIEW_ITEMS_PER_PAGE,
+                      startIndex: reviewPageStart,
+                      totalCount: reviews.length,
+                    })}
+                  </p>
+
+                  <AccountPagination
+                    currentPage={safeCurrentReviewPage}
+                    totalPages={totalReviewPages}
+                    onPageChange={setCurrentReviewPage}
+                    prevAriaLabel="Go to previous review page"
+                    nextAriaLabel="Go to next review page"
+                    className="flex flex-wrap items-center gap-2"
+                    pageClassName="center size-10 rounded-[10px] border text-xs font-semibold transition"
+                    activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
+                    inactivePageClassName="border-black/15 bg-white/50 text-black/70"
+                    navClassName="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
+                    ellipsisClassName="px-1 text-xs text-black/50"
+                    iconSize={15}
+                  />
+                </div>
+              ) : null}
             </div>
           </AccountSectionReveal>
         </>

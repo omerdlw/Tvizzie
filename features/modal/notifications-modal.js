@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import Container from '@/core/modules/modal/container';
@@ -16,7 +16,6 @@ import {
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import { Spinner } from '@/ui/loadings/spinner';
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
@@ -141,23 +140,45 @@ export default function NotificationsModal({ close, header, data }) {
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const optimisticStateRef = useRef({
+    deletedIds: new Set(),
+    forceReadIds: new Set(),
+  });
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
 
   const userId = useMemo(() => data?.userId || auth.user?.id || null, [auth.user?.id, data?.userId]);
 
+  function resetOptimisticState() {
+    optimisticStateRef.current = {
+      deletedIds: new Set(),
+      forceReadIds: new Set(),
+    };
+  }
+
+  function projectNotificationsWithOptimisticState(nextNotifications = []) {
+    const deletedIds = optimisticStateRef.current.deletedIds;
+    const forceReadIds = optimisticStateRef.current.forceReadIds;
+
+    return (Array.isArray(nextNotifications) ? nextNotifications : [])
+      .filter((item) => item?.id && !deletedIds.has(item.id))
+      .map((item) => (forceReadIds.has(item.id) ? { ...item, read: true } : item));
+  }
+
   useEffect(() => {
     if (!auth.isReady || !isAuthSessionReady || !auth.isAuthenticated || !userId) {
+      resetOptimisticState();
       setNotifications([]);
       setIsLoading(false);
       return undefined;
     }
 
+    resetOptimisticState();
     setIsLoading(true);
 
     return subscribeToNotifications(
       userId,
       (nextNotifications) => {
-        setNotifications(nextNotifications);
+        setNotifications(projectNotificationsWithOptimisticState(nextNotifications));
         setIsLoading(false);
       },
       {
@@ -176,6 +197,8 @@ export default function NotificationsModal({ close, header, data }) {
     if (!userId) return;
 
     const previous = notifications;
+    const markedIds = notifications.filter((item) => !item.read).map((item) => item.id);
+    markedIds.forEach((id) => optimisticStateRef.current.forceReadIds.add(id));
     setNotifications((current) =>
       current.map((item) => ({
         ...item,
@@ -185,6 +208,7 @@ export default function NotificationsModal({ close, header, data }) {
     try {
       await markAllAsRead(userId);
     } catch (error) {
+      markedIds.forEach((id) => optimisticStateRef.current.forceReadIds.delete(id));
       setNotifications(previous);
       console.error(error);
     }
@@ -197,11 +221,13 @@ export default function NotificationsModal({ close, header, data }) {
     if (!userId) return;
 
     const previous = notifications;
+    optimisticStateRef.current.forceReadIds.add(notificationId);
     setNotifications((current) => current.map((item) => (item.id === notificationId ? { ...item, read: true } : item)));
 
     try {
       await markAsRead(userId, notificationId);
     } catch (error) {
+      optimisticStateRef.current.forceReadIds.delete(notificationId);
       setNotifications(previous);
       console.error(error);
     }
@@ -213,9 +239,15 @@ export default function NotificationsModal({ close, header, data }) {
     if (!notificationId) return;
     if (!userId) return;
 
+    const previous = notifications;
+    optimisticStateRef.current.deletedIds.add(notificationId);
+    setNotifications((current) => current.filter((item) => item.id !== notificationId));
+
     try {
       await deleteNotification(userId, notificationId);
     } catch (error) {
+      optimisticStateRef.current.deletedIds.delete(notificationId);
+      setNotifications(previous);
       console.error(error);
     }
   };
@@ -225,10 +257,13 @@ export default function NotificationsModal({ close, header, data }) {
     if (!userId) return;
 
     const previous = notifications;
+    const deletedIds = notifications.map((item) => item.id);
+    deletedIds.forEach((id) => optimisticStateRef.current.deletedIds.add(id));
     setNotifications([]);
     try {
       await deleteAllNotifications(userId);
     } catch (error) {
+      deletedIds.forEach((id) => optimisticStateRef.current.deletedIds.delete(id));
       setNotifications(previous);
       console.error(error);
     }
@@ -244,17 +279,17 @@ export default function NotificationsModal({ close, header, data }) {
       bodyClassName="p-0"
       footer={{
         left: hasUnread ? (
-          <span className="text-sm opacity-70">{notifications.filter((item) => !item.read).length} unread</span>
+          <span className="text-xs opacity-70">{notifications.filter((item) => !item.read).length} unread</span>
         ) : (
-          `${notifications.length} notifications`
+          <span className="text-xs opacity-70">{notifications.length} notifications</span>
         ),
         right:
           notifications.length > 0 ? (
-            <div className="flex items-center gap-2">
+            <>
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className="h-8 rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
+                className="h-8 shrink-0 whitespace-nowrap rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
               >
                 Clear all
               </Button>
@@ -262,12 +297,12 @@ export default function NotificationsModal({ close, header, data }) {
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 whitespace-nowrap rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
                 >
                   Mark all as read
                 </Button>
               ) : null}
-            </div>
+            </>
           ) : null,
       }}
     >
@@ -336,7 +371,7 @@ export default function NotificationsModal({ close, header, data }) {
                           title="Mark as read"
                           className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 rounded-[8px] border transition"
                         >
-                          <Icon icon="solar:check-read-bold" size={16} />
+                          <Icon icon="material-symbols:check-rounded" size={16} />
                         </Button>
                       ) : null}
                       <Button

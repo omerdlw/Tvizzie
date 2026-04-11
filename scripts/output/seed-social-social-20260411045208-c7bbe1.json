@@ -1,0 +1,66 @@
+{
+  "config": {
+    "likesPerUser": 1,
+    "listCountPerUser": 1,
+    "listItemsPerList": 1,
+    "reviewsPerUser": 1,
+    "userCount": 10,
+    "watchedPerUser": 1,
+    "watchlistPerUser": 1
+  },
+  "createdAt": "2026-04-11T04:52:25.089Z",
+  "password": "TvizzieSeed!2026",
+  "runId": "social-20260411045208-c7bbe1",
+  "users": [
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.1@example.com",
+      "id": "1f470df0-c950-460e-9036-62efe9fd6545",
+      "username": "chill_thunder_3384"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.2@example.com",
+      "id": "c94e1e74-af39-461d-afa1-ef51c0768e0d",
+      "username": "wild_comet_9352"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.3@example.com",
+      "id": "1c43f339-5512-47f5-a081-c12fd5b5c0c2",
+      "username": "atomic_aurora_2874"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.4@example.com",
+      "id": "17f91ff4-b529-43c2-bcd9-1179a0639c15",
+      "username": "opal_thunder_2839"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.5@example.com",
+      "id": "52c30970-799d-4fae-b581-d57e30e86b02",
+      "username": "chill_drift_7070"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.6@example.com",
+      "id": "cc2e13bc-de02-4439-8ad4-f36a04a92b26",
+      "username": "misty_atlas_3599"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.7@example.com",
+      "id": "a84e338c-e163-45d0-803a-648588a928cc",
+      "username": "nova_summit_2170"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.8@example.com",
+      "id": "12d8219c-8d1e-472a-9294-f4e980c64b86",
+      "username": "crimson_glider_3653"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.9@example.com",
+      "id": "0e1c539d-3b22-4f64-a201-07bcdfbf9d22",
+      "username": "crimson_legend_8564"
+    },
+    {
+      "email": "seed.social.social-20260411045208-c7bbe1.10@example.com",
+      "id": "b2908bf0-b3f9-4dd2-a99e-1c1e5c53a726",
+      "username": "hidden_ranger_7438"
+    }
+  ]
+}

@@ -39,6 +39,8 @@ const COUNTER_SELECT = [
   'watchlist_count',
 ].join(',');
 const PROFILE_COUNTERS_TIMEOUT_MS = 1200;
+const FOLLOW_COUNTS_TIMEOUT_MS = 1200;
+const FOLLOW_STATUS_ACCEPTED = 'accepted';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -176,6 +178,52 @@ async function loadProfileCounters(userId) {
   return timeoutResult.data || null;
 }
 
+async function loadFollowCounts(userId) {
+  const normalizedUserId = normalizeValue(userId);
+
+  if (!normalizedUserId) {
+    return null;
+  }
+
+  const admin = createAdminClient();
+  const timeoutResult = await Promise.race([
+    Promise.all([
+      admin
+        .from('follows')
+        .select('follower_id', { count: 'exact', head: true })
+        .eq('following_id', normalizedUserId)
+        .eq('status', FOLLOW_STATUS_ACCEPTED),
+      admin
+        .from('follows')
+        .select('following_id', { count: 'exact', head: true })
+        .eq('follower_id', normalizedUserId)
+        .eq('status', FOLLOW_STATUS_ACCEPTED),
+    ]),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ data: null, error: null, timedOut: true }), FOLLOW_COUNTS_TIMEOUT_MS)
+    ),
+  ]);
+
+  if (timeoutResult?.timedOut) {
+    return null;
+  }
+
+  const [followersResult, followingResult] = timeoutResult;
+
+  if (followersResult?.error) {
+    throw new Error(followersResult.error.message || 'Follower count could not be loaded');
+  }
+
+  if (followingResult?.error) {
+    throw new Error(followingResult.error.message || 'Following count could not be loaded');
+  }
+
+  return {
+    followerCount: normalizeCount(followersResult?.count, 0),
+    followingCount: normalizeCount(followingResult?.count, 0),
+  };
+}
+
 const getAccountProfile = cache(async (userId, { includeEmail = false, includePrivateDetails = false } = {}) => {
   const normalizedUserId = normalizeValue(userId);
 
@@ -198,13 +246,26 @@ const getAccountProfile = cache(async (userId, { includeEmail = false, includePr
     return null;
   }
 
-  const counters = await loadProfileCounters(normalizedUserId).catch(() => null);
+  const [counters, followCounts] = await Promise.all([
+    loadProfileCounters(normalizedUserId).catch(() => null),
+    loadFollowCounts(normalizedUserId).catch(() => null),
+  ]);
 
   return normalizeAccountData(
     {
       ...profileResult.data,
-      follower_count: Number.isFinite(Number(counters?.follower_count)) ? Number(counters.follower_count) : 0,
-      following_count: Number.isFinite(Number(counters?.following_count)) ? Number(counters.following_count) : 0,
+      follower_count:
+        Number.isFinite(Number(followCounts?.followerCount)) && Number(followCounts.followerCount) >= 0
+          ? Number(followCounts.followerCount)
+          : Number.isFinite(Number(counters?.follower_count))
+            ? Number(counters.follower_count)
+            : 0,
+      following_count:
+        Number.isFinite(Number(followCounts?.followingCount)) && Number(followCounts.followingCount) >= 0
+          ? Number(followCounts.followingCount)
+          : Number.isFinite(Number(counters?.following_count))
+            ? Number(counters.following_count)
+            : 0,
       likes_count: counters?.likes_count ?? 0,
       lists_count: counters?.lists_count ?? 0,
       watched_count: Number.isFinite(Number(counters?.watched_count))
