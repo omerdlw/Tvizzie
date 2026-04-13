@@ -19,6 +19,34 @@ import { subscribeToUserWatched } from '@/core/services/media/watched.service';
 import LikesView from './view';
 
 const LIKE_SEGMENTS = new Set(['films', 'reviews', 'lists']);
+const LIKED_REVIEWS_FETCH_PAGE_SIZE = 100;
+const LIKED_REVIEWS_FETCH_MAX_PAGES = 80;
+
+function buildReviewDedupKey(item = {}, fallbackIndex = 0) {
+  return String(
+    item?.id ||
+      item?.docPath ||
+      `${item?.subjectType || 'subject'}-${item?.subjectId || 'id'}-${item?.reviewUserId || fallbackIndex}`
+  );
+}
+
+function mergeUniqueReviews(currentItems = [], nextItems = []) {
+  const dedupe = new Set();
+  const output = [];
+
+  [...currentItems, ...nextItems].forEach((item, index) => {
+    const key = buildReviewDedupKey(item, index);
+
+    if (dedupe.has(key)) {
+      return;
+    }
+
+    dedupe.add(key);
+    output.push(item);
+  });
+
+  return output;
+}
 
 export default function Client({
   currentPage = 1,
@@ -37,7 +65,6 @@ export default function Client({
   const toast = useToast();
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
-  const [isReviewsLoadingMore, setIsReviewsLoadingMore] = useState(false);
   const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'films';
   const requestedPage = Number.parseInt(searchParams.get('page') || String(currentPage), 10);
   const resolvedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -83,10 +110,7 @@ export default function Client({
   });
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const {
-    applyFeedResult: applyReviewFeedResult,
-    cursor: reviewsCursor,
     feedError: reviewsError,
-    hasMore: hasMoreReviews,
     isFeedLoading: isReviewsLoading,
     items: reviews,
     resetFeed: resetReviews,
@@ -94,6 +118,7 @@ export default function Client({
     setIsFeedLoading: setIsReviewsLoading,
     setItems: setReviews,
     syncFeed: syncReviewFeed,
+    totalCount: totalReviewsCount,
   } = useSeededFeedState(initialReviewFeed);
   const {
     feedError: likedListsError,
@@ -231,60 +256,92 @@ export default function Client({
   );
 
   const loadReviews = useCallback(
-    async ({ append = false } = {}) => {
+    async () => {
+      if (!resolvedUserId) {
+        resetReviews();
+        return;
+      }
+
+      if (!isViewerReady) {
+        return;
+      }
+
       if (shouldBlockReviewLoad) {
         resetReviews();
-        setIsReviewsLoadingMore(false);
         return;
       }
 
-      if (!append && hasSeededReviewFeed) {
-        setIsReviewsLoading(false);
-        setIsReviewsLoadingMore(false);
-        return;
-      }
-
-      if (append) {
-        setIsReviewsLoadingMore(true);
-      } else {
-        setIsReviewsLoading(true);
-      }
+      setIsReviewsLoading(true);
       setReviewsError(null);
 
       try {
-        const result = await fetchProfileReviewFeed({
-          cursor: append ? reviewsCursor : null,
+        const seededItems =
+          hasSeededReviewFeed && Array.isArray(initialReviewFeed?.items) ? initialReviewFeed.items : [];
+        let allItems = [...seededItems];
+        let nextCursor = hasSeededReviewFeed ? initialReviewFeed?.nextCursor ?? null : null;
+        let hasMorePages = hasSeededReviewFeed ? Boolean(initialReviewFeed?.hasMore) : true;
+        let pagesFetched = 0;
+
+        if (!hasSeededReviewFeed) {
+          const firstPage = await fetchProfileReviewFeed({
+            cursor: null,
+            mode: 'liked',
+            pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
+            userId: resolvedUserId,
+          });
+          const firstItems = Array.isArray(firstPage?.items) ? firstPage.items : [];
+
+          allItems = mergeUniqueReviews([], firstItems);
+          nextCursor = firstPage?.nextCursor ?? null;
+          hasMorePages = Boolean(firstPage?.hasMore);
+          pagesFetched += 1;
+        }
+
+        while (hasMorePages && nextCursor !== null && pagesFetched < LIKED_REVIEWS_FETCH_MAX_PAGES) {
+          const page = await fetchProfileReviewFeed({
+            cursor: nextCursor,
+            mode: 'liked',
+            pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
+            userId: resolvedUserId,
+          });
+          const pageItems = Array.isArray(page?.items) ? page.items : [];
+
+          allItems = mergeUniqueReviews(allItems, pageItems);
+          nextCursor = page?.nextCursor ?? null;
+          hasMorePages = Boolean(page?.hasMore);
+          pagesFetched += 1;
+        }
+
+        syncReviewFeed({
+          error: null,
+          hasMore: false,
+          items: allItems,
           mode: 'liked',
+          nextCursor: null,
+          totalCount: allItems.length,
           userId: resolvedUserId,
         });
-
-        applyReviewFeedResult(result, { append });
       } catch (error) {
-        if (!append) {
-          resetReviews();
-        }
+        resetReviews();
 
         if (!isPermissionDeniedError(error)) {
           logDataError('[Account] Liked reviews could not be loaded:', error);
           setReviewsError('Liked reviews could not be loaded right now.');
         }
       } finally {
-        if (append) {
-          setIsReviewsLoadingMore(false);
-        } else {
-          setIsReviewsLoading(false);
-        }
+        setIsReviewsLoading(false);
       }
     },
     [
-      applyReviewFeedResult,
       hasSeededReviewFeed,
+      initialReviewFeed,
+      isViewerReady,
       resolvedUserId,
       resetReviews,
-      reviewsCursor,
       setReviewsError,
       setIsReviewsLoading,
       shouldBlockReviewLoad,
+      syncReviewFeed,
     ]
   );
 
@@ -451,14 +508,12 @@ export default function Client({
       handleSegmentChange={handleSegmentChange}
       handleSignInRequest={handleSignInRequest}
       handleToggleShowcase={handleToggleShowcase}
-      hasMoreReviews={hasMoreReviews}
       isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isLikedListsLoading={isLikedListsLoading}
       isOwner={isOwner}
       isPageLoading={isPageLoading}
       isReviewsLoading={isReviewsLoading}
-      isReviewsLoadingMore={isReviewsLoadingMore}
       isResolvingProfile={isResolvingProfile}
       isShowcaseSaving={isShowcaseSaving}
       itemRemoveConfirmation={itemRemoveConfirmation}
@@ -473,8 +528,8 @@ export default function Client({
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
       reviews={reviews}
+      reviewsTotalCount={totalReviewsCount}
       reviewsError={reviewsError}
-      loadReviews={loadReviews}
       setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       showcaseMap={showcaseMap}
       unfollowConfirmation={unfollowConfirmation}

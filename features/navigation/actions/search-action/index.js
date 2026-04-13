@@ -57,6 +57,21 @@ export default function SearchAction() {
     navigate(path);
   };
 
+  const handleSeeAllResults = () => {
+    const normalizedQuery = query.trim();
+
+    if (!normalizedQuery) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      q: normalizedQuery,
+      type: searchType,
+    });
+
+    navigate(`/search?${params.toString()}`);
+  };
+
   useEffect(() => {
     if (!debouncedQuery?.trim()) {
       setResults([]);
@@ -238,6 +253,28 @@ export default function SearchAction() {
                 onSelect={handleSelect}
               />
             ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {query.trim() && (
+          <motion.div
+            className="mt-2 overflow-hidden"
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+          >
+            <button
+              type="button"
+              className={navActionClass({
+                cn,
+                button: `${SEARCH_STYLES.tabButton} text-left`,
+              })}
+              onClick={handleSeeAllResults}
+            >
+              See all results
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

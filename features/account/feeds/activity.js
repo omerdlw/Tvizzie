@@ -1,12 +1,20 @@
 'use client';
 
-import Link from 'next/link';
+import { useCallback, useMemo } from 'react';
 
+import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+
+import {
+  collectActivitySubjectOptions,
+  hasActiveActivityFilters,
+} from '@/features/account/filtering';
+import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
 import MediaCard from '@/features/shared/media-card';
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
+import AccountPagination from '@/features/account/shared/pagination';
+import { formatPaginationSummaryLabel } from '@/features/account/utils';
 import { TMDB_IMG } from '@/core/constants';
-import { Button } from '@/ui/elements';
-import Icon from '@/ui/icon';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const EVENT_META = Object.freeze({
@@ -39,6 +47,7 @@ const EVENT_META = Object.freeze({
     icon: 'solar:bookmark-bold',
   },
 });
+const ACTIVITY_ITEMS_PER_PAGE = 36;
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -110,39 +119,6 @@ function resolvePosterSrc(item) {
   return poster;
 }
 
-function CompactRating({ rating }) {
-  const normalized = Number(rating);
-  const clamped = Math.max(0.5, Math.min(5, normalized));
-
-  if (!Number.isFinite(normalized) || normalized <= 0) {
-    return null;
-  }
-
-  return (
-    <div className="inline-flex h-4" aria-label={`${normalized}/5`}>
-      {Array.from({ length: Math.ceil(clamped) }, (_, index) => {
-        const fill = Math.max(0, Math.min(1, clamped - index));
-
-        return (
-          <span key={index} className="relative size-4 shrink-0">
-            <span className="absolute inset-0 text-[#94a3b8]">
-              <Icon icon="solar:star-bold" size={16} />
-            </span>
-            <span
-              className="absolute inset-y-0 left-0 overflow-hidden text-[#15803d]"
-              style={{ width: `${fill * 100}%` }}
-            >
-              <span className="block size-4">
-                <Icon icon="solar:star-bold" size={16} />
-              </span>
-            </span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 function ListPreviewStack({ item }) {
   const previewItems = Array.isArray(item?.activityState?.previewItems)
     ? item.activityState.previewItems.slice(0, 3)
@@ -167,17 +143,22 @@ function ListPreviewStack({ item }) {
 }
 
 function ShowcaseItem({ item }) {
+  const reduceMotion = useReducedMotion();
   const { subjectHref, subjectTitle } = getActivityText(item);
   const posterSrc = resolvePosterSrc(item);
-  const activityState = item?.activityState || {};
-  const activityMeta = EVENT_META[item?.eventType] || null;
-  const rating = Number(activityState.rating);
-  const isWatchlistActivity = item?.eventType === 'WATCHLIST_ADDED';
-  const isListActivity = item?.subject?.type === 'list';
   const showMovieCard = item?.subject?.type !== 'list';
 
   return (
-    <div className="min-w-0">
+    <motion.div
+      className="flex min-w-0 flex-col h-full"
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.988 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+      transition={{
+        duration: reduceMotion ? 0.16 : 0.32,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
       {showMovieCard ? (
         <MediaCard
           href={subjectHref}
@@ -191,36 +172,31 @@ function ShowcaseItem({ item }) {
       ) : (
         <ListPreviewStack item={item} />
       )}
-
-      <div className="mt-2 flex min-h-4 items-center gap-2 text-black/70">
-        <CompactRating rating={rating} />
-        {isListActivity && activityMeta?.action ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-black/70">
-            {activityMeta?.icon ? <Icon icon={activityMeta.icon} size={14} /> : null}
-            <span>{activityMeta.action}</span>
-          </span>
-        ) : null}
-        {isWatchlistActivity ? <Icon icon="solar:bookmark-bold" size={16} /> : null}
-        {activityState.isLiked ? <Icon icon="solar:heart-bold" size={16} className="text-[#b91c1c]" /> : null}
-        {activityState.hasReview ? <Icon icon="solar:chat-round-bold" size={16} /> : null}
-        {activityState.isRewatch ? <Icon icon="solar:refresh-bold" size={16} className="text-[#15803d]" /> : null}
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
-function ActivityItem({ isFirst = false, item, variant = 'feed' }) {
+function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
+  const reduceMotion = useReducedMotion();
   const { actorName, action, subjectHref, subjectTitle } = getActivityText(item);
   const createdLabel = formatActivityTime(item?.updatedAt || item?.createdAt);
   const isShowcase = variant === 'showcase';
 
   return (
-    <article
+    <motion.article
       className={
         isShowcase
           ? `border-b border-black/10 ${isFirst ? 'pt-0 pb-4' : 'py-4'} last:border-b-0`
           : `border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`
       }
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+      transition={{
+        delay: reduceMotion ? 0 : index < 6 ? index * 0.016 : 0,
+        duration: reduceMotion ? 0.16 : 0.32,
+        ease: [0.22, 1, 0.36, 1],
+      }}
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
@@ -236,57 +212,101 @@ function ActivityItem({ isFirst = false, item, variant = 'feed' }) {
 
         {createdLabel ? <div className="shrink-0 text-sm font-medium sm:pt-0.5">{createdLabel}</div> : null}
       </div>
-    </article>
+    </motion.article>
   );
 }
 
 export default function AccountActivityFeed({
+  currentPage = 1,
   emptyMessage = 'No activity yet',
-  hasMore = false,
+  filters = { sort: 'newest', subject: 'all' },
   icon = 'solar:bolt-bold',
   isLoading = false,
   items = [],
   loadError = null,
-  onLoadMore = null,
+  onFiltersChange = null,
+  onPageChange = null,
+  showHeader = true,
   showSeeMore = false,
   summaryLabel = null,
   title = 'Recent Activity',
   titleHref = null,
+  totalCount = 0,
   variant = 'feed',
-  showcaseGridClassName = 'grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5',
+  showcaseGridClassName = 'grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6',
 }) {
-  const resolvedSummaryLabel = summaryLabel === null ? `${items.length} Events` : summaryLabel;
+  const listedActivityCount = Number.isFinite(Number(totalCount)) ? Math.max(0, Math.floor(Number(totalCount))) : 0;
+  const subjectOptions = useMemo(() => collectActivitySubjectOptions(), []);
+  const hasFilters = hasActiveActivityFilters(filters);
+  const totalPages = listedActivityCount > 0 ? Math.ceil(listedActivityCount / ACTIVITY_ITEMS_PER_PAGE) : 1;
+  const activePage = Math.min(Math.max(1, currentPage), totalPages);
+  const pageStart = (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE;
+  const visibleItems = Array.isArray(items) ? items : [];
+  const resolvedSummaryLabel = useMemo(() => {
+    if (!hasFilters) {
+      return summaryLabel === null ? `${listedActivityCount} Events` : summaryLabel;
+    }
+
+    const shownCount = Math.min(listedActivityCount, pageStart + visibleItems.length);
+    return `${shownCount} of ${listedActivityCount} shown`;
+  }, [hasFilters, listedActivityCount, pageStart, summaryLabel, visibleItems.length]);
+
+  const updateFilters = useCallback(
+    (updates = {}) => {
+      onFiltersChange?.({
+        ...filters,
+        ...updates,
+      });
+    },
+    [filters, onFiltersChange]
+  );
+
+  const resetFilters = useCallback(() => {
+    onFiltersChange?.({
+      sort: 'newest',
+      subject: 'all',
+    });
+  }, [onFiltersChange]);
 
   return (
     <AccountSectionLayout
       icon={icon}
+      showHeader={showHeader}
       showSeeMore={showSeeMore}
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
     >
-      {items.length === 0 && isLoading ? (
+      <AccountActivityFilterBar
+        filters={filters}
+        subjectOptions={subjectOptions}
+        onChange={updateFilters}
+        onReset={hasFilters ? resetFilters : null}
+      />
+
+      {visibleItems.length === 0 && isLoading ? (
         <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
           Loading activity...
         </div>
-      ) : items.length === 0 && !isLoading && !loadError ? (
+      ) : listedActivityCount === 0 && !isLoading && !loadError ? (
         <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
           {emptyMessage}
         </div>
-      ) : items.length === 0 && !isLoading && loadError ? (
+      ) : listedActivityCount === 0 && !isLoading && loadError ? (
         <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
       ) : variant === 'showcase' ? (
         <div className={`grid ${showcaseGridClassName}`}>
-          {items.map((item, index) => (
+          {visibleItems.map((item, index) => (
             <ShowcaseItem key={`${item.sourceUserId || item.id}-${item.id}-${index}`} item={item} />
           ))}
         </div>
       ) : (
         <div>
-          {items.map((item, index) => (
+          {visibleItems.map((item, index) => (
             <ActivityItem
               key={`${item.sourceUserId || item.id}-${item.id}-${index}`}
-              isFirst={item === items[0]}
+              index={index}
+              isFirst={item === visibleItems[0]}
               item={item}
               variant={variant}
             />
@@ -294,14 +314,23 @@ export default function AccountActivityFeed({
         </div>
       )}
 
-      {hasMore && typeof onLoadMore === 'function' ? (
-        <div className="flex justify-center">
-          <Button
-            onClick={onLoadMore}
-            className="border border-black/20 bg-white/65 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase backdrop-blur-sm transition"
-          >
-            Load More
-          </Button>
+      {listedActivityCount > 0 ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+            {formatPaginationSummaryLabel({
+              emptyLabel: '0 total',
+              pageSize: ACTIVITY_ITEMS_PER_PAGE,
+              startIndex: pageStart,
+              totalCount: listedActivityCount,
+            })}
+          </p>
+
+          <AccountPagination
+            currentPage={activePage}
+            onPageChange={onPageChange}
+            totalPages={totalPages}
+            className="flex flex-wrap items-center justify-end gap-2"
+          />
         </div>
       ) : null}
     </AccountSectionLayout>

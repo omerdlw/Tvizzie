@@ -19,14 +19,12 @@ export default function LikesView({
   handleSegmentChange,
   handleSignInRequest,
   handleToggleShowcase,
-  hasMoreReviews,
   isBioSurfaceOpen,
   isFollowLoading,
   isLikedListsLoading,
   isOwner,
   isPageLoading,
   isReviewsLoading,
-  isReviewsLoadingMore,
   isResolvingProfile,
   isShowcaseSaving,
   itemRemoveConfirmation,
@@ -35,13 +33,13 @@ export default function LikesView({
   likeCount,
   likes,
   listCount,
-  loadReviews,
   pendingFollowRequestCount,
   persistShowcase,
   profile,
   resolveError,
   resolvedUserId,
   reviews,
+  reviewsTotalCount,
   reviewsError,
   setIsBioSurfaceOpen,
   showcaseMap,
@@ -107,21 +105,20 @@ export default function LikesView({
         handleLike={handleLike}
         handleRequestRemoveLike={handleRequestRemoveLike}
         handleToggleShowcase={handleToggleShowcase}
-        hasMoreReviews={hasMoreReviews}
         isLikedListsLoading={isLikedListsLoading}
         isOwner={isOwner}
         isReviewsLoading={isReviewsLoading}
-        isReviewsLoadingMore={isReviewsLoadingMore}
         isShowcaseSaving={isShowcaseSaving}
         likedLists={likedLists}
         likedListsError={likedListsError}
         likes={likes}
-        loadReviews={loadReviews}
         persistShowcase={persistShowcase}
         reviews={reviews}
+        reviewsTotalCount={reviewsTotalCount}
         reviewsError={reviewsError}
         showcaseMap={showcaseMap}
         username={username}
+        resolvedUserId={resolvedUserId}
         watchedItems={watchedItems}
       />
     </AccountPageShell>

@@ -96,7 +96,7 @@ export default function AccountFavoritesOverview({
             <div
               key={`${card.id}-${index}`}
               className={cn(
-                'shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-48px)/5)]',
+                'flex h-full flex-col shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-48px)/5)]',
                 index >= 3 && 'hidden lg:block'
               )}
             >

@@ -86,6 +86,7 @@ export default function WatchedView({
         loadError={loadError}
         watchedItems={watchedItems}
         username={username}
+        resolvedUserId={resolvedUserId}
         onRemoveItem={handleRequestRemoveWatchedItem}
       />
     </AccountPageShell>

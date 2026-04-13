@@ -78,7 +78,7 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
                 isActive &&
                   !digit &&
-                  'border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border',
+                  'border border-black/10 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
                 digit &&
                   !hasError &&
                   'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border'
@@ -414,7 +414,7 @@ export default function AuthVerificationForm({
           type="button"
           onClick={() => void sendCode({ isInitial: false })}
           disabled={isSubmitting || isSending || !canResendCode}
-          className="h-11 w-full flex-auto rounded-[12px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition"
+          className="hover:bg-info h-11 w-full flex-auto rounded-[12px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
         >
           {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
         </Button>

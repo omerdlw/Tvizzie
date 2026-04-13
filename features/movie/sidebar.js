@@ -250,7 +250,7 @@ export default function Sidebar({ item, director, writers, creators, certificati
             className="object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center border border-[#0284c7] bg-[#dbeafe] text-black/70">
+          <div className="bg-primary center h-full w-full border border-black/5 text-black/60">
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}

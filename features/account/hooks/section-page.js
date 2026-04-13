@@ -75,6 +75,13 @@ export function useSeededFeedState(initialFeed = null) {
   const [items, setItems] = useState(Array.isArray(initialFeed?.items) ? initialFeed.items : []);
   const [cursor, setCursor] = useState(initialFeed?.nextCursor ?? null);
   const [hasMore, setHasMore] = useState(Boolean(initialFeed?.hasMore));
+  const [totalCount, setTotalCount] = useState(
+    Number.isFinite(Number(initialFeed?.totalCount))
+      ? Math.max(0, Math.floor(Number(initialFeed.totalCount)))
+      : Array.isArray(initialFeed?.items)
+        ? initialFeed.items.length
+        : 0
+  );
   const [isFeedLoading, setIsFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState(initialFeed?.error || null);
 
@@ -83,21 +90,41 @@ export function useSeededFeedState(initialFeed = null) {
     setCursor(null);
     setFeedError(null);
     setHasMore(false);
+    setTotalCount(0);
     setIsFeedLoading(false);
   }, []);
 
   const applyFeedResult = useCallback((result, { append = false } = {}) => {
-    setItems((current) => (append ? [...current, ...(result?.items || [])] : result?.items || []));
+    const incomingItems = Array.isArray(result?.items) ? result.items : [];
+    const explicitTotalCount = Number.isFinite(Number(result?.totalCount))
+      ? Math.max(0, Math.floor(Number(result.totalCount)))
+      : null;
+
+    setItems((current) => (append ? [...current, ...incomingItems] : incomingItems));
     setCursor(result?.nextCursor ?? null);
     setFeedError(null);
     setHasMore(Boolean(result?.hasMore));
+
+    if (explicitTotalCount !== null) {
+      setTotalCount(explicitTotalCount);
+    } else if (append) {
+      setTotalCount((current) => current + incomingItems.length);
+    } else {
+      setTotalCount(incomingItems.length);
+    }
   }, []);
 
   const syncFeed = useCallback((nextFeed = null) => {
-    setItems(Array.isArray(nextFeed?.items) ? nextFeed.items : []);
+    const nextItems = Array.isArray(nextFeed?.items) ? nextFeed.items : [];
+    const nextTotalCount = Number.isFinite(Number(nextFeed?.totalCount))
+      ? Math.max(0, Math.floor(Number(nextFeed.totalCount)))
+      : nextItems.length;
+
+    setItems(nextItems);
     setCursor(nextFeed?.nextCursor ?? null);
     setFeedError(nextFeed?.error || null);
     setHasMore(Boolean(nextFeed?.hasMore));
+    setTotalCount(nextTotalCount);
     setIsFeedLoading(false);
   }, []);
 
@@ -112,7 +139,9 @@ export function useSeededFeedState(initialFeed = null) {
     setFeedError,
     setIsFeedLoading,
     setItems,
+    setTotalCount,
     syncFeed,
+    totalCount,
   };
 }
 

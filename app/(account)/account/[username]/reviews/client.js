@@ -84,6 +84,7 @@ export default function Client({
     setIsFeedLoading,
     setItems: setReviews,
     syncFeed,
+    totalCount: totalReviewCount,
   } = useSeededFeedState(initialReviewFeed);
   const hasSeededReviewFeed =
     !shouldForcePrivateRefresh &&
@@ -344,6 +345,7 @@ export default function Client({
       resolveError={resolveError}
       resolvedUserId={resolvedUserId}
       reviews={reviews}
+      totalReviewCount={totalReviewCount}
       setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}

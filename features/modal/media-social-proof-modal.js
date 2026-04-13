@@ -51,22 +51,17 @@ export default function MediaSocialProofModal({ close, data, header }) {
 
   return (
     <Container
-      header={header}
+      header={
+        <p className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
+          People you follow engaged with this title
+        </p>
+      }
+      footer={{ center: <p className="mt-2 text-sm text-black">{(data?.summaryParts || []).join(' · ')}</p> }}
       className="h-screen w-full sm:h-screen sm:w-[420px]"
       close={close}
       bodyClassName="p-0"
-      footer={{
-        left: `${userActions.length} users`,
-      }}
     >
       <div className="flex h-full flex-col">
-        <div className="border-b border-black/10 px-5 py-4">
-          <p className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
-            People you follow engaged with this title
-          </p>
-          <p className="mt-2 text-sm text-black">{(data?.summaryParts || []).join(' · ')}</p>
-        </div>
-
         <div className="scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto">
           {userActions.map(({ actions, user }) => {
             const avatarSrc = getUserAvatarUrl(user);

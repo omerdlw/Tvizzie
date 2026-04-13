@@ -69,6 +69,7 @@ export default function Client({
     isResolvingProfile,
     itemRemoveConfirmation,
     likeCount,
+    likes,
     listCount,
     listDeleteConfirmation,
     pendingFollowRequestCount,
@@ -77,6 +78,8 @@ export default function Client({
     resolvedUserId,
     setIsBioSurfaceOpen,
     unfollowConfirmation,
+    watched,
+    watchlist,
     watchlistCount,
   } = useAccountSectionPage({
     activeListId: list?.id || '',
@@ -502,6 +505,7 @@ export default function Client({
       listDeleteConfirmation={listDeleteConfirmation}
       listCount={listCount}
       listItems={listItems}
+      likes={likes}
       ownReview={ownReview}
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
@@ -514,7 +518,9 @@ export default function Client({
       unfollowConfirmation={unfollowConfirmation}
       username={username}
       userProfile={userProfile}
+      watchedItems={watched}
       watchlistCount={watchlistCount}
+      watchlistItems={watchlist}
     />
   );
 }

@@ -99,12 +99,33 @@ function withMediaType(items = [], mediaType) {
   }));
 }
 
+function toFiniteNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortByPopularityDesc(first, second) {
+  const popularityDiff = toFiniteNumber(second?.popularity) - toFiniteNumber(first?.popularity);
+
+  if (popularityDiff !== 0) {
+    return popularityDiff;
+  }
+
+  const voteCountDiff = toFiniteNumber(second?.vote_count) - toFiniteNumber(first?.vote_count);
+
+  if (voteCountDiff !== 0) {
+    return voteCountDiff;
+  }
+
+  return toFiniteNumber(second?.vote_average) - toFiniteNumber(first?.vote_average);
+}
+
 function normalizeSearchResults(items = [], requestedType = 'movie') {
   const normalizedType = isPersonMediaType(requestedType) ? 'person' : 'movie';
 
   return withMediaType(items, normalizedType)
     .filter((item) => ['movie', 'person'].includes(item?.media_type || ''))
-    .sort((first, second) => (second.vote_count || 0) - (first.vote_count || 0));
+    .sort(sortByPopularityDesc);
 }
 
 function getDetailAppendParam(parts = []) {

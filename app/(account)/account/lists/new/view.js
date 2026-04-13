@@ -86,7 +86,7 @@ function DraftItemCard({ index, item, onRemove }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="truncate text-[14px] font-semibold text-black">{getItemTitle(item)}</p>
-        <p className="mt-0.5 text-[10px] font-bold tracking-widest text-black/50 uppercase">{getItemMeta(item)}</p>
+        <p className="mt-0.5 text-[10px] font-bold tracking-widest text-black/60 uppercase">{getItemMeta(item)}</p>
       </div>
 
       <Button
@@ -118,7 +118,7 @@ function MobileDraftRowItem({ item, onRemove }) {
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-[12px] font-semibold text-black">{getItemTitle(item)}</p>
-        <p className="truncate text-[10px] font-bold tracking-widest text-black/50 uppercase">{getItemMeta(item)}</p>
+        <p className="truncate text-[10px] font-bold tracking-widest text-black/60 uppercase">{getItemMeta(item)}</p>
       </div>
 
       <Button
@@ -164,7 +164,7 @@ export default function ListCreatorView({
               <div className="border-b border-black/10 p-4 sm:p-5">
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Title</label>
+                    <label className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Title</label>
                     <Input
                       value={draftTitle}
                       onChange={(event) => onTitleChange(event.target.value)}
@@ -178,7 +178,7 @@ export default function ListCreatorView({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Description</label>
+                    <label className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Description</label>
                     <Input
                       value={draftDescription}
                       onChange={(event) => onDescriptionChange(event.target.value)}
@@ -194,7 +194,7 @@ export default function ListCreatorView({
 
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">
+                    <label className="text-[11px] font-bold tracking-widest text-black/60 uppercase">
                       Search Movie
                     </label>
                     {seededItemTitle ? (

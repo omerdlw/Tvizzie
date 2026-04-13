@@ -13,7 +13,7 @@ import {
 import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
 import { getCurrentEditableAccountSnapshot } from '@/core/services/account/current-account-snapshot.server';
 
-const OVERVIEW_ACTIVITY_LIMIT = 5;
+const OVERVIEW_ACTIVITY_LIMIT = 36;
 const OVERVIEW_LISTS_LIMIT = 3;
 const OVERVIEW_REVIEW_LIMIT = 3;
 const OVERVIEW_WATCHED_LIMIT = 12;
@@ -116,11 +116,17 @@ function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
     return null;
   }
 
+  const normalizedItems = Array.isArray(feed.items) ? feed.items : [];
+  const normalizedTotalCount = Number.isFinite(Number(feed.totalCount))
+    ? Math.max(0, Math.floor(Number(feed.totalCount)))
+    : normalizedItems.length;
+
   return {
     error: null,
     hasMore: Boolean(feed.hasMore),
-    items: Array.isArray(feed.items) ? feed.items : [],
+    items: normalizedItems,
     nextCursor: feed.nextCursor ?? null,
+    totalCount: normalizedTotalCount,
     userId: resolvedUserId,
     ...(extras && typeof extras === 'object' ? extras : {}),
   };
@@ -497,9 +503,13 @@ export async function getUsernameAccountWatchedRouteData(username) {
   };
 }
 
-export async function getUsernameAccountActivityRouteData(username, { scope = 'user' } = {}) {
+export async function getUsernameAccountActivityRouteData(
+  username,
+  { page = 1, scope = 'user', sort = 'newest', subject = 'all' } = {}
+) {
   const snapshot = await getUsernameAccountSnapshot(username);
   const normalizedScope = scope === 'following' ? 'following' : 'user';
+  const normalizedPage = Number.isFinite(Number(page)) ? Math.max(1, Math.floor(Number(page))) : 1;
 
   if (!snapshot.initialResolvedUserId) {
     return {
@@ -513,7 +523,11 @@ export async function getUsernameAccountActivityRouteData(username, { scope = 'u
   const activityFeed = await safeLoad(
     () =>
       fetchAccountActivityFeedServer({
+        cursor: (normalizedPage - 1) * 36,
+        pageSize: 36,
         scope: normalizedScope,
+        sort,
+        subject,
         userId: snapshot.initialResolvedUserId,
         viewerId: snapshot.viewerId,
       }),
@@ -523,7 +537,10 @@ export async function getUsernameAccountActivityRouteData(username, { scope = 'u
   return {
     ...snapshot,
     initialActivityFeed: createInitialFeed(activityFeed, snapshot.initialResolvedUserId, {
+      page: normalizedPage,
       scope: normalizedScope,
+      sort,
+      subject,
     }),
     initialCollections: createInitialCollections({
       counts: snapshot.initialCounts,

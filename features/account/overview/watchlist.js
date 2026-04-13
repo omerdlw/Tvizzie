@@ -9,7 +9,7 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountSectionLayout from '../shared/section-wrapper';
 
-const OVERVIEW_ROW_CARD_LIMIT = 5;
+const OVERVIEW_ROW_CARD_LIMIT = 6;
 
 function getWatchlistType(item) {
   const explicitType = item?.media_type || item?.entityType;
@@ -42,7 +42,7 @@ function getWatchlistPoster(item) {
 }
 
 export default function AccountWatchlistOverview({
-  emptyMessage = 'No titles yet',
+  emptyMessage = 'Watchlist empty',
   icon = 'solar:bookmark-bold',
   isOwner = false,
   items = [],
@@ -97,7 +97,7 @@ export default function AccountWatchlistOverview({
             <div
               key={`${card.id}-${index}`}
               className={cn(
-                'shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-48px)/5)]',
+                'flex h-full flex-col shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-60px)/6)]',
                 index >= 3 && 'hidden lg:block'
               )}
             >
@@ -106,7 +106,7 @@ export default function AccountWatchlistOverview({
                 className="w-full md:w-full lg:w-full"
                 imageSrc={card.imageSrc}
                 imageAlt={card.imageAlt}
-                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
+                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
                 topOverlay={
                   typeof renderOverlay === 'function' ? (
                     renderOverlay(card.item)

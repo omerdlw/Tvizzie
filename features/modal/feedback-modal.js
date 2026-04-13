@@ -81,7 +81,7 @@ function FeedbackPageCard({ page }) {
         )
       ) : null}
       <div className="min-w-0">
-        <p className="text-[10px] font-bold tracking-[0.18em] text-black/50 uppercase">Current page</p>
+        <p className="text-[10px] font-bold tracking-[0.18em] text-black/60 uppercase">Current page</p>
         <p className="mt-0.5 truncate text-[15px] leading-tight font-semibold text-black">
           {page.titleText || page.path || 'Current page'}
         </p>
@@ -193,7 +193,7 @@ export default function FeedbackModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isSaving ? 'Sending' : 'Send feedback'}
             </Button>
@@ -214,18 +214,18 @@ export default function FeedbackModal({ close, data, header }) {
         <div className="flex flex-col gap-3 sm:flex-row">
           {page ? (
             <ScopeButton active={scope === 'page'} onClick={() => setScope('page')}>
-              <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Page</p>
+              <p className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Page</p>
               <p className="mt-1 text-[13px] text-black/70">Comment on the current route and its content.</p>
             </ScopeButton>
           ) : null}
           <ScopeButton active={scope === 'project'} onClick={() => setScope('project')}>
-            <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Project</p>
+            <p className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Project</p>
             <p className="mt-1 text-[13px] text-black/70">Share a broader product or UX suggestion.</p>
           </ScopeButton>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Feedback</label>
+          <label className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Feedback</label>
           <Textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}

@@ -50,6 +50,7 @@
   -ms-overflow-style: none;
   box-sizing: border-box;
   scrollbar-width: none;
+  border-radius: 0px;
   outline: none;
 }
 

@@ -118,9 +118,18 @@ export async function processActivityEvent({ actorUserId, eventType, payload = {
   const actor = buildActorSnapshot(normalizedActorUserId, actorProfile || {});
   const subject = buildSubject(payload);
   const visibility = normalizeValue(payload.visibility) || (actorProfile?.is_private === true ? 'followers' : 'public');
+  
+  const canonicalDedupeKey = buildCanonicalActivityDedupeKey({
+    actorUserId: normalizedActorUserId,
+    subjectId: subject.id,
+    subjectType: subject.type,
+  });
+  
   const dedupeKey =
+    canonicalDedupeKey ||
     normalizeValue(payload.dedupeKey) ||
     `${normalizedEventType}:${subject.type || 'unknown'}:${subject.id || 'unknown'}:${Date.now()}`;
+    
   const nowIso = new Date().toISOString();
   const recordPayload = {
     event_type: normalizedEventType,

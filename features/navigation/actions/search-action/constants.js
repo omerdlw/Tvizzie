@@ -9,6 +9,7 @@ export const SEARCH_LIMITS = Object.freeze({
   MAX_RESULTS: 6,
   MEDIA_RESULTS: 6,
   USER_RESULTS: 6,
+  USER_FULL_RESULTS: 10,
 });
 
 export const SEARCH_TAB_ITEMS = Object.freeze([

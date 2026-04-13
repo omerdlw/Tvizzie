@@ -211,21 +211,11 @@ export default function AccountEditView(props) {
   );
 
   if (!auth.isReady || isLoading) {
-    return (
-      <>
-        {editRegistry}
-        <AccountRouteSkeleton variant="edit" />
-      </>
-    );
+    return <AccountRouteSkeleton variant="edit" />;
   }
 
   if (!auth.isAuthenticated) {
-    return (
-      <>
-        {editRegistry}
-        <AccountRouteSkeleton variant="edit" />
-      </>
-    );
+    return <AccountRouteSkeleton variant="edit" />;
   }
 
   if (!profile) {

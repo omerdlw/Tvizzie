@@ -86,6 +86,17 @@ const NEXT_CONFIG = {
   compress: true,
   // reactCompiler: true,
   poweredByHeader: false,
+  logging: {
+    incomingRequests: {
+      ignore: [
+        /\/api\/collections(?:\?|$)/,
+        /\/api\/follows(?:\?|$)/,
+        /\/api\/account\/profile(?:\?|$)/,
+        /\/api\/notifications(?:\?|$)/,
+        /\/api\/auth\/session(?:\?|$)/,
+      ],
+    },
+  },
   env: {
     BUILD_DATE: new Date().toISOString().split('T')[0],
   },

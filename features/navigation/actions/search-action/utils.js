@@ -103,43 +103,90 @@ export function inferSearchType({ normalizedQuery, userResults, mediaResults }) 
   return exactMediaMatch?.media_type || mediaResults[0]?.media_type || SEARCH_TYPES.ALL;
 }
 
-export async function fetchUsers(query) {
+export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS) {
   const users = await ACCOUNT_CLIENT.searchAccounts(query, {
-    limitCount: SEARCH_LIMITS.USER_RESULTS,
+    limitCount,
   });
 
   return users.map((item) => normalizeResult(item, SEARCH_TYPES.USER));
 }
 
-export async function fetchMedia(query, type) {
+export async function fetchMediaPage(query, type, page = 1) {
   const { TmdbService } = await import('@/core/services/tmdb/tmdb.service');
 
   if (type !== SEARCH_TYPES.MOVIE && type !== SEARCH_TYPES.PERSON) {
-    return [];
+    return {
+      page: 1,
+      results: [],
+      totalPages: 0,
+      totalResults: 0,
+    };
   }
 
-  const response = await TmdbService.searchContent(query, type);
+  const response = await TmdbService.searchContent(query, type, page);
 
   if (response.status !== 200 || !response.data?.results) {
-    return [];
+    return {
+      page: 1,
+      results: [],
+      totalPages: 0,
+      totalResults: 0,
+    };
   }
 
-  return response.data.results.map((item) => normalizeResult(item));
+  const data = response.data;
+
+  return {
+    page: Number(data?.page) || page,
+    results: data.results.map((item) => normalizeResult(item)),
+    totalPages: Number(data?.total_pages) || 0,
+    totalResults: Number(data?.total_results) || 0,
+  };
 }
 
-export async function fetchAllMedia(query) {
-  const [movieResults, personResults] = await Promise.all([
-    fetchMedia(query, SEARCH_TYPES.MOVIE),
-    fetchMedia(query, SEARCH_TYPES.PERSON),
+export async function fetchMedia(query, type) {
+  const payload = await fetchMediaPage(query, type, 1);
+  return payload.results;
+}
+
+function toFiniteNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortByPopularityDesc(first, second) {
+  const popularityDiff = toFiniteNumber(second?.popularity) - toFiniteNumber(first?.popularity);
+
+  if (popularityDiff !== 0) {
+    return popularityDiff;
+  }
+
+  const voteCountDiff = toFiniteNumber(second?.vote_count) - toFiniteNumber(first?.vote_count);
+
+  if (voteCountDiff !== 0) {
+    return voteCountDiff;
+  }
+
+  return toFiniteNumber(second?.vote_average) - toFiniteNumber(first?.vote_average);
+}
+
+export async function fetchAllMedia(query, page = 1) {
+  const [moviePayload, personPayload] = await Promise.all([
+    fetchMediaPage(query, SEARCH_TYPES.MOVIE, page),
+    fetchMediaPage(query, SEARCH_TYPES.PERSON, page),
   ]);
 
-  return [...movieResults, ...personResults].sort(
-    (first, second) => (second.vote_count || 0) - (first.vote_count || 0)
-  );
+  return [...moviePayload.results, ...personPayload.results].sort(sortByPopularityDesc);
 }
 
-export function mergeAllResults(userResults, mediaResults) {
-  return [...userResults, ...mediaResults].slice(0, SEARCH_LIMITS.MAX_RESULTS);
+export function mergeAllResults(userResults, mediaResults, maxResults = SEARCH_LIMITS.MAX_RESULTS) {
+  const merged = [...userResults, ...mediaResults];
+
+  if (Number.isFinite(maxResults) && maxResults > 0) {
+    return merged.slice(0, maxResults);
+  }
+
+  return merged;
 }
 
 export function limitMediaResults(results) {

@@ -3,7 +3,7 @@ import { cn } from '@/core/utils';
 export const NAV_ACTION_STYLES = {
   base: 'center w-full rounded-[12px] gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider',
   muted: 'border border-black/5 bg-black/5 hover:bg-black/10 text-black/70',
-  active: 'border border-black/10 bg-black/10 hover:bg-black/5',
+  active: 'border border-black/10 bg-primary/70',
   row: 'mt-2.5 flex w-full gap-2',
   icon: 16,
 };

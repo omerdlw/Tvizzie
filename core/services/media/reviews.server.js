@@ -187,11 +187,13 @@ function paginateReviewItems(items = [], cursor = null, pageSize = 20) {
   const offset = Number.isFinite(Number(cursor)) ? Number(cursor) : 0;
   const nextItems = items.slice(offset, offset + pageSize);
   const nextOffset = offset + nextItems.length;
+  const totalCount = items.length;
 
   return {
     hasMore: nextOffset < items.length,
     items: nextItems,
     nextCursor: nextOffset < items.length ? nextOffset : null,
+    totalCount,
   };
 }
 

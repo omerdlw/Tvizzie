@@ -1,0 +1,21 @@
+{
+  "config": {
+    "likesPerUser": 400,
+    "listCountPerUser": 10,
+    "listItemsPerList": 400,
+    "reviewsPerUser": 400,
+    "userCount": 1,
+    "watchedPerUser": 400,
+    "watchlistPerUser": 400
+  },
+  "createdAt": "2026-04-12T06:11:48.340Z",
+  "password": "TvizzieSeed!2026",
+  "runId": "test-user-20260412-1",
+  "users": [
+    {
+      "email": "seed.social.test-user-20260412-1.1@example.com",
+      "id": "ab090116-effc-4055-bf7a-e8e86284fcd5",
+      "username": "ember_atlas_1660"
+    }
+  ]
+}

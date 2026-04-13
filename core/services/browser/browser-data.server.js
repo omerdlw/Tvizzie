@@ -108,8 +108,18 @@ function normalizeNumber(value, fallback = null) {
   return parsed;
 }
 
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function normalizeEntityType(value) {
   return normalizeValue(value).toLowerCase();
+}
+
+function isUuidLike(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    normalizeValue(value)
+  );
 }
 
 function resolveLimitCount(value, fallback = 0, max = 100) {
@@ -181,6 +191,9 @@ function normalizeMediaPayload(payload = {}, row = {}) {
     entityId: entityId || null,
     entityType: entityType || null,
     first_air_date: payload.first_air_date || null,
+    genreNames: normalizeArray(payload.genreNames || payload.genre_names),
+    genre_ids: normalizeArray(payload.genre_ids || payload.genreIds),
+    genres: normalizeArray(payload.genres),
     id: entityId || normalizeValue(payload.id || row.media_key) || null,
     mediaKey:
       payload.mediaKey || row.media_key || (entityType && entityId ? buildMediaItemKey(entityType, entityId) : null),
@@ -189,12 +202,21 @@ function normalizeMediaPayload(payload = {}, row = {}) {
     original_name: payload.original_name || null,
     original_title: payload.original_title || null,
     poster_path: payload.poster_path || payload.posterPath || row.poster_path || null,
+    popularity: normalizeNumber(payload.popularity, null),
     position: normalizeNumber(payload.position, null),
+    providerIds: normalizeArray(payload.providerIds || payload.provider_ids),
+    providerNames: normalizeArray(payload.providerNames || payload.provider_names),
+    providers: normalizeArray(payload.providers),
+    rating: normalizeNumber(payload.rating ?? row.rating, null),
     release_date: payload.release_date || null,
+    runtime: normalizeNumber(payload.runtime, null),
     title: payload.title || payload.original_title || row.title || payload.name || payload.original_name || '',
     updatedAt: normalizeTimestamp(payload.updatedAt || row.updated_at),
+    userRating: normalizeNumber(payload.userRating ?? payload.rating ?? row.rating, null),
     userId: payload.userId || row.user_id || null,
     vote_average: normalizeNumber(payload.vote_average, null),
+    vote_count: normalizeNumber(payload.vote_count, null),
+    watchProviders: payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
   };
 }
 
@@ -503,10 +525,40 @@ export const getAccountIdByUsername = cache(async (username) => {
   }
 
   const admin = createAdminClient();
-  const result = await admin.from('usernames').select('user_id').eq('username_lower', normalizedUsername).maybeSingle();
+  const usernameLookup = await admin
+    .from('usernames')
+    .select('user_id')
+    .eq('username_lower', normalizedUsername)
+    .maybeSingle();
 
-  assertResult(result, 'Username could not be resolved');
-  return result.data?.user_id || null;
+  assertResult(usernameLookup, 'Username could not be resolved');
+
+  if (usernameLookup.data?.user_id) {
+    return usernameLookup.data.user_id;
+  }
+
+  // Fallback for legacy/partial data where usernames mapping may be missing.
+  const profileByUsernameLookup = await admin
+    .from('profiles')
+    .select('id')
+    .eq('username_lower', normalizedUsername)
+    .maybeSingle();
+
+  assertResult(profileByUsernameLookup, 'Username could not be resolved');
+
+  if (profileByUsernameLookup.data?.id) {
+    return profileByUsernameLookup.data.id;
+  }
+
+  // Secondary fallback: links may carry ownerId instead of username.
+  if (!isUuidLike(normalizedUsername)) {
+    return null;
+  }
+
+  const profileByIdLookup = await admin.from('profiles').select('id').eq('id', normalizedUsername).maybeSingle();
+
+  assertResult(profileByIdLookup, 'Username could not be resolved');
+  return profileByIdLookup.data?.id || null;
 });
 
 export async function searchAccountProfiles(searchTerm, limitCount = 6) {

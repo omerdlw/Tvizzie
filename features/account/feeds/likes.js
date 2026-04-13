@@ -1,14 +1,44 @@
 'use client';
 
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Reorder, useDragControls } from 'framer-motion';
 
+import {
+  LIST_FILTER_QUERY_KEYS,
+  MEDIA_FILTER_QUERY_KEYS,
+  applyMediaFilters,
+  buildCollectionBasePath,
+  buildManagedQueryString,
+  buildMediaKeySet,
+  collectMediaGenreOptions,
+  getDecadeOptions,
+  hasActiveListFilters,
+  hasActiveMediaFilters,
+  parseListFilters,
+  parseMediaFilters,
+  sortProfileLists,
+  toListQueryValues,
+  toMediaQueryValues,
+} from '@/features/account/filtering';
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/features/account/utils';
+import {
+  AccountListSortBar,
+  AccountMediaFilterBar,
+} from '@/features/account/shared/content-filters';
 import AccountSectionLayout, { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountReviewsFeed from './reviews';
+
+const LIKES_VISIBILITY_OPTIONS = Object.freeze([
+  Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
+  Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
+]);
+const LIKES_ALLOWED_EYE_FLAGS = LIKES_VISIBILITY_OPTIONS.map((option) => option.key);
 
 function ReorderableListItem({ item, renderEditAction }) {
   const controls = useDragControls();
@@ -75,23 +105,151 @@ export default function AccountLikesFeed({
   handleLike,
   handleRequestRemoveLike,
   handleToggleShowcase,
-  hasMoreReviews,
   isLikedListsLoading,
   isOwner,
   isReviewsLoading,
-  isReviewsLoadingMore = false,
   isShowcaseSaving,
   likedLists,
   likedListsError,
   likes,
-  loadReviews,
   persistShowcase,
   reviews,
+  reviewsTotalCount,
   reviewsError,
   showcaseMap,
-  username,
   watchedItems,
 }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString?.() || '';
+  const initialMediaFilters = useMemo(
+    () =>
+      parseMediaFilters(new URLSearchParams(searchParamsKey), {
+        allowedEyeFlags: LIKES_ALLOWED_EYE_FLAGS,
+      }),
+    [searchParamsKey]
+  );
+  const initialListFilters = useMemo(() => parseListFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const initialPage = useMemo(() => {
+    const parsed = Number(new URLSearchParams(searchParamsKey).get('page') || '1');
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+  }, [searchParamsKey]);
+  const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
+  const [listFilters, setListFilters] = useState(initialListFilters);
+  const [activePage, setActivePage] = useState(initialPage);
+  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
+  const decadeOptions = useMemo(() => getDecadeOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(likes), [likes]);
+  const likedKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const filteredLikes = useMemo(() => applyMediaFilters(likes, mediaFilters, { likedKeys }), [likedKeys, likes, mediaFilters]);
+  const sortedLikedLists = useMemo(() => sortProfileLists(likedLists, listFilters.sort), [likedLists, listFilters.sort]);
+  useEffect(() => {
+    setMediaFilters(initialMediaFilters);
+    setListFilters(initialListFilters);
+    setActivePage(initialPage);
+  }, [initialListFilters, initialMediaFilters, initialPage, searchParamsKey]);
+
+  const updateUrl = useCallback(
+    ({ nextListSort, nextMediaFilters, nextPage } = {}) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const resolvedListSort = nextListSort ?? listFilters.sort;
+      const resolvedMediaFilters = nextMediaFilters ?? mediaFilters;
+      const resolvedPage = nextPage ?? activePage;
+      let params = new URLSearchParams(window.location.search);
+      const mediaQueryString = buildManagedQueryString(params, {
+        managedKeys: MEDIA_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toMediaQueryValues(resolvedMediaFilters),
+      });
+      params = new URLSearchParams(mediaQueryString);
+      const listQueryString = buildManagedQueryString(params, {
+        managedKeys: LIST_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toListQueryValues({ sort: resolvedListSort }),
+      });
+      params = new URLSearchParams(listQueryString);
+
+      if (resolvedPage > 1) {
+        params.set('page', String(resolvedPage));
+      } else {
+        params.delete('page');
+      }
+
+      const nextQuery = params.toString();
+      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
+    },
+    [activePage, collectionRootPath, listFilters.sort, mediaFilters]
+  );
+
+  const updateMediaFilters = useCallback(
+    (updates = {}) => {
+      const nextFilters = {
+        ...mediaFilters,
+        ...updates,
+      };
+      setMediaFilters(nextFilters);
+      setActivePage(1);
+      updateUrl({
+        nextListSort: listFilters.sort,
+        nextMediaFilters: nextFilters,
+        nextPage: 1,
+      });
+    },
+    [listFilters.sort, mediaFilters, updateUrl]
+  );
+
+  const resetMediaFilters = useCallback(() => {
+    const defaultFilters = parseMediaFilters(new URLSearchParams(), {
+      allowedEyeFlags: LIKES_ALLOWED_EYE_FLAGS,
+    });
+    setMediaFilters(defaultFilters);
+    setActivePage(1);
+    updateUrl({
+      nextListSort: listFilters.sort,
+      nextMediaFilters: defaultFilters,
+      nextPage: 1,
+    });
+  }, [listFilters.sort, updateUrl]);
+
+  const updateListSort = useCallback(
+    (nextSort) => {
+      setListFilters({ sort: nextSort });
+      setActivePage(1);
+      updateUrl({
+        nextListSort: nextSort,
+        nextMediaFilters: mediaFilters,
+        nextPage: 1,
+      });
+    },
+    [mediaFilters, updateUrl]
+  );
+
+  const resetListFilters = useCallback(() => {
+    const defaultSort = parseListFilters(new URLSearchParams()).sort;
+    setListFilters({ sort: defaultSort });
+    setActivePage(1);
+    updateUrl({
+      nextListSort: defaultSort,
+      nextMediaFilters: mediaFilters,
+      nextPage: 1,
+    });
+  }, [mediaFilters, updateUrl]);
+
+  const handlePageChange = useCallback(
+    (nextPage) => {
+      setActivePage(nextPage);
+      updateUrl({
+        nextListSort: listFilters.sort,
+        nextMediaFilters: mediaFilters,
+        nextPage,
+      });
+    },
+    [listFilters.sort, mediaFilters, updateUrl]
+  );
+
   return (
     <>
       {isOwner && activeSegment === 'films' ? (
@@ -106,11 +264,13 @@ export default function AccountLikesFeed({
       {canShowLikesGrid ? (
         activeSegment === 'films' ? (
           <AccountMediaGridPage
-            currentPage={currentPage}
+            currentPage={activePage}
             emptyMessage="No liked films yet"
             icon="solar:heart-bold"
-            items={likes}
-            pageBasePath={`/account/${username}/likes?segment=films`}
+            items={filteredLikes}
+            onPageChange={handlePageChange}
+            pageBasePath={collectionRootPath}
+            showHeader={false}
             renderOverlay={(item) =>
               isOwner ? (
                 <AccountProfileMediaActions
@@ -131,34 +291,53 @@ export default function AccountLikesFeed({
                 />
               ) : null
             }
+            toolbar={
+              <AccountMediaFilterBar
+                filters={mediaFilters}
+                decadeOptions={decadeOptions}
+                genreOptions={genreOptions}
+                visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+                onChange={updateMediaFilters}
+                onReset={hasActiveMediaFilters(mediaFilters) ? resetMediaFilters : null}
+              />
+            }
             title="Films"
           />
         ) : activeSegment === 'reviews' ? (
           <AccountReviewsFeed
+            enablePagination={true}
             currentUserId={auth.user?.id || null}
             emptyMessage="No liked reviews yet"
-            hasMore={hasMoreReviews}
             icon="solar:chat-round-bold"
             isLoading={isReviewsLoading}
-            isLoadingMore={isReviewsLoadingMore}
             items={reviews}
             loadError={reviewsError}
             onLike={handleLike}
-            onLoadMore={() => loadReviews({ append: true })}
             showOwnActions={false}
+            showHeader={false}
+            summaryLabel={Number.isFinite(Number(reviewsTotalCount)) ? `${Number(reviewsTotalCount)} Reviews` : null}
             title="Reviews"
             watchedItems={watchedItems}
           />
         ) : (
           <AccountPaginatedListGrid
-            currentPage={currentPage}
+            currentPage={activePage}
             emptyMessage="No liked lists yet"
             icon="solar:list-broken"
             isLoading={isLikedListsLoading}
-            lists={likedLists}
+            lists={sortedLikedLists}
             loadError={likedListsError}
-            pageBasePath={`/account/${username}/likes?segment=lists`}
+            onPageChange={handlePageChange}
+            pageBasePath={collectionRootPath}
+            showHeader={false}
             title="Lists"
+            toolbar={
+              <AccountListSortBar
+                sort={listFilters.sort}
+                onChange={updateListSort}
+                onReset={hasActiveListFilters(listFilters) ? resetListFilters : null}
+              />
+            }
           />
         )
       ) : (

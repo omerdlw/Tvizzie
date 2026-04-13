@@ -463,14 +463,12 @@ export default function AccountSocialModal({ close, data, header }) {
     >
       <div className="flex h-full min-h-0 flex-col">
         <SegmentedControl
+          className="m-1 w-full"
+          trackClassName="w-full border-0 p-0"
+          buttonClassName="flex-1 justify-center py-3 text-sm"
           items={tabs}
           value={activeTab}
           onChange={setActiveTab}
-          className="w-full"
-          trackClassName="w-full h-11 m-1 p-1 border-none"
-          buttonClassName="flex-1 h-full justify-center tracking-wide uppercase text-[11px]"
-          activeClassName="text-white"
-          activeIndicatorClassName="bg-black"
         />
         {isLoading ? (
           <div className="flex flex-col">

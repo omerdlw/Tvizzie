@@ -19,7 +19,7 @@ export function AccountSectionHeading({
   titleHref = null,
 }) {
   const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-black/70 transition';
-  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
+  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/60 uppercase';
 
   return (
     <div className={`flex w-full flex-col gap-6 ${className}`}>
@@ -78,6 +78,7 @@ export default function AccountSectionLayout({
   contentClassName = '',
   icon,
   revealDelay = 0,
+  showHeader = true,
   showDivider = true,
   showSeeMore = false,
   summaryLabel = null,
@@ -88,15 +89,19 @@ export default function AccountSectionLayout({
     <section className="relative bg-transparent">
       <AccountSectionReveal delay={revealDelay}>
         <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
-          <AccountSectionHeading
-            action={action}
-            icon={icon}
-            showDivider={showDivider}
-            showSeeMore={showSeeMore}
-            summaryLabel={summaryLabel}
-            title={title}
-            titleHref={titleHref}
-          />
+          {showHeader ? (
+            <AccountSectionHeading
+              action={action}
+              icon={icon}
+              showDivider={showDivider}
+              showSeeMore={showSeeMore}
+              summaryLabel={summaryLabel}
+              title={title}
+              titleHref={titleHref}
+            />
+          ) : title ? (
+            <h2 className="sr-only">{title}</h2>
+          ) : null}
 
           {contentClassName ? <div className={contentClassName}>{children}</div> : children}
         </div>

@@ -53,7 +53,14 @@ export async function fetchUserActivityPage({ cursor = null, pageSize = 20, user
   });
 }
 
-export async function fetchAccountActivityFeed({ cursor = null, pageSize = 20, scope = 'user', userId }) {
+export async function fetchAccountActivityFeed({
+  cursor = null,
+  pageSize = 20,
+  scope = 'user',
+  sort = 'newest',
+  subject = 'all',
+  userId,
+}) {
   if (!userId) {
     return {
       hasMore: false,
@@ -67,6 +74,8 @@ export async function fetchAccountActivityFeed({ cursor = null, pageSize = 20, s
       cursor,
       pageSize,
       scope,
+      sort,
+      subject,
       userId,
     },
   });

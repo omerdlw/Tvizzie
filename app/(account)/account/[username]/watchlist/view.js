@@ -84,6 +84,7 @@ export default function WatchlistView({
         isOwner={isOwner}
         onRemoveItem={handleRequestRemoveWatchlistItem}
         username={username}
+        resolvedUserId={resolvedUserId}
         watchlist={watchlist}
       />
     </AccountPageShell>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
@@ -92,6 +93,7 @@ export default function AccountReviewsOverview({
   userProfile = null,
   watchedItems = [],
 }) {
+  const reduceMotion = useReducedMotion();
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
   const resolvedSummaryLabel = summaryLabel === null ? `${listedReviewCount} Reviews` : summaryLabel;
   const likedMediaKeys = useMemo(() => buildLikedMediaKeySet(likes), [likes]);
@@ -107,32 +109,55 @@ export default function AccountReviewsOverview({
       titleHref={titleHref}
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
+        <motion.div
+          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
           {emptyMessage}
-        </div>
+        </motion.div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
+        <motion.div
+          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {loadError}
+        </motion.div>
       ) : (
-        <ReviewList
-          currentUserId={currentUserId}
-          displayVariant="account"
-          isLoading={isLoading && listedReviewCount === 0}
-          loadError={listedReviewCount === 0 ? loadError : null}
-          onDeleteRequest={onDeleteRequest || (() => {})}
-          onEdit={onEdit || (() => {})}
-          onLike={onLike}
-          likedMediaKeys={likedMediaKeys}
-          rewatchMediaKeys={rewatchMediaKeys}
-          showOwnActions={showOwnActions}
-          showSubject={true}
-          sortedReviews={items}
-          userProfile={userProfile}
-          watchedMediaKeys={watchedMediaKeys}
-        />
+        <motion.div
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <ReviewList
+            currentUserId={currentUserId}
+            displayVariant="account"
+            isLoading={isLoading && listedReviewCount === 0}
+            loadError={listedReviewCount === 0 ? loadError : null}
+            onDeleteRequest={onDeleteRequest || (() => {})}
+            onEdit={onEdit || (() => {})}
+            onLike={onLike}
+            likedMediaKeys={likedMediaKeys}
+            rewatchMediaKeys={rewatchMediaKeys}
+            showOwnActions={showOwnActions}
+            showSubject={true}
+            sortedReviews={items}
+            userProfile={userProfile}
+            watchedMediaKeys={watchedMediaKeys}
+          />
+        </motion.div>
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <div className="flex justify-center">
+        <motion.div
+          className="flex justify-center"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
           <Button
             type="button"
             onClick={onLoadMore}
@@ -141,7 +166,7 @@ export default function AccountReviewsOverview({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </div>
+        </motion.div>
       ) : null}
     </AccountSectionLayout>
   );

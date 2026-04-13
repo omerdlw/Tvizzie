@@ -28,9 +28,11 @@ const CoreShellProviders = pipe(
 function shouldEnableInteractiveBoundary(pathname = '/') {
   return (
     pathname === '/' ||
+    pathname.startsWith('/search') ||
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account') ||
+    pathname.startsWith('/admin') ||
     pathname.startsWith('/sign-in') ||
     pathname.startsWith('/sign-up')
   );

@@ -52,6 +52,11 @@ export async function GET(request) {
       hasMore: result?.hasMore === true,
       items: Array.isArray(result?.items) ? result.items : [],
       nextCursor: result?.nextCursor ?? null,
+      totalCount: Number.isFinite(Number(result?.totalCount))
+        ? Number(result.totalCount)
+        : Array.isArray(result?.items)
+          ? result.items.length
+          : 0,
     });
   } catch (error) {
     const status = Number.isFinite(Number(error?.status)) ? Number(error.status) : 500;

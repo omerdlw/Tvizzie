@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import MediaCard from '@/features/shared/media-card';
 import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/constants';
@@ -96,7 +97,7 @@ export function AccountProfileMediaActions({
   );
 
   return (
-    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2">
+    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
       {extraActions.map((action, index) => (
         <button
           key={`${action.label || action.icon || 'media-action'}-${index}`}
@@ -145,12 +146,25 @@ export default function AccountMediaGridPage({
   emptyMessage = 'No items yet',
   icon = 'solar:heart-bold',
   items = [],
+  onPageChange = null,
   pageBasePath,
   renderHeaderAction = null,
   renderOverlay = null,
+  showHeader = true,
+  toolbar = null,
   title,
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const reduceMotion = useReducedMotion();
+  const isQueryPagination = typeof pageBasePath === 'string' && pageBasePath.includes('?');
+  const requestedQueryPage = Number.parseInt(searchParams.get('page') || '1', 10);
+  const canControlPagination = typeof onPageChange === 'function';
+  const resolvedCurrentPage = canControlPagination
+    ? currentPage
+    : isQueryPagination && Number.isFinite(requestedQueryPage) && requestedQueryPage > 0
+      ? requestedQueryPage
+      : currentPage;
 
   const cards = useMemo(() => {
     return items
@@ -178,62 +192,91 @@ export default function AccountMediaGridPage({
   }, [items]);
 
   const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0;
-  const activePage = totalPages ? Math.min(currentPage, totalPages) : 1;
+  const activePage = totalPages ? Math.min(resolvedCurrentPage, totalPages) : 1;
   const pageStart = (activePage - 1) * ITEMS_PER_PAGE;
   const visibleCards = cards.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+  const paginationSummaryLabel = formatPaginationSummaryLabel({
+    pageSize: ITEMS_PER_PAGE,
+    startIndex: pageStart,
+    totalCount: cards.length,
+  });
 
   useEffect(() => {
-    if (!totalPages || currentPage <= totalPages || !pageBasePath) {
+    if (!totalPages || resolvedCurrentPage <= totalPages || !pageBasePath) {
+      return;
+    }
+
+    if (canControlPagination) {
+      onPageChange(totalPages);
       return;
     }
 
     router.replace(buildAccountCollectionPageHref(pageBasePath, totalPages));
-  }, [currentPage, pageBasePath, router, totalPages]);
+  }, [canControlPagination, onPageChange, pageBasePath, resolvedCurrentPage, router, totalPages]);
 
   return (
     <AccountSectionLayout
       icon={icon}
-      summaryLabel={formatPaginationSummaryLabel({
-        pageSize: ITEMS_PER_PAGE,
-        startIndex: pageStart,
-        totalCount: cards.length,
-      })}
+      showHeader={showHeader}
+      summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
+      {toolbar}
+
       {cards.length === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {visibleCards.map((card, index) => (
-              <MediaCard
+              <motion.div
                 key={`${card.id}-${pageStart + index}`}
-                href={card.href}
-                className="w-full"
-                imageSrc={card.imageSrc}
-                imageAlt={card.imageAlt}
-                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-                topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
-                tooltipText={card.tooltipText}
-              />
+                layout
+                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.986 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+                transition={{
+                  delay: reduceMotion ? 0 : index < 6 ? index * 0.018 : 0,
+                  duration: reduceMotion ? 0.16 : 0.34,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <MediaCard
+                  href={card.href}
+                  className="w-full"
+                  imageSrc={card.imageSrc}
+                  imageAlt={card.imageAlt}
+                  imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
+                  topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
+                  tooltipText={card.tooltipText}
+                />
+              </motion.div>
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <AccountPagination
-              currentPage={activePage}
-              totalPages={totalPages}
-              getPageHref={(page) => buildAccountCollectionPageHref(pageBasePath, page)}
-              hideDisabledNav
-              className="flex flex-wrap items-center justify-end gap-2"
-              pageClassName="center size-12 border text-xs font-semibold transition"
-              activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
-              inactivePageClassName="border-black/15 bg-white/50 text-black/70"
-              navClassName="center size-12 border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition"
-              ellipsisClassName="text-xs"
-              iconSize={16}
-            />
+            <motion.div
+              key={`media-grid-pagination-${activePage}-${totalPages}`}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reduceMotion ? 0.16 : 0.3,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">{paginationSummaryLabel}</p>
+
+                <AccountPagination
+                  currentPage={activePage}
+                  onPageChange={canControlPagination ? onPageChange : null}
+                  totalPages={totalPages}
+                  getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
+                  className="flex flex-wrap items-center justify-end gap-2"
+                />
+              </div>
+            </motion.div>
           ) : null}
         </>
       )}

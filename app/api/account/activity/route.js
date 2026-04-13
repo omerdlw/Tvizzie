@@ -25,9 +25,11 @@ export async function GET(request) {
     const cursor = searchParams.get('cursor');
     const pageSize = normalizePageSize(searchParams.get('pageSize'), 20);
     const scope = normalizeValue(searchParams.get('scope')) || 'user';
+    const sort = normalizeValue(searchParams.get('sort')) || 'newest';
+    const subject = normalizeValue(searchParams.get('subject')) || 'all';
     const userId = normalizeValue(searchParams.get('userId'));
     const viewerId = authContext?.userId || null;
-    const cacheKey = `account-activity|cursor=${cursor || ''}|pageSize=${pageSize}|scope=${scope}|user=${userId}|viewer=${
+    const cacheKey = `account-activity|cursor=${cursor || ''}|pageSize=${pageSize}|scope=${scope}|sort=${sort}|subject=${subject}|user=${userId}|viewer=${
       viewerId || 'anon'
     }`;
     const result = await getOrLoadCachedValue({
@@ -39,6 +41,8 @@ export async function GET(request) {
           cursor,
           pageSize,
           scope,
+          sort,
+          subject,
           userId,
           viewerId,
         }),

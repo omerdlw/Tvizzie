@@ -293,21 +293,11 @@ export default function Client({ initialSnapshot = null }) {
   );
 
   if (!auth.isReady || isLoading) {
-    return (
-      <>
-        {registry}
-        <AccountRouteSkeleton variant="lists" />
-      </>
-    );
+    return <AccountRouteSkeleton variant="list-builder" />;
   }
 
   if (!auth.isAuthenticated) {
-    return (
-      <>
-        {registry}
-        <AccountRouteSkeleton variant="lists" />
-      </>
-    );
+    return <AccountRouteSkeleton variant="list-builder" />;
   }
 
   return (

@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import MediaCard from '@/features/shared/media-card';
+import { cn } from '@/core/utils';
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { Button } from '@/ui/elements';
-import Icon from '@/ui/icon';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const EVENT_META = Object.freeze({
@@ -110,40 +111,7 @@ function resolvePosterSrc(item) {
   return poster;
 }
 
-function CompactRating({ rating }) {
-  const normalized = Number(rating);
-  const clamped = Math.max(0.5, Math.min(5, normalized));
-
-  if (!Number.isFinite(normalized) || normalized <= 0) {
-    return null;
-  }
-
-  return (
-    <div className="inline-flex h-4" aria-label={`${normalized}/5`}>
-      {Array.from({ length: Math.ceil(clamped) }, (_, index) => {
-        const fill = Math.max(0, Math.min(1, clamped - index));
-
-        return (
-          <span key={index} className="relative size-4 shrink-0">
-            <span className="absolute inset-0 text-[#94a3b8]">
-              <Icon icon="solar:star-bold" size={16} />
-            </span>
-            <span
-              className="absolute inset-y-0 left-0 overflow-hidden text-[#15803d]"
-              style={{ width: `${fill * 100}%` }}
-            >
-              <span className="block size-4">
-                <Icon icon="solar:star-bold" size={16} />
-              </span>
-            </span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-function ListPreviewStack({ item }) {
+function ListPreviewStack({ item, overlay = null }) {
   const previewItems = Array.isArray(item?.activityState?.previewItems)
     ? item.activityState.previewItems.slice(0, 3)
     : [];
@@ -153,74 +121,81 @@ function ListPreviewStack({ item }) {
   return (
     <Link
       href={subjectHref || '#'}
-      className="group block aspect-2/3 w-full overflow-hidden rounded-[12px] border border-black/15"
+      className="group flex shrink-0 flex-col overflow-hidden rounded-[14px] transition ease-in-out"
     >
-      <ListPreviewComposition
-        className="border-0 bg-transparent"
-        imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal) "
-        items={previewItems}
-      />
+      <div className="relative aspect-2/3 w-full overflow-hidden rounded-[14px]">
+        <ListPreviewComposition
+          className="h-full border-0 bg-transparent"
+          imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal)"
+          items={previewItems}
+        />
+        {overlay}
+      </div>
 
       <span className="sr-only">{subjectTitle}</span>
     </Link>
   );
 }
 
+
+
 function ShowcaseItem({ item }) {
+  const reduceMotion = useReducedMotion();
   const { subjectHref, subjectTitle } = getActivityText(item);
   const posterSrc = resolvePosterSrc(item);
-  const activityState = item?.activityState || {};
-  const activityMeta = EVENT_META[item?.eventType] || null;
-  const rating = Number(activityState.rating);
-  const isWatchlistActivity = item?.eventType === 'WATCHLIST_ADDED';
-  const isListActivity = item?.subject?.type === 'list';
   const showMovieCard = item?.subject?.type !== 'list';
+  const createdLabel = formatActivityTime(item?.updatedAt || item?.createdAt);
+  const tooltipText = [subjectTitle, createdLabel].filter(Boolean).join(' · ');
 
   return (
-    <div className="min-w-0">
+    <motion.div
+      className="min-w-0"
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.988 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+      transition={{
+        duration: reduceMotion ? 0.16 : 0.32,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
       {showMovieCard ? (
         <MediaCard
           href={subjectHref}
           className="w-full"
           imageSrc={posterSrc}
           imageAlt={subjectTitle}
-          imageSizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
+          imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
           fallbackIcon="solar:clapperboard-play-bold"
-          tooltipText={subjectTitle}
+          tooltipText={tooltipText || subjectTitle}
         />
       ) : (
         <ListPreviewStack item={item} />
       )}
-
-      <div className="mt-2 flex min-h-4 items-center gap-2 text-black/70">
-        <CompactRating rating={rating} />
-        {isListActivity && activityMeta?.action ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-black/70">
-            {activityMeta?.icon ? <Icon icon={activityMeta.icon} size={14} /> : null}
-            <span>{activityMeta.action}</span>
-          </span>
-        ) : null}
-        {isWatchlistActivity ? <Icon icon="solar:bookmark-bold" size={16} /> : null}
-        {activityState.isLiked ? <Icon icon="solar:heart-bold" size={16} className="text-[#b91c1c]" /> : null}
-        {activityState.hasReview ? <Icon icon="solar:chat-round-bold" size={16} /> : null}
-        {activityState.isRewatch ? <Icon icon="solar:refresh-bold" size={16} className="text-[#15803d]" /> : null}
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
-function ActivityItem({ isFirst = false, item, variant = 'feed' }) {
+function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
+  const reduceMotion = useReducedMotion();
   const { actorName, action, subjectHref, subjectTitle } = getActivityText(item);
   const createdLabel = formatActivityTime(item?.updatedAt || item?.createdAt);
   const isShowcase = variant === 'showcase';
 
   return (
-    <article
+    <motion.article
       className={
         isShowcase
           ? `border-b border-black/10 ${isFirst ? 'pt-0 pb-4' : 'py-4'} last:border-b-0`
           : `border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`
       }
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+      transition={{
+        delay: reduceMotion ? 0 : index < 6 ? index * 0.016 : 0,
+        duration: reduceMotion ? 0.16 : 0.32,
+        ease: [0.22, 1, 0.36, 1],
+      }}
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
@@ -236,7 +211,7 @@ function ActivityItem({ isFirst = false, item, variant = 'feed' }) {
 
         {createdLabel ? <div className="shrink-0 text-sm font-medium sm:pt-0.5">{createdLabel}</div> : null}
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -253,7 +228,6 @@ export default function AccountActivityOverview({
   title = 'Recent Activity',
   titleHref = null,
   variant = 'feed',
-  showcaseGridClassName = 'grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5',
 }) {
   const resolvedSummaryLabel = summaryLabel === null ? `${items.length} Events` : summaryLabel;
 
@@ -276,9 +250,17 @@ export default function AccountActivityOverview({
       ) : items.length === 0 && !isLoading && loadError ? (
         <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
       ) : variant === 'showcase' ? (
-        <div className={`grid ${showcaseGridClassName}`}>
+        <div className="flex gap-3 overflow-hidden">
           {items.map((item, index) => (
-            <ShowcaseItem key={`${item.sourceUserId || item.id}-${item.id}-${index}`} item={item} />
+            <div
+              key={`${item.sourceUserId || item.id}-${item.id}-${index}`}
+              className={cn(
+                'flex h-full flex-col shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-60px)/6)]',
+                index >= 3 && 'hidden lg:block'
+              )}
+            >
+              <ShowcaseItem item={item} />
+            </div>
           ))}
         </div>
       ) : (
@@ -286,6 +268,7 @@ export default function AccountActivityOverview({
           {items.map((item, index) => (
             <ActivityItem
               key={`${item.sourceUserId || item.id}-${item.id}-${index}`}
+              index={index}
               isFirst={item === items[0]}
               item={item}
               variant={variant}

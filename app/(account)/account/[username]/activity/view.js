@@ -5,8 +5,10 @@ import Registry from './registry';
 
 export default function ActivityView({
   activeScope,
+  activityFilters,
   auth,
   canShowActivity,
+  currentPage,
   feedError,
   followerCount,
   followingCount,
@@ -15,7 +17,6 @@ export default function ActivityView({
   handleFollow,
   handleOpenFollowList,
   handleSignInRequest,
-  hasMore,
   isBioSurfaceOpen,
   isFeedLoading,
   isFollowLoading,
@@ -26,7 +27,8 @@ export default function ActivityView({
   items,
   likeCount,
   listCount,
-  loadActivity,
+  onFiltersChange,
+  onPageChange,
   onScopeChange,
   pendingFollowRequestCount,
   profile,
@@ -36,6 +38,7 @@ export default function ActivityView({
   unfollowConfirmation,
   username,
   watchlistCount,
+  totalCount,
 }) {
   const pageRegistry = (
     <Registry
@@ -80,7 +83,7 @@ export default function ActivityView({
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}
-      skeletonVariant="reviews"
+      skeletonVariant="activity"
       username={username}
       watchedCount={profile?.watchedCount || 0}
       watchlistCount={watchlistCount}
@@ -88,12 +91,16 @@ export default function ActivityView({
       {canShowActivity ? (
         <AccountActivityFeed
           emptyMessage={activeScope === 'following' ? 'No following activity yet' : 'No activity yet'}
-          hasMore={hasMore}
+          currentPage={currentPage}
+          filters={activityFilters}
           icon="solar:bolt-bold"
           isLoading={isFeedLoading}
           items={items}
           loadError={feedError}
-          onLoadMore={() => loadActivity({ append: true })}
+          onFiltersChange={onFiltersChange}
+          onPageChange={onPageChange}
+          showHeader={false}
+          totalCount={totalCount}
           title={activeScope === 'following' ? 'Following Activity' : 'Your Activity'}
           variant="showcase"
         />

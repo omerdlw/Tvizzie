@@ -285,7 +285,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>
@@ -296,7 +296,7 @@ export default function ListPickerModal({ close, data }) {
       <section className="flex min-h-0 flex-col gap-3">
         <div className="mb-1 flex items-center justify-between gap-3 px-1">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Your Lists</h2>
+            <h2 className="text-[11px] font-bold tracking-widest text-black/60 uppercase">Your Lists</h2>
           </div>
           <Button
             type="button"
@@ -317,7 +317,7 @@ export default function ListPickerModal({ close, data }) {
             </div>
           ) : lists.length === 0 ? (
             <div className="flex min-h-40 flex-col items-center justify-center rounded-[12px] border border-dashed border-black/15 bg-black/2 text-center">
-              <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">No lists yet</p>
+              <p className="text-[11px] font-bold tracking-widest text-black/60 uppercase">No lists yet</p>
               <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
             </div>
           ) : (

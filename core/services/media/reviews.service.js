@@ -163,54 +163,6 @@ export function getReviewValidationError({ content, rating }) {
   return null;
 }
 
-export async function fetchUserMediaReviewMap({ items = [], userId, username = null }) {
-  if (!userId || !Array.isArray(items) || items.length === 0) {
-    return new Map();
-  }
-
-  const mediaKeys = items
-    .map((item) => createMediaSnapshot(item))
-    .filter(
-      (mediaSnapshot) =>
-        mediaSnapshot.entityType && mediaSnapshot.entityId && isMovieMediaType(mediaSnapshot.entityType)
-    )
-    .map((mediaSnapshot) => buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId));
-
-  if (mediaKeys.length === 0) {
-    return new Map();
-  }
-
-  const client = getSupabaseClient();
-  const entries = [];
-
-  for (let index = 0; index < mediaKeys.length; index += 100) {
-    const chunk = mediaKeys.slice(index, index + 100);
-    const result = await client
-      .from('media_reviews')
-      .select('media_key,payload,rating')
-      .eq('user_id', userId)
-      .in('media_key', chunk);
-
-    assertSupabaseResult(result, 'Reviews could not be loaded');
-    (result.data || []).forEach((row) => {
-      const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
-      const subjectHref = payload.subjectHref || null;
-
-      entries.push([
-        row.media_key,
-        {
-          docPath: `media_items/${row.media_key}/reviews/${userId}`,
-          exists: true,
-          href: username ? `/account/${username}/reviews` : subjectHref,
-          rating: row.rating === null || row.rating === undefined ? null : Number(row.rating),
-        },
-      ]);
-    });
-  }
-
-  return new Map(entries);
-}
-
 async function fetchMediaReviews(media, limitCount) {
   const mediaSnapshot = createMediaSnapshot(media);
 

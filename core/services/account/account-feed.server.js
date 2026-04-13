@@ -12,6 +12,8 @@ const ACTIVITY_SELECT = ['created_at', 'dedupe_key', 'event_type', 'id', 'payloa
 const ACTIVITY_MOVIE_REVIEW_SELECT = ['content', 'media_key', 'payload', 'rating', 'user_id'].join(',');
 const ACTIVITY_LIST_REVIEW_SELECT = ['content', 'list_id', 'payload', 'rating', 'user_id'].join(',');
 const ACTIVITY_LIST_SNAPSHOT_SELECT = ['id', 'payload', 'poster_path', 'title', 'user_id'].join(',');
+const ACTIVITY_SUBJECT_FILTERS = new Set(['all', 'list', 'movie', 'user']);
+const ACTIVITY_SORT_MODES = new Set(['newest', 'oldest']);
 
 function normalizeActor(value = {}) {
   return {
@@ -86,6 +88,42 @@ function sortActivityItems(items = []) {
 
     return String(right?.id || '').localeCompare(String(left?.id || ''));
   });
+}
+
+function normalizeActivitySubjectFilter(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  return ACTIVITY_SUBJECT_FILTERS.has(normalized) ? normalized : 'all';
+}
+
+function normalizeActivitySort(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  return ACTIVITY_SORT_MODES.has(normalized) ? normalized : 'newest';
+}
+
+function filterActivityItemsBySubject(items = [], subject = 'all') {
+  const normalizedSubject = normalizeActivitySubjectFilter(subject);
+
+  if (normalizedSubject === 'all') {
+    return Array.isArray(items) ? items : [];
+  }
+
+  return (Array.isArray(items) ? items : []).filter((item) => normalizeMediaType(item?.subject?.type) === normalizedSubject);
+}
+
+function sortActivityItemsForMode(items = [], sort = 'newest') {
+  const normalizedItems = sortActivityItems(items);
+
+  if (normalizeActivitySort(sort) === 'oldest') {
+    return [...normalizedItems].reverse();
+  }
+
+  return normalizedItems;
 }
 
 function chunkArray(values = [], size = 100) {
@@ -197,12 +235,14 @@ function dedupeActivityItems(items = []) {
   const seenKeys = new Set();
 
   return items.filter((item) => {
+    const normalizedEventType = String(item?.eventType || '').trim().toUpperCase() || 'UNKNOWN';
+    const canonicalKey = buildCanonicalActivityDedupeKey({
+      actorUserId: item?.sourceUserId || item?.actor?.id,
+      subjectId: item?.subject?.id,
+      subjectType: item?.subject?.type,
+    });
     const key =
-      buildCanonicalActivityDedupeKey({
-        actorUserId: item?.sourceUserId || item?.actor?.id,
-        subjectId: item?.subject?.id,
-        subjectType: item?.subject?.type,
-      }) ||
+      canonicalKey ||
       item?.dedupeKey ||
       `${item?.actor?.id || 'actor'}:${item?.eventType || 'event'}:${item?.id || 'id'}`;
 
@@ -560,6 +600,8 @@ export async function fetchAccountActivityFeedServer({
   cursor = null,
   pageSize = 20,
   scope = 'user',
+  sort = 'newest',
+  subject = 'all',
   userId,
   viewerId = null,
 }) {
@@ -586,7 +628,12 @@ export async function fetchAccountActivityFeedServer({
 
   const followingIds = await fetchAcceptedFollowingIds(admin, userId).catch(() => []);
   const sourceIds = scope === 'following' ? [...new Set(followingIds)] : [userId];
-  const sourcePageSize = Math.max(Number(pageSize || 20) * 2, 24);
+  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.floor(Number(pageSize))) : 20;
+  const normalizedOffset = Number.isFinite(Number(cursor)) ? Math.max(0, Math.floor(Number(cursor))) : 0;
+  const normalizedSubject = normalizeActivitySubjectFilter(subject);
+  const normalizedSort = normalizeActivitySort(sort);
+  const shouldResolveFullFilteredSet = normalizedSubject !== 'all' || normalizedSort !== 'newest';
+  const sourcePageSize = shouldResolveFullFilteredSet ? null : Math.max(normalizedOffset + normalizedPageSize * 2, 24);
 
   if (sourceIds.length === 0) {
     return {
@@ -596,13 +643,17 @@ export async function fetchAccountActivityFeedServer({
     };
   }
 
-  const items = sortActivityItems(
-    dedupeActivityItems(
-      (await fetchActivitiesForSources(admin, sourceIds, sourcePageSize)).map((item) => ({
-        ...item,
-        isFromFollowing: String(item?.sourceUserId || '').trim() !== String(userId || '').trim(),
-      }))
-    )
+  const items = sortActivityItemsForMode(
+    filterActivityItemsBySubject(
+      dedupeActivityItems(
+        (await fetchActivitiesForSources(admin, sourceIds, sourcePageSize)).map((item) => ({
+          ...item,
+          isFromFollowing: String(item?.sourceUserId || '').trim() !== String(userId || '').trim(),
+        }))
+      ),
+      normalizedSubject
+    ),
+    normalizedSort
   );
 
   const paginated = paginateItems(items, cursor, pageSize);
@@ -610,5 +661,6 @@ export async function fetchAccountActivityFeedServer({
   return {
     ...paginated,
     items: await enrichActivityItems(admin, paginated.items),
+    totalCount: items.length,
   };
 }

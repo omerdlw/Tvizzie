@@ -24,6 +24,37 @@ import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/serv
 import Icon from '@/ui/icon';
 
 function getMediaSnapshot(media) {
+  const normalizedGenres = Array.isArray(media?.genres)
+    ? media.genres
+        .map((genre) => {
+          if (!genre) {
+            return null;
+          }
+
+          if (typeof genre === 'object') {
+            return {
+              id: genre.id ?? null,
+              name: genre.name || null,
+            };
+          }
+
+          return {
+            id: null,
+            name: String(genre),
+          };
+        })
+        .filter(Boolean)
+    : [];
+
+  const genreIds = Array.isArray(media?.genre_ids)
+    ? media.genre_ids
+    : normalizedGenres
+        .map((genre) => genre.id)
+        .filter((value) => Number.isFinite(Number(value)))
+        .map((value) => Number(value));
+
+  const watchProviders = media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+
   return {
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
@@ -32,8 +63,18 @@ function getMediaSnapshot(media) {
     backdropPath: media?.backdrop_path || media?.backdropPath || null,
     release_date: media?.release_date || null,
     first_air_date: null,
+    genreNames: normalizedGenres.map((genre) => genre.name).filter(Boolean),
+    genre_ids: genreIds,
+    genres: normalizedGenres,
     name: '',
+    popularity: Number.isFinite(Number(media?.popularity)) ? Number(media.popularity) : null,
+    providerIds: [],
+    providerNames: [],
+    providers: [],
+    runtime: Number.isFinite(Number(media?.runtime)) ? Number(media.runtime) : null,
     vote_average: media?.vote_average ?? null,
+    vote_count: Number.isFinite(Number(media?.vote_count)) ? Number(media.vote_count) : null,
+    watchProviders,
   };
 }
 
@@ -69,7 +110,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed',
+        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >

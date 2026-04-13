@@ -20,6 +20,10 @@ function normalizeEntityType(value) {
     .toLowerCase();
 }
 
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 export function ensureUserId(userId, message) {
   if (!userId) {
     throw new Error(message || 'Authenticated user is required');
@@ -46,6 +50,9 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     entityId: entityId || null,
     entityType: entityType || null,
     first_air_date: payload.first_air_date || null,
+    genreNames: normalizeArray(payload.genreNames || payload.genre_names),
+    genre_ids: normalizeArray(payload.genre_ids || payload.genreIds),
+    genres: normalizeArray(payload.genres),
     id: entityId || String(payload.id || row.media_key || '').trim() || null,
     mediaKey:
       payload.mediaKey || row.media_key || (entityType && entityId ? buildMediaItemKey(entityType, entityId) : null),
@@ -54,12 +61,21 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     original_name: payload.original_name || null,
     original_title: payload.original_title || null,
     poster_path: payload.poster_path || payload.posterPath || row.poster_path || null,
+    popularity: normalizeNumber(payload.popularity, null),
     position: normalizeNumber(payload.position, null),
+    providerIds: normalizeArray(payload.providerIds || payload.provider_ids),
+    providerNames: normalizeArray(payload.providerNames || payload.provider_names),
+    providers: normalizeArray(payload.providers),
+    rating: normalizeNumber(payload.rating ?? row.rating, null),
     release_date: payload.release_date || null,
+    runtime: normalizeNumber(payload.runtime, null),
     title: payload.title || payload.original_title || row.title || payload.name || payload.original_name || '',
     updatedAt: normalizeTimestamp(payload.updatedAt || row.updated_at),
+    userRating: normalizeNumber(payload.userRating ?? payload.rating ?? row.rating, null),
     userId: payload.userId || row.user_id || null,
     vote_average: normalizeNumber(payload.vote_average, null),
+    vote_count: normalizeNumber(payload.vote_count, null),
+    watchProviders: payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
   };
 }
 
@@ -89,23 +105,33 @@ export function createMediaPayload(media = {}, userId = null, options = {}) {
     entityId: mediaSnapshot.entityId,
     entityType: mediaSnapshot.entityType,
     first_air_date: null,
+    genreNames: normalizeArray(media.genreNames || media.genre_names),
+    genre_ids: normalizeArray(media.genre_ids || media.genreIds),
+    genres: normalizeArray(media.genres),
     mediaKey,
     media_type: mediaSnapshot.entityType,
     name: '',
     original_name: null,
     original_title: media.original_title || null,
     poster_path: mediaSnapshot.posterPath,
+    popularity: normalizeNumber(media.popularity, null),
     position:
       options.position !== undefined
         ? options.position
         : Number.isFinite(Number(media.position))
           ? Number(media.position)
           : null,
+    providerIds: normalizeArray(media.providerIds || media.provider_ids),
+    providerNames: normalizeArray(media.providerNames || media.provider_names),
+    providers: normalizeArray(media.providers),
     release_date: media.release_date || null,
+    runtime: normalizeNumber(media.runtime, null),
     title: media.title || media.original_title || mediaSnapshot.title,
     updatedAt: options.updatedAt || now,
     userId: userId || null,
     vote_average: normalizeNumber(media.vote_average, null),
+    vote_count: normalizeNumber(media.vote_count, null),
+    watchProviders: media.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null,
   };
 }
 

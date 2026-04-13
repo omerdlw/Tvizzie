@@ -1,6 +1,5 @@
 'use client';
 
-import FollowListModal from '@/features/modal/follow-list-modal';
 import AccountSocialModal from '@/features/modal/account-social-modal';
 import ListEditorModal from '@/features/modal/list-editor-modal';
 import ListPickerModal from '@/features/modal/list-picker-modal';
@@ -76,9 +75,6 @@ export function buildAccountEditState({
   });
 
   return {
-    modal: {
-      FOLLOW_LIST_MODAL: FollowListModal,
-    },
     loading: loadingState,
     nav: {
       confirmation: deleteConfirmation,
@@ -172,7 +168,8 @@ export function buildAccountPageState({
   const shouldShowProfileFollowAction = Boolean(
     showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction
   );
-  const shouldUseNavActionOverride = !shouldForceProfileFollowAction && !shouldUseGuestFollowAction && hasNavActionOverride;
+  const shouldUseNavActionOverride =
+    !shouldForceProfileFollowAction && !shouldUseGuestFollowAction && hasNavActionOverride;
   const shouldShowToolbarFollowAction =
     !isOwner && !shouldShowProfileFollowAction && Boolean(profile) && typeof handleFollow === 'function';
 
@@ -220,7 +217,6 @@ export function buildAccountPageState({
     modal: {
       LIST_EDITOR_MODAL: ListEditorModal,
       LIST_PICKER_MODAL: ListPickerModal,
-      FOLLOW_LIST_MODAL: FollowListModal,
       ACCOUNT_SOCIAL_MODAL: AccountSocialModal,
       REVIEW_EDITOR_MODAL: ReviewEditorModal,
     },

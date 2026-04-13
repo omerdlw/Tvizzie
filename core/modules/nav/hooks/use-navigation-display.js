@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
+import { REGISTRY_TYPES, useRegistryState } from '@/core/modules/registry/context';
 import { useNavigationContext } from '../context';
 import MediaAction from '../actions/media-action';
 import { getNavConfirmationKey } from '../utils';
@@ -254,6 +255,30 @@ function applyStatusOverlay(item, statusState) {
   };
 }
 
+function applyLoadingState(item, loadingState) {
+  if (!item || !loadingState?.isLoading) {
+    return item;
+  }
+
+  return {
+    ...item,
+    isLoading: true,
+    isOverlay: false,
+    isSurface: false,
+    isConfirmation: false,
+    surfaceComponent: null,
+    surfaceContent: null,
+    surfaceProps: null,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isExpanded: false,
+    isParent: false,
+    action: null,
+    actions: null,
+  };
+}
+
 function applyConfirmationOverlay(item) {
   if (!item?.confirmation) {
     return item;
@@ -488,6 +513,7 @@ function hasDisplayResultChanged(currentResult, previousResult) {
 
 export function useNavigationDisplay() {
   const pathname = usePathname();
+  const { get } = useRegistryState();
 
   const { rawItems } = useNavigationItems();
   const {
@@ -511,6 +537,7 @@ export function useNavigationDisplay() {
     [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen]
   );
   const statusState = useNavigationStatus();
+  const loadingState = get(REGISTRY_TYPES.LOADING, 'page-loading');
   const { isVideo, countdownItem, toggleBackgroundVideo } = useNavigationCountdown();
 
   const isNotFoundPage = useMemo(() => {
@@ -530,7 +557,7 @@ export function useNavigationDisplay() {
   }, [rawItems, expanded, expandedParents, pathname, searchQuery, isNotFoundPage, countdownItem]);
 
   const activeItem = useMemo(() => {
-    return resolveActiveItem({
+    const resolvedActiveItem = resolveActiveItem({
       rawItems,
       navigationItems,
       pathname,
@@ -544,6 +571,7 @@ export function useNavigationDisplay() {
       guardConfirmation,
       closeSurface,
     });
+    return applyLoadingState(resolvedActiveItem, loadingState);
   }, [
     rawItems,
     navigationItems,
@@ -557,6 +585,7 @@ export function useNavigationDisplay() {
     dismissedConfirmationKey,
     guardConfirmation,
     closeSurface,
+    loadingState,
   ]);
 
   const activeIndex = useMemo(() => {

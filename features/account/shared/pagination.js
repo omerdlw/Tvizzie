@@ -5,6 +5,18 @@ import Link from 'next/link';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
+export const ACCOUNT_PAGINATION_STYLE_PROPS = Object.freeze({
+  className: 'flex flex-wrap items-center gap-2',
+  pageClassName: 'center size-10 rounded-[12px] border text-xs font-semibold transition',
+  activePageClassName: 'border-black bg-black text-white',
+  inactivePageClassName: 'border-black/10 bg-white hover:border-black/20 text-black/70',
+  navClassName:
+    'center size-10 rounded-[10px] border border-black/10 bg-white hover:border-black/20 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-50',
+  ellipsisClassName: 'px-1 text-xs text-black/60',
+  iconSize: 15,
+});
+export const ACCOUNT_PAGINATION_LIST_DETAIL_STYLE_PROPS = ACCOUNT_PAGINATION_STYLE_PROPS;
+
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -32,18 +44,18 @@ export function getAccountPaginationItems(currentPage, totalPages) {
 }
 
 export default function AccountPagination({
-  className = 'flex flex-wrap items-center justify-end gap-2',
+  className = ACCOUNT_PAGINATION_STYLE_PROPS.className,
   currentPage = 1,
-  ellipsisClassName = 'text-xs',
+  ellipsisClassName = ACCOUNT_PAGINATION_STYLE_PROPS.ellipsisClassName,
   getPageHref = null,
   hideDisabledNav = false,
-  iconSize = 16,
-  inactivePageClassName = 'border-black/15 bg-white/50 text-black/70',
-  navClassName = 'center size-12 border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40',
+  iconSize = ACCOUNT_PAGINATION_STYLE_PROPS.iconSize,
+  inactivePageClassName = ACCOUNT_PAGINATION_STYLE_PROPS.inactivePageClassName,
+  navClassName = ACCOUNT_PAGINATION_STYLE_PROPS.navClassName,
   nextAriaLabel = 'Go to next page',
   onPageChange = null,
-  pageClassName = 'center size-12 border text-xs font-semibold transition',
-  activePageClassName = 'border-black/30 bg-white/90 text-black shadow-sm',
+  pageClassName = ACCOUNT_PAGINATION_STYLE_PROPS.pageClassName,
+  activePageClassName = ACCOUNT_PAGINATION_STYLE_PROPS.activePageClassName,
   prevAriaLabel = 'Go to previous page',
   showPrevNext = true,
   totalPages = 1,
@@ -64,7 +76,12 @@ export default function AccountPagination({
 
     if (canUseLinks) {
       return (
-        <Link key={pageNumber} href={getPageHref(pageNumber)} aria-current={isActive ? 'page' : undefined} className={resolvedClassName}>
+        <Link
+          key={pageNumber}
+          href={getPageHref(pageNumber)}
+          aria-current={isActive ? 'page' : undefined}
+          className={resolvedClassName}
+        >
           {pageNumber}
         </Link>
       );

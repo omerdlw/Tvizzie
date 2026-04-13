@@ -122,7 +122,7 @@ export default function MediaCard({
             />
           ) : (
             fallbackContent || (
-              <div className="center bg-primary h-full w-full">
+              <div className="center h-full w-full border border-black/5 bg-black/5">
                 <Icon icon={fallbackIcon} size={fallbackIconSize} className={fallbackIconClassName} />
               </div>
             )
@@ -130,18 +130,25 @@ export default function MediaCard({
           {overlay || topOverlay}
         </div>
       </div>
-
-      {footer}
     </CardWrapper>
   );
 
-  if (!resolvedTooltipText) {
-    return cardNode;
-  }
-
-  return (
+  const cardWithTooltip = resolvedTooltipText ? (
     <Tooltip text={resolvedTooltipText} position="top" delayMs={40}>
       {cardNode}
     </Tooltip>
+  ) : (
+    cardNode
+  );
+
+  if (!footer) {
+    return cardWithTooltip;
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col justify-between">
+      {cardWithTooltip}
+      {footer}
+    </div>
   );
 }

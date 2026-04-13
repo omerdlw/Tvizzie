@@ -8,6 +8,7 @@ import GlobalContextMenuRegistry from '@/features/layout/global-context-menu-reg
 import ObservabilityBootstrap from '@/features/layout/observability-bootstrap';
 import NotificationsModal from '@/features/modal/notifications-modal';
 import AccountNavRegistry from '@/features/navigation/account-nav-registry';
+import AdminNavRegistry from '@/features/navigation/admin-nav-registry';
 import { AccountProvider } from '@/core/modules/account';
 import { AuthProvider } from '@/core/modules/auth';
 import { ContextMenuGlobal, ContextMenuProvider } from '@/core/modules/context-menu';
@@ -62,6 +63,7 @@ export function InteractiveFeatureBoundary({ children }) {
     <InteractiveProviders>
       <ObservabilityBootstrap />
       <AccountNavRegistry />
+      <AdminNavRegistry />
       <GlobalContextMenuRegistry />
       <GlobalNotificationModalRegistry />
       <NotificationContainer />

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,78 +13,93 @@ import Icon from '@/ui/icon';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
-function PersonCard({ person, priority = false, fetchPriority }) {
-  const [imageError, setImageError] = useState(false);
-  const imageSrc = person.profile_path && !imageError ? `${TMDB_IMG}/w185${person.profile_path}` : null;
+function PersonImage({ person, size, quality = 72, priority = false, fetchPriority, rounded = 'rounded-lg' }) {
+  const [error, setError] = useState(false);
+  const src = person.profile_path && !error ? `${TMDB_IMG}/${size}${person.profile_path}` : null;
 
+  if (!src) {
+    return (
+      <div className={`center h-full w-full bg-black/5 ${rounded}`}>
+        <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-slate-600" />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      fill
+      alt={person.name}
+      src={src}
+      sizes={size === 'w92' ? '32px' : '64px'}
+      priority={priority}
+      fetchPriority={fetchPriority}
+      quality={quality}
+      draggable={false}
+      className={`object-cover ${rounded}`}
+      onError={() => setError(true)}
+    />
+  );
+}
+
+function PersonCard({ person, compact = false, priority = false, fetchPriority }) {
   return (
     <Link
       href={`/person/${person.id}`}
-      onDragStart={(event) => event.preventDefault()}
-      className="group bg-primary/30 hover:bg-primary/60 flex items-center gap-2 rounded-[14px] border border-black/10 p-1 pr-4 backdrop-blur-sm transition-all duration-(--motion-duration-normal) hover:border-black/20"
+      onDragStart={(e) => e.preventDefault()}
+      className={[
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-2 border border-black/10 backdrop-blur-sm transition-all hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1 rounded-[10px] p-1 pr-2' : 'rounded-[14px] p-1 pr-4',
+      ].join(' ')}
     >
-      <div className="relative h-20 w-16 shrink-0 overflow-hidden">
-        {imageSrc ? (
-          <Image
-            fill
-            alt={person.name}
-            src={imageSrc}
-            sizes="64px"
-            priority={priority}
-            fetchPriority={fetchPriority}
-            quality={72}
-            draggable={false}
-            className="rounded-[10px] object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={20} className="text-[#475569]" />
-          </div>
-        )}
+      <div className={['relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}>
+        <PersonImage
+          person={person}
+          size={compact ? 'w92' : 'w185'}
+          quality={compact ? 70 : 72}
+          priority={priority}
+          fetchPriority={fetchPriority}
+          rounded={compact ? 'rounded-[6px]' : 'rounded-[10px]'}
+        />
       </div>
 
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-semibold text-black">{person.name}</span>
-        <span className="truncate text-xs text-black/70">{person.subtitle}</span>
-      </div>
+      {compact ? (
+        <span className="truncate text-xs font-semibold text-black">{person.name}</span>
+      ) : (
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-semibold text-black">{person.name}</span>
+          <span className="truncate text-xs text-black/70">{person.subtitle}</span>
+        </div>
+      )}
     </Link>
   );
 }
 
-function CompactPersonCard({ person, priority = false }) {
-  const [imageError, setImageError] = useState(false);
-  const imageSrc = person.profile_path && !imageError ? `${TMDB_IMG}/w92${person.profile_path}` : null;
+function buildEntries(list = [], fallbackKey) {
+  return list.map((item) => ({
+    ...item,
+    subtitle: item?.[fallbackKey] || (fallbackKey === 'character' ? 'Cast' : 'Crew'),
+  }));
+}
 
-  return (
-    <Link
-      href={`/person/${person.id}`}
-      onDragStart={(event) => event.preventDefault()}
-      className="group bg-primary/30 hover:bg-primary/60 flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-black/10 p-1 pr-2 transition-all duration-(--motion-duration-normal) hover:border-black/20"
-    >
-      <div className="relative size-8 shrink-0 overflow-hidden rounded-[6px] bg-black/5">
-        {imageSrc ? (
-          <Image
-            fill
-            alt={person.name}
-            src={imageSrc}
-            sizes="32px"
-            priority={priority}
-            quality={70}
-            draggable={false}
-            className="object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={14} className="text-[#475569]" />
-          </div>
-        )}
-      </div>
+function splitEntries(list = []) {
+  return {
+    featured: list.slice(0, FEATURED_COUNT),
+    compact: list.slice(FEATURED_COUNT, FEATURED_COUNT + COMPACT_COUNT),
+  };
+}
 
-      <span className="truncate text-xs font-semibold text-black">{person.name}</span>
-    </Link>
-  );
+function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') {
+  const creditKey =
+    person?.credit_id ||
+    person?.creditId ||
+    person?.cast_id ||
+    person?.castId ||
+    person?.order ||
+    [person?.id, person?.job, person?.department, person?.character, person?.subtitle].filter(Boolean).join('-') ||
+    person?.name ||
+    'person';
+
+  return `${tabKey}-${variant}-${creditKey}-${index}`;
 }
 
 export default function CastSection({ cast = [], crew = [], headerAction = null }) {
@@ -93,46 +107,35 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
 
-  const castEntries = useMemo(
-    () =>
-      (cast || []).map((member) => ({
-        ...member,
-        subtitle: member?.character || 'Cast',
-      })),
-    [cast]
-  );
+  const castEntries = useMemo(() => buildEntries(cast, 'character'), [cast]);
   const crewEntries = useMemo(
     () =>
-      (crew || []).map((member) => ({
-        ...member,
-        subtitle: member?.job || member?.department || 'Crew',
+      crew.map((item) => ({
+        ...item,
+        subtitle: item?.job || item?.department || 'Crew',
       })),
     [crew]
   );
-  const hasCast = castEntries.length > 0;
-  const hasCrew = crewEntries.length > 0;
+
+  const tabs = useMemo(() => {
+    const items = [];
+    if (castEntries.length) items.push({ key: 'cast', label: 'Cast', entries: castEntries });
+    if (crewEntries.length) items.push({ key: 'crew', label: 'Crew', entries: crewEntries });
+    return items;
+  }, [castEntries, crewEntries]);
 
   useEffect(() => {
-    if (activeTab === 'cast' && !hasCast && hasCrew) {
-      setActiveTab('crew');
-      return;
+    if (!tabs.find((tab) => tab.key === activeTab) && tabs[0]) {
+      setActiveTab(tabs[0].key);
     }
+  }, [activeTab, tabs]);
 
-    if (activeTab === 'crew' && !hasCrew && hasCast) {
-      setActiveTab('cast');
-    }
-  }, [activeTab, hasCast, hasCrew]);
+  if (!tabs.length) return null;
 
-  if (!hasCast && !hasCrew) {
-    return null;
-  }
+  const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
+  const activeTabData = tabs[activeIndex] || tabs[0];
 
-  const castFeatured = castEntries.slice(0, FEATURED_COUNT);
-  const castCompact = castEntries.slice(FEATURED_COUNT, FEATURED_COUNT + COMPACT_COUNT);
-  const crewFeatured = crewEntries.slice(0, FEATURED_COUNT);
-  const crewCompact = crewEntries.slice(FEATURED_COUNT, FEATURED_COUNT + COMPACT_COUNT);
-
-  const handleOpenCastModal = () => {
+  const handleOpenModal = () => {
     openModal(
       'CAST_MODAL',
       { desktop: 'center', mobile: 'bottom' },
@@ -146,20 +149,15 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
     );
   };
 
-  const segmentedItems = [
-    ...(hasCast ? [{ key: 'cast', label: 'Cast' }] : []),
-    ...(hasCrew ? [{ key: 'crew', label: 'Crew' }] : []),
-  ];
-
-  const renderPanel = (tabKey, featuredList, compactList) => {
-    const hasCompactRow = compactList.length > 0;
+  const renderPanel = (tabKey, entries) => {
+    const { featured, compact } = splitEntries(entries);
 
     return (
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {featuredList.map((person, index) => (
+          {featured.map((person, index) => (
             <PersonCard
-              key={`${tabKey}-${person.id || person.name || 'cast'}-${index}`}
+              key={buildPersonEntryKey(tabKey, person, index, 'featured')}
               person={person}
               priority={index < 4}
               fetchPriority={index < 4 ? 'high' : undefined}
@@ -167,68 +165,63 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
           ))}
         </div>
 
-        {hasCompactRow ? (
+        {!!compact.length && (
           <div className="flex h-10 items-center gap-2">
-            {compactList.map((person, index) => (
-              <CompactPersonCard key={`${tabKey}-${person.id || person.name || 'compact'}-${index}`} person={person} />
+            {compact.map((person, index) => (
+              <PersonCard key={buildPersonEntryKey(tabKey, person, index, 'compact')} person={person} compact />
             ))}
+
             <button
               type="button"
               aria-label="Show full cast"
-              onClick={handleOpenCastModal}
-              className="center bg-primary/50 hover:bg-primary/70 size-10 shrink-0 rounded-[10px] border border-black/10 text-black/70 transition-colors hover:text-black"
+              onClick={handleOpenModal}
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={18} />
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     );
   };
 
   return (
     <section className="relative flex flex-col gap-2">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <SegmentedControl value={activeTab} onChange={setActiveTab} items={segmentedItems} />
-          {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <SegmentedControl
+          className="rounded-xl backdrop-blur-sm"
+          value={activeTab}
+          onChange={setActiveTab}
+          items={tabs.map(({ key, label }) => ({ key, label }))}
+        />
+        {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
       </div>
+
       <div className="relative overflow-hidden">
-        {segmentedItems.length > 1 ? (
+        {tabs.length === 1 ? (
+          renderPanel(activeTabData.key, activeTabData.entries)
+        ) : (
           <>
             <div aria-hidden="true" className="invisible">
-              {activeTab === 'cast'
-                ? renderPanel('cast-measure', castFeatured, castCompact)
-                : renderPanel('crew-measure', crewFeatured, crewCompact)}
+              {renderPanel(activeTabData.key, activeTabData.entries)}
             </div>
 
-            <motion.div
-              className="absolute inset-0"
-              initial={false}
-              animate={{ x: activeTab === 'cast' ? '0%' : '-100%' }}
-              transition={
-                reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-              }
-            >
-              {renderPanel('cast', castFeatured, castCompact)}
-            </motion.div>
-
-            <motion.div
-              className="absolute inset-0"
-              initial={false}
-              animate={{ x: activeTab === 'cast' ? '100%' : '0%' }}
-              transition={
-                reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-              }
-            >
-              {renderPanel('crew', crewFeatured, crewCompact)}
-            </motion.div>
+            <div className="absolute inset-0 flex">
+              {tabs.map((tab, index) => (
+                <motion.div
+                  key={tab.key}
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={{ x: `${(index - activeIndex) * 100}%` }}
+                  transition={
+                    reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+                  }
+                >
+                  {renderPanel(tab.key, tab.entries)}
+                </motion.div>
+              ))}
+            </div>
           </>
-        ) : hasCast ? (
-          renderPanel('cast', castFeatured, castCompact)
-        ) : (
-          renderPanel('crew', crewFeatured, crewCompact)
         )}
       </div>
     </section>

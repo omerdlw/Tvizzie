@@ -289,7 +289,7 @@ export default function NotificationsModal({ close, header, data }) {
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className="h-8 shrink-0 whitespace-nowrap rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
+                className="h-8 shrink-0 rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
               >
                 Clear all
               </Button>
@@ -297,7 +297,7 @@ export default function NotificationsModal({ close, header, data }) {
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 whitespace-nowrap rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
                 >
                   Mark all as read
                 </Button>
@@ -326,7 +326,7 @@ export default function NotificationsModal({ close, header, data }) {
               ))}
             </div>
           ) : notifications.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
+            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/60')}>
               You have no notifications yet
             </div>
           ) : (

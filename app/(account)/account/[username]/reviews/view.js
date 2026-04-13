@@ -35,6 +35,7 @@ export default function ReviewsView({
   resolveError,
   resolvedUserId,
   reviews,
+  totalReviewCount,
   setIsBioSurfaceOpen,
   unfollowConfirmation,
   username,
@@ -101,7 +102,9 @@ export default function ReviewsView({
           onEdit={handleEditReview}
           onLike={handleLike}
           onLoadMore={() => loadReviews({ append: true })}
+          showHeader={false}
           showOwnActions={isOwner}
+          summaryLabel={Number.isFinite(Number(totalReviewCount)) ? `${Number(totalReviewCount)} Reviews` : null}
           title="Reviews"
           watchedItems={watchedItems}
         />

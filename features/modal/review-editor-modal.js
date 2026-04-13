@@ -316,7 +316,7 @@ export default function ReviewEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving || Boolean(validationError)}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, rating, reviewText })}
             </Button>

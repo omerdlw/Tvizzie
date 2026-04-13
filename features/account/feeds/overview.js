@@ -1,5 +1,4 @@
 'use client';
-
 import AccountActivityOverview from '@/features/account/overview/activity';
 import AccountFavoritesOverview from '@/features/account/overview/favorites';
 import AccountListsOverview from '@/features/account/overview/lists';
@@ -10,17 +9,16 @@ import { AccountPageShell } from '@/features/account/shared/layout';
 import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 
-const OVERVIEW_MEDIA_LIMIT = 5;
+const OVERVIEW_ACTIVITY_LIMIT = 6;
+const OVERVIEW_MEDIA_LIMIT = 6;
+const OVERVIEW_FAVORITES_LIMIT = 5;
 const OVERVIEW_LIST_LIMIT = 3;
 
 function buildSectionHref(username, suffix = '') {
   return username ? `/account/${username}${suffix}` : null;
 }
 
-export default function AccountOverviewFeed({
-  model = {},
-  RegistryComponent = null,
-}) {
+export default function AccountOverviewFeed({ model = {}, RegistryComponent = null }) {
   const {
     auth = { isAuthenticated: false, isReady: false, user: null },
     activityError,
@@ -128,7 +126,7 @@ export default function AccountOverviewFeed({
           {shouldShowFavorites ? (
             <AccountFavoritesOverview
               icon="solar:star-bold"
-              items={favoriteShowcase.slice(0, OVERVIEW_MEDIA_LIMIT)}
+              items={favoriteShowcase.slice(0, OVERVIEW_FAVORITES_LIMIT)}
               title="Favorites"
               titleHref={buildSectionHref(profileHandle, '/likes')}
             />
@@ -177,6 +175,21 @@ export default function AccountOverviewFeed({
             />
           ) : null}
 
+          {shouldShowActivity ? (
+            <AccountActivityOverview
+              hasMore={hasMoreActivityItems}
+              icon="solar:bolt-bold"
+              isLoading={activityLoading}
+              items={activityItems.slice(0, OVERVIEW_ACTIVITY_LIMIT)}
+              loadError={activityError}
+              showSeeMore={hasMoreActivityItems}
+              summaryLabel=""
+              title="Recent Activity"
+              titleHref={buildSectionHref(profileHandle, '/activity')}
+              variant="showcase"
+            />
+          ) : null}
+
           {shouldShowLists ? (
             <AccountListsOverview
               icon="solar:list-broken"
@@ -185,22 +198,6 @@ export default function AccountOverviewFeed({
               showSeeMore={listCount > OVERVIEW_LIST_LIMIT}
               title="Lists"
               titleHref={buildSectionHref(profileHandle, '/lists')}
-            />
-          ) : null}
-
-          {shouldShowActivity ? (
-            <AccountActivityOverview
-              hasMore={hasMoreActivityItems}
-              icon="solar:bolt-bold"
-              isLoading={activityLoading}
-              items={activityItems}
-              loadError={activityError}
-              showcaseGridClassName="grid-cols-3 gap-3 lg:grid-cols-5"
-              showSeeMore={hasMoreActivityItems}
-              summaryLabel=""
-              title="Recent Activity"
-              titleHref={buildSectionHref(profileHandle, '/activity')}
-              variant="showcase"
             />
           ) : null}
 

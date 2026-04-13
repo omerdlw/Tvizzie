@@ -1,11 +1,31 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import { AccountPageShell } from '@/features/account/shared/layout';
 import { AccountSectionReveal } from '@/features/account/shared/layout';
+import {
+  MEDIA_FILTER_QUERY_KEYS,
+  REVIEW_FILTER_QUERY_KEYS,
+  applyMediaFilters,
+  applyReviewFilters,
+  buildManagedQueryString,
+  buildMediaKeySet,
+  collectMediaGenreOptions,
+  collectReviewYears,
+  getDecadeOptions,
+  hasActiveMediaFilters,
+  hasActiveReviewFilters,
+  parseMediaFilters,
+  parseReviewFilters,
+  toMediaQueryValues,
+  toReviewQueryValues,
+} from '@/features/account/filtering';
+import { AccountMediaFilterBar, AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
-import AccountPagination from '@/features/account/shared/pagination';
+import AccountPagination, { ACCOUNT_PAGINATION_STYLE_PROPS } from '@/features/account/shared/pagination';
 import { formatPaginationSummaryLabel } from '@/features/account/utils';
 import AccountInlineSectionState from '@/features/account/shared/section-state';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
@@ -24,6 +44,14 @@ const MAX_ROWS_PER_PAGE = 8;
 const MOBILE_ITEMS_PER_PAGE = 3 * MAX_ROWS_PER_PAGE;
 const DESKTOP_ITEMS_PER_PAGE = 6 * MAX_ROWS_PER_PAGE;
 const REVIEW_ITEMS_PER_PAGE = 36;
+const LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS = Object.freeze([
+  Object.freeze({ key: 'hide_watched', label: 'Hide watched films' }),
+  Object.freeze({ key: 'hide_liked', label: 'Hide liked films' }),
+  Object.freeze({ key: 'hide_watchlist', label: 'Hide films in watchlist' }),
+  Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
+  Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
+]);
+const LIST_DETAIL_ALLOWED_EYE_FLAGS = LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS.map((option) => option.key);
 
 function useResponsivePageSize() {
   const [isMobile, setIsMobile] = useState(false);
@@ -59,8 +87,15 @@ function getPosterUrl(item) {
   return null;
 }
 
-function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null }) {
+function ListDetailMediaGrid({
+  emptyMessage = 'No titles in this list yet.',
+  isOwner = false,
+  items = [],
+  onRemoveItem = null,
+  toolbar = null,
+}) {
   const itemsPerPage = useResponsivePageSize();
+  const reduceMotion = useReducedMotion();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = items.length ? Math.ceil(items.length / itemsPerPage) : 1;
@@ -82,11 +117,18 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
   }, [currentPage, totalPages]);
 
   if (items.length === 0) {
-    return <AccountInlineSectionState className="px-4 py-5">No titles in this list yet.</AccountInlineSectionState>;
+    return (
+      <div className="flex flex-col gap-5">
+        {toolbar}
+        <AccountInlineSectionState className="px-4 py-5">{emptyMessage}</AccountInlineSectionState>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col gap-5">
+      {toolbar}
+
       <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
         {visibleItems.map((item, index) => {
           const mediaType = item?.entityType || item?.media_type;
@@ -94,24 +136,36 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
           const title = item?.title || item?.name || 'Untitled';
 
           return (
-            <MediaCard
+            <motion.div
               key={`${item.mediaKey || `${mediaType}-${mediaId}`}-${pageStart + index}`}
-              href={`/${mediaType}/${mediaId}`}
-              className="w-full"
-              imageSrc={getPosterUrl(item)}
-              imageAlt={title}
-              imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-              topOverlay={
-                isOwner && typeof onRemoveItem === 'function' ? (
-                  <AccountProfileMediaActions
-                    media={item}
-                    onRemoveItem={onRemoveItem}
-                    removeLabel={`Remove ${title} from this list`}
-                  />
-                ) : null
-              }
-              tooltipText={title}
-            />
+              layout
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.986 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+              transition={{
+                delay: reduceMotion ? 0 : index < 6 ? index * 0.018 : 0,
+                duration: reduceMotion ? 0.16 : 0.34,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <MediaCard
+                href={`/${mediaType}/${mediaId}`}
+                className="w-full"
+                imageSrc={getPosterUrl(item)}
+                imageAlt={title}
+                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
+                topOverlay={
+                  isOwner && typeof onRemoveItem === 'function' ? (
+                    <AccountProfileMediaActions
+                      media={item}
+                      onRemoveItem={onRemoveItem}
+                      removeLabel={`Remove ${title} from this list`}
+                    />
+                  ) : null
+                }
+                tooltipText={title}
+              />
+            </motion.div>
           );
         })}
       </div>
@@ -127,18 +181,7 @@ function ListDetailMediaGrid({ isOwner = false, items = [], onRemoveItem = null 
             })}
           </p>
 
-          <AccountPagination
-            currentPage={safeCurrentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            className="flex flex-wrap items-center gap-2"
-            pageClassName="center size-10 rounded-[10px] border text-xs font-semibold transition"
-            activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
-            inactivePageClassName="border-black/15 bg-white/50 text-black/70"
-            navClassName="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
-            ellipsisClassName="px-1 text-xs text-black/50"
-            iconSize={15}
-          />
+          <AccountPagination currentPage={safeCurrentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       ) : null}
     </div>
@@ -176,6 +219,7 @@ export default function AccountListDetailFeed({
   listDeleteConfirmation,
   listCount,
   listItems,
+  likes = [],
   ownReview,
   pendingFollowRequestCount,
   profile,
@@ -187,9 +231,104 @@ export default function AccountListDetailFeed({
   unfollowConfirmation,
   username,
   userProfile,
+  watchedItems = [],
   watchlistCount,
+  watchlistItems = [],
   RegistryComponent = null,
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const collectionRootPath = useMemo(() => String(pathname || ''), [pathname]);
+  const mediaFilters = useMemo(
+    () =>
+      parseMediaFilters(searchParams, {
+        allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
+      }),
+    [searchParams]
+  );
+  const reviewFilters = useMemo(() => parseReviewFilters(searchParams), [searchParams]);
+  const decadeOptions = useMemo(() => getDecadeOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(listItems), [listItems]);
+  const reviewYearOptions = useMemo(() => collectReviewYears(reviews), [reviews]);
+  const watchedKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
+  const likedKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const watchlistKeys = useMemo(() => buildMediaKeySet(watchlistItems), [watchlistItems]);
+  const filteredListItems = useMemo(
+    () =>
+      applyMediaFilters(listItems, mediaFilters, {
+        likedKeys,
+        watchedKeys,
+        watchlistKeys,
+      }),
+    [likedKeys, listItems, mediaFilters, watchedKeys, watchlistKeys]
+  );
+  const filteredReviews = useMemo(() => applyReviewFilters(reviews, reviewFilters), [reviewFilters, reviews]);
+  const hasMediaFilters = hasActiveMediaFilters(mediaFilters);
+  const hasReviewFilters = hasActiveReviewFilters(reviewFilters);
+
+  const updateMediaFilters = useCallback(
+    (updates = {}) => {
+      const nextFilters = {
+        ...mediaFilters,
+        ...updates,
+      };
+      const queryString = buildManagedQueryString(searchParams, {
+        managedKeys: MEDIA_FILTER_QUERY_KEYS,
+        resetPage: true,
+        values: toMediaQueryValues(nextFilters),
+      });
+
+      router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
+        scroll: false,
+      });
+    },
+    [collectionRootPath, mediaFilters, router, searchParams]
+  );
+
+  const resetMediaFilters = useCallback(() => {
+    const queryString = buildManagedQueryString(searchParams, {
+      managedKeys: MEDIA_FILTER_QUERY_KEYS,
+      resetPage: true,
+      values: {},
+    });
+
+    router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
+      scroll: false,
+    });
+  }, [collectionRootPath, router, searchParams]);
+
+  const updateReviewFilters = useCallback(
+    (updates = {}) => {
+      const nextFilters = {
+        ...reviewFilters,
+        ...updates,
+      };
+      const queryString = buildManagedQueryString(searchParams, {
+        managedKeys: REVIEW_FILTER_QUERY_KEYS,
+        resetPage: true,
+        values: toReviewQueryValues(nextFilters),
+      });
+
+      router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
+        scroll: false,
+      });
+    },
+    [collectionRootPath, reviewFilters, router, searchParams]
+  );
+
+  const resetReviewFilters = useCallback(() => {
+    const queryString = buildManagedQueryString(searchParams, {
+      managedKeys: REVIEW_FILTER_QUERY_KEYS,
+      resetPage: true,
+      values: {},
+    });
+
+    router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
+      scroll: false,
+    });
+  }, [collectionRootPath, router, searchParams]);
+
   const pageRegistry = RegistryComponent ? (
     <RegistryComponent
       auth={auth}
@@ -221,17 +360,17 @@ export default function AccountListDetailFeed({
     />
   ) : null;
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
-  const totalReviewPages = reviews.length ? Math.ceil(reviews.length / REVIEW_ITEMS_PER_PAGE) : 1;
+  const totalReviewPages = filteredReviews.length ? Math.ceil(filteredReviews.length / REVIEW_ITEMS_PER_PAGE) : 1;
   const safeCurrentReviewPage = Math.min(currentReviewPage, totalReviewPages);
   const reviewPageStart = (safeCurrentReviewPage - 1) * REVIEW_ITEMS_PER_PAGE;
   const visibleReviews = useMemo(
-    () => reviews.slice(reviewPageStart, reviewPageStart + REVIEW_ITEMS_PER_PAGE),
-    [reviews, reviewPageStart]
+    () => filteredReviews.slice(reviewPageStart, reviewPageStart + REVIEW_ITEMS_PER_PAGE),
+    [filteredReviews, reviewPageStart]
   );
 
   useEffect(() => {
     setCurrentReviewPage(1);
-  }, [list?.id]);
+  }, [list?.id, reviewFilters]);
 
   useEffect(() => {
     if (currentReviewPage > totalReviewPages) {
@@ -278,13 +417,52 @@ export default function AccountListDetailFeed({
 
           <AccountSectionReveal delay={0.06}>
             <div className={`${LIST_SECTION_SHELL_CLASS} pb-12`}>
-              <ListDetailMediaGrid isOwner={isOwner} items={listItems} onRemoveItem={handleRemoveListItem} />
+              <ListDetailMediaGrid
+                emptyMessage={
+                  hasMediaFilters && listItems.length > 0 ? 'No titles match the current filters.' : undefined
+                }
+                isOwner={isOwner}
+                items={filteredListItems}
+                onRemoveItem={handleRemoveListItem}
+                toolbar={
+                  <>
+                    <AccountMediaFilterBar
+                      filters={mediaFilters}
+                      decadeOptions={decadeOptions}
+                      genreOptions={genreOptions}
+                      visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
+                      onChange={updateMediaFilters}
+                      onReset={hasMediaFilters ? resetMediaFilters : null}
+                    />
+
+                    {hasMediaFilters ? (
+                      <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                        {filteredListItems.length} of {listItems.length} titles shown
+                      </p>
+                    ) : null}
+                  </>
+                }
+              />
             </div>
           </AccountSectionReveal>
 
           <AccountSectionReveal delay={0.1}>
             <div className={`${LIST_SECTION_SHELL_CLASS} pt-4 pb-20`}>
               <ReviewHeader ratingStats={ratingStats} totalReviews={reviews.length} />
+
+              <AccountReviewFilterBar
+                className="mb-2"
+                filters={reviewFilters}
+                yearOptions={reviewYearOptions}
+                onChange={updateReviewFilters}
+                onReset={hasReviewFilters ? resetReviewFilters : null}
+              />
+
+              {hasReviewFilters ? (
+                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                  {filteredReviews.length} of {reviews.length} reviews shown
+                </p>
+              ) : null}
 
               {!isOwner && (
                 <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={list.title} />}>
@@ -309,16 +487,24 @@ export default function AccountListDetailFeed({
                   </div>
                 </AuthGate>
               )}
-              <ReviewList
-                currentUserId={auth.user?.id || null}
-                isLoading={false}
-                loadError={null}
-                onDeleteRequest={handleDeleteRequest}
-                onEdit={handleEditReview}
-                onLike={handleLikeReview}
-                sortedReviews={visibleReviews}
-                userProfile={userProfile}
-              />
+              {visibleReviews.length === 0 ? (
+                <AccountInlineSectionState className="px-4 py-5">
+                  {hasReviewFilters && reviews.length > 0
+                    ? 'No reviews match the current filters.'
+                    : 'No ratings or reviews yet'}
+                </AccountInlineSectionState>
+              ) : (
+                <ReviewList
+                  currentUserId={auth.user?.id || null}
+                  isLoading={false}
+                  loadError={null}
+                  onDeleteRequest={handleDeleteRequest}
+                  onEdit={handleEditReview}
+                  onLike={handleLikeReview}
+                  sortedReviews={visibleReviews}
+                  userProfile={userProfile}
+                />
+              )}
 
               {totalReviewPages > 1 ? (
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -327,7 +513,7 @@ export default function AccountListDetailFeed({
                       emptyLabel: '0 total',
                       pageSize: REVIEW_ITEMS_PER_PAGE,
                       startIndex: reviewPageStart,
-                      totalCount: reviews.length,
+                      totalCount: filteredReviews.length,
                     })}
                   </p>
 
@@ -337,13 +523,6 @@ export default function AccountListDetailFeed({
                     onPageChange={setCurrentReviewPage}
                     prevAriaLabel="Go to previous review page"
                     nextAriaLabel="Go to next review page"
-                    className="flex flex-wrap items-center gap-2"
-                    pageClassName="center size-10 rounded-[10px] border text-xs font-semibold transition"
-                    activePageClassName="border-black/30 bg-white/90 text-black shadow-sm"
-                    inactivePageClassName="border-black/15 bg-white/50 text-black/70"
-                    navClassName="center size-10 rounded-[10px] border border-black/15 bg-white/50 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-40"
-                    ellipsisClassName="px-1 text-xs text-black/50"
-                    iconSize={15}
                   />
                 </div>
               ) : null}

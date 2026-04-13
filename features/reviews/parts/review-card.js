@@ -222,7 +222,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-wider text-black/50 uppercase transition-colors group-hover:text-black/70">
+        <span className="block text-[11px] font-semibold tracking-wider text-black/60 uppercase transition-colors group-hover:text-black/70">
           Spoiler warning
         </span>
         <span className="mt-1 block text-sm leading-6 text-black/70 transition-colors group-hover:text-black">

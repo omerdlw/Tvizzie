@@ -1,5 +1,7 @@
 'use client';
 
+import { motion, useReducedMotion } from 'framer-motion';
+
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';
 
@@ -19,6 +21,8 @@ export default function ReviewList({
   userProfile,
   watchedMediaKeys = null,
 }) {
+  const reduceMotion = useReducedMotion();
+
   if (isLoading) {
     return <div className="py-10 text-center text-sm text-black/70">Loading reviews</div>;
   }
@@ -38,21 +42,67 @@ export default function ReviewList({
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
 
         return (
-          <ReviewCard
+          <motion.div
             key={review.docPath || review.id || `review-${index}`}
-            className={sortedReviews[0] === review ? 'pt-0 pb-6 sm:pt-0 sm:pb-7' : ''}
-            review={mergedReview}
-            currentUserId={currentUserId}
-            displayVariant={displayVariant}
-            isOwnReview={showOwnActions && isOwnReview}
-            likedMediaKeys={likedMediaKeys}
-            onLike={() => onLike(review)}
-            onEdit={() => onEdit(review)}
-            onDeleteRequest={() => onDeleteRequest(review)}
-            rewatchMediaKeys={rewatchMediaKeys}
-            showSubject={showSubject}
-            watchedMediaKeys={watchedMediaKeys}
-          />
+            layout
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
+            whileInView={
+              reduceMotion
+                ? { opacity: 1 }
+                : {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    filter: 'blur(0px)',
+                    transitionEnd: {
+                      filter: 'none',
+                      transform: 'none',
+                      willChange: 'auto',
+                    },
+                  }
+            }
+            viewport={{ once: true, amount: 0, margin: '0px 0px 16% 0px' }}
+            transition={{
+              opacity: {
+                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
+                duration: reduceMotion ? 0.16 : 0.44,
+                ease: [0.22, 1, 0.36, 1],
+              },
+              filter: {
+                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
+                duration: reduceMotion ? 0.16 : 0.34,
+                ease: [0.22, 1, 0.36, 1],
+              },
+              scale: {
+                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
+                duration: reduceMotion ? 0.16 : 0.46,
+                ease: [0.22, 1, 0.36, 1],
+              },
+              y: {
+                type: 'spring',
+                stiffness: 132,
+                damping: 24,
+                mass: 1,
+                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
+              },
+            }}
+            style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
+          >
+            <ReviewCard
+              className={sortedReviews[0] === review ? 'pt-0 pb-6 sm:pt-0 sm:pb-7' : ''}
+              review={mergedReview}
+              currentUserId={currentUserId}
+              displayVariant={displayVariant}
+              isOwnReview={showOwnActions && isOwnReview}
+              likedMediaKeys={likedMediaKeys}
+              onLike={() => onLike(review)}
+              onEdit={() => onEdit(review)}
+              onDeleteRequest={() => onDeleteRequest(review)}
+              rewatchMediaKeys={rewatchMediaKeys}
+              showSubject={showSubject}
+              watchedMediaKeys={watchedMediaKeys}
+            />
+          </motion.div>
         );
       })}
     </div>
