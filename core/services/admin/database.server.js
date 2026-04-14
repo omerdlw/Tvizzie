@@ -235,7 +235,9 @@ export async function loadAdminDatabasePayload({ windowHours = 24 } = {}) {
 
       return toInteger(result.count, 0);
     }),
-    safeLoad('activity_window_current', () => countRowsBetween(admin, 'activity', 'created_at', range.sinceIso, range.nowIso)),
+    safeLoad('activity_window_current', () =>
+      countRowsBetween(admin, 'activity', 'created_at', range.sinceIso, range.nowIso)
+    ),
     safeLoad('activity_window_previous', () =>
       countRowsBetween(admin, 'activity', 'created_at', range.previousSinceIso, range.sinceIso)
     ),
@@ -269,12 +271,16 @@ export async function loadAdminDatabasePayload({ windowHours = 24 } = {}) {
     tableCountResults.map((result, index) => [TABLE_COUNT_TARGETS[index], toInteger(result.data, 0)])
   );
 
-  const performanceLints = Array.isArray(performanceAdvisorsResult.data?.items) ? performanceAdvisorsResult.data.items : [];
+  const performanceLints = Array.isArray(performanceAdvisorsResult.data?.items)
+    ? performanceAdvisorsResult.data.items
+    : [];
   const securityLints = Array.isArray(securityAdvisorsResult.data?.items) ? securityAdvisorsResult.data.items : [];
   const lintCounts = extractLintCounts(performanceLints);
   const topFindings = buildTopFindings(performanceLints, securityLints);
   const topTableRows = buildTopTableRows(tableCounts);
-  const advisorsAvailable = Boolean(performanceAdvisorsResult.data?.available && securityAdvisorsResult.data?.available);
+  const advisorsAvailable = Boolean(
+    performanceAdvisorsResult.data?.available && securityAdvisorsResult.data?.available
+  );
 
   const activityTrend = calculateTrend(activityCurrentResult.data, activityPreviousResult.data);
   const listItemsTrend = calculateTrend(listItemsCurrentResult.data, listItemsPreviousResult.data);
@@ -349,7 +355,10 @@ export async function loadAdminDatabasePayload({ windowHours = 24 } = {}) {
         source: 'database',
         status: tableCountResults.some((result) => result.error) ? 'degraded' : 'healthy',
         title: 'Core Table Footprint',
-        value: topTableRows.slice(0, 2).map((item) => `${item.table} ${item.rows}`).join(' · '),
+        value: topTableRows
+          .slice(0, 2)
+          .map((item) => `${item.table} ${item.rows}`)
+          .join(' · '),
       },
       {
         description: 'Profiles vs lifecycle/profile_counters consistency',

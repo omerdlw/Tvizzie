@@ -27,6 +27,17 @@ const WATCHED_VISIBILITY_OPTIONS = Object.freeze([
 ]);
 const WATCHED_ALLOWED_EYE_FLAGS = WATCHED_VISIBILITY_OPTIONS.map((option) => option.key);
 
+function parseWatchedMediaFilters(search) {
+  return parseMediaFilters(search, {
+    allowedEyeFlags: WATCHED_ALLOWED_EYE_FLAGS,
+  });
+}
+
+function parsePageFromSearch(search) {
+  const parsed = Number(search.get('page') || '1');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
+
 export default function AccountWatchedFeed({
   auth,
   canShowWatchedGrid,
@@ -39,19 +50,14 @@ export default function AccountWatchedFeed({
   const searchParams = useSearchParams();
   const searchParamsKey = searchParams?.toString?.() || '';
   const initialMediaFilters = useMemo(
-    () =>
-      parseMediaFilters(new URLSearchParams(searchParamsKey), {
-        allowedEyeFlags: WATCHED_ALLOWED_EYE_FLAGS,
-      }),
+    () => parseWatchedMediaFilters(new URLSearchParams(searchParamsKey)),
     [searchParamsKey]
   );
-  const initialPage = useMemo(() => {
-    const parsed = Number(new URLSearchParams(searchParamsKey).get('page') || '1');
-    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-  }, [searchParamsKey]);
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
   const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
+  const currentUserId = auth.user?.id || null;
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const genreOptions = useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems]);
   const watchedKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
@@ -62,7 +68,7 @@ export default function AccountWatchedFeed({
   useEffect(() => {
     setMediaFilters(initialMediaFilters);
     setActivePage(initialPage);
-  }, [initialMediaFilters, initialPage, searchParamsKey]);
+  }, [initialMediaFilters, initialPage]);
 
   const updateUrl = useCallback(
     (nextFilters, nextPage) => {
@@ -103,18 +109,11 @@ export default function AccountWatchedFeed({
   );
 
   const handleResetFilters = useCallback(() => {
-    setMediaFilters(
-      parseMediaFilters(new URLSearchParams(), {
-        allowedEyeFlags: WATCHED_ALLOWED_EYE_FLAGS,
-      })
-    );
+    const defaultFilters = parseWatchedMediaFilters(new URLSearchParams());
+
+    setMediaFilters(defaultFilters);
     setActivePage(1);
-    updateUrl(
-      parseMediaFilters(new URLSearchParams(), {
-        allowedEyeFlags: WATCHED_ALLOWED_EYE_FLAGS,
-      }),
-      1
-    );
+    updateUrl(defaultFilters, 1);
   }, [updateUrl]);
 
   const handlePageChange = useCallback(
@@ -148,7 +147,7 @@ export default function AccountWatchedFeed({
             media={item}
             onRemoveItem={onRemoveItem}
             removeLabel={`Remove ${item.title || item.name} from watched`}
-            userId={auth.user?.id || null}
+            userId={currentUserId}
           />
         ) : null
       }

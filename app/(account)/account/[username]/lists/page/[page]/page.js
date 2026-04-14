@@ -17,5 +17,5 @@ export default async function Page({ params }) {
 
   const routeData = await getUsernameAccountListsRouteData(username);
 
-  return <Client currentPage={pageNumber} {...routeData} />;
+  return <Client routeData={routeData} />;
 }

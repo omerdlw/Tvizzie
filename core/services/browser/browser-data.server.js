@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createClient as createServerClient } from '@/core/clients/supabase/server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { getAccountSnapshotByUserId, getAccountSnapshotByUsername } from '@/core/services/account/account.server';
+import { getAccountSnapshotByUserId } from '@/core/services/account/account.server';
 import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import { isMovieMediaType, isSupportedContentSubjectType, isTvReference, normalizeMediaType } from '@/core/utils/media';
@@ -117,9 +117,7 @@ function normalizeEntityType(value) {
 }
 
 function isUuidLike(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    normalizeValue(value)
-  );
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalizeValue(value));
 }
 
 function resolveLimitCount(value, fallback = 0, max = 100) {
@@ -216,7 +214,8 @@ function normalizeMediaPayload(payload = {}, row = {}) {
     userId: payload.userId || row.user_id || null,
     vote_average: normalizeNumber(payload.vote_average, null),
     vote_count: normalizeNumber(payload.vote_count, null),
-    watchProviders: payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
+    watchProviders:
+      payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
   };
 }
 

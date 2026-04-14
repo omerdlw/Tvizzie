@@ -9,7 +9,7 @@ import Icon from '@/ui/icon';
 
 const INPUT_CLASSNAMES = Object.freeze({
   wrapper:
-    'flex h-12 w-full items-center rounded-2xl border border-black/10 bg-primary px-4 transition focus-within:border-black/40',
+    'flex h-12 w-full items-center border border-black/10 bg-primary px-4 transition focus-within:border-black/40',
   input: 'w-full text-black placeholder:text-black/60',
 });
 
@@ -20,12 +20,12 @@ const PASSWORD_INPUT_CLASSNAMES = Object.freeze({
 
 const PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex h-12 w-full items-center justify-center rounded-2xl border border-transparent bg-black px-4 font-semibold text-white transition hover:border-black/10 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex h-12 w-full items-center justify-center border border-transparent bg-black px-4 font-semibold text-white transition hover:border-black/10 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-60',
 });
 
 const SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex h-12 w-full items-center justify-center rounded-2xl border border-black/10 bg-primary px-4 text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex h-12 w-full items-center justify-center border border-black/10 bg-primary px-4 text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60',
 });
 
 function PasswordToggleButton({ visible, onClick, showLabel = 'Show password', hideLabel = 'Hide password' }) {
@@ -182,7 +182,7 @@ export default function View({
               checked={rememberDevice}
               onChange={(event) => setRememberDevice(event.target.checked)}
               disabled={isSignInBusy}
-              className="size-5 rounded border border-black/10 accent-black"
+              className="size-5 border border-black/10 accent-black"
             />
             <span>Remember me</span>
           </label>

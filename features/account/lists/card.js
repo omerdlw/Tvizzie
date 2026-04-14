@@ -101,7 +101,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
       style={{ zIndex }}
     >
       <div
-        className="overflow-hidden rounded-[14px]"
+        className="overflow-hidden"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -150,7 +150,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
       style={{ zIndex }}
     >
       <div
-        className="rounded-[14px] border border-dashed border-black/10 bg-white"
+        className="border border-dashed border-black/10 bg-white"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -213,13 +213,13 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
     >
       <Link href={getListHref(list, ownerUsername)} className="block">
         <div
-          className="relative w-full rounded-[14px]"
+          className="relative w-full"
           style={{
             perspective: '1200px',
           }}
         >
           <motion.div
-            className="relative z-0 rounded-[14px] border border-black/15 bg-white"
+            className="relative z-0 border border-black/15 bg-white"
             initial={false}
             animate={{
               rotateX: isHovered ? 12 : 0,
@@ -275,7 +275,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-[14px] border border-black/20 bg-white/85"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/20 bg-white/85"
             initial={false}
             animate={{
               rotateX: isHovered ? -20 : 0,

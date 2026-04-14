@@ -67,15 +67,15 @@ function FeedbackPageCard({ page }) {
   }
 
   return (
-    <div className="flex items-start gap-4 rounded-[12px] border border-black/10 bg-black/5 p-3">
+    <div className="flex items-start gap-4 border border-black/10 bg-black/5 p-3">
       {page.icon ? (
         isImageIconSource(page.icon) ? (
           <div
-            className="size-11 shrink-0 rounded-[8px] bg-cover bg-center bg-no-repeat shadow-sm"
+            className="size-11 shrink-0 bg-cover bg-center bg-no-repeat shadow-sm"
             style={{ backgroundImage: `url(${page.icon})` }}
           />
         ) : (
-          <div className="bg-primary flex size-11 shrink-0 items-center justify-center rounded-[8px] border border-black/10 text-black/70 shadow-sm">
+          <div className="bg-primary flex size-11 shrink-0 items-center justify-center border border-black/10 text-black/70 shadow-sm">
             <Icon icon={page.icon} size={20} />
           </div>
         )
@@ -99,7 +99,7 @@ function ScopeButton({ active, children, onClick }) {
       type="button"
       onClick={onClick}
       className={cn(
-        'group flex flex-1 flex-col rounded-[12px] border p-3 text-left transition-all',
+        'group flex flex-1 flex-col border p-3 text-left transition-all',
         active
           ? 'border-black bg-black/5 shadow-sm'
           : 'bg-primary border-black/10 hover:border-black/20 hover:bg-black/2'
@@ -185,7 +185,7 @@ export default function FeedbackModal({ close, data, header }) {
             <Button
               type="button"
               onClick={close}
-              className="bg-primary h-8 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
+              className="bg-primary h-8 border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
             >
               Cancel
             </Button>
@@ -193,7 +193,7 @@ export default function FeedbackModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isSaving ? 'Sending' : 'Send feedback'}
             </Button>
@@ -237,7 +237,7 @@ export default function FeedbackModal({ close, data, header }) {
             maxHeight={220}
             className={{
               wrapper:
-                'rounded-[12px] border border-black/10 bg-white transition focus-within:border-black focus-within:bg-white hover:border-black/20',
+                'border border-black/10 bg-white transition focus-within:border-black focus-within:bg-white hover:border-black/20',
               textarea:
                 'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/40',
             }}

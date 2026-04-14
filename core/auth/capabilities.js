@@ -141,7 +141,9 @@ export function resolveProviderDescriptors({ providerData = [], identities = [],
 }
 
 export function resolvePrimaryProvider(providerIds = []) {
-  const normalizedProviderIds = uniqueStrings(providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean));
+  const normalizedProviderIds = uniqueStrings(
+    providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean)
+  );
 
   if (normalizedProviderIds.includes('password')) {
     return 'password';
@@ -159,7 +161,9 @@ export function resolvePrimaryProvider(providerIds = []) {
 }
 
 export function resolveAuthCapabilities({ providerIds = [], email = null } = {}) {
-  const uniqueProviderIds = uniqueStrings(providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean));
+  const uniqueProviderIds = uniqueStrings(
+    providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean)
+  );
   const passwordEnabled = uniqueProviderIds.includes('password');
   const oauthProviderIds = getEnabledOAuthProviderIds(uniqueProviderIds);
   const oauthEnabled = oauthProviderIds.length > 0;

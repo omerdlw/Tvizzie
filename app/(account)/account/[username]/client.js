@@ -3,8 +3,6 @@
 import AccountClient from '../client';
 import Registry from './registry';
 
-export default function Client({
-  ...props
-}) {
-  return <AccountClient {...props} RegistryComponent={Registry} />;
+export default function Client({ routeData = null }) {
+  return <AccountClient routeData={routeData} RegistryComponent={Registry} />;
 }

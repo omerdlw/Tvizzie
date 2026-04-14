@@ -22,7 +22,7 @@ const ACCOUNT_HERO_TOP_FADE_CLASS =
 const ACCOUNT_HERO_TINT_CLASS =
   'absolute inset-0 bg-[radial-gradient(90%_58%_at_50%_14%,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_34%,rgba(255,255,255,0)_64%),linear-gradient(180deg,rgba(6,10,16,0.14)_0%,rgba(6,10,16,0.04)_42%,rgba(6,10,16,0)_72%)]';
 const ACCOUNT_HERO_CENTER_GLOW_CLASS =
-  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 rounded-full bg-white/60 blur-3xl sm:h-64 sm:w-64';
+  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -266,7 +266,7 @@ export default function AccountHero({
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <img
-                className="h-full w-full rounded-full object-cover"
+                className="h-full w-full object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}

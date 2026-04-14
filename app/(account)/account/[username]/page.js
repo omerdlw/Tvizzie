@@ -15,5 +15,5 @@ export default async function Page({ params }) {
 
   const routeData = await getUsernameAccountOverviewRouteData(username);
 
-  return <Client {...routeData} />;
+  return <Client routeData={routeData} />;
 }

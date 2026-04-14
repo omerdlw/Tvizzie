@@ -34,11 +34,7 @@ function getRealtimeAdminClient() {
   return globalThis[REALTIME_ADMIN_CLIENT_KEY];
 }
 
-export async function publishUserRealtimeBroadcast({
-  userId,
-  eventType,
-  payload = {},
-}) {
+export async function publishUserRealtimeBroadcast({ userId, eventType, payload = {} }) {
   if (!isRealtimeTransportEnabled()) {
     return {
       delivered: false,

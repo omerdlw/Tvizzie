@@ -137,11 +137,7 @@ export function SmoothScrollProvider({ children }) {
   }, []);
 
   return (
-    <ReactLenis
-      ref={lenisRef}
-      root
-      options={PREMIUM_SCROLL_OPTIONS}
-    >
+    <ReactLenis ref={lenisRef} root options={PREMIUM_SCROLL_OPTIONS}>
       {children}
     </ReactLenis>
   );

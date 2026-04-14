@@ -36,7 +36,7 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
       }}
       transition={EASING.SPRING_CONFIG.NOTIFICATION}
       className={cn(
-        'pointer-events-auto w-full max-w-md min-w-xs rounded-[16px] border-[1.5px] border-black/10',
+        'pointer-events-auto w-full max-w-md min-w-xs border-[1.5px] border-black/10',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}

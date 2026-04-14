@@ -121,7 +121,9 @@ function buildSearchHref({ pathname, query, searchParamsString, searchType, movi
   const normalizedQuery = query.trim();
   const normalizedMovieFilters = normalizeSearchMovieFilters(movieFilters);
   const nextSearchType =
-    searchType === SEARCH_TYPES.ALL && hasActiveSearchMovieFilters(normalizedMovieFilters) ? SEARCH_TYPES.MOVIE : searchType;
+    searchType === SEARCH_TYPES.ALL && hasActiveSearchMovieFilters(normalizedMovieFilters)
+      ? SEARCH_TYPES.MOVIE
+      : searchType;
 
   if (normalizedQuery) {
     params.set('q', normalizedQuery);
@@ -153,7 +155,10 @@ export default function SearchPage() {
     () => parseSearchMovieFilters(new URLSearchParams(searchParamsString)),
     [searchParamsString]
   );
-  const searchParamMovieFiltersKey = useMemo(() => getMovieFiltersKey(searchParamMovieFilters), [searchParamMovieFilters]);
+  const searchParamMovieFiltersKey = useMemo(
+    () => getMovieFiltersKey(searchParamMovieFilters),
+    [searchParamMovieFilters]
+  );
   const initialBatchSize =
     typeof window === 'undefined'
       ? SEARCH_GRID.DESKTOP_COLUMNS * SEARCH_GRID.DESKTOP_ROWS
@@ -212,7 +217,9 @@ export default function SearchPage() {
   useEffect(() => {
     setQuery((currentValue) => (currentValue === searchParamQuery ? currentValue : searchParamQuery));
     setSearchType((currentValue) => (currentValue === searchParamType ? currentValue : searchParamType));
-    setMovieFilters((currentValue) => (areMovieFiltersEqual(currentValue, searchParamMovieFilters) ? currentValue : searchParamMovieFilters));
+    setMovieFilters((currentValue) =>
+      areMovieFiltersEqual(currentValue, searchParamMovieFilters) ? currentValue : searchParamMovieFilters
+    );
   }, [searchParamMovieFilters, searchParamMovieFiltersKey, searchParamQuery, searchParamType]);
 
   useEffect(() => {
@@ -513,7 +520,7 @@ export default function SearchPage() {
                 ) : null}
               </>
             ) : loading ? null : (
-              <div className="mx-auto w-full max-w-4xl rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+              <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
                 {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
                   ? 'No results found for the selected movie filters'
                   : 'No results found'}
@@ -521,7 +528,7 @@ export default function SearchPage() {
             )}
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-4xl rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+          <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
             Start typing to see all results
           </div>
         )}

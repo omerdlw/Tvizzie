@@ -67,7 +67,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
             rel="noopener noreferrer"
             title={link.label}
             className={cn(
-              'center bg-primary/70 size-10 rounded-[12px] border border-black/10 text-black/70 backdrop-blur-md transition-all duration-[var(--motion-duration-normal)] hover:border-black/20 hover:bg-white hover:text-black',
+              'center bg-primary/70 size-10 border border-black/10 text-black/70 backdrop-blur-md transition-all duration-[var(--motion-duration-normal)] hover:border-black/20 hover:bg-white hover:text-black',
               linkClassName
             )}
           >

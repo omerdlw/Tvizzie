@@ -111,7 +111,7 @@ export function Icon({ icon, isStackHovered, style }) {
   if (isImageSource) {
     return (
       <motion.div
-        className={cn('size-12 shrink-0 rounded-[12px] bg-cover bg-center bg-no-repeat', className)}
+        className={cn('size-12 shrink-0 bg-cover bg-center bg-no-repeat rounded-[12px]', className)}
         transition={{
           duration: DURATION.FAST,
           ease: EASING.SMOOTH,
@@ -124,8 +124,7 @@ export function Icon({ icon, isStackHovered, style }) {
   return (
     <motion.div
       className={cn(
-        'center size-12 rounded-[12px] transition-colors duration-(--motion-duration-normal)',
-        'bg-black/5',
+        'center size-12 transition-colors bg-black/5 duration-(--motion-duration-normal) rounded-lg',
         isStackHovered && !hasCustomBackground && 'bg-black/10',
         isStackHovered && !hasCustomColor && 'text-black',
         className

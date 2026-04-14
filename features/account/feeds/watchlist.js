@@ -26,30 +26,30 @@ const WATCHLIST_VISIBILITY_OPTIONS = Object.freeze([
 ]);
 const WATCHLIST_ALLOWED_EYE_FLAGS = WATCHLIST_VISIBILITY_OPTIONS.map((option) => option.key);
 
-export default function AccountWatchlistFeed({
-  auth,
-  canShowWatchlistGrid,
-  isOwner,
-  watchlist,
-  onRemoveItem,
-}) {
+function parseWatchlistMediaFilters(search) {
+  return parseMediaFilters(search, {
+    allowedEyeFlags: WATCHLIST_ALLOWED_EYE_FLAGS,
+  });
+}
+
+function parsePageFromSearch(search) {
+  const parsed = Number(search.get('page') || '1');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
+
+export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwner, watchlist, onRemoveItem }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsKey = searchParams?.toString?.() || '';
   const initialMediaFilters = useMemo(
-    () =>
-      parseMediaFilters(new URLSearchParams(searchParamsKey), {
-        allowedEyeFlags: WATCHLIST_ALLOWED_EYE_FLAGS,
-      }),
+    () => parseWatchlistMediaFilters(new URLSearchParams(searchParamsKey)),
     [searchParamsKey]
   );
-  const initialPage = useMemo(() => {
-    const parsed = Number(new URLSearchParams(searchParamsKey).get('page') || '1');
-    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-  }, [searchParamsKey]);
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
   const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
+  const currentUserId = auth.user?.id || null;
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const genreOptions = useMemo(() => collectMediaGenreOptions(watchlist), [watchlist]);
   const watchlistKeys = useMemo(() => buildMediaKeySet(watchlist), [watchlist]);
@@ -60,7 +60,7 @@ export default function AccountWatchlistFeed({
   useEffect(() => {
     setMediaFilters(initialMediaFilters);
     setActivePage(initialPage);
-  }, [initialMediaFilters, initialPage, searchParamsKey]);
+  }, [initialMediaFilters, initialPage]);
 
   const updateUrl = useCallback(
     (nextFilters, nextPage) => {
@@ -101,9 +101,7 @@ export default function AccountWatchlistFeed({
   );
 
   const handleResetFilters = useCallback(() => {
-    const defaultFilters = parseMediaFilters(new URLSearchParams(), {
-      allowedEyeFlags: WATCHLIST_ALLOWED_EYE_FLAGS,
-    });
+    const defaultFilters = parseWatchlistMediaFilters(new URLSearchParams());
 
     setMediaFilters(defaultFilters);
     setActivePage(1);
@@ -137,7 +135,7 @@ export default function AccountWatchlistFeed({
             media={item}
             onRemoveItem={onRemoveItem}
             removeLabel={`Remove ${item.title || item.name} from watchlist`}
-            userId={auth.user?.id || null}
+            userId={currentUserId}
           />
         ) : null
       }

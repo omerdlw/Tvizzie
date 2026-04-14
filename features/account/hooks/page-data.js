@@ -6,11 +6,7 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { isPermissionDeniedError } from '@/core/utils/errors';
 import { useCallback, useMemo } from 'react';
 import { useAccountCollections } from './collections';
-import {
-  useAccountListItems,
-  useAccountRelationshipData,
-  useAccountSocialProof,
-} from './relationships';
+import { useAccountListItems, useAccountRelationshipData, useAccountSocialProof } from './relationships';
 
 function showAccountLoadError(toast, error, fallbackMessage) {
   if (isPermissionDeniedError(error)) {

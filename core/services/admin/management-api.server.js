@@ -71,10 +71,7 @@ async function fetchFromCandidatePaths(paths = []) {
       available: false,
       error: {
         code: 'MANAGEMENT_UNAVAILABLE',
-        message:
-          missing.length > 0
-            ? `Missing env keys: ${missing.join(', ')}`
-            : 'Management API is not available',
+        message: missing.length > 0 ? `Missing env keys: ${missing.join(', ')}` : 'Management API is not available',
       },
       path: null,
       payload: null,

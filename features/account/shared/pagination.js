@@ -7,11 +7,11 @@ import Icon from '@/ui/icon';
 
 export const ACCOUNT_PAGINATION_STYLE_PROPS = Object.freeze({
   className: 'flex flex-wrap items-center gap-2',
-  pageClassName: 'center size-10 rounded-[12px] border text-xs font-semibold transition',
+  pageClassName: 'center size-10 border text-xs font-semibold transition',
   activePageClassName: 'border-black bg-black text-white',
   inactivePageClassName: 'border-black/10 bg-white hover:border-black/20 text-black/70',
   navClassName:
-    'center size-10 rounded-[10px] border border-black/10 bg-white hover:border-black/20 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-50',
+    'center size-10 border border-black/10 bg-white hover:border-black/20 text-xs font-semibold text-black/70 transition disabled:cursor-not-allowed disabled:opacity-50',
   ellipsisClassName: 'px-1 text-xs text-black/60',
   iconSize: 15,
 });

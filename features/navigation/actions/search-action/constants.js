@@ -32,11 +32,10 @@ export const SEARCH_STYLES = Object.freeze({
     active: 'border border-black/10 bg-black/10',
     muted: 'border border-black/5 bg-black/5 text-black/70',
   }),
-  input: 'rounded-[12px] flex w-full text-sm items-center p-2 pl-4 transition-colors duration-(--motion-duration-fast)',
-  tabButton:
-    'relative rounded-[12px] shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
+  input: ' flex w-full text-sm items-center rounded-lg p-2 pl-4 transition-colors duration-(--motion-duration-fast)',
+  tabButton: 'relative rounded-lg shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
   tabList: 'hide-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1',
-  resultItem: `group flex rounded-[12px] cursor-pointer items-center justify-between transition-all p-1 duration-(--motion-duration-fast) hover:bg-black/5`,
-  thumbnail: 'relative h-20 w-16 rounded-[8px] shrink-0 overflow-hidden',
-  metaBadge: `flex w-fit items-center gap-1 rounded-[6px] border border-black/10 bg-black/5`,
+  resultItem: `group rounded-lg flex cursor-pointer items-center justify-between transition-all p-0.5 duration-(--motion-duration-fast) hover:bg-black/5`,
+  thumbnail: 'relative h-20 w-16 rounded-md shrink-0 overflow-hidden',
+  metaBadge: `flex w-fit items-center gap-1 rounded-md border border-black/10 bg-black/5`,
 });

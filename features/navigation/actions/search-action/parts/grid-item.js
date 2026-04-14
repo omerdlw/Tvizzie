@@ -70,20 +70,12 @@ export default function SearchGridItem({ item, onSelect }) {
   const primaryMeta = getPrimaryMeta(item);
   const secondaryMeta = getSecondaryMeta(item);
   const imageSrc = getImageSrc(item);
-
-  return (
-    <Link
-      href={detailPath || '#'}
-      className="group flex h-full min-w-0 flex-col gap-2"
-      onClick={(event) => {
-        if (event.button === 0 && !event.ctrlKey && !event.metaKey) {
-          onSelect?.(item);
-        }
-      }}
-    >
+  const hasDetailPath = Boolean(detailPath);
+  const cardContent = (
+    <>
       <MediaCard
         className={cn(
-          'w-full overflow-hidden rounded-[14px] border border-black/10 transition-transform duration-(--motion-duration-fast)'
+          'w-full overflow-hidden border border-black/10 transition-transform duration-(--motion-duration-fast)'
         )}
         imageSrc={imageSrc}
         imageAlt={title}
@@ -103,6 +95,30 @@ export default function SearchGridItem({ item, onSelect }) {
         }
         tooltipText={title}
       />
+
+      <div className="min-w-0">
+        <p className="truncate text-[12px] leading-tight font-semibold text-black">{title}</p>
+        <p className="truncate text-[10px] font-medium text-black/65 uppercase">{primaryMeta}</p>
+        {secondaryMeta ? <p className="truncate text-[10px] text-black/55">{secondaryMeta}</p> : null}
+      </div>
+    </>
+  );
+
+  if (!hasDetailPath) {
+    return <div className="group flex h-full min-w-0 flex-col gap-2">{cardContent}</div>;
+  }
+
+  return (
+    <Link
+      href={detailPath}
+      className="group flex h-full min-w-0 flex-col gap-2"
+      onClick={(event) => {
+        if (event.button === 0 && !event.ctrlKey && !event.metaKey) {
+          onSelect?.(item);
+        }
+      }}
+    >
+      {cardContent}
     </Link>
   );
 }

@@ -825,11 +825,7 @@ export function isTransientSessionError(error) {
 
 export async function readSessionFromRequest(
   request,
-  {
-    allowBearer = true,
-    skipSupabaseFallbackIfNoHint = true,
-    skipSupabaseFallback = false,
-  } = {}
+  { allowBearer = true, skipSupabaseFallbackIfNoHint = true, skipSupabaseFallback = false } = {}
 ) {
   try {
     const bearerToken = allowBearer ? getBearerToken(request) : '';

@@ -100,22 +100,22 @@ function createInitialAvatarDataUrl(letter = 'A') {
     .toUpperCase();
 
   const svg = `
-    <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="256" height="256" fill="#F5F5F4"/>
-      <text
-        x="50%"
-        y="50%"
-        text-anchor="middle"
-        dominant-baseline="central"
-        fill="#111111"
-        font-family="ui-sans-serif, system-ui, sans-serif"
-        font-size="104"
-        font-weight="600"
-      >
-        ${normalizedLetter}
-      </text>
-    </svg>
-  `;
+ <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <rect width="256" height="256" fill="#F5F5F4"/>
+ <text
+ x="50%"
+ y="50%"
+ text-anchor="middle"
+ dominant-baseline="central"
+ fill="#111111"
+ font-family="ui-sans-serif, system-ui, sans-serif"
+ font-size="104"
+ font-weight="600"
+ >
+ ${normalizedLetter}
+ </text>
+ </svg>
+ `;
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
@@ -392,16 +392,16 @@ export function getImagePlaceholderDataUrl(seed, { width = 64, height = 64 } = {
   const background = getPlaceholderColor(seed);
   const highlight = getPlaceholderColor(`${seed}-highlight`);
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="${background}" />
-          <stop offset="100%" stop-color="${highlight}" />
-        </linearGradient>
-      </defs>
-      <rect width="${width}" height="${height}" fill="url(#bg)" />
-    </svg>
-  `;
+ <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+ <defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+ <stop offset="0%" stop-color="${background}" />
+ <stop offset="100%" stop-color="${highlight}" />
+ </linearGradient>
+ </defs>
+ <rect width="${width}" height="${height}" fill="url(#bg)" />
+ </svg>
+ `;
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }

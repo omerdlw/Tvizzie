@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest, resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import {
+  requireSessionRequest,
+  resolveOptionalSessionRequest,
+} from '@/core/auth/servers/session/authenticated-request.server';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
 import { getAccountProfileByUserId, getAccountProfileByUsername } from '@/core/services/browser/browser-data.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
@@ -384,13 +387,15 @@ export async function GET(request) {
       });
     }
 
-    const loadProfilePromise = (userId
-      ? getAccountProfileByUserId(userId, {
-          viewerId: viewerId || null,
-        })
-      : getAccountProfileByUsername(username, {
-          viewerId: viewerId || null,
-        }))
+    const loadProfilePromise = (
+      userId
+        ? getAccountProfileByUserId(userId, {
+            viewerId: viewerId || null,
+          })
+        : getAccountProfileByUsername(username, {
+            viewerId: viewerId || null,
+          })
+    )
       .then((profileValue) => {
         profileRequestCache.set(cacheKey, {
           expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,

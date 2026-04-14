@@ -28,10 +28,10 @@ export default function MovieAction({
             isActive: false,
           })} justify-between`,
           value: 'truncate',
-          menu: 'overflow-hidden rounded-[16px] border border-black/10 bg-white p-1 bottom-0',
+          menu: 'overflow-hidden border border-black/10 bg-white p-1 bottom-0',
           optionsList: 'flex flex-col gap-1',
           option:
-            'cursor-pointer rounded-[12px] p-3 text-xs font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
+            'cursor-pointer p-3 text-xs font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
           optionActive: 'bg-black/5 text-black',
           indicator: 'ml-auto text-black',
           icon: 'text-black/60',

@@ -1,112 +1,55 @@
 import AccountLikesFeed from '@/features/account/feeds/likes';
 import { AccountPageShell } from '@/features/account/shared/layout';
+import { buildAccountPageShellProps, useAccountSectionState } from '../shared/section-context';
 import Registry from './registry';
 
 export default function LikesView({
   activeSegment,
-  auth,
-  canShowLikesGrid,
-  currentPage,
   favoriteShowcase,
-  followerCount,
-  followingCount,
-  followState,
-  handleEditProfile,
-  handleFollow,
   handleLike,
-  handleOpenFollowList,
   handleRequestRemoveLike,
   handleSegmentChange,
-  handleSignInRequest,
   handleToggleShowcase,
-  isBioSurfaceOpen,
-  isFollowLoading,
   isLikedListsLoading,
-  isOwner,
-  isPageLoading,
   isReviewsLoading,
-  isResolvingProfile,
   isShowcaseSaving,
-  itemRemoveConfirmation,
   likedLists,
   likedListsError,
-  likeCount,
   likes,
-  listCount,
-  pendingFollowRequestCount,
   persistShowcase,
-  profile,
-  resolveError,
-  resolvedUserId,
   reviews,
   reviewsTotalCount,
   reviewsError,
-  setIsBioSurfaceOpen,
   showcaseMap,
-  unfollowConfirmation,
-  username,
   watchedItems,
-  watchlistCount,
 }) {
-  const pageRegistry = (
-    <Registry
-      activeSegment={activeSegment}
-      auth={auth}
-      canShowLikesGrid={canShowLikesGrid}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleSegmentChange={handleSegmentChange}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-    />
-  );
+  const sectionState = useAccountSectionState();
+  const shellProps = buildAccountPageShellProps(sectionState, {
+    activeSection: 'likes',
+    skeletonVariant: 'collection',
+  });
 
   return (
     <AccountPageShell
-      activeSection="likes"
-      followerCount={followerCount}
-      followState={followState}
-      followingCount={followingCount}
-      isLoading={isPageLoading}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      likesCount={likeCount}
-      listsCount={listCount}
-      onFollow={handleFollow}
-      onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioSurfaceOpen(true)}
-      profile={profile}
-      registry={pageRegistry}
-      resolvedUserId={resolvedUserId}
-      skeletonVariant="collection"
-      username={username}
-      watchedCount={profile?.watchedCount || 0}
-      watchlistCount={watchlistCount}
+      {...shellProps}
+      registry={
+        <Registry
+          activeSegment={activeSegment}
+          canShowLikesGrid={sectionState.canViewProfileCollections}
+          handleSegmentChange={handleSegmentChange}
+        />
+      }
     >
       <AccountLikesFeed
         activeSegment={activeSegment}
-        auth={auth}
-        canShowLikesGrid={canShowLikesGrid}
-        currentPage={currentPage}
+        auth={sectionState.auth}
+        canShowLikesGrid={sectionState.canViewProfileCollections}
         favoriteShowcase={favoriteShowcase}
         handleLike={handleLike}
         handleRequestRemoveLike={handleRequestRemoveLike}
         handleToggleShowcase={handleToggleShowcase}
         isLikedListsLoading={isLikedListsLoading}
-        isOwner={isOwner}
+        isOwner={sectionState.isOwner}
         isReviewsLoading={isReviewsLoading}
         isShowcaseSaving={isShowcaseSaving}
         likedLists={likedLists}
@@ -117,8 +60,6 @@ export default function LikesView({
         reviewsTotalCount={reviewsTotalCount}
         reviewsError={reviewsError}
         showcaseMap={showcaseMap}
-        username={username}
-        resolvedUserId={resolvedUserId}
         watchedItems={watchedItems}
       />
     </AccountPageShell>

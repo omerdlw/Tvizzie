@@ -75,7 +75,8 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     userId: payload.userId || row.user_id || null,
     vote_average: normalizeNumber(payload.vote_average, null),
     vote_count: normalizeNumber(payload.vote_count, null),
-    watchProviders: payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
+    watchProviders:
+      payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
   };
 }
 

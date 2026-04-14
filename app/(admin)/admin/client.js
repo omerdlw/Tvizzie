@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 import UsersSection from './users-section';
@@ -241,7 +241,7 @@ export default function Client({ guard }) {
                   type="button"
                   onClick={() => setAutoRefresh((current) => !current)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                    'inline-flex items-center gap-1.5 border px-3 py-1.5 text-xs font-medium transition-colors',
                     autoRefresh
                       ? 'border-success/20 bg-success/8 text-success'
                       : 'border-black/[0.1] bg-white text-black/60 hover:text-black/80'
@@ -254,7 +254,7 @@ export default function Client({ guard }) {
                 <button
                   type="button"
                   onClick={() => loadUsers({ silent: true })}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-black/[0.1] bg-white px-3 py-1.5 text-xs font-medium text-black/55 transition-colors hover:text-black"
+                  className="inline-flex items-center gap-1.5 border border-black/[0.1] bg-white px-3 py-1.5 text-xs font-medium text-black/55 transition-colors hover:text-black"
                 >
                   <Icon icon="solar:refresh-bold" size={11} />
                   {isRefreshing ? 'Refreshing' : 'Refresh'}
@@ -262,15 +262,15 @@ export default function Client({ guard }) {
 
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold',
+                    'inline-flex items-center gap-1.5 border px-3 py-1.5 text-[11px] font-semibold',
                     statusTone.badge
                   )}
                 >
-                  <span className={cn('h-1.5 w-1.5 rounded-full', statusTone.dot)} />
+                  <span className={cn('h-1.5 w-1.5', statusTone.dot)} />
                   {getStatusLabel(status)}
                 </span>
 
-                <span className="rounded-full border border-black/[0.08] bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-black/60">
+                <span className="border border-black/[0.08] bg-black/[0.02] px-3 py-1.5 text-[11px] font-medium text-black/60">
                   {formatTimestamp(payload?.generatedAt)}
                 </span>
               </div>
@@ -278,7 +278,7 @@ export default function Client({ guard }) {
           </header>
 
           {isLoading ? (
-            <section className="rounded-2xl border border-black/[0.07] bg-white p-6 text-sm text-black/55">
+            <section className="border border-black/[0.07] bg-white p-6 text-sm text-black/55">
               User dashboard loading...
             </section>
           ) : (
@@ -291,7 +291,7 @@ export default function Client({ guard }) {
           )}
 
           {errors.length > 0 ? (
-            <section className="border-warning/20 bg-warning/[0.08] text-warning rounded-2xl border p-5 text-sm">
+            <section className="border-warning/20 bg-warning/[0.08] text-warning border p-5 text-sm">
               <p className="text-[11px] font-semibold tracking-wider uppercase">Detected Issues</p>
               <div className="mt-2 space-y-1.5">
                 {errors.map((error, index) => (

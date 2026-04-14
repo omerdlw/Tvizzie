@@ -99,9 +99,9 @@ export default function AuthPoster() {
         {cards.map((movie) => (
           <article
             key={movie.id || movie.title}
-            className="flex items-center gap-4 rounded-2xl border border-black/12 bg-[var(--color-primary)] p-3 shadow-[0_10px_22px_rgba(23,23,23,0.08)]"
+            className="flex items-center gap-4 border border-black/12 bg-[var(--color-primary)] p-3 shadow-[0_10px_22px_rgba(23,23,23,0.08)]"
           >
-            <img src={movie.posterPath} alt={movie.title} className="h-24 w-16 rounded-xl border border-black/12 object-cover" />
+            <img src={movie.posterPath} alt={movie.title} className="h-24 w-16 border border-black/12 object-cover" />
             <div className="min-w-0">
               <p className="truncate text-base font-semibold text-[var(--color-black)]">{movie.title}</p>
               <p className="mt-1 text-xs font-semibold tracking-[0.1em] text-black/45 uppercase">

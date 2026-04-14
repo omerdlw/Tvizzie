@@ -87,7 +87,7 @@ export default function ReviewComposer({
                 onChange={(event) => setIsSpoiler(event.target.checked)}
               />
               <Icon
-                icon="material-symbols:check-rounded"
+                icon="material-symbols:check-"
                 size={15}
                 className="pointer-events-none invisible absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#0c4a6e] transition peer-checked:visible"
               />

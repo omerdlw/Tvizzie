@@ -4,16 +4,16 @@ import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/fea
 import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import AccountHero from '@/features/account/shared/hero';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import Icon from '@/ui/icon';
 import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'h-11 w-full rounded-[12px] border border-black/15 bg-white px-3 text-sm text-black outline-none transition-colors placeholder:text-black/60 focus:border-black';
+  'h-11 w-full border border-black/15 bg-white px-3 text-sm text-black outline-none transition-colors placeholder:text-black/60 focus:border-black';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  'rounded-[12px] border border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
+  ' border border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
 const BUTTON_FRAME_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
 const FILE_UPLOAD_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
@@ -23,7 +23,7 @@ function ActionButton({ children, className, tone = 'default', icon = null, ...p
     <button
       className={cn(
         BUTTON_FRAME_CLASSES,
-        tone === 'danger' ? cn(DESTRUCTIVE_ACTION_TONE_CLASS, 'rounded-[12px] backdrop-blur-sm') : BUTTON_BASE_CLASSES,
+        tone === 'danger' ? cn(DESTRUCTIVE_ACTION_TONE_CLASS, 'backdrop-blur-sm') : BUTTON_BASE_CLASSES,
         className
       )}
       {...props}
@@ -37,7 +37,7 @@ function ActionButton({ children, className, tone = 'default', icon = null, ...p
 function StatusState({ title, description }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="w-full max-w-xl rounded-[14px] border border-black/15 bg-white p-6 text-center">
+      <div className="w-full max-w-xl border border-black/15 bg-white p-6 text-center">
         <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-black">{title}</h1>
         <p className="mt-3 text-sm leading-6 text-black/70">{description}</p>
@@ -136,7 +136,7 @@ function MediaField({
       </div>
 
       <div>
-        <div className={cn('overflow-hidden rounded-[12px] border border-black/10 bg-black/5', previewClassName)}>
+        <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
           {preview ? (
             <img src={preview} alt={previewAlt} className="h-full w-full object-cover" />
           ) : (
@@ -341,13 +341,10 @@ export default function AccountEditView(props) {
                       </span>
                     </div>
 
-                    <span
-                      className="flex h-6 w-11 rounded-[14px] border border-black/15 bg-white p-px"
-                      aria-hidden="true"
-                    >
+                    <span className="flex h-6 w-11 border border-black/15 bg-white p-px" aria-hidden="true">
                       <span
                         className={cn(
-                          'h-full w-5 rounded-[10px] bg-black transition-transform',
+                          'h-full w-5 bg-black transition-transform',
                           form.isPrivate ? 'translate-x-5' : 'translate-x-0'
                         )}
                       />
@@ -356,7 +353,7 @@ export default function AccountEditView(props) {
                 </SectionCard>
 
                 {isAnyMediaUploading ? (
-                  <div className="rounded-[12px] border border-black/15 bg-white px-4 py-3 text-xs text-black/70">
+                  <div className="border border-black/15 bg-white px-4 py-3 text-xs text-black/70">
                     Media upload is in progress. Save is available right after upload completes.
                   </div>
                 ) : null}
@@ -365,7 +362,7 @@ export default function AccountEditView(props) {
               <div className="flex flex-col">
                 {!canUsePasswordSecurity ? (
                   <SectionCard title="Enable Password Sign-In">
-                    <div className="rounded-[12px] bg-black/5 p-2 text-sm leading-6 text-black/70">
+                    <div className="bg-black/5 p-2 text-sm leading-6 text-black/70">
                       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
                     </div>
                   </SectionCard>
@@ -376,7 +373,7 @@ export default function AccountEditView(props) {
                     title="Change Email"
                     summaryLabel={
                       currentAuthEmail && (
-                        <span className="text-[10px] font-medium lowercase tracking-normal text-black/40">
+                        <span className="text-[10px] font-medium tracking-normal text-black/40 lowercase">
                           {currentAuthEmail}
                         </span>
                       )

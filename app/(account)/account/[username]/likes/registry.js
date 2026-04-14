@@ -2,39 +2,40 @@
 
 import AccountAction from '@/features/navigation/actions/account-action';
 import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
-import {
-  EMPTY_ACCOUNT_REGISTRY_AUTH,
-  buildAccountPageState,
-  noopAccountRegistryHandler,
-} from '@/features/account/registry-config';
+import { EMPTY_ACCOUNT_REGISTRY_AUTH, buildAccountPageState } from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';
+import { useAccountSectionState } from '../shared/section-context';
 
 const ACCOUNT_LIKES_REGISTRY_SOURCE = 'account-likes';
 
 export default function Registry({
   activeSegment = 'films',
-  auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
   canShowLikesGrid = false,
-  followState = 'follow',
-  handleEditProfile = noopAccountRegistryHandler,
-  handleFollow = noopAccountRegistryHandler,
-  handleOpenFollowList = noopAccountRegistryHandler,
-  handleSegmentChange = noopAccountRegistryHandler,
-  handleSignInRequest = noopAccountRegistryHandler,
-  isBioSurfaceOpen = false,
-  isFollowLoading = false,
-  isOwner = false,
-  isPageLoading = false,
-  isResolvingProfile = false,
-  itemRemoveConfirmation = null,
-  pendingFollowRequestCount = 0,
-  profile = null,
-  registrySource = ACCOUNT_LIKES_REGISTRY_SOURCE,
-  resolveError = null,
-  setIsBioSurfaceOpen = noopAccountRegistryHandler,
-  unfollowConfirmation = null,
-  username,
+  handleSegmentChange = () => {},
+  isPageLoading: isPageLoadingProp,
 }) {
+  const sectionState = useAccountSectionState();
+  const isPageLoading = isPageLoadingProp ?? sectionState.isPageLoading;
+
+  const {
+    auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
+    followState = 'follow',
+    handleEditProfile,
+    handleFollow,
+    handleOpenFollowList,
+    handleSignInRequest,
+    isBioSurfaceOpen = false,
+    isFollowLoading = false,
+    isOwner = false,
+    isResolvingProfile = false,
+    itemRemoveConfirmation = null,
+    pendingFollowRequestCount = 0,
+    profile = null,
+    resolveError = null,
+    setIsBioSurfaceOpen,
+    unfollowConfirmation = null,
+    username,
+  } = sectionState;
   const segmentTabs = [
     { key: 'films', label: 'Films' },
     { key: 'reviews', label: 'Reviews' },
@@ -75,7 +76,7 @@ export default function Registry({
             onClose={() => setIsBioSurfaceOpen(false)}
           />
         ) : undefined,
-      navRegistrySource: registrySource,
+      navRegistrySource: ACCOUNT_LIKES_REGISTRY_SOURCE,
       onSaveSectionOrder: null,
       pendingFollowRequestCount,
       profile,

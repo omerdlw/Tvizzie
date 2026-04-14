@@ -53,7 +53,8 @@ function getMediaSnapshot(media) {
         .filter((value) => Number.isFinite(Number(value)))
         .map((value) => Number(value));
 
-  const watchProviders = media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+  const watchProviders =
+    media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
 
   return {
     entityId: media?.id,
@@ -110,7 +111,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >

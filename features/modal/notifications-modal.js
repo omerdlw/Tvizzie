@@ -289,7 +289,7 @@ export default function NotificationsModal({ close, header, data }) {
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className="h-8 shrink-0 rounded-[12px] border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
+                className="h-8 shrink-0 border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
               >
                 Clear all
               </Button>
@@ -297,7 +297,7 @@ export default function NotificationsModal({ close, header, data }) {
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
+                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
                 >
                   Mark all as read
                 </Button>
@@ -316,10 +316,10 @@ export default function NotificationsModal({ close, header, data }) {
                   className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                    <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+                    <div className="size-10 shrink-0 animate-pulse bg-black/5" />
                     <div className="flex w-full flex-col gap-1.5">
-                      <div className="h-3 w-[60%] animate-pulse rounded-full bg-black/5" />
-                      <div className="h-2 w-[40%] animate-pulse rounded-full bg-black/5" />
+                      <div className="h-3 w-[60%] animate-pulse bg-black/5" />
+                      <div className="h-2 w-[40%] animate-pulse bg-black/5" />
                     </div>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function NotificationsModal({ close, header, data }) {
                         <img
                           src={actorAvatarSrc}
                           alt={notification.actor?.displayName || 'Avatar'}
-                          className="size-full rounded-[12px] object-cover"
+                          className="size-full object-cover"
                           loading="lazy"
                           onError={(event) => applyAvatarFallback(event, actorAvatarFallbackSrc)}
                         />
@@ -369,16 +369,16 @@ export default function NotificationsModal({ close, header, data }) {
                         <Button
                           onClick={(event) => handleMarkRead(notification.id, event)}
                           title="Mark as read"
-                          className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 rounded-[8px] border transition"
+                          className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 border transition"
                         >
-                          <Icon icon="material-symbols:check-rounded" size={16} />
+                          <Icon icon="material-symbols:check-" size={16} />
                         </Button>
                       ) : null}
                       <Button
                         onClick={(event) => handleDelete(notification.id, event)}
                         title="Delete notification"
                         variant="destructive"
-                        className="size-7 rounded-[8px] transition"
+                        className="size-7 transition"
                       >
                         <Icon icon="solar:trash-bin-trash-linear" size={16} />
                       </Button>

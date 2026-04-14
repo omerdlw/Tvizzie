@@ -158,7 +158,7 @@ function invokeSafely(handler, ...args) {
 
 function ContextMenuHeaderIcon({ classNames, icon }) {
   const iconClassName = [
-    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden rounded-[12px] bg-black/5 text-black/60',
+    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-black/5 text-black/60',
     classNames.headerIcon,
   ]
     .filter(Boolean)
@@ -205,7 +205,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   }
 
   const itemClassName = [
-    'flex w-full items-center gap-2 rounded-[12px] px-2.5 py-2 text-left text-[13px] font-medium text-black/70 hover:text-black transition-colors hover:bg-black/5 focus-visible:outline-none data-[active=true]:bg-black/10 disabled:pointer-events-none disabled:opacity-50',
+    'flex w-full items-center gap-2 px-2.5 py-2 text-left text-[13px] font-medium text-black/70 hover:text-black transition-colors hover:bg-black/5 focus-visible:outline-none data-[active=true]:bg-black/10 disabled:pointer-events-none disabled:opacity-50',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -426,7 +426,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={[
-          'max-w-[320px] min-w-[240px] overflow-hidden rounded-[16px] border border-black/10 bg-white/80 p-1 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
+          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 p-1 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
           classNames.content,
         ]
           .filter(Boolean)

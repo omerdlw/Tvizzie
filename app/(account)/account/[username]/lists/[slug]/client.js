@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError } from '@/core/utils/errors';
 import { getRatingStats } from '@/features/reviews/utils';
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
@@ -24,19 +23,11 @@ import {
   subscribeToListReviews,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
+import { useAccountSectionEngine } from '../../shared/section-engine';
 import ListView from './view';
 
-export default function Client({
-  initialCollections = null,
-  initialList = null,
-  initialListItems = [],
-  initialListReviews = [],
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  slug,
-  username,
-}) {
+export default function Client({ routeData = null }) {
+  const { initialList = null, initialListItems = [], initialListReviews = [], slug } = routeData || {};
   const auth = useAuth();
   const { openModal } = useModal();
   const toast = useToast();
@@ -49,50 +40,30 @@ export default function Client({
     resolvedUserId: auth.user?.id || null,
   });
 
-  const {
-    canViewProfileCollections,
-    canViewPrivateContent,
-    followerCount,
-    followingCount,
-    followState,
-    handleDeleteList,
-    handleEditList,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleRequestRemoveListItem,
-    handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading,
-    isPrivateProfile,
-    isResolvingProfile,
-    itemRemoveConfirmation,
-    likeCount,
-    likes,
-    listCount,
-    listDeleteConfirmation,
-    pendingFollowRequestCount,
-    profile,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watched,
-    watchlist,
-    watchlistCount,
-  } = useAccountSectionPage({
+  const { routeData: resolvedRouteData, sectionState } = useAccountSectionEngine({
     activeListId: list?.id || '',
     activeTab: 'lists',
     auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
+    routeData,
     selectedList: list,
-    username,
   });
+  const {
+    canViewProfileCollections,
+    canViewPrivateContent,
+    handleDeleteList,
+    handleEditList,
+    handleRequestRemoveListItem,
+    handleSignInRequest,
+    isOwner,
+    isPrivateProfile,
+    itemRemoveConfirmation,
+    likes,
+    listDeleteConfirmation,
+    profile,
+    resolvedUserId,
+    watched,
+    watchlist,
+  } = sectionState;
   const hasSeededList = Boolean(initialList?.id) && initialList.slug === slug;
   const hasSeededListItems = hasSeededList && Array.isArray(initialListItems);
   const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews);
@@ -319,7 +290,8 @@ export default function Client({
 
       const targetReview = review || ownReview || null;
       const reviewIdentity = targetReview?.docPath || targetReview?.id || null;
-      const ownerUsername = list?.ownerSnapshot?.username || profile?.username || username || resolvedUserId;
+      const ownerUsername =
+        list?.ownerSnapshot?.username || profile?.username || resolvedRouteData.username || resolvedUserId;
 
       openModal('REVIEW_EDITOR_MODAL', 'center', {
         data: {
@@ -362,7 +334,7 @@ export default function Client({
       ownReview,
       profile?.username,
       resolvedUserId,
-      username,
+      resolvedRouteData.username,
     ]
   );
 
@@ -481,54 +453,34 @@ export default function Client({
   const requiresFollowForProfileInteractions = !isOwner && isPrivateProfile && !canViewPrivateContent;
   const ratingStats = getRatingStats(reviews);
 
-  return (
-    <ListView
-      auth={auth}
-      canShowList={canViewProfileCollections}
-      requiresFollowForProfileInteractions={requiresFollowForProfileInteractions}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleDeleteList={handleDeleteList}
-      handleDeleteRequest={handleDeleteRequest}
-      handleEditList={handleEditList}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleLikeReview={handleLikeReview}
-      handleOpenFollowList={handleOpenFollowList}
-      handleRemoveListItem={handleRequestRemoveListItem}
-      handleSignInRequest={handleSignInRequest}
-      handleOpenReviewComposer={handleOpenReviewComposer}
-      handleToggleLike={handleToggleLike}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isLiked={isLiked}
-      isLikeLoading={isLikeLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={reviewDeleteConfirmation || itemRemoveConfirmation}
-      likeCount={likeCount}
-      list={list}
-      listDeleteConfirmation={listDeleteConfirmation}
-      listCount={listCount}
-      listItems={listItems}
-      likes={likes}
-      ownReview={ownReview}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      ratingStats={ratingStats}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      reviews={reviews}
-      handleEditReview={handleEditReview}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      userProfile={userProfile}
-      watchedItems={watched}
-      watchlistCount={watchlistCount}
-      watchlistItems={watchlist}
-    />
-  );
+  const listDetailModel = {
+    auth,
+    canShowList: canViewProfileCollections,
+    requiresFollowForProfileInteractions,
+    ...sectionState,
+    handleDeleteList,
+    handleDeleteRequest,
+    handleEditList,
+    handleLikeReview,
+    handleRemoveListItem: handleRequestRemoveListItem,
+    handleSignInRequest,
+    handleOpenReviewComposer,
+    handleToggleLike,
+    isLiked,
+    isLikeLoading,
+    itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+    list,
+    listDeleteConfirmation,
+    listItems,
+    likes,
+    ownReview,
+    ratingStats,
+    reviews,
+    handleEditReview,
+    userProfile,
+    watchedItems: watched,
+    watchlistItems: watchlist,
+  };
+
+  return <ListView model={listDetailModel} />;
 }

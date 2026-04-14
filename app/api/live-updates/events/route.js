@@ -54,14 +54,9 @@ export async function POST(request) {
     }
 
     targetUserIds.forEach((userId) => {
-      publishUserEvent(
-        userId,
-        eventType,
-        payload,
-        {
-          traceId: requestMeta.traceId,
-        }
-      );
+      publishUserEvent(userId, eventType, payload, {
+        traceId: requestMeta.traceId,
+      });
     });
 
     return createApiSuccessResponse(

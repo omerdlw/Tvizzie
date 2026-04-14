@@ -1,5 +1,5 @@
-import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/core/constants';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 
 const BLOCK = 'skeleton-block';
 const BLOCK_SOFT = 'skeleton-block-soft';
@@ -10,15 +10,15 @@ function Bar({ className = '', soft = false }) {
 }
 
 function Line({ className = '', soft = false }) {
-  return <Bar className={`rounded-full ${className}`} soft={soft} />;
+  return <Bar className={`${className}`} soft={soft} />;
 }
 
 function Pill({ className = '', soft = false }) {
-  return <Bar className={`rounded-[12px] ${className}`} soft={soft} />;
+  return <Bar className={`${className}`} soft={soft} />;
 }
 
 function Poster({ className = '', soft = false }) {
-  return <Bar className={`aspect-2/3 w-full rounded-[14px] ${className}`} soft={soft} />;
+  return <Bar className={`aspect-2/3 w-full ${className}`} soft={soft} />;
 }
 
 function SectionShell({ children, className = '' }) {
@@ -43,7 +43,7 @@ function HeroCountItem({ mobile = false }) {
 function HeroEdgeMetric() {
   return (
     <div className="flex flex-col items-center gap-1 text-center">
-      <Line className="h-8 w-12 rounded-[10px]" />
+      <Line className="h-8 w-12" />
       <Line className="h-2.5 w-16" soft={true} />
     </div>
   );
@@ -57,14 +57,14 @@ function AccountHeroSkeleton() {
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-28 w-28 justify-self-start overflow-hidden rounded-full sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
-              <div className={`h-full w-full rounded-full ${BLOCK}`} />
+            <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+              <div className={`h-full w-full ${BLOCK}`} />
             </div>
 
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
-                  <Line className="h-[3.2rem] w-[68%] rounded-[18px] sm:h-[3.6rem] lg:h-[4.8rem]" />
+                  <Line className="h-[3.2rem] w-[68%] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 </div>
 
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
@@ -122,7 +122,7 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
     <div className="flex w-full flex-col gap-6">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className={`${BLOCK_SOFT} size-6 rounded-[8px]`} />
+          <div className={`${BLOCK_SOFT} size-6`} />
           <Line className="h-3 w-24" />
         </div>
 
@@ -202,7 +202,7 @@ function ListPreviewStackSkeleton() {
 
   return (
     <div className="relative h-[218px] overflow-hidden">
-      <Bar className="absolute inset-x-0 top-8 h-[170px] rounded-[14px]" soft={true} />
+      <Bar className="absolute inset-x-0 top-8 h-[170px]" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
         <div key={transformClass} className={`absolute top-2 left-1/2 h-[164px] w-[104px] ${transformClass}`}>
@@ -218,7 +218,7 @@ function ListCardSkeleton() {
     <div className="flex flex-col gap-2">
       <ListPreviewStackSkeleton />
 
-      <div className={`rounded-[14px] ${BLOCK_SOFT}`}>
+      <div className={`${BLOCK_SOFT}`}>
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-3.5 w-[74%]" />
@@ -248,9 +248,9 @@ function ListCardSkeleton() {
 
 function ReviewCardSkeleton() {
   return (
-    <div className={`rounded-[16px] p-4 ${BLOCK_SOFT}`}>
+    <div className={`p-4 ${BLOCK_SOFT}`}>
       <div className="flex gap-4">
-        <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-[12px] sm:h-28 sm:w-[72px]">
+        <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]">
           <Poster />
         </div>
 
@@ -291,11 +291,11 @@ function ReviewCardSkeleton() {
 
 function ListDetailHeaderSkeleton() {
   return (
-    <div className={`rounded-[18px] p-6 ${BLOCK_SOFT}`}>
+    <div className={`p-6 ${BLOCK_SOFT}`}>
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-5">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <Line className="h-8 w-56 rounded-[12px]" />
+            <Line className="h-8 w-56" />
             <Line className="h-3 w-32" soft={true} />
           </div>
 
@@ -320,7 +320,7 @@ function FormFieldSkeleton({ tall = false }) {
   return (
     <div className="flex flex-col gap-2">
       <Line className="h-2.5 w-20" soft={true} />
-      <Bar className={`w-full rounded-[12px] ${tall ? 'h-36' : 'h-11'} ${BLOCK_SOFT}`} />
+      <Bar className={`w-full ${tall ? 'h-36' : 'h-11'} ${BLOCK_SOFT}`} />
     </div>
   );
 }
@@ -336,7 +336,7 @@ function MediaFieldSkeleton({ large = false }) {
         </div>
       </div>
 
-      <Bar className={`overflow-hidden rounded-[12px] ${large ? 'h-28' : 'aspect-square'} ${BLOCK}`} />
+      <Bar className={`overflow-hidden ${large ? 'h-28' : 'aspect-square'} ${BLOCK}`} />
     </div>
   );
 }
@@ -494,7 +494,7 @@ function ListBuilderSkeleton() {
   return (
     <div className="py-8">
       <SectionShell>
-        <div className={`overflow-hidden rounded-[18px] ${BLOCK_SOFT}`}>
+        <div className={`overflow-hidden ${BLOCK_SOFT}`}>
           <div className="grid min-h-[72vh] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
             <section className="flex min-h-0 flex-col">
               <div className="p-4 sm:p-5">
@@ -525,9 +525,9 @@ function ListBuilderSkeleton() {
 
               <div className="mt-4 flex flex-col gap-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className={`flex items-center gap-3 rounded-[12px] p-2.5 ${BLOCK_SOFT}`}>
+                  <div key={index} className={`flex items-center gap-3 p-2.5 ${BLOCK_SOFT}`}>
                     <Line className="h-3 w-4" soft={true} />
-                    <Bar className={`h-16 w-11 shrink-0 rounded-[8px] ${BLOCK}`} />
+                    <Bar className={`h-16 w-11 shrink-0 ${BLOCK}`} />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <Line className="h-3 w-4/5" />
                       <Line className="h-2.5 w-1/2" soft={true} />

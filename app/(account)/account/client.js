@@ -4,11 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
-import {
-  hasMatchingSeededFeed,
-  useAccountSectionPage,
-  useDeferredPreviewFeed,
-} from '@/features/account/hooks/section-page';
+import { hasMatchingSeededFeed, useDeferredPreviewFeed } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -19,6 +15,8 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
+import { useAccountSectionEngine } from './[username]/shared/section-engine';
+import { AccountSectionStateProvider } from './[username]/shared/section-context';
 import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;
@@ -32,70 +30,40 @@ const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   watchlist: PREVIEW_MEDIA_LIMIT,
 });
 
-export default function Client({
-  username = null,
-  initialActivityFeed = null,
-  initialCollections = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  initialReviewFeed = null,
-  RegistryComponent = undefined,
-}) {
+export default function Client({ routeData = null, RegistryComponent = undefined }) {
+  const { initialActivityFeed = null, initialReviewFeed = null } = routeData || {};
   const auth = useAuth();
   const { openModal } = useModal();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const {
+    routeData: resolvedRouteData,
+    sectionProviderValue,
+    sectionState,
+  } = useAccountSectionEngine({
+    activeTab: 'likes',
+    auth,
+    collectionPreviewLimits: COLLECTION_PREVIEW_LIMITS,
+    routeData,
+  });
+  const { username = null, initialResolvedUserId = null } = resolvedRouteData;
   const seededCurrentAccount = Boolean(!username && initialResolvedUserId);
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
 
   const {
     canViewPrivateContent,
     canViewProfileCollections,
-    favoriteShowcase,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleRequestRemoveWatchedItem,
-    handleRequestRemoveWatchlistItem,
     handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
     isOwner,
     isPageLoading,
     isPrivateProfile,
     isViewerReady,
-    pendingFollowRequestCount,
     profile,
-    resolveError,
     resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watched,
-    watchedCount,
-    watchlist,
-    watchlistCount,
-    likeCount,
-    likes,
-    listCount,
-    lists,
-    isResolvingProfile,
     itemRemoveConfirmation,
-  } = useAccountSectionPage({
-    activeTab: 'likes',
-    auth,
-    collectionPreviewLimits: COLLECTION_PREVIEW_LIMITS,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
-  });
+  } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const profileHandle = profile?.username || username || null;
   const hasSeededReviewFeedForUser =
@@ -285,59 +253,31 @@ export default function Client({
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, reviewPreview, toast]
   );
 
-  const overviewModel = {
-    auth,
+  const overviewData = {
     authoredReviews: reviewPreview.items,
     authoredReviewsError: reviewPreview.feedError,
     authoredReviewsLoading: reviewPreview.isFeedLoading,
-    canViewProfileCollections,
     activityError: activityPreview.feedError,
     activityItems: activityPreview.items,
     activityLoading: activityPreview.isFeedLoading,
-    favoriteShowcase,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
     handleEditReview,
-    handleFollow,
     handleDeleteReview,
     handleLikeReview,
-    handleOpenFollowList,
-    handleRequestRemoveWatchedItem,
-    handleRequestRemoveWatchlistItem,
-    handleSignInRequest,
     hasMoreAuthoredReviews: reviewPreview.hasMore,
     hasMoreActivityItems: activityPreview.hasMore,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading: resolvedIsPageLoading,
-    isResolvingProfile,
-    itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
-    likeCount,
-    likes,
-    listCount,
-    lists,
-    navDescription,
-    pendingFollowRequestCount,
-    profile,
-    profileHandle,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    username,
-    watched,
-    watchedCount,
-    watchlistCount,
-    watchlist,
   };
 
   return (
-    <AccountView
-      model={overviewModel}
-      RegistryComponent={RegistryComponent}
-    />
+    <AccountSectionStateProvider
+      value={{
+        ...sectionProviderValue,
+        isPageLoading: resolvedIsPageLoading,
+        itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+        navDescription,
+        profileHandle,
+      }}
+    >
+      <AccountView overviewData={overviewData} RegistryComponent={RegistryComponent} />
+    </AccountSectionStateProvider>
   );
 }

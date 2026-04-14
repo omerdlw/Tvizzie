@@ -65,8 +65,7 @@ function invalidateNotificationCachesForUsers(userIds = []) {
 
   invalidateCachedValuesWhere(
     (cacheKey) =>
-      cacheKey.startsWith('notifications|') &&
-      normalizedUserIds.some((userId) => cacheKey.includes(`|user=${userId}`))
+      cacheKey.startsWith('notifications|') && normalizedUserIds.some((userId) => cacheKey.includes(`|user=${userId}`))
   );
 }
 

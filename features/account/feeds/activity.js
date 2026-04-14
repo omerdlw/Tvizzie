@@ -5,10 +5,7 @@ import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 
-import {
-  collectActivitySubjectOptions,
-  hasActiveActivityFilters,
-} from '@/features/account/filtering';
+import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
 import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
 import MediaCard from '@/features/shared/media-card';
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
@@ -20,7 +17,7 @@ import AccountSectionLayout from '../shared/section-wrapper';
 const EVENT_META = Object.freeze({
   FOLLOW_ACCEPTED: {
     action: 'accepted',
-    icon: 'solar:users-group-rounded-bold',
+    icon: 'solar:users-group-',
   },
   FOLLOW_CREATED: {
     action: 'followed',
@@ -56,6 +53,9 @@ const EVENT_META = Object.freeze({
   },
 });
 const ACTIVITY_ITEMS_PER_PAGE = 36;
+const STATE_MESSAGE_CLASS = 'border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm';
+const LIST_PREVIEW_WRAPPER_CLASS = 'group block aspect-2/3 w-full overflow-hidden border border-black/15';
+const DEFAULT_EVENT_META = Object.freeze({ action: 'updated' });
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -89,16 +89,18 @@ function formatActivityTime(value) {
 
 function getActivityText(item) {
   const actorName = item?.actor?.displayName || item?.actor?.username || 'Someone';
-  const meta = EVENT_META[item?.eventType] || { action: 'updated' };
+  const meta = EVENT_META[item?.eventType] || DEFAULT_EVENT_META;
   const followStatus = String(item?.payload?.status || '')
     .trim()
     .toLowerCase();
-  const action =
-    item?.eventType === 'REVIEW_PUBLISHED' && item?.payload?.reviewMode === 'rating'
-      ? 'rated'
-      : item?.eventType === 'FOLLOW_CREATED' && followStatus === 'pending'
-        ? 'requested to follow'
-        : meta.action;
+  let action = meta.action;
+
+  if (item?.eventType === 'REVIEW_PUBLISHED' && item?.payload?.reviewMode === 'rating') {
+    action = 'rated';
+  } else if (item?.eventType === 'FOLLOW_CREATED' && followStatus === 'pending') {
+    action = 'requested to follow';
+  }
+
   const subjectTitle = item?.subject?.title || 'something';
 
   return {
@@ -127,25 +129,41 @@ function resolvePosterSrc(item) {
   return poster;
 }
 
+function getActivityItemKey(item, index) {
+  return `${item?.sourceUserId || item?.id || 'activity'}-${item?.id || index}-${index}`;
+}
+
+function getActivityItemClassName({ isFirst, isShowcase }) {
+  const spacingClassName = isShowcase ? (isFirst ? 'pt-0 pb-4' : 'py-4') : isFirst ? 'pt-0 pb-5' : 'py-5';
+
+  return `border-b border-black/10 ${spacingClassName} last:border-b-0`;
+}
+
 function ListPreviewStack({ item }) {
   const previewItems = Array.isArray(item?.activityState?.previewItems)
     ? item.activityState.previewItems.slice(0, 3)
     : [];
   const subjectHref = item?.subject?.href || null;
   const subjectTitle = item?.subject?.title || 'Untitled List';
-
-  return (
-    <Link
-      href={subjectHref || '#'}
-      className="group block aspect-2/3 w-full overflow-hidden rounded-[12px] border border-black/15"
-    >
+  const previewContent = (
+    <>
       <ListPreviewComposition
         className="border-0 bg-transparent"
-        imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal) "
+        imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal)"
         items={previewItems}
       />
 
       <span className="sr-only">{subjectTitle}</span>
+    </>
+  );
+
+  if (!subjectHref) {
+    return <div className={LIST_PREVIEW_WRAPPER_CLASS}>{previewContent}</div>;
+  }
+
+  return (
+    <Link href={subjectHref} className={LIST_PREVIEW_WRAPPER_CLASS}>
+      {previewContent}
     </Link>
   );
 }
@@ -158,7 +176,7 @@ function ShowcaseItem({ item }) {
 
   return (
     <motion.div
-      className="flex min-w-0 flex-col h-full"
+      className="flex h-full min-w-0 flex-col"
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.988 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
@@ -192,11 +210,7 @@ function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
 
   return (
     <motion.article
-      className={
-        isShowcase
-          ? `border-b border-black/10 ${isFirst ? 'pt-0 pb-4' : 'py-4'} last:border-b-0`
-          : `border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`
-      }
+      className={getActivityItemClassName({ isFirst, isShowcase })}
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
@@ -208,7 +222,7 @@ function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
-          <span className="font-semibold">{actorName}</span> <span className="">{action}</span>{' '}
+          <span className="font-semibold">{actorName}</span> <span>{action}</span>{' '}
           {subjectHref ? (
             <Link href={subjectHref} className="transition">
               {subjectTitle}
@@ -250,6 +264,9 @@ export default function AccountActivityFeed({
   const activePage = Math.min(Math.max(1, currentPage), totalPages);
   const pageStart = (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE;
   const visibleItems = Array.isArray(items) ? items : [];
+  const hasVisibleItems = visibleItems.length > 0;
+  const shouldShowFilterBar = listedActivityCount > 0;
+  const shouldShowPagination = listedActivityCount > 0;
   const resolvedSummaryLabel = useMemo(() => {
     if (!hasFilters) {
       return summaryLabel === null ? `${listedActivityCount} Events` : summaryLabel;
@@ -275,6 +292,37 @@ export default function AccountActivityFeed({
       subject: 'all',
     });
   }, [onFiltersChange]);
+  let content = null;
+
+  if (!hasVisibleItems && isLoading) {
+    content = <div className={STATE_MESSAGE_CLASS}>Loading activity...</div>;
+  } else if (listedActivityCount === 0 && !isLoading && !loadError) {
+    content = <div className={STATE_MESSAGE_CLASS}>{emptyMessage}</div>;
+  } else if (listedActivityCount === 0 && !isLoading && loadError) {
+    content = <div className={STATE_MESSAGE_CLASS}>{loadError}</div>;
+  } else if (variant === 'showcase') {
+    content = (
+      <div className={`grid ${showcaseGridClassName}`}>
+        {visibleItems.map((item, index) => (
+          <ShowcaseItem key={getActivityItemKey(item, index)} item={item} />
+        ))}
+      </div>
+    );
+  } else {
+    content = (
+      <div>
+        {visibleItems.map((item, index) => (
+          <ActivityItem
+            key={getActivityItemKey(item, index)}
+            index={index}
+            isFirst={index === 0}
+            item={item}
+            variant={variant}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <AccountSectionLayout
@@ -285,7 +333,7 @@ export default function AccountActivityFeed({
       title={title}
       titleHref={titleHref}
     >
-      {listedActivityCount > 0 ? (
+      {shouldShowFilterBar ? (
         <AccountActivityFilterBar
           filters={filters}
           subjectOptions={subjectOptions}
@@ -294,37 +342,9 @@ export default function AccountActivityFeed({
         />
       ) : null}
 
-      {visibleItems.length === 0 && isLoading ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          Loading activity...
-        </div>
-      ) : listedActivityCount === 0 && !isLoading && !loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          {emptyMessage}
-        </div>
-      ) : listedActivityCount === 0 && !isLoading && loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">{loadError}</div>
-      ) : variant === 'showcase' ? (
-        <div className={`grid ${showcaseGridClassName}`}>
-          {visibleItems.map((item, index) => (
-            <ShowcaseItem key={`${item.sourceUserId || item.id}-${item.id}-${index}`} item={item} />
-          ))}
-        </div>
-      ) : (
-        <div>
-          {visibleItems.map((item, index) => (
-            <ActivityItem
-              key={`${item.sourceUserId || item.id}-${item.id}-${index}`}
-              index={index}
-              isFirst={item === visibleItems[0]}
-              item={item}
-              variant={variant}
-            />
-          ))}
-        </div>
-      )}
+      {content}
 
-      {listedActivityCount > 0 ? (
+      {shouldShowPagination ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
             {formatPaginationSummaryLabel({

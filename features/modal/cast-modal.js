@@ -27,7 +27,7 @@ function CastGridCard({ close, person }) {
       onClick={close}
       className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2 transition-colors"
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[10px] bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
         {imageSrc ? (
           <Image
             fill

@@ -9,7 +9,8 @@ export default async function Page({ params, searchParams }) {
     : 1;
   const scope = resolvedSearchParams?.scope === 'following' ? 'following' : 'user';
   const sort = resolvedSearchParams?.asort === 'oldest' ? 'oldest' : 'newest';
-  const subject = resolvedSearchParams?.asub === 'list' || resolvedSearchParams?.asub === 'movie' ? resolvedSearchParams.asub : 'all';
+  const subject =
+    resolvedSearchParams?.asub === 'list' || resolvedSearchParams?.asub === 'movie' ? resolvedSearchParams.asub : 'all';
   const routeData = await getUsernameAccountActivityRouteData(username, {
     page,
     scope,
@@ -17,5 +18,5 @@ export default async function Page({ params, searchParams }) {
     subject,
   });
 
-  return <Client {...routeData} />;
+  return <Client routeData={routeData} />;
 }

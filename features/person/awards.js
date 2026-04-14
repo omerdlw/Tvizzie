@@ -178,7 +178,7 @@ export default function PersonAwards({ personId }) {
                   : `${entry.organization} / ${entry.type}`;
 
                 const rowClassName = cn(
-                  'group flex items-end gap-2.5 rounded-[12px] border border-transparent p-1.5 transition-colors sm:gap-3',
+                  'group flex items-end gap-2.5 border border-transparent p-1.5 transition-colors sm:gap-3',
                   isInteractive ? 'hover:border-black/10 hover:bg-primary/35' : 'cursor-default'
                 );
 

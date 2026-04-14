@@ -1,4 +1,5 @@
 'use client';
+
 import AccountActivityOverview from '@/features/account/overview/activity';
 import AccountFavoritesOverview from '@/features/account/overview/favorites';
 import AccountListsOverview from '@/features/account/overview/lists';
@@ -33,34 +34,25 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
     followingCount = 0,
     followState,
     handleDeleteReview,
-    handleEditProfile,
     handleEditReview,
     handleFollow,
     handleLikeReview,
     handleOpenFollowList,
     handleRequestRemoveWatchedItem,
     handleRequestRemoveWatchlistItem,
-    handleSignInRequest,
     hasMoreActivityItems,
     hasMoreAuthoredReviews,
-    isBioSurfaceOpen = false,
     isFollowLoading = false,
     isOwner = false,
     isPageLoading = false,
-    isResolvingProfile = false,
-    itemRemoveConfirmation,
     likeCount = 0,
     likes = [],
     listCount = 0,
     lists = [],
-    navDescription,
-    pendingFollowRequestCount,
     profile,
     profileHandle,
-    resolveError,
     resolvedUserId,
     setIsBioSurfaceOpen,
-    unfollowConfirmation,
     username,
     watched = [],
     watchedCount = 0,
@@ -74,30 +66,15 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
   const shouldShowLists = lists.length > 0;
   const shouldShowActivity = activityItems.length > 0;
   const shouldShowReviews = authoredReviews.length > 0;
-
-  const pageRegistry = RegistryComponent ? (
-    <RegistryComponent
-      auth={auth}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      navDescription={navDescription}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-    />
-  ) : null;
+  const currentUserId = auth.user?.id || null;
+  const isShellLoading = isPageLoading || (!username && auth.isReady && !auth.isAuthenticated);
+  const activityHref = buildSectionHref(profileHandle, '/activity');
+  const likesHref = buildSectionHref(profileHandle, '/likes');
+  const listsHref = buildSectionHref(profileHandle, '/lists');
+  const reviewsHref = buildSectionHref(profileHandle, '/reviews');
+  const watchedHref = buildSectionHref(profileHandle, '/watched');
+  const watchlistHref = buildSectionHref(profileHandle, '/watchlist');
+  const pageRegistry = RegistryComponent ? <RegistryComponent /> : null;
 
   return (
     <AccountPageShell
@@ -105,7 +82,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
       followerCount={followerCount}
       followState={followState}
       followingCount={followingCount}
-      isLoading={isPageLoading || (!username && auth.isReady && !auth.isAuthenticated)}
+      isLoading={isShellLoading}
       isFollowLoading={isFollowLoading}
       isOwner={isOwner}
       likesCount={likeCount}
@@ -128,7 +105,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               icon="solar:star-bold"
               items={favoriteShowcase.slice(0, OVERVIEW_FAVORITES_LIMIT)}
               title="Favorites"
-              titleHref={buildSectionHref(profileHandle, '/likes')}
+              titleHref={likesHref}
             />
           ) : null}
 
@@ -143,13 +120,13 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
                     media={item}
                     onRemoveItem={handleRequestRemoveWatchedItem}
                     removeLabel={`Remove ${item.title || item.name} from watched`}
-                    userId={auth.user?.id || null}
+                    userId={currentUserId}
                   />
                 ) : null
               }
               showSeeMore={watchedCount > OVERVIEW_MEDIA_LIMIT}
               title="Watched"
-              titleHref={buildSectionHref(profileHandle, '/watched')}
+              titleHref={watchedHref}
             />
           ) : null}
 
@@ -165,13 +142,13 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
                     media={item}
                     onRemoveItem={handleRequestRemoveWatchlistItem}
                     removeLabel={`Remove ${item.title || item.name} from watchlist`}
-                    userId={auth.user?.id || null}
+                    userId={currentUserId}
                   />
                 ) : null
               }
               showSeeMore={watchlistCount > OVERVIEW_MEDIA_LIMIT}
               title="Watchlist"
-              titleHref={buildSectionHref(profileHandle, '/watchlist')}
+              titleHref={watchlistHref}
             />
           ) : null}
 
@@ -185,7 +162,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               showSeeMore={hasMoreActivityItems}
               summaryLabel=""
               title="Recent Activity"
-              titleHref={buildSectionHref(profileHandle, '/activity')}
+              titleHref={activityHref}
               variant="showcase"
             />
           ) : null}
@@ -197,13 +174,13 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               ownerUsername={profileHandle}
               showSeeMore={listCount > OVERVIEW_LIST_LIMIT}
               title="Lists"
-              titleHref={buildSectionHref(profileHandle, '/lists')}
+              titleHref={listsHref}
             />
           ) : null}
 
           {shouldShowReviews ? (
             <AccountReviewsOverview
-              currentUserId={auth.user?.id || null}
+              currentUserId={currentUserId}
               icon="solar:chat-round-bold"
               isLoading={authoredReviewsLoading}
               items={authoredReviews}
@@ -216,7 +193,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               showSeeMore={hasMoreAuthoredReviews}
               summaryLabel=""
               title="Recent Reviews"
-              titleHref={buildSectionHref(profileHandle, '/reviews')}
+              titleHref={reviewsHref}
             />
           ) : null}
         </>

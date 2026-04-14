@@ -95,13 +95,11 @@ async function readOrCreateLifecycleRow(userId) {
 
   const insertResult = await admin
     .from(ACCOUNT_LIFECYCLE_TABLE)
-    .insert(
-      {
-        state: ACCOUNT_LIFECYCLE_STATES.ACTIVE,
-        state_reason: 'bootstrap',
-        user_id: normalizedUserId,
-      }
-    )
+    .insert({
+      state: ACCOUNT_LIFECYCLE_STATES.ACTIVE,
+      state_reason: 'bootstrap',
+      user_id: normalizedUserId,
+    })
     .select('user_id,state,state_reason,pending_operation_key,deleted_at')
     .maybeSingle();
 

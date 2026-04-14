@@ -296,6 +296,7 @@ export default function Nav() {
               const position = getItemPosition(index, expanded);
               const isTop = position === 0;
               const isActive = getIsItemActive(link, activeItem);
+              const displayLink = isActive ? { ...link, ...activeItem } : link;
 
               const handleMouseEnter = () => {
                 if (expanded) {
@@ -326,7 +327,7 @@ export default function Nav() {
               };
 
               const handleClick = () => {
-                if (link.type === 'COUNTDOWN' || link.isOverlay) {
+                if (displayLink.type === 'COUNTDOWN' || displayLink.isOverlay) {
                   return;
                 }
 
@@ -337,22 +338,22 @@ export default function Nav() {
                   return;
                 }
 
-                if (link.isParent) {
-                  if (link.path) {
-                    navigate(link.path);
+                if (displayLink.isParent) {
+                  if (displayLink.path) {
+                    navigate(displayLink.path);
                   }
                   return;
                 }
 
-                if (link.path) {
-                  navigate(link.path);
+                if (displayLink.path) {
+                  navigate(displayLink.path);
                 }
               };
 
               return (
                 <Item
-                  key={getItemKey(link, index)}
-                  link={link}
+                  key={getItemKey(displayLink)}
+                  link={displayLink}
                   expanded={expanded}
                   position={position}
                   isTop={isTop}

@@ -72,7 +72,7 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center border-info bg-primary/40 hover:bg-primary/80 h-15 rounded-[12px] border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
+                'center border-info bg-primary/40 hover:bg-primary/80 h-15 border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
@@ -414,7 +414,7 @@ export default function AuthVerificationForm({
           type="button"
           onClick={() => void sendCode({ isInitial: false })}
           disabled={isSubmitting || isSending || !canResendCode}
-          className="hover:bg-info h-11 w-full flex-auto rounded-[12px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+          className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
         >
           {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
         </Button>

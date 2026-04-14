@@ -2,7 +2,7 @@ import { Suspense, use } from 'react';
 
 import { TextAnimate } from '@/components/ui/text-animate';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import CastSection from '@/features/movie/cast-section';
 import CollectionActions from '@/features/movie/collection-actions';
 import GallerySection from '@/features/movie/gallery-section';
@@ -293,7 +293,6 @@ export default function MovieView({
                   canResetMoviePoster={canResetMoviePoster}
                   secondaryDataPromise={secondaryDataPromise}
                 />
-
               </div>
             </div>
           </div>

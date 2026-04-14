@@ -28,14 +28,6 @@ const SEARCH_ACTION_VARIANTS = Object.freeze({
   PAGE: 'page',
 });
 
-function getSeeAllButtonClassName() {
-  return navActionClass({
-    cn,
-    button:
-      'relative w-full shrink-0 rounded-[12px] px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
-  });
-}
-
 export default function SearchAction({
   loading: controlledLoading = false,
   query: controlledQuery,
@@ -61,29 +53,35 @@ export default function SearchAction({
   const debouncedQuery = useDebounce(query, 500);
   const { expanded, navigate, setExpanded } = useNavigation();
 
-  const handleQueryChange = useCallback((nextQuery) => {
-    if (!isQueryControlled) {
-      setLocalQuery(nextQuery);
-    }
+  const handleQueryChange = useCallback(
+    (nextQuery) => {
+      if (!isQueryControlled) {
+        setLocalQuery(nextQuery);
+      }
 
-    onQueryChange?.(nextQuery);
+      onQueryChange?.(nextQuery);
 
-    if (!isPageVariant) {
-      setIsManualTab(false);
-    }
-  }, [isPageVariant, isQueryControlled, onQueryChange]);
+      if (!isPageVariant) {
+        setIsManualTab(false);
+      }
+    },
+    [isPageVariant, isQueryControlled, onQueryChange]
+  );
 
-  const handleSearchTypeChange = useCallback((nextSearchType) => {
-    if (!isSearchTypeControlled) {
-      setLocalSearchType(nextSearchType);
-    }
+  const handleSearchTypeChange = useCallback(
+    (nextSearchType) => {
+      if (!isSearchTypeControlled) {
+        setLocalSearchType(nextSearchType);
+      }
 
-    onSearchTypeChange?.(nextSearchType);
+      onSearchTypeChange?.(nextSearchType);
 
-    if (!isPageVariant) {
-      setIsManualTab(true);
-    }
-  }, [isPageVariant, isSearchTypeControlled, onSearchTypeChange]);
+      if (!isPageVariant) {
+        setIsManualTab(true);
+      }
+    },
+    [isPageVariant, isSearchTypeControlled, onSearchTypeChange]
+  );
 
   const handleClear = useCallback(() => {
     handleQueryChange('');
@@ -105,21 +103,24 @@ export default function SearchAction({
     }));
   }, []);
 
-  const handleSelect = useCallback((item) => {
-    const path = getDetailPath(item);
+  const handleSelect = useCallback(
+    (item) => {
+      const path = getDetailPath(item);
 
-    if (!path) {
-      return;
-    }
+      if (!path) {
+        return;
+      }
 
-    if (typeof document !== 'undefined') {
-      document.activeElement?.blur?.();
-    }
+      if (typeof document !== 'undefined') {
+        document.activeElement?.blur?.();
+      }
 
-    setExpanded(false);
-    handleClear();
-    navigate(path);
-  }, [handleClear, navigate, setExpanded]);
+      setExpanded(false);
+      handleClear();
+      navigate(path);
+    },
+    [handleClear, navigate, setExpanded]
+  );
 
   const handleSeeAllResults = useCallback(() => {
     const normalizedQuery = query.trim();
@@ -263,14 +264,13 @@ export default function SearchAction({
         onQueryChange={handleQueryChange}
         onSearchTypeChange={handleSearchTypeChange}
       />
-
       {!isPageVariant ? (
         <>
           <AnimatePresence>
             {results.length > 0 && query ? (
               <motion.div
                 layout="position"
-                className="mt-2 flex flex-col gap-1 overflow-hidden"
+                className="mt-2 flex flex-col gap-1 overflow-hidden rounded-lg"
                 initial={{ height: 0 }}
                 animate={{ height: 'auto' }}
                 exit={{ height: 0 }}
@@ -297,7 +297,10 @@ export default function SearchAction({
                 animate={{ height: 'auto' }}
                 exit={{ height: 0 }}
               >
-                <button type="button" className={getSeeAllButtonClassName()} onClick={handleSeeAllResults}>
+                <button type="button" className={navActionClass({
+                  button: 'relative w-full shrink-0 px-3 py-1.5 rounded-lg text-left text-xs whitespace-nowrap transition-colors',
+                  cn,
+                })} onClick={handleSeeAllResults}>
                   See all results
                 </button>
               </motion.div>

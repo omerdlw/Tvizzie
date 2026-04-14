@@ -26,7 +26,8 @@ function buildAbsoluteRedirectUrl({ requestUrl, pathname, nextPath = '', notice 
 
 function buildFailureRedirectUrl({ intent, nextPath, requestUrl }) {
   const provider = normalizeOAuthProvider(requestUrl.searchParams.get('provider'));
-  const failureNotice = provider === 'google' ? AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED : AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED;
+  const failureNotice =
+    provider === 'google' ? AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED : AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED;
 
   if (intent === 'sign-up') {
     return buildAbsoluteRedirectUrl({

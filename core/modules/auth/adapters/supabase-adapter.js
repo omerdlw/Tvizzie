@@ -1,10 +1,6 @@
 import { resolveAuthCapabilities } from '@/core/auth/capabilities';
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
-import {
-  buildOAuthCallbackUrl,
-  resolveOAuthIntent,
-  sanitizeAuthNextPath,
-} from '@/core/auth/oauth-callback';
+import { buildOAuthCallbackUrl, resolveOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
 import { getOAuthProviderLabel, isSupportedOAuthProvider, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient, terminateBrowserSession } from '@/core/clients/supabase/client';
 
@@ -222,8 +218,7 @@ export function createSupabaseAuthAdapter(options = {}) {
 
       if (oauthIntent === 'link' && isManualLinkingDisabledError(error)) {
         normalizedError.code = 'OAUTH_LINK_MANUAL_LINKING_DISABLED';
-        normalizedError.message =
-          `${providerLabel} linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
+        normalizedError.message = `${providerLabel} linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
       }
 
       throw normalizedError;

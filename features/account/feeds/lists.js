@@ -21,6 +21,11 @@ import Icon from '@/ui/icon';
 
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;
 
+function parsePageFromSearch(search) {
+  const parsed = Number(search.get('page') || '1');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
+
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
   const handleEditClick = (event) => {
     event.preventDefault();
@@ -40,7 +45,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         type="button"
         aria-label={`Edit ${list.title}`}
         onClick={handleEditClick}
-        className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
+        className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/20"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
@@ -48,7 +53,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         variant="destructive-icon"
         aria-label={`Delete ${list.title}`}
         onClick={handleDeleteClick}
-        className="size-8 rounded-[12px]"
+        className="size-8"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </Button>
@@ -56,30 +61,21 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
   );
 }
 
-export default function AccountListsFeed({
-  canShowLists,
-  isOwner,
-  lists,
-  username,
-  onDeleteList,
-  onEditList,
-}) {
+export default function AccountListsFeed({ canShowLists, isOwner, lists, username, onDeleteList, onEditList }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsKey = searchParams?.toString?.() || '';
   const initialListFilters = useMemo(() => parseListFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
-  const initialPage = useMemo(() => {
-    const parsed = Number(new URLSearchParams(searchParamsKey).get('page') || '1');
-    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-  }, [searchParamsKey]);
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
   const [listFilters, setListFilters] = useState(initialListFilters);
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const sortedLists = useMemo(() => sortProfileLists(lists, listFilters.sort), [listFilters.sort, lists]);
+
   useEffect(() => {
     setListFilters(initialListFilters);
     setActivePage(initialPage);
-  }, [initialListFilters, initialPage, searchParamsKey]);
+  }, [initialListFilters, initialPage]);
 
   const updateUrl = useCallback(
     (nextSort, nextPage) => {

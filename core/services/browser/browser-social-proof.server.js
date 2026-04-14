@@ -114,22 +114,6 @@ function buildProofGroup(recordsMap, followProfileMap) {
   };
 }
 
-function buildLikeMap(rows = []) {
-  const map = new Map();
-
-  rows.forEach((row) => {
-    const mediaKey = row.media_key;
-
-    if (!mediaKey) {
-      return;
-    }
-
-    map.set(mediaKey, row);
-  });
-
-  return map;
-}
-
 export async function getMediaSocialProofResource({ entityId, entityType, viewerId }) {
   if (!viewerId || !entityId || !entityType) {
     return createEmptyMediaSocialProof();

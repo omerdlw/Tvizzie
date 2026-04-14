@@ -87,12 +87,7 @@ export function invalidateCachedValuesWhere(matcher) {
   }
 }
 
-export async function getOrLoadCachedValue({
-  cacheKey,
-  enabled = true,
-  ttlMs = DEFAULT_TTL_MS,
-  loader,
-}) {
+export async function getOrLoadCachedValue({ cacheKey, enabled = true, ttlMs = DEFAULT_TTL_MS, loader }) {
   if (typeof loader !== 'function') {
     throw new Error('loader function is required');
   }

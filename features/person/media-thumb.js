@@ -32,7 +32,7 @@ export default function MediaThumb({ poster, alt, className = '' }) {
   const shouldOptimize = canUseNextImageOptimization(src);
 
   return (
-    <div className={cn('relative aspect-2/3 w-16 shrink-0 overflow-hidden rounded-[8px] sm:w-20', className)}>
+    <div className={cn('relative aspect-2/3 w-16 shrink-0 overflow-hidden sm:w-20', className)}>
       {src ? (
         <Image
           fill

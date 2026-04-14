@@ -10,10 +10,7 @@ import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.se
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { executeWriteRollout } from '@/core/services/shared/write-rollout.server';
-import {
-  getOrLoadCachedValue,
-  invalidateCachedValuesWhere,
-} from '@/core/services/shared/memory-cache.server';
+import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/core/services/shared/memory-cache.server';
 import { NOTIFICATION_TYPE_SET } from '@/core/services/notifications/notifications.constants';
 
 function normalizeValue(value) {
@@ -37,13 +34,7 @@ function invalidateNotificationCaches(userId) {
   );
 }
 
-async function executeNotificationWrite({
-  authContext,
-  request,
-  requestMeta,
-  action,
-  notificationId = null,
-}) {
+async function executeNotificationWrite({ authContext, request, requestMeta, action, notificationId = null }) {
   const normalizedAction = normalizeValue(action);
   const normalizedNotificationId = normalizeValue(notificationId);
 

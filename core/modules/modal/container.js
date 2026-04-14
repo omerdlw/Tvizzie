@@ -54,9 +54,9 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
     >
-      <Icon icon="material-symbols:close-rounded" size={18} />
+      <Icon icon="material-symbols:close-" size={18} />
     </button>
   );
 }
@@ -103,9 +103,7 @@ export default function Container({ children, className, bodyClassName, header =
       {shouldRenderHeader ? (
         <div
           className={cn(
-            hasSlotContent(headerCenter)
-              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
-              : 'flex justify-between',
+            hasSlotContent(headerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
             headerIsSticky && 'sticky top-0 z-10'
           )}
@@ -119,10 +117,7 @@ export default function Container({ children, className, bodyClassName, header =
       <div
         data-lenis-prevent
         data-lenis-prevent-wheel
-        className={cn(
-          'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-t-[16px] rounded-b-[16px]',
-          bodyClassName
-        )}
+        className={cn('bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto', bodyClassName)}
       >
         {children}
       </div>
@@ -130,9 +125,7 @@ export default function Container({ children, className, bodyClassName, header =
       {shouldRenderFooter ? (
         <div
           className={cn(
-            hasSlotContent(footerCenter)
-              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
-              : 'flex justify-between',
+            hasSlotContent(footerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
             footerIsSticky && 'sticky bottom-0'
           )}

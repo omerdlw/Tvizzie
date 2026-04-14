@@ -178,7 +178,7 @@ function buildUpdatedReview({
   };
 }
 
-export default function ReviewEditorModal({ close, data, header }) {
+export default function ReviewEditorModal({ close, data }) {
   const toast = useToast();
   const { onSuccess, review = null, user = null } = data || {};
   const hasExistingReview = Boolean(review);
@@ -308,7 +308,7 @@ export default function ReviewEditorModal({ close, data, header }) {
             <Button
               type="button"
               onClick={close}
-              className="bg-primary h-8 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
+              className="bg-primary h-8 border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
             >
               Cancel
             </Button>
@@ -316,7 +316,7 @@ export default function ReviewEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving || Boolean(validationError)}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, rating, reviewText })}
             </Button>
@@ -355,7 +355,7 @@ export default function ReviewEditorModal({ close, data, header }) {
                 ? 'bg-error/10 hover:bg-error/20 text-error'
                 : 'bg-primary border-black/10'
               : 'cursor-not-allowed border-black/10 text-black/60'
-          } ${validationError ? '' : 'rounded-b-[16px] hover:bg-black/5'}`}
+          } ${validationError ? '' : '[16px] hover:bg-black/5'}`}
         >
           <div className="flex flex-col gap-1">
             <span className="text-sm font-semibold">Contains spoilers</span>
@@ -366,12 +366,12 @@ export default function ReviewEditorModal({ close, data, header }) {
             </span>
           </div>
           <span
-            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border p-px transition-all ${
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center border p-px transition-all ${
               hasText && isSpoiler ? 'border-error bg-error' : 'border-black/5 bg-black/5'
             }`}
           >
             <span
-              className={`bg-primary size-5 rounded-full transition-all ${
+              className={`bg-primary size-5 transition-all ${
                 hasText && isSpoiler ? 'bg-error translate-x-5' : 'translate-x-0'
               }`}
             />

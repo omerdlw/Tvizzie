@@ -16,8 +16,7 @@ export async function GET(request) {
     const entityId = normalizeValue(searchParams.get('entityId'));
     const entityType = normalizeValue(searchParams.get('entityType'));
     const limitCount = searchParams.get('limitCount');
-    const cacheKey =
-      `reviews|resource=${resource}|listId=${listId}|ownerId=${ownerId}|entity=${entityType}:${entityId}|limit=${limitCount}`;
+    const cacheKey = `reviews|resource=${resource}|listId=${listId}|ownerId=${ownerId}|entity=${entityType}:${entityId}|limit=${limitCount}`;
     const payload = await getOrLoadCachedValue({
       cacheKey,
       enabled: true,

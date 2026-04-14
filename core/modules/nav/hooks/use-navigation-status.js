@@ -13,7 +13,6 @@ import { Button } from '@/ui/elements';
 import { Spinner } from '@/ui/loadings/spinner';
 
 import NotFoundAction from '../actions/not-found-action';
-import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 
 const STATUS_PRIORITY = Object.freeze({
   ACCOUNT_DELETE: 115,

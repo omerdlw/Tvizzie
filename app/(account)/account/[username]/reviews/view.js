@@ -1,95 +1,34 @@
 import { AccountPageShell } from '@/features/account/shared/layout';
 import AccountReviewFeed from '@/features/account/feeds/reviews';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import { buildAccountPageShellProps, useAccountSectionState } from '../shared/section-context';
 import Registry from './registry';
 
 export default function ReviewsView({
-  auth,
-  canShowReviews,
   feedError,
-  followerCount,
-  followingCount,
-  followState,
-  handleEditProfile,
-  handleEditReview,
-  handleFollow,
-  handleDeleteReview,
-  handleLike,
-  handleOpenFollowList,
-  handleSignInRequest,
   hasMore,
-  isBioSurfaceOpen,
   isFeedLoading,
   isLoadingMore,
-  isFollowLoading,
-  isOwner,
-  isPageLoading,
-  isResolvingProfile,
-  itemRemoveConfirmation,
-  likeCount,
   likes,
-  listCount,
   loadReviews,
-  pendingFollowRequestCount,
-  profile,
-  resolveError,
-  resolvedUserId,
   reviews,
   totalReviewCount,
-  setIsBioSurfaceOpen,
-  unfollowConfirmation,
-  username,
   watchedItems,
-  watchlistCount,
+  handleDeleteReview,
+  handleEditReview,
+  handleLike,
 }) {
-  const pageRegistry = (
-    <Registry
-      auth={auth}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-    />
-  );
+  const sectionState = useAccountSectionState();
+  const shellProps = buildAccountPageShellProps(sectionState, {
+    activeSection: 'reviews',
+    skeletonVariant: 'reviews',
+  });
 
   return (
-    <AccountPageShell
-      activeSection="reviews"
-      followerCount={followerCount}
-      followState={followState}
-      followingCount={followingCount}
-      isLoading={isPageLoading}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      likesCount={likeCount}
-      listsCount={listCount}
-      onFollow={handleFollow}
-      onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioSurfaceOpen(true)}
-      profile={profile}
-      registry={pageRegistry}
-      resolvedUserId={resolvedUserId}
-      skeletonVariant="reviews"
-      username={username}
-      watchedCount={profile?.watchedCount || 0}
-      watchlistCount={watchlistCount}
-    >
-      {canShowReviews ? (
+    <AccountPageShell {...shellProps} registry={<Registry />}>
+      {sectionState.canViewProfileCollections ? (
         <AccountReviewFeed
-          currentUserId={auth.user?.id || null}
+          currentUserId={sectionState.auth.user?.id || null}
           emptyMessage="No reviews yet"
           hasMore={hasMore}
           icon="solar:chat-round-bold"
@@ -103,7 +42,7 @@ export default function ReviewsView({
           onLike={handleLike}
           onLoadMore={() => loadReviews({ append: true })}
           showHeader={false}
-          showOwnActions={isOwner}
+          showOwnActions={sectionState.isOwner}
           summaryLabel={Number.isFinite(Number(totalReviewCount)) ? `${Number(totalReviewCount)} Reviews` : null}
           title="Reviews"
           watchedItems={watchedItems}

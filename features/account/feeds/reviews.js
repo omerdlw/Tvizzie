@@ -22,67 +22,33 @@ import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
+const EMPTY_STATE_CLASS = 'border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm';
 
-function buildLikedMediaKeySet(items = []) {
-  return new Set(
-    items
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
-
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
-
-        if (!entityType || !entityId) {
-          return null;
-        }
-
-        return `${entityType}_${entityId}`;
-      })
-      .filter(Boolean)
-  );
+function parsePageFromSearch(search) {
+  const parsed = Number(search.get('page') || '1');
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
 }
 
-function buildWatchedMediaKeySet(items = []) {
-  return new Set(
-    items
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
+function resolveMediaKey(item) {
+  if (item?.mediaKey) {
+    return item.mediaKey;
+  }
 
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
+  const entityType = item?.entityType || item?.media_type || null;
+  const entityId = String(item?.entityId || item?.id || '').trim();
 
-        if (!entityType || !entityId) {
-          return null;
-        }
+  if (!entityType || !entityId) {
+    return null;
+  }
 
-        return `${entityType}_${entityId}`;
-      })
-      .filter(Boolean)
-  );
+  return `${entityType}_${entityId}`;
 }
 
-function buildRewatchMediaKeySet(items = []) {
+function buildMediaKeySet(items = [], shouldInclude = () => true) {
   return new Set(
     items
-      .filter((item) => Number(item?.watchCount || 0) > 1)
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
-
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
-
-        if (!entityType || !entityId) {
-          return null;
-        }
-
-        return `${entityType}_${entityId}`;
-      })
+      .filter((item) => shouldInclude(item))
+      .map((item) => resolveMediaKey(item))
       .filter(Boolean)
   );
 }
@@ -118,11 +84,11 @@ export default function AccountReviewsFeed({
   const reduceMotion = useReducedMotion();
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
   const normalizedPathname = useMemo(() => String(pathname || '').replace(/\/page\/\d+$/i, '') || pathname, [pathname]);
-  const initialReviewFilters = useMemo(() => parseReviewFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
-  const initialPage = useMemo(() => {
-    const parsed = Number(new URLSearchParams(searchParamsKey).get('page') || '1');
-    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-  }, [searchParamsKey]);
+  const initialReviewFilters = useMemo(
+    () => parseReviewFilters(new URLSearchParams(searchParamsKey)),
+    [searchParamsKey]
+  );
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
   const [reviewFilters, setReviewFilters] = useState(initialReviewFilters);
   const [activePage, setActivePage] = useState(initialPage);
   const yearOptions = useMemo(() => collectReviewYears(items), [items]);
@@ -144,14 +110,17 @@ export default function AccountReviewsFeed({
 
     return `${filteredReviewCount} of ${listedReviewCount} shown`;
   }, [filteredReviewCount, hasFilters, listedReviewCount, summaryLabel]);
-  const likedMediaKeys = useMemo(() => buildLikedMediaKeySet(likes), [likes]);
-  const watchedMediaKeys = useMemo(() => buildWatchedMediaKeySet(watchedItems), [watchedItems]);
-  const rewatchMediaKeys = useMemo(() => buildRewatchMediaKeySet(watchedItems), [watchedItems]);
+  const likedMediaKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const watchedMediaKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
+  const rewatchMediaKeys = useMemo(
+    () => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1),
+    [watchedItems]
+  );
 
   useEffect(() => {
     setReviewFilters(initialReviewFilters);
     setActivePage(initialPage);
-  }, [initialPage, initialReviewFilters, searchParamsKey]);
+  }, [initialPage, initialReviewFilters]);
 
   const updateUrl = useCallback(
     (nextFilters, nextPage) => {
@@ -235,7 +204,7 @@ export default function AccountReviewsFeed({
 
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
-          className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm"
+          className={EMPTY_STATE_CLASS}
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -244,7 +213,7 @@ export default function AccountReviewsFeed({
         </motion.div>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
         <motion.div
-          className="border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm"
+          className={EMPTY_STATE_CLASS}
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}

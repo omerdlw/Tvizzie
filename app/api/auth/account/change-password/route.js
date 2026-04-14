@@ -149,20 +149,20 @@ export async function POST(request) {
           ? 410
           : message.includes('pending deletion')
             ? 409
-        : message.includes('Authentication session is required') ||
-            message.includes('Invalid or expired authentication token') ||
-            message.includes('Authentication token has been revoked') ||
-            message.includes('Recent authentication is required')
-          ? 401
-          : message.includes('required') ||
-              message.includes('invalid') ||
-              message.includes('incorrect') ||
-              message.includes('disabled') ||
-              message.includes('verification') ||
-              message.includes('must contain') ||
-              message.includes('at least')
-            ? 400
-            : 500;
+            : message.includes('Authentication session is required') ||
+                message.includes('Invalid or expired authentication token') ||
+                message.includes('Authentication token has been revoked') ||
+                message.includes('Recent authentication is required')
+              ? 401
+              : message.includes('required') ||
+                  message.includes('invalid') ||
+                  message.includes('incorrect') ||
+                  message.includes('disabled') ||
+                  message.includes('verification') ||
+                  message.includes('must contain') ||
+                  message.includes('at least')
+                ? 400
+                : 500;
 
     await writeAuthAuditLog({
       request,

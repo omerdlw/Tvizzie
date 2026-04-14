@@ -274,7 +274,7 @@ async function fetchJson(url, options = {}) {
 }
 
 function Panel({ children, className }) {
-  return <section className={cn('rounded-2xl border border-black/[0.08] bg-white', className)}>{children}</section>;
+  return <section className={cn('border border-black/[0.08] bg-white', className)}>{children}</section>;
 }
 
 function PanelHeader({ title, badge, children }) {
@@ -283,7 +283,7 @@ function PanelHeader({ title, badge, children }) {
       <div className="flex items-center gap-2">
         <h2 className="text-[32px] font-semibold tracking-tight text-black">{title}</h2>
         {badge ? (
-          <span className="rounded-md border border-black/[0.08] bg-black/[0.03] px-2 py-1 text-[11px] font-medium text-black/60">
+          <span className="border border-black/[0.08] bg-black/[0.03] px-2 py-1 text-[11px] font-medium text-black/60">
             {badge}
           </span>
         ) : null}
@@ -315,7 +315,7 @@ function UserTable({
                 type="checkbox"
                 checked={allSelected}
                 onChange={onToggleAll}
-                className="h-4 w-4 rounded border-black/[0.2]"
+                className="h-4 w-4 border-black/[0.2]"
               />
             </th>
             <th className="px-5 py-3 text-[13px] font-medium text-black/60">User</th>
@@ -349,7 +349,7 @@ function UserTable({
                     type="checkbox"
                     checked={checked}
                     onChange={() => onToggleRow(userId)}
-                    className="h-4 w-4 rounded border-black/[0.2]"
+                    className="h-4 w-4 border-black/[0.2]"
                   />
                 </td>
 
@@ -359,7 +359,7 @@ function UserTable({
                     onClick={() => onSelectRow(userId)}
                     className="flex items-center gap-3 text-left"
                   >
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/[0.08] bg-black/[0.03] text-[12px] font-semibold text-black/65">
+                    <span className="inline-flex h-11 w-11 items-center justify-center border border-black/[0.08] bg-black/[0.03] text-[12px] font-semibold text-black/65">
                       {buildInitials(item)}
                     </span>
                     <span className="text-base font-medium text-black/90">{displayName}</span>
@@ -373,11 +373,11 @@ function UserTable({
                 <td className="px-5 py-4">
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-[13px] font-medium',
+                      'inline-flex items-center gap-1 border px-2.5 py-1 text-[13px] font-medium',
                       resolveStatusChipClass(status.tone)
                     )}
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    <span className="h-1.5 w-1.5 bg-current" />
                     {status.label}
                   </span>
                 </td>
@@ -387,7 +387,7 @@ function UserTable({
                     <button
                       type="button"
                       onClick={() => onViewRow(userId)}
-                      className="inline-flex h-8 items-center rounded-md border border-black/[0.08] px-2.5 text-[11px] font-semibold text-black/60 transition-colors hover:text-black"
+                      className="inline-flex h-8 items-center border border-black/[0.08] px-2.5 text-[11px] font-semibold text-black/60 transition-colors hover:text-black"
                     >
                       View
                     </button>
@@ -395,7 +395,7 @@ function UserTable({
                       type="button"
                       disabled={isActionRunning}
                       onClick={() => onRunRowAction(userId, 'revoke_sessions', { reason: 'admin-row-revoke' })}
-                      className="inline-flex h-8 items-center rounded-md border border-black/[0.08] px-2.5 text-[11px] font-semibold text-black/60 transition-colors hover:text-black disabled:opacity-50"
+                      className="inline-flex h-8 items-center border border-black/[0.08] px-2.5 text-[11px] font-semibold text-black/60 transition-colors hover:text-black disabled:opacity-50"
                     >
                       Revoke
                     </button>
@@ -410,7 +410,7 @@ function UserTable({
                         )
                       }
                       className={cn(
-                        'inline-flex h-8 items-center rounded-md border px-2.5 text-[11px] font-semibold transition-colors disabled:opacity-50',
+                        'inline-flex h-8 items-center border px-2.5 text-[11px] font-semibold transition-colors disabled:opacity-50',
                         item?.auth?.disabled
                           ? 'border-success/20 bg-success/8 text-success'
                           : 'border-warning/20 bg-warning/8 text-warning'
@@ -431,7 +431,7 @@ function UserTable({
 
 function MiniTable({ title, rows = [], emptyMessage, columns = [] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-black/[0.08]">
+    <div className="overflow-hidden border border-black/[0.08]">
       <div className="border-b border-black/[0.06] bg-black/[0.01] px-4 py-3">
         <p className="text-[11px] font-semibold tracking-wider text-black/45 uppercase">{title}</p>
       </div>
@@ -872,12 +872,10 @@ export default function UsersSection({ payload, onRefreshSection }) {
   return (
     <div className="space-y-5">
       {uiError ? (
-        <div className="border-error/20 bg-error/[0.08] text-error rounded-xl border px-4 py-3 text-sm">{uiError}</div>
+        <div className="border-error/20 bg-error/[0.08] text-error border px-4 py-3 text-sm">{uiError}</div>
       ) : null}
       {uiMessage ? (
-        <div className="border-success/20 bg-success/[0.08] text-success rounded-xl border px-4 py-3 text-sm">
-          {uiMessage}
-        </div>
+        <div className="border-success/20 bg-success/[0.08] text-success border px-4 py-3 text-sm">{uiMessage}</div>
       ) : null}
 
       <Panel>
@@ -893,14 +891,14 @@ export default function UsersSection({ payload, onRefreshSection }) {
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="Search for user"
-                className="h-12 w-full rounded-lg border border-black/[0.1] bg-white pr-4 pl-11 text-[17px] font-medium text-black/75 placeholder:text-black/35"
+                className="h-12 w-full border border-black/[0.1] bg-white pr-4 pl-11 text-[17px] font-medium text-black/75 placeholder:text-black/35"
               />
             </div>
 
             <button
               type="button"
               onClick={() => setShowFilters((current) => !current)}
-              className="inline-flex h-12 items-center gap-2 rounded-lg border border-black/[0.1] bg-white px-4 text-[17px] font-medium text-black/75"
+              className="inline-flex h-12 items-center gap-2 border border-black/[0.1] bg-white px-4 text-[17px] font-medium text-black/75"
             >
               <Icon icon="solar:filter-bold" size={16} />
               Filters
@@ -909,7 +907,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
             <select
               value={dateRange}
               onChange={(event) => setDateRange(event.target.value)}
-              className="h-12 rounded-lg border border-black/[0.1] bg-white px-4 text-[17px] font-medium text-black/75"
+              className="h-12 border border-black/[0.1] bg-white px-4 text-[17px] font-medium text-black/75"
             >
               <option value="all">All time</option>
               <option value="30d">Last 30 days</option>
@@ -925,7 +923,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
               >
                 <option value="all">All</option>
                 <option value="active">Active</option>
@@ -939,7 +937,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
               <select
                 value={providerFilter}
                 onChange={(event) => setProviderFilter(event.target.value)}
-                className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
               >
                 <option value="all">All</option>
                 <option value="password">Password</option>
@@ -955,7 +953,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                   setProviderFilter('all');
                   setDateRange('all');
                 }}
-                className="h-10 rounded-lg border border-black/[0.1] bg-white px-4 text-sm font-medium text-black/65"
+                className="h-10 border border-black/[0.1] bg-white px-4 text-sm font-medium text-black/65"
               >
                 Reset filters
               </button>
@@ -979,7 +977,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                     setSelectedUserId(firstId);
                   }
                 }}
-                className="inline-flex h-9 items-center rounded-md border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60 disabled:opacity-50"
+                className="inline-flex h-9 items-center border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60 disabled:opacity-50"
               >
                 Open first
               </button>
@@ -989,14 +987,14 @@ export default function UsersSection({ payload, onRefreshSection }) {
                 onClick={() =>
                   runBulkAction('revoke_sessions', { reason: 'admin-bulk-revoke' }, { refreshDetail: false })
                 }
-                className="inline-flex h-9 items-center rounded-md border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60 disabled:opacity-50"
+                className="inline-flex h-9 items-center border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60 disabled:opacity-50"
               >
                 Revoke sessions
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedIds([])}
-                className="inline-flex h-9 items-center rounded-md border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60"
+                className="inline-flex h-9 items-center border border-black/[0.1] bg-white px-3 text-xs font-semibold text-black/60"
               >
                 Clear selection
               </button>
@@ -1050,7 +1048,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
               type="button"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={Number(pagination?.page || page) <= 1}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-black/55 disabled:text-black/25"
+              className="inline-flex h-8 w-8 items-center justify-center text-black/55 disabled:text-black/25"
             >
               <Icon icon="solar:alt-arrow-left-linear" size={16} />
             </button>
@@ -1072,7 +1070,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                   type="button"
                   onClick={() => setPage(token.value)}
                   className={cn(
-                    'h-8 min-w-8 rounded-md px-2 text-sm transition-colors',
+                    'h-8 min-w-8 px-2 text-sm transition-colors',
                     active ? 'bg-black/[0.06] font-semibold text-black' : 'text-black/60 hover:text-black'
                   )}
                 >
@@ -1085,7 +1083,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
               type="button"
               onClick={() => setPage((current) => current + 1)}
               disabled={Number(pagination?.page || page) >= Number(pagination?.totalPages || 1)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-black/55 disabled:text-black/25"
+              className="inline-flex h-8 w-8 items-center justify-center text-black/55 disabled:text-black/25"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -1120,7 +1118,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                     type="button"
                     onClick={() => setDetailTab(tab)}
                     className={cn(
-                      'rounded-md px-3 py-1.5 text-[11px] font-semibold tracking-wider uppercase transition-colors',
+                      'px-3 py-1.5 text-[11px] font-semibold tracking-wider uppercase transition-colors',
                       detailTab === tab ? 'bg-black text-white' : 'bg-black/[0.04] text-black/55'
                     )}
                   >
@@ -1133,7 +1131,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
             <div className="space-y-4 px-5 py-4">
               {detailTab === 'overview' ? (
                 <div className="grid gap-4 xl:grid-cols-3">
-                  <div className="space-y-2 rounded-xl border border-black/[0.08] p-4">
+                  <div className="space-y-2 border border-black/[0.08] p-4">
                     <p className="text-[11px] font-semibold tracking-wider text-black/45 uppercase">Auth snapshot</p>
                     <p className="text-sm text-black/70">Email: {normalizeValue(auth?.email) || 'n/a'}</p>
                     <p className="text-sm text-black/70">Providers: {(auth?.providers || []).join(', ') || 'n/a'}</p>
@@ -1142,7 +1140,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                     <p className="text-sm text-black/70">Last sign-in: {formatTimestamp(auth?.lastSignInAt)}</p>
                   </div>
 
-                  <div className="space-y-2 rounded-xl border border-black/[0.08] p-4">
+                  <div className="space-y-2 border border-black/[0.08] p-4">
                     <p className="text-[11px] font-semibold tracking-wider text-black/45 uppercase">Account snapshot</p>
                     <p className="text-sm text-black/70">Display: {normalizeValue(profile?.display_name) || 'n/a'}</p>
                     <p className="text-sm text-black/70">Username: {normalizeValue(profile?.username) || 'n/a'}</p>
@@ -1151,7 +1149,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                     <p className="text-sm text-black/70">Updated: {formatTimestamp(profile?.updated_at)}</p>
                   </div>
 
-                  <div className="space-y-2 rounded-xl border border-black/[0.08] p-4">
+                  <div className="space-y-2 border border-black/[0.08] p-4">
                     <p className="text-[11px] font-semibold tracking-wider text-black/45 uppercase">
                       Lifecycle snapshot
                     </p>
@@ -1167,7 +1165,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                     {Object.entries(counters)
                       .sort(([left], [right]) => left.localeCompare(right))
                       .map(([key, value]) => (
-                        <div key={key} className="rounded-lg border border-black/[0.08] bg-black/[0.02] px-3.5 py-2.5">
+                        <div key={key} className="border border-black/[0.08] bg-black/[0.02] px-3.5 py-2.5">
                           <p className="text-[10px] font-semibold tracking-wider text-black/40 uppercase">{key}</p>
                           <p className="mt-1 text-lg font-semibold text-black/85">{value ?? 0}</p>
                         </div>
@@ -1190,14 +1188,14 @@ export default function UsersSection({ payload, onRefreshSection }) {
               ) : null}
 
               {detailTab === 'auth' ? (
-                <div className="space-y-3 rounded-xl border border-black/[0.08] p-4">
+                <div className="space-y-3 border border-black/[0.08] p-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="text-xs font-medium text-black/60">
                       Email
                       <input
                         value={authForm.email}
                         onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1206,7 +1204,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       <input
                         value={authForm.role}
                         onChange={(event) => setAuthForm((current) => ({ ...current, role: event.target.value }))}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                         placeholder="admin"
                       />
                     </label>
@@ -1216,7 +1214,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       <select
                         value={authForm.signInMode}
                         onChange={(event) => setAuthForm((current) => ({ ...current, signInMode: event.target.value }))}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       >
                         <option value="hybrid">hybrid</option>
                         <option value="password">password</option>
@@ -1230,7 +1228,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         type="password"
                         value={authForm.password}
                         onChange={(event) => setAuthForm((current) => ({ ...current, password: event.target.value }))}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
                   </div>
@@ -1242,7 +1240,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       onChange={(event) =>
                         setAuthForm((current) => ({ ...current, emailConfirmed: event.target.checked }))
                       }
-                      className="h-4 w-4 rounded"
+                      className="h-4 w-4"
                     />
                     Email confirmed
                   </label>
@@ -1256,7 +1254,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setAuthForm((current) => ({ ...current, appMetadataText: event.target.value }))
                         }
-                        className="mt-1.5 w-full rounded-lg border border-black/[0.1] bg-white px-3 py-2 font-mono text-xs text-black"
+                        className="mt-1.5 w-full border border-black/[0.1] bg-white px-3 py-2 font-mono text-xs text-black"
                       />
                     </label>
 
@@ -1268,7 +1266,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setAuthForm((current) => ({ ...current, userMetadataText: event.target.value }))
                         }
-                        className="mt-1.5 w-full rounded-lg border border-black/[0.1] bg-white px-3 py-2 font-mono text-xs text-black"
+                        className="mt-1.5 w-full border border-black/[0.1] bg-white px-3 py-2 font-mono text-xs text-black"
                       />
                     </label>
                   </div>
@@ -1302,7 +1300,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
 
                       setAuthForm((current) => ({ ...current, password: '' }));
                     }}
-                    className="h-10 rounded-lg bg-black px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="h-10 bg-black px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
                     Save auth
                   </button>
@@ -1310,7 +1308,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
               ) : null}
 
               {detailTab === 'account' ? (
-                <div className="space-y-3 rounded-xl border border-black/[0.08] p-4">
+                <div className="space-y-3 border border-black/[0.08] p-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="text-xs font-medium text-black/60">
                       Display name
@@ -1319,7 +1317,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setProfileForm((current) => ({ ...current, displayName: event.target.value }))
                         }
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1330,7 +1328,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setProfileForm((current) => ({ ...current, username: event.target.value }))
                         }
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1339,7 +1337,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       <input
                         value={profileForm.email}
                         onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1350,7 +1348,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))
                         }
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1361,7 +1359,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setProfileForm((current) => ({ ...current, bannerUrl: event.target.value }))
                         }
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1372,7 +1370,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         onChange={(event) =>
                           setProfileForm((current) => ({ ...current, isPrivate: event.target.checked }))
                         }
-                        className="h-4 w-4 rounded"
+                        className="h-4 w-4"
                       />
                       Private profile
                     </label>
@@ -1386,7 +1384,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       onChange={(event) =>
                         setProfileForm((current) => ({ ...current, description: event.target.value }))
                       }
-                      className="mt-1.5 w-full rounded-lg border border-black/[0.1] bg-white px-3 py-2 text-sm text-black"
+                      className="mt-1.5 w-full border border-black/[0.1] bg-white px-3 py-2 text-sm text-black"
                     />
                   </label>
 
@@ -1404,7 +1402,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         username: profileForm.username,
                       })
                     }
-                    className="h-10 rounded-lg bg-black px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="h-10 bg-black px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
                     Save account
                   </button>
@@ -1413,7 +1411,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
 
               {detailTab === 'security' ? (
                 <div className="grid gap-4 xl:grid-cols-2">
-                  <div className="space-y-3 rounded-xl border border-black/[0.08] p-4">
+                  <div className="space-y-3 border border-black/[0.08] p-4">
                     <p className="text-[11px] font-semibold tracking-wider text-black/45 uppercase">
                       Session and access control
                     </p>
@@ -1423,7 +1421,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       <input
                         value={banDurationHours}
                         onChange={(event) => setBanDurationHours(event.target.value)}
-                        className="mt-1.5 h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                        className="mt-1.5 h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                       />
                     </label>
 
@@ -1432,7 +1430,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         type="button"
                         disabled={isActionRunning}
                         onClick={() => runAction('ban_user', { banDurationHours: banDurationHours || '24' })}
-                        className="border-warning/20 bg-warning/10 text-warning h-10 rounded-lg border px-4 text-xs font-semibold disabled:opacity-50"
+                        className="border-warning/20 bg-warning/10 text-warning h-10 border px-4 text-xs font-semibold disabled:opacity-50"
                       >
                         Ban user
                       </button>
@@ -1441,7 +1439,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         type="button"
                         disabled={isActionRunning}
                         onClick={() => runAction('unban_user')}
-                        className="border-success/20 bg-success/10 text-success h-10 rounded-lg border px-4 text-xs font-semibold disabled:opacity-50"
+                        className="border-success/20 bg-success/10 text-success h-10 border px-4 text-xs font-semibold disabled:opacity-50"
                       >
                         Unban
                       </button>
@@ -1450,18 +1448,18 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         type="button"
                         disabled={isActionRunning}
                         onClick={() => runAction('revoke_sessions', { reason: 'admin-revoke' }, { refreshList: false })}
-                        className="h-10 rounded-lg border border-black/[0.1] bg-white px-4 text-xs font-semibold text-black/65 disabled:opacity-50"
+                        className="h-10 border border-black/[0.1] bg-white px-4 text-xs font-semibold text-black/65 disabled:opacity-50"
                       >
                         Revoke sessions
                       </button>
                     </div>
                   </div>
 
-                  <div className="border-error/25 bg-error/[0.05] space-y-3 rounded-xl border p-4">
+                  <div className="border-error/25 bg-error/[0.05] space-y-3 border p-4">
                     <p className="text-error text-[11px] font-semibold tracking-wider uppercase">Danger zone</p>
                     <p className="text-sm text-black/65">
                       Bu kullanıcıyı tamamen silmek için şu metni yaz:
-                      <span className="ml-2 rounded border border-black/[0.08] bg-white px-1.5 py-0.5 font-mono text-xs text-black">
+                      <span className="ml-2 border border-black/[0.08] bg-white px-1.5 py-0.5 font-mono text-xs text-black">
                         {deleteConfirmExpected}
                       </span>
                     </p>
@@ -1470,7 +1468,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                       value={deleteConfirmText}
                       onChange={(event) => setDeleteConfirmText(event.target.value)}
                       placeholder={deleteConfirmExpected}
-                      className="h-10 w-full rounded-lg border border-black/[0.1] bg-white px-3 text-sm text-black"
+                      className="h-10 w-full border border-black/[0.1] bg-white px-3 text-sm text-black"
                     />
 
                     <button
@@ -1497,7 +1495,7 @@ export default function UsersSection({ payload, onRefreshSection }) {
                         }
                       }}
                       className={cn(
-                        'h-10 rounded-lg px-4 text-xs font-semibold transition-colors',
+                        'h-10 px-4 text-xs font-semibold transition-colors',
                         canDeleteUser ? 'bg-error text-white' : 'bg-black/[0.08] text-black/35'
                       )}
                     >

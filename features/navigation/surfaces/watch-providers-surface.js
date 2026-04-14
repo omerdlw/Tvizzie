@@ -46,7 +46,7 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
   const providerList = useMemo(() => buildProviderList(regionalProviders), [regionalProviders]);
 
   return (
-    <div className={`flex w-full flex-col overflow-hidden rounded-[12px] border border-black/10`}>
+    <div className={`flex w-full flex-col overflow-hidden border border-black/10`}>
       <div className={`flex items-center justify-between gap-2 p-4`}>
         <div className="flex min-w-0 items-baseline gap-2">
           <span className={`text-[11px] font-bold tracking-wider uppercase`}>Where to watch?</span>
@@ -65,12 +65,12 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
                 <img
                   src={`${TMDB_IMG}/w154${provider.logo_path}`}
                   alt={provider.provider_name}
-                  className="h-7 w-7 shrink-0 rounded-[8px] object-cover"
+                  className="h-7 w-7 shrink-0 object-cover"
                 />
                 <span className={`truncate text-[14px] font-medium text-black/70`}>{provider.provider_name}</span>
               </div>
               <span
-                className={`bg-primary rounded-[8px] border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/60 uppercase`}
+                className={`bg-primary border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/60 uppercase`}
               >
                 {provider.type}
               </span>

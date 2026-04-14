@@ -200,17 +200,17 @@ export function MovieSectionReveal({ children, className = '', delay = 0, once =
 export function MovieSectionSkeleton({ className = '' }) {
   return (
     <div className={cn('mt-20 flex w-full flex-col space-y-3 p-4', className)}>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
-      <div className="skeleton-block-soft h-4 w-full rounded-[12px]"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
+      <div className="skeleton-block-soft h-4 w-full"></div>
     </div>
   );
 }

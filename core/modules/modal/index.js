@@ -185,14 +185,14 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
           className={cn(
             'relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden rounded-[16px] border border-black/10 bg-white/80'
-              : 'overflow-visible rounded-[16px] border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && 'rounded-t-none',
-            isPanelChrome && isBottomModalPosition && 'rounded-b-none',
+              ? 'overflow-hidden border border-black/10 bg-white/80'
+              : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
+            isPanelChrome && isTopModalPosition && '',
+            isPanelChrome && isBottomModalPosition && '',
             isPanelChrome &&
               (isLeftModal || isRightModal) && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
-                isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0',
+                isLeftModal ? 'border-l-0' : 'border-r-0',
               ]
           )}
         >

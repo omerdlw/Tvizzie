@@ -1,6 +1,6 @@
 import { TextAnimate } from '@/components/ui/text-animate';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import CollectionActions from '@/features/movie/collection-actions';
 import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import Sidebar from '@/features/movie/sidebar';
@@ -20,13 +20,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
 
   return (
     <>
-      <Registry
-        movie={movie}
-        rating={rating}
-        runtimeText={runtimeText}
-        reviewState={reviewState}
-        year={year}
-      />
+      <Registry movie={movie} rating={rating} runtimeText={runtimeText} reviewState={reviewState} year={year} />
 
       <PageGradientShell>
         <div

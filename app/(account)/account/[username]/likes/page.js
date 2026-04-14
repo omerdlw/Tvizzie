@@ -9,5 +9,5 @@ export default async function Page({ params, searchParams }) {
     segment,
   });
 
-  return <Client {...routeData} />;
+  return <Client routeData={routeData} />;
 }

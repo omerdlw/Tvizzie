@@ -47,9 +47,7 @@ export const MEDIA_SORT_GROUPS = Object.freeze([
   }),
 ]);
 
-const MEDIA_SORT_VALUE_SET = new Set(
-  MEDIA_SORT_GROUPS.flatMap((group) => group.options.map((option) => option.value))
-);
+const MEDIA_SORT_VALUE_SET = new Set(MEDIA_SORT_GROUPS.flatMap((group) => group.options.map((option) => option.value)));
 
 export const LIST_SORT_OPTIONS = Object.freeze([
   Object.freeze({ label: 'Recently Updated', value: 'updated_desc' }),
@@ -582,11 +580,7 @@ export function getStarStepValues() {
 }
 
 export function buildMediaKeySet(items = []) {
-  return new Set(
-    (Array.isArray(items) ? items : [])
-      .map((item) => toMediaKey(item))
-      .filter(Boolean)
-  );
+  return new Set((Array.isArray(items) ? items : []).map((item) => toMediaKey(item)).filter(Boolean));
 }
 
 export function parseMediaFilters(searchParams, { allowedEyeFlags = null } = {}) {
@@ -689,7 +683,12 @@ export function applyMediaFilters(items = [], filters = DEFAULT_MEDIA_FILTERS, c
       const decadeValue = Number.parseInt(normalizedFilters.decade, 10);
       const releaseYear = resolveReleaseYear(item);
 
-      if (!Number.isFinite(decadeValue) || !Number.isFinite(releaseYear) || releaseYear < decadeValue || releaseYear >= decadeValue + 10) {
+      if (
+        !Number.isFinite(decadeValue) ||
+        !Number.isFinite(releaseYear) ||
+        releaseYear < decadeValue ||
+        releaseYear >= decadeValue + 10
+      ) {
         return false;
       }
     }
@@ -881,9 +880,7 @@ export function collectMediaServiceOptions(items = []) {
 
       labels.set(
         serviceValue,
-        serviceValue
-          .replace(/_/g, ' ')
-          .replace(/\b\w/g, (match) => match.toUpperCase())
+        serviceValue.replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase())
       );
     });
   });
@@ -1005,7 +1002,10 @@ export function applyReviewFilters(items = [], filters = DEFAULT_REVIEW_FILTERS)
       return false;
     }
 
-    if (normalizedFilters.ratingMode === 'range' && !matchesRange(ratingValue, normalizedFilters.minRating, normalizedFilters.maxRating)) {
+    if (
+      normalizedFilters.ratingMode === 'range' &&
+      !matchesRange(ratingValue, normalizedFilters.minRating, normalizedFilters.maxRating)
+    ) {
       return false;
     }
 
@@ -1049,10 +1049,15 @@ export function collectReviewYears(items = []) {
     years.add(new Date(itemTime).getUTCFullYear());
   });
 
-  return [{ label: 'Any year', value: 'all' }, ...[...years].sort((left, right) => right - left).map((year) => ({
-    label: String(year),
-    value: String(year),
-  }))];
+  return [
+    { label: 'Any year', value: 'all' },
+    ...[...years]
+      .sort((left, right) => right - left)
+      .map((year) => ({
+        label: String(year),
+        value: String(year),
+      })),
+  ];
 }
 
 export function parseListFilters(searchParams) {
@@ -1107,7 +1112,9 @@ export function sortProfileLists(items = [], sort = DEFAULT_LIST_FILTERS.sort) {
       case 'reviews_desc':
         return rightReviews - leftReviews || rightUpdatedAt - leftUpdatedAt || leftTitle.localeCompare(rightTitle);
       case 'items_desc':
-        return rightItemsCount - leftItemsCount || rightUpdatedAt - leftUpdatedAt || leftTitle.localeCompare(rightTitle);
+        return (
+          rightItemsCount - leftItemsCount || rightUpdatedAt - leftUpdatedAt || leftTitle.localeCompare(rightTitle)
+        );
       case 'title_asc':
         return leftTitle.localeCompare(rightTitle) || rightUpdatedAt - leftUpdatedAt;
       case 'title_desc':
@@ -1209,7 +1216,10 @@ export function applyActivityFilters(items = [], filters = DEFAULT_ACTIVITY_FILT
       return false;
     }
 
-    if (normalizedFilters.ratingMode === 'range' && !matchesRange(rating, normalizedFilters.minRating, normalizedFilters.maxRating)) {
+    if (
+      normalizedFilters.ratingMode === 'range' &&
+      !matchesRange(rating, normalizedFilters.minRating, normalizedFilters.maxRating)
+    ) {
       return false;
     }
 

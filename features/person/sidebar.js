@@ -94,7 +94,7 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[14px] lg:h-[600px] lg:w-[400px]">
+      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden lg:h-[600px] lg:w-[400px]">
         {hasImage ? (
           <Image
             src={imageSrc}

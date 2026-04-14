@@ -27,7 +27,9 @@ export const OAUTH_PROVIDER_KEYS = Object.freeze(Object.keys(OAUTH_PROVIDER_CONF
 export { PASSWORD_PROVIDER_ID };
 
 function normalizeValue(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 export function normalizeOAuthProvider(value) {

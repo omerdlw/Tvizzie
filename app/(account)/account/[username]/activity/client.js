@@ -3,14 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-import {
-  useAccountSectionPage,
-  useSeededFeedState,
-} from '@/features/account/hooks/section-page';
+import { useSeededFeedState } from '@/features/account/hooks/section-page';
 import { buildManagedQueryString, parseActivityFilters, toActivityQueryValues } from '@/features/account/filtering';
 import { logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
+import { useAccountSectionEngine } from '../shared/section-engine';
+import { AccountSectionStateProvider } from '../shared/section-context';
 import ActivityView from './view';
 
 const ACTIVITY_FETCH_PAGE_SIZE = 36;
@@ -37,13 +36,7 @@ function parseInitialActivityControls(searchParams) {
   };
 }
 
-function hasMatchingSeededActivityFeed({
-  filters,
-  initialFeed = null,
-  page,
-  resolvedUserId = null,
-  scope = 'user',
-}) {
+function hasMatchingSeededActivityFeed({ filters, initialFeed = null, page, resolvedUserId = null, scope = 'user' }) {
   if (!initialFeed?.userId || !resolvedUserId || initialFeed.userId !== resolvedUserId) {
     return false;
   }
@@ -56,14 +49,8 @@ function hasMatchingSeededActivityFeed({
   );
 }
 
-export default function Client({
-  initialActivityFeed = null,
-  initialCollections = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  username,
-}) {
+export default function Client({ routeData = null }) {
+  const { initialActivityFeed = null, initialResolvedUserId = null } = routeData || {};
   const auth = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,42 +59,12 @@ export default function Client({
   const [activityFilters, setActivityFilters] = useState(initialControls.filters);
   const [currentPage, setCurrentPage] = useState(initialControls.page);
   const latestRequestRef = useRef(0);
-  const {
-    canViewProfileCollections,
-    canViewPrivateContent,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading,
-    isPrivateProfile,
-    isResolvingProfile,
-    isViewerReady,
-    itemRemoveConfirmation,
-    likeCount,
-    listCount,
-    pendingFollowRequestCount,
-    profile,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watchlistCount,
-  } = useAccountSectionPage({
+  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
     activeTab: 'activity',
     auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
+    routeData,
   });
+  const { canViewPrivateContent, isOwner, isPrivateProfile, isViewerReady, resolvedUserId } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const effectiveResolvedUserId = resolvedUserId || initialResolvedUserId || null;
   const {
@@ -144,14 +101,7 @@ export default function Client({
     }
 
     return !isOwner && isPrivateProfile && !canViewPrivateContent;
-  }, [
-    canViewPrivateContent,
-    hasSeededActivityFeed,
-    isOwner,
-    isPrivateProfile,
-    isViewerReady,
-    effectiveResolvedUserId,
-  ]);
+  }, [canViewPrivateContent, hasSeededActivityFeed, isOwner, isPrivateProfile, isViewerReady, effectiveResolvedUserId]);
 
   const replaceActivityUrl = useCallback(
     (nextScope, nextFilters, nextPage) => {
@@ -202,74 +152,79 @@ export default function Client({
     setCurrentPage(nextControls.page);
   }, [searchParams]);
 
-  const loadActivity = useCallback(
-    async () => {
-      const requestId = latestRequestRef.current + 1;
-      latestRequestRef.current = requestId;
+  const loadActivity = useCallback(async () => {
+    const requestId = latestRequestRef.current + 1;
+    latestRequestRef.current = requestId;
 
-      if (shouldBlockFeedLoad) {
+    if (shouldBlockFeedLoad) {
+      resetFeed();
+      return;
+    }
+
+    if (hasSeededActivityFeed) {
+      setIsFeedLoading(false);
+      return;
+    }
+
+    setIsFeedLoading(true);
+    setFeedError(null);
+
+    try {
+      const result = await fetchAccountActivityFeed({
+        cursor: (currentPage - 1) * ACTIVITY_FETCH_PAGE_SIZE,
+        pageSize: ACTIVITY_FETCH_PAGE_SIZE,
+        scope: activeScope,
+        sort: activityFilters.sort,
+        subject: activityFilters.subject,
+        userId: effectiveResolvedUserId,
+      });
+
+      if (latestRequestRef.current !== requestId) {
+        return;
+      }
+
+      applyFeedResult(result, { append: false });
+    } catch (error) {
+      if (latestRequestRef.current !== requestId) {
+        return;
+      }
+
+      if (!hasSeededActivityFeed) {
         resetFeed();
-        return;
       }
 
-      if (hasSeededActivityFeed) {
+      logDataError('[Account] Activity could not be loaded:', error);
+      setFeedError('Activity could not be loaded right now.');
+    } finally {
+      if (latestRequestRef.current === requestId) {
         setIsFeedLoading(false);
-        return;
       }
-
-      setIsFeedLoading(true);
-      setFeedError(null);
-
-      try {
-        const result = await fetchAccountActivityFeed({
-          cursor: (currentPage - 1) * ACTIVITY_FETCH_PAGE_SIZE,
-          pageSize: ACTIVITY_FETCH_PAGE_SIZE,
-          scope: activeScope,
-          sort: activityFilters.sort,
-          subject: activityFilters.subject,
-          userId: effectiveResolvedUserId,
-        });
-
-        if (latestRequestRef.current !== requestId) {
-          return;
-        }
-
-        applyFeedResult(result, { append: false });
-      } catch (error) {
-        if (latestRequestRef.current !== requestId) {
-          return;
-        }
-
-        if (!hasSeededActivityFeed) {
-          resetFeed();
-        }
-
-        logDataError('[Account] Activity could not be loaded:', error);
-        setFeedError('Activity could not be loaded right now.');
-      } finally {
-        if (latestRequestRef.current === requestId) {
-          setIsFeedLoading(false);
-        }
-      }
-    },
-    [
-      activeScope,
-      applyFeedResult,
-      activityFilters.sort,
-      activityFilters.subject,
-      currentPage,
-      effectiveResolvedUserId,
-      hasSeededActivityFeed,
-      resetFeed,
-      setFeedError,
-      setIsFeedLoading,
-      shouldBlockFeedLoad,
-    ]
-  );
+    }
+  }, [
+    activeScope,
+    applyFeedResult,
+    activityFilters.sort,
+    activityFilters.subject,
+    currentPage,
+    effectiveResolvedUserId,
+    hasSeededActivityFeed,
+    resetFeed,
+    setFeedError,
+    setIsFeedLoading,
+    shouldBlockFeedLoad,
+  ]);
 
   useEffect(() => {
     loadActivity();
-  }, [activeScope, activityFilters.sort, activityFilters.subject, auth.user?.id, currentPage, isViewerReady, loadActivity]);
+  }, [
+    activeScope,
+    activityFilters.sort,
+    activityFilters.subject,
+    auth.user?.id,
+    currentPage,
+    isViewerReady,
+    loadActivity,
+  ]);
 
   const handleScopeChange = useCallback(
     (nextScope) => {
@@ -310,42 +265,19 @@ export default function Client({
   );
 
   return (
-    <ActivityView
-      auth={auth}
-      activeScope={activeScope}
-      canShowActivity={canViewProfileCollections}
-      feedError={feedError}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFeedLoading={isFeedLoading}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      items={items}
-      likeCount={likeCount}
-      listCount={listCount}
-      activityFilters={activityFilters}
-      currentPage={currentPage}
-      onFiltersChange={handleFiltersChange}
-      onPageChange={handlePageChange}
-      onScopeChange={handleScopeChange}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watchlistCount={watchlistCount}
-      totalCount={totalCount}
-    />
+    <AccountSectionStateProvider value={sectionProviderValue}>
+      <ActivityView
+        activeScope={activeScope}
+        activityFilters={activityFilters}
+        currentPage={currentPage}
+        feedError={feedError}
+        isFeedLoading={isFeedLoading}
+        items={items}
+        onFiltersChange={handleFiltersChange}
+        onPageChange={handlePageChange}
+        onScopeChange={handleScopeChange}
+        totalCount={totalCount}
+      />
+    </AccountSectionStateProvider>
   );
 }

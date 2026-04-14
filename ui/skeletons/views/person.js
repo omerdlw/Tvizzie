@@ -5,17 +5,17 @@ const BLOCK_SOFT = 'skeleton-block-soft';
 const BLOCK = 'skeleton-block';
 
 function Heading({ width = 'w-24' }) {
-  return <div className={`h-3 ${width} rounded-full ${BLOCK}`} />;
+  return <div className={`h-3 ${width} ${BLOCK}`} />;
 }
 
 function TextLine({ width = 'w-full', soft = false }) {
-  return <div className={`h-3.5 ${width} rounded-full ${soft ? BLOCK_SOFT : BLOCK}`} />;
+  return <div className={`h-3.5 ${width} ${soft ? BLOCK_SOFT : BLOCK}`} />;
 }
 
 function SidebarRowSkeleton() {
   return (
     <div className="flex items-center gap-2 py-1.5">
-      <div className={`mt-0.5 size-4 shrink-0 rounded-[6px] ${BLOCK}`} />
+      <div className={`mt-0.5 size-4 shrink-0 ${BLOCK}`} />
       <TextLine width="w-44" soft={true} />
     </div>
   );
@@ -24,13 +24,13 @@ function SidebarRowSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[14px] lg:h-[600px] lg:w-[400px]">
+      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden lg:h-[600px] lg:w-[400px]">
         <div className={`h-full w-full ${BLOCK}`} />
         <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 px-4">
-          <div className={`size-8 rounded-full ${BLOCK_SOFT}`} />
-          <div className={`size-8 rounded-full ${BLOCK_SOFT}`} />
-          <div className={`size-8 rounded-full ${BLOCK_SOFT}`} />
-          <div className={`size-8 rounded-full ${BLOCK_SOFT}`} />
+          <div className={`size-8 ${BLOCK_SOFT}`} />
+          <div className={`size-8 ${BLOCK_SOFT}`} />
+          <div className={`size-8 ${BLOCK_SOFT}`} />
+          <div className={`size-8 ${BLOCK_SOFT}`} />
         </div>
       </div>
 
@@ -55,10 +55,10 @@ function SidebarSkeleton() {
 function GalleryStripSkeleton() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <div className={`aspect-2/3 w-56 shrink-0 rounded-[14px] ${BLOCK}`} />
-      <div className={`aspect-2/3 w-56 shrink-0 rounded-[14px] ${BLOCK}`} />
-      <div className={`aspect-2/3 w-56 shrink-0 rounded-[14px] ${BLOCK}`} />
-      <div className={`aspect-2/3 w-20 shrink-0 rounded-[14px] ${BLOCK}`} />
+      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
+      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
+      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
+      <div className={`aspect-2/3 w-20 shrink-0 ${BLOCK}`} />
     </div>
   );
 }
@@ -67,7 +67,7 @@ function FilmographyGridSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 8 }).map((_, index) => (
-        <div key={index} className={`aspect-2/3 w-full rounded-[14px] ${BLOCK}`} />
+        <div key={index} className={`aspect-2/3 w-full ${BLOCK}`} />
       ))}
     </div>
   );
@@ -93,7 +93,7 @@ function PersonHeroSkeleton() {
   return (
     <>
       <div className="flex items-end justify-between gap-3">
-        <div className={`h-16 w-[56%] rounded-[14px] ${BLOCK}`} />
+        <div className={`h-16 w-[56%] ${BLOCK}`} />
       </div>
 
       <div className="mt-4">
@@ -134,7 +134,7 @@ function PersonContentSkeleton() {
 function YearHeaderSkeleton() {
   return (
     <div className="mb-2 flex items-center gap-2 sm:gap-3">
-      <div className={`h-4 w-9 shrink-0 rounded-full sm:w-12 ${BLOCK}`} />
+      <div className={`h-4 w-9 shrink-0 sm:w-12 ${BLOCK}`} />
       <div className={`h-px flex-1 ${BLOCK}`} />
     </div>
   );
@@ -142,8 +142,8 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-2.5 rounded-[12px] p-1.5 sm:gap-3">
-      <div className={`h-24 w-16 shrink-0 rounded-[8px] ${BLOCK}`} />
+    <div className="flex items-end gap-2.5 p-1.5 sm:gap-3">
+      <div className={`h-24 w-16 shrink-0 ${BLOCK}`} />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
         <TextLine width="w-4/5" soft={true} />

@@ -43,4 +43,3 @@ export function createAdminRouteErrorResponse(error, { source = 'admin', fallbac
     status,
   };
 }
-

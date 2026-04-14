@@ -152,7 +152,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
+        className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/20"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -162,7 +162,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
       <Button
         variant="destructive-icon"
         disabled={disabled}
-        className="size-8 rounded-[12px]"
+        className="size-8"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -175,8 +175,8 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden rounded-[12px] sm:h-28 sm:w-[72px]'
-    : 'relative size-14 shrink-0 overflow-hidden rounded-[12px] border border-black/10 bg-primary/30';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
+    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30';
 
   return (
     <div className={wrapperClass}>
@@ -184,7 +184,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
         <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
       ) : src ? (
         <Image
-          className={cn('object-cover', !isAccountVariant && 'rounded-[12px]')}
+          className={cn('object-cover', !isAccountVariant && '')}
           src={src}
           alt={alt}
           fill
@@ -193,7 +193,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           unoptimized={!canUseNextImageOptimization(src)}
         />
       ) : (
-        <div className="bg-primary/40 flex h-full w-full items-center justify-center rounded-[inherit] border border-black/10 text-[#475569]">
+        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10 text-[#475569]">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -216,7 +216,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[12px] border border-black/10 px-4 py-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 px-4 py-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
@@ -230,7 +230,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="shrink-0 rounded-lg bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-all group-hover:bg-black/10 group-hover:text-black">
+      <span className="shrink-0 bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-all group-hover:bg-black/10 group-hover:text-black">
         Show
       </span>
     </button>

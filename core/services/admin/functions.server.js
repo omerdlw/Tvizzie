@@ -136,7 +136,8 @@ function buildRecentRuntimeIssues(logItems = [], limit = 20) {
       return {
         id: normalizeValue(item?.id) || `runtime-issue-${index + 1}`,
         functionName: parseLogFunctionName(item) || 'unknown',
-        isTimeout: normalizeLowerValue(message).includes('timeout') || normalizeLowerValue(message).includes('timed out'),
+        isTimeout:
+          normalizeLowerValue(message).includes('timeout') || normalizeLowerValue(message).includes('timed out'),
         message: message || 'No message provided',
         statusCode,
         timestamp: timestamp || null,

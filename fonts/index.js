@@ -1,14 +1,6 @@
 import localFont from 'next/font/local';
 import { GeistSans } from 'geist/font';
 import { GeistMono } from 'geist/font/mono';
-import {
-  GeistPixelSquare,
-  GeistPixelGrid,
-  GeistPixelCircle,
-  GeistPixelTriangle,
-  GeistPixelLine,
-} from 'geist/font/pixel';
-
 export const geist = GeistSans;
 export const geistMono = GeistMono;
 

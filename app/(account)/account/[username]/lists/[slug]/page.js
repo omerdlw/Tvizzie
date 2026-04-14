@@ -6,5 +6,5 @@ export default async function Page({ params }) {
   const { slug, username } = await params;
   const routeData = await getUsernameAccountListDetailRouteData(username, slug);
 
-  return <Client slug={slug} {...routeData} />;
+  return <Client routeData={{ ...routeData, slug }} />;
 }

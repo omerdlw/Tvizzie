@@ -60,7 +60,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 top-0 mx-auto h-auto w-full cursor-pointer rounded-[20px] border-[1.5px] p-2 backdrop-blur-xl',
+      'absolute inset-x-0 top-0 mx-auto h-auto rounded-2xl w-full cursor-pointer border-[1.5px] p-2 backdrop-blur-xl',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -195,7 +195,7 @@ function VideoOverlayIcon({ icon }) {
     <motion.div
       className={cn(
         'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'rounded-[8px] border border-black/5 bg-white'
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
       transition={{
@@ -216,7 +216,7 @@ function Badge({ badge }) {
       {badge.visible && (
         <motion.div
           className={cn(
-            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring'
+            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -448,7 +448,10 @@ const Item = memo(
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
     }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
-    const cardClassName = useMemo(() => getScrollableCardClassName(cardProps.className, link), [cardProps.className, link]);
+    const cardClassName = useMemo(
+      () => getScrollableCardClassName(cardProps.className, link),
+      [cardProps.className, link]
+    );
 
     useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop);
 

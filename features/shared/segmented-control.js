@@ -31,15 +31,10 @@ export default function SegmentedControl({
 
   return (
     <div className="flex items-center">
-      <div
-        className={cn(
-          'hide-scrollbar w-full overflow-x-auto',
-          classNames.track
-        )}
-      >
+      <div className={cn('hide-scrollbar w-full overflow-x-auto', classNames.track)}>
         <div
           className={cn(
-            'relative flex min-w-full items-stretch gap-1 rounded-[12px] border border-black/5 bg-black/5',
+            'relative flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
             'p-1',
             classNames.wrapper
           )}
@@ -55,7 +50,7 @@ export default function SegmentedControl({
                 onClick={() => onChange?.(itemKey)}
                 whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                 className={cn(
-                  'relative z-10 isolate cursor-pointer rounded-[9px] px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
+                  'relative isolate z-10 cursor-pointer px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
                   isActive ? classNames.active || 'text-black' : classNames.inactive || 'text-black/70',
                   classNames.button
                 )}
@@ -63,11 +58,9 @@ export default function SegmentedControl({
                 {isActive ? (
                   <motion.span
                     layoutId={`${instanceId}-segmented-active-indicator`}
-                    className={cn('absolute inset-0 rounded-[9px]', classNames.indicator || 'bg-primary')}
+                    className={cn('absolute inset-0', classNames.indicator || 'bg-primary')}
                     transition={
-                      reduceMotion
-                        ? { duration: 0.12 }
-                        : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+                      reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
                     }
                   />
                 ) : null}

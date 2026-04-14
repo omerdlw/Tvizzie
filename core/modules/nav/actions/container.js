@@ -228,14 +228,14 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <button
-        className={`center relative cursor-pointer rounded-full border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
+        className={`center relative cursor-pointer border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
         onClick={action.onClick}
         type="button"
       >
         <Icon icon={action.icon} size={16} />
         {action.badge ? (
           <span
-            className={`center bg-info absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold text-white!`}
+            className={`center bg-info absolute -top-1 -right-1 h-4 min-w-4 text-[11px] leading-none font-semibold text-white!`}
           >
             {action.badge}
           </span>

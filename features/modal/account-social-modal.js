@@ -92,7 +92,7 @@ function SocialUserRow({ close, user, children }) {
         <img
           src={avatarSrc}
           alt={user.displayName}
-          className="size-10 shrink-0 overflow-hidden rounded-[10px] object-cover"
+          className="size-10 shrink-0 overflow-hidden object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
         />
         <div className="w-full">
@@ -105,7 +105,7 @@ function SocialUserRow({ close, user, children }) {
   );
 }
 
-export default function AccountSocialModal({ close, data, header }) {
+export default function AccountSocialModal({ close, data }) {
   const auth = useAuth();
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
   const toast = useToast();
@@ -464,9 +464,9 @@ export default function AccountSocialModal({ close, data, header }) {
       <div className="flex h-full min-h-0 flex-col">
         <SegmentedControl
           classNames={{
-            track: 'w-full gap-0 p-0! rounded-[14px] pt-3',
+            track: 'w-full gap-0 p-0! pt-3',
             wrapper: 'border-0 bg-transparent',
-            button: 'py-2 flex-1 justify-center rounded-[10px] text-[13px] font-semibold text-center',
+            button: 'py-2 flex-1 justify-center text-[13px] font-semibold text-center',
             indicator: 'bg-black',
             inactive: 'text-black/60 hover:text-black',
             active: 'text-white',
@@ -483,10 +483,10 @@ export default function AccountSocialModal({ close, data, header }) {
                 className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+                  <div className="size-10 shrink-0 animate-pulse bg-black/5" />
                   <div className="flex w-full flex-col gap-1.5">
-                    <div className="h-3 w-[60%] animate-pulse rounded-full bg-black/5" />
-                    <div className="h-2 w-[40%] animate-pulse rounded-full bg-black/5" />
+                    <div className="h-3 w-[60%] animate-pulse bg-black/5" />
+                    <div className="h-2 w-[40%] animate-pulse bg-black/5" />
                   </div>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export default function AccountSocialModal({ close, data, header }) {
         ) : list.length === 0 ? (
           <EmptyState title="Empty" description={emptyDescription} className="h-full min-h-96" />
         ) : (
-          <div className="min-h-96 flex-1 overflow-y-auto rounded-t-[12px]">
+          <div className="overflow-y-auto[12px] min-h-96 flex-1">
             {list.map((user) => (
               <SocialUserRow key={user.id} close={close} user={user}>
                 {(() => {
@@ -519,14 +519,14 @@ export default function AccountSocialModal({ close, data, header }) {
                         <Button
                           onClick={() => handleAccept(user.id)}
                           disabled={isActionPending}
-                          className="border-success/15 bg-success/5 text-success hover:bg-success/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+                          className="border-success/15 bg-success/5 text-success hover:bg-success/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                         >
                           {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
                         </Button>
                         <Button
                           onClick={() => handleReject(user.id)}
                           disabled={isActionPending}
-                          className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+                          className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                         >
                           {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
                         </Button>
@@ -539,7 +539,7 @@ export default function AccountSocialModal({ close, data, header }) {
                       <Button
                         onClick={() => handleUnfollow(user.id)}
                         disabled={isActionPending}
-                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                       >
                         {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
                       </Button>
@@ -551,7 +551,7 @@ export default function AccountSocialModal({ close, data, header }) {
                       <Button
                         onClick={() => handleRemoveFollower(user.id)}
                         disabled={isActionPending}
-                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                       >
                         {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
                       </Button>
@@ -563,7 +563,7 @@ export default function AccountSocialModal({ close, data, header }) {
                       <Button
                         onClick={() => handleFollow(user.id)}
                         disabled={isFollowDisabled}
-                        className="border-info/15 bg-info/5 text-info hover:bg-info/15 h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
+                        className="border-info/15 bg-info/5 text-info hover:bg-info/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
                       >
                         {pendingKind === 'follow' ? 'Updating' : followLabel}
                       </Button>

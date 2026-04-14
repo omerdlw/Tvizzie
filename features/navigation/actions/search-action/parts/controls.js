@@ -25,7 +25,7 @@ export default function SearchActionControls({
     <>
       <Input
         classNames={{
-          input: 'w-full placeholder:text-black/60 outline-none',
+          input: 'w-full placeholder:text-black/50 outline-none',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,
@@ -34,7 +34,7 @@ export default function SearchActionControls({
         }}
         leftIcon={
           <Icon
-            className={`${query ? 'text-black' : 'text-black/60'} transition-colors duration-(--motion-duration-normal)`}
+            className={`${query ? 'text-black' : 'text-black/50'} transition-colors duration-(--motion-duration-normal)`}
             icon="solar:magnifer-linear"
             size={16}
           />
@@ -65,7 +65,7 @@ export default function SearchActionControls({
                 exit={{ scale: 0.8 }}
                 onClick={onClear}
               >
-                <Icon icon="material-symbols:close-rounded" size={16} />
+                <Icon icon="material-symbols:close-" size={16} />
               </motion.button>
             ) : null}
           </AnimatePresence>

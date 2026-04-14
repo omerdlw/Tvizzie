@@ -96,13 +96,7 @@ function isRecoverableError(error, recoverableStatuses = [408, 409, 429, 500, 50
   );
 }
 
-async function runShadowValidation({
-  edgeValidate,
-  legacyResult,
-  logger,
-  requestId,
-  decision,
-}) {
+async function runShadowValidation({ edgeValidate, legacyResult, logger, requestId, decision }) {
   const executeShadow = edgeValidate;
 
   if (typeof executeShadow !== 'function') {
@@ -192,7 +186,8 @@ export async function executeWriteRollout({
         source: 'edge',
       };
     } catch (error) {
-      const canFallback = fallbackOnRecoverableEdgeError && typeof legacyWrite === 'function' && isRecoverableError(error);
+      const canFallback =
+        fallbackOnRecoverableEdgeError && typeof legacyWrite === 'function' && isRecoverableError(error);
 
       if (!canFallback) {
         throw error;

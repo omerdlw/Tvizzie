@@ -88,10 +88,10 @@ export default function AuthVerificationSurface({ close, data, header }) {
       <button
         type="button"
         onClick={() => closeSurface(close)}
-        className="bg-primary absolute top-0 right-0 z-10 inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+        className="bg-primary absolute top-0 right-0 z-10 inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
         aria-label="Close verification"
       >
-        <Icon icon="material-symbols:close-rounded" size={16} />
+        <Icon icon="material-symbols:close-" size={16} />
       </button>
 
       <div className="flex h-auto w-full items-center gap-2">

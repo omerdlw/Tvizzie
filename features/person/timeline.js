@@ -91,7 +91,7 @@ export default function PersonTimeline({ person }) {
                 >
                   <Link
                     href={`/movie/${credit.id}`}
-                    className="group hover:bg-primary/35 flex items-end gap-2.5 rounded-[12px] border border-transparent p-1 transition-colors hover:border-black/10 sm:gap-3"
+                    className="group hover:bg-primary/35 flex items-end gap-2.5 border border-transparent p-1 transition-colors hover:border-black/10 sm:gap-3"
                   >
                     <MediaThumb poster={credit.poster_path} alt={title} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">

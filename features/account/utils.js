@@ -231,12 +231,7 @@ export function buildAccountCollectionPageHref(basePath, pageNumber) {
   return `${basePath}/page/${pageNumber}`;
 }
 
-export function formatPaginationSummaryLabel({
-  emptyLabel = '0 items',
-  pageSize,
-  startIndex,
-  totalCount,
-}) {
+export function formatPaginationSummaryLabel({ emptyLabel = '0 items', pageSize, startIndex, totalCount }) {
   if (!Number.isFinite(totalCount) || totalCount <= 0) {
     return emptyLabel;
   }

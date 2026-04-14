@@ -65,7 +65,7 @@ function getPageInfo(data) {
 
 function getGenreButtonClass(isActive) {
   return cn(
-    'shrink-0 border px-4 py-1.5 text-xs font-semibold tracking-wide  transition-colors duration-300',
+    'shrink-0 border px-4 py-1.5 text-xs font-semibold tracking-wide transition-colors duration-300',
     isActive ? 'border-[#2563eb] bg-[#bfdbfe]' : 'border-[#0284c7] bg-[#dbeafe]'
   );
 }
@@ -347,7 +347,7 @@ export default function HomeDiscover({
             type="button"
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="group flex items-center gap-2 rounded-full border border-[#0284c7] px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="group flex items-center gap-2 border border-[#0284c7] px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoadingMore ? (
               <>

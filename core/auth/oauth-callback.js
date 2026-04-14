@@ -74,7 +74,12 @@ export function resolveOAuthIntent(payload = {}, provider = null, fallback = 'si
   );
 }
 
-export function buildOAuthCallbackUrl({ intent = 'sign-in', nextPath = AUTH_DEFAULT_POST_LOGIN_PATH, origin, provider } = {}) {
+export function buildOAuthCallbackUrl({
+  intent = 'sign-in',
+  nextPath = AUTH_DEFAULT_POST_LOGIN_PATH,
+  origin,
+  provider,
+} = {}) {
   const normalizedOrigin = normalizeOrigin(origin);
   const normalizedProvider = normalizeOAuthProvider(provider);
 
@@ -96,7 +101,11 @@ export function normalizeGoogleAuthIntent(value, fallback = 'sign-in') {
   return normalizeOAuthIntent(value, fallback);
 }
 
-export function buildGoogleOAuthCallbackUrl({ intent = 'sign-in', nextPath = AUTH_DEFAULT_POST_LOGIN_PATH, origin } = {}) {
+export function buildGoogleOAuthCallbackUrl({
+  intent = 'sign-in',
+  nextPath = AUTH_DEFAULT_POST_LOGIN_PATH,
+  origin,
+} = {}) {
   return buildOAuthCallbackUrl({
     intent,
     nextPath,

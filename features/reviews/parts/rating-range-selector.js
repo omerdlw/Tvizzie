@@ -160,7 +160,7 @@ export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onCh
     <div className="space-y-2">
       <div
         ref={containerRef}
-        className="flex select-none items-center gap-1.5 touch-none"
+        className="flex touch-none items-center gap-1.5 select-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -172,12 +172,16 @@ export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onCh
         {Array.from({ length: STAR_COUNT }, (_, index) => {
           const starIndex = index + 1;
 
-          return <Star key={starIndex} fillPercent={resolveFillPercent(starIndex, activeRange)} starIndex={starIndex} />;
+          return (
+            <Star key={starIndex} fillPercent={resolveFillPercent(starIndex, activeRange)} starIndex={starIndex} />
+          );
         })}
       </div>
 
       <p className="text-[11px] font-semibold tracking-wide text-black/60 uppercase">
-        {activeRange.min === activeRange.max ? `${activeRange.max} stars` : `${activeRange.min}-${activeRange.max} stars`}
+        {activeRange.min === activeRange.max
+          ? `${activeRange.max} stars`
+          : `${activeRange.min}-${activeRange.max} stars`}
       </p>
     </div>
   );

@@ -787,7 +787,8 @@ export async function toggleUserListItem({ userId, listId, media }) {
   assertSupabaseResult(listResult, 'List could not be loaded after item update');
 
   if (listResult.data) {
-    const listPayload = listResult.data.payload && typeof listResult.data.payload === 'object' ? listResult.data.payload : {};
+    const listPayload =
+      listResult.data.payload && typeof listResult.data.payload === 'object' ? listResult.data.payload : {};
 
     fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_ITEM_ADDED, {
       dedupeKey: `list-item:${userId}:${listId}:${mediaPayload.mediaKey}`,

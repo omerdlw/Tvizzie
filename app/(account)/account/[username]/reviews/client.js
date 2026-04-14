@@ -1,11 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
-  useAccountSectionPage,
   useSeededFeedState,
 } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
@@ -18,62 +17,40 @@ import {
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
+import { useAccountSectionEngine } from '../shared/section-engine';
+import { AccountSectionStateProvider } from '../shared/section-context';
 import ReviewsView from './view';
 
-export default function Client({
-  initialCollections = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  initialReviewFeed = null,
-  username,
-}) {
+export default function Client({ routeData = null }) {
+  const { initialReviewFeed = null } = routeData || {};
   const auth = useAuth();
   const { openModal } = useModal();
   const toast = useToast();
   const [watchedItems, setWatchedItems] = useState([]);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const pendingLikesRef = useRef(new Map());
+
+  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
+    activeTab: 'reviews',
+    auth,
+    routeData,
+  });
   const {
     canViewProfileCollections,
     canViewPrivateContent,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
     handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
     isOwner,
-    isPageLoading,
     isPrivateProfile,
-    isResolvingProfile,
     isViewerReady,
     itemRemoveConfirmation,
-    likeCount,
     likes,
-    listCount,
-    pendingFollowRequestCount,
     profile,
-    resolveError,
     resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watchlistCount,
-  } = useAccountSectionPage({
-    activeTab: 'reviews',
-    auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
-  });
+  } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const {
-    applyFeedResult,
+    applyFeedResult: originalApplyFeedResult,
     cursor,
     feedError,
     hasMore,
@@ -86,6 +63,25 @@ export default function Client({
     syncFeed,
     totalCount: totalReviewCount,
   } = useSeededFeedState(initialReviewFeed);
+
+  const applyFeedResult = useCallback(
+    (result, options) => {
+      const mergedItems = (result?.items || []).map((review) => {
+        const reviewId = review.docPath || review.id;
+        const pendingLikes = pendingLikesRef.current.get(reviewId);
+
+        if (pendingLikes) {
+          return { ...review, likes: pendingLikes };
+        }
+
+        return review;
+      });
+
+      originalApplyFeedResult({ ...result, items: mergedItems }, options);
+    },
+    [originalApplyFeedResult]
+  );
+
   const hasSeededReviewFeed =
     !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
@@ -224,34 +220,50 @@ export default function Client({
         return;
       }
 
+      const userId = auth.user.id;
+      const reviewId = review.docPath || review.id;
+      const wasLiked = Array.isArray(review.likes) ? review.likes.includes(userId) : false;
+      const previousReviews = [...reviews];
+
+      const currentItem = reviews.find((item) => (item.docPath || item.id) === reviewId);
+      const currentLikes = Array.isArray(currentItem?.likes) ? currentItem.likes : [];
+      const nextLikes = wasLiked ? currentLikes.filter((id) => id !== userId) : [...new Set([...currentLikes, userId])];
+
+      // Track pending optimistic state
+      pendingLikesRef.current.set(reviewId, nextLikes);
+
+      // Optimistic update
+      setReviews((current) =>
+        current.map((item) => {
+          if ((item.docPath || item.id) !== reviewId) {
+            return item;
+          }
+
+          return {
+            ...item,
+            likes: nextLikes,
+          };
+        })
+      );
+
       try {
-        const nextLikedState = await toggleStoredReviewLike({
+        await toggleStoredReviewLike({
           review,
-          userId: auth.user.id,
+          userId,
         });
 
-        setReviews((current) =>
-          current.map((item) => {
-            if ((item.docPath || item.id) !== (review.docPath || review.id)) {
-              return item;
-            }
-
-            const currentLikes = Array.isArray(item.likes) ? item.likes : [];
-            const nextLikes = nextLikedState
-              ? Array.from(new Set([...currentLikes, auth.user.id]))
-              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id);
-
-            return {
-              ...item,
-              likes: nextLikes,
-            };
-          })
-        );
+        // Keep in pending list for a bit to avoid data re-fetch revert
+        setTimeout(() => {
+          pendingLikesRef.current.delete(reviewId);
+        }, 3000);
       } catch (error) {
+        // Rollback
+        pendingLikesRef.current.delete(reviewId);
+        setReviews(previousReviews);
         toast.error(error?.message || 'Review could not be updated');
       }
     },
-    [auth.isAuthenticated, auth.user?.id, handleSignInRequest, setReviews, toast]
+    [auth.isAuthenticated, auth.user?.id, handleSignInRequest, reviews, setReviews, toast]
   );
 
   const handleEditReview = useCallback(
@@ -313,44 +325,26 @@ export default function Client({
   );
 
   return (
-    <ReviewsView
-      auth={auth}
-      canShowReviews={canViewProfileCollections}
-      feedError={feedError}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleEditReview={handleEditReview}
-      handleFollow={handleFollow}
-      handleDeleteReview={handleDeleteReview}
-      handleLike={handleLike}
-      handleOpenFollowList={handleOpenFollowList}
-      handleSignInRequest={handleSignInRequest}
-      hasMore={hasMore}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFeedLoading={isFeedLoading}
-      isLoadingMore={isLoadingMore}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={reviewDeleteConfirmation || itemRemoveConfirmation}
-      likeCount={likeCount}
-      likes={likes}
-      listCount={listCount}
-      loadReviews={loadReviews}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      reviews={reviews}
-      totalReviewCount={totalReviewCount}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watchedItems={watchedItems}
-      watchlistCount={watchlistCount}
-    />
+    <AccountSectionStateProvider
+      value={{
+        ...sectionProviderValue,
+        itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+      }}
+    >
+      <ReviewsView
+        feedError={feedError}
+        hasMore={hasMore}
+        isFeedLoading={isFeedLoading}
+        isLoadingMore={isLoadingMore}
+        likes={likes}
+        loadReviews={loadReviews}
+        reviews={reviews}
+        totalReviewCount={totalReviewCount}
+        watchedItems={watchedItems}
+        handleDeleteReview={handleDeleteReview}
+        handleEditReview={handleEditReview}
+        handleLike={handleLike}
+      />
+    </AccountSectionStateProvider>
   );
 }

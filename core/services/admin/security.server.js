@@ -91,8 +91,7 @@ function buildEventSummary(rows = []) {
     }
   });
 
-  summary.failureRate =
-    summary.totalEvents > 0 ? Number((summary.failureCount / summary.totalEvents).toFixed(4)) : 0;
+  summary.failureRate = summary.totalEvents > 0 ? Number((summary.failureCount / summary.totalEvents).toFixed(4)) : 0;
 
   return summary;
 }
@@ -140,7 +139,10 @@ function buildFailureBreakdowns(rows = []) {
     const eventType = normalizeValue(row?.event_type) || 'unknown';
     const provider = normalizeValue(row?.provider) || 'unknown';
     const actorKey =
-      normalizeValue(row?.user_id_hash) || normalizeValue(row?.email_masked) || normalizeValue(row?.user_id) || 'unknown';
+      normalizeValue(row?.user_id_hash) ||
+      normalizeValue(row?.email_masked) ||
+      normalizeValue(row?.user_id) ||
+      'unknown';
 
     byEventType.set(eventType, (byEventType.get(eventType) || 0) + 1);
     byProvider.set(provider, (byProvider.get(provider) || 0) + 1);

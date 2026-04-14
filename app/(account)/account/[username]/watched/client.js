@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { getMediaTitle } from '@/features/account/utils';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
+import { useAccountSectionEngine } from '../shared/section-engine';
+import { AccountSectionStateProvider } from '../shared/section-context';
 import WatchedView from './view';
 
 function showAccountLoadError(toast, error, fallbackMessage) {
@@ -40,56 +41,26 @@ function removeCollectionItem(items, itemToRemove) {
   });
 }
 
-export default function Client({
-  currentPage = 1,
-  initialCollections = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  username,
-}) {
+export default function Client({ routeData = null }) {
   const auth = useAuth();
   const toast = useToast();
   const {
-    canViewProfileCollections,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading,
-    isPrivateProfile,
-    isResolvingProfile,
-    likeCount,
-    listCount,
-    pendingFollowRequestCount,
-    profile,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watchlistCount,
-  } = useAccountSectionPage({
+    routeData: resolvedRouteData,
+    sectionProviderValue,
+    sectionState,
+  } = useAccountSectionEngine({
     activeTab: 'watched',
     auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
+    routeData,
   });
+  const { canViewProfileCollections, isOwner, isPrivateProfile, resolvedUserId, isPageLoading } = sectionState;
   const hasInitialWatchedSnapshot =
-    Boolean(initialCollections?.userId && resolvedUserId) &&
-    initialCollections.userId === resolvedUserId &&
-    Array.isArray(initialCollections?.watched);
+    Boolean(resolvedRouteData.initialCollections?.userId && resolvedUserId) &&
+    resolvedRouteData.initialCollections.userId === resolvedUserId &&
+    Array.isArray(resolvedRouteData.initialCollections?.watched);
   const initialWatched = useMemo(
-    () => (hasInitialWatchedSnapshot ? initialCollections.watched : []),
-    [hasInitialWatchedSnapshot, initialCollections]
+    () => (hasInitialWatchedSnapshot ? resolvedRouteData.initialCollections.watched : []),
+    [hasInitialWatchedSnapshot, resolvedRouteData.initialCollections]
   );
   const [itemRemoveConfirmation, setItemRemoveConfirmation] = useState(null);
   const [isWatchedLoading, setIsWatchedLoading] = useState(!hasInitialWatchedSnapshot);
@@ -192,36 +163,18 @@ export default function Client({
   );
 
   return (
-    <WatchedView
-      auth={auth}
-      canShowWatchedGrid={canViewProfileCollections}
-      currentPage={currentPage}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleRequestRemoveWatchedItem={handleRequestRemoveWatchedItem}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading || (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0)}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      likeCount={likeCount}
-      listCount={listCount}
-      loadError={loadError}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watchedItems={watchedItems}
-      watchlistCount={watchlistCount}
-    />
+    <AccountSectionStateProvider
+      value={{
+        ...sectionProviderValue,
+        isPageLoading: isPageLoading || (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0),
+        itemRemoveConfirmation,
+      }}
+    >
+      <WatchedView
+        loadError={loadError}
+        watchedItems={watchedItems}
+        handleRequestRemoveWatchedItem={handleRequestRemoveWatchedItem}
+      />
+    </AccountSectionStateProvider>
   );
 }

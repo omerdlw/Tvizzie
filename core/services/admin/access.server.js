@@ -155,4 +155,3 @@ export async function assertAdminAccessFromCookies({ source = 'admin' } = {}) {
 
   return assertAdminAccessFromContext(authContext, { source });
 }
-

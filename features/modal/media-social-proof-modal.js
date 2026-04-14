@@ -46,7 +46,7 @@ function formatActionSummary(actions = []) {
   return phrases.join(' · ');
 }
 
-export default function MediaSocialProofModal({ close, data, header }) {
+export default function MediaSocialProofModal({ close, data }) {
   const userActions = buildUserActionMap(data?.socialProof);
 
   return (
@@ -74,7 +74,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                 onClick={close}
                 className="flex items-center gap-3 border-b border-black/10 px-5 py-4 transition hover:bg-black/5"
               >
-                <div className="size-12 shrink-0 overflow-hidden rounded-[10px] border border-black/10">
+                <div className="size-12 shrink-0 overflow-hidden border border-black/10">
                   <img
                     src={avatarSrc}
                     alt={user.displayName}

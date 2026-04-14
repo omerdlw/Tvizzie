@@ -97,7 +97,7 @@ export default function AccountWatchlistOverview({
             <div
               key={`${card.id}-${index}`}
               className={cn(
-                'flex h-full flex-col shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-60px)/6)]',
+                'flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-60px)/6)]',
                 index >= 3 && 'hidden lg:block'
               )}
             >

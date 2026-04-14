@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -46,6 +46,7 @@ export function useMediaReviews({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [navConfirmation, setNavConfirmation] = useState(null);
+  const pendingLikesRef = useRef(new Map());
 
   const currentUserId = auth.user?.id;
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
@@ -77,7 +78,20 @@ export function useMediaReviews({
         media,
         (nextReviews) => {
           if (!isMounted) return;
-          setReviews(nextReviews);
+
+          // Merge pending optimistic likes
+          const mergedReviews = nextReviews.map((review) => {
+            const reviewId = review.docPath || review.id;
+            const pendingLikes = pendingLikesRef.current.get(reviewId);
+
+            if (pendingLikes) {
+              return { ...review, likes: pendingLikes };
+            }
+
+            return review;
+          });
+
+          setReviews(mergedReviews);
           setIsLoading(false);
         },
         {
@@ -140,7 +154,7 @@ export function useMediaReviews({
 
   const handleLike = useCallback(
     async (review) => {
-      if (!auth.isAuthenticated) {
+      if (!auth.isAuthenticated || !currentUserId) {
         router.push(
           buildAuthHref(AUTH_ROUTES.SIGN_IN, {
             next: currentPath,
@@ -149,17 +163,52 @@ export function useMediaReviews({
         return;
       }
 
+      const reviewId = review.docPath || review.id;
+      const wasLiked = review.likes?.includes(currentUserId);
+      const previousReviews = [...reviews];
+
+      const currentItem = reviews.find((r) => (r.docPath || r.id) === reviewId);
+      const currentLikes = Array.isArray(currentItem?.likes) ? currentItem.likes : [];
+      const nextLikes = wasLiked
+        ? currentLikes.filter((id) => id !== currentUserId)
+        : [...new Set([...currentLikes, currentUserId])];
+
+      // Track pending optimistic state to prevent polling revert
+      pendingLikesRef.current.set(reviewId, nextLikes);
+
+      // Optimistic update
+      setReviews((current) =>
+        current.map((item) => {
+          if ((item.docPath || item.id) !== reviewId) {
+            return item;
+          }
+
+          return {
+            ...item,
+            likes: nextLikes,
+          };
+        })
+      );
+
       try {
         await toggleReviewLike({
           media,
           reviewUserId: review?.reviewUserId || review?.user?.id,
           userId: currentUserId,
         });
+
+        // Keep in pending for a few seconds to let polling catch up
+        setTimeout(() => {
+          pendingLikesRef.current.delete(reviewId);
+        }, 3000);
       } catch (error) {
-        toast.error(error?.message || 'Failed to like review');
+        // Rollback
+        pendingLikesRef.current.delete(reviewId);
+        setReviews(previousReviews);
+        toast.error(error?.message || 'Failed to update like');
       }
     },
-    [auth.isAuthenticated, currentPath, currentUserId, media, router, toast]
+    [auth.isAuthenticated, currentPath, currentUserId, media, reviews, router, toast]
   );
 
   const applyOptimisticReviewUpdate = useCallback((review, updatedReview) => {

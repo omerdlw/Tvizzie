@@ -9,7 +9,10 @@ import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
 import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from '@/core/auth/servers/policy/auth-route-policy.server';
 import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
 import { verifyPasswordWithIdentityToolkit } from '@/core/auth/servers/security/password-security.server';
-import { AUTH_RATE_LIMIT_POLICY_KEYS, enforceAuthRateLimit } from '@/core/auth/servers/security/rate-limit-policies.server';
+import {
+  AUTH_RATE_LIMIT_POLICY_KEYS,
+  enforceAuthRateLimit,
+} from '@/core/auth/servers/security/rate-limit-policies.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { assertStepUp, clearStepUpCookie } from '@/core/auth/servers/security/step-up.server';
@@ -270,19 +273,19 @@ export async function POST(request) {
           ? 410
           : message.includes('pending deletion') || message.includes('in progress')
             ? 409
-        : message.includes('Authentication session is required') ||
-            message.includes('Invalid or expired authentication token') ||
-            message.includes('Authentication token has been revoked') ||
-            message.includes('Recent authentication is required')
-          ? 401
-          : message.includes('required') ||
-              message.includes('invalid') ||
-              message.includes('incorrect') ||
-              message.includes('verification') ||
-              message.includes('disabled') ||
-              message.includes('email/password sign-in enabled')
-            ? 400
-            : 500;
+            : message.includes('Authentication session is required') ||
+                message.includes('Invalid or expired authentication token') ||
+                message.includes('Authentication token has been revoked') ||
+                message.includes('Recent authentication is required')
+              ? 401
+              : message.includes('required') ||
+                  message.includes('invalid') ||
+                  message.includes('incorrect') ||
+                  message.includes('verification') ||
+                  message.includes('disabled') ||
+                  message.includes('email/password sign-in enabled')
+                ? 400
+                : 500;
 
     await writeAuthAuditLog({
       request,

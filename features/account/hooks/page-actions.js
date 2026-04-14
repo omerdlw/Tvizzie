@@ -5,25 +5,11 @@ import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features
 import { getUserAvatarUrl } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  FOLLOW_STATUSES,
-  cancelFollowRequest,
-  followUser,
-  unfollowUser,
-} from '@/core/services/social/follows.service';
-import {
-  getLikeDocRef,
-  removeUserLike,
-} from '@/core/services/media/likes.service';
-import {
-  deleteUserList,
-  toggleUserListItem,
-} from '@/core/services/media/lists.service';
+import { FOLLOW_STATUSES, cancelFollowRequest, followUser, unfollowUser } from '@/core/services/social/follows.service';
+import { getLikeDocRef, removeUserLike } from '@/core/services/media/likes.service';
+import { deleteUserList, toggleUserListItem } from '@/core/services/media/lists.service';
 import { updateUserMediaPosition } from '@/core/services/media/user-media.service';
-import {
-  getWatchlistDocRef,
-  removeUserWatchlistItem,
-} from '@/core/services/media/watchlist.service';
+import { getWatchlistDocRef, removeUserWatchlistItem } from '@/core/services/media/watchlist.service';
 import { removeUserWatchedItem } from '@/core/services/media/watched.service';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';

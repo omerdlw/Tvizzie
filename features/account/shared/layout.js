@@ -7,10 +7,10 @@ import { EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
 import AccountHero from './hero';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import NotFoundTemplate from '@/features/shared/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
-import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '../utils';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
 const SECTION_VIEWPORT = {
   amount: 0.08,
@@ -90,7 +90,8 @@ function AccountReveal({
         REVEAL_SYNC.maxDelay,
         Math.max(0, (REVEAL_SYNC.phaseLead[phase] ?? REVEAL_SYNC.phaseLead.section) + delay * REVEAL_SYNC.delayScale)
       );
-  const springConfig = phase === 'nav' ? { stiffness: 130, damping: 30, mass: 1 } : { stiffness: 165, damping: 31, mass: 1 };
+  const springConfig =
+    phase === 'nav' ? { stiffness: 130, damping: 30, mass: 1 } : { stiffness: 165, damping: 31, mass: 1 };
   const transition = reduceMotion
     ? {
         duration: REVEAL_TIMING.reducedDuration,
@@ -232,7 +233,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 shrink-0 items-center rounded-[12px] border px-4 text-[11px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:px-4 sm:text-xs',
+                    'inline-flex h-8 shrink-0 items-center border px-4 text-[11px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:px-4 sm:text-xs',
                     isActive
                       ? 'border-black bg-black text-white'
                       : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'

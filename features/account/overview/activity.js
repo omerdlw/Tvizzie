@@ -13,7 +13,7 @@ import AccountSectionLayout from '../shared/section-wrapper';
 const EVENT_META = Object.freeze({
   FOLLOW_ACCEPTED: {
     action: 'accepted',
-    icon: 'solar:users-group-rounded-bold',
+    icon: 'solar:users-group-',
   },
   FOLLOW_CREATED: {
     action: 'followed',
@@ -127,11 +127,8 @@ function ListPreviewStack({ item, overlay = null }) {
   const subjectTitle = item?.subject?.title || 'Untitled List';
 
   return (
-    <Link
-      href={subjectHref || '#'}
-      className="group flex shrink-0 flex-col overflow-hidden rounded-[14px] transition ease-in-out"
-    >
-      <div className="relative aspect-2/3 w-full overflow-hidden rounded-[14px]">
+    <Link href={subjectHref || '#'} className="group flex shrink-0 flex-col overflow-hidden transition ease-in-out">
+      <div className="relative aspect-2/3 w-full overflow-hidden">
         <ListPreviewComposition
           className="h-full border-0 bg-transparent"
           imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal)"
@@ -144,8 +141,6 @@ function ListPreviewStack({ item, overlay = null }) {
     </Link>
   );
 }
-
-
 
 function ShowcaseItem({ item }) {
   const reduceMotion = useReducedMotion();
@@ -263,7 +258,7 @@ export default function AccountActivityOverview({
             <div
               key={`${item.sourceUserId || item.id}-${item.id}-${index}`}
               className={cn(
-                'flex h-full flex-col shrink-0 basis-[calc((100%-24px)/3)] lg:basis-[calc((100%-60px)/6)]',
+                'flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-60px)/6)]',
                 index >= 3 && 'hidden lg:block'
               )}
             >

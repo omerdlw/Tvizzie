@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 
-import { AccountPageShell } from '@/features/account/shared/layout';
-import { AccountSectionReveal } from '@/features/account/shared/layout';
+import { AccountPageShell, AccountSectionReveal } from '@/features/account/shared/layout';
 import {
   MEDIA_FILTER_QUERY_KEYS,
   REVIEW_FILTER_QUERY_KEYS,
@@ -26,9 +25,8 @@ import {
 import { AccountMediaFilterBar, AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
 import AccountPagination from '@/features/account/shared/pagination';
-import { formatPaginationSummaryLabel } from '@/features/account/utils';
+import { ACCOUNT_ROUTE_SHELL_CLASS, formatPaginationSummaryLabel } from '@/features/account/utils';
 import AccountInlineSectionState from '@/features/account/shared/section-state';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback';
 import ReviewHeader from '@/features/reviews/parts/review-header';
@@ -52,6 +50,12 @@ const LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
 ]);
 const LIST_DETAIL_ALLOWED_EYE_FLAGS = LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS.map((option) => option.key);
+
+function parseListDetailMediaFilters(search) {
+  return parseMediaFilters(search, {
+    allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
+  });
+}
 
 function useResponsivePageSize() {
   const [isMobile, setIsMobile] = useState(false);
@@ -188,66 +192,67 @@ function ListDetailMediaGrid({
   );
 }
 
-export default function AccountListDetailFeed({
-  auth,
-  canShowList,
-  followerCount,
-  followingCount,
-  followState,
-  handleDeleteList,
-  handleDeleteRequest,
-  handleEditReview,
-  handleEditList,
-  handleEditProfile,
-  handleFollow,
-  handleLikeReview,
-  handleOpenFollowList,
-  handleOpenReviewComposer,
-  handleRemoveListItem,
-  handleSignInRequest,
-  handleToggleLike,
-  isBioSurfaceOpen,
-  isFollowLoading,
-  isLiked,
-  isLikeLoading,
-  isOwner,
-  isPageLoading,
-  isResolvingProfile,
-  itemRemoveConfirmation,
-  likeCount,
-  list,
-  listDeleteConfirmation,
-  listCount,
-  listItems,
-  likes = [],
-  ownReview,
-  pendingFollowRequestCount,
-  profile,
-  ratingStats,
-  resolveError,
-  resolvedUserId,
-  reviews,
-  setIsBioSurfaceOpen,
-  unfollowConfirmation,
-  username,
-  userProfile,
-  watchedItems = [],
-  watchlistCount,
-  watchlistItems = [],
-  RegistryComponent = null,
-}) {
+export default function AccountListDetailFeed({ model = null, RegistryComponent = null }) {
+  const {
+    auth,
+    canShowList,
+    followerCount,
+    followingCount,
+    followState,
+    handleDeleteList,
+    handleDeleteRequest,
+    handleEditReview,
+    handleEditList,
+    handleEditProfile,
+    handleFollow,
+    handleLikeReview,
+    handleOpenFollowList,
+    handleOpenReviewComposer,
+    handleRemoveListItem,
+    handleSignInRequest,
+    handleToggleLike,
+    isBioSurfaceOpen,
+    isFollowLoading,
+    isLiked,
+    isLikeLoading,
+    isOwner,
+    isPageLoading,
+    isResolvingProfile,
+    itemRemoveConfirmation,
+    likeCount,
+    list,
+    listDeleteConfirmation,
+    listCount,
+    listItems = [],
+    likes = [],
+    ownReview,
+    pendingFollowRequestCount,
+    profile,
+    ratingStats,
+    resolveError,
+    resolvedUserId,
+    reviews = [],
+    setIsBioSurfaceOpen,
+    unfollowConfirmation,
+    username,
+    userProfile,
+    watchedItems = [],
+    watchlistCount = 0,
+    watchlistItems = [],
+  } = model || {};
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsKey = searchParams?.toString?.() || '';
   const collectionRootPath = useMemo(() => String(pathname || ''), [pathname]);
   const initialMediaFilters = useMemo(
-    () =>
-      parseMediaFilters(new URLSearchParams(searchParamsKey), {
-        allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
-      }),
+    () => parseListDetailMediaFilters(new URLSearchParams(searchParamsKey)),
     [searchParamsKey]
   );
-  const initialReviewFilters = useMemo(() => parseReviewFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const initialReviewFilters = useMemo(
+    () => parseReviewFilters(new URLSearchParams(searchParamsKey)),
+    [searchParamsKey]
+  );
   const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
   const [reviewFilters, setReviewFilters] = useState(initialReviewFilters);
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
@@ -274,7 +279,7 @@ export default function AccountListDetailFeed({
   useEffect(() => {
     setMediaFilters(initialMediaFilters);
     setReviewFilters(initialReviewFilters);
-  }, [initialMediaFilters, initialReviewFilters, searchParamsKey]);
+  }, [initialMediaFilters, initialReviewFilters]);
 
   const updateUrl = useCallback(
     ({ nextMediaFilters = mediaFilters, nextReviewFilters = reviewFilters } = {}) => {
@@ -321,9 +326,7 @@ export default function AccountListDetailFeed({
   );
 
   const resetMediaFilters = useCallback(() => {
-    const defaultFilters = parseMediaFilters(new URLSearchParams(), {
-      allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
-    });
+    const defaultFilters = parseListDetailMediaFilters(new URLSearchParams());
 
     setMediaFilters(defaultFilters);
     updateUrl({
@@ -510,7 +513,7 @@ export default function AccountListDetailFeed({
                       </p>
                     </div>
                     <Button
-                      className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 rounded-[14px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                      className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
                       type="button"
                       onClick={handleOpenReviewComposer}
                     >

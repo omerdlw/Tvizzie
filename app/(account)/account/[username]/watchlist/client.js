@@ -1,84 +1,22 @@
 'use client';
 
-import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { useAuth } from '@/core/modules/auth';
+import { useAccountSectionEngine } from '../shared/section-engine';
+import { AccountSectionStateProvider } from '../shared/section-context';
 import WatchlistView from './view';
 
-export default function Client({
-  currentPage = 1,
-  initialCollections = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  username,
-}) {
+export default function Client({ routeData = null }) {
   const auth = useAuth();
-  const {
-    canViewProfileCollections,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleRequestRemoveWatchlistItem,
-    handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading,
-    isResolvingProfile,
-    itemRemoveConfirmation,
-    likeCount,
-    listCount,
-    pendingFollowRequestCount,
-    profile,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watchlistCount,
-    watchlist,
-  } = useAccountSectionPage({
+  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
     activeTab: 'watchlist',
     auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
+    routeData,
   });
+  const { handleRequestRemoveWatchlistItem, watchlist } = sectionState;
 
   return (
-    <WatchlistView
-      auth={auth}
-      canShowWatchlistGrid={canViewProfileCollections}
-      currentPage={currentPage}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleOpenFollowList={handleOpenFollowList}
-      handleRequestRemoveWatchlistItem={handleRequestRemoveWatchlistItem}
-      handleSignInRequest={handleSignInRequest}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isResolvingProfile={isResolvingProfile}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      likeCount={likeCount}
-      listCount={listCount}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      profile={profile}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watchlistCount={watchlistCount}
-      watchlist={watchlist}
-    />
+    <AccountSectionStateProvider value={sectionProviderValue}>
+      <WatchlistView watchlist={watchlist} handleRequestRemoveWatchlistItem={handleRequestRemoveWatchlistItem} />
+    </AccountSectionStateProvider>
   );
 }

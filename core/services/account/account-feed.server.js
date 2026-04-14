@@ -113,7 +113,9 @@ function filterActivityItemsBySubject(items = [], subject = 'all') {
     return Array.isArray(items) ? items : [];
   }
 
-  return (Array.isArray(items) ? items : []).filter((item) => normalizeMediaType(item?.subject?.type) === normalizedSubject);
+  return (Array.isArray(items) ? items : []).filter(
+    (item) => normalizeMediaType(item?.subject?.type) === normalizedSubject
+  );
 }
 
 function sortActivityItemsForMode(items = [], sort = 'newest') {
@@ -235,7 +237,10 @@ function dedupeActivityItems(items = []) {
   const seenKeys = new Set();
 
   return items.filter((item) => {
-    const normalizedEventType = String(item?.eventType || '').trim().toUpperCase() || 'UNKNOWN';
+    const normalizedEventType =
+      String(item?.eventType || '')
+        .trim()
+        .toUpperCase() || 'UNKNOWN';
     const canonicalKey = buildCanonicalActivityDedupeKey({
       actorUserId: item?.sourceUserId || item?.actor?.id,
       eventType: normalizedEventType,

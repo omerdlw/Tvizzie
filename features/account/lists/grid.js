@@ -7,7 +7,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 
 import AccountListCard from './card';
 import AccountSectionLayout from '../shared/section-wrapper';
-import AccountPagination, { ACCOUNT_PAGINATION_STYLE_PROPS } from '../shared/pagination';
+import AccountPagination from '../shared/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
 import AccountInlineSectionState from '../shared/section-state';
 
@@ -120,13 +120,17 @@ export default function AccountPaginatedListGrid({
               }}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">{paginationSummaryLabel}</p>
+                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                  {paginationSummaryLabel}
+                </p>
 
                 <AccountPagination
                   currentPage={activePage}
                   onPageChange={canControlPagination ? onPageChange : null}
                   totalPages={totalPages}
-                  getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
+                  getPageHref={
+                    canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)
+                  }
                   className="flex flex-wrap items-center justify-end gap-2"
                 />
               </div>

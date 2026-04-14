@@ -1,12 +1,7 @@
 'use client';
 
-import {
-  ensureLegacyFavoritesBackfilled,
-  subscribeToUserLikes,
-} from '@/core/services/media/likes.service';
-import {
-  subscribeToUserLists,
-} from '@/core/services/media/lists.service';
+import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/core/services/media/likes.service';
+import { subscribeToUserLists } from '@/core/services/media/lists.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
 import { subscribeToUserWatchlist } from '@/core/services/media/watchlist.service';
 import { useToast } from '@/core/modules/notification/hooks';
@@ -29,7 +24,9 @@ function normalizeMediaIdentity(item = {}) {
     return mediaKey;
   }
 
-  const entityType = String(item?.entityType || item?.media_type || '').trim().toLowerCase();
+  const entityType = String(item?.entityType || item?.media_type || '')
+    .trim()
+    .toLowerCase();
   const entityId = String(item?.entityId || item?.id || '').trim();
 
   if (!entityType || !entityId) {
@@ -142,7 +139,7 @@ export function useAccountCollections({
     [hasSeededCollectionSnapshot, initialCollections]
   );
   const initialWatched = useMemo(
-    () => hasSeededCollectionSnapshot && Array.isArray(initialCollections?.watched) ? initialCollections.watched : [],
+    () => (hasSeededCollectionSnapshot && Array.isArray(initialCollections?.watched) ? initialCollections.watched : []),
     [hasSeededCollectionSnapshot, initialCollections]
   );
   const initialCollectionCounts = useMemo(
@@ -200,7 +197,6 @@ export function useAccountCollections({
       .trim()
       .toLowerCase();
 
-    // Scope subscriptions by active account tab to avoid cross-tab cache pollution.
     const shouldScopeByActiveTab = Boolean(normalizedActiveTab);
     const shouldSubscribeLikes = !shouldScopeByActiveTab || normalizedActiveTab === 'likes';
     const shouldSubscribeLists = !shouldScopeByActiveTab || normalizedActiveTab === 'lists';

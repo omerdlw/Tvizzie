@@ -39,7 +39,7 @@ function ListPreviewStack({ list }) {
         previewItems.map((item, index) => (
           <div
             key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-            className="absolute bottom-0 overflow-hidden rounded-[8px] border-2 border-white bg-white shadow-sm ring-1 ring-black/5"
+            className="absolute bottom-0 overflow-hidden border-2 border-white bg-white shadow-sm ring-1 ring-black/5"
             style={{
               height: `${68 - index * 6}px`,
               left: `${index * 12}px`,
@@ -51,17 +51,17 @@ function ListPreviewStack({ list }) {
               <img
                 src={getPreviewImage(item)}
                 alt={item.title || item.name || 'Poster'}
-                className="h-full w-full rounded-[6px] object-cover"
+                className="h-full w-full object-cover"
               />
             ) : (
-              <div className="center h-full w-full rounded-[6px] bg-black/5 text-black/30">
+              <div className="center h-full w-full bg-black/5 text-black/30">
                 <Icon icon="solar:videocamera-record-bold" size={14} />
               </div>
             )}
           </div>
         ))
       ) : (
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] rounded-[8px] border border-dashed border-black/20 bg-[#f8fafc] text-black/30 shadow-sm">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-black/20 bg-[#f8fafc] text-black/30 shadow-sm">
           <Icon icon="solar:list-bold" size={20} />
         </div>
       )}
@@ -277,7 +277,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={close}
               disabled={isApplying}
-              className="bg-primary h-8 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
+              className="bg-primary h-8 border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase transition hover:border-black/15 hover:bg-white"
             >
               Cancel
             </Button>
@@ -285,7 +285,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>
@@ -302,7 +302,7 @@ export default function ListPickerModal({ close, data }) {
             type="button"
             onClick={handleOpenCreator}
             disabled={isApplying}
-            className="bg-primary h-8 shrink-0 rounded-[12px] border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black uppercase transition hover:border-black/20 hover:bg-black/2 disabled:cursor-not-allowed"
+            className="bg-primary h-8 shrink-0 border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black uppercase transition hover:border-black/20 hover:bg-black/2 disabled:cursor-not-allowed"
           >
             Create new list
           </Button>
@@ -312,11 +312,11 @@ export default function ListPickerModal({ close, data }) {
           {isLoading ? (
             <div className="space-y-2.5">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="h-24 animate-pulse rounded-[12px] border border-black/10 bg-black/5" />
+                <div key={item} className="h-24 animate-pulse border border-black/10 bg-black/5" />
               ))}
             </div>
           ) : lists.length === 0 ? (
-            <div className="flex min-h-40 flex-col items-center justify-center rounded-[12px] border border-dashed border-black/15 bg-black/2 text-center">
+            <div className="flex min-h-40 flex-col items-center justify-center border border-dashed border-black/15 bg-black/2 text-center">
               <p className="text-[11px] font-bold tracking-widest text-black/60 uppercase">No lists yet</p>
               <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
             </div>
@@ -330,7 +330,7 @@ export default function ListPickerModal({ close, data }) {
                   key={list.id}
                   onClick={() => handleToggleDraft(list.id)}
                   className={cn(
-                    'group flex w-full cursor-pointer items-center justify-between gap-4 rounded-[12px] border p-3 text-left transition-all',
+                    'group flex w-full cursor-pointer items-center justify-between gap-4 border p-3 text-left transition-all',
                     isSelected
                       ? 'border-black bg-black/5 shadow-sm'
                       : 'bg-primary border-black/10 hover:border-black/20 hover:bg-black/2'
@@ -349,13 +349,13 @@ export default function ListPickerModal({ close, data }) {
                   <div className="flex shrink-0 items-center pr-2">
                     <div
                       className={cn(
-                        'flex size-[22px] items-center justify-center rounded-full border transition-all',
+                        'flex size-[22px] items-center justify-center border transition-all',
                         isSelected
                           ? 'border-black bg-black text-white'
                           : 'border-black/20 text-black/20 group-hover:border-black/40 group-hover:text-black/40'
                       )}
                     >
-                      <Icon icon="material-symbols:check-rounded" size={14} />
+                      <Icon icon="material-symbols:check-" size={14} />
                     </div>
                   </div>
                 </button>

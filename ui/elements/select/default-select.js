@@ -79,7 +79,7 @@ const DefaultSelect = forwardRef(
                   {option.icon && <Icon icon={option.icon} size={14} className={cn(classes.optionIcon)} />}
                   <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
                   <SelectPrimitive.ItemIndicator className={cn(classes.indicator)}>
-                    <Icon icon="material-symbols:check-rounded" size={16} />
+                    <Icon icon="material-symbols:check-" size={16} />
                   </SelectPrimitive.ItemIndicator>
                 </SelectPrimitive.Item>
               ))}

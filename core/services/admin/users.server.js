@@ -238,7 +238,9 @@ function matchesDateRangeFilter(user, dateRangeDays) {
 }
 
 function applyAuthUserFilters(users = [], { providerFilter = '', dateRangeDays = null } = {}) {
-  return users.filter((user) => matchesProviderFilter(user, providerFilter) && matchesDateRangeFilter(user, dateRangeDays));
+  return users.filter(
+    (user) => matchesProviderFilter(user, providerFilter) && matchesDateRangeFilter(user, dateRangeDays)
+  );
 }
 
 function mapAuthUserSummary(user = {}) {
@@ -352,12 +354,7 @@ async function loadMapByIds(admin, table, idColumn, ids = [], selectColumns = '*
   return new Map((result.data || []).map((row) => [normalizeValue(row?.[idColumn]), row]));
 }
 
-function mapListItem({
-  user,
-  profile,
-  lifecycle,
-  counters,
-}) {
+function mapListItem({ user, profile, lifecycle, counters }) {
   const authUser = mapAuthUserSummary(user);
 
   return {
@@ -450,11 +447,18 @@ function resolveUsersPagination({
   searchApplied = false,
 }) {
   const normalizedPage = Math.max(1, normalizeInteger(page, 1));
-  const normalizedPageSize = Math.max(1, Math.min(USER_LIST_MAX_PAGE_SIZE, normalizeInteger(pageSize, USER_LIST_DEFAULT_PAGE_SIZE)));
+  const normalizedPageSize = Math.max(
+    1,
+    Math.min(USER_LIST_MAX_PAGE_SIZE, normalizeInteger(pageSize, USER_LIST_DEFAULT_PAGE_SIZE))
+  );
   const normalizedTotal = Math.max(0, normalizeInteger(total, 0));
   const resolvedTotal = searchApplied ? Math.max(normalizedTotal, items.length) : normalizedTotal;
   const totalPages =
-    resolvedTotal > 0 ? Math.max(1, Math.ceil(resolvedTotal / normalizedPageSize)) : hasMore ? normalizedPage + 1 : normalizedPage;
+    resolvedTotal > 0
+      ? Math.max(1, Math.ceil(resolvedTotal / normalizedPageSize))
+      : hasMore
+        ? normalizedPage + 1
+        : normalizedPage;
 
   return {
     hasMore: Boolean(hasMore),
@@ -466,10 +470,13 @@ function resolveUsersPagination({
 }
 
 async function countByColumn(admin, table, column, value) {
-  const result = await admin.from(table).select('*', {
-    count: 'exact',
-    head: true,
-  }).eq(column, value);
+  const result = await admin
+    .from(table)
+    .select('*', {
+      count: 'exact',
+      head: true,
+    })
+    .eq(column, value);
 
   if (result.error) {
     throw new Error(result.error.message || `${table} count failed`);
@@ -478,13 +485,10 @@ async function countByColumn(admin, table, column, value) {
   return normalizeInteger(result.count, 0);
 }
 
-async function fetchRecentRowsByColumn(admin, {
-  table,
-  column,
-  value,
-  limit = 20,
-  orderColumns = ['updated_at', 'created_at', 'added_at'],
-} = {}) {
+async function fetchRecentRowsByColumn(
+  admin,
+  { table, column, value, limit = 20, orderColumns = ['updated_at', 'created_at', 'added_at'] } = {}
+) {
   const normalizedLimit = Math.max(1, Math.min(200, normalizeInteger(limit, 20)));
 
   for (const orderColumn of [...orderColumns, null]) {
@@ -681,11 +685,7 @@ function buildUpdateAuthPayload(currentUser, input = {}) {
   return updates;
 }
 
-async function updateUsernameMapping(admin, {
-  userId,
-  previousUsername = null,
-  nextUsername = null,
-} = {}) {
+async function updateUsernameMapping(admin, { userId, previousUsername = null, nextUsername = null } = {}) {
   const normalizedPrevious = validateUsername(previousUsername);
   const normalizedNext = validateUsername(nextUsername);
 
@@ -901,7 +901,13 @@ async function updateContent(admin, userId, input = {}) {
       throw new Error('listId is required');
     }
 
-    const result = await admin.from('lists').update(updates).eq('user_id', userId).eq('id', listId).select('*').maybeSingle();
+    const result = await admin
+      .from('lists')
+      .update(updates)
+      .eq('user_id', userId)
+      .eq('id', listId)
+      .select('*')
+      .maybeSingle();
 
     if (result.error) {
       throw new Error(result.error.message || 'List update failed');
@@ -1210,7 +1216,9 @@ export async function loadAdminUsersPayload(options = {}) {
 
   const userIds = users.map((user) => normalizeValue(user?.id)).filter(Boolean);
   const [profileMapResult, lifecycleMapResult, counterMapResult] = await Promise.all([
-    safeLoad('profiles', () => loadMapByIds(admin, 'profiles', 'id', userIds, 'id,username,display_name,is_private,updated_at')),
+    safeLoad('profiles', () =>
+      loadMapByIds(admin, 'profiles', 'id', userIds, 'id,username,display_name,is_private,updated_at')
+    ),
     safeLoad('account_lifecycle', () =>
       loadMapByIds(
         admin,
@@ -1546,11 +1554,7 @@ export async function loadAdminUserDetailPayload({ userId } = {}) {
   });
 }
 
-export async function runAdminUserAction({
-  userId,
-  action,
-  input = {},
-} = {}) {
+export async function runAdminUserAction({ userId, action, input = {} } = {}) {
   const normalizedUserId = normalizeValue(userId);
   const normalizedAction = normalizeLowerValue(action);
 

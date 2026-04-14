@@ -198,7 +198,9 @@ function paginateReviewItems(items = [], cursor = null, pageSize = 20) {
 }
 
 function resolveReviewWindow({ cursor = null, pageSize = 20 } = {}) {
-  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.min(Math.floor(Number(pageSize)), 100)) : 20;
+  const normalizedPageSize = Number.isFinite(Number(pageSize))
+    ? Math.max(1, Math.min(Math.floor(Number(pageSize)), 100))
+    : 20;
   const offset = Number.isFinite(Number(cursor)) ? Math.max(0, Math.floor(Number(cursor))) : 0;
   const fetchLimit = Math.min(Math.max(offset + normalizedPageSize * 2, normalizedPageSize * 2), 300);
 
@@ -534,7 +536,11 @@ export async function fetchProfileReviewFeedServer({
           fetchLimit: reviewWindow.fetchLimit,
         });
 
-  return paginateReviewItems(dedupeReviews(reviews).filter(isSupportedReviewItem), reviewWindow.offset, reviewWindow.pageSize);
+  return paginateReviewItems(
+    dedupeReviews(reviews).filter(isSupportedReviewItem),
+    reviewWindow.offset,
+    reviewWindow.pageSize
+  );
 }
 
 export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = null }) {

@@ -5,5 +5,5 @@ export default async function Page({ params }) {
   const { username } = await params;
   const routeData = await getUsernameAccountWatchlistRouteData(username);
 
-  return <Client {...routeData} />;
+  return <Client routeData={routeData} />;
 }

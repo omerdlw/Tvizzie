@@ -54,7 +54,7 @@ function SearchGridCard({ isAdded, item, onAdd }) {
         <div className="pointer-events-none absolute top-2 right-2">
           <div
             className={cn(
-              'flex items-center gap-1 rounded-[8px] border px-2 py-1 text-[10px] font-bold tracking-wider uppercase backdrop-blur',
+              'flex items-center gap-1 border px-2 py-1 text-[10px] font-bold tracking-wider uppercase backdrop-blur',
               isAdded ? 'border-black! bg-black text-white' : 'border-black/20 bg-white/80 text-black'
             )}
           >
@@ -71,10 +71,10 @@ function DraftItemCard({ index, item, onRemove }) {
   const posterSrc = getPosterSrc(item);
 
   return (
-    <div className="group flex items-center gap-3 rounded-[12px] border border-black/10 bg-white/80 p-2.5 transition-all hover:border-black/20">
+    <div className="group flex items-center gap-3 border border-black/10 bg-white/80 p-2.5 transition-all hover:border-black/20">
       <span className="w-6 text-center text-[11px] font-bold tracking-widest text-black/40">{index + 1}</span>
 
-      <div className="relative h-16 w-11 shrink-0 overflow-hidden rounded-[8px] border border-black/10 bg-black/5">
+      <div className="relative h-16 w-11 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
           <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
         ) : (
@@ -92,7 +92,7 @@ function DraftItemCard({ index, item, onRemove }) {
       <Button
         variant="destructive-icon"
         onClick={() => onRemove(item)}
-        className="mr-1 size-8 shrink-0 rounded-[8px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        className="mr-1 size-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         aria-label={`Remove ${getItemTitle(item)}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
@@ -105,8 +105,8 @@ function MobileDraftRowItem({ item, onRemove }) {
   const posterSrc = getPosterSrc(item);
 
   return (
-    <div className="flex min-w-[180px] items-center gap-2 rounded-[12px] border border-black/10 bg-white/85 p-2">
-      <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-[8px] border border-black/10 bg-black/5">
+    <div className="flex min-w-[180px] items-center gap-2 border border-black/10 bg-white/85 p-2">
+      <div className="relative h-12 w-8 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
           <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
         ) : (
@@ -124,7 +124,7 @@ function MobileDraftRowItem({ item, onRemove }) {
       <Button
         variant="destructive-icon"
         onClick={() => onRemove(item)}
-        className="size-7 shrink-0 rounded-[8px]"
+        className="size-7 shrink-0"
         aria-label={`Remove ${getItemTitle(item)}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={14} />
@@ -171,7 +171,7 @@ export default function ListCreatorView({
                       placeholder="90s Sci-Fi Essentials"
                       className={{
                         wrapper:
-                          'flex h-12 items-center rounded-[12px] border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
+                          'flex h-12 items-center border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
                         input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
                       }}
                     />
@@ -185,7 +185,7 @@ export default function ListCreatorView({
                       placeholder="Optional"
                       className={{
                         wrapper:
-                          'flex h-12 items-center rounded-[12px] border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
+                          'flex h-12 items-center border border-black/10 bg-white px-4 transition focus-within:border-black/20 hover:border-black/25',
                         input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
                       }}
                     />
@@ -198,7 +198,7 @@ export default function ListCreatorView({
                       Search Movie
                     </label>
                     {seededItemTitle ? (
-                      <span className="truncate rounded-[8px] border border-black/10 bg-white px-2 py-1 text-[10px] font-bold tracking-widest text-black/70 uppercase">
+                      <span className="truncate border border-black/10 bg-white px-2 py-1 text-[10px] font-bold tracking-widest text-black/70 uppercase">
                         Seeded: {seededItemTitle}
                       </span>
                     ) : null}
@@ -223,7 +223,7 @@ export default function ListCreatorView({
                     }
                     className={{
                       wrapper:
-                        'flex h-12 items-center rounded-[12px] border border-black/20 bg-white px-4 transition focus-within:border-black/20 hover:border-black/30',
+                        'flex h-12 items-center border border-black/20 bg-white px-4 transition focus-within:border-black/20 hover:border-black/30',
                       input: 'h-full bg-transparent text-sm text-black outline-none placeholder:text-black/40',
                       leftIcon: 'flex shrink-0 items-center pr-3',
                       rightIcon: 'flex shrink-0 items-center pl-3',
@@ -232,7 +232,7 @@ export default function ListCreatorView({
                 </div>
 
                 {searchError ? (
-                  <div className="mt-3 rounded-[12px] border border-[#dc2626]/25 bg-[#fecaca]/60 px-4 py-3 text-sm text-[#991b1b]">
+                  <div className="mt-3 border border-[#dc2626]/25 bg-[#fecaca]/60 px-4 py-3 text-sm text-[#991b1b]">
                     {searchError}
                   </div>
                 ) : null}
@@ -261,7 +261,7 @@ export default function ListCreatorView({
                         />
                       ))
                     ) : (
-                      <div className="flex h-14 min-w-[180px] items-center justify-center rounded-[12px] border border-dashed border-black/10 bg-white/60 px-3 text-xs text-black/55">
+                      <div className="flex h-14 min-w-[180px] items-center justify-center border border-dashed border-black/10 bg-white/60 px-3 text-xs text-black/55">
                         No titles yet
                       </div>
                     )}
@@ -280,7 +280,7 @@ export default function ListCreatorView({
                     ))}
                   </div>
                 ) : (
-                  <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 rounded-[12px] border border-dashed border-black/10 bg-white/60 px-6 text-center text-sm text-black/55 sm:min-h-[280px]">
+                  <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 border border-dashed border-black/10 bg-white/60 px-6 text-center text-sm text-black/55 sm:min-h-[280px]">
                     <Icon
                       icon={searchQuery.trim() && !isSearching ? 'solar:ghost-smile-bold' : 'solar:magnifer-linear'}
                       size={32}
@@ -321,7 +321,7 @@ export default function ListCreatorView({
                     />
                   ))
                 ) : (
-                  <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-2 rounded-[12px] border border-dashed border-black/10 bg-white/60 px-5 text-center text-sm text-black/55 sm:min-h-[220px] sm:gap-3">
+                  <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-white/60 px-5 text-center text-sm text-black/55 sm:min-h-[220px] sm:gap-3">
                     <Icon icon="solar:box-minimalistic-bold" size={30} className="text-black/25" />
                     No titles yet
                   </div>

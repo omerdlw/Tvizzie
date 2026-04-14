@@ -23,7 +23,11 @@ export function getAuthProvider() {
 }
 
 export function getRealtimeMode() {
-  const resolved = resolveProvider(process.env.REALTIME_MODE, ['polling', 'sse', 'realtime', 'dual_observe'], 'realtime');
+  const resolved = resolveProvider(
+    process.env.REALTIME_MODE,
+    ['polling', 'sse', 'realtime', 'dual_observe'],
+    'realtime'
+  );
 
   if (resolved === 'polling') {
     return 'realtime';

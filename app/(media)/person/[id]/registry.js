@@ -70,7 +70,7 @@ export default function Registry({
         {
           key: 'search-overlay',
           tooltip: 'Search',
-          icon: isSearching ? 'material-symbols:close-rounded' : 'solar:magnifer-linear',
+          icon: isSearching ? 'material-symbols:close-' : 'solar:magnifer-linear',
           order: 30,
           onClick: (event) => {
             event.stopPropagation();

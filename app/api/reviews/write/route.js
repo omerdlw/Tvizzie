@@ -171,7 +171,12 @@ async function deleteMediaReviewLegacy({ admin, body, userId }) {
     throw new Error('mediaKey is required');
   }
 
-  const result = await admin.from('media_reviews').delete().eq('media_key', mediaKey).eq('user_id', userId).select('media_key');
+  const result = await admin
+    .from('media_reviews')
+    .delete()
+    .eq('media_key', mediaKey)
+    .eq('user_id', userId)
+    .select('media_key');
 
   if (result.error) {
     throw new Error(result.error.message || 'Review could not be deleted');
@@ -189,7 +194,12 @@ async function deleteListReviewLegacy({ admin, body, userId }) {
     throw new Error('listId is required');
   }
 
-  const result = await admin.from('list_reviews').delete().eq('list_id', listId).eq('user_id', userId).select('list_id');
+  const result = await admin
+    .from('list_reviews')
+    .delete()
+    .eq('list_id', listId)
+    .eq('user_id', userId)
+    .select('list_id');
 
   if (result.error) {
     throw new Error(result.error.message || 'Review could not be deleted');

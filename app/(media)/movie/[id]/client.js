@@ -206,7 +206,10 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
         }
       })
       .catch(async () => {
-        const nextBackgroundImage = await resolveFirstLoadableImage([preferredBackgroundImage, fallbackBackgroundImage]);
+        const nextBackgroundImage = await resolveFirstLoadableImage([
+          preferredBackgroundImage,
+          fallbackBackgroundImage,
+        ]);
 
         if (isActive) {
           setBackgroundImage(nextBackgroundImage || null);

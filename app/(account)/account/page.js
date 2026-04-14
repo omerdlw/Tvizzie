@@ -4,5 +4,5 @@ import { getCurrentAccountOverviewRouteData } from '@/core/services/account/acco
 export default async function Page() {
   const routeData = await getCurrentAccountOverviewRouteData();
 
-  return <Client {...routeData} />;
+  return <Client routeData={routeData} />;
 }

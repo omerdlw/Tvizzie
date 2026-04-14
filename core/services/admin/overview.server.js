@@ -282,7 +282,9 @@ export async function loadAdminOverviewPayload({ windowHours = 24 } = {}) {
     safeLoad('lists_window_current', () =>
       countRowsBetween(admin, 'lists', 'created_at', range.sinceIso, new Date(range.nowMs).toISOString())
     ),
-    safeLoad('lists_window_previous', () => countRowsBetween(admin, 'lists', 'created_at', range.previousSinceIso, range.sinceIso)),
+    safeLoad('lists_window_previous', () =>
+      countRowsBetween(admin, 'lists', 'created_at', range.previousSinceIso, range.sinceIso)
+    ),
     safeLoad('activity_feed', async () => {
       const result = await admin
         .from('activity')
@@ -425,7 +427,9 @@ export async function loadAdminOverviewPayload({ windowHours = 24 } = {}) {
     partial: errors.length > 0,
     widgets: [
       {
-        description: envState.ok ? 'Required runtime env keys are present' : `Missing keys: ${envState.missing.join(', ')}`,
+        description: envState.ok
+          ? 'Required runtime env keys are present'
+          : `Missing keys: ${envState.missing.join(', ')}`,
         href: '/api/health',
         id: 'runtime-health',
         source: 'runtime',

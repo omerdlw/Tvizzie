@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
-  useAccountSectionPage,
   useSeededFeedState,
 } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
@@ -16,6 +15,8 @@ import { fetchProfileLikedLists } from '@/core/services/media/lists.service';
 import { updateFavoriteShowcase } from '@/core/services/media/likes.service';
 import { fetchProfileReviewFeed, toggleStoredReviewLike } from '@/core/services/media/reviews.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
+import { useAccountSectionEngine } from '../shared/section-engine';
+import { AccountSectionStateProvider } from '../shared/section-context';
 import LikesView from './view';
 
 const LIKE_SEGMENTS = new Set(['films', 'reviews', 'lists']);
@@ -48,16 +49,8 @@ function mergeUniqueReviews(currentItems = [], nextItems = []) {
   return output;
 }
 
-export default function Client({
-  currentPage = 1,
-  initialCollections = null,
-  initialLikedLists = null,
-  initialProfile = null,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-  initialReviewFeed = null,
-  username,
-}) {
+export default function Client({ routeData = null }) {
+  const { initialLikedLists = null, initialReviewFeed = null } = routeData || {};
   const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -66,48 +59,23 @@ export default function Client({
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
   const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'films';
-  const requestedPage = Number.parseInt(searchParams.get('page') || String(currentPage), 10);
-  const resolvedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
-  const {
-    canViewProfileCollections,
-    canViewPrivateContent,
-    favoriteShowcase,
-    followerCount,
-    followingCount,
-    followState,
-    handleEditProfile,
-    handleFollow,
-    handleOpenFollowList,
-    handleRequestRemoveLike,
-    handleSignInRequest,
-    isBioSurfaceOpen,
-    isFollowLoading,
-    isOwner,
-    isPageLoading,
-    isPrivateProfile,
-    isResolvingProfile,
-    isViewerReady,
-    itemRemoveConfirmation,
-    likeCount,
-    likes,
-    listCount,
-    pendingFollowRequestCount,
-    profile,
-    resolveError,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    unfollowConfirmation,
-    watchlistCount,
-  } = useAccountSectionPage({
+  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
     activeTab: 'likes',
     auth,
-    initialCollections,
-    initialProfile,
-    initialResolvedUserId,
-    initialResolveError,
-    username,
+    routeData,
   });
+  const {
+    canViewPrivateContent,
+    favoriteShowcase,
+    handleRequestRemoveLike,
+    handleSignInRequest,
+    isOwner,
+    isPrivateProfile,
+    isViewerReady,
+    likes,
+    resolvedUserId,
+  } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const {
     feedError: reviewsError,
@@ -255,95 +223,91 @@ export default function Client({
     [activeSegment, updateLikesQuery]
   );
 
-  const loadReviews = useCallback(
-    async () => {
-      if (!resolvedUserId) {
-        resetReviews();
-        return;
-      }
+  const loadReviews = useCallback(async () => {
+    if (!resolvedUserId) {
+      resetReviews();
+      return;
+    }
 
-      if (!isViewerReady) {
-        return;
-      }
+    if (!isViewerReady) {
+      return;
+    }
 
-      if (shouldBlockReviewLoad) {
-        resetReviews();
-        return;
-      }
+    if (shouldBlockReviewLoad) {
+      resetReviews();
+      return;
+    }
 
-      setIsReviewsLoading(true);
-      setReviewsError(null);
+    setIsReviewsLoading(true);
+    setReviewsError(null);
 
-      try {
-        const seededItems =
-          hasSeededReviewFeed && Array.isArray(initialReviewFeed?.items) ? initialReviewFeed.items : [];
-        let allItems = [...seededItems];
-        let nextCursor = hasSeededReviewFeed ? initialReviewFeed?.nextCursor ?? null : null;
-        let hasMorePages = hasSeededReviewFeed ? Boolean(initialReviewFeed?.hasMore) : true;
-        let pagesFetched = 0;
+    try {
+      const seededItems = hasSeededReviewFeed && Array.isArray(initialReviewFeed?.items) ? initialReviewFeed.items : [];
+      let allItems = [...seededItems];
+      let nextCursor = hasSeededReviewFeed ? (initialReviewFeed?.nextCursor ?? null) : null;
+      let hasMorePages = hasSeededReviewFeed ? Boolean(initialReviewFeed?.hasMore) : true;
+      let pagesFetched = 0;
 
-        if (!hasSeededReviewFeed) {
-          const firstPage = await fetchProfileReviewFeed({
-            cursor: null,
-            mode: 'liked',
-            pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
-            userId: resolvedUserId,
-          });
-          const firstItems = Array.isArray(firstPage?.items) ? firstPage.items : [];
-
-          allItems = mergeUniqueReviews([], firstItems);
-          nextCursor = firstPage?.nextCursor ?? null;
-          hasMorePages = Boolean(firstPage?.hasMore);
-          pagesFetched += 1;
-        }
-
-        while (hasMorePages && nextCursor !== null && pagesFetched < LIKED_REVIEWS_FETCH_MAX_PAGES) {
-          const page = await fetchProfileReviewFeed({
-            cursor: nextCursor,
-            mode: 'liked',
-            pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
-            userId: resolvedUserId,
-          });
-          const pageItems = Array.isArray(page?.items) ? page.items : [];
-
-          allItems = mergeUniqueReviews(allItems, pageItems);
-          nextCursor = page?.nextCursor ?? null;
-          hasMorePages = Boolean(page?.hasMore);
-          pagesFetched += 1;
-        }
-
-        syncReviewFeed({
-          error: null,
-          hasMore: false,
-          items: allItems,
+      if (!hasSeededReviewFeed) {
+        const firstPage = await fetchProfileReviewFeed({
+          cursor: null,
           mode: 'liked',
-          nextCursor: null,
-          totalCount: allItems.length,
+          pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
           userId: resolvedUserId,
         });
-      } catch (error) {
-        resetReviews();
+        const firstItems = Array.isArray(firstPage?.items) ? firstPage.items : [];
 
-        if (!isPermissionDeniedError(error)) {
-          logDataError('[Account] Liked reviews could not be loaded:', error);
-          setReviewsError('Liked reviews could not be loaded right now.');
-        }
-      } finally {
-        setIsReviewsLoading(false);
+        allItems = mergeUniqueReviews([], firstItems);
+        nextCursor = firstPage?.nextCursor ?? null;
+        hasMorePages = Boolean(firstPage?.hasMore);
+        pagesFetched += 1;
       }
-    },
-    [
-      hasSeededReviewFeed,
-      initialReviewFeed,
-      isViewerReady,
-      resolvedUserId,
-      resetReviews,
-      setReviewsError,
-      setIsReviewsLoading,
-      shouldBlockReviewLoad,
-      syncReviewFeed,
-    ]
-  );
+
+      while (hasMorePages && nextCursor !== null && pagesFetched < LIKED_REVIEWS_FETCH_MAX_PAGES) {
+        const page = await fetchProfileReviewFeed({
+          cursor: nextCursor,
+          mode: 'liked',
+          pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
+          userId: resolvedUserId,
+        });
+        const pageItems = Array.isArray(page?.items) ? page.items : [];
+
+        allItems = mergeUniqueReviews(allItems, pageItems);
+        nextCursor = page?.nextCursor ?? null;
+        hasMorePages = Boolean(page?.hasMore);
+        pagesFetched += 1;
+      }
+
+      syncReviewFeed({
+        error: null,
+        hasMore: false,
+        items: allItems,
+        mode: 'liked',
+        nextCursor: null,
+        totalCount: allItems.length,
+        userId: resolvedUserId,
+      });
+    } catch (error) {
+      resetReviews();
+
+      if (!isPermissionDeniedError(error)) {
+        logDataError('[Account] Liked reviews could not be loaded:', error);
+        setReviewsError('Liked reviews could not be loaded right now.');
+      }
+    } finally {
+      setIsReviewsLoading(false);
+    }
+  }, [
+    hasSeededReviewFeed,
+    initialReviewFeed,
+    isViewerReady,
+    resolvedUserId,
+    resetReviews,
+    setReviewsError,
+    setIsReviewsLoading,
+    shouldBlockReviewLoad,
+    syncReviewFeed,
+  ]);
 
   useEffect(() => {
     if (activeSegment !== 'reviews') {
@@ -491,51 +455,27 @@ export default function Client({
   );
 
   return (
-    <LikesView
-      auth={auth}
-      activeSegment={activeSegment}
-      canShowLikesGrid={canViewProfileCollections}
-      currentPage={resolvedPage}
-      favoriteShowcase={favoriteShowcase}
-      followerCount={followerCount}
-      followingCount={followingCount}
-      followState={followState}
-      handleEditProfile={handleEditProfile}
-      handleFollow={handleFollow}
-      handleLike={handleLike}
-      handleOpenFollowList={handleOpenFollowList}
-      handleRequestRemoveLike={handleRequestRemoveLike}
-      handleSegmentChange={handleSegmentChange}
-      handleSignInRequest={handleSignInRequest}
-      handleToggleShowcase={handleToggleShowcase}
-      isBioSurfaceOpen={isBioSurfaceOpen}
-      isFollowLoading={isFollowLoading}
-      isLikedListsLoading={isLikedListsLoading}
-      isOwner={isOwner}
-      isPageLoading={isPageLoading}
-      isReviewsLoading={isReviewsLoading}
-      isResolvingProfile={isResolvingProfile}
-      isShowcaseSaving={isShowcaseSaving}
-      itemRemoveConfirmation={itemRemoveConfirmation}
-      likedLists={likedLists}
-      likedListsError={likedListsError}
-      likeCount={likeCount}
-      likes={likes}
-      listCount={listCount}
-      pendingFollowRequestCount={pendingFollowRequestCount}
-      persistShowcase={persistShowcase}
-      profile={profile}
-      resolveError={resolveError}
-      resolvedUserId={resolvedUserId}
-      reviews={reviews}
-      reviewsTotalCount={totalReviewsCount}
-      reviewsError={reviewsError}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
-      showcaseMap={showcaseMap}
-      unfollowConfirmation={unfollowConfirmation}
-      username={username}
-      watchedItems={watchedItems}
-      watchlistCount={watchlistCount}
-    />
+    <AccountSectionStateProvider value={sectionProviderValue}>
+      <LikesView
+        activeSegment={activeSegment}
+        favoriteShowcase={favoriteShowcase}
+        handleLike={handleLike}
+        handleRequestRemoveLike={handleRequestRemoveLike}
+        handleSegmentChange={handleSegmentChange}
+        handleToggleShowcase={handleToggleShowcase}
+        isLikedListsLoading={isLikedListsLoading}
+        isReviewsLoading={isReviewsLoading}
+        isShowcaseSaving={isShowcaseSaving}
+        likedLists={likedLists}
+        likedListsError={likedListsError}
+        likes={likes}
+        persistShowcase={persistShowcase}
+        reviews={reviews}
+        reviewsTotalCount={totalReviewsCount}
+        reviewsError={reviewsError}
+        showcaseMap={showcaseMap}
+        watchedItems={watchedItems}
+      />
+    </AccountSectionStateProvider>
   );
 }

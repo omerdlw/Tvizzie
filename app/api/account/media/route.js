@@ -285,7 +285,16 @@ async function uploadWithLegacyAdminFlow({ fileBuffer, fileExtension, mimeType, 
   };
 }
 
-async function uploadWithEdgeFlow({ authContext, fileBuffer, fileExtension, fileSize, mimeType, request, requestMeta, target }) {
+async function uploadWithEdgeFlow({
+  authContext,
+  fileBuffer,
+  fileExtension,
+  fileSize,
+  mimeType,
+  request,
+  requestMeta,
+  target,
+}) {
   const prepareResult = await invokeInternalEdgeFunction('account-media-upload', {
     body: {
       action: 'prepare-upload',
@@ -310,10 +319,12 @@ async function uploadWithEdgeFlow({ authContext, fileBuffer, fileExtension, file
   }
 
   const uploadClient = createSignedUploadClient();
-  const uploadResult = await uploadClient.storage.from(preparedBucket).uploadToSignedUrl(preparedPath, token, fileBuffer, {
-    cacheControl: '31536000',
-    contentType: mimeType,
-  });
+  const uploadResult = await uploadClient.storage
+    .from(preparedBucket)
+    .uploadToSignedUrl(preparedPath, token, fileBuffer, {
+      cacheControl: '31536000',
+      contentType: mimeType,
+    });
 
   if (uploadResult.error) {
     throw createHttpError(uploadResult.error.message || 'Image upload failed', 500);
@@ -328,7 +339,15 @@ async function uploadWithEdgeFlow({ authContext, fileBuffer, fileExtension, file
   };
 }
 
-async function validateEdgeUploadTicket({ authContext, fileExtension, fileSize, mimeType, request, requestMeta, target }) {
+async function validateEdgeUploadTicket({
+  authContext,
+  fileExtension,
+  fileSize,
+  mimeType,
+  request,
+  requestMeta,
+  target,
+}) {
   await invokeInternalEdgeFunction('account-media-upload', {
     body: {
       action: 'prepare-upload',

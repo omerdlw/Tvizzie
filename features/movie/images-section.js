@@ -78,7 +78,12 @@ export default function ImagesSection({ images }) {
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <SegmentedControl classNames={{ track: "w-auto", wrapper: 'p-0.5' }} items={availableTabs} value={activeKey} onChange={setActiveKey} />
+      <SegmentedControl
+        classNames={{ track: 'w-auto', wrapper: 'p-0.5' }}
+        items={availableTabs}
+        value={activeKey}
+        onChange={setActiveKey}
+      />
 
       <Carousel gap="gap-3">
         {items.map((image, index) => (
