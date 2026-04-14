@@ -1,30 +1,78 @@
-# Tvizzie: Comprehensive Technical Analysis Report and Restructuring Implementation Plan
+# Tvizzie: Technical Analysis Report and Restructuring Implementation Plan
+
+> **Version 3.0 — Final Consolidated Plan**
+> Ground truth verified against actual source files.
+> Execute phases in order. Run `pnpm build` after each phase. Do not proceed if build fails.
 
 ---
 
-## PART 1: TECHNICAL ANALYSIS REPORT
+## DOCUMENT OVERVIEW
+
+This document serves two purposes:
+
+1. **Part 1: Technical Analysis Report** — Comprehensive audit of the current codebase architecture, naming conventions, structural issues, and code quality metrics.
+
+2. **Part 2: Restructuring Implementation Plan** — Detailed, executable phases to improve structural clarity, naming consistency, and module boundary enforcement without changing runtime behavior.
 
 ---
 
-### 1. Executive Summary
+## AGENT/DEVELOPER CONTEXT
+
+**Objective:** Improve structural clarity, naming consistency, and module boundary enforcement without changing any runtime behavior. No feature changes. No logic rewrites.
+
+**What this plan does NOT do:**
+- Does not rewrite the Registry system (`core/modules/registry/`)
+- Does not merge `registry.js` route files (they contain complex JSX and router hooks — not simple config)
+- Does not inline `view.js` files into `client.js` (they are 200–300+ LOC rendering trees)
+- Does not change API route handler logic or merge endpoints with action-dispatch patterns
+- Does not touch `rollout.config.js` internals (sophisticated env-patching system — leave it)
+- Does not touch `useRegistry` hook internals
+
+**What this plan DOES do:**
+- Eliminates the confusing `core/` wrapper directory (moves contents to proper top-level dirs)
+- Applies consistent, professional file naming to route files
+- Resolves confirmed `ui/ → features/` import boundary violations
+- Splits `features/account/utils.js` (400+ LOC mixed-concern file) into focused modules
+- Consolidates fragmented auth server files
+- Consolidates nav hook files
+- Renames generic `utils.js` / `client.js` / `view.js` / `registry.js` files to domain-prefixed names
+- Moves `components/ui/` leftovers to `ui/`
+
+---
+
+# PART 1: TECHNICAL ANALYSIS REPORT
+
+---
+
+## 1. Executive Summary
 
 Tvizzie is a full-stack movie discovery and social engagement platform built with Next.js 16, React 19, Tailwind CSS 4, and Supabase. The application enables users to search for movies and people (via TMDB API), manage personal watchlists, mark movies as watched, rate and review content, create curated lists, and engage socially through a follow system.
 
-**Current Codebase Metrics:**
-- **Total JavaScript Files:** 539 files
-- **Primary Directories:** `app/`, `core/`, `features/`, `ui/`, `config/`, `fonts/`, `components/`
-- **Route Groups:** 5 (`(account)`, `(admin)`, `(auth)`, `(home)`, `(media)`)
-- **API Routes:** 42 endpoints across auth, account, media, social, admin, and system domains
-- **Lines of Code:** Estimated 28,000-38,000 LOC (excluding dependencies)
-- **Unique Naming Patterns:** 14+ distinct file naming conventions identified
+### Current Codebase Metrics
 
-The codebase exhibits significant architectural complexity stemming from rapid iterative development with AI assistance. While functional, it demonstrates structural inconsistencies, naming convention drift, and module boundary violations that impede maintainability, onboarding velocity, and portfolio presentation quality.
+| Metric | Value | Industry Benchmark | Assessment |
+|--------|-------|-------------------|------------|
+| Total JavaScript Files | 539 | 180-280 | Over-fragmented |
+| Route Groups | 5 | 3-6 | Appropriate |
+| API Endpoints | 42 | 20-40 | Slightly high |
+| Unique Naming Patterns | 14+ | 4-6 | Inconsistent |
+| Auth Files | 36 | 10-15 | Over-engineered |
+| Lines of Code (estimated) | 28,000-38,000 | — | — |
+
+### Primary Concerns
+
+1. **File count inflation** — 539 files for a medium-complexity application
+2. **Inconsistent naming conventions** — 14+ distinct patterns in use
+3. **Ambiguous route files** — `client.js`, `view.js`, `registry.js` lack context
+4. **Confusing `core/` directory** — conflates multiple concerns
+5. **Import boundary violations** — `ui/ → features/`, `services/ → features/`
+6. **Mixed-concern utility files** — 400+ LOC dumping grounds
 
 ---
 
-### 2. Technology Stack Analysis
+## 2. Technology Stack Analysis
 
-#### 2.1 Core Framework
+### 2.1 Core Framework
 
 | Layer | Technology | Version | Purpose |
 |-------|------------|---------|---------|
@@ -35,7 +83,7 @@ The codebase exhibits significant architectural complexity stemming from rapid i
 | Database/Auth | Supabase | 2.100.1 | PostgreSQL, Auth, Realtime, Storage |
 | External API | TMDB | v3 | Movie/Person metadata |
 
-#### 2.2 Supporting Libraries
+### 2.2 Supporting Libraries
 
 | Library | Version | Purpose |
 |---------|---------|---------|
@@ -50,7 +98,7 @@ The codebase exhibits significant architectural complexity stemming from rapid i
 | `clsx` | 2.x | Conditional class composition |
 | `tailwind-merge` | 2.x | Tailwind class deduplication |
 
-#### 2.3 Build Tooling
+### 2.3 Build Tooling
 
 | Tool | Configuration | Notes |
 |------|---------------|-------|
@@ -62,9 +110,9 @@ The codebase exhibits significant architectural complexity stemming from rapid i
 
 ---
 
-### 3. Architectural Patterns Analysis
+## 3. Architectural Patterns Analysis
 
-#### 3.1 Directory Structure Overview
+### 3.1 Directory Structure Overview
 
 ```
 tvizzie/
@@ -81,8 +129,7 @@ tvizzie/
 │   │   │   ├── edit/              # Profile editing
 │   │   │   └── lists/new/         # List creation
 │   ├── (admin)/                   # Admin dashboard routes
-│   │   └── admin/
-│   │       └── users/
+│   │   └── admin/users/
 │   ├── (auth)/                    # Authentication routes
 │   │   ├── sign-in/
 │   │   └── sign-up/
@@ -93,49 +140,58 @@ tvizzie/
 │   ├── api/                       # API route handlers (42 endpoints)
 │   ├── auth/                      # Auth callback handlers
 │   └── search/                    # Search page
-├── core/                          # Runtime systems, services, clients
+├── core/                          # ⚠️ TO BE ELIMINATED - Runtime systems, services, clients
 │   ├── auth/                      # Auth primitives (36 files)
-│   │   ├── clients/               # Browser-side auth utilities
-│   │   └── servers/               # Server-side auth operations
-│   ├── clients/                   # External service clients
+│   │   ├── clients/               # Browser-side auth utilities (5 files)
+│   │   └── servers/               # Server-side auth operations (27 files)
+│   │       ├── account/           # 4 files
+│   │       ├── audit/             # 1 file
+│   │       ├── notice/            # 1 file
+│   │       ├── policy/            # 1 file
+│   │       ├── providers/         # 2 files
+│   │       ├── security/          # 6 files
+│   │       ├── session/           # 5 files
+│   │       └── verification/      # 6 files
+│   ├── clients/                   # External service clients (7 files)
 │   │   ├── supabase/              # Supabase client wrappers
 │   │   └── tmdb/                  # TMDB API client
-│   ├── constants/                 # Shared constants
-│   ├── hooks/                     # Shared React hooks
+│   ├── constants/                 # Shared constants (2 files)
+│   ├── hooks/                     # Shared React hooks (7 files)
 │   ├── modules/                   # Runtime state providers (143 files)
-│   │   ├── account/               # Account state management
-│   │   ├── api/                   # API caching layer
-│   │   ├── auth/                  # Auth context and guards
-│   │   ├── background/            # Background overlay state
-│   │   ├── context-menu/          # Context menu state
-│   │   ├── countdown/             # Countdown/timer utilities
-│   │   ├── error-boundary/        # Error boundary system
-│   │   ├── loading/               # Loading state management
-│   │   ├── modal/                 # Modal state management
-│   │   ├── nav/                   # Navigation state (26 files)
-│   │   ├── notification/          # Notification system
-│   │   ├── registry/              # State registry system (14 files)
-│   │   └── settings/              # User settings state
-│   ├── services/                  # Data access and business logic
-│   │   ├── account/               # Account operations
-│   │   ├── activity/              # Activity tracking
-│   │   ├── admin/                 # Admin operations
-│   │   ├── browser/               # Browse page data
-│   │   ├── feedback/              # Feedback system
-│   │   ├── media/                 # Media operations
-│   │   ├── notifications/         # Notification operations
-│   │   ├── realtime/              # Real-time updates
-│   │   ├── shared/                # Shared service utilities
-│   │   ├── social/                # Social operations
-│   │   └── tmdb/                  # TMDB integration
-│   └── utils/                     # Pure utility functions
-├── features/                      # Domain-specific UI composition (121 files)
+│   │   ├── account/               # 6 files
+│   │   ├── api/                   # 2 files
+│   │   ├── auth/                  # 11 files
+│   │   ├── background/            # 2 files
+│   │   ├── context-menu/          # 3 files
+│   │   ├── countdown/             # 4 files
+│   │   ├── error-boundary/        # 5 files
+│   │   ├── loading/               # 2 files
+│   │   ├── modal/                 # 7 files
+│   │   ├── nav/                   # 26 files (14 hooks)
+│   │   ├── notification/          # 5 files
+│   │   ├── registry/              # 14 files
+│   │   └── settings/              # 6 files
+│   ├── services/                  # Data access and business logic (55 files)
+│   │   ├── account/               # 5 files
+│   │   ├── activity/              # 5 files
+│   │   ├── admin/                 # 11 files
+│   │   ├── browser/               # 3 files
+│   │   ├── feedback/              # 1 file
+│   │   ├── media/                 # 9 files
+│   │   ├── notifications/         # 5 files
+│   │   ├── realtime/              # 4 files
+│   │   ├── shared/                # 7 files
+│   │   ├── social/                # 2 files
+│   │   └── tmdb/                  # 3 files
+│   ├── utils/                     # Pure utility functions (2 files)
+│   └── index.js                   # Barrel re-export
+├── features/                      # Domain-specific UI composition (124 files)
 │   ├── account/                   # Account page components (34 files)
-│   │   ├── feeds/                 # Feed components
-│   │   ├── hooks/                 # Account-specific hooks
-│   │   ├── lists/                 # List components
-│   │   ├── overview/              # Overview section components
-│   │   └── shared/                # Shared account components
+│   │   ├── feeds/                 # 8 files
+│   │   ├── hooks/                 # 3 files
+│   │   ├── lists/                 # 5 files
+│   │   ├── overview/              # 4 files
+│   │   └── shared/                # 8 files
 │   ├── auth/                      # Auth UI components (11 files)
 │   ├── home/                      # Home page components (2 files)
 │   ├── layout/                    # Layout utilities (7 files)
@@ -146,7 +202,7 @@ tvizzie/
 │   │   └── surfaces/              # Nav surface components
 │   ├── person/                    # Person detail components (12 files)
 │   ├── reviews/                   # Review system (12 files)
-│   │   └── parts/                 # Review subcomponents
+│   │   └── parts/                 # ⚠️ Non-standard naming
 │   └── shared/                    # Cross-feature components (7 files)
 ├── ui/                            # Reusable presentational primitives (28 files)
 │   ├── animations/                # Animation wrappers
@@ -166,842 +222,225 @@ tvizzie/
 │   │   └── views/
 │   └── states/                    # State components
 ├── config/                        # Configuration modules (6 files)
-├── components/                    # Legacy shadcn components (2 files)
+│   ├── account.config.js
+│   ├── auth.config.js
+│   ├── nav.config.js
+│   ├── project.config.js
+│   ├── provider.config.js
+│   └── rollout.config.js          # ⚠️ Complex - do not modify
+├── components/                    # ⚠️ Legacy shadcn leftovers (2 files)
+│   └── ui/
+│       ├── noise-texture.js
+│       └── text-animate.js
 └── fonts/                         # Custom font files
 ```
 
-#### 3.2 Route File Split Pattern Analysis
+### 3.2 Route File Split Pattern Analysis
 
-The codebase employs a consistent but verbose route file decomposition pattern:
+The codebase employs a consistent but verbose route file decomposition:
 
 | File | Purpose | Occurrence | LOC Range |
 |------|---------|------------|-----------|
-| `page.js` | Route entry, server-side data fetching, metadata | 32/32 routes (100%) | 20-150 |
-| `client.js` | Client boundary wrapper, state management | 29/32 routes (91%) | 30-200 |
-| `registry.js` | Route-local registry state injection | 26/32 routes (81%) | 15-80 |
-| `view.js` | Presentational component | 14/32 routes (44%) | 40-250 |
-| `loading.js` | Suspense fallback | 22/32 routes (69%) | 10-40 |
-| `error.js` | Error boundary | 8/32 routes (25%) | 15-50 |
-| `not-found.js` | 404 handler | 5/32 routes (16%) | 15-40 |
+| `page.js` | Route entry, SSR data fetching, metadata | 32/32 (100%) | 20-150 |
+| `client.js` | Client boundary wrapper, state management | 29/32 (91%) | 30-200 |
+| `registry.js` | Route-local registry state injection | 26/32 (81%) | 50-150 |
+| `view.js` | Presentational component | 14/32 (44%) | 100-300 |
+| `loading.js` | Suspense fallback | 22/32 (69%) | 10-40 |
+| `error.js` | Error boundary | 8/32 (25%) | 15-50 |
+| `not-found.js` | 404 handler | 5/32 (16%) | 15-40 |
 
-**Detailed Route File Distribution:**
+**Critical Finding:** `registry.js` files contain **complex JSX, router hooks (`usePathname`, `useRouter`, `useSearchParams`), state management, and context menu configuration**. They are NOT simple config objects and cannot be trivially merged or extracted to a factory. `view.js` files are **200-300+ LOC rendering trees** with Suspense boundaries and deferred data loading.
 
-```
-app/(account)/account/[username]/          → 5 files (page, client, registry, loading, error, not-found)
-app/(account)/account/[username]/activity/ → 5 files (page, client, registry, view, loading)
-app/(account)/account/[username]/likes/    → 5 files (page, client, registry, view, loading)
-app/(account)/account/[username]/lists/    → 5 files (page, client, registry, view, loading)
-app/(account)/account/[username]/lists/[slug]/ → 5 files
-app/(account)/account/[username]/reviews/  → 5 files
-app/(account)/account/[username]/watched/  → 5 files
-app/(account)/account/[username]/watchlist/ → 5 files
-app/(account)/account/edit/                → 6 files (page, client, registry, view, loading, error, not-found)
-app/(media)/movie/[id]/                    → 6 files
-app/(media)/person/[id]/                   → 6 files
-app/(auth)/sign-in/                        → 4 files
-app/(auth)/sign-up/                        → 4 files
-app/(home)/                                → 4 files
-```
+### 3.3 Registry System Architecture
 
-**Issue Analysis:**
+The Registry pattern (`core/modules/registry/`) is a centralized state bus with plugin architecture:
 
-The `client.js` → `registry.js` → `view.js` chain creates excessive indirection:
+| Plugin | Purpose | LOC |
+|--------|---------|-----|
+| `nav.plugin.js` | Navigation state injection | 45 |
+| `modal.plugin.js` | Modal configuration | 35 |
+| `background.plugin.js` | Background overlay state | 25 |
+| `guard.plugin.js` | Route guard configuration | 30 |
+| `loading.plugin.js` | Loading state management | 25 |
+| `context-menu.plugin.js` | Context menu configuration | 35 |
+| `notification.plugin.js` | Notification state | 25 |
+| `title.plugin.js` | Document title management | 20 |
 
-1. **`registry.js` duplication**: 26 files with ~80% structural overlap
-2. **`view.js` redundancy**: Many are thin wrappers that could be inlined into `client.js`
-3. **Cognitive overhead**: Developers must trace through 3-4 files to understand a single route
+**Assessment:** The Registry system is sophisticated and working correctly. The `useRegistry` hook contains deep comparison engine, React element stabilization, and ref-based function memoization. **Do not modify its internals.**
 
-#### 3.3 Registry System Architecture
+### 3.4 Service Layer Architecture
 
-The codebase implements a custom "Registry" pattern (`core/modules/registry/`) functioning as a centralized state bus:
-
-**Registry Plugin System:**
-
-| Plugin | Purpose | File |
-|--------|---------|------|
-| `nav.plugin.js` | Navigation state injection | 45 LOC |
-| `modal.plugin.js` | Modal configuration | 35 LOC |
-| `background.plugin.js` | Background overlay state | 25 LOC |
-| `guard.plugin.js` | Route guard configuration | 30 LOC |
-| `loading.plugin.js` | Loading state management | 25 LOC |
-| `context-menu.plugin.js` | Context menu configuration | 35 LOC |
-| `notification.plugin.js` | Notification state | 25 LOC |
-| `title.plugin.js` | Document title management | 20 LOC |
-
-**Registry Flow:**
-```
-Route page.js
-    ↓
-Client component
-    ↓
-useRegistry({ nav: {...}, modal: {...}, background: {...} })
-    ↓
-RegistryInjector processes plugins
-    ↓
-Global providers consume state (NavProvider, ModalProvider, etc.)
-```
-
-**Architecture Assessment:**
-- **Strength:** Decouples route-specific state from global shell components
-- **Strength:** Enables route-level customization of navigation, modals, backgrounds
-- **Weakness:** Every route requires registry setup even for trivial cases
-- **Weakness:** Heavy abstraction overhead (14 files, ~350 LOC for the registry system alone)
-- **Weakness:** Route-local `registry.js` files duplicate boilerplate extensively
-
-#### 3.4 Service Layer Architecture
-
-Services are organized under `core/services/` with domain-based grouping:
-
-| Service Domain | Files | Server Files | Client Files | Responsibilities |
-|----------------|-------|--------------|--------------|------------------|
-| `account/` | 5 | 4 | 1 | Profile CRUD, account bootstrapping, feed assembly |
-| `activity/` | 5 | 1 | 4 | Activity event logging and retrieval |
+| Service Domain | Files | Server | Client | Responsibilities |
+|----------------|-------|--------|--------|------------------|
+| `account/` | 5 | 4 | 1 | Profile CRUD, bootstrapping, feeds |
+| `activity/` | 5 | 1 | 4 | Activity logging and retrieval |
 | `admin/` | 11 | 11 | 0 | Admin dashboard operations |
-| `browser/` | 3 | 3 | 0 | Browse page data assembly |
+| `browser/` | 3 | 3 | 0 | Browse page data |
 | `feedback/` | 1 | 0 | 1 | Feedback submission |
-| `media/` | 9 | 1 | 8 | Watchlist, watched, likes, favorites, reviews, lists |
-| `notifications/` | 5 | 2 | 3 | Notification CRUD and subscriptions |
-| `realtime/` | 4 | 2 | 2 | Live update broadcasting |
-| `shared/` | 7 | 2 | 5 | Cross-service utilities, API helpers |
-| `social/` | 2 | 1 | 1 | Follow/unfollow operations |
+| `media/` | 9 | 1 | 8 | Watchlist, watched, likes, reviews, lists |
+| `notifications/` | 5 | 2 | 3 | Notification CRUD |
+| `realtime/` | 4 | 2 | 2 | Live updates |
+| `shared/` | 7 | 2 | 5 | Cross-service utilities |
+| `social/` | 2 | 1 | 1 | Follow/unfollow |
 | `tmdb/` | 3 | 2 | 1 | TMDB API integration |
-
-**Service Naming Pattern Analysis:**
-
-```
-*.service.js    → Client-side service (API consumption)
-*.server.js     → Server-side service (route handlers, SSR)
-*.constants.js  → Domain constants
-*.config.js     → Service configuration
-```
-
-**Pattern Compliance:**
-
-| Pattern | Expected | Actual | Compliance |
-|---------|----------|--------|------------|
-| `*.service.js` for client | Yes | 18 files | 90% |
-| `*.server.js` for server | Yes | 25 files | 85% |
-| Mixed patterns | No | 12 files | VIOLATION |
-
-#### 3.5 Authentication Architecture
-
-Authentication is implemented as a multi-layered system spanning 36 files:
-
-```
-core/auth/
-├── capabilities.js                           # Auth capability detection
-├── oauth-callback.js                         # OAuth callback handler
-├── oauth-providers.js                        # Provider configuration
-├── route-notice.js                           # Route notice utilities
-├── clients/                                  # Browser-side (5 files)
-│   ├── audit.client.js                       # Client-side audit logging
-│   ├── auth-route-notice.client.js           # Route notice handling
-│   ├── csrf.client.js                        # CSRF token management
-│   ├── pending-account.client.js             # Pending account state
-│   └── pending-provider-link.client.js       # OAuth linking state
-└── servers/                                  # Server-side (27 files)
-    ├── account/                              # Account operations (4 files)
-    │   ├── account-bootstrap.server.js       # Account initialization
-    │   ├── account-deletion.server.js        # Account deletion
-    │   ├── account-lifecycle.server.js       # Lifecycle management
-    │   └── account-state.server.js           # State queries
-    ├── audit/                                # Audit logging (1 file)
-    │   └── audit-log.server.js
-    ├── notice/                               # Route notices (1 file)
-    │   └── auth-route-notice.server.js
-    ├── policy/                               # Access policies (1 file)
-    │   └── auth-route-policy.server.js
-    ├── providers/                            # OAuth providers (2 files)
-    │   ├── google-auth-intent.server.js
-    │   └── google-provider.server.js
-    ├── security/                             # Security utilities (6 files)
-    │   ├── csrf.server.js                    # CSRF validation
-    │   ├── password-security.server.js       # Password hashing
-    │   ├── rate-limit-policies.server.js     # Rate limit definitions
-    │   ├── rate-limit.server.js              # Rate limiter
-    │   ├── recent-reauth.server.js           # Re-authentication
-    │   └── step-up.server.js                 # Step-up auth
-    ├── session/                              # Session management (5 files)
-    │   ├── authenticated-request.server.js   # Request context
-    │   ├── request-context.server.js         # Context utilities
-    │   ├── revocation.server.js              # Session revocation
-    │   ├── session.server.js                 # Session CRUD
-    │   └── supabase-admin-auth.server.js     # Admin operations
-    └── verification/                         # Verification flows (6 files)
-        ├── email-sender.server.js            # Email dispatch
-        ├── email-verification.server.js      # Email verification
-        ├── login-verification.server.js      # Login verification
-        ├── password-account.server.js        # Password operations
-        ├── password-reset-proof.server.js    # Password reset
-        └── signup-proof.server.js            # Signup verification
-```
-
-**Complexity Assessment:**
-
-| Metric | Value | Industry Benchmark | Assessment |
-|--------|-------|-------------------|------------|
-| Total auth files | 36 | 8-15 | Over-engineered |
-| Directory depth | 4 levels | 2-3 levels | Excessive nesting |
-| Subdirectories | 8 | 2-4 | Fragmented |
-| Average file size | 45 LOC | 80-150 LOC | Under-consolidated |
 
 ---
 
-### 4. Naming Convention Analysis
+## 4. Naming Convention Analysis
 
-#### 4.1 Current Naming Patterns Inventory
+### 4.1 Current Patterns Inventory
 
-The codebase exhibits **14 distinct naming patterns** with inconsistent application:
+The codebase exhibits **14 distinct naming patterns**:
 
-**Pattern 1: Environment Suffix (`.server.js` / `.client.js`)**
-```
-Files using this pattern: 62 files
-Examples:
-  ✓ account-bootstrap.server.js
-  ✓ csrf.client.js
-  ✓ browser-data.server.js
-  ✗ audit.client.js (inconsistent with audit-log.server.js)
-```
+| Pattern | Files | Examples | Issue |
+|---------|-------|----------|-------|
+| Environment suffix `.server.js` / `.client.js` | 62 | `account-bootstrap.server.js` | Good |
+| Type suffix `.service.js` / `.constants.js` | 35 | `account.service.js` | Good |
+| Bare `index.js` barrels | 45+ | Various directories | Acceptable |
+| Kebab-case components | ~200 | `media-card.js`, `hero-spotlight.js` | Good |
+| `use-` prefix hooks | 35 | `use-click-outside.js` | Good |
+| Plugin suffix `.plugin.js` | 10 | `nav.plugin.js` | Good |
+| **Ambiguous `client.js`** | 29 | `app/(home)/client.js` | **Problem** |
+| **Ambiguous `registry.js`** | 26 | `app/(media)/movie/[id]/registry.js` | **Problem** |
+| **Ambiguous `view.js`** | 14 | `app/(account)/account/[username]/view.js` | **Problem** |
+| **Bare `utils.js`** | 5 | `features/account/utils.js` | **Problem** |
+| Non-standard `parts/` | 8 | `features/reviews/parts/` | **Problem** |
+| Non-standard `shared/` | 8 | `features/account/shared/` | **Minor** |
+| Bare noun feeds | 8 | `features/account/feeds/activity.js` | **Minor** |
+| Mixed concerns in utils | 4 | `features/account/utils.js` (400+ LOC) | **Problem** |
 
-**Pattern 2: Type Suffix (`.service.js` / `.constants.js` / `.config.js`)**
-```
-Files using this pattern: 35 files
-Examples:
-  ✓ account.service.js
-  ✓ activity-events.constants.js
-  ✓ realtime-transport.config.js
-  ✗ activity.service.js (should be activity-events.service.js for consistency)
-```
+### 4.2 Naming Problems Matrix
 
-**Pattern 3: Bare Noun (`index.js`)**
-```
-Files using this pattern: 45+ files
-Examples:
-  index.js (re-export barrel files)
-  Used in: ui/animations/, ui/elements/, core/modules/*/
-```
+| Problem | Severity | Files | Impact |
+|---------|----------|-------|--------|
+| Ambiguous route `client.js` | **High** | 29 | Impossible to identify route from filename |
+| Ambiguous route `registry.js` | **High** | 26 | Same as above |
+| Ambiguous route `view.js` | **High** | 14 | Same as above |
+| Generic `utils.js` without domain prefix | **Medium** | 5 | Loss of searchability |
+| `parts/` vs `components/` inconsistency | **Low** | 8 | Confusing structure |
+| `.client.js` suffix vs `client.js` file | **High** | Mixed | Pattern collision |
 
-**Pattern 4: Kebab-Case Feature Names**
-```
-Files using this pattern: ~200 files
-Examples:
-  ✓ media-card.js
-  ✓ hero-spotlight.js
-  ✓ segmented-control.js
-  ✗ accountsummary.js (should be account-summary.js) - NOT FOUND, but pattern violation risk
-```
+### 4.3 Professional Naming Standards
 
-**Pattern 5: `use-` Prefix for Hooks**
-```
-Files using this pattern: 35 files
-Examples:
-  ✓ use-click-outside.js
-  ✓ use-debounce.js
-  ✓ use-navigation.js
-  ✓ use-media-reviews.js
-```
-
-**Pattern 6: Plugin Suffix (`.plugin.js`)**
-```
-Files using this pattern: 10 files
-Location: core/modules/registry/plugins/
-Examples:
-  ✓ nav.plugin.js
-  ✓ modal.plugin.js
-  ✓ background.plugin.js
-```
-
-**Pattern 7: Route File Convention (`page.js`, `client.js`, `view.js`, `registry.js`)**
-```
-Files using this pattern: 110+ files
-Examples:
-  ✓ page.js (Next.js convention)
-  ✓ loading.js (Next.js convention)
-  ✗ client.js (project-specific, not industry standard)
-  ✗ registry.js (project-specific, not industry standard)
-  ✗ view.js (project-specific, ambiguous purpose)
-```
-
-**Pattern 8: Adapter Suffix**
-```
-Files using this pattern: 5 files
-Examples:
-  ✓ create-adapter.js
-  ✓ api-adapter.js
-  ✓ supabase-adapter.js
-```
-
-**Pattern 9: Action/Container Patterns**
-```
-Files using this pattern: 15 files
-Examples:
-  ✓ container.js (in navigation/actions/)
-  ✓ media-action.js
-  ✓ account-action.js
-```
-
-**Pattern 10: Parts Subdirectory**
-```
-Files using this pattern: 8 files
-Location: features/reviews/parts/
-Examples:
-  rating-selector.js
-  review-card.js
-  review-composer.js
-  Problem: Inconsistent - other features don't use "parts/" subdirectory
-```
-
-**Pattern 11: Shared Subdirectory**
-```
-Files using this pattern: 20+ files
-Locations: features/account/shared/, features/shared/
-Examples:
-  ✓ hero.js (in features/account/shared/)
-  ✓ media-grid.js (in features/account/shared/)
-  ✗ media-card.js (in features/shared/ - different location)
-```
-
-**Pattern 12: Feed Naming**
-```
-Files using this pattern: 8 files
-Location: features/account/feeds/
-Examples:
-  activity.js (should be activity-feed.js for clarity)
-  likes.js (should be likes-feed.js)
-  lists.js (should be lists-feed.js)
-```
-
-**Pattern 13: Inconsistent Capitalization in Directories**
-```
-All directories use lowercase-kebab-case: CONSISTENT ✓
-```
-
-**Pattern 14: Mixed Concerns in Single Files**
-```
-Problem files:
-  features/account/utils.js → contains both utilities AND constants
-  features/auth/utils.js → contains both utilities AND validation
-  core/services/shared/data-utils.js → too generic
-```
-
-#### 4.2 Naming Convention Problems Matrix
-
-| Problem | Severity | Files Affected | Example |
-|---------|----------|----------------|---------|
-| Ambiguous `client.js` in routes | High | 29 files | `app/(home)/client.js` - what client? |
-| Ambiguous `view.js` in routes | High | 14 files | `app/(media)/movie/[id]/view.js` - view of what? |
-| Generic `index.js` proliferation | Medium | 45+ files | Loss of searchability |
-| Inconsistent `.service.js` application | Medium | 18 files | `activity.service.js` vs `activity-events.service.js` |
-| `parts/` subdirectory inconsistency | Low | 8 files | Only in `features/reviews/` |
-| Bare noun files in feeds | Low | 8 files | `activity.js` vs `activity-feed.js` |
-| `.client.js` vs `client.js` confusion | High | Mixed | Route `client.js` ≠ `*.client.js` suffix |
-| Generic `utils.js` files | Medium | 12 files | No domain prefix |
-
-#### 4.3 Professional Naming Standard Comparison
-
-**Industry Standard (Recommended):**
+**Target Standard:**
 
 | Category | Pattern | Example |
 |----------|---------|---------|
-| Route Client Components | `{route-name}.client.tsx` | `movie-detail.client.js` |
-| Route View Components | Inline or `{route-name}.view.tsx` | `movie-detail.view.js` |
-| Server Services | `{domain}.server.ts` | `account.server.js` |
-| Client Services | `{domain}.client.ts` | `account.client.js` |
-| React Hooks | `use-{action}.ts` | `use-account-data.js` |
-| Constants | `{domain}.constants.ts` | `auth.constants.js` |
-| Types | `{domain}.types.ts` | `account.types.ts` |
-| Utilities | `{domain}.utils.ts` | `string.utils.js` |
-| Components | `{ComponentName}.tsx` (PascalCase) or `{component-name}.tsx` (kebab) | `MediaCard.js` or `media-card.js` |
-
-**Current Tvizzie vs Professional Standard:**
-
-| Aspect | Current | Professional | Gap |
-|--------|---------|--------------|-----|
-| Route files | `client.js`, `view.js` | `{route}.client.js`, `{route}.view.js` | Missing route prefix |
-| Services | Mixed patterns | Consistent `.server.js` / `.client.js` | 85% compliant |
-| Hooks | `use-*.js` | `use-*.ts` | Naming OK, lacks TypeScript |
-| Utils | `utils.js` | `{domain}.utils.js` | Missing domain prefix |
-| Constants | `constants.js` | `{domain}.constants.js` | Missing domain prefix |
-| Feeds | `activity.js` | `activity.feed.js` | Missing type suffix |
+| Route client components | `{route-name}.client.js` | `movie-detail.client.js` |
+| Route registry files | `{route-name}.registry.js` | `movie-detail.registry.js` |
+| Route view files | `{route-name}.view.js` | `movie-detail.view.js` |
+| Server services | `{domain}.server.js` | `account.server.js` |
+| Client services | `{domain}.service.js` | `account.service.js` |
+| Domain utilities | `{domain}.utils.js` | `account.utils.js` |
+| Domain constants | `{domain}.constants.js` | `auth.constants.js` |
+| React hooks | `use-{action}.js` | `use-nav-layout.js` |
+| Components | `{component-name}.js` (kebab) | `media-card.js` |
+| Subcomponent directories | `components/` | NOT `parts/` or `shared/` |
 
 ---
 
-### 5. Identified Structural Problems
+## 5. Identified Structural Problems
 
-#### 5.1 File Count Inflation
+### 5.1 File Count Inflation
 
-**Problem:** The codebase contains 539 JavaScript files for a medium-complexity application. Industry benchmarks suggest 180-280 files would be appropriate for this feature set.
-
-**Detailed Analysis:**
-
-| Directory | File Count | Expected | Excess |
-|-----------|------------|----------|--------|
+| Directory | Current | Expected | Excess |
+|-----------|---------|----------|--------|
 | `app/` routes | 160 | 60-80 | +80-100 |
 | `core/modules/` | 143 | 50-70 | +73-93 |
 | `core/auth/` | 36 | 10-15 | +21-26 |
 | `core/services/` | 55 | 30-40 | +15-25 |
-| `features/` | 121 | 80-100 | +21-41 |
+| `features/` | 124 | 80-100 | +24-44 |
 | `ui/` | 28 | 25-35 | OK |
-| Total | 539 | 180-280 | +259-359 |
+| **Total** | **539** | **180-280** | **+259-359** |
 
-**Root Causes:**
+### 5.2 Import Boundary Violations
 
-1. **Mandatory route file split** (estimated +80 files)
-   - Every route requires `client.js` + `registry.js` + `view.js`
-   - Could be reduced to 1-2 files per route
+**Confirmed Violations:**
 
-2. **Auth system fragmentation** (estimated +25 files)
-   - 36 files for authentication
-   - Could be consolidated to 10-12 files
+| Source | Target | Type |
+|--------|--------|------|
+| `ui/skeletons/views/account.js` | `@/features/account/utils` | `ui/ → features/` |
+| `ui/skeletons/views/account.js` | `@/features/layout/page-gradient-backdrop` | `ui/ → features/` |
+| `services/account/account.service.js` | `@/features/account/utils` | `services/ → features/` |
 
-3. **Navigation hook explosion** (estimated +10 files)
-   - 13 separate hook files in `core/modules/nav/hooks/`
-   - Could be consolidated to 3-4 files
+**Required Dependency Rules:**
 
-4. **Registry plugin proliferation** (estimated +8 files)
-   - 10 plugin files for registry system
-   - Could be reduced to 4-5 files
+| Layer | May Import From | Must NOT Import From |
+|-------|-----------------|---------------------|
+| `ui/` | `ui/`, `lib/` | `features/`, `modules/`, `services/` |
+| `lib/` | `lib/` | `modules/`, `services/`, `features/`, `app/` |
+| `services/` | `services/`, `lib/` | `features/`, `modules/`, `app/` |
+| `modules/` | `modules/`, `lib/`, `ui/` | `features/`, `services/`, `app/` |
+| `features/` | `features/`, `modules/`, `services/`, `lib/`, `ui/` | `app/` |
+| `app/` | Everything | — |
 
-5. **Service over-decomposition** (estimated +15 files)
-   - Excessive service file splitting
-   - Many single-function files
+### 5.3 The `core/` Directory Problem
 
-#### 5.2 Inconsistent Module Boundaries
+The `core/` directory conflates multiple distinct concerns:
 
-**Problem:** Ownership between `core/`, `features/`, `ui/`, and route-local code is unclear.
+| Current | Should Be | Semantics |
+|---------|-----------|-----------|
+| `core/modules/` | `modules/` | Runtime React state providers |
+| `core/services/` | `services/` | Data access layer |
+| `core/auth/` | `lib/auth/` | Auth infrastructure (library) |
+| `core/clients/` | `lib/clients/` | External API clients |
+| `core/hooks/` | `lib/hooks/` | Shared React hooks |
+| `core/utils/` | `lib/utils/` | Pure utility functions |
+| `core/constants/` | `lib/constants/` | Shared constants |
 
-**Documented Violations:**
+### 5.4 Mixed-Concern Utility Files
 
-| Source File | Target Import | Violation |
-|-------------|---------------|-----------|
-| `ui/skeletons/views/account.js` | `@/features/account/utils` | ui → features |
-| `ui/skeletons/views/account.js` | `@/features/layout/` | ui → features |
-| `core/services/account/account.service.js` | `@/features/account/utils` | services → features |
-| `features/navigation/surfaces/account-bio-surface.js` | `@/features/account/registry-config.js` | Cross-feature coupling |
+**`features/account/utils.js` (400+ LOC) contains:**
+- Constants (`EDIT_TABS`, `AUTH_PURPOSE`, `EMAIL_PATTERN`, etc.)
+- URL builders (`buildListCreatorHref`, `buildAccountCollectionPageHref`)
+- API fetch functions (`deleteAccountRequest`, `completeEmailChangeRequest`)
+- Data formatters (`sortAccountItems`, `formatPaginationSummaryLabel`)
+- Validation functions (`validatePassword`)
+- Event emitters (`emitAccountFeedback`, `clearAccountFeedback`)
+- Error resolvers (`resolveSecurityErrorMessage`)
 
-**Intended Dependency Graph:**
-```
-app → features, modules, services, ui, lib, config
-features → features, modules, services, ui, lib, config
-modules → modules, ui, lib, config
-services → services, lib, config
-ui → ui, lib, config
-lib → lib, config
-config → (standalone)
-```
+This is a dumping ground that violates single-responsibility.
 
-**Actual Violations Count:**
-- `ui/ → features/`: 2 violations
-- `services/ → features/`: 1 violation
-- Circular risk zones: 3 identified
+### 5.5 Code Quality Metrics
 
-#### 5.3 Abstraction Overhead
+**Duplication Patterns:**
 
-**Problem:** Multi-layer abstraction chains increase cognitive load without proportional benefit.
+| Pattern | Files | Duplicated LOC |
+|---------|-------|----------------|
+| `useRegistry()` boilerplate | 26 | ~520 |
+| `loading.js` skeleton rendering | 22 | ~330 |
+| API route auth checks | 42 | ~420 |
+| Registry config objects | 26 | ~780 |
 
-**Account Page Render Chain (11 layers):**
-```
-page.js 
-  → Client (client.js)
-    → AccountClient
-      → Registry (registry.js) 
-        → useRegistry()
-          → RegistryInjector
-            → ProfileLayout (features/account/shared/layout.js)
-              → HeroSection (features/account/shared/hero.js)
-                → ProfileHero
-                  → MediaGrid (features/account/shared/media-grid.js)
-                    → MediaCard (features/shared/media-card.js)
-```
+**File Size Distribution:**
 
-**Movie Detail Page Render Chain (10 layers):**
-```
-page.js
-  → Client (client.js)
-    → MovieClient
-      → Registry (registry.js)
-        → useRegistry()
-          → MovieDetailView (view.js)
-            → MovieSidebar (features/movie/sidebar.js)
-              → CollectionActions (features/movie/collection-actions.js)
-                → MovieMotion (features/movie/movie-motion.js)
-```
+| Range | Count | % |
+|-------|-------|---|
+| 1-25 LOC | 85 | 16% |
+| 26-50 LOC | 110 | 20% |
+| 51-100 LOC | 145 | 27% |
+| 101-200 LOC | 120 | 22% |
+| 201-400 LOC | 55 | 10% |
+| 400+ LOC | 24 | 4% |
 
-**Impact Assessment:**
-- Debugging requires tracing through 8-11 files
-- New developer onboarding time increased ~40%
-- Hot reload cycles affected by deep nesting
-
-#### 5.4 Configuration Fragmentation
-
-**Problem:** Six separate config files with overlapping concerns:
-
-| Config File | LOC | Exports | Primary Purpose |
-|-------------|-----|---------|-----------------|
-| `config/account.config.js` | ~60 | 3 | Account adapter bindings |
-| `config/auth.config.js` | ~45 | 5 | Auth provider configuration |
-| `config/nav.config.js` | ~120 | 8 | Navigation item definitions |
-| `config/project.config.js` | ~80 | 12 | Feature flags, debug settings |
-| `config/provider.config.js` | ~35 | 4 | Auth provider type checks |
-| `config/rollout.config.js` | ~50 | 6 | Feature rollout gates |
-
-**Overlap Analysis:**
-- `project.config.js` and `rollout.config.js` both handle feature flags
-- `auth.config.js` and `provider.config.js` both configure auth providers
-- `account.config.js` is tightly coupled to auth configuration
-
-#### 5.5 Route-Local vs Reusable Code Confusion
-
-**Problem:** `registry.js` files across routes duplicate configuration patterns with minor variations.
-
-**Comparison: Account Page Registry vs Lists Page Registry**
-
-```javascript
-// app/(account)/account/[username]/registry.js (simplified)
-export function useAccountRegistry({ user, isOwner }) {
-  return useRegistry({
-    nav: {
-      items: getAccountNavItems(user),
-      actions: isOwner ? getOwnerActions() : getVisitorActions(),
-      background: { type: 'gradient', color: user.accentColor }
-    },
-    modal: { available: ['settings', 'feedback'] },
-    guard: { requireAuth: false }
-  });
-}
-
-// app/(account)/account/[username]/lists/registry.js (simplified)
-export function useListsRegistry({ user, isOwner }) {
-  return useRegistry({
-    nav: {
-      items: getAccountNavItems(user),        // SAME
-      actions: isOwner ? getOwnerActions() : getVisitorActions(),  // SAME
-      background: { type: 'gradient', color: user.accentColor }    // SAME
-    },
-    modal: { available: ['settings', 'feedback', 'listEditor'] },  // +1 modal
-    guard: { requireAuth: false }             // SAME
-  });
-}
-```
-
-**Overlap Percentage:** ~85% identical code across registry files
+**195 files (36%) are under 50 LOC** — consolidation opportunity.
 
 ---
 
-### 6. Dependency Flow Analysis
-
-#### 6.1 Import Graph Statistics
-
-| Source Directory | Total Imports | Internal Imports | External Imports |
-|------------------|---------------|------------------|------------------|
-| `app/` | ~450 | ~380 | ~70 |
-| `features/` | ~320 | ~280 | ~40 |
-| `core/modules/` | ~250 | ~210 | ~40 |
-| `core/services/` | ~180 | ~150 | ~30 |
-| `core/auth/` | ~120 | ~100 | ~20 |
-| `ui/` | ~80 | ~65 | ~15 |
-
-#### 6.2 Circular Dependency Risk Zones
-
-**Zone 1: Account Registry Cycle**
-```
-features/account/registry-config.js
-    ↓ imports
-features/navigation/surfaces/account-bio-surface.js
-    ↓ imports
-features/account/shared/hero.js
-    ↓ imports (risk)
-features/account/registry-config.js
-```
-**Status:** Not currently circular, but fragile
-
-**Zone 2: Navigation Module Cycle**
-```
-core/modules/nav/context.js
-    ↓ imports
-core/modules/nav/hooks/use-navigation.js
-    ↓ imports
-features/navigation/actions/*.js
-    ↓ imports (risk)
-core/modules/nav/context.js
-```
-**Status:** Currently blocked by barrel exports, but architecturally fragile
-
-#### 6.3 Import Depth Analysis
-
-| Max Import Depth | Count | Example Path |
-|------------------|-------|--------------|
-| 1 level | 120 | `app/page.js → features/home/hero.js` |
-| 2 levels | 180 | `app/page.js → features/home/hero.js → ui/button/index.js` |
-| 3 levels | 150 | `page → feature → module → hook` |
-| 4+ levels | 80 | `page → client → registry → module → hook → context` |
+# PART 2: RESTRUCTURING IMPLEMENTATION PLAN
 
 ---
 
-### 7. Code Quality Metrics
+## Pre-Flight Verification
 
-#### 7.1 Duplication Patterns
+Before starting, establish baseline:
 
-| Pattern | Occurrences | Total Duplicated LOC | Impact |
-|---------|-------------|---------------------|--------|
-| `useRegistry()` boilerplate | 26 files | ~520 LOC | High |
-| `loading.js` skeleton rendering | 22 files | ~330 LOC | Medium |
-| API route auth checks | 42 files | ~420 LOC | Medium |
-| Supabase query wrappers | 15 files | ~225 LOC | Medium |
-| Registry config objects | 26 files | ~780 LOC | High |
-| Error boundary setup | 8 files | ~120 LOC | Low |
-
-**Total Estimated Duplicated LOC:** ~2,400 lines
-
-#### 7.2 File Size Distribution
-
-| Size Range | Count | Percentage | Example Files |
-|------------|-------|------------|---------------|
-| 1-25 LOC | 85 | 16% | Index re-exports, simple configs |
-| 26-50 LOC | 110 | 20% | Route stubs, simple hooks |
-| 51-100 LOC | 145 | 27% | Components, services |
-| 101-200 LOC | 120 | 22% | Complex components, services |
-| 201-400 LOC | 55 | 10% | Feature modules, TMDB client |
-| 400+ LOC | 24 | 4% | Account service, major views |
-
-**Files Under 50 LOC Analysis:**
-- 195 files (36%) are under 50 LOC
-- Many are single-function or single-export files
-- Consolidation opportunity: ~100 files could be merged
-
-#### 7.3 Complexity Hotspots
-
-| File | LOC | Cyclomatic Complexity | Recommendation |
-|------|-----|----------------------|----------------|
-| `core/clients/tmdb/server.js` | ~450 | 25+ | Split into domain modules |
-| `core/services/account/account.service.js` | ~380 | 20+ | Extract query builders |
-| `core/modules/nav/hooks/use-navigation.js` | ~280 | 18+ | Decompose into focused hooks |
-| `features/navigation/actions/search-action/index.js` | ~320 | 15+ | Extract search logic |
-| `core/auth/servers/security/rate-limit.server.js` | ~250 | 12+ | OK, complex by nature |
-
----
-
-## PART 2: COMPREHENSIVE RESTRUCTURING IMPLEMENTATION PLAN
-
----
-
-### Implementation Philosophy
-
-This plan follows these principles:
-1. **Minimal disruption** - Work in phases that leave the app functional between changes
-2. **Naming-first** - Establish naming conventions before structural changes
-3. **Dependency-aware** - Fix import violations before moving files
-4. **Testable checkpoints** - Each phase ends with a verifiable build/runtime state
-
----
-
-### Phase 0: Establish Professional Naming Conventions
-
-**Objective:** Define and document the naming standard before any restructuring.
-
-#### 0.1 File Naming Standard Definition
-
-**Category: Route Files**
-
-| Current | New | Rationale |
-|---------|-----|-----------|
-| `client.js` | `{route-name}.client.js` | Explicit route association |
-| `view.js` | Eliminated (inline) or `{route-name}.view.js` | Remove ambiguity |
-| `registry.js` | Eliminated (centralized) | Reduce duplication |
-| `page.js` | `page.js` (keep) | Next.js convention |
-| `loading.js` | `loading.js` (keep) | Next.js convention |
-| `error.js` | `error.js` (keep) | Next.js convention |
-
-**Examples:**
-```
-BEFORE:
-app/(media)/movie/[id]/
-├── page.js
-├── client.js      ← What client? Ambiguous
-├── view.js        ← View of what? Ambiguous
-├── registry.js    ← Duplicated boilerplate
-├── loading.js
-└── error.js
-
-AFTER:
-app/(media)/movie/[id]/
-├── page.js
-├── movie-detail.client.js    ← Clear: Movie detail client component
-├── loading.js
-└── error.js
+```bash
+pnpm build 2>&1 | tail -20
+# Must succeed with zero errors before proceeding
 ```
 
-**Category: Service Files**
-
-| Pattern | Usage | Example |
-|---------|-------|---------|
-| `{domain}.server.js` | Server-only code (RSC, API routes) | `account.server.js` |
-| `{domain}.service.js` | Client-side service (API calls) | `account.service.js` |
-| `{domain}.constants.js` | Domain constants | `activity.constants.js` |
-| `{domain}.types.js` | TypeScript types (future) | `account.types.js` |
-
-**Category: Hook Files**
-
-| Pattern | Usage | Example |
-|---------|-------|---------|
-| `use-{action}.js` | Single-purpose hooks | `use-account-data.js` |
-| `use-{domain}-{action}.js` | Domain-scoped hooks | `use-nav-layout.js` |
-
-**Category: Component Files**
-
-| Pattern | Usage | Example |
-|---------|-------|---------|
-| `{component-name}.js` | Kebab-case components | `media-card.js` |
-| `{domain}-{component}.js` | Domain-prefixed | `account-hero.js` |
-
-**Category: Utility Files**
-
-| Pattern | Usage | Example |
-|---------|-------|---------|
-| `{domain}.utils.js` | Domain-scoped utilities | `account.utils.js` |
-| `{purpose}.utils.js` | Purpose-scoped utilities | `string.utils.js` |
-
-**Category: Configuration Files**
-
-| Pattern | Usage | Example |
-|---------|-------|---------|
-| `{domain}.config.js` | Domain configuration | `auth.config.js` |
-| `app.config.js` | Application-wide config | `app.config.js` |
-
-#### 0.2 Directory Naming Standard
-
-| Current | New | Rationale |
-|---------|-----|-----------|
-| `core/` | ELIMINATED | Conflates multiple concerns |
-| `core/modules/` | `modules/` | Clearer top-level location |
-| `core/services/` | `services/` | Clearer top-level location |
-| `core/auth/` | `lib/auth/` | Auth is a library, not a module |
-| `core/clients/` | `lib/clients/` | Clients are libraries |
-| `core/hooks/` | `lib/hooks/` | Shared hooks are utilities |
-| `core/utils/` | `lib/utils/` | Utilities belong in lib |
-| `core/constants/` | `lib/constants/` | Constants are utilities |
-| `features/*/parts/` | `features/*/` (flatten) | Remove unnecessary nesting |
-| `features/*/shared/` | `features/*/components/` | More descriptive |
-
-#### 0.3 Create Naming Convention Document
-
-**Action:** Create `NAMING_CONVENTIONS.md` at project root.
-
-**File Content:**
-```markdown
-# Tvizzie Naming Conventions
-
-## File Naming
-
-### Route Files
-- `page.js` - Route entry point (Next.js convention)
-- `{route-name}.client.js` - Client component for route
-- `loading.js` - Loading state (Next.js convention)
-- `error.js` - Error boundary (Next.js convention)
-- `not-found.js` - 404 handler (Next.js convention)
-
-### Service Files
-- `{domain}.server.js` - Server-only operations
-- `{domain}.service.js` - Client-side API calls
-- `{domain}.constants.js` - Domain constants
-
-### Hook Files
-- `use-{action}.js` - Hook files with use- prefix
-- `use-{domain}-{action}.js` - Domain-scoped hooks
-
-### Component Files
-- `{component-name}.js` - Kebab-case component files
-- `{domain}-{type}.js` - Domain-prefixed components
-
-### Utility Files
-- `{domain}.utils.js` - Domain-scoped utilities
-
-## Directory Structure
-- `app/` - Next.js routes only
-- `features/` - Domain-specific UI composition
-- `modules/` - Runtime state providers
-- `services/` - Data access layer
-- `lib/` - Pure utilities and shared code
-- `ui/` - Reusable presentational primitives
-- `config/` - Configuration files
-
-## Import Boundaries
-- `ui/` MUST NOT import from `features/` or `services/`
-- `lib/` MUST NOT import from `modules/`, `services/`, or `features/`
-- `services/` MUST NOT import from `features/`
-```
-
----
-
-### Phase 1: Pre-Migration Setup and Tracking
-
-#### 1.1 Create Migration Tracking Infrastructure
-
-**Action:** Create migration directory with tracking files.
-
-**Directory Structure:**
-```
-migration/
-├── manifest.json              # Tracks all file operations
-├── import-updates.json        # Tracks import path changes
-├── validation-checklist.md    # QA checkpoints
-├── rollback-instructions.md   # Emergency rollback guide
-└── phase-status.json          # Phase completion tracking
-```
-
-**File: `migration/manifest.json`**
-```json
-{
-  "version": "1.0.0",
-  "startDate": "2024-XX-XX",
-  "phases": [
-    {
-      "id": 0,
-      "name": "Naming Conventions",
-      "status": "pending",
-      "operations": []
-    },
-    {
-      "id": 1,
-      "name": "Pre-Migration Setup",
-      "status": "pending",
-      "operations": []
-    }
-  ],
-  "totalFilesExpected": 539,
-  "targetFileCount": 280
-}
-```
-
-**File: `migration/validation-checklist.md`**
-```markdown
-# Migration Validation Checklist
-
-## After Each Phase
-
-- [ ] `pnpm build` completes without errors
-- [ ] `pnpm dev` starts successfully
-- [ ] No console errors on page load
-- [ ] Critical paths functional:
-  - [ ] Home page loads (/)
-  - [ ] Movie detail loads (/movie/123)
-  - [ ] Person detail loads (/person/123)
-  - [ ] Account page loads (/account/username)
-  - [ ] Sign in works (/sign-in)
-  - [ ] Search works (/search)
-
-## Import Boundary Verification
-
-- [ ] `ui/` has no imports from `features/`
-- [ ] `lib/` has no imports from `modules/`, `services/`, `features/`
-- [ ] `services/` has no imports from `features/`
-```
-
-#### 1.2 Document Current Import Aliases
-
-**Action:** Read and document current `jsconfig.json` paths.
-
-**Expected Current State:**
+Verify current `jsconfig.json` paths:
 ```json
 {
   "compilerOptions": {
@@ -1012,1216 +451,787 @@ migration/
 }
 ```
 
-**Target State (end of migration):**
+---
+
+## PHASE 1 — Eliminate `core/` Directory
+
+**Risk:** Medium. Highest impact. Touches ~250+ import statements.
+**Duration:** 2-3 hours.
+
+### Step 1.1 — Move `core/modules/` → `modules/`
+
+```bash
+cp -r core/modules modules
+find core/modules -name "*.js" | wc -l
+find modules -name "*.js" | wc -l
+# Counts must match
+```
+
+Global find-replace in all `.js` files:
+```
+@/core/modules/ → @/modules/
+```
+
+Verify:
+```bash
+grep -r "@/core/modules/" app features ui config --include="*.js" | wc -l
+# Must be 0
+pnpm build
+```
+
+Delete original:
+```bash
+rm -rf core/modules
+```
+
+### Step 1.2 — Move `core/services/` → `services/`
+
+```bash
+cp -r core/services services
+```
+
+Global find-replace:
+```
+@/core/services/ → @/services/
+```
+
+Verify:
+```bash
+grep -r "@/core/services/" . --include="*.js" --exclude-dir=node_modules --exclude-dir=.next | wc -l
+# Must be 0
+pnpm build
+```
+
+Delete original:
+```bash
+rm -rf core/services
+```
+
+### Step 1.3 — Move `core/auth/` → `lib/auth/`
+
+```bash
+mkdir -p lib
+cp -r core/auth lib/auth
+```
+
+Global find-replace:
+```
+@/core/auth/ → @/lib/auth/
+```
+
+Verify and delete original.
+
+### Step 1.4 — Move `core/clients/` → `lib/clients/`
+
+```bash
+cp -r core/clients lib/clients
+```
+
+Global find-replace:
+```
+@/core/clients/ → @/lib/clients/
+```
+
+Verify and delete original.
+
+### Step 1.5 — Move `core/hooks/`, `core/utils/`, `core/constants/`, `core/index.js`
+
+```bash
+cp -r core/hooks lib/hooks
+cp -r core/utils lib/utils
+cp -r core/constants lib/constants
+cp core/index.js lib/index.js
+```
+
+Global find-replace:
+```
+@/core/hooks/ → @/lib/hooks/
+@/core/utils/ → @/lib/utils/
+@/core/constants/ → @/lib/constants/
+@/core/utils' → @/lib/utils'
+@/core/constants' → @/lib/constants'
+```
+
+Verify no remaining `@/core/` references:
+```bash
+grep -r "@/core/" . --include="*.js" --exclude-dir=node_modules --exclude-dir=.next | grep -v "^./core/"
+# Must return 0 lines
+pnpm build
+```
+
+Delete remaining:
+```bash
+rm -rf core/hooks core/utils core/constants core/index.js
+rmdir core 2>/dev/null || echo "core/ has remaining files — inspect before deleting"
+```
+
+### Step 1.6 — Update jsconfig.json
+
+Remove the `@/core/*` alias if present:
 ```json
 {
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/app/*": ["app/*"],
-      "@/features/*": ["features/*"],
-      "@/modules/*": ["modules/*"],
-      "@/services/*": ["services/*"],
-      "@/lib/*": ["lib/*"],
-      "@/ui/*": ["ui/*"],
-      "@/config/*": ["config/*"]
+      "@/*": ["./*"]
     }
   }
 }
 ```
 
----
+### Phase 1 Validation
 
-### Phase 2: Eliminate `core/` Directory
-
-**Objective:** Redistribute `core/` contents to appropriate top-level directories.
-
-#### 2.1 Extract `core/modules/` → `modules/`
-
-**Files to Move (143 files):**
-
-| Source | Destination | Notes |
-|--------|-------------|-------|
-| `core/modules/account/*` (6 files) | `modules/account/*` | Account state management |
-| `core/modules/api/*` (2 files) | `modules/api/*` | API caching |
-| `core/modules/auth/*` (11 files) | `modules/auth/*` | Auth context |
-| `core/modules/background/*` (2 files) | `modules/background/*` | Background state |
-| `core/modules/context-menu/*` (3 files) | `modules/context-menu/*` | Context menu |
-| `core/modules/countdown/*` (4 files) | `modules/countdown/*` | Countdown |
-| `core/modules/error-boundary/*` (5 files) | `modules/error-boundary/*` | Error handling |
-| `core/modules/loading/*` (2 files) | `modules/loading/*` | Loading state |
-| `core/modules/modal/*` (7 files) | `modules/modal/*` | Modal system |
-| `core/modules/nav/*` (26 files) | `modules/nav/*` | Navigation |
-| `core/modules/notification/*` (5 files) | `modules/notification/*` | Notifications |
-| `core/modules/registry/*` (14 files) | `modules/registry/*` | Registry system |
-| `core/modules/settings/*` (6 files) | `modules/settings/*` | Settings |
-
-**Execution Instructions:**
-
-```
-1. Create modules/ directory at project root
-2. For each subdirectory in core/modules/:
-   a. Copy directory to modules/
-   b. Verify file contents match
-   c. Delete original from core/modules/
-3. Global find-replace: "@/core/modules/" → "@/modules/"
-4. Run: pnpm build
-5. Verify: No import errors
+```bash
+pnpm build
+grep -r "@/core/" . --include="*.js" --exclude-dir=node_modules --exclude-dir=.next | wc -l
+# Must be 0
 ```
 
-**Import Update Pattern:**
-```javascript
-// BEFORE
-import { useAuth } from '@/core/modules/auth';
-import { useRegistry } from '@/core/modules/registry';
-import { useNavigation } from '@/core/modules/nav';
-
-// AFTER
-import { useAuth } from '@/modules/auth';
-import { useRegistry } from '@/modules/registry';
-import { useNavigation } from '@/modules/nav';
-```
-
-**Estimated Impact:** 180+ import statements across 95+ files
-
-#### 2.2 Extract `core/services/` → `services/`
-
-**Files to Move (55 files):**
-
-| Source | Destination | File Count |
-|--------|-------------|------------|
-| `core/services/account/*` | `services/account/*` | 5 |
-| `core/services/activity/*` | `services/activity/*` | 5 |
-| `core/services/admin/*` | `services/admin/*` | 11 |
-| `core/services/browser/*` | `services/browser/*` | 3 |
-| `core/services/feedback/*` | `services/feedback/*` | 1 |
-| `core/services/media/*` | `services/media/*` | 9 |
-| `core/services/notifications/*` | `services/notifications/*` | 5 |
-| `core/services/realtime/*` | `services/realtime/*` | 4 |
-| `core/services/shared/*` | `services/shared/*` | 7 |
-| `core/services/social/*` | `services/social/*` | 2 |
-| `core/services/tmdb/*` | `services/tmdb/*` | 3 |
-
-**Execution Instructions:**
-```
-1. Create services/ directory at project root
-2. Move each subdirectory preserving structure
-3. Global find-replace: "@/core/services/" → "@/services/"
-4. Run: pnpm build
-5. Verify: No import errors
-```
-
-**Estimated Impact:** 120+ import statements across 70+ files
-
-#### 2.3 Extract `core/clients/` → `lib/clients/`
-
-**Files to Move (7 files):**
-
-| Source | Destination |
-|--------|-------------|
-| `core/clients/supabase/admin.js` | `lib/clients/supabase/admin.js` |
-| `core/clients/supabase/client.js` | `lib/clients/supabase/client.js` |
-| `core/clients/supabase/constants.js` | `lib/clients/supabase/constants.js` |
-| `core/clients/supabase/proxy.js` | `lib/clients/supabase/proxy.js` |
-| `core/clients/supabase/server.js` | `lib/clients/supabase/server.js` |
-| `core/clients/tmdb/sanitize.js` | `lib/clients/tmdb/sanitize.js` |
-| `core/clients/tmdb/server.js` | `lib/clients/tmdb/server.js` |
-
-**Execution Instructions:**
-```
-1. Create lib/clients/ directory structure
-2. Move supabase/ and tmdb/ directories
-3. Global find-replace: "@/core/clients/" → "@/lib/clients/"
-4. Run: pnpm build
-```
-
-**Estimated Impact:** 45+ import statements
-
-#### 2.4 Extract `core/auth/` → `lib/auth/`
-
-**Files to Move (36 files):**
-
-**Root Files (4):**
-| Source | Destination |
-|--------|-------------|
-| `core/auth/capabilities.js` | `lib/auth/capabilities.js` |
-| `core/auth/oauth-callback.js` | `lib/auth/oauth-callback.js` |
-| `core/auth/oauth-providers.js` | `lib/auth/oauth-providers.js` |
-| `core/auth/route-notice.js` | `lib/auth/route-notice.js` |
-
-**Client Files (5):**
-| Source | Destination |
-|--------|-------------|
-| `core/auth/clients/audit.client.js` | `lib/auth/clients/audit.client.js` |
-| `core/auth/clients/auth-route-notice.client.js` | `lib/auth/clients/auth-route-notice.client.js` |
-| `core/auth/clients/csrf.client.js` | `lib/auth/clients/csrf.client.js` |
-| `core/auth/clients/pending-account.client.js` | `lib/auth/clients/pending-account.client.js` |
-| `core/auth/clients/pending-provider-link.client.js` | `lib/auth/clients/pending-provider-link.client.js` |
-
-**Server Files (27):**
-All files in `core/auth/servers/` subdirectories move to corresponding `lib/auth/servers/` paths.
-
-**Execution Instructions:**
-```
-1. Create lib/auth/ directory structure matching core/auth/
-2. Move all files preserving subdirectory structure
-3. Global find-replace: "@/core/auth/" → "@/lib/auth/"
-4. Run: pnpm build
-```
-
-**Estimated Impact:** 85+ import statements
-
-#### 2.5 Extract Remaining `core/` Contents
-
-**Files to Move:**
-
-| Source | Destination | Count |
-|--------|-------------|-------|
-| `core/constants/*` | `lib/constants/*` | 2 |
-| `core/hooks/*` | `lib/hooks/*` | 7 |
-| `core/utils/*` | `lib/utils/*` | 2 |
-| `core/index.js` | `lib/index.js` | 1 |
-
-**Execution Instructions:**
-```
-1. Move remaining directories to lib/
-2. Update imports: "@/core/constants/" → "@/lib/constants/"
-3. Update imports: "@/core/hooks/" → "@/lib/hooks/"
-4. Update imports: "@/core/utils/" → "@/lib/utils/"
-5. Update imports: "@/core" → "@/lib"
-6. Delete empty core/ directory
-7. Run: pnpm build
-```
-
-#### 2.6 Phase 2 Validation
-
-**Checklist:**
-- [ ] `core/` directory deleted
-- [ ] `modules/` directory exists with 143 files
-- [ ] `services/` directory exists with 55 files
-- [ ] `lib/` directory exists with 57 files
-- [ ] `pnpm build` succeeds
-- [ ] All routes load correctly
+Test routes: `/`, `/movie/[id]`, `/person/[id]`, `/account/[username]`, `/sign-in`, `/sign-up`, `/search`
 
 ---
 
-### Phase 3: Fix Dependency Violations
+## PHASE 2 — Fix Import Boundary Violations
 
-**Objective:** Resolve import boundary violations before further restructuring.
+**Risk:** Low. 3 targeted file changes.
+**Duration:** 30-45 minutes.
 
-#### 3.1 Resolve `ui/` → `features/` Violations
+### Step 2.1 — Fix `ui/skeletons/views/account.js`
 
-**Violation 1: `ui/skeletons/views/account.js`**
-
-**Current Imports:**
-```javascript
+**Current imports (violations):**
+```js
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
 ```
 
-**Resolution Steps:**
+**Resolution:**
 
-1. **Create `lib/constants/layout.constants.js`:**
-```javascript
-// lib/constants/layout.constants.js
-export const ACCOUNT_ROUTE_SHELL_CLASS = 'relative flex flex-col min-h-screen';
-export const ACCOUNT_SECTION_SHELL_CLASS = 'flex-1 px-4 py-6 md:px-8';
+1. The constants `ACCOUNT_ROUTE_SHELL_CLASS` and `ACCOUNT_SECTION_SHELL_CLASS` are re-exported from `@/lib/constants` in `features/account/utils.js`. Update to import directly:
+
+```js
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/lib/constants';
 ```
 
-2. **Move `PageGradientShell` to `ui/layout/page-gradient-shell.js`:**
-```javascript
-// ui/layout/page-gradient-shell.js
-'use client';
+2. Move `PageGradientShell` to `ui/layout/`:
 
-export function PageGradientShell({ children, className, ...props }) {
-  // Component implementation from features/layout/page-gradient-backdrop.js
-}
+```bash
+mkdir -p ui/layout
+cp features/layout/page-gradient-backdrop.js ui/layout/page-gradient-backdrop.js
 ```
 
-3. **Update `ui/skeletons/views/account.js`:**
-```javascript
-// BEFORE
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
-import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
-
-// AFTER
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/lib/constants/layout.constants';
-import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
+Update import:
+```js
+import { PageGradientShell } from '@/ui/layout/page-gradient-backdrop';
 ```
 
-4. **Update `features/account/utils.js`** to import from new location:
-```javascript
-// Re-export for backward compatibility
-export { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/lib/constants/layout.constants';
-```
+Update all other files that import from `@/features/layout/page-gradient-backdrop` to use `@/ui/layout/page-gradient-backdrop`.
 
-5. **Update all other consumers** of these constants to use `@/lib/constants/layout.constants`
+### Step 2.2 — Fix `services/account/account.service.js`
 
-#### 3.2 Resolve `services/` → `features/` Violations
-
-**Violation: `services/account/account.service.js`**
-
-**Current Import:**
-```javascript
+**Current import (violation):**
+```js
 import { isReservedAccountSegment } from '@/features/account/utils';
 ```
-
-**Resolution Steps:**
-
-1. **Create `lib/utils/account.utils.js`:**
-```javascript
-// lib/utils/account.utils.js
-
-const RESERVED_SEGMENTS = ['edit', 'settings', 'activity', 'lists', 'new'];
-
-export function isReservedAccountSegment(segment) {
-  return RESERVED_SEGMENTS.includes(segment?.toLowerCase());
-}
-
-export function validateUsername(username) {
-  if (!username) return false;
-  if (isReservedAccountSegment(username)) return false;
-  return /^[a-zA-Z0-9_-]{3,30}$/.test(username);
-}
-```
-
-2. **Update `services/account/account.service.js`:**
-```javascript
-// BEFORE
-import { isReservedAccountSegment } from '@/features/account/utils';
-
-// AFTER
-import { isReservedAccountSegment } from '@/lib/utils/account.utils';
-```
-
-3. **Update `features/account/utils.js`:**
-```javascript
-// Re-export for backward compatibility
-export { isReservedAccountSegment, validateUsername } from '@/lib/utils/account.utils';
-```
-
-#### 3.3 Resolve `components/ui/` Duplication
-
-**Current Files:**
-- `components/ui/noise-texture.js`
-- `components/ui/text-animate.js`
 
 **Resolution:**
 
-1. **Move files to `ui/` directory:**
-```
-components/ui/noise-texture.js → ui/effects/noise-texture.js
-components/ui/text-animate.js → ui/animations/text-animate.js
-```
+Create `lib/utils/account.utils.js`:
+```js
+// lib/utils/account.utils.js
+export const RESERVED_ACCOUNT_SEGMENTS = new Set([
+  'activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists', 'edit'
+]);
 
-2. **Update imports globally:**
-```javascript
-// BEFORE
-import { NoiseTexture } from '@/components/ui/noise-texture';
-
-// AFTER
-import { NoiseTexture } from '@/ui/effects/noise-texture';
-```
-
-3. **Delete `components/` directory** if empty after move
-
-4. **Update or delete `components.json`** (shadcn config)
-
-#### 3.4 Phase 3 Validation
-
-**Run Import Boundary Verification Script:**
-```bash
-# Verify no ui/ → features/ imports
-grep -r "from '@/features" ui/ --include="*.js"
-# Should return: no matches
-
-# Verify no services/ → features/ imports
-grep -r "from '@/features" services/ --include="*.js"
-# Should return: no matches
-
-# Verify no lib/ → modules/services/features imports
-grep -r "from '@/modules\|from '@/services\|from '@/features" lib/ --include="*.js"
-# Should return: no matches
-```
-
----
-
-### Phase 4: Route File Pattern Consolidation and Renaming
-
-**Objective:** Reduce route file count and apply professional naming.
-
-#### 4.1 Define New Route File Convention
-
-**Standard:**
-```
-app/{route}/
-├── page.js                    # KEEP - Next.js convention
-├── {route-name}.client.js     # RENAME from client.js (if needed)
-├── loading.js                 # KEEP - Next.js convention
-├── error.js                   # KEEP - Next.js convention
-└── not-found.js               # KEEP - Next.js convention
-```
-
-**Eliminated Files:**
-- `view.js` → Inline into `{route-name}.client.js` or move to `features/`
-- `registry.js` → Centralize into `features/registry/route-configs.js`
-
-#### 4.2 Centralize Registry Configurations
-
-**Create: `features/registry/route-configs.js`**
-
-```javascript
-// features/registry/route-configs.js
-
-import { getAccountNavItems } from '@/features/navigation/account-nav-registry';
-import { getMediaNavItems } from '@/features/navigation/media-nav-registry';
-
-// Account pages registry factory
-export function createAccountRegistryConfig({ user, isOwner, additionalModals = [] }) {
-  return {
-    nav: {
-      items: getAccountNavItems(user),
-      actions: isOwner ? 'owner' : 'visitor',
-      background: { type: 'gradient', color: user?.accentColor || 'default' }
-    },
-    modal: {
-      available: ['settings', 'feedback', ...additionalModals]
-    },
-    guard: {
-      requireAuth: false
-    }
-  };
-}
-
-// Media pages registry factory
-export function createMediaRegistryConfig({ media, mediaType }) {
-  return {
-    nav: {
-      items: getMediaNavItems(media, mediaType),
-      actions: 'media',
-      background: { type: 'backdrop', image: media?.backdropPath }
-    },
-    modal: {
-      available: ['feedback', 'listPicker', 'reviewEditor']
-    },
-    guard: {
-      requireAuth: false
-    }
-  };
-}
-
-// Auth pages registry factory
-export function createAuthRegistryConfig({ mode }) {
-  return {
-    nav: {
-      items: [],
-      actions: 'auth',
-      background: { type: 'minimal' }
-    },
-    modal: {
-      available: []
-    },
-    guard: {
-      requireAuth: false,
-      redirectIfAuthed: '/'
-    }
-  };
-}
-
-// Home page registry factory
-export function createHomeRegistryConfig() {
-  return {
-    nav: {
-      items: [],
-      actions: 'home',
-      background: { type: 'hero' }
-    },
-    modal: {
-      available: ['feedback']
-    },
-    guard: {
-      requireAuth: false
-    }
-  };
-}
-```
-
-#### 4.3 Route File Transformation Examples
-
-**Example 1: Movie Detail Route**
-
-**BEFORE (6 files):**
-```
-app/(media)/movie/[id]/
-├── page.js           (50 LOC)
-├── client.js         (80 LOC)
-├── registry.js       (45 LOC)
-├── view.js           (120 LOC)
-├── loading.js        (25 LOC)
-└── error.js          (30 LOC)
-```
-
-**AFTER (4 files):**
-```
-app/(media)/movie/[id]/
-├── page.js                    (50 LOC) - unchanged
-├── movie-detail.client.js     (180 LOC) - merged client + registry + view
-├── loading.js                 (25 LOC) - unchanged
-└── error.js                   (30 LOC) - unchanged
-```
-
-**New `movie-detail.client.js`:**
-```javascript
-// app/(media)/movie/[id]/movie-detail.client.js
-'use client';
-
-import { useRegistry } from '@/modules/registry';
-import { createMediaRegistryConfig } from '@/features/registry/route-configs';
-import { MovieDetailView } from '@/features/movie/movie-detail-view';
-
-export function MovieDetailClient({ movie, initialData }) {
-  // Apply registry configuration
-  useRegistry(createMediaRegistryConfig({ 
-    media: movie, 
-    mediaType: 'movie' 
-  }));
-
-  // Render view directly (previously in view.js)
-  return (
-    <MovieDetailView 
-      movie={movie}
-      initialData={initialData}
-    />
+export function isReservedAccountSegment(value) {
+  return RESERVED_ACCOUNT_SEGMENTS.has(
+    String(value || '').trim().toLowerCase()
   );
 }
 ```
 
-**Example 2: Account Profile Route**
-
-**BEFORE (6 files):**
-```
-app/(account)/account/[username]/
-├── page.js           (60 LOC)
-├── client.js         (90 LOC)
-├── registry.js       (55 LOC)
-├── loading.js        (20 LOC)
-├── error.js          (25 LOC)
-└── not-found.js      (20 LOC)
+Update `services/account/account.service.js`:
+```js
+import { isReservedAccountSegment } from '@/lib/utils/account.utils';
 ```
 
-**AFTER (5 files):**
-```
-app/(account)/account/[username]/
-├── page.js                      (60 LOC)
-├── account-profile.client.js    (120 LOC) - merged client + registry
-├── loading.js                   (20 LOC)
-├── error.js                     (25 LOC)
-└── not-found.js                 (20 LOC)
+Update `features/account/utils.js` to re-export:
+```js
+export { RESERVED_ACCOUNT_SEGMENTS, isReservedAccountSegment } from '@/lib/utils/account.utils';
 ```
 
-#### 4.4 Bulk Route File Renaming
+### Phase 2 Validation
 
-**Complete Rename List:**
-
-| Current Path | New Path |
-|--------------|----------|
-| `app/(home)/client.js` | `app/(home)/home.client.js` |
-| `app/(home)/view.js` | DELETED (inline) |
-| `app/(home)/registry.js` | DELETED (centralized) |
-| `app/(auth)/sign-in/client.js` | `app/(auth)/sign-in/sign-in.client.js` |
-| `app/(auth)/sign-in/view.js` | DELETED (inline) |
-| `app/(auth)/sign-in/registry.js` | DELETED (centralized) |
-| `app/(auth)/sign-up/client.js` | `app/(auth)/sign-up/sign-up.client.js` |
-| `app/(auth)/sign-up/view.js` | DELETED (inline) |
-| `app/(auth)/sign-up/registry.js` | DELETED (centralized) |
-| `app/(media)/movie/[id]/client.js` | `app/(media)/movie/[id]/movie-detail.client.js` |
-| `app/(media)/movie/[id]/view.js` | DELETED (move to features) |
-| `app/(media)/movie/[id]/registry.js` | DELETED (centralized) |
-| `app/(media)/person/[id]/client.js` | `app/(media)/person/[id]/person-detail.client.js` |
-| `app/(media)/person/[id]/view.js` | DELETED (move to features) |
-| `app/(media)/person/[id]/registry.js` | DELETED (centralized) |
-| `app/(account)/account/[username]/client.js` | `app/(account)/account/[username]/account-profile.client.js` |
-| `app/(account)/account/[username]/registry.js` | DELETED (centralized) |
-| `app/(account)/account/[username]/activity/client.js` | `app/(account)/account/[username]/activity/account-activity.client.js` |
-| `app/(account)/account/[username]/activity/view.js` | DELETED (inline) |
-| `app/(account)/account/[username]/activity/registry.js` | DELETED (centralized) |
-| ... (continue for all 26 registry.js and 14 view.js files) |
-
-**Estimated Impact:**
-- Delete: 26 `registry.js` files
-- Delete: 14 `view.js` files (content moves to client or features)
-- Rename: 29 `client.js` files to `{route-name}.client.js`
-- Net reduction: ~40 files
-
-#### 4.5 Phase 4 Validation
-
-- [ ] All `registry.js` files deleted from routes
-- [ ] All `view.js` files deleted from routes (content migrated)
-- [ ] All `client.js` files renamed to `{route-name}.client.js`
-- [ ] `features/registry/route-configs.js` created with all factory functions
-- [ ] `pnpm build` succeeds
-- [ ] All routes render correctly
-
----
-
-### Phase 5: Consolidate Configuration Files
-
-**Objective:** Reduce 6 config files to 4 with clearer organization.
-
-#### 5.1 Configuration Consolidation Map
-
-| Current Files | New File | Contents |
-|---------------|----------|----------|
-| `config/project.config.js` + `config/rollout.config.js` | `config/app.config.js` | Feature flags, debug, rollout |
-| `config/auth.config.js` | `config/auth.config.js` | Keep as-is |
-| `config/account.config.js` + `config/provider.config.js` | `config/features.config.js` | Account + provider settings |
-| `config/nav.config.js` | `config/navigation.config.js` | Rename for clarity |
-
-#### 5.2 Create Consolidated Configuration Files
-
-**New: `config/app.config.js`**
-```javascript
-// config/app.config.js
-// Merged from: project.config.js + rollout.config.js
-
-export const APP_CONFIG = {
-  // From project.config.js
-  name: 'Tvizzie',
-  version: '1.0.0',
-  debug: {
-    enabled: process.env.NODE_ENV === 'development',
-    logLevel: 'info',
-    showDevTools: process.env.NODE_ENV === 'development'
-  },
-  
-  // From rollout.config.js
-  features: {
-    reviews: { enabled: true, rolloutPercentage: 100 },
-    lists: { enabled: true, rolloutPercentage: 100 },
-    notifications: { enabled: true, rolloutPercentage: 100 },
-    realtime: { enabled: true, rolloutPercentage: 100 },
-    adminDashboard: { enabled: true, rolloutPercentage: 100 }
-  }
-};
-
-export const isFeatureEnabled = (featureName) => {
-  const feature = APP_CONFIG.features[featureName];
-  return feature?.enabled && (feature?.rolloutPercentage ?? 100) > 0;
-};
-
-export const getFeatureRollout = (featureName) => {
-  return APP_CONFIG.features[featureName]?.rolloutPercentage ?? 0;
-};
-```
-
-**New: `config/features.config.js`**
-```javascript
-// config/features.config.js
-// Merged from: account.config.js + provider.config.js
-
-export const ACCOUNT_CONFIG = {
-  adapters: {
-    // From account.config.js
-    profile: 'supabase',
-    media: 'supabase',
-    social: 'supabase'
-  },
-  limits: {
-    maxLists: 50,
-    maxListItems: 500,
-    maxReviewLength: 5000
-  }
-};
-
-export const PROVIDER_CONFIG = {
-  // From provider.config.js
-  oauth: {
-    google: { enabled: true },
-    github: { enabled: false },
-    discord: { enabled: false }
-  },
-  isOAuthProvider: (provider) => {
-    return Object.keys(PROVIDER_CONFIG.oauth).includes(provider);
-  },
-  isProviderEnabled: (provider) => {
-    return PROVIDER_CONFIG.oauth[provider]?.enabled ?? false;
-  }
-};
-```
-
-**Rename: `config/nav.config.js` → `config/navigation.config.js`**
-
-#### 5.3 Update All Config Imports
-
-**Find-Replace Operations:**
-```javascript
-// project.config.js → app.config.js
-import { ... } from '@/config/project.config'
-→ import { ... } from '@/config/app.config'
-
-// rollout.config.js → app.config.js
-import { ... } from '@/config/rollout.config'
-→ import { ... } from '@/config/app.config'
-
-// account.config.js → features.config.js
-import { ... } from '@/config/account.config'
-→ import { ACCOUNT_CONFIG, ... } from '@/config/features.config'
-
-// provider.config.js → features.config.js
-import { ... } from '@/config/provider.config'
-→ import { PROVIDER_CONFIG, ... } from '@/config/features.config'
-
-// nav.config.js → navigation.config.js
-import { ... } from '@/config/nav.config'
-→ import { ... } from '@/config/navigation.config'
-```
-
-#### 5.4 Delete Redundant Config Files
-
-After all imports updated:
-- Delete `config/project.config.js`
-- Delete `config/rollout.config.js`
-- Delete `config/account.config.js`
-- Delete `config/provider.config.js`
-
-**Final Config Directory:**
-```
-config/
-├── app.config.js           # App-wide settings, feature flags
-├── auth.config.js          # Auth provider configuration
-├── features.config.js      # Feature-specific settings
-└── navigation.config.js    # Navigation structure
+```bash
+grep -r "from '@/features" ui/ --include="*.js"
+grep -r "from '@/features" services/ --include="*.js"
+# Both must return 0 matches
+pnpm build
 ```
 
 ---
 
-### Phase 6: Reduce Auth System Complexity
+## PHASE 3 — Route File Naming
 
-**Objective:** Consolidate 36 auth files to ~15 files.
+**Risk:** Low. Pure renames, no logic changes.
+**Duration:** 1-2 hours.
 
-#### 6.1 Auth Server Consolidation Map
+### Rename Pattern
 
-**Current Structure (27 server files):**
-```
-lib/auth/servers/
-├── account/           (4 files)
-├── audit/             (1 file)
-├── notice/            (1 file)
-├── policy/            (1 file)
-├── providers/         (2 files)
-├── security/          (6 files)
-├── session/           (5 files)
-└── verification/      (6 files)
-```
-
-**Target Structure (8 server files):**
-```
-lib/auth/servers/
-├── account.server.js       # Merged: account/*.server.js
-├── audit.server.js         # Keep: audit-log.server.js
-├── notice.server.js        # Keep: auth-route-notice.server.js
-├── policy.server.js        # Keep: auth-route-policy.server.js
-├── providers.server.js     # Merged: providers/*.server.js
-├── security.server.js      # Merged: csrf, password, step-up, recent-reauth
-├── rate-limit.server.js    # Keep separate (complex)
-├── session.server.js       # Merged: session/*.server.js
-└── verification.server.js  # Merged: verification/*.server.js
-```
-
-#### 6.2 Consolidation Details
-
-**Merge: `lib/auth/servers/account/*.server.js` → `lib/auth/servers/account.server.js`**
-
-```javascript
-// lib/auth/servers/account.server.js
-// Merged from: account-bootstrap, account-deletion, account-lifecycle, account-state
-
-// === BOOTSTRAP ===
-export async function bootstrapAccount(userId, userData) { ... }
-export async function initializeAccountProfile(userId) { ... }
-
-// === DELETION ===
-export async function deleteAccount(userId) { ... }
-export async function scheduleAccountDeletion(userId) { ... }
-export async function cancelAccountDeletion(userId) { ... }
-
-// === LIFECYCLE ===
-export async function activateAccount(userId) { ... }
-export async function deactivateAccount(userId) { ... }
-export async function suspendAccount(userId, reason) { ... }
-
-// === STATE ===
-export async function getAccountState(userId) { ... }
-export async function updateAccountState(userId, state) { ... }
-export async function isAccountActive(userId) { ... }
-```
-
-**Merge: `lib/auth/servers/session/*.server.js` → `lib/auth/servers/session.server.js`**
-
-```javascript
-// lib/auth/servers/session.server.js
-// Merged from: authenticated-request, request-context, revocation, session, supabase-admin-auth
-
-// === SESSION CRUD ===
-export async function createSession(userId, metadata) { ... }
-export async function getSession(sessionId) { ... }
-export async function updateSession(sessionId, data) { ... }
-export async function deleteSession(sessionId) { ... }
-
-// === AUTHENTICATION ===
-export async function getAuthenticatedUser(request) { ... }
-export async function requireAuth(request) { ... }
-export async function optionalAuth(request) { ... }
-
-// === REQUEST CONTEXT ===
-export function createRequestContext(request) { ... }
-export function getRequestContext() { ... }
-
-// === REVOCATION ===
-export async function revokeSession(sessionId) { ... }
-export async function revokeAllUserSessions(userId) { ... }
-
-// === ADMIN ===
-export async function adminGetUser(userId) { ... }
-export async function adminUpdateUser(userId, data) { ... }
-```
-
-**Similar consolidation for remaining directories...**
-
-#### 6.3 Auth Client Consolidation
-
-**Current (5 files) → Target (2 files):**
+For each route, rename ambiguous files to domain-prefixed names:
 
 ```
-lib/auth/clients/
-├── auth.client.js          # Merged: csrf, pending-account, pending-provider-link
-└── audit.client.js         # Keep: audit logging
+client.js   → {route-name}.client.js
+registry.js → {route-name}.registry.js
+view.js     → {route-name}.view.js
 ```
 
-#### 6.4 Update Auth Imports
+**Important:** Do NOT merge or eliminate `registry.js` or `view.js` files. They contain complex logic. Only rename them.
 
-**Example Import Updates:**
-```javascript
-// BEFORE
-import { bootstrapAccount } from '@/lib/auth/servers/account/account-bootstrap.server';
-import { createSession } from '@/lib/auth/servers/session/session.server';
+### Complete Rename List
 
-// AFTER
-import { bootstrapAccount } from '@/lib/auth/servers/account.server';
-import { createSession } from '@/lib/auth/servers/session.server';
+#### `app/(media)/movie/[id]/`
+```
+client.js   → movie-detail.client.js
+registry.js → movie-detail.registry.js
+view.js     → movie-detail.view.js
 ```
 
----
-
-### Phase 7: Consolidate Navigation Hooks
-
-**Objective:** Reduce 13 nav hook files to 4 files.
-
-#### 7.1 Navigation Hook Consolidation Map
-
-**Current (13 files):**
-```
-modules/nav/hooks/
-├── index.js
-├── use-action-component.js
-├── use-action-height.js
-├── use-element-height.js
-├── use-nav-badge.js
-├── use-nav-height.js
-├── use-navigation-core.js
-├── use-navigation-countdown.js
-├── use-navigation-display.js
-├── use-navigation-effects.js
-├── use-navigation-expanded.js
-├── use-navigation-items.js
-├── use-navigation-layout.js
-├── use-navigation-status.js
-└── use-navigation.js
+Update `page.js`:
+```js
+import Client from './movie-detail.client';
 ```
 
-**Target (4 files):**
+Update internal imports in the renamed files.
+
+#### `app/(media)/movie/[id]/reviews/`
 ```
-modules/nav/hooks/
-├── index.js                  # Re-exports
-├── use-navigation.js         # Primary hook (keep)
-├── use-nav-layout.js         # Merged: layout, height, element hooks
-└── use-nav-actions.js        # Merged: action, component, badge hooks
-```
-
-#### 7.2 Merge Strategy
-
-**New: `use-nav-layout.js`**
-```javascript
-// modules/nav/hooks/use-nav-layout.js
-// Merged from: use-element-height, use-nav-height, use-navigation-layout
-
-export function useNavLayout() {
-  // Combined layout logic
-}
-
-export function useNavHeight() {
-  // Height calculation
-}
-
-export function useElementHeight(elementRef) {
-  // Element height measurement
-}
-
-export function useNavigationLayout() {
-  // Full layout state
-}
+client.js → movie-reviews.client.js
+view.js   → movie-reviews.view.js
 ```
 
-**New: `use-nav-actions.js`**
-```javascript
-// modules/nav/hooks/use-nav-actions.js
-// Merged from: use-action-component, use-action-height, use-nav-badge
+#### `app/(media)/person/[id]/`
+```
+client.js   → person-detail.client.js
+registry.js → person-detail.registry.js
+view.js     → person-detail.view.js
+```
 
-export function useNavActions() {
-  // Combined action logic
-}
+#### `app/(home)/`
+```
+client.js   → home.client.js
+registry.js → home.registry.js (if exists)
+view.js     → home.view.js (if exists)
+```
 
-export function useActionComponent() {
-  // Action component resolution
-}
+#### `app/(auth)/sign-in/`
+```
+client.js   → sign-in.client.js
+registry.js → sign-in.registry.js (if exists)
+view.js     → sign-in.view.js (if exists)
+```
 
-export function useActionHeight() {
-  // Action container height
-}
+#### `app/(auth)/sign-up/`
+```
+client.js   → sign-up.client.js
+registry.js → sign-up.registry.js (if exists)
+view.js     → sign-up.view.js (if exists)
+```
 
-export function useNavBadge() {
-  // Badge state
-}
+#### `app/(account)/account/[username]/`
+```
+client.js   → account-profile.client.js
+registry.js → account-profile.registry.js
+```
+
+#### `app/(account)/account/[username]/activity/`
+```
+client.js   → account-activity.client.js
+registry.js → account-activity.registry.js
+view.js     → account-activity.view.js
+```
+
+#### `app/(account)/account/[username]/likes/`
+```
+client.js   → account-likes.client.js
+registry.js → account-likes.registry.js
+view.js     → account-likes.view.js
+```
+
+#### `app/(account)/account/[username]/watched/`
+```
+client.js   → account-watched.client.js
+registry.js → account-watched.registry.js
+view.js     → account-watched.view.js
+```
+
+#### `app/(account)/account/[username]/watchlist/`
+```
+client.js   → account-watchlist.client.js
+registry.js → account-watchlist.registry.js
+view.js     → account-watchlist.view.js
+```
+
+#### `app/(account)/account/[username]/reviews/`
+```
+client.js   → account-reviews.client.js
+registry.js → account-reviews.registry.js
+view.js     → account-reviews.view.js
+```
+
+#### `app/(account)/account/[username]/lists/`
+```
+client.js   → account-lists.client.js
+registry.js → account-lists.registry.js
+view.js     → account-lists.view.js
+```
+
+#### `app/(account)/account/[username]/lists/[slug]/`
+```
+client.js   → account-list-detail.client.js
+registry.js → account-list-detail.registry.js
+view.js     → account-list-detail.view.js
+```
+
+#### `app/(account)/account/edit/`
+```
+client.js   → account-edit.client.js
+registry.js → account-edit.registry.js (if exists)
+view.js     → account-edit.view.js (if exists)
+```
+
+#### `app/(admin)/admin/users/`
+```
+client.js → admin-users.client.js
+```
+
+#### `app/search/`
+```
+client.js → search.client.js
+```
+
+### Phase 3 Validation
+
+```bash
+find app -name "client.js" | wc -l
+# Should be 0
+find app -name "registry.js" | wc -l
+# Should be 0
+find app -name "view.js" | wc -l
+# Should be 0
+pnpm build
 ```
 
 ---
 
-### Phase 8: API Route Handler Consolidation
+## PHASE 4 — Split `features/account/utils.js`
 
-**Objective:** Reduce API route count by merging related endpoints.
+**Risk:** Medium. This file is imported by many consumers.
+**Duration:** 1.5-2 hours.
 
-#### 8.1 Auth API Consolidation
+### Target Split
 
-**Current (12 auth routes):**
-```
-app/api/auth/
-├── account/
-│   ├── change-email/route.js
-│   ├── change-password/route.js
-│   ├── delete/route.js
-│   ├── password-status/route.js
-│   ├── reauthenticate/route.js
-│   └── set-password/route.js
-├── audit/route.js
-├── password-reset/complete/route.js
-├── session/route.js
-├── sign-up/complete/route.js
-└── verification/
-    ├── send-code/route.js
-    └── verify-code/route.js
-```
+| New File | Contents |
+|----------|----------|
+| `features/account/account.constants.js` | `EDIT_TABS`, `AUTH_PURPOSE`, `EMAIL_PATTERN`, `PROFILE_TABS`, `ACCOUNT_SECTION_KEYS`, `ACCOUNT_LIST_CREATOR_PATH`, `INITIAL_EMAIL_FLOW`, `INITIAL_PASSWORD_FLOW`, `INITIAL_DELETE_FLOW` |
+| `features/account/account.api.js` | `deleteAccountRequest`, `completeEmailChangeRequest`, `completePasswordChangeRequest`, `completePasswordSetRequest` |
+| `features/account/account.validators.js` | `validatePassword`, email pattern validation |
+| `features/account/account.formatters.js` | `sortAccountItems`, `formatPaginationSummaryLabel`, `buildListCreatorHref`, `buildAccountCollectionPageHref`, `getMediaTitle`, `getFollowState`, `getNavDescription`, `getIsFullScreenEmpty`, `getAvatarFallback` |
+| `features/account/account.feedback.js` | `emitAccountFeedback`, `clearAccountFeedback`, `ACCOUNT_FEEDBACK_CONFIG` |
+| `features/account/account.security.js` | `resolveSecurityErrorMessage`, `normalizeProviderIds`, `normalizeProviderDescriptors`, `normalizeEmail`, `normalizeOptionalText` |
 
-**Target (7 auth routes):**
-```
-app/api/auth/
-├── account/route.js              # Merged: change-email, change-password, set-password, password-status
-├── account/delete/route.js       # Keep: delete operation (destructive)
-├── account/reauthenticate/route.js # Keep: security-sensitive
-├── audit/route.js                # Keep
-├── password-reset/route.js       # Renamed from complete/
-├── session/route.js              # Keep
-├── sign-up/route.js              # Renamed from complete/
-└── verification/route.js         # Merged: send-code, verify-code
+### Keep Barrel Re-export
+
+Keep `features/account/utils.js` as a **re-export barrel** to avoid breaking consumers:
+
+```js
+// features/account/utils.js — RE-EXPORT BARREL
+export * from './account.constants';
+export * from './account.api';
+export * from './account.validators';
+export * from './account.formatters';
+export * from './account.feedback';
+export * from './account.security';
+
+// Re-exports from lib/constants (keep existing)
+export { ACCOUNT_ROUTE_MAX_WIDTH_CLASS, ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/lib/constants';
+
+// Re-export from lib/utils (keep existing)
+export { RESERVED_ACCOUNT_SEGMENTS, isReservedAccountSegment } from '@/lib/utils/account.utils';
 ```
 
-**New: `app/api/auth/account/route.js`**
-```javascript
-// app/api/auth/account/route.js
-// Merged from: change-email, change-password, set-password, password-status
+### Phase 4 Validation
 
-import { NextResponse } from 'next/server';
-
-export async function POST(request) {
-  const { action, ...data } = await request.json();
-  
-  switch (action) {
-    case 'change-email':
-      return handleChangeEmail(data);
-    case 'change-password':
-      return handleChangePassword(data);
-    case 'set-password':
-      return handleSetPassword(data);
-    default:
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  }
-}
-
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
-  
-  switch (action) {
-    case 'password-status':
-      return handlePasswordStatus();
-    default:
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  }
-}
-
-async function handleChangeEmail({ newEmail }) { ... }
-async function handleChangePassword({ currentPassword, newPassword }) { ... }
-async function handleSetPassword({ password }) { ... }
-async function handlePasswordStatus() { ... }
+```bash
+pnpm build
+# All account routes must load correctly
 ```
 
 ---
 
-### Phase 9: Feature Module Cleanup and Renaming
+## PHASE 5 — Rename Generic Utility Files
 
-**Objective:** Flatten and rename feature module files.
+**Risk:** Low. Simple renames + import updates.
+**Duration:** 30-45 minutes.
 
-#### 9.1 Flatten `features/reviews/parts/`
-
-**Current:**
-```
-features/reviews/
-├── index.js
-├── parts/
-│   ├── rating-range-selector.js
-│   ├── rating-selector.js
-│   ├── rating-stars.js
-│   ├── review-auth-fallback.js
-│   ├── review-card.js
-│   ├── review-composer.js
-│   ├── review-header.js
-│   └── review-list.js
-├── use-media-reviews.js
-├── use-review-nav-state.js
-└── utils.js
-```
-
-**Target:**
-```
-features/reviews/
-├── index.js
-├── components/                    # Renamed from parts/
-│   ├── rating-range-selector.js
-│   ├── rating-selector.js
-│   ├── rating-stars.js
-│   ├── review-auth-fallback.js
-│   ├── review-card.js
-│   ├── review-composer.js
-│   ├── review-header.js
-│   └── review-list.js
-├── use-media-reviews.js
-├── use-review-nav-state.js
-└── reviews.utils.js               # Renamed from utils.js
-```
-
-#### 9.2 Rename Generic Utils Files
-
-| Current | New | Location |
-|---------|-----|----------|
-| `features/account/utils.js` | `features/account/account.utils.js` | features/account/ |
-| `features/auth/utils.js` | `features/auth/auth.utils.js` | features/auth/ |
-| `features/movie/utils.js` | `features/movie/movie.utils.js` | features/movie/ |
-| `features/person/utils.js` | `features/person/person.utils.js` | features/person/ |
-| `features/reviews/utils.js` | `features/reviews/reviews.utils.js` | features/reviews/ |
-| `ui/elements/utils.js` | `ui/elements/elements.utils.js` | ui/elements/ |
-
-#### 9.3 Rename `shared/` to `components/`
+### File Renames
 
 | Current | New |
 |---------|-----|
-| `features/account/shared/` | `features/account/components/` |
-| `features/shared/` | `features/common/` |
+| `features/auth/utils.js` | `features/auth/auth.utils.js` |
+| `features/movie/utils.js` | `features/movie/movie.utils.js` |
+| `features/person/utils.js` | `features/person/person.utils.js` |
+| `features/reviews/utils.js` | `features/reviews/reviews.utils.js` |
 
-#### 9.4 Consolidate Account Hooks
+**Note:** `features/account/utils.js` stays as the barrel (handled in Phase 4).
 
-**Current (8 files):**
-```
-features/account/hooks/
-├── collections.js
-├── edit-data.js
-├── page-actions.js
-├── page-data.js
-├── relationships.js
-├── section-page.js
-├── security-actions.js
-└── security-credentials.js
-```
+For each rename:
+1. Rename the file
+2. Find all imports and update them
 
-**Target (3 files):**
-```
-features/account/hooks/
-├── use-account-data.js           # Merged: page-data, edit-data, collections
-├── use-account-actions.js        # Merged: page-actions, security-actions
-└── use-account-social.js         # Merged: relationships, section-page, security-credentials
-```
+### Directory Renames
 
----
-
-### Phase 10: Final Validation and Documentation
-
-#### 10.1 Build Verification
-
-**Command Sequence:**
 ```bash
-# Clean install
-rm -rf node_modules .next
-pnpm install
+# Rename parts/ → components/
+mv features/reviews/parts features/reviews/components
 
-# Production build
+# Update all imports
+grep -r "features/reviews/parts" . --include="*.js" --exclude-dir=node_modules
+# Update each found import to features/reviews/components
+```
+
+```bash
+# Rename shared/ → components/
+mv features/account/shared features/account/components
+
+# Update all imports
+grep -r "features/account/shared" . --include="*.js" --exclude-dir=node_modules
+# Update each found import to features/account/components
+```
+
+### Phase 5 Validation
+
+```bash
 pnpm build
-
-# Verify output
-# Expected: Build Optimization... completed successfully
 ```
 
-#### 10.2 Runtime Verification Checklist
+---
 
-| Route | Test Actions | Expected Result |
-|-------|--------------|-----------------|
-| `/` | Load page | Home renders with hero |
-| `/movie/123` | Load, interact | Movie detail renders, actions work |
-| `/person/456` | Load, interact | Person detail renders |
-| `/account/username` | Load | Profile renders (or 404 if user doesn't exist) |
-| `/account/username/lists` | Load, create list | Lists page works |
-| `/sign-in` | Load, attempt sign in | Auth flow works |
-| `/sign-up` | Load, attempt sign up | Registration works |
-| `/search` | Load, search | Search results appear |
+## PHASE 6 — Consolidate Auth Server Files
 
-#### 10.3 Import Boundary Final Verification
+**Risk:** Medium. Do not change function signatures.
+**Duration:** 2-3 hours.
 
-**Verification Commands:**
+### Consolidation Map
+
+**Merge `lib/auth/servers/account/` (4 files) → `lib/auth/servers/account.server.js`**
+
+Files to merge:
+- `account/account-bootstrap.server.js`
+- `account/account-deletion.server.js`
+- `account/account-lifecycle.server.js`
+- `account/account-state.server.js`
+
+**Merge `lib/auth/servers/session/` (5 files) → `lib/auth/servers/session.server.js`**
+
+Files to merge:
+- `session/authenticated-request.server.js`
+- `session/request-context.server.js`
+- `session/revocation.server.js`
+- `session/session.server.js`
+- `session/supabase-admin-auth.server.js`
+
+**Merge `lib/auth/servers/verification/` (6 files) → `lib/auth/servers/verification.server.js`**
+
+Files to merge:
+- `verification/email-sender.server.js`
+- `verification/email-verification.server.js`
+- `verification/login-verification.server.js`
+- `verification/password-account.server.js`
+- `verification/password-reset-proof.server.js`
+- `verification/signup-proof.server.js`
+
+**Merge `lib/auth/servers/providers/` (2 files) → `lib/auth/servers/providers.server.js`**
+
+Files to merge:
+- `providers/google-auth-intent.server.js`
+- `providers/google-provider.server.js`
+
+**Flatten single-file directories:**
+- `lib/auth/servers/audit/audit-log.server.js` → `lib/auth/servers/audit.server.js`
+- `lib/auth/servers/notice/auth-route-notice.server.js` → `lib/auth/servers/notice.server.js`
+- `lib/auth/servers/policy/auth-route-policy.server.js` → `lib/auth/servers/policy.server.js`
+
+**Keep as-is:**
+- `lib/auth/servers/security/` (6 files) — genuinely complex, directory structure appropriate
+
+### Merge Strategy
+
+Concatenate all exports into one file with section comments:
+
+```js
+// lib/auth/servers/account.server.js
+
+// ── Bootstrap ─────────────────────────────────────────────────
+// [contents of account-bootstrap.server.js]
+
+// ── Deletion ──────────────────────────────────────────────────
+// [contents of account-deletion.server.js]
+
+// ── Lifecycle ─────────────────────────────────────────────────
+// [contents of account-lifecycle.server.js]
+
+// ── State ─────────────────────────────────────────────────────
+// [contents of account-state.server.js]
+```
+
+### Import Update Strategy
+
+After creating each merged file, update all imports:
+
 ```bash
-# No ui/ → features/ imports
-grep -rn "from '@/features" ui/ --include="*.js" | wc -l
-# Expected: 0
-
-# No lib/ → modules/services/features imports
-grep -rn "from '@/modules\|from '@/services\|from '@/features" lib/ --include="*.js" | wc -l
-# Expected: 0
-
-# No services/ → features/ imports
-grep -rn "from '@/features" services/ --include="*.js" | wc -l
-# Expected: 0
+# Example for account merger:
+grep -r "lib/auth/servers/account/account-bootstrap" . --include="*.js" --exclude-dir=node_modules
+# Replace with: @/lib/auth/servers/account.server
 ```
 
-#### 10.4 Update Documentation
+Delete old subdirectories only after all imports updated and build succeeds.
 
-**Files to Update:**
+### Final Auth Structure
 
-1. **`ARCHITECTURE.md`** - Update with new directory structure
-2. **`FILE_STRUCTURE.md`** - Regenerate with new file listing
-3. **`NAMING_CONVENTIONS.md`** - Already created in Phase 0
-4. **`README.md`** - Update getting started section
-
----
-
-### Migration Summary
-
-#### Before Migration
-
-| Metric | Value |
-|--------|-------|
-| Total JS Files | 539 |
-| `core/` Files | 217 |
-| Route Files per Page | 4-7 (avg 5.2) |
-| Auth System Files | 36 |
-| Config Files | 6 |
-| Nav Hook Files | 13 |
-| Registry Files | 26 |
-| Naming Patterns | 14+ (inconsistent) |
-
-#### After Migration (Target)
-
-| Metric | Value |
-|--------|-------|
-| Total JS Files | ~280-320 |
-| `core/` Files | 0 (eliminated) |
-| Route Files per Page | 2-4 (avg 2.8) |
-| Auth System Files | ~15 |
-| Config Files | 4 |
-| Nav Hook Files | 4 |
-| Registry Files | 1 (centralized) |
-| Naming Patterns | 6 (standardized) |
-
-#### File Reduction Breakdown
-
-| Action | Files Affected | Net Change |
-|--------|---------------|------------|
-| Eliminate `registry.js` files | 26 | -26 |
-| Eliminate `view.js` files | 14 | -14 |
-| Consolidate auth files | 36 → 15 | -21 |
-| Consolidate nav hooks | 13 → 4 | -9 |
-| Consolidate config files | 6 → 4 | -2 |
-| Merge API routes | 42 → 35 | -7 |
-| Consolidate account hooks | 8 → 3 | -5 |
-| Delete `components/ui/` | 2 | -2 |
-| **Total Reduction** | | **~86 files** |
+```
+lib/auth/servers/
+├── account.server.js       # merged 4 files
+├── audit.server.js         # flattened
+├── notice.server.js        # flattened
+├── policy.server.js        # flattened
+├── providers.server.js     # merged 2 files
+├── security/               # kept (6 files, genuinely complex)
+│   ├── csrf.server.js
+│   ├── password-security.server.js
+│   ├── rate-limit-policies.server.js
+│   ├── rate-limit.server.js
+│   ├── recent-reauth.server.js
+│   └── step-up.server.js
+├── session.server.js       # merged 5 files
+└── verification.server.js  # merged 6 files
+```
 
 ---
 
-### Execution Order Summary
+## PHASE 7 — Consolidate Navigation Hooks
 
-Execute phases in this exact order:
+**Risk:** Low. Only internal module consumers.
+**Duration:** 1 hour.
 
-| Order | Phase | Impact | Risk | Duration |
-|-------|-------|--------|------|----------|
-| 1 | Phase 0: Naming Conventions | Documentation | Low | 1 hour |
-| 2 | Phase 1: Migration Setup | Infrastructure | Low | 30 min |
-| 3 | Phase 2: Eliminate `core/` | 217 files moved | Medium | 2-3 hours |
-| 4 | Phase 3: Fix Violations | 5 files modified | Low | 1 hour |
-| 5 | Phase 4: Route Files | 69 files changed | Medium | 3-4 hours |
-| 6 | Phase 5: Config Files | 6 files → 4 | Low | 1 hour |
-| 7 | Phase 6: Auth System | 36 files → 15 | Medium | 2-3 hours |
-| 8 | Phase 7: Nav Hooks | 13 files → 4 | Low | 1 hour |
-| 9 | Phase 8: API Routes | 7 routes merged | Medium | 2 hours |
-| 10 | Phase 9: Feature Cleanup | 25 files renamed | Low | 2 hours |
-| 11 | Phase 10: Validation | Testing | Low | 1-2 hours |
+`modules/nav/hooks/` contains 14 files. Group by concern:
 
-**Total Estimated Duration:** 16-22 hours
+### Consolidation Map
 
----
+| New File | Merges |
+|----------|--------|
+| `use-nav-layout.js` | `use-element-height.js`, `use-nav-height.js`, `use-navigation-layout.js`, `use-action-height.js` |
+| `use-nav-display.js` | `use-navigation-display.js`, `use-navigation-status.js`, `use-navigation-expanded.js`, `use-navigation-countdown.js` |
+| `use-nav-core.js` | `use-navigation-core.js`, `use-navigation-items.js`, `use-navigation-effects.js` |
+| `use-nav-actions.js` | `use-action-component.js`, `use-nav-badge.js` |
 
-### Risk Mitigation
+**Keep unchanged:**
+- `use-navigation.js` (primary consumer-facing hook)
+- `index.js` (update re-exports)
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| Breaking imports during migration | High | High | Run `pnpm build` after each sub-phase |
-| Runtime regressions | Medium | High | Manual testing of critical paths |
-| Merge conflicts | Medium | Medium | Work on feature branch, rebase daily |
-| Lost functionality | Low | High | Git history preserves all changes |
-| Performance regression | Low | Medium | Lighthouse comparison before/after |
+### Execution
+
+1. Create new merged files with section comments
+2. Update `modules/nav/hooks/index.js` to export from new files
+3. Check for external direct imports and update them
+4. Delete old files
 
 ---
 
-### Post-Migration Recommendations
+## PHASE 8 — Move `components/ui/` to `ui/`
 
-1. **Add ESLint Import Boundaries**
-   - Configure `eslint-plugin-import` with zone restrictions
-   - Fail CI on boundary violations
+**Risk:** Low. Only 2 files.
+**Duration:** 15 minutes.
 
-2. **Add Architecture Tests**
-   - Automated tests verifying import boundaries
-   - Run on every PR
+```bash
+cp components/ui/noise-texture.js ui/effects/noise-texture.js
+cp components/ui/text-animate.js ui/animations/text-animate.js
+```
 
-3. **Add TypeScript**
-   - Gradual migration to `.ts` / `.tsx`
-   - Start with `lib/` and `services/`
+Update all imports:
+```bash
+grep -r "components/ui/noise-texture" . --include="*.js" --exclude-dir=node_modules
+# Update to @/ui/effects/noise-texture
 
-4. **Document Module Ownership**
-   - README.md in each top-level directory
-   - Define maintainer responsibilities
+grep -r "components/ui/text-animate" . --include="*.js" --exclude-dir=node_modules
+# Update to @/ui/animations/text-animate
+```
 
-5. **Remove Unused Exports**
-   - Use `ts-prune` or similar to find dead code
-   - Clean up after migration stabilizes
+Delete:
+```bash
+rm -rf components/ui
+rmdir components 2>/dev/null || true
+rm components.json  # if it only configured shadcn output paths
+```
 
 ---
 
-*Document Version: 2.0*
-*Generated: Comprehensive analysis of Tvizzie codebase*
-*Target Audience: Advanced AI coding agents, senior engineers*
-*Estimated Reading Time: 45 minutes*
+## PHASE 9 — Create Documentation
+
+**Risk:** None. New files only.
+**Duration:** 30 minutes.
+
+### Create `NAMING_CONVENTIONS.md`
+
+```markdown
+# Tvizzie — Naming Conventions
+
+## File Naming
+
+### Route Files (in `app/`)
+- `page.js` — Route entry point (Next.js convention)
+- `{route-name}.client.js` — Client boundary component
+- `{route-name}.registry.js` — Registry/nav state configuration
+- `{route-name}.view.js` — Presentational view component
+- `loading.js` — Suspense fallback (Next.js convention)
+- `error.js` — Error boundary (Next.js convention)
+- `not-found.js` — 404 handler (Next.js convention)
+
+### Service Files (in `services/`)
+- `{domain}.server.js` — Server-only operations
+- `{domain}.service.js` — Client-side API calls
+
+### Feature Files (in `features/`)
+- `{domain}.utils.js` — Domain-scoped utilities
+- `{domain}.constants.js` — Domain-scoped constants
+- `{domain}.api.js` — Domain-scoped fetch wrappers
+- `{domain}.validators.js` — Validation logic
+- `{domain}.formatters.js` — Data transformation
+
+### Hook Files
+- `use-{action}.js` — Single-purpose hooks
+- `use-{domain}-{action}.js` — Domain-scoped hooks
+
+## Directory Structure
+
+```
+app/          Next.js routes only — no shared logic
+features/     Domain-specific UI composition and orchestration
+modules/      Runtime React state providers (context, hooks)
+services/     Data access layer — server and client
+lib/          Infrastructure: auth, clients, hooks, utils, constants
+ui/           Reusable presentational primitives — no business logic
+config/       Application configuration files
+```
+
+## Import Boundary Rules
+
+| Layer | May import from | Must NOT import from |
+|-------|----------------|---------------------|
+| `ui/` | `ui/`, `lib/` | `features/`, `modules/`, `services/` |
+| `lib/` | `lib/` | `modules/`, `services/`, `features/`, `app/` |
+| `services/` | `services/`, `lib/` | `features/`, `modules/`, `app/` |
+| `modules/` | `modules/`, `lib/`, `ui/` | `features/`, `services/`, `app/` |
+| `features/` | `features/`, `modules/`, `services/`, `lib/`, `ui/` | `app/` |
+| `app/` | Everything | — |
+```
+
+### Update `ARCHITECTURE.md`
+
+Update to reflect new directory structure after all phases complete.
+
+---
+
+## FINAL VALIDATION
+
+Run after all phases complete:
+
+```bash
+# 1. Clean build
+rm -rf .next
+pnpm build
+# Must complete with zero errors
+
+# 2. Import boundary checks
+echo "=== ui/ → features/ violations ==="
+grep -r "from '@/features" ui/ --include="*.js" | wc -l
+# Expected: 0
+
+echo "=== lib/ → modules/services/features violations ==="
+grep -r "from '@/modules\|from '@/services\|from '@/features" lib/ --include="*.js" | wc -l
+# Expected: 0
+
+echo "=== services/ → features/ violations ==="
+grep -r "from '@/features" services/ --include="*.js" | wc -l
+# Expected: 0
+
+echo "=== Remaining @/core/ references ==="
+grep -r "from '@/core/" . --include="*.js" --exclude-dir=node_modules --exclude-dir=.next | wc -l
+# Expected: 0
+
+echo "=== Remaining generic client.js in routes ==="
+find app -name "client.js" | wc -l
+# Expected: 0
+
+echo "=== Remaining generic registry.js in routes ==="
+find app -name "registry.js" | wc -l
+# Expected: 0
+
+echo "=== Remaining generic view.js in routes ==="
+find app -name "view.js" | wc -l
+# Expected: 0
+
+# 3. Route verification
+# Test: /, /movie/[id], /person/[id], /account/[username], /sign-in, /sign-up, /search
+```
+
+---
+
+## WHAT WAS NOT CHANGED (AND WHY)
+
+| Component | Reason Left Unchanged |
+|-----------|----------------------|
+| `modules/registry/use-registry.js` | Highly sophisticated: deep comparison engine, React element stabilization, ref-based function memoization. Correct and complex by design. |
+| `{route}.registry.js` files | Contain route-specific JSX rendering, `useRouter`/`usePathname`/`useSearchParams` hooks, state machines, context menu configurations. Not simple config — cannot be extracted to a factory. |
+| `{route}.view.js` files | 200–300+ LOC rendering trees with Suspense boundaries and deferred data loading. Renaming them is the right action, not merging. |
+| `config/rollout.config.js` | Sophisticated env-patching system with `deepMerge`, `parseMode`, `parsePercent`, env variable overrides. Leave intact. |
+| API route handlers (`app/api/`) | Existing `fetch` call contracts throughout the codebase depend on these URLs and HTTP methods. Merging endpoints would break all consumers. |
+| `lib/auth/servers/security/` | 6 files with genuinely distinct security concerns (CSRF, rate limiting, step-up auth, reauth). Directory structure is appropriate. |
+| `features/account/registry-config.js` | Large shared factory (`buildAccountPageState`) used by all account route registry files. Already well-structured. |
+
+---
+
+## EXPECTED OUTCOME
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Top-level directories with unclear purpose | `core/` | Eliminated |
+| Ambiguous route file names | ~80 files | 0 |
+| `ui/ → features/` import violations | 2 | 0 |
+| `services/ → features/` import violations | 1 | 0 |
+| Auth server subdirectories | 8 | 2 |
+| Auth server files | 27 | 8 |
+| Nav hook files | 14 | 5 |
+| Mixed-concern `utils.js` in account | 1 (400+ LOC) | 6 focused modules |
+| Naming patterns (distinct) | 14+ | 6 (standardized) |
+| Total JS files (estimated) | 539 | ~480 |
+
+---
+
+## PHASE SUMMARY
+
+| Phase | Description | Risk | Duration |
+|-------|-------------|------|----------|
+| 1 | Eliminate `core/` directory | Medium | 2-3 hours |
+| 2 | Fix import boundary violations | Low | 30-45 min |
+| 3 | Route file naming | Low | 1-2 hours |
+| 4 | Split `features/account/utils.js` | Medium | 1.5-2 hours |
+| 5 | Rename generic utility files | Low | 30-45 min |
+| 6 | Consolidate auth server files | Medium | 2-3 hours |
+| 7 | Consolidate navigation hooks | Low | 1 hour |
+| 8 | Move `components/ui/` to `ui/` | Low | 15 min |
+| 9 | Create documentation | None | 30 min |
+| **Total** | | | **10-14 hours** |
+
+---
+
+*Document version: 3.0 — Consolidated from v0 analysis and Claude Code ground truth verification.*
