@@ -456,7 +456,6 @@ Verify current `jsconfig.json` paths:
 ## PHASE 1 — Eliminate `core/` Directory
 
 **Risk:** Medium. Highest impact. Touches ~250+ import statements.
-**Duration:** 2-3 hours.
 
 ### Step 1.1 — Move `core/modules/` → `modules/`
 
@@ -594,7 +593,6 @@ Test routes: `/`, `/movie/[id]`, `/person/[id]`, `/account/[username]`, `/sign-i
 ## PHASE 2 — Fix Import Boundary Violations
 
 **Risk:** Low. 3 targeted file changes.
-**Duration:** 30-45 minutes.
 
 ### Step 2.1 — Fix `ui/skeletons/views/account.js`
 
@@ -673,7 +671,6 @@ pnpm build
 ## PHASE 3 — Route File Naming
 
 **Risk:** Low. Pure renames, no logic changes.
-**Duration:** 1-2 hours.
 
 ### Rename Pattern
 
@@ -826,7 +823,6 @@ pnpm build
 ## PHASE 4 — Split `features/account/utils.js`
 
 **Risk:** Medium. This file is imported by many consumers.
-**Duration:** 1.5-2 hours.
 
 ### Target Split
 
@@ -871,7 +867,6 @@ pnpm build
 ## PHASE 5 — Rename Generic Utility Files
 
 **Risk:** Low. Simple renames + import updates.
-**Duration:** 30-45 minutes.
 
 ### File Renames
 
@@ -919,7 +914,6 @@ pnpm build
 ## PHASE 6 — Consolidate Auth Server Files
 
 **Risk:** Medium. Do not change function signatures.
-**Duration:** 2-3 hours.
 
 ### Consolidation Map
 
@@ -1021,7 +1015,6 @@ lib/auth/servers/
 ## PHASE 7 — Consolidate Navigation Hooks
 
 **Risk:** Low. Only internal module consumers.
-**Duration:** 1 hour.
 
 `modules/nav/hooks/` contains 14 files. Group by concern:
 
@@ -1050,7 +1043,6 @@ lib/auth/servers/
 ## PHASE 8 — Move `components/ui/` to `ui/`
 
 **Risk:** Low. Only 2 files.
-**Duration:** 15 minutes.
 
 ```bash
 cp components/ui/noise-texture.js ui/effects/noise-texture.js
@@ -1078,7 +1070,6 @@ rm components.json  # if it only configured shadcn output paths
 ## PHASE 9 — Create Documentation
 
 **Risk:** None. New files only.
-**Duration:** 30 minutes.
 
 ### Create `NAMING_CONVENTIONS.md`
 
@@ -1219,18 +1210,17 @@ find app -name "view.js" | wc -l
 
 ## PHASE SUMMARY
 
-| Phase | Description | Risk | Duration |
-|-------|-------------|------|----------|
-| 1 | Eliminate `core/` directory | Medium | 2-3 hours |
-| 2 | Fix import boundary violations | Low | 30-45 min |
-| 3 | Route file naming | Low | 1-2 hours |
-| 4 | Split `features/account/utils.js` | Medium | 1.5-2 hours |
-| 5 | Rename generic utility files | Low | 30-45 min |
-| 6 | Consolidate auth server files | Medium | 2-3 hours |
-| 7 | Consolidate navigation hooks | Low | 1 hour |
-| 8 | Move `components/ui/` to `ui/` | Low | 15 min |
-| 9 | Create documentation | None | 30 min |
-| **Total** | | | **10-14 hours** |
+| Phase | Description | Risk |
+|-------|-------------|------|
+| 1 | Eliminate `core/` directory | Medium |
+| 2 | Fix import boundary violations | Low |
+| 3 | Route file naming | Low |
+| 4 | Split `features/account/utils.js` | Medium |
+| 5 | Rename generic utility files | Low |
+| 6 | Consolidate auth server files | Medium |
+| 7 | Consolidate navigation hooks | Low |
+| 8 | Move `components/ui/` to `ui/` | Low |
+| 9 | Create documentation | None |
 
 ---
 
