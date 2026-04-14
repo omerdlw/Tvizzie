@@ -59,6 +59,7 @@ export default function Client({ initialSnapshot = null }) {
     linkedProviderIdsOverride,
     listsCount,
     profile,
+    applyProfile,
     setForm,
     setLinkedProviderDescriptorsOverride,
     setLinkedProviderIdsOverride,
@@ -234,6 +235,7 @@ export default function Client({ initialSnapshot = null }) {
         }
       }
 
+      applyProfile(nextProfile);
       emitAccountFeedback('account-update', 'success');
       toast.success('Account updated');
       router.push('/account');

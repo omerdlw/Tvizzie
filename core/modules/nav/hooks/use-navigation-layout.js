@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { useNavigationContext } from '../context';
+import { getNavItemMode, isNavOverlayMode, NAV_ITEM_MODES } from '../state-machine';
 
 const MAX_VISIBLE_STACKED_CARDS = 3;
 
@@ -148,13 +149,18 @@ export function useNavigationLayout({ isHovered, navigationItems, activeItem } =
   const { expanded } = useNavigationContext();
 
   const { displayItems, displayActiveIndex } = useMemo(() => {
-    const shouldShowOverlayStack = activeItem?.isStatus || activeItem?.isConfirmation || activeItem?.isSurface;
+    const activeMode = getNavItemMode(activeItem);
+    const shouldShowOverlayStack = isNavOverlayMode(activeMode) || activeMode === NAV_ITEM_MODES.STATUS_INLINE;
 
     const activeIndex = findActiveIndex(navigationItems, activeItem, pathname);
 
     const itemsWithActiveItem = replaceActiveItem(navigationItems, activeIndex, activeItem);
 
-    if (activeItem?.isLoading) {
+    if (
+      activeMode === NAV_ITEM_MODES.ROUTE_LOADING ||
+      activeMode === NAV_ITEM_MODES.PAGE_LOADING ||
+      activeMode === NAV_ITEM_MODES.STATUS_OVERLAY
+    ) {
       return {
         displayItems: activeItem ? [activeItem] : [],
         displayActiveIndex: activeItem ? 0 : -1,

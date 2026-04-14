@@ -19,7 +19,7 @@ function blurActiveElement() {
 export function useNavigationCore() {
   const pathname = usePathname();
   const router = useRouter();
-  const { clearGuardConfirmation, setGuardConfirmation } = useNavigationActions();
+  const { clearGuardConfirmation, setGuardConfirmation, setPendingNavigationPath } = useNavigationActions();
   const { isAuthenticated, isReady } = useAuth();
   const previousPathRef = useRef(pathname);
 
@@ -80,6 +80,7 @@ export function useNavigationCore() {
       }
 
       const from = pathname;
+      const normalizedTargetPath = normalizeNavPathname(targetHref);
 
       if (!force) {
         const guardResult = await checkGuards(targetHref, from);
@@ -93,13 +94,16 @@ export function useNavigationCore() {
 
       clearGuardConfirmation();
       blurActiveElement();
+      if (normalizedTargetPath && normalizedTargetPath !== normalizeNavPathname(pathname)) {
+        setPendingNavigationPath(normalizedTargetPath);
+      }
       NAV_EVENT_HANDLERS.navigateStart(targetHref, from);
       router.push(targetHref);
       NAV_EVENT_HANDLERS.navigate(targetHref, from);
 
       return true;
     },
-    [clearGuardConfirmation, openGuardConfirmation, pathname, resolveNavigationHref, router]
+    [clearGuardConfirmation, openGuardConfirmation, pathname, resolveNavigationHref, router, setPendingNavigationPath]
   );
 
   useEffect(() => {
@@ -108,9 +112,10 @@ export function useNavigationCore() {
     }
 
     clearGuardConfirmation();
+    setPendingNavigationPath(null);
     NAV_EVENT_HANDLERS.navigateEnd(pathname, previousPathRef.current);
     previousPathRef.current = pathname;
-  }, [clearGuardConfirmation, pathname]);
+  }, [clearGuardConfirmation, pathname, setPendingNavigationPath]);
 
   return {
     navigate,

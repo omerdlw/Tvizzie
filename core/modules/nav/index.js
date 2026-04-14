@@ -9,32 +9,36 @@ import { DURATION, EASING, Z_INDEX } from '@/core/constants';
 import { useClickOutside } from '@/core/hooks';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigation } from '@/core/modules/nav/hooks';
+import {
+  getNavItemMode,
+  getNavItemRenderKey,
+  getNavModeMinimumCardHeight,
+  isNavOverlayMode,
+  NAV_ITEM_MODES,
+} from '@/core/modules/nav/state-machine';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
+
+const NAV_STACK_EDGE_PADDING = 24;
 
 function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
   const baseClassName =
     'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-(--motion-duration-normal) sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
-  if (isModalOpen || isFullscreenStateActive) {
+  if (isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;
+  }
+
+  if (isModalOpen) {
+    return `${baseClassName} pointer-events-none opacity-100`;
   }
 
   return `${baseClassName} opacity-100`;
 }
 
-function getItemKey(link, index) {
-  const pathPart = String(link?.path || '').trim() || 'no-path';
-  const namePart = String(link?.name || '').trim() || 'no-name';
-  const typePart = String(link?.type || '').trim() || 'no-type';
-
-  if (link.isChild) {
-    const parentPart = String(link?.parentName || '').trim() || 'no-parent';
-    return `${parentPart}::${pathPart}::${namePart}::${typePart}::${index}`;
-  }
-
-  return `${pathPart}::${namePart}::${typePart}::${index}`;
+function getItemKey(link) {
+  return getNavItemRenderKey(link);
 }
 
 function getIsItemActive(link, activeItem) {
@@ -49,8 +53,13 @@ function getItemPosition(index, expanded) {
   return index;
 }
 
-function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight }) {
-  const nextCardHeight = Math.max(NAV_CARD_LAYOUT.baseHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
+function getContainerHeight({ actionHeight, activeItemHasAction, activeItemMode, cardContentHeight }) {
+  const minimumHeight = getNavModeMinimumCardHeight(activeItemMode ?? NAV_ITEM_MODES.IDLE);
+  const nextCardHeight = Math.max(
+    NAV_CARD_LAYOUT.baseHeight,
+    minimumHeight,
+    cardContentHeight + NAV_CARD_LAYOUT.chromeHeight
+  );
 
   return nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
 }
@@ -60,20 +69,7 @@ function getActiveItemLayoutKey(activeItem) {
     return 'none';
   }
 
-  const pathPart = String(activeItem.path || '').trim() || 'no-path';
-  const namePart = String(activeItem.name || '').trim() || 'no-name';
-  const typePart = String(activeItem.type || '').trim() || 'no-type';
-
-  return [
-    pathPart,
-    namePart,
-    typePart,
-    activeItem.isLoading ? 'loading' : 'ready',
-    activeItem.isOverlay ? 'overlay' : 'base',
-    activeItem.isSurface ? 'surface' : 'content',
-    activeItem.isConfirmation ? 'confirmation' : 'standard',
-    activeItem.action ? 'action' : 'no-action',
-  ].join('::');
+  return [getNavItemRenderKey(activeItem), activeItem.action ? 'action' : 'no-action'].join('::');
 }
 
 function getBackdropAnimation(isVisible) {
@@ -117,13 +113,15 @@ export default function Nav() {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [actionHeight, setActionHeight] = useState(0);
   const [portalTarget, setPortalTarget] = useState(null);
+  const [maxViewportHeight, setMaxViewportHeight] = useState(Infinity);
 
   const navRef = useRef(null);
   const previousPathRef = useRef(pathname);
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
   const previousActiveItemLayoutKeyRef = useRef(activeItemLayoutKey);
+  const activeItemMode = getNavItemMode(activeItem);
 
-  const isOverlayActive = !!activeItem?.isOverlay;
+  const isOverlayActive = isNavOverlayMode(activeItemMode);
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
 
   const handleOutsideDismiss = useCallback(() => {
@@ -187,7 +185,7 @@ export default function Nav() {
   }, [pathname, setNavHeight]);
 
   useIsomorphicLayoutEffect(() => {
-    if (activeItem?.isOverlay) {
+    if (activeItemMode === NAV_ITEM_MODES.SURFACE) {
       return;
     }
 
@@ -200,18 +198,20 @@ export default function Nav() {
     setCardContentHeight(0);
     setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
     setNavHeight(NAV_CARD_LAYOUT.baseHeight + 16);
-  }, [activeItem?.isOverlay, activeItemLayoutKey, setNavHeight]);
+  }, [activeItemLayoutKey, activeItemMode, setNavHeight]);
 
   useIsomorphicLayoutEffect(() => {
-    const height = getContainerHeight({
+    const measuredHeight = getContainerHeight({
       actionHeight,
       activeItemHasAction,
+      activeItemMode,
       cardContentHeight,
     });
+    const height = Math.min(measuredHeight, maxViewportHeight);
 
     setContainerHeight(height);
     setNavHeight(height + 16);
-  }, [actionHeight, activeItemHasAction, cardContentHeight, setNavHeight]);
+  }, [actionHeight, activeItemHasAction, activeItemMode, cardContentHeight, maxViewportHeight, setNavHeight]);
 
   useEffect(() => {
     if (expanded) {
@@ -228,6 +228,23 @@ export default function Nav() {
   useEffect(() => {
     if (typeof document === 'undefined') return;
     setPortalTarget(document.body);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    function updateMaxViewportHeight() {
+      setMaxViewportHeight(Math.max(NAV_CARD_LAYOUT.baseHeight, window.innerHeight - NAV_STACK_EDGE_PADDING));
+    }
+
+    updateMaxViewportHeight();
+    window.addEventListener('resize', updateMaxViewportHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateMaxViewportHeight);
+    };
   }, []);
 
   useEffect(() => {

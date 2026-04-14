@@ -16,12 +16,12 @@ function LoadingContent({ skeleton }) {
 }
 
 export function LoadingOverlay() {
-  const { isLoading, skeleton } = useLoadingState();
+  const { isLoading, skeleton, showOverlay } = useLoadingState();
   const isFullscreenStateActive = useIsFullscreenStateActive();
 
   return (
     <AnimatePresence>
-      {isLoading && !isFullscreenStateActive && (
+      {isLoading && showOverlay && !isFullscreenStateActive && (
         <motion.div
           className="center fixed inset-0 h-screen w-screen"
           initial={{}}

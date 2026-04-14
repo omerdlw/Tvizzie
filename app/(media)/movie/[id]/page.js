@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getMovieComputedData } from '@/features/movie/utils';
 import { TMDB_IMG } from '@/core/constants';
 import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server';
+import { isDisplayableMovie } from '@/core/clients/tmdb/sanitize';
 
 import Client from './client';
 
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }) {
   const response = await getMovieBase(id);
   const movie = response?.data;
 
-  if (!movie) {
+  if (!movie || !isDisplayableMovie(movie, 'detail')) {
     return { title: 'Movie Not Found' };
   }
 
@@ -52,7 +53,7 @@ export default async function Page({ params }) {
   const response = await getMovieBase(id);
   const movie = response?.data;
 
-  if (!movie || response.status === 404) {
+  if (!movie || response.status === 404 || !isDisplayableMovie(movie, 'detail')) {
     notFound();
   }
 

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { ACTIVITY_EVENT_TYPE_SET } from '@/core/services/activity/activity-events.constants';
+import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'is_private', 'username'].join(',');
@@ -118,18 +119,19 @@ export async function processActivityEvent({ actorUserId, eventType, payload = {
   const actor = buildActorSnapshot(normalizedActorUserId, actorProfile || {});
   const subject = buildSubject(payload);
   const visibility = normalizeValue(payload.visibility) || (actorProfile?.is_private === true ? 'followers' : 'public');
-  
+
   const canonicalDedupeKey = buildCanonicalActivityDedupeKey({
     actorUserId: normalizedActorUserId,
+    eventType: normalizedEventType,
     subjectId: subject.id,
     subjectType: subject.type,
   });
-  
+
   const dedupeKey =
-    canonicalDedupeKey ||
     normalizeValue(payload.dedupeKey) ||
+    canonicalDedupeKey ||
     `${normalizedEventType}:${subject.type || 'unknown'}:${subject.id || 'unknown'}:${Date.now()}`;
-    
+
   const nowIso = new Date().toISOString();
   const recordPayload = {
     event_type: normalizedEventType,

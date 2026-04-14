@@ -208,6 +208,7 @@ export async function markUserWatched({ media, sourceLastAction = 'watched', use
     fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHED_MARKED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
+        eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
         subjectId: mediaSnapshot.entityId,
         subjectType: mediaSnapshot.entityType,
       }),

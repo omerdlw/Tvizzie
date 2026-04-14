@@ -146,7 +146,7 @@ export default function Registry({
           },
         }
       : {}),
-    loading: { isLoading },
+    loading: { isLoading, showOverlay: false },
     modal: {
       PREVIEW_MODAL: ImagePreviewModal,
     },

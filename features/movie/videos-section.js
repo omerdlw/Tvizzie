@@ -50,7 +50,7 @@ export default function VideosSection({ videos }) {
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <SegmentedControl items={items} value={activeType} onChange={setActiveType} />
+      <SegmentedControl classNames={{ track: "w-auto", wrapper: 'p-0.5' }} items={items} value={activeType} onChange={setActiveType} />
 
       <Carousel gap="gap-3">
         {filteredVideos.map((video) => (

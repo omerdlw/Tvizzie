@@ -169,6 +169,7 @@ export async function toggleUserWatchlistItem({ media, userId }) {
     fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
+        eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
         subjectId: mediaSnapshot.entityId,
         subjectType: mediaSnapshot.entityType,
       }),

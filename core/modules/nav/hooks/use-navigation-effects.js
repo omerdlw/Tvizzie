@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 
-const EXPAND_PARENT_DELAY = 450;
-
 export function useRouteChangeEffects(pathname, expandParentForPath, setExpanded, setSearchQuery, setIsHovered) {
   const previousPathRef = useRef(pathname);
 
@@ -17,13 +15,6 @@ export function useRouteChangeEffects(pathname, expandParentForPath, setExpanded
     setExpanded(false);
     setSearchQuery('');
     setIsHovered(false);
-
-    const timerId = window.setTimeout(() => {
-      expandParentForPath(pathname);
-    }, EXPAND_PARENT_DELAY);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
+    expandParentForPath(pathname);
   }, [pathname, expandParentForPath, setExpanded, setSearchQuery, setIsHovered]);
 }

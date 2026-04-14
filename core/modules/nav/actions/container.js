@@ -21,9 +21,9 @@ const ACTION_KEYS = Object.freeze({
 
 const ACTION_ORDER = Object.freeze({
   NOTIFICATIONS: -10,
-  SETTINGS: 0,
   TOGGLE_MUTE: 10,
   SCROLL_TOP: 20,
+  SETTINGS: 0,
   LOGOUT: 30,
 });
 const UNREAD_COUNT_SUBSCRIPTION_INTERVAL_MS = 15000;

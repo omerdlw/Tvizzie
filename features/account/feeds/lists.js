@@ -150,11 +150,13 @@ export default function AccountListsFeed({
       }
       title="Lists"
       toolbar={
-        <AccountListSortBar
-          sort={listFilters.sort}
-          onChange={handleSortChange}
-          onReset={hasActiveListFilters(listFilters) ? handleResetFilters : null}
-        />
+        lists.length > 0 ? (
+          <AccountListSortBar
+            sort={listFilters.sort}
+            onChange={handleSortChange}
+            onReset={hasActiveListFilters(listFilters) ? handleResetFilters : null}
+          />
+        ) : null
       }
     />
   );

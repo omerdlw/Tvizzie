@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
-import {
-  normalizeGoogleAuthIntent,
-  sanitizeAuthNextPath,
-} from '@/core/auth/oauth-callback';
-import { createClient as createSupabaseServerClient } from '@/core/clients/supabase/server';
+import { normalizeOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
+import { normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 
 const CLIENT_OAUTH_CALLBACK_FALLBACK_PATH = '/auth/oauth-callback';
 
@@ -28,10 +25,13 @@ function buildAbsoluteRedirectUrl({ requestUrl, pathname, nextPath = '', notice 
 }
 
 function buildFailureRedirectUrl({ intent, nextPath, requestUrl }) {
+  const provider = normalizeOAuthProvider(requestUrl.searchParams.get('provider'));
+  const failureNotice = provider === 'google' ? AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED : AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED;
+
   if (intent === 'sign-up') {
     return buildAbsoluteRedirectUrl({
       nextPath,
-      notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+      notice: failureNotice,
       pathname: '/sign-up',
       requestUrl,
     });
@@ -40,29 +40,17 @@ function buildFailureRedirectUrl({ intent, nextPath, requestUrl }) {
   if (intent === 'sign-in') {
     return buildAbsoluteRedirectUrl({
       nextPath,
-      notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+      notice: failureNotice,
       pathname: '/sign-in',
       requestUrl,
     });
   }
 
   return buildAbsoluteRedirectUrl({
-    notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+    notice: failureNotice,
     pathname: nextPath,
     requestUrl,
   });
-}
-
-function buildPostAuthRedirectUrl({ nextPath, request }) {
-  const forwardedHost = normalizeValue(request.headers.get('x-forwarded-host'));
-  const forwardedProto = normalizeValue(request.headers.get('x-forwarded-proto')) || 'https';
-  const requestUrl = new URL(request.url);
-
-  if (process.env.NODE_ENV !== 'development' && forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}${nextPath}`;
-  }
-
-  return `${requestUrl.origin}${nextPath}`;
 }
 
 function buildClientFallbackUrl(requestUrl) {
@@ -82,7 +70,7 @@ export async function GET(request) {
     requestUrl.searchParams.get('error') || requestUrl.searchParams.get('error_description')
   );
   const nextPath = sanitizeAuthNextPath(requestUrl.searchParams.get('next'));
-  const intent = normalizeGoogleAuthIntent(requestUrl.searchParams.get('intent'), 'sign-in');
+  const intent = normalizeOAuthIntent(requestUrl.searchParams.get('intent'), 'sign-in');
 
   if (providerError) {
     return NextResponse.redirect(buildFailureRedirectUrl({ intent, nextPath, requestUrl }));
@@ -92,12 +80,5 @@ export async function GET(request) {
     return NextResponse.redirect(buildClientFallbackUrl(requestUrl));
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-  if (error) {
-    return NextResponse.redirect(buildClientFallbackUrl(requestUrl));
-  }
-
-  return NextResponse.redirect(buildPostAuthRedirectUrl({ nextPath, request }));
+  return NextResponse.redirect(buildClientFallbackUrl(requestUrl));
 }

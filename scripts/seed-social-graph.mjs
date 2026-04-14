@@ -1,1533 +1,1626 @@
 #!/usr/bin/env node
 
-import crypto from 'node:crypto';
-import fs from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
-
+import { fileURLToPath } from 'node:url';
+import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-const DEFAULTS = Object.freeze({
-  userCount: 20,
-  likesPerUser: 60,
-  listCountPerUser: 10,
-  listItemsPerList: 60,
-  reviewsPerUser: 60,
-  watchedPerUser: 60,
-  watchlistPerUser: 60,
-});
-
-const WORD_BANK = Object.freeze({
-  adjectives: [
-    'amber',
-    'ancient',
-    'atomic',
-    'autumn',
-    'bold',
-    'bright',
-    'bronze',
-    'celestial',
-    'chill',
-    'crimson',
-    'crystal',
-    'digital',
-    'ember',
-    'emerald',
-    'frost',
-    'golden',
-    'hidden',
-    'indigo',
-    'iron',
-    'lunar',
-    'midnight',
-    'misty',
-    'neon',
-    'nova',
-    'obsidian',
-    'opal',
-    'primal',
-    'rapid',
-    'solar',
-    'stellar',
-    'sunset',
-    'velvet',
-    'vivid',
-    'wild',
-  ],
-  nouns: [
-    'arrow',
-    'atlas',
-    'aurora',
-    'beacon',
-    'blaze',
-    'cipher',
-    'comet',
-    'drift',
-    'echo',
-    'falcon',
-    'field',
-    'flux',
-    'forge',
-    'glider',
-    'harbor',
-    'horizon',
-    'junction',
-    'kernel',
-    'legend',
-    'matrix',
-    'meadow',
-    'mirage',
-    'orbit',
-    'pulse',
-    'quartz',
-    'ranger',
-    'signal',
-    'summit',
-    'temple',
-    'thunder',
-    'vertex',
-    'voyage',
-    'wave',
-    'zenith',
-  ],
-  reviewOpeners: [
-    'Opening sequence carried strong momentum and set the tone immediately.',
-    'Performance quality stayed consistent and emotionally grounded throughout.',
-    'Pacing felt tighter than expected and avoided dead air in key acts.',
-    'Visual design stayed coherent and supported the story instead of distracting.',
-    'Character decisions mostly felt earned with a clear internal logic.',
-    'Sound design created tension effectively, especially in transitional scenes.',
-    'Editing rhythm gave the narrative a confident forward movement.',
-    'Dialogue quality was cleaner than average with memorable exchanges.',
-  ],
-  reviewClosers: [
-    'Final act lands well and leaves enough detail to discuss after credits.',
-    'Not flawless, but technically solid and easy to recommend.',
-    'A few rough edges exist, yet the overall craft level is high.',
-    'Good rewatch value due to consistent scene construction.',
-    'Worth seeing for execution quality alone.',
-    'Core idea is delivered with clarity and discipline.',
-    'Strong balance between style and narrative intent.',
-    'Would keep this on a yearly rewatch shortlist.',
-  ],
-  bioFragments: [
-    'movie collector',
-    'night cinema walker',
-    'list curator',
-    'slow-burn fan',
-    'sci-fi regular',
-    'thriller enjoyer',
-    'weekend reviewer',
-    'dialogue hunter',
-    'soundtrack listener',
-    'plot-hole inspector',
-    'film notebook owner',
-    'poster wall builder',
-  ],
-});
-
-const GENRE_CATALOG = Object.freeze([
-  Object.freeze({ id: 28, name: 'Action' }),
-  Object.freeze({ id: 12, name: 'Adventure' }),
-  Object.freeze({ id: 16, name: 'Animation' }),
-  Object.freeze({ id: 35, name: 'Comedy' }),
-  Object.freeze({ id: 80, name: 'Crime' }),
-  Object.freeze({ id: 99, name: 'Documentary' }),
-  Object.freeze({ id: 18, name: 'Drama' }),
-  Object.freeze({ id: 10751, name: 'Family' }),
-  Object.freeze({ id: 14, name: 'Fantasy' }),
-  Object.freeze({ id: 36, name: 'History' }),
-  Object.freeze({ id: 27, name: 'Horror' }),
-  Object.freeze({ id: 10402, name: 'Music' }),
-  Object.freeze({ id: 9648, name: 'Mystery' }),
-  Object.freeze({ id: 10749, name: 'Romance' }),
-  Object.freeze({ id: 878, name: 'Science Fiction' }),
-  Object.freeze({ id: 53, name: 'Thriller' }),
-  Object.freeze({ id: 10770, name: 'TV Movie' }),
-  Object.freeze({ id: 10752, name: 'War' }),
-  Object.freeze({ id: 37, name: 'Western' }),
-]);
-
-const GENRE_MAP = Object.freeze(
-  GENRE_CATALOG.reduce((accumulator, item) => {
-    accumulator[item.id] = item.name;
-    return accumulator;
-  }, {})
-);
-
-const PROVIDER_CATALOG = Object.freeze([
-  Object.freeze({ id: 8, name: 'Netflix' }),
-  Object.freeze({ id: 9, name: 'Amazon Prime Video' }),
-  Object.freeze({ id: 337, name: 'Disney Plus' }),
-  Object.freeze({ id: 350, name: 'Apple TV Plus' }),
-  Object.freeze({ id: 531, name: 'Paramount Plus' }),
-  Object.freeze({ id: 384, name: 'HBO Max' }),
-  Object.freeze({ id: 15, name: 'Hulu' }),
-  Object.freeze({ id: 386, name: 'Peacock' }),
-  Object.freeze({ id: 1899, name: 'MUBI' }),
-  Object.freeze({ id: 283, name: 'Crunchyroll' }),
-]);
+const scriptFilename = fileURLToPath(import.meta.url);
+const scriptDirname = path.dirname(scriptFilename);
+const REPO_ROOT = path.resolve(scriptDirname, '..');
+const OUTPUT_DIR = path.join(REPO_ROOT, 'scripts', 'output');
 
 const ACTIVITY_EVENT_TYPES = Object.freeze({
+  MEDIA_LIKED: 'MEDIA_LIKED',
+  LIST_ITEM_ADDED: 'LIST_ITEM_ADDED',
+  WATCHLIST_ADDED: 'WATCHLIST_ADDED',
+  WATCHED_MARKED: 'WATCHED_MARKED',
+  REVIEW_PUBLISHED: 'REVIEW_PUBLISHED',
   LIST_CREATED: 'LIST_CREATED',
   LIST_LIKED: 'LIST_LIKED',
-  REVIEW_PUBLISHED: 'REVIEW_PUBLISHED',
-  WATCHED_MARKED: 'WATCHED_MARKED',
-  WATCHLIST_ADDED: 'WATCHLIST_ADDED',
 });
 
-function normalizeValue(value) {
-  return String(value || '').trim();
+const NOTIFICATION_EVENT_TYPES = Object.freeze({
+  LIST_LIKED: 'LIST_LIKED',
+});
+
+const MOVIE_TITLE_PREFIXES = [
+  'Neon',
+  'Midnight',
+  'Velvet',
+  'Broken',
+  'Electric',
+  'Hidden',
+  'Last',
+  'Golden',
+  'Feral',
+  'Silent',
+  'Burning',
+  'Static',
+];
+const MOVIE_TITLE_SUFFIXES = [
+  'Run',
+  'Archive',
+  'Circuit',
+  'Signal',
+  'Harbor',
+  'Season',
+  'Empire',
+  'Memory',
+  'Drive',
+  'Ghost',
+  'Street',
+  'Horizon',
+];
+const LIST_TITLE_PREFIXES = [
+  'Late Night',
+  'Cold Weather',
+  'Unreliable',
+  'Weekend',
+  'Hidden Gem',
+  'Rainy Day',
+  'Sleepless',
+  'Loud Crowd',
+  'Slow Burn',
+  'After Hours',
+  'Chaos Theory',
+  'Sunday Panic',
+];
+const LIST_TITLE_SUFFIXES = [
+  'Favorites',
+  'Watchlist',
+  'Marathon',
+  'Queue',
+  'Rotation',
+  'Stack',
+  'Collection',
+  'Moodboard',
+  'Drafts',
+  'Detours',
+  'Essentials',
+  'Revisits',
+];
+const REVIEW_OPENERS = [
+  'I did not expect this one to work, but it really does.',
+  'This feels messy in the right ways.',
+  'There is a weird confidence to the whole thing.',
+  'The pacing should fall apart, yet it keeps moving.',
+  'A lot of this is excessive, but never dull.',
+  'This lands somewhere between chaos and precision.',
+  'It is easier to admire than to fully love, and that is fine.',
+  'The tone keeps shifting and somehow stays coherent.',
+  'I bought into the mood long before the plot caught up.',
+  'The whole thing plays better on instinct than on paper.',
+];
+const REVIEW_MIDDLES = [
+  'The performances do most of the heavy lifting.',
+  'Its best scenes feel improvised even when they clearly are not.',
+  'The script leaves some obvious gaps, but the atmosphere covers a lot of them.',
+  'The visual design keeps the energy high even when the story drifts.',
+  'It has enough texture to survive the weaker stretches.',
+  'Some choices are clumsy, though the movie stays surprisingly watchable.',
+  'There is more restraint here than the setup suggests.',
+  'The ending overreaches a little, but I respect the swing.',
+  'It understands exactly when to be subtle and when to go loud.',
+  'The central idea is simple, but the execution gives it weight.',
+];
+const REVIEW_CLOSERS = [
+  'I would still recommend it.',
+  'This is the kind of movie I can imagine revisiting.',
+  'It works best when you let the mood take over.',
+  'Not flawless, but definitely memorable.',
+  'I can see why people bounce off it, but I had a good time.',
+  'It earns more goodwill than it probably should.',
+  'There is enough here to keep me on its side.',
+  'The rough edges are part of the appeal.',
+  'I liked it more the longer it went on.',
+  'It is not tidy, but it sticks with you.',
+];
+const TMDB_GENRE_ID_TO_NAME = Object.freeze({
+  12: 'Adventure',
+  14: 'Fantasy',
+  16: 'Animation',
+  18: 'Drama',
+  27: 'Horror',
+  28: 'Action',
+  35: 'Comedy',
+  36: 'History',
+  37: 'Western',
+  53: 'Thriller',
+  80: 'Crime',
+  99: 'Documentary',
+  878: 'Science Fiction',
+  9648: 'Mystery',
+  10402: 'Music',
+  10749: 'Romance',
+  10751: 'Family',
+  10752: 'War',
+  10770: 'TV Movie',
+});
+const SYNTHETIC_GENRE_IDS = Object.freeze(Object.keys(TMDB_GENRE_ID_TO_NAME).map((value) => Number(value)));
+
+function loadEnvFile(filePath) {
+  return readFile(filePath, 'utf8')
+    .then((raw) => {
+      raw.split(/\r?\n/).forEach((line) => {
+        const trimmed = line.trim();
+
+        if (!trimmed || trimmed.startsWith('#')) {
+          return;
+        }
+
+        const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+
+        if (!match) {
+          return;
+        }
+
+        const [, key, valueRaw] = match;
+
+        if (process.env[key]) {
+          return;
+        }
+
+        let value = valueRaw.trim();
+
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+
+        process.env[key] = value;
+      });
+    })
+    .catch(() => {});
 }
 
-function normalizeNumber(value, fallback) {
+function log(message) {
+  console.log(`[seed:social] ${message}`);
+}
+
+function fail(message) {
+  throw new Error(message);
+}
+
+function normalizeValue(value) {
+  return String(value ?? '').trim();
+}
+
+function parseInteger(value, fallback) {
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : fallback;
+}
+
+function parseBoolean(value, fallback = false) {
+  const normalized = normalizeValue(value).toLowerCase();
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  if (['1', 'true', 'yes', 'y', 'on'].includes(normalized)) {
+    return true;
+  }
+
+  if (['0', 'false', 'no', 'n', 'off'].includes(normalized)) {
+    return false;
+  }
+
+  return fallback;
 }
 
 function randomInt(min, max) {
-  return crypto.randomInt(min, max + 1);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function randomPick(list = []) {
-  return list[randomInt(0, Math.max(list.length - 1, 0))];
+function randomChoice(items) {
+  return items[randomInt(0, items.length - 1)];
 }
 
-function shuffle(items = []) {
-  const arr = [...items];
+function shuffle(items) {
+  const copy = [...items];
 
-  for (let index = arr.length - 1; index > 0; index -= 1) {
-    const swapIndex = randomInt(0, index);
-    const tmp = arr[index];
-    arr[index] = arr[swapIndex];
-    arr[swapIndex] = tmp;
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const nextIndex = randomInt(0, index);
+    const current = copy[index];
+    copy[index] = copy[nextIndex];
+    copy[nextIndex] = current;
   }
 
-  return arr;
+  return copy;
 }
 
-function sampleUnique(items = [], count, predicate = null) {
-  const source = typeof predicate === 'function' ? items.filter(predicate) : [...items];
+function sampleUnique(items, count, excluded = new Set()) {
+  const selected = [];
 
-  if (!source.length || count <= 0) {
+  for (const item of shuffle(items)) {
+    const key = item?.mediaKey || item?.id || item?.userId || JSON.stringify(item);
+
+    if (excluded.has(key)) {
+      continue;
+    }
+
+    excluded.add(key);
+    selected.push(item);
+
+    if (selected.length >= count) {
+      break;
+    }
+  }
+
+  return selected;
+}
+
+function randomRating() {
+  return randomInt(1, 10) / 2;
+}
+
+function randomTimestampBetween(startMs, endMs) {
+  const safeStart = Math.min(startMs, endMs);
+  const safeEnd = Math.max(startMs, endMs);
+  return new Date(randomInt(safeStart, safeEnd)).toISOString();
+}
+
+function slugify(value) {
+  return normalizeValue(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+function shortHash(value) {
+  return createHash('sha1').update(normalizeValue(value) || randomUUID()).digest('hex').slice(0, 6);
+}
+
+function buildMediaKey(entityType, entityId) {
+  return `${normalizeValue(entityType).toLowerCase()}_${normalizeValue(entityId)}`;
+}
+
+function buildCanonicalActivityDedupeKey({ actorUserId, eventType, subjectId, subjectType }) {
+  const normalizedActorUserId = normalizeValue(actorUserId);
+  const normalizedEventType = normalizeValue(eventType).toUpperCase();
+  const normalizedSubjectType = normalizeValue(subjectType).toLowerCase();
+  const normalizedSubjectId = normalizeValue(subjectId);
+
+  if (!normalizedActorUserId || !normalizedEventType || !normalizedSubjectType || !normalizedSubjectId) {
+    return '';
+  }
+
+  return `subject:${normalizedActorUserId}:${normalizedEventType}:${normalizedSubjectType}:${normalizedSubjectId}`;
+}
+
+function createSyntheticMovie(index) {
+  const prefix = MOVIE_TITLE_PREFIXES[index % MOVIE_TITLE_PREFIXES.length];
+  const suffix = MOVIE_TITLE_SUFFIXES[(index * 7) % MOVIE_TITLE_SUFFIXES.length];
+  const entityId = String(900000 + index);
+  const genreIds = shuffle(SYNTHETIC_GENRE_IDS).slice(0, randomInt(1, 3));
+
+  return {
+    backdrop_path: null,
+    entityId,
+    entityType: 'movie',
+    genreNames: genreIds.map((genreId) => TMDB_GENRE_ID_TO_NAME[genreId]).filter(Boolean),
+    genre_ids: genreIds,
+    genres: genreIds.map((genreId) => ({
+      id: genreId,
+      name: TMDB_GENRE_ID_TO_NAME[genreId],
+    })),
+    id: entityId,
+    mediaKey: buildMediaKey('movie', entityId),
+    popularity: randomInt(1, 100),
+    poster_path: null,
+    release_date: `${randomInt(1990, 2025)}-${String(randomInt(1, 12)).padStart(2, '0')}-${String(randomInt(1, 28)).padStart(2, '0')}`,
+    runtime: randomInt(80, 160),
+    title: `${prefix} ${suffix}`,
+    vote_average: randomInt(50, 90) / 10,
+    vote_count: randomInt(100, 5000),
+  };
+}
+
+async function fetchTmdbMoviePool({ apiKey, targetCount }) {
+  if (!apiKey) {
     return [];
   }
 
-  if (count >= source.length) {
-    return shuffle(source);
+  const movies = new Map();
+  const pages = shuffle(Array.from({ length: 250 }, (_, index) => index + 1));
+
+  for (const page of pages) {
+    if (movies.size >= targetCount) {
+      break;
+    }
+
+    try {
+      const response = await fetch(`https://api.themoviedb.org/3/discover/movie?language=en-US&page=${page}&sort_by=popularity.desc&with_runtime.gte=40`, {
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json();
+      const results = Array.isArray(payload?.results) ? payload.results : [];
+
+      results.forEach((item) => {
+        const entityId = normalizeValue(item?.id);
+
+        if (!entityId) {
+          return;
+        }
+
+        movies.set(entityId, {
+          backdrop_path: item?.backdrop_path || null,
+          entityId,
+          entityType: 'movie',
+          genreNames: Array.isArray(item?.genre_ids)
+            ? item.genre_ids.map((genreId) => TMDB_GENRE_ID_TO_NAME[genreId]).filter(Boolean)
+            : [],
+          genre_ids: Array.isArray(item?.genre_ids) ? item.genre_ids.filter((genreId) => Number.isFinite(Number(genreId))) : [],
+          genres: Array.isArray(item?.genre_ids)
+            ? item.genre_ids
+                .map((genreId) => ({
+                  id: genreId,
+                  name: TMDB_GENRE_ID_TO_NAME[genreId] || null,
+                }))
+                .filter((genre) => genre.name)
+            : [],
+          id: entityId,
+          mediaKey: buildMediaKey('movie', entityId),
+          popularity: Number(item?.popularity || 0) || null,
+          poster_path: item?.poster_path || null,
+          release_date: item?.release_date || null,
+          runtime: null,
+          title: item?.title || item?.original_title || `Movie ${entityId}`,
+          vote_average: Number(item?.vote_average || 0) || null,
+          vote_count: Number(item?.vote_count || 0) || null,
+        });
+      });
+    } catch {
+      break;
+    }
   }
 
-  return shuffle(source).slice(0, count);
+  return Array.from(movies.values());
 }
 
-function chunk(items = [], size = 500) {
-  const output = [];
-
-  for (let index = 0; index < items.length; index += size) {
-    output.push(items.slice(index, index + size));
-  }
-
-  return output;
+function randomReviewText() {
+  return `${randomChoice(REVIEW_OPENERS)} ${randomChoice(REVIEW_MIDDLES)} ${randomChoice(REVIEW_CLOSERS)}`;
 }
 
-function randomPastIso(maxDaysBack = 365) {
-  const now = Date.now();
-  const offsetMs = randomInt(0, maxDaysBack * 24 * 60 * 60) * 1000;
-  return new Date(now - offsetMs).toISOString();
-}
-
-function randomReleaseDate() {
-  const year = randomInt(1965, 2026);
-  const month = randomInt(1, 12);
-  const day = randomInt(1, 28);
-  return `${String(year)}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-function normalizeGenreIds(rawGenreIds = []) {
-  const ids = [...new Set((Array.isArray(rawGenreIds) ? rawGenreIds : []).map((value) => Number(value)).filter(Boolean))].filter(
-    (id) => GENRE_MAP[id]
-  );
-
-  if (ids.length > 0) {
-    return ids.slice(0, 4);
-  }
-
-  return sampleUnique(GENRE_CATALOG, randomInt(1, 3)).map((genre) => genre.id);
-}
-
-function buildProviderMeta() {
-  const picked = sampleUnique(PROVIDER_CATALOG, randomInt(1, 3));
-  const providers = picked.map((provider) => ({
-    display_priority: randomInt(1, 100),
-    logo_path: null,
-    provider_id: provider.id,
-    provider_name: provider.name,
-  }));
+function createMediaPayload(movie, userId, timestamp, overrides = {}) {
+  const entityId = normalizeValue(movie?.entityId ?? movie?.id);
+  const entityType = 'movie';
 
   return {
-    providerIds: providers.map((provider) => provider.provider_id),
-    providerNames: providers.map((provider) => provider.provider_name),
-    providers,
-    watchProviders: {
-      TR: {
-        flatrate: providers,
-      },
-    },
+    addedAt: timestamp,
+    backdrop_path: movie?.backdrop_path || null,
+    entityId,
+    entityType,
+    first_air_date: null,
+    genreNames: Array.isArray(movie?.genreNames) ? movie.genreNames : [],
+    genre_ids: Array.isArray(movie?.genre_ids) ? movie.genre_ids : [],
+    genres: Array.isArray(movie?.genres) ? movie.genres : [],
+    mediaKey: buildMediaKey(entityType, entityId),
+    media_type: entityType,
+    name: '',
+    original_name: null,
+    original_title: movie?.title || null,
+    poster_path: movie?.poster_path || null,
+    popularity: movie?.popularity ?? null,
+    position: overrides.position ?? null,
+    providerIds: [],
+    providerNames: [],
+    providers: [],
+    release_date: movie?.release_date || null,
+    runtime: movie?.runtime ?? null,
+    title: movie?.title || `Movie ${entityId}`,
+    updatedAt: timestamp,
+    userId,
+    vote_average: movie?.vote_average ?? null,
+    vote_count: movie?.vote_count ?? null,
+    watchProviders: null,
   };
 }
 
-function withMovieMeta(movie = {}) {
-  const genreIds = normalizeGenreIds(movie.genre_ids || movie.genreIds);
-  const genres = genreIds.map((id) => ({
-    id,
-    name: GENRE_MAP[id],
-  }));
-  const providerMeta = buildProviderMeta();
-  const voteAverageRaw = Number(movie.vote_average ?? movie.voteAverage);
-  const voteAverage = Number.isFinite(voteAverageRaw) && voteAverageRaw > 0 ? Number(voteAverageRaw.toFixed(1)) : Number((randomInt(35, 95) / 10).toFixed(1));
-  const voteCountRaw = Number(movie.vote_count ?? movie.voteCount);
-  const voteCount = Number.isFinite(voteCountRaw) && voteCountRaw > 0 ? Math.floor(voteCountRaw) : randomInt(120, 20000);
-  const popularityRaw = Number(movie.popularity);
-  const popularity = Number.isFinite(popularityRaw) && popularityRaw > 0 ? Number(popularityRaw.toFixed(3)) : Number((randomInt(50, 4000) / 10).toFixed(3));
-  const runtimeRaw = Number(movie.runtime);
-  const runtime = Number.isFinite(runtimeRaw) && runtimeRaw > 0 ? Math.floor(runtimeRaw) : randomInt(78, 188);
-  const releaseDate = normalizeValue(movie.release_date || movie.releaseDate) || randomReleaseDate();
-
+function createActorSnapshot(user) {
   return {
-    ...movie,
-    genreIds,
-    genreNames: genres.map((genre) => genre.name),
-    genres,
-    popularity,
-    providerIds: providerMeta.providerIds,
-    providerNames: providerMeta.providerNames,
-    providers: providerMeta.providers,
-    releaseDate,
-    runtime,
-    voteAverage,
-    voteCount,
-    watchProviders: providerMeta.watchProviders,
+    avatarUrl: user.avatarUrl || null,
+    displayName: user.displayName,
+    id: user.id,
+    username: user.username,
   };
 }
 
-function buildMediaPayload(movie, extra = {}) {
-  return {
-    backdrop_path: movie.backdropPath,
-    entityId: movie.entityId,
-    entityType: 'movie',
-    genreNames: movie.genreNames || [],
-    genre_ids: movie.genreIds || [],
-    genres: movie.genres || [],
-    id: movie.entityId,
-    mediaKey: movie.mediaKey,
-    media_type: 'movie',
-    popularity: movie.popularity ?? null,
-    poster_path: movie.posterPath,
-    providerIds: movie.providerIds || [],
-    providerNames: movie.providerNames || [],
-    providers: movie.providers || [],
-    release_date: movie.releaseDate || null,
-    runtime: movie.runtime ?? null,
-    title: movie.title,
-    vote_average: movie.voteAverage ?? null,
-    vote_count: movie.voteCount ?? null,
-    watchProviders: movie.watchProviders || null,
-    ...extra,
-  };
-}
+function buildActivitySubject(payload = {}) {
+  const subjectType = normalizeValue(payload.subjectType).toLowerCase();
+  const subjectId = normalizeValue(payload.subjectId);
+  const subjectTitle = normalizeValue(payload.subjectTitle) || 'Untitled';
 
-function buildMovieSubject(movie) {
+  if (subjectType === 'list') {
+    const ownerUsername = normalizeValue(payload.subjectOwnerUsername || payload.ownerUsername);
+    const slug = normalizeValue(payload.subjectSlug || payload.listSlug || payload.listId || subjectId);
+
+    return {
+      href: ownerUsername && slug ? `/account/${ownerUsername}/lists/${slug}` : null,
+      id: subjectId || normalizeValue(payload.listId),
+      ownerId: normalizeValue(payload.subjectOwnerId || payload.listOwnerId) || null,
+      ownerUsername: ownerUsername || null,
+      poster: normalizeValue(payload.subjectPoster) || null,
+      slug: slug || null,
+      title: normalizeValue(payload.listTitle || subjectTitle) || 'Untitled List',
+      type: 'list',
+    };
+  }
+
   return {
-    href: `/movie/${movie.entityId}`,
-    id: movie.entityId,
+    href: subjectType && subjectId ? `/${subjectType}/${subjectId}` : null,
+    id: subjectId || null,
     ownerId: null,
     ownerUsername: null,
-    poster: movie.posterPath || null,
+    poster: normalizeValue(payload.subjectPoster) || null,
     slug: null,
-    title: movie.title,
-    type: 'movie',
+    title: subjectTitle,
+    type: subjectType || null,
   };
 }
 
-function buildListSubject({ coverPoster = null, listId, listSlug, listTitle, ownerId, ownerUsername }) {
-  return {
-    href: ownerUsername && listSlug ? `/account/${ownerUsername}/lists/${listSlug}` : null,
-    id: listId,
-    ownerId: ownerId || null,
-    ownerUsername: ownerUsername || null,
-    poster: coverPoster || null,
-    slug: listSlug || null,
-    title: listTitle || 'Untitled List',
-    type: 'list',
-  };
-}
-
-function buildActorSnapshot(user) {
-  return {
-    avatarUrl: user?.avatarUrl || null,
-    displayName: user?.displayName || user?.username || 'Someone',
-    id: user?.id || null,
-    username: user?.username || null,
-  };
-}
-
-function buildActivityRow({
-  actor,
-  createdAt,
-  dedupeSuffix,
-  eventType,
-  payload,
-  subject,
-  visibility = 'public',
-}) {
-  const normalizedCreatedAt = normalizeValue(createdAt) || toIsoNow();
+function createActivityRow({ actor, actorUserId, eventType, occurredAt, payload = {} }) {
+  const dedupeKey =
+    normalizeValue(payload.dedupeKey) ||
+    buildCanonicalActivityDedupeKey({
+      actorUserId,
+      eventType,
+      subjectId: payload.subjectId,
+      subjectType: payload.subjectType,
+    }) ||
+    `${eventType}:${payload.subjectType || 'unknown'}:${payload.subjectId || randomUUID()}`;
 
   return {
-    created_at: normalizedCreatedAt,
-    dedupe_key: `seed:${eventType}:${subject?.type || 'unknown'}:${subject?.id || 'unknown'}:${dedupeSuffix || crypto.randomUUID()}`,
+    created_at: occurredAt,
+    dedupe_key: dedupeKey,
     event_type: eventType,
     payload: {
       actor,
       eventType,
-      payload: payload && typeof payload === 'object' ? payload : {},
-      subject,
-      visibility,
+      payload,
+      subject: buildActivitySubject(payload),
+      visibility: 'public',
     },
-    updated_at: normalizedCreatedAt,
-    user_id: actor?.id || null,
+    updated_at: occurredAt,
+    user_id: actorUserId,
   };
 }
 
-function buildRunId() {
-  const stamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
-  return `social-${stamp}-${crypto.randomBytes(3).toString('hex')}`;
-}
-
-function mediaKey(entityId) {
-  return `movie_${entityId}`;
-}
-
-function buildAvatarUrl(seed) {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/512/512`;
-}
-
-function buildBannerUrl(seed) {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/1400/420`;
-}
-
-function buildTmdbImagePath(pathValue) {
-  return normalizeValue(pathValue) || null;
-}
-
-function buildUsername(existing = new Set()) {
-  let username = '';
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const candidate =
-      `${randomPick(WORD_BANK.adjectives)}_${randomPick(WORD_BANK.nouns)}_${randomInt(100, 9999)}`.toLowerCase();
-
-    if (!existing.has(candidate)) {
-      username = candidate;
-      break;
-    }
+function createNotificationRow({ actor, actorUserId, eventType, occurredAt, payload = {} }) {
+  if (eventType !== NOTIFICATION_EVENT_TYPES.LIST_LIKED) {
+    return null;
   }
 
-  if (!username) {
-    username = `user_${crypto.randomBytes(5).toString('hex')}`;
+  const listOwnerId = normalizeValue(payload.listOwnerId);
+
+  if (!listOwnerId || listOwnerId === actorUserId) {
+    return null;
   }
 
-  existing.add(username);
-  return username;
-}
-
-function buildDisplayName() {
-  return `${randomPick(WORD_BANK.adjectives)} ${randomPick(WORD_BANK.nouns)}`
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-    .trim();
-}
-
-function buildBio() {
-  const fragments = sampleUnique(WORD_BANK.bioFragments, 3);
-  return `${fragments[0]}, ${fragments[1]}, ${fragments[2]}.`;
-}
-
-function buildMovieTitle(index) {
-  return `${randomPick(WORD_BANK.adjectives)} ${randomPick(WORD_BANK.nouns)} ${index}`
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-    .trim();
-}
-
-function buildReviewText() {
-  const opener = randomPick(WORD_BANK.reviewOpeners);
-  const closer = randomPick(WORD_BANK.reviewClosers);
-  const bridge = `Direction and structure stayed deliberate from setup to payoff.`;
-  return `${opener} ${bridge} ${closer}`;
-}
-
-function buildListTitle() {
-  return `${randomPick(WORD_BANK.adjectives)} ${randomPick(WORD_BANK.nouns)} Mix`
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-    .trim();
-}
-
-function toRating() {
-  return Number((randomInt(1, 10) / 2).toFixed(1));
-}
-
-function toIsoNow() {
-  return new Date().toISOString();
-}
-
-function loadLocalEnvFile() {
-  const envPath = path.resolve(process.cwd(), '.env');
-
-  if (!fs.existsSync(envPath)) {
-    return;
-  }
-
-  const content = fs.readFileSync(envPath, 'utf8');
-  const lines = content.split(/\r?\n/);
-
-  lines.forEach((line) => {
-    const trimmed = normalizeValue(line);
-
-    if (!trimmed || trimmed.startsWith('#')) {
-      return;
-    }
-
-    const separatorIndex = trimmed.indexOf('=');
-
-    if (separatorIndex <= 0) {
-      return;
-    }
-
-    const key = trimmed.slice(0, separatorIndex).trim();
-
-    if (!key || process.env[key] !== undefined) {
-      return;
-    }
-
-    let value = trimmed.slice(separatorIndex + 1).trim();
-
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
-
-    process.env[key] = value;
+  const subject = buildActivitySubject({
+    ...payload,
+    subjectId: payload.listId || payload.subjectId,
+    subjectOwnerId: payload.subjectOwnerId || payload.listOwnerId,
+    subjectOwnerUsername: payload.subjectOwnerUsername,
+    subjectSlug: payload.subjectSlug || payload.listSlug,
+    subjectTitle: payload.subjectTitle || payload.listTitle,
+    subjectType: 'list',
   });
+
+  return {
+    actor_user_id: actorUserId,
+    body: '',
+    created_at: occurredAt,
+    event_type: 'LIST_LIKE',
+    href: subject.href || null,
+    metadata: {
+      actor,
+      payload: {
+        ...payload,
+        subject,
+      },
+    },
+    read: false,
+    title: `${actor.displayName} sent an update`,
+    updated_at: occurredAt,
+    user_id: listOwnerId,
+  };
 }
 
-async function fetchMovieCatalog({ tmdbApiKey, targetCount = 800 }) {
-  const dedupe = new Map();
+async function insertInChunks(admin, table, rows, size = 500) {
+  for (let index = 0; index < rows.length; index += size) {
+    const chunk = rows.slice(index, index + size);
 
-  if (!tmdbApiKey) {
-    return [];
+    if (!chunk.length) {
+      continue;
+    }
+
+    const result = await admin.from(table).insert(chunk);
+
+    if (result.error) {
+      throw new Error(`${table} insert failed: ${result.error.message || 'unknown error'}`);
+    }
   }
+}
 
-  const maxPages = Math.min(500, Math.max(5, Math.ceil(targetCount / 20) + 10));
+async function upsertInChunks(admin, table, rows, onConflict, size = 500) {
+  for (let index = 0; index < rows.length; index += size) {
+    const chunk = rows.slice(index, index + size);
 
-  for (let page = 1; page <= maxPages; page += 1) {
-    if (dedupe.size >= targetCount) {
+    if (!chunk.length) {
+      continue;
+    }
+
+    const result = await admin.from(table).upsert(chunk, { onConflict });
+
+    if (result.error) {
+      throw new Error(`${table} upsert failed: ${result.error.message || 'unknown error'}`);
+    }
+  }
+}
+
+async function listSeedUsers(admin, runId = '') {
+  const users = [];
+  let page = 1;
+
+  while (true) {
+    const result = await admin.auth.admin.listUsers({
+      page,
+      perPage: 100,
+    });
+
+    if (result.error) {
+      throw new Error(result.error.message || 'Auth users could not be listed');
+    }
+
+    const batch = Array.isArray(result.data?.users) ? result.data.users : [];
+
+    if (!batch.length) {
       break;
     }
 
-    const url = new URL('https://api.themoviedb.org/3/discover/movie');
-    url.searchParams.set('include_adult', 'false');
-    url.searchParams.set('include_video', 'false');
-    url.searchParams.set('language', 'en-US');
-    url.searchParams.set('page', String(page));
-    url.searchParams.set('sort_by', 'popularity.desc');
-    url.searchParams.set('vote_count.gte', '150');
+    batch.forEach((user) => {
+      const metadata = user?.user_metadata || {};
 
-    let response;
-
-    try {
-      response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${tmdbApiKey}`,
-          Accept: 'application/json',
-        },
-      });
-    } catch {
-      continue;
-    }
-
-    if (!response.ok) {
-      continue;
-    }
-
-    const payload = await response.json().catch(() => ({}));
-    const results = Array.isArray(payload?.results) ? payload.results : [];
-
-    results.forEach((item) => {
-      const entityId = normalizeValue(item?.id);
-      const title = normalizeValue(item?.title || item?.original_title || item?.name);
-
-      if (!entityId || !title) {
+      if (metadata?.seed_namespace !== 'tvizzie-social') {
         return;
       }
 
-      dedupe.set(entityId, {
-        backdropPath: buildTmdbImagePath(item?.backdrop_path),
-        entityId,
-        entityType: 'movie',
-        genre_ids: Array.isArray(item?.genre_ids) ? item.genre_ids : [],
-        mediaKey: mediaKey(entityId),
-        posterPath: buildTmdbImagePath(item?.poster_path),
-        popularity: Number.isFinite(Number(item?.popularity)) ? Number(item.popularity) : null,
-        release_date: normalizeValue(item?.release_date) || null,
-        title,
-        vote_average: Number.isFinite(Number(item?.vote_average)) ? Number(item.vote_average) : null,
-        vote_count: Number.isFinite(Number(item?.vote_count)) ? Number(item.vote_count) : null,
-      });
-    });
-  }
-
-  return [...dedupe.values()].map((item) => withMovieMeta(item));
-}
-
-function buildFallbackCatalog(targetCount = 800) {
-  const rows = [];
-
-  for (let index = 1; index <= targetCount; index += 1) {
-    const syntheticId = 900000 + index;
-    rows.push({
-      backdropPath: null,
-      entityId: String(syntheticId),
-      entityType: 'movie',
-      mediaKey: mediaKey(String(syntheticId)),
-      posterPath: null,
-      title: buildMovieTitle(index),
-    });
-  }
-
-  return rows.map((item) => withMovieMeta(item));
-}
-
-function createSupabaseAdminClient({ url, serviceRoleKey }) {
-  return createClient(url, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-}
-
-async function insertInChunks({ admin, label, onConflict = null, rows = [], table, upsert = false, chunkSize = 400 }) {
-  if (!rows.length) {
-    return;
-  }
-
-  const batches = chunk(rows, chunkSize);
-
-  for (let index = 0; index < batches.length; index += 1) {
-    const batch = batches[index];
-    let query = upsert ? admin.from(table).upsert(batch, onConflict ? { onConflict } : {}) : admin.from(table).insert(batch);
-
-    const result = await query;
-
-    if (result.error) {
-      throw new Error(`${label} failed on chunk ${index + 1}/${batches.length}: ${result.error.message}`);
-    }
-  }
-}
-
-async function deleteAllRows(admin, table, filterColumn) {
-  const result = await admin.from(table).delete().not(filterColumn, 'is', null);
-
-  if (result.error) {
-    throw new Error(`Reset failed on table "${table}": ${result.error.message}`);
-  }
-}
-
-async function purgeAllAccountData(admin) {
-  const deletePlan = [
-    ['notifications', 'id'],
-    ['review_likes', 'user_id'],
-    ['list_reviews', 'user_id'],
-    ['media_reviews', 'user_id'],
-    ['list_likes', 'user_id'],
-    ['list_items', 'list_id'],
-    ['lists', 'user_id'],
-    ['likes', 'user_id'],
-    ['watchlist', 'user_id'],
-    ['watched', 'user_id'],
-    ['activity', 'user_id'],
-    ['follows', 'follower_id'],
-    ['auth_challenges', 'user_id'],
-    ['auth_audit_logs', 'id'],
-    ['auth_rate_limit_windows', 'key_hash'],
-    ['auth_revocation_state', 'user_id'],
-    ['account_lifecycle', 'user_id'],
-    ['profile_counters', 'user_id'],
-    ['usernames', 'user_id'],
-    ['profiles', 'id'],
-    ['feedback_submissions', 'id'],
-  ];
-
-  for (const [table, filterColumn] of deletePlan) {
-    await deleteAllRows(admin, table, filterColumn);
-  }
-
-  let page = 1;
-  const perPage = 200;
-
-  while (true) {
-    const listResult = await admin.auth.admin.listUsers({
-      page,
-      perPage,
-    });
-
-    if (listResult.error) {
-      throw new Error(`Reset auth users list failed: ${listResult.error.message}`);
-    }
-
-    const users = Array.isArray(listResult.data?.users) ? listResult.data.users : [];
-
-    if (!users.length) {
-      break;
-    }
-
-    for (const user of users) {
-      const userId = normalizeValue(user?.id);
-
-      if (!userId) {
-        continue;
+      if (runId && metadata?.seed_run_id !== runId) {
+        return;
       }
 
-      const deleteResult = await admin.auth.admin.deleteUser(userId);
+      users.push(user);
+    });
 
-      if (deleteResult.error) {
-        throw new Error(`Reset auth user delete failed (${userId}): ${deleteResult.error.message}`);
-      }
-    }
-
-    if (users.length < perPage) {
+    if (batch.length < 100) {
       break;
     }
 
     page += 1;
   }
+
+  return users;
 }
 
-function ensureDir(dirPath) {
-  fs.mkdirSync(dirPath, {
-    recursive: true,
+async function purgeUserData(admin, userId) {
+  const listIdsResult = await admin.from('lists').select('id').eq('user_id', userId);
+
+  if (listIdsResult.error) {
+    throw new Error(listIdsResult.error.message || 'Seed user list lookup failed');
+  }
+
+  const listIds = (listIdsResult.data || []).map((row) => normalizeValue(row?.id)).filter(Boolean);
+  const operations = [
+    () => admin.from('review_likes').delete().eq('user_id', userId),
+    () => admin.from('review_likes').delete().eq('review_user_id', userId),
+    () => admin.from('list_likes').delete().eq('user_id', userId),
+    () => admin.from('follows').delete().or(`follower_id.eq.${userId},following_id.eq.${userId}`),
+    () => admin.from('watchlist').delete().eq('user_id', userId),
+    () => admin.from('watched').delete().eq('user_id', userId),
+    () => admin.from('likes').delete().eq('user_id', userId),
+    () => admin.from('activity').delete().eq('user_id', userId),
+    () => admin.from('notifications').delete().eq('user_id', userId),
+    () => admin.from('list_items').delete().eq('user_id', userId),
+    () => admin.from('list_reviews').delete().eq('user_id', userId),
+    () => admin.from('media_reviews').delete().eq('user_id', userId),
+    () => admin.from('lists').delete().eq('user_id', userId),
+    () => admin.from('profile_counters').delete().eq('user_id', userId),
+    () => admin.from('account_lifecycle').delete().eq('user_id', userId),
+    () => admin.from('usernames').delete().eq('user_id', userId),
+    () => admin.from('profiles').delete().eq('id', userId),
+  ];
+
+  if (listIds.length > 0) {
+    operations.unshift(() => admin.from('list_likes').delete().in('list_id', listIds));
+    operations.unshift(() => admin.from('list_reviews').delete().in('list_id', listIds));
+    operations.unshift(() => admin.from('list_items').delete().in('list_id', listIds));
+  }
+
+  for (const execute of operations) {
+    const result = await execute();
+
+    if (result.error) {
+      throw new Error(result.error.message || 'Seed user purge failed');
+    }
+  }
+}
+
+async function resetExistingSeedUsers(admin, runId) {
+  const users = await listSeedUsers(admin, runId);
+
+  if (!users.length) {
+    return 0;
+  }
+
+  for (const user of users) {
+    await purgeUserData(admin, user.id);
+
+    const deleteResult = await admin.auth.admin.deleteUser(user.id, false);
+
+    if (deleteResult.error) {
+      throw new Error(deleteResult.error.message || 'Seed auth user delete failed');
+    }
+  }
+
+  return users.length;
+}
+
+async function ensureAccountLifecycle(admin, userId) {
+  const rpcResult = await admin.rpc('ensure_account_lifecycle', {
+    p_user_id: userId,
   });
+
+  if (!rpcResult.error) {
+    return;
+  }
+
+  const fallbackResult = await admin.from('account_lifecycle').upsert(
+    {
+      state: 'ACTIVE',
+      state_reason: 'seed_bootstrap',
+      user_id: userId,
+    },
+    { onConflict: 'user_id' }
+  );
+
+  if (fallbackResult.error) {
+    throw new Error(fallbackResult.error.message || 'Account lifecycle could not be created');
+  }
+}
+
+async function claimUsername(admin, user) {
+  const rpcResult = await admin.rpc('claim_username', {
+    p_avatar_url: user.avatarUrl || null,
+    p_display_name: user.displayName,
+    p_email: user.email,
+    p_fail_if_profile_has_username: false,
+    p_preserve_existing: false,
+    p_user_id: user.id,
+    p_username: user.username,
+  });
+
+  if (!rpcResult.error) {
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const profileResult = await admin.from('profiles').upsert(
+    {
+      avatar_url: user.avatarUrl || null,
+      description: user.description,
+      display_name: user.displayName,
+      display_name_lower: user.displayName.toLowerCase(),
+      email: user.email,
+      favorite_showcase: [],
+      id: user.id,
+      is_private: false,
+      updated_at: nowIso,
+      username: user.username,
+      username_lower: user.username.toLowerCase(),
+    },
+    { onConflict: 'id' }
+  );
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message || 'Profile bootstrap failed');
+  }
+
+  const usernameResult = await admin.from('usernames').upsert(
+    {
+      created_at: nowIso,
+      updated_at: nowIso,
+      user_id: user.id,
+      username: user.username,
+      username_lower: user.username.toLowerCase(),
+    },
+    { onConflict: 'username_lower' }
+  );
+
+  if (usernameResult.error) {
+    throw new Error(usernameResult.error.message || 'Username mapping bootstrap failed');
+  }
+}
+
+function createSeedIdentity({ kind, index, runId }) {
+  const seedHash = shortHash(runId);
+  const paddedIndex = String(index).padStart(kind === 'primary' ? 2 : 3, '0');
+  const username = kind === 'primary' ? `seed${seedHash}u${paddedIndex}` : `rv${seedHash}${paddedIndex}`;
+  const email = `${username}+${runId}@seed.tvizzie.local`;
+  const displayName = kind === 'primary' ? `Seed User ${paddedIndex}` : `Reviewer ${paddedIndex}`;
+
+  return {
+    avatarUrl: null,
+    description:
+      kind === 'primary'
+        ? `Synthetic activity-heavy test user ${paddedIndex} for ${runId}.`
+        : `Synthetic review-only helper account ${paddedIndex} for ${runId}.`,
+    displayName,
+    email,
+    username,
+  };
+}
+
+async function createSeedUser(admin, { kind, index, password, runId }) {
+  const identity = createSeedIdentity({ kind, index, runId });
+  const authResult = await admin.auth.admin.createUser({
+    app_metadata: {
+      seed_kind: kind,
+      seed_namespace: 'tvizzie-social',
+    },
+    email: identity.email,
+    email_confirm: true,
+    password,
+    user_metadata: {
+      seed_kind: kind,
+      seed_namespace: 'tvizzie-social',
+      seed_run_id: runId,
+    },
+  });
+
+  if (authResult.error) {
+    throw new Error(authResult.error.message || 'Seed auth user could not be created');
+  }
+
+  const userId = authResult.data?.user?.id;
+
+  if (!userId) {
+    fail('Seed auth user id is missing');
+  }
+
+  const user = {
+    ...identity,
+    id: userId,
+    kind,
+  };
+
+  await claimUsername(admin, user);
+  await ensureAccountLifecycle(admin, user.id);
+
+  return user;
+}
+
+function createListBlueprints({ itemsPerList, moviePool, user }) {
+  const nowMs = Date.now();
+  const ninetyDaysAgo = nowMs - 1000 * 60 * 60 * 24 * 90;
+  const shuffledPool = shuffle(moviePool);
+  const blueprints = [];
+
+  for (let index = 0; index < 12; index += 1) {
+    const title = `${randomChoice(LIST_TITLE_PREFIXES)} ${randomChoice(LIST_TITLE_SUFFIXES)} ${index + 1}`;
+    const createdAt = randomTimestampBetween(ninetyDaysAgo, nowMs - 1000 * 60 * 60 * 24);
+    const listMovies = sampleUnique(shuffledPool, itemsPerList, new Set()).map((movie, itemIndex) => ({
+      addedAt: randomTimestampBetween(new Date(createdAt).getTime(), nowMs),
+      movie,
+      position: itemIndex + 1,
+    }));
+    const previewItems = listMovies
+      .slice(0, 5)
+      .map(({ movie, position, addedAt }) => createMediaPayload(movie, user.id, addedAt, { position }));
+
+    blueprints.push({
+      coverUrl: previewItems[0]?.poster_path || null,
+      createdAt,
+      description: `Auto-generated ${title.toLowerCase()} list for high-volume social testing.`,
+      items: listMovies,
+      payload: {
+        coverUrl: previewItems[0]?.poster_path || null,
+        description: `Auto-generated ${title.toLowerCase()} list for high-volume social testing.`,
+        itemsCount: itemsPerList,
+        likes: [],
+        ownerSnapshot: {
+          avatarUrl: user.avatarUrl || null,
+          displayName: user.displayName,
+          id: user.id,
+          username: user.username,
+        },
+        previewItems,
+        reviewsCount: 0,
+        slug: `${slugify(title)}-${shortHash(`${user.username}-${index}`)}`,
+        title,
+      },
+      title,
+    });
+  }
+
+  return blueprints;
+}
+
+async function createLists(admin, user, blueprints, activityRows, activityClock) {
+  const lists = [];
+
+  for (const blueprint of blueprints) {
+    const insertResult = await admin
+      .from('lists')
+      .insert({
+        created_at: blueprint.createdAt,
+        description: blueprint.description,
+        likes_count: 0,
+        payload: blueprint.payload,
+        poster_path: blueprint.coverUrl,
+        reviews_count: 0,
+        slug: blueprint.payload.slug,
+        title: blueprint.title,
+        updated_at: blueprint.createdAt,
+        user_id: user.id,
+      })
+      .select('id,slug,title,payload,poster_path,created_at')
+      .single();
+
+    if (insertResult.error) {
+      throw new Error(insertResult.error.message || 'List could not be created');
+    }
+
+    const list = {
+      coverUrl: blueprint.coverUrl,
+      createdAt: blueprint.createdAt,
+      id: insertResult.data.id,
+      ownerId: user.id,
+      ownerSnapshot: blueprint.payload.ownerSnapshot,
+      poster_path: insertResult.data.poster_path || blueprint.coverUrl,
+      previewItems: blueprint.payload.previewItems,
+      slug: insertResult.data.slug,
+      title: insertResult.data.title,
+    };
+
+    const itemRows = blueprint.items.map(({ addedAt, movie, position }) => {
+      const payload = createMediaPayload(movie, user.id, addedAt, { position });
+
+      activityRows.push(
+        createActivityRow({
+          actor: createActorSnapshot(user),
+          actorUserId: user.id,
+          eventType: ACTIVITY_EVENT_TYPES.LIST_ITEM_ADDED,
+          occurredAt: addedAt,
+          payload: {
+            dedupeKey: `list-item:${user.id}:${list.id}:${payload.mediaKey}`,
+            itemMediaId: payload.entityId,
+            itemMediaKey: payload.mediaKey,
+            itemPoster: payload.poster_path || null,
+            itemTitle: payload.title || 'Untitled',
+            listId: list.id,
+            listSlug: list.slug,
+            listTitle: list.title,
+            ownerUsername: user.username,
+            subjectId: list.id,
+            subjectPoster: list.coverUrl || payload.poster_path || null,
+            subjectTitle: list.title,
+            subjectType: 'list',
+          },
+        })
+      );
+      activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(addedAt).getTime()));
+
+      return {
+        added_at: addedAt,
+        backdrop_path: payload.backdrop_path,
+        entity_id: payload.entityId,
+        entity_type: payload.entityType,
+        list_id: list.id,
+        media_key: payload.mediaKey,
+        payload,
+        position,
+        poster_path: payload.poster_path,
+        title: payload.title,
+        updated_at: addedAt,
+        user_id: user.id,
+      };
+    });
+
+    await insertInChunks(admin, 'list_items', itemRows, 500);
+
+    activityRows.push(
+      createActivityRow({
+        actor: createActorSnapshot(user),
+        actorUserId: user.id,
+        eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
+        occurredAt: blueprint.createdAt,
+        payload: {
+          dedupeKey: buildCanonicalActivityDedupeKey({
+            actorUserId: user.id,
+            eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
+            subjectId: list.id,
+            subjectType: 'list',
+          }),
+          listId: list.id,
+          listSlug: list.slug,
+          listTitle: list.title,
+          ownerUsername: user.username,
+          subjectId: list.id,
+          subjectPoster: list.coverUrl || null,
+          subjectTitle: list.title,
+          subjectType: 'list',
+        },
+      })
+    );
+    activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(blueprint.createdAt).getTime()));
+    lists.push(list);
+  }
+
+  return lists;
+}
+
+function createPrimaryUserActions({ moviePool, user, config }) {
+  const nowMs = Date.now();
+  const startMs = nowMs - 1000 * 60 * 60 * 24 * 120;
+  const userPool = sampleUnique(moviePool, Math.max(config.likesPerUser, config.watchlistPerUser, config.watchedPerUser, config.reviewsPerUser) * 4);
+  const likes = sampleUnique(userPool, config.likesPerUser, new Set());
+  const watchlist = sampleUnique(userPool, config.watchlistPerUser, new Set());
+  const watched = sampleUnique(userPool, config.watchedPerUser, new Set());
+  const reviewBase = shuffle([...watched, ...userPool]);
+  const reviews = sampleUnique(reviewBase, config.reviewsPerUser, new Set());
+
+  return {
+    favorites: likes.slice(0, config.favoritesPerUser),
+    likes: likes.map((movie) => ({
+      movie,
+      timestamp: randomTimestampBetween(startMs, nowMs),
+    })),
+    reviews: reviews.map((movie) => ({
+      content: randomReviewText(),
+      movie,
+      rating: randomRating(),
+      timestamp: randomTimestampBetween(startMs, nowMs),
+    })),
+    watched: watched.map((movie) => ({
+      movie,
+      timestamp: randomTimestampBetween(startMs, nowMs),
+    })),
+    watchlist: watchlist.map((movie) => ({
+      movie,
+      timestamp: randomTimestampBetween(startMs, nowMs),
+    })),
+    user,
+  };
+}
+
+function createMediaCollectionRows({ actionName, entries, user, activityRows, activityClock }) {
+  const rows = [];
+
+  entries.forEach(({ movie, timestamp }) => {
+    const payload = createMediaPayload(movie, user.id, timestamp);
+
+    if (actionName === 'watched') {
+      rows.push({
+        backdrop_path: payload.backdrop_path,
+        created_at: timestamp,
+        entity_id: payload.entityId,
+        entity_type: payload.entityType,
+        last_watched_at: timestamp,
+        media_key: payload.mediaKey,
+        payload: {
+          ...payload,
+          firstWatchedAt: timestamp,
+          lastWatchedAt: timestamp,
+          sourceLastAction: 'watched',
+          watchCount: 1,
+        },
+        poster_path: payload.poster_path,
+        title: payload.title,
+        updated_at: timestamp,
+        user_id: user.id,
+        watch_count: 1,
+      });
+
+      activityRows.push(
+        createActivityRow({
+          actor: createActorSnapshot(user),
+          actorUserId: user.id,
+          eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
+          occurredAt: timestamp,
+          payload: {
+            dedupeKey: buildCanonicalActivityDedupeKey({
+              actorUserId: user.id,
+              eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
+              subjectId: payload.entityId,
+              subjectType: payload.entityType,
+            }),
+            subjectId: payload.entityId,
+            subjectPoster: payload.poster_path || null,
+            subjectTitle: payload.title,
+            subjectType: payload.entityType,
+            watchedAt: timestamp,
+          },
+        })
+      );
+    } else {
+      rows.push({
+        added_at: timestamp,
+        backdrop_path: payload.backdrop_path,
+        entity_id: payload.entityId,
+        entity_type: payload.entityType,
+        media_key: payload.mediaKey,
+        payload,
+        poster_path: payload.poster_path,
+        title: payload.title,
+        updated_at: timestamp,
+        user_id: user.id,
+      });
+
+      if (actionName === 'likes') {
+        activityRows.push(
+          createActivityRow({
+            actor: createActorSnapshot(user),
+            actorUserId: user.id,
+            eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
+            occurredAt: timestamp,
+            payload: {
+              dedupeKey: buildCanonicalActivityDedupeKey({
+                actorUserId: user.id,
+                eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
+                subjectId: payload.entityId,
+                subjectType: payload.entityType,
+              }),
+              subjectId: payload.entityId,
+              subjectPoster: payload.poster_path || null,
+              subjectTitle: payload.title,
+              subjectType: payload.entityType,
+            },
+          })
+        );
+      }
+
+      if (actionName === 'watchlist') {
+        activityRows.push(
+          createActivityRow({
+            actor: createActorSnapshot(user),
+            actorUserId: user.id,
+            eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
+            occurredAt: timestamp,
+            payload: {
+              dedupeKey: buildCanonicalActivityDedupeKey({
+                actorUserId: user.id,
+                eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
+                subjectId: payload.entityId,
+                subjectType: payload.entityType,
+              }),
+              subjectId: payload.entityId,
+              subjectPoster: payload.poster_path || null,
+              subjectTitle: payload.title,
+              subjectType: payload.entityType,
+            },
+          })
+        );
+      }
+    }
+
+    activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(timestamp).getTime()));
+  });
+
+  return rows;
+}
+
+function createMediaReviewRows({ entries, user, activityRows, activityClock }) {
+  return entries.map(({ content, movie, rating, timestamp }) => {
+    const payload = createMediaPayload(movie, user.id, timestamp);
+
+    activityRows.push(
+      createActivityRow({
+        actor: createActorSnapshot(user),
+        actorUserId: user.id,
+        eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+        occurredAt: timestamp,
+        payload: {
+          dedupeKey: buildCanonicalActivityDedupeKey({
+            actorUserId: user.id,
+            eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+            subjectId: payload.entityId,
+            subjectType: payload.entityType,
+          }),
+          reviewMode: 'review',
+          subjectHref: `/movie/${payload.entityId}`,
+          subjectId: payload.entityId,
+          subjectPoster: payload.poster_path || null,
+          subjectTitle: payload.title,
+          subjectType: payload.entityType,
+        },
+      })
+    );
+    activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(timestamp).getTime()));
+
+    return {
+      content,
+      created_at: timestamp,
+      is_spoiler: false,
+      media_key: payload.mediaKey,
+      payload: {
+        authorId: user.id,
+        content,
+        isSpoiler: false,
+        rating,
+        subjectHref: `/movie/${payload.entityId}`,
+        subjectId: payload.entityId,
+        subjectKey: payload.mediaKey,
+        subjectPoster: payload.poster_path || null,
+        subjectTitle: payload.title,
+        subjectType: payload.entityType,
+        updatedAt: timestamp,
+        user: {
+          avatarUrl: user.avatarUrl || null,
+          email: user.email,
+          id: user.id,
+          name: user.displayName,
+          username: user.username,
+        },
+      },
+      rating,
+      updated_at: timestamp,
+      user_id: user.id,
+    };
+  });
+}
+
+function buildFavoriteShowcase(user, favorites) {
+  return favorites.map((movie, index) => {
+    const payload = createMediaPayload(movie, user.id, new Date().toISOString(), {
+      position: index + 1,
+    });
+
+    return {
+      addedAt: payload.addedAt,
+      backdrop_path: payload.backdrop_path,
+      entityId: payload.entityId,
+      entityType: payload.entityType,
+      first_air_date: null,
+      mediaKey: payload.mediaKey,
+      media_type: payload.entityType,
+      name: '',
+      original_name: null,
+      original_title: payload.original_title,
+      poster_path: payload.poster_path,
+      position: index + 1,
+      release_date: payload.release_date,
+      title: payload.title,
+      updatedAt: payload.updatedAt,
+      vote_average: payload.vote_average,
+    };
+  });
+}
+
+function createListInteractionRows({
+  auxiliaryReviewers,
+  config,
+  lists,
+  primaryUsers,
+  activityRows,
+  activityClock,
+  notificationRows,
+}) {
+  const listLikes = [];
+  const listReviews = [];
+  const allReviewers = [...primaryUsers, ...auxiliaryReviewers];
+  const nowMs = Date.now();
+  const startMs = nowMs - 1000 * 60 * 60 * 24 * 90;
+
+  lists.forEach((list) => {
+    primaryUsers.forEach((user) => {
+      if (user.id === list.ownerId) {
+        return;
+      }
+
+      const timestamp = randomTimestampBetween(new Date(list.createdAt).getTime(), nowMs);
+
+      listLikes.push({
+        created_at: timestamp,
+        list_id: list.id,
+        user_id: user.id,
+      });
+
+      activityRows.push(
+        createActivityRow({
+          actor: createActorSnapshot(user),
+          actorUserId: user.id,
+          eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
+          occurredAt: timestamp,
+          payload: {
+            dedupeKey: buildCanonicalActivityDedupeKey({
+              actorUserId: user.id,
+              eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
+              subjectId: list.id,
+              subjectType: 'list',
+            }),
+            listId: list.id,
+            listSlug: list.slug,
+            listTitle: list.title,
+            listOwnerId: list.ownerId,
+            ownerUsername: list.ownerSnapshot.username || list.ownerId,
+            subjectId: list.id,
+            subjectOwnerId: list.ownerId,
+            subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
+            subjectPoster: list.coverUrl || list.previewItems[0]?.poster_path || null,
+            subjectSlug: list.slug,
+            subjectTitle: list.title,
+            subjectType: 'list',
+          },
+        })
+      );
+      notificationRows.push(
+        createNotificationRow({
+          actor: createActorSnapshot(user),
+          actorUserId: user.id,
+          eventType: NOTIFICATION_EVENT_TYPES.LIST_LIKED,
+          occurredAt: timestamp,
+          payload: {
+            listId: list.id,
+            listOwnerId: list.ownerId,
+            listSlug: list.slug,
+            listTitle: list.title,
+            subjectId: list.id,
+            subjectOwnerId: list.ownerId,
+            subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
+            subjectSlug: list.slug,
+            subjectTitle: list.title,
+            subjectType: 'list',
+          },
+        })
+      );
+      activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(timestamp).getTime()));
+    });
+
+    const reviewers = allReviewers.filter((user) => user.id !== list.ownerId).slice(0, config.listReviewsPerList);
+
+    reviewers.forEach((user) => {
+      const timestamp = randomTimestampBetween(Math.max(startMs, new Date(list.createdAt).getTime()), nowMs);
+      const rating = randomRating();
+      const content = randomReviewText();
+
+      listReviews.push({
+        content,
+        created_at: timestamp,
+        is_spoiler: false,
+        list_id: list.id,
+        payload: {
+          authorId: user.id,
+          content,
+          isSpoiler: false,
+          rating,
+          subjectHref: `/account/${list.ownerSnapshot.username}/lists/${list.slug}`,
+          subjectId: list.id,
+          subjectKey: `list:${list.ownerId}:${list.id}`,
+          subjectOwnerId: list.ownerId,
+          subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
+          subjectPreviewItems: list.previewItems,
+          subjectPoster: list.coverUrl || list.previewItems[0]?.poster_path || null,
+          subjectSlug: list.slug,
+          subjectTitle: list.title,
+          subjectType: 'list',
+          updatedAt: timestamp,
+          user: {
+            avatarUrl: user.avatarUrl || null,
+            email: user.email,
+            id: user.id,
+            name: user.displayName,
+            username: user.username,
+          },
+        },
+        rating,
+        updated_at: timestamp,
+        user_id: user.id,
+      });
+
+      activityRows.push(
+        createActivityRow({
+          actor: createActorSnapshot(user),
+          actorUserId: user.id,
+          eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+          occurredAt: timestamp,
+          payload: {
+            dedupeKey: buildCanonicalActivityDedupeKey({
+              actorUserId: user.id,
+              eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+              subjectId: list.id,
+              subjectType: 'list',
+            }),
+            reviewMode: 'review',
+            subjectHref: `/account/${list.ownerSnapshot.username}/lists/${list.slug}`,
+            subjectId: list.id,
+            subjectOwnerId: list.ownerId,
+            subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
+            subjectPreviewItems: list.previewItems,
+            subjectPoster: list.coverUrl || list.previewItems[0]?.poster_path || null,
+            subjectSlug: list.slug,
+            subjectTitle: list.title,
+            subjectType: 'list',
+          },
+        })
+      );
+      activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(timestamp).getTime()));
+    });
+  });
+
+  return { listLikes, listReviews };
 }
 
 async function main() {
-  loadLocalEnvFile();
-
-  const supabaseUrl = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL);
-  const serviceRoleKey = normalizeValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
-  const tmdbApiKey = normalizeValue(process.env.TMDB_API_KEY);
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
-  }
+  await loadEnvFile(path.join(REPO_ROOT, '.env'));
 
   const config = {
-    likesPerUser: normalizeNumber(process.env.SEED_LIKES_PER_USER, DEFAULTS.likesPerUser),
-    listCountPerUser: normalizeNumber(process.env.SEED_LISTS_PER_USER, DEFAULTS.listCountPerUser),
-    listItemsPerList: normalizeNumber(process.env.SEED_LIST_ITEMS_PER_LIST, DEFAULTS.listItemsPerList),
-    reviewsPerUser: normalizeNumber(process.env.SEED_REVIEWS_PER_USER, DEFAULTS.reviewsPerUser),
-    userCount: normalizeNumber(process.env.SEED_USER_COUNT, DEFAULTS.userCount),
-    watchedPerUser: normalizeNumber(process.env.SEED_WATCHED_PER_USER, DEFAULTS.watchedPerUser),
-    watchlistPerUser: normalizeNumber(process.env.SEED_WATCHLIST_PER_USER, DEFAULTS.watchlistPerUser),
+    favoritesPerUser: parseInteger(process.env.SEED_FAVORITES_PER_USER, 5),
+    likesPerUser: parseInteger(process.env.SEED_LIKES_PER_USER, 400),
+    listItemsPerList: parseInteger(process.env.SEED_LIST_ITEMS_PER_LIST, 400),
+    listReviewsPerList: parseInteger(process.env.SEED_LIST_REVIEWS_PER_LIST, 400),
+    listsPerUser: parseInteger(process.env.SEED_LISTS_PER_USER, 12),
+    resetAll: parseBoolean(process.env.SEED_RESET_ALL, false),
+    resetOnly: parseBoolean(process.env.SEED_RESET_ONLY, false),
+    reviewsPerUser: parseInteger(process.env.SEED_REVIEWS_PER_USER, 400),
+    runId: normalizeValue(process.env.SEED_RUN_ID) || `social-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`,
+    userCount: parseInteger(process.env.SEED_USER_COUNT, 5),
+    userPassword: normalizeValue(process.env.SEED_USER_PASSWORD) || 'TvizzieSeed!2026',
+    watchedPerUser: parseInteger(process.env.SEED_WATCHED_PER_USER, 400),
+    watchlistPerUser: parseInteger(process.env.SEED_WATCHLIST_PER_USER, 400),
   };
-  const shouldResetAll = normalizeValue(process.env.SEED_RESET_ALL) === '1';
-  const shouldIncludeActivity = normalizeValue(process.env.SEED_INCLUDE_ACTIVITY || '1') !== '0';
 
-  const runId = normalizeValue(process.env.SEED_RUN_ID) || buildRunId();
-  const sharedPassword = normalizeValue(process.env.SEED_USER_PASSWORD) || `TvizzieSeed!${new Date().getFullYear()}`;
-
-  const admin = createSupabaseAdminClient({
-    serviceRoleKey,
-    url: supabaseUrl,
-  });
-
-  console.log(`[INFO] Seed run id: ${runId}`);
-  console.log(`[INFO] Reset all account data: ${shouldResetAll ? 'yes' : 'no'}`);
-  console.log(`[INFO] Include activity rows: ${shouldIncludeActivity ? 'yes' : 'no'}`);
-  console.log(`[INFO] Users: ${config.userCount}, watched/likes/watchlist/reviews per user: ${config.watchedPerUser}/${config.likesPerUser}/${config.watchlistPerUser}/${config.reviewsPerUser}`);
-  console.log(`[INFO] Lists per user: ${config.listCountPerUser}, items per list: ${config.listItemsPerList}`);
-
-  if (shouldResetAll) {
-    console.log('[INFO] Purging all account-related data...');
-    await purgeAllAccountData(admin);
-    console.log('[INFO] Purge completed');
+  if (config.userCount !== 5) {
+    log(`SEED_USER_COUNT=${config.userCount}. Requested spec is 5; continuing with configured value.`);
   }
 
-  let catalog = await fetchMovieCatalog({
-    tmdbApiKey,
-    targetCount: 900,
-  });
-
-  if (catalog.length < 120) {
-    catalog = buildFallbackCatalog(1200);
-    console.log('[WARN] TMDB catalog unavailable or too small; using synthetic movie catalog.');
-  } else {
-    console.log(`[INFO] Movie catalog loaded from TMDB: ${catalog.length}`);
+  if (config.listsPerUser !== 12) {
+    log(`SEED_LISTS_PER_USER=${config.listsPerUser}. Requested spec is 12; continuing with configured value.`);
   }
 
-  const usernameDedupe = new Set();
-  const users = [];
-  const profiles = [];
-  const usernames = [];
-  const accountLifecycleRows = [];
-  const profileCounters = new Map();
+  const supabaseUrl = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const serviceRoleKey = normalizeValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  const watchedRows = [];
-  const likesRows = [];
-  const watchlistRows = [];
-  const listRows = [];
-  const listItemsRows = [];
-  const mediaReviewRows = [];
+  if (!supabaseUrl || !serviceRoleKey) {
+    fail('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+  }
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+
+  if (config.resetAll) {
+    log(`resetting existing seed users for run ${config.runId}`);
+    const removed = await resetExistingSeedUsers(admin, config.runId);
+    log(`removed ${removed} existing seed users`);
+
+    if (config.resetOnly) {
+      log('reset-only mode completed');
+      return;
+    }
+  }
+
+  const requiredAuxiliaryReviewers = Math.max(0, config.listReviewsPerList - (config.userCount - 1));
+  const tmdbPool = await fetchTmdbMoviePool({
+    apiKey: normalizeValue(process.env.TMDB_API_KEY),
+    targetCount: 2500,
+  });
+  const moviePool =
+    tmdbPool.length >= 800 ? tmdbPool : Array.from({ length: 4000 }, (_, index) => createSyntheticMovie(index + 1));
+
+  log(`using ${moviePool.length} movie records from ${tmdbPool.length >= 800 ? 'TMDB' : 'synthetic fallback'} pool`);
+
+  const primaryUsers = [];
+  const auxiliaryReviewers = [];
   const activityRows = [];
+  const notificationRows = [];
+  const activityClock = new Map();
+
+  log(`creating ${config.userCount} primary users`);
 
   for (let index = 1; index <= config.userCount; index += 1) {
-    const username = buildUsername(usernameDedupe);
-    const displayName = buildDisplayName();
-    const email = `seed.social.${runId}.${index}@example.com`;
-    const createdAt = randomPastIso(280);
-    const avatarUrl = buildAvatarUrl(`${runId}-${username}`);
-    const bannerUrl = buildBannerUrl(`${runId}-${username}`);
-    const isPrivate = Math.random() < 0.2;
+    primaryUsers.push(
+      await createSeedUser(admin, {
+        index,
+        kind: 'primary',
+        password: config.userPassword,
+        runId: config.runId,
+      })
+    );
+  }
 
-    const createdUser = await admin.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      password: sharedPassword,
-      user_metadata: {
-        seed_batch: runId,
-        seed_label: 'social-graph',
-        seed_username: username,
-      },
-    });
+  if (requiredAuxiliaryReviewers > 0) {
+    log(`creating ${requiredAuxiliaryReviewers} review-only helper users to satisfy ${config.listReviewsPerList} reviews/list`);
 
-    if (createdUser.error || !createdUser.data?.user?.id) {
-      throw new Error(`createUser failed (${email}): ${createdUser.error?.message || 'missing-user-id'}`);
+    for (let index = 1; index <= requiredAuxiliaryReviewers; index += 1) {
+      auxiliaryReviewers.push(
+        await createSeedUser(admin, {
+          index,
+          kind: 'reviewer',
+          password: config.userPassword,
+          runId: config.runId,
+        })
+      );
     }
+  }
 
-    const userId = createdUser.data.user.id;
-    const watchedSet = sampleUnique(catalog, config.watchedPerUser);
-    const likesSet = sampleUnique(catalog, config.likesPerUser);
-    const watchlistSet = sampleUnique(catalog, config.watchlistPerUser);
-    const reviewsSet = sampleUnique(catalog, config.reviewsPerUser);
-    const favoriteShowcase = sampleUnique(likesSet.length ? likesSet : catalog, Math.min(6, (likesSet.length ? likesSet : catalog).length));
-    const actorSnapshot = buildActorSnapshot({
-      avatarUrl,
-      displayName,
-      id: userId,
-      username,
-    });
-    const activityVisibility = isPrivate ? 'followers' : 'public';
+  const allLists = [];
+  const likesRows = [];
+  const watchlistRows = [];
+  const watchedRows = [];
+  const mediaReviewRows = [];
 
-    users.push({
-      avatarUrl,
-      bannerUrl,
-      createdAt,
-      displayName,
-      email,
-      id: userId,
-      isPrivate,
-      username,
-    });
+  for (const user of primaryUsers) {
+    log(`creating collections for ${user.username}`);
 
-    profiles.push({
-      avatar_url: avatarUrl,
-      banner_url: bannerUrl,
-      created_at: createdAt,
-      description: buildBio(),
-      display_name: displayName,
-      display_name_lower: displayName.toLowerCase(),
-      email,
-      favorite_showcase: favoriteShowcase.map((movie) => ({
-        entityId: movie.entityId,
-        entityType: 'movie',
-        mediaKey: movie.mediaKey,
-        poster_path: movie.posterPath,
-        title: movie.title,
-      })),
-      id: userId,
-      is_private: isPrivate,
-      last_activity_at: toIsoNow(),
-      updated_at: toIsoNow(),
-      username,
-      username_lower: username.toLowerCase(),
-      watched_count: config.watchedPerUser,
+    const listBlueprints = createListBlueprints({
+      itemsPerList: config.listItemsPerList,
+      moviePool,
+      user,
+    }).slice(0, config.listsPerUser);
+    const lists = await createLists(admin, user, listBlueprints, activityRows, activityClock);
+    allLists.push(...lists);
+
+    const actions = createPrimaryUserActions({
+      config,
+      moviePool,
+      user,
     });
 
-    usernames.push({
-      created_at: createdAt,
-      updated_at: toIsoNow(),
-      user_id: userId,
-      username,
-      username_lower: username.toLowerCase(),
-    });
+    likesRows.push(...createMediaCollectionRows({ actionName: 'likes', entries: actions.likes, user, activityRows, activityClock }));
+    watchlistRows.push(
+      ...createMediaCollectionRows({ actionName: 'watchlist', entries: actions.watchlist, user, activityRows, activityClock })
+    );
+    watchedRows.push(
+      ...createMediaCollectionRows({ actionName: 'watched', entries: actions.watched, user, activityRows, activityClock })
+    );
+    mediaReviewRows.push(...createMediaReviewRows({ entries: actions.reviews, user, activityRows, activityClock }));
 
-    accountLifecycleRows.push({
-      created_at: createdAt,
-      metadata: {
-        source: 'seed-social-graph',
-      },
-      state: 'ACTIVE',
-      updated_at: toIsoNow(),
-      user_id: userId,
-    });
+    const favoriteShowcase = buildFavoriteShowcase(user, actions.favorites);
+    const profileUpdateResult = await admin
+      .from('profiles')
+      .update({
+        description: user.description,
+        display_name: user.displayName,
+        display_name_lower: user.displayName.toLowerCase(),
+        favorite_showcase: favoriteShowcase,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
 
-    profileCounters.set(userId, {
+    if (profileUpdateResult.error) {
+      throw new Error(profileUpdateResult.error.message || 'Profile favorites could not be updated');
+    }
+  }
+
+  log('writing likes, watchlist, watched, and media reviews');
+  await insertInChunks(admin, 'likes', likesRows, 500);
+  await insertInChunks(admin, 'watchlist', watchlistRows, 500);
+  await insertInChunks(admin, 'watched', watchedRows, 500);
+  await upsertInChunks(admin, 'media_reviews', mediaReviewRows, 'media_key,user_id', 500);
+
+  log('creating cross-user list interactions');
+  const { listLikes, listReviews } = createListInteractionRows({
+    activityClock,
+    activityRows,
+    auxiliaryReviewers,
+    config,
+    lists: allLists,
+    notificationRows,
+    primaryUsers,
+  });
+
+  await insertInChunks(admin, 'list_likes', listLikes, 500);
+  await upsertInChunks(admin, 'list_reviews', listReviews, 'list_id,user_id', 500);
+
+  log('updating list counters');
+  for (const list of allLists) {
+    const likeCount = listLikes.filter((row) => row.list_id === list.id).length;
+    const reviewCount = listReviews.filter((row) => row.list_id === list.id).length;
+    const updateResult = await admin
+      .from('lists')
+      .update({
+        likes_count: likeCount,
+        reviews_count: reviewCount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', list.id);
+
+    if (updateResult.error) {
+      throw new Error(updateResult.error.message || 'List counters could not be updated');
+    }
+  }
+
+  log('writing activity and notifications');
+  await insertInChunks(admin, 'activity', activityRows, 500);
+  await insertInChunks(
+    admin,
+    'notifications',
+    notificationRows.filter(Boolean),
+    500
+  );
+
+  log('updating profile counters');
+  for (const user of primaryUsers) {
+    const lastActivityAt = activityClock.get(user.id) ? new Date(activityClock.get(user.id)).toISOString() : new Date().toISOString();
+    const counters = {
       follower_count: 0,
       following_count: 0,
       likes_count: config.likesPerUser,
-      lists_count: config.listCountPerUser,
-      updated_at: toIsoNow(),
-      user_id: userId,
+      lists_count: config.listsPerUser,
+      user_id: user.id,
       watched_count: config.watchedPerUser,
       watchlist_count: config.watchlistPerUser,
-    });
+    };
+    const counterResult = await admin.from('profile_counters').upsert(counters, { onConflict: 'user_id' });
 
-    watchedSet.forEach((movie) => {
-      const firstWatchedAt = randomPastIso(180);
-      const lastWatchedAt = randomPastIso(30);
-      const watchCount = randomInt(1, 6);
-      const payload = buildMediaPayload(movie, {
-        firstWatchedAt,
-        lastWatchedAt,
-        sourceLastAction: 'watched',
-        updatedAt: lastWatchedAt,
-        userId,
-        watchCount,
-      });
-
-      watchedRows.push({
-        backdrop_path: movie.backdropPath,
-        created_at: firstWatchedAt,
-        entity_id: movie.entityId,
-        entity_type: 'movie',
-        last_watched_at: lastWatchedAt,
-        media_key: movie.mediaKey,
-        payload,
-        poster_path: movie.posterPath,
-        title: movie.title,
-        updated_at: lastWatchedAt,
-        user_id: userId,
-        watch_count: watchCount,
-      });
-
-      if (shouldIncludeActivity) {
-        const subject = buildMovieSubject(movie);
-
-        activityRows.push(
-          buildActivityRow({
-            actor: actorSnapshot,
-            createdAt: lastWatchedAt,
-            dedupeSuffix: `${runId}:watched:${movie.mediaKey}:${lastWatchedAt}`,
-            eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
-            payload: {
-              subjectId: movie.entityId,
-              subjectPoster: movie.posterPath || null,
-              subjectTitle: movie.title,
-              subjectType: 'movie',
-              watchCount,
-            },
-            subject,
-            visibility: activityVisibility,
-          })
-        );
-      }
-    });
-
-    likesSet.forEach((movie) => {
-      const addedAt = randomPastIso(160);
-      const payload = buildMediaPayload(movie, {
-        updatedAt: addedAt,
-        userId,
-      });
-
-      likesRows.push({
-        added_at: addedAt,
-        backdrop_path: movie.backdropPath,
-        entity_id: movie.entityId,
-        entity_type: 'movie',
-        media_key: movie.mediaKey,
-        payload,
-        poster_path: movie.posterPath,
-        title: movie.title,
-        updated_at: addedAt,
-        user_id: userId,
-      });
-
-      if (shouldIncludeActivity) {
-        const subject = buildMovieSubject(movie);
-
-        activityRows.push(
-          buildActivityRow({
-            actor: actorSnapshot,
-            createdAt: addedAt,
-            dedupeSuffix: `${runId}:like:${movie.mediaKey}:${addedAt}`,
-            eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
-            payload: {
-              subjectId: movie.entityId,
-              subjectPoster: movie.posterPath || null,
-              subjectTitle: movie.title,
-              subjectType: 'movie',
-            },
-            subject,
-            visibility: activityVisibility,
-          })
-        );
-      }
-    });
-
-    watchlistSet.forEach((movie) => {
-      const addedAt = randomPastIso(200);
-      const payload = buildMediaPayload(movie, {
-        updatedAt: addedAt,
-        userId,
-      });
-
-      watchlistRows.push({
-        added_at: addedAt,
-        backdrop_path: movie.backdropPath,
-        entity_id: movie.entityId,
-        entity_type: 'movie',
-        media_key: movie.mediaKey,
-        payload,
-        poster_path: movie.posterPath,
-        title: movie.title,
-        updated_at: addedAt,
-        user_id: userId,
-      });
-
-      if (shouldIncludeActivity) {
-        const subject = buildMovieSubject(movie);
-
-        activityRows.push(
-          buildActivityRow({
-            actor: actorSnapshot,
-            createdAt: addedAt,
-            dedupeSuffix: `${runId}:watchlist:${movie.mediaKey}:${addedAt}`,
-            eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
-            payload: {
-              subjectId: movie.entityId,
-              subjectPoster: movie.posterPath || null,
-              subjectTitle: movie.title,
-              subjectType: 'movie',
-            },
-            subject,
-            visibility: activityVisibility,
-          })
-        );
-      }
-    });
-
-    reviewsSet.forEach((movie) => {
-      const createdAtIso = randomPastIso(170);
-      const ratingValue = toRating();
-      const reviewText = buildReviewText();
-      const reviewMode = Math.random() < 0.22 ? 'rating' : 'review';
-
-      mediaReviewRows.push({
-        content: reviewMode === 'rating' ? '' : reviewText,
-        created_at: createdAtIso,
-        is_spoiler: Math.random() < 0.08,
-        likes_count: 0,
-        media_key: movie.mediaKey,
-        payload: {
-          authorId: userId,
-          content: reviewMode === 'rating' ? '' : reviewText,
-          isSpoiler: false,
-          rating: ratingValue,
-          reviewMode,
-          subjectHref: `/movie/${movie.entityId}`,
-          subjectId: movie.entityId,
-          subjectKey: movie.mediaKey,
-          subjectPoster: movie.posterPath,
-          subjectTitle: movie.title,
-          subjectType: 'movie',
-          user: {
-            avatarUrl,
-            id: userId,
-            name: displayName,
-            username,
-          },
-        },
-        rating: ratingValue,
-        updated_at: createdAtIso,
-        user_id: userId,
-      });
-
-      if (shouldIncludeActivity) {
-        const subject = buildMovieSubject(movie);
-
-        activityRows.push(
-          buildActivityRow({
-            actor: actorSnapshot,
-            createdAt: createdAtIso,
-            dedupeSuffix: `${runId}:review:${movie.mediaKey}:${createdAtIso}`,
-            eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
-            payload: {
-              authorId: userId,
-              content: reviewMode === 'rating' ? '' : reviewText,
-              rating: ratingValue,
-              reviewMode,
-              subjectId: movie.entityId,
-              subjectPoster: movie.posterPath || null,
-              subjectTitle: movie.title,
-              subjectType: 'movie',
-            },
-            subject,
-            visibility: activityVisibility,
-          })
-        );
-      }
-    });
-
-    for (let listIndex = 1; listIndex <= config.listCountPerUser; listIndex += 1) {
-      const listId = crypto.randomUUID();
-      const listCreatedAt = randomPastIso(200);
-      const listTitle = buildListTitle();
-      const listSlug = `${username}-${listIndex}-${crypto.randomBytes(2).toString('hex')}`;
-      const listItems = sampleUnique(catalog, config.listItemsPerList);
-      const previewItems = listItems.slice(0, 6).map((movie) => ({
-        ...buildMediaPayload(movie),
-        id: movie.entityId,
-      }));
-      const cover = listItems[0] || null;
-
-      listRows.push({
-        created_at: listCreatedAt,
-        description: buildBio(),
-        id: listId,
-        is_private: false,
-        is_ranked: Math.random() < 0.35,
-        likes_count: 0,
-        payload: {
-          coverUrl: cover?.posterPath || '',
-          description: buildBio(),
-          itemsCount: listItems.length,
-          likes: [],
-          ownerSnapshot: {
-            avatarUrl,
-            displayName,
-            id: userId,
-            username,
-          },
-          previewItems,
-          reviewsCount: 0,
-          slug: listSlug,
-          title: listTitle,
-        },
-        poster_path: cover?.posterPath || null,
-        reviews_count: 0,
-        slug: listSlug,
-        title: listTitle,
-        updated_at: toIsoNow(),
-        user_id: userId,
-      });
-
-      listItems.forEach((movie, position) => {
-        const listItemUpdatedAt = randomPastIso(120);
-
-        listItemsRows.push({
-          added_at: listCreatedAt,
-          backdrop_path: movie.backdropPath,
-          entity_id: movie.entityId,
-          entity_type: 'movie',
-          list_id: listId,
-          media_key: movie.mediaKey,
-          payload: buildMediaPayload(movie, {
-            position: position + 1,
-            updatedAt: listItemUpdatedAt,
-            userId,
-          }),
-          position: position + 1,
-          poster_path: movie.posterPath,
-          title: movie.title,
-          updated_at: listItemUpdatedAt,
-          user_id: userId,
-        });
-      });
-
-      if (shouldIncludeActivity) {
-        activityRows.push(
-          buildActivityRow({
-            actor: actorSnapshot,
-            createdAt: listCreatedAt,
-            dedupeSuffix: `${runId}:list:${listId}:${listCreatedAt}`,
-            eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
-            payload: {
-              listId,
-              listSlug,
-              listTitle,
-              subjectId: listId,
-              subjectOwnerId: userId,
-              subjectOwnerUsername: username,
-              subjectPoster: cover?.posterPath || null,
-              subjectSlug: listSlug,
-              subjectTitle: listTitle,
-              subjectType: 'list',
-            },
-            subject: buildListSubject({
-              coverPoster: cover?.posterPath || null,
-              listId,
-              listSlug,
-              listTitle,
-              ownerId: userId,
-              ownerUsername: username,
-            }),
-            visibility: activityVisibility,
-          })
-        );
-      }
+    if (counterResult.error) {
+      throw new Error(counterResult.error.message || 'Profile counters could not be updated');
     }
 
-    if (index % 5 === 0 || index === config.userCount) {
-      console.log(`[INFO] Generated user data: ${index}/${config.userCount}`);
+    const profileResult = await admin
+      .from('profiles')
+      .update({
+        last_activity_at: lastActivityAt,
+        updated_at: lastActivityAt,
+      })
+      .eq('id', user.id);
+
+    if (profileResult.error) {
+      throw new Error(profileResult.error.message || 'Profile last_activity_at could not be updated');
     }
   }
 
-  const followsRows = [];
-  const followsDedupe = new Set();
+  await mkdir(OUTPUT_DIR, { recursive: true });
 
-  users.forEach((follower) => {
-    const targets = sampleUnique(users, randomInt(4, 10), (candidate) => candidate.id !== follower.id);
-
-    targets.forEach((following) => {
-      const key = `${follower.id}:${following.id}`;
-
-      if (followsDedupe.has(key)) {
-        return;
-      }
-
-      followsDedupe.add(key);
-
-      followsRows.push({
-        created_at: randomPastIso(160),
-        follower_avatar_url: follower.avatarUrl,
-        follower_display_name: follower.displayName,
-        follower_id: follower.id,
-        follower_username: follower.username,
-        following_avatar_url: following.avatarUrl,
-        following_display_name: following.displayName,
-        following_id: following.id,
-        following_username: following.username,
-        responded_at: randomPastIso(90),
-        status: Math.random() < 0.92 ? 'accepted' : 'pending',
-        updated_at: toIsoNow(),
-      });
-    });
-  });
-
-  const listLikesRows = [];
-  const listLikesDedupe = new Set();
-  const listReviewsRows = [];
-  const listReviewDedupe = new Set();
-  const allListRows = [...listRows];
-
-  users.forEach((actor) => {
-    const candidateLists = sampleUnique(
-      allListRows,
-      randomInt(18, 32),
-      (listItem) => normalizeValue(listItem.user_id) !== normalizeValue(actor.id)
-    );
-
-    candidateLists.forEach((listItem) => {
-      const key = `${listItem.id}:${actor.id}`;
-
-      if (listLikesDedupe.has(key)) {
-        return;
-      }
-
-      listLikesDedupe.add(key);
-      listLikesRows.push({
-        created_at: randomPastIso(120),
-        list_id: listItem.id,
-        user_id: actor.id,
-      });
-    });
-
-    const commentedLists = sampleUnique(
-      allListRows,
-      randomInt(8, 14),
-      (listItem) => normalizeValue(listItem.user_id) !== normalizeValue(actor.id)
-    );
-
-    commentedLists.forEach((listItem) => {
-      const key = `${listItem.id}:${actor.id}`;
-
-      if (listReviewDedupe.has(key)) {
-        return;
-      }
-
-      listReviewDedupe.add(key);
-      const owner = users.find((user) => normalizeValue(user.id) === normalizeValue(listItem.user_id));
-      const createdAtIso = randomPastIso(100);
-      listReviewsRows.push({
-        content: buildReviewText(),
-        created_at: createdAtIso,
-        is_spoiler: Math.random() < 0.06,
-        likes_count: 0,
-        list_id: listItem.id,
-        payload: {
-          authorId: actor.id,
-          content: buildReviewText(),
-          isSpoiler: false,
-          rating: toRating(),
-          subjectHref: `/account/${owner?.username || 'user'}/lists/${listItem.slug}`,
-          subjectId: listItem.id,
-          subjectKey: `list:${listItem.user_id}:${listItem.id}`,
-          subjectOwnerId: listItem.user_id,
-          subjectOwnerUsername: owner?.username || null,
-          subjectPoster: listItem.poster_path || null,
-          subjectSlug: listItem.slug,
-          subjectTitle: listItem.title,
-          subjectType: 'list',
-          user: {
-            avatarUrl: actor.avatarUrl,
-            id: actor.id,
-            name: actor.displayName,
-            username: actor.username,
-          },
-        },
-        rating: toRating(),
-        updated_at: toIsoNow(),
-        user_id: actor.id,
-      });
-    });
-  });
-
-  const reviewLikesRows = [];
-  const reviewLikesDedupe = new Set();
-  const reviewLikeCandidates = mediaReviewRows.map((row) => ({
-    mediaKey: row.media_key,
-    reviewUserId: row.user_id,
-  }));
-
-  users.forEach((actor) => {
-    const likes = sampleUnique(
-      reviewLikeCandidates,
-      randomInt(26, 40),
-      (candidate) => normalizeValue(candidate.reviewUserId) !== normalizeValue(actor.id)
-    );
-
-    likes.forEach((candidate) => {
-      const key = `${candidate.mediaKey}:${candidate.reviewUserId}:${actor.id}`;
-
-      if (reviewLikesDedupe.has(key)) {
-        return;
-      }
-
-      reviewLikesDedupe.add(key);
-      reviewLikesRows.push({
-        created_at: randomPastIso(110),
-        media_key: candidate.mediaKey,
-        review_user_id: candidate.reviewUserId,
-        user_id: actor.id,
-      });
-    });
-  });
-
-  const followerCountMap = new Map();
-  const followingCountMap = new Map();
-
-  followsRows.forEach((row) => {
-    if (normalizeValue(row.status) !== 'accepted') {
-      return;
-    }
-
-    followingCountMap.set(row.follower_id, (followingCountMap.get(row.follower_id) || 0) + 1);
-    followerCountMap.set(row.following_id, (followerCountMap.get(row.following_id) || 0) + 1);
-  });
-
-  const listLikeCountMap = new Map();
-  listLikesRows.forEach((row) => {
-    listLikeCountMap.set(row.list_id, (listLikeCountMap.get(row.list_id) || 0) + 1);
-  });
-
-  const listReviewCountMap = new Map();
-  listReviewsRows.forEach((row) => {
-    listReviewCountMap.set(row.list_id, (listReviewCountMap.get(row.list_id) || 0) + 1);
-  });
-
-  const reviewLikeCountMap = new Map();
-  reviewLikesRows.forEach((row) => {
-    const key = `${row.media_key}:${row.review_user_id}`;
-    reviewLikeCountMap.set(key, (reviewLikeCountMap.get(key) || 0) + 1);
-  });
-
-  listRows.forEach((row) => {
-    row.likes_count = listLikeCountMap.get(row.id) || 0;
-    row.reviews_count = listReviewCountMap.get(row.id) || 0;
-
-    const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
-    row.payload = {
-      ...payload,
-      itemsCount: config.listItemsPerList,
-      likes: [],
-      reviewsCount: row.reviews_count,
-    };
-  });
-
-  mediaReviewRows.forEach((row) => {
-    const key = `${row.media_key}:${row.user_id}`;
-    row.likes_count = reviewLikeCountMap.get(key) || 0;
-  });
-
-  users.forEach((user) => {
-    const counters = profileCounters.get(user.id);
-
-    if (!counters) {
-      return;
-    }
-
-    counters.follower_count = followerCountMap.get(user.id) || 0;
-    counters.following_count = followingCountMap.get(user.id) || 0;
-    profileCounters.set(user.id, counters);
-  });
-
-  console.log('[INFO] Writing seed rows to database...');
-
-  await insertInChunks({
-    admin,
-    label: 'profiles upsert',
-    onConflict: 'id',
-    rows: profiles,
-    table: 'profiles',
-    upsert: true,
-    chunkSize: 100,
-  });
-  await insertInChunks({
-    admin,
-    label: 'usernames upsert',
-    onConflict: 'username',
-    rows: usernames,
-    table: 'usernames',
-    upsert: true,
-    chunkSize: 100,
-  });
-  await insertInChunks({
-    admin,
-    label: 'account lifecycle upsert',
-    onConflict: 'user_id',
-    rows: accountLifecycleRows,
-    table: 'account_lifecycle',
-    upsert: true,
-    chunkSize: 100,
-  });
-  await insertInChunks({
-    admin,
-    label: 'profile counters upsert',
-    onConflict: 'user_id',
-    rows: [...profileCounters.values()],
-    table: 'profile_counters',
-    upsert: true,
-    chunkSize: 100,
-  });
-  await insertInChunks({
-    admin,
-    label: 'follows insert',
-    rows: followsRows,
-    table: 'follows',
-    chunkSize: 300,
-  });
-  await insertInChunks({
-    admin,
-    label: 'lists insert',
-    rows: listRows,
-    table: 'lists',
-    chunkSize: 150,
-  });
-  await insertInChunks({
-    admin,
-    label: 'list items insert',
-    rows: listItemsRows,
-    table: 'list_items',
-    chunkSize: 400,
-  });
-  await insertInChunks({
-    admin,
-    label: 'list likes insert',
-    rows: listLikesRows,
-    table: 'list_likes',
-    chunkSize: 400,
-  });
-  await insertInChunks({
-    admin,
-    label: 'list reviews insert',
-    rows: listReviewsRows,
-    table: 'list_reviews',
-    chunkSize: 300,
-  });
-  await insertInChunks({
-    admin,
-    label: 'watched insert',
-    rows: watchedRows,
-    table: 'watched',
-    chunkSize: 350,
-  });
-  await insertInChunks({
-    admin,
-    label: 'likes insert',
-    rows: likesRows,
-    table: 'likes',
-    chunkSize: 350,
-  });
-  await insertInChunks({
-    admin,
-    label: 'watchlist insert',
-    rows: watchlistRows,
-    table: 'watchlist',
-    chunkSize: 350,
-  });
-  await insertInChunks({
-    admin,
-    label: 'media reviews insert',
-    rows: mediaReviewRows,
-    table: 'media_reviews',
-    chunkSize: 300,
-  });
-  await insertInChunks({
-    admin,
-    label: 'activity insert',
-    rows: activityRows,
-    table: 'activity',
-    chunkSize: 350,
-  });
-  await insertInChunks({
-    admin,
-    label: 'review likes insert',
-    rows: reviewLikesRows,
-    table: 'review_likes',
-    chunkSize: 400,
-  });
-
-  const outputDir = path.resolve(process.cwd(), 'scripts', 'output');
-  ensureDir(outputDir);
-  const outputPath = path.join(outputDir, `seed-social-${runId}.json`);
-  const outputPayload = {
-    config,
-    createdAt: toIsoNow(),
-    password: sharedPassword,
-    runId,
-    users: users.map((user) => ({
+  const summary = {
+    auxiliaryReviewerCount: auxiliaryReviewers.length,
+    counts: {
+      activity: activityRows.length,
+      likes: likesRows.length,
+      listLikes: listLikes.length,
+      listReviews: listReviews.length,
+      lists: allLists.length,
+      mediaReviews: mediaReviewRows.length,
+      notifications: notificationRows.filter(Boolean).length,
+      watched: watchedRows.length,
+      watchlist: watchlistRows.length,
+    },
+    generatedAt: new Date().toISOString(),
+    listReviewsPerList: config.listReviewsPerList,
+    moviePoolSource: tmdbPool.length >= 800 ? 'tmdb' : 'synthetic',
+    primaryUserCount: primaryUsers.length,
+    runId: config.runId,
+    users: primaryUsers.map((user) => ({
       email: user.email,
       id: user.id,
+      password: config.userPassword,
       username: user.username,
     })),
   };
-  fs.writeFileSync(outputPath, JSON.stringify(outputPayload, null, 2), 'utf8');
 
-  console.log('[PASS] Social seed completed');
-  console.log(`[INFO] Run id: ${runId}`);
-  console.log(`[INFO] Created users: ${users.length}`);
-  console.log(`[INFO] Data rows -> watched:${watchedRows.length}, likes:${likesRows.length}, watchlist:${watchlistRows.length}, lists:${listRows.length}, list_items:${listItemsRows.length}, media_reviews:${mediaReviewRows.length}, activity:${activityRows.length}`);
-  console.log(`[INFO] Credentials file: ${outputPath}`);
+  const outputPath = path.join(OUTPUT_DIR, `seed-social-${config.runId}.json`);
+  await writeFile(outputPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+
+  log(`complete: ${summary.primaryUserCount} primary users, ${summary.auxiliaryReviewerCount} helper reviewers`);
+  log(`summary written to ${path.relative(REPO_ROOT, outputPath)}`);
 }
 
 main().catch((error) => {
-  console.error(`[FAIL] Social seed failed: ${error?.message || error}`);
-  process.exit(1);
+  console.error(`[seed:social] failed: ${error.message || error}`);
+  process.exitCode = 1;
 });

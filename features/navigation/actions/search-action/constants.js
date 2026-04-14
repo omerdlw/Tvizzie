@@ -12,6 +12,14 @@ export const SEARCH_LIMITS = Object.freeze({
   USER_FULL_RESULTS: 10,
 });
 
+export const SEARCH_GRID = Object.freeze({
+  MOBILE_COLUMNS: 6,
+  MOBILE_ROWS: 12,
+  DESKTOP_COLUMNS: 12,
+  DESKTOP_ROWS: 8,
+  DESKTOP_BREAKPOINT: 1024,
+});
+
 export const SEARCH_TAB_ITEMS = Object.freeze([
   { key: SEARCH_TYPES.ALL, label: 'All' },
   { key: SEARCH_TYPES.MOVIE, label: 'Movies' },

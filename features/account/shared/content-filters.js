@@ -5,7 +5,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 
 import { REVIEW_SORT_MODE } from '@/features/reviews/utils';
 import RatingRangeSelector from '@/features/reviews/parts/rating-range-selector';
-import { LIST_SORT_OPTIONS, MEDIA_SORT_GROUPS } from '@/features/account/filtering';
+import { LIST_SORT_OPTIONS, MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/features/account/filtering';
 import { useDebounce } from '@/core/hooks';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
@@ -65,7 +65,9 @@ function resolveOptionLabel(options = [], value, fallback = 'Any') {
 function buildRatingLabel(filters = {}) {
   if (filters.ratingMode === 'none') return 'No rating';
   if (filters.ratingMode === 'range') {
-    return filters.minRating === filters.maxRating ? `${filters.maxRating} stars` : `${filters.minRating}-${filters.maxRating}`;
+    return filters.minRating === filters.maxRating
+      ? `${filters.maxRating} stars`
+      : `${filters.minRating}-${filters.maxRating}`;
   }
   return 'Any rating';
 }
@@ -101,6 +103,16 @@ function FilterMenuItem({ active = false, children, onClick }) {
       <span>{children}</span>
       {active ? <Icon icon="material-symbols:check-rounded" size={16} className="text-black" /> : null}
     </button>
+  );
+}
+
+function DefaultMenuItem({ active = false, label = 'Default', onClick }) {
+  return (
+    <div className="space-y-1 pb-1">
+      <FilterMenuItem active={active} onClick={onClick}>
+        {label}
+      </FilterMenuItem>
+    </div>
   );
 }
 
@@ -208,8 +220,12 @@ function SearchChip({ value, open, onOpen, onClose, onChange, inputRef }) {
   const debouncedQuery = useDebounce(localQuery, 400);
 
   useEffect(() => {
+    if (debouncedQuery !== localQuery || debouncedQuery === value) {
+      return;
+    }
+
     onChange(debouncedQuery);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, localQuery, onChange, value]);
 
   useEffect(() => {
     if (!open) setLocalQuery('');
@@ -275,9 +291,12 @@ export function AccountMediaFilterBar({
   const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
 
   const sortLabel = useMemo(() => {
-    const flatOptions = MEDIA_SORT_GROUPS.flatMap((group) => group.options);
-    return flatOptions.find((option) => option.value === filters?.sort)?.label || 'Release Date';
+    const selectedOption = resolveMediaSortOption(filters?.sort);
+    return selectedOption
+      ? `${selectedOption.groupLabel}: ${selectedOption.label}`
+      : 'Release Date: Newest release first';
   }, [filters?.sort]);
+  const isDefaultSort = filters?.sort === 'release_desc';
 
   useEffect(() => {
     if (searchQuery) setIsSearchOpen(true);
@@ -315,10 +334,17 @@ export function AccountMediaFilterBar({
             />
           </FilterPopover>
 
-          <FilterPopover label={`Sort: ${sortLabel}`} active={filters?.sort !== 'release_desc'}>
+          <FilterPopover label={`${sortLabel}`} active={filters?.sort !== 'release_desc'}>
+            <DefaultMenuItem
+              active={isDefaultSort}
+              label="Default sort: Release date, newest first"
+              onClick={() => onChange({ sort: 'release_desc' })}
+            />
+
             {MEDIA_SORT_GROUPS.map((group) => (
               <OptionSection
                 key={group.label}
+                title={group.label}
                 options={group.options}
                 value={filters?.sort}
                 onChange={(value) => onChange({ sort: value })}
@@ -353,6 +379,7 @@ export function AccountReviewFilterBar({ className = '', filters, onChange, onRe
   const ratingLabel = buildRatingLabel(filters);
   const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
   const sortLabel = resolveOptionLabel(REVIEW_SORT_OPTIONS, filters?.sort, 'When Reviewed (Newest)');
+  const isDefaultSort = filters?.sort === REVIEW_SORT_MODE.NEWEST;
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -369,7 +396,13 @@ export function AccountReviewFilterBar({ className = '', filters, onChange, onRe
         <OptionSection options={yearOptions} value={filters?.year} onChange={(value) => onChange({ year: value })} />
       </FilterPopover>
 
-      <FilterPopover label={`Sort: ${sortLabel}`} active={filters?.sort !== REVIEW_SORT_MODE.NEWEST}>
+      <FilterPopover label={`${sortLabel}`} active={filters?.sort !== REVIEW_SORT_MODE.NEWEST}>
+        <DefaultMenuItem
+          active={isDefaultSort}
+          label="Default sort: When reviewed, newest first"
+          onClick={() => onChange({ sort: REVIEW_SORT_MODE.NEWEST })}
+        />
+
         <OptionSection
           options={REVIEW_SORT_OPTIONS}
           value={filters?.sort}
@@ -403,6 +436,7 @@ export function AccountReviewFilterBar({ className = '', filters, onChange, onRe
 export function AccountActivityFilterBar({ className = '', filters, onChange, onReset, subjectOptions = [] }) {
   const subjectLabel = resolveOptionLabel(subjectOptions, filters?.subject, 'Any content');
   const sortLabel = resolveOptionLabel(ACTIVITY_SORT_OPTIONS, filters?.sort, 'Newest First');
+  const isDefaultSort = filters?.sort === 'newest';
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -414,7 +448,13 @@ export function AccountActivityFilterBar({ className = '', filters, onChange, on
         />
       </FilterPopover>
 
-      <FilterPopover label={`Sort: ${sortLabel}`} active={filters?.sort !== 'newest'}>
+      <FilterPopover label={`${sortLabel}`} active={filters?.sort !== 'newest'}>
+        <DefaultMenuItem
+          active={isDefaultSort}
+          label="Default sort: Newest first"
+          onClick={() => onChange({ sort: 'newest' })}
+        />
+
         <OptionSection
           options={ACTIVITY_SORT_OPTIONS}
           value={filters?.sort}
@@ -429,11 +469,54 @@ export function AccountActivityFilterBar({ className = '', filters, onChange, on
 
 export function AccountListSortBar({ className = '', sort = 'updated_desc', onChange, onReset }) {
   const sortLabel = resolveOptionLabel(LIST_SORT_OPTIONS, sort, 'Recently Updated');
+  const isDefaultSort = sort === 'updated_desc';
 
   return (
     <div className={cn(UI.bar, className)}>
-      <FilterPopover label={`Sort: ${sortLabel}`} active={sort !== 'updated_desc'}>
+      <FilterPopover label={`${sortLabel}`} active={sort !== 'updated_desc'}>
+        <DefaultMenuItem
+          active={isDefaultSort}
+          label="Default sort: Recently updated"
+          onClick={() => onChange?.('updated_desc')}
+        />
+
         <OptionSection options={LIST_SORT_OPTIONS} value={sort} onChange={(value) => onChange?.(value)} />
+      </FilterPopover>
+
+      {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+    </div>
+  );
+}
+
+export function SearchMovieFilterBar({
+  className = '',
+  decadeOptions = [],
+  filters,
+  genreOptions = [],
+  onChange,
+  onReset,
+  yearOptions = [],
+}) {
+  const decadeLabel = resolveOptionLabel(decadeOptions, filters?.decade, 'Any decade');
+  const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
+  const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
+
+  return (
+    <div className={cn(UI.bar, className)}>
+      <FilterPopover label={`Genre: ${genreLabel}`} active={filters?.genre !== 'all'}>
+        <OptionSection options={genreOptions} value={filters?.genre} onChange={(value) => onChange({ genre: value })} />
+      </FilterPopover>
+
+      <FilterPopover label={`Decade: ${decadeLabel}`} active={filters?.decade !== 'all'}>
+        <OptionSection
+          options={decadeOptions}
+          value={filters?.decade}
+          onChange={(value) => onChange({ decade: value })}
+        />
+      </FilterPopover>
+
+      <FilterPopover label={`Release year: ${yearLabel}`} active={filters?.year !== 'all'}>
+        <OptionSection options={yearOptions} value={filters?.year} onChange={(value) => onChange({ year: value })} />
       </FilterPopover>
 
       {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}

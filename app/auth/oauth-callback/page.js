@@ -3,9 +3,12 @@
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
+import { ACCOUNT_CLIENT } from '@/config/account.config';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
-import { normalizeGoogleAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
+import { normalizeOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
+import { getOAuthProviderIcon, getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient } from '@/core/clients/supabase/client';
+import Icon from '@/ui/icon/index';
 
 const SESSION_SYNC_MAX_ATTEMPTS = 10;
 const SESSION_SYNC_RETRY_DELAY_MS = 200;
@@ -47,11 +50,15 @@ function buildRouteNoticeRedirect({ includeNext = true, nextPath, notice, origin
   return redirectUrl.toString();
 }
 
-function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
+function resolveFailureRedirectUrl({ intent, nextPath, origin, provider }) {
+  const normalizedProvider = normalizeOAuthProvider(provider);
+  const failureNotice =
+    normalizedProvider === 'google' ? AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED : AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED;
+
   if (intent === 'sign-up') {
     return buildRouteNoticeRedirect({
       nextPath,
-      notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+      notice: failureNotice,
       origin,
       pathname: '/sign-up',
     });
@@ -60,7 +67,7 @@ function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
   if (intent === 'sign-in') {
     return buildRouteNoticeRedirect({
       nextPath,
-      notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+      notice: failureNotice,
       origin,
       pathname: '/sign-in',
     });
@@ -69,7 +76,7 @@ function resolveFailureRedirectUrl({ intent, nextPath, origin }) {
   return buildRouteNoticeRedirect({
     includeNext: false,
     nextPath,
-    notice: AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED,
+    notice: failureNotice,
     origin,
     pathname: nextPath,
   });
@@ -193,6 +200,20 @@ async function waitForBrowserSession({ isCancelled = null, supabase }) {
   };
 }
 
+async function ensureAccountProfile(user = null) {
+  if (!user?.id) {
+    return;
+  }
+
+  await ACCOUNT_CLIENT.ensureAccount({
+    avatarUrl: user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
+    displayName:
+      user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || null,
+    email: user?.email || null,
+    id: user.id,
+  }).catch(() => null);
+}
+
 async function exchangeCodeForSessionWithRetry({ code, supabase }) {
   const normalizedCode = normalizeValue(code);
 
@@ -249,10 +270,14 @@ async function exchangeCodeForSessionWithRetry({ code, supabase }) {
   return exchangePromise;
 }
 
-function OAuthCallbackLoading() {
+function OAuthCallbackLoading({ provider = null }) {
+  const providerIcon = getOAuthProviderIcon(provider);
+  const providerLabel = getOAuthProviderLabel(provider, 'social');
+
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
-      <p className="text-sm text-slate-500">Finishing Google sign-in...</p>
+    <main className="center min-h-screen flex-col gap-2 p-6">
+      <Icon icon={providerIcon} size={50} />
+      <p className="font-semibold text-black/50">Finishing {providerLabel} sign-in</p>
     </main>
   );
 }
@@ -267,7 +292,8 @@ function OAuthCallbackContent() {
       const origin = window.location.origin;
       const nextPath = sanitizeAuthNextPath(searchParams.get('next'));
       const nextUrl = new URL(nextPath, origin).toString();
-      const intent = normalizeGoogleAuthIntent(searchParams.get('intent'), 'sign-in');
+      const intent = normalizeOAuthIntent(searchParams.get('intent'), 'sign-in');
+      const provider = normalizeOAuthProvider(searchParams.get('provider'));
       const code = normalizeValue(searchParams.get('code'));
       const providerError = normalizeValue(searchParams.get('error') || searchParams.get('error_description'));
 
@@ -290,6 +316,7 @@ function OAuthCallbackContent() {
             intent,
             nextPath,
             origin,
+            provider,
           })
         );
         return;
@@ -297,8 +324,15 @@ function OAuthCallbackContent() {
 
       const supabase = createSupabaseClient();
       const sessionState = await getBrowserSessionUserId(supabase);
+      const currentSession = await supabase.auth.getSession().catch(() => ({
+        data: {
+          session: null,
+        },
+      }));
+      const currentUser = currentSession?.data?.session?.user || null;
 
       if (sessionState.userId) {
+        await ensureAccountProfile(currentUser);
         await syncServerSession();
         redirectTo(nextUrl);
         return;
@@ -315,6 +349,7 @@ function OAuthCallbackContent() {
         exchangeError = exchangeResult.error || null;
 
         if (!exchangeResult.error && exchangeResult.data?.session?.user?.id) {
+          await ensureAccountProfile(exchangeResult.data.session.user);
           await syncServerSession();
           redirectTo(nextUrl);
           return;
@@ -327,6 +362,13 @@ function OAuthCallbackContent() {
       });
 
       if (browserSessionState.hasSession) {
+        const browserSession = await supabase.auth.getSession().catch(() => ({
+          data: {
+            session: null,
+          },
+        }));
+
+        await ensureAccountProfile(browserSession?.data?.session?.user || null);
         await syncServerSession();
         redirectTo(nextUrl);
         return;
@@ -346,6 +388,7 @@ function OAuthCallbackContent() {
           intent,
           nextPath,
           origin,
+          provider,
         })
       );
     }
@@ -357,7 +400,7 @@ function OAuthCallbackContent() {
     };
   }, [searchParams]);
 
-  return <OAuthCallbackLoading />;
+  return <OAuthCallbackLoading provider={searchParams.get('provider')} />;
 }
 
 export default function OAuthCallbackPage() {

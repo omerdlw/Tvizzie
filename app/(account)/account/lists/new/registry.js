@@ -16,6 +16,7 @@ export default function Registry({
   useRegistry({
     loading: {
       isLoading: !authIsReady || isLoading,
+      showOverlay: false,
       registry: {
         source: 'account-lists-new',
       },

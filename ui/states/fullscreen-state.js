@@ -1,45 +1,121 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
 import { cn } from '@/core/utils';
 
-let activeFullscreenStateCount = 0;
-
 const listeners = new Set();
+const activeFullscreenStateIds = new Set();
+const FULLSCREEN_ROOT_SELECTOR = '[data-fullscreen-state-root="true"][data-affect-global-state="true"]';
+
+let fullscreenStateIdCounter = 0;
+let domObserver = null;
+let lastSnapshot = false;
+
+function getDomSnapshot() {
+  if (typeof document === 'undefined') {
+    return activeFullscreenStateIds.size > 0;
+  }
+
+  return document.querySelector(FULLSCREEN_ROOT_SELECTOR) !== null;
+}
 
 function emitChange() {
   listeners.forEach((listener) => listener());
 }
 
+function emitIfSnapshotChanged() {
+  const nextSnapshot = getDomSnapshot();
+
+  if (nextSnapshot === lastSnapshot) {
+    return;
+  }
+
+  lastSnapshot = nextSnapshot;
+  emitChange();
+}
+
+function ensureDomObserver() {
+  if (typeof document === 'undefined' || domObserver || listeners.size === 0) {
+    return;
+  }
+
+  domObserver = new MutationObserver(() => {
+    emitIfSnapshotChanged();
+  });
+
+  domObserver.observe(document.documentElement, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+    attributeFilter: ['data-fullscreen-state', 'data-fullscreen-state-root', 'data-affect-global-state'],
+  });
+}
+
+function releaseDomObserver() {
+  if (listeners.size > 0 || !domObserver) {
+    return;
+  }
+
+  domObserver.disconnect();
+  domObserver = null;
+}
+
 function subscribe(listener) {
   listeners.add(listener);
+  ensureDomObserver();
+  emitIfSnapshotChanged();
 
   return () => {
     listeners.delete(listener);
+    releaseDomObserver();
   };
 }
 
 function getSnapshot() {
-  return activeFullscreenStateCount > 0;
+  return getDomSnapshot();
 }
 
-function updateActiveCount(delta) {
-  activeFullscreenStateCount = Math.max(0, activeFullscreenStateCount + delta);
-  emitChange();
+function registerFullscreenState(id) {
+  activeFullscreenStateIds.add(id);
+  emitIfSnapshotChanged();
+}
+
+function unregisterFullscreenState(id) {
+  activeFullscreenStateIds.delete(id);
+  emitIfSnapshotChanged();
 }
 
 export function useIsFullscreenStateActive() {
   return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
-export function FullscreenState({ children, className, contentClassName, lockScroll = true }) {
+export function FullscreenState({
+  children,
+  className,
+  contentClassName,
+  lockScroll = true,
+  affectGlobalState = true,
+}) {
+  const stateIdRef = useRef(null);
+
+  if (stateIdRef.current === null) {
+    fullscreenStateIdCounter += 1;
+    stateIdRef.current = `fullscreen-state-${fullscreenStateIdCounter}`;
+  }
+
   useEffect(() => {
-    updateActiveCount(1);
+    const stateId = stateIdRef.current;
+
+    if (affectGlobalState) {
+      registerFullscreenState(stateId);
+    }
 
     if (!lockScroll || typeof document === 'undefined') {
       return () => {
-        updateActiveCount(-1);
+        if (affectGlobalState) {
+          unregisterFullscreenState(stateId);
+        }
       };
     }
 
@@ -68,12 +144,19 @@ export function FullscreenState({ children, className, contentClassName, lockScr
         delete documentElement.dataset.fullscreenState;
       }
 
-      updateActiveCount(-1);
+      if (affectGlobalState) {
+        unregisterFullscreenState(stateId);
+      }
     };
-  }, [lockScroll]);
+  }, [affectGlobalState, lockScroll]);
 
   return (
-    <div className={cn('fixed inset-0 h-screen w-screen overflow-hidden', className)}>
+    <div
+      data-affect-global-state={affectGlobalState ? 'true' : 'false'}
+      data-fullscreen-state-root="true"
+      data-fullscreen-state-id={stateIdRef.current}
+      className={cn('fixed inset-0 h-screen w-screen overflow-hidden', className)}
+    >
       <div className={cn('center h-screen w-screen p-6', contentClassName)}>{children}</div>
     </div>
   );

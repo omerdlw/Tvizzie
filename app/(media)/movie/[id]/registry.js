@@ -313,7 +313,7 @@ export default function Registry({
           },
         }
       : {}),
-    loading: { isLoading },
+    loading: { isLoading, showOverlay: false },
     modal: {
       CAST_MODAL: CastModal,
       LIST_PICKER_MODAL: ListPickerModal,

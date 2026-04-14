@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 
 import { AccountPageShell } from '@/features/account/shared/layout';
@@ -25,7 +25,7 @@ import {
 } from '@/features/account/filtering';
 import { AccountMediaFilterBar, AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
-import AccountPagination, { ACCOUNT_PAGINATION_STYLE_PROPS } from '@/features/account/shared/pagination';
+import AccountPagination from '@/features/account/shared/pagination';
 import { formatPaginationSummaryLabel } from '@/features/account/utils';
 import AccountInlineSectionState from '@/features/account/shared/section-state';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
@@ -237,17 +237,19 @@ export default function AccountListDetailFeed({
   RegistryComponent = null,
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString?.() || '';
   const collectionRootPath = useMemo(() => String(pathname || ''), [pathname]);
-  const mediaFilters = useMemo(
+  const initialMediaFilters = useMemo(
     () =>
-      parseMediaFilters(searchParams, {
+      parseMediaFilters(new URLSearchParams(searchParamsKey), {
         allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
       }),
-    [searchParams]
+    [searchParamsKey]
   );
-  const reviewFilters = useMemo(() => parseReviewFilters(searchParams), [searchParams]);
+  const initialReviewFilters = useMemo(() => parseReviewFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
+  const [reviewFilters, setReviewFilters] = useState(initialReviewFilters);
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const genreOptions = useMemo(() => collectMediaGenreOptions(listItems), [listItems]);
   const reviewYearOptions = useMemo(() => collectReviewYears(reviews), [reviews]);
@@ -266,6 +268,42 @@ export default function AccountListDetailFeed({
   const filteredReviews = useMemo(() => applyReviewFilters(reviews, reviewFilters), [reviewFilters, reviews]);
   const hasMediaFilters = hasActiveMediaFilters(mediaFilters);
   const hasReviewFilters = hasActiveReviewFilters(reviewFilters);
+  const hasListItems = listItems.length > 0;
+  const hasListReviews = reviews.length > 0;
+
+  useEffect(() => {
+    setMediaFilters(initialMediaFilters);
+    setReviewFilters(initialReviewFilters);
+  }, [initialMediaFilters, initialReviewFilters, searchParamsKey]);
+
+  const updateUrl = useCallback(
+    ({ nextMediaFilters = mediaFilters, nextReviewFilters = reviewFilters } = {}) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      let params = new URLSearchParams(window.location.search);
+      const mediaQueryString = buildManagedQueryString(params, {
+        managedKeys: MEDIA_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toMediaQueryValues(nextMediaFilters),
+      });
+      params = new URLSearchParams(mediaQueryString);
+
+      const reviewQueryString = buildManagedQueryString(params, {
+        managedKeys: REVIEW_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toReviewQueryValues(nextReviewFilters),
+      });
+
+      window.history.replaceState(
+        {},
+        '',
+        reviewQueryString ? `${collectionRootPath}?${reviewQueryString}` : collectionRootPath
+      );
+    },
+    [collectionRootPath, mediaFilters, reviewFilters]
+  );
 
   const updateMediaFilters = useCallback(
     (updates = {}) => {
@@ -273,30 +311,26 @@ export default function AccountListDetailFeed({
         ...mediaFilters,
         ...updates,
       };
-      const queryString = buildManagedQueryString(searchParams, {
-        managedKeys: MEDIA_FILTER_QUERY_KEYS,
-        resetPage: true,
-        values: toMediaQueryValues(nextFilters),
-      });
-
-      router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
-        scroll: false,
+      setMediaFilters(nextFilters);
+      updateUrl({
+        nextMediaFilters: nextFilters,
+        nextReviewFilters: reviewFilters,
       });
     },
-    [collectionRootPath, mediaFilters, router, searchParams]
+    [mediaFilters, reviewFilters, updateUrl]
   );
 
   const resetMediaFilters = useCallback(() => {
-    const queryString = buildManagedQueryString(searchParams, {
-      managedKeys: MEDIA_FILTER_QUERY_KEYS,
-      resetPage: true,
-      values: {},
+    const defaultFilters = parseMediaFilters(new URLSearchParams(), {
+      allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
     });
 
-    router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
-      scroll: false,
+    setMediaFilters(defaultFilters);
+    updateUrl({
+      nextMediaFilters: defaultFilters,
+      nextReviewFilters: reviewFilters,
     });
-  }, [collectionRootPath, router, searchParams]);
+  }, [reviewFilters, updateUrl]);
 
   const updateReviewFilters = useCallback(
     (updates = {}) => {
@@ -304,30 +338,24 @@ export default function AccountListDetailFeed({
         ...reviewFilters,
         ...updates,
       };
-      const queryString = buildManagedQueryString(searchParams, {
-        managedKeys: REVIEW_FILTER_QUERY_KEYS,
-        resetPage: true,
-        values: toReviewQueryValues(nextFilters),
-      });
-
-      router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
-        scroll: false,
+      setReviewFilters(nextFilters);
+      updateUrl({
+        nextMediaFilters: mediaFilters,
+        nextReviewFilters: nextFilters,
       });
     },
-    [collectionRootPath, reviewFilters, router, searchParams]
+    [mediaFilters, reviewFilters, updateUrl]
   );
 
   const resetReviewFilters = useCallback(() => {
-    const queryString = buildManagedQueryString(searchParams, {
-      managedKeys: REVIEW_FILTER_QUERY_KEYS,
-      resetPage: true,
-      values: {},
-    });
+    const defaultFilters = parseReviewFilters(new URLSearchParams());
 
-    router.replace(queryString ? `${collectionRootPath}?${queryString}` : collectionRootPath, {
-      scroll: false,
+    setReviewFilters(defaultFilters);
+    updateUrl({
+      nextMediaFilters: mediaFilters,
+      nextReviewFilters: defaultFilters,
     });
-  }, [collectionRootPath, router, searchParams]);
+  }, [mediaFilters, updateUrl]);
 
   const pageRegistry = RegistryComponent ? (
     <RegistryComponent
@@ -425,22 +453,24 @@ export default function AccountListDetailFeed({
                 items={filteredListItems}
                 onRemoveItem={handleRemoveListItem}
                 toolbar={
-                  <>
-                    <AccountMediaFilterBar
-                      filters={mediaFilters}
-                      decadeOptions={decadeOptions}
-                      genreOptions={genreOptions}
-                      visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
-                      onChange={updateMediaFilters}
-                      onReset={hasMediaFilters ? resetMediaFilters : null}
-                    />
+                  hasListItems ? (
+                    <>
+                      <AccountMediaFilterBar
+                        filters={mediaFilters}
+                        decadeOptions={decadeOptions}
+                        genreOptions={genreOptions}
+                        visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
+                        onChange={updateMediaFilters}
+                        onReset={hasMediaFilters ? resetMediaFilters : null}
+                      />
 
-                    {hasMediaFilters ? (
-                      <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-                        {filteredListItems.length} of {listItems.length} titles shown
-                      </p>
-                    ) : null}
-                  </>
+                      {hasMediaFilters ? (
+                        <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                          {filteredListItems.length} of {listItems.length} titles shown
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null
                 }
               />
             </div>
@@ -450,15 +480,17 @@ export default function AccountListDetailFeed({
             <div className={`${LIST_SECTION_SHELL_CLASS} pt-4 pb-20`}>
               <ReviewHeader ratingStats={ratingStats} totalReviews={reviews.length} />
 
-              <AccountReviewFilterBar
-                className="mb-2"
-                filters={reviewFilters}
-                yearOptions={reviewYearOptions}
-                onChange={updateReviewFilters}
-                onReset={hasReviewFilters ? resetReviewFilters : null}
-              />
+              {hasListReviews ? (
+                <AccountReviewFilterBar
+                  className="mb-2"
+                  filters={reviewFilters}
+                  yearOptions={reviewYearOptions}
+                  onChange={updateReviewFilters}
+                  onReset={hasReviewFilters ? resetReviewFilters : null}
+                />
+              ) : null}
 
-              {hasReviewFilters ? (
+              {hasListReviews && hasReviewFilters ? (
                 <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
                   {filteredReviews.length} of {reviews.length} reviews shown
                 </p>

@@ -1,3 +1,5 @@
+import { normalizeOAuthProvider } from '@/core/auth/oauth-providers';
+
 const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';
 const LEGACY_AUTH_OAUTH_CALLBACK_PATH = '/auth/oauth-callback';
 
@@ -6,7 +8,7 @@ export const AUTH_DEFAULT_POST_LOGIN_PATH = '/account';
 
 const BLOCKED_NEXT_PATHS = new Set(['/sign-in', '/sign-up', AUTH_OAUTH_CALLBACK_PATH, LEGACY_AUTH_OAUTH_CALLBACK_PATH]);
 
-const GOOGLE_AUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
+export const OAUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -51,33 +53,54 @@ export function sanitizeAuthNextPath(nextPath, fallback = AUTH_DEFAULT_POST_LOGI
   }
 }
 
-export function normalizeGoogleAuthIntent(value, fallback = 'sign-in') {
+export function normalizeOAuthIntent(value, fallback = 'sign-in') {
   const normalizedIntent = normalizeValue(value).toLowerCase();
 
-  if (GOOGLE_AUTH_INTENTS.has(normalizedIntent)) {
+  if (OAUTH_INTENTS.has(normalizedIntent)) {
     return normalizedIntent;
   }
 
   return fallback;
 }
 
-export function buildGoogleOAuthCallbackUrl({
-  intent = 'sign-in',
-  nextPath = AUTH_DEFAULT_POST_LOGIN_PATH,
-  origin,
-} = {}) {
-  const normalizedOrigin = normalizeOrigin(origin);
+export function resolveOAuthIntent(payload = {}, provider = null, fallback = 'sign-in') {
+  const normalizedProvider = normalizeOAuthProvider(provider);
 
-  if (!normalizedOrigin) {
+  return normalizeOAuthIntent(
+    payload?.oauthIntent ||
+      (normalizedProvider ? payload?.[`${normalizedProvider}AuthIntent`] : null) ||
+      payload?.googleAuthIntent,
+    fallback
+  );
+}
+
+export function buildOAuthCallbackUrl({ intent = 'sign-in', nextPath = AUTH_DEFAULT_POST_LOGIN_PATH, origin, provider } = {}) {
+  const normalizedOrigin = normalizeOrigin(origin);
+  const normalizedProvider = normalizeOAuthProvider(provider);
+
+  if (!normalizedOrigin || !normalizedProvider) {
     return '';
   }
 
   const url = new URL(AUTH_OAUTH_CALLBACK_PATH, normalizedOrigin);
-  const normalizedIntent = normalizeGoogleAuthIntent(intent);
+  const normalizedIntent = normalizeOAuthIntent(intent);
 
   url.searchParams.set('next', sanitizeAuthNextPath(nextPath, AUTH_DEFAULT_POST_LOGIN_PATH));
   url.searchParams.set('intent', normalizedIntent);
-  url.searchParams.set('provider', 'google');
+  url.searchParams.set('provider', normalizedProvider);
 
   return url.toString();
+}
+
+export function normalizeGoogleAuthIntent(value, fallback = 'sign-in') {
+  return normalizeOAuthIntent(value, fallback);
+}
+
+export function buildGoogleOAuthCallbackUrl({ intent = 'sign-in', nextPath = AUTH_DEFAULT_POST_LOGIN_PATH, origin } = {}) {
+  return buildOAuthCallbackUrl({
+    intent,
+    nextPath,
+    origin,
+    provider: 'google',
+  });
 }

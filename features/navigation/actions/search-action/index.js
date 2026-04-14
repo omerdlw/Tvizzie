@@ -1,17 +1,16 @@
 'use client';
 
-import { startTransition, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useState } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { DURATION, EASING } from '@/core/constants';
 import { useDebounce } from '@/core/hooks';
-import { cn } from '@/core/utils';
 import { useNavigation } from '@/core/modules/nav/hooks';
-import { Input } from '@/ui/elements';
-import Icon from '@/ui/icon';
+import { cn } from '@/core/utils';
 
-import { SEARCH_LIMITS, SEARCH_STYLES, SEARCH_TAB_ITEMS, SEARCH_TYPES } from './constants';
+import { SEARCH_LIMITS, SEARCH_TYPES } from './constants';
+import SearchActionControls from './parts/controls';
 import SearchResultItem from './parts/item';
 import {
   fetchAllMedia,
@@ -24,40 +23,105 @@ import {
   navActionClass,
 } from './utils';
 
-export default function SearchAction() {
-  const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState(SEARCH_TYPES.ALL);
+const SEARCH_ACTION_VARIANTS = Object.freeze({
+  DEFAULT: 'default',
+  PAGE: 'page',
+});
+
+function getSeeAllButtonClassName() {
+  return navActionClass({
+    cn,
+    button:
+      'relative w-full shrink-0 rounded-[12px] px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
+  });
+}
+
+export default function SearchAction({
+  loading: controlledLoading = false,
+  query: controlledQuery,
+  searchType: controlledSearchType,
+  variant = SEARCH_ACTION_VARIANTS.DEFAULT,
+  onQueryChange,
+  onSearchTypeChange,
+}) {
+  const isPageVariant = variant === SEARCH_ACTION_VARIANTS.PAGE;
+  const isQueryControlled = typeof controlledQuery === 'string';
+  const isSearchTypeControlled = typeof controlledSearchType === 'string';
+
+  const [localQuery, setLocalQuery] = useState('');
+  const [localSearchType, setLocalSearchType] = useState(SEARCH_TYPES.ALL);
   const [isManualTab, setIsManualTab] = useState(false);
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
 
+  const query = isQueryControlled ? controlledQuery : localQuery;
+  const searchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
+  const loading = isPageVariant ? Boolean(controlledLoading) : localLoading;
   const debouncedQuery = useDebounce(query, 500);
   const { expanded, navigate, setExpanded } = useNavigation();
 
-  const handleImageError = (key) => {
+  const handleQueryChange = useCallback((nextQuery) => {
+    if (!isQueryControlled) {
+      setLocalQuery(nextQuery);
+    }
+
+    onQueryChange?.(nextQuery);
+
+    if (!isPageVariant) {
+      setIsManualTab(false);
+    }
+  }, [isPageVariant, isQueryControlled, onQueryChange]);
+
+  const handleSearchTypeChange = useCallback((nextSearchType) => {
+    if (!isSearchTypeControlled) {
+      setLocalSearchType(nextSearchType);
+    }
+
+    onSearchTypeChange?.(nextSearchType);
+
+    if (!isPageVariant) {
+      setIsManualTab(true);
+    }
+  }, [isPageVariant, isSearchTypeControlled, onSearchTypeChange]);
+
+  const handleClear = useCallback(() => {
+    handleQueryChange('');
+    setResults([]);
+
+    if (!isPageVariant) {
+      if (!isSearchTypeControlled) {
+        setLocalSearchType(SEARCH_TYPES.ALL);
+      }
+
+      setIsManualTab(false);
+    }
+  }, [handleQueryChange, isPageVariant, isSearchTypeControlled]);
+
+  const handleImageError = useCallback((key) => {
     setImageErrors((prev) => ({
       ...prev,
       [key]: true,
     }));
-  };
+  }, []);
 
-  const handleSelect = (item) => {
+  const handleSelect = useCallback((item) => {
     const path = getDetailPath(item);
 
-    if (!path) return;
+    if (!path) {
+      return;
+    }
 
     if (typeof document !== 'undefined') {
       document.activeElement?.blur?.();
     }
 
     setExpanded(false);
-    setQuery('');
-    setResults([]);
+    handleClear();
     navigate(path);
-  };
+  }, [handleClear, navigate, setExpanded]);
 
-  const handleSeeAllResults = () => {
+  const handleSeeAllResults = useCallback(() => {
     const normalizedQuery = query.trim();
 
     if (!normalizedQuery) {
@@ -70,21 +134,29 @@ export default function SearchAction() {
     });
 
     navigate(`/search?${params.toString()}`);
-  };
+  }, [navigate, query, searchType]);
 
   useEffect(() => {
+    if (isPageVariant) {
+      return undefined;
+    }
+
     if (!debouncedQuery?.trim()) {
       setResults([]);
-      setSearchType(SEARCH_TYPES.ALL);
+
+      if (!isSearchTypeControlled) {
+        setLocalSearchType(SEARCH_TYPES.ALL);
+      }
+
       setIsManualTab(false);
-      setLoading(false);
-      return;
+      setLocalLoading(false);
+      return undefined;
     }
 
     let isCancelled = false;
 
     async function runSearch() {
-      setLoading(true);
+      setLocalLoading(true);
 
       try {
         const normalizedQuery = debouncedQuery.trim().toLowerCase();
@@ -108,9 +180,9 @@ export default function SearchAction() {
             mediaResults,
           });
 
-          if (!isCancelled) {
+          if (!isCancelled && !isSearchTypeControlled) {
             startTransition(() => {
-              setSearchType(nextSearchType);
+              setLocalSearchType(nextSearchType);
             });
           }
         }
@@ -162,7 +234,7 @@ export default function SearchAction() {
         }
       } finally {
         if (!isCancelled) {
-          setLoading(false);
+          setLocalLoading(false);
         }
       }
     }
@@ -172,150 +244,67 @@ export default function SearchAction() {
     return () => {
       isCancelled = true;
     };
-  }, [debouncedQuery, isManualTab, searchType]);
+  }, [debouncedQuery, isManualTab, isPageVariant, isSearchTypeControlled, searchType]);
 
   useEffect(() => {
-    if (!expanded) {
-      setQuery('');
+    if (!isPageVariant && !expanded) {
+      handleClear();
     }
-  }, [expanded]);
+  }, [expanded, handleClear, isPageVariant]);
 
   return (
     <motion.div className="mt-2.5 w-full" layout="position">
-      <Input
-        classNames={{
-          input: 'w-full placeholder:text-black/60 outline-none',
-          wrapper: navActionClass({
-            cn,
-            button: SEARCH_STYLES.input,
-          }),
-          leftIcon: 'mr-2 center shrink-0',
-        }}
-        leftIcon={
-          <Icon
-            className={`${query ? 'text-black' : 'text-black/60'} transition-colors duration-(--motion-duration-normal)`}
-            icon="solar:magnifer-linear"
-            size={16}
-          />
-        }
-        placeholder="Search movies, people or users"
-        value={query}
-        spellCheck={false}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setIsManualTab(false);
-        }}
-        rightIcon={
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div
-                key="loading"
-                className="center shrink-0"
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-              >
-                <Icon icon="line-md:loading-loop" size={16} />
-              </motion.div>
-            ) : query ? (
-              <motion.button
-                key="clear"
-                type="button"
-                className={`center text-error shrink-0 cursor-pointer`}
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-                onClick={() => setQuery('')}
-              >
-                <Icon icon="material-symbols:close-rounded" size={16} />
-              </motion.button>
-            ) : null}
-          </AnimatePresence>
-        }
+      <SearchActionControls
+        loading={loading}
+        query={query}
+        searchType={searchType}
+        showTabsWhenEmpty={isPageVariant}
+        onClear={handleClear}
+        onQueryChange={handleQueryChange}
+        onSearchTypeChange={handleSearchTypeChange}
       />
 
-      <AnimatePresence>
-        {results.length > 0 && query && (
-          <motion.div
-            layout="position"
-            className="mt-2 flex flex-col gap-1 overflow-hidden"
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-            transition={{ duration: DURATION.QUICK, ease: EASING.EASE_OUT }}
-          >
-            {results.map((item) => (
-              <SearchResultItem
-                key={`${item.media_type}-${item.id}`}
-                item={item}
-                imageErrors={imageErrors}
-                onImageError={handleImageError}
-                onSelect={handleSelect}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!isPageVariant ? (
+        <>
+          <AnimatePresence>
+            {results.length > 0 && query ? (
+              <motion.div
+                layout="position"
+                className="mt-2 flex flex-col gap-1 overflow-hidden"
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
+                transition={{ duration: DURATION.QUICK, ease: EASING.EASE_OUT }}
+              >
+                {results.map((item) => (
+                  <SearchResultItem
+                    key={`${item.media_type}-${item.id}`}
+                    item={item}
+                    imageErrors={imageErrors}
+                    onImageError={handleImageError}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
-      <AnimatePresence>
-        {query.trim() && (
-          <motion.div
-            className="mt-2 overflow-hidden"
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-          >
-            <button
-              type="button"
-              className={navActionClass({
-                cn,
-                button: `${SEARCH_STYLES.tabButton} text-left`,
-              })}
-              onClick={handleSeeAllResults}
-            >
-              See all results
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {query && (
-          <motion.div
-            className="mt-2 overflow-hidden"
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-          >
-            <div className={SEARCH_STYLES.tabList}>
-              {SEARCH_TAB_ITEMS.map((item) => {
-                const isActive = searchType === item.key;
-
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className={cn(
-                      navActionClass({
-                        cn,
-                        button: SEARCH_STYLES.tabButton,
-                        isActive,
-                      }),
-                      'group'
-                    )}
-                    onClick={() => {
-                      setSearchType(item.key);
-                      setIsManualTab(true);
-                    }}
-                  >
-                    <span className="relative">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <AnimatePresence>
+            {query.trim() ? (
+              <motion.div
+                className="mt-2 overflow-hidden"
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
+              >
+                <button type="button" className={getSeeAllButtonClassName()} onClick={handleSeeAllResults}>
+                  See all results
+                </button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </>
+      ) : null}
     </motion.div>
   );
 }

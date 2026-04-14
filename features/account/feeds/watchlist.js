@@ -10,8 +10,8 @@ import {
   buildCollectionBasePath,
   buildManagedQueryString,
   buildMediaKeySet,
+  collectMediaGenreOptions,
   getDecadeOptions,
-  getAllMediaGenreOptions,
   hasActiveMediaFilters,
   parseMediaFilters,
   toMediaQueryValues,
@@ -51,7 +51,7 @@ export default function AccountWatchlistFeed({
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
-  const genreOptions = useMemo(() => getAllMediaGenreOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(watchlist), [watchlist]);
   const watchlistKeys = useMemo(() => buildMediaKeySet(watchlist), [watchlist]);
   const filteredWatchlist = useMemo(
     () => applyMediaFilters(watchlist, mediaFilters, { watchlistKeys }),
@@ -142,14 +142,16 @@ export default function AccountWatchlistFeed({
         ) : null
       }
       toolbar={
-        <AccountMediaFilterBar
-          filters={mediaFilters}
-          decadeOptions={decadeOptions}
-          genreOptions={genreOptions}
-          visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
-          onChange={updateFilters}
-          onReset={hasActiveMediaFilters(mediaFilters) ? handleResetFilters : null}
-        />
+        watchlist.length > 0 ? (
+          <AccountMediaFilterBar
+            filters={mediaFilters}
+            decadeOptions={decadeOptions}
+            genreOptions={genreOptions}
+            visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
+            onChange={updateFilters}
+            onReset={hasActiveMediaFilters(mediaFilters) ? handleResetFilters : null}
+          />
+        ) : null
       }
       title="Watchlist"
     />

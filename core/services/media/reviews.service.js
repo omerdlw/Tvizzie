@@ -321,6 +321,7 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
   fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: user.id,
+      eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
       subjectId: subjectMetadata.subjectId,
       subjectType: subjectMetadata.subjectType,
     }),
@@ -435,6 +436,7 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
   fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: user.id,
+      eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
       subjectId: subjectMetadata.subjectId,
       subjectType: subjectMetadata.subjectType,
     }),

@@ -2,7 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 
+import { resolvePrimaryProvider } from '@/core/auth/capabilities';
 import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 
 import { DEFAULT_AUTH_CONFIG, DEFAULT_AUTH_STATE, AUTH_STATUS } from './config';
@@ -51,22 +53,18 @@ function createAdapterContext(config, storage, session) {
 
 function resolveAuthProvider(payload = {}, session = null) {
   const providerFromPayload = payload?.provider || payload?.strategy || payload?.authProvider || null;
-
-  const normalizedProvider = String(providerFromPayload || '')
-    .trim()
-    .toLowerCase();
+  const normalizedProvider = normalizeOAuthProvider(providerFromPayload);
 
   if (normalizedProvider) {
     return normalizedProvider;
   }
 
   const providerIds = Array.isArray(session?.metadata?.providerIds) ? session.metadata.providerIds : [];
+  const sessionProvider = String(session?.provider || '')
+    .trim()
+    .toLowerCase();
 
-  if (providerIds.includes('google.com')) {
-    return 'google';
-  }
-
-  return 'password';
+  return normalizeOAuthProvider(sessionProvider) || sessionProvider || resolvePrimaryProvider(providerIds) || 'password';
 }
 
 function resolveSignInIdentifier(payload = {}) {
@@ -460,7 +458,9 @@ export function AuthProvider({ children, config = {} }) {
       setLoadingState();
       emitAuthFeedback('login', 'start', {
         description:
-          provider === 'google' ? 'Redirecting to Google sign-in' : 'Checking credentials and preparing session',
+          provider !== 'password'
+            ? `Redirecting to ${getOAuthProviderLabel(provider)} sign-in`
+            : 'Checking credentials and preparing session',
         title: 'Signing In',
       });
 

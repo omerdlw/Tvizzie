@@ -72,6 +72,7 @@ export function NavigationProvider({ children, config = {} }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [navHeight, setNavHeight] = useState(0);
+  const [pendingNavigationPath, setPendingNavigationPath] = useState(null);
   const [surfaceState, setSurfaceState] = useState(INITIAL_SURFACE_STATE);
 
   const { batch, getAll, register, unregister } = useNavRegistry();
@@ -294,6 +295,7 @@ export function NavigationProvider({ children, config = {} }) {
     });
 
     previousPathRef.current = pathname;
+    setPendingNavigationPath(null);
   }, [closeAllSurfaces, pathname]);
 
   const stateValue = useMemo(
@@ -304,6 +306,7 @@ export function NavigationProvider({ children, config = {} }) {
       expandedParents,
       searchQuery,
       navHeight,
+      pendingNavigationPath,
       expanded,
       config,
     }),
@@ -314,6 +317,7 @@ export function NavigationProvider({ children, config = {} }) {
       expandedParents,
       searchQuery,
       navHeight,
+      pendingNavigationPath,
       expanded,
       config,
     ]
@@ -332,6 +336,7 @@ export function NavigationProvider({ children, config = {} }) {
       setSearchQuery,
       toggleParent,
       setNavHeight,
+      setPendingNavigationPath,
       setExpanded,
       collapse,
       expand,
@@ -349,6 +354,7 @@ export function NavigationProvider({ children, config = {} }) {
       setSearchQuery,
       toggleParent,
       setNavHeight,
+      setPendingNavigationPath,
       setExpanded,
       collapse,
       expand,

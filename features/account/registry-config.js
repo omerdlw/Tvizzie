@@ -48,6 +48,7 @@ function getProfileFollowNavAction(state) {
 function buildAccountLoadingState({ isLoading = false, navRegistrySource }) {
   return {
     isLoading,
+    showOverlay: false,
     registry: navRegistrySource
       ? {
           source: navRegistrySource,
@@ -77,6 +78,20 @@ export function buildAccountEditState({
   return {
     loading: loadingState,
     nav: {
+      actions: authIsAuthenticated
+        ? [
+            {
+              key: 'back-to-account',
+              icon: 'solar:alt-arrow-left-bold',
+              tooltip: 'Back to Account',
+              order: -10,
+              onClick: (event) => {
+                event.stopPropagation();
+                window.location.assign('/account');
+              },
+            },
+          ]
+        : [],
       confirmation: deleteConfirmation,
       title: authIsAuthenticated ? 'Edit Account' : 'Account',
       icon: avatarPreview,

@@ -204,7 +204,7 @@ function getSectionHref(username, key) {
   }
 }
 
-function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
+export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   const reduceMotion = useReducedMotion();
 
   if (!username) {

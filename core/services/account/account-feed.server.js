@@ -238,12 +238,13 @@ function dedupeActivityItems(items = []) {
     const normalizedEventType = String(item?.eventType || '').trim().toUpperCase() || 'UNKNOWN';
     const canonicalKey = buildCanonicalActivityDedupeKey({
       actorUserId: item?.sourceUserId || item?.actor?.id,
+      eventType: normalizedEventType,
       subjectId: item?.subject?.id,
       subjectType: item?.subject?.type,
     });
     const key =
-      canonicalKey ||
       item?.dedupeKey ||
+      canonicalKey ||
       `${item?.actor?.id || 'actor'}:${item?.eventType || 'event'}:${item?.id || 'id'}`;
 
     if (seenKeys.has(key)) {

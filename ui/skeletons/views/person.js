@@ -197,7 +197,11 @@ export function PersonAwardsSkeleton({ className = '' }) {
 
 export function Skeleton() {
   return (
-    <FullscreenState className="h-screen w-screen" contentClassName="h-screen w-screen !block !p-0 overflow-y-auto">
+    <FullscreenState
+      affectGlobalState={false}
+      className="h-screen w-screen"
+      contentClassName="h-screen w-screen !block !p-0 overflow-y-auto"
+    >
       <PersonContentSkeleton />
     </FullscreenState>
   );

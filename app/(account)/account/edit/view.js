@@ -1,6 +1,6 @@
 import { cn } from '@/core/utils';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import { AccountSectionReveal } from '@/features/account/shared/layout';
+import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/features/account/shared/layout';
 import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import AccountHero from '@/features/account/shared/hero';
@@ -241,15 +241,20 @@ export default function AccountEditView(props) {
       {editRegistry}
       <PageGradientShell>
         <main className="relative min-h-screen overflow-hidden">
-          <AccountHero
-            profile={heroProfile}
-            likesCount={likesCount}
-            followerCount={followerCount}
-            followingCount={followingCount}
-            listsCount={listsCount}
-            watchedCount={watchedCount}
-            watchlistCount={watchlistCount}
-          />
+          <div className="relative">
+            <AccountHero
+              profile={heroProfile}
+              likesCount={likesCount}
+              followerCount={followerCount}
+              followingCount={followingCount}
+              listsCount={listsCount}
+              watchedCount={watchedCount}
+              watchlistCount={watchlistCount}
+            />
+            <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+              <AccountSectionNav activeKey="overview" username={profile?.username || heroProfile?.username || null} />
+            </AccountNavReveal>
+          </div>
 
           <div className="relative">
             {activeTab === 'general' ? (

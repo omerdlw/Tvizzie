@@ -5,7 +5,9 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { REGISTRY_TYPES, useRegistryState } from '@/core/modules/registry/context';
+import { useLoadingState } from '@/core/modules/loading';
 import { useNavigationContext } from '../context';
+import { NAV_ITEM_MODES } from '../state-machine';
 import MediaAction from '../actions/media-action';
 import { getNavConfirmationKey } from '../utils';
 import { useNavigationCountdown } from './use-navigation-countdown';
@@ -234,7 +236,17 @@ function resolveBaseActiveItem({ rawItems, navigationItems, pathname, isNotFound
   return rawItems[0] || null;
 }
 
-function applyStatusOverlay(item, statusState) {
+function getStatusKey(statusState) {
+  if (!statusState) {
+    return '';
+  }
+
+  return [statusState.type || 'status', statusState.flow || '', statusState.title || '', statusState.description || '']
+    .filter(Boolean)
+    .join('::');
+}
+
+function applyStatusState(item, statusState, navMode) {
   if (!item || !statusState) {
     return item;
   }
@@ -244,24 +256,27 @@ function applyStatusOverlay(item, statusState) {
   return {
     ...item,
     ...statusState,
+    navMode,
     activeChild: null,
     children: null,
     hasActiveChild: false,
     isExpanded: false,
     isParent: false,
     isStatus: true,
+    statusKey: getStatusKey(statusState),
     action: showStatusActions ? statusState.action : null,
     actions: showStatusActions ? statusState.actions : null,
   };
 }
 
-function applyLoadingState(item, loadingState) {
-  if (!item || !loadingState?.isLoading) {
+function applyLoadingState(item, navMode) {
+  if (!item || (navMode !== NAV_ITEM_MODES.PAGE_LOADING && navMode !== NAV_ITEM_MODES.ROUTE_LOADING)) {
     return item;
   }
 
   return {
     ...item,
+    navMode,
     isLoading: true,
     isOverlay: false,
     isSurface: false,
@@ -287,6 +302,7 @@ function applyConfirmationOverlay(item) {
   return {
     ...item,
     ...item.confirmation,
+    navMode: NAV_ITEM_MODES.CONFIRMATION,
     title: item.confirmation.title ?? item.title ?? item.name,
     description: item.confirmation.description ?? item.description,
     icon: item.confirmation.icon ?? item.icon,
@@ -359,9 +375,11 @@ function applySurface(item, surfaceEntry, closeSurface) {
 
   return {
     ...item,
+    navMode: NAV_ITEM_MODES.SURFACE,
     isSurface: true,
     isOverlay: true,
     dismissible: surfaceEntry.dismissible !== false,
+    surfaceId: surfaceEntry.id ?? null,
     surfaceComponent,
     surfaceContent,
     surfaceProps: surfaceEntry.props || {},
@@ -418,72 +436,117 @@ function applyMediaAction(item, isVideo, toggleBackgroundVideo) {
   };
 }
 
-function resolveActiveItem({
-  rawItems,
-  navigationItems,
-  pathname,
-  isNotFoundPage,
-  surfaceState,
-  statusState,
-  countdownItem,
-  isVideo,
-  toggleBackgroundVideo,
-  dismissedConfirmationKey,
-  guardConfirmation,
-  closeSurface,
-}) {
-  const baseActiveItem = resolveBaseActiveItem({
-    rawItems,
-    navigationItems,
-    pathname,
-    isNotFoundPage,
-  });
-
-  if (!baseActiveItem) {
-    return countdownItem || null;
-  }
-
-  if (surfaceState?.isSurfaceOpen) {
-    return applySurface(baseActiveItem, surfaceState.activeSurfaceEntry, (result) =>
-      closeSurface(result, surfaceState.activeSurfaceId)
-    );
-  }
-
-  if (statusState?.isOverlay) {
-    return applyStatusOverlay(baseActiveItem, statusState);
-  }
-
+function resolveSemanticActiveItem({ rawItems, navigationItems, pathname, isNotFoundPage, countdownItem }) {
   if (countdownItem) {
     return countdownItem;
   }
 
+  return (
+    resolveBaseActiveItem({
+      rawItems,
+      navigationItems,
+      pathname,
+      isNotFoundPage,
+    }) || null
+  );
+}
+
+function resolveItemConfirmation(item, guardConfirmation) {
+  if (!item) {
+    return null;
+  }
+
+  if (guardConfirmation) {
+    return {
+      ...item,
+      confirmation: guardConfirmation,
+    };
+  }
+
+  return item;
+}
+
+function resolveNavigationMode({
+  surfaceState,
+  statusState,
+  pageLoadingState,
+  pendingNavigationPath,
+  confirmationKey,
+  dismissedConfirmationKey,
+}) {
+  if (surfaceState?.isSurfaceOpen) {
+    return NAV_ITEM_MODES.SURFACE;
+  }
+
+  if (statusState?.isOverlay) {
+    return NAV_ITEM_MODES.STATUS_OVERLAY;
+  }
+
+  if (confirmationKey && confirmationKey !== dismissedConfirmationKey) {
+    return NAV_ITEM_MODES.CONFIRMATION;
+  }
+
+  if (pendingNavigationPath) {
+    return NAV_ITEM_MODES.ROUTE_LOADING;
+  }
+
+  if (pageLoadingState?.isLoading) {
+    return NAV_ITEM_MODES.PAGE_LOADING;
+  }
+
   if (statusState) {
-    return applyStatusOverlay(baseActiveItem, statusState);
+    return NAV_ITEM_MODES.STATUS_INLINE;
+  }
+
+  return NAV_ITEM_MODES.IDLE;
+}
+
+function buildActiveRenderItem({
+  baseActiveItem,
+  navMode,
+  surfaceState,
+  statusState,
+  isVideo,
+  toggleBackgroundVideo,
+  confirmationItem,
+  closeSurface,
+}) {
+  if (!baseActiveItem) {
+    return null;
   }
 
   const itemWithMediaAction = applyMediaAction(baseActiveItem, isVideo, toggleBackgroundVideo);
 
-  const itemWithConfirmation = guardConfirmation
-    ? {
-        ...itemWithMediaAction,
-        confirmation: guardConfirmation,
+  switch (navMode) {
+    case NAV_ITEM_MODES.SURFACE:
+      return applySurface(itemWithMediaAction, surfaceState?.activeSurfaceEntry, (result) =>
+        closeSurface(result, surfaceState?.activeSurfaceId)
+      );
+    case NAV_ITEM_MODES.CONFIRMATION:
+      return applyConfirmationOverlay({
+        ...confirmationItem,
+        confirmationKey: getNavConfirmationKey(confirmationItem),
+      });
+    case NAV_ITEM_MODES.STATUS_OVERLAY:
+    case NAV_ITEM_MODES.STATUS_INLINE:
+      return applyStatusState(itemWithMediaAction, statusState, navMode);
+    case NAV_ITEM_MODES.ROUTE_LOADING:
+    case NAV_ITEM_MODES.PAGE_LOADING:
+      return applyLoadingState(itemWithMediaAction, navMode);
+    case NAV_ITEM_MODES.IDLE:
+    default: {
+      const inlineSurface = resolveInlineSurface(itemWithMediaAction);
+
+      if (inlineSurface) {
+        return applySurface(itemWithMediaAction, inlineSurface);
       }
-    : itemWithMediaAction;
 
-  const confirmationKey = getNavConfirmationKey(itemWithConfirmation);
-  const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
-
-  if (itemWithConfirmation?.confirmation && !isConfirmationDismissed) {
-    return applyConfirmationOverlay(itemWithConfirmation);
+      return {
+        ...itemWithMediaAction,
+        navMode: NAV_ITEM_MODES.IDLE,
+      };
+    }
   }
-
-  const inlineSurface = resolveInlineSurface(itemWithMediaAction);
-
-  if (inlineSurface) {
-    return applySurface(itemWithMediaAction, inlineSurface);
-  }
-
-  return itemWithMediaAction;
 }
 
 function hasActiveItemChanged(currentItem, previousItem) {
@@ -491,10 +554,16 @@ function hasActiveItemChanged(currentItem, previousItem) {
     currentItem?.path !== previousItem?.path ||
     currentItem?.name !== previousItem?.name ||
     currentItem?.type !== previousItem?.type ||
+    currentItem?.navMode !== previousItem?.navMode ||
+    currentItem?.isLoading !== previousItem?.isLoading ||
+    currentItem?.isStatus !== previousItem?.isStatus ||
     currentItem?.isOverlay !== previousItem?.isOverlay ||
     currentItem?.isConfirmation !== previousItem?.isConfirmation ||
     currentItem?.isSurface !== previousItem?.isSurface ||
     currentItem?.title !== previousItem?.title ||
+    currentItem?.statusKey !== previousItem?.statusKey ||
+    currentItem?.surfaceId !== previousItem?.surfaceId ||
+    currentItem?.confirmationKey !== previousItem?.confirmationKey ||
     currentItem?.surfaceComponent !== previousItem?.surfaceComponent ||
     currentItem?.surfaceContent !== previousItem?.surfaceContent ||
     currentItem?.surfaceProps !== previousItem?.surfaceProps ||
@@ -514,6 +583,7 @@ function hasDisplayResultChanged(currentResult, previousResult) {
 export function useNavigationDisplay() {
   const pathname = usePathname();
   const { get } = useRegistryState();
+  const { isLoading: isPageLoading, skeleton: loadingSkeleton } = useLoadingState();
 
   const { rawItems } = useNavigationItems();
   const {
@@ -527,6 +597,7 @@ export function useNavigationDisplay() {
     activeSurfaceId,
     activeSurfaceEntry,
     isSurfaceOpen,
+    pendingNavigationPath,
   } = useNavigationContext();
   const surfaceState = useMemo(
     () => ({
@@ -537,8 +608,17 @@ export function useNavigationDisplay() {
     [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen]
   );
   const statusState = useNavigationStatus();
-  const loadingState = get(REGISTRY_TYPES.LOADING, 'page-loading');
+  const registryLoading = get(REGISTRY_TYPES.LOADING, 'page-loading');
+  const pageLoadingState = useMemo(
+    () => ({
+      ...registryLoading,
+      isLoading: Boolean(isPageLoading),
+      skeleton: loadingSkeleton ?? registryLoading?.skeleton ?? null,
+    }),
+    [isPageLoading, loadingSkeleton, registryLoading]
+  );
   const { isVideo, countdownItem, toggleBackgroundVideo } = useNavigationCountdown();
+  const activePathname = pendingNavigationPath || pathname;
 
   const isNotFoundPage = useMemo(() => {
     return rawItems.some((item) => isNotFoundItem(item));
@@ -557,45 +637,64 @@ export function useNavigationDisplay() {
   }, [rawItems, expanded, expandedParents, pathname, searchQuery, isNotFoundPage, countdownItem]);
 
   const activeItem = useMemo(() => {
-    const resolvedActiveItem = resolveActiveItem({
+    const semanticActiveItem = resolveSemanticActiveItem({
       rawItems,
       navigationItems,
-      pathname,
+      pathname: activePathname,
       isNotFoundPage,
+      countdownItem,
+    });
+
+    if (!semanticActiveItem) {
+      return null;
+    }
+
+    const confirmationItem = resolveItemConfirmation(semanticActiveItem, guardConfirmation);
+    const confirmationKey = getNavConfirmationKey(confirmationItem);
+    const navMode = resolveNavigationMode({
       surfaceState,
       statusState,
-      countdownItem,
+      pageLoadingState,
+      pendingNavigationPath,
+      confirmationKey,
+      dismissedConfirmationKey,
+    });
+
+    return buildActiveRenderItem({
+      baseActiveItem: semanticActiveItem,
+      navMode,
+      surfaceState,
+      statusState,
       isVideo,
       toggleBackgroundVideo,
-      dismissedConfirmationKey,
-      guardConfirmation,
+      confirmationItem,
       closeSurface,
     });
-    return applyLoadingState(resolvedActiveItem, loadingState);
   }, [
     rawItems,
     navigationItems,
-    pathname,
+    activePathname,
     isNotFoundPage,
     surfaceState,
     statusState,
     countdownItem,
+    pageLoadingState,
+    pendingNavigationPath,
     isVideo,
     toggleBackgroundVideo,
     dismissedConfirmationKey,
     guardConfirmation,
     closeSurface,
-    loadingState,
   ]);
 
   const activeIndex = useMemo(() => {
     return resolveActiveIndex({
       navigationItems,
       activeItem,
-      pathname,
+      pathname: activePathname,
       countdownItem,
     });
-  }, [navigationItems, activeItem, pathname, countdownItem]);
+  }, [navigationItems, activeItem, activePathname, countdownItem]);
 
   useEffect(() => {
     if (statusState?.isOverlay) {

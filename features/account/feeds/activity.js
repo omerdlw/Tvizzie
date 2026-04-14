@@ -26,6 +26,10 @@ const EVENT_META = Object.freeze({
     action: 'followed',
     icon: 'solar:user-plus-bold',
   },
+  LIST_ITEM_ADDED: {
+    action: 'added items to',
+    icon: 'solar:playlist-minimalistic-bold',
+  },
   LIST_CREATED: {
     action: 'created',
     icon: 'solar:list-broken',
@@ -33,6 +37,10 @@ const EVENT_META = Object.freeze({
   LIST_LIKED: {
     action: 'liked',
     icon: 'solar:heart-bold',
+  },
+  MEDIA_LIKED: {
+    action: 'liked',
+    icon: 'solar:heart-angle-bold',
   },
   REVIEW_PUBLISHED: {
     action: 'reviewed',
@@ -277,12 +285,14 @@ export default function AccountActivityFeed({
       title={title}
       titleHref={titleHref}
     >
-      <AccountActivityFilterBar
-        filters={filters}
-        subjectOptions={subjectOptions}
-        onChange={updateFilters}
-        onReset={hasFilters ? resetFilters : null}
-      />
+      {listedActivityCount > 0 ? (
+        <AccountActivityFilterBar
+          filters={filters}
+          subjectOptions={subjectOptions}
+          onChange={updateFilters}
+          onReset={hasFilters ? resetFilters : null}
+        />
+      ) : null}
 
       {visibleItems.length === 0 && isLoading ? (
         <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">

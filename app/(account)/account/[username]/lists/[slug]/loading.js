@@ -1,7 +1,13 @@
 'use client';
 
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import Registry from './registry';
 
 export default function Loading() {
-  return <AccountRouteSkeleton variant="list-detail" />;
+  return (
+    <>
+      <Registry isPageLoading={true} />
+      <AccountRouteSkeleton variant="list-detail" />
+    </>
+  );
 }

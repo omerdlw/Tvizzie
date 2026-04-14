@@ -512,6 +512,7 @@ export async function createUserList({ userId, title, description = '', coverUrl
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: userId,
+      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
       subjectId: insertResult.data.id,
       subjectType: 'list',
     }),
@@ -608,6 +609,7 @@ export async function createUserListWithItems({ userId, title, description = '',
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: userId,
+      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
       subjectId: insertResult.data.id,
       subjectType: 'list',
     }),
@@ -672,6 +674,7 @@ export async function updateUserList({ userId, listId, title, description = '', 
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: userId,
+      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
       subjectId: listId,
       subjectType: 'list',
     }),
@@ -774,6 +777,35 @@ export async function toggleUserListItem({ userId, listId, media }) {
     };
   }
 
+  const listResult = await client
+    .from('lists')
+    .select('id,payload,poster_path,slug,title,user_id')
+    .eq('id', listId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  assertSupabaseResult(listResult, 'List could not be loaded after item update');
+
+  if (listResult.data) {
+    const listPayload = listResult.data.payload && typeof listResult.data.payload === 'object' ? listResult.data.payload : {};
+
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_ITEM_ADDED, {
+      dedupeKey: `list-item:${userId}:${listId}:${mediaPayload.mediaKey}`,
+      itemMediaId: mediaSnapshot.entityId,
+      itemMediaKey: mediaPayload.mediaKey,
+      itemPoster: mediaPayload.poster_path || null,
+      itemTitle: mediaPayload.title || 'Untitled',
+      listId,
+      listSlug: listResult.data.slug || listId,
+      listTitle: listResult.data.title || 'Untitled List',
+      ownerUsername: listPayload?.ownerSnapshot?.username || userId,
+      subjectId: listId,
+      subjectPoster: listPayload?.coverUrl || listResult.data.poster_path || mediaPayload.poster_path || null,
+      subjectTitle: listResult.data.title || 'Untitled List',
+      subjectType: 'list',
+    });
+  }
+
   return {
     isInList: true,
     item: {
@@ -840,6 +872,7 @@ export async function toggleListLike({ ownerId, listId, userId }) {
     fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
+        eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
         subjectId: listId,
         subjectType: 'list',
       }),

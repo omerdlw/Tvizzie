@@ -11,6 +11,7 @@ export function LoadingProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [skeleton, setSkeleton] = useState(null);
   const [minDuration, setMinDuration] = useState(0);
+  const [showOverlay, setShowOverlay] = useState(true);
 
   const startTimeRef = useRef(null);
   const stopTimerRef = useRef(null);
@@ -29,6 +30,7 @@ export function LoadingProvider({ children }) {
     setIsLoading(false);
     setSkeleton(null);
     setMinDuration(0);
+    setShowOverlay(true);
     startTimeRef.current = null;
   }, [clearStopTimer]);
 
@@ -41,10 +43,8 @@ export function LoadingProvider({ children }) {
       startTimeRef.current = Date.now();
       setIsLoading(true);
       setMinDuration(duration);
-
-      if (options.skeleton) {
-        setSkeleton(options.skeleton);
-      }
+      setShowOverlay(options.showOverlay !== false);
+      setSkeleton(options.skeleton ?? null);
     },
     [clearStopTimer]
   );
@@ -110,8 +110,9 @@ export function LoadingProvider({ children }) {
       isLoading,
       skeleton,
       minDuration,
+      showOverlay,
     }),
-    [isLoading, skeleton, minDuration]
+    [isLoading, skeleton, minDuration, showOverlay]
   );
 
   const actionsValue = useMemo(

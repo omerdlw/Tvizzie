@@ -10,8 +10,8 @@ import {
   buildCollectionBasePath,
   buildManagedQueryString,
   buildMediaKeySet,
+  collectMediaGenreOptions,
   getDecadeOptions,
-  getAllMediaGenreOptions,
   hasActiveMediaFilters,
   parseMediaFilters,
   toMediaQueryValues,
@@ -53,7 +53,7 @@ export default function AccountWatchedFeed({
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
-  const genreOptions = useMemo(() => getAllMediaGenreOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems]);
   const watchedKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
   const filteredWatchedItems = useMemo(
     () => applyMediaFilters(watchedItems, mediaFilters, { watchedKeys }),
@@ -153,14 +153,16 @@ export default function AccountWatchedFeed({
         ) : null
       }
       toolbar={
-        <AccountMediaFilterBar
-          filters={mediaFilters}
-          decadeOptions={decadeOptions}
-          genreOptions={genreOptions}
-          visibilityOptions={WATCHED_VISIBILITY_OPTIONS}
-          onChange={updateFilters}
-          onReset={hasActiveMediaFilters(mediaFilters) ? handleResetFilters : null}
-        />
+        watchedItems.length > 0 ? (
+          <AccountMediaFilterBar
+            filters={mediaFilters}
+            decadeOptions={decadeOptions}
+            genreOptions={genreOptions}
+            visibilityOptions={WATCHED_VISIBILITY_OPTIONS}
+            onChange={updateFilters}
+            onReset={hasActiveMediaFilters(mediaFilters) ? handleResetFilters : null}
+          />
+        ) : null
       }
       title="Watched"
     />

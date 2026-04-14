@@ -19,6 +19,7 @@ import {
 } from '@/features/auth';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { consumeAuthRouteNoticeCookie } from '@/core/auth/clients/auth-route-notice.client';
+import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
@@ -55,12 +56,12 @@ export default function Client() {
   const [password, setPassword] = useState('');
   const [rememberDevice, setRememberDevice] = useState(false);
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [activeOAuthProvider, setActiveOAuthProvider] = useState(null);
   const [isPreparingReset, setIsPreparingReset] = useState(false);
   const [isIdentifierChecking, setIsIdentifierChecking] = useState(false);
   const [currentStep, setCurrentStep] = useState('identifier');
   const [resetFlow, setResetFlow] = useState(INITIAL_RESET_FLOW);
-  const isSubmitting = isPasswordSubmitting || isGoogleSubmitting;
+  const isSubmitting = isPasswordSubmitting || Boolean(activeOAuthProvider);
   const isSignInBusy = isSubmitting || isPreparingReset || isIdentifierChecking;
   const isResetMode = resetFlow.active;
 
@@ -103,6 +104,10 @@ export default function Client() {
 
     if (activeNotice === AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED) {
       toast.error('Google sign-in could not be completed. Please try again.');
+    }
+
+    if (activeNotice === AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED) {
+      toast.error('Social sign-in could not be completed. Please try again.');
     }
 
     if (activeNotice === AUTH_ROUTE_NOTICE.GOOGLE_PROVIDER_COLLISION) {
@@ -272,17 +277,18 @@ export default function Client() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleOAuthSignIn = async (provider) => {
     if (isSignInBusy || resetFlow.active) {
       return;
     }
 
-    setIsGoogleSubmitting(true);
+    const providerLabel = getOAuthProviderLabel(provider);
+    setActiveOAuthProvider(provider);
     try {
       const signInResult = await auth.signIn({
-        googleAuthIntent: 'sign-in',
+        oauthIntent: 'sign-in',
         next: postAuthRedirect,
-        provider: 'google',
+        provider,
       });
 
       if (signInResult?.requiresRedirect) {
@@ -319,9 +325,9 @@ export default function Client() {
         setIdentifier(resolvedEmail);
       }
 
-      toast.error(resolveAuthErrorMessage(error, 'Google sign-in failed'));
+      toast.error(resolveAuthErrorMessage(error, `${providerLabel} sign-in failed`));
     } finally {
-      setIsGoogleSubmitting(false);
+      setActiveOAuthProvider(null);
     }
   };
 
@@ -421,7 +427,9 @@ export default function Client() {
     <>
       {registry}
       <View
+        activeOAuthProvider={activeOAuthProvider}
         currentStep={currentStep}
+        handleOAuthSignIn={handleOAuthSignIn}
         handleContinueToPassword={handleContinueToPassword}
         handleGoBackToIdentifier={() => setCurrentStep('identifier')}
         handleRequestPasswordReset={handleRequestPasswordReset}
@@ -433,8 +441,6 @@ export default function Client() {
         isPreparingReset={isPreparingReset}
         isResetMode={isResetMode}
         isSignInBusy={isSignInBusy}
-        isGoogleSubmitting={isGoogleSubmitting}
-        handleGoogleSignIn={handleGoogleSignIn}
         password={password}
         rememberDevice={rememberDevice}
         resetFlow={resetFlow}

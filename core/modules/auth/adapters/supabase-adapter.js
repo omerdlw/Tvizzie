@@ -1,10 +1,11 @@
 import { resolveAuthCapabilities } from '@/core/auth/capabilities';
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import {
-  buildGoogleOAuthCallbackUrl,
-  normalizeGoogleAuthIntent,
+  buildOAuthCallbackUrl,
+  resolveOAuthIntent,
   sanitizeAuthNextPath,
 } from '@/core/auth/oauth-callback';
+import { getOAuthProviderLabel, isSupportedOAuthProvider, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient, terminateBrowserSession } from '@/core/clients/supabase/client';
 
 import { createAuthAdapter } from './create-adapter';
@@ -179,29 +180,37 @@ function getClient(providedClient = null) {
 export function createSupabaseAuthAdapter(options = {}) {
   const { client: providedClient = null, getOAuthRedirectUrl = null, oauthDefaultNextPath = '/account' } = options;
 
-  async function signInWithGoogle(payload = {}) {
+  async function signInWithOAuthProvider(payload = {}) {
     const client = getClient(providedClient);
+    const provider = normalizeOAuthProvider(resolveProviderKey(payload));
     const nextPath = resolveNextPath(payload) || oauthDefaultNextPath;
     const fallbackRedirect = `${window.location.origin}${nextPath}`;
-    const googleAuthIntent = normalizeGoogleAuthIntent(payload?.googleAuthIntent);
-    const callbackRedirect = buildGoogleOAuthCallbackUrl({
-      intent: googleAuthIntent,
+    const oauthIntent = resolveOAuthIntent(payload, provider);
+    const providerLabel = getOAuthProviderLabel(provider);
+
+    if (!provider || !isSupportedOAuthProvider(provider)) {
+      throw new Error('Unsupported OAuth provider');
+    }
+
+    const callbackRedirect = buildOAuthCallbackUrl({
+      intent: oauthIntent,
       nextPath,
       origin: window.location.origin,
+      provider,
     });
     const redirectTo =
       typeof getOAuthRedirectUrl === 'function'
         ? getOAuthRedirectUrl({
-            intent: googleAuthIntent,
+            intent: oauthIntent,
             nextPath,
-            provider: 'google',
+            provider,
           }) ||
           callbackRedirect ||
           fallbackRedirect
         : callbackRedirect || fallbackRedirect;
 
     const { data, error } = await client.auth.signInWithOAuth({
-      provider: 'google',
+      provider,
       options: {
         redirectTo,
         skipBrowserRedirect: true,
@@ -209,12 +218,12 @@ export function createSupabaseAuthAdapter(options = {}) {
     });
 
     if (error) {
-      const normalizedError = toAdapterError(error, 'Google sign-in failed');
+      const normalizedError = toAdapterError(error, `${providerLabel} sign-in failed`);
 
-      if (googleAuthIntent === 'link' && isManualLinkingDisabledError(error)) {
-        normalizedError.code = 'GOOGLE_LINK_MANUAL_LINKING_DISABLED';
+      if (oauthIntent === 'link' && isManualLinkingDisabledError(error)) {
+        normalizedError.code = 'OAUTH_LINK_MANUAL_LINKING_DISABLED';
         normalizedError.message =
-          'Google linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.';
+          `${providerLabel} linking is disabled. Enable "Manual Linking" in Supabase Auth settings, then try again.`;
       }
 
       throw normalizedError;
@@ -225,10 +234,6 @@ export function createSupabaseAuthAdapter(options = {}) {
     }
 
     return createRedirectResult();
-  }
-
-  async function signUpWithGoogle(payload = {}) {
-    return signInWithGoogle(payload);
   }
 
   return createAuthAdapter({
@@ -253,8 +258,8 @@ export function createSupabaseAuthAdapter(options = {}) {
     async signIn(payload = {}) {
       const providerKey = resolveProviderKey(payload);
 
-      if (providerKey === 'google') {
-        return signInWithGoogle(payload);
+      if (isSupportedOAuthProvider(providerKey)) {
+        return signInWithOAuthProvider(payload);
       }
 
       const client = getClient(providedClient);
@@ -274,8 +279,8 @@ export function createSupabaseAuthAdapter(options = {}) {
     async signUp(payload = {}) {
       const providerKey = resolveProviderKey(payload);
 
-      if (providerKey === 'google') {
-        return signUpWithGoogle(payload);
+      if (isSupportedOAuthProvider(providerKey)) {
+        return signInWithOAuthProvider(payload);
       }
 
       throw new Error('Password sign-up must be completed through the application email verification flow');
@@ -371,11 +376,11 @@ export function createSupabaseAuthAdapter(options = {}) {
     async linkProvider(payload = {}) {
       const providerKey = resolveProviderKey(payload);
 
-      if (providerKey !== 'google') {
-        throw new Error('Only Google provider linking is currently supported');
+      if (!isSupportedOAuthProvider(providerKey)) {
+        throw new Error('Only supported OAuth provider linking is currently supported');
       }
 
-      return signInWithGoogle(payload);
+      return signInWithOAuthProvider(payload);
     },
 
     async unlinkProvider(payload = {}) {

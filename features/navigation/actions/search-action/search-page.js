@@ -1,19 +1,33 @@
 'use client';
 
-import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
+import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { useDebounce } from '@/core/hooks';
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
-import { cn } from '@/core/utils';
 import { useRegistry } from '@/core/modules/registry';
-import { Input } from '@/ui/elements';
-import Icon from '@/ui/icon';
 
-import { SEARCH_LIMITS, SEARCH_STYLES, SEARCH_TAB_ITEMS, SEARCH_TYPES } from './constants';
-import SearchResultItem from './parts/item';
-import { fetchAllMedia, fetchMediaPage, fetchUsers, mergeAllResults, navActionClass } from './utils';
+import SearchAction from './index';
+import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from './constants';
+import SearchGridItem from './parts/grid-item';
+import {
+  applySearchMovieFilters,
+  fetchAllMedia,
+  fetchMediaPage,
+  fetchUsers,
+  hasActiveSearchMovieFilters,
+  mergeAllResults,
+  normalizeSearchMovieFilters,
+} from './utils';
+
+const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
+  decade: 'all',
+  genre: 'all',
+  year: 'all',
+});
 
 function resolveSearchType(value) {
   if (value === SEARCH_TYPES.MOVIE || value === SEARCH_TYPES.PERSON || value === SEARCH_TYPES.USER) {
@@ -41,75 +55,288 @@ function dedupeResults(items = []) {
   return deduped;
 }
 
+function getSearchGridBatchSize(width) {
+  if (width >= SEARCH_GRID.DESKTOP_BREAKPOINT) {
+    return SEARCH_GRID.DESKTOP_COLUMNS * SEARCH_GRID.DESKTOP_ROWS;
+  }
+
+  return SEARCH_GRID.MOBILE_COLUMNS * SEARCH_GRID.MOBILE_ROWS;
+}
+
+function parseSearchMovieFilters(searchParams) {
+  return normalizeSearchMovieFilters({
+    decade: searchParams?.get('decade'),
+    genre: searchParams?.get('genre'),
+    year: searchParams?.get('year'),
+  });
+}
+
+function getReleaseYearOptions(minYear = 1900) {
+  const currentYear = new Date().getUTCFullYear();
+  const options = [];
+
+  for (let year = currentYear; year >= minYear; year -= 1) {
+    options.push({
+      label: String(year),
+      value: String(year),
+    });
+  }
+
+  return [{ label: 'Any year', value: 'all' }, ...options];
+}
+
+function applySearchMovieFilterParams(params, filters) {
+  const normalizedFilters = normalizeSearchMovieFilters(filters);
+
+  if (normalizedFilters.genre !== DEFAULT_SEARCH_MOVIE_FILTERS.genre) {
+    params.set('genre', normalizedFilters.genre);
+  } else {
+    params.delete('genre');
+  }
+
+  if (normalizedFilters.decade !== DEFAULT_SEARCH_MOVIE_FILTERS.decade) {
+    params.set('decade', normalizedFilters.decade);
+  } else {
+    params.delete('decade');
+  }
+
+  if (normalizedFilters.year !== DEFAULT_SEARCH_MOVIE_FILTERS.year) {
+    params.set('year', normalizedFilters.year);
+  } else {
+    params.delete('year');
+  }
+}
+
+function areMovieFiltersEqual(left, right) {
+  return left?.genre === right?.genre && left?.decade === right?.decade && left?.year === right?.year;
+}
+
+function getMovieFiltersKey(filters) {
+  const normalizedFilters = normalizeSearchMovieFilters(filters);
+  return `${normalizedFilters.genre}|${normalizedFilters.decade}|${normalizedFilters.year}`;
+}
+
+function buildSearchHref({ pathname, query, searchParamsString, searchType, movieFilters }) {
+  const params = new URLSearchParams(searchParamsString);
+  const normalizedQuery = query.trim();
+  const normalizedMovieFilters = normalizeSearchMovieFilters(movieFilters);
+  const nextSearchType =
+    searchType === SEARCH_TYPES.ALL && hasActiveSearchMovieFilters(normalizedMovieFilters) ? SEARCH_TYPES.MOVIE : searchType;
+
+  if (normalizedQuery) {
+    params.set('q', normalizedQuery);
+  } else {
+    params.delete('q');
+  }
+
+  if (normalizedQuery && nextSearchType !== SEARCH_TYPES.ALL) {
+    params.set('type', nextSearchType);
+  } else {
+    params.delete('type');
+  }
+
+  applySearchMovieFilterParams(params, normalizedMovieFilters);
+
+  const nextQueryString = params.toString();
+
+  return nextQueryString ? `${pathname}?${nextQueryString}` : pathname;
+}
+
 export default function SearchPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams?.toString() || '';
   const searchParamQuery = String(searchParams?.get('q') || '').trim();
-  const searchParamType = String(searchParams?.get('type') || '').toLowerCase();
-  const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState(SEARCH_TYPES.ALL);
+  const searchParamType = resolveSearchType(String(searchParams?.get('type') || '').toLowerCase());
+  const searchParamMovieFilters = useMemo(
+    () => parseSearchMovieFilters(new URLSearchParams(searchParamsString)),
+    [searchParamsString]
+  );
+  const searchParamMovieFiltersKey = useMemo(() => getMovieFiltersKey(searchParamMovieFilters), [searchParamMovieFilters]);
+  const initialBatchSize =
+    typeof window === 'undefined'
+      ? SEARCH_GRID.DESKTOP_COLUMNS * SEARCH_GRID.DESKTOP_ROWS
+      : getSearchGridBatchSize(window.innerWidth);
+
+  const [query, setQuery] = useState(searchParamQuery);
+  const [searchType, setSearchType] = useState(searchParamType);
+  const [movieFilters, setMovieFilters] = useState(searchParamMovieFilters);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [imageErrors, setImageErrors] = useState({});
+  const [visibleCount, setVisibleCount] = useState(initialBatchSize);
   const [pageState, setPageState] = useState({
     page: 1,
     totalPages: 0,
     totalResults: 0,
   });
 
+  const gridBatchSizeRef = useRef(initialBatchSize);
   const debouncedQuery = useDebounce(query, 500);
   const trimmedQuery = debouncedQuery.trim();
+  const genreOptions = useMemo(() => getAllMediaGenreOptions(), []);
+  const decadeOptions = useMemo(() => getDecadeOptions(), []);
+  const yearOptions = useMemo(() => getReleaseYearOptions(), []);
   const activeTypeLabel = SEARCH_TAB_ITEMS.find((item) => item.key === searchType)?.label || 'Results';
   const isMediaType = searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.PERSON;
   const hasMore = isMediaType && pageState.page < pageState.totalPages;
+  const hasActiveMovieFilters = useMemo(() => hasActiveSearchMovieFilters(movieFilters), [movieFilters]);
+  const shouldShowMovieFilters = searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE;
+  const getRenderableResults = useCallback(
+    (items = []) => {
+      return searchType === SEARCH_TYPES.MOVIE ? applySearchMovieFilters(items, movieFilters) : items;
+    },
+    [movieFilters, searchType]
+  );
+  const filteredResults = useMemo(() => getRenderableResults(results), [getRenderableResults, results]);
+  const canLoadMore = Boolean(trimmedQuery) && (visibleCount < filteredResults.length || hasMore);
+  const visibleResults = useMemo(() => filteredResults.slice(0, visibleCount), [filteredResults, visibleCount]);
+
+  useEffect(() => {
+    function updateGridBatchSize() {
+      const nextBatchSize = getSearchGridBatchSize(window.innerWidth);
+
+      gridBatchSizeRef.current = nextBatchSize;
+      setVisibleCount((currentValue) => (currentValue < nextBatchSize ? nextBatchSize : currentValue));
+    }
+
+    updateGridBatchSize();
+    window.addEventListener('resize', updateGridBatchSize);
+
+    return () => {
+      window.removeEventListener('resize', updateGridBatchSize);
+    };
+  }, []);
+
+  useEffect(() => {
+    setQuery((currentValue) => (currentValue === searchParamQuery ? currentValue : searchParamQuery));
+    setSearchType((currentValue) => (currentValue === searchParamType ? currentValue : searchParamType));
+    setMovieFilters((currentValue) => (areMovieFiltersEqual(currentValue, searchParamMovieFilters) ? currentValue : searchParamMovieFilters));
+  }, [searchParamMovieFilters, searchParamMovieFiltersKey, searchParamQuery, searchParamType]);
+
+  useEffect(() => {
+    const nextHref = buildSearchHref({
+      pathname,
+      query: debouncedQuery,
+      searchParamsString,
+      searchType,
+      movieFilters,
+    });
+    const currentHref = searchParamsString ? `${pathname}?${searchParamsString}` : pathname;
+
+    if (nextHref !== currentHref) {
+      router.replace(nextHref, { scroll: false });
+    }
+  }, [debouncedQuery, movieFilters, pathname, router, searchParamsString, searchType]);
+
+  useEffect(() => {
+    if (!trimmedQuery) {
+      return;
+    }
+
+    setVisibleCount((currentValue) => Math.min(currentValue, filteredResults.length));
+  }, [filteredResults.length, trimmedQuery]);
+
+  const handleMovieFiltersChange = useCallback((nextPatch) => {
+    let nextFilters = DEFAULT_SEARCH_MOVIE_FILTERS;
+
+    setMovieFilters((currentValue) => {
+      nextFilters = normalizeSearchMovieFilters({ ...currentValue, ...(nextPatch || {}) });
+      return nextFilters;
+    });
+
+    setSearchType((currentValue) => {
+      if (currentValue !== SEARCH_TYPES.ALL) {
+        return currentValue;
+      }
+
+      return hasActiveSearchMovieFilters(nextFilters) ? SEARCH_TYPES.MOVIE : currentValue;
+    });
+  }, []);
+
+  const handleMovieFiltersReset = useCallback(() => {
+    setMovieFilters(DEFAULT_SEARCH_MOVIE_FILTERS);
+  }, []);
 
   const handleLoadMore = useCallback(async () => {
+    const nextVisibleCount = visibleCount + gridBatchSizeRef.current;
+
+    if (visibleCount < filteredResults.length) {
+      setVisibleCount(Math.min(nextVisibleCount, filteredResults.length));
+      return;
+    }
+
     if (!trimmedQuery || !isMediaType || loading || loadingMore || !hasMore) {
       return;
     }
 
-    const nextPage = pageState.page + 1;
     setLoadingMore(true);
 
     try {
-      const payload = await fetchMediaPage(trimmedQuery, searchType, nextPage);
+      let mergedResults = results;
+      let nextPage = pageState.page;
+      let totalPages = pageState.totalPages;
+      let totalResults = pageState.totalResults;
+      let renderableResults = getRenderableResults(mergedResults);
+
+      while (renderableResults.length < nextVisibleCount && nextPage < totalPages) {
+        const payload = await fetchMediaPage(trimmedQuery, searchType, nextPage + 1);
+
+        nextPage = payload.page || nextPage + 1;
+        totalPages = payload.totalPages || totalPages;
+        totalResults = payload.totalResults || totalResults;
+        mergedResults = dedupeResults([...mergedResults, ...payload.results]);
+        renderableResults = getRenderableResults(mergedResults);
+
+        if (!payload.results.length) {
+          break;
+        }
+      }
 
       startTransition(() => {
-        setResults((prev) => dedupeResults([...prev, ...payload.results]));
-        setPageState((prev) => ({
-          page: payload.page || nextPage,
-          totalPages: payload.totalPages || prev.totalPages,
-          totalResults: payload.totalResults || prev.totalResults,
-        }));
+        setResults(mergedResults);
+        setPageState({
+          page: nextPage,
+          totalPages,
+          totalResults,
+        });
+        setVisibleCount(Math.min(nextVisibleCount, renderableResults.length));
       });
     } catch {
-      // Keep current list when loading next page fails.
+      // Keep the current grid when loading the next batch fails.
     } finally {
       setLoadingMore(false);
     }
-  }, [hasMore, isMediaType, loading, loadingMore, pageState.page, searchType, trimmedQuery]);
+  }, [
+    hasMore,
+    isMediaType,
+    loading,
+    loadingMore,
+    pageState.page,
+    pageState.totalPages,
+    pageState.totalResults,
+    results,
+    searchType,
+    trimmedQuery,
+    visibleCount,
+    filteredResults.length,
+    getRenderableResults,
+  ]);
 
-  const navAction = useMemo(() => {
-    if (!hasMore) {
-      return null;
-    }
-
-    return (
-      <div className="mt-2.5 flex w-full gap-2">
-        <button
-          type="button"
-          className={getNavActionClass({
-            className: 'flex-1',
-            isActive: false,
-          })}
-          disabled={loadingMore}
-          onClick={handleLoadMore}
-        >
-          {loadingMore ? 'Loading...' : 'Load more results'}
-        </button>
-      </div>
-    );
-  }, [handleLoadMore, hasMore, loadingMore]);
+  const navAction = useMemo(
+    () => (
+      <SearchAction
+        variant="page"
+        loading={loading}
+        query={query}
+        searchType={searchType}
+        onQueryChange={setQuery}
+        onSearchTypeChange={setSearchType}
+      />
+    ),
+    [loading, query, searchType]
+  );
 
   useRegistry({
     nav: {
@@ -123,15 +350,11 @@ export default function SearchPage() {
   });
 
   useEffect(() => {
-    setQuery(searchParamQuery);
-    setSearchType(resolveSearchType(searchParamType));
-  }, [searchParamQuery, searchParamType]);
-
-  useEffect(() => {
     if (!trimmedQuery) {
       setResults([]);
       setLoading(false);
       setLoadingMore(false);
+      setVisibleCount(gridBatchSizeRef.current);
       setPageState({
         page: 1,
         totalPages: 0,
@@ -153,6 +376,7 @@ export default function SearchPage() {
           if (!isCancelled) {
             startTransition(() => {
               setResults(userResults);
+              setVisibleCount(Math.min(gridBatchSizeRef.current, getRenderableResults(userResults).length));
               setPageState({
                 page: 1,
                 totalPages: 1,
@@ -173,8 +397,11 @@ export default function SearchPage() {
           const mergedResults = mergeAllResults(userResults, mediaResults, null);
 
           if (!isCancelled) {
+            const renderableResults = getRenderableResults(mergedResults);
+
             startTransition(() => {
               setResults(mergedResults);
+              setVisibleCount(Math.min(gridBatchSizeRef.current, renderableResults.length));
               setPageState({
                 page: 1,
                 totalPages: 1,
@@ -186,15 +413,35 @@ export default function SearchPage() {
           return;
         }
 
-        const payload = await fetchMediaPage(trimmedQuery, searchType, 1);
+        const minimumCount = gridBatchSizeRef.current;
+        let payload = await fetchMediaPage(trimmedQuery, searchType, 1);
+        let mergedResults = payload.results;
+        let currentPage = payload.page || 1;
+        let totalPages = payload.totalPages || 0;
+        let totalResults = payload.totalResults || payload.results.length;
+
+        while (!isCancelled && getRenderableResults(mergedResults).length < minimumCount && currentPage < totalPages) {
+          payload = await fetchMediaPage(trimmedQuery, searchType, currentPage + 1);
+          currentPage = payload.page || currentPage + 1;
+          totalPages = payload.totalPages || totalPages;
+          totalResults = payload.totalResults || totalResults;
+          mergedResults = dedupeResults([...mergedResults, ...payload.results]);
+
+          if (!payload.results.length) {
+            break;
+          }
+        }
 
         if (!isCancelled) {
+          const renderableResults = getRenderableResults(mergedResults);
+
           startTransition(() => {
-            setResults(payload.results);
+            setResults(mergedResults);
+            setVisibleCount(Math.min(minimumCount, renderableResults.length));
             setPageState({
-              page: payload.page || 1,
-              totalPages: payload.totalPages || 0,
-              totalResults: payload.totalResults || payload.results.length,
+              page: currentPage,
+              totalPages,
+              totalResults,
             });
           });
         }
@@ -202,6 +449,7 @@ export default function SearchPage() {
         if (!isCancelled) {
           startTransition(() => {
             setResults([]);
+            setVisibleCount(gridBatchSizeRef.current);
             setPageState({
               page: 1,
               totalPages: 0,
@@ -221,135 +469,62 @@ export default function SearchPage() {
     return () => {
       isCancelled = true;
     };
-  }, [trimmedQuery, searchType]);
-
-  const handleImageError = (key) => {
-    setImageErrors((prev) => ({
-      ...prev,
-      [key]: true,
-    }));
-  };
-
-  const summaryLabel = useMemo(() => {
-    if (!trimmedQuery) {
-      return 'Type to search';
-    }
-
-    if (loading) {
-      return 'Searching...';
-    }
-
-    const totalCount = Number.isFinite(pageState.totalResults) && pageState.totalResults > 0
-      ? pageState.totalResults
-      : results.length;
-
-    return `${totalCount} ${activeTypeLabel.toLowerCase()} result${totalCount === 1 ? '' : 's'}`;
-  }, [activeTypeLabel, loading, pageState.totalResults, results.length, trimmedQuery]);
+  }, [getRenderableResults, searchType, trimmedQuery]);
 
   return (
     <>
-      <section className="mx-auto w-full max-w-3xl px-4 pt-6">
-        <Input
-          classNames={{
-            input: 'w-full placeholder:text-black/60 outline-none',
-            wrapper: navActionClass({
-              cn,
-              button: SEARCH_STYLES.input,
-            }),
-            leftIcon: 'mr-2 center shrink-0',
-          }}
-          leftIcon={
-            <Icon
-              className={`${query ? 'text-black' : 'text-black/60'} transition-colors duration-(--motion-duration-normal)`}
-              icon="solar:magnifer-linear"
-              size={16}
-            />
-          }
-          placeholder="Search movies, people or users"
-          value={query}
-          spellCheck={false}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setImageErrors({});
-          }}
-          rightIcon={
-            loading ? (
-              <div className="center shrink-0">
-                <Icon icon="line-md:loading-loop" size={16} />
-              </div>
-            ) : query ? (
-              <button
-                type="button"
-                className={`center text-error shrink-0 cursor-pointer`}
-                onClick={() => {
-                  setQuery('');
-                  setResults([]);
-                  setImageErrors({});
-                }}
-              >
-                <Icon icon="material-symbols:close-rounded" size={16} />
-              </button>
-            ) : null
-          }
-        />
-
-        <div className="mt-2">
-          <div className={SEARCH_STYLES.tabList}>
-            {SEARCH_TAB_ITEMS.map((item) => {
-              const isActive = searchType === item.key;
-
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  className={cn(
-                    navActionClass({
-                      cn,
-                      button: SEARCH_STYLES.tabButton,
-                      isActive,
-                    }),
-                    'group'
-                  )}
-                  onClick={() => {
-                    setSearchType(item.key);
-                    setImageErrors({});
-                  }}
-                >
-                  <span className="relative">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mt-3">
-          <p className="text-[11px] font-semibold tracking-widest text-black/60 uppercase">{summaryLabel}</p>
-        </div>
+      <section className="mx-auto w-full max-w-[1680px] px-4 pt-6 md:px-6 lg:px-8">
+        {shouldShowMovieFilters ? (
+          <SearchMovieFilterBar
+            className="mb-5"
+            decadeOptions={decadeOptions}
+            filters={movieFilters}
+            genreOptions={genreOptions}
+            onChange={handleMovieFiltersChange}
+            onReset={hasActiveMovieFilters ? handleMovieFiltersReset : undefined}
+            yearOptions={yearOptions}
+          />
+        ) : null}
 
         {trimmedQuery ? (
-          <div className="mt-2 flex flex-col gap-1">
-            {results.length > 0 ? (
-              results.map((item) => (
-                <SearchResultItem
-                  key={`${item.media_type}-${item.id}`}
-                  item={item}
-                  imageErrors={imageErrors}
-                  onImageError={handleImageError}
-                  onSelect={() => {}}
-                />
-              ))
+          <div>
+            {visibleResults.length > 0 ? (
+              <>
+                <div className="grid grid-cols-6 gap-3 lg:grid-cols-12">
+                  {visibleResults.map((item) => (
+                    <SearchGridItem key={`${item.media_type}-${item.id}`} item={item} />
+                  ))}
+                </div>
+
+                {canLoadMore ? (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      className={getNavActionClass({
+                        className: 'min-w-[220px] px-5',
+                        isActive: false,
+                      })}
+                      disabled={loadingMore}
+                      onClick={handleLoadMore}
+                    >
+                      {loadingMore ? 'Loading...' : 'Load more results'}
+                    </button>
+                  </div>
+                ) : null}
+              </>
             ) : loading ? null : (
-              <div className="rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
-                No results found
+              <div className="mx-auto w-full max-w-4xl rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+                {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
+                  ? 'No results found for the selected movie filters'
+                  : 'No results found'}
               </div>
             )}
           </div>
         ) : (
-          <div className="mt-2 rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+          <div className="mx-auto w-full max-w-4xl rounded-[12px] border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
             Start typing to see all results
           </div>
         )}
-
       </section>
       <NavHeightSpacer />
     </>

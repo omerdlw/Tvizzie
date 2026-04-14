@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError } from '@/core/utils/errors';
 import { getRatingStats } from '@/features/reviews/utils';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -190,18 +191,25 @@ export default function Client({
       return undefined;
     }
 
-    return subscribeToUserListItems(resolvedUserId, list.id, setListItems, {
-      fetchOnSubscribe: !hasSeededListItems,
-      onError: (error) => {
-        if (!hasSeededListItems) {
-          setListItems([]);
-        }
-
-        if (!isPermissionDeniedError(error)) {
-          toast.error(error?.message || 'List items could not be loaded');
-        }
+    return subscribeToUserListItems(
+      resolvedUserId,
+      list.id,
+      (nextItems) => {
+        setListItems((current) => mergeCollectionItemsWithExistingMetadata(current, nextItems));
       },
-    });
+      {
+        fetchOnSubscribe: !hasSeededListItems,
+        onError: (error) => {
+          if (!hasSeededListItems) {
+            setListItems([]);
+          }
+
+          if (!isPermissionDeniedError(error)) {
+            toast.error(error?.message || 'List items could not be loaded');
+          }
+        },
+      }
+    );
   }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId, toast]);
 
   useEffect(() => {

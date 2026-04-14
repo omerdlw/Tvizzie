@@ -17,6 +17,8 @@ import {
   normalizeMediaPayload,
   resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
+import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 
 function resolveRpcRow(data) {
   if (Array.isArray(data)) {
@@ -282,6 +284,22 @@ export async function toggleUserLike({ media, userId }) {
 
   if (!isLiked) {
     await removeLikeFromShowcase(userId, likeRef.id);
+  } else {
+    const normalizedType = assertMoviePayload(media, 'Only movies are supported in likes');
+    const entityId = String(media?.entityId ?? media?.id ?? '').trim();
+
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.MEDIA_LIKED, {
+      dedupeKey: buildCanonicalActivityDedupeKey({
+        actorUserId: userId,
+        eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
+        subjectId: entityId,
+        subjectType: normalizedType,
+      }),
+      subjectId: entityId,
+      subjectPoster: media?.posterPath || media?.poster_path || null,
+      subjectTitle: media?.title || media?.name || 'Untitled',
+      subjectType: normalizedType,
+    });
   }
 
   const nextResult = {

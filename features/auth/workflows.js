@@ -1,6 +1,7 @@
 'use client';
 
 import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { completeVerifiedSignUp } from './api';
 
 import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './utils';
@@ -90,11 +91,12 @@ export async function finalizeSignUp({ auth, displayName, email, password, signU
   };
 }
 
-export async function finalizeGoogleSignUp({ auth, nextPath = '/account' }) {
+export async function finalizeOAuthSignUp({ auth, nextPath = '/account', provider = 'google' }) {
+  const providerLabel = getOAuthProviderLabel(provider);
   const session = await auth.signUp({
-    googleAuthIntent: 'sign-up',
+    oauthIntent: 'sign-up',
     next: nextPath,
-    provider: 'google',
+    provider,
   });
 
   if (session?.requiresRedirect) {
@@ -102,10 +104,18 @@ export async function finalizeGoogleSignUp({ auth, nextPath = '/account' }) {
   }
 
   if (!session?.user?.id) {
-    throw new Error('Google sign-up completed but no authenticated session was returned');
+    throw new Error(`${providerLabel} sign-up completed but no authenticated session was returned`);
   }
 
   await ACCOUNT_CLIENT.ensureAccount(session.user);
 
   return session;
+}
+
+export async function finalizeGoogleSignUp({ auth, nextPath = '/account' }) {
+  return finalizeOAuthSignUp({
+    auth,
+    nextPath,
+    provider: 'google',
+  });
 }

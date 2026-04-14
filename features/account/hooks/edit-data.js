@@ -30,6 +30,30 @@ function normalizeEditableAccountCounts(snapshot = null) {
   };
 }
 
+function normalizeEditableProfile(profile = null) {
+  const nextProfile = profile && typeof profile === 'object' ? profile : null;
+
+  return {
+    avatarUrl: nextProfile?.avatarUrl || '',
+    bannerUrl: nextProfile?.bannerUrl || '',
+    description: nextProfile?.description || '',
+    displayName: nextProfile?.displayName || '',
+    isPrivate: nextProfile?.isPrivate === true,
+    username: nextProfile?.username || '',
+  };
+}
+
+function normalizeEditableProfileCounts(profile = null) {
+  return {
+    followers: normalizeEditableCount(profile?.followerCount),
+    following: normalizeEditableCount(profile?.followingCount),
+    likes: normalizeEditableCount(profile?.likesCount),
+    lists: normalizeEditableCount(profile?.listsCount),
+    watchlist: normalizeEditableCount(profile?.watchlistCount),
+    watched: normalizeEditableCount(profile?.watchedCount),
+  };
+}
+
 export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
   const accountClient = useAccountClient();
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
@@ -43,16 +67,23 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
   const [followerCount, setFollowerCount] = useState(initialCounts.followers);
   const [followingCount, setFollowingCount] = useState(initialCounts.following);
   const [isLoading, setIsLoading] = useState(!initialProfile);
-  const [form, setForm] = useState({
-    avatarUrl: initialProfile?.avatarUrl || '',
-    bannerUrl: initialProfile?.bannerUrl || '',
-    description: initialProfile?.description || '',
-    displayName: initialProfile?.displayName || '',
-    isPrivate: initialProfile?.isPrivate === true,
-    username: initialProfile?.username || '',
-  });
+  const [form, setForm] = useState(() => normalizeEditableProfile(initialProfile));
   const [linkedProviderDescriptorsOverride, setLinkedProviderDescriptorsOverride] = useState(null);
   const [linkedProviderIdsOverride, setLinkedProviderIdsOverride] = useState(null);
+
+  const applyProfile = useCallback((nextProfile) => {
+    const nextCounts = normalizeEditableProfileCounts(nextProfile);
+
+    setProfile(nextProfile);
+    setLikesCount(nextCounts.likes);
+    setWatchedCount(nextCounts.watched);
+    setWatchlistCount(nextCounts.watchlist);
+    setListsCount(nextCounts.lists);
+    setFollowerCount(nextCounts.followers);
+    setFollowingCount(nextCounts.following);
+    setForm(normalizeEditableProfile(nextProfile));
+    setIsLoading(false);
+  }, []);
 
   const applySnapshot = useCallback((snapshot) => {
     const nextProfile = snapshot?.profile || null;
@@ -65,14 +96,7 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     setListsCount(nextCounts.lists);
     setFollowerCount(nextCounts.followers);
     setFollowingCount(nextCounts.following);
-    setForm({
-      avatarUrl: nextProfile?.avatarUrl || '',
-      bannerUrl: nextProfile?.bannerUrl || '',
-      description: nextProfile?.description || '',
-      displayName: nextProfile?.displayName || '',
-      isPrivate: nextProfile?.isPrivate === true,
-      username: nextProfile?.username || '',
-    });
+    setForm(normalizeEditableProfile(nextProfile));
     setIsLoading(false);
   }, []);
 
@@ -119,17 +143,7 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
           return;
         }
 
-        setProfile(nextProfile);
-        setWatchedCount(Number(nextProfile?.watchedCount || 0));
-        setForm((prev) => ({
-          ...prev,
-          avatarUrl: nextProfile?.avatarUrl || '',
-          bannerUrl: nextProfile?.bannerUrl || '',
-          description: nextProfile?.description || '',
-          displayName: nextProfile?.displayName || '',
-          isPrivate: nextProfile?.isPrivate === true,
-          username: nextProfile?.username || '',
-        }));
+        applyProfile(nextProfile);
       } catch (error) {
         if (!ignore) {
           setProfile(null);
@@ -150,6 +164,7 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     };
   }, [
     accountClient,
+    applyProfile,
     applySnapshot,
     auth.isAuthenticated,
     auth.isReady,
@@ -175,6 +190,7 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
     listsCount,
     profile,
     setForm,
+    applyProfile,
     setLinkedProviderDescriptorsOverride,
     setLinkedProviderIdsOverride,
     watchedCount,

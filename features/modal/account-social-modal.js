@@ -463,9 +463,14 @@ export default function AccountSocialModal({ close, data, header }) {
     >
       <div className="flex h-full min-h-0 flex-col">
         <SegmentedControl
-          className="m-1 w-full"
-          trackClassName="w-full border-0 p-0"
-          buttonClassName="flex-1 justify-center py-3 text-sm"
+          classNames={{
+            track: 'w-full gap-0 p-0! rounded-[14px] pt-3',
+            wrapper: 'border-0 bg-transparent',
+            button: 'py-2 flex-1 justify-center rounded-[10px] text-[13px] font-semibold text-center',
+            indicator: 'bg-black',
+            inactive: 'text-black/60 hover:text-black',
+            active: 'text-white',
+          }}
           items={tabs}
           value={activeTab}
           onChange={setActiveTab}

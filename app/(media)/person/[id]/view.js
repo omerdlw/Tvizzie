@@ -9,11 +9,7 @@ import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
 import { PageGradientShell } from '@/features/layout/page-gradient-backdrop';
-import {
-  MovieHeroReveal,
-  MovieSectionReveal,
-  MovieSidebarReveal,
-} from '@/features/movie/movie-motion';
+import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import { getFilmographyCredits, getPersonLifeRange } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
@@ -124,9 +120,7 @@ export default function PersonView({
   const reduceMotion = useReducedMotion();
   if (!person) return null;
 
-  const lifeRange = getPersonLifeRange(person);
   const biographyExcerpt = getBiographyExcerpt(person.biography);
-  const heroMeta = [person?.known_for_department, lifeRange].filter(Boolean).join(' • ');
   const viewTransition = reduceMotion
     ? {
         duration: 0.12,
@@ -182,14 +176,6 @@ export default function PersonView({
                     </TextAnimate>
                   </div>
                 </MovieHeroReveal>
-
-                {heroMeta ? (
-                  <MovieHeroReveal delay={HERO_REVEAL_TIMING.taglineDelay} className="mt-4">
-                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
-                      {heroMeta}
-                    </p>
-                  </MovieHeroReveal>
-                ) : null}
 
                 {biographyExcerpt ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">

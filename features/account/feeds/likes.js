@@ -100,7 +100,6 @@ export default function AccountLikesFeed({
   activeSegment,
   auth,
   canShowLikesGrid,
-  currentPage,
   favoriteShowcase,
   handleLike,
   handleRequestRemoveLike,
@@ -292,14 +291,16 @@ export default function AccountLikesFeed({
               ) : null
             }
             toolbar={
-              <AccountMediaFilterBar
-                filters={mediaFilters}
-                decadeOptions={decadeOptions}
-                genreOptions={genreOptions}
-                visibilityOptions={LIKES_VISIBILITY_OPTIONS}
-                onChange={updateMediaFilters}
-                onReset={hasActiveMediaFilters(mediaFilters) ? resetMediaFilters : null}
-              />
+              likes.length > 0 ? (
+                <AccountMediaFilterBar
+                  filters={mediaFilters}
+                  decadeOptions={decadeOptions}
+                  genreOptions={genreOptions}
+                  visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+                  onChange={updateMediaFilters}
+                  onReset={hasActiveMediaFilters(mediaFilters) ? resetMediaFilters : null}
+                />
+              ) : null
             }
             title="Films"
           />
@@ -332,11 +333,13 @@ export default function AccountLikesFeed({
             showHeader={false}
             title="Lists"
             toolbar={
-              <AccountListSortBar
-                sort={listFilters.sort}
-                onChange={updateListSort}
-                onReset={hasActiveListFilters(listFilters) ? resetListFilters : null}
-              />
+              likedLists.length > 0 ? (
+                <AccountListSortBar
+                  sort={listFilters.sort}
+                  onChange={updateListSort}
+                  onReset={hasActiveListFilters(listFilters) ? resetListFilters : null}
+                />
+              ) : null
             }
           />
         )

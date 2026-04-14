@@ -13,36 +13,36 @@ export const MEDIA_SORT_GROUPS = Object.freeze([
   Object.freeze({
     label: 'Release Date',
     options: Object.freeze([
-      Object.freeze({ label: 'Newest First', value: 'release_desc' }),
-      Object.freeze({ label: 'Earliest First', value: 'release_asc' }),
+      Object.freeze({ label: 'Newest release first', value: 'release_desc' }),
+      Object.freeze({ label: 'Earliest release first', value: 'release_asc' }),
     ]),
   }),
   Object.freeze({
     label: 'When Added',
     options: Object.freeze([
-      Object.freeze({ label: 'Newest First', value: 'added_desc' }),
-      Object.freeze({ label: 'Earliest First', value: 'added_asc' }),
+      Object.freeze({ label: 'Recently added first', value: 'added_desc' }),
+      Object.freeze({ label: 'Oldest added first', value: 'added_asc' }),
     ]),
   }),
   Object.freeze({
     label: 'Average Rating',
     options: Object.freeze([
-      Object.freeze({ label: 'Highest First', value: 'average_desc' }),
-      Object.freeze({ label: 'Lowest First', value: 'average_asc' }),
+      Object.freeze({ label: 'Highest TMDB rating first', value: 'average_desc' }),
+      Object.freeze({ label: 'Lowest TMDB rating first', value: 'average_asc' }),
     ]),
   }),
   Object.freeze({
     label: 'Title',
     options: Object.freeze([
-      Object.freeze({ label: 'A to Z', value: 'title_asc' }),
-      Object.freeze({ label: 'Z to A', value: 'title_desc' }),
+      Object.freeze({ label: 'Title A to Z', value: 'title_asc' }),
+      Object.freeze({ label: 'Title Z to A', value: 'title_desc' }),
     ]),
   }),
   Object.freeze({
     label: 'Other',
     options: Object.freeze([
-      Object.freeze({ label: 'Popularity', value: 'popularity_desc' }),
-      Object.freeze({ label: 'Shuffle', value: 'shuffle' }),
+      Object.freeze({ label: 'Highest popularity first', value: 'popularity_desc' }),
+      Object.freeze({ label: 'Shuffle order', value: 'shuffle' }),
     ]),
   }),
 ]);
@@ -853,6 +853,21 @@ export function collectMediaGenreOptions(items = []) {
 
 export function getAllMediaGenreOptions() {
   return [{ label: 'Any genre', value: 'all' }, ...BASE_GENRE_OPTIONS];
+}
+
+export function resolveMediaSortOption(value) {
+  for (const group of MEDIA_SORT_GROUPS) {
+    const option = group.options.find((entry) => entry.value === value);
+
+    if (option) {
+      return {
+        ...option,
+        groupLabel: group.label,
+      };
+    }
+  }
+
+  return null;
 }
 
 export function collectMediaServiceOptions(items = []) {

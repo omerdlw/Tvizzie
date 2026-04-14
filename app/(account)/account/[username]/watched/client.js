@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAccountSectionPage } from '@/features/account/hooks/section-page';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { getMediaTitle } from '@/features/account/utils';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
@@ -111,7 +112,7 @@ export default function Client({
     return subscribeToUserWatched(
       resolvedUserId,
       (nextItems) => {
-        setWatchedItems(nextItems);
+        setWatchedItems((currentItems) => mergeCollectionItemsWithExistingMetadata(currentItems, nextItems));
         setLoadError(null);
         setIsWatchedLoading(false);
       },

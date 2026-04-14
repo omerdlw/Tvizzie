@@ -51,19 +51,21 @@ function HeroEdgeMetric() {
 
 function AccountHeroSkeleton() {
   return (
-    <section className={`relative w-full bg-white ${HERO_HEIGHT_CLASS}`}>
+    <section className={`relative w-full overflow-hidden border-b border-black/15 bg-white ${HERO_HEIGHT_CLASS}`}>
       <div
         className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-20 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
-        <div className="flex w-full flex-col gap-3">
-          <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_220px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
+        <div className="flex w-full flex-col gap-2 sm:gap-3">
+          <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-28 w-28 justify-self-start overflow-hidden rounded-full sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <div className={`h-full w-full rounded-full ${BLOCK}`} />
             </div>
 
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <Line className="h-[3.6rem] w-[68%] rounded-[18px] sm:h-[4.2rem] lg:h-[4.8rem]" />
+                <div className="flex items-center gap-4">
+                  <Line className="h-[3.2rem] w-[68%] rounded-[18px] sm:h-[3.6rem] lg:h-[4.8rem]" />
+                </div>
 
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
@@ -91,7 +93,6 @@ function AccountHeroSkeleton() {
             <div className="mt-2 flex max-w-[66ch] flex-col gap-2">
               <Line className="h-3.5 w-full" soft={true} />
               <Line className="h-3.5 w-[92%]" soft={true} />
-              <Line className="h-3.5 w-[76%]" soft={true} />
             </div>
           </div>
         </div>
@@ -106,7 +107,7 @@ function AccountNavSkeleton() {
   return (
     <div>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-hidden px-4 py-3 sm:justify-center sm:px-8 sm:py-4">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-8 sm:py-4">
           {tabWidths.map((width, index) => (
             <Pill key={index} className={`h-8 shrink-0 ${width}`} soft={index !== 0} />
           ))}

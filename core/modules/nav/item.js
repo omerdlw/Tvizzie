@@ -4,13 +4,14 @@ import { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import { DURATION, EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { useAuth } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
 import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
+import { getNavItemMode } from '@/core/modules/nav/state-machine';
 import { default as Iconify } from '@/ui/icon';
 import { Skeleton } from '@/ui/skeletons/components/nav';
 
@@ -46,14 +47,16 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   }),
 });
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, motionState) {
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
-  const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
+  const { offsetY: collapsedOffsetY, scale: collapsedBaseScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
     : {};
 
+  const { reduceMotion } = motionState;
   const cardDelay = expanded ? position * 0.02 : 0;
+  const targetScale = expanded ? cardScale || 1 : collapsedBaseScale ** position;
 
   return {
     className: cn(
@@ -68,36 +71,87 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     },
     animate: {
       y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
-      scale: expanded ? cardScale || 1 : collapsedScale ** position,
+      scale: targetScale,
       zIndex: NAV_CARD_LAYOUT.expanded.scale - position,
       opacity: 1,
     },
-    initial: { opacity: 0, scale: 0.92, y: 0 },
+    initial: reduceMotion ? { opacity: 0, scale: 0.98, y: 0 } : { opacity: 0, scale: 0.95, y: 4 },
     exit: {
       transition: {
-        duration: DURATION.FAST,
-        ease: EASING.EMPHASIZED,
+        duration: reduceMotion ? DURATION.VERY_FAST : DURATION.QUICK,
+        ease: EASING.EASE_OUT,
       },
-      scale: 0.92,
+      scale: reduceMotion ? 0.98 : 0.96,
+      y: reduceMotion ? 0 : 2,
       opacity: 0,
     },
     transition: {
       y: {
-        ...NAV_CARD_LAYOUT.transition,
+        duration: reduceMotion ? DURATION.VERY_FAST : DURATION.MODERATE,
         delay: cardDelay,
+        ease: EASING.EMPHASIZED,
       },
       scale: {
-        ...NAV_CARD_LAYOUT.transition,
+        duration: reduceMotion ? DURATION.VERY_FAST : DURATION.MODERATE,
         delay: cardDelay,
+        ease: EASING.EMPHASIZED,
       },
       opacity: {
-        ...NAV_CARD_LAYOUT.transition,
+        duration: reduceMotion ? DURATION.VERY_FAST : DURATION.NORMAL,
         delay: cardDelay,
+        ease: EASING.EASE_OUT,
       },
       zIndex: {
         delay: cardDelay,
         duration: DURATION.INSTANT,
       },
+    },
+  };
+}
+
+function getScrollableCardClassName(className, link) {
+  if (link?.isOverlay || link?.isConfirmation || link?.isSurface) {
+    return cn(className, 'top-auto bottom-0 max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain');
+  }
+
+  return className;
+}
+
+function getContentTransition(reduceMotion, delay = 0) {
+  if (reduceMotion) {
+    return {
+      duration: DURATION.VERY_FAST,
+      delay: 0,
+      ease: EASING.EASE_OUT,
+    };
+  }
+
+  return {
+    duration: DURATION.FAST,
+    delay,
+    ease: EASING.SMOOTH,
+  };
+}
+
+function getContentVariants(reduceMotion, { baseDelay = 0, distance = 14 } = {}) {
+  return {
+    container: {
+      initial: {},
+      animate: {
+        transition: reduceMotion
+          ? undefined
+          : {
+              staggerChildren: 0.045,
+              delayChildren: baseDelay,
+            },
+      },
+      exit: {},
+    },
+    item: {
+      initial: reduceMotion ? { opacity: 0 } : { opacity: 0, y: distance * 0.35 },
+      animate: { opacity: 1, y: 0 },
+      exit: reduceMotion ? { opacity: 0 } : { opacity: 0, y: -3 },
+      transition: getContentTransition(reduceMotion, baseDelay),
     },
   };
 }
@@ -113,13 +167,7 @@ function shouldShowVideoIcon({ isActive, isVideo, link }) {
 }
 
 function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered }) {
-  const state = link.isLoading
-    ? 'loading'
-    : link.isSurface
-      ? 'surface'
-      : link.isConfirmation
-        ? 'confirmation'
-        : 'standard';
+  const state = getNavItemMode(link);
 
   return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}`;
 }
@@ -194,8 +242,10 @@ function StandardItemContent({
   footerNode,
   footerRef,
 }) {
+  const reduceMotion = useReducedMotion();
   const { isVideo, isPlaying } = useBackgroundState();
   const { toggleVideo } = useBackgroundActions();
+  const contentMotion = useMemo(() => getContentVariants(reduceMotion), [reduceMotion]);
 
   const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo, link });
   const description = getItemDescription({ expanded, isHovered, link });
@@ -217,9 +267,16 @@ function StandardItemContent({
   };
 
   return (
-    <div ref={contentContainerRef} className="relative flex h-auto w-full flex-col gap-0">
+    <motion.div
+      ref={contentContainerRef}
+      className="relative flex h-auto w-full flex-col gap-0"
+      variants={contentMotion.container}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       <div className="relative flex w-full items-center space-x-3">
-        <div className="center relative">
+        <motion.div className="center relative" variants={contentMotion.item}>
           {link.icon ? (
             <div
               className={link.onClick || showVideoIcon ? 'relative cursor-pointer transition-transform' : 'relative'}
@@ -237,64 +294,101 @@ function StandardItemContent({
             <div className="h-12" />
           )}
           <Badge badge={badge} />
-        </div>
+        </motion.div>
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
-          <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
+          <motion.div
+            className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5"
+            variants={contentMotion.item}
+          >
             <div className="flex items-center gap-1.5">
               <Title text={link.title || link.name} style={itemStyle.title} />
             </div>
             <Description text={description} style={itemStyle.description} />
-          </div>
-          {isTop && link.type !== 'COUNTDOWN' && <NavActionsContainer activeItem={link} />}
+          </motion.div>
+          {isTop && link.type !== 'COUNTDOWN' && (
+            <motion.div variants={contentMotion.item}>
+              <NavActionsContainer activeItem={link} />
+            </motion.div>
+          )}
         </div>
       </div>
 
       {footerNode ? (
-        <div ref={footerRef} className="w-full pt-2.5">
+        <motion.div ref={footerRef} className="w-full pt-2.5" variants={contentMotion.item}>
           {footerNode}
-        </div>
+        </motion.div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }
 
 function ConfirmationItemContent({ link, itemStyle, contentContainerRef }) {
+  const reduceMotion = useReducedMotion();
+  const contentMotion = useMemo(
+    () => getContentVariants(reduceMotion, { baseDelay: 0.03, distance: 12 }),
+    [reduceMotion]
+  );
+
   return (
-    <div ref={contentContainerRef} className="flex w-full flex-col gap-3 px-1 py-1">
+    <motion.div
+      ref={contentContainerRef}
+      className="flex w-full flex-col gap-3 px-1 py-1"
+      variants={contentMotion.container}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {link.icon ? (
-        <div className="self-start">
+        <motion.div className="self-start" variants={contentMotion.item}>
           <BadgeIcon isStackHovered={false} icon={link.icon} style={itemStyle.icon} />
-        </div>
+        </motion.div>
       ) : null}
 
-      <div className="flex flex-col gap-1.5">
+      <motion.div className="flex flex-col gap-1.5" variants={contentMotion.item}>
         <Title text={link.title || link.name} style={itemStyle.title} />
         {link.description ? <Description text={link.description} style={itemStyle.description} maxLines={6} /> : null}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
 function SurfaceItemContent({ link, contentContainerRef }) {
   const SurfaceComponent = link.surfaceComponent;
   const surfaceContent = link.surfaceContent;
+  const reduceMotion = useReducedMotion();
 
   return (
-    <div ref={contentContainerRef} className="relative w-full" onClick={(event) => event.stopPropagation()}>
+    <motion.div
+      ref={contentContainerRef}
+      className="relative w-full"
+      onClick={(event) => event.stopPropagation()}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+      transition={getContentTransition(reduceMotion, 0.02)}
+    >
       {typeof SurfaceComponent === 'function' ? (
         <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
       ) : (
         surfaceContent
       )}
-    </div>
+    </motion.div>
   );
 }
 
 function LoadingItemContent({ contentContainerRef }) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div ref={contentContainerRef}>
+    <motion.div
+      ref={contentContainerRef}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -3 }}
+      transition={getContentTransition(reduceMotion)}
+    >
       <Skeleton />
-    </div>
+    </motion.div>
   );
 }
 
@@ -319,6 +413,7 @@ const Item = memo(
 
     const pathname = usePathname();
     const router = useRouter();
+    const reduceMotion = useReducedMotion();
     const { isAuthenticated, isReady } = useAuth();
 
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
@@ -340,7 +435,9 @@ const Item = memo(
       return getActionNode(link, ActionComponent);
     }, [link, ActionComponent]);
     const cardProps = useMemo(() => {
-      const resolvedCardProps = getNavItemCardProps(expanded, position, showBorder, itemStyle.card, itemStyle.scale);
+      const resolvedCardProps = getNavItemCardProps(expanded, position, showBorder, itemStyle.card, itemStyle.scale, {
+        reduceMotion,
+      });
 
       if (!link.isSurface) {
         return resolvedCardProps;
@@ -350,7 +447,8 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface]);
+    }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
+    const cardClassName = useMemo(() => getScrollableCardClassName(cardProps.className, link), [cardProps.className, link]);
 
     useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop);
 
@@ -429,6 +527,7 @@ const Item = memo(
       <motion.div
         ref={ref}
         {...cardProps}
+        className={cardClassName}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
@@ -436,9 +535,16 @@ const Item = memo(
         {renderContent()}
 
         {actionNode && (
-          <div ref={actionContainerRef} onClick={(event) => event.stopPropagation()}>
+          <motion.div
+            ref={actionContainerRef}
+            onClick={(event) => event.stopPropagation()}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+            transition={getContentTransition(reduceMotion, 0.06)}
+          >
             <Suspense>{actionNode}</Suspense>
-          </div>
+          </motion.div>
         )}
       </motion.div>
     );

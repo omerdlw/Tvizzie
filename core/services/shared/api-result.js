@@ -41,7 +41,14 @@ export function buildApiErrorResult({
 }
 
 export function isApiResultEnvelope(value) {
-  return Boolean(value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'ok'));
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      Object.prototype.hasOwnProperty.call(value, 'ok') &&
+      Object.prototype.hasOwnProperty.call(value, 'code') &&
+      Object.prototype.hasOwnProperty.call(value, 'message') &&
+      Object.prototype.hasOwnProperty.call(value, 'retryable')
+  );
 }
 
 export function normalizeApiResultEnvelope(value, { fallbackCode = 'OK', fallbackMessage = 'OK' } = {}) {

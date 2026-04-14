@@ -16,7 +16,7 @@ const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS =
 const ACCOUNT_HERO_LEFT_FADE_CLASS =
   'absolute inset-0 bg-[linear-gradient(90deg,rgba(250,249,245,0.97)_0%,rgba(250,249,245,0.94)_12%,rgba(250,249,245,0.82)_24%,rgba(250,249,245,0.6)_36%,rgba(250,249,245,0.34)_50%,rgba(250,249,245,0.12)_62%,rgba(250,249,245,0.03)_70%,rgba(250,249,245,0)_76%)]';
 const ACCOUNT_HERO_RIGHT_FADE_CLASS =
-  'absolute inset-0 hidden bg-[linear-gradient(270deg,rgba(250,249,245,0.97)_0%,rgba(250,249,245,0.94)_12%,rgba(250,249,245,0.82)_24%,rgba(250,249,245,0.6)_36%,rgba(250,249,245,0.34)_50%,rgba(250,249,245,0.12)_62%,rgba(250,249,245,0.03)_70%,rgba(250,249,245,0)_76%)] lg:block';
+  'absolute inset-0 bg-[linear-gradient(270deg,rgba(250,249,245,0.97)_0%,rgba(250,249,245,0.94)_12%,rgba(250,249,245,0.82)_24%,rgba(250,249,245,0.6)_36%,rgba(250,249,245,0.34)_50%,rgba(250,249,245,0.12)_62%,rgba(250,249,245,0.03)_70%,rgba(250,249,245,0)_76%)]';
 const ACCOUNT_HERO_TOP_FADE_CLASS =
   'absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(250,249,245,0.34)_0%,rgba(250,249,245,0.2)_38%,rgba(250,249,245,0.08)_68%,rgba(250,249,245,0)_100%)] sm:h-36';
 const ACCOUNT_HERO_TINT_CLASS =

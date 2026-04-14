@@ -4,6 +4,13 @@ import { cache } from 'react';
 
 import { TMDB_API_URL } from '@/core/constants';
 import { isPersonMediaType, normalizeMediaType } from '@/core/utils/media';
+import {
+  rankSearchResults,
+  sanitizeMovieDetail,
+  sanitizeMovieResults,
+  sanitizePersonDetail,
+  sanitizePersonResults,
+} from '@/core/clients/tmdb/sanitize';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 
@@ -99,33 +106,18 @@ function withMediaType(items = [], mediaType) {
   }));
 }
 
-function toFiniteNumber(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function sortByPopularityDesc(first, second) {
-  const popularityDiff = toFiniteNumber(second?.popularity) - toFiniteNumber(first?.popularity);
-
-  if (popularityDiff !== 0) {
-    return popularityDiff;
-  }
-
-  const voteCountDiff = toFiniteNumber(second?.vote_count) - toFiniteNumber(first?.vote_count);
-
-  if (voteCountDiff !== 0) {
-    return voteCountDiff;
-  }
-
-  return toFiniteNumber(second?.vote_average) - toFiniteNumber(first?.vote_average);
-}
-
-function normalizeSearchResults(items = [], requestedType = 'movie') {
+function normalizeSearchResults(items = [], query = '', requestedType = 'movie') {
   const normalizedType = isPersonMediaType(requestedType) ? 'person' : 'movie';
 
-  return withMediaType(items, normalizedType)
-    .filter((item) => ['movie', 'person'].includes(item?.media_type || ''))
-    .sort(sortByPopularityDesc);
+  const normalizedItems = withMediaType(items, normalizedType).filter((item) =>
+    ['movie', 'person'].includes(item?.media_type || '')
+  );
+  const sanitizedItems =
+    normalizedType === 'person'
+      ? sanitizePersonResults(normalizedItems, { context: 'search', role: 'cast' })
+      : sanitizeMovieResults(normalizedItems, 'search');
+
+  return rankSearchResults(sanitizedItems, query, normalizedType);
 }
 
 function getDetailAppendParam(parts = []) {
@@ -153,6 +145,45 @@ const resolveTmdbDetailId = cache(async (id, type) => {
 
   return results[0]?.id || id;
 });
+
+const resolveMovieRuntime = cache(async (id) => {
+  const targetId = await resolveTmdbDetailId(id, 'movie');
+  const response = await tmdbRequest(`/movie/${targetId}`, {
+    query: {
+      language: 'en-US',
+    },
+    revalidate: TMDB_REVALIDATE.DETAIL_BASE,
+    tags: ['tmdb:movie:runtime', `tmdb:movie:${targetId}:runtime`],
+  });
+
+  return response?.data?.runtime ?? null;
+});
+
+async function hydrateMovieRuntime(item) {
+  if (!item || typeof item !== 'object' || !item?.id) {
+    return item;
+  }
+
+  if (Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0) {
+    return item;
+  }
+
+  const runtime = await resolveMovieRuntime(item.id);
+
+  if (!Number.isFinite(Number(runtime)) || Number(runtime) <= 0) {
+    return item;
+  }
+
+  return {
+    ...item,
+    runtime: Number(runtime),
+  };
+}
+
+async function sanitizeMovieResultsWithRuntime(items = [], context = 'browse') {
+  const hydratedItems = await Promise.all((Array.isArray(items) ? items : []).map((item) => hydrateMovieRuntime(item)));
+  return sanitizeMovieResults(hydratedItems, context);
+}
 
 async function getEntityDetail(id, type, { append = [], revalidate, tags = [] } = {}) {
   const targetId = await resolveTmdbDetailId(id, type);
@@ -199,11 +230,16 @@ export const getTrending = cache(async (timeWindow = 'day', mediaType = 'movie')
     return response;
   }
 
+  const sanitizedResults = await sanitizeMovieResultsWithRuntime(
+    withMediaType(response.data.results, normalizedMediaType),
+    'browse'
+  );
+
   return {
     ...response,
     data: {
       ...response.data,
-      results: withMediaType(response.data.results, normalizedMediaType),
+      results: sanitizedResults,
     },
   };
 });
@@ -229,6 +265,7 @@ export const discoverContent = cache(async ({ genreId, page = 1, sortBy = 'popul
       language: 'en-US',
       page,
       sort_by: sortBy,
+      'with_runtime.gte': 40,
       with_genres: normalizedGenre === 'all' ? undefined : normalizedGenre,
     },
     revalidate: TMDB_REVALIDATE.DISCOVER,
@@ -239,11 +276,16 @@ export const discoverContent = cache(async ({ genreId, page = 1, sortBy = 'popul
     return response;
   }
 
+  const sanitizedResults = await sanitizeMovieResultsWithRuntime(
+    withMediaType(response.data.results, 'movie'),
+    'browse'
+  );
+
   return {
     ...response,
     data: {
       ...response.data,
-      results: withMediaType(response.data.results, 'movie'),
+      results: sanitizedResults,
     },
   };
 });
@@ -265,11 +307,18 @@ export const searchContent = cache(async (query, searchType = 'movie', page = 1)
     return response;
   }
 
+  const normalizedItems = withMediaType(response.data.results, type);
+  const runtimeAwareItems =
+    type === 'movie' ? await sanitizeMovieResultsWithRuntime(normalizedItems, 'search') : normalizedItems;
+
   return {
     ...response,
     data: {
       ...response.data,
-      results: normalizeSearchResults(response.data.results, type),
+      results:
+        type === 'movie'
+          ? rankSearchResults(runtimeAwareItems, query, type)
+          : normalizeSearchResults(response.data.results, query, type),
     },
   };
 });
@@ -278,7 +327,10 @@ export const getMovieBase = cache(async (id) =>
   getEntityDetail(id, 'movie', {
     append: ['credits', 'keywords', 'release_dates', 'videos', 'watch/providers'],
     revalidate: TMDB_REVALIDATE.DETAIL_BASE,
-  })
+  }).then((response) => ({
+    ...response,
+    data: sanitizeMovieDetail(response?.data),
+  }))
 );
 
 export const getMovieSecondary = cache(async (id) =>
@@ -286,6 +338,39 @@ export const getMovieSecondary = cache(async (id) =>
     append: ['images', 'recommendations', 'similar'],
     revalidate: TMDB_REVALIDATE.DETAIL_SECONDARY,
     tags: ['tmdb:movie:secondary'],
+  }).then(async (response) => {
+    const data = response?.data;
+
+    if (!data) {
+      return {
+        ...response,
+        data,
+      };
+    }
+
+    const [recommendations, similar] = await Promise.all([
+      sanitizeMovieResultsWithRuntime(data?.recommendations?.results || [], 'browse'),
+      sanitizeMovieResultsWithRuntime(data?.similar?.results || [], 'browse'),
+    ]);
+
+    return {
+      ...response,
+      data: sanitizeMovieDetail({
+        ...data,
+        recommendations: data?.recommendations
+          ? {
+              ...data.recommendations,
+              results: recommendations,
+            }
+          : data?.recommendations,
+        similar: data?.similar
+          ? {
+              ...data.similar,
+              results: similar,
+            }
+          : data?.similar,
+      }),
+    };
   })
 );
 
@@ -305,7 +390,10 @@ export const getPersonBase = cache(async (id) =>
   getEntityDetail(id, 'person', {
     append: ['external_ids'],
     revalidate: TMDB_REVALIDATE.DETAIL_BASE,
-  })
+  }).then((response) => ({
+    ...response,
+    data: sanitizePersonDetail(response?.data),
+  }))
 );
 
 export const getPersonSecondary = cache(async (id) =>
@@ -313,6 +401,34 @@ export const getPersonSecondary = cache(async (id) =>
     append: ['images', 'movie_credits', 'tagged_images'],
     revalidate: TMDB_REVALIDATE.DETAIL_SECONDARY,
     tags: ['tmdb:person:secondary'],
+  }).then(async (response) => {
+    const data = response?.data;
+
+    if (!data) {
+      return {
+        ...response,
+        data,
+      };
+    }
+
+    const [castCredits, crewCredits] = await Promise.all([
+      sanitizeMovieResultsWithRuntime(data?.movie_credits?.cast || [], 'credits'),
+      sanitizeMovieResultsWithRuntime(data?.movie_credits?.crew || [], 'credits'),
+    ]);
+
+    return {
+      ...response,
+      data: sanitizePersonDetail({
+        ...data,
+        movie_credits: data?.movie_credits
+          ? {
+              ...data.movie_credits,
+              cast: castCredits,
+              crew: crewCredits,
+            }
+          : data?.movie_credits,
+      }),
+    };
   })
 );
 

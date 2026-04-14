@@ -11,13 +11,14 @@ import {
   assertSignUpEmailAvailable,
   buildAuthHref,
   createPendingSignUpPayload,
-  finalizeGoogleSignUp,
+  finalizeOAuthSignUp,
   finalizeSignUp,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
 } from '@/features/auth';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { setPendingAccountBootstrap } from '@/core/auth/clients/pending-account.client';
@@ -52,6 +53,7 @@ export default function Client() {
   }));
   const [currentStep, setCurrentStep] = useState(0);
   const [pendingAction, setPendingAction] = useState(null);
+  const activeOAuthProvider = normalizeOAuthProvider(pendingAction);
   const isBusy = pendingAction !== null;
 
   const postAuthRedirect = useMemo(() => resolvePostAuthRedirect(nextParam), [nextParam]);
@@ -92,6 +94,10 @@ export default function Client() {
       toast.error('Google sign-up could not be completed. Please try again.');
     }
 
+    if (routeNotice === AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED) {
+      toast.error('Social sign-up could not be completed. Please try again.');
+    }
+
     const params = new URLSearchParams(searchParams.toString());
     params.delete('notice');
     const nextHref = params.toString() ? `/sign-up?${params.toString()}` : AUTH_ROUTES.SIGN_UP;
@@ -103,24 +109,26 @@ export default function Client() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleGoogleSignUp = async () => {
+  const handleOAuthSignUp = async (provider) => {
     if (isBusy) {
       return;
     }
 
-    setPendingAction('google');
+    const providerLabel = getOAuthProviderLabel(provider);
+    setPendingAction(provider);
 
     try {
-      const signUpResult = await finalizeGoogleSignUp({
+      const signUpResult = await finalizeOAuthSignUp({
         auth,
         nextPath: postAuthRedirect,
+        provider,
       });
 
       if (signUpResult?.requiresRedirect) {
         return;
       }
 
-      toast.success('Google sign-up completed successfully');
+      toast.success(`${providerLabel} sign-up completed successfully`);
       router.replace(postAuthRedirect);
     } catch (error) {
       const code = String(error?.code || '').trim();
@@ -136,7 +144,7 @@ export default function Client() {
         return;
       }
 
-      toast.error(resolveAuthErrorMessage(error, 'Google sign-up failed'));
+      toast.error(resolveAuthErrorMessage(error, `${providerLabel} sign-up failed`));
     } finally {
       setPendingAction(null);
     }
@@ -270,10 +278,11 @@ export default function Client() {
     <>
       {registry}
       <SignUpView
+        activeOAuthProvider={activeOAuthProvider}
         currentStep={currentStep}
         form={form}
         handleChange={handleChange}
-        handleGoogleSignUp={handleGoogleSignUp}
+        handleOAuthSignUp={handleOAuthSignUp}
         handlePreviousStep={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
         handleStepSubmit={handleStepSubmit}
         isBusy={isBusy}

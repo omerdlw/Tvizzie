@@ -189,7 +189,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
     <section className="relative flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <SegmentedControl
-          className="rounded-xl backdrop-blur-sm"
+          classNames={{ track: 'rounded-xl backdrop-blur-sm',wrapper:"p-0.5" }}
           value={activeTab}
           onChange={setActiveTab}
           items={tabs.map(({ key, label }) => ({ key, label }))}

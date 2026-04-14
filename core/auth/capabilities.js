@@ -1,3 +1,5 @@
+import { getEnabledOAuthProviderIds, normalizeOAuthProvider, normalizeProviderId } from '@/core/auth/oauth-providers';
+
 function normalizeValue(value) {
   return String(value || '').trim();
 }
@@ -29,21 +31,7 @@ export function uniqueStrings(items) {
 }
 
 export function normalizeProvider(value) {
-  const provider = normalizeValue(value).toLowerCase();
-
-  if (!provider) {
-    return null;
-  }
-
-  if (provider === 'google' || provider === 'google.com') {
-    return 'google.com';
-  }
-
-  if (provider === 'email' || provider === 'password') {
-    return 'password';
-  }
-
-  return provider;
+  return normalizeProviderId(value);
 }
 
 function getMetadataProviders(appMetadata = {}) {
@@ -153,28 +141,40 @@ export function resolveProviderDescriptors({ providerData = [], identities = [],
 }
 
 export function resolvePrimaryProvider(providerIds = []) {
-  if (providerIds.includes('password')) {
+  const normalizedProviderIds = uniqueStrings(providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean));
+
+  if (normalizedProviderIds.includes('password')) {
     return 'password';
   }
 
-  if (providerIds.includes('google.com')) {
+  if (normalizedProviderIds.includes('google.com')) {
     return 'google';
   }
 
-  return providerIds[0] || null;
+  if (normalizedProviderIds.includes('github')) {
+    return 'github';
+  }
+
+  return normalizeOAuthProvider(normalizedProviderIds[0]) || normalizedProviderIds[0] || null;
 }
 
 export function resolveAuthCapabilities({ providerIds = [], email = null } = {}) {
-  const uniqueProviderIds = uniqueStrings(providerIds);
+  const uniqueProviderIds = uniqueStrings(providerIds.map((providerId) => normalizeProvider(providerId)).filter(Boolean));
   const passwordEnabled = uniqueProviderIds.includes('password');
+  const oauthProviderIds = getEnabledOAuthProviderIds(uniqueProviderIds);
+  const oauthEnabled = oauthProviderIds.length > 0;
   const googleEnabled = uniqueProviderIds.includes('google.com');
+  const githubEnabled = uniqueProviderIds.includes('github');
   const primaryProvider = resolvePrimaryProvider(uniqueProviderIds);
 
   return {
     passwordEnabled,
+    oauthEnabled,
+    oauthProviderIds,
     googleEnabled,
+    githubEnabled,
     primaryProvider,
-    needsPasswordSetup: googleEnabled && !passwordEnabled,
+    needsPasswordSetup: oauthEnabled && !passwordEnabled,
     canResetPassword: passwordEnabled && Boolean(normalizeEmail(email)),
   };
 }

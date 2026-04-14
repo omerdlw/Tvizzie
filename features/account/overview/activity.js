@@ -19,6 +19,10 @@ const EVENT_META = Object.freeze({
     action: 'followed',
     icon: 'solar:user-plus-bold',
   },
+  LIST_ITEM_ADDED: {
+    action: 'added items to',
+    icon: 'solar:playlist-minimalistic-bold',
+  },
   LIST_CREATED: {
     action: 'created',
     icon: 'solar:list-broken',
@@ -26,6 +30,10 @@ const EVENT_META = Object.freeze({
   LIST_LIKED: {
     action: 'liked',
     icon: 'solar:heart-bold',
+  },
+  MEDIA_LIKED: {
+    action: 'liked',
+    icon: 'solar:heart-angle-bold',
   },
   REVIEW_PUBLISHED: {
     action: 'reviewed',

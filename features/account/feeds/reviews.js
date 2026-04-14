@@ -102,7 +102,6 @@ export default function AccountReviewsFeed({
   onEdit = null,
   onLike,
   onLoadMore = null,
-  pageBasePath = null,
   paginationPageSize = REVIEW_ITEMS_PER_PAGE,
   showHeader = true,
   showOwnActions = false,
@@ -225,12 +224,14 @@ export default function AccountReviewsFeed({
       title={title}
       titleHref={titleHref}
     >
-      <AccountReviewFilterBar
-        filters={reviewFilters}
-        yearOptions={yearOptions}
-        onChange={updateFilters}
-        onReset={hasFilters ? resetFilters : null}
-      />
+      {listedReviewCount > 0 ? (
+        <AccountReviewFilterBar
+          filters={reviewFilters}
+          yearOptions={yearOptions}
+          onChange={updateFilters}
+          onReset={hasFilters ? resetFilters : null}
+        />
+      ) : null}
 
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
