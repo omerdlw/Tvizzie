@@ -65,7 +65,7 @@ export default function SearchActionControls({
                 exit={{ scale: 0.8 }}
                 onClick={onClear}
               >
-                <Icon icon="material-symbols:close-" size={16} />
+                <Icon icon="material-symbols:close-rounded" size={16} />
               </motion.button>
             ) : null}
           </AnimatePresence>

@@ -67,8 +67,6 @@ function UserAvatar({ item, title }) {
 export default function SearchGridItem({ item, onSelect }) {
   const title = getItemTitle(item);
   const detailPath = getDetailPath(item);
-  const primaryMeta = getPrimaryMeta(item);
-  const secondaryMeta = getSecondaryMeta(item);
   const imageSrc = getImageSrc(item);
   const hasDetailPath = Boolean(detailPath);
   const cardContent = (
@@ -93,14 +91,8 @@ export default function SearchGridItem({ item, onSelect }) {
             </div>
           )
         }
-        tooltipText={title}
+        tooltipText={item.media_type === SEARCH_TYPES.MOVIE && getItemYear(item) ? `${title} (${getItemYear(item)})` : title}
       />
-
-      <div className="min-w-0">
-        <p className="truncate text-[12px] leading-tight font-semibold text-black">{title}</p>
-        <p className="truncate text-[10px] font-medium text-black/65 uppercase">{primaryMeta}</p>
-        {secondaryMeta ? <p className="truncate text-[10px] text-black/55">{secondaryMeta}</p> : null}
-      </div>
     </>
   );
 

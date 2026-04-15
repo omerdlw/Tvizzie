@@ -57,24 +57,34 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
   if (!availableLinks.length) return null;
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {availableLinks.map((link) => (
-        <Tooltip className="bg-white text-black" key={link.key} text={link.label}>
-          <a
-            key={link.key}
-            href={link.getUrl(externalIds[link.key])}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={link.label}
-            className={cn(
-              'center bg-primary/70 size-10 border border-black/10 text-black/70 backdrop-blur-md transition-all duration-[var(--motion-duration-normal)] hover:border-black/20 hover:bg-white hover:text-black',
-              linkClassName
-            )}
-          >
-            <Icon icon={link.icon} size={20} />
-          </a>
-        </Tooltip>
-      ))}
+    <div
+      className={cn(
+        'bg-primary/70 inline-flex h-10 w-fit items-center overflow-hidden rounded-[14px] border border-black/10 text-black/70 backdrop-blur-md',
+        className
+      )}
+    >
+      {availableLinks.map((link, index) => {
+        const isLast = index === availableLinks.length - 1;
+
+        return (
+          <div key={link.key} className={cn('flex h-10 items-center', !isLast && 'border-r border-black/10')}>
+            <Tooltip className="rounded bg-white text-black" text={link.label}>
+              <a
+                href={link.getUrl(externalIds[link.key])}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={link.label}
+                className={cn(
+                  'center hover:text-info h-full shrink-0 p-1 px-2 transition-all duration-[var(--motion-duration-normal)] hover:bg-white',
+                  linkClassName
+                )}
+              >
+                <Icon icon={link.icon} size={20} />
+              </a>
+            </Tooltip>
+          </div>
+        );
+      })}
     </div>
   );
 }

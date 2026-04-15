@@ -54,7 +54,7 @@ function RelatedMoviesSection({ items, title, delay = 0 }) {
         <Carousel gap="gap-3" itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]">
           {items.map((item, index) => (
             <RecommendationCard
-              key={item.id}
+              key={`${item.id}-${index}`}
               movie={item}
               imagePriority={index < 4}
               imageFetchPriority={index < 4 ? 'high' : undefined}
@@ -304,6 +304,7 @@ export default function MovieView({
               title={movie.title}
               headerTitle="Recent Reviews"
               listMode="recent"
+              showBackdropGradient={false}
               hideWhenEmpty
               allReviewsHref={`/movie/${movie.id}/reviews`}
               posterPath={movie.poster_path}

@@ -76,32 +76,42 @@ export default function AuthVerificationSurface({ close, data, header }) {
     };
   }, [data, header?.description, header?.title, meta?.codeExpiryLabel, meta?.isExpired, meta?.isSending]);
 
-  const headerIcon = meta?.isSending && !meta?.hasChallenge ? <Spinner size={24} /> : 'solar:shield-keyhole-bold';
+  const headerIcon =
+    meta?.isSending && !meta?.hasChallenge ? (
+      <Spinner size={24} className={'text-[#0f766e]'} />
+    ) : (
+      'solar:shield-keyhole-bold'
+    );
 
   return (
     <section
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-verification-surface-title"
-      className="relative flex flex-col gap-3"
+      className={`flex flex-col gap-3 rounded-[12px] border border-[#8b5cf6] bg-[#ddd6fe] px-1 py-1`}
     >
-      <button
-        type="button"
-        onClick={() => closeSurface(close)}
-        className="bg-primary absolute top-0 right-0 z-10 inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
-        aria-label="Close verification"
+      <div
+        className={`relative flex h-auto w-full items-center space-x-3 rounded-[10px] border border-[#2563eb] bg-[#bfdbfe] px-2 py-2`}
       >
-        <Icon icon="material-symbols:close-" size={16} />
-      </button>
-
-      <div className="flex h-auto w-full items-center gap-2">
         <div className="center relative">
           <BadgeIcon icon={headerIcon} />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center -space-y-0.5 overflow-hidden">
-          <Title text={resolvedHeader.title} style={{ className: '!normal-case !truncate' }} />
-          {resolvedHeader.description ? <Description text={resolvedHeader.description} /> : null}
+        <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
+          <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
+            <Title text={resolvedHeader.title} style={{ className: '!normal-case !truncate' }} />
+
+            {resolvedHeader.description ? <Description text={resolvedHeader.description} /> : null}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => closeSurface(close)}
+            className={`center cursor-pointer rounded-full border border-[#be123c] bg-[#fecdd3] p-1 text-[#881337] transition-all`}
+            aria-label="Close verification"
+          >
+            <Icon icon="material-symbols:close-roundedrounded" size={24} />
+          </button>
         </div>
       </div>
 

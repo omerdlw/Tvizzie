@@ -111,7 +111,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab overflow-x-auto overscroll-x-contain p-1 select-none',
+          'scrollbar-hide flex cursor-grab overflow-x-auto overscroll-x-contain rounded-[14px] p-1 select-none',
           gap,
           className
         )}
@@ -128,7 +128,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
           className={cn(
-            'center absolute top-1/2 left-2 z-10 h-10 w-10 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) hover:border-black/20 hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 focus-visible:outline-none md:left-[-16px] md:h-9 md:w-9'
+            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white/80 text-black/70 backdrop-blur-md transition duration-(--motion-duration-fast) hover:bg-white hover:text-black md:left-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
@@ -141,7 +141,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
           className={cn(
-            'center absolute top-1/2 right-2 z-10 h-10 w-10 -translate-y-1/2 cursor-pointer border border-black/10 bg-white/75 text-black/70 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.65)] backdrop-blur-md transition duration-(--motion-duration-fast) hover:border-black/20 hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#0284c7]/45 focus-visible:outline-none md:right-[-16px] md:h-9 md:w-9'
+            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white/80 text-black/70 backdrop-blur-md transition duration-(--motion-duration-fast) hover:bg-white hover:text-black md:right-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />

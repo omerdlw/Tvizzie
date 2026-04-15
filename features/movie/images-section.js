@@ -42,13 +42,29 @@ const PLACEHOLDER_ICONS = Object.freeze({
 });
 
 function getTabItems(images, key) {
-  const items = images?.[key] || [];
+  const sourceItems = Array.isArray(images?.[key]) ? images[key] : [];
+  const items = key === 'backdrops' ? sourceItems.filter((image) => image?.iso_639_1) : sourceItems;
+  const seenFilePaths = new Set();
+  const dedupedItems = [];
 
-  if (key === 'backdrops') {
-    return items.filter((image) => image.iso_639_1);
-  }
+  items.forEach((image, index) => {
+    if (!image || typeof image !== 'object') {
+      return;
+    }
 
-  return items;
+    const filePath = String(image.file_path || '').trim();
+    const fallbackKey = `${key}-fallback-${index}-${image.width || 0}x${image.height || 0}`;
+    const dedupeKey = filePath || fallbackKey;
+
+    if (seenFilePaths.has(dedupeKey)) {
+      return;
+    }
+
+    seenFilePaths.add(dedupeKey);
+    dedupedItems.push(image);
+  });
+
+  return dedupedItems;
 }
 
 export default function ImagesSection({ images }) {
@@ -79,13 +95,18 @@ export default function ImagesSection({ images }) {
   return (
     <section className="flex w-full flex-col gap-3">
       <SegmentedControl
-        classNames={{ track: 'w-auto', wrapper: 'p-0.5' }}
+        classNames={{
+          track: ' w-auto',
+          wrapper: 'p-0.5 rounded-[12px]',
+          button: 'rounded-[9px]',
+          indicator: 'rounded-[9px]',
+        }}
         items={availableTabs}
         value={activeKey}
         onChange={setActiveKey}
       />
 
-      <Carousel gap="gap-3">
+      <Carousel key={`movie-images-${currentTab.key}`} gap="gap-3">
         {items.map((image, index) => (
           <MediaCard
             imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
@@ -96,7 +117,7 @@ export default function ImagesSection({ images }) {
             imageAlt={`${currentTab.label} ${index + 1}`}
             className={`shrink-0 ${currentTab.width}`}
             aspectClass={currentTab.aspect}
-            key={image.file_path || index}
+            key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
             imageSizes={currentTab.sizes}
             imagePriority={index < 3}
             fallbackIconSize={24}

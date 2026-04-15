@@ -9,9 +9,6 @@ export function useNavigationExpanded() {
     expand,
     collapse,
     toggle,
-    expandParentForPath,
-    isParentExpanded,
-    toggleParent,
     setSearchQuery,
     setNavHeight,
   } = useNavigationContext();
@@ -22,9 +19,6 @@ export function useNavigationExpanded() {
     expand,
     collapse,
     toggle,
-    expandParentForPath,
-    isParentExpanded,
-    toggleParent,
     setSearchQuery,
     setNavHeight,
   };

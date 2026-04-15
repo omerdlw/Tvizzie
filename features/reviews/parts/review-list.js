@@ -28,7 +28,7 @@ export default function ReviewList({
   }
 
   if (loadError) {
-    return <div className="py-10 text-center text-sm leading-relaxed text-[#7f1d1d]">{loadError}</div>;
+    return <div className="text-error py-10 text-center text-sm leading-relaxed">{loadError}</div>;
   }
 
   if (sortedReviews.length === 0) {
@@ -89,7 +89,7 @@ export default function ReviewList({
             style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
           >
             <ReviewCard
-              className={sortedReviews[0] === review ? 'pt-0 pb-6 sm:pt-0 sm:pb-7' : ''}
+              className={sortedReviews[0] === review ? 'pt-0 pb-6' : ''}
               review={mergedReview}
               currentUserId={currentUserId}
               displayVariant={displayVariant}

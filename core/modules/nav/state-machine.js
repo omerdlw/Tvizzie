@@ -65,11 +65,6 @@ export function getNavItemIdentity(item) {
   const namePart = String(item?.name || '').trim() || 'no-name';
   const typePart = String(item?.type || '').trim() || 'no-type';
 
-  if (item?.isChild) {
-    const parentPart = String(item?.parentName || item?.parentPath || '').trim() || 'no-parent';
-    return `${parentPart}::${pathPart}::${namePart}::${typePart}`;
-  }
-
   return `${pathPart}::${namePart}::${typePart}`;
 }
 

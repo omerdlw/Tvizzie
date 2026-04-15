@@ -46,20 +46,20 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
   const providerList = useMemo(() => buildProviderList(regionalProviders), [regionalProviders]);
 
   return (
-    <div className={`flex w-full flex-col overflow-hidden border border-black/10`}>
-      <div className={`flex items-center justify-between gap-2 p-4`}>
+    <div className={`flex w-full flex-col overflow-hidden`}>
+      <div className={`flex items-center justify-between gap-2 p-1`}>
         <div className="flex min-w-0 items-baseline gap-2">
-          <span className={`text-[11px] font-bold tracking-wider uppercase`}>Where to watch?</span>
+          <span className={`text-xs font-semibold tracking-wider uppercase`}>Where to watch?</span>
         </div>
-        <span className={`text-[10px] tracking-widest text-black/60 uppercase`}>{region}</span>
+        <span className={`text-[10px] tracking-widest text-black/50 uppercase`}>{region}</span>
       </div>
 
       {providerList.length > 0 ? (
-        <div className="flex flex-col">
+        <div className="flex flex-col px-1">
           {providerList.map((provider) => (
             <div
               key={`${provider.provider_id}-${provider.type}`}
-              className={`flex items-center justify-between gap-2 border-b border-black/10 p-4 pr-4 last:border-b-0`}
+              className={`flex items-center justify-between border-b border-black/10 py-3 last:border-b-0`}
             >
               <div className="flex min-w-0 items-center gap-2">
                 <img
@@ -67,10 +67,10 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
                   alt={provider.provider_name}
                   className="h-7 w-7 shrink-0 object-cover"
                 />
-                <span className={`truncate text-[14px] font-medium text-black/70`}>{provider.provider_name}</span>
+                <span className={`truncate text-sm font-medium text-black/70`}>{provider.provider_name}</span>
               </div>
               <span
-                className={`bg-primary border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/60 uppercase`}
+                className={`bg-primary border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase`}
               >
                 {provider.type}
               </span>
@@ -78,9 +78,7 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
           ))}
         </div>
       ) : (
-        <div className={`center border-t border-black/10 p-4 text-xs`}>
-          Watch providers are not available for this region
-        </div>
+        <div className={`center p-4 text-sm`}>Watch providers are not available for this region</div>
       )}
     </div>
   );

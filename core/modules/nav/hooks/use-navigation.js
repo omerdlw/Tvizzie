@@ -24,9 +24,6 @@ export function useNavigation() {
     expanded: isExpanded,
     setExpanded: setExpandedState,
     setSearchQuery,
-    expandParentForPath,
-    isParentExpanded,
-    toggleParent,
     setNavHeight,
   } = expanded;
   const isSurfaceActive = Boolean(activeItem?.isSurface);
@@ -81,7 +78,7 @@ export function useNavigation() {
     activeItem,
   });
 
-  useRouteChangeEffects(pathname, expandParentForPath, setExpanded, setSearchQuery, setIsHovered);
+  useRouteChangeEffects(pathname, setExpanded, setSearchQuery, setIsHovered);
 
   const activeItemHasAction = useMemo(() => {
     return Boolean(activeItem?.action || activeItem?.isConfirmation);
@@ -100,9 +97,6 @@ export function useNavigation() {
 
     expanded: isExpanded,
     setExpanded,
-    expandParentForPath,
-    isParentExpanded,
-    toggleParent,
     setNavHeight,
     setSearchQuery,
 

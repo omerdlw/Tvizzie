@@ -371,7 +371,7 @@ export default function NotificationsModal({ close, header, data }) {
                           title="Mark as read"
                           className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 border transition"
                         >
-                          <Icon icon="material-symbols:check-" size={16} />
+                          <Icon icon="material-symbols:check-rounded" size={16} />
                         </Button>
                       ) : null}
                       <Button

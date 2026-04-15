@@ -4,12 +4,10 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '../context';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
-import { buildNavSignInHref, normalizeNavPathname } from '../utils';
 
 function blurActiveElement() {
   if (typeof document === 'undefined') return;
@@ -19,34 +17,12 @@ function blurActiveElement() {
 export function useNavigationCore() {
   const pathname = usePathname();
   const router = useRouter();
-  const { clearGuardConfirmation, setGuardConfirmation, setPendingNavigationPath } = useNavigationActions();
-  const { isAuthenticated, isReady } = useAuth();
+  const { clearGuardConfirmation, setGuardConfirmation } = useNavigationActions();
   const previousPathRef = useRef(pathname);
 
   const cancelNavigation = useCallback(() => {
     clearGuardConfirmation();
   }, [clearGuardConfirmation]);
-
-  const resolveNavigationHref = useCallback(
-    (href) => {
-      const normalizedHref = typeof href === 'string' ? href.trim() : '';
-
-      if (!normalizedHref) {
-        return '';
-      }
-
-      if (!isReady || isAuthenticated) {
-        return normalizedHref;
-      }
-
-      if (normalizeNavPathname(normalizedHref) === '/account') {
-        return buildNavSignInHref(normalizedHref);
-      }
-
-      return normalizedHref;
-    },
-    [isAuthenticated, isReady]
-  );
 
   const openGuardConfirmation = useCallback(
     ({ href, from, message }) => {
@@ -73,37 +49,27 @@ export function useNavigationCore() {
 
   const navigate = useCallback(
     async (href, { force = false } = {}) => {
-      const targetHref = resolveNavigationHref(href);
-
-      if (!targetHref) {
-        return false;
-      }
-
       const from = pathname;
-      const normalizedTargetPath = normalizeNavPathname(targetHref);
 
       if (!force) {
-        const guardResult = await checkGuards(targetHref, from);
+        const guardResult = await checkGuards(href, from);
 
         if (guardResult.blocked) {
           blurActiveElement();
-          openGuardConfirmation({ href: targetHref, from, message: guardResult.message });
+          openGuardConfirmation({ href, from, message: guardResult.message });
           return false;
         }
       }
 
       clearGuardConfirmation();
       blurActiveElement();
-      if (normalizedTargetPath && normalizedTargetPath !== normalizeNavPathname(pathname)) {
-        setPendingNavigationPath(normalizedTargetPath);
-      }
-      NAV_EVENT_HANDLERS.navigateStart(targetHref, from);
-      router.push(targetHref);
-      NAV_EVENT_HANDLERS.navigate(targetHref, from);
+      NAV_EVENT_HANDLERS.navigateStart(href, from);
+      router.push(href);
+      NAV_EVENT_HANDLERS.navigate(href, from);
 
       return true;
     },
-    [clearGuardConfirmation, openGuardConfirmation, pathname, resolveNavigationHref, router, setPendingNavigationPath]
+    [clearGuardConfirmation, openGuardConfirmation, pathname, router]
   );
 
   useEffect(() => {
@@ -112,10 +78,9 @@ export function useNavigationCore() {
     }
 
     clearGuardConfirmation();
-    setPendingNavigationPath(null);
     NAV_EVENT_HANDLERS.navigateEnd(pathname, previousPathRef.current);
     previousPathRef.current = pathname;
-  }, [clearGuardConfirmation, pathname, setPendingNavigationPath]);
+  }, [clearGuardConfirmation, pathname]);
 
   return {
     navigate,

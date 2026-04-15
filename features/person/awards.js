@@ -166,10 +166,10 @@ export default function PersonAwards({ personId }) {
               <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
                 {year}
               </span>
-              <div className="h-px flex-1 bg-black/15" />
+              <div className="h-px flex-1 bg-black/20" />
             </div>
 
-            <div className="ml-0 flex flex-col sm:ml-16">
+            <div className="flex flex-col sm:ml-16">
               {entries.map((entry, entryIndex) => {
                 const isInteractive = Boolean(entry.projectId);
                 const title = entry.project || entry.category;
@@ -178,21 +178,19 @@ export default function PersonAwards({ personId }) {
                   : `${entry.organization} / ${entry.type}`;
 
                 const rowClassName = cn(
-                  'group flex items-end gap-2.5 border border-transparent p-1.5 transition-colors sm:gap-3',
-                  isInteractive ? 'hover:border-black/10 hover:bg-primary/35' : 'cursor-default'
+                  'group flex items-end gap-3 border-transparent p-1 transition-colors',
+                  isInteractive ? 'hover:bg-primary' : 'cursor-default'
                 );
 
                 const content = (
                   <>
                     <MediaThumb poster={entry.poster} alt={title} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold tracking-tight text-black sm:text-lg">
-                          {title}
-                        </span>
+                        <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
                       </div>
 
-                      <span className="truncate text-[11px] text-black/60 sm:text-sm">{detail}</span>
+                      <span className="truncate text-xs text-black/60 sm:text-sm">{detail}</span>
                     </div>
                   </>
                 );

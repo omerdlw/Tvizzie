@@ -94,7 +94,7 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden lg:h-[600px] lg:w-[400px]">
+      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] lg:h-[600px] lg:w-[400px]">
         {hasImage ? (
           <Image
             src={imageSrc}
@@ -117,7 +117,7 @@ export default function PersonSidebar({ person, age }) {
         {person?.external_ids ? (
           <SocialLinks
             externalIds={person.external_ids}
-            className="absolute inset-x-0 bottom-4 z-10 justify-center px-4"
+            className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
           />
         ) : null}
       </div>

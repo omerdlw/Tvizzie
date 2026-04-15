@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { useNavigationContext } from '../context';
-import { getNavItemMode, isNavOverlayMode, NAV_ITEM_MODES } from '../state-machine';
 
 const MAX_VISIBLE_STACKED_CARDS = 3;
 
@@ -38,14 +37,14 @@ function isAncestorPath(candidatePath, activePath) {
   return normalizedActivePath.startsWith(`${normalizedCandidate}/`);
 }
 
-function removeAncestorDuplicates(items = [], activePath = '') {
+function removeAncestorDuplicates(items = []) {
   if (!Array.isArray(items) || items.length <= 1) {
     return items;
   }
 
-  const resolvedActivePath = activePath || items[0]?.path;
+  const activePath = items[0]?.path;
 
-  if (!resolvedActivePath) {
+  if (!activePath) {
     return items;
   }
 
@@ -54,7 +53,7 @@ function removeAncestorDuplicates(items = [], activePath = '') {
       return true;
     }
 
-    return !isAncestorPath(item?.path, resolvedActivePath);
+    return !isAncestorPath(item?.path, activePath);
   });
 }
 
@@ -114,53 +113,18 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
-function reorderItemsWithParentSectionFirst(items, activeItem) {
-  if (!activeItem?.isChild || !activeItem?.parentName) {
-    return items;
-  }
-
-  const parentIndex = items.findIndex(
-    (item) => (item?.name && item.name === activeItem.parentName) || (item?.path && item.path === activeItem.parentPath)
-  );
-
-  if (parentIndex === -1) {
-    return items;
-  }
-
-  let sectionStart = parentIndex;
-
-  while (
-    sectionStart > 0 &&
-    items[sectionStart - 1]?.isChild &&
-    items[sectionStart - 1]?.parentName === activeItem.parentName
-  ) {
-    sectionStart -= 1;
-  }
-
-  return [
-    ...items.slice(sectionStart, parentIndex + 1),
-    ...items.slice(0, sectionStart),
-    ...items.slice(parentIndex + 1),
-  ];
-}
-
 export function useNavigationLayout({ isHovered, navigationItems, activeItem } = {}) {
   const pathname = usePathname();
   const { expanded } = useNavigationContext();
 
   const { displayItems, displayActiveIndex } = useMemo(() => {
-    const activeMode = getNavItemMode(activeItem);
-    const shouldShowOverlayStack = isNavOverlayMode(activeMode) || activeMode === NAV_ITEM_MODES.STATUS_INLINE;
+    const shouldShowOverlayStack = activeItem?.isStatus || activeItem?.isConfirmation || activeItem?.isSurface;
 
     const activeIndex = findActiveIndex(navigationItems, activeItem, pathname);
 
     const itemsWithActiveItem = replaceActiveItem(navigationItems, activeIndex, activeItem);
 
-    if (
-      activeMode === NAV_ITEM_MODES.ROUTE_LOADING ||
-      activeMode === NAV_ITEM_MODES.PAGE_LOADING ||
-      activeMode === NAV_ITEM_MODES.STATUS_OVERLAY
-    ) {
+    if (activeItem?.isLoading) {
       return {
         displayItems: activeItem ? [activeItem] : [],
         displayActiveIndex: activeItem ? 0 : -1,
@@ -170,13 +134,7 @@ export function useNavigationLayout({ isHovered, navigationItems, activeItem } =
     const reorderedItems = reorderItemsWithActiveFirst(itemsWithActiveItem, activeIndex);
 
     if (expanded) {
-      const expandedItemsBase = activeItem?.isChild
-        ? reorderItemsWithParentSectionFirst(itemsWithActiveItem, activeItem)
-        : reorderedItems;
-      const expandedItems = removeAncestorDuplicates(
-        removeInactiveLoadingItems(expandedItemsBase, activeItem),
-        activeItem?.path || pathname
-      );
+      const expandedItems = removeInactiveLoadingItems(reorderedItems, activeItem);
       const expandedActiveIndex = expandedItems.findIndex((item) => isSameItem(item, activeItem));
 
       return {

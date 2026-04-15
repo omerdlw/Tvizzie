@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export function useRouteChangeEffects(pathname, expandParentForPath, setExpanded, setSearchQuery, setIsHovered) {
+export function useRouteChangeEffects(pathname, setExpanded, setSearchQuery, setIsHovered) {
   const previousPathRef = useRef(pathname);
 
   useEffect(() => {
@@ -15,6 +15,5 @@ export function useRouteChangeEffects(pathname, expandParentForPath, setExpanded
     setExpanded(false);
     setSearchQuery('');
     setIsHovered(false);
-    expandParentForPath(pathname);
-  }, [pathname, expandParentForPath, setExpanded, setSearchQuery, setIsHovered]);
+  }, [pathname, setExpanded, setSearchQuery, setIsHovered]);
 }

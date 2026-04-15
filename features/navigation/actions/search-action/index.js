@@ -270,7 +270,7 @@ export default function SearchAction({
             {results.length > 0 && query ? (
               <motion.div
                 layout="position"
-                className="mt-2 flex flex-col gap-1 overflow-hidden rounded-lg"
+                className="mt-2 flex flex-col gap-1 overflow-hidden"
                 initial={{ height: 0 }}
                 animate={{ height: 'auto' }}
                 exit={{ height: 0 }}
@@ -297,10 +297,15 @@ export default function SearchAction({
                 animate={{ height: 'auto' }}
                 exit={{ height: 0 }}
               >
-                <button type="button" className={navActionClass({
-                  button: 'relative w-full shrink-0 px-3 py-1.5 rounded-lg text-left text-xs whitespace-nowrap transition-colors',
-                  cn,
-                })} onClick={handleSeeAllResults}>
+                <button
+                  type="button"
+                  className={navActionClass({
+                    button:
+                      'relative w-full shrink-0 rounded-[14px] px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
+                    cn,
+                  })}
+                  onClick={handleSeeAllResults}
+                >
                   See all results
                 </button>
               </motion.div>

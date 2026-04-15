@@ -219,29 +219,55 @@ export default function AccountAction(props) {
     );
   }
 
-  if (!isOwner && showProfileFollowAction && typeof onFollow === 'function') {
-    const followAction = getProfileFollowAction(followState);
+  const canShowFollowAction = !isOwner && showProfileFollowAction && typeof onFollow === 'function';
+  const canShowLikeListAction = !isOwner && typeof onToggleLike === 'function';
+
+  if (canShowFollowAction || canShowLikeListAction) {
+    const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
 
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button
-          type="button"
-          onClick={onFollow}
-          disabled={isFollowLoading}
-          className={actionClass({
-            tone: followAction.tone,
-            className: '',
-          })}
-        >
-          {isFollowLoading ? (
-            'Updating'
-          ) : (
-            <>
-              <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
-              {followAction.label}
-            </>
-          )}
-        </button>
+        {canShowFollowAction ? (
+          <button
+            type="button"
+            onClick={onFollow}
+            disabled={isFollowLoading}
+            className={actionClass({
+              tone: followAction.tone,
+              className: '',
+            })}
+          >
+            {isFollowLoading ? (
+              'Updating'
+            ) : (
+              <>
+                <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                {followAction.label}
+              </>
+            )}
+          </button>
+        ) : null}
+
+        {canShowLikeListAction ? (
+          <button
+            type="button"
+            onClick={onToggleLike}
+            disabled={isLikeLoading}
+            className={actionClass({
+              tone: isLiked ? 'success' : 'muted',
+              className: '',
+            })}
+          >
+            {isLikeLoading ? (
+              'Updating'
+            ) : (
+              <>
+                <Icon icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'} size={NAV_ACTION_STYLES.icon} />
+                {isLiked ? 'Liked' : 'Like List'}
+              </>
+            )}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -299,31 +325,6 @@ export default function AccountAction(props) {
             )}
           </>
         )}
-      </div>
-    );
-  }
-
-  if (!isOwner && typeof onToggleLike === 'function') {
-    return (
-      <div className={NAV_ACTION_STYLES.row}>
-        <button
-          type="button"
-          onClick={onToggleLike}
-          disabled={isLikeLoading}
-          className={actionClass({
-            tone: isLiked ? 'success' : 'muted',
-            className: '',
-          })}
-        >
-          {isLikeLoading ? (
-            'Updating'
-          ) : (
-            <>
-              <Icon icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'} size={NAV_ACTION_STYLES.icon} />
-              {isLiked ? 'Liked' : 'Like List'}
-            </>
-          )}
-        </button>
       </div>
     );
   }

@@ -355,7 +355,7 @@ export default function ListPickerModal({ close, data }) {
                           : 'border-black/20 text-black/20 group-hover:border-black/40 group-hover:text-black/40'
                       )}
                     >
-                      <Icon icon="material-symbols:check-" size={14} />
+                      <Icon icon="material-symbols:check-rounded" size={16} />
                     </div>
                   </div>
                 </button>

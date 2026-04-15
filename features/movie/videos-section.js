@@ -51,7 +51,12 @@ export default function VideosSection({ videos }) {
   return (
     <section className="flex w-full flex-col gap-3">
       <SegmentedControl
-        classNames={{ track: 'w-auto', wrapper: 'p-0.5' }}
+        classNames={{
+          track: ' w-auto',
+          wrapper: 'p-0.5 rounded-[12px]',
+          button: 'rounded-[9px]',
+          indicator: 'rounded-[9px]',
+        }}
         items={items}
         value={activeType}
         onChange={setActiveType}

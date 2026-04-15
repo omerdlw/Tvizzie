@@ -86,6 +86,16 @@ const NEXT_CONFIG = {
   compress: true,
   // reactCompiler: true,
   poweredByHeader: false,
+  productionBrowserSourceMaps: false,
+  onDemandEntries: {
+    maxInactiveAge: 15 * 1000,
+    pagesBufferLength: 2,
+  },
+  experimental: {
+    preloadEntriesOnStart: false,
+    webpackMemoryOptimizations: true,
+    serverSourceMaps: false,
+  },
   logging: {
     incomingRequests: {
       ignore: [
@@ -103,7 +113,7 @@ const NEXT_CONFIG = {
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 7,
-    qualities: [72, 74, 75, 78, 82, 88, 90],
+    qualities: [70, 72, 74, 75, 78, 82, 88, 90],
     deviceSizes: [480, 640, 768, 1024, 1280, 1536, 1920, 2048, 2560, 3200],
     imageSizes: [48, 56, 64, 80, 88, 92, 144, 160, 185, 208, 240, 288, 342, 400, 500, 780],
     remotePatterns: [

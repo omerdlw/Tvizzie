@@ -2,13 +2,12 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { useNavigationContext } from '@/core/modules/nav/context';
 import { getNavConfirmationKey } from '@/core/modules/nav/utils';
 
 const BUTTON_TONES = Object.freeze({
-  danger: DESTRUCTIVE_ACTION_TONE_CLASS,
+  danger: 'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-white hover:border-error',
   muted: 'border border-black/10 bg-primary hover:bg-white',
   primary: 'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-white hover:border-info',
 });
@@ -19,7 +18,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-[var(--motion-duration-fast)]',
+    'center rounded-[12px] w-full cursor-pointer gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-[var(--motion-duration-fast)]',
     resolveButtonTone(tone),
     className
   );

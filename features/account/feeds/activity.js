@@ -10,7 +10,6 @@ import { AccountActivityFilterBar } from '@/features/account/shared/content-filt
 import MediaCard from '@/features/shared/media-card';
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import AccountPagination from '@/features/account/shared/pagination';
-import { formatPaginationSummaryLabel } from '@/features/account/utils';
 import { TMDB_IMG } from '@/core/constants';
 import AccountSectionLayout from '../shared/section-wrapper';
 
@@ -345,21 +344,12 @@ export default function AccountActivityFeed({
       {content}
 
       {shouldShowPagination ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-            {formatPaginationSummaryLabel({
-              emptyLabel: '0 total',
-              pageSize: ACTIVITY_ITEMS_PER_PAGE,
-              startIndex: pageStart,
-              totalCount: listedActivityCount,
-            })}
-          </p>
-
+        <div>
           <AccountPagination
+            className="w-full"
             currentPage={activePage}
             onPageChange={onPageChange}
             totalPages={totalPages}
-            className="flex flex-wrap items-center justify-end gap-2"
           />
         </div>
       ) : null}

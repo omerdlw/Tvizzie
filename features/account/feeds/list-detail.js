@@ -25,7 +25,7 @@ import {
 import { AccountMediaFilterBar, AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
 import AccountPagination from '@/features/account/shared/pagination';
-import { ACCOUNT_ROUTE_SHELL_CLASS, formatPaginationSummaryLabel } from '@/features/account/utils';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
 import AccountInlineSectionState from '@/features/account/shared/section-state';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback';
@@ -175,18 +175,7 @@ function ListDetailMediaGrid({
       </div>
 
       {totalPages > 1 ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-            {formatPaginationSummaryLabel({
-              emptyLabel: '0 total',
-              pageSize: itemsPerPage,
-              startIndex: pageStart,
-              totalCount: items.length,
-            })}
-          </p>
-
-          <AccountPagination currentPage={safeCurrentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
+        <AccountPagination className="w-full" currentPage={safeCurrentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       ) : null}
     </div>
   );
@@ -542,17 +531,9 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
               )}
 
               {totalReviewPages > 1 ? (
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-                    {formatPaginationSummaryLabel({
-                      emptyLabel: '0 total',
-                      pageSize: REVIEW_ITEMS_PER_PAGE,
-                      startIndex: reviewPageStart,
-                      totalCount: filteredReviews.length,
-                    })}
-                  </p>
-
+                <div className="mt-4">
                   <AccountPagination
+                    className="w-full"
                     currentPage={safeCurrentReviewPage}
                     totalPages={totalReviewPages}
                     onPageChange={setCurrentReviewPage}

@@ -16,7 +16,6 @@ import {
 } from '@/features/account/filtering';
 import { AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import AccountPagination from '@/features/account/shared/pagination';
-import { formatPaginationSummaryLabel } from '@/features/account/utils';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
@@ -258,21 +257,12 @@ export default function AccountReviewsFeed({
       ) : null}
 
       {enablePagination && filteredReviewCount > 0 ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-            {formatPaginationSummaryLabel({
-              emptyLabel: '0 total',
-              pageSize: safePageSize,
-              startIndex: pageStart,
-              totalCount: filteredReviewCount,
-            })}
-          </p>
-
+        <div>
           <AccountPagination
+            className="w-full"
             currentPage={resolvedPage}
             onPageChange={handlePageChange}
             totalPages={totalPages}
-            className="flex flex-wrap items-center justify-end gap-2"
           />
         </div>
       ) : null}

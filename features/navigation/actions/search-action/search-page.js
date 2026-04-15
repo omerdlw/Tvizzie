@@ -187,7 +187,6 @@ export default function SearchPage() {
   const isMediaType = searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.PERSON;
   const hasMore = isMediaType && pageState.page < pageState.totalPages;
   const hasActiveMovieFilters = useMemo(() => hasActiveSearchMovieFilters(movieFilters), [movieFilters]);
-  const shouldShowMovieFilters = searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE;
   const getRenderableResults = useCallback(
     (items = []) => {
       return searchType === SEARCH_TYPES.MOVIE ? applySearchMovieFilters(items, movieFilters) : items;
@@ -197,6 +196,7 @@ export default function SearchPage() {
   const filteredResults = useMemo(() => getRenderableResults(results), [getRenderableResults, results]);
   const canLoadMore = Boolean(trimmedQuery) && (visibleCount < filteredResults.length || hasMore);
   const visibleResults = useMemo(() => filteredResults.slice(0, visibleCount), [filteredResults, visibleCount]);
+  const shouldShowMovieFilters = (searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE) && visibleResults.length > 0;
 
   useEffect(() => {
     function updateGridBatchSize() {
@@ -497,7 +497,7 @@ export default function SearchPage() {
           <div>
             {visibleResults.length > 0 ? (
               <>
-                <div className="grid grid-cols-6 gap-3 lg:grid-cols-12">
+                <div className="grid grid-cols-4 gap-3 lg:grid-cols-8">
                   {visibleResults.map((item) => (
                     <SearchGridItem key={`${item.media_type}-${item.id}`} item={item} />
                   ))}

@@ -36,6 +36,24 @@ function orderNavigationItems(registeredItems, orderedKeys) {
   return orderedItems;
 }
 
+function stripChildrenSystemFields(item) {
+  if (!item || typeof item !== 'object') {
+    return item;
+  }
+
+  return {
+    ...item,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isChild: false,
+    isExpanded: false,
+    isParent: false,
+    parentName: null,
+    parentPath: null,
+  };
+}
+
 export function useNavigationItems() {
   const { config } = useNavigationContext();
   const { getAll } = useNavRegistry();
@@ -44,7 +62,7 @@ export function useNavigationItems() {
     const registeredItems = getAll();
     const orderedKeys = getConfigItemKeys(config?.items);
 
-    return orderNavigationItems(registeredItems, orderedKeys);
+    return orderNavigationItems(registeredItems, orderedKeys).map(stripChildrenSystemFields);
   }, [getAll, config?.items]);
 
   return { rawItems };

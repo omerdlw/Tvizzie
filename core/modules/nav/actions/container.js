@@ -21,13 +21,11 @@ const ACTION_KEYS = Object.freeze({
 
 const ACTION_ORDER = Object.freeze({
   NOTIFICATIONS: -10,
+  SETTINGS: 0,
   TOGGLE_MUTE: 10,
   SCROLL_TOP: 20,
-  SETTINGS: 0,
   LOGOUT: 30,
 });
-const UNREAD_COUNT_SUBSCRIPTION_INTERVAL_MS = 15000;
-const UNREAD_COUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 
 function stopPropagation(event) {
   event.stopPropagation();
@@ -113,16 +111,9 @@ function useDefaultNavActions() {
       return undefined;
     }
 
-    return subscribeToUnreadCount(
-      user.id,
-      (count) => {
-        setUnreadCount(count);
-      },
-      {
-        hiddenIntervalMs: UNREAD_COUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
-        intervalMs: UNREAD_COUNT_SUBSCRIPTION_INTERVAL_MS,
-      }
-    );
+    return subscribeToUnreadCount(user.id, (count) => {
+      setUnreadCount(count);
+    });
   }, [isAuthenticated, isAuthSessionReady, isReady, subscribeToUnreadCount, user?.id]);
 
   return useMemo(
@@ -154,10 +145,9 @@ function useDefaultNavActions() {
 
           try {
             await signOut();
+            router.replace('/');
           } catch (error) {
             toast.error(error?.message || 'Could not sign out');
-          } finally {
-            router.replace('/');
           }
         },
       },
@@ -228,14 +218,14 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <button
-        className={`center relative cursor-pointer border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
+        className={`center relative cursor-pointer rounded-full border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
         onClick={action.onClick}
         type="button"
       >
         <Icon icon={action.icon} size={16} />
         {action.badge ? (
           <span
-            className={`center bg-info absolute -top-1 -right-1 h-4 min-w-4 text-[11px] leading-none font-semibold text-white!`}
+            className={`center absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold`}
           >
             {action.badge}
           </span>

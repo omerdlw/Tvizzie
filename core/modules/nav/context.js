@@ -68,14 +68,12 @@ export function NavigationProvider({ children, config = {} }) {
   const pathname = usePathname();
   const [dismissedConfirmationKey, setDismissedConfirmationKey] = useState(null);
   const [guardConfirmation, setGuardConfirmation] = useState(null);
-  const [expandedParents, setExpandedParents] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [navHeight, setNavHeight] = useState(0);
-  const [pendingNavigationPath, setPendingNavigationPath] = useState(null);
   const [surfaceState, setSurfaceState] = useState(INITIAL_SURFACE_STATE);
 
-  const { batch, getAll, register, unregister } = useNavRegistry();
+  const { batch, register, unregister } = useNavRegistry();
   const previousPathRef = useRef(pathname);
   const surfaceStackRef = useRef([]);
   const surfaceResolveMapRef = useRef(new Map());
@@ -91,10 +89,7 @@ export function NavigationProvider({ children, config = {} }) {
   const navItems = useMemo(() => config?.items || {}, [config]);
 
   useEffect(() => {
-    const entries = Object.values(navItems).map((item) => [
-      item.path || item.name,
-      { ...item, isParent: !!item.children },
-    ]);
+    const entries = Object.values(navItems).map((item) => [item.path || item.name, item]);
 
     if (entries.length === 0) return;
 
@@ -125,37 +120,6 @@ export function NavigationProvider({ children, config = {} }) {
       });
     };
   }, [batch, register, unregister, navItems]);
-
-  const toggleParent = useCallback((parentName) => {
-    setExpandedParents((prev) => {
-      if (prev.has(parentName)) {
-        return new Set();
-      }
-      return new Set([parentName]);
-    });
-  }, []);
-
-  const isParentExpanded = useCallback((parentName) => expandedParents.has(parentName), [expandedParents]);
-
-  const expandParentForPath = useCallback(
-    (pathname) => {
-      Object.values(getAll()).forEach((item) => {
-        if (item.children) {
-          const hasChild = item.children.some((child) => child.path === pathname);
-          if (hasChild) {
-            setExpandedParents((prev) => new Set([...prev, item.name]));
-          }
-        }
-      });
-    },
-    [getAll]
-  );
-
-  useEffect(() => {
-    if (!expanded) {
-      setExpandedParents(new Set());
-    }
-  }, [expanded]);
 
   const collapse = useCallback(() => {
     setExpanded(false);
@@ -295,7 +259,6 @@ export function NavigationProvider({ children, config = {} }) {
     });
 
     previousPathRef.current = pathname;
-    setPendingNavigationPath(null);
   }, [closeAllSurfaces, pathname]);
 
   const stateValue = useMemo(
@@ -303,10 +266,8 @@ export function NavigationProvider({ children, config = {} }) {
       dismissedConfirmationKey,
       guardConfirmation,
       ...surfaceState,
-      expandedParents,
       searchQuery,
       navHeight,
-      pendingNavigationPath,
       expanded,
       config,
     }),
@@ -314,10 +275,8 @@ export function NavigationProvider({ children, config = {} }) {
       dismissedConfirmationKey,
       guardConfirmation,
       surfaceState,
-      expandedParents,
       searchQuery,
       navHeight,
-      pendingNavigationPath,
       expanded,
       config,
     ]
@@ -329,14 +288,10 @@ export function NavigationProvider({ children, config = {} }) {
       clearGuardConfirmation,
       closeSurface,
       dismissConfirmation,
-      expandParentForPath,
-      isParentExpanded,
       openSurface,
       setGuardConfirmation,
       setSearchQuery,
-      toggleParent,
       setNavHeight,
-      setPendingNavigationPath,
       setExpanded,
       collapse,
       expand,
@@ -347,14 +302,10 @@ export function NavigationProvider({ children, config = {} }) {
       clearGuardConfirmation,
       closeSurface,
       dismissConfirmation,
-      expandParentForPath,
-      isParentExpanded,
       openSurface,
       setGuardConfirmation,
       setSearchQuery,
-      toggleParent,
       setNavHeight,
-      setPendingNavigationPath,
       setExpanded,
       collapse,
       expand,

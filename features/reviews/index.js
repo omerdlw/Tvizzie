@@ -230,7 +230,7 @@ export default function MediaReviews({
               <p className="text-xs text-black/70">Share your rating and thoughts from the review modal.</p>
             </div>
             <Button
-              className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+              className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
               type="button"
               onClick={() => openReviewModal()}
             >
@@ -254,14 +254,14 @@ export default function MediaReviews({
       ) : null}
       {isSortControlEnabled ? (
         <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
-          <span className="text-[11px] font-semibold tracking-wider text-black/60 uppercase">Sort</span>
+          <span className="text-[11px] font-semibold tracking-wider text-black/50 uppercase">Sort</span>
           <Select
             value={sortMode}
             onChange={setSortMode}
             options={REVIEW_SORT_OPTIONS}
             classNames={{
               trigger:
-                'bg-primary/40 inline-flex h-10 min-w-[290px] justify-between border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
+                'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
               menu: 'overflow-hidden border border-black/10 bg-[#faf9f5] p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
               option:

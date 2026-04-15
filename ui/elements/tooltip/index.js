@@ -42,7 +42,7 @@ const Tooltip = forwardRef(
                 'animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-(--z-tooltip) font-medium',
                 DURATION.CLASS.FAST,
                 EASING.CLASS.STANDARD,
-                'bg-black px-2 py-1 text-xs rounded-lg font-semibold text-white',
+                'rounded-[10px] bg-black px-2.5 py-1.5 text-xs font-semibold text-white',
                 classes.content,
                 classes.root
               )}

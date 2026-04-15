@@ -32,26 +32,26 @@ const ACTIVITY_SORT_OPTIONS = Object.freeze([
 const UI = {
   bar: 'flex w-full flex-nowrap flex-auto items-center gap-2 overflow-x-auto border-b border-black/10 pb-5 scrollbar-none',
   trigger:
-    'inline-flex w-auto flex-auto h-9 shrink-0 items-center gap-1.5 border border-black/10 bg-white px-3 text-[11px] font-semibold uppercase tracking-wide text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
+    'inline-flex h-9 w-auto flex-auto shrink-0 items-center gap-1.5 rounded-[14px] border border-black/10 bg-white px-3 text-[11px] font-semibold uppercase tracking-wide text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
   triggerActive: 'border-info/70 bg-info/20 text-info',
   iconButton:
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center border border-black/10 bg-white text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
+    'inline-flex h-9 w-9 shrink-0 rounded-[14px] items-center justify-center border border-black/10 bg-white text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
   resetButton:
-    'ml-auto inline-flex h-9 shrink-0 items-center border border-black/10 bg-white px-3 text-[11px] font-semibold uppercase tracking-wide text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
-  menu: 'z-50 overflow-y-auto overscroll-contain border border-black/10 bg-white p-1 shadow-lg',
+    'ml-auto inline-flex h-9 shrink-0 rounded-[14px] items-center border border-black/10 bg-white px-3 text-[11px] font-semibold uppercase tracking-wide text-black/70 transition-colors hover:border-black/20 hover:bg-black/5',
+  menu: 'z-50 overflow-y-auto overscroll-contain rounded-[14px] border border-black/10 bg-white p-1 shadow-lg',
   sectionLabel: 'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-black/50',
   menuItem:
-    'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-black/80 transition-colors hover:bg-black/5',
+    'flex w-full items-center justify-between rounded-[10px] px-3 py-2 text-left text-sm text-black/80 transition-colors hover:bg-black/5',
   menuItemActive: 'bg-black/5 font-medium text-black',
   divider: 'border-t border-black/10',
   inputWrap:
-    'flex h-9 min-w-0 flex-1 items-center gap-3 border border-black/10 bg-white px-3 transition-colors focus-within:border-black/20',
+    'flex h-9 min-w-0 flex-1 items-center gap-3 rounded-[14px] border border-black/10 bg-white px-3 transition-colors focus-within:border-black/20',
   input: 'min-w-0 flex-1 bg-transparent text-sm text-black outline-none placeholder:text-black/50',
   select:
-    'h-8 w-full border border-black/10 bg-white px-2 text-sm text-black outline-none transition-colors focus:border-black/20',
+    'h-8 w-full rounded-[14px] border border-black/10 bg-white px-2 text-sm text-black outline-none transition-colors focus:border-black/20',
   helperText: 'px-1 text-[10px] text-black/50',
   visibilityItem:
-    'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-black/80 transition-colors hover:bg-black/5',
+    'flex w-full items-center justify-between rounded-[10px] px-3 py-2 text-left text-sm text-black/80 transition-colors hover:bg-black/5',
   visibilityItemActive: 'bg-black/5 font-medium text-black',
   dot: 'h-2.5 w-2.5 border border-black/20',
   dotActive: 'bg-black',
@@ -101,7 +101,7 @@ function FilterMenuItem({ active = false, children, onClick }) {
       className={cn(UI.menuItem, active && UI.menuItemActive)}
     >
       <span>{children}</span>
-      {active ? <Icon icon="material-symbols:check-" size={16} className="text-black" /> : null}
+      {active ? <Icon icon="material-symbols:check-rounded" size={16} className="text-black" /> : null}
     </button>
   );
 }

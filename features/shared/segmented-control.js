@@ -50,7 +50,7 @@ export default function SegmentedControl({
                 onClick={() => onChange?.(itemKey)}
                 whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                 className={cn(
-                  'relative isolate z-10 cursor-pointer px-3 py-1 text-[11px]! font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
+                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
                   isActive ? classNames.active || 'text-black' : classNames.inactive || 'text-black/70',
                   classNames.button
                 )}
@@ -58,7 +58,8 @@ export default function SegmentedControl({
                 {isActive ? (
                   <motion.span
                     layoutId={`${instanceId}-segmented-active-indicator`}
-                    className={cn('absolute inset-0', classNames.indicator || 'bg-primary')}
+                    layout="position"
+                    className={cn('absolute inset-0 rounded-[10px] bg-primary', classNames.indicator)}
                     transition={
                       reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
                     }

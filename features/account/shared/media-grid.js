@@ -265,21 +265,13 @@ export default function AccountMediaGridPage({
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-                  {paginationSummaryLabel}
-                </p>
-
-                <AccountPagination
-                  currentPage={activePage}
-                  onPageChange={canControlPagination ? onPageChange : null}
-                  totalPages={totalPages}
-                  getPageHref={
-                    canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)
-                  }
-                  className="flex flex-wrap items-center justify-end gap-2"
-                />
-              </div>
+              <AccountPagination
+                className="w-full"
+                currentPage={activePage}
+                onPageChange={canControlPagination ? onPageChange : null}
+                totalPages={totalPages}
+                getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
+              />
             </motion.div>
           ) : null}
         </>
