@@ -225,7 +225,7 @@ export function NavAction({ action }) {
         <Icon icon={action.icon} size={16} />
         {action.badge ? (
           <span
-            className={`center absolute -top-1 -right-1 h-4 min-w-4 rounded-full text-[11px] leading-none font-semibold`}
+            className={`center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-white`}
           >
             {action.badge}
           </span>

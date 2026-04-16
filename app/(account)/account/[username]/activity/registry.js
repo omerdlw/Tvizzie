@@ -10,7 +10,6 @@ const ACCOUNT_ACTIVITY_REGISTRY_SOURCE = 'account-activity';
 
 export default function Registry({
   activeScope = 'user',
-  canShowActivity = false,
   isPageLoading: isPageLoadingProp,
   onScopeChange = () => {},
 }) {
@@ -64,9 +63,19 @@ export default function Registry({
       isSectionSaveLoading: false,
       itemRemoveConfirmation,
       listDeleteConfirmation: null,
-      navActionOverride: canShowActivity ? (
-        <AccountAction mode="tab-switch" activeTab={activeScope} tabs={scopeTabs} onTabChange={onScopeChange} />
-      ) : null,
+      navActionOverride: (
+        <AccountAction
+          mode="tab-switch"
+          activeTab={activeScope}
+          tabs={scopeTabs}
+          onTabChange={onScopeChange}
+          followState={followState}
+          isFollowLoading={isFollowLoading}
+          isOwner={isOwner}
+          onFollow={handleFollow}
+          showProfileFollowAction
+        />
+      ),
       navDescription: 'Activity Feed',
       navSurface:
         isBioSurfaceOpen && profile?.description ? (
@@ -81,6 +90,7 @@ export default function Registry({
       pendingFollowRequestCount,
       profile,
       resolveError,
+      showProfileFollowAction: true,
       unfollowConfirmation,
       username,
     })

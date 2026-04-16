@@ -8,6 +8,7 @@ import Icon from '@/ui/icon';
 
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '../constants';
 import { navActionClass } from '../utils';
+import { useState } from 'react';
 
 export default function SearchActionControls({
   loading = false,
@@ -20,15 +21,19 @@ export default function SearchActionControls({
   onSearchTypeChange,
 }) {
   const shouldShowTabs = showTabs && (showTabsWhenEmpty || Boolean(query.trim()));
+  const [isActive, setIsActive] = useState(false);
 
   return (
     <>
       <Input
+        onFocus={() => setIsActive(true)}
+        onBlur={() => setIsActive(false)}
         classNames={{
           input: 'w-full placeholder:text-black/50 outline-none',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,
+            isActive,
           }),
           leftIcon: 'mr-2 center shrink-0',
         }}

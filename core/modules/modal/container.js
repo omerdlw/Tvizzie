@@ -54,7 +54,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>
@@ -117,7 +117,10 @@ export default function Container({ children, className, bodyClassName, header =
       <div
         data-lenis-prevent
         data-lenis-prevent-wheel
-        className={cn('bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto', bodyClassName)}
+        className={cn(
+          'bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto rounded-[14px]',
+          bodyClassName
+        )}
       >
         {children}
       </div>

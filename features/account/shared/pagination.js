@@ -9,27 +9,56 @@ const DEFAULT_NAV_CLASS =
   'inline-flex h-10 min-w-[112px] items-center justify-center rounded-[14px] border border-black/10 bg-white px-4 text-xs font-semibold tracking-widest text-black/70 uppercase transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50';
 
 export function getAccountPaginationItems(currentPage, totalPages) {
-  if (totalPages <= 7) {
+  if (totalPages <= 8) {
     return Array.from({ length: totalPages }, (_, index) => index + 1);
   }
 
-  const items = [1];
-  const start = Math.max(2, currentPage - 1);
-  const end = Math.min(totalPages - 1, currentPage + 1);
+  const pinnedStartCount = 4;
+  const pinnedEdgeCount = 2;
+  const pages = new Set();
+  const sortedPages = [];
 
-  if (start > 2) {
-    items.push('start-ellipsis');
+  const addRange = (start, end) => {
+    for (let page = start; page <= end; page += 1) {
+      if (page >= 1 && page <= totalPages) {
+        pages.add(page);
+      }
+    }
+  };
+
+  addRange(1, Math.min(pinnedEdgeCount, totalPages));
+  addRange(Math.max(1, totalPages - pinnedEdgeCount + 1), totalPages);
+
+  if (currentPage <= pinnedStartCount) {
+    addRange(1, Math.min(pinnedStartCount, totalPages));
+  } else if (currentPage >= totalPages - (pinnedStartCount - 1)) {
+    addRange(Math.max(1, totalPages - pinnedStartCount + 1), totalPages);
+  } else {
+    addRange(currentPage - 1, currentPage + 1);
   }
 
-  for (let page = start; page <= end; page += 1) {
+  pages.forEach((page) => {
+    sortedPages.push(page);
+  });
+  sortedPages.sort((left, right) => left - right);
+
+  const items = [];
+  let previousPage = null;
+
+  sortedPages.forEach((page) => {
+    if (previousPage != null) {
+      const gap = page - previousPage;
+
+      if (gap === 2) {
+        items.push(previousPage + 1);
+      } else if (gap > 2) {
+        items.push(`ellipsis-${previousPage}-${page}`);
+      }
+    }
+
     items.push(page);
-  }
-
-  if (end < totalPages - 1) {
-    items.push('end-ellipsis');
-  }
-
-  items.push(totalPages);
+    previousPage = page;
+  });
 
   return items;
 }
@@ -74,12 +103,42 @@ export default function AccountPagination({
       ? (activePageClassName ?? 'text-black')
       : (inactivePageClassName ?? 'text-black/55');
     const resolvedClassName = cn(
-      pageClassName ?? 'px-1 text-xl font-semibold leading-none select-none',
+      pageClassName ?? 'px-1 text-sm font-semibold leading-none select-none',
       pageToneClassName
     );
 
+    if (isActive) {
+      return (
+        <span key={pageNumber} aria-current="page" className={resolvedClassName}>
+          {pageNumber}
+        </span>
+      );
+    }
+
+    if (canUseLinks) {
+      return (
+        <Link key={pageNumber} href={getPageHref(pageNumber)} className={resolvedClassName}>
+          {pageNumber}
+        </Link>
+      );
+    }
+
+    if (canUseButtons) {
+      return (
+        <button
+          key={pageNumber}
+          type="button"
+          onClick={() => onPageChange(pageNumber)}
+          aria-label={`Go to page ${pageNumber}`}
+          className={resolvedClassName}
+        >
+          {pageNumber}
+        </button>
+      );
+    }
+
     return (
-      <span key={pageNumber} aria-current={isActive ? 'page' : undefined} className={resolvedClassName}>
+      <span key={pageNumber} className={resolvedClassName}>
         {pageNumber}
       </span>
     );

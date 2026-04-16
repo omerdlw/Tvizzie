@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import Link from 'next/link';
 
-import { EmptyState } from '@/features/shared/empty-state';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
-import SegmentedControl from '@/features/shared/segmented-control';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   FOLLOW_STATUSES,
@@ -20,6 +16,9 @@ import {
   subscribeToFollowing,
   unfollowUser,
 } from '@/core/services/social/follows.service';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import { EmptyState } from '@/features/shared/empty-state';
+import SegmentedControl from '@/features/shared/segmented-control';
 import { Button } from '@/ui/elements';
 
 const TABS = Object.freeze({
@@ -28,25 +27,29 @@ const TABS = Object.freeze({
   INBOX: 'inbox',
 });
 
+const ROW_BUTTON_CLASS =
+  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
+const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-error/15 bg-error/5 text-error hover:bg-error/15`;
+const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-success/15 bg-success/5 text-success hover:bg-success/15`;
+const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-info/15 bg-info/5 text-info hover:bg-info/15`;
+
 function normalizeTab(value) {
   const normalized = String(value || '')
     .trim()
     .toLowerCase();
-
   if (normalized === 'following') return TABS.FOLLOWING;
-  if (normalized === 'requests') return TABS.INBOX;
-  if (normalized === TABS.INBOX) return TABS.INBOX;
+  if (normalized === 'requests' || normalized === TABS.INBOX) return TABS.INBOX;
   return TABS.FOLLOWERS;
 }
 
-async function hydrateFollowUsers(list) {
-  return (list || [])
+function hydrateFollowUsers(list) {
+  return (Array.isArray(list) ? list : [])
     .map((item) => ({
+      id: item.userId || item.id,
+      username: item.username || null,
       avatarUrl: item.avatarUrl || null,
       displayName: item.displayName || item.username || 'Anonymous User',
-      id: item.userId || item.id,
       status: item.status || FOLLOW_STATUSES.ACCEPTED,
-      username: item.username || null,
     }))
     .filter((item) => item.id);
 }
@@ -66,63 +69,146 @@ function resolveCollectionErrorMessage(error, tab) {
 }
 
 function buildFollowingStatusMap(list = [], fallbackStatus = FOLLOW_STATUSES.ACCEPTED) {
-  return (Array.isArray(list) ? list : []).reduce((accumulator, item) => {
-    const targetUserId = item?.userId || item?.id;
-
-    if (!targetUserId) {
-      return accumulator;
-    }
-
-    accumulator[targetUserId] = item?.status || fallbackStatus;
-    return accumulator;
+  return (Array.isArray(list) ? list : []).reduce((acc, item) => {
+    const id = item?.userId || item?.id;
+    if (!id) return acc;
+    acc[id] = item?.status || fallbackStatus;
+    return acc;
   }, {});
 }
 
-function SocialUserRow({ close, user, children }) {
+function LoadingList() {
+  return (
+    <div>
+      {Array.from({ length: 10 }, (_, index) => (
+        <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
+          <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <div className="h-3 w-3/5 animate-pulse bg-black/5" />
+            <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SocialUserRow({ close, user, action }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
   return (
     <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4">
       <Link
-        className="flex min-w-0 flex-1 items-center gap-2.5"
         href={`/account/${user.username || user.id}`}
         onClick={close}
+        className="flex min-w-0 flex-1 items-center gap-2.5"
       >
         <img
           src={avatarSrc}
           alt={user.displayName}
-          className="size-10 shrink-0 overflow-hidden object-cover"
+          className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
         />
-        <div className="w-full">
-          <p className={`truncate text-sm font-semibold`}>{user.displayName}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{user.displayName}</p>
           <p className="truncate text-[11px] text-black/70">@{user.username || 'user'}</p>
         </div>
       </Link>
-      {children}
+      {action}
     </div>
   );
 }
 
+function UserAction({
+  tab,
+  user,
+  authUserId,
+  isOwnProfile,
+  pendingKind,
+  followStatus,
+  onAccept,
+  onReject,
+  onUnfollow,
+  onRemoveFollower,
+  onFollow,
+}) {
+  const isPending = Boolean(pendingKind);
+  const canShowFollowAction =
+    tab !== TABS.INBOX &&
+    Boolean(authUserId) &&
+    !isOwnProfile &&
+    authUserId !== user.id &&
+    followStatus !== FOLLOW_STATUSES.ACCEPTED;
+
+  if (tab === TABS.INBOX) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button onClick={() => onAccept(user.id)} disabled={isPending} className={SUCCESS_BUTTON_CLASS}>
+          {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
+        </Button>
+        <Button onClick={() => onReject(user.id)} disabled={isPending} className={ERROR_BUTTON_CLASS}>
+          {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
+        </Button>
+      </div>
+    );
+  }
+
+  if (tab === TABS.FOLLOWING && isOwnProfile) {
+    return (
+      <Button onClick={() => onUnfollow(user.id)} disabled={isPending} className={ERROR_BUTTON_CLASS}>
+        {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
+      </Button>
+    );
+  }
+
+  if (tab === TABS.FOLLOWERS && isOwnProfile) {
+    return (
+      <Button onClick={() => onRemoveFollower(user.id)} disabled={isPending} className={ERROR_BUTTON_CLASS}>
+        {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
+      </Button>
+    );
+  }
+
+  if (canShowFollowAction) {
+    const isFollowPending = followStatus === FOLLOW_STATUSES.PENDING;
+    return (
+      <Button onClick={() => onFollow(user.id)} disabled={isFollowPending || isPending} className={INFO_BUTTON_CLASS}>
+        {pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow'}
+      </Button>
+    );
+  }
+
+  return null;
+}
+
 export default function AccountSocialModal({ close, data }) {
   const auth = useAuth();
-  const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
   const toast = useToast();
+
+  const authUserId = auth.user?.id || null;
   const userId = String(data?.userId || '').trim() || null;
   const canManageRequests = Boolean(data?.canManageRequests);
+  const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? authUserId : null);
+
   const [activeTab, setActiveTab] = useState(() => normalizeTab(data?.tab || data?.type));
+
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [requests, setRequests] = useState([]);
+
   const [isLoadingFollowers, setIsLoadingFollowers] = useState(true);
   const [isLoadingFollowing, setIsLoadingFollowing] = useState(true);
   const [isLoadingRequests, setIsLoadingRequests] = useState(canManageRequests);
+
   const [followersError, setFollowersError] = useState(null);
   const [followingError, setFollowingError] = useState(null);
   const [requestsError, setRequestsError] = useState(null);
+
   const [pendingActionByUserId, setPendingActionByUserId] = useState({});
   const [followingStatusMap, setFollowingStatusMap] = useState({});
+
+  const isOwnProfile = Boolean(authUserId) && authUserId === userId;
 
   useEffect(() => {
     setActiveTab(normalizeTab(data?.tab || data?.type));
@@ -133,17 +219,17 @@ export default function AccountSocialModal({ close, data }) {
       setFollowers([]);
       setIsLoadingFollowers(false);
       setFollowersError(null);
-      return undefined;
+      return;
     }
 
     setFollowers([]);
     setIsLoadingFollowers(true);
     setFollowersError(null);
+
     return subscribeToFollowers(
       userId,
-      async (list) => {
-        const hydrated = await hydrateFollowUsers(list);
-        setFollowers(hydrated);
+      (list) => {
+        setFollowers(hydrateFollowUsers(list));
         setIsLoadingFollowers(false);
         setFollowersError(null);
       },
@@ -165,17 +251,17 @@ export default function AccountSocialModal({ close, data }) {
       setFollowing([]);
       setIsLoadingFollowing(false);
       setFollowingError(null);
-      return undefined;
+      return;
     }
 
     setFollowing([]);
     setIsLoadingFollowing(true);
     setFollowingError(null);
+
     return subscribeToFollowing(
       userId,
-      async (list) => {
-        const hydrated = await hydrateFollowUsers(list);
-        setFollowing(hydrated);
+      (list) => {
+        setFollowing(hydrateFollowUsers(list));
         setIsLoadingFollowing(false);
         setFollowingError(null);
       },
@@ -193,28 +279,28 @@ export default function AccountSocialModal({ close, data }) {
   }, [userId]);
 
   useEffect(() => {
-    if (!canManageRequests || !auth.user?.id) {
+    if (!canManageRequests || !authUserId) {
       setRequests([]);
       setIsLoadingRequests(false);
       setRequestsError(null);
-      return undefined;
+      return;
     }
 
     if (!isAuthSessionReady) {
       setRequests([]);
       setIsLoadingRequests(true);
       setRequestsError(null);
-      return undefined;
+      return;
     }
 
     setRequests([]);
     setIsLoadingRequests(true);
     setRequestsError(null);
+
     return subscribeToFollowers(
-      auth.user.id,
-      async (list) => {
-        const hydrated = await hydrateFollowUsers(list);
-        setRequests(hydrated);
+      authUserId,
+      (list) => {
+        setRequests(hydrateFollowUsers(list));
         setIsLoadingRequests(false);
         setRequestsError(null);
       },
@@ -229,29 +315,24 @@ export default function AccountSocialModal({ close, data }) {
         },
       }
     );
-  }, [auth.user?.id, canManageRequests, isAuthSessionReady]);
+  }, [authUserId, canManageRequests, isAuthSessionReady]);
 
   useEffect(() => {
-    if (!auth.user?.id || !isAuthSessionReady) {
+    if (!authUserId || !isAuthSessionReady) {
       setFollowingStatusMap({});
-      return undefined;
+      return;
     }
 
     let acceptedStatusMap = {};
     let pendingStatusMap = {};
 
-    const syncStatusMap = () => {
-      setFollowingStatusMap({
-        ...acceptedStatusMap,
-        ...pendingStatusMap,
-      });
-    };
+    const sync = () => setFollowingStatusMap({ ...acceptedStatusMap, ...pendingStatusMap });
 
     const unsubscribeAccepted = subscribeToFollowing(
-      auth.user.id,
+      authUserId,
       (list) => {
         acceptedStatusMap = buildFollowingStatusMap(list, FOLLOW_STATUSES.ACCEPTED);
-        syncStatusMap();
+        sync();
       },
       {
         emitCachedPayloadOnSubscribe: false,
@@ -261,10 +342,10 @@ export default function AccountSocialModal({ close, data }) {
     );
 
     const unsubscribePending = subscribeToFollowing(
-      auth.user.id,
+      authUserId,
       (list) => {
         pendingStatusMap = buildFollowingStatusMap(list, FOLLOW_STATUSES.PENDING);
-        syncStatusMap();
+        sync();
       },
       {
         emitCachedPayloadOnSubscribe: false,
@@ -277,10 +358,9 @@ export default function AccountSocialModal({ close, data }) {
       unsubscribeAccepted();
       unsubscribePending();
     };
-  }, [auth.user?.id, isAuthSessionReady]);
+  }, [authUserId, isAuthSessionReady]);
 
   const shouldShowInboxTab = canManageRequests && (isLoadingRequests || requests.length > 0 || Boolean(requestsError));
-  const isOwnProfile = Boolean(auth.user?.id) && auth.user.id === userId;
 
   useEffect(() => {
     if (activeTab === TABS.INBOX && !shouldShowInboxTab) {
@@ -289,19 +369,19 @@ export default function AccountSocialModal({ close, data }) {
   }, [activeTab, shouldShowInboxTab]);
 
   const tabs = useMemo(() => {
-    const baseTabs = [
+    const items = [
       { key: TABS.FOLLOWING, label: 'Following' },
       { key: TABS.FOLLOWERS, label: 'Followers' },
     ];
 
     if (shouldShowInboxTab) {
-      baseTabs.push({
+      items.push({
         key: TABS.INBOX,
         label: requests.length > 0 ? `Inbox ${requests.length}` : 'Inbox',
       });
     }
 
-    return baseTabs;
+    return items;
   }, [requests.length, shouldShowInboxTab]);
 
   const list = activeTab === TABS.FOLLOWING ? following : activeTab === TABS.INBOX ? requests : followers;
@@ -313,139 +393,74 @@ export default function AccountSocialModal({ close, data }) {
         : isLoadingFollowers;
   const activeError =
     activeTab === TABS.FOLLOWING ? followingError : activeTab === TABS.INBOX ? requestsError : followersError;
-  const activeErrorMessage = activeError ? resolveCollectionErrorMessage(activeError, activeTab) : null;
 
+  const activeErrorMessage = activeError ? resolveCollectionErrorMessage(activeError, activeTab) : null;
   const emptyDescription = activeTab === TABS.INBOX ? 'No pending follow requests' : `No ${activeTab} yet`;
 
-  const handleAccept = async (requesterId) => {
-    if (!auth.user?.id || pendingActionByUserId[requesterId]) return;
+  async function runUserAction(targetUserId, actionKey, action, successMessage, errorMessage) {
+    if (!authUserId || pendingActionByUserId[targetUserId]) return;
 
-    setPendingActionByUserId((current) => ({
-      ...current,
-      [requesterId]: 'accept',
-    }));
+    setPendingActionByUserId((current) => ({ ...current, [targetUserId]: actionKey }));
 
     try {
-      await acceptFollowRequest(auth.user.id, requesterId);
-      toast.success('Follow request accepted');
+      await action();
+      toast.success(successMessage);
     } catch (error) {
-      toast.error(error?.message || 'Request could not be accepted');
+      toast.error(error?.message || errorMessage);
     } finally {
       setPendingActionByUserId((current) => {
-        if (!current[requesterId]) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[requesterId];
-        return next;
-      });
-    }
-  };
-
-  const handleReject = async (requesterId) => {
-    if (!auth.user?.id || pendingActionByUserId[requesterId]) return;
-
-    setPendingActionByUserId((current) => ({
-      ...current,
-      [requesterId]: 'reject',
-    }));
-
-    try {
-      await rejectFollowRequest(auth.user.id, requesterId);
-      toast.success('Follow request rejected');
-    } catch (error) {
-      toast.error(error?.message || 'Request could not be rejected');
-    } finally {
-      setPendingActionByUserId((current) => {
-        if (!current[requesterId]) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[requesterId];
-        return next;
-      });
-    }
-  };
-
-  const handleUnfollow = async (targetUserId) => {
-    if (!auth.user?.id || pendingActionByUserId[targetUserId]) return;
-
-    setPendingActionByUserId((current) => ({
-      ...current,
-      [targetUserId]: 'unfollow',
-    }));
-
-    try {
-      await unfollowUser(auth.user.id, targetUserId);
-      toast.success('User unfollowed');
-    } catch (error) {
-      toast.error(error?.message || 'Could not unfollow this user');
-    } finally {
-      setPendingActionByUserId((current) => {
-        if (!current[targetUserId]) {
-          return current;
-        }
-
+        if (!current[targetUserId]) return current;
         const next = { ...current };
         delete next[targetUserId];
         return next;
       });
     }
-  };
+  }
 
-  const handleRemoveFollower = async (followerId) => {
-    if (!auth.user?.id || pendingActionByUserId[followerId]) return;
+  const handleAccept = (requesterId) =>
+    runUserAction(
+      requesterId,
+      'accept',
+      () => acceptFollowRequest(authUserId, requesterId),
+      'Follow request accepted',
+      'Request could not be accepted'
+    );
 
-    setPendingActionByUserId((current) => ({
-      ...current,
-      [followerId]: 'remove-follower',
-    }));
+  const handleReject = (requesterId) =>
+    runUserAction(
+      requesterId,
+      'reject',
+      () => rejectFollowRequest(authUserId, requesterId),
+      'Follow request rejected',
+      'Request could not be rejected'
+    );
 
-    try {
-      await removeFollower(auth.user.id, followerId);
-      toast.success('Follower removed');
-    } catch (error) {
-      toast.error(error?.message || 'Could not remove follower');
-    } finally {
-      setPendingActionByUserId((current) => {
-        if (!current[followerId]) {
-          return current;
-        }
+  const handleUnfollow = (targetUserId) =>
+    runUserAction(
+      targetUserId,
+      'unfollow',
+      () => unfollowUser(authUserId, targetUserId),
+      'User unfollowed',
+      'Could not unfollow this user'
+    );
 
-        const next = { ...current };
-        delete next[followerId];
-        return next;
-      });
-    }
-  };
+  const handleRemoveFollower = (followerId) =>
+    runUserAction(
+      followerId,
+      'remove-follower',
+      () => removeFollower(authUserId, followerId),
+      'Follower removed',
+      'Could not remove follower'
+    );
 
-  const handleFollow = async (targetUserId) => {
-    if (!auth.user?.id || pendingActionByUserId[targetUserId]) return;
-
-    setPendingActionByUserId((current) => ({
-      ...current,
-      [targetUserId]: 'follow',
-    }));
-
-    try {
-      await followUser(auth.user.id, targetUserId);
-      toast.success('Follow state updated');
-    } catch (error) {
-      toast.error(error?.message || 'Could not follow this user');
-    } finally {
-      setPendingActionByUserId((current) => {
-        if (!current[targetUserId]) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[targetUserId];
-        return next;
-      });
-    }
-  };
+  const handleFollow = (targetUserId) =>
+    runUserAction(
+      targetUserId,
+      'follow',
+      () => followUser(authUserId, targetUserId),
+      'Follow state updated',
+      'Could not follow this user'
+    );
 
   return (
     <Container
@@ -463,116 +478,48 @@ export default function AccountSocialModal({ close, data }) {
     >
       <div className="flex h-full min-h-0 flex-col">
         <SegmentedControl
+          value={activeTab}
+          onChange={setActiveTab}
+          items={tabs}
           classNames={{
             track: 'w-full gap-0 p-0! pt-3',
             wrapper: 'border-0 bg-transparent',
-            button: 'py-2 flex-1 justify-center text-[13px] font-semibold text-center',
+            button: 'flex-1 justify-center py-2 text-center text-[13px] font-semibold',
             indicator: 'bg-black',
             inactive: 'text-black/60 hover:text-black',
             active: 'text-white',
           }}
-          items={tabs}
-          value={activeTab}
-          onChange={setActiveTab}
         />
+
         {isLoading ? (
-          <div className="flex flex-col">
-            {Array.from({ length: 10 }, (_, index) => index + 1).map((item) => (
-              <div
-                key={item}
-                className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                  <div className="size-10 shrink-0 animate-pulse bg-black/5" />
-                  <div className="flex w-full flex-col gap-1.5">
-                    <div className="h-3 w-[60%] animate-pulse bg-black/5" />
-                    <div className="h-2 w-[40%] animate-pulse bg-black/5" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <LoadingList />
         ) : activeErrorMessage ? (
           <EmptyState description={activeErrorMessage} className="h-full" />
         ) : list.length === 0 ? (
           <EmptyState title="Empty" description={emptyDescription} className="h-full min-h-96" />
         ) : (
-          <div className="overflow-y-auto[12px] min-h-96 flex-1">
+          <div className="min-h-96 flex-1 overflow-y-auto">
             {list.map((user) => (
-              <SocialUserRow key={user.id} close={close} user={user}>
-                {(() => {
-                  const pendingKind = pendingActionByUserId[user.id] || null;
-                  const isActionPending = Boolean(pendingKind);
-                  const followStatus = followingStatusMap[user.id] || null;
-                  const canShowFollowAction =
-                    activeTab !== TABS.INBOX &&
-                    !isOwnProfile &&
-                    Boolean(auth.user?.id) &&
-                    auth.user.id !== user.id &&
-                    followStatus !== FOLLOW_STATUSES.ACCEPTED;
-                  const followLabel = followStatus === FOLLOW_STATUSES.PENDING ? 'Requested' : 'Follow';
-                  const isFollowDisabled = followStatus === FOLLOW_STATUSES.PENDING || isActionPending;
-
-                  if (activeTab === TABS.INBOX) {
-                    return (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={() => handleAccept(user.id)}
-                          disabled={isActionPending}
-                          className="border-success/15 bg-success/5 text-success hover:bg-success/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
-                        >
-                          {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
-                        </Button>
-                        <Button
-                          onClick={() => handleReject(user.id)}
-                          disabled={isActionPending}
-                          className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
-                        >
-                          {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
-                        </Button>
-                      </div>
-                    );
-                  }
-
-                  if (activeTab === TABS.FOLLOWING && isOwnProfile) {
-                    return (
-                      <Button
-                        onClick={() => handleUnfollow(user.id)}
-                        disabled={isActionPending}
-                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
-                      >
-                        {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
-                      </Button>
-                    );
-                  }
-
-                  if (activeTab === TABS.FOLLOWERS && isOwnProfile) {
-                    return (
-                      <Button
-                        onClick={() => handleRemoveFollower(user.id)}
-                        disabled={isActionPending}
-                        className="border-error/15 bg-error/5 text-error hover:bg-error/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
-                      >
-                        {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
-                      </Button>
-                    );
-                  }
-
-                  if (canShowFollowAction) {
-                    return (
-                      <Button
-                        onClick={() => handleFollow(user.id)}
-                        disabled={isFollowDisabled}
-                        className="border-info/15 bg-info/5 text-info hover:bg-info/15 h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5"
-                      >
-                        {pendingKind === 'follow' ? 'Updating' : followLabel}
-                      </Button>
-                    );
-                  }
-
-                  return null;
-                })()}
-              </SocialUserRow>
+              <SocialUserRow
+                key={user.id}
+                close={close}
+                user={user}
+                action={
+                  <UserAction
+                    tab={activeTab}
+                    user={user}
+                    authUserId={authUserId}
+                    isOwnProfile={isOwnProfile}
+                    pendingKind={pendingActionByUserId[user.id] || null}
+                    followStatus={followingStatusMap[user.id] || null}
+                    onAccept={handleAccept}
+                    onReject={handleReject}
+                    onUnfollow={handleUnfollow}
+                    onRemoveFollower={handleRemoveFollower}
+                    onFollow={handleFollow}
+                  />
+                }
+              />
             ))}
           </div>
         )}

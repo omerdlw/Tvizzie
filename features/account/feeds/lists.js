@@ -45,7 +45,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         type="button"
         aria-label={`Edit ${list.title}`}
         onClick={handleEditClick}
-        className="bg-primary/40 hover:bg-primary/70 flex size-8 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/20"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
@@ -53,7 +53,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         variant="destructive-icon"
         aria-label={`Delete ${list.title}`}
         onClick={handleDeleteClick}
-        className="size-8"
+        className="size-8 rounded-[10px]"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </Button>

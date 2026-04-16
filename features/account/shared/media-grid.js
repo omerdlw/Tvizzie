@@ -103,7 +103,7 @@ export function AccountProfileMediaActions({
           key={`${action.label || action.icon || 'media-action'}-${index}`}
           type="button"
           aria-label={action.label}
-          className="center size-8 border border-black/15 bg-white/90 text-black backdrop-blur-lg transition disabled:cursor-default"
+          className="center size-8 rounded-[10px] border border-black/15 bg-white text-black transition disabled:cursor-default"
           disabled={Boolean(action.disabled)}
           onClick={(event) => {
             event.preventDefault();
@@ -119,7 +119,7 @@ export function AccountProfileMediaActions({
         <button
           type="button"
           aria-label="Add to list"
-          className="center size-8 border border-black/15 bg-white/90 text-black backdrop-blur-lg transition disabled:cursor-default"
+          className="center size-8 rounded-[10px] border border-black/15 bg-white text-black transition disabled:cursor-default"
           onClick={handleOpenListPicker}
         >
           <Icon icon="solar:list-check-minimalistic-bold" size={12} />
@@ -129,7 +129,7 @@ export function AccountProfileMediaActions({
       {typeof onRemoveItem === 'function' ? (
         <Button
           variant="destructive-icon"
-          className={`center size-8 ${MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS} backdrop-blur-lg disabled:cursor-default`}
+          className={`center size-8 ${MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS} rounded-[10px] disabled:cursor-default`}
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}

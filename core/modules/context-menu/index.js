@@ -14,6 +14,22 @@ import { useContextMenu } from './context';
 import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';
 
 const MENU_SCREEN_MARGIN = 10;
+const CONTEXT_MENU_LAYOUT = Object.freeze({
+  wrapperRadius: 20,
+  wrapperPadding: 6,
+});
+
+function getContextMenuMetrics() {
+  const wrapperRadius = CONTEXT_MENU_LAYOUT.wrapperRadius;
+  const wrapperPadding = CONTEXT_MENU_LAYOUT.wrapperPadding;
+
+  return {
+    headerIconRadius: Math.max(8, wrapperRadius - wrapperPadding - 2),
+    itemRadius: Math.max(8, wrapperRadius - wrapperPadding),
+    wrapperPadding,
+    wrapperRadius,
+  };
+}
 
 function isImageIconSource(icon) {
   return (
@@ -156,22 +172,29 @@ function invokeSafely(handler, ...args) {
   }
 }
 
-function ContextMenuHeaderIcon({ classNames, icon }) {
+function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
   const iconClassName = [
     'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-black/5 text-black/60',
     classNames.headerIcon,
   ]
     .filter(Boolean)
     .join(' ');
+  const iconStyle = {
+    borderRadius: `${metrics.headerIconRadius}px`,
+  };
 
   if (isImageIconSource(icon)) {
-    return <div className={iconClassName} style={{ backgroundImage: `url(${icon})` }} />;
+    return <div className={iconClassName} style={{ ...iconStyle, backgroundImage: `url(${icon})` }} />;
   }
 
-  return <div className={iconClassName}>{typeof icon === 'string' ? <Icon icon={icon} size={20} /> : icon}</div>;
+  return (
+    <div className={iconClassName} style={iconStyle}>
+      {typeof icon === 'string' ? <Icon icon={icon} size={20} /> : icon}
+    </div>
+  );
 }
 
-function ContextMenuHeader({ classNames, header }) {
+function ContextMenuHeader({ classNames, header, metrics }) {
   if (!header) {
     return null;
   }
@@ -187,7 +210,7 @@ function ContextMenuHeader({ classNames, header }) {
 
   return (
     <div className={containerClassName}>
-      {header.icon ? <ContextMenuHeaderIcon classNames={classNames} icon={header.icon} /> : null}
+      {header.icon ? <ContextMenuHeaderIcon classNames={classNames} icon={header.icon} metrics={metrics} /> : null}
       <div className="h-full w-full -space-y-1">
         {header.eyebrow ? <div className={eyebrowClassName}>{header.eyebrow}</div> : null}
         {header.title ? <div className={titleClassName}>{header.title}</div> : null}
@@ -197,7 +220,7 @@ function ContextMenuHeader({ classNames, header }) {
   );
 }
 
-function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setButtonRef }) {
+function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelect, setButtonRef }) {
   if (item.type === 'separator') {
     const separatorClassName = ['my-1 h-px bg-black/10', classNames.separator].filter(Boolean).join(' ');
 
@@ -228,6 +251,9 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
     <button
       ref={setButtonRef}
       className={itemClassName}
+      style={{
+        borderRadius: `${metrics.itemRadius}px`,
+      }}
       data-active={isActive ? 'true' : undefined}
       aria-disabled={item.disabled}
       disabled={item.disabled}
@@ -247,6 +273,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
   const menuRef = useRef(null);
   const itemRefs = useRef([]);
   const classNames = isObject(config.classNames) ? config.classNames : {};
+  const metrics = useMemo(() => getContextMenuMetrics(), []);
   const header = useMemo(() => resolveMenuHeader(config, menuContext), [config, menuContext]);
   const actionableIndexes = useMemo(() => getActionableIndexes(items), [items]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -426,7 +453,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={[
-          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 p-1 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
+          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
           classNames.content,
         ]
           .filter(Boolean)
@@ -434,7 +461,9 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         role="menu"
         tabIndex={-1}
         style={{
+          borderRadius: `${metrics.wrapperRadius}px`,
           left: position?.x || 0,
+          padding: `${metrics.wrapperPadding}px`,
           position: 'fixed',
           top: position?.y || 0,
           zIndex: Z_INDEX.DEBUG_OVERLAY,
@@ -442,13 +471,14 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         onMouseLeave={() => setActiveIndex(-1)}
         onKeyDown={handleMenuKeyDown}
       >
-        <ContextMenuHeader classNames={classNames} header={header} />
+        <ContextMenuHeader classNames={classNames} header={header} metrics={metrics} />
         {items.map((item, index) => (
           <ContextMenuItem
             key={item.key || `menu-item-${index}`}
             item={item}
             classNames={classNames}
             isActive={index === activeIndex}
+            metrics={metrics}
             onHover={() => {
               if (item.type === 'action' && !item.disabled) {
                 setActiveIndex(index);

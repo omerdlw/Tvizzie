@@ -71,6 +71,7 @@ export default function AccountAction(props) {
     canManageRequests = false,
     onFollow,
     onOpenInbox,
+    onEditProfile,
     onEditTabChange,
     onTabChange,
     onSignIn,
@@ -104,6 +105,9 @@ export default function AccountAction(props) {
       return null;
     }
 
+    const canShowFollowAction = !isOwner && showProfileFollowAction && typeof onFollow === 'function';
+    const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
+
     return (
       <div className="mt-2.5 flex w-full flex-col gap-2">
         <div className="grid w-full gap-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
@@ -126,6 +130,29 @@ export default function AccountAction(props) {
             );
           })}
         </div>
+
+        {canShowFollowAction ? (
+          <div className="flex w-full gap-2">
+            <button
+              type="button"
+              onClick={onFollow}
+              disabled={isFollowLoading}
+              className={actionClass({
+                tone: followAction.tone,
+                className: '',
+              })}
+            >
+              {isFollowLoading ? (
+                'Updating'
+              ) : (
+                <>
+                  <Icon icon={followAction.icon} size={NAV_ACTION_STYLES.icon} />
+                  {followAction.label}
+                </>
+              )}
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -297,8 +324,10 @@ export default function AccountAction(props) {
   if (isOwner) {
     const showListActions = typeof onEditList === 'function' && typeof onDeleteList === 'function';
     const shouldShowInboxAction = canManageRequests && inboxCount > 0 && typeof onOpenInbox === 'function';
+    const shouldShowEditProfileAction =
+      !showListActions && !shouldShowInboxAction && typeof onEditProfile === 'function';
 
-    if (!showListActions && !shouldShowInboxAction) {
+    if (!showListActions && !shouldShowInboxAction && !shouldShowEditProfileAction) {
       return null;
     }
 
@@ -321,6 +350,12 @@ export default function AccountAction(props) {
               <button type="button" onClick={onOpenInbox} className={actionClass({ tone: 'info' })}>
                 <Icon icon="solar:inbox-bold" size={NAV_ACTION_STYLES.icon} />
                 Inbox {inboxCount}
+              </button>
+            )}
+            {shouldShowEditProfileAction && (
+              <button type="button" onClick={() => onEditProfile?.()} className={actionClass()}>
+                <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
+                Edit Profile
               </button>
             )}
           </>

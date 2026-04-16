@@ -65,6 +65,11 @@ export default function Registry({
           activeTab={activeSegment}
           tabs={segmentTabs}
           onTabChange={handleSegmentChange}
+          followState={followState}
+          isFollowLoading={isFollowLoading}
+          isOwner={isOwner}
+          onFollow={handleFollow}
+          showProfileFollowAction
         />
       ) : null,
       navDescription: 'Likes',
@@ -81,6 +86,7 @@ export default function Registry({
       pendingFollowRequestCount,
       profile,
       resolveError,
+      showProfileFollowAction: true,
       unfollowConfirmation,
       username,
     })

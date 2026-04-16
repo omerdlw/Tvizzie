@@ -52,7 +52,7 @@ const EVENT_META = Object.freeze({
   },
 });
 const ACTIVITY_ITEMS_PER_PAGE = 36;
-const STATE_MESSAGE_CLASS = 'border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm';
+const STATE_MESSAGE_CLASS = 'py-4 text-center underline';
 const LIST_PREVIEW_WRAPPER_CLASS = 'group block aspect-2/3 w-full overflow-hidden border border-black/15';
 const DEFAULT_EVENT_META = Object.freeze({ action: 'updated' });
 

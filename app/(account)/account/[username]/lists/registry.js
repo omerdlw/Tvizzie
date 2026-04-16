@@ -72,6 +72,7 @@ export default function Registry({ isPageLoading: isPageLoadingProp, listDeleteC
       pendingFollowRequestCount,
       profile,
       resolveError,
+      showProfileFollowAction: true,
       unfollowConfirmation,
       username,
     })

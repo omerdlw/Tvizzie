@@ -17,13 +17,20 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
+const ACTION_BUTTON_CLASS =
+  'h-8 shrink-0 rounded-[12px] border px-4 text-xs font-semibold tracking-wide uppercase transition';
+
+const TOOL_BUTTON_CLASS = 'size-7 rounded-[10px] transition';
+
+const SKELETON_COUNT = 16;
+
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
+
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return '';
 
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
+  const diffInSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) return 'Just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
@@ -50,103 +57,182 @@ function getNotificationIcon(type) {
   }
 }
 
-function getNotificationContent({ type, actor, payload }) {
-  const actorName = actor?.displayName || actor?.username || 'Someone';
-  const actorLink = actor?.username ? `/account/${actor.username}` : null;
-  const reviewSubject =
-    payload?.subject && typeof payload.subject === 'object'
+function getNotificationSubject(payload, type) {
+  if (type === NOTIFICATION_TYPES.REVIEW_LIKE) {
+    return payload?.subject && typeof payload.subject === 'object'
       ? payload.subject
       : {
           href: payload?.subjectHref || null,
           title: payload?.subjectTitle || null,
         };
-  const listSubject =
-    payload?.list && typeof payload.list === 'object'
-      ? payload.list
-      : payload?.subject && typeof payload.subject === 'object'
-        ? payload.subject
-        : {
-            href: payload?.listHref || payload?.subjectHref || null,
-            title: payload?.listTitle || payload?.subjectTitle || null,
-          };
+  }
 
-  const ActorComponent = ({ children }) =>
-    actorLink ? (
-      <Link href={actorLink} className="font-semibold">
-        {children}
-      </Link>
-    ) : (
-      <span className="font-semibold">{children}</span>
-    );
+  if (type === NOTIFICATION_TYPES.LIST_LIKE) {
+    if (payload?.list && typeof payload.list === 'object') return payload.list;
+    if (payload?.subject && typeof payload.subject === 'object') return payload.subject;
+
+    return {
+      href: payload?.listHref || payload?.subjectHref || null,
+      title: payload?.listTitle || payload?.subjectTitle || null,
+    };
+  }
+
+  return null;
+}
+
+function InlineEntity({ href, children, muted = false }) {
+  const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
+
+  return href ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <span className={className}>{children}</span>
+  );
+}
+
+function NotificationContent({ type, actor, payload }) {
+  const actorName = actor?.displayName || actor?.username || 'Someone';
+  const actorHref = actor?.username ? `/account/${actor.username}` : null;
+  const subject = getNotificationSubject(payload, type);
 
   switch (type) {
     case NOTIFICATION_TYPES.FOLLOW_REQUEST:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> requested to follow you.
-        </span>
+        <p className="text-sm">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> requested to follow you
+        </p>
       );
+
     case NOTIFICATION_TYPES.FOLLOW_ACCEPTED:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> accepted your follow request.
-        </span>
+        <p className="text-sm">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> accepted your follow request
+        </p>
       );
+
     case NOTIFICATION_TYPES.NEW_FOLLOWER:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> started following you.
-        </span>
+        <p className="text-sm">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> started following you
+        </p>
       );
+
     case NOTIFICATION_TYPES.REVIEW_LIKE:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> liked your review of{' '}
-          {reviewSubject?.href ? (
-            <Link href={reviewSubject.href} className="font-semibold">
-              {reviewSubject.title || 'a title'}
-            </Link>
-          ) : (
-            <span className="font-semibold">{reviewSubject?.title || 'a title'}</span>
-          )}
-          .
-        </span>
+        <p className="text-sm">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> liked your review of{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a title'}</InlineEntity>
+        </p>
       );
+
     case NOTIFICATION_TYPES.LIST_LIKE:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> liked your list{' '}
-          {listSubject?.href ? (
-            <Link href={listSubject.href} className="font-semibold">
-              {listSubject.title || 'a list'}
-            </Link>
-          ) : (
-            <span className="font-semibold">{listSubject?.title || 'a list'}</span>
-          )}
-          .
-        </span>
+        <p className="text-sm">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> liked your list{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
+        </p>
       );
+
     default:
       return (
-        <span className="text-sm text-black/70">
-          <ActorComponent>{actorName}</ActorComponent> interacted with you.
-        </span>
+        <p className="text-sm text-black/70">
+          <InlineEntity href={actorHref}>{actorName}</InlineEntity> interacted with you
+        </p>
       );
   }
 }
 
+function NotificationSkeleton() {
+  return (
+    <div className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
+      <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="h-3 w-3/5 animate-pulse bg-black/5" />
+        <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+      </div>
+    </div>
+  );
+}
+
+function NotificationRow({ notification, onMarkRead, onDelete }) {
+  const avatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
+  const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
+  const isUnread = !notification.read;
+
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
+        isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
+      )}
+    >
+      <div className="center size-10 overflow-hidden rounded-[10px] border border-black/5">
+        {notification.actor ? (
+          <img
+            src={avatarSrc}
+            alt={notification.actor?.displayName || 'Avatar'}
+            className="size-full object-cover"
+            loading="lazy"
+            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+          />
+        ) : (
+          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
+        )}
+      </div>
+
+      <div className="flex w-full flex-col">
+        <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
+        <span className="text-[10px] tracking-widest text-black/50 uppercase">
+          {formatRelativeTime(notification.createdAt)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        {isUnread && (
+          <Button
+            onClick={(event) => onMarkRead(notification.id, event)}
+            title="Mark as read"
+            className={cn(
+              TOOL_BUTTON_CLASS,
+              'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
+            )}
+          >
+            <Icon icon="material-symbols:check-rounded" size={16} />
+          </Button>
+        )}
+
+        <Button
+          onClick={(event) => onDelete(notification.id, event)}
+          title="Delete notification"
+          variant="destructive"
+          className={TOOL_BUTTON_CLASS}
+        >
+          <Icon icon="solar:trash-bin-trash-linear" size={16} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
-  const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
+  const userId = data?.userId || auth.user?.id || null;
+  const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+
   const optimisticStateRef = useRef({
     deletedIds: new Set(),
     forceReadIds: new Set(),
   });
+
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
 
-  const userId = useMemo(() => data?.userId || auth.user?.id || null, [auth.user?.id, data?.userId]);
+  const unreadCount = useMemo(() => notifications.filter((item) => !item.read).length, [notifications]);
+  const hasUnread = unreadCount > 0;
 
   function resetOptimisticState() {
     optimisticStateRef.current = {
@@ -155,9 +241,8 @@ export default function NotificationsModal({ close, header, data }) {
     };
   }
 
-  function projectNotificationsWithOptimisticState(nextNotifications = []) {
-    const deletedIds = optimisticStateRef.current.deletedIds;
-    const forceReadIds = optimisticStateRef.current.forceReadIds;
+  function projectNotifications(nextNotifications = []) {
+    const { deletedIds, forceReadIds } = optimisticStateRef.current;
 
     return (Array.isArray(nextNotifications) ? nextNotifications : [])
       .filter((item) => item?.id && !deletedIds.has(item.id))
@@ -165,11 +250,11 @@ export default function NotificationsModal({ close, header, data }) {
   }
 
   useEffect(() => {
-    if (!auth.isReady || !isAuthSessionReady || !auth.isAuthenticated || !userId) {
+    if (!auth.isReady || !auth.isAuthenticated || !isAuthSessionReady || !userId) {
       resetOptimisticState();
       setNotifications([]);
       setIsLoading(false);
-      return undefined;
+      return;
     }
 
     resetOptimisticState();
@@ -178,7 +263,7 @@ export default function NotificationsModal({ close, header, data }) {
     return subscribeToNotifications(
       userId,
       (nextNotifications) => {
-        setNotifications(projectNotificationsWithOptimisticState(nextNotifications));
+        setNotifications(projectNotifications(nextNotifications));
         setIsLoading(false);
       },
       {
@@ -188,37 +273,30 @@ export default function NotificationsModal({ close, header, data }) {
         },
       }
     );
-  }, [auth.isAuthenticated, auth.isReady, isAuthSessionReady, userId]);
+  }, [auth.isReady, auth.isAuthenticated, isAuthSessionReady, userId]);
 
-  const hasUnread = notifications.some((item) => !item.read);
-
-  const handleMarkAllRead = async () => {
-    if (!hasUnread) return;
-    if (!userId) return;
+  async function handleMarkAllRead() {
+    if (!userId || !hasUnread) return;
 
     const previous = notifications;
-    const markedIds = notifications.filter((item) => !item.read).map((item) => item.id);
-    markedIds.forEach((id) => optimisticStateRef.current.forceReadIds.add(id));
-    setNotifications((current) =>
-      current.map((item) => ({
-        ...item,
-        read: true,
-      }))
-    );
+    const unreadIds = notifications.filter((item) => !item.read).map((item) => item.id);
+
+    unreadIds.forEach((id) => optimisticStateRef.current.forceReadIds.add(id));
+    setNotifications((current) => current.map((item) => ({ ...item, read: true })));
+
     try {
       await markAllAsRead(userId);
     } catch (error) {
-      markedIds.forEach((id) => optimisticStateRef.current.forceReadIds.delete(id));
+      unreadIds.forEach((id) => optimisticStateRef.current.forceReadIds.delete(id));
       setNotifications(previous);
       console.error(error);
     }
-  };
+  }
 
-  const handleMarkRead = async (notificationId, event) => {
+  async function handleMarkRead(notificationId, event) {
     event?.preventDefault();
     event?.stopPropagation();
-    if (!notificationId) return;
-    if (!userId) return;
+    if (!userId || !notificationId) return;
 
     const previous = notifications;
     optimisticStateRef.current.forceReadIds.add(notificationId);
@@ -231,13 +309,12 @@ export default function NotificationsModal({ close, header, data }) {
       setNotifications(previous);
       console.error(error);
     }
-  };
+  }
 
-  const handleDelete = async (notificationId, event) => {
+  async function handleDelete(notificationId, event) {
     event?.preventDefault();
     event?.stopPropagation();
-    if (!notificationId) return;
-    if (!userId) return;
+    if (!userId || !notificationId) return;
 
     const previous = notifications;
     optimisticStateRef.current.deletedIds.add(notificationId);
@@ -250,24 +327,25 @@ export default function NotificationsModal({ close, header, data }) {
       setNotifications(previous);
       console.error(error);
     }
-  };
+  }
 
-  const handleDeleteAll = async () => {
-    if (notifications.length === 0) return;
-    if (!userId) return;
+  async function handleDeleteAll() {
+    if (!userId || notifications.length === 0) return;
 
     const previous = notifications;
-    const deletedIds = notifications.map((item) => item.id);
-    deletedIds.forEach((id) => optimisticStateRef.current.deletedIds.add(id));
+    const ids = notifications.map((item) => item.id);
+
+    ids.forEach((id) => optimisticStateRef.current.deletedIds.add(id));
     setNotifications([]);
+
     try {
       await deleteAllNotifications(userId);
     } catch (error) {
-      deletedIds.forEach((id) => optimisticStateRef.current.deletedIds.delete(id));
+      ids.forEach((id) => optimisticStateRef.current.deletedIds.delete(id));
       setNotifications(previous);
       console.error(error);
     }
-  };
+  }
 
   return (
     <Container
@@ -278,10 +356,10 @@ export default function NotificationsModal({ close, header, data }) {
       header={header}
       bodyClassName="p-0"
       footer={{
-        left: hasUnread ? (
-          <span className="text-xs opacity-70">{notifications.filter((item) => !item.read).length} unread</span>
-        ) : (
-          <span className="text-xs opacity-70">{notifications.length} notifications</span>
+        left: (
+          <span className="text-xs opacity-70">
+            {hasUnread ? `${unreadCount} unread` : `${notifications.length} notifications`}
+          </span>
         ),
         right:
           notifications.length > 0 ? (
@@ -289,106 +367,44 @@ export default function NotificationsModal({ close, header, data }) {
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className="h-8 shrink-0 border border-black/10 bg-black/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-black/70 uppercase transition hover:bg-black/10 hover:text-black"
+                className={cn(ACTION_BUTTON_CLASS, 'border-black/10 text-black/70 hover:bg-black/5 hover:text-black')}
               >
                 Clear all
               </Button>
-              {hasUnread ? (
+
+              {hasUnread && (
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="hover:bg-info hover:border-info hover:text-primary h-8 shrink-0 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60"
+                  className={cn(
+                    ACTION_BUTTON_CLASS,
+                    'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60'
+                  )}
                 >
                   Mark all as read
                 </Button>
-              ) : null}
+              )}
             </>
           ) : null,
       }}
     >
-      <div className="flex h-full min-h-0 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex flex-col">
-              {Array.from({ length: 100 }, (_, index) => index + 1).map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                    <div className="size-10 shrink-0 animate-pulse bg-black/5" />
-                    <div className="flex w-full flex-col gap-1.5">
-                      <div className="h-3 w-[60%] animate-pulse bg-black/5" />
-                      <div className="h-2 w-[40%] animate-pulse bg-black/5" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/60')}>
-              You have no notifications yet
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-col">
-              {notifications.map((notification) => {
-                const actorAvatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
-                const actorAvatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
-
-                return (
-                  <div
-                    key={notification.id}
-                    className={cn(
-                      'relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
-                      notification.read ? 'hover:bg-black/5' : 'bg-black/5 text-black hover:bg-black/10'
-                    )}
-                  >
-                    <div className="center size-10 shrink-0 overflow-hidden">
-                      {notification.actor ? (
-                        <img
-                          src={actorAvatarSrc}
-                          alt={notification.actor?.displayName || 'Avatar'}
-                          className="size-full object-cover"
-                          loading="lazy"
-                          onError={(event) => applyAvatarFallback(event, actorAvatarFallbackSrc)}
-                        />
-                      ) : (
-                        <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
-                      )}
-                    </div>
-
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      {getNotificationContent(notification)}
-                      <span className="text-[10px] tracking-widest text-black/70 uppercase">
-                        {formatRelativeTime(notification.createdAt)}
-                      </span>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-1.5 self-center">
-                      {!notification.read ? (
-                        <Button
-                          onClick={(event) => handleMarkRead(notification.id, event)}
-                          title="Mark as read"
-                          className="border-info/15 bg-info/5 text-info hover:bg-info/15 size-7 border transition"
-                        >
-                          <Icon icon="material-symbols:check-rounded" size={16} />
-                        </Button>
-                      ) : null}
-                      <Button
-                        onClick={(event) => handleDelete(notification.id, event)}
-                        title="Delete notification"
-                        variant="destructive"
-                        className="size-7 transition"
-                      >
-                        <Icon icon="solar:trash-bin-trash-linear" size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+      <div className="min-h-0 overflow-y-auto">
+        {isLoading ? (
+          Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
+        ) : notifications.length === 0 ? (
+          <div className="center h-full min-h-60 py-20 text-sm font-medium text-black/60">
+            You have no notifications yet
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <NotificationRow
+              key={notification.id}
+              notification={notification}
+              onMarkRead={handleMarkRead}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
       </div>
     </Container>
   );

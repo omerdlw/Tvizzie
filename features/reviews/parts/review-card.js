@@ -216,7 +216,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 px-4 py-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[14px] border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
@@ -225,12 +225,12 @@ function SpoilerNotice({ compact = false, onReveal }) {
         <span className="block text-[11px] font-semibold tracking-wider text-black/50 uppercase transition-colors group-hover:text-black/70">
           Spoiler warning
         </span>
-        <span className="mt-1 block text-sm leading-6 text-black/70 transition-colors group-hover:text-black">
+        <span className="block text-sm leading-6 text-black/70 transition-colors group-hover:text-black">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
 
-      <span className="shrink-0 bg-black/5 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-all group-hover:bg-black/10 group-hover:text-black">
+      <span className="text-info group-hover:bg-primary shrink-0 rounded-[8px] p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
         Show
       </span>
     </button>

@@ -36,7 +36,7 @@ export default function Registry({
   registrySource = ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
   resolveError = null,
   reviewState,
-  showProfileFollowAction = false,
+  showProfileFollowAction = true,
   setIsBioSurfaceOpen = noopAccountRegistryHandler,
   unfollowConfirmation = null,
   username,

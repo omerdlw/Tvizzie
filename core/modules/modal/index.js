@@ -155,7 +155,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     >
       {isTopModal ? (
         <motion.div
-          className="fixed inset-0 bg-white/60 backdrop-blur-md"
+          className="fixed inset-0 bg-white/50 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
           variants={BACKDROP_VARIANTS}
           initial="hidden"
@@ -183,16 +183,16 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       >
         <div
           className={cn(
-            'relative flex flex-col',
+            'relative flex flex-col rounded-[20px]',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && '',
-            isPanelChrome && isBottomModalPosition && '',
+            isPanelChrome && isTopModalPosition && 'rounded-t-none',
+            isPanelChrome && isBottomModalPosition && 'rounded-b-none',
             isPanelChrome &&
               (isLeftModal || isRightModal) && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
-                isLeftModal ? 'border-l-0' : 'border-r-0',
+                isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0',
               ]
           )}
         >

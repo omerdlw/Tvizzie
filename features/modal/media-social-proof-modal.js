@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import Container from '@/core/modules/modal/container';
 import Icon from '@/ui/icon';
 
@@ -35,65 +35,88 @@ function buildUserActionMap(socialProof) {
 
 function formatActionSummary(actions = []) {
   const actionMap = {
-    Review: 'Review',
+    Review: 'Reviewed',
     Like: 'Liked',
-    Watchlist: 'Watchlist',
+    Watchlist: 'Watchlisted',
   };
-  const phrases = actions.map((action) => actionMap[action] || action);
+  const ordered = ['Review', 'Like', 'Watchlist'];
+  const phrases = ordered.filter((action) => actions.includes(action)).map((action) => actionMap[action] || action);
 
   if (phrases.length === 0) return '';
 
   return phrases.join(' · ');
 }
 
-export default function MediaSocialProofModal({ close, data }) {
+export default function MediaSocialProofModal({ close, data, header }) {
   const userActions = buildUserActionMap(data?.socialProof);
+  const isSidePosition = header?.position === 'left' || header?.position === 'right';
+  const summaryText = (data?.summaryParts || []).join(' · ');
 
   return (
     <Container
-      header={
-        <p className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
-          People you follow engaged with this title
-        </p>
+      className={
+        isSidePosition ? 'h-full max-h-full w-full sm:w-[460px]' : 'max-h-[78dvh] w-full sm:w-[min(1400px,96vw)]'
       }
-      footer={{ center: <p className="mt-2 text-sm text-black">{(data?.summaryParts || []).join(' · ')}</p> }}
-      className="h-screen w-full sm:h-screen sm:w-[420px]"
       close={close}
+      header={header}
       bodyClassName="p-0"
+      footer={{
+        left: <span className="text-xs opacity-70">{userActions.length} people</span>,
+        right: summaryText ? <span className="text-xs opacity-70">{summaryText}</span> : null,
+      }}
     >
-      <div className="flex h-full flex-col">
-        <div className="scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {userActions.map(({ actions, user }) => {
-            const avatarSrc = getUserAvatarUrl(user);
-            const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {userActions.length === 0 ? (
+            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/60')}>
+              No social activity from people you follow yet
+            </div>
+          ) : (
+            <div className="flex min-h-0 flex-col">
+              {userActions.map(({ actions, user }) => {
+                const avatarSrc = getUserAvatarUrl(user);
+                const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
+                const username = user?.username || 'user';
 
-            return (
-              <Link
-                key={user.id}
-                href={`/account/${user.username || user.id}`}
-                onClick={close}
-                className="flex items-center gap-3 border-b border-black/10 px-5 py-4 transition hover:bg-black/5"
-              >
-                <div className="size-12 shrink-0 overflow-hidden border border-black/10">
-                  <img
-                    src={avatarSrc}
-                    alt={user.displayName}
-                    className="h-full w-full object-cover"
-                    onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-                  />
-                </div>
+                return (
+                  <Link
+                    key={user.id}
+                    href={`/account/${username}`}
+                    onClick={close}
+                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
+                  >
+                    <div className="center size-10 shrink-0 overflow-hidden rounded-[10px] border border-black/5">
+                      <img
+                        src={avatarSrc}
+                        alt={user?.displayName || username}
+                        className="size-full object-cover"
+                        loading="lazy"
+                        onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+                      />
+                    </div>
 
-                <div className="min-w-0 flex-1 -space-y-0.5">
-                  <p className="mt-0.5 truncate text-sm text-black">@{user.username || 'user'}</p>
-                  <p className="mt-1.5 truncate text-[12px] font-medium text-black/70">
-                    {formatActionSummary(actions)}
-                  </p>
-                </div>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-sm">
+                        <span className="font-semibold">@{username}</span> engaged with this title.
+                      </span>
+                      <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
+                        {formatActionSummary(actions)}
+                      </span>
+                    </div>
 
-                <Icon icon="solar:alt-arrow-right-linear" size={18} className="shrink-0 text-black/70" />
-              </Link>
-            );
-          })}
+                    <div className="flex shrink-0 items-center gap-1.5 self-center">
+                      <span
+                        aria-hidden="true"
+                        className="center size-7 rounded-[10px] border border-black/10 text-black/70 transition"
+                      >
+                        <Icon icon="solar:alt-arrow-right-linear" size={16} />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </Container>

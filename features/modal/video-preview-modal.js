@@ -12,7 +12,7 @@ export default function VideoPreviewModal({ close, data }) {
       header={false}
       bodyClassName="p-0"
       footer={{
-        left: data?.name || 'Video preview',
+        center: data?.name || 'Video preview',
       }}
     >
       <div className="relative aspect-video h-auto w-full">

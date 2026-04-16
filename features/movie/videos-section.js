@@ -76,7 +76,7 @@ export default function VideosSection({ videos }) {
             overlay={
               <>
                 <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
-                  <div className="center size-8 border border-white/20 bg-white/10 text-white backdrop-blur-md">
+                  <div className="center text-primary size-8 rounded-full border border-white/20 bg-white/10 backdrop-blur-md">
                     <Icon icon="solar:play-bold" size={16} />
                   </div>
                 </div>
