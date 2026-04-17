@@ -1,13 +1,13 @@
 import { Suspense, use } from 'react';
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { TextAnimate } from '@/components/ui/text-animate';
 import PersonAwards from '@/features/person/awards';
 import FilmographyCard from '@/features/person/filmography-card';
 import PersonGallery from '@/features/person/gallery';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
+import { TextAnimate } from '@/ui/animations/text-animate';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import { getFilmographyCredits } from '@/features/person/utils';

@@ -8,35 +8,7 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import Icon from '@/ui/icon';
 
 import { SEARCH_TYPES } from '../constants';
-import { getDetailPath, getImagePath, getItemDirector, getItemTitle, getItemYear } from '../utils';
-
-function getPrimaryMeta(item) {
-  if (item.media_type === SEARCH_TYPES.USER) {
-    return item.username ? `@${item.username}` : 'USER';
-  }
-
-  if (item.media_type === SEARCH_TYPES.PERSON) {
-    return item.known_for_department || 'PERSON';
-  }
-
-  return getItemYear(item) || 'MOVIE';
-}
-
-function getSecondaryMeta(item) {
-  if (item.media_type === SEARCH_TYPES.MOVIE) {
-    return getItemDirector(item);
-  }
-
-  if (item.media_type === SEARCH_TYPES.PERSON) {
-    return item.known_for?.[0]?.title || item.known_for?.[0]?.name || null;
-  }
-
-  if (item.media_type === SEARCH_TYPES.USER) {
-    return item.displayName && item.username && item.displayName !== item.username ? item.displayName : null;
-  }
-
-  return null;
-}
+import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '../utils';
 
 function getImageSrc(item) {
   if (item.media_type === SEARCH_TYPES.USER) {

@@ -136,10 +136,6 @@ export function mergeUserIntoSession(session, userPatch) {
   });
 }
 
-export function getAccessToken() {
-  return null;
-}
-
 export function isSessionExpired(session, leewayMs = 0) {
   const normalizedSession = normalizeSession(session);
 

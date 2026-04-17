@@ -11,15 +11,10 @@
     "analyze": "ANALYZE=true next build",
     "build": "next build",
     "build:debug-memory": "next build --experimental-debug-memory-usage",
+    "preflight:prod": "node scripts/preflight-production.mjs",
     "start": "next start",
     "lint": "eslint",
-    "test:supabase:smoke": "node scripts/supabase-smoke.mjs",
-    "test:realtime:smoke": "node scripts/realtime-broadcast-smoke.mjs",
     "seed:social": "node scripts/seed-social-graph.mjs",
-    "follow:burst": "node scripts/send-follow-burst.mjs",
-    "test:auth:signup-smoke": "node scripts/auth-signup-complete-smoke.mjs",
-    "test:auth:smoke": "node scripts/supabase-auth-smoke.mjs",
-    "test:baseline:api-contract": "node scripts/baseline-report.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

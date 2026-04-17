@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { DURATION, EASING, Z_INDEX } from '@/core/constants';
-import { NoiseTexture } from '@/components/ui/noise-texture';
+import { NoiseTexture } from '@/ui/elements/noise-texture';
 
 import { useBackgroundActions, useBackgroundState } from './context';
 

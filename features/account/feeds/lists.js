@@ -10,6 +10,7 @@ import {
   buildManagedQueryString,
   hasActiveListFilters,
   parseListFilters,
+  parsePageFromSearch,
   sortProfileLists,
   toListQueryValues,
 } from '@/features/account/filtering';
@@ -20,11 +21,6 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;
-
-function parsePageFromSearch(search) {
-  const parsed = Number(search.get('page') || '1');
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-}
 
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
   const handleEditClick = (event) => {
@@ -71,6 +67,7 @@ export default function AccountListsFeed({ canShowLists, isOwner, lists, usernam
   const [activePage, setActivePage] = useState(initialPage);
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const sortedLists = useMemo(() => sortProfileLists(lists, listFilters.sort), [listFilters.sort, lists]);
+  const hasFilters = hasActiveListFilters(listFilters);
 
   useEffect(() => {
     setListFilters(initialListFilters);
@@ -150,8 +147,10 @@ export default function AccountListsFeed({ canShowLists, isOwner, lists, usernam
           <AccountListSortBar
             sort={listFilters.sort}
             onChange={handleSortChange}
-            onReset={hasActiveListFilters(listFilters) ? handleResetFilters : null}
+            onReset={hasFilters ? handleResetFilters : null}
           />
+        ) : hasFilters ? (
+          <AccountListSortBar sort={listFilters.sort} onChange={handleSortChange} onReset={handleResetFilters} />
         ) : null
       }
     />

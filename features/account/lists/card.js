@@ -275,7 +275,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-[14px] border border-black/10 bg-white/70"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-[14px] border border-black/10 bg-white/80"
             initial={false}
             animate={{
               rotateX: isHovered ? -20 : 0,

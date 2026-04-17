@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 const scriptFilename = fileURLToPath(import.meta.url);
 const scriptDirname = path.dirname(scriptFilename);
 const REPO_ROOT = path.resolve(scriptDirname, '..');
+const OUTPUT_DIR = path.join(REPO_ROOT, 'scripts', 'output');
 
 const TMDB_GENRE_ID_TO_NAME = Object.freeze({
   12: 'Adventure',
@@ -82,6 +83,25 @@ async function fetchJson(url, init = {}) {
   }
 
   return response.json();
+}
+
+async function resolveSummaryPath(inputPath) {
+  if (inputPath) {
+    return path.resolve(inputPath);
+  }
+
+  const entries = await readdir(OUTPUT_DIR, { withFileTypes: true }).catch(() => []);
+  const latestSummary = entries
+    .filter((entry) => entry.isFile() && /^seed-social-.*\.json$/i.test(entry.name))
+    .map((entry) => entry.name)
+    .sort()
+    .at(-1);
+
+  if (latestSummary) {
+    return path.join(OUTPUT_DIR, latestSummary);
+  }
+
+  throw new Error('No seed summary found. Pass a JSON file path or run `npm run seed:social` first.');
 }
 
 async function fetchDiscoverGenreMap(apiKey, targetMediaIds = []) {
@@ -294,9 +314,7 @@ async function loadAllRowsByUserIds(admin, table, userIds = [], pageSize = 1000)
 async function main() {
   await loadEnvFile(path.join(REPO_ROOT, '.env'));
 
-  const summaryPath = process.argv[2]
-    ? path.resolve(process.argv[2])
-    : path.join(REPO_ROOT, 'scripts', 'output', 'seed-social-social-20260414-activity-1.json');
+  const summaryPath = await resolveSummaryPath(process.argv[2]);
   const supabaseUrl = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const serviceRoleKey = normalizeValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const tmdbApiKey = normalizeValue(process.env.TMDB_API_KEY);

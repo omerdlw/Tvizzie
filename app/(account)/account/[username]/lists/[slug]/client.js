@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { isPermissionDeniedError } from '@/core/utils/errors';
-import { getRatingStats } from '@/features/reviews/utils';
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
@@ -23,7 +22,7 @@ import {
   subscribeToListReviews,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
-import { useAccountSectionEngine } from '../../shared/section-engine';
+import { useAccountSectionEngine } from '../../../shared/section-state';
 import ListView from './view';
 
 export default function Client({ routeData = null }) {
@@ -451,7 +450,6 @@ export default function Client({ routeData = null }) {
 
   const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false;
   const requiresFollowForProfileInteractions = !isOwner && isPrivateProfile && !canViewPrivateContent;
-  const ratingStats = getRatingStats(reviews);
 
   const listDetailModel = {
     auth,
@@ -474,7 +472,6 @@ export default function Client({ routeData = null }) {
     listItems,
     likes,
     ownReview,
-    ratingStats,
     reviews,
     handleEditReview,
     userProfile,

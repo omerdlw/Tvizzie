@@ -4,7 +4,7 @@ import { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import { DURATION, EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
@@ -40,19 +40,68 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
   transition: Object.freeze({
     ease: EASING.EMPHASIZED,
-    duration: DURATION.BALANCED,
+    duration: DURATION.SNAPPY,
     type: 'tween',
   }),
 });
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale) {
+// ─── Fast spring configs tuned for responsive nav feel ──────────────────────
+
+const SPRING_SNAPPY = Object.freeze({ type: 'spring', stiffness: 560, damping: 44, mass: 0.72 });
+const SPRING_SMOOTH = Object.freeze({ type: 'spring', stiffness: 440, damping: 40, mass: 0.86 });
+const SPRING_GENTLE = Object.freeze({ type: 'spring', stiffness: 320, damping: 34, mass: 0.95 });
+const BLUR_AMOUNT = 7;
+
+const MAX_STAGGER_DELAY = 0.06;
+const STAGGER_PER_POSITION = 0.018;
+
+function getCardStaggerDelay(position, expanded) {
+  if (!expanded) return 0;
+  return Math.min(position * STAGGER_PER_POSITION, MAX_STAGGER_DELAY);
+}
+
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion) {
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
     : {};
 
-  const cardDelay = expanded ? position * 0.02 : 0;
+  const staggerDelay = getCardStaggerDelay(position, expanded);
+
+  // Reduced-motion fallback: simple and quick fade/position transitions.
+  if (reduceMotion) {
+    return {
+      className: cn(
+        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-xl',
+        'border-black/15 bg-white/80',
+        showBorder && 'border-black/20',
+        cardStyle?.className
+      ),
+      style: { ...safeCardStyle, willChange: 'auto' },
+      animate: {
+        y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
+        scale: expanded ? cardScale || 1 : collapsedScale ** position,
+        zIndex: 10 - position,
+        opacity: 1,
+      },
+      initial: { opacity: 0, scale: 0.97 },
+      exit: {
+        opacity: 0,
+        scale: 0.97,
+        transition: { duration: 0.1, ease: 'easeOut' },
+      },
+      transition: {
+        y: { duration: 0.14, ease: EASING.EASE_OUT, delay: staggerDelay },
+        scale: { duration: 0.14, ease: EASING.EASE_OUT, delay: staggerDelay },
+        opacity: { duration: 0.12, ease: 'easeOut', delay: staggerDelay },
+        zIndex: { duration: 0, delay: staggerDelay },
+      },
+    };
+  }
+
+  // Full animation: spring physics without blur for better performance.
+  const spring = position === 0 ? SPRING_SNAPPY : position === 1 ? SPRING_SMOOTH : SPRING_GENTLE;
 
   return {
     className: cn(
@@ -63,40 +112,40 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     ),
     style: {
       ...safeCardStyle,
-      willChange: expanded || position === 0 ? 'transform' : 'auto',
+      willChange: position <= 1 ? 'transform, opacity, filter' : 'auto',
     },
     animate: {
       y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
-      zIndex: NAV_CARD_LAYOUT.expanded.scale - position,
+      zIndex: 10 - position,
       opacity: 1,
+      filter: 'blur(0px)',
     },
-    initial: { opacity: 0, scale: 0.92, y: 0 },
-    exit: {
-      transition: {
-        duration: DURATION.FAST,
-        ease: EASING.EMPHASIZED,
-      },
-      scale: 0.92,
+    initial: {
       opacity: 0,
+      scale: 0.94,
+      y: 10,
+      filter: `blur(${BLUR_AMOUNT}px)`,
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.92,
+      filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
+      transition: {
+        duration: DURATION.QUICK,
+        ease: EASING.EMPHASIZED,
+        filter: { duration: 0.14 },
+      },
     },
     transition: {
-      y: {
-        ...NAV_CARD_LAYOUT.transition,
-        delay: cardDelay,
-      },
-      scale: {
-        ...NAV_CARD_LAYOUT.transition,
-        delay: cardDelay,
-      },
-      opacity: {
-        ...NAV_CARD_LAYOUT.transition,
-        delay: cardDelay,
-      },
-      zIndex: {
-        delay: cardDelay,
-        duration: DURATION.INSTANT,
-      },
+      // Position/scale: spring physics for natural feel
+      y: { ...spring, delay: staggerDelay },
+      scale: { ...spring, delay: staggerDelay },
+      // Opacity/blur: short tween for quick response.
+      opacity: { duration: 0.18, ease: EASING.EASE_OUT, delay: staggerDelay },
+      filter: { duration: 0.2, ease: EASING.EASE_OUT, delay: staggerDelay },
+      // zIndex snaps instantly
+      zIndex: { duration: 0, delay: staggerDelay },
     },
   };
 }
@@ -149,12 +198,9 @@ function VideoOverlayIcon({ icon }) {
         isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'rounded-[8px] border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
-      transition={{
-        duration: DURATION.FAST,
-        ease: EASING.SMOOTH,
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      transition={{ ...SPRING_SNAPPY }}
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
     >
       {!isImageIcon && <Iconify icon={icon} size={14} className={'text-[#831843]'} />}
     </motion.div>
@@ -172,6 +218,7 @@ function Badge({ badge }) {
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
+          transition={SPRING_SNAPPY}
         >
           {badge.value}
         </motion.div>
@@ -227,6 +274,7 @@ function StandardItemContent({
               <BadgeIcon
                 isStackHovered={iconHoverState}
                 icon={showVideoIcon ? (isPlaying ? 'mdi:pause' : 'mdi:play') : link.icon}
+                iconOverlay={showVideoIcon ? null : link.iconOverlay}
                 style={itemStyle.icon}
               />
 
@@ -262,7 +310,7 @@ function ConfirmationItemContent({ link, itemStyle, contentContainerRef }) {
     <div ref={contentContainerRef} className="flex w-full flex-col gap-3 px-1 py-1">
       {link.icon ? (
         <div className="self-start">
-          <BadgeIcon isStackHovered={false} icon={link.icon} style={itemStyle.icon} />
+          <BadgeIcon isStackHovered={false} icon={link.icon} iconOverlay={link.iconOverlay} style={itemStyle.icon} />
         </div>
       ) : null}
 
@@ -318,6 +366,7 @@ const Item = memo(
 
     const pathname = usePathname();
     const router = useRouter();
+    const reduceMotion = useReducedMotion();
 
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
     const ActionComponent = useActionComponent(link, pathname);
@@ -337,8 +386,16 @@ const Item = memo(
     const actionNode = useMemo(() => {
       return getActionNode(link, ActionComponent);
     }, [link, ActionComponent]);
+
     const cardProps = useMemo(() => {
-      const resolvedCardProps = getNavItemCardProps(expanded, position, showBorder, itemStyle.card, itemStyle.scale);
+      const resolvedCardProps = getNavItemCardProps(
+        expanded,
+        position,
+        showBorder,
+        itemStyle.card,
+        itemStyle.scale,
+        !!reduceMotion
+      );
 
       if (!link.isSurface) {
         return resolvedCardProps;
@@ -348,14 +405,7 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [
-      expanded,
-      position,
-      showBorder,
-      itemStyle.card,
-      itemStyle.scale,
-      link.isSurface,
-    ]);
+    }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
 
     useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop);
 

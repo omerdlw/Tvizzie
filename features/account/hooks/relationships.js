@@ -1,6 +1,7 @@
 'use client';
 
-import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
+import { notifyAccountLoadError } from '@/features/account/utils';
+import { logDataError } from '@/core/utils/errors';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   FOLLOW_STATUSES,
@@ -11,15 +12,6 @@ import {
 import { getAccountSocialProof } from '@/core/services/media/social-proof.service';
 import { subscribeToUserListItems } from '@/core/services/media/lists.service';
 import { useEffect, useMemo, useState } from 'react';
-
-function showAccountLoadError(toast, error, fallbackMessage) {
-  if (isPermissionDeniedError(error)) {
-    return false;
-  }
-
-  toast.error(error?.message || fallbackMessage);
-  return true;
-}
 
 export function useAccountRelationshipData({
   authIsReady,
@@ -320,7 +312,7 @@ export function useAccountListItems({
         activeTab,
         onError: (error) => {
           setListItems([]);
-          showAccountLoadError(toast, error, 'List items could not be loaded');
+          notifyAccountLoadError(toast, error, 'List items could not be loaded');
           setIsLoadingListItems(false);
         },
       }

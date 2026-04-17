@@ -1,51 +1,12 @@
 'use client';
 
-import { useAccountProfile, useResolvedAccountUser as useModuleResolvedAccountUser } from '@/core/modules/account';
+import { useAccountProfile, useResolvedAccountUser } from '@/core/modules/account';
 import { useAuthSessionReady } from '@/core/modules/auth';
 import { useToast } from '@/core/modules/notification/hooks';
-import { isPermissionDeniedError } from '@/core/utils/errors';
+import { notifyAccountLoadError } from '../utils';
 import { useCallback, useMemo } from 'react';
 import { useAccountCollections } from './collections';
 import { useAccountListItems, useAccountRelationshipData, useAccountSocialProof } from './relationships';
-
-function showAccountLoadError(toast, error, fallbackMessage) {
-  if (isPermissionDeniedError(error)) {
-    return false;
-  }
-
-  toast.error(error?.message || fallbackMessage);
-  return true;
-}
-
-export function useAccountResolvedUser({
-  authUserId,
-  username,
-  initialResolvedUserId = null,
-  initialResolveError = null,
-}) {
-  return useModuleResolvedAccountUser({
-    authUserId,
-    username,
-    initialResolvedUserId,
-    initialResolveError,
-  });
-}
-
-export function useAccountSubscription({ resolvedUserId, initialProfile = null }) {
-  const toast = useToast();
-  const handleProfileError = useCallback(
-    (error) => {
-      showAccountLoadError(toast, error, 'Profile could not be loaded');
-    },
-    [toast]
-  );
-
-  return useAccountProfile({
-    resolvedUserId,
-    initialProfile,
-    onError: handleProfileError,
-  });
-}
 
 export function useAccountPageData({
   activeListId,
@@ -60,16 +21,23 @@ export function useAccountPageData({
   username,
 }) {
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? auth.user?.id || null : null);
-  const { isResolvingProfile, resolveError, resolvedUserId } = useAccountResolvedUser({
+  const toast = useToast();
+  const handleProfileError = useCallback(
+    (error) => {
+      notifyAccountLoadError(toast, error, 'Profile could not be loaded');
+    },
+    [toast]
+  );
+  const { isResolvingProfile, resolveError, resolvedUserId } = useResolvedAccountUser({
     authUserId: auth.user?.id || null,
     initialResolvedUserId,
     initialResolveError,
     username,
   });
-
-  const { profile } = useAccountSubscription({
+  const { profile } = useAccountProfile({
     resolvedUserId,
     initialProfile,
+    onError: handleProfileError,
   });
 
   const isOwner = useMemo(() => {

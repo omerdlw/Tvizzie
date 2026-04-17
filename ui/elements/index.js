@@ -11,5 +11,6 @@ export { default as Select } from './select';
 
 export { default as Popover } from './popover';
 export { default as Tooltip } from './tooltip';
+export { NoiseTexture } from './noise-texture';
 
 export * from './utils';

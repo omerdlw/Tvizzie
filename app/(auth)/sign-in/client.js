@@ -91,7 +91,7 @@ export default function Client() {
   }, [auth.isAuthenticated, auth.isReady, postAuthRedirect, router]);
 
   useEffect(() => {
-    const cookieNotice = routeNotice ? consumeAuthRouteNoticeCookie() : '';
+    const cookieNotice = consumeAuthRouteNoticeCookie();
     const activeNotice = routeNotice || cookieNotice;
 
     if (!activeNotice) {

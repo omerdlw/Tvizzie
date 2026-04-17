@@ -3,12 +3,16 @@
 import Icon from '@/ui/icon';
 
 export default function ReviewHeader({
-  ratingStats,
+  itemLabel = 'review',
+  ratingStats = null,
+  showRatingSummary = true,
   title = 'Community Reviews',
   totalReviews,
   onEditOwnReview = null,
 }) {
   const hasEditOwnReview = typeof onEditOwnReview === 'function';
+  const hasRatingSummary =
+    showRatingSummary && Number.isFinite(Number(ratingStats?.average)) && Number(ratingStats.average) > 0;
 
   return (
     <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
@@ -18,15 +22,15 @@ export default function ReviewHeader({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
-          <span className="font-bold">{totalReviews}</span> review
+          <span className="font-bold">{totalReviews}</span> {itemLabel}
           {totalReviews === 1 ? '' : 's'}
         </div>
-        {ratingStats.average && (
+        {hasRatingSummary && (
           <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
             <Icon icon="solar:star-bold" className="text-warning" size={16} />
             <span>
-              {ratingStats.average}/5 avg
-              {ratingStats.count ? ` • ${ratingStats.count} rated` : ''}
+              {ratingStats?.average}/5 avg
+              {ratingStats?.count ? ` • ${ratingStats.count} rated` : ''}
             </span>
           </div>
         )}

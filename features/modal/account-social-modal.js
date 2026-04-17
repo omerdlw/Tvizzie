@@ -28,10 +28,10 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
-const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-error/15 bg-error/5 text-error hover:bg-error/15`;
-const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-success/15 bg-success/5 text-success hover:bg-success/15`;
-const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-info/15 bg-info/5 text-info hover:bg-info/15`;
+  'h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
+const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-error/20 bg-error/20 text-error hover:bg-error/10`;
+const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-success/20 bg-success/20 text-success hover:bg-success/10`;
+const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-info/20 bg-info/20 text-info hover:bg-info/10`;
 
 function normalizeTab(value) {
   const normalized = String(value || '')
@@ -107,12 +107,12 @@ function SocialUserRow({ close, user, action }) {
         <img
           src={avatarSrc}
           alt={user.displayName}
-          className="size-10 shrink-0 object-cover"
+          className="size-10 shrink-0 rounded-[10px] object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
-          <p className="truncate text-[11px] text-black/70">@{user.username || 'user'}</p>
+          <p className="truncate text-[10px] tracking-widest text-black/50 uppercase">@{user.username || 'user'}</p>
         </div>
       </Link>
       {action}
@@ -465,32 +465,24 @@ export default function AccountSocialModal({ close, data }) {
   return (
     <Container
       className="max-h-[74vh] min-h-96 w-full sm:w-[500px]"
-      header={false}
       close={close}
       bodyClassName="p-0"
-      footer={{
-        left: (
-          <span className="text-xs text-black/70">
-            {list.length} {activeTab}
-          </span>
-        ),
-      }}
-    >
-      <div className="flex h-full min-h-0 flex-col">
+      header={
         <SegmentedControl
           value={activeTab}
           onChange={setActiveTab}
           items={tabs}
           classNames={{
-            track: 'w-full gap-0 p-0! pt-3',
-            wrapper: 'border-0 bg-transparent',
-            button: 'flex-1 justify-center py-2 text-center text-[13px] font-semibold',
-            indicator: 'bg-black',
-            inactive: 'text-black/60 hover:text-black',
-            active: 'text-white',
+            wrapper: 'bg-transparent border-none',
+            button: 'flex-1 justify-center rounded-[16px] px-4 py-2 text-[13px]',
+            indicator: 'rounded-[16px] bg-black',
+            inactive: 'text-black/50 hover:text-black',
+            active: 'text-white font-semibold',
           }}
         />
-
+      }
+    >
+      <div className="flex h-full min-h-0 flex-col">
         {isLoading ? (
           <LoadingList />
         ) : activeErrorMessage ? (

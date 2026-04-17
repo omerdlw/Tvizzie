@@ -7,12 +7,12 @@ import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/fi
 import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { useDebounce } from '@/core/hooks';
-import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { useRegistry } from '@/core/modules/registry';
+import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 
-import SearchAction from './index';
-import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from './constants';
-import SearchGridItem from './parts/grid-item';
+import SearchAction from '@/features/navigation/actions/search-action';
+import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/navigation/actions/search-action/constants';
+import SearchGridItem from '@/features/navigation/actions/search-action/parts/grid-item';
 import {
   applySearchMovieFilters,
   fetchAllMedia,
@@ -21,7 +21,7 @@ import {
   hasActiveSearchMovieFilters,
   mergeAllResults,
   normalizeSearchMovieFilters,
-} from './utils';
+} from '@/features/navigation/actions/search-action/utils';
 
 const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
   decade: 'all',
@@ -144,7 +144,7 @@ function buildSearchHref({ pathname, query, searchParamsString, searchType, movi
   return nextQueryString ? `${pathname}?${nextQueryString}` : pathname;
 }
 
-export default function SearchPage() {
+export default function SearchClient() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -179,7 +179,8 @@ export default function SearchPage() {
 
   const gridBatchSizeRef = useRef(initialBatchSize);
   const debouncedQuery = useDebounce(query, 500);
-  const trimmedQuery = debouncedQuery.trim();
+  const trimmedQuery = query.trim();
+  const trimmedDebouncedQuery = debouncedQuery.trim();
   const genreOptions = useMemo(() => getAllMediaGenreOptions(), []);
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const yearOptions = useMemo(() => getReleaseYearOptions(), []);
@@ -196,7 +197,8 @@ export default function SearchPage() {
   const filteredResults = useMemo(() => getRenderableResults(results), [getRenderableResults, results]);
   const canLoadMore = Boolean(trimmedQuery) && (visibleCount < filteredResults.length || hasMore);
   const visibleResults = useMemo(() => filteredResults.slice(0, visibleCount), [filteredResults, visibleCount]);
-  const shouldShowMovieFilters = (searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE) && visibleResults.length > 0;
+  const shouldShowMovieFilters =
+    (searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE) && visibleResults.length > 0;
 
   useEffect(() => {
     function updateGridBatchSize() {
@@ -274,7 +276,7 @@ export default function SearchPage() {
       return;
     }
 
-    if (!trimmedQuery || !isMediaType || loading || loadingMore || !hasMore) {
+    if (!trimmedDebouncedQuery || !isMediaType || loading || loadingMore || !hasMore) {
       return;
     }
 
@@ -288,7 +290,7 @@ export default function SearchPage() {
       let renderableResults = getRenderableResults(mergedResults);
 
       while (renderableResults.length < nextVisibleCount && nextPage < totalPages) {
-        const payload = await fetchMediaPage(trimmedQuery, searchType, nextPage + 1);
+        const payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, nextPage + 1);
 
         nextPage = payload.page || nextPage + 1;
         totalPages = payload.totalPages || totalPages;
@@ -316,6 +318,8 @@ export default function SearchPage() {
       setLoadingMore(false);
     }
   }, [
+    filteredResults.length,
+    getRenderableResults,
     hasMore,
     isMediaType,
     loading,
@@ -325,10 +329,8 @@ export default function SearchPage() {
     pageState.totalResults,
     results,
     searchType,
-    trimmedQuery,
+    trimmedDebouncedQuery,
     visibleCount,
-    filteredResults.length,
-    getRenderableResults,
   ]);
 
   const navAction = useMemo(
@@ -357,7 +359,7 @@ export default function SearchPage() {
   });
 
   useEffect(() => {
-    if (!trimmedQuery) {
+    if (!trimmedDebouncedQuery) {
       setResults([]);
       setLoading(false);
       setLoadingMore(false);
@@ -378,7 +380,7 @@ export default function SearchPage() {
 
       try {
         if (searchType === SEARCH_TYPES.USER) {
-          const userResults = await fetchUsers(trimmedQuery, SEARCH_LIMITS.USER_FULL_RESULTS);
+          const userResults = await fetchUsers(trimmedDebouncedQuery, SEARCH_LIMITS.USER_FULL_RESULTS);
 
           if (!isCancelled) {
             startTransition(() => {
@@ -397,8 +399,8 @@ export default function SearchPage() {
 
         if (searchType === SEARCH_TYPES.ALL) {
           const [userResults, mediaResults] = await Promise.all([
-            fetchUsers(trimmedQuery, SEARCH_LIMITS.USER_FULL_RESULTS),
-            fetchAllMedia(trimmedQuery),
+            fetchUsers(trimmedDebouncedQuery, SEARCH_LIMITS.USER_FULL_RESULTS),
+            fetchAllMedia(trimmedDebouncedQuery),
           ]);
 
           const mergedResults = mergeAllResults(userResults, mediaResults, null);
@@ -421,14 +423,14 @@ export default function SearchPage() {
         }
 
         const minimumCount = gridBatchSizeRef.current;
-        let payload = await fetchMediaPage(trimmedQuery, searchType, 1);
+        let payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, 1);
         let mergedResults = payload.results;
         let currentPage = payload.page || 1;
         let totalPages = payload.totalPages || 0;
         let totalResults = payload.totalResults || payload.results.length;
 
         while (!isCancelled && getRenderableResults(mergedResults).length < minimumCount && currentPage < totalPages) {
-          payload = await fetchMediaPage(trimmedQuery, searchType, currentPage + 1);
+          payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, currentPage + 1);
           currentPage = payload.page || currentPage + 1;
           totalPages = payload.totalPages || totalPages;
           totalResults = payload.totalResults || totalResults;
@@ -471,12 +473,12 @@ export default function SearchPage() {
       }
     }
 
-    runSearch();
+    void runSearch();
 
     return () => {
       isCancelled = true;
     };
-  }, [getRenderableResults, searchType, trimmedQuery]);
+  }, [getRenderableResults, searchType, trimmedDebouncedQuery]);
 
   return (
     <>

@@ -1,7 +1,7 @@
 'use client';
 
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
-import Registry from './registry';
+import { Registry } from './view';
 
 export default function Loading() {
   return (

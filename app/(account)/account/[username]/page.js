@@ -1,3 +1,4 @@
+import { createAccountRoutePage } from '../shared/route-page';
 import { isReservedAccountSegment } from '@/features/account/utils';
 import {
   getUsernameAccountOverviewRouteData,
@@ -6,14 +7,10 @@ import {
 
 import Client from './client';
 
-export default async function Page({ params }) {
-  const { username } = await params;
-
-  if (isReservedAccountSegment(username)) {
-    await redirectCurrentAccountSection(username);
-  }
-
-  const routeData = await getUsernameAccountOverviewRouteData(username);
-
-  return <Client routeData={routeData} />;
-}
+export default createAccountRoutePage(Client, getUsernameAccountOverviewRouteData, {
+  beforeLoad: async (params) => {
+    if (isReservedAccountSegment(params?.username)) {
+      await redirectCurrentAccountSection(params.username);
+    }
+  },
+});

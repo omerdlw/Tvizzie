@@ -1,12 +1,19 @@
 import { normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 
 const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';
+const LEGACY_AUTH_CALLBACK_PATH = '/auth/callback';
 const LEGACY_AUTH_OAUTH_CALLBACK_PATH = '/auth/oauth-callback';
 
-export const AUTH_OAUTH_CALLBACK_PATH = '/auth/callback';
+export const AUTH_OAUTH_CALLBACK_PATH = '/callback';
 export const AUTH_DEFAULT_POST_LOGIN_PATH = '/account';
 
-const BLOCKED_NEXT_PATHS = new Set(['/sign-in', '/sign-up', AUTH_OAUTH_CALLBACK_PATH, LEGACY_AUTH_OAUTH_CALLBACK_PATH]);
+const BLOCKED_NEXT_PATHS = new Set([
+  '/sign-in',
+  '/sign-up',
+  AUTH_OAUTH_CALLBACK_PATH,
+  LEGACY_AUTH_CALLBACK_PATH,
+  LEGACY_AUTH_OAUTH_CALLBACK_PATH,
+]);
 
 export const OAUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
 

@@ -9,14 +9,12 @@ import {
   useSeededFeedState,
 } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
-import { useAuth } from '@/core/modules/auth';
 import { useToast } from '@/core/modules/notification/hooks';
 import { fetchProfileLikedLists } from '@/core/services/media/lists.service';
 import { updateFavoriteShowcase } from '@/core/services/media/likes.service';
 import { fetchProfileReviewFeed, toggleStoredReviewLike } from '@/core/services/media/reviews.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { useAccountSectionEngine } from '../shared/section-engine';
-import { AccountSectionStateProvider } from '../shared/section-context';
+import { createAccountSectionClient } from '../../shared/section-factory';
 import LikesView from './view';
 
 const LIKE_SEGMENTS = new Set(['films', 'reviews', 'lists']);
@@ -49,9 +47,8 @@ function mergeUniqueReviews(currentItems = [], nextItems = []) {
   return output;
 }
 
-export default function Client({ routeData = null }) {
+function useLikesClientState({ auth, routeData, sectionProviderValue, sectionState }) {
   const { initialLikedLists = null, initialReviewFeed = null } = routeData || {};
-  const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -59,12 +56,6 @@ export default function Client({ routeData = null }) {
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
   const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'films';
-
-  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
-    activeTab: 'likes',
-    auth,
-    routeData,
-  });
   const {
     canViewPrivateContent,
     favoriteShowcase,
@@ -454,28 +445,32 @@ export default function Client({ routeData = null }) {
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, setReviews, toast]
   );
 
-  return (
-    <AccountSectionStateProvider value={sectionProviderValue}>
-      <LikesView
-        activeSegment={activeSegment}
-        favoriteShowcase={favoriteShowcase}
-        handleLike={handleLike}
-        handleRequestRemoveLike={handleRequestRemoveLike}
-        handleSegmentChange={handleSegmentChange}
-        handleToggleShowcase={handleToggleShowcase}
-        isLikedListsLoading={isLikedListsLoading}
-        isReviewsLoading={isReviewsLoading}
-        isShowcaseSaving={isShowcaseSaving}
-        likedLists={likedLists}
-        likedListsError={likedListsError}
-        likes={likes}
-        persistShowcase={persistShowcase}
-        reviews={reviews}
-        reviewsTotalCount={totalReviewsCount}
-        reviewsError={reviewsError}
-        showcaseMap={showcaseMap}
-        watchedItems={watchedItems}
-      />
-    </AccountSectionStateProvider>
-  );
+  return {
+    activeSegment,
+    favoriteShowcase,
+    handleLike,
+    handleRequestRemoveLike,
+    handleSegmentChange,
+    handleToggleShowcase,
+    isLikedListsLoading,
+    isReviewsLoading,
+    isShowcaseSaving,
+    likedLists,
+    likedListsError,
+    likes,
+    persistShowcase,
+    providerValue: sectionProviderValue,
+    reviews,
+    reviewsError,
+    reviewsTotalCount: totalReviewsCount,
+    showcaseMap,
+    watchedItems,
+  };
 }
+
+export default createAccountSectionClient({
+  activeTab: 'likes',
+  displayName: 'AccountLikesClient',
+  View: LikesView,
+  useSectionClientState: useLikesClientState,
+});

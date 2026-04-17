@@ -1,14 +1,15 @@
 'use client';
 
+import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
-export default function RatingStars({ rating }) {
+export default function RatingStars({ className = '', rating }) {
   if (!Number.isFinite(rating)) return null;
 
   const normalized = rating > 5 ? rating / 2 : Math.max(0, Math.min(5, rating));
 
   return (
-    <div className="text-success flex items-center gap-0.5" aria-label={`${normalized}/5`}>
+    <span className={cn('text-success inline-flex items-center gap-0.5 align-middle', className)} aria-label={`${normalized}/5`}>
       {Array.from({ length: 5 }, (_, index) => {
         const fill = Math.max(0, Math.min(1, normalized - index));
 
@@ -25,6 +26,6 @@ export default function RatingStars({ rating }) {
           </span>
         );
       })}
-    </div>
+    </span>
   );
 }

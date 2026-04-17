@@ -1,5 +1,3 @@
-'use client';
-
 import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import { normalizeTimestamp } from '@/core/services/shared/data-utils';
 import { isMovieMediaType } from '@/core/utils/media';
@@ -78,6 +76,38 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     watchProviders:
       payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
   };
+}
+
+export function normalizeFavoriteShowcaseItem(value = {}) {
+  const normalized = normalizeMediaPayload(value, value);
+
+  if (!normalized.entityId || !isMovieMediaType(normalized.entityType)) {
+    return null;
+  }
+
+  return {
+    addedAt: normalized.addedAt,
+    backdrop_path: normalized.backdrop_path,
+    entityId: normalized.entityId,
+    entityType: normalized.entityType,
+    first_air_date: normalized.first_air_date,
+    id: normalized.entityId,
+    mediaKey: normalized.mediaKey,
+    media_type: normalized.media_type,
+    name: normalized.name,
+    original_name: normalized.original_name,
+    original_title: normalized.original_title,
+    poster_path: normalized.poster_path,
+    position: normalized.position,
+    release_date: normalized.release_date,
+    title: normalized.title,
+    updatedAt: normalized.updatedAt,
+    vote_average: normalized.vote_average,
+  };
+}
+
+export function normalizeFavoriteShowcaseItems(value = []) {
+  return normalizeArray(value).map(normalizeFavoriteShowcaseItem).filter(Boolean);
 }
 
 export function assertMoviePayload(payload = {}, message = 'Only movies are supported') {

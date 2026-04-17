@@ -13,9 +13,23 @@ async function postActivityEvent({ eventType, payload = {} }) {
   });
 }
 
+async function deleteActivityEvent(payload = {}) {
+  return requestApiJson('/api/activity/events', {
+    method: 'DELETE',
+    body: payload,
+  });
+}
+
 export function fireActivityEvent(eventType, payload = {}) {
   return postActivityEvent({ eventType, payload }).catch((error) => {
     console.error('[ActivityEvents] Failed to dispatch event:', error);
+    throw error;
+  });
+}
+
+export function removeActivityEvents(payload = {}) {
+  return deleteActivityEvent(payload).catch((error) => {
+    console.error('[ActivityEvents] Failed to remove activity:', error);
     throw error;
   });
 }

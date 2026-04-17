@@ -7,7 +7,14 @@ import {
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
-import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
+import {
+  buildMediaCollectionStatusSubscriptionKey,
+  buildUserMediaCollectionSubscriptionKey,
+  fetchMediaCollectionStatus,
+  fetchUserMediaCollection,
+  refreshMediaCollectionAccountSummary,
+  resolveMediaCollectionRpcRow,
+} from '@/core/services/shared/media-collection.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 import {
@@ -15,22 +22,11 @@ import {
   createMediaRow,
   ensureUserId,
   normalizeMediaPayload,
-  resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
-import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
-
-function resolveRpcRow(data) {
-  if (Array.isArray(data)) {
-    return data[0] || null;
-  }
-
-  if (data && typeof data === 'object') {
-    return data;
-  }
-
-  return null;
-}
+import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
+import { isUserMediaWatched, markUserWatched } from '@/core/services/media/watched.service';
 
 function buildLikeRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage likes');
@@ -44,24 +40,13 @@ function buildLikeRef(userId, media) {
   };
 }
 
-function buildMediaIdentity(media) {
-  return {
-    entityId: media?.entityId ?? media?.id ?? null,
-    entityType: media?.entityType ?? media?.media_type ?? null,
-  };
-}
-
 function getLikeStatusSubscriptionKey({ media, userId }) {
-  return buildPollingSubscriptionKey('likes:status', {
-    media: buildMediaIdentity(media),
-    userId,
-  });
+  return buildMediaCollectionStatusSubscriptionKey('likes', { media, userId });
 }
 
 function getUserLikesSubscriptionKey(userId, options = {}) {
-  return buildPollingSubscriptionKey('likes:user', {
+  return buildUserMediaCollectionSubscriptionKey('likes', userId, {
     limitCount: options.limitCount ?? null,
-    userId,
   });
 }
 
@@ -69,14 +54,6 @@ function getFavoriteShowcaseSubscriptionKey(userId) {
   return buildPollingSubscriptionKey('likes:favorite-showcase', {
     userId,
   });
-}
-
-function refreshAccountSummary(userId) {
-  if (!userId) {
-    return;
-  }
-
-  scheduleAccountSummaryRefresh(userId);
 }
 
 function buildFavoriteShowcaseItem(media = {}) {
@@ -112,50 +89,20 @@ function buildFavoriteShowcaseItem(media = {}) {
 }
 
 async function fetchLikeStatus({ media, userId }) {
-  if (!userId || !media) {
-    return {
+  return fetchMediaCollectionStatus({
+    emptyValue: {
       isLiked: false,
       like: null,
-    };
-  }
-
-  const likeRef = buildLikeRef(userId, media);
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      entityId: media?.entityId ?? media?.id ?? null,
-      entityType: media?.entityType ?? media?.media_type ?? null,
-      mediaKey: likeRef.id,
-      resource: 'like-status',
-      userId,
     },
+    media,
+    mediaKey: userId && media ? buildLikeRef(userId, media).id : null,
+    resource: 'like-status',
+    userId,
   });
-
-  return (
-    payload?.data || {
-      isLiked: false,
-      like: null,
-    }
-  );
 }
 
 async function fetchLikes(userId, options = {}) {
-  if (!userId) {
-    return [];
-  }
-
-  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null;
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      activeTab: options.activeTab || null,
-      cursor: options.cursor || null,
-      limit: resolvedLimitCount,
-      limitCount: resolvedLimitCount,
-      resource: 'likes',
-      userId,
-    },
-  });
-
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return fetchUserMediaCollection('likes', userId, options);
 }
 
 async function readFavoriteShowcase(userId) {
@@ -257,7 +204,7 @@ export async function updateFavoriteShowcase({ items = [], userId }) {
   const showcase = await writeFavoriteShowcase(userId, items);
 
   primePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), showcase);
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return showcase;
 }
@@ -279,7 +226,7 @@ export async function toggleUserLike({ media, userId }) {
 
   assertSupabaseResult(rpcResult, 'Like could not be updated');
 
-  const rpcRow = resolveRpcRow(rpcResult.data);
+  const rpcRow = resolveMediaCollectionRpcRow(rpcResult.data);
   const isLiked = rpcRow?.is_liked === true;
 
   if (!isLiked) {
@@ -287,13 +234,28 @@ export async function toggleUserLike({ media, userId }) {
   } else {
     const normalizedType = assertMoviePayload(media, 'Only movies are supported in likes');
     const entityId = String(media?.entityId ?? media?.id ?? '').trim();
+    const mediaKey = buildMediaItemKey(normalizedType, entityId);
+    const alreadyWatched = await isUserMediaWatched({
+      mediaKey,
+      userId,
+    });
 
-    fireActivityEvent(ACTIVITY_EVENT_TYPES.MEDIA_LIKED, {
+    if (!alreadyWatched) {
+      await markUserWatched({
+        media,
+        sourceLastAction: 'like',
+        userId,
+      });
+    }
+
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.LIKED_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
-        eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
-        subjectId: entityId,
-        subjectType: normalizedType,
+        primaryRef: buildActivitySubjectRef({
+          subjectId: entityId,
+          subjectType: normalizedType,
+        }),
+        slotType: ACTIVITY_SLOT_TYPES.LIKED_ENTRY,
       }),
       subjectId: entityId,
       subjectPoster: media?.posterPath || media?.poster_path || null,
@@ -312,7 +274,7 @@ export async function toggleUserLike({ media, userId }) {
   invalidatePollingSubscription(getUserLikesSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return nextResult;
 }
@@ -329,7 +291,7 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
 
   assertSupabaseResult(rpcResult, 'Like could not be removed');
 
-  const rpcRow = resolveRpcRow(rpcResult.data);
+  const rpcRow = resolveMediaCollectionRpcRow(rpcResult.data);
 
   if (rpcRow?.removed) {
     await removeLikeFromShowcase(userId, resolvedMediaKey);
@@ -348,7 +310,7 @@ export async function removeUserLike({ media = null, mediaKey = null, userId }) 
   invalidatePollingSubscription(getFavoriteShowcaseSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return {
     mediaKey: resolvedMediaKey,

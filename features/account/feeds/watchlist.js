@@ -14,6 +14,7 @@ import {
   getDecadeOptions,
   hasActiveMediaFilters,
   parseMediaFilters,
+  parsePageFromSearch,
   toMediaQueryValues,
 } from '@/features/account/filtering';
 import { AccountMediaFilterBar } from '@/features/account/shared/content-filters';
@@ -30,11 +31,6 @@ function parseWatchlistMediaFilters(search) {
   return parseMediaFilters(search, {
     allowedEyeFlags: WATCHLIST_ALLOWED_EYE_FLAGS,
   });
-}
-
-function parsePageFromSearch(search) {
-  const parsed = Number(search.get('page') || '1');
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
 }
 
 export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwner, watchlist, onRemoveItem }) {
@@ -57,6 +53,7 @@ export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwn
     () => applyMediaFilters(watchlist, mediaFilters, { watchlistKeys }),
     [mediaFilters, watchlist, watchlistKeys]
   );
+  const hasFilters = hasActiveMediaFilters(mediaFilters);
   useEffect(() => {
     setMediaFilters(initialMediaFilters);
     setActivePage(initialPage);
@@ -147,7 +144,16 @@ export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwn
             genreOptions={genreOptions}
             visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
             onChange={updateFilters}
-            onReset={hasActiveMediaFilters(mediaFilters) ? handleResetFilters : null}
+            onReset={hasFilters ? handleResetFilters : null}
+          />
+        ) : hasFilters ? (
+          <AccountMediaFilterBar
+            filters={mediaFilters}
+            decadeOptions={decadeOptions}
+            genreOptions={genreOptions}
+            visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
+            onChange={updateFilters}
+            onReset={handleResetFilters}
           />
         ) : null
       }

@@ -34,14 +34,22 @@ function isRatingOnlyReview({ rating, reviewText }) {
   return rating !== null && !reviewText.trim();
 }
 
-function getPrimaryActionLabel({ hasExistingReview, rating, reviewText }) {
+function getPrimaryActionLabel({ hasExistingReview, isList = false, rating, reviewText }) {
+  if (isList) {
+    return hasExistingReview ? 'Update Comment' : 'Publish Comment';
+  }
+
   const isRatingOnly = isRatingOnlyReview({ rating, reviewText });
 
   if (hasExistingReview) return isRatingOnly ? 'Update Rating' : 'Update Review';
   return isRatingOnly ? 'Save Rating' : 'Publish Review';
 }
 
-function getSuccessMessage({ hasExistingReview, rating, reviewText }) {
+function getSuccessMessage({ hasExistingReview, isList = false, rating, reviewText }) {
+  if (isList) {
+    return hasExistingReview ? 'Your comment was updated' : 'Your comment was published';
+  }
+
   const isRatingOnly = isRatingOnlyReview({ rating, reviewText });
 
   if (hasExistingReview) return isRatingOnly ? 'Your rating was updated' : 'Your review was updated';
@@ -142,13 +150,14 @@ function buildUpdatedReview({
   };
 
   const docPath = review?.docPath || (reviewUserId ? buildReviewDocPath(nextSubject, reviewUserId) : null);
+  const resolvedRating = nextSubject.subjectType === 'list' ? null : rating;
 
   return {
     ...review,
     ...nextSubject,
     content,
     isSpoiler,
-    rating,
+    rating: resolvedRating,
     createdAt: review?.createdAt || nowIso,
     updatedAt: nowIso,
     docPath,
@@ -167,11 +176,15 @@ function buildUpdatedReview({
   };
 }
 
-function FooterMeta({ hasText, trimmedTextLength, validationError }) {
+function FooterMeta({ hasText, isList = false, trimmedTextLength, validationError }) {
   return (
     <div>
       <div className="text-xs text-black/70">
-        {hasText ? `${trimmedTextLength} characters` : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
+        {hasText
+          ? `${trimmedTextLength} characters`
+          : isList
+            ? `Comment required (${REVIEW_MIN_LENGTH}+ characters)`
+            : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
       </div>
       {validationError && <div className="text-error text-xs">Please resolve validation before saving</div>}
     </div>
@@ -224,9 +237,11 @@ export default function ReviewEditorModal({ close, data }) {
 
   const hasExistingReview = Boolean(review);
   const subjectContext = useMemo(() => resolveSubjectContext(data, review), [data, review]);
+  const isListSubject = subjectContext?.subjectType === 'list';
+  const initialRating = isListSubject ? null : (review?.rating ?? null);
 
   const [reviewText, setReviewText] = useState(review?.content || '');
-  const [rating, setRating] = useState(review?.rating ?? null);
+  const [rating, setRating] = useState(initialRating);
   const [isSpoiler, setIsSpoiler] = useState(Boolean(review?.isSpoiler));
   const [isSaving, setIsSaving] = useState(false);
 
@@ -241,8 +256,11 @@ export default function ReviewEditorModal({ close, data }) {
       getReviewValidationError({
         content: reviewText,
         rating,
+        allowRating: !isListSubject,
+        requireText: isListSubject,
+        textLabel: isListSubject ? 'comment' : 'review',
       }),
-    [reviewText, rating]
+    [isListSubject, reviewText, rating]
   );
 
   async function handleSubmit(event) {
@@ -267,6 +285,7 @@ export default function ReviewEditorModal({ close, data }) {
 
     const content = trimmedText;
     const spoiler = content ? isSpoiler : false;
+    const savedRating = isListSubject ? null : rating;
 
     setIsSaving(true);
 
@@ -279,14 +298,14 @@ export default function ReviewEditorModal({ close, data }) {
               list: subjectContext.list,
               listId: subjectContext.listId,
               ownerId: subjectContext.ownerId,
-              rating,
+              rating: null,
               user,
             })
           : await upsertMediaReview({
               content,
               isSpoiler: spoiler,
               media: subjectContext.media,
-              rating,
+              rating: savedRating,
               user,
             });
 
@@ -296,11 +315,11 @@ export default function ReviewEditorModal({ close, data }) {
         user,
         content,
         isSpoiler: spoiler,
-        rating,
+        rating: savedRating,
       });
 
       onSuccess?.(nextReview);
-      toast.success(getSuccessMessage({ hasExistingReview, rating, reviewText: content }));
+      toast.success(getSuccessMessage({ hasExistingReview, isList: isListSubject, rating: savedRating, reviewText: content }));
       close(nextReview);
     } catch (error) {
       toast.error(error?.message || 'Review could not be saved');
@@ -323,10 +342,17 @@ export default function ReviewEditorModal({ close, data }) {
   return (
     <Container
       className="w-full sm:w-[640px]"
-      header={<RatingSelector value={rating} onChange={setRating} />}
+      header={isListSubject ? null : <RatingSelector value={rating} onChange={setRating} />}
       close={close}
       footer={{
-        left: <FooterMeta hasText={hasText} trimmedTextLength={trimmedTextLength} validationError={validationError} />,
+        left: (
+          <FooterMeta
+            hasText={hasText}
+            isList={isListSubject}
+            trimmedTextLength={trimmedTextLength}
+            validationError={validationError}
+          />
+        ),
         right: (
           <>
             <Button type="button" onClick={close} className={SECONDARY_BUTTON_CLASS}>
@@ -338,7 +364,7 @@ export default function ReviewEditorModal({ close, data }) {
               disabled={isSaving || Boolean(validationError)}
               className={PRIMARY_BUTTON_CLASS}
             >
-              {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, rating, reviewText })}
+              {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, isList: isListSubject, rating, reviewText })}
             </Button>
           </>
         ),
@@ -348,7 +374,11 @@ export default function ReviewEditorModal({ close, data }) {
         <Textarea
           maxLength={800}
           value={reviewText}
-          placeholder={`Add your thoughts about ${modalSubjectTitle} (optional)`}
+          placeholder={
+            isListSubject
+              ? `Share your thoughts on ${modalSubjectTitle}`
+              : `Add your thoughts about ${modalSubjectTitle} (optional)`
+          }
           onChange={handleTextChange}
           className={{
             wrapper: 'flex',

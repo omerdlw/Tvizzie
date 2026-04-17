@@ -8,7 +8,6 @@ import {
   useSeededFeedState,
 } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
-import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
@@ -17,25 +16,17 @@ import {
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { useAccountSectionEngine } from '../shared/section-engine';
-import { AccountSectionStateProvider } from '../shared/section-context';
+import { createAccountSectionClient } from '../../shared/section-factory';
 import ReviewsView from './view';
 
-export default function Client({ routeData = null }) {
+function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionState }) {
   const { initialReviewFeed = null } = routeData || {};
-  const auth = useAuth();
   const { openModal } = useModal();
   const toast = useToast();
   const [watchedItems, setWatchedItems] = useState([]);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const pendingLikesRef = useRef(new Map());
-
-  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
-    activeTab: 'reviews',
-    auth,
-    routeData,
-  });
   const {
     canViewProfileCollections,
     canViewPrivateContent,
@@ -324,27 +315,29 @@ export default function Client({ routeData = null }) {
     [auth.user?.id, isOwner, setReviews, toast]
   );
 
-  return (
-    <AccountSectionStateProvider
-      value={{
-        ...sectionProviderValue,
-        itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
-      }}
-    >
-      <ReviewsView
-        feedError={feedError}
-        hasMore={hasMore}
-        isFeedLoading={isFeedLoading}
-        isLoadingMore={isLoadingMore}
-        likes={likes}
-        loadReviews={loadReviews}
-        reviews={reviews}
-        totalReviewCount={totalReviewCount}
-        watchedItems={watchedItems}
-        handleDeleteReview={handleDeleteReview}
-        handleEditReview={handleEditReview}
-        handleLike={handleLike}
-      />
-    </AccountSectionStateProvider>
-  );
+  return {
+    feedError,
+    handleDeleteReview,
+    handleEditReview,
+    handleLike,
+    hasMore,
+    isFeedLoading,
+    isLoadingMore,
+    likes,
+    loadReviews,
+    providerValue: {
+      ...sectionProviderValue,
+      itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+    },
+    reviews,
+    totalReviewCount,
+    watchedItems,
+  };
 }
+
+export default createAccountSectionClient({
+  activeTab: 'reviews',
+  displayName: 'AccountReviewsClient',
+  View: ReviewsView,
+  useSectionClientState: useReviewsClientState,
+});

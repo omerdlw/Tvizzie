@@ -68,7 +68,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
 
         return (
           <div key={link.key} className={cn('flex h-10 items-center', !isLast && 'border-r border-black/10')}>
-            <Tooltip className="rounded bg-white text-black" text={link.label}>
+            <Tooltip className="rounded-[10px] bg-white text-black" text={link.label}>
               <a
                 href={link.getUrl(externalIds[link.key])}
                 target="_blank"

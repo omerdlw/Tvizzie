@@ -52,6 +52,8 @@ function getNotificationIcon(type) {
     case NOTIFICATION_TYPES.REVIEW_LIKE:
     case NOTIFICATION_TYPES.LIST_LIKE:
       return 'solar:heart-bold';
+    case NOTIFICATION_TYPES.LIST_COMMENT:
+      return 'solar:chat-round-bold';
     default:
       return 'solar:bell-bold';
   }
@@ -77,6 +79,16 @@ function getNotificationSubject(payload, type) {
     };
   }
 
+  if (type === NOTIFICATION_TYPES.LIST_COMMENT) {
+    if (payload?.list && typeof payload.list === 'object') return payload.list;
+    if (payload?.subject && typeof payload.subject === 'object') return payload.subject;
+
+    return {
+      href: payload?.listHref || payload?.subjectHref || null,
+      title: payload?.listTitle || payload?.subjectTitle || null,
+    };
+  }
+
   return null;
 }
 
@@ -92,6 +104,16 @@ function InlineEntity({ href, children, muted = false }) {
   );
 }
 
+function InlineEntityName({ href, children }) {
+  return href ? (
+    <Link href={href} className="truncate text-sm font-semibold">
+      {children}
+    </Link>
+  ) : (
+    <span className="truncate text-sm font-semibold">{children}</span>
+  );
+}
+
 function NotificationContent({ type, actor, payload }) {
   const actorName = actor?.displayName || actor?.username || 'Someone';
   const actorHref = actor?.username ? `/account/${actor.username}` : null;
@@ -101,28 +123,28 @@ function NotificationContent({ type, actor, payload }) {
     case NOTIFICATION_TYPES.FOLLOW_REQUEST:
       return (
         <p className="text-sm">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> requested to follow you
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> requested to follow you
         </p>
       );
 
     case NOTIFICATION_TYPES.FOLLOW_ACCEPTED:
       return (
         <p className="text-sm">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> accepted your follow request
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> accepted your follow request
         </p>
       );
 
     case NOTIFICATION_TYPES.NEW_FOLLOWER:
       return (
         <p className="text-sm">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> started following you
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> started following you
         </p>
       );
 
     case NOTIFICATION_TYPES.REVIEW_LIKE:
       return (
         <p className="text-sm">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> liked your review of{' '}
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your review of{' '}
           <InlineEntity href={subject?.href}>{subject?.title || 'a title'}</InlineEntity>
         </p>
       );
@@ -130,7 +152,15 @@ function NotificationContent({ type, actor, payload }) {
     case NOTIFICATION_TYPES.LIST_LIKE:
       return (
         <p className="text-sm">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> liked your list{' '}
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your list{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.LIST_COMMENT:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> commented on your list{' '}
           <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
         </p>
       );
@@ -138,7 +168,7 @@ function NotificationContent({ type, actor, payload }) {
     default:
       return (
         <p className="text-sm text-black/70">
-          <InlineEntity href={actorHref}>{actorName}</InlineEntity> interacted with you
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> interacted with you
         </p>
       );
   }
@@ -168,7 +198,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
         isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
       )}
     >
-      <div className="center size-10 overflow-hidden rounded-[10px] border border-black/5">
+      <div className="center size-10 shrink-0 overflow-hidden rounded-[10px]">
         {notification.actor ? (
           <img
             src={avatarSrc}
@@ -392,9 +422,7 @@ export default function NotificationsModal({ close, header, data }) {
         {isLoading ? (
           Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
         ) : notifications.length === 0 ? (
-          <div className="center h-full min-h-60 py-20 text-sm font-medium text-black/60">
-            You have no notifications yet
-          </div>
+          <div className="center h-screen text-sm font-medium text-black/50">You have no notifications yet</div>
         ) : (
           notifications.map((notification) => (
             <NotificationRow

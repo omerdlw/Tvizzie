@@ -30,6 +30,8 @@ function normalizePayloadObject(value) {
   return value;
 }
 
+const REVIEW_MIN_LENGTH = 10;
+
 function resolveWriteStatusCode(message) {
   const normalizedMessage = normalizeValue(message).toLowerCase();
 
@@ -120,6 +122,18 @@ async function upsertListReviewLegacy({ admin, body, userId }) {
     throw new Error('listId is required');
   }
 
+  if (rating !== null) {
+    throw new Error('Lists only support comments');
+  }
+
+  if (!content) {
+    throw new Error('Write a comment to share your thoughts');
+  }
+
+  if (content.length < REVIEW_MIN_LENGTH) {
+    throw new Error(`Comment must be at least ${REVIEW_MIN_LENGTH} characters long`);
+  }
+
   const existingResult = await admin
     .from('list_reviews')
     .select('created_at,payload')
@@ -138,7 +152,7 @@ async function upsertListReviewLegacy({ admin, body, userId }) {
     ...payloadPatch,
     content,
     isSpoiler: content ? isSpoiler : false,
-    rating,
+    rating: null,
   };
 
   const upsertResult = await admin.from('list_reviews').upsert(
@@ -146,7 +160,7 @@ async function upsertListReviewLegacy({ admin, body, userId }) {
       list_id: listId,
       user_id: userId,
       content,
-      rating,
+      rating: null,
       is_spoiler: content ? isSpoiler : false,
       payload,
       created_at: existingResult.data?.created_at || nowIso,

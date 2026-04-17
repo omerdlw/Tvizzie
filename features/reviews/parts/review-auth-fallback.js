@@ -2,12 +2,15 @@
 
 import { Button } from '@/ui/elements';
 
-export default function ReviewAuthFallback({ onSignIn, title }) {
+export default function ReviewAuthFallback({ mode = 'review', onSignIn, title }) {
+  const helperText =
+    mode === 'comment' ? `Sign in to leave a comment on ${title}.` : `Sign in to leave a rating or review for ${title}.`;
+
   return (
     <div className="flex w-full items-center justify-between border-y border-black/10 py-4">
       <div className="min-w-0">
         <p className="text-sm font-semibold">Join the conversation</p>
-        <p className="text-xs text-black/70">Sign in to leave a rating or review for {title}.</p>
+        <p className="text-xs text-black/70">{helperText}</p>
       </div>
       <Button
         type="button"

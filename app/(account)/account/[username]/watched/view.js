@@ -1,25 +1,25 @@
 import AccountWatchedFeed from '@/features/account/feeds/watched';
-import { AccountPageShell } from '@/features/account/shared/layout';
-import { buildAccountPageShellProps, useAccountSectionState } from '../shared/section-context';
-import Registry from './registry';
+import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
 
-export default function WatchedView({ loadError, watchedItems, handleRequestRemoveWatchedItem }) {
-  const sectionState = useAccountSectionState();
-  const shellProps = buildAccountPageShellProps(sectionState, {
-    activeSection: 'watched',
-    skeletonVariant: 'collection',
-  });
+export const Registry = createAccountSectionRegistry({
+  displayName: 'AccountWatchedRegistry',
+  navDescription: 'Watched',
+  navRegistrySource: 'account-watched',
+});
 
-  return (
-    <AccountPageShell {...shellProps} registry={<Registry />}>
-      <AccountWatchedFeed
-        auth={sectionState.auth}
-        canShowWatchedGrid={sectionState.canViewProfileCollections}
-        isOwner={sectionState.isOwner}
-        loadError={loadError}
-        watchedItems={watchedItems}
-        onRemoveItem={handleRequestRemoveWatchedItem}
-      />
-    </AccountPageShell>
-  );
-}
+export default createAccountSectionView({
+  activeSection: 'watched',
+  displayName: 'AccountWatchedView',
+  Registry,
+  skeletonVariant: 'collection',
+  renderContent: (sectionState, { handleRequestRemoveWatchedItem, loadError, watchedItems }) => (
+    <AccountWatchedFeed
+      auth={sectionState.auth}
+      canShowWatchedGrid={sectionState.canViewProfileCollections}
+      isOwner={sectionState.isOwner}
+      loadError={loadError}
+      watchedItems={watchedItems}
+      onRemoveItem={handleRequestRemoveWatchedItem}
+    />
+  ),
+});

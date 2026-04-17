@@ -1,22 +1,20 @@
 'use client';
 
-import { useAuth } from '@/core/modules/auth';
-import { useAccountSectionEngine } from '../shared/section-engine';
-import { AccountSectionStateProvider } from '../shared/section-context';
+import { createAccountSectionClient } from '../../shared/section-factory';
 import WatchlistView from './view';
 
-export default function Client({ routeData = null }) {
-  const auth = useAuth();
-  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
-    activeTab: 'watchlist',
-    auth,
-    routeData,
-  });
+function useWatchlistClientState({ sectionState }) {
   const { handleRequestRemoveWatchlistItem, watchlist } = sectionState;
 
-  return (
-    <AccountSectionStateProvider value={sectionProviderValue}>
-      <WatchlistView watchlist={watchlist} handleRequestRemoveWatchlistItem={handleRequestRemoveWatchlistItem} />
-    </AccountSectionStateProvider>
-  );
+  return {
+    handleRequestRemoveWatchlistItem,
+    watchlist,
+  };
 }
+
+export default createAccountSectionClient({
+  activeTab: 'watchlist',
+  displayName: 'AccountWatchlistClient',
+  View: WatchlistView,
+  useSectionClientState: useWatchlistClientState,
+});

@@ -32,7 +32,6 @@ function shouldEnableInteractiveBoundary(pathname = '/') {
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account') ||
-    pathname.startsWith('/admin') ||
     pathname.startsWith('/sign-in') ||
     pathname.startsWith('/sign-up')
   );

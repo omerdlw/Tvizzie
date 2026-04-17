@@ -16,8 +16,9 @@ import {
   resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
 import { getUserAccount } from '@/core/services/account/account.service';
-import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
-import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent, removeActivityEvents } from '@/core/services/activity/activity-events.service';
+import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
@@ -512,13 +513,16 @@ export async function createUserList({ userId, title, description = '', coverUrl
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: userId,
-      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
-      subjectId: insertResult.data.id,
-      subjectType: 'list',
+      primaryRef: buildActivitySubjectRef({
+        subjectId: insertResult.data.id,
+        subjectType: 'list',
+      }),
+      slotType: ACTIVITY_SLOT_TYPES.LIST_CREATED,
     }),
     listId: insertResult.data.id,
     listSlug: slug,
     listTitle: validatedTitle,
+    subjectOwnerId: userId,
     ownerUsername: ownerSnapshot?.username || null,
     subjectId: insertResult.data.id,
     subjectTitle: validatedTitle,
@@ -609,13 +613,16 @@ export async function createUserListWithItems({ userId, title, description = '',
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
       actorUserId: userId,
-      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
-      subjectId: insertResult.data.id,
-      subjectType: 'list',
+      primaryRef: buildActivitySubjectRef({
+        subjectId: insertResult.data.id,
+        subjectType: 'list',
+      }),
+      slotType: ACTIVITY_SLOT_TYPES.LIST_CREATED,
     }),
     listId: insertResult.data.id,
     listSlug: slug,
     listTitle: validatedTitle,
+    subjectOwnerId: userId,
     ownerUsername: ownerSnapshot?.username || null,
     subjectId: insertResult.data.id,
     subjectTitle: validatedTitle,
@@ -671,23 +678,6 @@ export async function updateUserList({ userId, listId, title, description = '', 
 
   assertSupabaseResult(updateResult, 'List could not be updated');
 
-  fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
-    dedupeKey: buildCanonicalActivityDedupeKey({
-      actorUserId: userId,
-      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
-      subjectId: listId,
-      subjectType: 'list',
-    }),
-    listId,
-    listSlug: nextPayload.slug || listId,
-    listTitle: validatedTitle,
-    ownerUsername: ownerSnapshot?.username || null,
-    subjectId: listId,
-    subjectPoster: normalizedCoverUrl || existingPayload.coverUrl || null,
-    subjectTitle: validatedTitle,
-    subjectType: 'list',
-  });
-
   return fetchListById(userId, listId);
 }
 
@@ -699,6 +689,10 @@ export async function deleteUserList({ userId, listId }) {
   }
 
   const client = getSupabaseClient();
+  await removeActivityEvents({
+    action: 'delete-list-activity',
+    listId,
+  });
   const result = await client.from('lists').delete().eq('id', listId).eq('user_id', userId);
 
   assertSupabaseResult(result, 'List could not be deleted');
@@ -777,36 +771,6 @@ export async function toggleUserListItem({ userId, listId, media }) {
     };
   }
 
-  const listResult = await client
-    .from('lists')
-    .select('id,payload,poster_path,slug,title,user_id')
-    .eq('id', listId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  assertSupabaseResult(listResult, 'List could not be loaded after item update');
-
-  if (listResult.data) {
-    const listPayload =
-      listResult.data.payload && typeof listResult.data.payload === 'object' ? listResult.data.payload : {};
-
-    fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_ITEM_ADDED, {
-      dedupeKey: `list-item:${userId}:${listId}:${mediaPayload.mediaKey}`,
-      itemMediaId: mediaSnapshot.entityId,
-      itemMediaKey: mediaPayload.mediaKey,
-      itemPoster: mediaPayload.poster_path || null,
-      itemTitle: mediaPayload.title || 'Untitled',
-      listId,
-      listSlug: listResult.data.slug || listId,
-      listTitle: listResult.data.title || 'Untitled List',
-      ownerUsername: listPayload?.ownerSnapshot?.username || userId,
-      subjectId: listId,
-      subjectPoster: listPayload?.coverUrl || listResult.data.poster_path || mediaPayload.poster_path || null,
-      subjectTitle: listResult.data.title || 'Untitled List',
-      subjectType: 'list',
-    });
-  }
-
   return {
     isInList: true,
     item: {
@@ -870,23 +834,6 @@ export async function toggleListLike({ ownerId, listId, userId }) {
       subjectType: 'list',
     });
 
-    fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {
-      dedupeKey: buildCanonicalActivityDedupeKey({
-        actorUserId: userId,
-        eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
-        subjectId: listId,
-        subjectType: 'list',
-      }),
-      listId,
-      listSlug: listResult.data.slug || listId,
-      listTitle: listResult.data.title || 'Untitled List',
-      ownerUsername: listResult.data?.payload?.ownerSnapshot?.username || ownerId,
-      subjectId: listId,
-      subjectPoster:
-        listResult.data?.payload?.coverUrl || listResult.data?.payload?.previewItems?.[0]?.poster_path || null,
-      subjectTitle: listResult.data.title || 'Untitled List',
-      subjectType: 'list',
-    });
   }
 
   return isNowLiked;

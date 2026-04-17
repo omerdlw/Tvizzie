@@ -1,6 +1,6 @@
 'use client';
 
-import { PROFILE_TABS, getMediaTitle } from '../utils';
+import { PROFILE_TABS, getMediaTitle, removeAccountCollectionItem } from '../utils';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
 import { getUserAvatarUrl } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
@@ -13,26 +13,6 @@ import { getWatchlistDocRef, removeUserWatchlistItem } from '@/core/services/med
 import { removeUserWatchedItem } from '@/core/services/media/watched.service';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-function removeCollectionItem(items, itemToRemove) {
-  const removedItemId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
-  const removedMediaType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
-    .trim()
-    .toLowerCase();
-
-  return items.filter((currentItem) => {
-    if (itemToRemove?.mediaKey && currentItem?.mediaKey) {
-      return currentItem.mediaKey !== itemToRemove.mediaKey;
-    }
-
-    const currentItemId = String(currentItem?.entityId || currentItem?.id || '').trim();
-    const currentMediaType = String(currentItem?.media_type || currentItem?.entityType || '')
-      .trim()
-      .toLowerCase();
-
-    return currentItemId !== removedItemId || currentMediaType !== removedMediaType;
-  });
-}
 
 export function useAccountHeroHeight() {
   const heroRef = useRef(null);
@@ -381,7 +361,7 @@ export function useAccountPageActions({
 
       setLikes((currentLikes) => {
         previousLikes = currentLikes;
-        return removeCollectionItem(currentLikes, item);
+        return removeAccountCollectionItem(currentLikes, item);
       });
 
       try {
@@ -411,7 +391,7 @@ export function useAccountPageActions({
 
       setWatchlist((currentWatchlist) => {
         previousWatchlist = currentWatchlist;
-        return removeCollectionItem(currentWatchlist, item);
+        return removeAccountCollectionItem(currentWatchlist, item);
       });
 
       try {
@@ -441,7 +421,7 @@ export function useAccountPageActions({
 
       setWatched((currentWatched) => {
         previousWatched = currentWatched;
-        return removeCollectionItem(currentWatched, item);
+        return removeAccountCollectionItem(currentWatched, item);
       });
 
       try {

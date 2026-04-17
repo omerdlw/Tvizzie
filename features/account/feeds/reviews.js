@@ -8,9 +8,11 @@ import { motion, useReducedMotion } from 'framer-motion';
 import {
   REVIEW_FILTER_QUERY_KEYS,
   applyReviewFilters,
+  buildCollectionBasePath,
   buildManagedQueryString,
   collectReviewYears,
   hasActiveReviewFilters,
+  parsePageFromSearch,
   parseReviewFilters,
   toReviewQueryValues,
 } from '@/features/account/filtering';
@@ -22,11 +24,6 @@ import AccountSectionLayout from '../shared/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 const EMPTY_STATE_CLASS = 'border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm';
-
-function parsePageFromSearch(search) {
-  const parsed = Number(search.get('page') || '1');
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
-}
 
 function resolveMediaKey(item) {
   if (item?.mediaKey) {
@@ -82,7 +79,7 @@ export default function AccountReviewsFeed({
   const searchParamsKey = searchParams?.toString?.() || '';
   const reduceMotion = useReducedMotion();
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
-  const normalizedPathname = useMemo(() => String(pathname || '').replace(/\/page\/\d+$/i, '') || pathname, [pathname]);
+  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const initialReviewFilters = useMemo(
     () => parseReviewFilters(new URLSearchParams(searchParamsKey)),
     [searchParamsKey]
@@ -141,9 +138,9 @@ export default function AccountReviewsFeed({
       }
 
       const nextQuery = params.toString();
-      window.history.replaceState({}, '', nextQuery ? `${normalizedPathname}?${nextQuery}` : normalizedPathname);
+      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
     },
-    [enablePagination, normalizedPathname]
+    [collectionRootPath, enablePagination]
   );
 
   useEffect(() => {
@@ -192,7 +189,7 @@ export default function AccountReviewsFeed({
       title={title}
       titleHref={titleHref}
     >
-      {listedReviewCount > 0 ? (
+      {listedReviewCount > 0 || hasFilters ? (
         <AccountReviewFilterBar
           filters={reviewFilters}
           yearOptions={yearOptions}

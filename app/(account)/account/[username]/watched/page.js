@@ -1,9 +1,5 @@
-import Client from './client';
+import { createAccountRoutePage } from '../../shared/route-page';
 import { getUsernameAccountWatchedRouteData } from '@/core/services/account/account-route-data.server';
+import Client from './client';
 
-export default async function Page({ params }) {
-  const { username } = await params;
-  const routeData = await getUsernameAccountWatchedRouteData(username);
-
-  return <Client routeData={routeData} />;
-}
+export default createAccountRoutePage(Client, getUsernameAccountWatchedRouteData);

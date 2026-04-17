@@ -10,9 +10,11 @@ import {
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
-import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
-import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_EVENT_TYPES, fireActivityEvent, removeActivityEvents } from '@/core/services/activity/activity-events.service';
+import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 import { updateListReviewsCount } from '@/core/services/media/lists.service';
+import { isUserMediaWatched, markUserWatched } from '@/core/services/media/watched.service';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
@@ -37,6 +39,16 @@ function normalizeRating(value) {
 
 function normalizeReviewContent(value) {
   return String(value || '').trim();
+}
+
+function capitalizeLabel(value) {
+  const normalizedValue = normalizeReviewContent(value);
+
+  if (!normalizedValue) {
+    return '';
+  }
+
+  return `${normalizedValue.charAt(0).toUpperCase()}${normalizedValue.slice(1)}`;
 }
 
 function unwrapReviewWriteResult(payload = {}) {
@@ -85,6 +97,105 @@ function buildListSubjectMetadata({ list = null, listId, ownerId, ownerUsername 
     subjectSlug: resolvedSlug,
     subjectTitle: list?.title || 'Untitled List',
     subjectType: 'list',
+  };
+}
+
+function buildMediaOpinionDedupeKey(userId, subjectMetadata = {}) {
+  return buildCanonicalActivityDedupeKey({
+    actorUserId: userId,
+    primaryRef: buildActivitySubjectRef({
+      subjectId: subjectMetadata.subjectId,
+      subjectType: subjectMetadata.subjectType,
+    }),
+    slotType: ACTIVITY_SLOT_TYPES.MEDIA_OPINION,
+  });
+}
+
+function buildListOpinionDedupeKey(userId, subjectMetadata = {}) {
+  return buildCanonicalActivityDedupeKey({
+    actorUserId: userId,
+    primaryRef: buildActivitySubjectRef({
+      subjectId: subjectMetadata.subjectId,
+      subjectType: subjectMetadata.subjectType,
+    }),
+    slotType: ACTIVITY_SLOT_TYPES.LIST_OPINION,
+  });
+}
+
+function buildReviewCardPayload({ content, isSpoiler = false, rating = null, subjectMetadata = {}, user }) {
+  return {
+    content,
+    reviewContent: content,
+    reviewIsSpoiler: Boolean(isSpoiler),
+    reviewRating: rating,
+    subjectHref: subjectMetadata.subjectHref,
+    subjectId: subjectMetadata.subjectId,
+    subjectKey: subjectMetadata.subjectKey,
+    subjectOwnerId: subjectMetadata.subjectOwnerId || null,
+    subjectOwnerUsername: subjectMetadata.subjectOwnerUsername || null,
+    subjectPoster: subjectMetadata.subjectPoster || null,
+    subjectPreviewItems: Array.isArray(subjectMetadata.subjectPreviewItems) ? subjectMetadata.subjectPreviewItems : [],
+    subjectSlug: subjectMetadata.subjectSlug || null,
+    subjectTitle: subjectMetadata.subjectTitle,
+    subjectType: subjectMetadata.subjectType,
+    user: {
+      avatarUrl: user.avatarUrl || user.photoURL || null,
+      email: user.email || null,
+      id: user.id,
+      name: user.displayName || user.name || user.email || 'Anonymous User',
+      username: user.username || null,
+    },
+  };
+}
+
+function buildReviewLikeActivityPayload(review = {}) {
+  const subjectType = review.subjectType;
+  const subjectId = review.subjectId;
+  const reviewUserId = review.reviewUserId || review?.user?.id;
+  const reviewKey = review.subjectKey || review.mediaKey || null;
+
+  if (!subjectType || !subjectId || !reviewUserId || !reviewKey) {
+    return null;
+  }
+
+  return {
+    reviewKey,
+    reviewOwnerDisplayName: review?.user?.name || 'Anonymous User',
+    reviewOwnerId: reviewUserId,
+    reviewOwnerUsername: review?.user?.username || null,
+    reviewRating: review.rating ?? null,
+    subjectHref: review.subjectHref || null,
+    subjectId,
+    subjectOwnerId: review.subjectOwnerId || null,
+    subjectOwnerUsername: review.subjectOwnerUsername || null,
+    subjectPoster: review.subjectPoster || null,
+    subjectSlug: review.subjectSlug || null,
+    subjectTitle: review.subjectTitle || 'Untitled',
+    subjectType,
+  };
+}
+
+async function ensureWatchedBeforeMediaReview({ media, mediaKey, userId, watchedAt, hasText }) {
+  const alreadyWatched = await isUserMediaWatched({
+    mediaKey,
+    userId,
+  });
+
+  if (alreadyWatched) {
+    return {
+      autoMarkedWatched: false,
+    };
+  }
+
+  await markUserWatched({
+    media,
+    sourceLastAction: hasText ? 'review' : 'rating',
+    userId,
+    watchedAt,
+  });
+
+  return {
+    autoMarkedWatched: true,
   };
 }
 
@@ -148,16 +259,30 @@ export function getReviewMinLength() {
   return REVIEW_MIN_LENGTH;
 }
 
-export function getReviewValidationError({ content, rating }) {
+export function getReviewValidationError({
+  content,
+  rating,
+  allowRating = true,
+  requireText = false,
+  textLabel = 'review',
+}) {
   const normalizedContent = normalizeReviewContent(content);
   const normalizedRating = normalizeRating(rating);
+
+  if (!allowRating && normalizedRating !== null) {
+    return 'Lists only support comments';
+  }
+
+  if (requireText && !normalizedContent) {
+    return 'Write a comment to share your thoughts';
+  }
 
   if (!normalizedContent && normalizedRating === null) {
     return 'Add a score or write a review';
   }
 
   if (normalizedContent.length > 0 && normalizedContent.length < REVIEW_MIN_LENGTH) {
-    return `Review must be at least ${REVIEW_MIN_LENGTH} characters long`;
+    return `${capitalizeLabel(textLabel) || 'Review'} must be at least ${REVIEW_MIN_LENGTH} characters long`;
   }
 
   return null;
@@ -282,24 +407,26 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
   }
 
   const nowIso = new Date().toISOString();
+  await ensureWatchedBeforeMediaReview({
+    hasText: normalizedContent.length > 0,
+    media,
+    mediaKey: subjectMetadata.subjectKey,
+    userId: user.id,
+    watchedAt: nowIso,
+  });
+
   const payload = {
     authorId: user.id,
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
     rating: normalizedRating,
-    subjectHref: subjectMetadata.subjectHref,
-    subjectId: subjectMetadata.subjectId,
-    subjectKey: subjectMetadata.subjectKey,
-    subjectPoster: subjectMetadata.subjectPoster,
-    subjectTitle: subjectMetadata.subjectTitle,
-    subjectType: subjectMetadata.subjectType,
-    user: {
-      avatarUrl: user.avatarUrl || user.photoURL || null,
-      email: user.email || null,
-      id: user.id,
-      name: user.displayName || user.name || user.email || 'Anonymous User',
-      username: user.username || null,
-    },
+    ...buildReviewCardPayload({
+      content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      rating: normalizedRating,
+      subjectMetadata,
+      user,
+    }),
   };
   const writePayload = await requestApiJson('/api/reviews/write', {
     method: 'POST',
@@ -318,19 +445,15 @@ export async function upsertMediaReview({ media, user, rating = null, content, i
   const writeResult = unwrapReviewWriteResult(writePayload);
   const isCreated = writeResult?.created === true;
 
-  fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED, {
-    dedupeKey: buildCanonicalActivityDedupeKey({
-      actorUserId: user.id,
-      eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
-      subjectId: subjectMetadata.subjectId,
-      subjectType: subjectMetadata.subjectType,
+  fireActivityEvent(normalizedContent ? ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED : ACTIVITY_EVENT_TYPES.RATING_LOGGED, {
+    dedupeKey: buildMediaOpinionDedupeKey(user.id, subjectMetadata),
+    ...buildReviewCardPayload({
+      content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      rating: normalizedRating,
+      subjectMetadata,
+      user,
     }),
-    reviewMode: normalizedContent ? 'review' : 'rating',
-    subjectHref: subjectMetadata.subjectHref,
-    subjectId: subjectMetadata.subjectId,
-    subjectPoster: subjectMetadata.subjectPoster,
-    subjectTitle: subjectMetadata.subjectTitle,
-    subjectType: subjectMetadata.subjectType,
   });
 
   invalidatePollingSubscription(getMediaReviewsSubscriptionKey(media), {
@@ -364,6 +487,9 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
   const validationError = getReviewValidationError({
     content: normalizedContent,
     rating: normalizedRating,
+    allowRating: false,
+    requireText: true,
+    textLabel: 'comment',
   });
   const subjectMetadata = buildListSubjectMetadata({
     list,
@@ -389,24 +515,14 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
     authorId: user.id,
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
-    rating: normalizedRating,
-    subjectHref: subjectMetadata.subjectHref,
-    subjectId: subjectMetadata.subjectId,
-    subjectKey: subjectMetadata.subjectKey,
-    subjectOwnerId: subjectMetadata.subjectOwnerId,
-    subjectOwnerUsername: subjectMetadata.subjectOwnerUsername,
-    subjectPreviewItems: subjectMetadata.subjectPreviewItems,
-    subjectPoster: subjectMetadata.subjectPoster,
-    subjectSlug: subjectMetadata.subjectSlug,
-    subjectTitle: subjectMetadata.subjectTitle,
-    subjectType: subjectMetadata.subjectType,
-    user: {
-      avatarUrl: user.avatarUrl || user.photoURL || null,
-      email: user.email || null,
-      id: user.id,
-      name: user.displayName || user.name || user.email || 'Anonymous User',
-      username: user.username || null,
-    },
+    rating: null,
+    ...buildReviewCardPayload({
+      content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      rating: null,
+      subjectMetadata,
+      user,
+    }),
   };
   const writePayload = await requestApiJson('/api/reviews/write', {
     method: 'POST',
@@ -419,7 +535,7 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
         ...payload,
         updatedAt: nowIso,
       },
-      rating: normalizedRating,
+      rating: null,
     },
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
@@ -433,24 +549,29 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
     });
   }
 
-  fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED, {
-    dedupeKey: buildCanonicalActivityDedupeKey({
-      actorUserId: user.id,
-      eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
-      subjectId: subjectMetadata.subjectId,
-      subjectType: subjectMetadata.subjectType,
+  fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_COMMENTED, {
+    dedupeKey: buildListOpinionDedupeKey(user.id, subjectMetadata),
+    ...buildReviewCardPayload({
+      content: normalizedContent,
+      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+      rating: null,
+      subjectMetadata,
+      user,
     }),
-    reviewMode: normalizedContent ? 'review' : 'rating',
-    subjectHref: subjectMetadata.subjectHref,
-    subjectId: subjectMetadata.subjectId,
-    subjectOwnerId: subjectMetadata.subjectOwnerId,
-    subjectOwnerUsername: subjectMetadata.subjectOwnerUsername,
-    subjectPreviewItems: subjectMetadata.subjectPreviewItems,
-    subjectPoster: subjectMetadata.subjectPoster,
-    subjectSlug: subjectMetadata.subjectSlug,
-    subjectTitle: subjectMetadata.subjectTitle,
-    subjectType: subjectMetadata.subjectType,
   });
+
+  if (isCreated && ownerId !== user.id) {
+    fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_COMMENTED, {
+      listId,
+      listOwnerId: ownerId,
+      subjectId: subjectMetadata.subjectId,
+      subjectOwnerId: subjectMetadata.subjectOwnerId || ownerId,
+      subjectOwnerUsername: subjectMetadata.subjectOwnerUsername || null,
+      subjectSlug: subjectMetadata.subjectSlug || listId,
+      subjectTitle: subjectMetadata.subjectTitle || 'Untitled List',
+      subjectType: 'list',
+    });
+  }
 
   invalidatePollingSubscription(getListReviewsSubscriptionKey({ list, ownerId, listId }), {
     refetch: true,
@@ -467,7 +588,7 @@ export async function upsertListReview({ list, ownerId, listId, user, rating = n
     authorId: user.id,
     content: normalizedContent,
     isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
-    rating: normalizedRating,
+    rating: null,
     subjectHref: subjectMetadata.subjectHref,
     subjectId: subjectMetadata.subjectId,
     subjectKey: subjectMetadata.subjectKey,
@@ -497,6 +618,14 @@ export async function deleteMediaReview({ media, userId }) {
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const deleted = writeResult?.deleted !== false;
+
+  if (deleted) {
+    await removeActivityEvents({
+      action: 'delete-media-opinion',
+      subjectId: mediaSnapshot.entityId,
+      subjectType: mediaSnapshot.entityType,
+    });
+  }
 
   invalidatePollingSubscription(getMediaReviewsSubscriptionKey(media), {
     refetch: true,
@@ -532,6 +661,11 @@ export async function deleteListReview({ ownerId, listId, userId }) {
     return false;
   }
 
+  await removeActivityEvents({
+    action: 'delete-list-opinion',
+    listId,
+  });
+
   await updateListReviewsCount({
     ownerId,
     listId,
@@ -566,7 +700,7 @@ async function toggleReviewLikeByKey({ reviewKey, reviewUserId }) {
   return writeResult?.isNowLiked === true;
 }
 
-export async function toggleReviewLike({ media, reviewUserId, userId }) {
+export async function toggleReviewLike({ media, review = null, reviewUserId, userId }) {
   if (!media || !reviewUserId || !userId) {
     throw new Error('Media, reviewUserId, and userId are required to toggle a like');
   }
@@ -590,6 +724,36 @@ export async function toggleReviewLike({ media, reviewUserId, userId }) {
       subjectTitle: media.title || media.name || '',
       subjectType: mediaSnapshot.entityType,
     });
+
+    const activityPayload = buildReviewLikeActivityPayload(
+      review || {
+        rating: null,
+        reviewUserId,
+        subjectHref: `/${mediaSnapshot.entityType}/${mediaSnapshot.entityId}`,
+        subjectId: mediaSnapshot.entityId,
+        subjectKey: mediaKey,
+        subjectPoster: media?.posterPath || media?.poster_path || null,
+        subjectTitle: media.title || media.name || 'Untitled',
+        subjectType: mediaSnapshot.entityType,
+        user: {
+          id: reviewUserId,
+          name: 'Anonymous User',
+          username: null,
+        },
+      }
+    );
+
+    if (activityPayload) {
+      fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_LIKED, {
+        ...activityPayload,
+        dedupeKey: buildCanonicalActivityDedupeKey({
+          actorUserId: userId,
+          primaryRef: activityPayload.reviewKey,
+          secondaryRef: activityPayload.reviewOwnerId,
+          slotType: ACTIVITY_SLOT_TYPES.REVIEW_LIKE,
+        }),
+      });
+    }
   }
 
   invalidatePollingSubscription(getMediaReviewsSubscriptionKey(media), {
@@ -605,7 +769,7 @@ export async function toggleReviewLike({ media, reviewUserId, userId }) {
   return isNowLiked;
 }
 
-export async function toggleListReviewLike({ ownerId, listId, reviewUserId, userId }) {
+export async function toggleListReviewLike({ ownerId, listId, review = null, reviewUserId, userId }) {
   if (!ownerId || !listId || !reviewUserId || !userId) {
     throw new Error('ownerId, listId, reviewUserId, and userId are required to toggle a like');
   }
@@ -634,6 +798,42 @@ export async function toggleListReviewLike({ ownerId, listId, reviewUserId, user
       subjectTitle: listContext?.subjectTitle || 'Untitled List',
       subjectType: 'list',
     });
+
+    const activityPayload = buildReviewLikeActivityPayload(
+      review ||
+        (listContext
+        ? {
+            rating: null,
+            reviewUserId,
+            subjectHref: listContext.subjectHref,
+            subjectId: listContext.subjectId,
+            subjectKey: listContext.subjectKey,
+            subjectOwnerId: listContext.subjectOwnerId,
+            subjectOwnerUsername: listContext.subjectOwnerUsername,
+            subjectPoster: listContext.subjectPoster,
+            subjectSlug: listContext.subjectSlug,
+            subjectTitle: listContext.subjectTitle,
+            subjectType: listContext.subjectType,
+            user: {
+              id: reviewUserId,
+              name: 'Anonymous User',
+              username: null,
+            },
+          }
+        : null)
+    );
+
+    if (activityPayload) {
+      fireActivityEvent(ACTIVITY_EVENT_TYPES.REVIEW_LIKED, {
+        ...activityPayload,
+        dedupeKey: buildCanonicalActivityDedupeKey({
+          actorUserId: userId,
+          primaryRef: activityPayload.reviewKey,
+          secondaryRef: activityPayload.reviewOwnerId,
+          slotType: ACTIVITY_SLOT_TYPES.REVIEW_LIKE,
+        }),
+      });
+    }
   }
 
   invalidatePollingSubscription(getListReviewsSubscriptionKey({ list: null, ownerId, listId }), {
@@ -678,6 +878,7 @@ export async function toggleStoredReviewLike({ review, userId }) {
     return toggleListReviewLike({
       listId: review.subjectId,
       ownerId: review.subjectOwnerId,
+      review,
       reviewUserId: review.reviewUserId,
       userId,
     });
@@ -693,6 +894,7 @@ export async function toggleStoredReviewLike({ review, userId }) {
       entityType: review.subjectType,
       title: review.subjectTitle || 'Untitled',
     },
+    review,
     reviewUserId: review.reviewUserId,
     userId,
   });

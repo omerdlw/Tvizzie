@@ -2,34 +2,27 @@
 
 import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import {
-  buildPollingSubscriptionKey,
   createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
-import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
+import {
+  buildMediaCollectionStatusSubscriptionKey,
+  buildUserMediaCollectionSubscriptionKey,
+  fetchMediaCollectionStatus,
+  fetchUserMediaCollection,
+  refreshMediaCollectionAccountSummary,
+  resolveMediaCollectionRpcRow,
+} from '@/core/services/shared/media-collection.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
-import { requestApiJson } from '@/core/services/shared/api-request.service';
 import {
   createMediaPayload,
   ensureUserId,
   normalizeMediaPayload,
-  resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
-import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
-
-function resolveRpcRow(data) {
-  if (Array.isArray(data)) {
-    return data[0] || null;
-  }
-
-  if (data && typeof data === 'object') {
-    return data;
-  }
-
-  return null;
-}
+import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 
 function createWatchedRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watched items');
@@ -43,96 +36,54 @@ function createWatchedRef(userId, media) {
   };
 }
 
-function buildMediaIdentity(media) {
-  return {
-    entityId: media?.entityId ?? media?.id ?? null,
-    entityType: media?.entityType ?? media?.media_type ?? null,
-  };
-}
-
 function getWatchedStatusSubscriptionKey({ media, userId }) {
-  return buildPollingSubscriptionKey('watched:status', {
-    media: buildMediaIdentity(media),
-    userId,
-  });
+  return buildMediaCollectionStatusSubscriptionKey('watched', { media, userId });
 }
 
 function getUserWatchedSubscriptionKey(userId) {
-  return buildPollingSubscriptionKey('watched:user', {
-    userId,
-  });
+  return buildUserMediaCollectionSubscriptionKey('watched', userId);
 }
 
 function getUserWatchlistSubscriptionKey(userId) {
-  return buildPollingSubscriptionKey('watchlist:user', {
-    userId,
-  });
+  return buildUserMediaCollectionSubscriptionKey('watchlist', userId);
 }
 
 function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildPollingSubscriptionKey('watchlist:status', {
-    media: buildMediaIdentity(media),
+  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
+}
+
+async function fetchWatchedStatus({ media, userId }) {
+  return fetchMediaCollectionStatus({
+    emptyValue: {
+      isWatched: false,
+      watched: null,
+    },
+    media,
+    mediaKey: userId && media ? createWatchedRef(userId, media).id : null,
+    resource: 'watched-status',
     userId,
   });
 }
 
-function refreshAccountSummary(userId) {
-  if (!userId) {
-    return;
-  }
-
-  scheduleAccountSummaryRefresh(userId);
-}
-
-async function fetchWatchedStatus({ media, userId }) {
-  if (!userId || !media) {
-    return {
-      isWatched: false,
-      watched: null,
-    };
-  }
-
-  const watchedRef = createWatchedRef(userId, media);
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      entityId: media?.entityId ?? media?.id ?? null,
-      entityType: media?.entityType ?? media?.media_type ?? null,
-      mediaKey: watchedRef.id,
-      resource: 'watched-status',
-      userId,
-    },
-  });
-
-  return (
-    payload?.data || {
-      isWatched: false,
-      watched: null,
-    }
-  );
-}
-
 async function fetchWatchedList(userId, options = {}) {
-  if (!userId) {
-    return [];
-  }
-
-  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null;
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      activeTab: options.activeTab || null,
-      cursor: options.cursor || null,
-      limit: resolvedLimitCount,
-      limitCount: resolvedLimitCount,
-      resource: 'watched',
-      userId,
-    },
-  });
-
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return fetchUserMediaCollection('watched', userId, options);
 }
 
 export function getWatchedDocRef(userId, media) {
   return createWatchedRef(userId, media);
+}
+
+export async function isUserMediaWatched({ mediaKey, userId }) {
+  if (!mediaKey || !userId) {
+    return false;
+  }
+
+  const client = getSupabaseClient();
+  const result = await client.from('watched').select('media_key').eq('media_key', mediaKey).eq('user_id', userId).maybeSingle();
+
+  assertSupabaseResult(result, 'Watched state could not be loaded');
+
+  return Boolean(result.data?.media_key);
 }
 
 export function subscribeToWatchedStatus({ media, userId }, callback, options = {}) {
@@ -199,18 +150,20 @@ export async function markUserWatched({ media, sourceLastAction = 'watched', use
 
   assertSupabaseResult(rpcResult, 'Watched item could not be saved');
 
-  const rpcRow = resolveRpcRow(rpcResult.data);
+  const rpcRow = resolveMediaCollectionRpcRow(rpcResult.data);
   const isNew = rpcRow?.is_new === true;
   const watchCount = Number(rpcRow?.watch_count || 1);
   const wasRemovedFromWatchlist = rpcRow?.was_removed_from_watchlist === true;
 
   if (isNew) {
-    fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHED_MARKED, {
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHED_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
-        eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
-        subjectId: mediaSnapshot.entityId,
-        subjectType: mediaSnapshot.entityType,
+        primaryRef: buildActivitySubjectRef({
+          subjectId: mediaSnapshot.entityId,
+          subjectType: mediaSnapshot.entityType,
+        }),
+        slotType: ACTIVITY_SLOT_TYPES.WATCHED_ENTRY,
       }),
       subjectId: mediaSnapshot.entityId,
       subjectPoster: media?.poster_path || media?.posterPath || null,
@@ -245,7 +198,7 @@ export async function markUserWatched({ media, sourceLastAction = 'watched', use
       item: null,
     },
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return {
     isAlreadyWatched: !isNew,
@@ -267,7 +220,7 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
 
   assertSupabaseResult(rpcResult, 'Watched item could not be removed');
 
-  const rpcRow = resolveRpcRow(rpcResult.data);
+  const rpcRow = resolveMediaCollectionRpcRow(rpcResult.data);
   const wasRemoved = rpcRow?.removed === true;
 
   primePollingSubscription(getWatchedStatusSubscriptionKey({ media, userId }), {
@@ -278,7 +231,7 @@ export async function removeUserWatchedItem({ media = null, mediaKey = null, use
   invalidatePollingSubscription(getUserWatchedSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return {
     isWatched: false,

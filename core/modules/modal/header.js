@@ -92,11 +92,18 @@ function resolveNotificationsHeader() {
   };
 }
 
+function isListReviewConfig(config = {}) {
+  const data = config?.data || {};
+
+  return data?.review?.subjectType === 'list' || Boolean(data?.listId || data?.ownerId || data?.list);
+}
+
 function resolveReviewEditorHeader(config = {}) {
   const hasExistingReview = Boolean(config?.data?.review);
+  const isListReview = isListReviewConfig(config);
 
   return {
-    title: hasExistingReview ? 'Edit review' : 'Write review',
+    title: hasExistingReview ? (isListReview ? 'Edit comment' : 'Edit review') : isListReview ? 'Write comment' : 'Write review',
   };
 }
 

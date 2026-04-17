@@ -2,153 +2,112 @@
 
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 
-export async function assertPasswordAccountStatus({ email, intent = 'sign-in' }) {
-  const response = await fetch('/api/auth/account/password-status', {
+async function postAuthJson(pathname, body, { cache, credentials, includeCsrf = false, message } = {}) {
+  const response = await fetch(pathname, {
     method: 'POST',
-    cache: 'no-store',
-    credentials: 'include',
+    ...(cache ? { cache } : {}),
+    ...(credentials ? { credentials } : {}),
     headers: {
+      ...(includeCsrf ? createCsrfHeaders() : {}),
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({ error: message }));
+
+  if (response.ok) {
+    return payload;
+  }
+
+  const error = new Error(payload?.error || message);
+  error.code = payload?.code || null;
+  error.status = response.status;
+  throw error;
+}
+
+function resolvePasswordAccountStatus(email, intent) {
+  return postAuthJson(
+    '/api/auth/account/password-status',
+    {
       email,
       intent,
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Account status could not be resolved' }));
-
-  if (!response.ok) {
-    const error = new Error(payload?.error || 'Account status could not be resolved');
-    error.code = payload?.code || null;
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
+    },
+    {
+      cache: 'no-store',
+      credentials: 'include',
+      message: 'Account status could not be resolved',
+    }
+  );
 }
 
-export async function assertSignUpEmailAvailable({ email }) {
-  const response = await fetch('/api/auth/account/password-status', {
-    method: 'POST',
-    cache: 'no-store',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email,
-      intent: 'sign-up',
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Account status could not be resolved' }));
-
-  if (!response.ok) {
-    const error = new Error(payload?.error || 'Account status could not be resolved');
-    error.code = payload?.code || null;
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
+export function assertPasswordAccountStatus({ email, intent = 'sign-in' }) {
+  return resolvePasswordAccountStatus(email, intent);
 }
 
-export async function requestVerificationCode({ email, forceNew = false, purpose }) {
-  const response = await fetch('/api/auth/verification/send-code', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      ...createCsrfHeaders(),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+export function assertSignUpEmailAvailable({ email }) {
+  return resolvePasswordAccountStatus(email, 'sign-up');
+}
+
+export function requestVerificationCode({ email, forceNew = false, purpose }) {
+  return postAuthJson(
+    '/api/auth/verification/send-code',
+    {
       email,
       forceNew,
       purpose,
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Could not send verification code' }));
-
-  if (!response.ok) {
-    throw new Error(payload?.error || 'Could not send verification code');
-  }
-
-  return payload;
+    },
+    {
+      credentials: 'include',
+      includeCsrf: true,
+      message: 'Could not send verification code',
+    }
+  );
 }
 
-export async function verifyCodeRequest({ challengeToken, code, email, rememberDevice = false, purpose }) {
-  const response = await fetch('/api/auth/verification/verify-code', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      ...createCsrfHeaders(),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+export function verifyCodeRequest({ challengeToken, code, email, rememberDevice = false, purpose }) {
+  return postAuthJson(
+    '/api/auth/verification/verify-code',
+    {
       challengeToken,
       code,
       email,
       rememberDevice,
       purpose,
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Verification failed' }));
-
-  if (!response.ok) {
-    throw new Error(payload?.error || 'Verification failed');
-  }
-
-  return payload;
+    },
+    {
+      credentials: 'include',
+      includeCsrf: true,
+      message: 'Verification failed',
+    }
+  );
 }
 
-export async function completeVerifiedSignUp({ displayName, email, password, signUpProof, username }) {
-  const response = await fetch('/api/auth/sign-up/complete', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+export function completeVerifiedSignUp({ displayName, email, password, signUpProof, username }) {
+  return postAuthJson(
+    '/api/auth/sign-up/complete',
+    {
       displayName,
       email,
       password,
       signUpProof,
       username,
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Sign-up could not be completed' }));
-
-  if (!response.ok) {
-    const error = new Error(payload?.error || 'Sign-up could not be completed');
-    error.code = payload?.code || null;
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
+    },
+    {
+      message: 'Sign-up could not be completed',
+    }
+  );
 }
 
-export async function completePasswordReset({ email, newPassword, passwordResetProof }) {
-  const response = await fetch('/api/auth/password-reset/complete', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+export function completePasswordReset({ email, newPassword, passwordResetProof }) {
+  return postAuthJson(
+    '/api/auth/password-reset/complete',
+    {
       email,
       newPassword,
       passwordResetProof,
-    }),
-  });
-
-  const payload = await response.json().catch(() => ({ error: 'Password reset failed' }));
-
-  if (!response.ok) {
-    throw new Error(payload?.error || 'Password reset failed');
-  }
-
-  return payload;
+    },
+    {
+      message: 'Password reset failed',
+    }
+  );
 }

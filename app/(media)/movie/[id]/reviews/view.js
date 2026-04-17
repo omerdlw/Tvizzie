@@ -1,6 +1,6 @@
-import { TextAnimate } from '@/components/ui/text-animate';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import { TextAnimate } from '@/ui/animations/text-animate';
 import CollectionActions from '@/features/movie/collection-actions';
 import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import Sidebar from '@/features/movie/sidebar';

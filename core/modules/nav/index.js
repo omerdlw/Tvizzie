@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { DURATION, EASING, Z_INDEX } from '@/core/constants';
@@ -13,9 +13,28 @@ import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
 
+// ─── Viewport-safe height calculation ───────────────────────────────────────
+
+const VIEWPORT_MARGIN = 24; // px from top of viewport
+
+function getViewportMaxHeight() {
+  if (typeof window === 'undefined') return Infinity;
+  return window.innerHeight - VIEWPORT_MARGIN;
+}
+
+function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight }) {
+  const nextCardHeight = Math.max(NAV_CARD_LAYOUT.baseHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
+  const rawHeight = nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
+
+  // Clamp to viewport so nav never goes off-screen
+  return Math.min(rawHeight, getViewportMaxHeight());
+}
+
+// ─── Nav stack classname ─────────────────────────────────────────────────────
+
 function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
   const baseClassName =
-    'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-(--motion-duration-normal) sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
+    'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-(--motion-duration-fast) sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
   if (isModalOpen || isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;
@@ -23,6 +42,8 @@ function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
 
   return `${baseClassName} opacity-100`;
 }
+
+// ─── Item key helpers ────────────────────────────────────────────────────────
 
 function getItemKey(link, index) {
   const pathPart = String(link?.path || '').trim() || 'no-path';
@@ -36,24 +57,12 @@ function getIsItemActive(link, activeItem) {
   return (link.path || link.name) === (activeItem?.path || activeItem?.name);
 }
 
-function getItemPosition(index, expanded) {
-  if (!expanded) {
-    return index;
-  }
-
+function getItemPosition(index) {
   return index;
 }
 
-function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight }) {
-  const nextCardHeight = Math.max(NAV_CARD_LAYOUT.baseHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
-
-  return nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
-}
-
 function getActiveItemLayoutKey(activeItem) {
-  if (!activeItem) {
-    return 'none';
-  }
+  if (!activeItem) return 'none';
 
   const pathPart = String(activeItem.path || '').trim() || 'no-path';
   const namePart = String(activeItem.name || '').trim() || 'no-name';
@@ -71,11 +80,13 @@ function getActiveItemLayoutKey(activeItem) {
   ].join('::');
 }
 
-function getBackdropAnimation(isVisible) {
+// ─── Backdrop animation ──────────────────────────────────────────────────────
+
+function getBackdropAnimation(isVisible, reduceMotion) {
   if (isVisible) {
     return {
       opacity: 1,
-      backdropFilter: 'blur(10px)',
+      backdropFilter: reduceMotion ? 'blur(0px)' : 'blur(10px)',
       display: 'block',
     };
   }
@@ -87,7 +98,11 @@ function getBackdropAnimation(isVisible) {
   };
 }
 
+// ─── Layout effect isomorphic shim ──────────────────────────────────────────
+
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+// ─── Main Nav component ──────────────────────────────────────────────────────
 
 export default function Nav() {
   const {
@@ -105,12 +120,11 @@ export default function Nav() {
 
   const { isOpen: isModalOpen } = useModal();
   const isFullscreenStateActive = useIsFullscreenStateActive();
+  const reduceMotion = useReducedMotion();
 
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [containerHeight, setContainerHeight] = useState(NAV_CARD_LAYOUT.baseHeight);
-  const [cardContentHeight, setCardContentHeight] = useState(0);
   const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [actionHeight, setActionHeight] = useState(0);
   const [portalTarget, setPortalTarget] = useState(null);
 
   const navRef = useRef(null);
@@ -118,14 +132,111 @@ export default function Nav() {
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
   const previousActiveItemLayoutKeyRef = useRef(activeItemLayoutKey);
 
+  // ─── Ref-based height batching ─────────────────────────────────────────────
+  //
+  // Previously, actionHeight and cardContentHeight were separate states.
+  // When both updated (e.g. on navigation), getContainerHeight ran twice:
+  // once with a stale value, producing a wrong intermediate height that
+  // caused the nav to jump off-screen before settling.
+  //
+  // Now both values live in a ref. computeAndSetHeight always reads
+  // the latest of both together, eliminating the race.
+
+  const heightRef = useRef({ action: 0, content: 0 });
+  const rafRef = useRef(null);
+
+  const computeAndSetHeight = useCallback(() => {
+    // Cancel any pending frame to coalesce rapid updates
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const { action, content } = heightRef.current;
+      const height = getContainerHeight({
+        actionHeight: action,
+        activeItemHasAction,
+        cardContentHeight: content,
+      });
+
+      setContainerHeight(height);
+      setNavHeight(height + 16);
+    });
+  }, [activeItemHasAction, setNavHeight]);
+
+  const handleActionHeightChange = useCallback(
+    (h) => {
+      heightRef.current.action = h;
+      computeAndSetHeight();
+    },
+    [computeAndSetHeight]
+  );
+
+  const handleContentHeightChange = useCallback(
+    (h) => {
+      heightRef.current.content = h;
+      computeAndSetHeight();
+    },
+    [computeAndSetHeight]
+  );
+
+  const resetHeights = useCallback(() => {
+    // Cancel any pending rAF before resetting so stale measurements don't win
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
+    heightRef.current = { action: 0, content: 0 };
+    setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
+    setNavHeight(NAV_CARD_LAYOUT.baseHeight + 16);
+  }, [setNavHeight]);
+
+  // Cleanup pending rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  // ─── Re-run computeAndSetHeight when activeItemHasAction changes ───────────
+  // (e.g. a confirmation appears/disappears — the action slot changes but
+  // the heights in the ref are still valid, we just need to recompute.)
+  useIsomorphicLayoutEffect(() => {
+    computeAndSetHeight();
+  }, [activeItemHasAction, computeAndSetHeight]);
+
+  // ─── Height reset on path change ──────────────────────────────────────────
+
+  useIsomorphicLayoutEffect(() => {
+    if (previousPathRef.current === pathname) return;
+    previousPathRef.current = pathname;
+    resetHeights();
+  }, [pathname, resetHeights]);
+
+  // ─── Height reset on active item layout change ────────────────────────────
+
+  useIsomorphicLayoutEffect(() => {
+    if (activeItem?.isOverlay) return;
+    if (previousActiveItemLayoutKeyRef.current === activeItemLayoutKey) return;
+    previousActiveItemLayoutKeyRef.current = activeItemLayoutKey;
+    resetHeights();
+  }, [activeItem?.isOverlay, activeItemLayoutKey, resetHeights]);
+
+  // ─── Overlay / backdrop state ─────────────────────────────────────────────
+
   const isOverlayActive = !!activeItem?.isOverlay;
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
 
   const handleOutsideDismiss = useCallback(() => {
     if (isOverlayActive) return;
-
     setExpanded(false);
   }, [isOverlayActive, setExpanded]);
+
+  // ─── Keyboard navigation ──────────────────────────────────────────────────
 
   const handleKeyDown = useCallback(
     (event) => {
@@ -161,52 +272,11 @@ export default function Nav() {
 
   useEffect(() => {
     if (!expanded) return;
-
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [expanded, handleKeyDown]);
 
-  useIsomorphicLayoutEffect(() => {
-    if (previousPathRef.current === pathname) {
-      return;
-    }
-
-    previousPathRef.current = pathname;
-    setActionHeight(0);
-    setCardContentHeight(0);
-    setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
-    setNavHeight(NAV_CARD_LAYOUT.baseHeight + 16);
-  }, [pathname, setNavHeight]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (activeItem?.isOverlay) {
-      return;
-    }
-
-    if (previousActiveItemLayoutKeyRef.current === activeItemLayoutKey) {
-      return;
-    }
-
-    previousActiveItemLayoutKeyRef.current = activeItemLayoutKey;
-    setActionHeight(0);
-    setCardContentHeight(0);
-    setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
-    setNavHeight(NAV_CARD_LAYOUT.baseHeight + 16);
-  }, [activeItem?.isOverlay, activeItemLayoutKey, setNavHeight]);
-
-  useIsomorphicLayoutEffect(() => {
-    const height = getContainerHeight({
-      actionHeight,
-      activeItemHasAction,
-      cardContentHeight,
-    });
-
-    setContainerHeight(height);
-    setNavHeight(height + 16);
-  }, [actionHeight, activeItemHasAction, cardContentHeight, setNavHeight]);
+  // ─── Focus index sync ─────────────────────────────────────────────────────
 
   useEffect(() => {
     if (expanded) {
@@ -214,38 +284,41 @@ export default function Nav() {
       setFocusedIndex(activeIndex);
       return;
     }
-
     setFocusedIndex(-1);
   }, [expanded, activeIndex]);
 
+  // ─── Click outside ────────────────────────────────────────────────────────
+
   useClickOutside(navRef, handleOutsideDismiss);
+
+  // ─── Portal setup ─────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
     setPortalTarget(document.body);
   }, []);
 
-  useEffect(() => {
-    if (!isFullscreenStateActive) {
-      return;
-    }
+  // ─── Fullscreen guard ─────────────────────────────────────────────────────
 
+  useEffect(() => {
+    if (!isFullscreenStateActive) return;
     setExpanded(false);
     setIsHovered(false);
     setIsStackHovered(false);
   }, [isFullscreenStateActive, setExpanded, setIsHovered]);
 
+  // ─── Stack className ──────────────────────────────────────────────────────
+
   const stackClassName = useMemo(
-    () =>
-      getNavStackClassName({
-        isModalOpen,
-        isFullscreenStateActive,
-      }),
+    () => getNavStackClassName({ isModalOpen, isFullscreenStateActive }),
     [isFullscreenStateActive, isModalOpen]
   );
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   const navContent = (
     <MotionConfig transition={NAV_CARD_LAYOUT.transition}>
+      {/* Backdrop */}
       <motion.div
         className="fixed inset-0 cursor-pointer"
         style={{
@@ -253,71 +326,56 @@ export default function Nav() {
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
         initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-        animate={getBackdropAnimation(isBackdropVisible)}
+        animate={getBackdropAnimation(isBackdropVisible, !!reduceMotion)}
         transition={{
           ease: EASING.EASE_OUT,
-          duration: DURATION.SNAPPY,
+          duration: reduceMotion ? DURATION.QUICK : DURATION.FAST,
         }}
         onClick={handleOutsideDismiss}
       >
         <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-white via-white/70 to-transparent" />
       </motion.div>
 
+      {/* Card stack */}
       <div id="nav-card-stack" ref={navRef} className={stackClassName} style={{ zIndex: Z_INDEX.NAV }}>
         <motion.div
           style={{ position: 'relative' }}
           animate={{ height: containerHeight }}
-          transition={NAV_CARD_LAYOUT.transition}
+          transition={
+            reduceMotion
+              ? { duration: 0.12, ease: 'easeOut' }
+              : { type: 'spring', stiffness: 520, damping: 42, mass: 0.78 }
+          }
         >
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {
-              const position = getItemPosition(index, expanded);
+              const position = getItemPosition(index);
               const isTop = position === 0;
               const isActive = getIsItemActive(link, activeItem);
 
               const handleMouseEnter = () => {
-                if (expanded) {
-                  setFocusedIndex(index);
-                }
-
+                if (expanded) setFocusedIndex(index);
                 if (!isTop) return;
-
                 setIsStackHovered(true);
-
-                if (pathname !== '/') {
-                  setIsHovered(true);
-                }
+                if (pathname !== '/') setIsHovered(true);
               };
 
               const handleMouseLeave = () => {
-                if (expanded) {
-                  setFocusedIndex(-1);
-                }
-
+                if (expanded) setFocusedIndex(-1);
                 if (!isTop) return;
-
                 setIsStackHovered(false);
-
-                if (pathname !== '/') {
-                  setIsHovered(false);
-                }
+                if (pathname !== '/') setIsHovered(false);
               };
 
               const handleClick = () => {
-                if (link.type === 'COUNTDOWN' || link.isOverlay) {
-                  return;
-                }
+                if (link.type === 'COUNTDOWN' || link.isOverlay) return;
 
                 if (!expanded) {
-                  if (isTop) {
-                    setExpanded(true);
-                  }
+                  if (isTop) setExpanded(true);
                   return;
                 }
 
-                if (link.path) {
-                  navigate(link.path);
-                }
+                if (link.path) navigate(link.path);
               };
 
               return (
@@ -333,8 +391,8 @@ export default function Nav() {
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
                   onClick={handleClick}
-                  onActionHeightChange={isTop ? setActionHeight : null}
-                  onContentHeightChange={isTop ? setCardContentHeight : null}
+                  onActionHeightChange={isTop ? handleActionHeightChange : null}
+                  onContentHeightChange={isTop ? handleContentHeightChange : null}
                 />
               );
             })}
@@ -344,9 +402,7 @@ export default function Nav() {
     </MotionConfig>
   );
 
-  if (!portalTarget) {
-    return null;
-  }
+  if (!portalTarget) return null;
 
   return createPortal(navContent, portalTarget);
 }

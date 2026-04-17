@@ -31,6 +31,7 @@ import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback';
 import ReviewHeader from '@/features/reviews/parts/review-header';
 import ReviewList from '@/features/reviews/parts/review-list';
+import { REVIEW_SORT_MODE } from '@/features/reviews/utils';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { AuthGate } from '@/core/modules/auth';
@@ -42,6 +43,13 @@ const MAX_ROWS_PER_PAGE = 8;
 const MOBILE_ITEMS_PER_PAGE = 3 * MAX_ROWS_PER_PAGE;
 const DESKTOP_ITEMS_PER_PAGE = 6 * MAX_ROWS_PER_PAGE;
 const REVIEW_ITEMS_PER_PAGE = 36;
+const LIST_COMMENT_SORT_OPTIONS = Object.freeze([
+  { value: REVIEW_SORT_MODE.NEWEST, label: 'Newest to oldest' },
+  { value: REVIEW_SORT_MODE.OLDEST, label: 'Oldest to newest' },
+  { value: REVIEW_SORT_MODE.LIKES_DESC, label: 'Most liked to least liked' },
+  { value: REVIEW_SORT_MODE.LIKES_ASC, label: 'Least liked to most liked' },
+]);
+const LIST_COMMENT_SORT_SET = new Set(LIST_COMMENT_SORT_OPTIONS.map((option) => option.value));
 const LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({ key: 'hide_watched', label: 'Hide watched films' }),
   Object.freeze({ key: 'hide_liked', label: 'Hide liked films' }),
@@ -55,6 +63,17 @@ function parseListDetailMediaFilters(search) {
   return parseMediaFilters(search, {
     allowedEyeFlags: LIST_DETAIL_ALLOWED_EYE_FLAGS,
   });
+}
+
+function sanitizeListCommentFilters(filters = {}) {
+  return {
+    ...filters,
+    eyeFlags: new Set(),
+    maxRating: 5,
+    minRating: 0.5,
+    ratingMode: 'any',
+    sort: LIST_COMMENT_SORT_SET.has(filters?.sort) ? filters.sort : REVIEW_SORT_MODE.NEWEST,
+  };
 }
 
 function useResponsivePageSize() {
@@ -217,7 +236,6 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
     ownReview,
     pendingFollowRequestCount,
     profile,
-    ratingStats,
     resolveError,
     resolvedUserId,
     reviews = [],
@@ -239,7 +257,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
     [searchParamsKey]
   );
   const initialReviewFilters = useMemo(
-    () => parseReviewFilters(new URLSearchParams(searchParamsKey)),
+    () => sanitizeListCommentFilters(parseReviewFilters(new URLSearchParams(searchParamsKey))),
     [searchParamsKey]
   );
   const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
@@ -326,10 +344,10 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
 
   const updateReviewFilters = useCallback(
     (updates = {}) => {
-      const nextFilters = {
+      const nextFilters = sanitizeListCommentFilters({
         ...reviewFilters,
         ...updates,
-      };
+      });
       setReviewFilters(nextFilters);
       updateUrl({
         nextMediaFilters: mediaFilters,
@@ -340,7 +358,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
   );
 
   const resetReviewFilters = useCallback(() => {
-    const defaultFilters = parseReviewFilters(new URLSearchParams());
+    const defaultFilters = sanitizeListCommentFilters(parseReviewFilters(new URLSearchParams()));
 
     setReviewFilters(defaultFilters);
     updateUrl({
@@ -470,12 +488,15 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
 
           <AccountSectionReveal delay={0.1}>
             <div className={`${LIST_SECTION_SHELL_CLASS} pt-4 pb-20`}>
-              <ReviewHeader ratingStats={ratingStats} totalReviews={reviews.length} />
+              <ReviewHeader itemLabel="comment" showRatingSummary={false} title="Comments" totalReviews={reviews.length} />
 
               {hasListReviews ? (
                 <AccountReviewFilterBar
                   className="mb-2"
                   filters={reviewFilters}
+                  showRatingFilter={false}
+                  sortOptions={LIST_COMMENT_SORT_OPTIONS}
+                  visibilityOptions={[]}
                   yearOptions={reviewYearOptions}
                   onChange={updateReviewFilters}
                   onReset={hasReviewFilters ? resetReviewFilters : null}
@@ -484,38 +505,36 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
 
               {hasListReviews && hasReviewFilters ? (
                 <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
-                  {filteredReviews.length} of {reviews.length} reviews shown
+                  {filteredReviews.length} of {reviews.length} comments shown
                 </p>
               ) : null}
 
               {!isOwner && (
-                <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={list.title} />}>
+                <AuthGate fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}>
                   <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold">
-                        {ownReview ? 'Update your list review' : 'Rate or review this list'}
+                        {ownReview ? 'Update your comment' : 'Write a comment'}
                       </p>
                       <p className="text-xs text-black/70">
                         {ownReview
-                          ? 'Open the review modal to edit your score or text.'
-                          : 'Share your rating and thoughts from the review modal.'}
+                          ? 'Open the comment composer to edit your text.'
+                          : 'Share your thoughts from the comment composer.'}
                       </p>
                     </div>
                     <Button
-                      className="bg-primary/40 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                      className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
                       type="button"
                       onClick={handleOpenReviewComposer}
                     >
-                      {ownReview ? 'Edit Review' : 'Add Review'}
+                      {ownReview ? 'Edit Comment' : 'Add Comment'}
                     </Button>
                   </div>
                 </AuthGate>
               )}
               {visibleReviews.length === 0 ? (
                 <AccountInlineSectionState className="px-4 py-5">
-                  {hasReviewFilters && reviews.length > 0
-                    ? 'No reviews match the current filters.'
-                    : 'No ratings or reviews yet'}
+                  {hasReviewFilters && reviews.length > 0 ? 'No comments match the current filters.' : 'No comments yet'}
                 </AccountInlineSectionState>
               ) : (
                 <ReviewList

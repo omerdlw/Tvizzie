@@ -193,6 +193,7 @@ export function useMediaReviews({
       try {
         await toggleReviewLike({
           media,
+          review,
           reviewUserId: review?.reviewUserId || review?.user?.id,
           userId: currentUserId,
         });

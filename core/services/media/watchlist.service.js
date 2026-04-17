@@ -2,34 +2,27 @@
 
 import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import {
-  buildPollingSubscriptionKey,
   createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
-import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
+import {
+  buildMediaCollectionStatusSubscriptionKey,
+  buildUserMediaCollectionSubscriptionKey,
+  fetchMediaCollectionStatus,
+  fetchUserMediaCollection,
+  refreshMediaCollectionAccountSummary,
+  resolveMediaCollectionRpcRow,
+} from '@/core/services/shared/media-collection.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
-import { requestApiJson } from '@/core/services/shared/api-request.service';
 import {
   createMediaRow,
   ensureUserId,
   normalizeMediaPayload,
-  resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
-import { buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
-
-function resolveRpcRow(data) {
-  if (Array.isArray(data)) {
-    return data[0] || null;
-  }
-
-  if (data && typeof data === 'object') {
-    return data;
-  }
-
-  return null;
-}
+import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
+import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 
 function createWatchlistRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watchlist items');
@@ -43,80 +36,31 @@ function createWatchlistRef(userId, media) {
   };
 }
 
-function buildMediaIdentity(media) {
-  return {
-    entityId: media?.entityId ?? media?.id ?? null,
-    entityType: media?.entityType ?? media?.media_type ?? null,
-  };
-}
-
 function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildPollingSubscriptionKey('watchlist:status', {
-    media: buildMediaIdentity(media),
-    userId,
-  });
+  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
 }
 
 function getUserWatchlistSubscriptionKey(userId, options = {}) {
-  return buildPollingSubscriptionKey('watchlist:user', {
+  return buildUserMediaCollectionSubscriptionKey('watchlist', userId, {
     limitCount: options.limitCount ?? null,
+  });
+}
+
+async function fetchWatchlistStatus({ media, userId }) {
+  return fetchMediaCollectionStatus({
+    emptyValue: {
+      isInWatchlist: false,
+      item: null,
+    },
+    media,
+    mediaKey: userId && media ? createWatchlistRef(userId, media).id : null,
+    resource: 'watchlist-status',
     userId,
   });
 }
 
-function refreshAccountSummary(userId) {
-  if (!userId) {
-    return;
-  }
-
-  scheduleAccountSummaryRefresh(userId);
-}
-
-async function fetchWatchlistStatus({ media, userId }) {
-  if (!userId || !media) {
-    return {
-      isInWatchlist: false,
-      item: null,
-    };
-  }
-
-  const watchlistRef = createWatchlistRef(userId, media);
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      entityId: media?.entityId ?? media?.id ?? null,
-      entityType: media?.entityType ?? media?.media_type ?? null,
-      mediaKey: watchlistRef.id,
-      resource: 'watchlist-status',
-      userId,
-    },
-  });
-
-  return (
-    payload?.data || {
-      isInWatchlist: false,
-      item: null,
-    }
-  );
-}
-
 async function fetchWatchlist(userId, options = {}) {
-  if (!userId) {
-    return [];
-  }
-
-  const resolvedLimitCount = resolveLimitCount(options.limitCount, 0, 50) || null;
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      activeTab: options.activeTab || null,
-      cursor: options.cursor || null,
-      limit: resolvedLimitCount,
-      limitCount: resolvedLimitCount,
-      resource: 'watchlist',
-      userId,
-    },
-  });
-
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return fetchUserMediaCollection('watchlist', userId, options);
 }
 
 export function getWatchlistDocRef(userId, media) {
@@ -160,7 +104,7 @@ export async function toggleUserWatchlistItem({ media, userId }) {
 
   assertSupabaseResult(rpcResult, 'Watchlist item could not be updated');
 
-  const rpcRow = resolveRpcRow(rpcResult.data);
+  const rpcRow = resolveMediaCollectionRpcRow(rpcResult.data);
   const isInWatchlist = rpcRow?.is_in_watchlist === true;
 
   if (isInWatchlist) {
@@ -169,9 +113,11 @@ export async function toggleUserWatchlistItem({ media, userId }) {
     fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({
         actorUserId: userId,
-        eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
-        subjectId: mediaSnapshot.entityId,
-        subjectType: mediaSnapshot.entityType,
+        primaryRef: buildActivitySubjectRef({
+          subjectId: mediaSnapshot.entityId,
+          subjectType: mediaSnapshot.entityType,
+        }),
+        slotType: ACTIVITY_SLOT_TYPES.WATCHLIST_ENTRY,
       }),
       subjectId: mediaSnapshot.entityId,
       subjectPoster: media?.posterPath || media?.poster_path || null,
@@ -190,7 +136,7 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return nextResult;
 }
@@ -216,7 +162,7 @@ export async function removeUserWatchlistItem({ media = null, mediaKey = null, u
   invalidatePollingSubscription(getUserWatchlistSubscriptionKey(userId), {
     refetch: true,
   });
-  refreshAccountSummary(userId);
+  refreshMediaCollectionAccountSummary(userId);
 
   return {
     mediaKey: resolvedMediaKey,

@@ -7,7 +7,7 @@ import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elemen
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
 
-function closeSurface(close) {
+function dismissSurface(close) {
   if (typeof close === 'function') {
     close({
       success: false,
@@ -88,11 +88,20 @@ export default function AuthVerificationSurface({ close, data, header }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-verification-surface-title"
-      className={`flex flex-col gap-3 rounded-[12px] border border-[#8b5cf6] bg-[#ddd6fe] px-1 py-1`}
+      className={`relative flex flex-col gap-3`}
     >
-      <div
-        className={`relative flex h-auto w-full items-center space-x-3 rounded-[10px] border border-[#2563eb] bg-[#bfdbfe] px-2 py-2`}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          dismissSurface(close);
+        }}
+        className={`center bg-primary absolute top-0 right-0 z-10 cursor-pointer rounded-full border border-black/10 p-1 transition-all`}
+        aria-label="Close verification"
       >
+        <Icon icon="material-symbols:close-rounded" size={20} />
+      </button>
+      <div className="relative flex h-auto w-full items-center space-x-2 pr-8">
         <div className="center relative">
           <BadgeIcon icon={headerIcon} />
         </div>
@@ -100,18 +109,8 @@ export default function AuthVerificationSurface({ close, data, header }) {
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
           <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <Title text={resolvedHeader.title} style={{ className: '!normal-case !truncate' }} />
-
             {resolvedHeader.description ? <Description text={resolvedHeader.description} /> : null}
           </div>
-
-          <button
-            type="button"
-            onClick={() => closeSurface(close)}
-            className={`center cursor-pointer rounded-full border border-[#be123c] bg-[#fecdd3] p-1 text-[#881337] transition-all`}
-            aria-label="Close verification"
-          >
-            <Icon icon="material-symbols:close-roundedrounded" size={24} />
-          </button>
         </div>
       </div>
 

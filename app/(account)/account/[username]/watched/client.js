@@ -3,56 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
-import { getMediaTitle } from '@/features/account/utils';
-import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
-import { useAuth } from '@/core/modules/auth';
+import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/features/account/utils';
+import { logDataError } from '@/core/utils/errors';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { useAccountSectionEngine } from '../shared/section-engine';
-import { AccountSectionStateProvider } from '../shared/section-context';
+import { createAccountSectionClient } from '../../shared/section-factory';
 import WatchedView from './view';
 
-function showAccountLoadError(toast, error, fallbackMessage) {
-  if (isPermissionDeniedError(error)) {
-    return false;
-  }
-
-  toast.error(error?.message || fallbackMessage);
-  return true;
-}
-
-function removeCollectionItem(items, itemToRemove) {
-  const removedItemId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
-  const removedMediaType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
-    .trim()
-    .toLowerCase();
-
-  return items.filter((currentItem) => {
-    if (itemToRemove?.mediaKey && currentItem?.mediaKey) {
-      return currentItem.mediaKey !== itemToRemove.mediaKey;
-    }
-
-    const currentItemId = String(currentItem?.entityId || currentItem?.id || '').trim();
-    const currentMediaType = String(currentItem?.media_type || currentItem?.entityType || '')
-      .trim()
-      .toLowerCase();
-
-    return currentItemId !== removedItemId || currentMediaType !== removedMediaType;
-  });
-}
-
-export default function Client({ routeData = null }) {
-  const auth = useAuth();
+function useWatchedClientState({ auth, routeData: resolvedRouteData, sectionProviderValue, sectionState }) {
   const toast = useToast();
-  const {
-    routeData: resolvedRouteData,
-    sectionProviderValue,
-    sectionState,
-  } = useAccountSectionEngine({
-    activeTab: 'watched',
-    auth,
-    routeData,
-  });
   const { canViewProfileCollections, isOwner, isPrivateProfile, resolvedUserId, isPageLoading } = sectionState;
   const hasInitialWatchedSnapshot =
     Boolean(resolvedRouteData.initialCollections?.userId && resolvedUserId) &&
@@ -95,7 +54,7 @@ export default function Client({ routeData = null }) {
           setIsWatchedLoading(false);
           logDataError('[Account] Watched could not be loaded:', error);
           setLoadError('Watched could not be loaded right now.');
-          showAccountLoadError(toast, error, 'Watched could not be loaded');
+          notifyAccountLoadError(toast, error, 'Watched could not be loaded');
         },
       }
     );
@@ -120,7 +79,7 @@ export default function Client({ routeData = null }) {
 
       setWatchedItems((currentItems) => {
         previousItems = currentItems;
-        return removeCollectionItem(currentItems, item);
+        return removeAccountCollectionItem(currentItems, item);
       });
 
       try {
@@ -162,19 +121,21 @@ export default function Client({ routeData = null }) {
     [handleRemoveWatchedItem, isOwner]
   );
 
-  return (
-    <AccountSectionStateProvider
-      value={{
-        ...sectionProviderValue,
-        isPageLoading: isPageLoading || (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0),
-        itemRemoveConfirmation,
-      }}
-    >
-      <WatchedView
-        loadError={loadError}
-        watchedItems={watchedItems}
-        handleRequestRemoveWatchedItem={handleRequestRemoveWatchedItem}
-      />
-    </AccountSectionStateProvider>
-  );
+  return {
+    providerValue: {
+      ...sectionProviderValue,
+      isPageLoading: isPageLoading || (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0),
+      itemRemoveConfirmation,
+    },
+    handleRequestRemoveWatchedItem,
+    loadError,
+    watchedItems,
+  };
 }
+
+export default createAccountSectionClient({
+  activeTab: 'watched',
+  displayName: 'AccountWatchedClient',
+  View: WatchedView,
+  useSectionClientState: useWatchedClientState,
+});

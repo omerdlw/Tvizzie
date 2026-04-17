@@ -18,6 +18,7 @@ import {
   hasActiveMediaFilters,
   parseListFilters,
   parseMediaFilters,
+  parsePageFromSearch,
   sortProfileLists,
   toListQueryValues,
   toMediaQueryValues,
@@ -41,11 +42,6 @@ function parseLikesMediaFilters(search) {
   return parseMediaFilters(search, {
     allowedEyeFlags: LIKES_ALLOWED_EYE_FLAGS,
   });
-}
-
-function parsePageFromSearch(search) {
-  const parsed = Number(search.get('page') || '1');
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
 }
 
 function ReorderableListItem({ item, renderEditAction }) {
@@ -150,6 +146,8 @@ export default function AccountLikesFeed({
     () => sortProfileLists(likedLists, listFilters.sort),
     [likedLists, listFilters.sort]
   );
+  const hasMediaFilters = hasActiveMediaFilters(mediaFilters);
+  const hasListFilters = hasActiveListFilters(listFilters);
 
   useEffect(() => {
     setMediaFilters(initialMediaFilters);
@@ -298,7 +296,16 @@ export default function AccountLikesFeed({
               genreOptions={genreOptions}
               visibilityOptions={LIKES_VISIBILITY_OPTIONS}
               onChange={updateMediaFilters}
-              onReset={hasActiveMediaFilters(mediaFilters) ? resetMediaFilters : null}
+              onReset={hasMediaFilters ? resetMediaFilters : null}
+            />
+          ) : hasMediaFilters ? (
+            <AccountMediaFilterBar
+              filters={mediaFilters}
+              decadeOptions={decadeOptions}
+              genreOptions={genreOptions}
+              visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+              onChange={updateMediaFilters}
+              onReset={resetMediaFilters}
             />
           ) : null
         }
@@ -341,8 +348,10 @@ export default function AccountLikesFeed({
             <AccountListSortBar
               sort={listFilters.sort}
               onChange={updateListSort}
-              onReset={hasActiveListFilters(listFilters) ? resetListFilters : null}
+              onReset={hasListFilters ? resetListFilters : null}
             />
+          ) : hasListFilters ? (
+            <AccountListSortBar sort={listFilters.sort} onChange={updateListSort} onReset={resetListFilters} />
           ) : null
         }
       />

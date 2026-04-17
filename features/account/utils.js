@@ -1,7 +1,8 @@
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
-import { getUserAvatarUrl } from '@/core/utils';
 import { FOLLOW_STATUSES } from '@/core/services/social/follows.service';
+import { getUserAvatarUrl } from '@/core/utils';
+import { isPermissionDeniedError } from '@/core/utils/errors';
 
 export {
   ACCOUNT_ROUTE_MAX_WIDTH_CLASS,
@@ -136,6 +137,34 @@ export function getAvatarFallback(profile) {
   return getUserAvatarUrl(profile);
 }
 
+export function notifyAccountLoadError(toast, error, fallbackMessage) {
+  if (!toast || isPermissionDeniedError(error)) {
+    return;
+  }
+
+  toast.error(error?.message || fallbackMessage);
+}
+
+export function removeAccountCollectionItem(items = [], itemToRemove) {
+  const removedId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
+  const removedType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
+    .trim()
+    .toLowerCase();
+
+  return items.filter((item) => {
+    if (itemToRemove?.mediaKey && item?.mediaKey) {
+      return item.mediaKey !== itemToRemove.mediaKey;
+    }
+
+    return (
+      String(item?.entityId || item?.id || '').trim() !== removedId ||
+      String(item?.media_type || item?.entityType || '')
+        .trim()
+        .toLowerCase() !== removedType
+    );
+  });
+}
+
 export function emitAccountFeedback(flow, phase, overrides = {}) {
   const config = resolveAccountFeedbackConfig(flow);
 
@@ -210,25 +239,17 @@ export function buildAccountCollectionPageHref(basePath, pageNumber) {
     return '';
   }
 
-  if (basePath.includes('?')) {
-    const [pathname, search = ''] = basePath.split('?');
-    const params = new URLSearchParams(search);
-
-    if (pageNumber <= 1) {
-      params.delete('page');
-    } else {
-      params.set('page', String(pageNumber));
-    }
-
-    const query = params.toString();
-    return query ? `${pathname}?${query}` : pathname;
-  }
+  const [pathname, search = ''] = basePath.split('?');
+  const params = new URLSearchParams(search);
 
   if (pageNumber <= 1) {
-    return basePath;
+    params.delete('page');
+  } else {
+    params.set('page', String(pageNumber));
   }
 
-  return `${basePath}/page/${pageNumber}`;
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 export function formatPaginationSummaryLabel({ emptyLabel = '0 items', pageSize, startIndex, totalCount }) {

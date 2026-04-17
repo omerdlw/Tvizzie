@@ -63,9 +63,7 @@ export function AccountSectionState({ message }) {
   return (
     <section className="relative bg-transparent">
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className="border border-black/15 bg-white/40 px-5 py-5 text-sm font-semibold uppercase backdrop-blur-sm">
-          {message}
-        </div>
+        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{message}</div>
       </div>
     </section>
   );

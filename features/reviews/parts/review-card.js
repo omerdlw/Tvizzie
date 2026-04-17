@@ -31,7 +31,7 @@ function getReviewLikeText(likesCount) {
 
 function getAccountActivityLabel(review, { hasRating, hasText }) {
   if (review.subjectType === 'list') {
-    return hasText ? 'List review' : 'List note';
+    return hasText ? 'List comment' : 'List note';
   }
 
   if (hasText) {
@@ -47,7 +47,7 @@ function getAccountActivityLabel(review, { hasRating, hasText }) {
 
 function getFeedActivityLabel(review, { hasRating, hasText }) {
   if (review.subjectType === 'list') {
-    return hasText ? 'List review by' : 'List note by';
+    return hasText ? 'List comment by' : 'List note by';
   }
 
   if (hasText) {
@@ -254,14 +254,17 @@ export default function ReviewCard({
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
 
   const isAccountVariant = displayVariant === 'account';
+  const isActivityVariant = displayVariant === 'activity';
+  const isSubjectCardVariant = isAccountVariant || isActivityVariant;
   const isSpoiler = Boolean(review.isSpoiler);
   const isSpoilerHidden = isSpoiler && !isSpoilerVisible;
   const hasLiked = currentUserId ? review.likes?.includes(currentUserId) : false;
   const likesCount = review.likes?.length || 0;
-  const hasRating = Number.isFinite(review.rating);
+  const resolvedRating = Number(review.rating);
+  const hasRating = review.subjectType !== 'list' && Number.isFinite(resolvedRating);
   const hasText = Boolean(review.content?.trim());
   const isLikeDisabled = currentUserId && review.user?.id === currentUserId;
-  const activityLabel = isAccountVariant
+  const activityLabel = isSubjectCardVariant
     ? getAccountActivityLabel(review, { hasRating, hasText })
     : getFeedActivityLabel(review, { hasRating, hasText });
   const displayName = review.user?.displayName || review.user?.name || review.user?.email || 'Anonymous User';
@@ -269,8 +272,8 @@ export default function ReviewCard({
   const timestamp = review.updatedAt || review.createdAt;
   const formattedDate = timestamp ? formatDate(timestamp) : 'Just now';
   const accountHref = `/account/${username || review.user?.id || review.id}`;
-  const visualSrc = isAccountVariant ? getReviewPosterSrc(review) : getUserAvatarUrl(review.user);
-  const subjectHref = resolveSubjectHref(review, isAccountVariant);
+  const visualSrc = isSubjectCardVariant ? getReviewPosterSrc(review) : getUserAvatarUrl(review.user);
+  const subjectHref = resolveSubjectHref(review, isSubjectCardVariant);
   const previewItems = Array.isArray(review.subjectPreviewItems) ? review.subjectPreviewItems : [];
   const reviewSubjectKey = review.subjectKey || review.mediaKey || null;
   const hasLikedSubject = Boolean(
@@ -282,7 +285,7 @@ export default function ReviewCard({
   const isRewatch = Boolean(
     review.subjectType !== 'list' && reviewSubjectKey && rewatchMediaKeys?.has?.(reviewSubjectKey)
   );
-  const contentClass = cn('flex min-w-0 flex-1 flex-col', isAccountVariant ? 'gap-1 self-stretch' : 'gap-1');
+  const contentClass = cn('flex min-w-0 flex-1 flex-col', isSubjectCardVariant ? 'gap-1 self-stretch' : 'gap-1');
   const revealSpoiler = () => setIsSpoilerVisible(true);
   const handleCardClick = (event) => {
     if (!isSpoilerHidden || isInteractiveTarget(event.target)) {
@@ -306,8 +309,8 @@ export default function ReviewCard({
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative shrink-0">
             <ReviewVisual
-              alt={isAccountVariant ? review.subjectTitle || 'Poster' : displayName}
-              isAccountVariant={isAccountVariant}
+              alt={isSubjectCardVariant ? review.subjectTitle || 'Poster' : displayName}
+              isAccountVariant={isSubjectCardVariant}
               isListSubject={review.subjectType === 'list'}
               previewItems={previewItems}
               src={visualSrc}
@@ -319,38 +322,46 @@ export default function ReviewCard({
           </div>
 
           <div className={contentClass}>
-            {isAccountVariant ? (
+            {isSubjectCardVariant ? (
               <>
-                <div className="flex min-w-0 items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    {showSubject && subjectHref && review.subjectTitle && (
-                      <Link
-                        href={subjectHref}
-                        className="block min-w-0 text-lg font-semibold tracking-tight transition sm:text-xl"
-                        style={{
-                          display: '-webkit-box',
-                          overflow: 'hidden',
-                          WebkitBoxOrient: 'vertical',
-                          WebkitLineClamp: 2,
-                        }}
-                      >
-                        {review.subjectTitle}
-                      </Link>
-                    )}
+                {!isActivityVariant ? (
+                  <>
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        {showSubject && subjectHref && review.subjectTitle && (
+                          <Link
+                            href={subjectHref}
+                            className="block min-w-0 text-lg font-semibold tracking-tight transition sm:text-xl"
+                            style={{
+                              display: '-webkit-box',
+                              overflow: 'hidden',
+                              WebkitBoxOrient: 'vertical',
+                              WebkitLineClamp: 2,
+                            }}
+                          >
+                            {review.subjectTitle}
+                          </Link>
+                        )}
+                      </div>
+
+                      {isOwnReview && <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                      {hasRating && <RatingStars rating={resolvedRating} />}
+                      {hasLikedSubject && <Icon icon="solar:heart-bold" size={16} className="text-error" />}
+                      {hasWatchedSubject && isRewatch && (
+                        <Icon icon="solar:refresh-bold" size={16} className="text-success" />
+                      )}
+                      <span>{activityLabel}</span>
+                      <span className="text-xs sm:text-sm">{formattedDate}</span>
+                    </div>
+                  </>
+                ) : hasRating ? (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                    <RatingStars rating={resolvedRating} />
                   </div>
-
-                  {isOwnReview && <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
-                  {hasRating && <RatingStars rating={review.rating} />}
-                  {hasLikedSubject && <Icon icon="solar:heart-bold" size={16} className="text-error" />}
-                  {hasWatchedSubject && isRewatch && (
-                    <Icon icon="solar:refresh-bold" size={16} className="text-success" />
-                  )}
-                  <span>{activityLabel}</span>
-                  <span className="text-xs sm:text-sm">{formattedDate}</span>
-                </div>
+                ) : null}
 
                 {hasText &&
                   (isSpoilerHidden ? (
@@ -362,16 +373,16 @@ export default function ReviewCard({
                         display: '-webkit-box',
                         overflow: 'hidden',
                         WebkitBoxOrient: 'vertical',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: isActivityVariant ? 3 : 2,
                       }}
                     >
                       {review.content}
                     </p>
                   ))}
 
-                {!hasText && hasRating && <p className="min-w-0 text-sm leading-6">- Rated without review</p>}
+                {!hasText && hasRating && !isActivityVariant && <p className="min-w-0 text-sm leading-6">- Rated without review</p>}
 
-                {!isSpoilerHidden && (
+                {!isSpoilerHidden && !isActivityVariant && (
                   <ReviewLikeButton
                     disabled={isLikeDisabled}
                     hasLiked={hasLiked}
@@ -385,7 +396,7 @@ export default function ReviewCard({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-black/70 sm:text-sm">
-                      {hasRating && <RatingStars rating={review.rating} />}
+                      {hasRating && <RatingStars rating={resolvedRating} />}
                       <span>{activityLabel}</span>
                       <Link href={accountHref} className="font-semibold text-black transition-colors">
                         {displayName}

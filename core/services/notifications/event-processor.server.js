@@ -139,11 +139,35 @@ function mapEventToNotification(eventType, payload = {}, actor = {}) {
     };
   }
 
+  if (eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED) {
+    const listOwnerId = normalizeValue(payload.listOwnerId || payload.subjectOwnerId || payload.ownerId);
+
+    if (!listOwnerId) {
+      return null;
+    }
+
+    const subject = buildSubject({
+      ...payload,
+      subjectId: payload.listId || payload.subjectId,
+      subjectType: 'list',
+    });
+
+    return {
+      body: '',
+      eventType: NOTIFICATION_TYPES.LIST_COMMENT,
+      href: subject.href || null,
+      userId: listOwnerId,
+    };
+  }
+
   return null;
 }
 
 function resolveNotificationSubject(eventType, payload = {}) {
-  if (eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED) {
+  if (
+    eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED ||
+    eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED
+  ) {
     return buildSubject({
       ...payload,
       subjectId: payload.listId || payload.subjectId,

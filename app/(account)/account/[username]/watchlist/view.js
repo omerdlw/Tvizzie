@@ -1,24 +1,24 @@
 import AccountWatchlistFeed from '@/features/account/feeds/watchlist';
-import { AccountPageShell } from '@/features/account/shared/layout';
-import { buildAccountPageShellProps, useAccountSectionState } from '../shared/section-context';
-import Registry from './registry';
+import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
 
-export default function WatchlistView({ watchlist, handleRequestRemoveWatchlistItem }) {
-  const sectionState = useAccountSectionState();
-  const shellProps = buildAccountPageShellProps(sectionState, {
-    activeSection: 'watchlist',
-    skeletonVariant: 'collection',
-  });
+export const Registry = createAccountSectionRegistry({
+  displayName: 'AccountWatchlistRegistry',
+  navDescription: 'Watchlist',
+  navRegistrySource: 'account-watchlist',
+});
 
-  return (
-    <AccountPageShell {...shellProps} registry={<Registry />}>
-      <AccountWatchlistFeed
-        auth={sectionState.auth}
-        canShowWatchlistGrid={sectionState.canViewProfileCollections}
-        isOwner={sectionState.isOwner}
-        onRemoveItem={handleRequestRemoveWatchlistItem}
-        watchlist={watchlist}
-      />
-    </AccountPageShell>
-  );
-}
+export default createAccountSectionView({
+  activeSection: 'watchlist',
+  displayName: 'AccountWatchlistView',
+  Registry,
+  skeletonVariant: 'collection',
+  renderContent: (sectionState, { handleRequestRemoveWatchlistItem, watchlist }) => (
+    <AccountWatchlistFeed
+      auth={sectionState.auth}
+      canShowWatchlistGrid={sectionState.canViewProfileCollections}
+      isOwner={sectionState.isOwner}
+      onRemoveItem={handleRequestRemoveWatchlistItem}
+      watchlist={watchlist}
+    />
+  ),
+});

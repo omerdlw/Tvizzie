@@ -1,8 +1,9 @@
 'use client';
 
-import { cn } from '@/core/utils';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { useMemo, useRef } from 'react';
+
+import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { cn } from '@/core/utils';
 
 const STAGGER_BY = Object.freeze({
   character: 0.02,

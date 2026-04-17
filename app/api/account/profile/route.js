@@ -172,7 +172,7 @@ function extractStorageObjectPath(url, bucket) {
 }
 
 const SUPABASE_MEDIA_HOSTS = resolveSupabaseMediaHosts();
-const ALLOW_ANY_EXTERNAL_MEDIA_URL = normalizeBoolean(process.env.ACCOUNT_MEDIA_ALLOW_ANY_EXTERNAL_URL, true);
+const ALLOW_ANY_EXTERNAL_MEDIA_URL = normalizeBoolean(process.env.ACCOUNT_MEDIA_ALLOW_ANY_EXTERNAL_URL, false);
 const ALLOWED_EXTERNAL_MEDIA_HOST_PATTERNS = normalizeHostPatterns(
   process.env.ACCOUNT_MEDIA_ALLOWED_EXTERNAL_HOSTS,
   DEFAULT_EXTERNAL_MEDIA_HOST_PATTERNS
@@ -269,6 +269,18 @@ function resolveProfileMediaUrl(value, { target, userId, currentValue = null }) 
   }
 
   throw new Error(`${target === 'avatar' ? 'Avatar' : 'Logo'} URL is not allowed`);
+}
+
+function resolveProfileWriteMediaUrl(value, { action, currentValue = null, target, userId }) {
+  if (action === 'ensure') {
+    const preservedValue = normalizeValue(currentValue) || null;
+
+    if (preservedValue) {
+      return preservedValue;
+    }
+  }
+
+  return resolveProfileMediaUrl(value, { target, userId, currentValue });
 }
 
 async function getCurrentProfileMediaSnapshot(userId) {
@@ -450,12 +462,14 @@ export async function POST(request) {
         ? { avatarUrl: null, bannerUrl: null }
         : await getCurrentProfileMediaSnapshot(authContext.userId);
 
-    const avatarUrl = resolveProfileMediaUrl(body?.avatarUrl, {
+    const avatarUrl = resolveProfileWriteMediaUrl(body?.avatarUrl, {
+      action,
       target: 'avatar',
       userId: authContext.userId,
       currentValue: currentMediaSnapshot.avatarUrl,
     });
-    const bannerUrl = resolveProfileMediaUrl(body?.bannerUrl, {
+    const bannerUrl = resolveProfileWriteMediaUrl(body?.bannerUrl, {
+      action,
       target: 'banner',
       userId: authContext.userId,
       currentValue: currentMediaSnapshot.bannerUrl,

@@ -1,10 +1,7 @@
 'use client';
 
-import { AUTH_ERROR_MESSAGES, AUTH_ERROR_MESSAGE_PATTERNS, AUTH_ROUTES, EMAIL_DOMAIN_PATTERNS } from './constants';
-
-const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';
-const REDIRECT_FALLBACK_PATH = '/account';
-const REDIRECT_BLOCKED_PATHS = new Set([AUTH_ROUTES.SIGN_IN, AUTH_ROUTES.SIGN_UP]);
+import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
+import { AUTH_ERROR_MESSAGES, AUTH_ERROR_MESSAGE_PATTERNS, EMAIL_DOMAIN_PATTERNS } from './constants';
 
 export function createError(code, message = null) {
   const error = new Error(message || code);
@@ -175,33 +172,12 @@ export function resolveVerificationTimestamp(value) {
   return 0;
 }
 
-export function sanitizeNextPath(next, fallback = REDIRECT_FALLBACK_PATH) {
-  const rawValue = String(next || '').trim();
-
-  if (!rawValue) {
-    return fallback;
-  }
-
-  if (!rawValue.startsWith('/') || rawValue.startsWith('//')) {
-    return fallback;
-  }
-
-  try {
-    const parsed = new URL(rawValue, REDIRECT_BASE_ORIGIN);
-    const normalizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-
-    if (parsed.origin !== REDIRECT_BASE_ORIGIN || REDIRECT_BLOCKED_PATHS.has(parsed.pathname)) {
-      return fallback;
-    }
-
-    return normalizedPath;
-  } catch {
-    return fallback;
-  }
+export function sanitizeNextPath(next, fallback = AUTH_DEFAULT_POST_LOGIN_PATH) {
+  return sanitizeAuthNextPath(next, fallback);
 }
 
 export function resolvePostAuthRedirect(next) {
-  return sanitizeNextPath(next, REDIRECT_FALLBACK_PATH);
+  return sanitizeNextPath(next, AUTH_DEFAULT_POST_LOGIN_PATH);
 }
 
 export function getCurrentPathWithSearch(pathname, searchParams) {

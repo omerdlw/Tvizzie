@@ -1,5 +1,6 @@
 import { cn } from '@/core/utils';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { useNavHeight } from '@/core/modules/nav/hooks';
 import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/features/account/shared/layout';
 import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
@@ -151,6 +152,7 @@ function MediaField({
 }
 
 export default function AccountEditView(props) {
+  const { navHeight } = useNavHeight();
   const {
     currentAuthEmail,
     auth,
@@ -194,6 +196,7 @@ export default function AccountEditView(props) {
     setPasswordFlow,
     setDeleteFlow,
   } = props;
+  const resolvedNavHeight = Math.max(0, Math.round(navHeight || 0));
 
   const editRegistry = (
     <Registry
@@ -223,7 +226,10 @@ export default function AccountEditView(props) {
       <>
         {editRegistry}
         <PageGradientShell>
-          <main className="relative min-h-screen overflow-hidden">
+          <main
+            className="relative min-h-screen overflow-hidden"
+            style={{ paddingBottom: `calc(${resolvedNavHeight}px + 1rem)` }}
+          >
             <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}>
               <StatusState
                 title="Account data unavailable"
@@ -240,7 +246,10 @@ export default function AccountEditView(props) {
     <>
       {editRegistry}
       <PageGradientShell>
-        <main className="relative min-h-screen overflow-hidden">
+        <main
+          className="relative min-h-screen overflow-hidden"
+          style={{ paddingBottom: `calc(${resolvedNavHeight}px + 1rem)` }}
+        >
           <div className="relative">
             <AccountHero
               profile={heroProfile}

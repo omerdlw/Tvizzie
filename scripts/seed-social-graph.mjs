@@ -12,13 +12,24 @@ const REPO_ROOT = path.resolve(scriptDirname, '..');
 const OUTPUT_DIR = path.join(REPO_ROOT, 'scripts', 'output');
 
 const ACTIVITY_EVENT_TYPES = Object.freeze({
-  MEDIA_LIKED: 'MEDIA_LIKED',
-  LIST_ITEM_ADDED: 'LIST_ITEM_ADDED',
   WATCHLIST_ADDED: 'WATCHLIST_ADDED',
-  WATCHED_MARKED: 'WATCHED_MARKED',
+  REVIEW_LIKED: 'REVIEW_LIKED',
+  RATING_LOGGED: 'RATING_LOGGED',
   REVIEW_PUBLISHED: 'REVIEW_PUBLISHED',
   LIST_CREATED: 'LIST_CREATED',
-  LIST_LIKED: 'LIST_LIKED',
+  LIST_COMMENTED: 'LIST_COMMENTED',
+  WATCHED_ADDED: 'WATCHED_ADDED',
+  LIKED_ADDED: 'LIKED_ADDED',
+});
+
+const ACTIVITY_SLOT_TYPES = Object.freeze({
+  WATCHLIST_ENTRY: 'WATCHLIST_ENTRY',
+  REVIEW_LIKE: 'REVIEW_LIKE',
+  MEDIA_OPINION: 'MEDIA_OPINION',
+  LIST_CREATED: 'LIST_CREATED',
+  LIST_OPINION: 'LIST_OPINION',
+  WATCHED_ENTRY: 'WATCHED_ENTRY',
+  LIKED_ENTRY: 'LIKED_ENTRY',
 });
 
 const NOTIFICATION_EVENT_TYPES = Object.freeze({
@@ -280,17 +291,28 @@ function buildMediaKey(entityType, entityId) {
   return `${normalizeValue(entityType).toLowerCase()}_${normalizeValue(entityId)}`;
 }
 
-function buildCanonicalActivityDedupeKey({ actorUserId, eventType, subjectId, subjectType }) {
-  const normalizedActorUserId = normalizeValue(actorUserId);
-  const normalizedEventType = normalizeValue(eventType).toUpperCase();
+function buildActivitySubjectRef({ subjectId, subjectType }) {
   const normalizedSubjectType = normalizeValue(subjectType).toLowerCase();
   const normalizedSubjectId = normalizeValue(subjectId);
 
-  if (!normalizedActorUserId || !normalizedEventType || !normalizedSubjectType || !normalizedSubjectId) {
+  if (!normalizedSubjectType || !normalizedSubjectId) {
     return '';
   }
 
-  return `subject:${normalizedActorUserId}:${normalizedEventType}:${normalizedSubjectType}:${normalizedSubjectId}`;
+  return `${normalizedSubjectType}:${normalizedSubjectId}`;
+}
+
+function buildCanonicalActivityDedupeKey({ actorUserId, slotType, primaryRef, secondaryRef = '-' }) {
+  const normalizedActorUserId = normalizeValue(actorUserId);
+  const normalizedSlotType = normalizeValue(slotType).toUpperCase();
+  const normalizedPrimaryRef = normalizeValue(primaryRef);
+  const normalizedSecondaryRef = normalizeValue(secondaryRef) || '-';
+
+  if (!normalizedActorUserId || !normalizedSlotType || !normalizedPrimaryRef) {
+    return '';
+  }
+
+  return `slot:${normalizedActorUserId}:${normalizedSlotType}:${normalizedPrimaryRef}:${normalizedSecondaryRef}`;
 }
 
 function createSyntheticMovie(index) {
@@ -479,26 +501,117 @@ function buildActivitySubject(payload = {}) {
 }
 
 function createActivityRow({ actor, actorUserId, eventType, occurredAt, payload = {} }) {
+  const subject = buildActivitySubject(payload);
+  const subjectRef = buildActivitySubjectRef({
+    subjectId: subject.id,
+    subjectType: subject.type,
+  });
+  const basePayload = {
+    actor,
+    occurredAt,
+    subject,
+    version: 2,
+    visibility: 'public',
+  };
+  let slotType = '';
+  let primaryRef = subjectRef;
+  let secondaryRef = '-';
+  let renderKind = 'text';
+  let details = {};
+  let reviewCard = null;
+
+  if (eventType === ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED) {
+    slotType = ACTIVITY_SLOT_TYPES.WATCHLIST_ENTRY;
+  } else if (eventType === ACTIVITY_EVENT_TYPES.LIKED_ADDED) {
+    slotType = ACTIVITY_SLOT_TYPES.LIKED_ENTRY;
+  } else if (eventType === ACTIVITY_EVENT_TYPES.WATCHED_ADDED) {
+    slotType = ACTIVITY_SLOT_TYPES.WATCHED_ENTRY;
+    details = {
+      watchedAt: payload.watchedAt || occurredAt,
+    };
+  } else if (eventType === ACTIVITY_EVENT_TYPES.RATING_LOGGED) {
+    slotType = ACTIVITY_SLOT_TYPES.MEDIA_OPINION;
+    details = {
+      rating: Number(payload.reviewRating ?? payload.rating ?? null),
+    };
+  } else if (eventType === ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED) {
+    slotType = ACTIVITY_SLOT_TYPES.MEDIA_OPINION;
+    renderKind = 'text_with_review';
+  } else if (eventType === ACTIVITY_EVENT_TYPES.LIST_CREATED) {
+    slotType = ACTIVITY_SLOT_TYPES.LIST_CREATED;
+  } else if (eventType === ACTIVITY_EVENT_TYPES.LIST_COMMENTED) {
+    slotType = ACTIVITY_SLOT_TYPES.LIST_OPINION;
+    renderKind = 'text_with_review';
+  } else if (eventType === ACTIVITY_EVENT_TYPES.REVIEW_LIKED) {
+    slotType = ACTIVITY_SLOT_TYPES.REVIEW_LIKE;
+    primaryRef = normalizeValue(payload.reviewKey);
+    secondaryRef = normalizeValue(payload.reviewOwnerId);
+    details = {
+      reviewKey: normalizeValue(payload.reviewKey),
+      reviewOwnerDisplayName: normalizeValue(payload.reviewOwnerDisplayName) || 'Someone',
+      reviewOwnerId: normalizeValue(payload.reviewOwnerId),
+      reviewOwnerUsername: normalizeValue(payload.reviewOwnerUsername) || null,
+      reviewRating: payload.reviewRating ?? null,
+    };
+  }
+
+  if (renderKind === 'text_with_review') {
+    reviewCard = {
+      authorId: actor.id,
+      content: normalizeValue(payload.reviewContent || payload.content),
+      createdAt: occurredAt,
+      id: `${subject.type}:${subject.id}:${actor.id}:${occurredAt}`,
+      isSpoiler: Boolean(payload.reviewIsSpoiler || payload.isSpoiler),
+      likes: [],
+      rating: payload.reviewRating ?? payload.rating ?? null,
+      reviewUserId: actor.id,
+      subjectHref: payload.subjectHref || subject.href,
+      subjectId: subject.id,
+      subjectKey: payload.subjectKey || subjectRef,
+      subjectOwnerId: subject.ownerId || null,
+      subjectOwnerUsername: subject.ownerUsername || null,
+      subjectPoster: subject.poster || null,
+      subjectPreviewItems: Array.isArray(payload.subjectPreviewItems) ? payload.subjectPreviewItems : [],
+      subjectSlug: subject.slug || null,
+      subjectTitle: subject.title,
+      subjectType: subject.type,
+      updatedAt: occurredAt,
+      user: {
+        avatarUrl: actor.avatarUrl || null,
+        id: actor.id,
+        name: actor.displayName,
+        username: actor.username || null,
+      },
+    };
+    details = {
+      ...details,
+      rating: payload.reviewRating ?? payload.rating ?? null,
+    };
+  }
+
   const dedupeKey =
     normalizeValue(payload.dedupeKey) ||
     buildCanonicalActivityDedupeKey({
       actorUserId,
-      eventType,
-      subjectId: payload.subjectId,
-      subjectType: payload.subjectType,
+      primaryRef,
+      secondaryRef,
+      slotType,
     }) ||
-    `${eventType}:${payload.subjectType || 'unknown'}:${payload.subjectId || randomUUID()}`;
+    `${eventType}:${subject.type || 'unknown'}:${subject.id || randomUUID()}`;
 
   return {
     created_at: occurredAt,
     dedupe_key: dedupeKey,
     event_type: eventType,
     payload: {
-      actor,
+      ...basePayload,
+      dedupeKey,
+      details,
       eventType,
-      payload,
-      subject: buildActivitySubject(payload),
-      visibility: 'public',
+      primaryRef,
+      renderKind,
+      reviewCard,
+      slotType,
     },
     updated_at: occurredAt,
     user_id: actorUserId,
@@ -905,29 +1018,6 @@ async function createLists(admin, user, blueprints, activityRows, activityClock)
     const itemRows = blueprint.items.map(({ addedAt, movie, position }) => {
       const payload = createMediaPayload(movie, user.id, addedAt, { position });
 
-      activityRows.push(
-        createActivityRow({
-          actor: createActorSnapshot(user),
-          actorUserId: user.id,
-          eventType: ACTIVITY_EVENT_TYPES.LIST_ITEM_ADDED,
-          occurredAt: addedAt,
-          payload: {
-            dedupeKey: `list-item:${user.id}:${list.id}:${payload.mediaKey}`,
-            itemMediaId: payload.entityId,
-            itemMediaKey: payload.mediaKey,
-            itemPoster: payload.poster_path || null,
-            itemTitle: payload.title || 'Untitled',
-            listId: list.id,
-            listSlug: list.slug,
-            listTitle: list.title,
-            ownerUsername: user.username,
-            subjectId: list.id,
-            subjectPoster: list.coverUrl || payload.poster_path || null,
-            subjectTitle: list.title,
-            subjectType: 'list',
-          },
-        })
-      );
       activityClock.set(user.id, Math.max(activityClock.get(user.id) || 0, new Date(addedAt).getTime()));
 
       return {
@@ -957,13 +1047,16 @@ async function createLists(admin, user, blueprints, activityRows, activityClock)
         payload: {
           dedupeKey: buildCanonicalActivityDedupeKey({
             actorUserId: user.id,
-            eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
-            subjectId: list.id,
-            subjectType: 'list',
+            primaryRef: buildActivitySubjectRef({
+              subjectId: list.id,
+              subjectType: 'list',
+            }),
+            slotType: ACTIVITY_SLOT_TYPES.LIST_CREATED,
           }),
           listId: list.id,
           listSlug: list.slug,
           listTitle: list.title,
+          subjectOwnerId: user.id,
           ownerUsername: user.username,
           subjectId: list.id,
           subjectPoster: list.coverUrl || null,
@@ -1048,14 +1141,16 @@ function createMediaCollectionRows({ actionName, entries, user, activityRows, ac
         createActivityRow({
           actor: createActorSnapshot(user),
           actorUserId: user.id,
-          eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
+          eventType: ACTIVITY_EVENT_TYPES.WATCHED_ADDED,
           occurredAt: timestamp,
           payload: {
             dedupeKey: buildCanonicalActivityDedupeKey({
               actorUserId: user.id,
-              eventType: ACTIVITY_EVENT_TYPES.WATCHED_MARKED,
-              subjectId: payload.entityId,
-              subjectType: payload.entityType,
+              primaryRef: buildActivitySubjectRef({
+                subjectId: payload.entityId,
+                subjectType: payload.entityType,
+              }),
+              slotType: ACTIVITY_SLOT_TYPES.WATCHED_ENTRY,
             }),
             subjectId: payload.entityId,
             subjectPoster: payload.poster_path || null,
@@ -1084,14 +1179,16 @@ function createMediaCollectionRows({ actionName, entries, user, activityRows, ac
           createActivityRow({
             actor: createActorSnapshot(user),
             actorUserId: user.id,
-            eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
+            eventType: ACTIVITY_EVENT_TYPES.LIKED_ADDED,
             occurredAt: timestamp,
             payload: {
               dedupeKey: buildCanonicalActivityDedupeKey({
                 actorUserId: user.id,
-                eventType: ACTIVITY_EVENT_TYPES.MEDIA_LIKED,
-                subjectId: payload.entityId,
-                subjectType: payload.entityType,
+                primaryRef: buildActivitySubjectRef({
+                  subjectId: payload.entityId,
+                  subjectType: payload.entityType,
+                }),
+                slotType: ACTIVITY_SLOT_TYPES.LIKED_ENTRY,
               }),
               subjectId: payload.entityId,
               subjectPoster: payload.poster_path || null,
@@ -1112,9 +1209,11 @@ function createMediaCollectionRows({ actionName, entries, user, activityRows, ac
             payload: {
               dedupeKey: buildCanonicalActivityDedupeKey({
                 actorUserId: user.id,
-                eventType: ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED,
-                subjectId: payload.entityId,
-                subjectType: payload.entityType,
+                primaryRef: buildActivitySubjectRef({
+                  subjectId: payload.entityId,
+                  subjectType: payload.entityType,
+                }),
+                slotType: ACTIVITY_SLOT_TYPES.WATCHLIST_ENTRY,
               }),
               subjectId: payload.entityId,
               subjectPoster: payload.poster_path || null,
@@ -1145,13 +1244,19 @@ function createMediaReviewRows({ entries, user, activityRows, activityClock }) {
         payload: {
           dedupeKey: buildCanonicalActivityDedupeKey({
             actorUserId: user.id,
-            eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
-            subjectId: payload.entityId,
-            subjectType: payload.entityType,
+            primaryRef: buildActivitySubjectRef({
+              subjectId: payload.entityId,
+              subjectType: payload.entityType,
+            }),
+            slotType: ACTIVITY_SLOT_TYPES.MEDIA_OPINION,
           }),
-          reviewMode: 'review',
+          content,
+          reviewContent: content,
+          reviewIsSpoiler: false,
+          reviewRating: rating,
           subjectHref: `/movie/${payload.entityId}`,
           subjectId: payload.entityId,
+          subjectKey: payload.mediaKey,
           subjectPoster: payload.poster_path || null,
           subjectTitle: payload.title,
           subjectType: payload.entityType,
@@ -1248,34 +1353,6 @@ function createListInteractionRows({
         user_id: user.id,
       });
 
-      activityRows.push(
-        createActivityRow({
-          actor: createActorSnapshot(user),
-          actorUserId: user.id,
-          eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
-          occurredAt: timestamp,
-          payload: {
-            dedupeKey: buildCanonicalActivityDedupeKey({
-              actorUserId: user.id,
-              eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
-              subjectId: list.id,
-              subjectType: 'list',
-            }),
-            listId: list.id,
-            listSlug: list.slug,
-            listTitle: list.title,
-            listOwnerId: list.ownerId,
-            ownerUsername: list.ownerSnapshot.username || list.ownerId,
-            subjectId: list.id,
-            subjectOwnerId: list.ownerId,
-            subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
-            subjectPoster: list.coverUrl || list.previewItems[0]?.poster_path || null,
-            subjectSlug: list.slug,
-            subjectTitle: list.title,
-            subjectType: 'list',
-          },
-        })
-      );
       notificationRows.push(
         createNotificationRow({
           actor: createActorSnapshot(user),
@@ -1344,18 +1421,24 @@ function createListInteractionRows({
         createActivityRow({
           actor: createActorSnapshot(user),
           actorUserId: user.id,
-          eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+          eventType: ACTIVITY_EVENT_TYPES.LIST_COMMENTED,
           occurredAt: timestamp,
           payload: {
             dedupeKey: buildCanonicalActivityDedupeKey({
               actorUserId: user.id,
-              eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
-              subjectId: list.id,
-              subjectType: 'list',
+              primaryRef: buildActivitySubjectRef({
+                subjectId: list.id,
+                subjectType: 'list',
+              }),
+              slotType: ACTIVITY_SLOT_TYPES.LIST_OPINION,
             }),
-            reviewMode: 'review',
+            content,
+            reviewContent: content,
+            reviewIsSpoiler: false,
+            reviewRating: rating,
             subjectHref: `/account/${list.ownerSnapshot.username}/lists/${list.slug}`,
             subjectId: list.id,
+            subjectKey: `list:${list.ownerId}:${list.id}`,
             subjectOwnerId: list.ownerId,
             subjectOwnerUsername: list.ownerSnapshot.username || list.ownerId,
             subjectPreviewItems: list.previewItems,

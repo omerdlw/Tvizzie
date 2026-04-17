@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { processActivityEvent } from '@/core/services/activity/event-processor.server';
+import { deleteActivityEvents, processActivityEvent } from '@/core/services/activity/event-processor.server';
 
 export const runtime = 'nodejs';
 
@@ -45,6 +45,38 @@ export async function POST(request) {
 
     return NextResponse.json({
       delivered: result?.delivered === true,
+      reason: result?.reason || null,
+    });
+  } catch (error) {
+    const message = normalizeErrorMessage(error);
+
+    return NextResponse.json(
+      {
+        error: message,
+      },
+      {
+        status: resolveStatusCode(message),
+      }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const authContext = await requireAuthenticatedRequest(request);
+    const body = await request.json().catch(() => ({}));
+    const action = normalizeValue(body?.action);
+
+    const result = await deleteActivityEvents({
+      action,
+      actorUserId: authContext.userId,
+      listId: normalizeValue(body?.listId),
+      subjectId: normalizeValue(body?.subjectId),
+      subjectType: normalizeValue(body?.subjectType),
+    });
+
+    return NextResponse.json({
+      deleted: result?.deleted === true,
       reason: result?.reason || null,
     });
   } catch (error) {

@@ -1,0 +1,777 @@
+# FILE_STRUCTURE
+
+Generated: 2026-04-17
+Scope: current filesystem tree under repository root, excluding ignored/generated/private paths.
+Excluded paths/patterns: .git, node_modules, .next, .env*, .env.local, .DS_Store
+Total included files: 568
+Total included empty directories: 10
+
+```text
+.
+├── .vscode/
+│   └── settings.json
+├── app/
+│   ├── (account)/
+│   │   └── account/
+│   │       ├── [username]/
+│   │       │   ├── activity/
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── likes/
+│   │       │   │   ├── lists/
+│   │       │   │   │   ├── page/
+│   │       │   │   │   │   └── [page]/
+│   │       │   │   │   │       └── page.js
+│   │       │   │   │   └── page.js
+│   │       │   │   ├── page/
+│   │       │   │   │   └── [page]/
+│   │       │   │   │       └── page.js
+│   │       │   │   ├── reviews/
+│   │       │   │   │   └── page.js
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── lists/
+│   │       │   │   ├── [slug]/
+│   │       │   │   │   ├── client.js
+│   │       │   │   │   ├── loading.js
+│   │       │   │   │   ├── page.js
+│   │       │   │   │   └── view.js
+│   │       │   │   ├── page/
+│   │       │   │   │   └── [page]/
+│   │       │   │   │       └── page.js
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── reviews/
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── watched/
+│   │       │   │   ├── page/
+│   │       │   │   │   └── [page]/
+│   │       │   │   │       └── page.js
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── watchlist/
+│   │       │   │   ├── page/
+│   │       │   │   │   └── [page]/
+│   │       │   │   │       └── page.js
+│   │       │   │   ├── client.js
+│   │       │   │   ├── loading.js
+│   │       │   │   ├── page.js
+│   │       │   │   └── view.js
+│   │       │   ├── client.js
+│   │       │   ├── error.js
+│   │       │   ├── loading.js
+│   │       │   ├── not-found.js
+│   │       │   ├── page.js
+│   │       │   └── registry.js
+│   │       ├── edit/
+│   │       │   ├── client.js
+│   │       │   ├── error.js
+│   │       │   ├── loading.js
+│   │       │   ├── not-found.js
+│   │       │   ├── page.js
+│   │       │   ├── registry.js
+│   │       │   └── view.js
+│   │       ├── lists/
+│   │       │   └── new/
+│   │       │       ├── client.js
+│   │       │       ├── error.js
+│   │       │       ├── loading.js
+│   │       │       ├── page.js
+│   │       │       ├── registry.js
+│   │       │       └── view.js
+│   │       ├── shared/
+│   │       │   ├── registry-state.js
+│   │       │   ├── route-page.js
+│   │       │   ├── section-factory.js
+│   │       │   └── section-state.js
+│   │       ├── client.js
+│   │       ├── error.js
+│   │       ├── loading.js
+│   │       ├── not-found.js
+│   │       ├── page.js
+│   │       ├── registry.js
+│   │       └── view.js
+│   ├── (auth)/
+│   │   ├── callback/
+│   │   │   └── page.js
+│   │   ├── sign-in/
+│   │   │   ├── client.js
+│   │   │   ├── page.js
+│   │   │   ├── registry.js
+│   │   │   └── view.js
+│   │   └── sign-up/
+│   │       ├── client.js
+│   │       ├── page.js
+│   │       ├── registry.js
+│   │       └── view.js
+│   ├── (home)/
+│   │   ├── client.js
+│   │   ├── page.js
+│   │   ├── registry.js
+│   │   └── view.js
+│   ├── (media)/
+│   │   ├── movie/
+│   │   │   └── [id]/
+│   │   │       ├── reviews/
+│   │   │       │   ├── client.js
+│   │   │       │   ├── page.js
+│   │   │       │   └── view.js
+│   │   │       ├── client.js
+│   │   │       ├── error.js
+│   │   │       ├── loading.js
+│   │   │       ├── not-found.js
+│   │   │       ├── page.js
+│   │   │       ├── registry.js
+│   │   │       └── view.js
+│   │   └── person/
+│   │       └── [id]/
+│   │           ├── client.js
+│   │           ├── error.js
+│   │           ├── loading.js
+│   │           ├── not-found.js
+│   │           ├── page.js
+│   │           ├── registry.js
+│   │           └── view.js
+│   ├── api/
+│   │   ├── account/
+│   │   │   ├── activity/
+│   │   │   │   └── route.js
+│   │   │   ├── media/
+│   │   │   │   └── route.js
+│   │   │   ├── profile/
+│   │   │   │   └── route.js
+│   │   │   ├── resolve/
+│   │   │   │   └── route.js
+│   │   │   ├── reviews/
+│   │   │   │   └── route.js
+│   │   │   └── search/
+│   │   │       └── route.js
+│   │   ├── activity/
+│   │   │   └── events/
+│   │   │       └── route.js
+│   │   ├── admin/
+│   │   │   ├── access/
+│   │   │   ├── database/
+│   │   │   ├── functions/
+│   │   │   ├── overview/
+│   │   │   ├── security/
+│   │   │   └── users/
+│   │   │       └── [userId]/
+│   │   │           └── actions/
+│   │   ├── auth/
+│   │   │   ├── account/
+│   │   │   │   ├── change-email/
+│   │   │   │   │   └── route.js
+│   │   │   │   ├── change-password/
+│   │   │   │   │   └── route.js
+│   │   │   │   ├── delete/
+│   │   │   │   │   └── route.js
+│   │   │   │   ├── password-status/
+│   │   │   │   │   └── route.js
+│   │   │   │   ├── reauthenticate/
+│   │   │   │   │   └── route.js
+│   │   │   │   └── set-password/
+│   │   │   │       └── route.js
+│   │   │   ├── audit/
+│   │   │   │   └── route.js
+│   │   │   ├── password-reset/
+│   │   │   │   └── complete/
+│   │   │   │       └── route.js
+│   │   │   ├── session/
+│   │   │   │   └── route.js
+│   │   │   ├── sign-up/
+│   │   │   │   └── complete/
+│   │   │   │       └── route.js
+│   │   │   └── verification/
+│   │   │       ├── send-code/
+│   │   │       │   └── route.js
+│   │   │       └── verify-code/
+│   │   │           └── route.js
+│   │   ├── collections/
+│   │   │   └── route.js
+│   │   ├── feedback/
+│   │   │   └── route.js
+│   │   ├── follows/
+│   │   │   └── route.js
+│   │   ├── health/
+│   │   │   └── route.js
+│   │   ├── live-updates/
+│   │   │   ├── events/
+│   │   │   │   └── route.js
+│   │   │   └── route.js
+│   │   ├── notifications/
+│   │   │   ├── events/
+│   │   │   │   └── route.js
+│   │   │   └── route.js
+│   │   ├── person/
+│   │   │   └── [id]/
+│   │   │       └── awards/
+│   │   │           └── route.js
+│   │   ├── reviews/
+│   │   │   ├── write/
+│   │   │   │   └── route.js
+│   │   │   └── route.js
+│   │   ├── social-proof/
+│   │   │   └── route.js
+│   │   ├── system/
+│   │   │   └── rollout/
+│   │   │       └── route.js
+│   │   └── tmdb/
+│   │       ├── discover/
+│   │       │   └── route.js
+│   │       ├── genres/
+│   │       │   └── route.js
+│   │       ├── movie-images/
+│   │       │   └── [id]/
+│   │       ├── search/
+│   │       │   └── route.js
+│   │       └── trending/
+│   │           └── route.js
+│   ├── search/
+│   │   ├── client.js
+│   │   └── page.js
+│   ├── error.js
+│   ├── global-error.js
+│   ├── globals.css
+│   ├── layout.js
+│   ├── manifest.js
+│   ├── not-found.js
+│   ├── providers.js
+│   └── template.js
+├── config/
+│   ├── account.config.js
+│   ├── auth.config.js
+│   ├── nav.config.js
+│   ├── project.config.js
+│   ├── provider.config.js
+│   └── rollout.config.js
+├── core/
+│   ├── auth/
+│   │   ├── clients/
+│   │   │   ├── audit.client.js
+│   │   │   ├── auth-route-notice.client.js
+│   │   │   ├── csrf.client.js
+│   │   │   ├── pending-account.client.js
+│   │   │   └── pending-provider-link.client.js
+│   │   ├── servers/
+│   │   │   ├── account/
+│   │   │   │   ├── account-bootstrap.server.js
+│   │   │   │   ├── account-deletion.server.js
+│   │   │   │   ├── account-lifecycle.server.js
+│   │   │   │   └── account-state.server.js
+│   │   │   ├── audit/
+│   │   │   │   └── audit-log.server.js
+│   │   │   ├── notice/
+│   │   │   │   └── auth-route-notice.server.js
+│   │   │   ├── policy/
+│   │   │   │   └── auth-route-policy.server.js
+│   │   │   ├── providers/
+│   │   │   │   ├── google-auth-intent.server.js
+│   │   │   │   └── google-provider.server.js
+│   │   │   ├── security/
+│   │   │   │   ├── csrf.server.js
+│   │   │   │   ├── password-security.server.js
+│   │   │   │   ├── rate-limit-policies.server.js
+│   │   │   │   ├── rate-limit.server.js
+│   │   │   │   ├── recent-reauth.server.js
+│   │   │   │   └── step-up.server.js
+│   │   │   ├── session/
+│   │   │   │   ├── authenticated-request.server.js
+│   │   │   │   ├── request-context.server.js
+│   │   │   │   ├── revocation.server.js
+│   │   │   │   ├── session.server.js
+│   │   │   │   └── supabase-admin-auth.server.js
+│   │   │   └── verification/
+│   │   │       ├── email-sender.server.js
+│   │   │       ├── email-verification.server.js
+│   │   │       ├── login-verification.server.js
+│   │   │       ├── password-account.server.js
+│   │   │       ├── password-reset-proof.server.js
+│   │   │       └── signup-proof.server.js
+│   │   ├── capabilities.js
+│   │   ├── oauth-callback.js
+│   │   ├── oauth-providers.js
+│   │   └── route-notice.js
+│   ├── clients/
+│   │   ├── supabase/
+│   │   │   ├── admin.js
+│   │   │   ├── client.js
+│   │   │   ├── constants.js
+│   │   │   ├── proxy.js
+│   │   │   └── server.js
+│   │   └── tmdb/
+│   │       ├── sanitize.js
+│   │       └── server.js
+│   ├── constants/
+│   │   ├── events/
+│   │   │   └── index.js
+│   │   └── index.js
+│   ├── hooks/
+│   │   ├── index.js
+│   │   ├── use-click-outside.js
+│   │   ├── use-debounce.js
+│   │   ├── use-delayed-ready.js
+│   │   ├── use-draggable-scroll.js
+│   │   ├── use-os.js
+│   │   └── use-scroll-to-top.js
+│   ├── modules/
+│   │   ├── account/
+│   │   │   ├── adapters/
+│   │   │   │   ├── create-adapter.js
+│   │   │   │   └── index.js
+│   │   │   ├── client.js
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── hooks.js
+│   │   │   └── index.js
+│   │   ├── api/
+│   │   │   ├── cache.js
+│   │   │   └── index.js
+│   │   ├── auth/
+│   │   │   ├── adapters/
+│   │   │   │   ├── api-adapter.js
+│   │   │   │   ├── create-adapter.js
+│   │   │   │   └── supabase-adapter.js
+│   │   │   ├── action-flows.js
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── guards.js
+│   │   │   ├── index.js
+│   │   │   ├── session-ready.js
+│   │   │   ├── storage.js
+│   │   │   └── utils.js
+│   │   ├── background/
+│   │   │   ├── context.js
+│   │   │   └── index.js
+│   │   ├── context-menu/
+│   │   │   ├── context.js
+│   │   │   ├── index.js
+│   │   │   └── menu-engine.js
+│   │   ├── countdown/
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── gate.js
+│   │   │   └── index.js
+│   │   ├── error-boundary/
+│   │   │   ├── core.js
+│   │   │   ├── index.js
+│   │   │   ├── integrations.js
+│   │   │   ├── listener.js
+│   │   │   └── reporter.js
+│   │   ├── layout/
+│   │   ├── loading/
+│   │   │   ├── context.js
+│   │   │   └── index.js
+│   │   ├── modal/
+│   │   │   ├── config.js
+│   │   │   ├── container.js
+│   │   │   ├── context.js
+│   │   │   ├── header.js
+│   │   │   ├── index.js
+│   │   │   ├── title.js
+│   │   │   └── utils.js
+│   │   ├── nav/
+│   │   │   ├── actions/
+│   │   │   │   ├── container.js
+│   │   │   │   ├── media-action.js
+│   │   │   │   ├── not-found-action.js
+│   │   │   │   └── styles.js
+│   │   │   ├── hooks/
+│   │   │   │   ├── index.js
+│   │   │   │   ├── use-action-component.js
+│   │   │   │   ├── use-action-height.js
+│   │   │   │   ├── use-element-height.js
+│   │   │   │   ├── use-nav-badge.js
+│   │   │   │   ├── use-nav-height.js
+│   │   │   │   ├── use-navigation-core.js
+│   │   │   │   ├── use-navigation-countdown.js
+│   │   │   │   ├── use-navigation-display.js
+│   │   │   │   ├── use-navigation-effects.js
+│   │   │   │   ├── use-navigation-expanded.js
+│   │   │   │   ├── use-navigation-items.js
+│   │   │   │   ├── use-navigation-layout.js
+│   │   │   │   ├── use-navigation-status.js
+│   │   │   │   └── use-navigation.js
+│   │   │   ├── surfaces/
+│   │   │   │   ├── auth-verification-surface.js
+│   │   │   │   └── confirmation-surface.js
+│   │   │   ├── context.js
+│   │   │   ├── elements.js
+│   │   │   ├── events.js
+│   │   │   ├── guards.js
+│   │   │   ├── index.js
+│   │   │   ├── item.js
+│   │   │   ├── state-machine.js
+│   │   │   └── utils.js
+│   │   ├── notification/
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── hooks.js
+│   │   │   ├── index.js
+│   │   │   ├── listener.js
+│   │   │   └── overlay.js
+│   │   ├── registry/
+│   │   │   ├── plugins/
+│   │   │   │   ├── background.plugin.js
+│   │   │   │   ├── context-menu.plugin.js
+│   │   │   │   ├── create-plugin.js
+│   │   │   │   ├── guard.plugin.js
+│   │   │   │   ├── index.js
+│   │   │   │   ├── loading.plugin.js
+│   │   │   │   ├── modal.plugin.js
+│   │   │   │   ├── nav.plugin.js
+│   │   │   │   ├── notification.plugin.js
+│   │   │   │   ├── registry-meta.js
+│   │   │   │   └── title.plugin.js
+│   │   │   ├── context.js
+│   │   │   ├── debug-panel.js
+│   │   │   ├── index.js
+│   │   │   ├── injector.js
+│   │   │   └── use-registry.js
+│   │   └── settings/
+│   │       ├── config.js
+│   │       ├── context.js
+│   │       ├── index.js
+│   │       ├── modal.js
+│   │       ├── storage.js
+│   │       └── utils.js
+│   ├── services/
+│   │   ├── account/
+│   │   │   ├── account-feed.server.js
+│   │   │   ├── account-route-data.server.js
+│   │   │   ├── account.server.js
+│   │   │   ├── account.service.js
+│   │   │   └── current-account-snapshot.server.js
+│   │   ├── activity/
+│   │   │   ├── activity-events.constants.js
+│   │   │   ├── activity-events.service.js
+│   │   │   ├── activity.service.js
+│   │   │   ├── canonical-key.js
+│   │   │   └── event-processor.server.js
+│   │   ├── admin/
+│   │   ├── browser/
+│   │   │   ├── browser-data.server.js
+│   │   │   ├── browser-reviews.server.js
+│   │   │   └── browser-social-proof.server.js
+│   │   ├── feedback/
+│   │   │   └── feedback.service.js
+│   │   ├── media/
+│   │   │   ├── favorites.service.js
+│   │   │   ├── likes.service.js
+│   │   │   ├── lists.service.js
+│   │   │   ├── reviews.server.js
+│   │   │   ├── reviews.service.js
+│   │   │   ├── social-proof.service.js
+│   │   │   ├── user-media.service.js
+│   │   │   ├── watched.service.js
+│   │   │   └── watchlist.service.js
+│   │   ├── notifications/
+│   │   │   ├── event-processor.server.js
+│   │   │   ├── notification-events.constants.js
+│   │   │   ├── notification-events.service.js
+│   │   │   ├── notifications.constants.js
+│   │   │   └── notifications.service.js
+│   │   ├── realtime/
+│   │   │   ├── live-updates.service.js
+│   │   │   ├── realtime-broadcast.server.js
+│   │   │   ├── realtime-transport.config.js
+│   │   │   └── user-events.server.js
+│   │   ├── shared/
+│   │   │   ├── account-summary.service.js
+│   │   │   ├── api-request.service.js
+│   │   │   ├── api-response.server.js
+│   │   │   ├── api-result.js
+│   │   │   ├── data-utils.js
+│   │   │   ├── media-collection.service.js
+│   │   │   ├── media-key.service.js
+│   │   │   ├── memory-cache.server.js
+│   │   │   ├── polling-subscription.service.js
+│   │   │   ├── request-meta.server.js
+│   │   │   ├── supabase-data.service.js
+│   │   │   ├── supabase-edge-internal.server.js
+│   │   │   ├── supabase-media-utils.service.js
+│   │   │   └── write-rollout.server.js
+│   │   ├── social/
+│   │   │   └── follows.service.js
+│   │   └── tmdb/
+│   │       └── tmdb.service.js
+│   ├── utils/
+│   │   ├── client-utils.js
+│   │   ├── errors.js
+│   │   ├── index.js
+│   │   ├── media.js
+│   │   ├── pipe.js
+│   │   ├── server-url.js
+│   │   └── site-url.js
+│   └── index.js
+├── features/
+│   ├── account/
+│   │   ├── feeds/
+│   │   │   ├── activity.js
+│   │   │   ├── likes.js
+│   │   │   ├── list-detail.js
+│   │   │   ├── lists.js
+│   │   │   ├── overview.js
+│   │   │   ├── reviews.js
+│   │   │   ├── watched.js
+│   │   │   └── watchlist.js
+│   │   ├── filtering/
+│   │   │   ├── activity.js
+│   │   │   ├── query-utils.js
+│   │   │   └── shared.js
+│   │   ├── hooks/
+│   │   │   ├── collections.js
+│   │   │   ├── edit-data.js
+│   │   │   ├── page-actions.js
+│   │   │   ├── page-data.js
+│   │   │   ├── relationships.js
+│   │   │   ├── section-page.js
+│   │   │   ├── security-actions.js
+│   │   │   └── security-credentials.js
+│   │   ├── lists/
+│   │   │   ├── card.js
+│   │   │   └── grid.js
+│   │   ├── overview/
+│   │   │   ├── activity.js
+│   │   │   ├── favorites.js
+│   │   │   ├── lists.js
+│   │   │   ├── reviews.js
+│   │   │   ├── watched.js
+│   │   │   └── watchlist.js
+│   │   ├── shared/
+│   │   │   ├── content-filters.js
+│   │   │   ├── hero.js
+│   │   │   ├── layout.js
+│   │   │   ├── media-grid.js
+│   │   │   ├── pagination.js
+│   │   │   ├── section-state.js
+│   │   │   └── section-wrapper.js
+│   │   ├── filtering.js
+│   │   ├── registry-config.js
+│   │   └── utils.js
+│   ├── auth/
+│   │   ├── api.js
+│   │   ├── auth-verification-form.js
+│   │   ├── constants.js
+│   │   ├── index.js
+│   │   ├── oauth-provider-button.js
+│   │   ├── page-shell.js
+│   │   ├── poster.js
+│   │   ├── utils.js
+│   │   └── workflows.js
+│   ├── home/
+│   │   ├── discover.js
+│   │   └── hero-spotlight.js
+│   ├── layout/
+│   │   ├── dynamic-wrappers.js
+│   │   ├── global-context-menu-registry.js
+│   │   ├── interactive-boundary.js
+│   │   ├── nav-height-spacer.js
+│   │   ├── observability-bootstrap.js
+│   │   └── smooth-scroll.js
+│   ├── modal/
+│   │   ├── account-social-modal.js
+│   │   ├── cast-modal.js
+│   │   ├── feedback-modal.js
+│   │   ├── image-preview-modal.js
+│   │   ├── list-editor-modal.js
+│   │   ├── list-picker-modal.js
+│   │   ├── media-social-proof-modal.js
+│   │   ├── notifications-modal.js
+│   │   ├── review-editor-modal.js
+│   │   └── video-preview-modal.js
+│   ├── movie/
+│   │   ├── background-preferences.js
+│   │   ├── cast-section.js
+│   │   ├── collection-actions.js
+│   │   ├── context-menu-actions.js
+│   │   ├── gallery-section.js
+│   │   ├── images-section.js
+│   │   ├── movie-motion.js
+│   │   ├── recommendation-card.js
+│   │   ├── sidebar.js
+│   │   ├── social-proof.js
+│   │   ├── utils.js
+│   │   └── videos-section.js
+│   ├── navigation/
+│   │   ├── actions/
+│   │   │   ├── search-action/
+│   │   │   │   ├── parts/
+│   │   │   │   │   ├── controls.js
+│   │   │   │   │   ├── grid-item.js
+│   │   │   │   │   └── item.js
+│   │   │   │   ├── constants.js
+│   │   │   │   ├── index.js
+│   │   │   │   └── utils.js
+│   │   │   ├── account-action.js
+│   │   │   ├── auth-google-action.js
+│   │   │   ├── container.js
+│   │   │   ├── media-action.js
+│   │   │   ├── movie-action.js
+│   │   │   ├── not-found-action.js
+│   │   │   ├── person-action.js
+│   │   │   └── review-action.js
+│   │   ├── surfaces/
+│   │   │   ├── account-bio-surface.js
+│   │   │   └── watch-providers-surface.js
+│   │   ├── account-nav-links.js
+│   │   └── account-nav-registry.js
+│   ├── person/
+│   │   ├── awards.js
+│   │   ├── bio.js
+│   │   ├── filmography-card.js
+│   │   ├── gallery.js
+│   │   ├── hero.js
+│   │   ├── media-thumb.js
+│   │   ├── poster-preferences.js
+│   │   ├── sidebar.js
+│   │   ├── social-links.js
+│   │   ├── timeline.js
+│   │   └── utils.js
+│   ├── reviews/
+│   │   ├── parts/
+│   │   │   ├── rating-range-selector.js
+│   │   │   ├── rating-selector.js
+│   │   │   ├── rating-stars.js
+│   │   │   ├── review-auth-fallback.js
+│   │   │   ├── review-card.js
+│   │   │   ├── review-header.js
+│   │   │   └── review-list.js
+│   │   ├── index.js
+│   │   ├── use-media-reviews.js
+│   │   ├── use-review-nav-state.js
+│   │   └── utils.js
+│   ├── shared/
+│   │   ├── carousel.js
+│   │   ├── empty-state.js
+│   │   ├── list-preview-composition.js
+│   │   ├── media-card.js
+│   │   ├── media-poster-card.js
+│   │   ├── not-found-template.js
+│   │   └── segmented-control.js
+│   └── README.md
+├── fonts/
+│   ├── zuume/
+│   │   ├── stylesheet.css
+│   │   ├── Zuume-Black.woff2
+│   │   ├── Zuume-BlackItalic.woff2
+│   │   ├── Zuume-Bold.woff2
+│   │   ├── Zuume-BoldItalic.woff2
+│   │   ├── Zuume-ExtraBold.woff2
+│   │   ├── Zuume-ExtraBoldItalic.woff2
+│   │   ├── Zuume-ExtraLight.woff2
+│   │   ├── Zuume-ExtraLightItalic.woff2
+│   │   ├── Zuume-Italic.woff2
+│   │   ├── Zuume-Light.woff2
+│   │   ├── Zuume-LightItalic.woff2
+│   │   ├── Zuume-Medium.woff2
+│   │   ├── Zuume-MediumItalic.woff2
+│   │   ├── Zuume-Regular.woff2
+│   │   ├── Zuume-SemiBold.woff2
+│   │   ├── Zuume-SemiBoldItalic.woff2
+│   │   ├── ZuumeCut-Black.woff2
+│   │   ├── ZuumeCut-BlackItalic.woff2
+│   │   ├── ZuumeCut-Bold.woff2
+│   │   ├── ZuumeCut-BoldItalic.woff2
+│   │   ├── ZuumeCut-ExtraBold.woff2
+│   │   ├── ZuumeCut-ExtraBoldItalic.woff2
+│   │   ├── ZuumeCut-ExtraLight.woff2
+│   │   ├── ZuumeCut-ExtraLightItalic.woff2
+│   │   ├── ZuumeCut-Italic.woff2
+│   │   ├── ZuumeCut-Light.woff2
+│   │   ├── ZuumeCut-LightItalic.woff2
+│   │   ├── ZuumeCut-Medium.woff2
+│   │   ├── ZuumeCut-MediumItalic.woff2
+│   │   ├── ZuumeCut-Regular.woff2
+│   │   ├── ZuumeCut-SemiBold.woff2
+│   │   └── ZuumeCut-SemiBoldItalic.woff2
+│   └── index.js
+├── public/
+│   ├── images/
+│   │   ├── default-avatar.svg
+│   │   └── noise.webp
+│   ├── apple-icon.svg
+│   └── icon.svg
+├── scripts/
+│   ├── output/
+│   ├── backfill-seed-genres.mjs
+│   ├── preflight-production.mjs
+│   └── seed-social-graph.mjs
+├── ui/
+│   ├── animations/
+│   │   ├── fade-left.js
+│   │   ├── fade-up.js
+│   │   ├── index.js
+│   │   ├── reveal-item.js
+│   │   ├── stagger-container.js
+│   │   └── text-animate.js
+│   ├── elements/
+│   │   ├── button/
+│   │   │   └── index.js
+│   │   ├── checkbox/
+│   │   │   └── index.js
+│   │   ├── input/
+│   │   │   └── index.js
+│   │   ├── popover/
+│   │   │   └── index.js
+│   │   ├── select/
+│   │   │   ├── async-select.js
+│   │   │   ├── combobox.js
+│   │   │   ├── default-select.js
+│   │   │   ├── index.js
+│   │   │   ├── multi-select.js
+│   │   │   └── searchable-select.js
+│   │   ├── switch/
+│   │   │   └── index.js
+│   │   ├── textarea/
+│   │   │   └── index.js
+│   │   ├── tooltip/
+│   │   │   └── index.js
+│   │   ├── index.js
+│   │   ├── noise-texture.js
+│   │   ├── page-gradient-shell.js
+│   │   └── utils.js
+│   ├── icon/
+│   │   └── index.js
+│   ├── loadings/
+│   │   └── spinner/
+│   │       └── index.js
+│   ├── skeletons/
+│   │   ├── components/
+│   │   │   └── nav.js
+│   │   └── views/
+│   │       ├── account.js
+│   │       ├── home.js
+│   │       ├── movie.js
+│   │       └── person.js
+│   └── states/
+│       └── fullscreen-state.js
+├── .gitattributes
+├── .gitignore
+├── .prettierignore
+├── .prettierrc.js
+├── affected_files.txt
+├── components.json
+├── eslint.config.mjs
+├── FILE_STRUCTURE
+├── jsconfig.json
+├── next.config.mjs
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── proxy.js
+├── skills-lock.json
+├── tailwind.config.js
+└── vercel.json
+```

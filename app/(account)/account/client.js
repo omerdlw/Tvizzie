@@ -15,8 +15,7 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
-import { useAccountSectionEngine } from './[username]/shared/section-engine';
-import { AccountSectionStateProvider } from './[username]/shared/section-context';
+import { AccountSectionStateProvider, useAccountSectionEngine } from './shared/section-state';
 import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;
@@ -29,6 +28,33 @@ const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   watched: PREVIEW_MEDIA_LIMIT,
   watchlist: PREVIEW_MEDIA_LIMIT,
 });
+
+function useAccountOverviewPreviewFeed({
+  canLoad,
+  errorMessage,
+  hasSeededFeed,
+  initialFeed = null,
+  loadFeed,
+  logLabel,
+}) {
+  return useDeferredPreviewFeed({
+    canLoad,
+    hasSeededFeed,
+    initialFeed,
+    loadFeed,
+    onLoadError: useCallback(
+      (error) => {
+        if (isPermissionDeniedError(error)) {
+          return null;
+        }
+
+        logDataError(`[Account] ${logLabel} could not be loaded:`, error);
+        return errorMessage;
+      },
+      [errorMessage, logLabel]
+    ),
+  });
+}
 
 export default function Client({ routeData = null, RegistryComponent = undefined }) {
   const { initialActivityFeed = null, initialReviewFeed = null } = routeData || {};
@@ -66,6 +92,7 @@ export default function Client({ routeData = null, RegistryComponent = undefined
   } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const profileHandle = profile?.username || username || null;
+  const canLoadPreviews = Boolean(isViewerReady && resolvedUserId && canViewProfileCollections) && (Boolean(username) || auth.isAuthenticated);
   const hasSeededReviewFeedForUser =
     !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
@@ -105,10 +132,9 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     );
   }, [auth.isAuthenticated, currentPath, isViewerReady, router, username]);
 
-  const reviewPreview = useDeferredPreviewFeed({
-    canLoad:
-      Boolean(isViewerReady && resolvedUserId && canViewProfileCollections) &&
-      (Boolean(username) || auth.isAuthenticated),
+  const reviewPreview = useAccountOverviewPreviewFeed({
+    canLoad: canLoadPreviews,
+    errorMessage: 'Reviews could not be loaded right now.',
     hasSeededFeed: hasSeededReviewFeedForUser,
     initialFeed: initialReviewFeed,
     loadFeed: useCallback(
@@ -120,19 +146,11 @@ export default function Client({ routeData = null, RegistryComponent = undefined
         }),
       [resolvedUserId]
     ),
-    onLoadError: useCallback((error) => {
-      if (isPermissionDeniedError(error)) {
-        return null;
-      }
-
-      logDataError('[Account] Review previews could not be loaded:', error);
-      return 'Reviews could not be loaded right now.';
-    }, []),
+    logLabel: 'Review previews',
   });
-  const activityPreview = useDeferredPreviewFeed({
-    canLoad:
-      Boolean(isViewerReady && resolvedUserId && canViewProfileCollections) &&
-      (Boolean(username) || auth.isAuthenticated),
+  const activityPreview = useAccountOverviewPreviewFeed({
+    canLoad: canLoadPreviews,
+    errorMessage: 'Activity could not be loaded right now.',
     hasSeededFeed: hasSeededActivityFeedForUser,
     initialFeed: initialActivityFeed,
     loadFeed: useCallback(
@@ -143,15 +161,15 @@ export default function Client({ routeData = null, RegistryComponent = undefined
         }),
       [resolvedUserId]
     ),
-    onLoadError: useCallback((error) => {
-      if (isPermissionDeniedError(error)) {
-        return null;
-      }
-
-      logDataError('[Account] Activity previews could not be loaded:', error);
-      return 'Activity could not be loaded right now.';
-    }, []),
+    logLabel: 'Activity previews',
   });
+  const seededActivityItems = useMemo(
+    () => (hasSeededActivityFeedForUser && Array.isArray(initialActivityFeed?.items) ? initialActivityFeed.items : []),
+    [hasSeededActivityFeedForUser, initialActivityFeed]
+  );
+  const resolvedActivityItems = activityPreview.items.length > 0 ? activityPreview.items : seededActivityItems;
+  const resolvedHasMoreActivityItems =
+    activityPreview.items.length > 0 ? activityPreview.hasMore : hasSeededActivityFeedForUser && Boolean(initialActivityFeed?.hasMore);
   const isCurrentAccountLoading = !username && !seededCurrentAccount && (!isViewerReady || auth.status === 'loading');
   const resolvedIsPageLoading = isPageLoading || isCurrentAccountLoading;
 
@@ -258,13 +276,13 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     authoredReviewsError: reviewPreview.feedError,
     authoredReviewsLoading: reviewPreview.isFeedLoading,
     activityError: activityPreview.feedError,
-    activityItems: activityPreview.items,
-    activityLoading: activityPreview.isFeedLoading,
+    activityItems: resolvedActivityItems,
+    activityLoading: activityPreview.isFeedLoading && resolvedActivityItems.length === 0,
     handleEditReview,
     handleDeleteReview,
     handleLikeReview,
     hasMoreAuthoredReviews: reviewPreview.hasMore,
-    hasMoreActivityItems: activityPreview.hasMore,
+    hasMoreActivityItems: resolvedHasMoreActivityItems,
   };
 
   return (

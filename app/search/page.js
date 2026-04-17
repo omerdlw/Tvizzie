@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import SearchPage from '@/features/navigation/actions/search-action/search-page';
+import SearchClient from './client';
 
 export const metadata = {
   title: 'Search',
@@ -9,7 +9,7 @@ export const metadata = {
 export default function Page() {
   return (
     <Suspense fallback={null}>
-      <SearchPage />
+      <SearchClient />
     </Suspense>
   );
 }

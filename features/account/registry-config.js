@@ -1,5 +1,7 @@
 'use client';
 
+import { cloneElement, isValidElement } from 'react';
+
 import AccountSocialModal from '@/features/modal/account-social-modal';
 import ListEditorModal from '@/features/modal/list-editor-modal';
 import ListPickerModal from '@/features/modal/list-picker-modal';
@@ -43,6 +45,16 @@ function getProfileFollowNavAction(state) {
     .toLowerCase();
 
   return PROFILE_FOLLOW_NAV_ACTIONS[normalizedState] || PROFILE_FOLLOW_NAV_ACTIONS.follow;
+}
+
+function suppressNavOverrideProfileFollowAction(navActionOverride) {
+  if (!isValidElement(navActionOverride) || navActionOverride.type !== AccountAction) {
+    return navActionOverride;
+  }
+
+  return cloneElement(navActionOverride, {
+    showProfileFollowAction: false,
+  });
 }
 
 function buildAccountLoadingState({ isLoading = false, navRegistrySource }) {
@@ -139,6 +151,7 @@ export function buildAccountEditState({
 
 export function buildAccountPageState({
   authIsAuthenticated,
+  authUser,
   followState,
   handleEditProfile,
   handleFollow,
@@ -176,17 +189,21 @@ export function buildAccountPageState({
   const canManageRequests = Boolean(isOwner && profile?.isPrivate === true);
   const isPrivateProfile = Boolean(profile?.isPrivate);
   const isFollowingProfile = followState === 'following';
-  const shouldForceProfileFollowAction = !isOwner && isPrivateProfile && !isFollowingProfile;
   const hasNavActionOverride = Boolean(navActionOverride);
+  const shouldForceProfileFollowAction = !hasNavActionOverride && !isOwner && isPrivateProfile && !isFollowingProfile;
   const shouldUseGuestFollowAction =
     !authIsAuthenticated && !isOwner && Boolean(profile) && typeof handleFollow === 'function' && !hasNavActionOverride;
-  const shouldShowProfileFollowAction = Boolean(
-    showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction
+  const shouldShowInlineProfileFollowAction = Boolean(
+    !hasNavActionOverride && (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction)
   );
-  const shouldUseNavActionOverride =
-    !shouldForceProfileFollowAction && !shouldUseGuestFollowAction && hasNavActionOverride;
-  const shouldShowToolbarFollowAction =
-    !isOwner && !shouldShowProfileFollowAction && Boolean(profile) && typeof handleFollow === 'function';
+  const shouldShowToolbarFollowAction = Boolean(
+    hasNavActionOverride && !isOwner && profile && typeof handleFollow === 'function'
+  );
+  const shouldShowCurrentAccountAvatar = Boolean(authIsAuthenticated && authUser && profile && !isOwner);
+  const shouldUseNavActionOverride = hasNavActionOverride;
+  const resolvedNavActionOverride = hasNavActionOverride
+    ? suppressNavOverrideProfileFollowAction(navActionOverride)
+    : navActionOverride;
 
   const accountNavActions = [];
 
@@ -242,6 +259,15 @@ export function buildAccountPageState({
       confirmation: itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
       description: navDescription,
       icon: getUserAvatarUrl(profile),
+      iconOverlay: shouldShowCurrentAccountAvatar
+        ? {
+            icon: getUserAvatarUrl(authUser),
+            onClick: () => {
+              window.location.assign('/account');
+            },
+            title: 'Go to your account',
+          }
+        : null,
       registry: navRegistrySource
         ? {
             cleanupDelayMs: isPageLoading ? ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS : 0,
@@ -261,7 +287,7 @@ export function buildAccountPageState({
         accountTitle
       ),
       action: navSurface ? null : shouldUseNavActionOverride ? (
-        navActionOverride
+        resolvedNavActionOverride
       ) : showSectionSaveAction ? (
         <AccountAction mode="save" onSave={onSaveSectionOrder} isSaveLoading={isSectionSaveLoading} />
       ) : reviewState?.isActive ? (
@@ -279,7 +305,7 @@ export function buildAccountPageState({
           onFollow={handleFollow}
           onSignIn={handleSignInRequest}
           onEditProfile={handleEditProfile}
-          showProfileFollowAction={shouldShowProfileFollowAction}
+          showProfileFollowAction={shouldShowInlineProfileFollowAction}
           onDeleteList={onDeleteList}
           onEditList={onEditList}
           onToggleLike={onToggleLike}

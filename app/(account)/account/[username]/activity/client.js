@@ -4,23 +4,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import { useSeededFeedState } from '@/features/account/hooks/section-page';
-import { buildManagedQueryString, parseActivityFilters, toActivityQueryValues } from '@/features/account/filtering';
+import {
+  buildManagedQueryString,
+  normalizePage,
+  parseActivityFilters,
+  parsePageFromSearch,
+  toActivityQueryValues,
+} from '@/features/account/filtering';
 import { logDataError } from '@/core/utils/errors';
-import { useAuth } from '@/core/modules/auth';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
-import { useAccountSectionEngine } from '../shared/section-engine';
-import { AccountSectionStateProvider } from '../shared/section-context';
+import { createAccountSectionClient } from '../../shared/section-factory';
 import ActivityView from './view';
 
 const ACTIVITY_FETCH_PAGE_SIZE = 36;
 
 function normalizeScope(value) {
   return value === 'following' ? 'following' : 'user';
-}
-
-function normalizePage(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
 }
 
 function parseInitialActivityControls(searchParams) {
@@ -31,7 +30,7 @@ function parseInitialActivityControls(searchParams) {
       sort: filters.sort,
       subject: filters.subject,
     },
-    page: normalizePage(searchParams?.get?.('page')),
+    page: parsePageFromSearch(searchParams),
     scope: normalizeScope(searchParams?.get?.('scope')),
   };
 }
@@ -49,9 +48,8 @@ function hasMatchingSeededActivityFeed({ filters, initialFeed = null, page, reso
   );
 }
 
-export default function Client({ routeData = null }) {
+function useActivityClientState({ auth, routeData, sectionProviderValue, sectionState }) {
   const { initialActivityFeed = null, initialResolvedUserId = null } = routeData || {};
-  const auth = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialControls = useMemo(() => parseInitialActivityControls(searchParams), [searchParams]);
@@ -59,11 +57,6 @@ export default function Client({ routeData = null }) {
   const [activityFilters, setActivityFilters] = useState(initialControls.filters);
   const [currentPage, setCurrentPage] = useState(initialControls.page);
   const latestRequestRef = useRef(0);
-  const { sectionProviderValue, sectionState } = useAccountSectionEngine({
-    activeTab: 'activity',
-    auth,
-    routeData,
-  });
   const { canViewPrivateContent, isOwner, isPrivateProfile, isViewerReady, resolvedUserId } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const effectiveResolvedUserId = resolvedUserId || initialResolvedUserId || null;
@@ -264,20 +257,24 @@ export default function Client({ routeData = null }) {
     [activeScope, activityFilters, currentPage, replaceActivityUrl]
   );
 
-  return (
-    <AccountSectionStateProvider value={sectionProviderValue}>
-      <ActivityView
-        activeScope={activeScope}
-        activityFilters={activityFilters}
-        currentPage={currentPage}
-        feedError={feedError}
-        isFeedLoading={isFeedLoading}
-        items={items}
-        onFiltersChange={handleFiltersChange}
-        onPageChange={handlePageChange}
-        onScopeChange={handleScopeChange}
-        totalCount={totalCount}
-      />
-    </AccountSectionStateProvider>
-  );
+  return {
+    activeScope,
+    activityFilters,
+    currentPage,
+    feedError,
+    isFeedLoading,
+    items,
+    onFiltersChange: handleFiltersChange,
+    onPageChange: handlePageChange,
+    onScopeChange: handleScopeChange,
+    providerValue: sectionProviderValue,
+    totalCount,
+  };
 }
+
+export default createAccountSectionClient({
+  activeTab: 'activity',
+  displayName: 'AccountActivityClient',
+  View: ActivityView,
+  useSectionClientState: useActivityClientState,
+});

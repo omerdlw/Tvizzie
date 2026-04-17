@@ -1,18 +1,9 @@
 'use client';
 
+import { notifyAccountLoadError } from '@/features/account/utils';
 import { useAccountClient } from '@/core/modules/account';
 import { useAuthSessionReady } from '@/core/modules/auth';
-import { isPermissionDeniedError } from '@/core/utils/errors';
 import { useCallback, useEffect, useState } from 'react';
-
-function showAccountLoadError(toast, error, fallbackMessage) {
-  if (isPermissionDeniedError(error)) {
-    return false;
-  }
-
-  toast.error(error?.message || fallbackMessage);
-  return true;
-}
 
 function normalizeEditableCount(value) {
   return Number.isFinite(Number(value)) ? Number(value) : 0;
@@ -148,7 +139,7 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast }) {
         if (!ignore) {
           setProfile(null);
           setWatchedCount(0);
-          showAccountLoadError(toast, error, 'Profile could not be loaded');
+          notifyAccountLoadError(toast, error, 'Profile could not be loaded');
         }
       } finally {
         if (!ignore) {

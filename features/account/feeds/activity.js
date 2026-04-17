@@ -7,54 +7,13 @@ import { motion, useReducedMotion } from 'framer-motion';
 
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
 import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
-import MediaCard from '@/features/shared/media-card';
-import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import AccountPagination from '@/features/account/shared/pagination';
-import { TMDB_IMG } from '@/core/constants';
+import ReviewCard from '@/features/reviews/parts/review-card';
+import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '../shared/section-wrapper';
 
-const EVENT_META = Object.freeze({
-  FOLLOW_ACCEPTED: {
-    action: 'accepted',
-    icon: 'solar:users-group-',
-  },
-  FOLLOW_CREATED: {
-    action: 'followed',
-    icon: 'solar:user-plus-bold',
-  },
-  LIST_ITEM_ADDED: {
-    action: 'added items to',
-    icon: 'solar:playlist-minimalistic-bold',
-  },
-  LIST_CREATED: {
-    action: 'created',
-    icon: 'solar:list-broken',
-  },
-  LIST_LIKED: {
-    action: 'liked',
-    icon: 'solar:heart-bold',
-  },
-  MEDIA_LIKED: {
-    action: 'liked',
-    icon: 'solar:heart-angle-bold',
-  },
-  REVIEW_PUBLISHED: {
-    action: 'reviewed',
-    icon: 'solar:chat-round-bold',
-  },
-  WATCHED_MARKED: {
-    action: 'watched',
-    icon: 'solar:clapperboard-play-bold',
-  },
-  WATCHLIST_ADDED: {
-    action: 'added',
-    icon: 'solar:bookmark-bold',
-  },
-});
 const ACTIVITY_ITEMS_PER_PAGE = 36;
-const STATE_MESSAGE_CLASS = 'py-4 text-center underline';
-const LIST_PREVIEW_WRAPPER_CLASS = 'group block aspect-2/3 w-full overflow-hidden border border-black/15';
-const DEFAULT_EVENT_META = Object.freeze({ action: 'updated' });
+const STATE_MESSAGE_CLASS = 'bg-primary rounded-[10px] text-black/50 border border-black/5 p-3';
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -86,130 +45,55 @@ function formatActivityTime(value) {
   return `${diffDays}d`;
 }
 
-function getActivityText(item) {
-  const actorName = item?.actor?.displayName || item?.actor?.username || 'Someone';
-  const meta = EVENT_META[item?.eventType] || DEFAULT_EVENT_META;
-  const followStatus = String(item?.payload?.status || '')
-    .trim()
-    .toLowerCase();
-  let action = meta.action;
-
-  if (item?.eventType === 'REVIEW_PUBLISHED' && item?.payload?.reviewMode === 'rating') {
-    action = 'rated';
-  } else if (item?.eventType === 'FOLLOW_CREATED' && followStatus === 'pending') {
-    action = 'requested to follow';
-  }
-
-  const subjectTitle = item?.subject?.title || 'something';
-
-  return {
-    actorName,
-    action,
-    subjectHref: item?.subject?.href || null,
-    subjectTitle,
-  };
+function getActivityItemKey(item, index) {
+  return `${item?.dedupeKey || item?.id || 'activity'}-${index}`;
 }
 
-function resolvePosterSrc(item) {
-  const poster = String(item?.subject?.poster || '').trim();
+function renderLinePart(part, index) {
+  if (part?.kind === 'rating' && Number.isFinite(Number(part?.rating))) {
+    return <RatingStars key={`${part.kind}-${index}`} className="translate-y-[-1px]" rating={Number(part.rating)} />;
+  }
 
-  if (!poster) {
+  if (!part?.text) {
     return null;
   }
 
-  if (poster.startsWith('http://') || poster.startsWith('https://')) {
-    return poster;
+  if (part.href) {
+    return (
+      <Link
+        key={`${part.kind || 'link'}-${index}`}
+        href={part.href}
+        className={part.kind === 'actor' || part.kind === 'account' ? 'font-semibold transition' : 'transition'}
+      >
+        {part.text}
+      </Link>
+    );
   }
 
-  if (poster.startsWith('/')) {
-    return `${TMDB_IMG}/w342${poster}`;
+  if (part.kind === 'actor') {
+    return (
+      <span key={`${part.kind}-${index}`} className="font-semibold">
+        {part.text}
+      </span>
+    );
   }
 
-  return poster;
+  return <span key={`${part.kind || 'text'}-${index}`}>{part.text}</span>;
 }
 
-function getActivityItemKey(item, index) {
-  return `${item?.sourceUserId || item?.id || 'activity'}-${item?.id || index}-${index}`;
+function ActivityLine({ item }) {
+  const parts = Array.isArray(item?.line?.parts) ? item.line.parts : [];
+
+  return <>{parts.map((part, index) => renderLinePart(part, index))}</>;
 }
 
-function getActivityItemClassName({ isFirst, isShowcase }) {
-  const spacingClassName = isShowcase ? (isFirst ? 'pt-0 pb-4' : 'py-4') : isFirst ? 'pt-0 pb-5' : 'py-5';
-
-  return `border-b border-black/10 ${spacingClassName} last:border-b-0`;
-}
-
-function ListPreviewStack({ item }) {
-  const previewItems = Array.isArray(item?.activityState?.previewItems)
-    ? item.activityState.previewItems.slice(0, 3)
-    : [];
-  const subjectHref = item?.subject?.href || null;
-  const subjectTitle = item?.subject?.title || 'Untitled List';
-  const previewContent = (
-    <>
-      <ListPreviewComposition
-        className="border-0 bg-transparent"
-        imageClassName="h-full w-full object-cover transition-transform duration-(--motion-duration-normal)"
-        items={previewItems}
-      />
-
-      <span className="sr-only">{subjectTitle}</span>
-    </>
-  );
-
-  if (!subjectHref) {
-    return <div className={LIST_PREVIEW_WRAPPER_CLASS}>{previewContent}</div>;
-  }
-
-  return (
-    <Link href={subjectHref} className={LIST_PREVIEW_WRAPPER_CLASS}>
-      {previewContent}
-    </Link>
-  );
-}
-
-function ShowcaseItem({ item }) {
+function ActivityItem({ index = 0, isFirst = false, item }) {
   const reduceMotion = useReducedMotion();
-  const { subjectHref, subjectTitle } = getActivityText(item);
-  const posterSrc = resolvePosterSrc(item);
-  const showMovieCard = item?.subject?.type !== 'list';
-
-  return (
-    <motion.div
-      className="flex h-full min-w-0 flex-col"
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.988 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
-      transition={{
-        duration: reduceMotion ? 0.16 : 0.32,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-    >
-      {showMovieCard ? (
-        <MediaCard
-          href={subjectHref}
-          className="w-full"
-          imageSrc={posterSrc}
-          imageAlt={subjectTitle}
-          imageSizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
-          fallbackIcon="solar:clapperboard-play-bold"
-          tooltipText={subjectTitle}
-        />
-      ) : (
-        <ListPreviewStack item={item} />
-      )}
-    </motion.div>
-  );
-}
-
-function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
-  const reduceMotion = useReducedMotion();
-  const { actorName, action, subjectHref, subjectTitle } = getActivityText(item);
-  const createdLabel = formatActivityTime(item?.updatedAt || item?.createdAt);
-  const isShowcase = variant === 'showcase';
+  const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
 
   return (
     <motion.article
-      className={getActivityItemClassName({ isFirst, isShowcase })}
+      className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
@@ -221,18 +105,17 @@ function ActivityItem({ index = 0, isFirst = false, item, variant = 'feed' }) {
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
-          <span className="font-semibold">{actorName}</span> <span>{action}</span>{' '}
-          {subjectHref ? (
-            <Link href={subjectHref} className="transition">
-              {subjectTitle}
-            </Link>
-          ) : (
-            <span>{subjectTitle}</span>
-          )}
+          <ActivityLine item={item} />
         </div>
 
         {createdLabel ? <div className="shrink-0 text-sm font-medium sm:pt-0.5">{createdLabel}</div> : null}
       </div>
+
+      {item?.renderKind === 'text_with_review' && item?.reviewCard ? (
+        <div className="mt-3">
+          <ReviewCard className="border-b-0 py-0" displayVariant="activity" review={item.reviewCard} />
+        </div>
+      ) : null}
     </motion.article>
   );
 }
@@ -252,20 +135,20 @@ export default function AccountActivityFeed({
   summaryLabel = null,
   title = 'Recent Activity',
   titleHref = null,
-  totalCount = 0,
-  variant = 'feed',
-  showcaseGridClassName = 'grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6',
+  totalCount = null,
 }) {
-  const listedActivityCount = Number.isFinite(Number(totalCount)) ? Math.max(0, Math.floor(Number(totalCount))) : 0;
+  const visibleItems = Array.isArray(items) ? items : [];
+  const listedActivityCount = Number.isFinite(Number(totalCount))
+    ? Math.max(0, Math.floor(Number(totalCount)))
+    : visibleItems.length;
   const subjectOptions = useMemo(() => collectActivitySubjectOptions(), []);
   const hasFilters = hasActiveActivityFilters(filters);
   const totalPages = listedActivityCount > 0 ? Math.ceil(listedActivityCount / ACTIVITY_ITEMS_PER_PAGE) : 1;
   const activePage = Math.min(Math.max(1, currentPage), totalPages);
   const pageStart = (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE;
-  const visibleItems = Array.isArray(items) ? items : [];
   const hasVisibleItems = visibleItems.length > 0;
-  const shouldShowFilterBar = listedActivityCount > 0;
-  const shouldShowPagination = listedActivityCount > 0;
+  const shouldShowFilterBar = typeof onFiltersChange === 'function' && (listedActivityCount > 0 || hasFilters);
+  const shouldShowPagination = listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && typeof onPageChange === 'function';
   const resolvedSummaryLabel = useMemo(() => {
     if (!hasFilters) {
       return summaryLabel === null ? `${listedActivityCount} Events` : summaryLabel;
@@ -291,33 +174,22 @@ export default function AccountActivityFeed({
       subject: 'all',
     });
   }, [onFiltersChange]);
+
   let content = null;
 
   if (!hasVisibleItems && isLoading) {
     content = <div className={STATE_MESSAGE_CLASS}>Loading activity...</div>;
   } else if (listedActivityCount === 0 && !isLoading && !loadError) {
-    content = <div className={STATE_MESSAGE_CLASS}>{emptyMessage}</div>;
+    content = (
+      <div className={STATE_MESSAGE_CLASS}>{hasFilters ? 'No activity matches the current filters' : emptyMessage}</div>
+    );
   } else if (listedActivityCount === 0 && !isLoading && loadError) {
     content = <div className={STATE_MESSAGE_CLASS}>{loadError}</div>;
-  } else if (variant === 'showcase') {
-    content = (
-      <div className={`grid ${showcaseGridClassName}`}>
-        {visibleItems.map((item, index) => (
-          <ShowcaseItem key={getActivityItemKey(item, index)} item={item} />
-        ))}
-      </div>
-    );
   } else {
     content = (
       <div>
         {visibleItems.map((item, index) => (
-          <ActivityItem
-            key={getActivityItemKey(item, index)}
-            index={index}
-            isFirst={index === 0}
-            item={item}
-            variant={variant}
-          />
+          <ActivityItem key={getActivityItemKey(item, index)} index={index} isFirst={index === 0} item={item} />
         ))}
       </div>
     );

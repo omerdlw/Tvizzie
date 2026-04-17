@@ -84,7 +84,6 @@ const STATIC_CACHE_HEADERS = [
 
 const NEXT_CONFIG = {
   compress: true,
-  // reactCompiler: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   onDemandEntries: {
@@ -160,6 +159,20 @@ const NEXT_CONFIG = {
       {
         source: '/images/:path*',
         headers: STATIC_CACHE_HEADERS,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/auth/callback',
+        destination: '/callback',
+        permanent: true,
+      },
+      {
+        source: '/auth/oauth-callback',
+        destination: '/callback',
+        permanent: true,
       },
     ];
   },

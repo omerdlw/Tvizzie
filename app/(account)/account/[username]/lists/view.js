@@ -1,28 +1,42 @@
 import AccountListsFeed from '@/features/account/feeds/lists';
-import { AccountPageShell } from '@/features/account/shared/layout';
-import { buildAccountPageShellProps, useAccountSectionState } from '../shared/section-context';
-import Registry from './registry';
+import AccountAction from '@/features/navigation/actions/account-action';
+import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
 
-export default function ListsView({ lists, handleDeleteList, handleEditList, listDeleteConfirmation, onCreateList }) {
-  const sectionState = useAccountSectionState();
-  const shellProps = buildAccountPageShellProps(sectionState, {
-    activeSection: 'lists',
-    skeletonVariant: 'lists',
-  });
+export const Registry = createAccountSectionRegistry({
+  displayName: 'AccountListsRegistry',
+  navDescription: 'Lists',
+  navRegistrySource: 'account-lists',
+  resolveOverrides: (sectionState, { listDeleteConfirmation, onCreateList = null }) => ({
+    listDeleteConfirmation,
+    navActionOverride:
+      sectionState.isOwner && typeof onCreateList === 'function' ? (
+        <AccountAction
+          mode="single-action"
+          actionIcon="solar:add-circle-bold"
+          actionLabel="Create List"
+          onAction={onCreateList}
+        />
+      ) : null,
+  }),
+});
 
-  return (
-    <AccountPageShell
-      {...shellProps}
-      registry={<Registry listDeleteConfirmation={listDeleteConfirmation} onCreateList={onCreateList} />}
-    >
-      <AccountListsFeed
-        canShowLists={sectionState.canViewProfileCollections}
-        isOwner={sectionState.isOwner}
-        lists={lists}
-        onDeleteList={handleDeleteList}
-        onEditList={handleEditList}
-        username={sectionState.username}
-      />
-    </AccountPageShell>
-  );
-}
+export default createAccountSectionView({
+  activeSection: 'lists',
+  displayName: 'AccountListsView',
+  Registry,
+  resolveRegistryProps: (_, { listDeleteConfirmation, onCreateList }) => ({
+    listDeleteConfirmation,
+    onCreateList,
+  }),
+  skeletonVariant: 'lists',
+  renderContent: (sectionState, { handleDeleteList, handleEditList, lists }) => (
+    <AccountListsFeed
+      canShowLists={sectionState.canViewProfileCollections}
+      isOwner={sectionState.isOwner}
+      lists={lists}
+      onDeleteList={handleDeleteList}
+      onEditList={handleEditList}
+      username={sectionState.username}
+    />
+  ),
+});

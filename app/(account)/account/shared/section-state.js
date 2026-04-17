@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo } from 'react';
 
+import { useAccountSectionPage } from '@/features/account/hooks/section-page';
 import { EMPTY_ACCOUNT_REGISTRY_AUTH, noopAccountRegistryHandler } from '@/features/account/registry-config';
 
 const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
@@ -33,14 +34,52 @@ const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   username: null,
   watchlistCount: 0,
 });
+const EMPTY_ROUTE_DATA = Object.freeze({});
 
 const AccountSectionStateContext = createContext(DEFAULT_ACCOUNT_SECTION_STATE);
+
+export function useAccountSectionEngine({
+  activeListId = '',
+  activeTab,
+  auth,
+  collectionPreviewLimits = null,
+  routeData = null,
+  selectedList = null,
+}) {
+  const resolvedRouteData = routeData && typeof routeData === 'object' ? routeData : EMPTY_ROUTE_DATA;
+  const rawSectionState = useAccountSectionPage({
+    activeListId,
+    activeTab,
+    auth,
+    collectionPreviewLimits,
+    initialCollections: resolvedRouteData.initialCollections ?? null,
+    initialProfile: resolvedRouteData.initialProfile ?? null,
+    initialResolvedUserId: resolvedRouteData.initialResolvedUserId ?? null,
+    initialResolveError: resolvedRouteData.initialResolveError ?? null,
+    selectedList,
+    username: resolvedRouteData.username,
+  });
+  const sectionState = useMemo(
+    () => ({
+      ...rawSectionState,
+      username: resolvedRouteData.username ?? null,
+    }),
+    [rawSectionState, resolvedRouteData.username]
+  );
+  const sectionProviderValue = useMemo(() => ({ auth, ...sectionState }), [auth, sectionState]);
+
+  return {
+    routeData: resolvedRouteData,
+    sectionProviderValue,
+    sectionState,
+  };
+}
 
 export function AccountSectionStateProvider({ children, value = null }) {
   const resolvedValue = useMemo(
     () => ({
       ...DEFAULT_ACCOUNT_SECTION_STATE,
-      ...(value || {}),
+      ...(value ?? {}),
       auth: value?.auth || DEFAULT_ACCOUNT_SECTION_STATE.auth,
     }),
     [value]
@@ -55,7 +94,7 @@ export function useAccountSectionState() {
 
 export function buildAccountPageShellProps(sectionState, overrides = null) {
   return {
-    activeSection: overrides?.activeSection || 'overview',
+    activeSection: overrides?.activeSection ?? 'overview',
     followerCount: sectionState.followerCount,
     followState: sectionState.followState,
     followingCount: sectionState.followingCount,
@@ -69,9 +108,9 @@ export function buildAccountPageShellProps(sectionState, overrides = null) {
     onReadMore: () => sectionState.setIsBioSurfaceOpen(true),
     profile: sectionState.profile,
     resolvedUserId: sectionState.resolvedUserId,
-    skeletonVariant: overrides?.skeletonVariant || 'overview',
+    skeletonVariant: overrides?.skeletonVariant ?? 'overview',
     username: sectionState.username,
-    watchedCount: sectionState.profile?.watchedCount || 0,
+    watchedCount: sectionState.profile?.watchedCount ?? 0,
     watchlistCount: sectionState.watchlistCount,
   };
 }

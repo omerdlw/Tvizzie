@@ -1,8 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
 
-import Client from '../../client';
-import { getUsernameAccountWatchlistRouteData } from '@/core/services/account/account-route-data.server';
-
 export default async function Page({ params }) {
   const { page, username } = await params;
   const pageNumber = Number.parseInt(page, 10);
@@ -15,7 +12,5 @@ export default async function Page({ params }) {
     redirect(`/account/${username}/watchlist`);
   }
 
-  const routeData = await getUsernameAccountWatchlistRouteData(username);
-
-  return <Client routeData={routeData} />;
+  redirect(`/account/${username}/watchlist?page=${pageNumber}`);
 }

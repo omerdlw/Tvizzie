@@ -24,6 +24,11 @@ const RATING_MODE_OPTIONS = Object.freeze([
   { label: 'No rating', value: 'none' },
 ]);
 
+const REVIEW_VISIBILITY_OPTIONS = Object.freeze([
+  { key: 'hide_ratings_only', label: 'Hide rating-only entries' },
+  { key: 'hide_text_reviews', label: 'Hide written reviews' },
+]);
+
 const ACTIVITY_SORT_OPTIONS = Object.freeze([
   { label: 'Newest First', value: 'newest' },
   { label: 'Oldest First', value: 'oldest' },
@@ -374,23 +379,34 @@ export function AccountMediaFilterBar({
   );
 }
 
-export function AccountReviewFilterBar({ className = '', filters, onChange, onReset, yearOptions = [] }) {
+export function AccountReviewFilterBar({
+  className = '',
+  filters,
+  onChange,
+  onReset,
+  showRatingFilter = true,
+  sortOptions = REVIEW_SORT_OPTIONS,
+  visibilityOptions = REVIEW_VISIBILITY_OPTIONS,
+  yearOptions = [],
+}) {
   const selectedEyeFlags = filters?.eyeFlags instanceof Set ? filters.eyeFlags : new Set();
   const ratingLabel = buildRatingLabel(filters);
   const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
-  const sortLabel = resolveOptionLabel(REVIEW_SORT_OPTIONS, filters?.sort, 'When Reviewed (Newest)');
+  const sortLabel = resolveOptionLabel(sortOptions, filters?.sort, 'When Reviewed (Newest)');
   const isDefaultSort = filters?.sort === REVIEW_SORT_MODE.NEWEST;
 
   return (
     <div className={cn(UI.bar, className)}>
-      <FilterPopover label={`Rating: ${ratingLabel}`} active={filters?.ratingMode !== 'any'}>
-        <OptionSection
-          options={RATING_MODE_OPTIONS}
-          value={filters?.ratingMode}
-          onChange={(value) => onChange({ ratingMode: value })}
-        />
-        <RatingRangeEditor filters={filters} onChange={onChange} />
-      </FilterPopover>
+      {showRatingFilter ? (
+        <FilterPopover label={`Rating: ${ratingLabel}`} active={filters?.ratingMode !== 'any'}>
+          <OptionSection
+            options={RATING_MODE_OPTIONS}
+            value={filters?.ratingMode}
+            onChange={(value) => onChange({ ratingMode: value })}
+          />
+          <RatingRangeEditor filters={filters} onChange={onChange} />
+        </FilterPopover>
+      ) : null}
 
       <FilterPopover label={`Diary year: ${yearLabel}`} active={filters?.year !== 'all'}>
         <OptionSection options={yearOptions} value={filters?.year} onChange={(value) => onChange({ year: value })} />
@@ -403,30 +419,25 @@ export function AccountReviewFilterBar({ className = '', filters, onChange, onRe
           onClick={() => onChange({ sort: REVIEW_SORT_MODE.NEWEST })}
         />
 
-        <OptionSection
-          options={REVIEW_SORT_OPTIONS}
-          value={filters?.sort}
-          onChange={(value) => onChange({ sort: value })}
-        />
+        <OptionSection options={sortOptions} value={filters?.sort} onChange={(value) => onChange({ sort: value })} />
       </FilterPopover>
 
-      <FilterPopover label="Visibility" active={selectedEyeFlags.size > 0}>
-        <VisibilityGroup
-          options={[
-            { key: 'hide_ratings_only', label: 'Hide rating-only entries' },
-            { key: 'hide_text_reviews', label: 'Hide written reviews' },
-          ]}
-          selectedFlags={selectedEyeFlags}
-          onToggle={(key) => {
-            const nextFlags = new Set(selectedEyeFlags);
+      {visibilityOptions.length > 0 ? (
+        <FilterPopover label="Visibility" active={selectedEyeFlags.size > 0}>
+          <VisibilityGroup
+            options={visibilityOptions}
+            selectedFlags={selectedEyeFlags}
+            onToggle={(key) => {
+              const nextFlags = new Set(selectedEyeFlags);
 
-            if (nextFlags.has(key)) nextFlags.delete(key);
-            else nextFlags.add(key);
+              if (nextFlags.has(key)) nextFlags.delete(key);
+              else nextFlags.add(key);
 
-            onChange({ eyeFlags: nextFlags });
-          }}
-        />
-      </FilterPopover>
+              onChange({ eyeFlags: nextFlags });
+            }}
+          />
+        </FilterPopover>
+      ) : null}
 
       {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
     </div>

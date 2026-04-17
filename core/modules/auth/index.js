@@ -11,11 +11,11 @@ export {
   hasAnyCapability,
   isSessionExpired,
   normalizeSession,
-  getAccessToken,
   hasCapability,
   hasAnyRole,
   canAccess,
   hasRole,
 } from './utils';
 
-export { createSupabaseAuthAdapter, createApiAuthAdapter, createAuthAdapter } from './adapters';
+export { createSupabaseAuthAdapter } from './adapters/supabase-adapter';
+export { createApiAuthAdapter } from './adapters/api-adapter';

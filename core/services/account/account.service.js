@@ -3,7 +3,6 @@
 import { isReservedAccountSegment } from '@/features/account/utils';
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import { isValidUrl } from '@/core/utils';
-import { isMovieMediaType } from '@/core/utils/media';
 import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
 import {
   buildPollingSubscriptionKey,
@@ -12,6 +11,7 @@ import {
 } from '@/core/services/shared/polling-subscription.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
 
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 24;
@@ -79,34 +79,7 @@ function normalizeAccountData(data = {}, id = null) {
     followerCount: Number.isFinite(Number(data.follower_count ?? data.followerCount))
       ? Number(data.follower_count ?? data.followerCount)
       : 0,
-    favoriteShowcase: Array.isArray(data.favorite_showcase)
-      ? data.favorite_showcase
-          .map((item) => ({
-            addedAt: normalizeTimestamp(item?.addedAt),
-            backdrop_path: item?.backdrop_path || item?.backdropPath || null,
-            entityId: String(item?.entityId ?? item?.id ?? '').trim() || null,
-            entityType: String(item?.entityType ?? item?.media_type ?? item?.type ?? '')
-              .trim()
-              .toLowerCase(),
-            first_air_date: item?.first_air_date || null,
-            id: String(item?.entityId ?? item?.id ?? '').trim() || null,
-            mediaKey: item?.mediaKey || null,
-            media_type:
-              String(item?.entityType ?? item?.media_type ?? item?.type ?? '')
-                .trim()
-                .toLowerCase() || null,
-            name: item?.name || item?.original_name || '',
-            original_name: item?.original_name || null,
-            original_title: item?.original_title || null,
-            poster_path: item?.poster_path || item?.posterPath || null,
-            position: Number.isFinite(Number(item?.position)) ? Number(item.position) : null,
-            release_date: item?.release_date || null,
-            title: item?.title || item?.original_title || '',
-            updatedAt: normalizeTimestamp(item?.updatedAt),
-            vote_average: Number.isFinite(Number(item?.vote_average)) ? Number(item.vote_average) : null,
-          }))
-          .filter((item) => item.entityId && item.entityType && isMovieMediaType(item.entityType))
-      : [],
+    favoriteShowcase: normalizeFavoriteShowcaseItems(data.favorite_showcase),
     id: id || data.id || null,
     isPrivate: data.is_private === true || data.isPrivate === true,
     lastActivityAt: normalizeTimestamp(data.last_activity_at || data.lastActivityAt),

@@ -1,8 +1,8 @@
 import { Suspense, use } from 'react';
 
-import { TextAnimate } from '@/components/ui/text-animate';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import { TextAnimate } from '@/ui/animations/text-animate';
 import CastSection from '@/features/movie/cast-section';
 import CollectionActions from '@/features/movie/collection-actions';
 import GallerySection from '@/features/movie/gallery-section';

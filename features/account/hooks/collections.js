@@ -1,21 +1,12 @@
 'use client';
 
+import { notifyAccountLoadError } from '@/features/account/utils';
 import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/core/services/media/likes.service';
 import { subscribeToUserLists } from '@/core/services/media/lists.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
 import { subscribeToUserWatchlist } from '@/core/services/media/watchlist.service';
 import { useToast } from '@/core/modules/notification/hooks';
-import { isPermissionDeniedError } from '@/core/utils/errors';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
-function showAccountLoadError(toast, error, fallbackMessage) {
-  if (isPermissionDeniedError(error)) {
-    return false;
-  }
-
-  toast.error(error?.message || fallbackMessage);
-  return true;
-}
 
 function normalizeMediaIdentity(item = {}) {
   const mediaKey = String(item?.mediaKey || '').trim();
@@ -356,7 +347,7 @@ export function useAccountCollections({
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'likes',
             limitCount: likesPreviewLimit,
             onError: (error) => {
-              showAccountLoadError(toast, error, 'Likes could not be loaded');
+              notifyAccountLoadError(toast, error, 'Likes could not be loaded');
               markStreamAsResolved('likes');
             },
           }
@@ -383,7 +374,7 @@ export function useAccountCollections({
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'watched',
             limitCount: watchedPreviewLimit,
             onError: (error) => {
-              showAccountLoadError(toast, error, 'Watched could not be loaded');
+              notifyAccountLoadError(toast, error, 'Watched could not be loaded');
               markStreamAsResolved('watched');
             },
           }
@@ -412,7 +403,7 @@ export function useAccountCollections({
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'watchlist',
             limitCount: watchlistPreviewLimit,
             onError: (error) => {
-              showAccountLoadError(toast, error, 'Watchlist could not be loaded');
+              notifyAccountLoadError(toast, error, 'Watchlist could not be loaded');
               markStreamAsResolved('watchlist');
             },
           }
@@ -439,7 +430,7 @@ export function useAccountCollections({
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'lists',
             limitCount: listsPreviewLimit,
             onError: (error) => {
-              showAccountLoadError(toast, error, 'Lists could not be loaded');
+              notifyAccountLoadError(toast, error, 'Lists could not be loaded');
               markStreamAsResolved('lists');
             },
           }
@@ -449,7 +440,7 @@ export function useAccountCollections({
 
     subscribeToCollections().catch((error) => {
       if (!isMounted) return;
-      showAccountLoadError(toast, error, 'Collections could not be loaded');
+      notifyAccountLoadError(toast, error, 'Collections could not be loaded');
       hasResolvedCollectionCounts = true;
       markStreamAsResolved('likes');
       markStreamAsResolved('watched');

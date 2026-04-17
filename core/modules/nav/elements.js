@@ -68,6 +68,43 @@ export function Description({ text, style, maxLines = 1 }) {
   );
 }
 
+function renderIconNode(icon, size) {
+  return typeof icon === 'string' ? <Iconify icon={icon} size={size} /> : icon;
+}
+
+function IconOverlay({ overlay }) {
+  if (!overlay?.icon) {
+    return null;
+  }
+
+  const { icon, onClick, title = '' } = overlay;
+
+  const isImageSource = isImageIconSource(icon);
+
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        onClick?.(event);
+      }}
+      title={title || undefined}
+      aria-label={title || 'Open current account'}
+      className={cn(
+        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden rounded-[10px] transition-transform hover:scale-[1.04]',
+        typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default'
+      )}
+    >
+      {isImageSource ? (
+        <span className="size-full bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${icon})` }} />
+      ) : (
+        <span className="text-black">{renderIconNode(icon, 12)}</span>
+      )}
+    </button>
+  );
+}
+
 function getIconStyleFlags(style = {}) {
   return {
     hasCustomBackground:
@@ -88,38 +125,36 @@ function getImageIconStyle(style, icon) {
   };
 }
 
-export function Icon({ icon, isStackHovered, style }) {
+export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
   const { className, inlineStyle } = splitStyle(style);
   const { size = 24, ...iconStyle } = inlineStyle;
   const isImageSource = isImageIconSource(icon);
   const { hasCustomBackground, hasCustomColor } = getIconStyleFlags(iconStyle);
 
-  if (isImageSource) {
-    return (
-      <motion.div
-        className={cn('size-12 shrink-0 rounded-[12.5px] bg-cover bg-center bg-no-repeat', className)}
-        transition={{ duration: DURATION.FAST, ease: EASING.SMOOTH }}
-        style={getImageIconStyle(iconStyle, icon)}
-      />
-    );
-  }
-
   return (
-    <motion.div
-      className={cn(
-        'center size-12 rounded-[12.5px] transition-colors duration-(--motion-duration-normal)',
-        'border border-black/5 bg-black/5',
-        isStackHovered && !hasCustomBackground && 'border-black/10 bg-black/10',
-        isStackHovered && !hasCustomColor && 'text-black',
-        className
+    <div className="relative">
+      {isImageSource ? (
+        <motion.div
+          className={cn('size-12 shrink-0 rounded-[12.5px] bg-cover bg-center bg-no-repeat', className)}
+          transition={{ duration: DURATION.FAST, ease: EASING.SMOOTH }}
+          style={getImageIconStyle(iconStyle, icon)}
+        />
+      ) : (
+        <motion.div
+          className={cn(
+            'center size-12 rounded-[12.5px] bg-black/5 transition-colors duration-(--motion-duration-normal)',
+            isStackHovered && !hasCustomBackground && 'bg-black/10',
+            isStackHovered && !hasCustomColor && 'text-black',
+            className
+          )}
+          style={iconStyle}
+          transition={{ duration: DURATION.SNAPPY, ease: EASING.SMOOTH }}
+        >
+          <motion.span transition={{ duration: DURATION.FAST }}>{renderIconNode(icon, size)}</motion.span>
+        </motion.div>
       )}
-      style={iconStyle}
-      transition={{ duration: DURATION.SNAPPY, ease: EASING.SMOOTH }}
-    >
-      <motion.span transition={{ duration: DURATION.FAST }}>
-        {typeof icon === 'string' ? <Iconify icon={icon} size={size} /> : icon}
-      </motion.span>
-    </motion.div>
+      <IconOverlay overlay={iconOverlay} />
+    </div>
   );
 }
 

@@ -2,14 +2,23 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 
-import { resolvePrimaryProvider } from '@/core/auth/capabilities';
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
-import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 
+import {
+  runAuthInitialize,
+  runAuthPasswordResetConfirmation,
+  runAuthPasswordResetRequest,
+  runAuthProviderMutation,
+  runAuthReauthenticate,
+  runAuthRefreshSession,
+  runAuthSignIn,
+  runAuthSignUp,
+  runAuthSignOut,
+  runAuthUpdateProfile,
+} from './action-flows';
 import { DEFAULT_AUTH_CONFIG, DEFAULT_AUTH_STATE, AUTH_STATUS } from './config';
 import { createAuthStorage } from './storage';
-import { mergeUserIntoSession, isSessionExpired, normalizeSession, hasCapability, canAccess, hasRole } from './utils';
+import { isSessionExpired, normalizeSession, hasCapability, canAccess, hasRole } from './utils';
 
 const FALLBACK_AUTH_ACTIONS = Object.freeze({
   clearError: () => {},
@@ -49,57 +58,6 @@ function createAdapterContext(config, storage, session) {
     storage,
     session: normalizeSession(session),
   };
-}
-
-function resolveAuthProvider(payload = {}, session = null) {
-  const providerFromPayload = payload?.provider || payload?.strategy || payload?.authProvider || null;
-  const normalizedProvider = normalizeOAuthProvider(providerFromPayload);
-
-  if (normalizedProvider) {
-    return normalizedProvider;
-  }
-
-  const providerIds = Array.isArray(session?.metadata?.providerIds) ? session.metadata.providerIds : [];
-  const sessionProvider = String(session?.provider || '')
-    .trim()
-    .toLowerCase();
-
-  return (
-    normalizeOAuthProvider(sessionProvider) || sessionProvider || resolvePrimaryProvider(providerIds) || 'password'
-  );
-}
-
-function resolveSignInIdentifier(payload = {}) {
-  return payload?.email || payload?.identifier || payload?.username || payload?.userId || null;
-}
-
-function isPendingSignInResult(value) {
-  return Boolean(value?.requiresVerification || value?.requiresRedirect);
-}
-
-function isIgnorableSignOutError(error) {
-  const message = String(error?.message || '')
-    .trim()
-    .toLowerCase();
-
-  if (!message) {
-    return false;
-  }
-
-  return (
-    message.includes('invalid jwt') ||
-    message.includes('token is malformed') ||
-    message.includes('invalid number of segments') ||
-    message.includes('invalid or expired authentication token') ||
-    message.includes('authentication token has been revoked') ||
-    message.includes('jwt expired') ||
-    message.includes('request timed out') ||
-    message.includes('timed out') ||
-    message.includes('timeout') ||
-    message.includes('network request failed') ||
-    message.includes('failed to fetch') ||
-    message.includes('fetch failed')
-  );
 }
 
 const AUTH_FLOW_STATUS = Object.freeze({
@@ -256,33 +214,19 @@ export function AuthProvider({ children, config = {} }) {
   );
 
   const refreshSession = useCallback(
-    async ({ session: sourceSession, silent = false } = {}) => {
-      const adapter = adapterRef.current;
-      const activeSession = normalizeSession(sourceSession || sessionRef.current);
-
-      if (!adapter?.refreshSession || !activeSession) {
-        return activeSession;
-      }
-
-      setLoadingState(state.isReady ? AUTH_STATUS.REFRESHING : AUTH_STATUS.LOADING, { preserveError: silent });
-
-      try {
-        const nextSession = await adapter.refreshSession(activeSession, getAdapterContext(activeSession));
-
-        const resolvedSession = applySession(nextSession);
-        emitSessionEvent(EVENT_TYPES.AUTH_REFRESH, resolvedSession);
-
-        return resolvedSession;
-      } catch (error) {
-        clearSession({ preserveError: silent });
-
-        if (!silent) {
-          throw setAuthError(error, 'Session refresh failed');
-        }
-
-        return null;
-      }
-    },
+    (payload) =>
+      runAuthRefreshSession({
+        adapter: adapterRef.current,
+        applySession,
+        clearSession,
+        emitSessionEvent,
+        getAdapterContext,
+        isReady: state.isReady,
+        session: payload?.session || sessionRef.current,
+        setAuthError,
+        setLoadingState,
+        silent: payload?.silent,
+      }),
     [applySession, clearSession, emitSessionEvent, getAdapterContext, setAuthError, setLoadingState, state.isReady]
   );
 
@@ -293,48 +237,21 @@ export function AuthProvider({ children, config = {} }) {
 
     bootstrapRef.current = true;
 
-    if (!mergedConfig.enabled) {
-      applySession(null, AUTH_STATUS.ANONYMOUS);
-      emitAuthEvent(EVENT_TYPES.AUTH_READY, { session: null, user: null });
-      return;
-    }
-
-    setLoadingState();
-
-    const adapter = adapterRef.current;
-    const initialSession = normalizeSession(mergedConfig.initialSession);
-    const persistedSession = mergedConfig.hydrateFromStorage && !initialSession ? storage.read() : null;
-
-    let resolvedSession = normalizeSession(initialSession || persistedSession);
-
-    try {
-      if (resolvedSession && isSessionExpired(resolvedSession, mergedConfig.refreshLeewayMs)) {
-        resolvedSession = await refreshSession({
-          session: resolvedSession,
-          silent: true,
-        });
-      }
-
-      if (!resolvedSession && adapter?.getSession) {
-        resolvedSession = normalizeSession(await adapter.getSession(getAdapterContext(null)));
-      }
-
-      if (resolvedSession) {
-        resolvedSession = applySession(resolvedSession);
-      } else {
-        // Always resolve bootstrap into an anonymous ready state when no
-        // session is available. Otherwise auth.isReady can remain false.
-        clearSession();
-      }
-
-      emitAuthEvent(EVENT_TYPES.AUTH_READY, {
-        session: resolvedSession || null,
-        user: resolvedSession?.user || null,
-      });
-    } catch (error) {
-      clearSession();
-      setAuthError(error, 'Authentication bootstrap failed');
-    }
+    await runAuthInitialize({
+      adapter: adapterRef.current,
+      applySession,
+      clearSession,
+      emitAuthEvent,
+      enabled: mergedConfig.enabled,
+      getAdapterContext,
+      hydrateFromStorage: mergedConfig.hydrateFromStorage,
+      initialSession: mergedConfig.initialSession,
+      refreshLeewayMs: mergedConfig.refreshLeewayMs,
+      refreshSession,
+      setAuthError,
+      setLoadingState,
+      storage,
+    });
   }, [
     applySession,
     clearSession,
@@ -447,80 +364,22 @@ export function AuthProvider({ children, config = {} }) {
   }, [applySession, clearSession, emitAuthEvent, emitSessionEvent, getAdapterContext]);
 
   const signIn = useCallback(
-    async (credentials) => {
-      const adapter = getAdapterMethod(
-        'signIn',
-        'Active auth adapter does not implement signIn',
-        'Authentication adapter is not configured'
-      );
-
-      const provider = resolveAuthProvider(credentials);
-      const identifier = resolveSignInIdentifier(credentials);
-
-      setLoadingState();
-      emitAuthFeedback('login', 'start', {
-        description:
-          provider !== 'password'
-            ? `Redirecting to ${getOAuthProviderLabel(provider)} sign-in`
-            : 'Checking credentials and preparing session',
-        title: 'Signing In',
-      });
-
-      try {
-        const signInResult = await adapter.signIn(credentials, getAdapterContext());
-
-        if (isPendingSignInResult(signInResult)) {
-          if (signInResult?.requiresVerification) {
-            emitAuthFeedback('login', 'clear');
-          }
-          if (signInResult?.requiresRedirect && typeof window !== 'undefined') {
-            window.setTimeout(() => {
-              emitAuthFeedback('login', 'clear');
-            }, 12000);
-          }
-
-          clearSession();
-          return signInResult;
-        }
-
-        const resolvedSession = applySession(signInResult);
-
-        if (!resolvedSession?.user) {
-          emitAuthFeedback('login', 'clear');
-          return resolvedSession;
-        }
-
-        emitSessionEvent(EVENT_TYPES.AUTH_SIGN_IN, resolvedSession);
-
-        logAuthAuditEvent({
-          eventType: 'sign-in',
-          status: 'success',
-          userId: resolvedSession?.user?.id || null,
-          email: resolvedSession?.user?.email || identifier || null,
-          provider,
-          metadata: { source: 'auth-context' },
-        });
-
-        return resolvedSession;
-      } catch (error) {
-        emitAuthFeedback('login', 'failure');
-
-        logAuthAuditEvent({
-          eventType: 'failed-attempt',
-          status: 'failure',
-          email: identifier || null,
-          provider,
-          metadata: {
-            action: 'sign-in',
-            code: error?.code || null,
-            message: error?.message || 'Sign in failed',
-            source: 'auth-context',
-          },
-        });
-
-        throw setAuthError(error, 'Sign in failed');
-      }
-    },
+    (credentials) =>
+      runAuthSignIn({
+        adapter: getAdapterMethod(
+          'signIn',
+          'Active auth adapter does not implement signIn',
+          'Authentication adapter is not configured'
+        ),
+        applySession,
+        clearSession,
+        credentials,
+        emitAuthFeedback,
+        emitSessionEvent,
+        getAdapterContext,
+        setAuthError,
+        setLoadingState,
+      }),
     [
       applySession,
       clearSession,
@@ -534,184 +393,97 @@ export function AuthProvider({ children, config = {} }) {
   );
 
   const signUp = useCallback(
-    async (payload) => {
-      const adapter = getAdapterMethod(
-        'signUp',
-        'Active auth adapter does not implement signUp',
-        'Authentication adapter is not configured'
-      );
-
-      setLoadingState();
-
-      try {
-        const resolvedSession = applySession(await adapter.signUp(payload, getAdapterContext()));
-
-        emitSessionEvent(EVENT_TYPES.AUTH_SIGN_UP, resolvedSession);
-
-        return resolvedSession;
-      } catch (error) {
-        throw setAuthError(error, 'Sign up failed');
-      }
-    },
+    (payload) =>
+      runAuthSignUp({
+        adapter: getAdapterMethod(
+          'signUp',
+          'Active auth adapter does not implement signUp',
+          'Authentication adapter is not configured'
+        ),
+        applySession,
+        emitSessionEvent,
+        getAdapterContext,
+        payload,
+        setAuthError,
+        setLoadingState,
+      }),
     [applySession, emitSessionEvent, getAdapterContext, getAdapterMethod, setAuthError, setLoadingState]
   );
 
   const signOut = useCallback(
-    async ({ reason = 'logout' } = {}) => {
-      const adapter = adapterRef.current;
-      const previousSession = sessionRef.current;
-      let signOutError = null;
-      const shouldUseLocalPurge =
-        reason === 'email-change' ||
-        reason === 'password-change' ||
-        reason === 'password-set' ||
-        reason === 'password-reset' ||
-        reason === 'delete-account';
-
-      setLoadingState();
-      emitAuthFeedback('logout', 'start', {
-        description: 'Ending active session',
-        title: 'Signing Out',
-      });
-
-      try {
-        if (adapter?.signOut) {
-          await adapter.signOut(getAdapterContext(previousSession), {
-            mode: shouldUseLocalPurge ? 'local-purge' : 'global',
-          });
-        }
-      } catch (error) {
-        if (!isIgnorableSignOutError(error)) {
-          emitAuthFeedback('logout', 'failure');
-          signOutError = setAuthError(error, 'Sign out failed');
-        }
-      }
-
-      clearSession({ preserveError: Boolean(signOutError) });
-
-      emitAuthEvent(EVENT_TYPES.AUTH_SIGN_OUT, {
-        reason,
-        previousSession,
-        session: null,
-        user: null,
-      });
-
-      if (!previousSession?.user && reason !== 'delete-account') {
-        emitAuthFeedback('logout', 'clear');
-      }
-
-      if (signOutError) {
-        throw signOutError;
-      }
-
-      return true;
-    },
+    (payload) =>
+      runAuthSignOut({
+        adapter: adapterRef.current,
+        clearSession,
+        emitAuthEvent,
+        emitAuthFeedback,
+        getAdapterContext,
+        previousSession: sessionRef.current,
+        ...(payload || {}),
+        setAuthError,
+        setLoadingState,
+      }),
     [clearSession, emitAuthEvent, emitAuthFeedback, getAdapterContext, setAuthError, setLoadingState]
   );
 
   const updateProfile = useCallback(
-    async (payload) => {
-      const adapter = getAdapterMethod(
-        'updateProfile',
-        'Active auth adapter does not implement updateProfile',
-        'Profile updates are not supported by the current auth adapter'
-      );
-
-      setLoadingState();
-
-      try {
-        const response = await adapter.updateProfile(payload, getAdapterContext());
-        const normalizedResponse = normalizeSession(response);
-
-        const nextSession = normalizedResponse
-          ? normalizedResponse
-          : mergeUserIntoSession(sessionRef.current, response);
-
-        const resolvedSession = applySession(nextSession);
-
-        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession);
-
-        return resolvedSession?.user || null;
-      } catch (error) {
-        throw setAuthError(error, 'Profile update failed');
-      }
-    },
+    (payload) =>
+      runAuthUpdateProfile({
+        adapter: getAdapterMethod(
+          'updateProfile',
+          'Active auth adapter does not implement updateProfile',
+          'Profile updates are not supported by the current auth adapter'
+        ),
+        applySession,
+        currentSession: sessionRef.current,
+        emitSessionEvent,
+        getAdapterContext,
+        payload,
+        setAuthError,
+        setLoadingState,
+      }),
     [applySession, emitSessionEvent, getAdapterContext, getAdapterMethod, setAuthError, setLoadingState]
   );
 
   const reauthenticate = useCallback(
-    async (payload) => {
-      const adapter = getAdapterMethod(
-        'reauthenticate',
-        'Active auth adapter does not implement reauthenticate',
-        'Reauthentication is not supported by the current auth adapter'
-      );
-
-      setLoadingState();
-
-      try {
-        const resolvedSession = applySession(await adapter.reauthenticate(payload, getAdapterContext()));
-
-        emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, resolvedSession, {
-          action: 'reauthenticate',
-        });
-
-        return resolvedSession;
-      } catch (error) {
-        throw setAuthError(error, 'Reauthentication failed');
-      }
-    },
+    (payload) =>
+      runAuthReauthenticate({
+        adapter: getAdapterMethod(
+          'reauthenticate',
+          'Active auth adapter does not implement reauthenticate',
+          'Reauthentication is not supported by the current auth adapter'
+        ),
+        applySession,
+        emitSessionEvent,
+        getAdapterContext,
+        payload,
+        setAuthError,
+        setLoadingState,
+      }),
     [applySession, emitSessionEvent, getAdapterContext, getAdapterMethod, setAuthError, setLoadingState]
   );
 
   const runProviderMutation = useCallback(
-    async (
-      payload,
-      { methodName, successEventName, successAuditType, failureMessage, failureAction, unsupportedMessage }
-    ) => {
-      const adapter = getAdapterMethod(
+    (payload, { methodName, successEventName, successAuditType, failureMessage, failureAction, unsupportedMessage }) =>
+      runAuthProviderMutation({
+        adapter: getAdapterMethod(
+          methodName,
+          `Active auth adapter does not implement ${methodName}`,
+          unsupportedMessage
+        ),
+        applySession,
+        currentSession: sessionRef.current,
+        emitSessionEvent,
+        failureAction,
+        failureMessage,
+        getAdapterContext,
         methodName,
-        `Active auth adapter does not implement ${methodName}`,
-        unsupportedMessage
-      );
-
-      const provider = resolveAuthProvider(payload);
-
-      setLoadingState();
-
-      try {
-        const resolvedSession = applySession(await adapter[methodName](payload, getAdapterContext()));
-
-        emitSessionEvent(successEventName, resolvedSession);
-
-        logAuthAuditEvent({
-          eventType: successAuditType,
-          status: 'success',
-          userId: resolvedSession?.user?.id || null,
-          email: resolvedSession?.user?.email || null,
-          provider,
-          metadata: { source: 'auth-context' },
-        });
-
-        return resolvedSession;
-      } catch (error) {
-        logAuthAuditEvent({
-          eventType: 'failed-attempt',
-          status: 'failure',
-          userId: sessionRef.current?.user?.id || null,
-          email: sessionRef.current?.user?.email || null,
-          provider,
-          metadata: {
-            action: failureAction,
-            code: error?.code || null,
-            message: error?.message || failureMessage,
-            source: 'auth-context',
-          },
-        });
-
-        throw setAuthError(error, failureMessage);
-      }
-    },
+        payload,
+        setAuthError,
+        setLoadingState,
+        successAuditType,
+        successEventName,
+      }),
     [applySession, emitSessionEvent, getAdapterContext, getAdapterMethod, setAuthError, setLoadingState]
   );
 
@@ -742,50 +514,34 @@ export function AuthProvider({ children, config = {} }) {
   );
 
   const requestPasswordReset = useCallback(
-    async (payload) => {
-      const adapter = getAdapterMethod(
-        'requestPasswordReset',
-        'Active auth adapter does not implement requestPasswordReset',
-        'Password reset is not supported by the current auth adapter'
-      );
-
-      try {
-        const response = await adapter.requestPasswordReset(payload, getAdapterContext());
-
-        emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
-          action: 'request-password-reset',
-          response,
-        });
-
-        return response;
-      } catch (error) {
-        throw setAuthError(error, 'Password reset request failed');
-      }
-    },
+    (payload) =>
+      runAuthPasswordResetRequest({
+        adapter: getAdapterMethod(
+          'requestPasswordReset',
+          'Active auth adapter does not implement requestPasswordReset',
+          'Password reset is not supported by the current auth adapter'
+        ),
+        emitAuthEvent,
+        getAdapterContext,
+        payload,
+        setAuthError,
+      }),
     [emitAuthEvent, getAdapterContext, getAdapterMethod, setAuthError]
   );
 
   const confirmPasswordReset = useCallback(
-    async (payload) => {
-      const adapter = getAdapterMethod(
-        'confirmPasswordReset',
-        'Active auth adapter does not implement confirmPasswordReset',
-        'Password reset confirmation is not supported by the current auth adapter'
-      );
-
-      try {
-        const response = await adapter.confirmPasswordReset(payload, getAdapterContext());
-
-        emitAuthEvent(EVENT_TYPES.AUTH_UPDATE, {
-          action: 'confirm-password-reset',
-          response,
-        });
-
-        return response;
-      } catch (error) {
-        throw setAuthError(error, 'Password reset confirmation failed');
-      }
-    },
+    (payload) =>
+      runAuthPasswordResetConfirmation({
+        adapter: getAdapterMethod(
+          'confirmPasswordReset',
+          'Active auth adapter does not implement confirmPasswordReset',
+          'Password reset confirmation is not supported by the current auth adapter'
+        ),
+        emitAuthEvent,
+        getAdapterContext,
+        payload,
+        setAuthError,
+      }),
     [emitAuthEvent, getAdapterContext, getAdapterMethod, setAuthError]
   );
 
