@@ -33,7 +33,13 @@ export default function ListPreviewComposition({
             className="h-full overflow-hidden border-r border-[#0284c7] last:border-r-0"
           >
             {getPreviewImage(item) ? (
-              <img src={getPreviewImage(item)} alt={item.title || item.name || 'Poster'} className={imageClassName} />
+              <img
+                src={getPreviewImage(item)}
+                alt={item.title || item.name || 'Poster'}
+                loading="lazy"
+                decoding="async"
+                className={imageClassName}
+              />
             ) : (
               <div className="center h-full w-full">
                 <Icon icon="solar:videocamera-record-bold" size={16} />

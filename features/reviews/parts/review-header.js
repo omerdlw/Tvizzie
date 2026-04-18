@@ -1,8 +1,10 @@
 'use client';
 
+import Link from '@/node_modules/next/link';
 import Icon from '@/ui/icon';
 
 export default function ReviewHeader({
+  allReviewsHref = '#',
   itemLabel = 'review',
   ratingStats = null,
   showRatingSummary = true,
@@ -45,6 +47,12 @@ export default function ReviewHeader({
             <Icon icon="solar:pen-bold" size={16} />
           </button>
         ) : null}
+        <Link
+          href={allReviewsHref}
+          className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
+        >
+          All reviews
+        </Link>
       </div>
     </div>
   );

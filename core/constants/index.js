@@ -142,28 +142,28 @@ export const Z_INDEX = {
 
 export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
-    icon: 'border border-white/10 bg-white/10 text-white/70',
-    description: 'text-white/70',
-    surface: 'border border-error bg-error text-white',
-    title: 'text-white',
+    icon: 'border border-black/5 bg-black/5 text-black',
+    description: 'text-black/70',
+    surface: 'border-2 border-error bg-white text-black',
+    title: 'text-black',
   }),
   info: Object.freeze({
-    icon: 'border border-white/10 bg-white/10 text-white/70',
-    description: 'text-white/70',
-    surface: 'border border-info bg-info text-white',
-    title: 'text-white',
+    icon: 'border border-black/5 bg-black/5 text-black',
+    description: 'text-black/70',
+    surface: 'border-2 border-info bg-white text-black',
+    title: 'text-black',
   }),
   success: Object.freeze({
-    icon: 'border border-white/10 bg-white/10 text-white/70',
-    description: 'text-white/70',
-    surface: 'border border-success bg-success text-white',
-    title: 'text-white',
+    icon: 'border border-black/5 bg-black/5 text-black',
+    description: 'text-black/70',
+    surface: 'border-2 border-success bg-white text-black',
+    title: 'text-black',
   }),
   warning: Object.freeze({
-    icon: 'border border-white/10 bg-white/10 text-white/70',
-    description: 'text-white/70',
-    surface: 'border border-warning bg-warning text-white',
-    title: 'text-white',
+    icon: 'border border-black/5 bg-black/5 text-black',
+    description: 'text-black/70',
+    surface: 'border-2 border-warning bg-white text-black',
+    title: 'text-black',
   }),
 });
 

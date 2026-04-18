@@ -1,4 +1,4 @@
-import { ACCOUNT_SECTION_KEYS } from '@/features/account/utils';
+import { ACCOUNT_SECTION_KEYS } from '@/core/utils/account-routing';
 
 const ACCOUNT_NAV_CHILDREN = Object.freeze([
   {

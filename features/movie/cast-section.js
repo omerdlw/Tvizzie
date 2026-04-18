@@ -5,8 +5,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { TMDB_IMG } from '@/core/constants';
+import { EASING, TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
+import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
+import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
 import SegmentedControl from '@/features/shared/segmented-control';
 import Icon from '@/ui/icon';
 
@@ -32,8 +34,10 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       src={src}
       sizes={size === 'w92' ? '32px' : '64px'}
       priority={priority}
-      fetchPriority={fetchPriority}
-      quality={quality}
+      fetchPriority={resolveImageFetchPriority({ fetchPriority, priority })}
+      loading={resolveImageLoading({ priority })}
+      quality={resolveImageQuality('thumbnail', quality)}
+      decoding="async"
       draggable={false}
       className="rounded-[9px] object-cover"
       onError={() => setError(true)}
@@ -47,7 +51,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 backdrop-blur-sm transition-all hover:border-black/15',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 transition-all hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 rounded-[12px]! p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
@@ -103,6 +107,7 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
 
 export default function CastSection({ cast = [], crew = [], headerAction = null }) {
   const reduceMotion = useReducedMotion();
+  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
 
@@ -154,30 +159,64 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
     return (
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {featured.map((person, index) => (
-            <PersonCard
-              key={buildPersonEntryKey(tabKey, person, index, 'featured')}
-              person={person}
-              priority={index < 4}
-              fetchPriority={index < 4 ? 'high' : undefined}
-            />
-          ))}
+          {featured.map((person, index) => {
+            const cardMotion = getSurfaceItemMotion({
+              enabled: shouldAnimateItemReveal,
+              reduceMotion,
+              index,
+              distance: 20,
+              scale: 0.984,
+            });
+
+            return (
+              <motion.div
+                key={buildPersonEntryKey(tabKey, person, index, 'featured')}
+                initial={cardMotion.initial}
+                animate={cardMotion.animate}
+                transition={cardMotion.transition}
+              >
+                <PersonCard person={person} priority={index < 4} fetchPriority={index < 4 ? 'high' : undefined} />
+              </motion.div>
+            );
+          })}
         </div>
 
         {!!compact.length && (
           <div className="flex h-10 items-center gap-2">
-            {compact.map((person, index) => (
-              <PersonCard key={buildPersonEntryKey(tabKey, person, index, 'compact')} person={person} compact />
-            ))}
+            {compact.map((person, index) => {
+              const compactMotion = getSurfaceItemMotion({
+                enabled: shouldAnimateItemReveal,
+                reduceMotion,
+                index,
+                groupIndex: 1,
+                distance: 16,
+                scale: 0.988,
+              });
 
-            <button
+              return (
+                <motion.div
+                  key={buildPersonEntryKey(tabKey, person, index, 'compact')}
+                  initial={compactMotion.initial}
+                  animate={compactMotion.animate}
+                  transition={compactMotion.transition}
+                  className="flex-1"
+                >
+                  <PersonCard person={person} compact />
+                </motion.div>
+              );
+            })}
+
+            <motion.button
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={reduceMotion ? { duration: 0.16 } : { duration: 0.48, delay: 0.18, ease: EASING.ACCENT }}
               className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={18} />
-            </button>
+            </motion.button>
           </div>
         )}
       </div>
@@ -189,7 +228,6 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       <div className="flex items-center justify-between gap-3">
         <SegmentedControl
           classNames={{
-            track: ' backdrop-blur-sm',
             wrapper: 'p-0.5 rounded-[12px]',
             indicator: 'rounded-[9px]',
           }}

@@ -5,14 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { INITIAL_DELETE_FLOW, INITIAL_EMAIL_FLOW, INITIAL_PASSWORD_FLOW } from '@/features/account/security';
 import { useAccountSecurityActions } from '@/features/account/hooks/security-actions';
 import { useAccountEditData } from '@/features/account/hooks/edit-data';
 import {
   clearAccountFeedback,
   emitAccountFeedback,
-  INITIAL_DELETE_FLOW,
-  INITIAL_EMAIL_FLOW,
-  INITIAL_PASSWORD_FLOW,
   getAvatarFallback,
   normalizeEmail,
   normalizeOptionalText,
@@ -24,9 +22,25 @@ import { useAccount } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigationActions } from '@/core/modules/nav/context';
+import FileUploadSurface from '@/core/modules/nav/surfaces/file-upload-surface';
 import { useToast } from '@/core/modules/notification/hooks';
 
 import AccountEditView from './view';
+
+const ACCOUNT_MEDIA_UPLOAD_CONFIG = Object.freeze({
+  avatar: {
+    buttonLabel: 'Choose avatar',
+    description: 'Drop your avatar image here or pick it from your device',
+    hint: 'PNG, JPG, WEBP, AVIF or GIF',
+    title: 'Upload avatar',
+  },
+  banner: {
+    buttonLabel: 'Choose logo',
+    description: 'Drop your logo image here or pick it from your device',
+    hint: 'PNG, JPG, WEBP, AVIF or GIF',
+    title: 'Upload logo',
+  },
+});
 
 export default function Client({ initialSnapshot = null }) {
   const { updateCurrentAccount } = useAccount();
@@ -46,8 +60,8 @@ export default function Client({ initialSnapshot = null }) {
   const [deleteFlow, setDeleteFlow] = useState(INITIAL_DELETE_FLOW);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [mediaUploadState, setMediaUploadState] = useState({
-    avatar: false,
-    banner: false,
+    avatar: null,
+    banner: null,
   });
 
   const {
@@ -120,7 +134,10 @@ export default function Client({ initialSnapshot = null }) {
       normalizeOptionalText(form.bannerUrl) !== normalizeOptionalText(profile.bannerUrl)
     );
   }, [form, profile]);
-  const isAnyMediaUploading = mediaUploadState.avatar || mediaUploadState.banner;
+  const activeMediaUpload = useMemo(() => {
+    return mediaUploadState.avatar || mediaUploadState.banner || null;
+  }, [mediaUploadState.avatar, mediaUploadState.banner]);
+  const isAnyMediaUploading = Boolean(activeMediaUpload);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -138,7 +155,9 @@ export default function Client({ initialSnapshot = null }) {
 
       setMediaUploadState((prev) => ({
         ...prev,
-        [normalizedTarget]: true,
+        [normalizedTarget]: {
+          fileName: file?.name || `${label}.image`,
+        },
       }));
 
       try {
@@ -151,13 +170,12 @@ export default function Client({ initialSnapshot = null }) {
           ...prev,
           [field]: result.url,
         }));
-        toast.success(`${label} uploaded`);
       } catch (error) {
         toast.error(error?.message || `${label} could not be uploaded`);
       } finally {
         setMediaUploadState((prev) => ({
           ...prev,
-          [normalizedTarget]: false,
+          [normalizedTarget]: null,
         }));
       }
     },
@@ -188,6 +206,44 @@ export default function Client({ initialSnapshot = null }) {
   const handleSave = useCallback(() => {
     formRef.current?.requestSubmit?.();
   }, []);
+
+  const handleCancel = useCallback(() => {
+    if (!profile || isSaving || isAnyMediaUploading) {
+      return;
+    }
+
+    setForm({
+      avatarUrl: profile.avatarUrl || '',
+      bannerUrl: profile.bannerUrl || '',
+      description: profile.description || '',
+      displayName: profile.displayName || '',
+      isPrivate: profile.isPrivate === true,
+      username: profile.username || '',
+    });
+  }, [isAnyMediaUploading, isSaving, profile, setForm]);
+
+  const handleOpenMediaUpload = useCallback(
+    async (target) => {
+      if (isSaving || isAnyMediaUploading) {
+        return;
+      }
+
+      const normalizedTarget = String(target || '').toLowerCase() === 'avatar' ? 'avatar' : 'banner';
+      const selection = await openSurface(FileUploadSurface, {
+        data: {
+          ...ACCOUNT_MEDIA_UPLOAD_CONFIG[normalizedTarget],
+          target: normalizedTarget,
+        },
+      });
+
+      if (!selection?.success || !selection?.file) {
+        return;
+      }
+
+      await handleMediaUpload(normalizedTarget, selection.file);
+    },
+    [handleMediaUpload, isAnyMediaUploading, isSaving, openSurface]
+  );
 
   useEffect(() => {
     if (!auth.isReady || isLoading || auth.isAuthenticated) {
@@ -237,7 +293,6 @@ export default function Client({ initialSnapshot = null }) {
 
       applyProfile(nextProfile);
       emitAccountFeedback('account-update', 'success');
-      toast.success('Account updated');
       router.push('/account');
     } catch (error) {
       clearAccountFeedback('account-update');
@@ -294,13 +349,15 @@ export default function Client({ initialSnapshot = null }) {
       heroDisplayName={heroDisplayName}
       isGeneralAccountDirty={isGeneralAccountDirty}
       isAnyMediaUploading={isAnyMediaUploading}
+      mediaUploadFileName={activeMediaUpload?.fileName || ''}
       mediaUploadState={mediaUploadState}
       canUsePasswordSecurity={canUsePasswordSecurity}
       isPasswordLinked={isPasswordLinked}
       formRef={formRef}
       handleChange={handleChange}
       handleClearMedia={handleClearMedia}
-      handleMediaUpload={handleMediaUpload}
+      handleOpenMediaUpload={handleOpenMediaUpload}
+      handleCancel={handleCancel}
       handleSignIn={handleSignIn}
       handleSave={handleSave}
       setActiveTab={setActiveTab}

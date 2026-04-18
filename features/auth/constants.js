@@ -31,7 +31,7 @@ export const AUTH_ERROR_MESSAGES = Object.freeze({
   'auth/too-many-requests': 'Too many attempts were made. Please try again later',
   'auth/user-disabled': 'This account has been disabled',
   'auth/user-not-found': 'No account was found with these credentials',
-  'auth/weak-password': 'Password is too weak. Use at least 8 characters, 1 uppercase letter, 1 number, and 1 symbol',
+  'auth/weak-password': 'Password is too weak. Use at least 8 characters and 1 number',
   'auth/wrong-password': 'The password is incorrect',
   SIGNIN_IDENTIFIER_REQUIRED: 'Username or email is required',
   PROFILE_EMAIL_MISSING: 'No sign-in email was found for this username. Please contact support',

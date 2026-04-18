@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import {
   AUTH_PURPOSE,
   AUTH_ROUTES,
@@ -13,6 +14,9 @@ import {
   createPendingSignUpPayload,
   finalizeOAuthSignUp,
   finalizeSignUp,
+  hasSatisfiedPasswordRequirements,
+  isPasswordConfirmationMismatchError,
+  isPasswordRequirementError,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
@@ -55,6 +59,8 @@ export default function Client() {
   const [pendingAction, setPendingAction] = useState(null);
   const activeOAuthProvider = normalizeOAuthProvider(pendingAction);
   const isBusy = pendingAction !== null;
+  const isPasswordReady = hasSatisfiedPasswordRequirements(form.password);
+  const passwordsMatch = Boolean(form.password) && form.password === form.confirmPassword;
 
   const postAuthRedirect = useMemo(() => resolvePostAuthRedirect(nextParam), [nextParam]);
 
@@ -72,6 +78,43 @@ export default function Client() {
       setForm((prev) => ({ ...prev, email: emailPrefill }));
     }
   }, [emailPrefill, form.email]);
+
+  useEffect(() => {
+    if (pendingAction === 'creating-account') {
+      globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
+        description: 'Creating your account and starting your session.',
+        flow: 'signup-complete',
+        isOverlay: true,
+        phase: 'start',
+        priority: 110,
+        statusType: 'SIGNUP',
+        themeType: 'SIGNUP',
+        title: 'Creating account',
+      });
+      return;
+    }
+
+    if (pendingAction === 'redirecting') {
+      globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
+        description: 'Redirecting to your account.',
+        duration: 3000,
+        flow: 'signup-complete',
+        isOverlay: true,
+        phase: 'success',
+        priority: 110,
+        statusType: 'SIGNUP',
+        themeType: 'SIGNUP',
+        title: 'Account ready',
+      });
+      return;
+    }
+
+    globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
+      flow: 'signup-complete',
+      phase: 'clear',
+      statusType: 'SIGNUP',
+    });
+  }, [pendingAction]);
 
   useEffect(() => {
     if (!auth.isReady || !auth.isAuthenticated || isBusy) {
@@ -128,7 +171,6 @@ export default function Client() {
         return;
       }
 
-      toast.success(`${providerLabel} sign-up completed successfully`);
       router.replace(postAuthRedirect);
     } catch (error) {
       const code = String(error?.code || '').trim();
@@ -151,6 +193,7 @@ export default function Client() {
   };
 
   const handleStartVerification = async () => {
+    let shouldResetPendingAction = true;
     setPendingAction('email');
 
     try {
@@ -185,6 +228,7 @@ export default function Client() {
         username: pendingPayload.username,
       });
 
+      setPendingAction('creating-account');
       const signUpResult = await finalizeSignUp({
         auth,
         displayName: pendingPayload.displayName,
@@ -195,17 +239,31 @@ export default function Client() {
       });
 
       if (signUpResult?.requiresRedirect) {
+        shouldResetPendingAction = false;
         return;
       }
 
-      toast.success('Your account was created successfully');
+      shouldResetPendingAction = false;
+      setPendingAction('redirecting');
       router.replace(postAuthRedirect);
     } catch (error) {
+      globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
+        flow: 'signup-complete',
+        phase: 'failure',
+        statusType: 'SIGNUP',
+      });
+
+      if (isPasswordRequirementError(error) || isPasswordConfirmationMismatchError(error)) {
+        return;
+      }
+
       toast.error(resolveAuthErrorMessage(error, 'Sign-up could not be completed'), {
         id: 'auth-signup-complete-error',
       });
     } finally {
-      setPendingAction(null);
+      if (shouldResetPendingAction) {
+        setPendingAction(null);
+      }
     }
   };
 
@@ -265,6 +323,14 @@ export default function Client() {
       return;
     }
 
+    if (!isPasswordReady) {
+      return;
+    }
+
+    if (!passwordsMatch) {
+      return;
+    }
+
     await handleStartVerification();
   };
 
@@ -286,6 +352,8 @@ export default function Client() {
         handlePreviousStep={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
         handleStepSubmit={handleStepSubmit}
         isBusy={isBusy}
+        isPasswordReady={isPasswordReady}
+        passwordsMatch={passwordsMatch}
         signInHref={signInHref}
         pendingAction={pendingAction}
       />

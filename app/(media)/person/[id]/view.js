@@ -9,25 +9,33 @@ import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
+import {
+  MovieClipReveal,
+  MovieHeroReveal,
+  MovieSectionReveal,
+  MovieSidebarReveal,
+  getSurfaceItemMotion,
+  getSurfacePanelMotion,
+  useInitialItemRevealEnabled,
+} from '@/features/movie/movie-motion';
 import { getFilmographyCredits } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
 
 const HERO_REVEAL_TIMING = Object.freeze({
-  containerDelay: 0.14,
-  titleDelay: 0.22,
-  titleDuration: 0.6,
-  taglineDelay: 0.34,
-  overviewDelay: 0.48,
+  containerDelay: 0.1,
+  titleDelay: 0.18,
+  titleClipDelay: 0.16,
+  titleDuration: 0.82,
+  overviewDelay: 0.4,
 });
 
 const SECTION_REVEAL_TIMING = Object.freeze({
-  gallery: 0.26,
-  filmography: 0.36,
-  timeline: 0.28,
-  awards: 0.28,
+  gallery: 0.18,
+  filmography: 0.26,
+  timeline: 0.2,
+  awards: 0.2,
 });
 
 function getBiographyExcerpt(biography, maxLength = 280) {
@@ -44,7 +52,7 @@ function getBiographyExcerpt(biography, maxLength = 280) {
   return `${value.slice(0, maxLength).replace(/\s+\S*$/, '')}...`;
 }
 
-function PersonMainContent({ person }) {
+function PersonMainContent({ person, animateItemReveal = true }) {
   const reduceMotion = useReducedMotion();
   const movieCredits = getFilmographyCredits(person, 'movie');
 
@@ -52,7 +60,7 @@ function PersonMainContent({ person }) {
     <>
       {person?.images?.profiles?.length > 0 ? (
         <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
-          <PersonGallery images={person.images} />
+          <PersonGallery images={person.images} animateItemReveal={animateItemReveal} />
         </MovieSectionReveal>
       ) : null}
 
@@ -62,24 +70,30 @@ function PersonMainContent({ person }) {
             <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-              {movieCredits.map((credit, index) => (
-                <motion.div
-                  key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: reduceMotion ? 0 : index * 0.02,
-                    duration: reduceMotion ? 0.16 : 0.34,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                >
-                  <FilmographyCard
-                    credit={credit}
-                    imagePriority={index < 8}
-                    imageFetchPriority={index < 8 ? 'high' : undefined}
-                  />
-                </motion.div>
-              ))}
+              {movieCredits.map((credit, index) => {
+                const cardMotion = getSurfaceItemMotion({
+                  enabled: animateItemReveal,
+                  reduceMotion,
+                  index,
+                  distance: 18,
+                  scale: 0.982,
+                });
+
+                return (
+                  <motion.div
+                    key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
+                    initial={cardMotion.initial}
+                    animate={cardMotion.animate}
+                    transition={cardMotion.transition}
+                  >
+                    <FilmographyCard
+                      credit={credit}
+                      imagePriority={index < 8}
+                      imageFetchPriority={index < 8 ? 'high' : undefined}
+                    />
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         </MovieSectionReveal>
@@ -88,7 +102,7 @@ function PersonMainContent({ person }) {
   );
 }
 
-function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
+function PersonDeferredContent({ person, secondaryDataPromise, activeView, animateItemReveal = true }) {
   const secondaryPerson = use(secondaryDataPromise);
   const mergedPerson = {
     ...person,
@@ -103,7 +117,7 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
     );
   }
 
-  return <PersonMainContent person={mergedPerson} />;
+  return <PersonMainContent person={mergedPerson} animateItemReveal={animateItemReveal} />;
 }
 
 export default function PersonView({
@@ -118,17 +132,11 @@ export default function PersonView({
   canResetPersonPoster,
 }) {
   const reduceMotion = useReducedMotion();
+  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   if (!person) return null;
 
   const biographyExcerpt = getBiographyExcerpt(person.biography);
-  const viewTransition = reduceMotion
-    ? {
-        duration: 0.12,
-      }
-    : {
-        duration: 0.42,
-        ease: [0.22, 1, 0.36, 1],
-      };
+  const viewMotion = getSurfacePanelMotion({ reduceMotion });
   const deferredFallback =
     activeView === 'timeline' ? (
       <PersonTimelineSkeleton className="mt-10" />
@@ -163,35 +171,39 @@ export default function PersonView({
             <div className="flex w-full min-w-0 flex-col">
               <div className="flex w-full flex-col">
                 <MovieHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
-                  <div className="flex items-end justify-between gap-3">
-                    <TextAnimate
-                      animation="slideUp"
-                      by="word"
-                      delay={HERO_REVEAL_TIMING.titleDelay}
-                      duration={HERO_REVEAL_TIMING.titleDuration}
-                      startOnView={false}
-                      className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
-                    >
-                      {person.name}
-                    </TextAnimate>
+                  <div className="flex min-w-0 items-end justify-between gap-3">
+                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
+                      <TextAnimate
+                        animation="cinematicUp"
+                        by="word"
+                        delay={HERO_REVEAL_TIMING.titleDelay}
+                        duration={HERO_REVEAL_TIMING.titleDuration}
+                        startOnView={false}
+                        className="max-w-full [overflow-wrap:anywhere] font-zuume text-5xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
+                      >
+                        {person.name}
+                      </TextAnimate>
+                    </MovieClipReveal>
                   </div>
                 </MovieHeroReveal>
 
                 {biographyExcerpt ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <p className="max-w-[72ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
-                      {biographyExcerpt}
-                    </p>
+                    <MovieClipReveal animateOnView={false} delay={0.06}>
+                      <p className="max-w-[72ch] text-left text-[15px] leading-6 text-black/70 sm:text-justify sm:text-base sm:leading-7">
+                        {biographyExcerpt}
+                      </p>
+                    </MovieClipReveal>
                   </MovieHeroReveal>
                 ) : null}
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`person-view-${activeView}`}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
-                    transition={viewTransition}
+                    initial={viewMotion.initial}
+                    animate={viewMotion.animate}
+                    exit={viewMotion.exit}
+                    transition={viewMotion.transition}
                   >
                     {activeView === 'awards' ? (
                       <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards} animateOnView={false}>
@@ -203,6 +215,7 @@ export default function PersonView({
                           person={person}
                           secondaryDataPromise={secondaryDataPromise}
                           activeView={activeView}
+                          animateItemReveal={shouldAnimateItemReveal}
                         />
                       </Suspense>
                     )}

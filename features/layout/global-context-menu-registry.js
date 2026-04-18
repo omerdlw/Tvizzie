@@ -37,7 +37,7 @@ async function shareCurrentPage({ page, toast }) {
   if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success('Page link copied');
+      toast.success('Page link copied', { allowInProduction: true });
       return;
     } catch {
       // fall through to error toast
@@ -93,10 +93,6 @@ export default function GlobalContextMenuRegistry() {
           icon: 'solar:chat-round-dots-bold',
           onSelect: () => {
             openModal('FEEDBACK_MODAL', 'center', {
-              data: {
-                defaultScope: menuContext?.page ? 'page' : 'project',
-                page: menuContext?.page || null,
-              },
               title: 'Feedback',
             });
           },

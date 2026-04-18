@@ -121,26 +121,38 @@ export function getTrustedLoginDeviceCookieName(userId) {
 }
 
 export function createPendingSignInToken({
+  accessToken,
   deviceHash,
   email,
   provider,
+  refreshToken,
   user,
   userId,
   expiresAt = Date.now() + PENDING_SIGN_IN_MAX_AGE_MS,
 }) {
   const normalizedUserId = normalizeValue(userId);
+  const normalizedAccessToken = normalizeValue(accessToken);
   const normalizedEmail = normalizeEmail(email);
   const normalizedDeviceHash = normalizeValue(deviceHash);
+  const normalizedRefreshToken = normalizeValue(refreshToken);
 
-  if (!normalizedUserId || !normalizedEmail || !normalizedDeviceHash) {
+  if (
+    !normalizedUserId ||
+    !normalizedEmail ||
+    !normalizedDeviceHash ||
+    !normalizedAccessToken ||
+    !normalizedRefreshToken
+  ) {
     throw new Error('Pending sign-in payload is invalid');
   }
 
   const payload = {
+    accessToken: normalizedAccessToken,
     deviceHash: normalizedDeviceHash,
     email: normalizedEmail,
     exp: Math.floor(Number(expiresAt) / 1000),
     provider: normalizeValue(provider) || 'password',
+    refreshToken: normalizedRefreshToken,
     user: buildUserSnapshot(user),
     userId: normalizedUserId,
   };
@@ -159,15 +171,23 @@ export function verifyPendingSignInToken(token) {
 
   const user = buildUserSnapshot(payload?.user);
 
-  if (!normalizeValue(payload?.userId) || !normalizeEmail(payload?.email) || !normalizeValue(payload?.deviceHash)) {
+  if (
+    !normalizeValue(payload?.userId) ||
+    !normalizeEmail(payload?.email) ||
+    !normalizeValue(payload?.deviceHash) ||
+    !normalizeValue(payload?.accessToken) ||
+    !normalizeValue(payload?.refreshToken)
+  ) {
     throw new Error('Pending sign-in session is invalid');
   }
 
   return {
+    accessToken: normalizeValue(payload.accessToken),
     deviceHash: normalizeValue(payload.deviceHash),
     email: normalizeEmail(payload.email),
     expiresAt: new Date(expiresAtMs).toISOString(),
     provider: normalizeValue(payload.provider) || 'password',
+    refreshToken: normalizeValue(payload.refreshToken),
     user,
     userId: normalizeValue(payload.userId),
   };

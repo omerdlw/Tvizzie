@@ -1,6 +1,6 @@
 'use client';
 
-import { Children, cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Children, cloneElement, isValidElement, useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
@@ -270,7 +270,7 @@ export function useRegistry(config) {
 
   const runner = useMemo(() => createPluginRunner(PLUGINS), []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     return runner.apply(stableConfig, context);
   }, [stableConfig, runner, context]);
 }

@@ -58,7 +58,7 @@ function SearchGridCard({ isAdded, item, onAdd }) {
               isAdded ? 'border-black! bg-black text-white' : 'border-black/20 bg-white/80 text-black'
             )}
           >
-            <Icon icon={isAdded ? 'solar:check-read-bold' : 'solar:add-circle-linear'} size={13} />
+            <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={13} />
             {isAdded ? 'Added' : 'Add'}
           </div>
         </div>
@@ -76,7 +76,13 @@ function DraftItemCard({ index, item, onRemove }) {
 
       <div className="relative h-16 w-11 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
-          <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
+          <img
+            src={posterSrc}
+            alt={getItemTitle(item)}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-black/30">
             <Icon icon="solar:videocamera-record-bold" size={14} />
@@ -108,7 +114,13 @@ function MobileDraftRowItem({ item, onRemove }) {
     <div className="flex min-w-[180px] items-center gap-2 border border-black/10 bg-white/85 p-2">
       <div className="relative h-12 w-8 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
-          <img src={posterSrc} alt={getItemTitle(item)} className="h-full w-full object-cover" />
+          <img
+            src={posterSrc}
+            alt={getItemTitle(item)}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-black/30">
             <Icon icon="solar:videocamera-record-bold" size={12} />
@@ -158,7 +170,7 @@ export default function ListCreatorView({
   return (
     <main className="h-screen w-screen overflow-hidden">
       <AccountSectionReveal className="h-full min-h-0">
-        <div className="h-full min-h-0 w-full overflow-hidden border border-black/10 bg-white/55 shadow-sm backdrop-blur-md">
+        <div className="h-full min-h-0 w-full overflow-hidden border border-black/10 bg-white/50 shadow-sm">
           <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
             <section className="flex min-h-0 flex-col overflow-hidden border-b border-black/10 lg:border-r lg:border-b-0">
               <div className="border-b border-black/10 p-4 sm:p-5">
@@ -269,7 +281,7 @@ export default function ListCreatorView({
                 </div>
 
                 {searchResults.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                     {searchResults.map((item) => (
                       <SearchGridCard
                         key={`${item.entityType}-${item.entityId}`}
@@ -288,7 +300,7 @@ export default function ListCreatorView({
                     />
                     {searchQuery.trim()
                       ? isSearching
-                        ? 'Searching...'
+                        ? 'Searching'
                         : 'No results found'
                       : 'Search to start adding titles'}
                   </div>

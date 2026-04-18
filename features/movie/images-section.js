@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
+import {
+  getSurfaceItemMotion,
+  getSurfacePanelMotion,
+  useInitialItemRevealEnabled,
+} from '@/features/movie/movie-motion';
 import Carousel from '@/features/shared/carousel';
 import MediaCard from '@/features/shared/media-card';
 import SegmentedControl from '@/features/shared/segmented-control';
@@ -13,7 +19,7 @@ const TABS = Object.freeze([
     key: 'backdrops',
     label: 'Backdrops',
     aspect: 'aspect-video',
-    width: 'w-72',
+    width: 'w-[min(18rem,calc(100vw-4.5rem))] sm:w-72',
     size: 'w780',
     sizes: '288px',
   },
@@ -29,7 +35,7 @@ const TABS = Object.freeze([
     key: 'logos',
     label: 'Logos',
     aspect: 'aspect-video',
-    width: 'w-52',
+    width: 'w-[min(13rem,calc(100vw-5rem))] sm:w-52',
     size: 'w500',
     sizes: '208px',
   },
@@ -68,6 +74,8 @@ function getTabItems(images, key) {
 }
 
 export default function ImagesSection({ images }) {
+  const reduceMotion = useReducedMotion();
+  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
 
   const availableTabs = useMemo(() => TABS.filter((tab) => getTabItems(images, tab.key).length > 0), [images]);
@@ -87,6 +95,7 @@ export default function ImagesSection({ images }) {
 
   const currentTab = availableTabs.find((tab) => tab.key === activeKey) || null;
   const items = currentTab ? getTabItems(images, currentTab.key) : [];
+  const panelMotion = getSurfacePanelMotion({ reduceMotion });
 
   if (!currentTab) {
     return null;
@@ -106,35 +115,64 @@ export default function ImagesSection({ images }) {
         onChange={setActiveKey}
       />
 
-      <Carousel key={`movie-images-${currentTab.key}`} gap="gap-3">
-        {items.map((image, index) => (
-          <MediaCard
-            imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
-            imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
-            onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
-            imageFetchPriority={index < 3 ? 'high' : undefined}
-            fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
-            imageAlt={`${currentTab.label} ${index + 1}`}
-            className={`shrink-0 ${currentTab.width}`}
-            aspectClass={currentTab.aspect}
-            key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-            imageSizes={currentTab.sizes}
-            imagePriority={index < 3}
-            fallbackIconSize={24}
-            {...(currentTab.key === 'backdrops'
-              ? {
-                  'data-backdrop-file-path': image.file_path || '',
-                  'data-context-menu-target': 'movie-backdrop-card',
-                }
-              : currentTab.key === 'posters'
-                ? {
-                    'data-poster-file-path': image.file_path || '',
-                    'data-context-menu-target': 'movie-poster-card',
-                  }
-                : {})}
-          />
-        ))}
-      </Carousel>
+      <div className="relative">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`movie-images-${currentTab.key}`}
+            initial={panelMotion.initial}
+            animate={panelMotion.animate}
+            exit={panelMotion.exit}
+            transition={panelMotion.transition}
+          >
+            <Carousel gap="gap-3">
+              {items.map((image, index) => {
+                const cardMotion = getSurfaceItemMotion({
+                  enabled: shouldAnimateItemReveal,
+                  reduceMotion,
+                  index,
+                  distance: currentTab.key === 'posters' ? 22 : 18,
+                  scale: currentTab.key === 'logos' ? 0.988 : 0.982,
+                });
+
+                return (
+                  <motion.div
+                    key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
+                    initial={cardMotion.initial}
+                    animate={cardMotion.animate}
+                    transition={cardMotion.transition}
+                  >
+                    <MediaCard
+                      imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
+                      imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
+                      onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
+                      imageFetchPriority={index < 3 ? 'high' : undefined}
+                      imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
+                      fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
+                      imageAlt={`${currentTab.label} ${index + 1}`}
+                      className={`shrink-0 ${currentTab.width}`}
+                      aspectClass={currentTab.aspect}
+                      imageSizes={currentTab.sizes}
+                      imagePriority={index < 3}
+                      fallbackIconSize={24}
+                      {...(currentTab.key === 'backdrops'
+                        ? {
+                            'data-backdrop-file-path': image.file_path || '',
+                            'data-context-menu-target': 'movie-backdrop-card',
+                          }
+                        : currentTab.key === 'posters'
+                          ? {
+                              'data-poster-file-path': image.file_path || '',
+                              'data-context-menu-target': 'movie-poster-card',
+                            }
+                          : {})}
+                    />
+                  </motion.div>
+                );
+              })}
+            </Carousel>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </section>
   );
 }

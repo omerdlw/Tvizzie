@@ -23,7 +23,7 @@ export default function MediaReviews({
   backdropPath = null,
   headerTitle = 'Community Reviews',
   listMode = 'all',
-  allReviewsHref = null,
+  allReviewsHref,
   sectionClassName = 'mt-12 md:mt-16',
   showBackdropGradient = true,
   enableSortControl = false,
@@ -219,6 +219,7 @@ export default function MediaReviews({
       <ReviewHeader
         ratingStats={effectiveRatingStats}
         title={headerTitle}
+        allReviewsHref={allReviewsHref}
         totalReviews={filteredReviews.length}
         onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
       />
@@ -238,19 +239,6 @@ export default function MediaReviews({
             </Button>
           </div>
         </AuthGate>
-      ) : null}
-      {isRecentListMode && !shouldHideRecentList ? (
-        <div className="flex w-full items-center justify-between border-b border-black/10 py-5">
-          <span className="text-xs font-semibold tracking-wider text-black/70 uppercase">Recent reviews</span>
-          {hasMoreThanRecentLimit && allReviewsHref ? (
-            <Link
-              href={allReviewsHref}
-              className="text-xs font-semibold tracking-wider text-black/70 uppercase transition hover:text-black"
-            >
-              All reviews
-            </Link>
-          ) : null}
-        </div>
       ) : null}
       {isSortControlEnabled ? (
         <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">

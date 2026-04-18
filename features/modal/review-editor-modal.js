@@ -45,17 +45,6 @@ function getPrimaryActionLabel({ hasExistingReview, isList = false, rating, revi
   return isRatingOnly ? 'Save Rating' : 'Publish Review';
 }
 
-function getSuccessMessage({ hasExistingReview, isList = false, rating, reviewText }) {
-  if (isList) {
-    return hasExistingReview ? 'Your comment was updated' : 'Your comment was published';
-  }
-
-  const isRatingOnly = isRatingOnlyReview({ rating, reviewText });
-
-  if (hasExistingReview) return isRatingOnly ? 'Your rating was updated' : 'Your review was updated';
-  return isRatingOnly ? 'Your rating was saved' : 'Your review was published';
-}
-
 function resolveListContext(data = {}, review = null) {
   const listId = data?.listId || data?.list?.id || review?.subjectId || null;
   const ownerId =
@@ -319,7 +308,6 @@ export default function ReviewEditorModal({ close, data }) {
       });
 
       onSuccess?.(nextReview);
-      toast.success(getSuccessMessage({ hasExistingReview, isList: isListSubject, rating: savedRating, reviewText: content }));
       close(nextReview);
     } catch (error) {
       toast.error(error?.message || 'Review could not be saved');

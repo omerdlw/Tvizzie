@@ -47,7 +47,7 @@ function getMediaPoster(item) {
   return null;
 }
 
-export function AccountProfileMediaActions({
+export function ProfileMediaActions({
   extraActions = [],
   media,
   onRemoveItem = null,
@@ -228,7 +228,7 @@ export default function AccountMediaGridPage({
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
             {visibleCards.map((card, index) => (
               <motion.div
                 key={`${card.id}-${pageStart + index}`}
@@ -247,7 +247,7 @@ export default function AccountMediaGridPage({
                   className="w-full"
                   imageSrc={card.imageSrc}
                   imageAlt={card.imageAlt}
-                  imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
+                  imageSizes="(max-width: 419px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
                   topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
                   tooltipText={card.tooltipText}
                 />

@@ -1,5 +1,6 @@
 'use client';
 
+import { evaluatePasswordRules, validatePasswordRules } from '@/core/auth/password-validation';
 import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
 import { AUTH_ERROR_MESSAGES, AUTH_ERROR_MESSAGE_PATTERNS, EMAIL_DOMAIN_PATTERNS } from './constants';
 
@@ -20,25 +21,30 @@ export function isEmailIdentifier(value) {
 }
 
 export function validatePassword(value) {
-  const password = String(value || '');
+  return validatePasswordRules(value);
+}
 
-  if (password.length < 8) {
-    throw new Error('Password must be at least 8 characters long');
-  }
+export function hasSatisfiedPasswordRequirements(value) {
+  return evaluatePasswordRules(value).every((requirement) => requirement.satisfied);
+}
 
-  if (!/[A-Z]/.test(password)) {
-    throw new Error('Password must contain at least 1 uppercase letter');
-  }
+export function isPasswordRequirementError(error) {
+  const message = String(error?.message || '')
+    .trim()
+    .toLowerCase();
 
-  if (!/\d/.test(password)) {
-    throw new Error('Password must contain at least 1 number');
-  }
+  return (
+    message.includes('password must be at least 8 characters long') ||
+    message.includes('password must contain at least 1 number')
+  );
+}
 
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    throw new Error('Password must contain at least 1 symbol');
-  }
+export function isPasswordConfirmationMismatchError(error) {
+  const message = String(error?.message || '')
+    .trim()
+    .toLowerCase();
 
-  return password;
+  return message.includes('password confirmation does not match');
 }
 
 export function validateAllowedEmailDomain(value) {

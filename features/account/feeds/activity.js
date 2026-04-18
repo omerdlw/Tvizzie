@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 
+import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
 import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
 import AccountPagination from '@/features/account/shared/pagination';
@@ -178,13 +179,13 @@ export default function AccountActivityFeed({
   let content = null;
 
   if (!hasVisibleItems && isLoading) {
-    content = <div className={STATE_MESSAGE_CLASS}>Loading activity...</div>;
+    content = <div className={STATE_MESSAGE_CLASS}>Loading activity</div>;
   } else if (listedActivityCount === 0 && !isLoading && !loadError) {
     content = (
       <div className={STATE_MESSAGE_CLASS}>{hasFilters ? 'No activity matches the current filters' : emptyMessage}</div>
     );
   } else if (listedActivityCount === 0 && !isLoading && loadError) {
-    content = <div className={STATE_MESSAGE_CLASS}>{loadError}</div>;
+    content = <div className={STATE_MESSAGE_CLASS}>{normalizeFeedbackText(loadError)}</div>;
   } else {
     content = (
       <div>

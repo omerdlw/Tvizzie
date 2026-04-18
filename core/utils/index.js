@@ -18,6 +18,14 @@ const NEXT_IMAGE_ALLOWED_HOSTS = Object.freeze([
   'api.dicebear.com',
   'lh3.googleusercontent.com',
 ]);
+const IMAGE_QUALITY_PRESETS = Object.freeze({
+  hero: 88,
+  feature: 82,
+  poster: 78,
+  grid: 74,
+  thumbnail: 72,
+});
+const VERSIONED_IMAGE_PATH_PATTERN = /-(\d{13})-[^/]+\.[a-z0-9]+$/i;
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -48,7 +56,78 @@ function normalizeAvatarUrl(value) {
     return normalized;
   }
 
-  return isValidUrl(normalized) ? normalized : '';
+  return isValidUrl(normalized) ? resolveVersionedImageUrl(normalized) : '';
+}
+
+function extractVersionFromImageUrl(value) {
+  const normalized = String(value || '').trim();
+
+  if (!normalized || normalized.startsWith('data:image/') || normalized.startsWith('blob:')) {
+    return '';
+  }
+
+  try {
+    const parsed = normalized.startsWith('/') ? new URL(normalized, 'https://tvizzie.local') : new URL(normalized);
+    const versionMatch = parsed.pathname.match(VERSIONED_IMAGE_PATH_PATTERN);
+    return versionMatch?.[1] || '';
+  } catch {
+    return '';
+  }
+}
+
+export function resolveVersionedImageUrl(value, version = '') {
+  const normalized = String(value || '').trim();
+
+  if (!normalized || normalized.startsWith('data:image/') || normalized.startsWith('blob:')) {
+    return normalized;
+  }
+
+  const resolvedVersion = String(version || extractVersionFromImageUrl(normalized)).trim();
+
+  if (!resolvedVersion) {
+    return normalized;
+  }
+
+  try {
+    const isRelativeUrl = normalized.startsWith('/');
+    const parsed = isRelativeUrl ? new URL(normalized, 'https://tvizzie.local') : new URL(normalized);
+
+    if (parsed.searchParams.get('v') === resolvedVersion) {
+      return normalized;
+    }
+
+    parsed.searchParams.set('v', resolvedVersion);
+
+    return isRelativeUrl ? `${parsed.pathname}${parsed.search}${parsed.hash}` : parsed.toString();
+  } catch {
+    return normalized;
+  }
+}
+
+export function resolveImageQuality(preset = 'poster', explicitQuality = undefined) {
+  const parsedQuality = Number(explicitQuality);
+
+  if (Number.isFinite(parsedQuality) && parsedQuality > 0) {
+    return parsedQuality;
+  }
+
+  return IMAGE_QUALITY_PRESETS[preset] ?? IMAGE_QUALITY_PRESETS.poster;
+}
+
+export function resolveImageLoading({ loading, priority = false } = {}) {
+  if (priority) {
+    return loading === 'lazy' ? undefined : loading;
+  }
+
+  return loading || 'lazy';
+}
+
+export function resolveImageFetchPriority({ fetchPriority, priority = false } = {}) {
+  if (fetchPriority) {
+    return fetchPriority;
+  }
+
+  return priority ? 'high' : undefined;
 }
 
 function resolveAvatarUrlCandidate(user = {}) {

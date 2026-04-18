@@ -1,8 +1,14 @@
 node_modules
 .next
 .env*
+!.env.example
 .env.local
 .DS_Store
+.agents/
+.codex/
+.vscode/
+FILE_STRUCTURE
+affected_files.txt
 *.mp4
 !public/video.mp4
 scripts/output/

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
 import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
 const REVIEW_MODES = new Set(['authored', 'liked']);
 
@@ -39,12 +39,14 @@ export async function GET(request) {
       enabled: !viewerId,
       ttlMs: 2000,
       loader: () =>
-        fetchProfileReviewFeedServer({
-          cursor,
-          mode,
-          pageSize,
-          userId,
-          viewerId,
+        invokeInternalEdgeFunction('account-reviews-feed', {
+          body: {
+            cursor,
+            mode,
+            pageSize,
+            userId,
+            viewerId,
+          },
         }),
     });
 

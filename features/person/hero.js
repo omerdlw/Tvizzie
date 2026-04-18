@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 import { TMDB_IMG } from '@/core/constants';
-import { getImagePlaceholderDataUrl } from '@/core/utils';
+import { getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 function resolveProfileImage(path) {
@@ -29,9 +29,11 @@ export default function PersonHero({ person, overline = null }) {
               alt={person.name}
               fill
               priority
+              fetchPriority="high"
               className="object-cover"
               sizes="256px"
-              quality={88}
+              quality={resolveImageQuality('hero')}
+              decoding="async"
               placeholder="blur"
               blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
               onError={() => setHasError(true)}

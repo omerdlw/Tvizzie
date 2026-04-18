@@ -150,7 +150,6 @@ export default function Client({ initialSnapshot = null }) {
         userId: auth.user.id,
       });
 
-      toast.success(`"${nextList.title}" was created`);
       const ownerHandle = nextList?.ownerSnapshot?.username || profile?.username || null;
 
       if (ownerHandle && nextList?.slug) {

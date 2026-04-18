@@ -11,20 +11,19 @@ import Icon from '@/ui/icon';
 import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'h-11 w-full border border-black/15 bg-white px-3 text-sm text-black outline-none transition-colors placeholder:text-black/60 focus:border-black';
+  'h-11 rounded-[14px] w-full border border-black/15 bg-white px-3 text-sm text-black outline-none transition-colors placeholder:text-black/60 focus:border-black';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  ' border border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
+  ' border rounded-[14px] border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
 const BUTTON_FRAME_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
-const FILE_UPLOAD_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
 
 function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
     <button
       className={cn(
         BUTTON_FRAME_CLASSES,
-        tone === 'danger' ? cn(DESTRUCTIVE_ACTION_TONE_CLASS, 'backdrop-blur-sm') : BUTTON_BASE_CLASSES,
+        tone === 'danger' ? DESTRUCTIVE_ACTION_TONE_CLASS : BUTTON_BASE_CLASSES,
         className
       )}
       {...props}
@@ -78,12 +77,11 @@ function MediaField({
   preview,
   previewAlt,
   previewClassName,
-  uploadId,
   isUploading,
   isDisabled,
   onChange,
-  onUpload,
   onClear,
+  onOpenUpload,
 }) {
   const shouldDisableActions = isDisabled || isUploading;
 
@@ -101,34 +99,14 @@ function MediaField({
         </Field>
 
         <div className="flex flex-wrap gap-2">
-          <label
-            htmlFor={uploadId}
-            className={cn(
-              BUTTON_FRAME_CLASSES,
-              BUTTON_BASE_CLASSES,
-              shouldDisableActions && 'cursor-not-allowed opacity-60'
-            )}
-          >
-            <Icon icon={isUploading ? 'solar:refresh-bold' : 'solar:upload-bold'} size={15} />
-            {isUploading ? 'Uploading' : 'Upload from device'}
-          </label>
-
-          <input
-            id={uploadId}
-            type="file"
-            accept={FILE_UPLOAD_ACCEPT}
-            className="sr-only"
+          <ActionButton
+            type="button"
+            onClick={onOpenUpload}
             disabled={shouldDisableActions}
-            onChange={(event) => {
-              const file = event.target.files?.[0] || null;
-
-              if (file) {
-                onUpload(file);
-              }
-
-              event.target.value = '';
-            }}
-          />
+            icon={isUploading ? 'solar:refresh-bold' : 'solar:upload-bold'}
+          >
+            {isUploading ? 'Uploading' : 'Upload Media'}
+          </ActionButton>
 
           <ActionButton type="button" onClick={onClear} disabled={!value || shouldDisableActions}>
             Clear
@@ -139,7 +117,7 @@ function MediaField({
       <div>
         <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
           {preview ? (
-            <img src={preview} alt={previewAlt} className="h-full w-full object-cover" />
+            <img src={preview} alt={previewAlt} decoding="async" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black/5 text-black/70">
               <Icon icon="solar:gallery-bold" size={20} />
@@ -177,13 +155,15 @@ export default function AccountEditView(props) {
     heroDisplayName,
     isGeneralAccountDirty,
     isAnyMediaUploading,
+    mediaUploadFileName,
     mediaUploadState,
     canUsePasswordSecurity,
     isPasswordLinked,
     formRef,
     handleChange,
     handleClearMedia,
-    handleMediaUpload,
+    handleOpenMediaUpload,
+    handleCancel,
     handleSignIn,
     handleSave,
     setActiveTab,
@@ -204,10 +184,13 @@ export default function AccountEditView(props) {
       authIsAuthenticated={auth?.isAuthenticated}
       avatarPreview={avatarPreview}
       deleteConfirmation={deleteConfirmation}
+      handleCancel={handleCancel}
       handleSignIn={handleSignIn}
       handleSave={handleSave}
       isGeneralAccountDirty={isGeneralAccountDirty}
       isLoading={!auth?.isReady || isLoading}
+      isMediaUploading={isAnyMediaUploading}
+      mediaUploadFileName={mediaUploadFileName}
       isSaving={isSaving}
       setActiveTab={setActiveTab}
     />
@@ -308,12 +291,11 @@ export default function AccountEditView(props) {
                     preview={avatarPreview}
                     previewAlt={`${heroDisplayName} avatar preview`}
                     previewClassName="aspect-square"
-                    uploadId="account-avatar-upload"
                     isUploading={Boolean(mediaUploadState?.avatar)}
-                    isDisabled={isSaving}
+                    isDisabled={isSaving || isAnyMediaUploading}
                     onChange={(value) => handleChange('avatarUrl', value)}
-                    onUpload={(file) => handleMediaUpload('avatar', file)}
                     onClear={() => handleClearMedia('avatar')}
+                    onOpenUpload={() => handleOpenMediaUpload('avatar')}
                   />
 
                   <div className="h-px w-full bg-black/10" />
@@ -324,12 +306,11 @@ export default function AccountEditView(props) {
                     preview={bannerPreview}
                     previewAlt={`${heroDisplayName} logo preview`}
                     previewClassName="aspect-[16/7]"
-                    uploadId="account-logo-upload"
                     isUploading={Boolean(mediaUploadState?.banner)}
-                    isDisabled={isSaving}
+                    isDisabled={isSaving || isAnyMediaUploading}
                     onChange={(value) => handleChange('bannerUrl', value)}
-                    onUpload={(file) => handleMediaUpload('logo', file)}
                     onClear={() => handleClearMedia('logo')}
+                    onOpenUpload={() => handleOpenMediaUpload('banner')}
                   />
                 </SectionCard>
 
@@ -350,28 +331,25 @@ export default function AccountEditView(props) {
                       </span>
                     </div>
 
-                    <span className="flex h-6 w-11 border border-black/15 bg-white p-px" aria-hidden="true">
+                    <span
+                      className="flex h-6 w-11 rounded-full border border-black/15 bg-white p-px"
+                      aria-hidden="true"
+                    >
                       <span
                         className={cn(
-                          'h-full w-5 bg-black transition-transform',
-                          form.isPrivate ? 'translate-x-5' : 'translate-x-0'
+                          'h-full w-5 rounded-full bg-black transition-transform',
+                          form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0'
                         )}
                       />
                     </span>
                   </button>
                 </SectionCard>
-
-                {isAnyMediaUploading ? (
-                  <div className="border border-black/15 bg-white px-4 py-3 text-xs text-black/70">
-                    Media upload is in progress. Save is available right after upload completes.
-                  </div>
-                ) : null}
               </form>
             ) : (
               <div className="flex flex-col">
                 {!canUsePasswordSecurity ? (
                   <SectionCard title="Enable Password Sign-In">
-                    <div className="bg-black/5 p-2 text-sm leading-6 text-black/70">
+                    <div className="rounded-[14px] bg-black/5 p-3 text-sm leading-6 text-black/50">
                       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
                     </div>
                   </SectionCard>
@@ -528,7 +506,7 @@ export default function AccountEditView(props) {
                     tone="danger"
                     onClick={handleDeleteAccount}
                     disabled={deleteFlow.isSubmitting}
-                    className="w-full"
+                    className="w-full rounded-[14px]"
                   >
                     {deleteFlow.isSubmitting ? 'Deleting' : 'Delete Account'}
                   </ActionButton>

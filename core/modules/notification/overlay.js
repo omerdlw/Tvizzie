@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 
 import { DURATION, EASING } from '@/core/constants';
+import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
 import { cn } from '@/core/utils';
 
 import { NOTIFICATION_CONFIG } from './config';
@@ -14,6 +15,7 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
   };
 
   const dismissible = config.dismissible;
+  const message = normalizeFeedbackText(notification.description || notification.message);
 
   return (
     <motion.div
@@ -36,13 +38,13 @@ export function NotificationOverlay({ notification, onDismiss, type }) {
       }}
       transition={EASING.SPRING_CONFIG.NOTIFICATION}
       className={cn(
-        'pointer-events-auto w-full max-w-md min-w-xs border-[1.5px] border-black/10',
+        'pointer-events-auto w-full max-w-md min-w-xs rounded-[20px] border-[1.5px] border-black/10',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}
     >
       <div className="flex flex-col space-y-2 p-4">
-        <p className="text-sm font-semibold">{notification.description || notification.message}</p>
+        <p className="text-sm font-semibold">{message}</p>
         {notification.actions && (
           <div className="flex gap-2">
             {notification.actions.map((action, index) => (

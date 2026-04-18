@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { resolveAuthVerificationHeader } from '@/core/modules/modal/header';
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
+import { NAV_ACTION_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -65,7 +67,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
     const dynamicDescription = meta?.isExpired
       ? 'Süre doldu'
       : meta?.isSending && !meta?.codeExpiryLabel
-        ? 'Sending verification code...'
+        ? 'Sending verification code'
         : meta?.codeExpiryLabel
           ? `Code expires at ${meta.codeExpiryLabel}`
           : defaultDescription;
@@ -76,21 +78,20 @@ export default function AuthVerificationSurface({ close, data, header }) {
     };
   }, [data, header?.description, header?.title, meta?.codeExpiryLabel, meta?.isExpired, meta?.isSending]);
 
-  const headerIcon =
-    meta?.isSending && !meta?.hasChallenge ? (
-      <Spinner size={24} className={'text-[#0f766e]'} />
-    ) : (
-      'solar:shield-keyhole-bold'
-    );
+  const headerIcon = meta?.isSending && !meta?.hasChallenge ? <Spinner size={24} /> : 'solar:shield-keyhole-bold';
 
   return (
-    <section
+    <motion.section
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-verification-surface-title"
-      className={`relative flex flex-col gap-3`}
+      className="relative flex flex-col gap-3"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={NAV_SURFACE_SPRING}
     >
-      <button
+      <motion.button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
@@ -98,9 +99,12 @@ export default function AuthVerificationSurface({ close, data, header }) {
         }}
         className={`center bg-primary absolute top-0 right-0 z-10 cursor-pointer rounded-full border border-black/10 p-1 transition-all`}
         aria-label="Close verification"
+        whileTap={{ scale: 0.94 }}
+        whileHover={{ scale: 1.03 }}
+        transition={NAV_ACTION_SPRING}
       >
         <Icon icon="material-symbols:close-rounded" size={20} />
-      </button>
+      </motion.button>
       <div className="relative flex h-auto w-full items-center space-x-2 pr-8">
         <div className="center relative">
           <BadgeIcon icon={headerIcon} />
@@ -123,6 +127,6 @@ export default function AuthVerificationSurface({ close, data, header }) {
           className="space-y-3 pt-0.5"
         />
       ) : null}
-    </section>
+    </motion.section>
   );
 }

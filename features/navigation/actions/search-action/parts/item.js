@@ -4,17 +4,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import {
+  applyAvatarFallback,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+  resolveImageLoading,
+  resolveImageQuality,
+} from '@/core/utils';
 import Icon from '@/ui/icon';
 
 import { SEARCH_STYLES, SEARCH_TYPES } from '../constants';
-import { getDetailPath, getImagePath, getItemDirector, getItemStatus, getItemTitle, getItemYear } from '../utils';
+import { getDetailPath, getImagePath, getItemDirector, getItemTitle, getItemYear } from '@/features/search/utils';
 
 export default function SearchResultItem({ item, imageErrors, onImageError, onSelect }) {
   const title = getItemTitle(item);
   const year = getItemYear(item);
   const director = getItemDirector(item);
-  const status = getItemStatus(item);
   const imagePath = getImagePath(item);
   const itemKey = `${item.media_type}-${item.id}`;
   const hasImageError = imageErrors[itemKey];
@@ -30,6 +35,9 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             className="h-full w-full object-cover transition-transform duration-(--motion-duration-moderate)"
             src={userAvatarSrc}
             alt={title}
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             onError={(event) => applyAvatarFallback(event, userAvatarFallbackSrc)}
           />
         ) : imagePath && !hasImageError ? (
@@ -40,7 +48,9 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             onError={() => onImageError(itemKey)}
             src={`${TMDB_IMG}/w92${imagePath}`}
             sizes="64px"
-            quality={74}
+            loading={resolveImageLoading()}
+            quality={resolveImageQuality('grid')}
+            decoding="async"
           />
         ) : (
           <div className={`center h-full w-full text-[#7f1d1d]`}>
@@ -59,11 +69,6 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
           {director && (
             <div className={SEARCH_STYLES.metaBadge}>
               <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-black/70">{director}</span>
-            </div>
-          )}
-          {status && (
-            <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-black/70">{status}</span>
             </div>
           )}
         </div>

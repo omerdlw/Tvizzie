@@ -113,7 +113,7 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
-export function useNavigationLayout({ isHovered, navigationItems, activeItem } = {}) {
+export function useNavigationLayout({ isHovered, isCompact = false, navigationItems, activeItem } = {}) {
   const pathname = usePathname();
   const { expanded } = useNavigationContext();
 
@@ -143,7 +143,8 @@ export function useNavigationLayout({ isHovered, navigationItems, activeItem } =
       };
     }
 
-    const visibleCount = pathname === '/' || isHovered || shouldShowOverlayStack ? MAX_VISIBLE_STACKED_CARDS : 1;
+    const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact);
+    const visibleCount = shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
 
     return {
       displayItems: removeAncestorDuplicates(removeInactiveLoadingItems(reorderedItems, activeItem)).slice(
@@ -152,7 +153,7 @@ export function useNavigationLayout({ isHovered, navigationItems, activeItem } =
       ),
       displayActiveIndex: reorderedItems.length > 0 ? 0 : -1,
     };
-  }, [pathname, expanded, isHovered, navigationItems, activeItem]);
+  }, [pathname, expanded, isHovered, isCompact, navigationItems, activeItem]);
 
   return {
     displayItems,

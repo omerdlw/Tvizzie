@@ -1,10 +1,6 @@
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { isReservedAccountSegment } from '@/features/account/utils';
+import { validateUsername } from '@/core/utils/account-username';
 import { ensureAccountLifecycle } from '@/core/auth/servers/account/account-lifecycle.server';
-
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 24;
-const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -12,24 +8,6 @@ function normalizeValue(value) {
 
 function normalizeEmail(value) {
   return normalizeValue(value).toLowerCase();
-}
-
-function validateUsername(value) {
-  const username = normalizeValue(value).toLowerCase();
-
-  if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
-    throw new Error(`Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters long`);
-  }
-
-  if (!USERNAME_PATTERN.test(username)) {
-    throw new Error('Username can only contain lowercase letters, numbers, and hyphens');
-  }
-
-  if (isReservedAccountSegment(username)) {
-    throw new Error('This username is reserved');
-  }
-
-  return username;
 }
 
 async function claimUsernameForProfile({
@@ -57,7 +35,7 @@ async function claimUsernameForProfile({
   }
 }
 
-export async function ensurePasswordAccountProfile({ avatarUrl = null, displayName, email, userId, username }) {
+export async function ensurePasswordAccountRecord({ avatarUrl = null, displayName, email, userId, username }) {
   const normalizedUserId = normalizeValue(userId);
   const normalizedEmail = normalizeEmail(email);
   const normalizedUsername = validateUsername(username);

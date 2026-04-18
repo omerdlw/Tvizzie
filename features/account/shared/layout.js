@@ -143,7 +143,13 @@ function AccountReveal({
   }
 
   return (
-    <motion.div className={className} initial={initial} animate={target} transition={transition} style={style}>
+    <motion.div
+      className={className}
+      initial={initial}
+      animate={target}
+      transition={transition}
+      style={style}
+    >
       {children}
     </motion.div>
   );
@@ -215,7 +221,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
   return (
     <div className={cn('bg-transparent', className)}>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-8 sm:py-4">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 sm:justify-center sm:px-8 sm:py-4">
           {SECTION_ITEMS.map((item, index) => {
             const isActive = item.key === activeKey;
 
@@ -233,7 +239,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 shrink-0 items-center rounded-[14px] border px-4 text-[11px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:px-4 sm:text-xs',
+                    'inline-flex h-8 shrink-0 items-center rounded-[14px] border px-3.5 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:px-4 sm:text-xs',
                     isActive
                       ? 'border-black bg-black text-white'
                       : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'
@@ -296,7 +302,7 @@ export function AccountPageShell({
   return (
     <>
       {registry}
-      <AccountProfileLayout
+      <ProfileLayout
         activeSection={activeSection}
         profile={profile}
         likesCount={likesCount}
@@ -310,12 +316,12 @@ export function AccountPageShell({
         onReadMore={onReadMore}
       >
         {children}
-      </AccountProfileLayout>
+      </ProfileLayout>
     </>
   );
 }
 
-export default function AccountProfileLayout({
+export default function ProfileLayout({
   activeSection = 'overview',
   children,
   followerCount = 0,

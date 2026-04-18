@@ -2,7 +2,7 @@ import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import CollectionActions from '@/features/movie/collection-actions';
-import { MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
+import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import Sidebar from '@/features/movie/sidebar';
 import MediaReviews from '@/features/reviews';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
@@ -10,9 +10,9 @@ import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import Registry from '../registry';
 
 const REVIEW_PAGE_REVEAL_TIMING = Object.freeze({
-  sidebar: 0.08,
-  title: 0.14,
-  reviews: 0.2,
+  sidebar: 0.04,
+  title: 0.1,
+  reviews: 0.16,
 });
 
 export default function View({ computed, movie, reviewState, setReviewState }) {
@@ -41,14 +41,18 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
 
             <div className="flex w-full min-w-0 flex-col gap-6">
               <MovieHeroReveal delay={REVIEW_PAGE_REVEAL_TIMING.title}>
-                <TextAnimate
-                  animation="slideUp"
-                  by="word"
-                  startOnView={false}
-                  className="font-zuume text-5xl leading-none font-bold uppercase sm:text-6xl lg:text-7xl"
-                >
-                  {movie.title}
-                </TextAnimate>
+                <MovieClipReveal animateOnView={false} delay={0.08} className="min-w-0">
+                  <TextAnimate
+                    animation="cinematicUp"
+                    by="word"
+                    delay={REVIEW_PAGE_REVEAL_TIMING.title}
+                    duration={0.68}
+                    startOnView={false}
+                    className="font-zuume text-5xl leading-none font-bold uppercase sm:text-6xl lg:text-7xl"
+                  >
+                    {movie.title}
+                  </TextAnimate>
+                </MovieClipReveal>
               </MovieHeroReveal>
 
               <MovieSectionReveal delay={REVIEW_PAGE_REVEAL_TIMING.reviews}>

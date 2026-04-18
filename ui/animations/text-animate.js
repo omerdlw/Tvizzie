@@ -3,11 +3,12 @@
 import { useMemo, useRef } from 'react';
 
 import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
 
 const STAGGER_BY = Object.freeze({
   character: 0.02,
-  word: 0.05,
+  word: 0.042,
   text: 0,
 });
 
@@ -145,6 +146,20 @@ export function TextAnimate({
         x: 0,
         opacity: 1,
         transition: { duration: resolvedDuration },
+      },
+    },
+    cinematicUp: {
+      hidden: shouldReduceMotion
+        ? { opacity: 0 }
+        : { opacity: 0, y: 18, scale: 0.965, filter: 'blur(8px)' },
+      show: {
+        opacity: 1,
+        ...(shouldReduceMotion ? {} : { y: 0, scale: 1, filter: 'blur(0px)' }),
+        transition: {
+          duration: resolvedDuration,
+          ease: EASING.EMPHASIZED,
+        },
+        transitionEnd: shouldReduceMotion ? undefined : { filter: 'none' },
       },
     },
     scaleUp: {

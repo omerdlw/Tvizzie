@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
-import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl } from '@/core/utils';
+import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -189,7 +189,8 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           alt={alt}
           fill
           sizes={isAccountVariant ? '(max-width: 640px) 64px, 72px' : '56px'}
-          quality={isAccountVariant ? 78 : 82}
+          quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
+          decoding="async"
           unoptimized={!canUseNextImageOptimization(src)}
         />
       ) : (

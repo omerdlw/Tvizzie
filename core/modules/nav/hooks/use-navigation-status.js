@@ -8,7 +8,6 @@ import { Wifi, WifiOff } from 'lucide-react';
 
 import { SEMANTIC_SURFACE_CLASSES } from '@/core/constants';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
-import { getUserAvatarUrl } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -202,13 +201,6 @@ function ErrorActions({ onRetry, onRefresh }) {
   );
 }
 
-function getDefaultAvatar(user, fallbackSeed = 'account') {
-  return getUserAvatarUrl({
-    ...user,
-    id: user?.id || fallbackSeed,
-  });
-}
-
 function createOverlayStatus({
   type,
   title,
@@ -260,7 +252,23 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
 }
 
 function createProgressIcon() {
-  return <Spinner size={18} className={'text-[#0f766e]'} />;
+  return <Spinner size={24} />;
+}
+
+function createSuccessIcon() {
+  return 'material-symbols:check-rounded';
+}
+
+function resolveFeedbackIcon({ phase, icon = null }) {
+  if (phase === 'start') {
+    return createProgressIcon();
+  }
+
+  if (phase === 'success') {
+    return createSuccessIcon();
+  }
+
+  return icon;
 }
 
 export function useNavigationStatus() {
@@ -514,7 +522,7 @@ export function useNavigationStatus() {
           type,
           title: user?.name || user?.email || 'Account',
           description: isAccountDelete ? 'Account deleted' : 'Signed out',
-          icon: getDefaultAvatar(user, 'account'),
+          icon: createSuccessIcon(),
           style: getStatusTheme(type),
         })
       );
@@ -530,7 +538,7 @@ export function useNavigationStatus() {
             type,
             title: user?.name || user?.email || 'Account',
             description: 'Signed out',
-            icon: getDefaultAvatar(user, 'account'),
+            icon: createSuccessIcon(),
             style: getStatusTheme(type),
           }),
           AUTH_STATUS_CLEAR_DURATION
@@ -575,7 +583,7 @@ export function useNavigationStatus() {
         type: 'LOGIN',
         title: user.name || user.email || 'User',
         description: 'Signed in',
-        icon: getDefaultAvatar(user, 'default'),
+        icon: createSuccessIcon(),
         style: getStatusTheme('LOGIN'),
       });
 
@@ -600,7 +608,7 @@ export function useNavigationStatus() {
         type: 'SIGNUP',
         title: user.name || user.email || 'Account',
         description: 'Setting up account',
-        icon: getDefaultAvatar(user, 'default'),
+        icon: createSuccessIcon(),
         style: getStatusTheme('SIGNUP'),
       });
 
@@ -652,7 +660,10 @@ export function useNavigationStatus() {
           priority: eventData?.priority ?? STATUS_PRIORITY.LOGIN,
           title: eventData?.title || 'Account',
           description: eventData?.description || '',
-          icon: eventData?.icon || (phase === 'start' ? createProgressIcon() : 'solar:check-circle-bold'),
+          icon: resolveFeedbackIcon({
+            phase,
+            icon: eventData?.icon || null,
+          }),
           style: eventData?.style || getStatusTheme(eventData?.themeType || 'LOGIN'),
           isOverlay: eventData?.isOverlay !== false,
         })

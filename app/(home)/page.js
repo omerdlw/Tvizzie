@@ -20,26 +20,13 @@ export default async function Page() {
 
   return (
     <Client
-      homeData={{
+      data={{
         heroItems,
-        discover: {
-          initialGenres,
-          initialHasMore,
-          initialItems: initialDiscoverItems,
-          initialPage: initialDiscoverPage,
-        },
-        popularRows: [
-          {
-            id: 'today-popular-movies',
-            items: [...heroItems],
-            title: "Today's Popular Movies",
-          },
-          {
-            id: 'weekly-popular-movies',
-            items: weeklyPopularMovies,
-            title: "This Week's Popular Movies",
-          },
-        ].filter((row) => row.items.length > 0),
+        weeklyPopularMovies,
+        initialDiscoverItems,
+        initialDiscoverPage,
+        initialHasMore,
+        initialGenres,
       }}
     />
   );

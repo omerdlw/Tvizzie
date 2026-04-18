@@ -84,16 +84,12 @@ const STATIC_CACHE_HEADERS = [
 
 const NEXT_CONFIG = {
   compress: true,
+  output: 'standalone',
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   onDemandEntries: {
     maxInactiveAge: 15 * 1000,
     pagesBufferLength: 2,
-  },
-  experimental: {
-    preloadEntriesOnStart: false,
-    webpackMemoryOptimizations: true,
-    serverSourceMaps: false,
   },
   logging: {
     incomingRequests: {
@@ -106,12 +102,9 @@ const NEXT_CONFIG = {
       ],
     },
   },
-  env: {
-    BUILD_DATE: new Date().toISOString().split('T')[0],
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 7,
+    minimumCacheTTL: 60 * 60 * 24 * 365,
     qualities: [70, 72, 74, 75, 78, 82, 88, 90],
     deviceSizes: [480, 640, 768, 1024, 1280, 1536, 1920, 2048, 2560, 3200],
     imageSizes: [48, 56, 64, 80, 88, 92, 144, 160, 185, 208, 240, 288, 342, 400, 500, 780],
@@ -132,6 +125,7 @@ const NEXT_CONFIG = {
         protocol: 'https',
         hostname: 'm.media-amazon.com',
       },
+      { protocol: 'https', hostname: 'i.pinimg.com' },
       {
         protocol: 'https',
         hostname: 'api.dicebear.com',
@@ -157,6 +151,14 @@ const NEXT_CONFIG = {
         headers: STATIC_CACHE_HEADERS,
       },
       {
+        source: '/icon.svg',
+        headers: STATIC_CACHE_HEADERS,
+      },
+      {
+        source: '/apple-icon.svg',
+        headers: STATIC_CACHE_HEADERS,
+      },
+      {
         source: '/images/:path*',
         headers: STATIC_CACHE_HEADERS,
       },
@@ -172,6 +174,56 @@ const NEXT_CONFIG = {
       {
         source: '/auth/oauth-callback',
         destination: '/callback',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/likes/page/1',
+        destination: '/account/:username/likes',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/likes/page/:page',
+        destination: '/account/:username/likes?page=:page',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/likes/lists/page/1',
+        destination: '/account/:username/likes?segment=lists',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/likes/lists/page/:page',
+        destination: '/account/:username/likes?segment=lists&page=:page',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/lists/page/1',
+        destination: '/account/:username/lists',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/lists/page/:page',
+        destination: '/account/:username/lists?page=:page',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/watched/page/1',
+        destination: '/account/:username/watched',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/watched/page/:page',
+        destination: '/account/:username/watched?page=:page',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/watchlist/page/1',
+        destination: '/account/:username/watchlist',
+        permanent: true,
+      },
+      {
+        source: '/account/:username/watchlist/page/:page',
+        destination: '/account/:username/watchlist?page=:page',
         permanent: true,
       },
     ];

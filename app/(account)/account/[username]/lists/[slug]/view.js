@@ -1,4 +1,9 @@
+'use client';
+
+import { useState } from 'react';
+
 import AccountListDetailFeed from '@/features/account/feeds/list-detail';
+import SearchAction from '@/features/navigation/actions/search-action';
 import { noopAccountRegistryHandler } from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';
 import { buildAccountRegistryState } from '../../../shared/registry-state';
@@ -36,6 +41,7 @@ export function Registry({
   unfollowConfirmation = null,
   username,
 }) {
+  const [isSearching, setIsSearching] = useState(false);
   const canLikeList = Boolean(list);
   const navCountsDescription = list
     ? `${listItemsCount} items · ${list?.likesCount || 0} likes · ${list?.reviewsCount || 0} reviews`
@@ -64,8 +70,21 @@ export function Registry({
         username,
       },
       {
+        extraNavActions: [
+          {
+            key: 'search-overlay',
+            tooltip: 'Search',
+            icon: isSearching ? 'material-symbols:close-rounded' : 'solar:magnifer-linear',
+            order: 30,
+            onClick: (event) => {
+              event.stopPropagation();
+              setIsSearching((value) => !value);
+            },
+          },
+        ],
         listDeleteConfirmation,
         navDescription: navCountsDescription,
+        navActionOverride: !reviewState?.isActive && isSearching ? <SearchAction /> : null,
         navRegistrySource: registrySource,
         isLiked: canLikeList ? isLiked : false,
         isLikeLoading: canLikeList ? isLikeLoading : false,
@@ -74,6 +93,7 @@ export function Registry({
         onToggleLike: canLikeList ? handleToggleLike : null,
         reviewState,
         showProfileFollowAction,
+        showToolbarFollowActionWithOverride: !isSearching,
       }
     )
   );

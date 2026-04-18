@@ -23,7 +23,7 @@ import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
-const EMPTY_STATE_CLASS = 'border border-black/10 p-4 text-sm text-black/70 backdrop-blur-sm';
+const EMPTY_STATE_CLASS = 'bg-primary rounded-[10px] border border-black/5 p-3 text-black/50';
 
 function resolveMediaKey(item) {
   if (item?.mediaKey) {
@@ -246,7 +246,7 @@ export default function AccountReviewsFeed({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="border border-black/20 bg-white/65 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase backdrop-blur-sm transition"
+            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase transition"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

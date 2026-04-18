@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/core/utils';
@@ -22,10 +22,70 @@ export default function SegmentedControl({
   value,
   renderSuffix,
 }) {
-  const instanceId = useId();
   const reduceMotion = useReducedMotion();
+  const wrapperRef = useRef(null);
+  const buttonRefs = useRef(new Map());
+  const [indicatorFrame, setIndicatorFrame] = useState({ x: 0, y: 0, width: 0, height: 0, ready: false });
+  const resolvedItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+  const activeItemKey = useMemo(() => {
+    if (!resolvedItems.length) {
+      return null;
+    }
 
-  if (!Array.isArray(items) || items.length === 0) {
+    const fallbackItem = resolvedItems[0];
+    const activeKey = value ?? getKey(fallbackItem);
+
+    return getKey(resolvedItems.find((item) => getKey(item) === activeKey) || fallbackItem);
+  }, [getKey, resolvedItems, value]);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const activeButton = buttonRefs.current.get(activeItemKey);
+
+    if (!wrapper || !activeButton) {
+      setIndicatorFrame((current) => ({ ...current, ready: false }));
+      return undefined;
+    }
+
+    const updateIndicatorFrame = () => {
+      const nextX = activeButton.offsetLeft;
+      const nextY = activeButton.offsetTop;
+      const nextWidth = activeButton.offsetWidth;
+      const nextHeight = activeButton.offsetHeight;
+
+      setIndicatorFrame((current) => {
+        if (
+          current.x === nextX &&
+          current.y === nextY &&
+          current.width === nextWidth &&
+          current.height === nextHeight &&
+          current.ready
+        ) {
+          return current;
+        }
+
+        return {
+          x: nextX,
+          y: nextY,
+          width: nextWidth,
+          height: nextHeight,
+          ready: true,
+        };
+      });
+    };
+
+    updateIndicatorFrame();
+
+    const resizeObserver = new ResizeObserver(updateIndicatorFrame);
+    resizeObserver.observe(wrapper);
+    resizeObserver.observe(activeButton);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [activeItemKey, resolvedItems]);
+
+  if (!resolvedItems.length) {
     return null;
   }
 
@@ -33,43 +93,63 @@ export default function SegmentedControl({
     <div className="flex items-center">
       <div className={cn('hide-scrollbar w-full overflow-x-auto', classNames.track)}>
         <div
+          ref={wrapperRef}
           className={cn(
             'relative flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
             'p-1',
             classNames.wrapper
           )}
         >
-          {items.map((item) => {
+          <motion.span
+            aria-hidden="true"
+            className={cn('pointer-events-none absolute left-0 top-0 rounded-[10px] bg-primary', classNames.indicator)}
+            initial={false}
+            animate={
+              indicatorFrame.ready
+                ? {
+                    x: indicatorFrame.x,
+                    y: indicatorFrame.y,
+                    width: indicatorFrame.width,
+                    height: indicatorFrame.height,
+                    opacity: 1,
+                  }
+                : {
+                    opacity: 0,
+                  }
+            }
+            transition={
+              reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+            }
+          />
+
+          {resolvedItems.map((item) => {
             const itemKey = getKey(item);
-            const isActive = value === itemKey;
+            const isActive = activeItemKey === itemKey;
 
             return (
-              <motion.button
+              <button
                 key={itemKey}
                 type="button"
+                ref={(node) => {
+                  if (node) {
+                    buttonRefs.current.set(itemKey, node);
+                    return;
+                  }
+
+                  buttonRefs.current.delete(itemKey);
+                }}
                 onClick={() => onChange?.(itemKey)}
-                whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                 className={cn(
                   'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
                   isActive ? classNames.active || 'text-black' : classNames.inactive || 'text-black/70',
                   classNames.button
                 )}
               >
-                {isActive ? (
-                  <motion.span
-                    layoutId={`${instanceId}-segmented-active-indicator`}
-                    layout="position"
-                    className={cn('absolute inset-0 rounded-[10px] bg-primary', classNames.indicator)}
-                    transition={
-                      reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-                    }
-                  />
-                ) : null}
                 <span className="relative z-10 inline-flex items-center gap-1">
                   {getLabel(item)}
                   {typeof renderSuffix === 'function' ? renderSuffix(item) : null}
                 </span>
-              </motion.button>
+              </button>
             );
           })}
         </div>

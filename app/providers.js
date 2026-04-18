@@ -8,6 +8,7 @@ import { MotionConfig, useReducedMotion } from 'framer-motion';
 
 import { isRegistryDebugPanelEnabled, isRegistryHistoryCaptureEnabled } from '@/config/project.config';
 import { InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary';
+import { MotionRuntimeProvider } from '@/features/motion-runtime';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { SmoothScrollProvider } from '@/features/layout/smooth-scroll';
 import { pipe } from '@/core/utils/pipe';
@@ -71,12 +72,14 @@ export const AppProviders = ({ children }) => {
 
   return (
     <MotionConfig reducedMotion={shouldReduceMotion || prefersReducedMotion ? 'always' : 'never'}>
-      <CoreShellProviders>
-        {isHydrated && showRegistryDebugPanel ? <RegistryDebugPanel /> : null}
-        <BackgroundOverlay />
-        <LoadingOverlay />
-        <GlobalError>{contentWithEnhancements}</GlobalError>
-      </CoreShellProviders>
+      <MotionRuntimeProvider>
+        <CoreShellProviders>
+          {isHydrated && showRegistryDebugPanel ? <RegistryDebugPanel /> : null}
+          <BackgroundOverlay />
+          <LoadingOverlay />
+          <GlobalError>{contentWithEnhancements}</GlobalError>
+        </CoreShellProviders>
+      </MotionRuntimeProvider>
     </MotionConfig>
   );
 };

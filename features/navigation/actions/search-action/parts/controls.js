@@ -1,14 +1,16 @@
 'use client';
 
+import { useState } from 'react';
+
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
+import { NAV_ACTION_SPRING, NAV_CONTENT_TRANSITION, NAV_SEARCH_REVEAL_TRANSITION } from '@/core/modules/nav/motion';
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '../constants';
 import { navActionClass } from '../utils';
-import { useState } from 'react';
 
 export default function SearchActionControls({
   loading = false,
@@ -29,7 +31,7 @@ export default function SearchActionControls({
         onFocus={() => setIsActive(true)}
         onBlur={() => setIsActive(false)}
         classNames={{
-          input: 'w-full placeholder:text-black/50 outline-none',
+          input: 'w-full text-base placeholder:text-black/50 outline-none md:text-sm',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,
@@ -37,6 +39,7 @@ export default function SearchActionControls({
           }),
           leftIcon: 'mr-2 center shrink-0',
         }}
+        enterKeyHint="search"
         leftIcon={
           <Icon
             className={`${query ? 'text-black' : 'text-black/50'} transition-colors duration-(--motion-duration-normal)`}
@@ -45,6 +48,7 @@ export default function SearchActionControls({
           />
         }
         placeholder="Search movies, people or users"
+        type="text"
         value={query}
         spellCheck={false}
         onChange={(event) => onQueryChange?.(event.target.value)}
@@ -54,9 +58,10 @@ export default function SearchActionControls({
               <motion.div
                 key="loading"
                 className="center shrink-0"
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={NAV_ACTION_SPRING}
               >
                 <Icon icon="line-md:loading-loop" size={16} />
               </motion.div>
@@ -65,9 +70,10 @@ export default function SearchActionControls({
                 key="clear"
                 type="button"
                 className="center text-error shrink-0 cursor-pointer"
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={NAV_ACTION_SPRING}
                 onClick={onClear}
               >
                 <Icon icon="material-symbols:close-rounded" size={16} />
@@ -81,16 +87,17 @@ export default function SearchActionControls({
         {shouldShowTabs ? (
           <motion.div
             className="mt-2 overflow-hidden"
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={NAV_SEARCH_REVEAL_TRANSITION}
           >
-            <div className={SEARCH_STYLES.tabList}>
+            <motion.div className={SEARCH_STYLES.tabList} layout="position" transition={NAV_CONTENT_TRANSITION}>
               {SEARCH_TAB_ITEMS.map((item) => {
                 const isActive = searchType === item.key;
 
                 return (
-                  <button
+                  <motion.button
                     key={item.key}
                     type="button"
                     className={cn(
@@ -102,12 +109,14 @@ export default function SearchActionControls({
                       'group'
                     )}
                     onClick={() => onSearchTypeChange?.(item.key)}
+                    whileTap={{ scale: 0.98 }}
+                    transition={NAV_ACTION_SPRING}
                   >
                     <span className="relative">{item.label}</span>
-                  </button>
+                  </motion.button>
                 );
               })}
-            </div>
+            </motion.div>
           </motion.div>
         ) : null}
       </AnimatePresence>

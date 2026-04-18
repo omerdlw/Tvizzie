@@ -143,7 +143,6 @@ export function useMediaReviews({
 
     try {
       await deleteMediaReview({ media, userId: currentUserId });
-      toast.success('Your review was deleted');
       setNavConfirmation(null);
       return true;
     } catch (error) {

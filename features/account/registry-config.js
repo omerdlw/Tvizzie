@@ -10,6 +10,7 @@ import AccountAction from '@/features/navigation/actions/account-action';
 import ReviewAction from '@/features/navigation/actions/review-action';
 import Icon from '@/ui/icon';
 import { getUserAvatarUrl } from '@/core/utils';
+import { Spinner } from '@/ui/loadings/spinner';
 
 const ACCOUNT_LOADING_NAV_PRIORITY = 190;
 const ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS = 8000;
@@ -74,10 +75,13 @@ export function buildAccountEditState({
   authIsAuthenticated,
   avatarPreview,
   deleteConfirmation,
+  handleCancel,
   handleSignIn,
   handleSave,
   isGeneralAccountDirty,
   isLoading = false,
+  isMediaUploading = false,
+  mediaUploadFileName = '',
   isSaving,
   navRegistrySource,
   setActiveTab,
@@ -86,11 +90,40 @@ export function buildAccountEditState({
     isLoading,
     navRegistrySource,
   });
+  const editNavAction = !authIsAuthenticated ? (
+    <AccountAction isAuthenticated={false} onSignIn={handleSignIn} />
+  ) : isMediaUploading ? null : (
+    <AccountAction
+      mode="profile-edit"
+      activeEditTab={activeTab}
+      editTabs={[
+        {
+          key: 'general',
+          icon: 'solar:user-circle-bold',
+          label: 'General Info',
+        },
+        {
+          key: 'security',
+          icon: 'solar:shield-keyhole-bold',
+          label: 'Security',
+        },
+      ]}
+      onCancel={handleCancel}
+      onEditTabChange={setActiveTab}
+      onSave={handleSave}
+      isCancelDisabled={isSaving || isMediaUploading}
+      showCancelAction={activeTab === 'general' && isGeneralAccountDirty}
+      isSaveDisabled={isMediaUploading}
+      isSaveLoading={isSaving}
+      saveLabel="Save"
+      showSaveAction={activeTab === 'general' && isGeneralAccountDirty}
+    />
+  );
 
   return {
     loading: loadingState,
     nav: {
-      actions: authIsAuthenticated
+      actions: authIsAuthenticated && !isMediaUploading
         ? [
             {
               key: 'back-to-account',
@@ -105,12 +138,14 @@ export function buildAccountEditState({
           ]
         : [],
       confirmation: deleteConfirmation,
-      title: authIsAuthenticated ? 'Edit Account' : 'Account',
-      icon: avatarPreview,
+      title: authIsAuthenticated ? (isMediaUploading ? 'Media uploading' : 'Edit Account') : 'Account',
+      icon: isMediaUploading ? <Spinner size={22} /> : avatarPreview,
       description: isLoading
         ? null
         : authIsAuthenticated
-          ? activeTab === 'general'
+          ? isMediaUploading
+            ? mediaUploadFileName || 'Uploading from device'
+            : activeTab === 'general'
             ? 'Update your public account details'
             : 'Manage account security and providers'
           : 'Sign in to see your account',
@@ -120,31 +155,7 @@ export function buildAccountEditState({
             source: navRegistrySource,
           }
         : undefined,
-      action: !authIsAuthenticated ? (
-        <AccountAction isAuthenticated={false} onSignIn={handleSignIn} />
-      ) : (
-        <AccountAction
-          mode="profile-edit"
-          activeEditTab={activeTab}
-          editTabs={[
-            {
-              key: 'general',
-              icon: 'solar:user-circle-bold',
-              label: 'General Info',
-            },
-            {
-              key: 'security',
-              icon: 'solar:shield-keyhole-bold',
-              label: 'Security',
-            },
-          ]}
-          onEditTabChange={setActiveTab}
-          onSave={handleSave}
-          isSaveLoading={isSaving}
-          saveLabel="Save"
-          showSaveAction={activeTab === 'general' && isGeneralAccountDirty}
-        />
-      ),
+      action: editNavAction,
     },
   };
 }
@@ -152,6 +163,7 @@ export function buildAccountEditState({
 export function buildAccountPageState({
   authIsAuthenticated,
   authUser,
+  extraNavActions = [],
   followState,
   handleEditProfile,
   handleFollow,
@@ -175,6 +187,7 @@ export function buildAccountPageState({
   profile,
   resolveError,
   showProfileFollowAction = false,
+  showToolbarFollowActionWithOverride = true,
   unfollowConfirmation,
   username,
   onDeleteList,
@@ -197,7 +210,7 @@ export function buildAccountPageState({
     !hasNavActionOverride && (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction)
   );
   const shouldShowToolbarFollowAction = Boolean(
-    hasNavActionOverride && !isOwner && profile && typeof handleFollow === 'function'
+    showToolbarFollowActionWithOverride && hasNavActionOverride && !isOwner && profile && typeof handleFollow === 'function'
   );
   const shouldShowCurrentAccountAvatar = Boolean(authIsAuthenticated && authUser && profile && !isOwner);
   const shouldUseNavActionOverride = hasNavActionOverride;
@@ -238,6 +251,10 @@ export function buildAccountPageState({
         handleFollow();
       },
     });
+  }
+
+  if (Array.isArray(extraNavActions) && extraNavActions.length > 0) {
+    accountNavActions.push(...extraNavActions.filter(Boolean));
   }
 
   const loadingState = buildAccountLoadingState({

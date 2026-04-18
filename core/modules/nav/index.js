@@ -5,25 +5,32 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
-import { DURATION, EASING, Z_INDEX } from '@/core/constants';
+import { Z_INDEX } from '@/core/constants';
+import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useClickOutside } from '@/core/hooks';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
+import {
+  NAV_BACKDROP_REDUCED_TRANSITION,
+  NAV_BACKDROP_TRANSITION,
+  NAV_CONTAINER_SPRING,
+  NAV_DEFAULT_TRANSITION,
+} from './motion';
 
 // ─── Viewport-safe height calculation ───────────────────────────────────────
 
 const VIEWPORT_MARGIN = 24; // px from top of viewport
-
 function getViewportMaxHeight() {
   if (typeof window === 'undefined') return Infinity;
   return window.innerHeight - VIEWPORT_MARGIN;
 }
 
-function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight }) {
-  const nextCardHeight = Math.max(NAV_CARD_LAYOUT.baseHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
+function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact }) {
+  const minCardHeight = compact ? NAV_CARD_LAYOUT.compactHeight : NAV_CARD_LAYOUT.baseHeight;
+  const nextCardHeight = Math.max(minCardHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
   const rawHeight = nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
 
   // Clamp to viewport so nav never goes off-screen
@@ -55,6 +62,14 @@ function getItemKey(link, index) {
 
 function getIsItemActive(link, activeItem) {
   return (link.path || link.name) === (activeItem?.path || activeItem?.name);
+}
+
+function getNavCardWidth() {
+  if (typeof window === 'undefined') {
+    return 460;
+  }
+
+  return window.innerWidth >= 640 ? 460 : Math.max(window.innerWidth - 16, 0);
 }
 
 function getItemPosition(index) {
@@ -105,6 +120,7 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
 // ─── Main Nav component ──────────────────────────────────────────────────────
 
 export default function Nav() {
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const {
     activeItemHasAction,
     activeItem,
@@ -113,6 +129,7 @@ export default function Nav() {
     setIsHovered,
     setExpanded,
     activeIndex,
+    compact,
     expanded,
     pathname,
     navigate,
@@ -125,6 +142,7 @@ export default function Nav() {
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [containerHeight, setContainerHeight] = useState(NAV_CARD_LAYOUT.baseHeight);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [stackWidth, setStackWidth] = useState(() => getNavCardWidth());
   const [portalTarget, setPortalTarget] = useState(null);
 
   const navRef = useRef(null);
@@ -158,12 +176,13 @@ export default function Nav() {
         actionHeight: action,
         activeItemHasAction,
         cardContentHeight: content,
+        compact,
       });
 
       setContainerHeight(height);
       setNavHeight(height + 16);
     });
-  }, [activeItemHasAction, setNavHeight]);
+  }, [activeItemHasAction, compact, setNavHeight]);
 
   const handleActionHeightChange = useCallback(
     (h) => {
@@ -207,7 +226,7 @@ export default function Nav() {
   // the heights in the ref are still valid, we just need to recompute.)
   useIsomorphicLayoutEffect(() => {
     computeAndSetHeight();
-  }, [activeItemHasAction, computeAndSetHeight]);
+  }, [activeItemHasAction, compact, computeAndSetHeight]);
 
   // ─── Height reset on path change ──────────────────────────────────────────
 
@@ -230,11 +249,19 @@ export default function Nav() {
 
   const isOverlayActive = !!activeItem?.isOverlay;
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
+  const isCompactPreviewActive = compact && !expanded && isStackHovered;
 
   const handleOutsideDismiss = useCallback(() => {
     if (isOverlayActive) return;
+
+    if (isCompactPreviewActive) {
+      setIsStackHovered(false);
+      setIsHovered(false);
+      return;
+    }
+
     setExpanded(false);
-  }, [isOverlayActive, setExpanded]);
+  }, [isCompactPreviewActive, isOverlayActive, setExpanded, setIsHovered]);
 
   // ─── Keyboard navigation ──────────────────────────────────────────────────
 
@@ -281,11 +308,15 @@ export default function Nav() {
   useEffect(() => {
     if (expanded) {
       setIsStackHovered(false);
+      setIsHovered(false);
       setFocusedIndex(activeIndex);
       return;
     }
+
+    setIsStackHovered(false);
+    setIsHovered(false);
     setFocusedIndex(-1);
-  }, [expanded, activeIndex]);
+  }, [expanded, activeIndex, setIsHovered]);
 
   // ─── Click outside ────────────────────────────────────────────────────────
 
@@ -293,9 +324,26 @@ export default function Nav() {
 
   // ─── Portal setup ─────────────────────────────────────────────────────────
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (typeof document === 'undefined') return;
     setPortalTarget(document.body);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleResize = () => {
+      setStackWidth(getNavCardWidth());
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // ─── Fullscreen guard ─────────────────────────────────────────────────────
@@ -317,7 +365,7 @@ export default function Nav() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   const navContent = (
-    <MotionConfig transition={NAV_CARD_LAYOUT.transition}>
+    <MotionConfig transition={NAV_DEFAULT_TRANSITION}>
       {/* Backdrop */}
       <motion.div
         className="fixed inset-0 cursor-pointer"
@@ -325,12 +373,9 @@ export default function Nav() {
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
-        initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+        initial={initialPageAnimationsEnabled ? { opacity: 0, backdropFilter: 'blur(0px)' } : false}
         animate={getBackdropAnimation(isBackdropVisible, !!reduceMotion)}
-        transition={{
-          ease: EASING.EASE_OUT,
-          duration: reduceMotion ? DURATION.QUICK : DURATION.FAST,
-        }}
+        transition={reduceMotion ? NAV_BACKDROP_REDUCED_TRANSITION : NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
       >
         <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-white via-white/70 to-transparent" />
@@ -341,11 +386,7 @@ export default function Nav() {
         <motion.div
           style={{ position: 'relative' }}
           animate={{ height: containerHeight }}
-          transition={
-            reduceMotion
-              ? { duration: 0.12, ease: 'easeOut' }
-              : { type: 'spring', stiffness: 520, damping: 42, mass: 0.78 }
-          }
+          transition={reduceMotion ? { duration: 0.12, ease: 'easeOut' } : NAV_CONTAINER_SPRING}
         >
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {
@@ -356,22 +397,40 @@ export default function Nav() {
               const handleMouseEnter = () => {
                 if (expanded) setFocusedIndex(index);
                 if (!isTop) return;
+
+                if (compact && !expanded) {
+                  return;
+                }
+
                 setIsStackHovered(true);
-                if (pathname !== '/') setIsHovered(true);
+                if (pathname !== '/' || compact) setIsHovered(true);
               };
 
               const handleMouseLeave = () => {
                 if (expanded) setFocusedIndex(-1);
                 if (!isTop) return;
+
+                if (compact && !expanded) return;
+
                 setIsStackHovered(false);
-                if (pathname !== '/') setIsHovered(false);
+                if (pathname !== '/' || compact) setIsHovered(false);
               };
 
               const handleClick = () => {
                 if (link.type === 'COUNTDOWN' || link.isOverlay) return;
 
                 if (!expanded) {
-                  if (isTop) setExpanded(true);
+                  if (isTop) {
+                    if (compact && !isCompactPreviewActive) {
+                      setIsStackHovered(true);
+                      setIsHovered(true);
+                      return;
+                    }
+
+                    setIsHovered(false);
+                    setIsStackHovered(false);
+                    setExpanded(true);
+                  }
                   return;
                 }
 
@@ -382,11 +441,14 @@ export default function Nav() {
                 <Item
                   key={getItemKey(link, index)}
                   link={link}
+                  initialPageAnimationsEnabled={initialPageAnimationsEnabled}
                   expanded={expanded}
+                  compact={compact && isTop && !isCompactPreviewActive}
                   position={position}
                   isTop={isTop}
                   isActive={isActive}
                   isStackHovered={isStackHovered}
+                  stackWidth={stackWidth}
                   totalItems={navigationItems.length}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}

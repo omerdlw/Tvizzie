@@ -47,7 +47,6 @@ export default function ListEditorModal({ close, data, header }) {
           userId: userId,
         });
 
-        toast.success(`"${updatedList.title}" was updated`);
         if (typeof onSuccess === 'function') onSuccess(updatedList);
       } else {
         const listData = {
@@ -57,7 +56,6 @@ export default function ListEditorModal({ close, data, header }) {
         };
         const nextList = await createUserList(listData);
 
-        toast.success(`"${nextList.title}" was created`);
         if (typeof onSuccess === 'function') onSuccess(nextList);
       }
       close();

@@ -91,6 +91,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                         alt={user?.displayName || username}
                         className="size-full object-cover"
                         loading="lazy"
+                        decoding="async"
                         onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
                       />
                     </div>

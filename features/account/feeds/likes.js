@@ -27,7 +27,7 @@ import AccountPaginatedListGrid from '@/features/account/lists/grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/features/account/utils';
 import { AccountListSortBar, AccountMediaFilterBar } from '@/features/account/shared/content-filters';
 import AccountSectionLayout, { AccountSectionState } from '@/features/account/shared/section-wrapper';
-import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountReviewsFeed from './reviews';
@@ -49,7 +49,7 @@ function ReorderableListItem({ item, renderEditAction }) {
 
   return (
     <Reorder.Item as="div" value={item} dragListener={false} dragControls={controls} className="relative w-full">
-      <div className="flex w-full items-center gap-2 border border-black/15 bg-white/40 px-4 py-3 backdrop-blur-sm">
+      <div className="flex w-full items-center gap-2 border border-black/15 bg-white/40 px-4 py-3">
         <div
           onPointerDown={(event) => controls.start(event)}
           className="center size-8 shrink-0 cursor-grab text-[#475569] transition"
@@ -67,8 +67,8 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, o
   return (
     <AccountSectionLayout icon="solar:star-bold" summaryLabel={`${items.length}/5 selected`} title="Favorites Showcase">
       {items.length === 0 ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          No showcase titles selected yet.
+        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">
+          No showcase titles selected yet
         </div>
       ) : (
         <Reorder.Group
@@ -270,7 +270,7 @@ export default function AccountLikesFeed({
         showHeader={false}
         renderOverlay={(item) =>
           isOwner ? (
-            <AccountProfileMediaActions
+            <ProfileMediaActions
               extraActions={[
                 {
                   disabled: !showcaseMap.has(item.mediaKey) && favoriteShowcase.length >= 5,

@@ -453,7 +453,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={[
-          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-md',
+          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-lg',
           classNames.content,
         ]
           .filter(Boolean)

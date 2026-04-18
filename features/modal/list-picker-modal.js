@@ -17,10 +17,6 @@ const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
-function getMediaTitle(media = {}) {
-  return media?.title || media?.name || 'this title';
-}
-
 function getPreviewImage(item) {
   return item?.poster_path_full || (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
 }
@@ -54,7 +50,13 @@ function ListPreviewStack({ list }) {
               }}
             >
               {imageSrc ? (
-                <img src={imageSrc} alt={item.title || item.name || 'Poster'} className="h-full w-full object-cover" />
+                <img
+                  src={imageSrc}
+                  alt={item.title || item.name || 'Poster'}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="center bg-primary h-full w-full text-black/50">
                   <Icon icon="solar:videocamera-record-bold" size={14} />
@@ -81,8 +83,6 @@ export default function ListPickerModal({ close, data }) {
   const [draftMemberships, setDraftMemberships] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
-
-  const mediaTitle = getMediaTitle(media);
 
   const selectedCount = useMemo(
     () => lists.filter((list) => Boolean(draftMemberships[list.id])).length,
@@ -233,12 +233,6 @@ export default function ListPickerModal({ close, data }) {
       return;
     }
 
-    toast.success(
-      successfulListIds.length === 1
-        ? `${mediaTitle} list selection was updated`
-        : `${successfulListIds.length} changes applied`
-    );
-
     close({
       memberships: nextMemberships,
       selectedListIds: Object.keys(nextMemberships).filter((id) => Boolean(nextMemberships[id])),
@@ -251,7 +245,6 @@ export default function ListPickerModal({ close, data }) {
     isApplying,
     lists,
     media,
-    mediaTitle,
     pendingListIds,
     toast,
     userId,

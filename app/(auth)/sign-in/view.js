@@ -2,44 +2,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { OAUTH_PROVIDER_KEYS } from '@/core/auth/oauth-providers';
+import {
+  AUTH_INPUT_CLASSNAMES,
+  AUTH_PASSWORD_INPUT_CLASSNAMES,
+  AUTH_PRIMARY_BUTTON_CLASSNAMES,
+  AUTH_SECONDARY_BUTTON_CLASSNAMES,
+  AuthField,
+  PasswordToggleButton,
+} from '@/features/auth/form-primitives';
 import OAuthProviderButton from '@/features/auth/oauth-provider-button';
 import AuthPageShell from '@/features/auth/page-shell';
 import { Button, Input } from '@/ui/elements';
-import Icon from '@/ui/icon';
-
-const INPUT_CLASSNAMES = Object.freeze({
-  wrapper:
-    'flex h-12 w-full rounded-[14px] items-center border border-black/10 bg-primary px-4 transition focus-within:border-black/40',
-  input: 'w-full text-black placeholder:text-black/50',
-});
-
-const PASSWORD_INPUT_CLASSNAMES = Object.freeze({
-  ...INPUT_CLASSNAMES,
-  rightIcon: 'h-full cneter',
-});
-
-const PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
-  default:
-    'inline-flex h-12 rounded-[14px] w-full items-center justify-center border border-transparent bg-black px-4 font-semibold text-white transition hover:border-black/10 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-60',
-});
-
-const SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
-  default:
-    'inline-flex h-12 rounded-[14px] w-full items-center justify-center border border-black/10 bg-primary px-4 text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60',
-});
-
-function PasswordToggleButton({ visible, onClick, showLabel = 'Show password', hideLabel = 'Hide password' }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={visible ? hideLabel : showLabel}
-      className="flex h-full items-center justify-center"
-    >
-      <Icon icon={visible ? 'solar:eye-closed-linear' : 'solar:eye-linear'} size={20} />
-    </button>
-  );
-}
 
 export default function View({
   activeOAuthProvider,
@@ -53,11 +26,9 @@ export default function View({
   isResetMode,
   isSignInBusy,
   password,
-  rememberDevice,
   resetFlow,
   setIdentifier,
   setPassword,
-  setRememberDevice,
   setResetFlow,
   signUpHref,
   INITIAL_RESET_FLOW,
@@ -87,7 +58,7 @@ export default function View({
             }
             placeholder="New password"
             autoComplete="new-password"
-            classNames={PASSWORD_INPUT_CLASSNAMES}
+            classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
             rightIcon={
               <PasswordToggleButton visible={showResetPassword} onClick={() => setShowResetPassword((prev) => !prev)} />
             }
@@ -105,7 +76,7 @@ export default function View({
             }
             placeholder="Confirm password"
             autoComplete="new-password"
-            classNames={PASSWORD_INPUT_CLASSNAMES}
+            classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
             rightIcon={
               <PasswordToggleButton
                 visible={showResetConfirmPassword}
@@ -121,14 +92,14 @@ export default function View({
               type="button"
               onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
               disabled={resetFlow.isSubmitting}
-              classNames={SECONDARY_BUTTON_CLASSNAMES}
+              classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
             >
               Back
             </Button>
             <Button
               type="submit"
               disabled={resetFlow.isSubmitting || !resetFlow.passwordResetProof}
-              classNames={PRIMARY_BUTTON_CLASSNAMES}
+              classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
             >
               {resetFlow.isSubmitting ? 'Resetting' : 'Reset'}
             </Button>
@@ -145,24 +116,18 @@ export default function View({
           <h1 className="text-3xl font-semibold sm:text-4xl">Welcome back!</h1>
         </div>
 
-        <div className="pt-1">
-          <label htmlFor="sign-in-identifier" className="text-sm font-medium text-black/50">
-            Email
-          </label>
+        <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Email">
           <Input
             id="sign-in-identifier"
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
             placeholder="Enter your email"
             autoComplete="username"
-            classNames={INPUT_CLASSNAMES}
+            classNames={AUTH_INPUT_CLASSNAMES}
           />
-        </div>
+        </AuthField>
 
-        <div>
-          <label htmlFor="sign-in-password" className="text-sm font-medium text-black/50">
-            Password
-          </label>
+        <AuthField htmlFor="sign-in-password" label="Password">
           <Input
             id="sign-in-password"
             type={showPassword ? 'text' : 'password'}
@@ -170,35 +135,24 @@ export default function View({
             onChange={(event) => setPassword(event.target.value)}
             placeholder="•••••••"
             autoComplete="current-password"
-            classNames={PASSWORD_INPUT_CLASSNAMES}
+            classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
             rightIcon={<PasswordToggleButton visible={showPassword} onClick={() => setShowPassword((prev) => !prev)} />}
           />
-        </div>
+        </AuthField>
 
-        <div className="flex items-center justify-between pt-1 text-sm font-medium">
-          <label className="inline-flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={rememberDevice}
-              onChange={(event) => setRememberDevice(event.target.checked)}
-              disabled={isSignInBusy}
-              className="size-5 rounded-[14px]! border border-black/10 accent-black"
-            />
-            <span>Remember me</span>
-          </label>
-
+        <div className="flex items-center justify-end pt-1 text-sm font-medium">
           <button
             type="button"
             onClick={handleRequestPasswordReset}
             disabled={isSignInBusy}
             className="text-black/50 transition hover:text-black"
           >
-            {isPreparingReset ? 'Checking...' : 'Forgot password?'}
+            {isPreparingReset ? 'Checking' : 'Forgot password?'}
           </button>
         </div>
 
-        <Button type="submit" disabled={isSignInBusy} classNames={PRIMARY_BUTTON_CLASSNAMES}>
-          {isPasswordSubmitting ? 'Logging in...' : 'Log In'}
+        <Button type="submit" disabled={isSignInBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
+          {isPasswordSubmitting ? 'Logging in' : 'Log In'}
         </Button>
 
         <div className="relative flex items-center py-1.5">

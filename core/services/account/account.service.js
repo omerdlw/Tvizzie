@@ -1,7 +1,10 @@
 'use client';
 
-import { isReservedAccountSegment } from '@/features/account/utils';
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import {
+  normalizeAccountDisplayNameSearchValue,
+  validateUsername,
+} from '@/core/utils/account-username';
 import { isValidUrl } from '@/core/utils';
 import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
 import {
@@ -12,10 +15,8 @@ import {
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
+export { sanitizeUsername, validateUsername } from '@/core/utils/account-username';
 
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 24;
-const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
 const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
 const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -32,26 +33,6 @@ function normalizeOptionalUrl(value) {
   return normalized;
 }
 
-function buildUsernameCandidate(value) {
-  const turkishMap = {
-    ç: 'c',
-    ğ: 'g',
-    ı: 'i',
-    ö: 'o',
-    ş: 's',
-    ü: 'u',
-  };
-
-  const normalized = cleanString(value)
-    .toLowerCase()
-    .replace(/[çğışüö]/g, (char) => turkishMap[char] || char);
-
-  return normalized
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-    .replace(/_{2,}/g, '_');
-}
-
 function createUserIdentity(user = {}) {
   return {
     avatarUrl: user.avatarUrl || user.photoURL || null,
@@ -59,10 +40,6 @@ function createUserIdentity(user = {}) {
     email: user.email || null,
     id: user.id || user.uid || null,
   };
-}
-
-function normalizeDisplayNameSearchValue(value) {
-  return cleanString(value).toLocaleLowerCase();
 }
 
 function normalizeAccountData(data = {}, id = null) {
@@ -74,7 +51,8 @@ function normalizeAccountData(data = {}, id = null) {
     createdAt: normalizeTimestamp(data.created_at || data.createdAt),
     description: data.description || '',
     displayName,
-    displayNameLower: data.display_name_lower || data.displayNameLower || normalizeDisplayNameSearchValue(displayName),
+    displayNameLower:
+      data.display_name_lower || data.displayNameLower || normalizeAccountDisplayNameSearchValue(displayName),
     email: data.email || null,
     followerCount: Number.isFinite(Number(data.follower_count ?? data.followerCount))
       ? Number(data.follower_count ?? data.followerCount)
@@ -94,28 +72,6 @@ function normalizeAccountData(data = {}, id = null) {
     usernameLower:
       data.username_lower || data.usernameLower || (data.username ? String(data.username).toLowerCase() : null),
   };
-}
-
-export function sanitizeUsername(value) {
-  return buildUsernameCandidate(value);
-}
-
-export function validateUsername(value) {
-  const username = sanitizeUsername(value);
-
-  if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
-    throw new Error(`Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters long`);
-  }
-
-  if (!USERNAME_PATTERN.test(username)) {
-    throw new Error('Username can only contain lowercase letters, numbers, and hyphens');
-  }
-
-  if (isReservedAccountSegment(username)) {
-    throw new Error('This username is reserved');
-  }
-
-  return username;
 }
 
 export function normalizeAccountSnapshot(snapshot) {

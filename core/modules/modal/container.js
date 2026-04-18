@@ -28,6 +28,16 @@ function getContainerClassName({ className, position }) {
   );
 }
 
+function getBodyClassName(position, bodyClassName) {
+  const sideModal = isSideModal(position);
+
+  return cn(
+    'bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto',
+    sideModal ? 'rounded-none sm:rounded-[14px]' : 'rounded-[14px]',
+    bodyClassName
+  );
+}
+
 function resolveHeaderActions(actions, close) {
   if (typeof actions === 'function') {
     return actions({ close });
@@ -117,10 +127,7 @@ export default function Container({ children, className, bodyClassName, header =
       <div
         data-lenis-prevent
         data-lenis-prevent-wheel
-        className={cn(
-          'bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto rounded-[14px]',
-          bodyClassName
-        )}
+        className={getBodyClassName(position, bodyClassName)}
       >
         {children}
       </div>

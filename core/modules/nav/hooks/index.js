@@ -6,6 +6,7 @@ export { useNavigationItems } from './use-navigation-items';
 export { useNavigationDisplay } from './use-navigation-display';
 export { useNavigationLayout } from './use-navigation-layout';
 export { useNavigationExpanded } from './use-navigation-expanded';
+export { useNavigationCompact } from './use-navigation-compact';
 
 export { useActionComponent } from './use-action-component';
 export { useActionHeight } from './use-action-height';

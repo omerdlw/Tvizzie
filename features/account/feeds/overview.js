@@ -7,10 +7,10 @@ import AccountReviewsOverview from '@/features/account/overview/reviews';
 import AccountWatchedOverview from '@/features/account/overview/watched';
 import AccountWatchlistOverview from '@/features/account/overview/watchlist';
 import { AccountPageShell } from '@/features/account/shared/layout';
-import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import { ProfileMediaActions } from '@/features/account/shared/media-grid';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 
-const OVERVIEW_ACTIVITY_LIMIT = 6;
+const OVERVIEW_ACTIVITY_LIMIT = 5;
 const OVERVIEW_MEDIA_LIMIT = 6;
 const OVERVIEW_FAVORITES_LIMIT = 5;
 const OVERVIEW_LIST_LIMIT = 3;
@@ -22,12 +22,10 @@ function buildSectionHref(username, suffix = '') {
 export default function AccountOverviewFeed({ model = {}, RegistryComponent = null }) {
   const {
     auth = { isAuthenticated: false, isReady: false, user: null },
-    activityError,
-    activityItems = [],
-    activityLoading,
     authoredReviews = [],
     authoredReviewsError,
     authoredReviewsLoading,
+    canViewPrivateContent = false,
     canViewProfileCollections = false,
     favoriteShowcase = [],
     followerCount = 0,
@@ -40,11 +38,13 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
     handleOpenFollowList,
     handleRequestRemoveWatchedItem,
     handleRequestRemoveWatchlistItem,
-    hasMoreActivityItems,
     hasMoreAuthoredReviews,
+    initialActivityFeed = null,
     isFollowLoading = false,
     isOwner = false,
     isPageLoading = false,
+    isPrivateProfile = false,
+    isViewerReady = false,
     likeCount = 0,
     likes = [],
     listCount = 0,
@@ -64,7 +64,6 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
   const shouldShowWatched = watched.length > 0;
   const shouldShowWatchlist = watchlist.length > 0;
   const shouldShowLists = lists.length > 0;
-  const shouldShowActivity = activityItems.length > 0;
   const shouldShowReviews = authoredReviews.length > 0;
   const currentUserId = auth.user?.id || null;
   const isShellLoading = isPageLoading || (!username && auth.isReady && !auth.isAuthenticated);
@@ -116,7 +115,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               items={watched.slice(0, OVERVIEW_MEDIA_LIMIT)}
               renderOverlay={(item) =>
                 isOwner ? (
-                  <AccountProfileMediaActions
+                  <ProfileMediaActions
                     media={item}
                     onRemoveItem={handleRequestRemoveWatchedItem}
                     removeLabel={`Remove ${item.title || item.name} from watched`}
@@ -138,7 +137,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
               onRemoveItem={handleRequestRemoveWatchlistItem}
               renderOverlay={(item) =>
                 isOwner ? (
-                  <AccountProfileMediaActions
+                  <ProfileMediaActions
                     media={item}
                     onRemoveItem={handleRequestRemoveWatchlistItem}
                     removeLabel={`Remove ${item.title || item.name} from watchlist`}
@@ -152,20 +151,19 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
             />
           ) : null}
 
-          {shouldShowActivity ? (
-            <AccountActivityOverview
-              hasMore={hasMoreActivityItems}
-              icon="solar:bolt-bold"
-              isLoading={activityLoading}
-              items={activityItems.slice(0, OVERVIEW_ACTIVITY_LIMIT)}
-              loadError={activityError}
-              showSeeMore={hasMoreActivityItems}
-              summaryLabel=""
-              title="Recent Activity"
-              titleHref={activityHref}
-              variant="showcase"
-            />
-          ) : null}
+          <AccountActivityOverview
+            canViewPrivateContent={canViewPrivateContent}
+            icon="solar:bolt-bold"
+            initialFeed={initialActivityFeed}
+            isOwner={isOwner}
+            isPrivateProfile={isPrivateProfile}
+            isViewerReady={isViewerReady}
+            limit={OVERVIEW_ACTIVITY_LIMIT}
+            resolvedUserId={resolvedUserId}
+            summaryLabel=""
+            title="Recent Activity"
+            titleHref={activityHref}
+          />
 
           {shouldShowLists ? (
             <AccountListsOverview

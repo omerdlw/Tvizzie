@@ -3,7 +3,7 @@
 import { createAccountSectionRegistry } from '../shared/section-factory';
 
 export default createAccountSectionRegistry({
-  displayName: 'AccountProfileOverviewRegistry',
+  displayName: 'AccountOverviewRegistry',
   navDescription: (sectionState) => sectionState.navDescription,
-  navRegistrySource: 'account-profile-overview',
+  navRegistrySource: 'account-overview',
 });

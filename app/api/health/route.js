@@ -11,24 +11,6 @@ function normalizeLowerValue(value) {
   return normalizeValue(value).toLowerCase();
 }
 
-function normalizeBoolean(value, fallback = false) {
-  const normalized = normalizeLowerValue(value);
-
-  if (!normalized) {
-    return fallback;
-  }
-
-  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
-    return true;
-  }
-
-  if (['0', 'false', 'no', 'off'].includes(normalized)) {
-    return false;
-  }
-
-  return fallback;
-}
-
 function hasAnyConfigured(keys = []) {
   return keys.some((key) => normalizeValue(process.env[key]));
 }
@@ -79,10 +61,6 @@ function evaluateEnvironment() {
 
   if (!hasAnyConfigured(['NEXT_PUBLIC_SITE_URL', 'SITE_URL', 'VERCEL_PROJECT_PRODUCTION_URL'])) {
     missing.push('NEXT_PUBLIC_SITE_URL|SITE_URL|VERCEL_PROJECT_PRODUCTION_URL');
-  }
-
-  if (normalizeBoolean(process.env.ACCOUNT_MEDIA_ALLOW_ANY_EXTERNAL_URL, false)) {
-    warnings.push('ACCOUNT_MEDIA_ALLOW_ANY_EXTERNAL_URL');
   }
 
   if (!normalizeValue(process.env.NEXT_PUBLIC_TMDB_READ_TOKEN)) {

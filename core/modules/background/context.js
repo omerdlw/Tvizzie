@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState, useMemo } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useState, useMemo } from 'react';
 
 import { DURATION, EASING } from '@/core/constants';
 
@@ -117,7 +117,7 @@ export function BackgroundProvider({ children }) {
     setBackgroundState(mergeBackgroundState(DEFAULT_BACKGROUND, registryConfig));
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (registryBackground) {
       setBackgroundFromRegistry(registryBackground);
       return;
@@ -184,4 +184,8 @@ export function useBackgroundActions() {
   }
 
   return context;
+}
+
+export function useOptionalBackgroundActions() {
+  return useContext(BackgroundActionsContext);
 }

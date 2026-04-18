@@ -9,7 +9,6 @@ import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import { fetchUserActivityPage } from '@/core/services/activity/activity.service';
 import {
   deleteStoredReview,
   fetchProfileReviewFeed,
@@ -20,7 +19,6 @@ import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;
 const PREVIEW_REVIEW_LIMIT = 3;
-const PREVIEW_ACTIVITY_LIMIT = 36;
 const PREVIEW_LIST_LIMIT = 3;
 const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   likes: 1,
@@ -90,22 +88,17 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     resolvedUserId,
     itemRemoveConfirmation,
   } = sectionState;
+  const effectiveResolvedUserId = resolvedUserId || initialResolvedUserId || null;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const profileHandle = profile?.username || username || null;
-  const canLoadPreviews = Boolean(isViewerReady && resolvedUserId && canViewProfileCollections) && (Boolean(username) || auth.isAuthenticated);
+  const canLoadPreviews =
+    Boolean(isViewerReady && effectiveResolvedUserId && canViewProfileCollections) && (Boolean(username) || auth.isAuthenticated);
   const hasSeededReviewFeedForUser =
     !shouldForcePrivateRefresh &&
     hasMatchingSeededFeed({
       expectedValue: 'authored',
       initialFeed: initialReviewFeed,
-      resolvedUserId,
-    });
-  const hasSeededActivityFeedForUser =
-    !shouldForcePrivateRefresh &&
-    hasMatchingSeededFeed({
-      initialFeed: initialActivityFeed,
-      resolvedUserId,
-      valueKey: null,
+      resolvedUserId: effectiveResolvedUserId,
     });
   const editableReviewUser = useMemo(() => {
     if (!isOwner || !auth.user?.id) {
@@ -142,34 +135,12 @@ export default function Client({ routeData = null, RegistryComponent = undefined
         fetchProfileReviewFeed({
           mode: 'authored',
           pageSize: PREVIEW_REVIEW_LIMIT,
-          userId: resolvedUserId,
+          userId: effectiveResolvedUserId,
         }),
-      [resolvedUserId]
+      [effectiveResolvedUserId]
     ),
     logLabel: 'Review previews',
   });
-  const activityPreview = useAccountOverviewPreviewFeed({
-    canLoad: canLoadPreviews,
-    errorMessage: 'Activity could not be loaded right now.',
-    hasSeededFeed: hasSeededActivityFeedForUser,
-    initialFeed: initialActivityFeed,
-    loadFeed: useCallback(
-      () =>
-        fetchUserActivityPage({
-          pageSize: PREVIEW_ACTIVITY_LIMIT,
-          userId: resolvedUserId,
-        }),
-      [resolvedUserId]
-    ),
-    logLabel: 'Activity previews',
-  });
-  const seededActivityItems = useMemo(
-    () => (hasSeededActivityFeedForUser && Array.isArray(initialActivityFeed?.items) ? initialActivityFeed.items : []),
-    [hasSeededActivityFeedForUser, initialActivityFeed]
-  );
-  const resolvedActivityItems = activityPreview.items.length > 0 ? activityPreview.items : seededActivityItems;
-  const resolvedHasMoreActivityItems =
-    activityPreview.items.length > 0 ? activityPreview.hasMore : hasSeededActivityFeedForUser && Boolean(initialActivityFeed?.hasMore);
   const isCurrentAccountLoading = !username && !seededCurrentAccount && (!isViewerReady || auth.status === 'loading');
   const resolvedIsPageLoading = isPageLoading || isCurrentAccountLoading;
 
@@ -223,7 +194,6 @@ export default function Client({ routeData = null, RegistryComponent = undefined
               current.filter((item) => (item.docPath || item.id) !== (review.docPath || review.id))
             );
             setReviewDeleteConfirmation(null);
-            toast.success('Your review was deleted');
           } catch (error) {
             toast.error(error?.message || 'Review could not be deleted');
             throw error;
@@ -275,14 +245,11 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     authoredReviews: reviewPreview.items,
     authoredReviewsError: reviewPreview.feedError,
     authoredReviewsLoading: reviewPreview.isFeedLoading,
-    activityError: activityPreview.feedError,
-    activityItems: resolvedActivityItems,
-    activityLoading: activityPreview.isFeedLoading && resolvedActivityItems.length === 0,
+    initialActivityFeed,
     handleEditReview,
     handleDeleteReview,
     handleLikeReview,
     hasMoreAuthoredReviews: reviewPreview.hasMore,
-    hasMoreActivityItems: resolvedHasMoreActivityItems,
   };
 
   return (

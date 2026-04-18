@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
+import { getSurfaceItemMotion } from '@/features/movie/movie-motion';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
 
 import MediaThumb from './media-thumb';
@@ -150,89 +151,97 @@ export default function PersonAwards({ personId }) {
       </div>
 
       <div className="flex w-full flex-col">
-        {awardsTimeline.map(([year, entries], yearIndex) => (
-          <motion.div
-            key={year}
-            className="mt-4 first:mt-0"
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: reduceMotion ? 0 : yearIndex * 0.045,
-              duration: reduceMotion ? 0.16 : 0.36,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <div className="mb-2 flex items-center gap-2 sm:gap-3">
-              <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
-                {year}
-              </span>
-              <div className="h-px flex-1 bg-black/20" />
-            </div>
+        {awardsTimeline.map(([year, entries], yearIndex) => {
+          const yearMotion = getSurfaceItemMotion({
+            reduceMotion,
+            index: yearIndex,
+            distance: 18,
+            duration: 0.64,
+            delayStep: 0.088,
+            scale: 0.986,
+          });
 
-            <div className="flex flex-col sm:ml-16">
-              {entries.map((entry, entryIndex) => {
-                const isInteractive = Boolean(entry.projectId);
-                const title = entry.project || entry.category;
-                const detail = entry.project
-                  ? `${entry.organization} / ${entry.type} · ${entry.category}`
-                  : `${entry.organization} / ${entry.type}`;
+          return (
+            <motion.div
+              key={year}
+              className="mt-4 first:mt-0"
+              initial={yearMotion.initial}
+              animate={yearMotion.animate}
+              transition={yearMotion.transition}
+            >
+              <div className="mb-2 flex items-center gap-2 sm:gap-3">
+                <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
+                  {year}
+                </span>
+                <div className="h-px flex-1 bg-black/20" />
+              </div>
 
-                const rowClassName = cn(
-                  'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
-                  isInteractive ? 'hover:bg-primary' : 'cursor-default'
-                );
+              <div className="flex flex-col sm:ml-16">
+                {entries.map((entry, entryIndex) => {
+                  const isInteractive = Boolean(entry.projectId);
+                  const title = entry.project || entry.category;
+                  const detail = entry.project
+                    ? `${entry.organization} / ${entry.type} · ${entry.category}`
+                    : `${entry.organization} / ${entry.type}`;
+                  const rowClassName = cn(
+                    'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
+                    isInteractive ? 'hover:bg-primary' : 'cursor-default'
+                  );
+                  const entryMotion = getSurfaceItemMotion({
+                    reduceMotion,
+                    axis: 'x',
+                    distance: -14,
+                    duration: 0.48,
+                    groupIndex: yearIndex,
+                    groupDelayStep: 0.088,
+                    index: entryIndex,
+                    delayStep: 0.028,
+                    scale: 0.992,
+                  });
+                  const content = (
+                    <>
+                      <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+                        </div>
 
-                const content = (
-                  <>
-                    <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+                        <span className="truncate text-xs text-black/60 sm:text-sm">{detail}</span>
                       </div>
+                    </>
+                  );
 
-                      <span className="truncate text-xs text-black/60 sm:text-sm">{detail}</span>
-                    </div>
-                  </>
-                );
+                  if (isInteractive) {
+                    return (
+                      <motion.div
+                        key={entry.key}
+                        initial={entryMotion.initial}
+                        animate={entryMotion.animate}
+                        transition={entryMotion.transition}
+                      >
+                        <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+                          {content}
+                        </Link>
+                      </motion.div>
+                    );
+                  }
 
-                if (isInteractive) {
                   return (
                     <motion.div
                       key={entry.key}
-                      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        delay: reduceMotion ? 0 : yearIndex * 0.045 + entryIndex * 0.02,
-                        duration: reduceMotion ? 0.16 : 0.3,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
+                      initial={entryMotion.initial}
+                      animate={entryMotion.animate}
+                      transition={entryMotion.transition}
+                      className={rowClassName}
                     >
-                      <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
-                        {content}
-                      </Link>
+                      {content}
                     </motion.div>
                   );
-                }
-
-                return (
-                  <motion.div
-                    key={entry.key}
-                    initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      delay: reduceMotion ? 0 : yearIndex * 0.045 + entryIndex * 0.02,
-                      duration: reduceMotion ? 0.16 : 0.3,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    className={rowClassName}
-                  >
-                    {content}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        ))}
+                })}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );

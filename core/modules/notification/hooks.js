@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo } from 'react';
 
+import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+
 import { useNotificationActions, TOAST_TYPES } from './context';
 
 const DURATIONS = {
@@ -14,19 +16,39 @@ function generateToastId() {
   return `toast_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+const PRODUCTION_OPTIONAL_TOAST_TYPES = new Set([TOAST_TYPES.SUCCESS, TOAST_TYPES.INFO]);
+
+function shouldSuppressToast(type, options = {}) {
+  if (process.env.NODE_ENV !== 'production') {
+    return false;
+  }
+
+  if (!PRODUCTION_OPTIONAL_TOAST_TYPES.has(type)) {
+    return false;
+  }
+
+  return options.allowInProduction !== true;
+}
+
 export function useToast() {
   const { showNotification } = useNotificationActions();
 
   const createToast = useCallback(
     (type, message, options = {}) => {
-      const { action, actions, dedupeKey, duration, ...rest } = options;
+      const { action, actions, allowInProduction, dedupeKey, description, duration, ...rest } = options;
+      const normalizedMessage = normalizeFeedbackText(message);
+
+      if (!normalizedMessage || shouldSuppressToast(type, { allowInProduction })) {
+        return null;
+      }
 
       const finalActions = actions || (action ? [action] : undefined);
       const resolvedId = dedupeKey || rest.id || generateToastId();
 
       return showNotification(type, {
         id: resolvedId,
-        message,
+        message: normalizedMessage,
+        description: normalizeFeedbackText(description),
         duration,
         actions: finalActions,
         ...rest,

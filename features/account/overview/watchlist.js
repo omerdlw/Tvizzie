@@ -149,9 +149,7 @@ export default function AccountWatchlistOverview({
           ))}
         </div>
       ) : (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm">
-          {emptyMessage}
-        </div>
+        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{emptyMessage}</div>
       )}
     </AccountSectionLayout>
   );

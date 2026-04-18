@@ -184,7 +184,6 @@ export function useAccountPageActions({
               userId: auth.user.id,
             });
             setListDeleteConfirmation(null);
-            toast.success(`"${targetList.title}" was deleted`);
 
             if (activeListId === targetList.id) {
               updateQuery({ list: null, tab: 'lists' });
@@ -327,7 +326,6 @@ export function useAccountPageActions({
           userId: auth.user.id,
         });
         setItemRemoveConfirmation(null);
-        toast.success(`${getMediaTitle(item)} was removed from the list`);
       } catch (error) {
         toast.error(error?.message || 'The item could not be removed');
         throw error;
@@ -371,7 +369,6 @@ export function useAccountPageActions({
           userId: auth.user.id,
         });
         setItemRemoveConfirmation(null);
-        toast.success(`${getMediaTitle(item)} was removed from likes`);
       } catch (error) {
         if (previousLikes) {
           setLikes(previousLikes);
@@ -401,7 +398,6 @@ export function useAccountPageActions({
           userId: auth.user.id,
         });
         setItemRemoveConfirmation(null);
-        toast.success(`${getMediaTitle(item)} was removed from watchlist`);
       } catch (error) {
         if (previousWatchlist) {
           setWatchlist(previousWatchlist);
@@ -431,7 +427,6 @@ export function useAccountPageActions({
           userId: auth.user.id,
         });
         setItemRemoveConfirmation(null);
-        toast.success(`${getMediaTitle(item)} was removed from watched`);
       } catch (error) {
         if (previousWatched) {
           setWatched(previousWatched);

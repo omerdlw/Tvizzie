@@ -82,10 +82,10 @@ function LoadingList() {
     <div>
       {Array.from({ length: 10 }, (_, index) => (
         <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+          <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+            <div className="h-3 w-3/5 animate-pulse rounded-[10px] bg-black/5" />
+            <div className="h-2 w-2/5 animate-pulse rounded-[10px] bg-black/5" />
           </div>
         </div>
       ))}
@@ -107,6 +107,8 @@ function SocialUserRow({ close, user, action }) {
         <img
           src={avatarSrc}
           alt={user.displayName}
+          loading="lazy"
+          decoding="async"
           className="size-10 shrink-0 rounded-[10px] object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
         />
@@ -404,7 +406,6 @@ export default function AccountSocialModal({ close, data }) {
 
     try {
       await action();
-      toast.success(successMessage);
     } catch (error) {
       toast.error(error?.message || errorMessage);
     } finally {
@@ -488,7 +489,7 @@ export default function AccountSocialModal({ close, data }) {
         ) : activeErrorMessage ? (
           <EmptyState description={activeErrorMessage} className="h-full" />
         ) : list.length === 0 ? (
-          <EmptyState title="Empty" description={emptyDescription} className="h-full min-h-96" />
+          <EmptyState description={emptyDescription} className="h-full min-h-96" />
         ) : (
           <div className="min-h-96 flex-1 overflow-y-auto">
             {list.map((user) => (

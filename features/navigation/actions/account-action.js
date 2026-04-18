@@ -11,17 +11,17 @@ const PROFILE_FOLLOW_ACTIONS = Object.freeze({
   follow: {
     icon: 'solar:user-plus-bold',
     label: 'Follow',
-    tone: 'active',
+    tone: 'muted',
   },
   follow_back: {
     icon: 'solar:user-plus-bold',
     label: 'Follow Back',
-    tone: 'active',
+    tone: 'muted',
   },
   following: {
     icon: 'solar:user-minus-bold',
     label: 'Unfollow',
-    tone: 'muted',
+    tone: 'active',
   },
   requested: {
     icon: 'solar:clock-circle-bold',
@@ -76,11 +76,19 @@ export default function AccountAction(props) {
     onSignIn,
     showProfileFollowAction = false,
     isNotFound,
+    onOpenMediaUpload,
+    onCancel,
     onSave,
+    isCancelDisabled = false,
+    cancelLabel = 'Cancel',
+    isUploadDisabled = false,
     isSaveDisabled = false,
     saveLabel = 'Save',
     isSaveLoading,
+    showCancelAction = false,
     showSaveAction = false,
+    showUploadAction = false,
+    uploadLabel = 'Upload Media',
     // List actions
     isLiked,
     isLikeLoading,
@@ -157,46 +165,90 @@ export default function AccountAction(props) {
   }
 
   if (mode === 'profile-edit') {
+    const canShowUploadAction = showUploadAction && typeof onOpenMediaUpload === 'function';
+    const canShowCancelAction = showCancelAction && typeof onCancel === 'function';
+    const shouldShowTabRow = !showSaveAction;
+    const shouldShowBottomRow = canShowUploadAction || canShowCancelAction || showSaveAction;
+
     return (
       <div className="mt-2.5 flex w-full flex-col gap-2">
-        <div className="grid w-full grid-cols-2 gap-2">
-          {editTabs.map((tab) => {
-            const isActive = activeEditTab === tab.key;
+        {shouldShowTabRow ? (
+          <div className="grid w-full grid-cols-2 gap-2">
+            {editTabs.map((tab) => {
+              const isActive = activeEditTab === tab.key;
 
-            return (
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => onEditTabChange?.(tab.key)}
+                  aria-pressed={isActive}
+                  className={actionClass({
+                    tone: isActive ? 'active' : 'muted',
+                    className: 'justify-center',
+                  })}
+                >
+                  <Icon icon={tab.icon} size={NAV_ACTION_STYLES.icon} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {shouldShowBottomRow ? (
+          <div className="flex w-full gap-2">
+            {canShowUploadAction ? (
               <button
-                key={tab.key}
                 type="button"
-                onClick={() => onEditTabChange?.(tab.key)}
-                aria-pressed={isActive}
+                onClick={onOpenMediaUpload}
+                disabled={isUploadDisabled}
                 className={actionClass({
-                  tone: isActive ? 'active' : 'muted',
-                  className: 'justify-center',
+                  tone: 'info',
+                  className: showSaveAction ? 'flex-1' : '',
                 })}
               >
-                <Icon icon={tab.icon} size={NAV_ACTION_STYLES.icon} />
-                {tab.label}
+                <Icon icon="solar:upload-bold" size={NAV_ACTION_STYLES.icon} />
+                {uploadLabel}
               </button>
-            );
-          })}
-        </div>
+            ) : null}
 
-        {showSaveAction ? (
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={isSaveLoading}
-            className={actionClass({ tone: 'success', className: '' })}
-          >
-            {isSaveLoading ? (
-              'Saving'
-            ) : (
-              <>
-                <Icon icon="solar:check-circle-bold" size={NAV_ACTION_STYLES.icon} />
-                {saveLabel}
-              </>
-            )}
-          </button>
+            {canShowCancelAction ? (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isCancelDisabled}
+                className={actionClass({
+                  tone: 'muted',
+                  className: 'flex-1',
+                })}
+              >
+                <Icon icon="material-symbols:close-rounded" size={NAV_ACTION_STYLES.icon} />
+                {cancelLabel}
+              </button>
+            ) : null}
+
+            {showSaveAction ? (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={isSaveLoading || isSaveDisabled}
+                className={actionClass({
+                  tone: isSaveDisabled ? 'muted' : 'success',
+                  className: canShowUploadAction || canShowCancelAction ? 'flex-1' : '',
+                })}
+              >
+                {isSaveLoading ? (
+                  'Saving'
+                ) : (
+                  <>
+                    <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
+                    {saveLabel}
+                  </>
+                )}
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
     );
@@ -215,7 +267,7 @@ export default function AccountAction(props) {
             'Saving'
           ) : (
             <>
-              <Icon icon="solar:check-circle-bold" size={NAV_ACTION_STYLES.icon} />
+              <Icon icon="material-symbols:check-rounded" size={NAV_ACTION_STYLES.icon} />
               {saveLabel}
             </>
           )}

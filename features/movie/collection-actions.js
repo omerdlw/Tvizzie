@@ -111,7 +111,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-(--motion-duration-normal) disabled:cursor-not-allowed lg:py-3.5 lg:backdrop-blur-none',
         getActionPalette(palette, active)
       )}
     >
@@ -137,7 +137,6 @@ export default function CollectionActions({ media }) {
 
   const userId = auth.user?.id || null;
   const isSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
-  const title = media?.title || media?.original_title || 'This movie';
 
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
   const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
@@ -287,8 +286,6 @@ export default function CollectionActions({ media }) {
         ...prev,
         liked: result.isLiked,
       }));
-
-      toast.success(result.isLiked ? `${title} was added to your likes` : `${title} was removed from your likes`);
     } catch (error) {
       toast.error(error?.message || 'Like could not be updated');
     } finally {
@@ -325,10 +322,6 @@ export default function CollectionActions({ media }) {
         ...prev,
         watchlist: result.isInWatchlist,
       }));
-
-      toast.success(
-        result.isInWatchlist ? `${title} was added to your watchlist` : `${title} was removed from your watchlist`
-      );
     } catch (error) {
       toast.error(error?.message || 'Watchlist could not be updated');
     } finally {
@@ -366,8 +359,6 @@ export default function CollectionActions({ media }) {
           ...prev,
           watched: false,
         }));
-
-        toast.success(`${title} was removed from watched`);
       } else {
         const result = await markUserWatched({ media: mediaSnapshot, userId: resolvedUserId });
 
@@ -376,12 +367,6 @@ export default function CollectionActions({ media }) {
           watched: true,
           watchlist: result.wasRemovedFromWatchlist ? false : prev.watchlist,
         }));
-
-        toast.success(
-          result.wasRemovedFromWatchlist
-            ? `${title} was marked watched and removed from your watchlist`
-            : `${title} was marked as watched`
-        );
       }
     } catch (error) {
       toast.error(error?.message || 'Watched state could not be updated');

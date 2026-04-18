@@ -43,11 +43,11 @@ function sanitizeMovies(movies = []) {
   }
 
   return movies
-    .filter((movie) => movie?.title && movie?.posterPath)
+    .filter((movie) => movie?.title && String(movie?.posterPath || '').trim())
     .map((movie) => ({
       id: movie.id,
       title: movie.title,
-      posterPath: movie.posterPath,
+      posterPath: String(movie.posterPath || '').trim(),
       year: movie.year || 'N/A',
       rating: movie.rating || 'N/A',
     }));
@@ -101,7 +101,17 @@ export default function AuthPoster() {
             key={movie.id || movie.title}
             className="flex items-center gap-4 border border-black/12 bg-[var(--color-primary)] p-3 shadow-[0_10px_22px_rgba(23,23,23,0.08)]"
           >
-            <img src={movie.posterPath} alt={movie.title} className="h-24 w-16 border border-black/12 object-cover" />
+            {movie.posterPath ? (
+              <img
+                src={movie.posterPath}
+                alt={movie.title}
+                loading="lazy"
+                decoding="async"
+                className="h-24 w-16 border border-black/12 object-cover"
+              />
+            ) : (
+              <div className="h-24 w-16 border border-black/12 bg-black/5" aria-hidden="true" />
+            )}
             <div className="min-w-0">
               <p className="truncate text-base font-semibold text-[var(--color-black)]">{movie.title}</p>
               <p className="mt-1 text-xs font-semibold tracking-[0.1em] text-black/45 uppercase">

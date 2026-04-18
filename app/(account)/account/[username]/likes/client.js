@@ -380,7 +380,6 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
           if (!isPermissionDeniedError(error)) {
             logDataError('[Account] Liked lists could not be loaded:', error);
             setLikedListsError('Liked lists could not be loaded right now.');
-            toast.error('Liked lists could not be loaded');
           }
         }
       } finally {

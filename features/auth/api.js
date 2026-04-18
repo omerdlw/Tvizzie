@@ -93,6 +93,7 @@ export function completeVerifiedSignUp({ displayName, email, password, signUpPro
       username,
     },
     {
+      credentials: 'include',
       message: 'Sign-up could not be completed',
     }
   );

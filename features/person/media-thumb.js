@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 import { TMDB_IMG } from '@/core/constants';
-import { canUseNextImageOptimization, cn } from '@/core/utils';
+import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 function resolvePosterSrc(poster) {
@@ -39,7 +39,8 @@ export default function MediaThumb({ poster, alt, className = '' }) {
           sizes="(max-width: 640px) 64px, 80px"
           src={src}
           alt={alt || 'Poster'}
-          quality={72}
+          quality={resolveImageQuality('thumbnail')}
+          decoding="async"
           unoptimized={!shouldOptimize}
           className="object-cover"
           onError={() => setHasError(true)}

@@ -7,7 +7,7 @@ import Image from 'next/image';
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
 import { TMDB_IMG } from '@/core/constants';
-import { getImagePlaceholderDataUrl } from '@/core/utils';
+import { getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 function getProfileImage(path) {
@@ -94,15 +94,17 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] lg:h-[600px] lg:w-[400px]">
+      <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
         {hasImage ? (
           <Image
             src={imageSrc}
             alt={person?.name || 'Person portrait'}
             fill
             priority
+            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 400px"
-            quality={88}
+            quality={resolveImageQuality('hero')}
+            decoding="async"
             placeholder="blur"
             blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
             onError={() => setHasImageError(true)}

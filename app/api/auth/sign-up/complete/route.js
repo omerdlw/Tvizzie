@@ -1,24 +1,28 @@
 import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
-import { isReservedAccountSegment } from '@/features/account/utils';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
 import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
-import { ensurePasswordAccountProfile } from '@/core/auth/servers/account/account-bootstrap.server';
+import { ensurePasswordAccountRecord } from '@/core/auth/servers/account/account-bootstrap.server';
 import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
-import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server';
+import {
+  createPendingPasswordSignIn,
+  validateStrongPassword,
+} from '@/core/auth/servers/security/password-security.server';
+import { validateUsername } from '@/core/utils/account-username';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   enforceAuthRateLimit,
 } from '@/core/auth/servers/security/rate-limit-policies.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
 import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server';
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
+import { setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges';
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 24;
-const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
 const SIGNUP_CHALLENGE_SELECT = ['jti', 'purpose', 'signup_completed_at', 'status', 'used_at'].join(',');
 
 function normalizeValue(value) {
@@ -27,24 +31,6 @@ function normalizeValue(value) {
 
 function normalizeEmail(value) {
   return normalizeValue(value).toLowerCase();
-}
-
-function validateUsername(value) {
-  const username = normalizeValue(value).toLowerCase();
-
-  if (username.length < USERNAME_MIN_LENGTH || username.length > USERNAME_MAX_LENGTH) {
-    throw new Error(`Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters long`);
-  }
-
-  if (!USERNAME_PATTERN.test(username)) {
-    throw new Error('Username can only contain lowercase letters, numbers, and hyphens');
-  }
-
-  if (isReservedAccountSegment(username)) {
-    throw new Error('This username is reserved');
-  }
-
-  return username;
 }
 
 function isUserAlreadyExistsError(error) {
@@ -73,6 +59,21 @@ function createStatusPayload({ messageCode = 'SIGNUP_COMPLETED', recovered = fal
   };
 }
 
+function createResponseClient(request, response) {
+  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+}
+
 async function assertSignUpChallenge({ challengeJti, challengeKey }) {
   const challengeResult = await createAdminClient()
     .from(AUTH_CHALLENGE_TABLE)
@@ -99,9 +100,10 @@ async function assertSignUpChallenge({ challengeJti, challengeKey }) {
     throw new Error('Sign-up verification is invalid');
   }
 
-  if (challenge?.signup_completed_at) {
-    throw new Error('Sign-up verification has already been used');
-  }
+  return {
+    alreadyCompleted: Boolean(challenge?.signup_completed_at),
+    challenge,
+  };
 }
 
 async function markSignUpCompleted(challengeKey) {
@@ -206,6 +208,51 @@ async function createOrRecoverPasswordUser({ email, password, username, displayN
   };
 }
 
+async function resolveCompletedSignUpReplay({ displayName, email, password, username }) {
+  const accountState = await resolveEmailAccountState(email);
+
+  if (accountState.state === EMAIL_ACCOUNT_STATES.EXISTING_GOOGLE_ONLY) {
+    throw createConflictError(
+      'This email is already used by a Google-linked Tvizzie account. Continue with Google to sign in.',
+      'SIGNUP_GOOGLE_ACCOUNT_EXISTS'
+    );
+  }
+
+  if (accountState.state === EMAIL_ACCOUNT_STATES.AVAILABLE) {
+    return {
+      ...(await createOrRecoverPasswordUser({
+        displayName,
+        email,
+        password,
+        username,
+      })),
+      shouldEnsureAccountRecord: true,
+    };
+  }
+
+  if (!accountState.userId) {
+    throw new Error('Sign-up verification has already been used');
+  }
+
+  if (accountState.state === EMAIL_ACCOUNT_STATES.RECOVERABLE_PASSWORD_ORPHAN) {
+    return {
+      ...(await createOrRecoverPasswordUser({
+        displayName,
+        email,
+        password,
+        username,
+      })),
+      shouldEnsureAccountRecord: true,
+    };
+  }
+
+  return {
+    recovered: true,
+    shouldEnsureAccountRecord: false,
+    userId: accountState.userId,
+  };
+}
+
 export async function POST(request) {
   const requestContext = getRequestContext(request);
   const routePolicy = getAuthRoutePolicy(AUTH_ROUTE_POLICY_KEYS.SIGN_UP_COMPLETE);
@@ -234,29 +281,35 @@ export async function POST(request) {
     });
 
     const proof = verifySignUpProofToken(signUpProof, { email });
-    await assertSignUpChallenge({
+    const challengeState = await assertSignUpChallenge({
       challengeJti: proof.challengeJti,
       challengeKey: proof.challengeKey,
     });
-
-    const creationResult = await createOrRecoverPasswordUser({
-      displayName,
-      email,
-      password,
-      username,
-    });
+    const creationResult = challengeState.alreadyCompleted
+      ? await resolveCompletedSignUpReplay({
+          displayName,
+          email,
+          password,
+          username,
+        })
+      : await createOrRecoverPasswordUser({
+          displayName,
+          email,
+          password,
+          username,
+        });
 
     userId = creationResult.userId;
     recovered = creationResult.recovered;
 
-    await ensurePasswordAccountProfile({
-      displayName,
-      email,
-      userId,
-      username,
-    });
-
-    await markSignUpCompleted(proof.challengeKey);
+    if (creationResult.shouldEnsureAccountRecord !== false) {
+      await ensurePasswordAccountRecord({
+        displayName,
+        email,
+        userId,
+        username,
+      });
+    }
 
     await writeAuthAuditLog({
       request,
@@ -278,13 +331,38 @@ export async function POST(request) {
       console.error('[AuthAudit] sign-up success log failed:', auditError);
     });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       createStatusPayload({
         messageCode: recovered ? 'SIGNUP_RECOVERED' : 'SIGNUP_COMPLETED',
         recovered,
         userId,
       })
     );
+
+    const pendingSignIn = await createPendingPasswordSignIn({
+      email,
+      password,
+    });
+    const supabase = createResponseClient(request, response);
+    const sessionResult = await supabase.auth.setSession({
+      access_token: pendingSignIn.accessToken,
+      refresh_token: pendingSignIn.refreshToken,
+    });
+
+    if (sessionResult.error) {
+      throw new Error(sessionResult.error?.message || 'Sign-up session could not be created');
+    }
+
+    applySessionCookies(response, {
+      csrfToken: createCsrfToken(),
+    });
+    setDeviceIdCookie(response, requestContext.deviceId);
+
+    if (!challengeState.alreadyCompleted) {
+      await markSignUpCompleted(proof.challengeKey);
+    }
+
+    return response;
   } catch (error) {
     const message = String(error?.message || 'Sign-up could not be completed');
     const status = message.includes('Too many')

@@ -2,6 +2,8 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 
+import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';
 
@@ -28,7 +30,7 @@ export default function ReviewList({
   }
 
   if (loadError) {
-    return <div className="text-error py-10 text-center text-sm leading-relaxed">{loadError}</div>;
+    return <div className="text-error py-10 text-center text-sm leading-relaxed">{normalizeFeedbackText(loadError)}</div>;
   }
 
   if (sortedReviews.length === 0) {

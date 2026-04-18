@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants';
+import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { cn } from '@/core/utils';
 import Iconify from '@/ui/icon';
+
+import { NAV_CONTENT_TRANSITION, NAV_MICRO_SPRING } from './motion';
 
 function isImageIconSource(icon) {
   return (
@@ -23,10 +25,7 @@ function getDescriptionAnimation() {
     initial: { opacity: 0, y: 8 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -8 },
-    transition: {
-      duration: DURATION.FAST,
-      ease: EASING.SMOOTH,
-    },
+    transition: NAV_CONTENT_TRANSITION,
   };
 }
 
@@ -45,19 +44,20 @@ function getLineClampStyle(maxLines, style) {
 }
 
 export function Description({ text, style, maxLines = 1 }) {
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
 
   return (
     <div className="relative w-full text-sm">
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} mode="wait">
         <motion.p
           className={cn('text-black', isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate', className)}
           animate={{ ...getDescriptionAnimation().animate, opacity }}
           transition={getDescriptionAnimation().transition}
           style={getLineClampStyle(maxLines, restStyle)}
-          initial={getDescriptionAnimation().initial}
+          initial={initialPageAnimationsEnabled ? getDescriptionAnimation().initial : false}
           exit={getDescriptionAnimation().exit}
           key={typeof text === 'string' || typeof text === 'number' ? text : undefined}
         >
@@ -136,7 +136,7 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
       {isImageSource ? (
         <motion.div
           className={cn('size-12 shrink-0 rounded-[12.5px] bg-cover bg-center bg-no-repeat', className)}
-          transition={{ duration: DURATION.FAST, ease: EASING.SMOOTH }}
+          transition={NAV_CONTENT_TRANSITION}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
@@ -148,9 +148,9 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
             className
           )}
           style={iconStyle}
-          transition={{ duration: DURATION.SNAPPY, ease: EASING.SMOOTH }}
+          transition={NAV_MICRO_SPRING}
         >
-          <motion.span transition={{ duration: DURATION.FAST }}>{renderIconNode(icon, size)}</motion.span>
+          <motion.span transition={NAV_CONTENT_TRANSITION}>{renderIconNode(icon, size)}</motion.span>
         </motion.div>
       )}
       <IconOverlay overlay={iconOverlay} />

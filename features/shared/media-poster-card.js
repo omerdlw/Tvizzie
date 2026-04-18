@@ -43,6 +43,7 @@ export default function MediaPosterCard({
       imageLoading={imageLoading}
       imagePriority={imagePriority}
       imageFetchPriority={imageFetchPriority}
+      imagePreset="poster"
       tooltipText={tooltipText}
     />
   );

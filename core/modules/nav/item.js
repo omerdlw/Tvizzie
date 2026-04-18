@@ -9,18 +9,30 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { DURATION, EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
+import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
 import { default as Iconify } from '@/ui/icon';
 import { Skeleton } from '@/ui/skeletons/components/nav';
 
 import { NavActionsContainer } from './actions/container';
 import { Icon as BadgeIcon, Description, Title } from './elements';
+import {
+  getNavCardSpring,
+  getNavCardStaggerDelay,
+  NAV_BADGE_SPRING,
+  NAV_CARD_BLUR_TRANSITION,
+  NAV_CARD_OPACITY_TRANSITION,
+  NAV_CARD_WIDTH_SPRING,
+  NAV_CONTENT_TRANSITION,
+  NAV_MICRO_SPRING,
+} from './motion';
 import ConfirmationSurface from './surfaces/confirmation-surface';
 import { resolveNavVisualStyle } from './utils';
 
 const NAV_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 24,
   collapsedY: -8,
+  compactHeight: 52,
   expandedY: -78,
   actionGap: 10,
   height: 74,
@@ -37,6 +49,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   }),
   baseHeight: NAV_CARD_DIMENSIONS.height,
   chromeHeight: NAV_CARD_DIMENSIONS.chromeHeight,
+  compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
   transition: Object.freeze({
     ease: EASING.EMPHASIZED,
@@ -45,41 +58,45 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   }),
 });
 
-// ─── Fast spring configs tuned for responsive nav feel ──────────────────────
-
-const SPRING_SNAPPY = Object.freeze({ type: 'spring', stiffness: 560, damping: 44, mass: 0.72 });
-const SPRING_SMOOTH = Object.freeze({ type: 'spring', stiffness: 440, damping: 40, mass: 0.86 });
-const SPRING_GENTLE = Object.freeze({ type: 'spring', stiffness: 320, damping: 34, mass: 0.95 });
 const BLUR_AMOUNT = 7;
 
-const MAX_STAGGER_DELAY = 0.06;
-const STAGGER_PER_POSITION = 0.018;
+const COMPACT_CARD_MIN_WIDTH = 148;
+const COMPACT_CARD_HORIZONTAL_PADDING = 56;
+const COMPACT_CARD_MAX_OFFSET = 72;
 
-function getCardStaggerDelay(position, expanded) {
-  if (!expanded) return 0;
-  return Math.min(position * STAGGER_PER_POSITION, MAX_STAGGER_DELAY);
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion) {
+function estimateCompactCardWidth(title, stackWidth) {
+  const titleLength = String(title || '').trim().length;
+  const estimatedWidth = titleLength * 10 + COMPACT_CARD_HORIZONTAL_PADDING;
+  const maxWidth = Math.max(COMPACT_CARD_MIN_WIDTH, stackWidth - COMPACT_CARD_MAX_OFFSET);
+
+  return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
+}
+
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion, cardWidth) {
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
     : {};
 
-  const staggerDelay = getCardStaggerDelay(position, expanded);
+  const staggerDelay = getNavCardStaggerDelay(position, expanded);
 
   // Reduced-motion fallback: simple and quick fade/position transitions.
   if (reduceMotion) {
     return {
       className: cn(
-        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-xl',
+        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-lg',
         'border-black/15 bg-white/80',
         showBorder && 'border-black/20',
         cardStyle?.className
       ),
       style: { ...safeCardStyle, willChange: 'auto' },
       animate: {
+        width: cardWidth,
         y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
         scale: expanded ? cardScale || 1 : collapsedScale ** position,
         zIndex: 10 - position,
@@ -92,20 +109,20 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
         transition: { duration: 0.1, ease: 'easeOut' },
       },
       transition: {
-        y: { duration: 0.14, ease: EASING.EASE_OUT, delay: staggerDelay },
-        scale: { duration: 0.14, ease: EASING.EASE_OUT, delay: staggerDelay },
-        opacity: { duration: 0.12, ease: 'easeOut', delay: staggerDelay },
+        width: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
+        y: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
+        scale: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
+        opacity: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
         zIndex: { duration: 0, delay: staggerDelay },
       },
     };
   }
 
-  // Full animation: spring physics without blur for better performance.
-  const spring = position === 0 ? SPRING_SNAPPY : position === 1 ? SPRING_SMOOTH : SPRING_GENTLE;
+  const spring = getNavCardSpring(position);
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-xl',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-lg',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -115,6 +132,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       willChange: position <= 1 ? 'transform, opacity, filter' : 'auto',
     },
     animate: {
+      width: cardWidth,
       y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
       zIndex: 10 - position,
@@ -138,13 +156,11 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       },
     },
     transition: {
-      // Position/scale: spring physics for natural feel
+      width: { ...NAV_CARD_WIDTH_SPRING, delay: staggerDelay },
       y: { ...spring, delay: staggerDelay },
       scale: { ...spring, delay: staggerDelay },
-      // Opacity/blur: short tween for quick response.
-      opacity: { duration: 0.18, ease: EASING.EASE_OUT, delay: staggerDelay },
-      filter: { duration: 0.2, ease: EASING.EASE_OUT, delay: staggerDelay },
-      // zIndex snaps instantly
+      opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay: staggerDelay },
+      filter: { ...NAV_CARD_BLUR_TRANSITION, delay: staggerDelay },
       zIndex: { duration: 0, delay: staggerDelay },
     },
   };
@@ -160,7 +176,7 @@ function shouldShowVideoIcon({ isActive, isVideo, link }) {
   return isActive && isVideo && link.type !== 'COUNTDOWN';
 }
 
-function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered }) {
+function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered, compact }) {
   const state = link.isLoading
     ? 'loading'
     : link.isSurface
@@ -169,7 +185,7 @@ function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered }) {
         ? 'confirmation'
         : 'standard';
 
-  return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}`;
+  return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}:${compact ? 'compact' : 'full'}`;
 }
 
 function getItemDescription({ expanded, isHovered, link }) {
@@ -190,6 +206,7 @@ function getActionNode(link, ActionComponent) {
 
 function VideoOverlayIcon({ icon }) {
   const isImageIcon = isImageIconSource(icon);
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
 
   return (
     <motion.div
@@ -198,8 +215,8 @@ function VideoOverlayIcon({ icon }) {
         isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'rounded-[8px] border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
-      transition={{ ...SPRING_SNAPPY }}
-      initial={{ opacity: 0, scale: 0.7 }}
+      transition={NAV_MICRO_SPRING}
+      initial={initialPageAnimationsEnabled ? { opacity: 0, scale: 0.7 } : false}
       animate={{ opacity: 1, scale: 1 }}
     >
       {!isImageIcon && <Iconify icon={icon} size={14} className={'text-[#831843]'} />}
@@ -208,6 +225,8 @@ function VideoOverlayIcon({ icon }) {
 }
 
 function Badge({ badge }) {
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
+
   return (
     <AnimatePresence>
       {badge.visible && (
@@ -215,10 +234,10 @@ function Badge({ badge }) {
           className={cn(
             'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
-          initial={{ scale: 0, opacity: 0 }}
+          initial={initialPageAnimationsEnabled ? { scale: 0, opacity: 0 } : false}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
-          transition={SPRING_SNAPPY}
+          transition={NAV_BADGE_SPRING}
         >
           {badge.value}
         </motion.div>
@@ -228,6 +247,7 @@ function Badge({ badge }) {
 }
 
 function StandardItemContent({
+  compact,
   link,
   isTop,
   expanded,
@@ -246,6 +266,22 @@ function StandardItemContent({
   const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo, link });
   const description = getItemDescription({ expanded, isHovered, link });
   const iconHoverState = expanded ? isHovered : isStackHovered;
+
+  if (compact) {
+    const compactTitleStyle = {
+      ...itemStyle.title,
+      className: cn('tracking-tight normal-case text-center', itemStyle.title?.className),
+      textTransform: 'none',
+    };
+
+    return (
+      <div ref={contentContainerRef} className="flex h-7 w-full items-center justify-center px-5">
+        <div className="min-w-0">
+          <Title text={link.title || link.name} style={compactTitleStyle} />
+        </div>
+      </div>
+    );
+  }
 
   const handleIconClick = (event) => {
     if (showVideoIcon) {
@@ -353,12 +389,15 @@ const Item = memo(
       isStackHovered,
       onMouseEnter,
       onMouseLeave,
+      compact,
       expanded,
       position,
       onClick,
       isTop,
       link,
       isActive,
+      stackWidth,
+      initialPageAnimationsEnabled,
     },
     ref
   ) {
@@ -375,6 +414,7 @@ const Item = memo(
     const contentContainerRef = useRef(null);
 
     const showBorder = expanded ? isHovered : isHovered || isStackHovered;
+    const cardWidth = compact ? estimateCompactCardWidth(link.title || link.name, stackWidth) : stackWidth;
 
     const itemStyle = useMemo(() => {
       return resolveNavVisualStyle(link.style, {
@@ -386,6 +426,7 @@ const Item = memo(
     const actionNode = useMemo(() => {
       return getActionNode(link, ActionComponent);
     }, [link, ActionComponent]);
+    const renderedActionNode = compact ? null : actionNode;
 
     const cardProps = useMemo(() => {
       const resolvedCardProps = getNavItemCardProps(
@@ -394,7 +435,8 @@ const Item = memo(
         showBorder,
         itemStyle.card,
         itemStyle.scale,
-        !!reduceMotion
+        !!reduceMotion,
+        cardWidth
       );
 
       if (!link.isSurface) {
@@ -405,9 +447,9 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
+    }, [cardWidth, expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
 
-    useActionHeight(onActionHeightChange, actionContainerRef, actionNode, isTop);
+    useActionHeight(onActionHeightChange, actionContainerRef, renderedActionNode, isTop);
 
     useElementHeight(
       onContentHeightChange,
@@ -418,6 +460,7 @@ const Item = memo(
         expanded,
         isHovered,
         isStackHovered,
+        compact,
       })
     );
 
@@ -461,6 +504,7 @@ const Item = memo(
       return (
         <StandardItemContent
           link={link}
+          compact={compact}
           isTop={isTop}
           expanded={expanded}
           isHovered={isHovered}
@@ -479,15 +523,16 @@ const Item = memo(
       <motion.div
         ref={ref}
         {...cardProps}
+        initial={initialPageAnimationsEnabled ? cardProps.initial : false}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
         {renderContent()}
 
-        {actionNode && (
+        {renderedActionNode && (
           <div ref={actionContainerRef} onClick={(event) => event.stopPropagation()}>
-            <Suspense>{actionNode}</Suspense>
+            <Suspense>{renderedActionNode}</Suspense>
           </div>
         )}
       </motion.div>

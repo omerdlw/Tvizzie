@@ -217,7 +217,7 @@ export default function Registry({
                 animation: MOVIE_BACKGROUND_ANIMATION,
                 image: resolvedBackgroundImage,
                 overlay: true,
-                overlayOpacity: 0.3,
+                overlayOpacity: 0.4,
                 overlayColor: '#faf9f5',
                 noiseStyle: {
                   opacity: 0.13,

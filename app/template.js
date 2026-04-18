@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { useBackgroundActions } from '@/core/modules/background/context';
+import { useOptionalBackgroundActions } from '@/core/modules/background/context';
 import { ModuleError } from '@/core/modules/error-boundary';
 
 function isMoviePath(pathname = '') {
@@ -12,7 +12,7 @@ function isMoviePath(pathname = '') {
 }
 
 export default function Template({ children }) {
-  const { resetBackground } = useBackgroundActions();
+  const backgroundActions = useOptionalBackgroundActions();
   const pathname = usePathname();
   const previousPathnameRef = useRef(pathname);
 
@@ -25,9 +25,9 @@ export default function Template({ children }) {
     }
 
     if (isMoviePath(previousPathname) && isMoviePath(pathname)) {
-      resetBackground();
+      backgroundActions?.resetBackground?.();
     }
-  }, [pathname, resetBackground]);
+  }, [backgroundActions, pathname]);
 
   return (
     <ModuleError>

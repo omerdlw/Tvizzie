@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
-import { cn, formatCurrency, getImagePlaceholderDataUrl } from '@/core/utils';
+import { cn, formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
@@ -236,15 +236,17 @@ export default function Sidebar({ item, director, writers, creators, certificati
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] lg:h-[600px] lg:w-[400px]">
+      <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
         {posterSrc ? (
           <Image
             fill
             priority
             src={posterSrc}
             alt={item.title || item.name}
+            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 400px"
-            quality={88}
+            quality={resolveImageQuality('hero')}
+            decoding="async"
             placeholder="blur"
             blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
             className="object-cover"

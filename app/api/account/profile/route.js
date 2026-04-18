@@ -5,19 +5,12 @@ import {
   resolveOptionalSessionRequest,
 } from '@/core/auth/servers/session/authenticated-request.server';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { getAccountProfileByUserId, getAccountProfileByUsername } from '@/core/services/browser/browser-data.server';
+import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/contracts';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
-const PROFILE_CACHE_TTL_MS = 5000;
-const PROFILE_CACHE_MAX_SIZE = 200;
 const DEFAULT_MEDIA_BUCKET = 'profile-media';
-const DEFAULT_EXTERNAL_MEDIA_HOST_PATTERNS = [
-  '.googleusercontent.com',
-  '.gravatar.com',
-  'avatars.githubusercontent.com',
-];
-const profileRequestCache = new Map();
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -25,24 +18,6 @@ function normalizeValue(value) {
 
 function normalizeLower(value) {
   return normalizeValue(value).toLowerCase();
-}
-
-function normalizeBoolean(value, fallback = false) {
-  const normalized = normalizeLower(value);
-
-  if (!normalized) {
-    return fallback;
-  }
-
-  if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') {
-    return true;
-  }
-
-  if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
-    return false;
-  }
-
-  return fallback;
 }
 
 function normalizeOptionalBoolean(value) {
@@ -101,36 +76,6 @@ function resolveSupabaseMediaHosts() {
   return hosts;
 }
 
-function normalizeHostPatterns(value, fallback = []) {
-  const rawPatterns = [
-    ...fallback,
-    ...normalizeValue(value)
-      .split(',')
-      .map((item) => normalizeLower(item))
-      .filter(Boolean),
-  ];
-
-  return Array.from(new Set(rawPatterns));
-}
-
-function hostMatchesPattern(host, pattern) {
-  const normalizedHost = normalizeLower(host);
-  const normalizedPattern = normalizeLower(pattern);
-
-  if (!normalizedHost || !normalizedPattern) {
-    return false;
-  }
-
-  if (normalizedPattern.startsWith('.')) {
-    const suffix = normalizedPattern;
-    const exact = normalizedPattern.slice(1);
-
-    return normalizedHost === exact || normalizedHost.endsWith(suffix);
-  }
-
-  return normalizedHost === normalizedPattern;
-}
-
 function extractStorageObjectPath(url, bucket) {
   const normalizedBucket = normalizeValue(bucket);
 
@@ -172,11 +117,6 @@ function extractStorageObjectPath(url, bucket) {
 }
 
 const SUPABASE_MEDIA_HOSTS = resolveSupabaseMediaHosts();
-const ALLOW_ANY_EXTERNAL_MEDIA_URL = normalizeBoolean(process.env.ACCOUNT_MEDIA_ALLOW_ANY_EXTERNAL_URL, false);
-const ALLOWED_EXTERNAL_MEDIA_HOST_PATTERNS = normalizeHostPatterns(
-  process.env.ACCOUNT_MEDIA_ALLOWED_EXTERNAL_HOSTS,
-  DEFAULT_EXTERNAL_MEDIA_HOST_PATTERNS
-);
 
 function normalizeAndValidateMediaUrlInput(value) {
   if (value === undefined) {
@@ -231,24 +171,6 @@ function isOwnedProfileMediaUrl(value, { target, userId }) {
   return Boolean(objectPath && objectPath.startsWith(expectedPrefix));
 }
 
-function isAllowedExternalMediaUrl(value) {
-  if (ALLOW_ANY_EXTERNAL_MEDIA_URL) {
-    return true;
-  }
-
-  let parsed;
-
-  try {
-    parsed = new URL(value);
-  } catch {
-    return false;
-  }
-
-  const host = normalizeLower(parsed.host);
-
-  return ALLOWED_EXTERNAL_MEDIA_HOST_PATTERNS.some((pattern) => hostMatchesPattern(host, pattern));
-}
-
 function resolveProfileMediaUrl(value, { target, userId, currentValue = null }) {
   const normalized = normalizeAndValidateMediaUrlInput(value);
 
@@ -264,11 +186,7 @@ function resolveProfileMediaUrl(value, { target, userId, currentValue = null }) 
     return normalized;
   }
 
-  if (isAllowedExternalMediaUrl(normalized)) {
-    return normalized;
-  }
-
-  throw new Error(`${target === 'avatar' ? 'Avatar' : 'Logo'} URL is not allowed`);
+  return normalized;
 }
 
 function resolveProfileWriteMediaUrl(value, { action, currentValue = null, target, userId }) {
@@ -293,7 +211,7 @@ async function getCurrentProfileMediaSnapshot(userId) {
     };
   }
 
-  const payload = await invokeInternalEdgeFunction('account-read', {
+  const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
     body: {
       resource: 'profile',
       userId: normalizedUserId,
@@ -316,7 +234,7 @@ async function getCurrentProfileSnapshot(userId) {
     return null;
   }
 
-  const payload = await invokeInternalEdgeFunction('account-read', {
+  const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
     body: {
       resource: 'profile',
       userId: normalizedUserId,
@@ -333,35 +251,6 @@ function getProfileCacheKey({ userId = '', username = '', viewerId = '' } = {}) 
   }
 
   return `username:${username}|viewer:${viewerId || ''}`;
-}
-
-function pruneProfileCache() {
-  if (profileRequestCache.size <= PROFILE_CACHE_MAX_SIZE) {
-    return;
-  }
-
-  const now = Date.now();
-
-  for (const [key, entry] of profileRequestCache.entries()) {
-    if ((entry?.expiresAt || 0) <= now && !entry?.inFlightPromise) {
-      profileRequestCache.delete(key);
-    }
-  }
-
-  if (profileRequestCache.size <= PROFILE_CACHE_MAX_SIZE) {
-    return;
-  }
-
-  const overflowCount = profileRequestCache.size - PROFILE_CACHE_MAX_SIZE;
-  const keys = Array.from(profileRequestCache.keys());
-
-  for (let index = 0; index < overflowCount; index += 1) {
-    const key = keys[index];
-
-    if (key) {
-      profileRequestCache.delete(key);
-    }
-  }
 }
 
 export async function GET(request) {
@@ -382,56 +271,22 @@ export async function GET(request) {
     }
 
     const cacheKey = getProfileCacheKey({ userId, username, viewerId });
-    const cachedEntry = profileRequestCache.get(cacheKey);
-    const now = Date.now();
-
-    if (cachedEntry && cachedEntry.value !== undefined && cachedEntry.expiresAt > now) {
-      return NextResponse.json({
-        profile: cachedEntry.value,
-      });
-    }
-
-    if (cachedEntry?.inFlightPromise) {
-      const inFlightProfile = await cachedEntry.inFlightPromise;
-
-      return NextResponse.json({
-        profile: inFlightProfile,
-      });
-    }
-
-    const loadProfilePromise = (
-      userId
-        ? getAccountProfileByUserId(userId, {
+    const payload = await getOrLoadCachedValue({
+      cacheKey: `account-profile|${cacheKey}`,
+      enabled: true,
+      ttlMs: 5000,
+      loader: () =>
+        invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
+          body: {
+            resource: 'profile',
+            ...(userId ? { userId } : { username }),
             viewerId: viewerId || null,
-          })
-        : getAccountProfileByUsername(username, {
-            viewerId: viewerId || null,
-          })
-    )
-      .then((profileValue) => {
-        profileRequestCache.set(cacheKey, {
-          expiresAt: Date.now() + PROFILE_CACHE_TTL_MS,
-          inFlightPromise: null,
-          value: profileValue,
-        });
-        pruneProfileCache();
-        return profileValue;
-      })
-      .catch((error) => {
-        profileRequestCache.delete(cacheKey);
-        throw error;
-      });
-
-    profileRequestCache.set(cacheKey, {
-      expiresAt: now + PROFILE_CACHE_TTL_MS,
-      inFlightPromise: loadProfilePromise,
-      value: undefined,
+          },
+        }),
     });
 
-    const profile = await loadProfilePromise;
-
     return NextResponse.json({
-      profile,
+      profile: payload?.profile || null,
     });
   } catch (error) {
     const status = Number.isFinite(Number(error?.status)) ? Number(error.status) : 500;
@@ -490,7 +345,7 @@ export async function POST(request) {
     let payload;
 
     try {
-      payload = await invokeInternalEdgeFunction('account-profile-write', {
+      payload = await invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
         body: writeBody,
       });
     } catch (error) {
@@ -509,7 +364,7 @@ export async function POST(request) {
           profile: profileAfterError,
         };
       } else {
-        payload = await invokeInternalEdgeFunction('account-profile-write', {
+        payload = await invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
           body: writeBody,
         });
       }

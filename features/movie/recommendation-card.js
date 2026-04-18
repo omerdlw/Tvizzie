@@ -1,22 +1,37 @@
 'use client';
 
+import { motion, useReducedMotion } from 'framer-motion';
+
+import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 
-export default function RecommendationCard({ movie, imagePriority = false, imageFetchPriority }) {
+export default function RecommendationCard({ movie, index = 0, imagePriority = false, imageFetchPriority }) {
+  const reduceMotion = useReducedMotion();
+  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const resolvedTitle = movie.title || movie.original_title || 'Untitled';
   const year = movie.release_date?.slice(0, 4);
   const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
+  const cardMotion = getSurfaceItemMotion({
+    enabled: shouldAnimateItemReveal,
+    reduceMotion,
+    index,
+    distance: 20,
+    scale: 0.984,
+  });
 
   return (
-    <MediaCard
-      imageSrc={movie.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : null}
-      imageFetchPriority={imageFetchPriority}
-      imagePriority={imagePriority}
-      href={`/movie/${movie.id}`}
-      tooltipText={tooltipText}
-      imageAlt={resolvedTitle}
-      className="w-full"
-    />
+    <motion.div initial={cardMotion.initial} animate={cardMotion.animate} transition={cardMotion.transition}>
+      <MediaCard
+        imageSrc={movie.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : null}
+        imageFetchPriority={imageFetchPriority}
+        imagePriority={imagePriority}
+        imagePreset="poster"
+        href={`/movie/${movie.id}`}
+        tooltipText={tooltipText}
+        imageAlt={resolvedTitle}
+        className="w-full"
+      />
+    </motion.div>
   );
 }

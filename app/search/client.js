@@ -6,12 +6,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
 import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';
-import { useDebounce } from '@/core/hooks';
-import { useRegistry } from '@/core/modules/registry';
-import { getNavActionClass } from '@/core/modules/nav/actions/styles';
-
 import SearchAction from '@/features/navigation/actions/search-action';
-import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/navigation/actions/search-action/constants';
+import {
+  SEARCH_GRID,
+  SEARCH_LIMITS,
+  SEARCH_TAB_ITEMS,
+  SEARCH_TYPES,
+} from '@/features/navigation/actions/search-action/constants';
 import SearchGridItem from '@/features/navigation/actions/search-action/parts/grid-item';
 import {
   applySearchMovieFilters,
@@ -21,7 +22,10 @@ import {
   hasActiveSearchMovieFilters,
   mergeAllResults,
   normalizeSearchMovieFilters,
-} from '@/features/navigation/actions/search-action/utils';
+} from '@/features/search/utils';
+import { useDebounce } from '@/core/hooks';
+import { getNavActionClass } from '@/core/modules/nav/actions/styles';
+import { useRegistry } from '@/core/modules/registry';
 
 const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
   decade: 'all',
@@ -516,7 +520,7 @@ export default function SearchClient() {
                       disabled={loadingMore}
                       onClick={handleLoadMore}
                     >
-                      {loadingMore ? 'Loading...' : 'Load more results'}
+                      {loadingMore ? 'Loading' : 'Load more results'}
                     </button>
                   </div>
                 ) : null}

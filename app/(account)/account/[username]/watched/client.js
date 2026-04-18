@@ -89,7 +89,6 @@ function useWatchedClientState({ auth, routeData: resolvedRouteData, sectionProv
           userId: auth.user.id,
         });
         setItemRemoveConfirmation(null);
-        toast.success(`${getMediaTitle(item)} was removed from watched`);
       } catch (error) {
         if (previousItems) {
           setWatchedItems(previousItems);

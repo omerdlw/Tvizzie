@@ -1,6 +1,11 @@
 'use client';
 
 import {
+  clearAccountFeedback,
+  emitAccountFeedback,
+  normalizeEmail,
+} from '../utils';
+import {
   AUTH_PURPOSE,
   EMAIL_PATTERN,
   INITIAL_EMAIL_FLOW,
@@ -8,12 +13,9 @@ import {
   completeEmailChangeRequest,
   completePasswordChangeRequest,
   completePasswordSetRequest,
-  clearAccountFeedback,
-  emitAccountFeedback,
-  normalizeEmail,
   resolveSecurityErrorMessage,
   validatePassword,
-} from '../utils';
+} from '../security';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { AUTH_ROUTES, buildAuthHref, requestVerificationCode } from '@/features/auth';
 import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
@@ -205,7 +207,6 @@ export function useAccountCredentialActions({
 
       emitAccountFeedback('email-change', 'success');
       setEmailFlow(INITIAL_EMAIL_FLOW);
-      toast.success('Email updated successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(
@@ -316,7 +317,6 @@ export function useAccountCredentialActions({
 
       emitAccountFeedback('password-change', 'success');
       setPasswordFlow(INITIAL_PASSWORD_FLOW);
-      toast.success('Password updated successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(
@@ -431,7 +431,6 @@ export function useAccountCredentialActions({
 
       emitAccountFeedback('password-set', 'success');
       setPasswordFlow(INITIAL_PASSWORD_FLOW);
-      toast.success('Password added successfully. Please sign in again');
 
       if (typeof window !== 'undefined') {
         window.location.replace(

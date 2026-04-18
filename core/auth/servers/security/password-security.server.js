@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
+import { normalizePassword, validatePasswordRules } from '@/core/auth/password-validation';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, assertSupabaseBrowserEnv } from '@/core/clients/supabase/constants';
 
 function normalizeValue(value) {
@@ -8,10 +9,6 @@ function normalizeValue(value) {
 
 function normalizeEmail(value) {
   return normalizeValue(value).toLowerCase();
-}
-
-function normalizePassword(value) {
-  return String(value || '');
 }
 
 function getPasswordSecurityClient() {
@@ -26,26 +23,35 @@ function getPasswordSecurityClient() {
   });
 }
 
+function createAuthError(message, code = null) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
+function normalizeAuthFailure(error) {
+  const message = normalizeValue(error?.message || '').toLowerCase();
+  const code = normalizeValue(error?.code || error?.error_code || '').toLowerCase();
+
+  if (
+    code === 'invalid_credentials' ||
+    code === 'invalid_login_credentials' ||
+    message.includes('invalid login credentials') ||
+    message.includes('invalid_credentials') ||
+    message.includes('invalid credentials')
+  ) {
+    throw createAuthError('Invalid login credentials', 'invalid_login_credentials');
+  }
+
+  if (message.includes('user banned') || message.includes('user_disabled')) {
+    throw createAuthError('This account has been disabled', 'auth/user-disabled');
+  }
+
+  throw createAuthError(error?.message || 'Sign in failed', error?.code || error?.error_code || null);
+}
+
 export function validateStrongPassword(value) {
-  const password = normalizePassword(value);
-
-  if (password.length < 8) {
-    throw new Error('Password must be at least 8 characters long');
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    throw new Error('Password must contain at least 1 uppercase letter');
-  }
-
-  if (!/\d/.test(password)) {
-    throw new Error('Password must contain at least 1 number');
-  }
-
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    throw new Error('Password must contain at least 1 symbol');
-  }
-
-  return password;
+  return validatePasswordRules(value);
 }
 
 export async function verifyPasswordWithIdentityToolkit({ email, password }) {
@@ -81,4 +87,42 @@ export async function verifyPasswordWithIdentityToolkit({ email, password }) {
   }
 
   throw new Error('Current password could not be verified');
+}
+
+export async function createPendingPasswordSignIn({ email, password }) {
+  const client = getPasswordSecurityClient();
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail || password === undefined || password === null || password === '') {
+    throw createAuthError('Email and password are required');
+  }
+
+  const response = await client.auth.signInWithPassword({
+    email: normalizedEmail,
+    password: String(password),
+  });
+
+  if (response.error) {
+    normalizeAuthFailure(response.error);
+  }
+
+  const session = response.data?.session || null;
+  const user = response.data?.user || session?.user || null;
+  const accessToken = normalizeValue(session?.access_token);
+  const refreshToken = normalizeValue(session?.refresh_token);
+  const userId = normalizeValue(user?.id);
+  const userEmail = normalizeEmail(user?.email || normalizedEmail);
+
+  if (!accessToken || !refreshToken || !userId || !userEmail) {
+    throw createAuthError('Sign in failed');
+  }
+
+  return {
+    accessToken,
+    email: userEmail,
+    provider: normalizeValue(session?.user?.app_metadata?.provider) || 'password',
+    refreshToken,
+    user,
+    userId,
+  };
 }

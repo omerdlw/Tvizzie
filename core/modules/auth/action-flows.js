@@ -150,14 +150,16 @@ export async function runAuthRefreshSession({
 }) {
   const activeSession = normalizeSession(session);
 
-  if (!adapter?.refreshSession || !activeSession) {
+  if (!adapter?.refreshSession && !adapter?.getSession) {
     return activeSession;
   }
 
   setLoadingState(isReady ? AUTH_STATUS.REFRESHING : AUTH_STATUS.LOADING, { preserveError: silent });
 
   try {
-    const nextSession = await adapter.refreshSession(activeSession, getAdapterContext(activeSession));
+    const nextSession = activeSession
+      ? await adapter.refreshSession(activeSession, getAdapterContext(activeSession))
+      : await adapter.getSession(getAdapterContext(null));
     const resolvedSession = applySession(nextSession);
 
     emitSessionEvent(EVENT_TYPES.AUTH_REFRESH, resolvedSession);

@@ -110,7 +110,7 @@ export default function AccountReviewsOverview({
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
-          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm"
+          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70"
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -119,7 +119,7 @@ export default function AccountReviewsOverview({
         </motion.div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
         <motion.div
-          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70 backdrop-blur-sm"
+          className="border border-black/15 bg-white/40 p-4 text-sm text-black/70"
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -162,7 +162,7 @@ export default function AccountReviewsOverview({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="border border-black/20 bg-white/65 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase backdrop-blur-sm transition"
+            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase transition"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

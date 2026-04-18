@@ -54,7 +54,6 @@ export default function Client() {
 
   const [identifier, setIdentifier] = useState(identifierPrefill);
   const [password, setPassword] = useState('');
-  const [rememberDevice, setRememberDevice] = useState(false);
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [activeOAuthProvider, setActiveOAuthProvider] = useState(null);
   const [isPreparingReset, setIsPreparingReset] = useState(false);
@@ -138,7 +137,6 @@ export default function Client() {
       });
     }
 
-    toast.success('Signed in successfully');
     window.location.replace(postAuthRedirect);
     return true;
   };
@@ -154,13 +152,12 @@ export default function Client() {
         description: 'Verify your email to finish signing in',
       },
       data: {
-        allowRememberDevice: false,
+        allowRememberDevice: true,
         autoSendOnOpen: true,
         email: signInResult.email || '',
         forceNewCodeOnOpen: true,
         formComponent: AuthVerificationForm,
         purpose: AUTH_PURPOSE.SIGN_IN,
-        rememberDevice,
       },
     });
 
@@ -255,7 +252,6 @@ export default function Client() {
         return;
       }
 
-      toast.success('Signed in successfully');
       router.replace(postAuthRedirect);
     } catch (error) {
       const code = String(error?.code || '').trim();
@@ -305,7 +301,6 @@ export default function Client() {
         return;
       }
 
-      toast.success('Signed in successfully');
       router.replace(postAuthRedirect);
     } catch (error) {
       const code = String(error?.code || '').trim();
@@ -405,7 +400,6 @@ export default function Client() {
         passwordResetProof: resetFlow.passwordResetProof,
       });
 
-      toast.success('Password reset completed successfully');
       setIdentifier(resetFlow.email);
       setPassword('');
       setResetFlow(INITIAL_RESET_FLOW);
@@ -442,11 +436,9 @@ export default function Client() {
         isResetMode={isResetMode}
         isSignInBusy={isSignInBusy}
         password={password}
-        rememberDevice={rememberDevice}
         resetFlow={resetFlow}
         setIdentifier={setIdentifier}
         setPassword={setPassword}
-        setRememberDevice={setRememberDevice}
         setResetFlow={setResetFlow}
         signUpHref={signUpHref}
         INITIAL_RESET_FLOW={INITIAL_RESET_FLOW}

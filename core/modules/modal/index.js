@@ -85,6 +85,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   const isRightModal = activePosition === MODAL_POSITIONS.RIGHT;
   const isTopModalPosition = activePosition === MODAL_POSITIONS.TOP;
   const isBottomModalPosition = activePosition === MODAL_POSITIONS.BOTTOM;
+  const isMobileSideModal = isMobileViewport && (isLeftModal || isRightModal);
 
   const titleId = `modal-title-${entry.id}`;
 
@@ -183,7 +184,8 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       >
         <div
           className={cn(
-            'relative flex flex-col rounded-[20px]',
+            'relative flex flex-col',
+            isMobileSideModal ? 'rounded-none' : 'rounded-[20px]',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
@@ -192,7 +194,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             isPanelChrome &&
               (isLeftModal || isRightModal) && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
-                isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0',
+                isLeftModal ? 'sm:rounded-l-none sm:border-l-0' : 'sm:rounded-r-none sm:border-r-0',
               ]
           )}
         >

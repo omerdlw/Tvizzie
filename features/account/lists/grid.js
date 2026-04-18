@@ -80,7 +80,7 @@ export default function AccountPaginatedListGrid({
       {toolbar}
 
       {isLoading && lists.length === 0 ? (
-        <AccountInlineSectionState>Loading lists...</AccountInlineSectionState>
+        <AccountInlineSectionState>Loading lists</AccountInlineSectionState>
       ) : lists.length === 0 ? (
         <AccountInlineSectionState>{loadError || emptyMessage}</AccountInlineSectionState>
       ) : (

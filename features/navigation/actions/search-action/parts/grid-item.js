@@ -8,7 +8,7 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import Icon from '@/ui/icon';
 
 import { SEARCH_TYPES } from '../constants';
-import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '../utils';
+import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '@/features/search/utils';
 
 function getImageSrc(item) {
   if (item.media_type === SEARCH_TYPES.USER) {
@@ -30,6 +30,8 @@ function UserAvatar({ item, title }) {
         className="h-full w-full object-cover"
         src={avatarSrc}
         alt={title}
+        loading="lazy"
+        decoding="async"
         onError={(event) => applyAvatarFallback(event, fallbackSrc)}
       />
     </div>

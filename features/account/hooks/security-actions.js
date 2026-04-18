@@ -1,13 +1,11 @@
 'use client';
 
 import {
-  AUTH_PURPOSE,
   clearAccountFeedback,
-  deleteAccountRequest,
   emitAccountFeedback,
   normalizeProviderDescriptors,
-  resolveSecurityErrorMessage,
 } from '../utils';
+import { AUTH_PURPOSE, deleteAccountRequest, resolveSecurityErrorMessage } from '../security';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { openAccountVerificationPrompt, useAccountCredentialActions } from './security-credentials';
@@ -108,7 +106,6 @@ export function useAccountDeleteAction({
           }
 
           emitAccountFeedback('account-delete', 'success');
-          toast.success('Account deleted');
           router.replace('/');
         } catch (error) {
           clearAccountFeedback('account-delete');
@@ -191,7 +188,6 @@ export function useAccountGoogleLinking({
       });
       updateLinkedProvidersFromSession(session);
       emitAccountFeedback('google-link', 'success');
-      toast.success('Google account linked successfully');
     } catch (error) {
       clearAccountFeedback('google-link');
       try {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useMemo } from 'react';
 
 import { useNavigationContext } from '../context';
 import { useNavigationCore } from './use-navigation-core';
+import { useNavigationCompact } from './use-navigation-compact';
 import { useNavigationDisplay } from './use-navigation-display';
 import { useRouteChangeEffects } from './use-navigation-effects';
 import { useNavigationExpanded } from './use-navigation-expanded';
@@ -27,6 +28,7 @@ export function useNavigation() {
     setNavHeight,
   } = expanded;
   const isSurfaceActive = Boolean(activeItem?.isSurface);
+  const compact = useNavigationCompact({ activeItem, expanded: isExpanded, pathname });
 
   const setExpanded = useCallback(
     (nextValue) => {
@@ -74,6 +76,7 @@ export function useNavigation() {
 
   const { displayItems, activeIndex: layoutActiveIndex } = useNavigationLayout({
     isHovered,
+    isCompact: compact,
     navigationItems,
     activeItem,
   });
@@ -104,5 +107,6 @@ export function useNavigation() {
     setIsHovered,
     searchQuery,
     activeItemHasAction,
+    compact,
   };
 }

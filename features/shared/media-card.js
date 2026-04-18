@@ -5,7 +5,13 @@ import { forwardRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { cn, getImagePlaceholderDataUrl } from '@/core/utils';
+import {
+  cn,
+  getImagePlaceholderDataUrl,
+  resolveImageFetchPriority,
+  resolveImageLoading,
+  resolveImageQuality,
+} from '@/core/utils';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
@@ -70,10 +76,11 @@ export default function MediaCard({
   imageAlt,
   imageSrc,
   imageSizes = '(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw',
+  imagePreset = 'grid',
   imageLoading,
   imagePriority = false,
   imageFetchPriority,
-  imageQuality = 82,
+  imageQuality,
   onImageError,
   imageClassName,
   imageBaseClassName = 'object-cover transition-transform duration-(--motion-duration-normal) ',
@@ -90,6 +97,12 @@ export default function MediaCard({
   const [hasError, setHasError] = useState(false);
   const hasImage = Boolean(imageSrc) && !hasError;
   const resolvedTooltipText = String(tooltipText || '').trim();
+  const resolvedImageLoading = resolveImageLoading({ loading: imageLoading, priority: imagePriority });
+  const resolvedImageFetchPriority = resolveImageFetchPriority({
+    fetchPriority: imageFetchPriority,
+    priority: imagePriority,
+  });
+  const resolvedImageQuality = resolveImageQuality(imagePreset, imageQuality);
 
   const cardNode = (
     <CardWrapper
@@ -108,10 +121,11 @@ export default function MediaCard({
               fill
               draggable="false"
               sizes={imageSizes}
-              loading={imageLoading}
+              loading={resolvedImageLoading}
               priority={imagePriority}
-              fetchPriority={imageFetchPriority}
-              quality={imageQuality}
+              fetchPriority={resolvedImageFetchPriority}
+              quality={resolvedImageQuality}
+              decoding="async"
               placeholder="blur"
               blurDataURL={getImagePlaceholderDataUrl(imageSrc || imageAlt || title)}
               onError={() => {

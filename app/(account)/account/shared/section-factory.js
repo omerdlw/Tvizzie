@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useRegistry } from '@/core/modules/registry';
 import { useAuth } from '@/core/modules/auth';
+import SearchAction from '@/features/navigation/actions/search-action';
 import { AccountPageShell } from '@/features/account/shared/layout';
 import { buildAccountRegistryState } from './registry-state';
 import {
@@ -25,6 +28,8 @@ export function createAccountSectionRegistry({
 }) {
   function AccountSectionRegistry(props) {
     const sectionState = useAccountSectionState();
+    const [isSearching, setIsSearching] = useState(false);
+    const resolvedOverrides = resolveOverrides ? resolveOverrides(sectionState, props) : null;
 
     useRegistry(
       buildAccountRegistryState(sectionState, {
@@ -34,7 +39,24 @@ export function createAccountSectionRegistry({
             ? navDescription(sectionState, props)
             : (navDescription ?? sectionState.navDescription),
         navRegistrySource,
-        ...(resolveOverrides ? resolveOverrides(sectionState, props) : {}),
+        ...(resolvedOverrides || {}),
+        extraNavActions: [
+          ...(Array.isArray(resolvedOverrides?.extraNavActions) ? resolvedOverrides.extraNavActions : []),
+          {
+            key: 'search-overlay',
+            tooltip: 'Search',
+            icon: isSearching ? 'material-symbols:close-rounded' : 'solar:magnifer-linear',
+            order: 30,
+            onClick: (event) => {
+              event.stopPropagation();
+              setIsSearching((value) => !value);
+            },
+          },
+        ],
+        navActionOverride: isSearching ? <SearchAction /> : (resolvedOverrides?.navActionOverride ?? null),
+        showToolbarFollowActionWithOverride: isSearching
+          ? false
+          : resolvedOverrides?.showToolbarFollowActionWithOverride,
       })
     );
 

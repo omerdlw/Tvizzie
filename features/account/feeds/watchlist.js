@@ -18,7 +18,7 @@ import {
   toMediaQueryValues,
 } from '@/features/account/filtering';
 import { AccountMediaFilterBar } from '@/features/account/shared/content-filters';
-import AccountMediaGridPage, { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 
 const WATCHLIST_VISIBILITY_OPTIONS = Object.freeze([
@@ -128,7 +128,7 @@ export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwn
       showHeader={false}
       renderOverlay={(item) =>
         isOwner ? (
-          <AccountProfileMediaActions
+          <ProfileMediaActions
             media={item}
             onRemoveItem={onRemoveItem}
             removeLabel={`Remove ${item.title || item.name} from watchlist`}

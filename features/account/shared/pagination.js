@@ -6,7 +6,7 @@ import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[112px] items-center justify-center rounded-[14px] border border-black/10 bg-white px-4 text-xs font-semibold tracking-widest text-black/70 uppercase transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex h-10 min-w-[96px] items-center justify-center rounded-[14px] border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
 
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {
@@ -204,7 +204,7 @@ export default function AccountPagination({
 
   if (layout === 'split') {
     const splitWrapperClassName = cn(
-      'grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3',
+      'grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-3',
       splitClassName,
       className
     );
@@ -215,7 +215,9 @@ export default function AccountPagination({
       <div className={splitWrapperClassName}>
         <div className={splitPrevSlotClassNameResolved}>{showPrevNext ? renderNav('previous') : null}</div>
 
-        <div className={cn('flex flex-wrap items-center justify-center gap-4', pageListClassName)}>{pageItems}</div>
+        <div className={cn('flex flex-wrap items-center justify-center gap-3 sm:gap-4', pageListClassName)}>
+          {pageItems}
+        </div>
 
         <div className={splitNextSlotClassNameResolved}>{showPrevNext ? renderNav('next') : null}</div>
       </div>

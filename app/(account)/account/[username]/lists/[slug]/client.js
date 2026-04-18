@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { isPermissionDeniedError } from '@/core/utils/errors';
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
@@ -142,18 +141,14 @@ export default function Client({ routeData = null }) {
       },
       {
         fetchOnSubscribe: !hasSeededList,
-        onError: (error) => {
+        onError: () => {
           if (!hasSeededList) {
             setList(null);
-          }
-
-          if (!isPermissionDeniedError(error)) {
-            toast.error(error?.message || 'List could not be loaded');
           }
         },
       }
     );
-  }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug, toast]);
+  }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug]);
 
   useEffect(() => {
     if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
@@ -169,18 +164,14 @@ export default function Client({ routeData = null }) {
       },
       {
         fetchOnSubscribe: !hasSeededListItems,
-        onError: (error) => {
+        onError: () => {
           if (!hasSeededListItems) {
             setListItems([]);
-          }
-
-          if (!isPermissionDeniedError(error)) {
-            toast.error(error?.message || 'List items could not be loaded');
           }
         },
       }
     );
-  }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId, toast]);
+  }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId]);
 
   useEffect(() => {
     if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
@@ -191,17 +182,13 @@ export default function Client({ routeData = null }) {
     return subscribeToListReviews({ list, ownerId: resolvedUserId, listId: list.id }, setReviews, {
       fetchOnSubscribe: !hasSeededListReviews,
       liveUserId: auth.user?.id || null,
-      onError: (error) => {
+      onError: () => {
         if (!hasSeededListReviews) {
           setReviews([]);
         }
-
-        if (!isPermissionDeniedError(error)) {
-          toast.error(error?.message || 'List reviews could not be loaded');
-        }
       },
     });
-  }, [auth.user?.id, canViewProfileCollections, hasSeededListReviews, list, resolvedUserId, toast]);
+  }, [auth.user?.id, canViewProfileCollections, hasSeededListReviews, list, resolvedUserId]);
 
   const ownReview = useMemo(() => {
     if (!auth.user?.id) {
@@ -367,7 +354,6 @@ export default function Client({ routeData = null }) {
             return item?.user?.id !== auth.user.id;
           })
         );
-        toast.success('Your review was deleted');
       } catch (error) {
         toast.error(error?.message || 'Review could not be deleted');
         throw error;

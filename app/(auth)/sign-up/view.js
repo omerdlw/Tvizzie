@@ -2,55 +2,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { OAUTH_PROVIDER_KEYS } from '@/core/auth/oauth-providers';
+import { arePasswordRulesSatisfied, evaluatePasswordRules } from '@/core/auth/password-validation';
+import {
+  AUTH_INPUT_CLASSNAMES,
+  AUTH_PASSWORD_INPUT_CLASSNAMES,
+  AUTH_PRIMARY_BUTTON_CLASSNAMES,
+  AUTH_SECONDARY_BUTTON_CLASSNAMES,
+  AuthField,
+  PasswordToggleButton,
+} from '@/features/auth/form-primitives';
 import OAuthProviderButton from '@/features/auth/oauth-provider-button';
 import AuthPageShell from '@/features/auth/page-shell';
-import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
-
-const INPUT_CLASSNAMES = Object.freeze({
-  wrapper:
-    'flex h-12 w-full rounded-[14px] items-center border border-black/10 bg-primary px-4 transition focus-within:border-black/40',
-  input: 'w-full text-black placeholder:text-black/50',
-});
-
-const PASSWORD_INPUT_CLASSNAMES = Object.freeze({
-  ...INPUT_CLASSNAMES,
-  rightIcon: 'flex h-full items-center justify-center',
-});
-
-const PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
-  default:
-    'inline-flex h-12 rounded-[14px] w-full items-center justify-center border border-transparent bg-black px-4 font-semibold text-white transition hover:border-black/10 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-60',
-});
-
-const SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
-  default:
-    'inline-flex h-12 rounded-[14px] w-full items-center justify-center border border-black/10 bg-primary px-4 text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60',
-});
-
-function AuthField({ children, className = '', htmlFor, label }) {
-  return (
-    <div className={className}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-black/50">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function PasswordToggleButton({ visible, onClick, showLabel = 'Show password', hideLabel = 'Hide password' }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={visible ? hideLabel : showLabel}
-      className="flex h-full items-center justify-center"
-    >
-      <Icon icon={visible ? 'solar:eye-closed-linear' : 'solar:eye-linear'} size={20} />
-    </button>
-  );
-}
+import { Button, Input } from '@/ui/elements';
 
 export default function SignUpView({
   activeOAuthProvider,
@@ -61,11 +25,15 @@ export default function SignUpView({
   handlePreviousStep,
   handleStepSubmit,
   isBusy,
+  isPasswordReady,
+  passwordsMatch,
   signInHref,
   pendingAction,
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const passwordRequirements = evaluatePasswordRules(form.password);
+  const passwordRequirementsSatisfied = arePasswordRulesSatisfied(form.password);
 
   const stepTitle =
     currentStep === 0 ? 'Create account' : currentStep === 1 ? 'Profile details' : 'Secure your account';
@@ -73,15 +41,19 @@ export default function SignUpView({
   const submitLabel =
     currentStep === 0
       ? pendingAction === 'step-email'
-        ? 'Checking email...'
+        ? 'Checking email'
         : 'Continue'
       : currentStep === 1
         ? pendingAction === 'step-profile'
-          ? 'Checking username...'
+          ? 'Checking username'
           : 'Continue'
         : pendingAction === 'email'
-          ? 'Sending verification...'
-          : 'Verify and create';
+          ? 'Sending verification'
+          : pendingAction === 'creating-account'
+            ? 'Creating account'
+            : pendingAction === 'redirecting'
+              ? 'Redirecting'
+              : 'Verify and create';
 
   return (
     <AuthPageShell>
@@ -100,11 +72,11 @@ export default function SignUpView({
                 onChange={(event) => handleChange('email', event.target.value)}
                 placeholder="Enter your email"
                 autoComplete="email"
-                classNames={INPUT_CLASSNAMES}
+                classNames={AUTH_INPUT_CLASSNAMES}
               />
             </AuthField>
 
-            <Button type="submit" disabled={isBusy} classNames={PRIMARY_BUTTON_CLASSNAMES}>
+            <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
               {submitLabel}
             </Button>
 
@@ -138,7 +110,7 @@ export default function SignUpView({
                 onChange={(event) => handleChange('username', event.target.value)}
                 placeholder="Choose a username"
                 autoComplete="username"
-                classNames={INPUT_CLASSNAMES}
+                classNames={AUTH_INPUT_CLASSNAMES}
               />
             </AuthField>
 
@@ -149,7 +121,7 @@ export default function SignUpView({
                 onChange={(event) => handleChange('displayName', event.target.value)}
                 placeholder="Display name"
                 autoComplete="name"
-                classNames={INPUT_CLASSNAMES}
+                classNames={AUTH_INPUT_CLASSNAMES}
               />
             </AuthField>
           </>
@@ -165,12 +137,28 @@ export default function SignUpView({
                 onChange={(event) => handleChange('password', event.target.value)}
                 placeholder="Create password"
                 autoComplete="new-password"
-                classNames={PASSWORD_INPUT_CLASSNAMES}
+                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
                 rightIcon={
                   <PasswordToggleButton visible={showPassword} onClick={() => setShowPassword((prev) => !prev)} />
                 }
               />
             </AuthField>
+
+            <div className="space-y-1.5">
+              {passwordRequirements.map((requirement) => (
+                <div
+                  key={requirement.id}
+                  className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
+                >
+                  <Icon
+                    icon={requirement.satisfied ? 'material-symbols:check-rounded' : 'material-symbols:close-rounded'}
+                    size={16}
+                    className="shrink-0"
+                  />
+                  <span>{requirement.label}</span>
+                </div>
+              ))}
+            </div>
 
             <AuthField htmlFor="sign-up-confirm-password" label="Confirm password">
               <Input
@@ -180,7 +168,7 @@ export default function SignUpView({
                 onChange={(event) => handleChange('confirmPassword', event.target.value)}
                 placeholder="Confirm password"
                 autoComplete="new-password"
-                classNames={PASSWORD_INPUT_CLASSNAMES}
+                classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
                 rightIcon={
                   <PasswordToggleButton
                     visible={showConfirmPassword}
@@ -200,12 +188,18 @@ export default function SignUpView({
               type="button"
               onClick={handlePreviousStep}
               disabled={isBusy}
-              classNames={SECONDARY_BUTTON_CLASSNAMES}
+              classNames={AUTH_SECONDARY_BUTTON_CLASSNAMES}
             >
               Back
             </Button>
 
-            <Button type="submit" disabled={isBusy} classNames={PRIMARY_BUTTON_CLASSNAMES}>
+            <Button
+              type="submit"
+              disabled={
+                isBusy || (currentStep === 2 && (!isPasswordReady || !passwordRequirementsSatisfied || !passwordsMatch))
+              }
+              classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
+            >
               {submitLabel}
             </Button>
           </div>

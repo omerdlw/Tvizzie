@@ -17,6 +17,7 @@ import Carousel from '@/features/shared/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 
 import {
+  MovieClipReveal,
   MovieHeroReveal,
   MovieSectionReveal,
   MovieSectionSkeleton,
@@ -25,21 +26,23 @@ import {
 import Registry from './registry';
 
 const HERO_REVEAL_TIMING = Object.freeze({
-  containerDelay: 0.12,
-  titleDelay: 0.18,
-  titleDuration: 0.54,
-  taglineDelay: 0.3,
-  overviewDelay: 0.42,
+  containerDelay: 0.08,
+  titleDelay: 0.14,
+  titleClipDelay: 0.12,
+  titleDuration: 0.78,
+  socialProofDelay: 0.26,
+  taglineDelay: 0.28,
+  overviewDelay: 0.38,
 });
 
 const SECTION_REVEAL_TIMING = Object.freeze({
-  cast: 0.16,
-  gallery: 0.28,
-  images: 0.4,
-  videos: 0.52,
-  recommendations: 0.64,
-  similar: 0.76,
-  reviews: 0.14,
+  cast: 0.14,
+  gallery: 0.22,
+  images: 0.3,
+  videos: 0.38,
+  recommendations: 0.46,
+  similar: 0.54,
+  reviews: 0.12,
 });
 
 function RelatedMoviesSection({ items, title, delay = 0 }) {
@@ -56,6 +59,7 @@ function RelatedMoviesSection({ items, title, delay = 0 }) {
             <RecommendationCard
               key={`${item.id}-${index}`}
               movie={item}
+              index={index}
               imagePriority={index < 4}
               imageFetchPriority={index < 4 ? 'high' : undefined}
             />
@@ -252,33 +256,44 @@ export default function MovieView({
               <div className="flex w-full flex-col">
                 <MovieHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
                   <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                    <TextAnimate
-                      animation="slideUp"
-                      by="word"
-                      delay={HERO_REVEAL_TIMING.titleDelay}
-                      duration={HERO_REVEAL_TIMING.titleDuration}
-                      startOnView={false}
-                      className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
-                    >
-                      {movie.title}
-                    </TextAnimate>
-                    <MediaSocialProof media={{ ...movie, entityType: 'movie' }} />
+                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
+                      <TextAnimate
+                        animation="cinematicUp"
+                        by="word"
+                        delay={HERO_REVEAL_TIMING.titleDelay}
+                        duration={HERO_REVEAL_TIMING.titleDuration}
+                        startOnView={false}
+                        className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
+                      >
+                        {movie.title}
+                      </TextAnimate>
+                    </MovieClipReveal>
+
+                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.socialProofDelay} direction="left">
+                      <div>
+                        <MediaSocialProof media={{ ...movie, entityType: 'movie' }} />
+                      </div>
+                    </MovieClipReveal>
                   </div>
                 </MovieHeroReveal>
 
                 {movie.tagline ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.taglineDelay} className="mt-4">
-                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
-                      {movie.tagline}
-                    </p>
+                    <MovieClipReveal animateOnView={false} delay={0.04} className="w-fit">
+                      <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
+                        {movie.tagline}
+                      </p>
+                    </MovieClipReveal>
                   </MovieHeroReveal>
                 ) : null}
 
                 {movie.overview ? (
                   <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
-                      {movie.overview}
-                    </p>
+                    <MovieClipReveal animateOnView={false} delay={0.06}>
+                      <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
+                        {movie.overview}
+                      </p>
+                    </MovieClipReveal>
                   </MovieHeroReveal>
                 ) : null}
 

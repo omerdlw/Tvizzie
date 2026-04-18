@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/core/utils';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl, resolveVersionedImageUrl } from '@/core/utils';
 import Link from 'next/link';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
-const DEFAULT_ACCOUNT_HERO_IMAGE =
-  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop';
-const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[500px] sm:min-h-[620px] lg:min-h-[600px]';
+const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
 const ACCOUNT_HERO_IMAGE_CLASS =
   'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
 const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS =
@@ -127,20 +125,20 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
     <div className="w-full min-w-0 text-left">
       <div className="flex items-center gap-4">
-        <h1 className="font-zuume min-w-0 truncate text-[3.2rem] leading-none font-bold uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
+        <h1 className="font-zuume min-w-0 max-w-full [overflow-wrap:anywhere] text-[2.9rem] leading-none font-bold uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
           {displayName}
         </h1>
       </div>
 
       <div className="mt-2 flex flex-col gap-0.5 text-sm">
-        <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 min-[420px]:grid-cols-3 lg:hidden">
           {mobileStats.map((item, index) => (
             <HeroInlineMetric
               key={`${item.label}-${item.value}-${index}`}
               item={item}
-              className="inline-flex min-w-0 items-baseline gap-1.5 text-left whitespace-nowrap"
-              valueClassName="text-base font-semibold leading-none tracking-tight "
-              labelClassName="truncate text-base leading-none text-black/75"
+              className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
+              valueClassName="text-base font-semibold leading-none tracking-tight"
+              labelClassName="max-w-full truncate text-[13px] leading-none text-black/75"
             />
           ))}
         </div>
@@ -207,6 +205,9 @@ export default function AccountHero({
   watchlistCount = 0,
 }) {
   const heroDisplayName = String(profile?.displayName || '').trim() || 'Account';
+  const heroBannerSrc = resolveVersionedImageUrl(String(profile?.bannerUrl || ''))
+    .trim()
+    .replace(/^(null|undefined)$/i, '') || null;
   const resolvedWatchedCount =
     watchedCount !== null && watchedCount !== undefined && Number.isFinite(Number(watchedCount))
       ? Number(watchedCount)
@@ -246,13 +247,18 @@ export default function AccountHero({
 
   return (
     <section className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}>
-      <div className="absolute inset-0">
-        <img
-          src={profile?.bannerUrl || DEFAULT_ACCOUNT_HERO_IMAGE}
-          className={ACCOUNT_HERO_IMAGE_CLASS}
-          alt={`${heroDisplayName} cover`}
-        />
-      </div>
+      {heroBannerSrc ? (
+        <div className="absolute inset-0">
+          <img
+            src={heroBannerSrc}
+            className={ACCOUNT_HERO_IMAGE_CLASS}
+            alt={`${heroDisplayName} cover`}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </div>
+      ) : null}
       <div className={ACCOUNT_HERO_TINT_CLASS} />
       <div className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS} />
       <div className={ACCOUNT_HERO_LEFT_FADE_CLASS} />
@@ -260,15 +266,16 @@ export default function AccountHero({
       <div className={ACCOUNT_HERO_TOP_FADE_CLASS} />
       <div className={ACCOUNT_HERO_CENTER_GLOW_CLASS} />
       <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-20 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
+        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <img
                 className="h-full w-full rounded-[20px] object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
+                decoding="async"
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
               />
             </div>

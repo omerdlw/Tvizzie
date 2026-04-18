@@ -1,17 +1,14 @@
 'use client';
 
-import { useRegistry } from '@/core/modules/registry';
+import AuthRouteRegistry from '@/features/auth/route-registry';
 
 export default function Registry({ authIsReady }) {
-  useRegistry({
-    nav: {
-      title: 'Sign Up',
-      description: 'Create your account',
-      icon: 'solar:user-plus-bold',
-      action: null,
-    },
-    loading: { isLoading: !authIsReady },
-  });
-
-  return null;
+  return (
+    <AuthRouteRegistry
+      authIsReady={authIsReady}
+      title="Sign Up"
+      description="Create your account"
+      icon="solar:user-plus-bold"
+    />
+  );
 }

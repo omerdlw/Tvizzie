@@ -304,7 +304,6 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
               current.filter((item) => (item.docPath || item.id) !== (review.docPath || review.id))
             );
             setReviewDeleteConfirmation(null);
-            toast.success('Your review was deleted');
           } catch (error) {
             toast.error(error?.message || 'Review could not be deleted');
             throw error;

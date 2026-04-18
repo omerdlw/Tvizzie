@@ -4,7 +4,7 @@ import {
   deleteUserNotification,
   markAllUserNotificationsAsRead,
   markNotificationAsRead,
-} from '@/core/services/browser/browser-data.server';
+} from '@/core/services/notifications/notification-resources.server';
 import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
 import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';

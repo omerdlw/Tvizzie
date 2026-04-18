@@ -257,14 +257,26 @@ export function createSupabaseAuthAdapter(options = {}) {
         return signInWithOAuthProvider(payload);
       }
 
-      const client = getClient(providedClient);
-      const { error } = await client.auth.signInWithPassword({
-        email: normalizeEmail(payload.email),
-        password: String(payload.password || ''),
+      const response = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: normalizeEmail(payload.email),
+          password: String(payload.password || ''),
+        }),
       });
+      const result = await response.json().catch(() => ({ error: 'Sign in failed' }));
 
-      if (error) {
-        throw toAdapterError(error, 'Sign in failed');
+      if (!response.ok) {
+        throw toAdapterError(result, 'Sign in failed');
+      }
+
+      if (result?.requiresVerification) {
+        clearCanonicalSessionCache();
+        return result;
       }
 
       clearCanonicalSessionCache();

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { normalizeFeedbackContent } from '@/core/utils/feedback-copy';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
@@ -23,19 +24,19 @@ export function AccountSectionHeading({
 
   return (
     <div className={`flex w-full flex-col gap-6 ${className}`}>
-      <div className="flex w-full items-center justify-between gap-3">
-        <div className="flex w-full flex-1 items-center gap-2">
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full min-w-0 flex-1 items-center gap-2">
           {icon ? <Icon icon={icon} size={24} className="text-black/70" /> : null}
           {titleHref ? (
-            <Link href={titleHref} className={titleClassName}>
+            <Link href={titleHref} className={cn(titleClassName, 'min-w-0')}>
               {title}
             </Link>
           ) : (
-            <h2 className={titleClassName}>{title}</h2>
+            <h2 className={cn(titleClassName, 'min-w-0')}>{title}</h2>
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-3 text-right">
+        <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 text-left sm:w-auto sm:shrink-0 sm:justify-end sm:text-right">
           {summaryLabel && titleHref ? (
             <Link href={titleHref} className={summaryClassName}>
               {summaryLabel}
@@ -63,7 +64,9 @@ export function AccountSectionState({ message }) {
   return (
     <section className="relative bg-transparent">
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{message}</div>
+        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">
+          {normalizeFeedbackContent(message)}
+        </div>
       </div>
     </section>
   );

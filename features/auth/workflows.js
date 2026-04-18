@@ -71,19 +71,11 @@ export async function finalizeSignUp({ auth, displayName, email, password, signU
     username,
   });
 
-  const session = await auth.signIn({
-    email,
-    password,
-  });
+  const session = await auth.refreshSession();
 
   if (!session?.user?.id) {
     throw new Error('Sign-up completed but no authenticated session was returned');
   }
-
-  await ACCOUNT_CLIENT.ensureAccount(session.user, {
-    displayName: displayName || username,
-    username,
-  }).catch(() => null);
 
   return {
     ...session,

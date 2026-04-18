@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
+import { NAV_CONTENT_TRANSITION, NAV_SURFACE_ITEM_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
 
 const MAX_WATCH_PROVIDERS = 6;
 const DEFAULT_REGION = 'TR';
@@ -46,25 +48,38 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
   const providerList = useMemo(() => buildProviderList(regionalProviders), [regionalProviders]);
 
   return (
-    <div className={`flex w-full flex-col overflow-hidden`}>
-      <div className={`flex items-center justify-between gap-2 p-1`}>
+    <motion.div
+      className="flex w-full flex-col overflow-hidden"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={NAV_SURFACE_SPRING}
+      layout="position"
+    >
+      <div className="flex items-center justify-between gap-2 p-1">
         <div className="flex min-w-0 items-baseline gap-2">
-          <span className={`text-xs font-semibold tracking-wider uppercase`}>Where to watch?</span>
+          <span className="text-xs font-semibold tracking-wider uppercase">Where to watch?</span>
         </div>
-        <span className={`text-[10px] tracking-widest text-black/50 uppercase`}>{region}</span>
+        <span className="text-[10px] tracking-widest text-black/50 uppercase">{region}</span>
       </div>
 
       {providerList.length > 0 ? (
-        <div className="flex flex-col px-1">
-          {providerList.map((provider) => (
-            <div
+        <motion.div className="flex flex-col px-1" layout="position" transition={NAV_CONTENT_TRANSITION}>
+          {providerList.map((provider, index) => (
+            <motion.div
               key={`${provider.provider_id}-${provider.type}`}
-              className={`flex items-center justify-between border-b border-black/10 py-3 last:border-b-0`}
+              className="flex items-center justify-between border-b border-black/10 py-3 last:border-b-0"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ ...NAV_SURFACE_ITEM_SPRING, delay: Math.min(index * 0.024, 0.1) }}
             >
               <div className="flex min-w-0 items-center gap-2">
                 <img
                   src={`${TMDB_IMG}/w154${provider.logo_path}`}
                   alt={provider.provider_name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-7 w-7 shrink-0 rounded-[10px] object-cover"
                 />
                 <span className={`truncate text-sm font-medium text-black/70`}>{provider.provider_name}</span>
@@ -74,12 +89,14 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
               >
                 {provider.type}
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
-        <div className={`center p-4 text-sm`}>Watch providers are not available for this region</div>
+        <motion.div className="center p-4 text-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          Watch providers are not available for this region
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -5,7 +5,7 @@ import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge
 
 export const runtime = 'nodejs';
 
-const VALID_SCOPES = new Set(['page', 'project']);
+const FEEDBACK_SCOPE = 'project';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -47,12 +47,7 @@ function resolveStatusCode(error) {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const scope = normalizeValue(body?.scope).toLowerCase();
     const message = normalizeValue(body?.message);
-
-    if (!VALID_SCOPES.has(scope)) {
-      return NextResponse.json({ error: 'scope must be page or project' }, { status: 400 });
-    }
 
     if (!message) {
       return NextResponse.json({ error: 'message is required' }, { status: 400 });
@@ -71,10 +66,7 @@ export async function POST(request) {
           referer: normalizeOptionalValue(request.headers.get('referer'), 1024),
           userAgent: normalizeOptionalValue(request.headers.get('user-agent'), 512),
         },
-        pageDescription: normalizeOptionalValue(body?.pageDescription, 600),
-        pagePath: normalizeOptionalValue(body?.pagePath, 320),
-        pageTitle: normalizeOptionalValue(body?.pageTitle, 160),
-        scope,
+        scope: FEEDBACK_SCOPE,
         source: normalizeOptionalValue(body?.source, 80) || 'context-menu',
         userEmail: normalizeOptionalValue(sessionContext?.email, 320),
         userId: normalizeOptionalValue(sessionContext?.userId, 80),

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
 import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
 import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
@@ -18,6 +19,7 @@ import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/sessio
 import { getRequestContext, setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
 import { assertRecentReauth } from '@/core/auth/servers/security/recent-reauth.server';
 import { createStepUpToken, setStepUpCookie } from '@/core/auth/servers/security/step-up.server';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 
 function normalizeEmail(value) {
   return String(value || '')
@@ -33,6 +35,21 @@ function isSecurePurpose(purpose) {
     purpose === PURPOSES.PASSWORD_SET ||
     purpose === PURPOSES.PROVIDER_LINK
   );
+}
+
+function createResponseClient(request, response) {
+  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
 }
 
 export async function POST(request) {
@@ -132,6 +149,15 @@ export async function POST(request) {
     const response = NextResponse.json(responsePayload);
 
     if (purpose === PURPOSES.SIGN_IN && pendingSignIn) {
+      const supabase = createResponseClient(request, response);
+      const sessionResult = await supabase.auth.refreshSession({
+        refresh_token: pendingSignIn.refreshToken,
+      });
+
+      if (sessionResult.error || !sessionResult.data?.session?.access_token) {
+        throw new Error(sessionResult.error?.message || 'Sign-in session could not be restored');
+      }
+
       applySessionCookies(response, {
         csrfToken: createCsrfToken(),
       });

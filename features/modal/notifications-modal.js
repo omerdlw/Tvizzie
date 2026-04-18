@@ -205,6 +205,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
             alt={notification.actor?.displayName || 'Avatar'}
             className="size-full object-cover"
             loading="lazy"
+            decoding="async"
             onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           />
         ) : (

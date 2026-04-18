@@ -2,7 +2,8 @@ import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_EVENT_TYPES } from '@/core/services/activity/activity-events.constants';
-import { getAccountProfileByUserId, getCollectionResource } from '@/core/services/browser/browser-data.server';
+import { canViewerAccessUserContent, createPrivateProfileError, getAccountProfileByUserId } from '@/core/services/account/account-profile.server';
+import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
 import { normalizeTimestamp } from '@/core/services/shared/data-utils';
 import { normalizeMediaType } from '@/core/utils/media';
@@ -636,48 +637,6 @@ function projectActivityItem(item = {}, viewerId = null) {
   };
 }
 
-async function canViewerAccessUserContent({ admin, ownerId, viewerId = null }) {
-  if (!ownerId) {
-    return false;
-  }
-
-  if (viewerId && viewerId === ownerId) {
-    return true;
-  }
-
-  const profileResult = await admin.from('profiles').select('is_private').eq('id', ownerId).maybeSingle();
-
-  if (profileResult.error) {
-    throw new Error(profileResult.error.message || 'Profile visibility could not be checked');
-  }
-
-  if (!profileResult.data) {
-    return false;
-  }
-
-  if (profileResult.data.is_private !== true) {
-    return true;
-  }
-
-  if (!viewerId) {
-    return false;
-  }
-
-  const followResult = await admin
-    .from('follows')
-    .select('status')
-    .eq('follower_id', viewerId)
-    .eq('following_id', ownerId)
-    .eq('status', FOLLOW_STATUS_ACCEPTED)
-    .maybeSingle();
-
-  if (followResult.error) {
-    throw new Error(followResult.error.message || 'Profile visibility could not be checked');
-  }
-
-  return Boolean(followResult.data);
-}
-
 async function fetchActivitiesForSources(admin, sourceIds = [], pageSize = null) {
   const uniqueSourceIds = [...new Set(sourceIds.map((value) => normalizeValue(value)).filter(Boolean))];
 
@@ -763,15 +722,13 @@ export async function fetchAccountActivityFeedServer({
 
   const admin = createAdminClient();
   const canViewProfile = await canViewerAccessUserContent({
-    admin,
+    client: admin,
     ownerId: userId,
     viewerId,
   });
 
   if (!canViewProfile) {
-    const error = new Error('This profile is private');
-    error.status = 403;
-    throw error;
+    throw createPrivateProfileError();
   }
 
   const followingIds = await fetchAcceptedFollowingIds(admin, userId).catch(() => []);

@@ -1,10 +1,10 @@
 import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
 import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
+import { getFollowResource } from '@/core/services/social/follow-resources.server';
 import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
 import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
-import { getFollowResource } from '@/core/services/browser/browser-data.server';
 import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/core/services/shared/memory-cache.server';
 
 export const runtime = 'nodejs';

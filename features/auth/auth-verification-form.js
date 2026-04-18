@@ -178,12 +178,6 @@ export default function AuthVerificationForm({
         lastAutoSubmittedCodeRef.current = '';
         completedRef.current = false;
         activeSubmissionKeyRef.current = '';
-
-        if (!isInitial) {
-          toast.success('A new verification code has been sent', {
-            id: `auth-verification-resend-${purpose}`,
-          });
-        }
       } catch (error) {
         if (isInitial) {
           autoSentRef.current = false;
@@ -304,7 +298,6 @@ export default function AuthVerificationForm({
         });
 
         completedRef.current = true;
-        toast.success('Verification completed successfully');
         closeVerification(close, {
           success: true,
           purpose,
@@ -411,7 +404,7 @@ export default function AuthVerificationForm({
       ) : null}
       <div className="grid gap-2">
         <Button
-          className="hover:bg-info h-11 w-full flex-auto rounded-[10px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+          className="hover:bg-info h-11 w-full flex-auto rounded-[14px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"

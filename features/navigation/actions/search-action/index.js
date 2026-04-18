@@ -4,14 +4,20 @@ import { startTransition, useCallback, useEffect, useState } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants';
 import { useDebounce } from '@/core/hooks';
 import { useNavigation } from '@/core/modules/nav/hooks';
+import {
+  NAV_ACTION_SPRING,
+  NAV_CONTENT_TRANSITION,
+  NAV_SEARCH_REVEAL_TRANSITION,
+  NAV_SURFACE_ITEM_SPRING,
+} from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
 
 import { SEARCH_LIMITS, SEARCH_TYPES } from './constants';
 import SearchActionControls from './parts/controls';
 import SearchResultItem from './parts/item';
+import { navActionClass } from './utils';
 import {
   fetchAllMedia,
   fetchMedia,
@@ -20,8 +26,7 @@ import {
   inferSearchType,
   limitMediaResults,
   mergeAllResults,
-  navActionClass,
-} from './utils';
+} from '@/features/search/utils';
 
 const SEARCH_ACTION_VARIANTS = Object.freeze({
   DEFAULT: 'default',
@@ -254,7 +259,7 @@ export default function SearchAction({
   }, [expanded, handleClear, isPageVariant]);
 
   return (
-    <motion.div className="mt-2.5 w-full" layout="position">
+    <motion.div className="mt-2.5 w-full" layout="position" transition={NAV_CONTENT_TRANSITION}>
       <SearchActionControls
         loading={loading}
         query={query}
@@ -266,38 +271,46 @@ export default function SearchAction({
       />
       {!isPageVariant ? (
         <>
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {results.length > 0 && query ? (
               <motion.div
                 layout="position"
                 className="mt-2 flex flex-col gap-1 overflow-hidden"
-                initial={{ height: 0 }}
-                animate={{ height: 'auto' }}
-                exit={{ height: 0 }}
-                transition={{ duration: DURATION.QUICK, ease: EASING.EASE_OUT }}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={NAV_SEARCH_REVEAL_TRANSITION}
               >
-                {results.map((item) => (
-                  <SearchResultItem
+                {results.map((item, index) => (
+                  <motion.div
                     key={`${item.media_type}-${item.id}`}
-                    item={item}
-                    imageErrors={imageErrors}
-                    onImageError={handleImageError}
-                    onSelect={handleSelect}
-                  />
+                    initial={{ opacity: 0, y: 6, scale: 0.985 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.985 }}
+                    transition={{ ...NAV_SURFACE_ITEM_SPRING, delay: Math.min(index * 0.018, 0.08) }}
+                  >
+                    <SearchResultItem
+                      item={item}
+                      imageErrors={imageErrors}
+                      onImageError={handleImageError}
+                      onSelect={handleSelect}
+                    />
+                  </motion.div>
                 ))}
               </motion.div>
             ) : null}
           </AnimatePresence>
 
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {query.trim() ? (
               <motion.div
                 className="mt-2 overflow-hidden"
-                initial={{ height: 0 }}
-                animate={{ height: 'auto' }}
-                exit={{ height: 0 }}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={NAV_SEARCH_REVEAL_TRANSITION}
               >
-                <button
+                <motion.button
                   type="button"
                   className={navActionClass({
                     button:
@@ -305,9 +318,11 @@ export default function SearchAction({
                     cn,
                   })}
                   onClick={handleSeeAllResults}
+                  whileTap={{ scale: 0.985 }}
+                  transition={NAV_ACTION_SPRING}
                 >
                   See all results
-                </button>
+                </motion.button>
               </motion.div>
             ) : null}
           </AnimatePresence>

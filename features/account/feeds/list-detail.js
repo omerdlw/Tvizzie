@@ -23,7 +23,7 @@ import {
   toReviewQueryValues,
 } from '@/features/account/filtering';
 import { AccountMediaFilterBar, AccountReviewFilterBar } from '@/features/account/shared/content-filters';
-import { AccountProfileMediaActions } from '@/features/account/shared/media-grid';
+import { ProfileMediaActions } from '@/features/account/shared/media-grid';
 import AccountPagination from '@/features/account/shared/pagination';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/features/account/utils';
 import AccountInlineSectionState from '@/features/account/shared/section-state';
@@ -179,7 +179,7 @@ function ListDetailMediaGrid({
                 imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
                 topOverlay={
                   isOwner && typeof onRemoveItem === 'function' ? (
-                    <AccountProfileMediaActions
+                    <ProfileMediaActions
                       media={item}
                       onRemoveItem={onRemoveItem}
                       removeLabel={`Remove ${title} from this list`}

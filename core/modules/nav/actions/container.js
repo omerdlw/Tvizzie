@@ -2,14 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
+import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigationState } from '@/core/modules/nav/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
+
+import { NAV_ACTION_SPRING, NAV_BADGE_SPRING, NAV_CONTENT_TRANSITION } from '../motion';
 
 const ACTION_KEYS = Object.freeze({
   NOTIFICATIONS: 'notifications',
@@ -215,34 +219,57 @@ export function useNavActions({ activeItem } = {}) {
 }
 
 export function NavAction({ action }) {
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
+
   return (
     <Tooltip className="px-2" text={action.tooltip}>
-      <button
-        className={`center relative cursor-pointer rounded-full border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black`}
+      <motion.button
+        className="center relative cursor-pointer rounded-full border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black"
         onClick={action.onClick}
         type="button"
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.04 }}
+        transition={NAV_ACTION_SPRING}
       >
         <Icon icon={action.icon} size={16} />
-        {action.badge ? (
-          <span
-            className={`center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-white`}
-          >
-            {action.badge}
-          </span>
-        ) : null}
-      </button>
+        <AnimatePresence initial={false}>
+          {action.badge ? (
+            <motion.span
+              className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-white"
+              initial={initialPageAnimationsEnabled ? { scale: 0.6, opacity: 0 } : false}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={NAV_BADGE_SPRING}
+            >
+              {action.badge}
+            </motion.span>
+          ) : null}
+        </AnimatePresence>
+      </motion.button>
     </Tooltip>
   );
 }
 
 export function NavActionsContainer({ activeItem }) {
+  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const actions = useNavActions({ activeItem });
 
   return (
-    <div className={`mr-2 flex shrink-0 items-center gap-1`}>
-      {actions.map((action, index) => (
-        <NavAction key={`${action.key || action.icon || 'nav-action'}-${index}`} action={action} />
-      ))}
-    </div>
+    <motion.div className="mr-2 flex shrink-0 items-center gap-1" layout="position" transition={NAV_CONTENT_TRANSITION}>
+      <AnimatePresence initial={false}>
+        {actions.map((action, index) => (
+          <motion.div
+            key={`${action.key || action.icon || 'nav-action'}-${index}`}
+            layout="position"
+            initial={initialPageAnimationsEnabled ? { opacity: 0, scale: 0.84, y: 4 } : false}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.84, y: -4 }}
+            transition={NAV_ACTION_SPRING}
+          >
+            <NavAction action={action} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 }

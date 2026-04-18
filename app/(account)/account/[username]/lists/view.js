@@ -12,7 +12,7 @@ export const Registry = createAccountSectionRegistry({
       sectionState.isOwner && typeof onCreateList === 'function' ? (
         <AccountAction
           mode="single-action"
-          actionIcon="solar:add-circle-bold"
+          actionIcon="material-symbols:add-rounded"
           actionLabel="Create List"
           onAction={onCreateList}
         />

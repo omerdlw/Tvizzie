@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import {
-  getAccountSocialProofResource,
-  getMediaSocialProofResource,
-} from '@/core/services/browser/browser-social-proof.server';
 import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -29,18 +26,26 @@ export async function GET(request) {
       cacheKey,
       enabled: !viewerId,
       ttlMs: 1500,
-      loader: () =>
-        resource === 'account'
-          ? getAccountSocialProofResource({
-              canViewPrivateContent,
-              targetUserId,
-              viewerId,
-            })
-          : getMediaSocialProofResource({
-              entityId,
-              entityType,
-              viewerId,
-            }),
+      loader: async () => {
+        const payload = await invokeInternalEdgeFunction('social-proof-read', {
+          body:
+            resource === 'account'
+              ? {
+                  canViewPrivateContent,
+                  resource: 'account',
+                  targetUserId,
+                  viewerId,
+                }
+              : {
+                  entityId,
+                  entityType,
+                  resource: 'media',
+                  viewerId,
+                },
+        });
+
+        return payload?.data || null;
+      },
     });
 
     return NextResponse.json({ data });
