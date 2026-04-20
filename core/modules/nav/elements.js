@@ -50,7 +50,7 @@ export function Description({ text, style, maxLines = 1 }) {
   const isMultiline = Number(maxLines) > 1;
 
   return (
-    <div className="relative w-full text-sm">
+    <div className="relative w-full text-xs sm:text-sm">
       <AnimatePresence initial={false} mode="wait">
         <motion.p
           className={cn('text-black', isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate', className)}
@@ -135,14 +135,14 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
     <div className="relative">
       {isImageSource ? (
         <motion.div
-          className={cn('size-12 shrink-0 rounded-[12.5px] bg-cover bg-center bg-no-repeat', className)}
+          className={cn('size-10 sm:size-12 shrink-0 rounded-[14px] sm:rounded-[12px] bg-cover bg-center bg-no-repeat', className)}
           transition={NAV_CONTENT_TRANSITION}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
           className={cn(
-            'center size-12 rounded-[12.5px] bg-black/5 transition-colors duration-[300ms]',
+            'center size-10 sm:size-12 rounded-[14px] sm:rounded-[12px] bg-black/5 transition-colors duration-[300ms]',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className

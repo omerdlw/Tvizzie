@@ -57,69 +57,10 @@ function getUniqueItems(items = [], limit = items.length) {
     .slice(0, limit);
 }
 
-function SectionLabel({ children }) {
-  return <h2 className="text-[11px] font-semibold tracking-[0.16em] text-black/68 uppercase">{children}</h2>;
-}
-
-function HeroPager({ items = [], activeId, onSelect }) {
-  if (items.length <= 1) {
-    return null;
-  }
-
-  return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-white/14 bg-black/26 px-2.5 py-2 backdrop-blur-sm">
-      {items.map((item) => {
-        const isActive = item?.id === activeId;
-
-        return (
-          <motion.button
-            key={item.id}
-            type="button"
-            onClick={() => onSelect(item.id)}
-            aria-label={`Show ${getTitle(item)}`}
-            aria-pressed={isActive}
-            animate={{
-              width: isActive ? 28 : 10,
-              opacity: isActive ? 1 : 0.8,
-              backgroundColor: isActive ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.34)',
-            }}
-            transition={HOME_HERO_PAGER_TRANSITION}
-            className="h-2.5 rounded-full"
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-function GenreChip({ genre, isActive, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isActive}
-      className={`inline-flex h-9 shrink-0 items-center rounded-full border px-4 text-[11px] font-semibold tracking-wide text-black/72 transition ${
-        isActive ? 'border-black bg-black text-white' : 'border-black/10 bg-white hover:border-black/20 hover:bg-black/5'
-      }`}
-    >
-      {genre.name}
-    </button>
-  );
-}
-
-function PosterRail({ items = [] }) {
-  if (!items.length) {
-    return null;
-  }
-
-  return (
-    <Carousel gap="gap-3" itemClassName="w-[7.2rem] sm:w-[8.2rem] md:w-[9rem] lg:w-[9.4rem]">
-      {items.map((item) => (
-        <MediaPosterCard key={item.id} item={item} />
-      ))}
-    </Carousel>
-  );
-}
+import { HeroPager } from '@/features/home/hero-pager';
+import { GenreChip } from '@/features/home/genre-chip';
+import { PosterRail } from '@/features/home/poster-rail';
+import { SectionLabel } from '@/features/home/section-label';
 
 function getDiscoverBatchSize(isMobileGrid) {
   return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
@@ -384,7 +325,7 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
                             {getTitle(heroItem)}
                           </h1>
                           {heroItem?.overview ? (
-                            <p className="max-w-[34rem] text-sm leading-7 text-white/66 sm:text-[15px]">
+                            <p className="line-clamp-3 max-w-[34rem] text-[13px] leading-relaxed text-white/66 sm:line-clamp-4 sm:text-[15px] sm:leading-7">
                               {heroItem.overview}
                             </p>
                           ) : null}

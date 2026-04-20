@@ -159,7 +159,7 @@ export default function Sidebar({ item, director, writers, creators, certificati
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
+      <div className="relative mx-auto aspect-2/3 w-[65%] max-w-[280px] shrink-0 overflow-hidden rounded-[20px] sm:w-full sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
         {posterSrc ? (
           <AdaptiveImage
             fill

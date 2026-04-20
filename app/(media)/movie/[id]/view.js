@@ -272,7 +272,7 @@ export default function MovieView({
                         delay={HERO_REVEAL_TIMING.titleDelay}
                         duration={HERO_REVEAL_TIMING.titleDuration}
                         startOnView={false}
-                        className="font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
+                        className="max-w-full [overflow-wrap:anywhere] font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
                       >
                         {movie.title}
                       </TextAnimate>

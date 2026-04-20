@@ -194,13 +194,16 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
                 scale: 0.988,
               });
 
+              // Hide the third pill on small screens to ensure the action button fits.
+              const responsiveClass = index > 1 ? 'hidden sm:block' : '';
+
               return (
                 <motion.div
                   key={buildPersonEntryKey(tabKey, person, index, 'compact')}
                   initial={compactMotion.initial}
                   animate={compactMotion.animate}
                   transition={compactMotion.transition}
-                  className="flex-1"
+                  className={`flex-1 min-w-0 ${responsiveClass}`}
                 >
                   <PersonCard person={person} compact />
                 </motion.div>

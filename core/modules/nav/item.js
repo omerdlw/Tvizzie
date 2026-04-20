@@ -29,12 +29,12 @@ import ConfirmationSurface from './surfaces/confirmation-surface';
 import { resolveNavVisualStyle } from './utils';
 
 const NAV_CARD_DIMENSIONS = Object.freeze({
-  chromeHeight: 24,
+  chromeHeight: 20,
   collapsedY: -8,
-  compactHeight: 52,
+  compactHeight: 38,
   expandedY: -78,
   actionGap: 10,
-  height: 74,
+  height: 64,
 });
 
 export const NAV_CARD_LAYOUT = Object.freeze({
@@ -88,7 +88,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
   if (reduceMotion) {
     return {
       className: cn(
-        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-lg',
+        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
         'border-black/15 bg-white/80',
         showBorder && 'border-black/20',
         cardStyle?.className
@@ -121,7 +121,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-2 backdrop-blur-lg',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -274,9 +274,9 @@ function StandardItemContent({
     };
 
     return (
-      <div ref={contentContainerRef} className="flex h-7 w-full items-center justify-center px-5">
+      <div ref={contentContainerRef} className="flex h-5 sm:h-6 w-full items-center justify-center px-4 sm:px-5">
         <div className="min-w-0">
-          <Title text={link.title || link.name} style={compactTitleStyle} />
+          <Title text={link.title || link.name} style={{ ...compactTitleStyle, className: cn(compactTitleStyle.className, 'text-[12px] sm:text-[14px]') }} />
         </div>
       </div>
     );
@@ -323,7 +323,13 @@ function StandardItemContent({
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
           <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <div className="flex items-center gap-1.5">
-              <Title text={link.title || link.name} style={itemStyle.title} />
+              <Title 
+                text={link.title || link.name} 
+                style={{
+                  ...itemStyle.title,
+                  className: cn(itemStyle.title?.className, 'text-[14px] sm:text-[16px]')
+                }} 
+              />
             </div>
             <Description text={description} style={itemStyle.description} />
           </div>
