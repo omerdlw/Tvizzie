@@ -2,10 +2,10 @@ import NavHeightSpacer from '@/features/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import CollectionActions from '@/features/movie/collection-actions';
-import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '@/features/movie/movie-motion';
 import Sidebar from '@/features/movie/sidebar';
 import MediaReviews from '@/features/reviews';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from './motion';
 
 import Registry from '../registry';
 

@@ -83,7 +83,7 @@ export default function MediaCard({
   imageQuality,
   onImageError,
   imageClassName,
-  imageBaseClassName = 'object-cover transition-transform duration-(--motion-duration-normal) ',
+  imageBaseClassName = 'object-cover transition-transform duration-[300ms] ',
   fallbackIcon = 'solar:gallery-bold',
   fallbackIconClassName = '',
   fallbackIconSize = 20,

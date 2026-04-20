@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -28,8 +27,8 @@ export function LoadingOverlay() {
           animate={{}}
           exit={{}}
           transition={{
-            duration: DURATION.NORMAL,
-            ease: EASING.EASE_IN_OUT,
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1],
           }}
         >
           <LoadingContent skeleton={skeleton} />

@@ -11,8 +11,6 @@ const FALLBACK_NOTIFICATION_ACTIONS = Object.freeze({
 
 const FALLBACK_NOTIFICATION_STATE = Object.freeze({
   notifications: {},
-  hasNotification: () => false,
-  getNotification: () => undefined,
 });
 
 const NotificationActionsContext = createContext(FALLBACK_NOTIFICATION_ACTIONS);
@@ -147,8 +145,6 @@ export const NotificationProvider = ({ children }) => {
   const state = useMemo(
     () => ({
       notifications,
-      hasNotification: (type) => notifications[type] !== undefined,
-      getNotification: (type) => notifications[type],
     }),
     [notifications]
   );

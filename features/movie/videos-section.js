@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
-import { EASING } from '@/core/constants';
 import {
   getSurfaceItemMotion,
   getSurfacePanelMotion,
@@ -113,7 +112,7 @@ export default function VideosSection({ videos }) {
                             <motion.div
                               className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm"
                               whileHover={reduceMotion ? undefined : { scale: 1.08 }}
-                              transition={reduceMotion ? undefined : { duration: 0.28, ease: EASING.ACCENT }}
+                              transition={reduceMotion ? undefined : { duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
                             >
                               <Icon icon="solar:play-bold" size={16} />
                             </motion.div>

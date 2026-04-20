@@ -113,6 +113,9 @@ export default function View({
     <AuthPageShell>
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3">
         <div className="flex flex-col items-center text-center">
+          <Link href="/" className="mb-6 block transition-transform hover:scale-[1.02]">
+            <img src="/tvizzie.svg" alt="Tvizzie" className="size-16" />
+          </Link>
           <h1 className="text-3xl font-semibold sm:text-4xl">Welcome back!</h1>
         </div>
 

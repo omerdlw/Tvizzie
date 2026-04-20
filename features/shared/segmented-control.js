@@ -140,7 +140,7 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-(--motion-duration-fast)',
+                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-[200ms]',
                   isActive ? classNames.active || 'text-black' : classNames.inactive || 'text-black/70',
                   classNames.button
                 )}

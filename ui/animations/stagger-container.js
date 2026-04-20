@@ -1,14 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
-import { DURATION } from '@/core/constants';
+import { ANIMATION_STAGGER } from '@/core/animation';
 
 const STAGGER_CONTAINER_VARIANTS = {
   visible: {
     transition: {
-      staggerChildren: DURATION.VERY_FAST,
-      delayChildren: DURATION.QUICK,
+      staggerChildren: ANIMATION_STAGGER.CASCADE,
+      delayChildren: ANIMATION_STAGGER.GROUP,
     },
   },
   hidden: {},

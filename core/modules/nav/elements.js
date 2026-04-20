@@ -142,7 +142,7 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
       ) : (
         <motion.div
           className={cn(
-            'center size-12 rounded-[12.5px] bg-black/5 transition-colors duration-(--motion-duration-normal)',
+            'center size-12 rounded-[12.5px] bg-black/5 transition-colors duration-[300ms]',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className

@@ -7,7 +7,7 @@ import Carousel from '@/features/shared/carousel';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
-import { getSurfaceItemMotion } from '@/features/movie/movie-motion';
+import { getPersonSurfaceItemMotion } from '@/features/person/person-motion';
 
 function sortProfiles(profiles = []) {
   return [...profiles]
@@ -32,7 +32,7 @@ export default function PersonGallery({ images, animateItemReveal = true }) {
 
       <Carousel gap="gap-3">
         {profiles.map((image, index) => {
-          const cardMotion = getSurfaceItemMotion({
+          const cardMotion = getPersonSurfaceItemMotion({
             enabled: animateItemReveal,
             reduceMotion,
             index,

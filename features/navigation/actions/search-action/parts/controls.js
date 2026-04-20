@@ -42,7 +42,7 @@ export default function SearchActionControls({
         enterKeyHint="search"
         leftIcon={
           <Icon
-            className={`${query ? 'text-black' : 'text-black/50'} transition-colors duration-(--motion-duration-normal)`}
+            className={`${query ? 'text-black' : 'text-black/50'} transition-colors duration-[300ms]`}
             icon="solar:magnifer-linear"
             size={16}
           />

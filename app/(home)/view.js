@@ -6,26 +6,18 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { EASING, PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/core/constants';
+import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/core/constants';
+import { HOME_HERO_CONTENT_TRANSITION, HOME_HERO_IMAGE_TRANSITION, HOME_HERO_PAGER_TRANSITION, HomeSectionReveal } from './motion';
 import Carousel from '@/features/shared/carousel';
 import MediaPosterCard from '@/features/shared/media-poster-card';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import { RevealItem } from '@/ui/animations/reveal-item';
 import Icon from '@/ui/icon';
 
 const ALL_GENRE_ID = 'all';
 const MOBILE_DISCOVER_BATCH = 9;
 const DESKTOP_DISCOVER_BATCH = 24;
 const MOBILE_DISCOVER_MEDIA_QUERY = '(max-width: 639px)';
-const HERO_IMAGE_TRANSITION = Object.freeze({
-  duration: 0.78,
-  ease: EASING.EMPHASIZED,
-});
-const HERO_CONTENT_TRANSITION = Object.freeze({
-  duration: 0.52,
-  ease: EASING.ACCENT,
-});
 
 function getTitle(item) {
   return item?.title || item?.original_title || item?.name || item?.original_name || 'Untitled';
@@ -91,7 +83,7 @@ function HeroPager({ items = [], activeId, onSelect }) {
               opacity: isActive ? 1 : 0.8,
               backgroundColor: isActive ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.34)',
             }}
-            transition={{ duration: 0.34, ease: EASING.ACCENT }}
+            transition={HOME_HERO_PAGER_TRANSITION}
             className="h-2.5 rounded-full"
           />
         );
@@ -309,7 +301,7 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
       <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.18),transparent_55%)] opacity-50" />
 
       <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-3 pt-20 pb-20 sm:px-4 md:px-6`}>
-        <RevealItem delay={0.04} distance={24}>
+        <HomeSectionReveal delay={0.04} distance={24}>
           <section className="mx-auto w-full max-w-5xl">
             <div className="relative overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
               <div className="relative h-[21rem] w-full sm:h-[28rem] lg:h-[38rem]">
@@ -330,7 +322,7 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
                               filter: isActive ? 'blur(0px)' : 'blur(0px)',
                             }
                       }
-                      transition={reduceMotion ? { duration: 0.12 } : HERO_IMAGE_TRANSITION}
+                      transition={reduceMotion ? { duration: 0.12 } : HOME_HERO_IMAGE_TRANSITION}
                       className="absolute inset-0"
                       style={{ zIndex: 0, pointerEvents: 'none' }}
                     >
@@ -371,7 +363,7 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
                         initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.985 }}
                         animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
                         exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.992 }}
-                        transition={reduceMotion ? { duration: 0.16 } : HERO_CONTENT_TRANSITION}
+                        transition={reduceMotion ? { duration: 0.16 } : HOME_HERO_CONTENT_TRANSITION}
                         className="flex flex-col gap-4"
                       >
                         <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-white/84 uppercase">
@@ -422,9 +414,9 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
               <HeroPager items={heroPagerItems} activeId={heroItem?.id} onSelect={onSelectHero} />
             </div>
           </section>
-        </RevealItem>
+        </HomeSectionReveal>
 
-        <RevealItem delay={0.08} distance={18}>
+        <HomeSectionReveal delay={0.08} distance={18}>
           <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
             <div className="overflow-x-auto pb-1">
               <div className="flex w-max min-w-full items-center gap-2">
@@ -441,9 +433,9 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
 
               <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
                 {gridItems.map((item, index) => (
-                  <RevealItem key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
+                  <HomeSectionReveal key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
                     <MediaPosterCard item={item} className="w-full" />
-                  </RevealItem>
+                  </HomeSectionReveal>
                 ))}
 
               {isFiltering
@@ -477,21 +469,21 @@ export default function View({ homeData = {}, heroItems = [], selectedHeroId = n
               ) : null}
             </div>
           </section>
-        </RevealItem>
+        </HomeSectionReveal>
 
-        <RevealItem delay={0.12} distance={18}>
+        <HomeSectionReveal delay={0.12} distance={18}>
           <section className="mx-auto flex w-full max-w-5xl flex-col gap-3">
             <SectionLabel>Today&apos;s popular movies</SectionLabel>
             <PosterRail items={todayRailItems} />
           </section>
-        </RevealItem>
+        </HomeSectionReveal>
 
-        <RevealItem delay={0.16} distance={18}>
+        <HomeSectionReveal delay={0.16} distance={18}>
           <section className="mx-auto flex w-full max-w-5xl flex-col gap-3">
             <SectionLabel>This week&apos;s popular movies</SectionLabel>
             <PosterRail items={weekRailItems} />
           </section>
-        </RevealItem>
+        </HomeSectionReveal>
       </div>
     </PageGradientShell>
   );

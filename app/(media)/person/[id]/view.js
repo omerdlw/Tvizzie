@@ -10,14 +10,14 @@ import PersonTimeline from '@/features/person/timeline';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import {
-  MovieClipReveal,
-  MovieHeroReveal,
-  MovieSectionReveal,
-  MovieSidebarReveal,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
-  useInitialItemRevealEnabled,
-} from '@/features/movie/movie-motion';
+  PersonClipReveal,
+  PersonHeroReveal,
+  PersonSectionReveal,
+  PersonSidebarReveal,
+  getPersonSurfaceItemMotion,
+  getPersonSurfacePanelMotion,
+  useInitialPersonItemRevealEnabled,
+} from './motion';
 import { getFilmographyCredits } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
@@ -59,19 +59,19 @@ function PersonMainContent({ person, animateItemReveal = true }) {
   return (
     <>
       {person?.images?.profiles?.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
+        <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
           <PersonGallery images={person.images} animateItemReveal={animateItemReveal} />
-        </MovieSectionReveal>
+        </PersonSectionReveal>
       ) : null}
 
       {movieCredits.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography} animateOnView={false}>
+        <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography} animateOnView={false}>
           <section className="flex flex-col gap-3">
             <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
               {movieCredits.map((credit, index) => {
-                const cardMotion = getSurfaceItemMotion({
+                const cardMotion = getPersonSurfaceItemMotion({
                   enabled: animateItemReveal,
                   reduceMotion,
                   index,
@@ -96,7 +96,7 @@ function PersonMainContent({ person, animateItemReveal = true }) {
               })}
             </div>
           </section>
-        </MovieSectionReveal>
+        </PersonSectionReveal>
       ) : null}
     </>
   );
@@ -111,9 +111,9 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView, anima
 
   if (activeView === 'timeline') {
     return (
-      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.timeline} animateOnView={false}>
+      <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.timeline} animateOnView={false}>
         <PersonTimeline person={mergedPerson} />
-      </MovieSectionReveal>
+      </PersonSectionReveal>
     );
   }
 
@@ -132,11 +132,11 @@ export default function PersonView({
   canResetPersonPoster,
 }) {
   const reduceMotion = useReducedMotion();
-  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
+  const shouldAnimateItemReveal = useInitialPersonItemRevealEnabled();
   if (!person) return null;
 
   const biographyExcerpt = getBiographyExcerpt(person.biography);
-  const viewMotion = getSurfacePanelMotion({ reduceMotion });
+  const viewMotion = getPersonSurfacePanelMotion({ reduceMotion });
   const deferredFallback =
     activeView === 'timeline' ? (
       <PersonTimelineSkeleton className="mt-10" />
@@ -163,16 +163,16 @@ export default function PersonView({
         >
           <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
             <div className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-[400px]">
-              <MovieSidebarReveal>
+              <PersonSidebarReveal>
                 <PersonSidebar person={person} age={age} />
-              </MovieSidebarReveal>
+              </PersonSidebarReveal>
             </div>
 
             <div className="flex w-full min-w-0 flex-col">
               <div className="flex w-full flex-col">
-                <MovieHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
+                <PersonHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
                   <div className="flex min-w-0 items-end justify-between gap-3">
-                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
+                    <PersonClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
                       <TextAnimate
                         animation="cinematicUp"
                         by="word"
@@ -183,18 +183,18 @@ export default function PersonView({
                       >
                         {person.name}
                       </TextAnimate>
-                    </MovieClipReveal>
+                    </PersonClipReveal>
                   </div>
-                </MovieHeroReveal>
+                </PersonHeroReveal>
 
                 {biographyExcerpt ? (
-                  <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <MovieClipReveal animateOnView={false} delay={0.06}>
+                  <PersonHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
+                    <PersonClipReveal animateOnView={false} delay={0.06}>
                       <p className="max-w-[72ch] text-left text-[15px] leading-6 text-black/70 sm:text-justify sm:text-base sm:leading-7">
                         {biographyExcerpt}
                       </p>
-                    </MovieClipReveal>
-                  </MovieHeroReveal>
+                    </PersonClipReveal>
+                  </PersonHeroReveal>
                 ) : null}
 
                 <AnimatePresence mode="wait">
@@ -206,9 +206,9 @@ export default function PersonView({
                     transition={viewMotion.transition}
                   >
                     {activeView === 'awards' ? (
-                      <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards} animateOnView={false}>
+                      <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards} animateOnView={false}>
                         <PersonAwards personId={person.id} />
-                      </MovieSectionReveal>
+                      </PersonSectionReveal>
                     ) : (
                       <Suspense fallback={deferredFallback}>
                         <PersonDeferredContent

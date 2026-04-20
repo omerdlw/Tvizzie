@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { getSurfaceItemMotion } from '@/features/movie/movie-motion';
+import { getPersonSurfaceItemMotion } from '@/features/person/person-motion';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
 
 import MediaThumb from './media-thumb';
@@ -152,7 +152,7 @@ export default function PersonAwards({ personId }) {
 
       <div className="flex w-full flex-col">
         {awardsTimeline.map(([year, entries], yearIndex) => {
-          const yearMotion = getSurfaceItemMotion({
+          const yearMotion = getPersonSurfaceItemMotion({
             reduceMotion,
             index: yearIndex,
             distance: 18,
@@ -187,7 +187,7 @@ export default function PersonAwards({ personId }) {
                     'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
                     isInteractive ? 'hover:bg-primary' : 'cursor-default'
                   );
-                  const entryMotion = getSurfaceItemMotion({
+                  const entryMotion = getPersonSurfaceItemMotion({
                     reduceMotion,
                     axis: 'x',
                     distance: -14,

@@ -1,8 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
-import { DURATION, EASING } from '@/core/constants';
+import { ANIMATION_DURATIONS, ANIMATION_EASINGS } from '@/core/animation';
 
 const FADE_LEFT_VARIANTS = {
   visible: {
@@ -13,10 +12,10 @@ const FADE_LEFT_VARIANTS = {
   hidden: { opacity: 0, x: -32 },
 };
 
-export function FadeLeft({ children, className = '', delay = 0, duration = DURATION.SLOWER, once = true }) {
+export function FadeLeft({ children, className = '', delay = 0, duration = ANIMATION_DURATIONS.SLOWER, once = true }) {
   return (
     <motion.div
-      transition={{ duration, ease: EASING.STANDARD, delay }}
+      transition={{ duration, ease: ANIMATION_EASINGS.STANDARD, delay }}
       variants={FADE_LEFT_VARIANTS}
       className={className}
       initial="hidden"

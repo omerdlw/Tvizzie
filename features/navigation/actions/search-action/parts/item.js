@@ -33,7 +33,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
         {item.media_type === SEARCH_TYPES.USER ? (
           <AdaptiveImage
             mode="img"
-            className="h-full w-full object-cover transition-transform duration-(--motion-duration-moderate)"
+            className="h-full w-full object-cover transition-transform duration-[500ms]"
             src={userAvatarSrc}
             alt={title}
             loading="lazy"
@@ -45,7 +45,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
           <AdaptiveImage
             fill
             alt={title}
-            className="object-cover transition-transform duration-(--motion-duration-moderate)"
+            className="object-cover transition-transform duration-[500ms]"
             onError={() => onImageError(itemKey)}
             src={`${TMDB_IMG}/w92${imagePath}`}
             sizes="64px"

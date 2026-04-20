@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 
-import { EASING, TMDB_IMG } from '@/core/constants';
+import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
@@ -213,7 +213,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               onClick={handleOpenModal}
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={reduceMotion ? { duration: 0.16 } : { duration: 0.48, delay: 0.18, ease: EASING.ACCENT }}
+              transition={reduceMotion ? { duration: 0.16 } : { duration: 0.48, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
               className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={18} />

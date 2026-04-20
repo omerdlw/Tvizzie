@@ -6,7 +6,7 @@ import ImagePreviewModal from '@/features/modal/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';
-import { EASING, TMDB_IMG } from '@/core/constants';
+import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 
 const PERSON_BACKGROUND_ANIMATION = Object.freeze({
@@ -14,7 +14,7 @@ const PERSON_BACKGROUND_ANIMATION = Object.freeze({
   transition: {
     duration: 1.2,
     delay: 0.4,
-    ease: EASING.EMPHASIZED,
+    ease: [0.23, 1, 0.32, 1],
   },
   initial: {
     opacity: 0,

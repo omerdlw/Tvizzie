@@ -41,7 +41,7 @@ function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeig
 
 function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
   const baseClassName =
-    'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-(--motion-duration-fast) sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
+    'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-[200ms] sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
   if (isModalOpen || isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;

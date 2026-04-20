@@ -1,6 +1,5 @@
 'use client';
 
-import { EASING } from '@/core/constants';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { useRegistry } from '@/core/modules/registry';
 
@@ -9,7 +8,7 @@ const HOME_BACKGROUND_ANIMATION = Object.freeze({
   transition: {
     duration: 1.15,
     delay: 0.08,
-    ease: EASING.EMPHASIZED,
+    ease: [0.23, 1, 0.32, 1],
   },
   initial: {
     opacity: 0,

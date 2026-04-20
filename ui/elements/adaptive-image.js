@@ -61,7 +61,7 @@ export default function AdaptiveImage({
 
   const imageClassName = cn(
     fill ? 'absolute inset-0 h-full w-full' : 'h-full w-full',
-    'transition-opacity duration-(--motion-duration-normal)',
+    'transition-opacity duration-[300ms]',
     hasLoaded ? 'opacity-100' : 'opacity-0',
     className
   );

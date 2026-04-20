@@ -1,10 +1,7 @@
-import { FullscreenState } from '@/ui/states/fullscreen-state';
+import NotFoundTemplate from '@/features/shared/not-found-template';
 
 export default function NotFound() {
   return (
-    <FullscreenState contentClassName="center h-full w-full flex-col gap-3 p-6 text-center">
-      <h1>Account editor unavailable</h1>
-      <p>The account editor is unavailable because the account details could not be loaded.</p>
-    </FullscreenState>
+    <NotFoundTemplate description="The account editor is unavailable because the account details could not be loaded" />
   );
 }

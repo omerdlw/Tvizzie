@@ -17,8 +17,8 @@
   --color-text: var(--color-black);
 
   --font-zuume: var(--font-zuume);
-  --animate-spin: spin var(--motion-duration-hero) var(--motion-easing-linear) infinite;
-  --animate-pulse: pulse var(--motion-duration-pulse) var(--motion-easing-ease-in-out) infinite;
+  --animate-spin: spin 1s linear infinite;
+  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @layer base {
@@ -87,14 +87,14 @@
   }
 
   .animate-spin {
-    animation: spin var(--motion-duration-hero) var(--motion-easing-linear) infinite;
+    animation: spin 1s linear infinite;
   }
 
   .skeleton-block,
   .skeleton-block-soft {
     position: relative;
     overflow: hidden;
-    animation: pulse var(--motion-duration-pulse) var(--motion-easing-ease-in-out) infinite;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   .skeleton-block {
@@ -113,7 +113,7 @@
     pointer-events: none;
     background-image: linear-gradient(110deg, transparent 20%, rgb(255 255 255 / 0.5) 48%, transparent 78%);
     transform: translateX(-100%);
-    animation: skeleton-shimmer var(--motion-duration-ambient) var(--motion-easing-linear) infinite;
+    animation: skeleton-shimmer 8s linear infinite;
   }
 }
 
@@ -121,9 +121,9 @@
   *,
   *::before,
   *::after {
-    animation-duration: var(--motion-duration-reduced-motion) !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: var(--motion-duration-reduced-motion) !important;
+    transition-duration: 0.01ms !important;
   }
 
   .skeleton-block,

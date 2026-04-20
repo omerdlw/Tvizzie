@@ -3,7 +3,7 @@
 import { useMemo, useRef } from 'react';
 
 import { motion, useInView, useReducedMotion } from 'framer-motion';
-import { EASING } from '@/core/constants';
+import { ANIMATION_EASINGS } from '@/core/animation';
 import { cn } from '@/core/utils';
 
 const STAGGER_BY = Object.freeze({
@@ -157,7 +157,7 @@ export function TextAnimate({
         ...(shouldReduceMotion ? {} : { y: 0, scale: 1, filter: 'blur(0px)' }),
         transition: {
           duration: resolvedDuration,
-          ease: EASING.EMPHASIZED,
+          ease: ANIMATION_EASINGS.EMPHASIZED,
         },
         transitionEnd: shouldReduceMotion ? undefined : { filter: 'none' },
       },

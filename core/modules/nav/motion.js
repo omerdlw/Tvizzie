@@ -1,5 +1,3 @@
-import { DURATION, EASING } from '@/core/constants';
-
 const NAV_CARD_SPRINGS = Object.freeze([
   Object.freeze({ type: 'spring', stiffness: 300, damping: 31, mass: 0.92 }),
   Object.freeze({ type: 'spring', stiffness: 264, damping: 29, mass: 0.98 }),
@@ -7,8 +5,8 @@ const NAV_CARD_SPRINGS = Object.freeze([
 ]);
 
 export const NAV_DEFAULT_TRANSITION = Object.freeze({
-  ease: EASING.SMOOTH,
-  duration: DURATION.MODERATE,
+  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.5,
   type: 'tween',
 });
 
@@ -48,33 +46,33 @@ export const NAV_BADGE_SPRING = Object.freeze({
 });
 
 export const NAV_CONTENT_TRANSITION = Object.freeze({
-  duration: DURATION.FAST,
-  ease: EASING.SMOOTH,
+  duration: 0.2,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 export const NAV_CARD_OPACITY_TRANSITION = Object.freeze({
   duration: 0.22,
-  ease: EASING.SMOOTH,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
   duration: 0.24,
-  ease: EASING.SMOOTH,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 export const NAV_BACKDROP_TRANSITION = Object.freeze({
-  duration: DURATION.MODERATE,
-  ease: EASING.SMOOTH,
+  duration: 0.5,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 export const NAV_BACKDROP_REDUCED_TRANSITION = Object.freeze({
   duration: 0.16,
-  ease: EASING.EASE_OUT,
+  ease: [0, 0, 0.2, 1],
 });
 
 export const NAV_SEARCH_REVEAL_TRANSITION = Object.freeze({
-  duration: DURATION.FAST,
-  ease: EASING.SMOOTH,
+  duration: 0.2,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 export const NAV_SURFACE_SPRING = Object.freeze({

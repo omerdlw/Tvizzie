@@ -1,6 +1,7 @@
 'use client';
 
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
@@ -26,6 +27,7 @@ import {
 import { useDebounce } from '@/core/hooks';
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { useRegistry } from '@/core/modules/registry';
+import { SEARCH_ROUTE_MOTION, SearchSectionReveal, getSearchGridItemMotion } from './motion';
 
 const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
   decade: 'all',
@@ -149,6 +151,7 @@ function buildSearchHref({ pathname, query, searchParamsString, searchType, movi
 }
 
 export default function SearchClient() {
+  const reduceMotion = useReducedMotion();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -488,51 +491,66 @@ export default function SearchClient() {
     <>
       <section className="mx-auto w-full max-w-[1680px] px-4 pt-6 md:px-6 lg:px-8">
         {shouldShowMovieFilters ? (
-          <SearchMovieFilterBar
-            className="mb-5"
-            decadeOptions={decadeOptions}
-            filters={movieFilters}
-            genreOptions={genreOptions}
-            onChange={handleMovieFiltersChange}
-            onReset={hasActiveMovieFilters ? handleMovieFiltersReset : undefined}
-            yearOptions={yearOptions}
-          />
+          <SearchSectionReveal delay={SEARCH_ROUTE_MOTION.orchestration.filterDelay}>
+            <SearchMovieFilterBar
+              className="mb-5"
+              decadeOptions={decadeOptions}
+              filters={movieFilters}
+              genreOptions={genreOptions}
+              onChange={handleMovieFiltersChange}
+              onReset={hasActiveMovieFilters ? handleMovieFiltersReset : undefined}
+              yearOptions={yearOptions}
+            />
+          </SearchSectionReveal>
         ) : null}
 
         {trimmedQuery ? (
-          <div>
-            {visibleResults.length > 0 ? (
-              <>
-                <div className="grid grid-cols-4 gap-3 lg:grid-cols-8">
-                  {visibleResults.map((item) => (
-                    <SearchGridItem key={`${item.media_type}-${item.id}`} item={item} />
-                  ))}
-                </div>
+          <SearchSectionReveal delay={SEARCH_ROUTE_MOTION.orchestration.resultDelay}>
+            <div>
+              {visibleResults.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-4 gap-3 lg:grid-cols-8">
+                    {visibleResults.map((item, index) => {
+                      const itemMotion = getSearchGridItemMotion({ index, reduceMotion });
 
-                {canLoadMore ? (
-                  <div className="mt-6 flex justify-center">
-                    <button
-                      type="button"
-                      className={getNavActionClass({
-                        className: 'min-w-[220px] px-5',
-                        isActive: false,
-                      })}
-                      disabled={loadingMore}
-                      onClick={handleLoadMore}
-                    >
-                      {loadingMore ? 'Loading' : 'Load more results'}
-                    </button>
+                      return (
+                        <motion.div
+                          key={`${item.media_type}-${item.id}`}
+                          initial={itemMotion.initial}
+                          animate={itemMotion.animate}
+                          transition={itemMotion.transition}
+                        >
+                          <SearchGridItem item={item} />
+                        </motion.div>
+                      );
+                    })}
                   </div>
-                ) : null}
-              </>
-            ) : loading ? null : (
-              <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
-                {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
-                  ? 'No results found for the selected movie filters'
-                  : 'No results found'}
-              </div>
-            )}
-          </div>
+
+                  {canLoadMore ? (
+                    <div className="mt-6 flex justify-center">
+                      <button
+                        type="button"
+                        className={getNavActionClass({
+                          className: 'min-w-[220px] px-5',
+                          isActive: false,
+                        })}
+                        disabled={loadingMore}
+                        onClick={handleLoadMore}
+                      >
+                        {loadingMore ? 'Loading' : 'Load more results'}
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              ) : loading ? null : (
+                <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+                  {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
+                    ? 'No results found for the selected movie filters'
+                    : 'No results found'}
+                </div>
+              )}
+            </div>
+          </SearchSectionReveal>
         ) : (
           <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
             Start typing to see all results

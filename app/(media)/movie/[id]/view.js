@@ -17,13 +17,7 @@ import Carousel from '@/features/shared/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
-import {
-  MovieClipReveal,
-  MovieHeroReveal,
-  MovieSectionGroup,
-  MovieSectionReveal,
-  MovieSidebarReveal,
-} from '../../../../features/movie/movie-motion';
+import { MovieClipReveal, MovieHeroReveal, MovieSectionGroup, MovieSectionReveal, MovieSidebarReveal } from './motion';
 import Registry from './registry';
 
 const HERO_REVEAL_TIMING = Object.freeze({

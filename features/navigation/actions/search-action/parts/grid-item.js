@@ -49,9 +49,7 @@ export default function SearchGridItem({ item, onSelect }) {
   const cardContent = (
     <>
       <MediaCard
-        className={cn(
-          'w-full overflow-hidden border border-black/10 transition-transform duration-(--motion-duration-fast)'
-        )}
+        className={cn('w-full overflow-hidden border border-black/10 transition-transform duration-[200ms]')}
         imageSrc={imageSrc}
         imageAlt={title}
         imageSizes="(max-width: 1023px) 16.66vw, 8.33vw"

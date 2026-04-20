@@ -2,8 +2,6 @@
 
 import { createContext, useCallback, useContext, useLayoutEffect, useState, useMemo } from 'react';
 
-import { DURATION, EASING } from '@/core/constants';
-
 import { REGISTRY_TYPES, useRegistryState } from '../registry/context';
 
 const BackgroundActionsContext = createContext(null);
@@ -14,7 +12,7 @@ const DEFAULT_BACKGROUND = Object.freeze({
   overlayColor: '#faf9f5',
   position: 'center',
   animation: {
-    transition: { duration: DURATION.SLOW, ease: EASING.EASE_IN_OUT },
+    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
     initial: {},
     animate: {},
     exit: {},

@@ -3,7 +3,6 @@
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-import { EASING } from '@/core/constants';
 import { useDraggableScroll } from '@/core/hooks';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
@@ -11,6 +10,7 @@ import Icon from '@/ui/icon';
 const SCROLL_STEP = 2;
 const SCROLL_THRESHOLD = 4;
 const FALLBACK_CARD_WIDTH = 288;
+const ACCENT_EASING = [0.32, 0.72, 0, 1];
 
 function getScrollState(element) {
   return {
@@ -106,7 +106,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
     },
     [scrollRef]
   );
-  const controlTransition = reduceMotion ? { duration: 0.16 } : { duration: 0.42, ease: EASING.ACCENT };
+  const controlTransition = reduceMotion ? { duration: 0.16 } : { duration: 0.42, ease: ACCENT_EASING };
 
   return (
     <div className="group/carousel relative -m-1">
@@ -136,7 +136,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
-            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-(--motion-duration-fast) hover:bg-white hover:text-black md:left-[-16px] md:size-8'
+            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-[200ms] hover:bg-white hover:text-black md:left-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
@@ -153,7 +153,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
-            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-(--motion-duration-fast) hover:bg-white hover:text-black md:right-[-16px] md:size-8'
+            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-[200ms] hover:bg-white hover:text-black md:right-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />

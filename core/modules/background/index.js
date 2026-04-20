@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { DURATION, EASING, Z_INDEX } from '@/core/constants';
+import { Z_INDEX } from '@/core/constants';
 import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { NoiseTexture } from '@/ui/elements/noise-texture';
 
@@ -12,14 +12,21 @@ import { useBackgroundActions, useBackgroundState } from './context';
 
 export { BackgroundProvider, useBackgroundState } from './context';
 
+const DEFAULT_BACKGROUND_DURATION = 0.6;
+const DEFAULT_BACKGROUND_EASE = [0.4, 0, 0.2, 1];
+const BACKGROUND_EXIT_EASE = [0, 0, 0.2, 1];
+const BACKGROUND_EXIT_DURATION_FACTOR = 0.6;
+const BACKGROUND_EXIT_MAX_DURATION = 0.15;
+const DEFAULT_CSS_FALLBACK_EASE = 'ease';
+
 function getMotionConfig(pageAnimation) {
   const resolvedAnimation = pageAnimation || {};
 
   return {
     exitDurationFactor: Number(resolvedAnimation?.exitDurationFactor),
     transition: resolvedAnimation?.transition ?? {
-      duration: DURATION.SLOW,
-      ease: EASING.EASE_IN_OUT,
+      duration: DEFAULT_BACKGROUND_DURATION,
+      ease: DEFAULT_BACKGROUND_EASE,
     },
     initial: resolvedAnimation?.initial ?? { opacity: 0 },
     animate: resolvedAnimation?.animate ?? { opacity: 1 },
@@ -29,7 +36,7 @@ function getMotionConfig(pageAnimation) {
 
 function toCssDuration(seconds) {
   const value = Number(seconds);
-  return `${Math.max(0, Number.isFinite(value) ? value : DURATION.SLOW) * 1000}ms`;
+  return `${Math.max(0, Number.isFinite(value) ? value : DEFAULT_BACKGROUND_DURATION) * 1000}ms`;
 }
 
 function toCssDelay(seconds) {
@@ -46,7 +53,7 @@ function toCssEasing(easing) {
     return easing;
   }
 
-  return 'ease';
+  return DEFAULT_CSS_FALLBACK_EASE;
 }
 
 function getVisualStyle(currentStyle = {}) {
@@ -153,10 +160,10 @@ export function BackgroundOverlay() {
   );
   const exitDurationFactor = Number.isFinite(motionConfig.exitDurationFactor)
     ? Math.max(0, motionConfig.exitDurationFactor)
-    : DURATION.RATIO.EXIT;
+    : BACKGROUND_EXIT_DURATION_FACTOR;
   const resolvedExitDuration = Math.min(
-    DURATION.QUICK,
-    (motionConfig.transition?.duration ?? DURATION.MODERATE) * exitDurationFactor
+    BACKGROUND_EXIT_MAX_DURATION,
+    (motionConfig.transition?.duration ?? 0.5) * exitDurationFactor
   );
 
   useEffect(() => {
@@ -225,7 +232,7 @@ export function BackgroundOverlay() {
               ...motionConfig.transition,
               delay: 0,
               duration: resolvedExitDuration,
-              ease: EASING.EASE_OUT,
+              ease: BACKGROUND_EXIT_EASE,
             },
           }}
           className="pointer-events-none fixed inset-0 transform-gpu"

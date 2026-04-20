@@ -12,7 +12,7 @@ export default function AuthGoogleAction({ isLoading = false, label = 'Continue 
         disabled={isLoading}
         className={getNavActionClass({
           variant:
-            'w-full border border-[#0d9488] bg-[#99f6e4] text-[#134e4a] transition-colors duration-(--motion-duration-fast)',
+            'w-full border border-[#0d9488] bg-[#99f6e4] text-[#134e4a] transition-colors duration-[200ms]',
           className: 'justify-center text-sm font-medium tracking-normal normal-case',
         })}
       >

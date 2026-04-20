@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { ReactLenis } from 'lenis/react';
-import { DURATION } from '@/core/constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -14,6 +13,12 @@ const DETAIL_ROUTE_PREFIXES = ['/movie/', '/person/'];
 
 const prefersReducedMotion =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function isTouchDevice() {
+  if (typeof window === 'undefined') return false;
+  if (window.matchMedia?.('(pointer: coarse)').matches) return true;
+  return navigator.maxTouchPoints > 0;
+}
 
 // ─── Easing ──────────────────────────────────────────────────────────────────
 
@@ -33,7 +38,7 @@ function premiumScrollEasing(t) {
 
 const PREMIUM_SCROLL_OPTIONS = Object.freeze({
   anchors: {
-    duration: DURATION.MODERATE,
+    duration: 0.5,
     easing: premiumScrollEasing,
   },
   gestureOrientation: 'vertical',
@@ -50,8 +55,7 @@ const PREMIUM_SCROLL_OPTIONS = Object.freeze({
   stopInertiaOnNavigate: true,
 
   /**
-   * syncTouch: false → mobilde native inertia scroll.
-   * Apple/Google bunu bizden çok daha iyi tune etmiş.
+   * Touch cihazlarda ayrı profile geciyoruz; masaustunde bu path kapali kalir.
    */
   touchMultiplier: 1.5,
   syncTouch: false,
@@ -63,6 +67,16 @@ const PREMIUM_SCROLL_OPTIONS = Object.freeze({
   wheelMultiplier: 0.8,
 
   autoResize: true,
+});
+
+const TOUCH_SCROLL_OPTIONS = Object.freeze({
+  ...PREMIUM_SCROLL_OPTIONS,
+  lerp: prefersReducedMotion ? 1 : 0.085,
+  smoothWheel: false,
+  syncTouch: !prefersReducedMotion,
+  syncTouchLerp: 0.11,
+  touchMultiplier: 1.1,
+  wheelMultiplier: 1,
 });
 
 // ─── CSS Custom Property Bridge ───────────────────────────────────────────────
@@ -163,6 +177,10 @@ export function SmoothScrollProvider({ children }) {
   const lenisRef = useRef(null);
   const pathname = usePathname();
   const previousPathnameRef = useRef(pathname);
+  const lenisOptions = useMemo(
+    () => (isTouchDevice() ? TOUCH_SCROLL_OPTIONS : PREMIUM_SCROLL_OPTIONS),
+    []
+  );
 
   // Her Lenis tick'inde CSS değişkenlerini ve class'ları güncelle
   useEffect(() => {
@@ -212,7 +230,7 @@ export function SmoothScrollProvider({ children }) {
   }, []);
 
   return (
-    <ReactLenis ref={lenisRef} root options={PREMIUM_SCROLL_OPTIONS}>
+    <ReactLenis ref={lenisRef} root options={lenisOptions}>
       {children}
     </ReactLenis>
   );

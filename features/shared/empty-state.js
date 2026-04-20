@@ -9,7 +9,7 @@ export function EmptyState({ action, description, title, className }) {
         <h3 className="text-lg font-bold uppercase">{title}</h3>
         {description && <p className="text-sm leading-relaxed font-medium">{description}</p>}
       </div>
-      {action && <div className="mt-2 transition-transform duration-[var(--motion-duration-normal)]">{action}</div>}
+      {action && <div className="mt-2 transition-transform duration-[300ms]">{action}</div>}
     </div>
   );
 }

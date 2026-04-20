@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
-import { DURATION, EASING } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
 import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
@@ -52,8 +51,8 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
   transition: Object.freeze({
-    ease: EASING.EMPHASIZED,
-    duration: DURATION.SNAPPY,
+    ease: [0.23, 1, 0.32, 1],
+    duration: 0.25,
     type: 'tween',
   }),
 });
@@ -150,8 +149,8 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       scale: 0.92,
       filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
       transition: {
-        duration: DURATION.QUICK,
-        ease: EASING.EMPHASIZED,
+        duration: 0.15,
+        ease: [0.23, 1, 0.32, 1],
         filter: { duration: 0.14 },
       },
     },

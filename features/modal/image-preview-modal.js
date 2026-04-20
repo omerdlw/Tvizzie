@@ -48,7 +48,7 @@ export default function ImagePreviewModal({ close, data }) {
       <div className="relative h-auto w-full" style={{ aspectRatio: String(aspectRatio) }}>
         <Image
           src={`${TMDB_IMG}/original${filePath}`}
-          className={`object-contain transition duration-[var(--motion-duration-fast)] ${
+          className={`object-contain transition duration-[200ms] ${
             isLoaded ? 'visible' : 'invisible'
           }`}
           onLoad={() => setIsLoaded(true)}

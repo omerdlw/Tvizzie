@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 
-import { getSurfaceItemMotion } from '@/features/movie/movie-motion';
+import { getPersonSurfaceItemMotion } from '@/features/person/person-motion';
 import MediaThumb from './media-thumb';
 import { getTimelineCredits } from './utils';
 
@@ -56,7 +56,7 @@ export default function PersonTimeline({ person }) {
       <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Timeline</h2>
 
       {timeline.map(([year, credits], yearIndex) => {
-        const yearMotion = getSurfaceItemMotion({
+        const yearMotion = getPersonSurfaceItemMotion({
           reduceMotion,
           index: yearIndex,
           distance: 18,
@@ -84,7 +84,7 @@ export default function PersonTimeline({ person }) {
               {credits.map((credit, creditIndex) => {
                 const title = credit.title || credit.original_title || 'Untitled';
                 const creditLabel = getCreditLabel(credit);
-                const creditMotion = getSurfaceItemMotion({
+                const creditMotion = getPersonSurfaceItemMotion({
                   reduceMotion,
                   axis: 'x',
                   distance: -14,

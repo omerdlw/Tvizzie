@@ -307,7 +307,7 @@ export default function ReviewCard({
         className
       )}
     >
-      <div className="relative transition-all duration-(--motion-duration-normal)">
+      <div className="relative transition-all duration-[300ms]">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative shrink-0">
             <ReviewVisual

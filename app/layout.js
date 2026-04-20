@@ -2,7 +2,6 @@ import ReactDOM from 'react-dom';
 
 import { DynamicNav } from '@/features/layout/dynamic-wrappers';
 import { WebVitals } from '@/features/layout/web-vitals';
-import { MOTION_CSS_VARIABLES } from '@/core/constants';
 import { getSiteUrl } from '@/core/utils/site-url';
 import { cn } from '@/core/utils';
 
@@ -30,9 +29,9 @@ export const metadata = {
     card: 'summary_large_image',
   },
   icons: {
-    icon: '/icon.svg',
-    apple: '/apple-icon.svg',
-    shortcut: '/icon.svg',
+    icon: [{ url: '/tvizzie.svg', type: 'image/png', sizes: '1024x1024' }],
+    apple: [{ url: '/tvizzie.svg', type: 'image/png', sizes: '1024x1024' }],
+    shortcut: '/tvizzie.svg',
   },
   openGraph: {
     description: 'Discover, track, and review your favorite movies',
@@ -61,7 +60,6 @@ export default function RootLayout({ children }) {
           geist.className,
           zuume.variable
         )}
-        style={MOTION_CSS_VARIABLES}
       >
         <ResourceHints />
         <WebVitals />

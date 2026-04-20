@@ -1,31 +1,33 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
-import { DURATION, EASING } from '@/core/constants';
+import { ANIMATION_DURATIONS, ANIMATION_EASINGS, buildRevealMotion } from '@/core/animation';
 
 export function RevealItem({
   children,
   className = '',
   delay = 0,
-  duration = DURATION.MEDIUM,
+  duration = ANIMATION_DURATIONS.MEDIUM,
   distance = 18,
   scale = 0.985,
   once = true,
 }) {
+  const motionProps = buildRevealMotion({
+    delay,
+    distance,
+    duration,
+    ease: ANIMATION_EASINGS.STANDARD,
+    scale,
+  });
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: distance, scale }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transitionEnd: { transform: 'none', willChange: 'auto' },
-      }}
+      initial={motionProps.initial}
+      whileInView={motionProps.animate}
       viewport={{ once, amount: 'some' }}
-      transition={{ duration, ease: EASING.STANDARD, delay }}
+      transition={motionProps.transition}
       className={className}
-      style={{ willChange: 'transform, opacity' }}
+      style={motionProps.style}
     >
       {children}
     </motion.div>

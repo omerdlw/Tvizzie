@@ -1,8 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
-import { DURATION, EASING } from '@/core/constants';
+import { ANIMATION_DURATIONS, ANIMATION_EASINGS } from '@/core/animation';
 
 const FADE_UP_VARIANTS = {
   visible: {
@@ -13,13 +12,13 @@ const FADE_UP_VARIANTS = {
   hidden: { opacity: 0, y: 24 },
 };
 
-export function FadeUp({ children, className = '', delay = 0, duration = DURATION.SLOW, once = true }) {
+export function FadeUp({ children, className = '', delay = 0, duration = ANIMATION_DURATIONS.SLOW, once = true }) {
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once, amount: 'some' }}
-      transition={{ duration, ease: EASING.STANDARD, delay }}
+      transition={{ duration, ease: ANIMATION_EASINGS.STANDARD, delay }}
       variants={FADE_UP_VARIANTS}
       className={className}
       style={{ willChange: 'transform, opacity' }}

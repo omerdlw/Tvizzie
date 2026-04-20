@@ -1,54 +1,52 @@
-import { DURATION, EASING } from '@/core/constants';
-
 import { MODAL_POSITIONS } from './config';
 
 const REDUCED_TRANSITION = Object.freeze({
-  duration: DURATION.REDUCED_MOTION,
-  ease: EASING.LINEAR,
+  duration: 0.00001,
+  ease: 'linear',
 });
 
 const PANEL_OPACITY_ENTER_TRANSITION = Object.freeze({
   duration: 0.28,
-  ease: EASING.EASE_OUT,
+  ease: [0, 0, 0.2, 1],
 });
 
 const PANEL_OPACITY_EXIT_TRANSITION = Object.freeze({
   duration: 0.22,
-  ease: EASING.EASE_IN_OUT,
+  ease: [0.4, 0, 0.2, 1],
 });
 
 const CENTER_PANEL_ENTER_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: DURATION.MODERATE,
-  ease: EASING.SMOOTH,
+  duration: 0.5,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 const CENTER_PANEL_EXIT_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: DURATION.FAST,
-  ease: EASING.SMOOTH,
+  duration: 0.2,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 const EDGE_PANEL_ENTER_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: DURATION.MODERATE,
-  ease: EASING.SMOOTH,
+  duration: 0.5,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 const EDGE_PANEL_EXIT_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: DURATION.BALANCED,
-  ease: EASING.SMOOTH,
+  duration: 0.45,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 const BACKDROP_TRANSITION = Object.freeze({
-  duration: DURATION.BALANCED,
-  ease: EASING.SMOOTH,
+  duration: 0.45,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 const BACKDROP_EXIT_TRANSITION = Object.freeze({
-  duration: DURATION.NORMAL,
-  ease: EASING.SMOOTH,
+  duration: 0.3,
+  ease: [0.25, 0.46, 0.45, 0.94],
 });
 
 function createCenterVariant(reduceMotion) {

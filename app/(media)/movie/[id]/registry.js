@@ -14,7 +14,7 @@ import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
-import { EASING, TMDB_IMG } from '@/core/constants';
+import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import Icon from '@/ui/icon/index';
 import MediaSocialProofModal from '@/features/modal/media-social-proof-modal';
@@ -28,7 +28,7 @@ const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
   transition: {
     duration: 1.2,
     delay: 0.4,
-    ease: EASING.EMPHASIZED,
+    ease: [0.23, 1, 0.32, 1],
   },
   initial: {
     opacity: 0,

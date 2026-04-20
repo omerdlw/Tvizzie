@@ -6,7 +6,13 @@ export const NAV_CONFIG = {
       path: '/',
       title: 'Tvizzie',
       description: 'Discover Movies',
-      icon: 'solar:home-2-bold',
+      icon: '/tvizzie.svg',
+      style: {
+        icon: {
+          scale: 0.8,
+          borderRadius: 0,
+        },
+      },
     },
     profile: {
       name: 'account',
