@@ -1,24 +1,25 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/core/constants';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 
-const BLOCK = 'skeleton-block';
-const BLOCK_SOFT = 'skeleton-block-soft';
-const HERO_HEIGHT_CLASS = 'min-h-[500px] sm:min-h-[620px] lg:min-h-[600px]';
+const HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
 
 function Bar({ className = '', soft = false }) {
-  return <div className={`${soft ? BLOCK_SOFT : BLOCK} ${className}`} />;
+  return <SkeletonBlock className={className} soft={soft} />;
 }
 
 function Line({ className = '', soft = false }) {
-  return <Bar className={`${className}`} soft={soft} />;
+  const size =
+    className.includes('h-2.5') ? 'xs' : className.includes('h-3.5') ? 'md' : className.includes('h-4') ? 'lg' : 'sm';
+  return <SkeletonLine className={className.replace(/h-\[[^\]]+\]|h-2\.5|h-3\.5|h-4|h-3/g, '').trim()} size={size} soft={soft} />;
 }
 
 function Pill({ className = '', soft = false }) {
-  return <Bar className={`${className}`} soft={soft} />;
+  return <SkeletonPill className={className} soft={soft} />;
 }
 
-function Poster({ className = '', soft = false }) {
-  return <Bar className={`aspect-2/3 w-full ${className}`} soft={soft} />;
+function Poster({ className = '', radius = 'card', soft = false }) {
+  return <SkeletonPoster className={className} radius={radius} soft={soft} />;
 }
 
 function SectionShell({ children, className = '' }) {
@@ -43,7 +44,7 @@ function HeroCountItem({ mobile = false }) {
 function HeroEdgeMetric() {
   return (
     <div className="flex flex-col items-center gap-1 text-center">
-      <Line className="h-8 w-12" />
+      <SkeletonLine size="xl" className="w-12" />
       <Line className="h-2.5 w-16" soft={true} />
     </div>
   );
@@ -51,14 +52,14 @@ function HeroEdgeMetric() {
 
 function AccountHeroSkeleton() {
   return (
-    <section className={`relative w-full overflow-hidden border-b border-black/15 bg-white ${HERO_HEIGHT_CLASS}`}>
+    <section className={`relative w-full overflow-hidden bg-white ${HERO_HEIGHT_CLASS}`}>
       <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-20 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
+        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-28 w-28 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
-              <div className={`h-full w-full ${BLOCK}`} />
+            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+              <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
 
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
@@ -107,7 +108,7 @@ function AccountNavSkeleton() {
   return (
     <div>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:px-8 sm:py-4">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 sm:justify-center sm:px-8 sm:py-4">
           {tabWidths.map((width, index) => (
             <Pill key={index} className={`h-8 shrink-0 ${width}`} soft={index !== 0} />
           ))}
@@ -122,7 +123,7 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
     <div className="flex w-full flex-col gap-6">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className={`${BLOCK_SOFT} size-6`} />
+          <SkeletonCircle className="size-6" soft={true} />
           <Line className="h-3 w-24" />
         </div>
 
@@ -132,7 +133,7 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
         </div>
       </div>
 
-      <div className={`h-px w-full ${BLOCK_SOFT}`} />
+      <SkeletonBlock className="h-px w-full" soft={true} />
     </div>
   );
 }
@@ -202,7 +203,7 @@ function ListPreviewStackSkeleton() {
 
   return (
     <div className="relative h-[218px] overflow-hidden">
-      <Bar className="absolute inset-x-0 top-8 h-[170px]" soft={true} />
+      <Bar className="absolute inset-x-0 top-8 h-[170px] rounded-[14px]" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
         <div key={transformClass} className={`absolute top-2 left-1/2 h-[164px] w-[104px] ${transformClass}`}>
@@ -218,7 +219,7 @@ function ListCardSkeleton() {
     <div className="flex flex-col gap-2">
       <ListPreviewStackSkeleton />
 
-      <div className={`${BLOCK_SOFT}`}>
+      <div className="skeleton-block-soft overflow-hidden rounded-[14px]">
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-3.5 w-[74%]" />
@@ -231,7 +232,7 @@ function ListCardSkeleton() {
           </div>
         </div>
 
-        <div className={`h-px w-full ${BLOCK}`} />
+        <SkeletonBlock className="h-px w-full" />
 
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <Line className="h-2.5 w-24" soft={true} />
@@ -248,10 +249,10 @@ function ListCardSkeleton() {
 
 function ReviewCardSkeleton() {
   return (
-    <div className={`p-4 ${BLOCK_SOFT}`}>
+    <div className="skeleton-block-soft rounded-[14px] p-4">
       <div className="flex gap-4">
-        <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]">
-          <Poster />
+        <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-[14px] sm:h-28 sm:w-[72px]">
+          <Poster radius="card" />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -291,7 +292,7 @@ function ReviewCardSkeleton() {
 
 function ListDetailHeaderSkeleton() {
   return (
-    <div className={`p-6 ${BLOCK_SOFT}`}>
+    <div className="skeleton-block-soft rounded-[14px] p-6">
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-5">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -320,7 +321,7 @@ function FormFieldSkeleton({ tall = false }) {
   return (
     <div className="flex flex-col gap-2">
       <Line className="h-2.5 w-20" soft={true} />
-      <Bar className={`w-full ${tall ? 'h-36' : 'h-11'} ${BLOCK_SOFT}`} />
+      <SkeletonPill className={`w-full ${tall ? 'h-36' : 'h-11'}`} radius="field" soft={true} />
     </div>
   );
 }
@@ -336,7 +337,7 @@ function MediaFieldSkeleton({ large = false }) {
         </div>
       </div>
 
-      <Bar className={`overflow-hidden ${large ? 'h-28' : 'aspect-square'} ${BLOCK}`} />
+      <SkeletonBlock className={`overflow-hidden ${large ? 'h-28' : 'aspect-square'}`} radius="card" />
     </div>
   );
 }
@@ -494,7 +495,7 @@ function ListBuilderSkeleton() {
   return (
     <div className="py-8">
       <SectionShell>
-        <div className={`overflow-hidden ${BLOCK_SOFT}`}>
+        <div className="skeleton-block-soft overflow-hidden rounded-[14px]">
           <div className="grid min-h-[72vh] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
             <section className="flex min-h-0 flex-col">
               <div className="p-4 sm:p-5">
@@ -525,9 +526,12 @@ function ListBuilderSkeleton() {
 
               <div className="mt-4 flex flex-col gap-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className={`flex items-center gap-3 p-2.5 ${BLOCK_SOFT}`}>
+                  <div
+                    key={index}
+                    className="skeleton-block-soft flex items-center gap-3 rounded-[14px] p-2.5"
+                  >
                     <Line className="h-3 w-4" soft={true} />
-                    <Bar className={`h-16 w-11 shrink-0 ${BLOCK}`} />
+                    <SkeletonPoster className="h-16 w-11 shrink-0 rounded-[10px] aspect-auto" radius="field" />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <Line className="h-3 w-4/5" />
                       <Line className="h-2.5 w-1/2" soft={true} />

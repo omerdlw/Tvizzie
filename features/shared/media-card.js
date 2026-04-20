@@ -2,7 +2,6 @@
 
 import { forwardRef, useState } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 import {
@@ -12,6 +11,7 @@ import {
   resolveImageLoading,
   resolveImageQuality,
 } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
@@ -115,11 +115,10 @@ export default function MediaCard({
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
         <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>
           {hasImage ? (
-            <Image
+            <AdaptiveImage
               src={imageSrc}
               alt={imageAlt || title || 'Media'}
               fill
-              draggable="false"
               sizes={imageSizes}
               loading={resolvedImageLoading}
               priority={imagePriority}
@@ -133,6 +132,8 @@ export default function MediaCard({
                 onImageError?.();
               }}
               className={cn(imageBaseClassName, imageClassName)}
+              wrapperClassName="h-full w-full"
+              draggable="false"
             />
           ) : (
             fallbackContent || (

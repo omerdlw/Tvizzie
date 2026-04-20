@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
 import Container from '@/core/modules/modal/container';
 import SegmentedControl from '@/features/shared/segmented-control';
 import { cn } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 const DESKTOP_COLUMNS = 3;
@@ -45,7 +45,7 @@ function PersonCard({ close, person }) {
     >
       <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[10px] bg-black/5">
         {imageSrc ? (
-          <Image
+          <AdaptiveImage
             fill
             src={imageSrc}
             alt={person.name || 'Cast member'}
@@ -53,6 +53,7 @@ function PersonCard({ close, person }) {
             quality={72}
             className="object-cover"
             onError={() => setImageError(true)}
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className="center h-full w-full">

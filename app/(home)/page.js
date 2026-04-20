@@ -1,9 +1,24 @@
 import Client from './client';
 
-import { discoverContent, getTrending, getGenres } from '@/core/clients/tmdb/server';
+import { discoverContent, getGenres, getTrending } from '@/core/clients/tmdb/server';
+
+function getUniqueItems(items = []) {
+  const seen = new Set();
+
+  return items.filter((item) => {
+    const id = item?.id;
+
+    if (!id || seen.has(id)) {
+      return false;
+    }
+
+    seen.add(id);
+    return true;
+  });
+}
 
 export default async function Page() {
-  const [dailyTrendingResponse, weeklyTrendingResponse, discoverResponse, genresResponse] = await Promise.all([
+  const [dailyTrendingResponse, weeklyTrendingResponse, discoverFirstResponse, genresResponse] = await Promise.all([
     getTrending('day', 'movie'),
     getTrending('week', 'movie'),
     discoverContent({ page: 1 }),
@@ -12,10 +27,11 @@ export default async function Page() {
 
   const heroItems = dailyTrendingResponse.data?.results || [];
   const weeklyPopularMovies = weeklyTrendingResponse.data?.results || [];
-  const discoverData = discoverResponse.data || {};
-  const initialDiscoverItems = discoverData.results || [];
-  const initialDiscoverPage = discoverData.page || 1;
-  const initialHasMore = initialDiscoverPage < (discoverData.total_pages || initialDiscoverPage);
+  const firstDiscoverData = discoverFirstResponse.data || {};
+  const initialDiscoverItems = getUniqueItems(firstDiscoverData.results || []);
+  const initialDiscoverPage = firstDiscoverData.page || 1;
+  const totalDiscoverPages = firstDiscoverData.total_pages || initialDiscoverPage;
+  const initialHasMore = initialDiscoverPage < totalDiscoverPages;
   const initialGenres = genresResponse.data || [];
 
   return (
@@ -31,3 +47,5 @@ export default async function Page() {
     />
   );
 }
+
+export const revalidate = 600;

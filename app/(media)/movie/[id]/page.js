@@ -62,3 +62,5 @@ export default async function Page({ params }) {
 
   return <Client key={movie.id} computed={computed} movie={movie} secondaryDataPromise={secondaryDataPromise} />;
 }
+
+export const revalidate = 3600;

@@ -2,6 +2,10 @@
 
 import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 
+const PASSWORD_STATUS_CACHE_TTL_MS = 4000;
+const passwordStatusCache = new Map();
+const passwordStatusInFlight = new Map();
+
 async function postAuthJson(pathname, body, { cache, credentials, includeCsrf = false, message } = {}) {
   const response = await fetch(pathname, {
     method: 'POST',
@@ -25,34 +29,88 @@ async function postAuthJson(pathname, body, { cache, credentials, includeCsrf = 
   throw error;
 }
 
-function resolvePasswordAccountStatus(email, intent) {
-  return postAuthJson(
+function normalizeValue(value) {
+  return String(value || '').trim();
+}
+
+function createPasswordStatusCacheKey({ email, identifier, intent }) {
+  return JSON.stringify({
+    email: normalizeValue(email).toLowerCase(),
+    identifier: normalizeValue(identifier).toLowerCase(),
+    intent: normalizeValue(intent).toLowerCase() || 'sign-in',
+  });
+}
+
+function readPasswordStatusCache(cacheKey) {
+  const entry = passwordStatusCache.get(cacheKey);
+
+  if (!entry) {
+    return null;
+  }
+
+  if (entry.expiresAt <= Date.now()) {
+    passwordStatusCache.delete(cacheKey);
+    return null;
+  }
+
+  return entry.value;
+}
+
+function resolvePasswordAccountStatus({ email, identifier, intent }) {
+  const cacheKey = createPasswordStatusCacheKey({ email, identifier, intent });
+  const cachedValue = readPasswordStatusCache(cacheKey);
+
+  if (cachedValue) {
+    return Promise.resolve(cachedValue);
+  }
+
+  if (passwordStatusInFlight.has(cacheKey)) {
+    return passwordStatusInFlight.get(cacheKey);
+  }
+
+  const requestPromise = postAuthJson(
     '/api/auth/account/password-status',
     {
       email,
+      identifier,
       intent,
     },
     {
-      cache: 'no-store',
       credentials: 'include',
       message: 'Account status could not be resolved',
     }
-  );
+  )
+    .then((payload) => {
+      passwordStatusCache.set(cacheKey, {
+        expiresAt: Date.now() + PASSWORD_STATUS_CACHE_TTL_MS,
+        value: payload,
+      });
+      passwordStatusInFlight.delete(cacheKey);
+      return payload;
+    })
+    .catch((error) => {
+      passwordStatusInFlight.delete(cacheKey);
+      throw error;
+    });
+
+  passwordStatusInFlight.set(cacheKey, requestPromise);
+  return requestPromise;
 }
 
-export function assertPasswordAccountStatus({ email, intent = 'sign-in' }) {
-  return resolvePasswordAccountStatus(email, intent);
+export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-in' }) {
+  return resolvePasswordAccountStatus({ email, identifier, intent });
 }
 
 export function assertSignUpEmailAvailable({ email }) {
-  return resolvePasswordAccountStatus(email, 'sign-up');
+  return resolvePasswordAccountStatus({ email, intent: 'sign-up' });
 }
 
-export function requestVerificationCode({ email, forceNew = false, purpose }) {
+export function requestVerificationCode({ email, identifier, forceNew = false, purpose }) {
   return postAuthJson(
     '/api/auth/verification/send-code',
     {
       email,
+      identifier,
       forceNew,
       purpose,
     },

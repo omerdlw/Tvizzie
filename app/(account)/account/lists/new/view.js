@@ -7,6 +7,7 @@ import { useNavHeight } from '@/core/modules/nav/hooks';
 import { cn, formatYear } from '@/core/utils';
 import { AccountSectionReveal } from '@/features/account/shared/layout';
 import MediaCard from '@/features/shared/media-card';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -76,12 +77,14 @@ function DraftItemCard({ index, item, onRemove }) {
 
       <div className="relative h-16 w-11 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
-          <img
+          <AdaptiveImage
+            mode="img"
             src={posterSrc}
             alt={getItemTitle(item)}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-black/30">
@@ -114,12 +117,14 @@ function MobileDraftRowItem({ item, onRemove }) {
     <div className="flex min-w-[180px] items-center gap-2 border border-black/10 bg-white/85 p-2">
       <div className="relative h-12 w-8 shrink-0 overflow-hidden border border-black/10 bg-black/5">
         {posterSrc ? (
-          <img
+          <AdaptiveImage
+            mode="img"
             src={posterSrc}
             alt={getItemTitle(item)}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-black/30">

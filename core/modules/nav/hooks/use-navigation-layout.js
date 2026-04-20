@@ -118,7 +118,8 @@ export function useNavigationLayout({ isHovered, isCompact = false, navigationIt
   const { expanded } = useNavigationContext();
 
   const { displayItems, displayActiveIndex } = useMemo(() => {
-    const shouldShowOverlayStack = activeItem?.isStatus || activeItem?.isConfirmation || activeItem?.isSurface;
+    const shouldShowOverlayStack = activeItem?.isConfirmation || activeItem?.isSurface;
+    const shouldShowSingleStatusCard = Boolean(activeItem?.isStatus);
 
     const activeIndex = findActiveIndex(navigationItems, activeItem, pathname);
 
@@ -143,8 +144,9 @@ export function useNavigationLayout({ isHovered, isCompact = false, navigationIt
       };
     }
 
-    const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact);
-    const visibleCount = shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
+    const shouldRevealCollapsedStack =
+      !shouldShowSingleStatusCard && (isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact));
+    const visibleCount = shouldShowSingleStatusCard ? 1 : shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
 
     return {
       displayItems: removeAncestorDuplicates(removeInactiveLoadingItems(reorderedItems, activeItem)).slice(

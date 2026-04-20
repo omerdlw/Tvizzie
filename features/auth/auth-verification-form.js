@@ -17,6 +17,7 @@ const PURPOSES = Object.freeze({
   ACCOUNT_DELETE: 'account-delete',
   PASSWORD_CHANGE: 'password-change',
   PASSWORD_SET: 'password-set',
+  PASSWORD_RESET: 'password-reset',
   PROVIDER_LINK: 'provider-link',
   SIGN_IN: 'sign-in',
   SIGN_UP: 'sign-up',
@@ -113,16 +114,18 @@ export default function AuthVerificationForm({
     .trim()
     .toLowerCase();
   const email = normalizeEmail(data?.email);
+  const identifier = String(data?.identifier || '').trim();
   const autoSendOnOpen = data?.autoSendOnOpen !== false;
   const initialChallenge =
     data?.initialChallenge && typeof data.initialChallenge === 'object' ? data.initialChallenge : null;
   const initialChallengeToken = String(initialChallenge?.challengeToken || '').trim();
-  const hasValidVerificationEmail =
+  const hasValidVerificationTarget =
     purpose === PURPOSES.ACCOUNT_DELETE ||
     purpose === PURPOSES.PASSWORD_CHANGE ||
     purpose === PURPOSES.PASSWORD_SET ||
     purpose === PURPOSES.PROVIDER_LINK ||
-    (email && email.includes('@'));
+    (email && email.includes('@')) ||
+    ((purpose === PURPOSES.SIGN_IN || purpose === PURPOSES.PASSWORD_RESET) && Boolean(identifier));
 
   const [isSending, setIsSending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,8 +150,8 @@ export default function AuthVerificationForm({
     async ({ isInitial = false } = {}) => {
       if (isSending || isSubmitting) return;
 
-      if (!hasValidVerificationEmail) {
-        toast.error('A valid email address is required');
+      if (!hasValidVerificationTarget) {
+        toast.error('A valid username or email is required');
         return;
       }
 
@@ -162,6 +165,7 @@ export default function AuthVerificationForm({
       try {
         const challenge = await requestVerificationCode({
           email,
+          identifier,
           forceNew:
             isInitial &&
             data?.forceNewCodeOnOpen === true &&
@@ -193,7 +197,8 @@ export default function AuthVerificationForm({
     [
       canResendCode,
       email,
-      hasValidVerificationEmail,
+      hasValidVerificationTarget,
+      identifier,
       isSending,
       isSubmitting,
       purpose,
@@ -225,13 +230,13 @@ export default function AuthVerificationForm({
 
   useEffect(() => {
     if (autoSentRef.current) return;
-    if (!autoSendOnOpen || initialChallengeToken || !hasValidVerificationEmail) {
+    if (!autoSendOnOpen || initialChallengeToken || !hasValidVerificationTarget) {
       return;
     }
 
     autoSentRef.current = true;
     void sendCode({ isInitial: true });
-  }, [autoSendOnOpen, hasValidVerificationEmail, initialChallengeToken, sendCode]);
+  }, [autoSendOnOpen, hasValidVerificationTarget, initialChallengeToken, sendCode]);
 
   useEffect(() => {
     if (!autoFocusCodeInput) return;

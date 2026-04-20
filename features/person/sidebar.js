@@ -2,12 +2,11 @@
 
 import { useMemo, useState } from 'react';
 
-import Image from 'next/image';
-
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
 import { TMDB_IMG } from '@/core/constants';
 import { getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function getProfileImage(path) {
@@ -96,7 +95,7 @@ export default function PersonSidebar({ person, age }) {
     <div className="flex flex-col gap-3">
       <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
         {hasImage ? (
-          <Image
+          <AdaptiveImage
             src={imageSrc}
             alt={person?.name || 'Person portrait'}
             fill
@@ -109,6 +108,7 @@ export default function PersonSidebar({ person, age }) {
             blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
             onError={() => setHasImageError(true)}
             className="object-cover"
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className="bg-primary center h-full w-full border border-black/5 text-black/60">

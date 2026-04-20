@@ -1,18 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
-import { cn, formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
+import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
 const MAX_VISIBLE_PERSONS = 2;
-const COMMUNITY_REVIEWS_SELECTOR = '[data-community-reviews="true"]';
-const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 
 function SidebarRow({ icon, children }) {
   return (
@@ -68,84 +64,11 @@ function createRow(id, icon, content) {
 }
 
 export default function Sidebar({ item, director, writers, creators, certification, topContent }) {
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [isCommunityReviewsVisible, setIsCommunityReviewsVisible] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
-    const handleDesktopChange = () => {
-      setIsDesktop(mediaQuery.matches);
-    };
-
-    handleDesktopChange();
-
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleDesktopChange);
-    } else {
-      mediaQuery.addListener(handleDesktopChange);
-    }
-
-    let observer = null;
-    let mutationObserver = null;
-
-    const bindObserver = () => {
-      if (observer) {
-        return true;
-      }
-
-      const target = document.querySelector(COMMUNITY_REVIEWS_SELECTOR);
-
-      if (!target) {
-        setIsCommunityReviewsVisible(false);
-        return false;
-      }
-
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          setIsCommunityReviewsVisible(entry.isIntersecting);
-        },
-        {
-          threshold: 0.08,
-          rootMargin: '0px 0px -18% 0px',
-        }
-      );
-
-      observer.observe(target);
-      return true;
-    };
-
-    if (!bindObserver()) {
-      mutationObserver = new MutationObserver(() => {
-        if (bindObserver()) {
-          mutationObserver?.disconnect();
-        }
-      });
-
-      mutationObserver.observe(document.body, { childList: true, subtree: true });
-    }
-
-    return () => {
-      if (typeof mediaQuery.removeEventListener === 'function') {
-        mediaQuery.removeEventListener('change', handleDesktopChange);
-      } else {
-        mediaQuery.removeListener(handleDesktopChange);
-      }
-
-      observer?.disconnect();
-      mutationObserver?.disconnect();
-    };
-  }, []);
-
   const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)?.english_name ||
     item.original_language;
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
-  const shouldCollapseDetails = isDesktop && isCommunityReviewsVisible;
 
   const personGroups = [
     {
@@ -238,7 +161,7 @@ export default function Sidebar({ item, director, writers, creators, certificati
     <div className="flex flex-col gap-3">
       <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
         {posterSrc ? (
-          <Image
+          <AdaptiveImage
             fill
             priority
             src={posterSrc}
@@ -250,6 +173,7 @@ export default function Sidebar({ item, director, writers, creators, certificati
             placeholder="blur"
             blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
             className="object-cover"
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className="bg-primary center h-full w-full border border-black/5 text-black/60">
@@ -260,15 +184,7 @@ export default function Sidebar({ item, director, writers, creators, certificati
 
       {topContent}
 
-      <div
-        className={cn(
-          'flex flex-col gap-1 transition-all duration-300 ease-out',
-          shouldCollapseDetails
-            ? 'pointer-events-none max-h-0 -translate-y-1 overflow-hidden opacity-0'
-            : 'max-h-[32rem] translate-y-0 opacity-100'
-        )}
-        aria-hidden={shouldCollapseDetails}
-      >
+      <div className="flex flex-col gap-1">
         {rows.map((row) => (
           <SidebarRow key={row.id} icon={row.icon}>
             {row.content}

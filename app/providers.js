@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { MotionConfig, useReducedMotion } from 'framer-motion';
 
 import { isRegistryDebugPanelEnabled, isRegistryHistoryCaptureEnabled } from '@/config/project.config';
-import { InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary';
+import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary';
 import { MotionRuntimeProvider } from '@/features/motion-runtime';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { SmoothScrollProvider } from '@/features/layout/smooth-scroll';
@@ -27,19 +27,37 @@ const CoreShellProviders = pipe(
 );
 
 function shouldEnableInteractiveBoundary(pathname = '/') {
+  return resolveInteractiveBoundaryVariant(pathname) !== 'none';
+}
+
+function resolveInteractiveBoundaryVariant(pathname = '/') {
   return (
     pathname === '/' ||
     pathname.startsWith('/search') ||
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/person/') ||
-    pathname.startsWith('/account') ||
-    pathname.startsWith('/sign-in') ||
-    pathname.startsWith('/sign-up')
-  );
+    pathname.startsWith('/account')
+  )
+    ? 'full'
+    : pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')
+      ? 'auth'
+      : 'none';
+}
+
+function renderInteractiveBoundary(children, variant) {
+  if (variant === 'full') {
+    return <InteractiveFeatureBoundary>{children}</InteractiveFeatureBoundary>;
+  }
+
+  if (variant === 'auth') {
+    return <AuthInteractiveBoundary>{children}</AuthInteractiveBoundary>;
+  }
+
+  return children;
 }
 
 function shouldEnableSmoothScroll(pathname = '/') {
-  return pathname.startsWith('/movie/') || pathname.startsWith('/person/') || pathname.startsWith('/account');
+  return resolveInteractiveBoundaryVariant(pathname) === 'full';
 }
 
 export const AppProviders = ({ children }) => {
@@ -59,14 +77,11 @@ export const AppProviders = ({ children }) => {
     setIsHydrated(true);
   }, []);
 
+  const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
   const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
   const needsSmoothScroll = shouldEnableSmoothScroll(pathname);
 
-  const content = needsInteractiveBoundary ? (
-    <InteractiveFeatureBoundary>{children}</InteractiveFeatureBoundary>
-  ) : (
-    children
-  );
+  const content = needsInteractiveBoundary ? renderInteractiveBoundary(children, interactiveBoundaryVariant) : children;
 
   const contentWithEnhancements = needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
 

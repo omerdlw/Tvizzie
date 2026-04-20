@@ -31,6 +31,10 @@ const SEARCH_GENRE_TOKEN_TO_ID = Object.freeze({
 });
 
 const SEARCH_TEXT_STOPWORDS = new Set(['a', 'an', 'and', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to']);
+const SEARCH_CLIENT_CACHE_TTL_MS = 1000 * 60 * 5;
+const SEARCH_CLIENT_CACHE_MAX_ENTRIES = 120;
+const searchClientCache = new Map();
+const searchClientInFlight = new Map();
 
 export function normalizeResult(item, type = item?.media_type) {
   return {
@@ -101,6 +105,65 @@ function isExactUserMatch(item, normalizedQuery) {
 
 function normalizeString(value) {
   return String(value || '').trim();
+}
+
+function createSearchCacheKey(prefix, parts = []) {
+  return [prefix, ...parts.map((value) => normalizeString(value).toLowerCase())].join('::');
+}
+
+function readSearchCache(key) {
+  const entry = searchClientCache.get(key);
+
+  if (!entry) {
+    return null;
+  }
+
+  if (entry.expiresAt <= Date.now()) {
+    searchClientCache.delete(key);
+    return null;
+  }
+
+  return entry.value;
+}
+
+function writeSearchCache(key, value) {
+  if (searchClientCache.size >= SEARCH_CLIENT_CACHE_MAX_ENTRIES) {
+    const oldestKey = searchClientCache.keys().next().value;
+
+    if (oldestKey) {
+      searchClientCache.delete(oldestKey);
+    }
+  }
+
+  searchClientCache.set(key, {
+    expiresAt: Date.now() + SEARCH_CLIENT_CACHE_TTL_MS,
+    value,
+  });
+}
+
+async function withClientSearchCache(key, load) {
+  const cachedValue = readSearchCache(key);
+
+  if (cachedValue !== null) {
+    return cachedValue;
+  }
+
+  if (searchClientInFlight.has(key)) {
+    return searchClientInFlight.get(key);
+  }
+
+  const requestPromise = Promise.resolve()
+    .then(load)
+    .then((value) => {
+      writeSearchCache(key, value);
+      return value;
+    })
+    .finally(() => {
+      searchClientInFlight.delete(key);
+    });
+
+  searchClientInFlight.set(key, requestPromise);
+  return requestPromise;
 }
 
 function normalizeComparableText(value) {
@@ -666,15 +729,19 @@ export function inferSearchType({ normalizedQuery, userResults, mediaResults }) 
 }
 
 export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS) {
-  try {
-    const users = await ACCOUNT_CLIENT.searchAccounts(query, {
-      limitCount,
-    });
+  const cacheKey = createSearchCacheKey('users', [query, limitCount]);
 
-    return users.map((item) => normalizeResult(item, SEARCH_TYPES.USER));
-  } catch {
-    return [];
-  }
+  return withClientSearchCache(cacheKey, async () => {
+    try {
+      const users = await ACCOUNT_CLIENT.searchAccounts(query, {
+        limitCount,
+      });
+
+      return users.map((item) => normalizeResult(item, SEARCH_TYPES.USER));
+    } catch {
+      return [];
+    }
+  });
 }
 
 export async function fetchMediaPage(query, type, page = 1) {
@@ -687,11 +754,31 @@ export async function fetchMediaPage(query, type, page = 1) {
     };
   }
 
-  try {
-    const { TmdbService } = await import('@/core/services/tmdb/tmdb.service');
-    const response = await TmdbService.searchContent(query, type, page);
+  const cacheKey = createSearchCacheKey('media-page', [query, type, page]);
 
-    if (response.status !== 200 || !response.data?.results) {
+  return withClientSearchCache(cacheKey, async () => {
+    try {
+      const { TmdbService } = await import('@/core/services/tmdb/tmdb.service');
+      const response = await TmdbService.searchContent(query, type, page);
+
+      if (response.status !== 200 || !response.data?.results) {
+        return {
+          page: 1,
+          results: [],
+          totalPages: 0,
+          totalResults: 0,
+        };
+      }
+
+      const data = response.data;
+
+      return {
+        page: Number(data?.page) || page,
+        results: data.results.map((item) => normalizeResult(item)),
+        totalPages: Number(data?.total_pages) || 0,
+        totalResults: Number(data?.total_results) || 0,
+      };
+    } catch {
       return {
         page: 1,
         results: [],
@@ -699,23 +786,7 @@ export async function fetchMediaPage(query, type, page = 1) {
         totalResults: 0,
       };
     }
-
-    const data = response.data;
-
-    return {
-      page: Number(data?.page) || page,
-      results: data.results.map((item) => normalizeResult(item)),
-      totalPages: Number(data?.total_pages) || 0,
-      totalResults: Number(data?.total_results) || 0,
-    };
-  } catch {
-    return {
-      page: 1,
-      results: [],
-      totalPages: 0,
-      totalResults: 0,
-    };
-  }
+  });
 }
 
 export async function fetchMedia(query, type) {

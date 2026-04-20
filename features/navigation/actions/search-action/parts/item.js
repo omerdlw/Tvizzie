@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -11,6 +10,7 @@ import {
   resolveImageLoading,
   resolveImageQuality,
 } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 import { SEARCH_STYLES, SEARCH_TYPES } from '../constants';
@@ -31,7 +31,8 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
     <div className="flex min-w-0 items-center gap-3">
       <div className={SEARCH_STYLES.thumbnail}>
         {item.media_type === SEARCH_TYPES.USER ? (
-          <img
+          <AdaptiveImage
+            mode="img"
             className="h-full w-full object-cover transition-transform duration-(--motion-duration-moderate)"
             src={userAvatarSrc}
             alt={title}
@@ -41,7 +42,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             onError={(event) => applyAvatarFallback(event, userAvatarFallbackSrc)}
           />
         ) : imagePath && !hasImageError ? (
-          <Image
+          <AdaptiveImage
             fill
             alt={title}
             className="object-cover transition-transform duration-(--motion-duration-moderate)"
@@ -51,6 +52,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             loading={resolveImageLoading()}
             quality={resolveImageQuality('grid')}
             decoding="async"
+            wrapperClassName="h-full w-full"
           />
         ) : (
           <div className={`center h-full w-full text-[#7f1d1d]`}>

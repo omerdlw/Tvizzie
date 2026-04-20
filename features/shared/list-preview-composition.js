@@ -2,6 +2,7 @@
 
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function getPreviewImage(item) {
@@ -33,12 +34,14 @@ export default function ListPreviewComposition({
             className="h-full overflow-hidden border-r border-[#0284c7] last:border-r-0"
           >
             {getPreviewImage(item) ? (
-              <img
+              <AdaptiveImage
+                mode="img"
                 src={getPreviewImage(item)}
                 alt={item.title || item.name || 'Poster'}
                 loading="lazy"
                 decoding="async"
                 className={imageClassName}
+                wrapperClassName="h-full w-full"
               />
             ) : (
               <div className="center h-full w-full">

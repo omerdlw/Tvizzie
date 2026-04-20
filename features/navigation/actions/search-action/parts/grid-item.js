@@ -5,6 +5,7 @@ import Link from 'next/link';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 import { SEARCH_TYPES } from '../constants';
@@ -26,13 +27,15 @@ function UserAvatar({ item, title }) {
 
   return (
     <div className="center h-full w-full border border-black/5 bg-black/[0.03]">
-      <img
+      <AdaptiveImage
+        mode="img"
         className="h-full w-full object-cover"
         src={avatarSrc}
         alt={title}
         loading="lazy"
         decoding="async"
         onError={(event) => applyAvatarFallback(event, fallbackSrc)}
+        wrapperClassName="h-full w-full"
       />
     </div>
   );

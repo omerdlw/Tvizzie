@@ -13,10 +13,9 @@
  *  7. Strict will-change teardown — set before, cleared via transitionEnd.
  */
 
-import { useEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { cn } from '@/core/utils';
 
 // ---------------------------------------------------------------------------
 // Easing catalogue — raw cubic-bezier arrays for Framer Motion
@@ -78,11 +77,18 @@ const PHASE = Object.freeze({
 // ---------------------------------------------------------------------------
 // Viewport trigger config for whileInView
 // ---------------------------------------------------------------------------
-const VIEWPORT = {
+const SECTION_VIEWPORT = Object.freeze({
   once: true,
   amount: 0.14,
   margin: '0px 0px -6% 0px',
-};
+});
+
+const SECTION_OBSERVER = Object.freeze({
+  threshold: SECTION_VIEWPORT.amount,
+  rootMargin: '0px 0px -6% 0px',
+});
+
+const SectionGroupContext = createContext(null);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -100,6 +106,11 @@ function resolvePhasedDelay(delay, phase, reduceMotion) {
   if (reduceMotion) return 0;
   const lead = STAGGER.PHASE_LEAD[phase] ?? 0;
   return clamp(lead + delay, 0, STAGGER.MAX_DELAY);
+}
+
+function resolveSectionGroupDelay(group, groupIndex, reduceMotion) {
+  if (!group || reduceMotion) return 0;
+  return clamp(group.delay + groupIndex * group.staggerStep, 0, STAGGER.MAX_DELAY);
 }
 
 /**
@@ -138,12 +149,14 @@ function Reveal({
   distance, // px — falls back to phase default
   duration,
   ease,
+  groupIndex = 0,
   offset, // explicit {x, y} override
   once = true,
   phase = 'section',
   scale,
 }) {
   const reduceMotion = useReducedMotion();
+  const sectionGroup = useContext(SectionGroupContext);
   const cfg = PHASE[phase] ?? PHASE.section;
 
   const resolvedDuration = duration ?? T[phase.toUpperCase()] ?? T.SECTION;
@@ -162,7 +175,11 @@ function Reveal({
   const resetOffset = Object.fromEntries(Object.keys(resolvedOffset).map((k) => [k, 0]));
   const axes = Object.keys(resolvedOffset); // ['x'] or ['y']
 
-  const phasedDelay = resolvePhasedDelay(delay, phase, reduceMotion);
+  const phasedDelay = resolvePhasedDelay(
+    delay + resolveSectionGroupDelay(sectionGroup, groupIndex, reduceMotion),
+    phase,
+    reduceMotion
+  );
 
   const initial = reduceMotion ? { opacity: 0 } : { opacity: 0, scale: resolvedScale, ...resolvedOffset };
 
@@ -184,13 +201,27 @@ function Reveal({
 
   const style = reduceMotion ? undefined : { willChange: buildWillChange(axes) };
 
+  if (sectionGroup) {
+    return (
+      <motion.div
+        className={className}
+        initial={initial}
+        animate={sectionGroup.isActive ? animate : initial}
+        transition={transition}
+        style={style}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
   if (animateOnView) {
     return (
       <motion.div
         className={className}
         initial={initial}
         whileInView={animate}
-        viewport={{ ...VIEWPORT, once }}
+        viewport={{ ...SECTION_VIEWPORT, once }}
         transition={transition}
         style={style}
       >
@@ -203,6 +234,64 @@ function Reveal({
     <motion.div className={className} initial={initial} animate={animate} transition={transition} style={style}>
       {children}
     </motion.div>
+  );
+}
+
+export function MovieSectionGroup({ children, className = '', delay = 0, staggerStep = STAGGER.GROUP_STEP }) {
+  const reduceMotion = useReducedMotion();
+  const containerRef = useRef(null);
+  const [isActive, setIsActive] = useState(reduceMotion);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setIsActive(true);
+      return undefined;
+    }
+
+    if (isActive) {
+      return undefined;
+    }
+
+    const target = containerRef.current;
+    if (!target) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting || entry?.intersectionRatio >= SECTION_OBSERVER.threshold) {
+          setIsActive(true);
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: [0, SECTION_OBSERVER.threshold, 1],
+        rootMargin: SECTION_OBSERVER.rootMargin,
+      }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isActive, reduceMotion]);
+
+  const value = useMemo(
+    () => ({
+      delay,
+      isActive,
+      staggerStep,
+    }),
+    [delay, isActive, staggerStep]
+  );
+
+  return (
+    <SectionGroupContext.Provider value={value}>
+      <div ref={containerRef} className={className}>
+        {children}
+      </div>
+    </SectionGroupContext.Provider>
   );
 }
 
@@ -260,7 +349,7 @@ export function MovieClipReveal({
         className={className}
         initial={initial}
         whileInView={animate}
-        viewport={VIEWPORT}
+        viewport={SECTION_VIEWPORT}
         transition={transition}
         style={style}
       >
@@ -369,7 +458,14 @@ export function MovieHeroReveal({ children, className = '', delay = 0 }) {
  * Section reveal — viewport-triggered for below-the-fold content.
  * Defaults to animating once and only when 14 % of the element is visible.
  */
-export function MovieSectionReveal({ children, className = '', delay = 0, once = true, animateOnView = true }) {
+export function MovieSectionReveal({
+  children,
+  className = '',
+  delay = 0,
+  once = true,
+  animateOnView = true,
+  groupIndex = 0,
+}) {
   return (
     <Reveal
       className={className}
@@ -377,23 +473,11 @@ export function MovieSectionReveal({ children, className = '', delay = 0, once =
       axis="y"
       delay={delay}
       duration={T.SECTION}
+      groupIndex={groupIndex}
       once={once}
       phase="section"
     >
       {children}
     </Reveal>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton placeholder — unchanged API surface
-// ---------------------------------------------------------------------------
-export function MovieSectionSkeleton({ className = '' }) {
-  return (
-    <div className={cn('mt-20 flex w-full flex-col space-y-3 p-4', className)}>
-      {Array.from({ length: 11 }, (_, i) => (
-        <div key={i} className="skeleton-block-soft h-4 w-full" />
-      ))}
-    </div>
   );
 }

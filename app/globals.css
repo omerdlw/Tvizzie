@@ -2,10 +2,10 @@
 @plugin 'tailwindcss-animate';
 
 @theme {
-  --color-white: #f0f0ed;
+  --color-white: #f5f3ed;
   --color-primary: #fff;
   --color-black: #181412;
-  --color-error: #cf393a;
+  --color-error: #8d2625;
   --color-warning: #fcb404;
   --color-success: #099965;
   --color-info: #2976d7;
@@ -48,7 +48,9 @@
 
 @supports (-webkit-touch-callout: none) {
   @media (hover: none) and (pointer: coarse) {
-    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='button']):not([type='submit']):not([type='reset']),
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not(
+        [type='button']
+      ):not([type='submit']):not([type='reset']),
     textarea,
     select {
       font-size: 16px !important;

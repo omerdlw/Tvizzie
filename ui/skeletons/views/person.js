@@ -1,40 +1,51 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import {
+  SkeletonBlock,
+  SkeletonCircle,
+  SkeletonLine,
+  SkeletonPill,
+  SkeletonPoster,
+  SKELETON_TOKENS,
+} from '@/ui/skeletons/primitives';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
 
-const BLOCK_SOFT = 'skeleton-block-soft';
-const BLOCK = 'skeleton-block';
-
 function Heading({ width = 'w-24' }) {
-  return <div className={`h-3 ${width} ${BLOCK}`} />;
+  return <SkeletonLine size="sm" className={width} />;
 }
 
 function TextLine({ width = 'w-full', soft = false }) {
-  return <div className={`h-3.5 ${width} ${soft ? BLOCK_SOFT : BLOCK}`} />;
+  return <SkeletonLine size="md" className={width} soft={soft} />;
 }
 
 function SidebarRowSkeleton() {
   return (
-    <div className="flex items-center gap-2 py-1.5">
-      <div className={`mt-0.5 size-4 shrink-0 ${BLOCK}`} />
+    <div className="flex items-start gap-2 py-1.5">
+      <SkeletonCircle className="mt-0.5 size-4 shrink-0" soft={true} />
       <TextLine width="w-44" soft={true} />
+    </div>
+  );
+}
+
+function SocialDockSkeleton() {
+  return (
+    <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 px-4">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <SkeletonPill key={index} className="size-8" radius="field" soft={true} />
+      ))}
     </div>
   );
 }
 
 function SidebarSkeleton() {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative aspect-2/3 w-full max-w-none shrink-0 overflow-hidden lg:h-[600px] lg:w-[400px]">
-        <div className={`h-full w-full ${BLOCK}`} />
-        <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2 px-4">
-          <div className={`size-8 ${BLOCK_SOFT}`} />
-          <div className={`size-8 ${BLOCK_SOFT}`} />
-          <div className={`size-8 ${BLOCK_SOFT}`} />
-          <div className={`size-8 ${BLOCK_SOFT}`} />
-        </div>
+    <div className={`flex flex-col ${SKELETON_TOKENS.gap.stack}`}>
+      <div className="relative mx-auto aspect-2/3 w-full max-w-none shrink-0 overflow-hidden rounded-[20px] sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
+        <SkeletonBlock className="h-full w-full" radius="hero" />
+        <SocialDockSkeleton />
       </div>
 
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-1">
         {Array.from({ length: 5 }).map((_, index) => (
           <SidebarRowSkeleton key={index} />
         ))}
@@ -42,7 +53,7 @@ function SidebarSkeleton() {
 
       <div className="mt-1 flex flex-col gap-2">
         <Heading width="w-12" />
-        <div className="flex flex-col gap-2">
+        <div className={`flex flex-col ${SKELETON_TOKENS.gap.compact}`}>
           <TextLine />
           <TextLine width="w-[92%]" soft={true} />
           <TextLine width="w-[80%]" soft={true} />
@@ -55,10 +66,10 @@ function SidebarSkeleton() {
 function GalleryStripSkeleton() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
-      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
-      <div className={`aspect-2/3 w-56 shrink-0 ${BLOCK}`} />
-      <div className={`aspect-2/3 w-20 shrink-0 ${BLOCK}`} />
+      <SkeletonPoster className="w-[min(14rem,calc(100vw-4.5rem))] sm:w-60" />
+      <SkeletonPoster className="w-[min(14rem,calc(100vw-4.5rem))] sm:w-60" />
+      <SkeletonPoster className="w-[min(14rem,calc(100vw-4.5rem))] sm:w-60" />
+      <SkeletonPoster className="w-20" soft={true} />
     </div>
   );
 }
@@ -67,7 +78,7 @@ function FilmographyGridSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 8 }).map((_, index) => (
-        <div key={index} className={`aspect-2/3 w-full ${BLOCK}`} />
+        <SkeletonPoster key={index} />
       ))}
     </div>
   );
@@ -93,11 +104,11 @@ function PersonHeroSkeleton() {
   return (
     <>
       <div className="flex items-end justify-between gap-3">
-        <div className={`h-16 w-[56%] ${BLOCK}`} />
+        <SkeletonBlock className="h-16 w-[56%]" radius="hero" />
       </div>
 
       <div className="mt-4">
-        <TextLine width="w-44" />
+        <SkeletonLine size="sm" className="w-44" />
       </div>
 
       <div className="mt-4 flex max-w-[72ch] flex-col gap-2">
@@ -112,38 +123,40 @@ function PersonHeroSkeleton() {
 
 function PersonContentSkeleton() {
   return (
-    <div
-      className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
-    >
-      <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
-        <div className="w-full shrink-0 self-start lg:w-[400px]">
-          <SidebarSkeleton />
-        </div>
+    <PageGradientShell>
+      <div
+        className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
+      >
+        <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
+          <div className="w-full shrink-0 self-start lg:w-[400px]">
+            <SidebarSkeleton />
+          </div>
 
-        <div className="flex w-full min-w-0 flex-col">
-          <div className="flex w-full flex-col">
-            <PersonHeroSkeleton />
-            <PersonMainSectionsSkeleton className="mt-10" />
+          <div className="flex w-full min-w-0 flex-col">
+            <div className="flex w-full flex-col">
+              <PersonHeroSkeleton />
+              <PersonMainSectionsSkeleton className="mt-10" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </PageGradientShell>
   );
 }
 
 function YearHeaderSkeleton() {
   return (
     <div className="mb-2 flex items-center gap-2 sm:gap-3">
-      <div className={`h-4 w-9 shrink-0 sm:w-12 ${BLOCK}`} />
-      <div className={`h-px flex-1 ${BLOCK}`} />
+      <SkeletonLine size="lg" className="w-9 shrink-0 sm:w-12" />
+      <SkeletonBlock className="h-px flex-1" soft={true} />
     </div>
   );
 }
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-2.5 p-1.5 sm:gap-3">
-      <div className={`h-24 w-16 shrink-0 ${BLOCK}`} />
+    <div className="flex items-end gap-3 rounded-[14px] p-1">
+      <SkeletonPoster className="h-24 w-16 shrink-0 rounded-[10px] aspect-auto" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
         <TextLine width="w-4/5" soft={true} />

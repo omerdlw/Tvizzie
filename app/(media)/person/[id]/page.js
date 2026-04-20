@@ -56,3 +56,5 @@ export default async function PersonDetailPage({ params }) {
 
   return <Client key={person.id} person={person} secondaryDataPromise={secondaryDataPromise} />;
 }
+
+export const revalidate = 3600;

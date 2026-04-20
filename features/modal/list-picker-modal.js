@@ -10,6 +10,7 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
 import { cn } from '@/core/utils';
 import { buildListCreatorHref } from '@/features/account/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -50,12 +51,14 @@ function ListPreviewStack({ list }) {
               }}
             >
               {imageSrc ? (
-                <img
+                <AdaptiveImage
+                  mode="img"
                   src={imageSrc}
                   alt={item.title || item.name || 'Poster'}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover"
+                  wrapperClassName="h-full w-full"
                 />
               ) : (
                 <div className="center bg-primary h-full w-full text-black/50">

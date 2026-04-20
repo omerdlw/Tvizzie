@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
 import { NAV_CONTENT_TRANSITION, NAV_SURFACE_ITEM_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 
 const MAX_WATCH_PROVIDERS = 6;
 const DEFAULT_REGION = 'TR';
@@ -75,12 +76,14 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
               transition={{ ...NAV_SURFACE_ITEM_SPRING, delay: Math.min(index * 0.024, 0.1) }}
             >
               <div className="flex min-w-0 items-center gap-2">
-                <img
+                <AdaptiveImage
+                  mode="img"
                   src={`${TMDB_IMG}/w154${provider.logo_path}`}
                   alt={provider.provider_name}
                   loading="lazy"
                   decoding="async"
                   className="h-7 w-7 shrink-0 rounded-[10px] object-cover"
+                  wrapperClassName="h-7 w-7 shrink-0 rounded-[10px]"
                 />
                 <span className={`truncate text-sm font-medium text-black/70`}>{provider.provider_name}</span>
               </div>

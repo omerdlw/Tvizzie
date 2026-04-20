@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
-import Image from 'next/image';
-
 import { TMDB_IMG } from '@/core/constants';
 import { getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function resolveProfileImage(path) {
@@ -24,7 +23,7 @@ export default function PersonHero({ person, overline = null }) {
       {!overline && (
         <div className="relative h-86 w-64 overflow-hidden border border-[#0284c7] bg-[#dbeafe]">
           {hasImage ? (
-            <Image
+            <AdaptiveImage
               src={imageSrc}
               alt={person.name}
               fill
@@ -37,6 +36,7 @@ export default function PersonHero({ person, overline = null }) {
               placeholder="blur"
               blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
               onError={() => setHasError(true)}
+              wrapperClassName="h-full w-full"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { EASING, TMDB_IMG } from '@/core/constants';
@@ -10,6 +9,7 @@ import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
 import SegmentedControl from '@/features/shared/segmented-control';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 const FEATURED_COUNT = 6;
@@ -28,7 +28,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
   }
 
   return (
-    <Image
+    <AdaptiveImage
       fill
       alt={person.name}
       src={src}
@@ -41,6 +41,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       draggable={false}
       className="rounded-[9px] object-cover"
       onError={() => setError(true)}
+      wrapperClassName="h-full w-full"
     />
   );
 }

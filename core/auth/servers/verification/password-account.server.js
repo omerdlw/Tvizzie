@@ -1,6 +1,7 @@
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
 import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
 import { createAdminClient } from '@/core/clients/supabase/admin';
+import { validateUsername } from '@/core/utils/account-username';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -8,6 +9,48 @@ function normalizeValue(value) {
 
 function normalizeEmail(value) {
   return normalizeValue(value).toLowerCase();
+}
+
+export async function resolvePasswordAccountIdentifier(identifier) {
+  const normalizedIdentifier = normalizeValue(identifier);
+
+  if (!normalizedIdentifier) {
+    throw new Error('Username or email is required');
+  }
+
+  if (normalizedIdentifier.includes('@')) {
+    return {
+      email: normalizeEmail(normalizedIdentifier),
+      userId: null,
+      username: null,
+    };
+  }
+
+  const username = validateUsername(normalizedIdentifier);
+  const admin = createAdminClient();
+  const profileResult = await admin
+    .from('profiles')
+    .select('id, email, username')
+    .eq('username_lower', username)
+    .maybeSingle();
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message || 'Username lookup failed');
+  }
+
+  const profile = profileResult.data || null;
+
+  if (!profile?.id || !profile?.email) {
+    const error = new Error('No account was found with this username');
+    error.code = 'auth/user-not-found';
+    throw error;
+  }
+
+  return {
+    email: normalizeEmail(profile.email),
+    userId: normalizeValue(profile.id) || null,
+    username: normalizeValue(profile.username) || username,
+  };
 }
 
 export async function lookupAccountByEmail(email) {

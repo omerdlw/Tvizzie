@@ -14,7 +14,6 @@ import {
   isEmailIdentifier,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
-  resolveSignInEmail,
   validatePassword,
 } from '@/features/auth';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
@@ -155,6 +154,7 @@ export default function Client() {
         allowRememberDevice: true,
         autoSendOnOpen: true,
         email: signInResult.email || '',
+        identifier,
         forceNewCodeOnOpen: true,
         formComponent: AuthVerificationForm,
         purpose: AUTH_PURPOSE.SIGN_IN,
@@ -174,7 +174,10 @@ export default function Client() {
     setIsIdentifierChecking(true);
 
     try {
-      await resolveSignInEmail(identifier);
+      await assertPasswordAccountStatus({
+        identifier,
+        intent: 'sign-in',
+      });
       setCurrentStep('password');
     } catch (error) {
       toast.error(resolveAuthErrorMessage(error, 'Could not continue'));
@@ -200,9 +203,8 @@ export default function Client() {
         throw new Error('Password is required');
       }
 
-      const { email } = await resolveSignInEmail(identifier);
       await assertPasswordAccountStatus({
-        email,
+        identifier,
         intent: 'sign-in',
       });
       passwordAccountEligible = true;
@@ -210,7 +212,7 @@ export default function Client() {
 
       try {
         signInResult = await auth.signIn({
-          email,
+          identifier,
           password: rawPassword,
         });
       } catch (error) {
@@ -230,7 +232,7 @@ export default function Client() {
 
         if (isInvalidCredentials && rawPassword !== trimmedPassword && trimmedPassword) {
           signInResult = await auth.signIn({
-            email,
+            identifier,
             password: trimmedPassword,
           });
         } else {
@@ -334,9 +336,8 @@ export default function Client() {
     setIsPreparingReset(true);
 
     try {
-      const { email } = await resolveSignInEmail(identifier);
-      await assertPasswordAccountStatus({
-        email,
+      const { email } = await assertPasswordAccountStatus({
+        identifier,
         intent: 'password-reset',
       });
 
@@ -348,6 +349,7 @@ export default function Client() {
         data: {
           purpose: AUTH_PURPOSE.PASSWORD_RESET,
           email,
+          identifier,
           autoSendOnOpen: true,
           formComponent: AuthVerificationForm,
         },
@@ -402,6 +404,7 @@ export default function Client() {
 
       setIdentifier(resetFlow.email);
       setPassword('');
+      setCurrentStep('password');
       setResetFlow(INITIAL_RESET_FLOW);
     } catch (error) {
       setResetFlow(INITIAL_RESET_FLOW);

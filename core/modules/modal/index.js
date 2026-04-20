@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -12,7 +12,7 @@ import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_POSITIONS } from '@/core/modules
 import { useModal } from '@/core/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
-import { BACKDROP_VARIANTS, getModalVariants, POSITION_CLASSES } from './utils';
+import { getBackdropVariants, getModalVariants, POSITION_CLASSES } from './utils';
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -73,12 +73,15 @@ function trapFocus(event, elements) {
 function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModal, registry }) {
   const modalRef = useRef(null);
   const focusableRef = useRef([]);
+  const reduceMotion = useReducedMotion();
 
   const activePosition = useMemo(() => {
     return resolveActivePosition(entry.position, entry.responsivePosition, isMobileViewport);
   }, [entry.position, entry.responsivePosition, isMobileViewport]);
 
   const SpecificModalComponent = registry.get(entry.modalType);
+  const modalVariants = useMemo(() => getModalVariants(activePosition, reduceMotion), [activePosition, reduceMotion]);
+  const backdropVariants = useMemo(() => getBackdropVariants(reduceMotion), [reduceMotion]);
 
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
   const isLeftModal = activePosition === MODAL_POSITIONS.LEFT;
@@ -158,7 +161,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         <motion.div
           className="fixed inset-0 bg-white/50 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
-          variants={BACKDROP_VARIANTS}
+          variants={backdropVariants}
           initial="hidden"
           animate="visible"
           exit="hidden"
@@ -175,9 +178,9 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         )}
         style={{
           zIndex: modalZIndex,
-          willChange: 'transform',
+          willChange: reduceMotion ? 'opacity' : 'transform, opacity',
         }}
-        variants={getModalVariants(activePosition)}
+        variants={modalVariants}
         initial="hidden"
         animate="visible"
         exit="exit"

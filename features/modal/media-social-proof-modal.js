@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import Container from '@/core/modules/modal/container';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function buildUserActionMap(socialProof) {
@@ -86,13 +87,15 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
                   >
                     <div className="center size-10 shrink-0 overflow-hidden rounded-[10px] border border-black/5">
-                      <img
+                      <AdaptiveImage
+                        mode="img"
                         src={avatarSrc}
                         alt={user?.displayName || username}
                         className="size-full object-cover"
                         loading="lazy"
                         decoding="async"
                         onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+                        wrapperClassName="size-full"
                       />
                     </div>
 

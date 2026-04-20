@@ -116,12 +116,12 @@ export default function View({
           <h1 className="text-3xl font-semibold sm:text-4xl">Welcome back!</h1>
         </div>
 
-        <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Email">
+        <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
           <Input
             id="sign-in-identifier"
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
-            placeholder="Enter your email"
+            placeholder="Enter your username or email"
             autoComplete="username"
             classNames={AUTH_INPUT_CLASSNAMES}
           />

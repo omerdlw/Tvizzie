@@ -10,6 +10,8 @@ import { normalizeOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-ca
 import { getOAuthProviderIcon, getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient } from '@/core/clients/supabase/client';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
+import { isCanonicalSessionAuthenticated } from '@/core/modules/auth/session-client';
+import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
 
 const SESSION_SYNC_MAX_ATTEMPTS = 10;
@@ -107,32 +109,15 @@ function isTransientOAuthError(error) {
   );
 }
 
-async function isCanonicalSessionAuthenticated() {
-  try {
-    const response = await fetch('/api/auth/session', {
-      cache: 'no-store',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const payload = await response.json().catch(() => null);
-
-    return payload?.status === 'authenticated' && Boolean(payload?.user?.id);
-  } catch {
-    return false;
-  }
-}
-
 async function waitForCanonicalSession({ isCancelled = null } = {}) {
   for (let attempt = 0; attempt < SESSION_SYNC_MAX_ATTEMPTS; attempt += 1) {
     if (typeof isCancelled === 'function' && isCancelled()) {
       return false;
     }
 
-    const isAuthenticated = await isCanonicalSessionAuthenticated();
+    const isAuthenticated = await isCanonicalSessionAuthenticated({
+      force: attempt > 0,
+    });
 
     if (isAuthenticated) {
       return true;
@@ -146,26 +131,34 @@ async function waitForCanonicalSession({ isCancelled = null } = {}) {
   return false;
 }
 
-async function getBrowserSessionUserId(supabase) {
+function createEmptyBrowserSessionState(error = null) {
+  return {
+    error,
+    session: null,
+    user: null,
+    userId: '',
+  };
+}
+
+async function getBrowserSessionState(supabase) {
   try {
     const sessionResult = await supabase.auth.getSession();
 
     if (sessionResult.error) {
-      return {
-        error: sessionResult.error,
-        userId: '',
-      };
+      return createEmptyBrowserSessionState(sessionResult.error);
     }
+
+    const session = sessionResult.data?.session || null;
+    const user = session?.user || null;
 
     return {
       error: null,
-      userId: normalizeValue(sessionResult.data?.session?.user?.id),
+      session,
+      user,
+      userId: normalizeValue(user?.id),
     };
   } catch (error) {
-    return {
-      error,
-      userId: '',
-    };
+    return createEmptyBrowserSessionState(error);
   }
 }
 
@@ -180,12 +173,14 @@ async function waitForBrowserSession({ isCancelled = null, supabase }) {
       };
     }
 
-    const sessionState = await getBrowserSessionUserId(supabase);
+    const sessionState = await getBrowserSessionState(supabase);
 
     if (sessionState.userId) {
       return {
         hasSession: true,
         lastError: null,
+        session: sessionState.session,
+        user: sessionState.user,
       };
     }
 
@@ -199,6 +194,8 @@ async function waitForBrowserSession({ isCancelled = null, supabase }) {
   return {
     hasSession: false,
     lastError,
+    session: null,
+    user: null,
   };
 }
 
@@ -272,17 +269,19 @@ async function exchangeCodeForSessionWithRetry({ code, supabase }) {
   return exchangePromise;
 }
 
-function OAuthCallbackLoading() {
+function OAuthCallbackLoading({ provider = null }) {
+  const providerIcon = getOAuthProviderIcon(provider);
+
   return (
-    <main className="pointer-events-none fixed inset-0 center p-6" style={{ zIndex: Z_INDEX.LOADING }}>
-      <Spinner size={32} className="text-black/45" />
+    <main className="center pointer-events-none fixed inset-0 p-6" style={{ zIndex: Z_INDEX.LOADING }}>
+      {providerIcon ? <Icon icon={providerIcon} size={50} /> : <Spinner size={50} />}
     </main>
   );
 }
 
-function OAuthCallbackContent() {
+function OAuthCallbackContent({ initialProvider = null }) {
   const searchParams = useSearchParams();
-  const provider = normalizeOAuthProvider(searchParams.get('provider'));
+  const provider = normalizeOAuthProvider(searchParams.get('provider')) || normalizeOAuthProvider(initialProvider);
 
   useEffect(() => {
     const providerLabel = getOAuthProviderLabel(provider, 'social');
@@ -346,16 +345,10 @@ function OAuthCallbackContent() {
       }
 
       const supabase = createSupabaseClient();
-      const sessionState = await getBrowserSessionUserId(supabase);
-      const currentSession = await supabase.auth.getSession().catch(() => ({
-        data: {
-          session: null,
-        },
-      }));
-      const currentUser = currentSession?.data?.session?.user || null;
+      const sessionState = await getBrowserSessionState(supabase);
 
       if (sessionState.userId) {
-        await ensureAccountRecord(currentUser);
+        await ensureAccountRecord(sessionState.user);
         await syncServerSession();
         redirectTo(nextUrl);
         return;
@@ -385,13 +378,7 @@ function OAuthCallbackContent() {
       });
 
       if (browserSessionState.hasSession) {
-        const browserSession = await supabase.auth.getSession().catch(() => ({
-          data: {
-            session: null,
-          },
-        }));
-
-        await ensureAccountRecord(browserSession?.data?.session?.user || null);
+        await ensureAccountRecord(browserSessionState.user);
         await syncServerSession();
         redirectTo(nextUrl);
         return;
@@ -423,13 +410,15 @@ function OAuthCallbackContent() {
     };
   }, [searchParams]);
 
-  return <OAuthCallbackLoading />;
+  return <OAuthCallbackLoading provider={provider} />;
 }
 
-export default function Client() {
+export default function Client({ initialProvider = null }) {
+  const provider = normalizeOAuthProvider(initialProvider);
+
   return (
-    <Suspense fallback={<OAuthCallbackLoading />}>
-      <OAuthCallbackContent />
+    <Suspense fallback={<OAuthCallbackLoading provider={provider} />}>
+      <OAuthCallbackContent initialProvider={provider} />
     </Suspense>
   );
 }

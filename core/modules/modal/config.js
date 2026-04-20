@@ -1,5 +1,3 @@
-import { DURATION, EASING } from '@/core/constants';
-
 export const MODAL_POSITIONS = Object.freeze({
   CENTER: 'center',
   BOTTOM: 'bottom',
@@ -23,14 +21,5 @@ export const MODAL_PRESETS = Object.freeze({
   },
   VIDEO_PREVIEW_MODAL: {
     chrome: MODAL_CHROME.BARE,
-  },
-});
-
-export const ANIMATION_CONFIGS = Object.freeze({
-  SPRING: EASING.SPRING_CONFIG.MODAL,
-  SMOOTH: {
-    type: 'tween',
-    ease: EASING.ACCENT,
-    duration: DURATION.SLOW,
   },
 });

@@ -1,52 +1,143 @@
 import { DURATION, EASING } from '@/core/constants';
 
-import { ANIMATION_CONFIGS, MODAL_POSITIONS } from './config';
+import { MODAL_POSITIONS } from './config';
 
-const SPRING_TRANSITION = ANIMATION_CONFIGS.SPRING;
-const SMOOTH_TRANSITION = ANIMATION_CONFIGS.SMOOTH;
+const REDUCED_TRANSITION = Object.freeze({
+  duration: DURATION.REDUCED_MOTION,
+  ease: EASING.LINEAR,
+});
 
-function createCenterVariant() {
+const PANEL_OPACITY_ENTER_TRANSITION = Object.freeze({
+  duration: 0.28,
+  ease: EASING.EASE_OUT,
+});
+
+const PANEL_OPACITY_EXIT_TRANSITION = Object.freeze({
+  duration: 0.22,
+  ease: EASING.EASE_IN_OUT,
+});
+
+const CENTER_PANEL_ENTER_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: DURATION.MODERATE,
+  ease: EASING.SMOOTH,
+});
+
+const CENTER_PANEL_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: DURATION.FAST,
+  ease: EASING.SMOOTH,
+});
+
+const EDGE_PANEL_ENTER_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: DURATION.MODERATE,
+  ease: EASING.SMOOTH,
+});
+
+const EDGE_PANEL_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: DURATION.BALANCED,
+  ease: EASING.SMOOTH,
+});
+
+const BACKDROP_TRANSITION = Object.freeze({
+  duration: DURATION.BALANCED,
+  ease: EASING.SMOOTH,
+});
+
+const BACKDROP_EXIT_TRANSITION = Object.freeze({
+  duration: DURATION.NORMAL,
+  ease: EASING.SMOOTH,
+});
+
+function createCenterVariant(reduceMotion) {
+  if (reduceMotion) {
+    return {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: REDUCED_TRANSITION,
+      },
+      exit: {
+        opacity: 0,
+        transition: REDUCED_TRANSITION,
+      },
+    };
+  }
+
   return {
-    hidden: { scale: 0.94, opacity: 0 },
+    hidden: { scale: 0.986, y: 12, opacity: 0 },
     visible: {
       scale: 1,
+      y: 0,
       opacity: 1,
-      transition: SPRING_TRANSITION,
+      transition: {
+        opacity: PANEL_OPACITY_ENTER_TRANSITION,
+        scale: CENTER_PANEL_ENTER_TRANSITION,
+        y: CENTER_PANEL_ENTER_TRANSITION,
+      },
     },
     exit: {
-      scale: 0.94,
+      scale: 0.992,
+      y: 8,
       opacity: 0,
-      transition: SPRING_TRANSITION,
+      transition: {
+        opacity: PANEL_OPACITY_EXIT_TRANSITION,
+        scale: CENTER_PANEL_EXIT_TRANSITION,
+        y: CENTER_PANEL_EXIT_TRANSITION,
+      },
     },
   };
 }
 
-function createDirectionalVariant(axis, hiddenValue) {
+function createDirectionalVariant(axis, hiddenValue, reduceMotion) {
+  if (reduceMotion) {
+    return {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: REDUCED_TRANSITION,
+      },
+      exit: {
+        opacity: 0,
+        transition: REDUCED_TRANSITION,
+      },
+    };
+  }
+
   return {
     hidden: { [axis]: hiddenValue, opacity: 0 },
     visible: {
       [axis]: 0,
       opacity: 1,
-      transition: SMOOTH_TRANSITION,
+      transition: {
+        opacity: PANEL_OPACITY_ENTER_TRANSITION,
+        [axis]: EDGE_PANEL_ENTER_TRANSITION,
+      },
     },
     exit: {
       [axis]: hiddenValue,
       opacity: 0,
-      transition: SMOOTH_TRANSITION,
+      transition: {
+        opacity: PANEL_OPACITY_EXIT_TRANSITION,
+        [axis]: EDGE_PANEL_EXIT_TRANSITION,
+      },
     },
   };
 }
 
-const POSITION_VARIANTS = Object.freeze({
-  [MODAL_POSITIONS.CENTER]: createCenterVariant(),
-  [MODAL_POSITIONS.TOP]: createDirectionalVariant('y', '-100%'),
-  [MODAL_POSITIONS.BOTTOM]: createDirectionalVariant('y', '100%'),
-  [MODAL_POSITIONS.LEFT]: createDirectionalVariant('x', '-100%'),
-  [MODAL_POSITIONS.RIGHT]: createDirectionalVariant('x', '100%'),
+const POSITION_VARIANT_BUILDERS = Object.freeze({
+  [MODAL_POSITIONS.CENTER]: (reduceMotion) => createCenterVariant(reduceMotion),
+  [MODAL_POSITIONS.TOP]: (reduceMotion) => createDirectionalVariant('y', '-100%', reduceMotion),
+  [MODAL_POSITIONS.BOTTOM]: (reduceMotion) => createDirectionalVariant('y', '100%', reduceMotion),
+  [MODAL_POSITIONS.LEFT]: (reduceMotion) => createDirectionalVariant('x', '-100%', reduceMotion),
+  [MODAL_POSITIONS.RIGHT]: (reduceMotion) => createDirectionalVariant('x', '100%', reduceMotion),
 });
 
-export function getModalVariants(position) {
-  return POSITION_VARIANTS[position] || POSITION_VARIANTS[MODAL_POSITIONS.CENTER];
+export function getModalVariants(position, reduceMotion = false) {
+  const buildVariants = POSITION_VARIANT_BUILDERS[position] || POSITION_VARIANT_BUILDERS[MODAL_POSITIONS.CENTER];
+  return buildVariants(reduceMotion);
 }
 
 export const POSITION_CLASSES = Object.freeze({
@@ -57,19 +148,28 @@ export const POSITION_CLASSES = Object.freeze({
   [MODAL_POSITIONS.RIGHT]: 'items-end justify-start',
 });
 
-export const BACKDROP_VARIANTS = Object.freeze({
-  hidden: {
-    opacity: 0,
-    transition: {
-      duration: DURATION.SLOW,
-      ease: EASING.ACCENT,
+export function getBackdropVariants(reduceMotion = false) {
+  if (reduceMotion) {
+    return {
+      hidden: {
+        opacity: 0,
+        transition: REDUCED_TRANSITION,
+      },
+      visible: {
+        opacity: 1,
+        transition: REDUCED_TRANSITION,
+      },
+    };
+  }
+
+  return {
+    hidden: {
+      opacity: 0,
+      transition: BACKDROP_EXIT_TRANSITION,
     },
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      duration: DURATION.SLOW,
-      ease: EASING.ACCENT,
+    visible: {
+      opacity: 1,
+      transition: BACKDROP_TRANSITION,
     },
-  },
-});
+  };
+}

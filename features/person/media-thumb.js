@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
-import Image from 'next/image';
-
 import { TMDB_IMG } from '@/core/constants';
 import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function resolvePosterSrc(poster) {
@@ -34,7 +33,7 @@ export default function MediaThumb({ poster, alt, className = '' }) {
   return (
     <div className={cn('relative aspect-2/3 w-16 shrink-0 overflow-hidden sm:w-20', className)}>
       {src ? (
-        <Image
+        <AdaptiveImage
           fill
           sizes="(max-width: 640px) 64px, 80px"
           src={src}
@@ -44,6 +43,7 @@ export default function MediaThumb({ poster, alt, className = '' }) {
           unoptimized={!shouldOptimize}
           className="object-cover"
           onError={() => setHasError(true)}
+          wrapperClassName="h-full w-full"
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center">

@@ -15,6 +15,7 @@ import { assertPendingSignIn } from '@/core/auth/servers/verification/login-veri
 import {
   lookupAccountByEmail,
   lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
 } from '@/core/auth/servers/verification/password-account.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { assertRecentReauth } from '@/core/auth/servers/security/recent-reauth.server';
@@ -85,6 +86,28 @@ function resolvePasswordResetLookupError(code) {
   throw new Error('Password reset could not be started');
 }
 
+async function resolvePasswordResetEmail(identifier) {
+  const normalizedIdentifier = normalizeValue(identifier);
+
+  if (!normalizedIdentifier) {
+    throw new Error('Username or email is required');
+  }
+
+  if (normalizedIdentifier.includes('@')) {
+    return validateAllowedEmailDomain(normalizedIdentifier);
+  }
+
+  try {
+    return (await resolvePasswordAccountIdentifier(normalizedIdentifier)).email;
+  } catch (error) {
+    if (normalizeValue(error?.code) === 'auth/user-not-found') {
+      resolvePasswordResetLookupError('auth/user-not-found');
+    }
+
+    throw error;
+  }
+}
+
 export async function POST(request) {
   const requestContext = getRequestContext(request);
   let email = null;
@@ -148,6 +171,8 @@ export async function POST(request) {
 
         email = pendingSignIn.email;
         userId = pendingSignIn.userId;
+      } else if (purpose === PURPOSES.PASSWORD_RESET) {
+        email = await resolvePasswordResetEmail(body?.identifier || body?.email);
       } else {
         email = validateAllowedEmailDomain(body?.email);
       }
@@ -220,6 +245,7 @@ export async function POST(request) {
               : message.includes('already in use') || message.includes('already linked to this account')
                 ? 409
                 : message.includes('required') ||
+                    message.includes('Username or email is required') ||
                     message.includes('invalid') ||
                     message.includes('must be') ||
                     message.includes('Unsupported verification purpose') ||

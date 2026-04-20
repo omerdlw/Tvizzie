@@ -47,6 +47,13 @@ const InteractiveProviders = pipe(
   [ContextMenuProvider]
 );
 
+const AuthInteractiveProviders = pipe(
+  [SettingsProvider, { config: APP_SETTINGS_CONFIG }],
+  [AuthProvider, { config: APP_AUTH_CONFIG }],
+  [NotificationProvider],
+  [ModalProvider]
+);
+
 function GlobalNotificationModalRegistry() {
   useRegistry({
     modal: {
@@ -57,20 +64,38 @@ function GlobalNotificationModalRegistry() {
   return null;
 }
 
+function SharedInteractiveFrame({ children }) {
+  return (
+    <>
+      <ObservabilityBootstrap />
+      <NotificationContainer />
+      <NotificationListener />
+      <GlobalErrorListener />
+      {children}
+    </>
+  );
+}
+
+export function AuthInteractiveBoundary({ children }) {
+  return (
+    <AuthInteractiveProviders>
+      <SharedInteractiveFrame>{children}</SharedInteractiveFrame>
+    </AuthInteractiveProviders>
+  );
+}
+
 export function InteractiveFeatureBoundary({ children }) {
   return (
     <InteractiveProviders>
-      <ObservabilityBootstrap />
-      <AccountNavRegistry />
-      <GlobalContextMenuRegistry />
-      <GlobalNotificationModalRegistry />
-      <NotificationContainer />
-      <NotificationListener />
-      <NotificationBadgeListener />
-      <GlobalErrorListener />
-      <ContextMenuGlobal />
-      <CountdownOverlay />
-      {children}
+      <SharedInteractiveFrame>
+        <AccountNavRegistry />
+        <GlobalContextMenuRegistry />
+        <GlobalNotificationModalRegistry />
+        <NotificationBadgeListener />
+        <ContextMenuGlobal />
+        <CountdownOverlay />
+        {children}
+      </SharedInteractiveFrame>
     </InteractiveProviders>
   );
 }

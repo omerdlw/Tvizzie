@@ -1,3 +1,7 @@
 import Client from './client';
 
-export default Client;
+export default async function CallbackPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+
+  return <Client initialProvider={resolvedSearchParams?.provider || null} />;
+}

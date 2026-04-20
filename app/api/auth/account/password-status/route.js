@@ -6,7 +6,10 @@ import {
 } from '@/core/auth/servers/security/rate-limit.server';
 import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
-import { lookupPasswordAccountByEmail } from '@/core/auth/servers/verification/password-account.server';
+import {
+  lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
+} from '@/core/auth/servers/verification/password-account.server';
 
 const INTENTS = Object.freeze({
   PASSWORD_RESET: 'password-reset',
@@ -100,29 +103,64 @@ export async function POST(request) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const email = normalizeValue(body?.email);
+    const identifier = normalizeValue(body?.identifier || body?.email);
+    const emailInput = normalizeValue(body?.email);
     const intent = normalizeIntent(body?.intent);
+
+    const lookupTarget = intent === INTENTS.SIGN_UP ? emailInput : identifier;
 
     await enforceSlidingWindowRateLimit({
       namespace: `auth:account:password-status:${intent}`,
       windowMs: 15 * 60 * 1000,
       dimensions: [
-        { id: 'email', value: email, limit: 10 },
+        { id: 'identifier', value: lookupTarget, limit: 10 },
         { id: 'ip', value: requestContext.ipAddress || 'unknown', limit: 40 },
         { id: 'device', value: requestContext.deviceId || 'unknown', limit: 25 },
       ],
       message: 'Too many account lookup requests',
     });
 
+    let resolvedEmail = emailInput;
+
+    if (intent !== INTENTS.SIGN_UP) {
+      try {
+        resolvedEmail = (await resolvePasswordAccountIdentifier(identifier)).email;
+      } catch (error) {
+        if (normalizeValue(error?.code) === 'auth/user-not-found') {
+          const resolvedError = resolveLookupError(intent, 'auth/user-not-found');
+
+          return NextResponse.json(
+            {
+              ...createStatusPayload({
+                email: null,
+                lookup: null,
+                accountExists: false,
+                accountState: null,
+                passwordEnabled: false,
+                allowedIntent: resolvedError.allowedIntent,
+                messageCode: resolvedError.messageCode,
+              }),
+              code: resolvedError.messageCode,
+              email: null,
+              error: resolvedError.error,
+            },
+            { status: resolvedError.status }
+          );
+        }
+
+        throw error;
+      }
+    }
+
     const lookup =
       intent === INTENTS.SIGN_UP
         ? null
-        : await lookupPasswordAccountByEmail(email, {
+        : await lookupPasswordAccountByEmail(resolvedEmail, {
             requireProfile: intent === INTENTS.PASSWORD_RESET,
           });
 
     if (intent === INTENTS.SIGN_UP) {
-      const accountState = await resolveEmailAccountState(email);
+      const accountState = await resolveEmailAccountState(resolvedEmail);
 
       if (accountState.state === EMAIL_ACCOUNT_STATES.EXISTING_GOOGLE_ONLY) {
         return NextResponse.json(
@@ -219,7 +257,7 @@ export async function POST(request) {
     const message = String(error?.message || 'Account status could not be resolved');
     const status = isSlidingWindowRateLimitError(error)
       ? 429
-      : message.includes('Enter a valid email address')
+      : message.includes('Enter a valid email address') || message.includes('Username or email is required')
         ? 400
         : 500;
 

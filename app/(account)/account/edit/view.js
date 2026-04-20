@@ -5,6 +5,7 @@ import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/fea
 import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import AccountHero from '@/features/account/shared/hero';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import Icon from '@/ui/icon';
@@ -117,7 +118,14 @@ function MediaField({
       <div>
         <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
           {preview ? (
-            <img src={preview} alt={previewAlt} decoding="async" className="h-full w-full object-cover" />
+            <AdaptiveImage
+              mode="img"
+              src={preview}
+              alt={previewAlt}
+              decoding="async"
+              className="h-full w-full object-cover"
+              wrapperClassName="h-full w-full"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black/5 text-black/70">
               <Icon icon="solar:gallery-bold" size={20} />

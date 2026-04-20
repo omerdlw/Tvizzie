@@ -1,18 +1,22 @@
 'use client';
 
 import Link from '@/node_modules/next/link';
+import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 export default function ReviewHeader({
-  allReviewsHref = '#',
+  allReviewsHref = null,
   itemLabel = 'review',
+  onDeleteOwnReview = null,
   ratingStats = null,
   showRatingSummary = true,
   title = 'Community Reviews',
   totalReviews,
   onEditOwnReview = null,
 }) {
+  const hasDeleteOwnReview = typeof onDeleteOwnReview === 'function';
   const hasEditOwnReview = typeof onEditOwnReview === 'function';
+  const hasAllReviewsLink = Boolean(allReviewsHref) && Number(totalReviews) > 0;
   const hasRatingSummary =
     showRatingSummary && Number.isFinite(Number(ratingStats?.average)) && Number(ratingStats.average) > 0;
 
@@ -36,6 +40,14 @@ export default function ReviewHeader({
             </span>
           </div>
         )}
+        {hasAllReviewsLink ? (
+          <Link
+            href={allReviewsHref}
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
+          >
+            All reviews
+          </Link>
+        ) : null}
         {hasEditOwnReview ? (
           <button
             type="button"
@@ -47,12 +59,18 @@ export default function ReviewHeader({
             <Icon icon="solar:pen-bold" size={16} />
           </button>
         ) : null}
-        <Link
-          href={allReviewsHref}
-          className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
-        >
-          All reviews
-        </Link>
+        {hasDeleteOwnReview ? (
+          <Button
+            variant="destructive-icon"
+            className="rounded-[12px]"
+            onClick={onDeleteOwnReview}
+            aria-label="Delete your review"
+            title="Delete your review"
+            type="button"
+          >
+            <Icon icon="solar:trash-bin-trash-bold" size={16} />
+          </Button>
+        ) : null}
       </div>
     </div>
   );

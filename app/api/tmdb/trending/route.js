@@ -5,8 +5,6 @@ import { getTrending } from '@/core/clients/tmdb/server';
 const DEFAULT_MOVIE_LIMIT = 3;
 const MAX_MOVIE_LIMIT = 6;
 
-export const dynamic = 'force-dynamic';
-
 function mapMovie(movie) {
   return {
     id: movie.id,
@@ -19,15 +17,15 @@ function mapMovie(movie) {
   };
 }
 
-function pickRandomMovies(movies, limit) {
-  const copy = [...movies];
-
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+function pickStableMovies(movies, limit) {
+  if (movies.length <= limit) {
+    return movies.slice(0, limit);
   }
 
-  return copy.slice(0, limit);
+  const rotationWindow = Math.floor(Date.now() / (1000 * 60 * 60 * 6));
+  const startIndex = rotationWindow % movies.length;
+
+  return Array.from({ length: limit }, (_, index) => movies[(startIndex + index) % movies.length]);
 }
 
 function resolveLimit(rawLimit) {
@@ -57,7 +55,7 @@ export async function GET(request) {
       return NextResponse.json({ movies: [], poster: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    const movies = pickRandomMovies(candidates, limit).map(mapMovie);
+    const movies = pickStableMovies(candidates, limit).map(mapMovie);
     const poster = movies[0] || null;
 
     return NextResponse.json(
@@ -67,11 +65,14 @@ export async function GET(request) {
       },
       {
         headers: {
-          'Cache-Control': 'no-store',
+          'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
         },
       }
     );
   } catch {
-    return NextResponse.json({ movies: [], poster: null }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { movies: [], poster: null },
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' } }
+    );
   }
 }

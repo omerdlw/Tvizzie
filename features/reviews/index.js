@@ -221,6 +221,7 @@ export default function MediaReviews({
         title={headerTitle}
         allReviewsHref={allReviewsHref}
         totalReviews={filteredReviews.length}
+        onDeleteOwnReview={ownReview ? handleDeleteRequest : null}
         onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
       />
       {shouldShowComposer ? (
@@ -280,6 +281,7 @@ export default function MediaReviews({
               onDeleteRequest={handleDeleteRequest}
               onEdit={handleEditReview}
               onLike={handleLike}
+              showOwnActions={false}
               sortedReviews={displayedReviews}
               userProfile={userProfile}
             />

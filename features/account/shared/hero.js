@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/core/utils';
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl, resolveVersionedImageUrl } from '@/core/utils';
 import Link from 'next/link';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
 const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
@@ -249,13 +250,15 @@ export default function AccountHero({
     <section className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}>
       {heroBannerSrc ? (
         <div className="absolute inset-0">
-          <img
+          <AdaptiveImage
+            mode="img"
             src={heroBannerSrc}
             className={ACCOUNT_HERO_IMAGE_CLASS}
             alt={`${heroDisplayName} cover`}
             loading="eager"
             fetchPriority="high"
             decoding="async"
+            wrapperClassName="h-full w-full"
           />
         </div>
       ) : null}
@@ -271,12 +274,14 @@ export default function AccountHero({
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
-              <img
+              <AdaptiveImage
+                mode="img"
                 className="h-full w-full rounded-[20px] object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
                 decoding="async"
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
+                wrapperClassName="h-full w-full"
               />
             </div>
 

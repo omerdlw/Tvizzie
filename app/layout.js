@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 
 import { DynamicNav } from '@/features/layout/dynamic-wrappers';
+import { WebVitals } from '@/features/layout/web-vitals';
 import { MOTION_CSS_VARIABLES } from '@/core/constants';
 import { getSiteUrl } from '@/core/utils/site-url';
 import { cn } from '@/core/utils';
@@ -63,6 +64,7 @@ export default function RootLayout({ children }) {
         style={MOTION_CSS_VARIABLES}
       >
         <ResourceHints />
+        <WebVitals />
         <AppProviders>
           <DynamicNav />
           <main className="h-auto w-full flex-1">{children}</main>

@@ -14,6 +14,7 @@ import {
   subscribeToNotifications,
 } from '@/core/services/notifications/notifications.service';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -200,13 +201,15 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
     >
       <div className="center size-10 shrink-0 overflow-hidden rounded-[10px]">
         {notification.actor ? (
-          <img
+          <AdaptiveImage
+            mode="img"
             src={avatarSrc}
             alt={notification.actor?.displayName || 'Avatar'}
             className="size-full object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+            wrapperClassName="size-full"
           />
         ) : (
           <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />

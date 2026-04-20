@@ -19,6 +19,7 @@ import {
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { EmptyState } from '@/features/shared/empty-state';
 import SegmentedControl from '@/features/shared/segmented-control';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 
 const TABS = Object.freeze({
@@ -104,13 +105,15 @@ function SocialUserRow({ close, user, action }) {
         onClick={close}
         className="flex min-w-0 flex-1 items-center gap-2.5"
       >
-        <img
+        <AdaptiveImage
+          mode="img"
           src={avatarSrc}
           alt={user.displayName}
           loading="lazy"
           decoding="async"
           className="size-10 shrink-0 rounded-[10px] object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+          wrapperClassName="size-10 shrink-0 rounded-[10px]"
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>

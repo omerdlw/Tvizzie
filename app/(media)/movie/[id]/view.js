@@ -15,12 +15,13 @@ import VideosSection from '@/features/movie/videos-section';
 import MediaReviews from '@/features/reviews';
 import Carousel from '@/features/shared/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
 import {
   MovieClipReveal,
   MovieHeroReveal,
+  MovieSectionGroup,
   MovieSectionReveal,
-  MovieSectionSkeleton,
   MovieSidebarReveal,
 } from '../../../../features/movie/movie-motion';
 import Registry from './registry';
@@ -37,21 +38,21 @@ const HERO_REVEAL_TIMING = Object.freeze({
 
 const SECTION_REVEAL_TIMING = Object.freeze({
   cast: 0.14,
-  gallery: 0.22,
-  images: 0.3,
-  videos: 0.38,
-  recommendations: 0.46,
-  similar: 0.54,
   reviews: 0.12,
 });
 
-function RelatedMoviesSection({ items, title, delay = 0 }) {
+const SECTION_GROUP_REVEAL_TIMING = Object.freeze({
+  delay: SECTION_REVEAL_TIMING.reviews,
+  staggerStep: 0.18,
+});
+
+function RelatedMoviesSection({ items, title, groupIndex = 0 }) {
   if (!items?.length) {
     return null;
   }
 
   return (
-    <MovieSectionReveal className="mt-10" delay={delay}>
+    <MovieSectionReveal groupIndex={groupIndex}>
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">{title}</h2>
         <Carousel gap="gap-3" itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]">
@@ -70,32 +71,7 @@ function RelatedMoviesSection({ items, title, delay = 0 }) {
   );
 }
 
-function MovieGalleryDeferred({
-  onSetMovieBackground,
-  onResetMovieBackground,
-  canResetMovieBackground,
-  secondaryDataPromise,
-}) {
-  const secondaryMovie = use(secondaryDataPromise);
-  const galleryImages = getGalleryImages(secondaryMovie?.images);
-
-  if (!galleryImages.length) {
-    return null;
-  }
-
-  return (
-    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
-      <GallerySection
-        images={galleryImages}
-        onSetMovieBackground={onSetMovieBackground}
-        onResetMovieBackground={onResetMovieBackground}
-        canResetMovieBackground={canResetMovieBackground}
-      />
-    </MovieSectionReveal>
-  );
-}
-
-function MovieImagesDeferred({
+function MovieVisualMediaDeferred({
   onSetMovieBackground,
   onSetMoviePoster,
   onResetMovieBackground,
@@ -105,47 +81,101 @@ function MovieImagesDeferred({
   secondaryDataPromise,
 }) {
   const secondaryMovie = use(secondaryDataPromise);
+  const galleryImages = getGalleryImages(secondaryMovie?.images);
+  const hasGallery = galleryImages.length > 0;
+  const hasImages = Boolean(secondaryMovie?.images);
 
-  if (!secondaryMovie?.images) {
+  if (!hasGallery && !hasImages) {
     return null;
   }
 
   return (
-    <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.images} animateOnView={false}>
-      <ImagesSection
-        images={secondaryMovie.images}
-        onSetMovieBackground={onSetMovieBackground}
-        onSetMoviePoster={onSetMoviePoster}
-        onResetMovieBackground={onResetMovieBackground}
-        onResetMoviePoster={onResetMoviePoster}
-        canResetMovieBackground={canResetMovieBackground}
-        canResetMoviePoster={canResetMoviePoster}
-      />
-    </MovieSectionReveal>
+    <MovieSectionGroup
+      className="mt-10 flex flex-col gap-10"
+      delay={SECTION_GROUP_REVEAL_TIMING.delay}
+      staggerStep={SECTION_GROUP_REVEAL_TIMING.staggerStep}
+    >
+      {hasGallery ? (
+        <MovieSectionReveal groupIndex={0}>
+          <GallerySection
+            images={galleryImages}
+            onSetMovieBackground={onSetMovieBackground}
+            onResetMovieBackground={onResetMovieBackground}
+            canResetMovieBackground={canResetMovieBackground}
+          />
+        </MovieSectionReveal>
+      ) : null}
+
+      {hasImages ? (
+        <MovieSectionReveal groupIndex={hasGallery ? 1 : 0}>
+          <ImagesSection
+            images={secondaryMovie.images}
+            onSetMovieBackground={onSetMovieBackground}
+            onSetMoviePoster={onSetMoviePoster}
+            onResetMovieBackground={onResetMovieBackground}
+            onResetMoviePoster={onResetMoviePoster}
+            canResetMovieBackground={canResetMovieBackground}
+            canResetMoviePoster={canResetMoviePoster}
+          />
+        </MovieSectionReveal>
+      ) : null}
+    </MovieSectionGroup>
   );
 }
 
-function MovieRelatedDeferred({ secondaryDataPromise }) {
+function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   const secondaryMovie = use(secondaryDataPromise);
   const deferredComputed = getMovieComputedData(secondaryMovie);
+  const sections = [];
 
-  if (!deferredComputed.recommendations?.length && !deferredComputed.similar?.length) {
+  if (videos.length > 0) {
+    sections.push({
+      key: 'videos',
+      content: <VideosSection videos={videos} />,
+    });
+  }
+
+  if (deferredComputed.recommendations?.length) {
+    sections.push({
+      key: 'recommendations',
+      items: deferredComputed.recommendations,
+      title: 'More like this',
+    });
+  }
+
+  if (deferredComputed.similar?.length) {
+    sections.push({
+      key: 'similar',
+      items: deferredComputed.similar,
+      title: 'Similar movies',
+    });
+  }
+
+  if (!sections.length) {
     return null;
   }
 
   return (
-    <>
-      <RelatedMoviesSection
-        items={deferredComputed.recommendations}
-        title="More like this"
-        delay={SECTION_REVEAL_TIMING.recommendations}
-      />
-      <RelatedMoviesSection
-        items={deferredComputed.similar}
-        title="Similar movies"
-        delay={SECTION_REVEAL_TIMING.similar}
-      />
-    </>
+    <MovieSectionGroup
+      className="mt-10 flex flex-col gap-10"
+      delay={SECTION_GROUP_REVEAL_TIMING.delay}
+      staggerStep={SECTION_GROUP_REVEAL_TIMING.staggerStep}
+    >
+      {sections.map((section, index) =>
+        section.key === 'videos' ? (
+          <MovieSectionReveal key={section.key} groupIndex={index}>
+            {section.content}
+          </MovieSectionReveal>
+        ) : (
+          <RelatedMoviesSection
+            key={section.key}
+            items={section.items}
+            title={section.title}
+            groupIndex={index}
+          />
+        )
+      )}
+    </MovieSectionGroup>
   );
 }
 
@@ -168,17 +198,8 @@ function MovieSecondaryContent({
         </MovieSectionReveal>
       ) : null}
 
-      <Suspense fallback={<MovieSectionSkeleton />}>
-        <MovieGalleryDeferred
-          onSetMovieBackground={onSetMovieBackground}
-          onResetMovieBackground={onResetMovieBackground}
-          canResetMovieBackground={canResetMovieBackground}
-          secondaryDataPromise={secondaryDataPromise}
-        />
-      </Suspense>
-
-      <Suspense fallback={<MovieSectionSkeleton />}>
-        <MovieImagesDeferred
+      <Suspense fallback={<MovieSectionSkeleton variant="gallery" />}>
+        <MovieVisualMediaDeferred
           onSetMovieBackground={onSetMovieBackground}
           onSetMoviePoster={onSetMoviePoster}
           onResetMovieBackground={onResetMovieBackground}
@@ -189,14 +210,8 @@ function MovieSecondaryContent({
         />
       </Suspense>
 
-      {movie.videos?.results?.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.videos}>
-          <VideosSection videos={movie.videos.results} />
-        </MovieSectionReveal>
-      ) : null}
-
       <Suspense fallback={null}>
-        <MovieRelatedDeferred secondaryDataPromise={secondaryDataPromise} />
+        <MovieDiscoveryDeferred secondaryDataPromise={secondaryDataPromise} videos={movie.videos?.results || []} />
       </Suspense>
     </>
   );
@@ -239,9 +254,9 @@ export default function MovieView({
         <div
           className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
         >
-          <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
-            <div className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-[400px]">
-              <MovieSidebarReveal>
+          <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:items-stretch lg:gap-12">
+            <div className="w-full shrink-0 self-start lg:w-[400px] lg:self-stretch">
+              <MovieSidebarReveal className="lg:sticky lg:top-6">
                 <Sidebar
                   item={movie}
                   certification={certification}
@@ -252,7 +267,7 @@ export default function MovieView({
               </MovieSidebarReveal>
             </div>
 
-            <div className="flex w-full min-w-0 flex-col">
+            <div className="flex w-full min-w-0 flex-col lg:self-stretch">
               <div className="flex w-full flex-col">
                 <MovieHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
                   <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">

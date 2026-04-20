@@ -55,3 +55,5 @@ export default async function Page({ params }) {
 
   return <Client computed={computed} movie={movie} />;
 }
+
+export const revalidate = 3600;

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import AdaptiveImage from '@/ui/elements/adaptive-image';
+
 const FALLBACK_MOVIES = Object.freeze([
   {
     id: 'fallback-1',
@@ -61,9 +63,7 @@ export default function AuthPoster() {
 
     async function fetchMovies() {
       try {
-        const res = await fetch('/api/tmdb/trending?limit=6', {
-          cache: 'no-store',
-        });
+        const res = await fetch('/api/tmdb/trending?limit=6');
         const data = await res.json();
 
         if (isCancelled) {
@@ -102,12 +102,14 @@ export default function AuthPoster() {
             className="flex items-center gap-4 border border-black/12 bg-[var(--color-primary)] p-3 shadow-[0_10px_22px_rgba(23,23,23,0.08)]"
           >
             {movie.posterPath ? (
-              <img
+              <AdaptiveImage
+                mode="img"
                 src={movie.posterPath}
                 alt={movie.title}
                 loading="lazy"
                 decoding="async"
-                className="h-24 w-16 border border-black/12 object-cover"
+                className="h-24 w-16 object-cover"
+                wrapperClassName="h-24 w-16 border border-black/12"
               />
             ) : (
               <div className="h-24 w-16 border border-black/12 bg-black/5" aria-hidden="true" />

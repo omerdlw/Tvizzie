@@ -1,35 +1,71 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import {
+  SkeletonBlock,
+  SkeletonCircle,
+  SkeletonLine,
+  SkeletonPill,
+  SkeletonPoster,
+} from '@/ui/skeletons/primitives';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
 
-const BLOCK_SOFT = 'skeleton-block-soft';
-const BLOCK = 'skeleton-block';
-
-function Heading({ width = 'w-32' }) {
-  return <div className={`h-3 ${width} ${BLOCK}`} />;
+function Bar({ className = '', soft = false }) {
+  return <SkeletonBlock className={className} soft={soft} />;
 }
 
-function TextLine({ width = 'w-full' }) {
-  return <div className={`h-4 ${width} ${BLOCK}`} />;
+function Heading({ width = 'w-32' }) {
+  return <SkeletonLine size="sm" className={width} />;
+}
+
+function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
+  const size = className === 'h-2.5' ? 'xs' : className === 'h-3' ? 'sm' : className === 'h-3.5' ? 'md' : 'lg';
+  return <SkeletonLine size={size} className={width} soft={soft} />;
 }
 
 function SegmentTabs() {
   return (
-    <div className="inline-flex items-center gap-1.5">
-      <div className={`h-6 w-16 ${BLOCK}`} />
-      <div className={`h-6 w-14 ${BLOCK_SOFT}`} />
-      <div className={`h-6 w-14 ${BLOCK_SOFT}`} />
+    <div className="inline-flex w-fit items-center gap-1 rounded-[12px] p-0.5 skeleton-block-soft">
+      <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
+      <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
+      <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
+    </div>
+  );
+}
+
+function SocialProofPills() {
+  return (
+    <div className="flex items-center gap-2">
+      <SkeletonPill className="h-8 w-24" radius="full" soft={true} />
+      <SkeletonPill className="h-8 w-20" radius="full" soft={true} />
     </div>
   );
 }
 
 function CastCard() {
   return (
-    <div className={`flex items-center gap-2 p-1 pr-4 ${BLOCK_SOFT}`}>
-      <div className={`h-20 w-16 shrink-0 ${BLOCK}`} />
+    <div className="bg-primary/30 skeleton-block-soft flex items-center gap-3 rounded-[14px] p-1 pr-4">
+      <SkeletonPoster className="h-20 w-16 shrink-0 rounded-[9px] aspect-auto" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className={`h-3 w-2/3 ${BLOCK}`} />
-        <div className={`h-2.5 w-1/2 ${BLOCK}`} />
+        <TextLine width="w-2/3" className="h-3" />
+        <TextLine width="w-1/2" className="h-2.5" soft={true} />
       </div>
+    </div>
+  );
+}
+
+function CompactCastCard() {
+  return (
+    <div className="bg-primary/30 skeleton-block-soft flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] p-1 pr-2">
+      <SkeletonBlock className="size-8 shrink-0 rounded-[9px]" />
+      <TextLine width="w-3/5" className="h-3" />
+    </div>
+  );
+}
+
+function CarouselCard({ className = '', aspectClass = 'aspect-video', soft = false }) {
+  return (
+    <div className={`w-72 shrink-0 ${className}`}>
+      <SkeletonBlock className={`${aspectClass} w-full rounded-[14px]`} soft={soft} />
     </div>
   );
 }
@@ -37,9 +73,9 @@ function CastCard() {
 function LandscapeCarouselStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <div className={`h-40 w-72 shrink-0 ${BLOCK}`} />
-      <div className={`h-40 w-72 shrink-0 ${BLOCK}`} />
-      <div className={`h-40 w-20 shrink-0 ${BLOCK}`} />
+      <CarouselCard />
+      <CarouselCard />
+      <CarouselCard className="w-20" soft={true} />
     </div>
   );
 }
@@ -47,11 +83,11 @@ function LandscapeCarouselStrip() {
 function PosterCarouselStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <div className={`h-52 w-36 shrink-0 ${BLOCK}`} />
-      <div className={`h-52 w-36 shrink-0 ${BLOCK}`} />
-      <div className={`h-52 w-36 shrink-0 ${BLOCK}`} />
-      <div className={`h-52 w-36 shrink-0 ${BLOCK}`} />
-      <div className={`h-52 w-16 shrink-0 ${BLOCK}`} />
+      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
+      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
+      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
+      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
+      <CarouselCard className="w-16" aspectClass="aspect-2/3" soft={true} />
     </div>
   );
 }
@@ -59,101 +95,188 @@ function PosterCarouselStrip() {
 function SidebarStat() {
   return (
     <div className="flex items-center gap-2">
-      <div className={`size-3 ${BLOCK}`} />
-      <div className={`h-3 w-40 ${BLOCK}`} />
+      <SkeletonCircle className="size-3" soft={true} />
+      <TextLine width="w-40" className="h-3" soft={true} />
     </div>
+  );
+}
+
+function SidebarActionButtons() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-2">
+        <SkeletonPill className="h-[42px]" soft={true} />
+        <SkeletonPill className="h-[42px]" soft={true} />
+      </div>
+      <SkeletonPill className="h-[42px]" soft={true} />
+    </>
+  );
+}
+
+function SectionAction() {
+  return <TextLine width="w-16" className="h-3" soft={true} />;
+}
+
+function MovieHeroSkeleton() {
+  return (
+    <>
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <SkeletonBlock className="h-20 w-[52%]" radius="hero" />
+        <SocialProofPills />
+      </div>
+
+      <div className="mt-4">
+        <TextLine width="w-4/5" className="h-3" soft={true} />
+      </div>
+
+      <div className="mt-4 flex max-w-[70ch] flex-col gap-2">
+        <TextLine soft={true} />
+        <TextLine width="w-[95%]" soft={true} />
+        <TextLine width="w-[88%]" soft={true} />
+        <TextLine width="w-[74%]" soft={true} />
+      </div>
+    </>
+  );
+}
+
+function MovieCastSkeleton({ className = '' }) {
+  return (
+    <section className={`flex w-full flex-col gap-3 ${className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <SegmentTabs />
+        <SectionAction />
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <CastCard key={index} />
+        ))}
+      </div>
+
+      <div className="flex h-10 items-center gap-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <CompactCastCard key={index} />
+        ))}
+        <SkeletonPill className="size-10 shrink-0" radius="segmentedTrack" soft={true} />
+      </div>
+    </section>
+  );
+}
+
+function MovieReviewsSkeleton({ className = '' }) {
+  return (
+    <section className={`relative flex w-full flex-col gap-6 overflow-hidden ${className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <SkeletonCircle className="size-10" soft={true} />
+          <div className="flex min-w-0 flex-col gap-2">
+            <Heading width="w-28" />
+            <TextLine width="w-20" className="h-3" soft={true} />
+          </div>
+        </div>
+        <TextLine width="w-16" className="h-3" soft={true} />
+      </div>
+
+      <div className="flex w-full flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <TextLine width="w-40" className="h-4" />
+          <TextLine width="w-60" className="mt-2 h-3" soft={true} />
+        </div>
+        <SkeletonPill className="h-10 w-full sm:w-32" radius="segmentedTrack" soft={true} />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {Array.from({ length: 2 }).map((_, index) => (
+          <div key={index} className="flex flex-col gap-3 pb-4">
+            <div className="flex items-center gap-3">
+              <SkeletonCircle className="size-10" soft={true} />
+              <div className="flex flex-col gap-2">
+                <TextLine width="w-28" className="h-3" />
+                <TextLine width="w-20" className="h-2.5" soft={true} />
+              </div>
+            </div>
+            <div className="flex max-w-[62ch] flex-col gap-2">
+              <TextLine width="w-full" className="h-3.5" soft={true} />
+              <TextLine width="w-[94%]" className="h-3.5" soft={true} />
+              <TextLine width="w-[82%]" className="h-3.5" soft={true} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
+  if (variant === 'images' || variant === 'videos') {
+    return (
+      <section className={`flex w-full flex-col gap-3 ${className || 'mt-10'}`}>
+        <SegmentTabs />
+        <LandscapeCarouselStrip />
+      </section>
+    );
+  }
+
+  if (variant === 'recommendations') {
+    return (
+      <section className={`flex w-full flex-col gap-3 ${className || 'mt-10'}`}>
+        <Heading width="w-28" />
+        <PosterCarouselStrip />
+      </section>
+    );
+  }
+
+  if (variant === 'reviews') {
+    return <MovieReviewsSkeleton className={className || 'mt-12 md:mt-16'} />;
+  }
+
+  if (variant === 'cast') {
+    return <MovieCastSkeleton className={className || 'mt-10'} />;
+  }
+
+  return (
+    <section className={`flex w-full flex-col gap-3 ${className || 'mt-10'}`}>
+      <Heading width="w-20" />
+      <LandscapeCarouselStrip />
+    </section>
   );
 }
 
 function MovieContentSkeleton() {
   return (
-    <div
-      className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
-    >
-      <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
-        <div className="w-full shrink-0 self-start lg:w-[400px]">
-          <div className="flex w-full flex-col gap-3">
-            <div className={`h-[580px] w-full ${BLOCK}`} />
-            <div className="grid grid-cols-2 gap-2">
-              <div className={`h-[42px] ${BLOCK_SOFT}`} />
-              <div className={`h-[42px] ${BLOCK_SOFT}`} />
-            </div>
-            <div className={`h-[42px] ${BLOCK_SOFT}`} />
-            <div className="mt-2 flex flex-col gap-3">
-              {Array.from({ length: 7 }).map((_, index) => (
-                <SidebarStat key={index} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex w-full min-w-0 flex-col">
-          <div className="flex w-full flex-col">
-            <div className="flex items-end justify-between gap-3">
-              <div className={`h-20 w-[52%] ${BLOCK}`} />
-              <div className={`h-6 w-24 ${BLOCK_SOFT}`} />
-            </div>
-
-            <div className="mt-4">
-              <TextLine width="w-4/5" />
-            </div>
-
-            <div className="mt-4 flex max-w-[72ch] flex-col gap-2">
-              <TextLine />
-              <TextLine width="w-[95%]" />
-              <TextLine width="w-[88%]" />
-              <TextLine width="w-[74%]" />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-3">
-                <Heading width="w-24" />
-                <div className={`h-3 w-16 ${BLOCK}`} />
-              </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <CastCard key={index} />
+    <PageGradientShell>
+      <div
+        className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
+      >
+        <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
+          <div className="w-full shrink-0 self-start lg:w-[400px]">
+            <div className="flex w-full flex-col gap-3">
+              <SkeletonBlock className="h-[580px] w-full" radius="hero" />
+              <SidebarActionButtons />
+              <div className="mt-2 flex flex-col gap-3">
+                {Array.from({ length: 7 }).map((_, index) => (
+                  <SidebarStat key={index} />
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="mt-10 flex flex-col gap-3">
-              <Heading width="w-20" />
-              <LandscapeCarouselStrip />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-3">
-              <SegmentTabs />
-              <LandscapeCarouselStrip />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-3">
-              <SegmentTabs />
-              <LandscapeCarouselStrip />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-3">
-              <Heading width="w-28" />
-              <PosterCarouselStrip />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-3">
-              <Heading width="w-28" />
-              <PosterCarouselStrip />
-            </div>
-
-            <div className="mt-10 flex flex-col gap-4 pb-16">
-              <div className="flex items-center justify-between gap-3">
-                <Heading width="w-36" />
-                <div className={`h-6 w-16 ${BLOCK_SOFT}`} />
-              </div>
-              <div className={`h-14 ${BLOCK_SOFT}`} />
-              <div className={`h-10 w-48 ${BLOCK_SOFT}`} />
+          <div className="flex w-full min-w-0 flex-col">
+            <div className="flex w-full flex-col">
+              <MovieHeroSkeleton />
+              <MovieSectionSkeleton variant="cast" className="mt-10" />
+              <MovieSectionSkeleton variant="gallery" className="mt-10" />
+              <MovieSectionSkeleton variant="images" className="mt-10" />
+              <MovieSectionSkeleton variant="videos" className="mt-10" />
+              <MovieSectionSkeleton variant="recommendations" className="mt-10" />
+              <MovieSectionSkeleton variant="recommendations" className="mt-10" />
             </div>
           </div>
         </div>
+
+        <MovieSectionSkeleton variant="reviews" className="w-full" />
       </div>
-    </div>
+    </PageGradientShell>
   );
 }
 

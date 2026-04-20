@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getMovieBase, searchContent } from '@/core/clients/tmdb/server';
+import { searchContent } from '@/core/clients/tmdb/server';
 
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
@@ -26,27 +26,6 @@ export async function GET(request) {
 
   const response = await searchContent(query, type, page);
   const data = response.data || { results: [] };
-
-  if (type === 'movie' && data.results.length > 0) {
-    data.results = await Promise.all(
-      data.results.map(async (item) => {
-        if (item.media_type !== 'movie') return item;
-
-        try {
-          const detail = await getMovieBase(item.id);
-          const director = detail.data?.credits?.crew?.find((member) => member.job === 'Director')?.name;
-
-          return {
-            ...item,
-            status: detail.data?.status,
-            director,
-          };
-        } catch {
-          return item;
-        }
-      })
-    );
-  }
 
   return NextResponse.json(data, {
     status: response.status || 200,

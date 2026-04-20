@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { lookupPasswordAccountByEmail } from '@/core/auth/servers/verification/password-account.server';
+import {
+  lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
+} from '@/core/auth/servers/verification/password-account.server';
 import { createPendingPasswordSignIn } from '@/core/auth/servers/security/password-security.server';
 import { applySessionCookies, clearAuthCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
 import { getRequestContext, setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
@@ -15,10 +18,6 @@ import {
 
 function normalizeValue(value) {
   return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
 }
 
 function createResponseClient(request, response) {
@@ -53,11 +52,23 @@ function resolvePasswordAccountLookupError(code) {
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const email = normalizeEmail(body?.email);
+    const identifier = normalizeValue(body?.identifier || body?.email);
     const password = String(body?.password || '');
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'email and password are required' }, { status: 400 });
+    if (!identifier || !password) {
+      return NextResponse.json({ error: 'identifier and password are required' }, { status: 400 });
+    }
+
+    let email = null;
+
+    try {
+      email = (await resolvePasswordAccountIdentifier(identifier)).email;
+    } catch (error) {
+      if (normalizeValue(error?.code) === 'auth/user-not-found') {
+        resolvePasswordAccountLookupError('auth/user-not-found');
+      }
+
+      throw error;
     }
 
     const passwordLookup = await lookupPasswordAccountByEmail(email);
@@ -115,7 +126,8 @@ export async function POST(request) {
     const message = String(error?.message || 'Sign in failed');
     const code = normalizeValue(error?.code) || null;
     const status =
-      message.includes('email and password are required') ||
+      message.includes('identifier and password are required') ||
+      message.includes('Username or email is required') ||
       message.includes('Invalid login credentials') ||
       message.includes('email/password sign-in enabled')
         ? 400

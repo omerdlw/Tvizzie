@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 import ListPreviewComposition from '@/features/shared/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -183,7 +183,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
       {isAccountVariant && isListSubject ? (
         <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
       ) : src ? (
-        <Image
+        <AdaptiveImage
           className={cn('object-cover', !isAccountVariant && '')}
           src={src}
           alt={alt}
@@ -192,6 +192,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
           decoding="async"
           unoptimized={!canUseNextImageOptimization(src)}
+          wrapperClassName="h-full w-full"
         />
       ) : (
         <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10">
