@@ -74,7 +74,7 @@ function AccountHeroSkeleton() {
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <Line className="h-[3.2rem] w-[68%] sm:h-[5rem] lg:h-[4.8rem]" />
+                <Line className="h-[4rem] w-[68%] sm:h-[5rem] lg:h-[7rem]" />
                 <div className="flex items-center gap-4">
                   <Line className="h-[3.2rem] w-[68%] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 </div>
