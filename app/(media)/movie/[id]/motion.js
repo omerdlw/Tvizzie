@@ -24,21 +24,28 @@ const MOVIE_PHASES = Object.freeze({
     ease: ANIMATION_EASINGS.QUINT_OUT,
     lead: 0.04,
     offset: Object.freeze({ x: -48 }),
-    scale: 0.97,
+    scale: 0.962,
   }),
   hero: Object.freeze({
     duration: ANIMATION_DURATIONS.HERO,
     ease: ANIMATION_EASINGS.EXPO_OUT,
     lead: 0.1,
     offset: Object.freeze({ y: 60 }),
-    scale: 0.978,
+    scale: 0.97,
   }),
   section: Object.freeze({
     duration: ANIMATION_DURATIONS.SECTION,
     ease: ANIMATION_EASINGS.EXPO_OUT,
     lead: 0.18,
     offset: Object.freeze({ y: 48 }),
-    scale: 0.984,
+    scale: 0.978,
+  }),
+  surface: Object.freeze({
+    duration: ANIMATION_DURATIONS.PANEL,
+    ease: ANIMATION_EASINGS.EXPO_OUT,
+    lead: 0.12,
+    offset: Object.freeze({ y: 20 }),
+    scale: 0.94,
   }),
 });
 
@@ -217,10 +224,33 @@ export function MovieSectionReveal({
   );
 }
 
+export function MovieSurfaceReveal({
+  children,
+  className = '',
+  delay = 0,
+  once = true,
+  animateOnView = true,
+  groupIndex = 0,
+}) {
+  return (
+    <MovieReveal
+      className={className}
+      delay={delay}
+      once={once}
+      animateOnView={animateOnView}
+      groupIndex={groupIndex}
+      phase="surface"
+    >
+      {children}
+    </MovieReveal>
+  );
+}
+
 export function getSurfaceItemMotion(options = {}) {
   return createSurfaceItemMotion({
     ...options,
     ease: ANIMATION_EASINGS.EXPO_OUT,
+    scale: options.scale ?? 0.976,
   });
 }
 
@@ -231,6 +261,8 @@ export function getSurfacePanelMotion({ reduceMotion = false } = {}) {
     ease: ANIMATION_EASINGS.EXPO_OUT,
     exitDuration: ANIMATION_DURATIONS.PANEL * 0.55,
     exitEase: ANIMATION_EASINGS.EXPO_IN_OUT,
+    initialScale: 0.976,
+    exitScale: 0.988,
   });
 }
 

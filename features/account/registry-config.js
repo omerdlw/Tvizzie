@@ -3,6 +3,7 @@
 import { cloneElement, isValidElement } from 'react';
 
 import AccountSocialModal from '@/features/modal/account-social-modal';
+import CreateListModal from '@/features/modal/create-list-modal';
 import ListEditorModal from '@/features/modal/list-editor-modal';
 import ListPickerModal from '@/features/modal/list-picker-modal';
 import ReviewEditorModal from '@/features/modal/review-editor-modal';
@@ -264,6 +265,7 @@ export function buildAccountPageState({
 
   return {
     modal: {
+      CREATE_LIST_MODAL: CreateListModal,
       LIST_EDITOR_MODAL: ListEditorModal,
       LIST_PICKER_MODAL: ListPickerModal,
       ACCOUNT_SOCIAL_MODAL: AccountSocialModal,

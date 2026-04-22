@@ -1,5 +1,5 @@
 import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 import { isMovieMediaType } from '@/core/utils/media';
 
 function normalizeNumber(value, fallback = null) {

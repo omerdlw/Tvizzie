@@ -23,3 +23,15 @@ export const MODAL_PRESETS = Object.freeze({
     chrome: MODAL_CHROME.BARE,
   },
 });
+
+export const MODAL_LABELS = Object.freeze({
+  ACCOUNT_SOCIAL_MODAL: 'Social',
+  CAST_MODAL: 'Cast',
+  CREATE_LIST_MODAL: 'Create List',
+  LIST_EDITOR_MODAL: 'Edit List',
+  LIST_PICKER_MODAL: 'Your Lists',
+  MEDIA_SOCIAL_PROOF_MODAL: 'Social Proof',
+  PREVIEW_MODAL: 'Preview',
+  REVIEW_EDITOR_MODAL: 'Review',
+  VIDEO_PREVIEW_MODAL: 'Video',
+});

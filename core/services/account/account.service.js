@@ -4,9 +4,9 @@ import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
 import {
   normalizeAccountDisplayNameSearchValue,
   validateUsername,
-} from '@/core/utils/account-username';
+} from '@/core/utils/account';
 import { isValidUrl } from '@/core/utils';
-import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { cleanString, normalizeTimestamp } from '@/core/utils';
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
@@ -15,7 +15,9 @@ import {
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
-export { sanitizeUsername, validateUsername } from '@/core/utils/account-username';
+export { sanitizeUsername, validateUsername } from '@/core/utils/account';
+
+export { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from './account.constants';
 
 const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
 const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;

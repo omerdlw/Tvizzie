@@ -21,7 +21,6 @@ export function FadeLeft({ children, className = '', delay = 0, duration = ANIMA
       initial="hidden"
       whileInView="visible"
       viewport={{ once, amount: 'some' }}
-      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>

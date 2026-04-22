@@ -7,7 +7,10 @@ export function PosterRail({ items = [] }) {
   }
 
   return (
-    <Carousel gap="gap-3" itemClassName="w-[7.2rem] sm:w-[8.2rem] md:w-[9rem] lg:w-[9.4rem]">
+    <Carousel 
+      gap="gap-3" 
+      itemClassName="w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-3.75rem)/6)]"
+    >
       {items.map((item) => (
         <MediaPosterCard key={item.id} item={item} />
       ))}

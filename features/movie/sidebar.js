@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { MovieSurfaceReveal } from '@/app/(media)/movie/[id]/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -159,30 +160,32 @@ export default function Sidebar({ item, director, writers, creators, certificati
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative mx-auto aspect-2/3 w-[65%] max-w-[280px] shrink-0 overflow-hidden rounded-[20px] sm:w-full sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
-        {posterSrc ? (
-          <AdaptiveImage
-            fill
-            priority
-            src={posterSrc}
-            alt={item.title || item.name}
-            fetchPriority="high"
-            sizes="(max-width: 1024px) 100vw, 400px"
-            quality={resolveImageQuality('hero')}
-            decoding="async"
-            placeholder="blur"
-            blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
-            className="object-cover"
-            wrapperClassName="h-full w-full"
-          />
-        ) : (
-          <div className="bg-primary center h-full w-full border border-black/5 text-black/60">
-            <Icon icon="solar:clapperboard-play-bold" size={40} />
-          </div>
-        )}
-      </div>
+      <MovieSurfaceReveal animateOnView={false} delay={0.04}>
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
+          {posterSrc ? (
+            <AdaptiveImage
+              fill
+              priority
+              src={posterSrc}
+              alt={item.title || item.name}
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 400px"
+              quality={resolveImageQuality('hero')}
+              decoding="async"
+              placeholder="blur"
+              blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
+              className="object-cover"
+              wrapperClassName="h-full w-full"
+            />
+          ) : (
+            <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
+              <Icon icon="solar:clapperboard-play-bold" size={40} />
+            </div>
+          )}
+        </div>
+      </MovieSurfaceReveal>
 
-      {topContent}
+      {topContent ? <MovieSurfaceReveal animateOnView={false} delay={0.12}>{topContent}</MovieSurfaceReveal> : null}
 
       <div className="flex flex-col gap-1">
         {rows.map((row) => (

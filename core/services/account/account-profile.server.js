@@ -1,9 +1,9 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { ACCOUNT_READ_FUNCTION } from '@/core/services/account/contracts';
+import { ACCOUNT_READ_FUNCTION } from '@/core/services/account/account.constants';
 import { getAccountSnapshotByUserId } from '@/core/services/account/account.server';
-import { cleanString } from '@/core/services/shared/data-utils';
+import { cleanString } from '@/core/utils';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { cache } from 'react';
 

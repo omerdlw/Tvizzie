@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackText } from '@/core/utils';
 
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';

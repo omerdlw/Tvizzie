@@ -2,7 +2,7 @@
 
 import NotFoundAction from '@/core/modules/nav/actions/not-found-action';
 import { useRegistry } from '@/core/modules/registry';
-import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackText } from '@/core/utils';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
 
 export default function NotFoundTemplate({ description }) {

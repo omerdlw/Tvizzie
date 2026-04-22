@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
 import { useNavHeight } from '@/core/modules/nav/hooks';
+import { getNotificationBottomOffset } from '@/core/modules/nav/layout';
 
 import { useNotificationActions, useNotificationState } from './context';
 import { NotificationOverlay } from './overlay';
@@ -19,7 +20,7 @@ export function NotificationContainer() {
     () => Object.entries(notifications).sort((a, b) => a[1].timestamp - b[1].timestamp),
     [notifications]
   );
-  const resolvedBottomOffset = Math.max(4, Math.round((navHeight || 0) - 8));
+  const resolvedBottomOffset = getNotificationBottomOffset(navHeight);
 
   if (sortedNotifications.length === 0) return null;
 

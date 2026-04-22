@@ -6,10 +6,9 @@ export const NAV_CONFIG = {
       path: '/',
       title: 'Tvizzie',
       description: 'Discover Movies',
-      icon: '/tvizzie.svg',
+      icon: '/tvizzie.png',
       style: {
         icon: {
-          scale: 0.8,
           borderRadius: 0,
         },
       },

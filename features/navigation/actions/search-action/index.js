@@ -56,7 +56,7 @@ export default function SearchAction({
   const searchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
   const loading = isPageVariant ? Boolean(controlledLoading) : localLoading;
   const debouncedQuery = useDebounce(query, 500);
-  const { expanded, navigate, setExpanded } = useNavigation();
+  const { expanded, navigate, setCompactLock, setExpanded } = useNavigation();
 
   const handleQueryChange = useCallback(
     (nextQuery) => {
@@ -257,6 +257,19 @@ export default function SearchAction({
       handleClear();
     }
   }, [expanded, handleClear, isPageVariant]);
+
+  useEffect(() => {
+    if (isPageVariant) {
+      return undefined;
+    }
+
+    const shouldLockCompact = Boolean(query.trim() || loading || results.length > 0);
+    setCompactLock('search-action', shouldLockCompact);
+
+    return () => {
+      setCompactLock('search-action', false);
+    };
+  }, [isPageVariant, loading, query, results.length, setCompactLock]);
 
   return (
     <motion.div className="mt-2.5 w-full" layout="position" transition={NAV_CONTENT_TRANSITION}>

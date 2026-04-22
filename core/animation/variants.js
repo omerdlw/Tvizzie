@@ -34,12 +34,6 @@ export function resolvePhaseDelay({ delay = 0, lead = 0, reduceMotion = false })
   return clampAnimationValue(lead + delay);
 }
 
-function buildWillChange(axes = []) {
-  const props = ['opacity', ...axes.map((axis) => (axis === 'x' || axis === 'y' ? 'transform' : axis))];
-
-  return [...new Set(props)].join(', ');
-}
-
 export function buildRevealTransition({
   delay = 0,
   duration = ANIMATION_DURATIONS.SECTION,
@@ -94,8 +88,6 @@ export function buildRevealMotion({
 }) {
   const resolvedOffset = offset ? { ...(offset || {}) } : { [axis]: direction * distance };
   const resetOffset = Object.fromEntries(Object.keys(resolvedOffset).map((key) => [key, 0]));
-  const axes = Object.keys(resolvedOffset);
-
   return {
     initial: reduceMotion ? { opacity: 0 } : { opacity: 0, scale, ...resolvedOffset },
     animate: reduceMotion
@@ -115,7 +107,7 @@ export function buildRevealMotion({
       ease,
       reduceMotion,
     }),
-    style: reduceMotion ? undefined : { willChange: buildWillChange(axes) },
+    style: undefined,
   };
 }
 

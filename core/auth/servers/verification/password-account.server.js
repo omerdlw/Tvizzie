@@ -1,7 +1,7 @@
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
 import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { validateUsername } from '@/core/utils/account-username';
+import { validateUsername } from '@/core/utils/account';
 
 function normalizeValue(value) {
   return String(value || '').trim();

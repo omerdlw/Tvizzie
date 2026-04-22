@@ -120,6 +120,7 @@ export function useAccountPageActions({
   setWatched,
   setWatchlist,
   updateQuery,
+  profileHandle,
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -186,7 +187,11 @@ export function useAccountPageActions({
             setListDeleteConfirmation(null);
 
             if (activeListId === targetList.id) {
-              updateQuery({ list: null, tab: 'lists' });
+              if (pathname.includes('/lists/') && profileHandle) {
+                router.push(`/account/${profileHandle}/lists`);
+              } else {
+                updateQuery({ list: null, tab: 'lists' });
+              }
             }
           } catch (error) {
             if (previousLists && typeof setLists === 'function') {

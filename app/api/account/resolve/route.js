@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { ACCOUNT_READ_FUNCTION } from '@/core/services/account/contracts';
+import { ACCOUNT_READ_FUNCTION } from '@/core/services/account/account.constants';
 import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 

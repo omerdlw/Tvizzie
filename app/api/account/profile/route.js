@@ -5,7 +5,7 @@ import {
   resolveOptionalSessionRequest,
 } from '@/core/auth/servers/session/authenticated-request.server';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/contracts';
+import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.constants';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';

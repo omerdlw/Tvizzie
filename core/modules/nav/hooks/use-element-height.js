@@ -2,15 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
-// Ignore height changes smaller than this to avoid spurious reflows
 const HEIGHT_EPSILON = 0.5;
 
-// ─── Measurement helpers ──────────────────────────────────────────────────────
-
-/**
- * Prefer borderBoxSize (layout-accurate), fall back to offsetHeight.
- * Some browsers (older Safari) don't populate borderBoxSize — we handle both.
- */
 function getObservedHeight(entry, element) {
   const borderBoxSize = Array.isArray(entry?.borderBoxSize) ? entry.borderBoxSize[0] : entry?.borderBoxSize;
 
@@ -18,7 +11,6 @@ function getObservedHeight(entry, element) {
     return borderBoxSize.blockSize;
   }
 
-  // contentRect is always available and reliable as a fallback
   if (entry?.contentRect?.height != null) {
     return entry.contentRect.height;
   }
@@ -30,37 +22,29 @@ function hasMeaningfulHeightChange(previousHeight, nextHeight) {
   return Math.abs(nextHeight - previousHeight) > HEIGHT_EPSILON;
 }
 
-// ─── useElementHeight ─────────────────────────────────────────────────────────
-//
-// Observes an element's height via ResizeObserver and calls onHeightChange
-// whenever a meaningful change is detected.
-//
-// Key improvements over the original:
-//  • rAF-batches ResizeObserver callbacks so rapid multi-entry bursts
-//    (e.g. simultaneous action + content resize) collapse into one call
-//    per frame, preventing the intermediate-wrong-height bug.
-//  • Cleans up the pending rAF on disconnect so we never fire a stale
-//    measurement after unmount or dependency change.
-//  • Falls back gracefully when borderBoxSize is unavailable.
-
 export function useElementHeight(onHeightChange, elementRef, shouldMeasure, dependencyKey = null) {
   const lastHeightRef = useRef(0);
   const rafRef = useRef(null);
+  const callbackRef = useRef(onHeightChange);
 
   useEffect(() => {
-    // Cancel any pending rAF from a previous render cycle
+    callbackRef.current = onHeightChange;
+  });
+
+  useEffect(() => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
 
-    if (!onHeightChange) return;
+    lastHeightRef.current = -1;
+
+    if (!callbackRef.current) return;
 
     if (!shouldMeasure) {
-      // Reset: report zero so parent can recompute
       if (hasMeaningfulHeightChange(lastHeightRef.current, 0)) {
         lastHeightRef.current = 0;
-        onHeightChange(0);
+        callbackRef.current(0);
       }
       return;
     }
@@ -71,44 +55,70 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
     function publishHeight(nextHeight) {
       if (!hasMeaningfulHeightChange(lastHeightRef.current, nextHeight)) return;
       lastHeightRef.current = nextHeight;
-      onHeightChange(nextHeight);
+      callbackRef.current?.(nextHeight);
     }
 
-    // Batch ResizeObserver entries within a single animation frame.
-    // This is the critical fix: when both content and action resize at the
-    // same time, we only run publishHeight once with the final settled value.
     let pendingHeight = null;
+
+    function flushPendingHeight() {
+      rafRef.current = null;
+
+      if (pendingHeight == null) {
+        return;
+      }
+
+      publishHeight(pendingHeight);
+      pendingHeight = null;
+    }
+
+    function scheduleMeasurement(nextHeight) {
+      pendingHeight = nextHeight;
+
+      if (rafRef.current !== null) {
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(flushPendingHeight);
+    }
+
+    function measureElement() {
+      scheduleMeasurement(element.offsetHeight || 0);
+    }
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        pendingHeight = getObservedHeight(entry, element);
+        scheduleMeasurement(getObservedHeight(entry, element));
       }
-
-      if (rafRef.current !== null) return; // already scheduled
-
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-
-        if (pendingHeight !== null) {
-          publishHeight(pendingHeight);
-          pendingHeight = null;
-        }
-      });
     });
 
     observer.observe(element);
+    measureElement();
 
-    // Measure immediately (synchronously) so the initial render has the
-    // correct height without waiting for the first observer callback.
-    publishHeight(element.offsetHeight || 0);
+    const handlePageShow = () => {
+      measureElement();
+      requestAnimationFrame(measureElement);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      handlePageShow();
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       observer.disconnect();
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
     };
-  }, [dependencyKey, elementRef, onHeightChange, shouldMeasure]);
+  }, [dependencyKey, elementRef, shouldMeasure]);
 }

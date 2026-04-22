@@ -1,6 +1,6 @@
 'use client';
 
-import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { cleanString, normalizeTimestamp } from '@/core/utils';
 import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import { isMovieMediaType } from '@/core/utils/media';
 import {

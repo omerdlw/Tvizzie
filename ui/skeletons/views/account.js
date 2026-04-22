@@ -9,9 +9,20 @@ function Bar({ className = '', soft = false }) {
 }
 
 function Line({ className = '', soft = false }) {
-  const size =
-    className.includes('h-2.5') ? 'xs' : className.includes('h-3.5') ? 'md' : className.includes('h-4') ? 'lg' : 'sm';
-  return <SkeletonLine className={className.replace(/h-\[[^\]]+\]|h-2\.5|h-3\.5|h-4|h-3/g, '').trim()} size={size} soft={soft} />;
+  const size = className.includes('h-2.5')
+    ? 'xs'
+    : className.includes('h-3.5')
+      ? 'md'
+      : className.includes('h-4')
+        ? 'lg'
+        : 'sm';
+  return (
+    <SkeletonLine
+      className={className.replace(/h-\[[^\]]+\]|h-2\.5|h-3\.5|h-4|h-3/g, '').trim()}
+      size={size}
+      soft={soft}
+    />
+  );
 }
 
 function Pill({ className = '', soft = false }) {
@@ -61,13 +72,12 @@ function AccountHeroSkeleton() {
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
-
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
+                <Line className="h-[3.2rem] w-[68%] sm:h-[5rem] lg:h-[4.8rem]" />
                 <div className="flex items-center gap-4">
                   <Line className="h-[3.2rem] w-[68%] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 </div>
-
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <HeroCountItem key={index} mobile={true} />
@@ -526,12 +536,9 @@ function ListBuilderSkeleton() {
 
               <div className="mt-4 flex flex-col gap-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="skeleton-block-soft flex items-center gap-3 rounded-[14px] p-2.5"
-                  >
+                  <div key={index} className="skeleton-block-soft flex items-center gap-3 rounded-[14px] p-2.5">
                     <Line className="h-3 w-4" soft={true} />
-                    <SkeletonPoster className="h-16 w-11 shrink-0 rounded-[10px] aspect-auto" radius="field" />
+                    <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0 rounded-[10px]" radius="field" />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <Line className="h-3 w-4/5" />
                       <Line className="h-2.5 w-1/2" soft={true} />

@@ -20,7 +20,7 @@ const SECONDARY_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase text-black/70 transition hover:bg-black/5 hover:text-black';
 
 const PRIMARY_BUTTON_CLASS =
-  'h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide uppercase text-white transition hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60';
+  'h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide uppercase text-white transition hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject?.subjectType === 'list') {
@@ -190,7 +190,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
       onClick={onClick}
       className={cn(
         'flex w-full items-center justify-between border-t p-4 text-left transition',
-        disabled && 'cursor-not-allowed border-black/10 text-black/60',
+        disabled && 'cursor-not-allowed border-black/10 text-black/50',
         !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-black/10',
         !disabled && !checked && 'bg-primary border-black/10 hover:bg-black/5',
         invalid && 'border-t'
@@ -371,7 +371,7 @@ export default function ReviewEditorModal({ close, data }) {
           className={{
             wrapper: 'flex',
             textarea:
-              'min-h-[180px] w-full resize-none p-3 text-sm leading-normal outline-none placeholder:text-black/60',
+              'min-h-[180px] w-full resize-none p-3 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
         />
         <SpoilerToggle

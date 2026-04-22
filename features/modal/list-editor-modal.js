@@ -87,7 +87,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving}
-              className="h-10 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition hover:bg-black/70 disabled:cursor-not-allowed disabled:border-black/15 disabled:bg-black/15 disabled:text-black/60"
+              className="h-10 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition hover:bg-black/70 disabled:cursor-not-allowed disabled:border-black/15 disabled:bg-black/15 disabled:text-black/50"
             >
               {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
             </Button>
@@ -104,7 +104,7 @@ export default function ListEditorModal({ close, data, header }) {
             placeholder="e.g. 90s Sci-Fi Essentials"
             className={{
               input:
-                'bg-primary w-full border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/60',
+                'bg-primary w-full border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
           />
           <label className="text-xs font-semibold tracking-wide text-black/70 uppercase">Description</label>
@@ -115,7 +115,7 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={200}
             className={{
               textarea:
-                'bg-primary w-full border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/60',
+                'bg-primary w-full border border-black/15 p-3 text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
           />
         </div>

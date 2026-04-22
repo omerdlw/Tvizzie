@@ -174,7 +174,7 @@ function invokeSafely(handler, ...args) {
 
 function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
   const iconClassName = [
-    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-black/5 text-black/60',
+    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-black/5 text-black/50',
     classNames.headerIcon,
   ]
     .filter(Boolean)
@@ -202,7 +202,7 @@ function ContextMenuHeader({ classNames, header, metrics }) {
   const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-black/10 pb-2', classNames.header]
     .filter(Boolean)
     .join(' ');
-  const eyebrowClassName = ['text-[11px] font-bold tracking- text-black/60 uppercase', classNames.headerEyebrow]
+  const eyebrowClassName = ['text-[11px] font-bold tracking- text-black/50 uppercase', classNames.headerEyebrow]
     .filter(Boolean)
     .join(' ');
   const titleClassName = ['truncate text-sm font-semibold', classNames.headerTitle].filter(Boolean).join(' ');
@@ -241,7 +241,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
     .join(' ');
   const itemLabelClassName = ['grow truncate', classNames.itemLabel].filter(Boolean).join(' ');
   const itemShortcutClassName = [
-    'ml-2 shrink-0 text-[10px] tracking-wide text-black/60 uppercase',
+    'ml-2 shrink-0 text-[10px] tracking-wide text-black/50 uppercase',
     classNames.itemShortcut,
   ]
     .filter(Boolean)

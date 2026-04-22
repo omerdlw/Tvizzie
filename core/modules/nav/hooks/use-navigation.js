@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
 import { useNavigationContext } from '../context';
 import { useNavigationCore } from './use-navigation-core';
@@ -11,7 +11,7 @@ import { useNavigationExpanded } from './use-navigation-expanded';
 import { useNavigationLayout } from './use-navigation-layout';
 
 export function useNavigation() {
-  const { searchQuery, closeSurface } = useNavigationContext();
+  const { searchQuery, closeSurface, compactLocked, setCompactLock } = useNavigationContext();
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -28,7 +28,12 @@ export function useNavigation() {
     setNavHeight,
   } = expanded;
   const isSurfaceActive = Boolean(activeItem?.isSurface);
-  const compact = useNavigationCompact({ activeItem, expanded: isExpanded, pathname });
+
+  const activeItemHasAction = useMemo(() => {
+    return Boolean(activeItem?.action || activeItem?.isConfirmation);
+  }, [activeItem]);
+
+  const compact = useNavigationCompact({ activeItem, expanded: isExpanded, pathname, searchQuery, compactLocked });
 
   const setExpanded = useCallback(
     (nextValue) => {
@@ -44,6 +49,20 @@ export function useNavigation() {
     },
     [isSurfaceActive, setExpandedState]
   );
+
+  const wasSurfaceActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (isSurfaceActive) {
+      wasSurfaceActiveRef.current = true;
+      return;
+    }
+
+    if (wasSurfaceActiveRef.current) {
+      wasSurfaceActiveRef.current = false;
+      setIsHovered(false);
+    }
+  }, [isSurfaceActive]);
 
   useEffect(() => {
     if (!isSurfaceActive || !isExpanded) {
@@ -83,9 +102,6 @@ export function useNavigation() {
 
   useRouteChangeEffects(pathname, setExpanded, setSearchQuery, setIsHovered);
 
-  const activeItemHasAction = useMemo(() => {
-    return Boolean(activeItem?.action || activeItem?.isConfirmation);
-  }, [activeItem]);
 
   return {
     navigationItems: displayItems,
@@ -102,6 +118,7 @@ export function useNavigation() {
     setExpanded,
     setNavHeight,
     setSearchQuery,
+    setCompactLock,
 
     isHovered,
     setIsHovered,

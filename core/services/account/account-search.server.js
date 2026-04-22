@@ -1,11 +1,11 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { cleanString, normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { cleanString, normalizeTimestamp } from '@/core/utils';
 import {
   normalizeAccountDisplayNameSearchValue,
   sanitizeUsername,
-} from '@/core/utils/account-username';
+} from '@/core/utils/account';
 
 const ACCOUNT_SEARCH_LIMIT = 10;
 const ACCOUNT_SEARCH_SELECT = [

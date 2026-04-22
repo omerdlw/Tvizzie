@@ -6,38 +6,13 @@ import { ANIMATION_DURATIONS, ANIMATION_EASINGS, ANIMATION_VIEWPORTS, buildRevea
 
 export const HOME_ROUTE_MOTION = Object.freeze({
   orchestration: Object.freeze({
-    heroDelay: 0.04,
     sectionStep: 0.04,
     cardStep: 0.015,
   }),
   scroll: Object.freeze({
     sectionViewport: ANIMATION_VIEWPORTS.relaxed,
   }),
-  sharedElements: Object.freeze({
-    heroImage: Object.freeze({
-      transition: Object.freeze({
-        duration: 0.78,
-        ease: ANIMATION_EASINGS.EMPHASIZED,
-      }),
-    }),
-    heroContent: Object.freeze({
-      transition: Object.freeze({
-        duration: 0.52,
-        ease: ANIMATION_EASINGS.ACCENT,
-      }),
-    }),
-    pager: Object.freeze({
-      transition: Object.freeze({
-        duration: 0.34,
-        ease: ANIMATION_EASINGS.ACCENT,
-      }),
-    }),
-  }),
 });
-
-export const HOME_HERO_IMAGE_TRANSITION = HOME_ROUTE_MOTION.sharedElements.heroImage.transition;
-export const HOME_HERO_CONTENT_TRANSITION = HOME_ROUTE_MOTION.sharedElements.heroContent.transition;
-export const HOME_HERO_PAGER_TRANSITION = HOME_ROUTE_MOTION.sharedElements.pager.transition;
 
 export function HomeSectionReveal({
   children,

@@ -9,7 +9,7 @@ import {
   createPendingPasswordSignIn,
   validateStrongPassword,
 } from '@/core/auth/servers/security/password-security.server';
-import { validateUsername } from '@/core/utils/account-username';
+import { validateUsername } from '@/core/utils/account';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   enforceAuthRateLimit,

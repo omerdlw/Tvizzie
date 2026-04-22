@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import CastModal from '@/features/modal/cast-modal';
+import CreateListModal from '@/features/modal/create-list-modal';
 import ImagePreviewModal from '@/features/modal/image-preview-modal';
 import ListPickerModal from '@/features/modal/list-picker-modal';
 import ReviewEditorModal from '@/features/modal/review-editor-modal';
@@ -316,6 +317,7 @@ export default function Registry({
     loading: { isLoading, showOverlay: false },
     modal: {
       CAST_MODAL: CastModal,
+      CREATE_LIST_MODAL: CreateListModal,
       LIST_PICKER_MODAL: ListPickerModal,
       MEDIA_SOCIAL_PROOF_MODAL: MediaSocialProofModal,
       PREVIEW_MODAL: ImagePreviewModal,

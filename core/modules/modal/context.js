@@ -172,13 +172,42 @@ export function ModalProvider({ children }) {
     },
     [syncModalStack]
   );
+  const closeAllModals = useCallback(
+    (result = null) => {
+      const currentStack = modalStackRef.current;
+
+      if (currentStack.length === 0) {
+        return;
+      }
+
+      syncModalStack([]);
+
+      currentStack.forEach((entry) => {
+        const onClose = onCloseMapRef.current.get(entry.id);
+        if (typeof onClose === 'function') {
+          try {
+            onClose(result);
+          } catch {}
+        }
+        onCloseMapRef.current.delete(entry.id);
+
+        const resolve = resolveMapRef.current.get(entry.id);
+        if (typeof resolve === 'function') {
+          resolve(result);
+        }
+        resolveMapRef.current.delete(entry.id);
+      });
+    },
+    [syncModalStack]
+  );
 
   const actionsValue = useMemo(
     () => ({
       openModal,
       closeModal,
+      closeAllModals,
     }),
-    [openModal, closeModal]
+    [openModal, closeModal, closeAllModals]
   );
 
   return (

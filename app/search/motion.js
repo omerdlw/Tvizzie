@@ -69,7 +69,6 @@ export function SearchSectionReveal({ children, className = '', delay = 0, dista
               },
             }
       }
-      style={reduceMotion ? undefined : { willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>

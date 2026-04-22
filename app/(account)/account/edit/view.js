@@ -12,7 +12,7 @@ import Icon from '@/ui/icon';
 import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'h-11 rounded-[14px] w-full border border-black/15 bg-white px-3 text-sm text-black outline-none transition-colors placeholder:text-black/60 focus:border-black';
+  'h-11 rounded-[14px] w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none transition-colors placeholder:text-black/50 focus:border-black';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
   ' border rounded-[14px] border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';

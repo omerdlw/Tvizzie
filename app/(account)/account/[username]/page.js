@@ -1,5 +1,5 @@
 import { createAccountRoutePage } from '../shared/route-page';
-import { isReservedAccountSegment } from '@/core/utils/account-routing';
+import { isReservedAccountSegment } from '@/core/utils/account';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,

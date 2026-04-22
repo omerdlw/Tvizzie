@@ -25,7 +25,7 @@ export default async function Page() {
     getGenres(),
   ]);
 
-  const heroItems = dailyTrendingResponse.data?.results || [];
+  const dailyTrendingItems = dailyTrendingResponse.data?.results || [];
   const weeklyPopularMovies = weeklyTrendingResponse.data?.results || [];
   const firstDiscoverData = discoverFirstResponse.data || {};
   const initialDiscoverItems = getUniqueItems(firstDiscoverData.results || []);
@@ -37,7 +37,7 @@ export default async function Page() {
   return (
     <Client
       data={{
-        heroItems,
+        dailyTrendingItems,
         weeklyPopularMovies,
         initialDiscoverItems,
         initialDiscoverPage,

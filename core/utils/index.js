@@ -484,3 +484,57 @@ export function getImagePlaceholderDataUrl(seed, { width = 64, height = 64 } = {
 
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
+
+export function normalizeTimestamp(value) {
+  if (!value) return null;
+
+  if (typeof value?.toDate === 'function') {
+    return value.toDate().toISOString();
+  }
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate.toISOString();
+}
+
+export function cleanString(value) {
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
+}
+
+export function normalizeFeedbackText(value) {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  let normalizedValue = value.replace(/\u2026/g, '...').trim();
+
+  while (normalizedValue.endsWith('...') || normalizedValue.endsWith('.')) {
+    normalizedValue = normalizedValue.endsWith('...')
+      ? normalizedValue.slice(0, -3).trimEnd()
+      : normalizedValue.slice(0, -1).trimEnd();
+  }
+
+  return normalizedValue;
+}
+
+export function normalizeFeedbackContent(value) {
+  return typeof value === 'string' ? normalizeFeedbackText(value) : value;
+}
+
+export function pipe(...providers) {
+  return providers.reduce(
+    (AccumulatedProviders, [Provider, props = {}]) =>
+      ({ children }) => (
+        <AccumulatedProviders>
+          <Provider {...props}>{children}</Provider>
+        </AccumulatedProviders>
+      ),
+    ({ children }) => <>{children}</>
+  );
+}
+

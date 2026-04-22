@@ -5,9 +5,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 
+import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { getPersonSurfaceItemMotion } from '@/features/person/person-motion';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
 
 import MediaThumb from './media-thumb';
@@ -139,110 +139,112 @@ export default function PersonAwards({ personId }) {
   const stats = awardsData?.stats;
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <div className="flex items-end justify-between gap-3">
-        <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Awards</h2>
-        {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
-          <div className="text-xs font-semibold text-black/60 sm:text-sm">
-            {stats.totalNominations} Nominations
-            {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
-          </div>
-        )}
-      </div>
+    <PersonSurfaceReveal>
+      <section className="flex w-full flex-col gap-3">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Awards</h2>
+          {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
+            <div className="text-xs font-semibold text-black/50 sm:text-sm">
+              {stats.totalNominations} Nominations
+              {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
+            </div>
+          )}
+        </div>
 
-      <div className="flex w-full flex-col">
-        {awardsTimeline.map(([year, entries], yearIndex) => {
-          const yearMotion = getPersonSurfaceItemMotion({
-            reduceMotion,
-            index: yearIndex,
-            distance: 18,
-            duration: 0.64,
-            delayStep: 0.088,
-            scale: 0.986,
-          });
+        <div className="flex w-full flex-col">
+          {awardsTimeline.map(([year, entries], yearIndex) => {
+            const yearMotion = getPersonSurfaceItemMotion({
+              reduceMotion,
+              index: yearIndex,
+              distance: 18,
+              duration: 0.64,
+              delayStep: 0.088,
+              scale: 0.986,
+            });
 
-          return (
-            <motion.div
-              key={year}
-              className="mt-4 first:mt-0"
-              initial={yearMotion.initial}
-              animate={yearMotion.animate}
-              transition={yearMotion.transition}
-            >
-              <div className="mb-2 flex items-center gap-2 sm:gap-3">
-                <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
-                  {year}
-                </span>
-                <div className="h-px flex-1 bg-black/20" />
-              </div>
+            return (
+              <motion.div
+                key={year}
+                className="mt-4 first:mt-0"
+                initial={yearMotion.initial}
+                animate={yearMotion.animate}
+                transition={yearMotion.transition}
+              >
+                <div className="mb-2 flex items-center gap-2 sm:gap-3">
+                  <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
+                    {year}
+                  </span>
+                  <div className="h-px flex-1 bg-black/20" />
+                </div>
 
-              <div className="flex flex-col sm:ml-16">
-                {entries.map((entry, entryIndex) => {
-                  const isInteractive = Boolean(entry.projectId);
-                  const title = entry.project || entry.category;
-                  const detail = entry.project
-                    ? `${entry.organization} / ${entry.type} · ${entry.category}`
-                    : `${entry.organization} / ${entry.type}`;
-                  const rowClassName = cn(
-                    'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
-                    isInteractive ? 'hover:bg-primary' : 'cursor-default'
-                  );
-                  const entryMotion = getPersonSurfaceItemMotion({
-                    reduceMotion,
-                    axis: 'x',
-                    distance: -14,
-                    duration: 0.48,
-                    groupIndex: yearIndex,
-                    groupDelayStep: 0.088,
-                    index: entryIndex,
-                    delayStep: 0.028,
-                    scale: 0.992,
-                  });
-                  const content = (
-                    <>
-                      <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+                <div className="flex flex-col sm:ml-16">
+                  {entries.map((entry, entryIndex) => {
+                    const isInteractive = Boolean(entry.projectId);
+                    const title = entry.project || entry.category;
+                    const detail = entry.project
+                      ? `${entry.organization} / ${entry.type} · ${entry.category}`
+                      : `${entry.organization} / ${entry.type}`;
+                    const rowClassName = cn(
+                      'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
+                      isInteractive ? 'hover:bg-primary' : 'cursor-default'
+                    );
+                    const entryMotion = getPersonSurfaceItemMotion({
+                      reduceMotion,
+                      axis: 'x',
+                      distance: -14,
+                      duration: 0.48,
+                      groupIndex: yearIndex,
+                      groupDelayStep: 0.088,
+                      index: entryIndex,
+                      delayStep: 0.028,
+                      scale: 0.992,
+                    });
+                    const content = (
+                      <>
+                        <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+                          </div>
+
+                          <span className="truncate text-xs text-black/50 sm:text-sm">{detail}</span>
                         </div>
+                      </>
+                    );
 
-                        <span className="truncate text-xs text-black/60 sm:text-sm">{detail}</span>
-                      </div>
-                    </>
-                  );
+                    if (isInteractive) {
+                      return (
+                        <motion.div
+                          key={entry.key}
+                          initial={entryMotion.initial}
+                          animate={entryMotion.animate}
+                          transition={entryMotion.transition}
+                        >
+                          <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+                            {content}
+                          </Link>
+                        </motion.div>
+                      );
+                    }
 
-                  if (isInteractive) {
                     return (
                       <motion.div
                         key={entry.key}
                         initial={entryMotion.initial}
                         animate={entryMotion.animate}
                         transition={entryMotion.transition}
+                        className={rowClassName}
                       >
-                        <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
-                          {content}
-                        </Link>
+                        {content}
                       </motion.div>
                     );
-                  }
-
-                  return (
-                    <motion.div
-                      key={entry.key}
-                      initial={entryMotion.initial}
-                      animate={entryMotion.animate}
-                      transition={entryMotion.transition}
-                      className={rowClassName}
-                    >
-                      {content}
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-    </section>
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+    </PersonSurfaceReveal>
   );
 }

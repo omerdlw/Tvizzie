@@ -45,7 +45,7 @@ export function Registry({
   const canLikeList = Boolean(list);
   const navCountsDescription = list
     ? `${listItemsCount} items · ${list?.likesCount || 0} likes · ${list?.reviewsCount || 0} reviews`
-    : 'List';
+    : null;
 
   useRegistry(
     buildAccountRegistryState(
@@ -88,12 +88,12 @@ export function Registry({
         navRegistrySource: registrySource,
         isLiked: canLikeList ? isLiked : false,
         isLikeLoading: canLikeList ? isLikeLoading : false,
-        onDeleteList: () => handleDeleteList(list),
-        onEditList: () => handleEditList(list),
-        onToggleLike: canLikeList ? handleToggleLike : null,
+        onDeleteList: list ? () => handleDeleteList(list) : null,
+        onEditList: list ? () => handleEditList(list) : null,
+        onToggleLike: list ? handleToggleLike : null,
         reviewState,
-        showProfileFollowAction,
-        showToolbarFollowActionWithOverride: !isSearching,
+        showProfileFollowAction: Boolean(list) && showProfileFollowAction,
+        showToolbarFollowActionWithOverride: Boolean(list) && !isSearching,
       }
     )
   );

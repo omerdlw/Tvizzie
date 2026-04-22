@@ -1,6 +1,6 @@
 'use client';
 
-import { pipe } from '@/core/utils/pipe';
+import { pipe } from '@/core/utils';
 import { ACCOUNT_CONFIG } from '@/config/account.config';
 import { AUTH_CONFIG } from '@/config/auth.config';
 import { isProjectFeatureEnabled } from '@/config/project.config';

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackText } from '@/core/utils';
 import { cn } from '@/core/utils';
 
 import { NOTIFICATION_CONFIG } from './config';

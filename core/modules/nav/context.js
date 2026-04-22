@@ -69,6 +69,7 @@ export function NavigationProvider({ children, config = {} }) {
   const [dismissedConfirmationKey, setDismissedConfirmationKey] = useState(null);
   const [guardConfirmation, setGuardConfirmation] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [compactLocks, setCompactLocks] = useState({});
   const [expanded, setExpanded] = useState(false);
   const [navHeight, setNavHeight] = useState(0);
   const [surfaceState, setSurfaceState] = useState(INITIAL_SURFACE_STATE);
@@ -144,6 +145,35 @@ export function NavigationProvider({ children, config = {} }) {
 
   const clearGuardConfirmation = useCallback(() => {
     setGuardConfirmation(null);
+  }, []);
+
+  const setCompactLock = useCallback((lockId, isLocked) => {
+    if (!lockId) {
+      return;
+    }
+
+    setCompactLocks((previousLocks) => {
+      const hasLock = Boolean(previousLocks[lockId]);
+
+      if (isLocked) {
+        if (hasLock) {
+          return previousLocks;
+        }
+
+        return {
+          ...previousLocks,
+          [lockId]: true,
+        };
+      }
+
+      if (!hasLock) {
+        return previousLocks;
+      }
+
+      const nextLocks = { ...previousLocks };
+      delete nextLocks[lockId];
+      return nextLocks;
+    });
   }, []);
 
   const syncSurfaceStack = useCallback((nextStack) => {
@@ -261,12 +291,15 @@ export function NavigationProvider({ children, config = {} }) {
     previousPathRef.current = pathname;
   }, [closeAllSurfaces, pathname]);
 
+  const compactLocked = Object.keys(compactLocks).length > 0;
+
   const stateValue = useMemo(
     () => ({
       dismissedConfirmationKey,
       guardConfirmation,
       ...surfaceState,
       searchQuery,
+      compactLocked,
       navHeight,
       expanded,
       config,
@@ -276,6 +309,7 @@ export function NavigationProvider({ children, config = {} }) {
       guardConfirmation,
       surfaceState,
       searchQuery,
+      compactLocked,
       navHeight,
       expanded,
       config,
@@ -289,6 +323,7 @@ export function NavigationProvider({ children, config = {} }) {
       closeSurface,
       dismissConfirmation,
       openSurface,
+      setCompactLock,
       setGuardConfirmation,
       setSearchQuery,
       setNavHeight,
@@ -303,6 +338,7 @@ export function NavigationProvider({ children, config = {} }) {
       closeSurface,
       dismissConfirmation,
       openSurface,
+      setCompactLock,
       setGuardConfirmation,
       setSearchQuery,
       setNavHeight,

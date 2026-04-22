@@ -1,15 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { TMDB_IMG } from '@/core/constants';
 import { useAuthSessionReady } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
+import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
 import { cn } from '@/core/utils';
-import { buildListCreatorHref } from '@/features/account/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -74,7 +73,7 @@ function ListPreviewStack({ list }) {
 }
 
 export default function ListPickerModal({ close, data }) {
-  const router = useRouter();
+  const { openModal } = useModalActions();
   const toast = useToast();
 
   const userId = data?.userId ?? null;
@@ -169,9 +168,8 @@ export default function ListPickerModal({ close, data }) {
   }, [userId, isAuthSessionReady, media, lists, toast]);
 
   const handleOpenCreator = useCallback(() => {
-    close();
-    router.push(buildListCreatorHref(media));
-  }, [close, router, media]);
+    openModal('CREATE_LIST_MODAL', undefined, { data: { media } });
+  }, [openModal, media]);
 
   const handleToggleDraft = useCallback((listId) => {
     setDraftMemberships((prev) => ({

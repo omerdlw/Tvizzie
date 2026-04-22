@@ -7,6 +7,8 @@ const COMPACT_RELEASE_THRESHOLD = 36;
 const SCROLL_DIRECTION_EPSILON = 0.5;
 const COMPACT_ACTIVATION_BUFFER = 88;
 const COMPACT_MIN_ACTIVATION_DELTA = 4.5;
+const COMPACT_TOGGLE_COOLDOWN_MS = 300;
+const OVERSCROLL_THRESHOLD = -1;
 const HORIZONTAL_GESTURE_DELTA_THRESHOLD = 8;
 const HORIZONTAL_GESTURE_DOMINANCE_RATIO = 1.15;
 const HORIZONTAL_GESTURE_SUPPRESSION_MS = 260;
@@ -21,6 +23,7 @@ function getNow() {
 
 function canUseCompactNav({
   hasActiveItem,
+  isActionEngaged,
   isConfirmation,
   isLoading,
   isOverlay,
@@ -33,7 +36,7 @@ function canUseCompactNav({
     return false;
   }
 
-  if (isOverlay || isSurface || isConfirmation || isLoading || isStatus || type === 'COUNTDOWN') {
+  if (isOverlay || isSurface || isConfirmation || isLoading || isStatus || isActionEngaged || type === 'COUNTDOWN') {
     return false;
   }
 
@@ -66,13 +69,14 @@ function resolveCompactState(scrollY, previousScrollY, currentValue, downwardTra
   return currentValue;
 }
 
-export function useNavigationCompact({ activeItem, expanded, pathname }) {
+export function useNavigationCompact({ activeItem, expanded, pathname, searchQuery = '', compactLocked = false }) {
   const [compact, setCompact] = useState(false);
   const compactRef = useRef(false);
   const restoreCompactRef = useRef(false);
   const suppressCompactUntilRef = useRef(0);
   const lastScrollYRef = useRef(0);
   const downwardTravelRef = useRef(0);
+  const lastToggleTimeRef = useRef(0);
   const hasActiveItem = Boolean(activeItem);
   const activeItemPath = activeItem?.path || '';
   const activeItemName = activeItem?.name || '';
@@ -83,10 +87,12 @@ export function useNavigationCompact({ activeItem, expanded, pathname }) {
   const isConfirmation = Boolean(activeItem?.isConfirmation);
   const isLoading = Boolean(activeItem?.isLoading);
   const isStatus = Boolean(activeItem?.isStatus);
+  const isActionEngaged = Boolean(searchQuery?.trim());
 
   useEffect(() => {
     const compactAllowed = canUseCompactNav({
       hasActiveItem,
+      isActionEngaged,
       isConfirmation,
       isLoading,
       isOverlay,
@@ -97,7 +103,7 @@ export function useNavigationCompact({ activeItem, expanded, pathname }) {
     });
     const canPreserveCompactRestore = typeof window !== 'undefined' && isSurface && restoreCompactRef.current;
 
-    if (!compactAllowed || typeof window === 'undefined') {
+    if (!compactAllowed || compactLocked || typeof window === 'undefined') {
       if (canPreserveCompactRestore) {
         compactRef.current = false;
         lastScrollYRef.current = window.scrollY || 0;
@@ -140,6 +146,12 @@ export function useNavigationCompact({ activeItem, expanded, pathname }) {
       frameId = 0;
 
       const scrollY = window.scrollY || 0;
+
+      if (scrollY < OVERSCROLL_THRESHOLD) {
+        lastScrollYRef.current = scrollY;
+        return;
+      }
+
       const scrollDelta = scrollY - lastScrollYRef.current;
       const compactActivationSuppressed = !compactRef.current && getNow() < suppressCompactUntilRef.current;
 
@@ -162,7 +174,12 @@ export function useNavigationCompact({ activeItem, expanded, pathname }) {
         return;
       }
 
+      if (getNow() - lastToggleTimeRef.current < COMPACT_TOGGLE_COOLDOWN_MS) {
+        return;
+      }
+
       compactRef.current = nextValue;
+      lastToggleTimeRef.current = getNow();
 
       if (nextValue) {
         downwardTravelRef.current = 0;
@@ -212,7 +229,9 @@ export function useNavigationCompact({ activeItem, expanded, pathname }) {
   }, [
     pathname,
     expanded,
+    compactLocked,
     hasActiveItem,
+    isActionEngaged,
     activeItemName,
     activeItemPath,
     activeItemTitle,

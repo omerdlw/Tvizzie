@@ -412,7 +412,7 @@ export default function NotificationsModal({ close, header, data }) {
                   onClick={handleMarkAllRead}
                   className={cn(
                     ACTION_BUTTON_CLASS,
-                    'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/60'
+                    'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50'
                   )}
                 >
                   Mark all as read

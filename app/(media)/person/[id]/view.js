@@ -14,6 +14,7 @@ import {
   PersonHeroReveal,
   PersonSectionReveal,
   PersonSidebarReveal,
+  PersonSurfaceReveal,
   getPersonSurfaceItemMotion,
   getPersonSurfacePanelMotion,
   useInitialPersonItemRevealEnabled,
@@ -66,36 +67,38 @@ function PersonMainContent({ person, animateItemReveal = true }) {
 
       {movieCredits.length > 0 ? (
         <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography} animateOnView={false}>
-          <section className="flex flex-col gap-3">
-            <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
+          <PersonSurfaceReveal>
+            <section className="flex flex-col gap-3">
+              <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-              {movieCredits.map((credit, index) => {
-                const cardMotion = getPersonSurfaceItemMotion({
-                  enabled: animateItemReveal,
-                  reduceMotion,
-                  index,
-                  distance: 18,
-                  scale: 0.982,
-                });
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                {movieCredits.map((credit, index) => {
+                  const cardMotion = getPersonSurfaceItemMotion({
+                    enabled: animateItemReveal,
+                    reduceMotion,
+                    index,
+                    distance: 18,
+                    scale: 0.976,
+                  });
 
-                return (
-                  <motion.div
-                    key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
-                    initial={cardMotion.initial}
-                    animate={cardMotion.animate}
-                    transition={cardMotion.transition}
-                  >
-                    <FilmographyCard
-                      credit={credit}
-                      imagePriority={index < 8}
-                      imageFetchPriority={index < 8 ? 'high' : undefined}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
-          </section>
+                  return (
+                    <motion.div
+                      key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
+                      initial={cardMotion.initial}
+                      animate={cardMotion.animate}
+                      transition={cardMotion.transition}
+                    >
+                      <FilmographyCard
+                        credit={credit}
+                        imagePriority={index < 8}
+                        imageFetchPriority={index < 8 ? 'high' : undefined}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          </PersonSurfaceReveal>
         </PersonSectionReveal>
       ) : null}
     </>

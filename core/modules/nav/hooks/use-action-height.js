@@ -26,7 +26,7 @@ function getActionMargins(containerRef) {
   return parsePixelValue(computedStyle.marginTop) + parsePixelValue(computedStyle.marginBottom);
 }
 
-export function useActionHeight(onHeightChange, containerRef, actionNode, isTopItem) {
+export function useActionHeight(onHeightChange, containerRef, actionNode, isTopItem, dependencyKey = actionNode) {
   const handleHeightChange = useCallback(
     (contentHeight) => {
       if (!onHeightChange) {
@@ -40,5 +40,5 @@ export function useActionHeight(onHeightChange, containerRef, actionNode, isTopI
 
   const shouldMeasure = isTopItem && Boolean(actionNode);
 
-  useElementHeight(handleHeightChange, containerRef, shouldMeasure, actionNode);
+  useElementHeight(handleHeightChange, containerRef, shouldMeasure, dependencyKey);
 }

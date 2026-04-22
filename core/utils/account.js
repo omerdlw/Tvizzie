@@ -1,4 +1,13 @@
-import { isReservedAccountSegment } from '@/core/utils/account-routing';
+export const ACCOUNT_SECTION_KEYS = Object.freeze(['activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists']);
+export const RESERVED_ACCOUNT_SEGMENTS = new Set([...ACCOUNT_SECTION_KEYS, 'edit']);
+
+export function isReservedAccountSegment(value) {
+  return RESERVED_ACCOUNT_SEGMENTS.has(
+    String(value || '')
+      .trim()
+      .toLowerCase()
+  );
+}
 
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 24;

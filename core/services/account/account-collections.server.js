@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { canViewerAccessUserContent, createPrivateProfileError } from '@/core/services/account/account-profile.server';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import { isMovieMediaType } from '@/core/utils/media';
 

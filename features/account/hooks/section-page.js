@@ -278,6 +278,7 @@ export function useAccountSectionPage({
     setWatched,
     setWatchlist,
     updateQuery: noop,
+    profileHandle: username,
   });
 
   const canViewProfileCollections = !isPrivateProfile || isOwner || canViewPrivateContent;

@@ -111,7 +111,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-sm transition-all duration-[300ms] disabled:cursor-not-allowed lg:py-3.5 lg:backdrop-blur-none',
+        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >

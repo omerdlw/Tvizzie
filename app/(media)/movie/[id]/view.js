@@ -17,7 +17,14 @@ import Carousel from '@/features/shared/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
-import { MovieClipReveal, MovieHeroReveal, MovieSectionGroup, MovieSectionReveal, MovieSidebarReveal } from './motion';
+import {
+  MovieClipReveal,
+  MovieHeroReveal,
+  MovieSectionGroup,
+  MovieSectionReveal,
+  MovieSidebarReveal,
+  MovieSurfaceReveal,
+} from './motion';
 import Registry from './registry';
 
 const HERO_REVEAL_TIMING = Object.freeze({
@@ -47,20 +54,22 @@ function RelatedMoviesSection({ items, title, groupIndex = 0 }) {
 
   return (
     <MovieSectionReveal groupIndex={groupIndex}>
-      <div className="flex flex-col gap-3">
-        <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">{title}</h2>
-        <Carousel gap="gap-3" itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]">
-          {items.map((item, index) => (
-            <RecommendationCard
-              key={`${item.id}-${index}`}
-              movie={item}
-              index={index}
-              imagePriority={index < 4}
-              imageFetchPriority={index < 4 ? 'high' : undefined}
-            />
-          ))}
-        </Carousel>
-      </div>
+      <MovieSurfaceReveal>
+        <div className="flex flex-col gap-3">
+          <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">{title}</h2>
+          <Carousel gap="gap-3" itemClassName="w-36 sm:w-[calc((100%-24px)/3)] md:w-[calc((100%-36px)/4)]">
+            {items.map((item, index) => (
+              <RecommendationCard
+                key={`${item.id}-${index}`}
+                movie={item}
+                index={index}
+                imagePriority={index < 4}
+                imageFetchPriority={index < 4 ? 'high' : undefined}
+              />
+            ))}
+          </Carousel>
+        </div>
+      </MovieSurfaceReveal>
     </MovieSectionReveal>
   );
 }

@@ -13,6 +13,7 @@ import { useNavigation } from '@/core/modules/nav/hooks';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
+import { NAV_HEIGHT_BUFFER } from './layout';
 import {
   NAV_BACKDROP_REDUCED_TRANSITION,
   NAV_BACKDROP_TRANSITION,
@@ -41,7 +42,7 @@ function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeig
 
 function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
   const baseClassName =
-    'fixed right-2 bottom-1 left-2 h-auto touch-manipulation select-none transition-opacity duration-[200ms] sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
+    'fixed right-2 bottom-0 left-2 h-auto touch-manipulation select-none transition-opacity duration-[200ms] sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
   if (isModalOpen || isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;
@@ -143,6 +144,7 @@ export default function Nav() {
   const [containerHeight, setContainerHeight] = useState(NAV_CARD_LAYOUT.baseHeight);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [stackWidth, setStackWidth] = useState(() => getNavCardWidth());
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 640 : false));
   const [portalTarget, setPortalTarget] = useState(null);
 
   const navRef = useRef(null);
@@ -162,46 +164,55 @@ export default function Nav() {
 
   const heightRef = useRef({ action: 0, content: 0 });
   const rafRef = useRef(null);
+  const compactRef = useRef(compact);
+  const activeItemHasActionRef = useRef(activeItemHasAction);
 
-  const computeAndSetHeight = useCallback(() => {
-    // Cancel any pending frame to coalesce rapid updates
+  useEffect(() => {
+    compactRef.current = compact;
+  });
+
+  useEffect(() => {
+    activeItemHasActionRef.current = activeItemHasAction;
+  });
+
+  const applyHeight = useCallback(() => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
     }
 
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
+
       const { action, content } = heightRef.current;
       const height = getContainerHeight({
         actionHeight: action,
-        activeItemHasAction,
+        activeItemHasAction: activeItemHasActionRef.current,
         cardContentHeight: content,
-        compact,
+        compact: compactRef.current,
       });
 
       setContainerHeight(height);
-      setNavHeight(height + 16);
+      setNavHeight(height + NAV_HEIGHT_BUFFER);
     });
-  }, [activeItemHasAction, compact, setNavHeight]);
+  }, [setNavHeight]);
 
   const handleActionHeightChange = useCallback(
     (h) => {
       heightRef.current.action = h;
-      computeAndSetHeight();
+      applyHeight();
     },
-    [computeAndSetHeight]
+    [applyHeight]
   );
 
   const handleContentHeightChange = useCallback(
     (h) => {
       heightRef.current.content = h;
-      computeAndSetHeight();
+      applyHeight();
     },
-    [computeAndSetHeight]
+    [applyHeight]
   );
 
   const resetHeights = useCallback(() => {
-    // Cancel any pending rAF before resetting so stale measurements don't win
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -209,10 +220,9 @@ export default function Nav() {
 
     heightRef.current = { action: 0, content: 0 };
     setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
-    setNavHeight(NAV_CARD_LAYOUT.baseHeight + 16);
+    setNavHeight(NAV_CARD_LAYOUT.baseHeight + NAV_HEIGHT_BUFFER);
   }, [setNavHeight]);
 
-  // Cleanup pending rAF on unmount
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) {
@@ -221,14 +231,9 @@ export default function Nav() {
     };
   }, []);
 
-  // ─── Re-run computeAndSetHeight when activeItemHasAction changes ───────────
-  // (e.g. a confirmation appears/disappears — the action slot changes but
-  // the heights in the ref are still valid, we just need to recompute.)
   useIsomorphicLayoutEffect(() => {
-    computeAndSetHeight();
-  }, [activeItemHasAction, compact, computeAndSetHeight]);
-
-  // ─── Height reset on path change ──────────────────────────────────────────
+    applyHeight();
+  }, [activeItemHasAction, compact, applyHeight]);
 
   useIsomorphicLayoutEffect(() => {
     if (previousPathRef.current === pathname) return;
@@ -236,14 +241,12 @@ export default function Nav() {
     resetHeights();
   }, [pathname, resetHeights]);
 
-  // ─── Height reset on active item layout change ────────────────────────────
-
   useIsomorphicLayoutEffect(() => {
     if (activeItem?.isOverlay) return;
     if (previousActiveItemLayoutKeyRef.current === activeItemLayoutKey) return;
     previousActiveItemLayoutKeyRef.current = activeItemLayoutKey;
-    resetHeights();
-  }, [activeItem?.isOverlay, activeItemLayoutKey, resetHeights]);
+    applyHeight();
+  }, [activeItem?.isOverlay, activeItemLayoutKey, applyHeight]);
 
   // ─── Overlay / backdrop state ─────────────────────────────────────────────
 
@@ -336,6 +339,7 @@ export default function Nav() {
 
     const handleResize = () => {
       setStackWidth(getNavCardWidth());
+      setIsMobile(window.innerWidth < 640);
     };
 
     handleResize();
@@ -449,6 +453,7 @@ export default function Nav() {
                   isActive={isActive}
                   isStackHovered={isStackHovered}
                   stackWidth={stackWidth}
+                  isMobile={isMobile}
                   totalItems={navigationItems.length}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}

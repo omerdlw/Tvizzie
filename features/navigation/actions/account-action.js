@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import Icon from '@/ui/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { useNavigationActions } from '@/core/modules/nav/context';
 import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, WARNING_ACTION_TONE_CLASS } from '@/core/constants/index';
 
 const PROFILE_FOLLOW_ACTIONS = Object.freeze({
@@ -97,6 +100,7 @@ export default function AccountAction(props) {
     onAction,
     onToggleLike,
   } = props;
+  const { setCompactLock } = useNavigationActions();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -106,6 +110,15 @@ export default function AccountAction(props) {
   });
   const guestLabel = guestMode === 'sign-up' ? 'Sign Up' : 'Sign In';
   const guestIcon = guestMode === 'sign-up' ? 'solar:user-plus-bold' : 'solar:user-circle-bold';
+
+  useEffect(() => {
+    const shouldLockCompact = mode === 'profile-edit' && showSaveAction;
+    setCompactLock('account-action', shouldLockCompact);
+
+    return () => {
+      setCompactLock('account-action', false);
+    };
+  }, [mode, setCompactLock, showSaveAction]);
 
   if (mode === 'tab-switch') {
     if (!tabs.length) {

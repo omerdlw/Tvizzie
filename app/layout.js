@@ -2,7 +2,6 @@ import ReactDOM from 'react-dom';
 
 import { DynamicNav } from '@/features/layout/dynamic-wrappers';
 import { WebVitals } from '@/features/layout/web-vitals';
-import { getSiteUrl } from '@/core/utils/site-url';
 import { cn } from '@/core/utils';
 
 import { geist, geistMono, zuume } from '../fonts';
@@ -10,10 +9,8 @@ import './globals.css';
 import 'lenis/dist/lenis.css';
 import { AppProviders } from './providers';
 
-const SITE_URL = getSiteUrl();
-
 export const metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: 'https://tvizzie.vercel.app',
   alternates: {
     canonical: '/',
   },
@@ -29,17 +26,24 @@ export const metadata = {
     card: 'summary_large_image',
   },
   icons: {
-    icon: [{ url: '/tvizzie.svg', type: 'image/png', sizes: '1024x1024' }],
-    apple: [{ url: '/tvizzie.svg', type: 'image/png', sizes: '1024x1024' }],
-    shortcut: '/tvizzie.svg',
+    icon: [{ url: '/tvizzie.png', type: 'image/png', sizes: '1024x1024' }],
+    apple: [{ url: '/tvizzie.png', type: 'image/png', sizes: '1024x1024' }],
+    shortcut: '/tvizzie.png',
   },
   openGraph: {
     description: 'Discover, track, and review your favorite movies',
     title: 'Tvizzie',
     siteName: 'Tvizzie',
-    url: SITE_URL,
+    url: 'https://tvizzie.vercel.app',
     type: 'website',
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 function ResourceHints() {

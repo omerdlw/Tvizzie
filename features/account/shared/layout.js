@@ -10,7 +10,7 @@ import {
   AccountHeroReveal,
   AccountNavReveal,
   AccountSectionReveal,
-} from '@/features/account/account-motion';
+} from '@/app/(account)/account/motion';
 export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
 import AccountHero from './hero';
 import NavHeightSpacer from '@/features/layout/nav-height-spacer';

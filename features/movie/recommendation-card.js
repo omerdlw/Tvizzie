@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 
-import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
+import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 
@@ -17,7 +17,7 @@ export default function RecommendationCard({ movie, index = 0, imagePriority = f
     reduceMotion,
     index,
     distance: 20,
-    scale: 0.984,
+    scale: 0.978,
   });
 
   return (

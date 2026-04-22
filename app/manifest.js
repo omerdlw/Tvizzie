@@ -9,7 +9,7 @@ export default function manifest() {
     theme_color: '#ffffff',
     icons: [
       {
-        src: '/tvizzie.svg',
+        src: '/tvizzie.png',
         sizes: '1024x1024',
         type: 'image/png',
         purpose: 'any',

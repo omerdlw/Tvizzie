@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
-import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/features/movie/movie-motion';
+import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import SegmentedControl from '@/features/shared/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
@@ -52,7 +52,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 transition-all hover:border-black/15',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 rounded-[12px]! p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
@@ -166,7 +166,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               reduceMotion,
               index,
               distance: 20,
-              scale: 0.984,
+              scale: 0.978,
             });
 
             return (
@@ -191,7 +191,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
                 index,
                 groupIndex: 1,
                 distance: 16,
-                scale: 0.988,
+                scale: 0.984,
               });
 
               // Hide the third pill on small screens to ensure the action button fits.
@@ -203,7 +203,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
                   initial={compactMotion.initial}
                   animate={compactMotion.animate}
                   transition={compactMotion.transition}
-                  className={`flex-1 min-w-0 ${responsiveClass}`}
+                  className={`min-w-0 flex-1 ${responsiveClass}`}
                 >
                   <PersonCard person={person} compact />
                 </motion.div>
@@ -214,12 +214,12 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.952 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={reduceMotion ? { duration: 0.16 } : { duration: 0.48, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
               className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
-              <Icon icon="solar:alt-arrow-right-linear" size={18} />
+              <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </motion.button>
           </div>
         )}
@@ -228,47 +228,49 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   };
 
   return (
-    <section className="relative flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <SegmentedControl
-          classNames={{
-            wrapper: 'p-0.5 rounded-[12px]',
-            indicator: 'rounded-[9px]',
-          }}
-          value={activeTab}
-          onChange={setActiveTab}
-          items={tabs.map(({ key, label }) => ({ key, label }))}
-        />
-        {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
-      </div>
+    <MovieSurfaceReveal>
+      <section className="relative flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <SegmentedControl
+            classNames={{
+              wrapper: 'p-0.5 rounded-[12px] backdrop-blur-xs bg-primary/30',
+              indicator: 'rounded-[9px]',
+            }}
+            value={activeTab}
+            onChange={setActiveTab}
+            items={tabs.map(({ key, label }) => ({ key, label }))}
+          />
+          {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
+        </div>
 
-      <div className="relative overflow-hidden">
-        {tabs.length === 1 ? (
-          renderPanel(activeTabData.key, activeTabData.entries)
-        ) : (
-          <>
-            <div aria-hidden="true" className="invisible">
-              {renderPanel(activeTabData.key, activeTabData.entries)}
-            </div>
+        <div className="relative overflow-hidden">
+          {tabs.length === 1 ? (
+            renderPanel(activeTabData.key, activeTabData.entries)
+          ) : (
+            <>
+              <div aria-hidden="true" className="invisible">
+                {renderPanel(activeTabData.key, activeTabData.entries)}
+              </div>
 
-            <div className="absolute inset-0 flex">
-              {tabs.map((tab, index) => (
-                <motion.div
-                  key={tab.key}
-                  className="absolute inset-0"
-                  initial={false}
-                  animate={{ x: `${(index - activeIndex) * 100}%` }}
-                  transition={
-                    reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-                  }
-                >
-                  {renderPanel(tab.key, tab.entries)}
-                </motion.div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </section>
+              <div className="absolute inset-0 flex">
+                {tabs.map((tab, index) => (
+                  <motion.div
+                    key={tab.key}
+                    className="absolute inset-0"
+                    initial={false}
+                    animate={{ x: `${(index - activeIndex) * 100}%` }}
+                    transition={
+                      reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
+                    }
+                  >
+                    {renderPanel(tab.key, tab.entries)}
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+    </MovieSurfaceReveal>
   );
 }

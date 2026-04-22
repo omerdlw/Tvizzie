@@ -2,7 +2,7 @@ import 'server-only';
 
 import { isListSubjectType, isMovieMediaType, isTvReference } from '@/core/utils/media';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 
 const ACCOUNT_REVIEWS_FEED_FUNCTION = 'account-reviews-feed';

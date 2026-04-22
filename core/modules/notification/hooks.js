@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackText } from '@/core/utils';
 
 import { useNotificationActions, TOAST_TYPES } from './context';
 

@@ -69,7 +69,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
           {userActions.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/60')}>
+            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
               No social activity from people you follow yet
             </div>
           ) : (

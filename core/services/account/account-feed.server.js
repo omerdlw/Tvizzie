@@ -5,7 +5,7 @@ import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_EVENT_TYPES } from '@/core/services/a
 import { canViewerAccessUserContent, createPrivateProfileError, getAccountProfileByUserId } from '@/core/services/account/account-profile.server';
 import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 import { normalizeMediaType } from '@/core/utils/media';
 
 const ACTIVITY_SELECT = ['created_at', 'dedupe_key', 'event_type', 'id', 'payload', 'updated_at', 'user_id'].join(',');

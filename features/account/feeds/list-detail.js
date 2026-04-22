@@ -194,7 +194,12 @@ function ListDetailMediaGrid({
       </div>
 
       {totalPages > 1 ? (
-        <AccountPagination className="w-full" currentPage={safeCurrentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        <AccountPagination
+          className="w-full"
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       ) : null}
     </div>
   );
@@ -475,7 +480,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                       />
 
                       {hasMediaFilters ? (
-                        <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                        <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
                           {filteredListItems.length} of {listItems.length} titles shown
                         </p>
                       ) : null}
@@ -488,7 +493,12 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
 
           <AccountSectionReveal delay={0.1}>
             <div className={`${LIST_SECTION_SHELL_CLASS} pt-4 pb-20`}>
-              <ReviewHeader itemLabel="comment" showRatingSummary={false} title="Comments" totalReviews={reviews.length} />
+              <ReviewHeader
+                itemLabel="comment"
+                showRatingSummary={false}
+                title="Comments"
+                totalReviews={reviews.length}
+              />
 
               {hasListReviews ? (
                 <AccountReviewFilterBar
@@ -504,18 +514,18 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
               ) : null}
 
               {hasListReviews && hasReviewFilters ? (
-                <p className="text-xs font-semibold tracking-widest text-black/60 uppercase">
+                <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
                   {filteredReviews.length} of {reviews.length} comments shown
                 </p>
               ) : null}
 
               {!isOwner && (
-                <AuthGate fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}>
+                <AuthGate
+                  fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}
+                >
                   <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold">
-                        {ownReview ? 'Update your comment' : 'Write a comment'}
-                      </p>
+                      <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
                       <p className="text-xs text-black/70">
                         {ownReview
                           ? 'Open the comment composer to edit your text.'
@@ -534,7 +544,9 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
               )}
               {visibleReviews.length === 0 ? (
                 <AccountInlineSectionState className="px-4 py-5">
-                  {hasReviewFilters && reviews.length > 0 ? 'No comments match the current filters.' : 'No comments yet'}
+                  {hasReviewFilters && reviews.length > 0
+                    ? 'No comments match the current filters.'
+                    : 'No comments yet'}
                 </AccountInlineSectionState>
               ) : (
                 <ReviewList

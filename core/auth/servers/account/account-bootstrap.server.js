@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { validateUsername } from '@/core/utils/account-username';
+import { validateUsername } from '@/core/utils/account';
 import { ensureAccountLifecycle } from '@/core/auth/servers/account/account-lifecycle.server';
 
 function normalizeValue(value) {

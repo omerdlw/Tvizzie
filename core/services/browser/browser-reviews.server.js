@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createClient as createServerClient } from '@/core/clients/supabase/server';
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 
 const REVIEW_LIMIT = 120;
 const MEDIA_REVIEW_SELECT = [

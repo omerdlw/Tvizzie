@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeFeedbackContent } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackContent } from '@/core/utils';
 import { cn } from '@/core/utils';
 
 export default function AccountInlineSectionState({ children, className = '' }) {

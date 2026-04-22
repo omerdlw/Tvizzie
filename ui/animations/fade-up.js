@@ -21,7 +21,6 @@ export function FadeUp({ children, className = '', delay = 0, duration = ANIMATI
       transition={{ duration, ease: ANIMATION_EASINGS.STANDARD, delay }}
       variants={FADE_UP_VARIANTS}
       className={className}
-      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>

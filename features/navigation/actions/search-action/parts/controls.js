@@ -31,7 +31,7 @@ export default function SearchActionControls({
         onFocus={() => setIsActive(true)}
         onBlur={() => setIsActive(false)}
         classNames={{
-          input: 'w-full text-base placeholder:text-black/50 outline-none md:text-sm',
+          input: 'w-full text-sm placeholder:text-black/50 outline-none',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,

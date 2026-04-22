@@ -2,19 +2,17 @@
 
 import { useCallback } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { ACCOUNT_LIST_CREATOR_PATH } from '@/features/account/utils';
+import { useModalActions } from '@/core/modules/modal/context';
 import { createAccountSectionClient } from '../../shared/section-factory';
 import ListsView from './view';
 
 function useListsClientState({ sectionState }) {
-  const router = useRouter();
+  const { openModal } = useModalActions();
   const { handleDeleteList, handleEditList, listDeleteConfirmation, lists } = sectionState;
 
   const handleOpenListCreator = useCallback(() => {
-    router.push(ACCOUNT_LIST_CREATOR_PATH);
-  }, [router]);
+    openModal('CREATE_LIST_MODAL');
+  }, [openModal]);
 
   return {
     handleDeleteList,

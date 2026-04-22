@@ -34,7 +34,7 @@ export default function MovieAction({
             'cursor-pointer p-3 text-xs font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
           optionActive: 'bg-black/5 text-black',
           indicator: 'ml-auto text-black',
-          icon: 'text-black/60',
+          icon: 'text-black/50',
         }}
         aria-label="Sort reviews"
       />

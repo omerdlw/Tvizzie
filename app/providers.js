@@ -10,8 +10,9 @@ import { isRegistryDebugPanelEnabled, isRegistryHistoryCaptureEnabled } from '@/
 import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary';
 import { MotionRuntimeProvider } from '@/features/motion-runtime';
 import { NAV_CONFIG } from '@/config/nav.config';
+import { pipe } from '@/core/utils';
 import { SmoothScrollProvider } from '@/features/layout/smooth-scroll';
-import { pipe } from '@/core/utils/pipe';
+
 import { BackgroundOverlay, BackgroundProvider } from '@/core/modules/background';
 import { GlobalError } from '@/core/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/core/modules/loading';

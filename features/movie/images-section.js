@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import {
+  MovieSurfaceReveal,
   getSurfaceItemMotion,
   getSurfacePanelMotion,
   useInitialItemRevealEnabled,
-} from '@/features/movie/movie-motion';
+} from '@/app/(media)/movie/[id]/motion';
 import Carousel from '@/features/shared/carousel';
 import MediaCard from '@/features/shared/media-card';
 import SegmentedControl from '@/features/shared/segmented-control';
@@ -102,77 +103,79 @@ export default function ImagesSection({ images }) {
   }
 
   return (
-    <section className="flex w-full flex-col gap-3">
-      <SegmentedControl
-        classNames={{
-          track: ' w-auto',
-          wrapper: 'p-0.5 rounded-[12px]',
-          button: 'rounded-[9px]',
-          indicator: 'rounded-[9px]',
-        }}
-        items={availableTabs}
-        value={activeKey}
-        onChange={setActiveKey}
-      />
+    <MovieSurfaceReveal>
+      <section className="flex w-full flex-col gap-3">
+        <SegmentedControl
+          classNames={{
+            track: ' w-auto',
+            wrapper: 'p-0.5 rounded-[12px]',
+            button: 'rounded-[9px]',
+            indicator: 'rounded-[9px]',
+          }}
+          items={availableTabs}
+          value={activeKey}
+          onChange={setActiveKey}
+        />
 
-      <div className="relative">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={`movie-images-${currentTab.key}`}
-            initial={panelMotion.initial}
-            animate={panelMotion.animate}
-            exit={panelMotion.exit}
-            transition={panelMotion.transition}
-          >
-            <Carousel gap="gap-3">
-              {items.map((image, index) => {
-                const cardMotion = getSurfaceItemMotion({
-                  enabled: shouldAnimateItemReveal,
-                  reduceMotion,
-                  index,
-                  distance: currentTab.key === 'posters' ? 22 : 18,
-                  scale: currentTab.key === 'logos' ? 0.988 : 0.982,
-                });
+        <div className="relative">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`movie-images-${currentTab.key}`}
+              initial={panelMotion.initial}
+              animate={panelMotion.animate}
+              exit={panelMotion.exit}
+              transition={panelMotion.transition}
+            >
+              <Carousel gap="gap-3">
+                {items.map((image, index) => {
+                  const cardMotion = getSurfaceItemMotion({
+                    enabled: shouldAnimateItemReveal,
+                    reduceMotion,
+                    index,
+                    distance: currentTab.key === 'posters' ? 22 : 18,
+                    scale: currentTab.key === 'logos' ? 0.984 : 0.976,
+                  });
 
-                return (
-                  <motion.div
-                    key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                    initial={cardMotion.initial}
-                    animate={cardMotion.animate}
-                    transition={cardMotion.transition}
-                  >
-                    <MediaCard
-                      imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
-                      imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
-                      onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
-                      imageFetchPriority={index < 3 ? 'high' : undefined}
-                      imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
-                      fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
-                      imageAlt={`${currentTab.label} ${index + 1}`}
-                      className={`shrink-0 ${currentTab.width}`}
-                      aspectClass={currentTab.aspect}
-                      imageSizes={currentTab.sizes}
-                      imagePriority={index < 3}
-                      fallbackIconSize={24}
-                      {...(currentTab.key === 'backdrops'
-                        ? {
-                            'data-backdrop-file-path': image.file_path || '',
-                            'data-context-menu-target': 'movie-backdrop-card',
-                          }
-                        : currentTab.key === 'posters'
+                  return (
+                    <motion.div
+                      key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
+                      initial={cardMotion.initial}
+                      animate={cardMotion.animate}
+                      transition={cardMotion.transition}
+                    >
+                      <MediaCard
+                        imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
+                        imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
+                        onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
+                        imageFetchPriority={index < 3 ? 'high' : undefined}
+                        imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
+                        fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
+                        imageAlt={`${currentTab.label} ${index + 1}`}
+                        className={`shrink-0 ${currentTab.width}`}
+                        aspectClass={currentTab.aspect}
+                        imageSizes={currentTab.sizes}
+                        imagePriority={index < 3}
+                        fallbackIconSize={24}
+                        {...(currentTab.key === 'backdrops'
                           ? {
-                              'data-poster-file-path': image.file_path || '',
-                              'data-context-menu-target': 'movie-poster-card',
+                              'data-backdrop-file-path': image.file_path || '',
+                              'data-context-menu-target': 'movie-backdrop-card',
                             }
-                          : {})}
-                    />
-                  </motion.div>
-                );
-              })}
-            </Carousel>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </section>
+                          : currentTab.key === 'posters'
+                            ? {
+                                'data-poster-file-path': image.file_path || '',
+                                'data-context-menu-target': 'movie-poster-card',
+                              }
+                            : {})}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </Carousel>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
+    </MovieSurfaceReveal>
   );
 }

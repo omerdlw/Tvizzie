@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
 import { cache } from 'react';
 

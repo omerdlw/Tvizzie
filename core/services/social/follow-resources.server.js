@@ -6,7 +6,7 @@ import {
   createPrivateProfileError,
   getAccountProfileByUserId,
 } from '@/core/services/account/account-profile.server';
-import { normalizeTimestamp } from '@/core/services/shared/data-utils';
+import { normalizeTimestamp } from '@/core/utils';
 
 const FOLLOW_SELECT = [
   'created_at',

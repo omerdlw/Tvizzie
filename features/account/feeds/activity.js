@@ -5,7 +5,7 @@ import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackText } from '@/core/utils';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
 import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
 import AccountPagination from '@/features/account/shared/pagination';

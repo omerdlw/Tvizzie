@@ -33,7 +33,7 @@ export default function PersonBio({ biography }) {
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="cursor-pointer self-start text-[11px] font-semibold tracking-widest text-black/60 uppercase transition-colors hover:text-black"
+          className="cursor-pointer self-start text-[11px] font-semibold tracking-widest text-black/50 uppercase transition-colors hover:text-black"
         >
           {expanded ? 'Show Less' : 'Read More'}
         </button>

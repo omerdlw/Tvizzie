@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { normalizeFeedbackContent } from '@/core/utils/feedback-copy';
+import { normalizeFeedbackContent } from '@/core/utils';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
@@ -20,7 +20,7 @@ export function AccountSectionHeading({
   titleHref = null,
 }) {
   const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-black/70 transition';
-  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/60 uppercase';
+  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
 
   return (
     <div className={`flex w-full flex-col gap-6 ${className}`}>

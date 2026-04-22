@@ -15,6 +15,7 @@ import { Skeleton } from '@/ui/skeletons/components/nav';
 
 import { NavActionsContainer } from './actions/container';
 import { Icon as BadgeIcon, Description, Title } from './elements';
+import { getNavStackOffset } from './layout';
 import {
   getNavCardSpring,
   getNavCardStaggerDelay,
@@ -32,7 +33,7 @@ const NAV_CARD_DIMENSIONS = Object.freeze({
   chromeHeight: 20,
   collapsedY: -8,
   compactHeight: 38,
-  expandedY: -78,
+  expandedY: getNavStackOffset(68),
   actionGap: 10,
   height: 64,
 });
@@ -75,8 +76,10 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion, cardWidth) {
-  const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion, cardWidth, isMobile) {
+  const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
+  // Reduce gap between cards on mobile devices
+  const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
@@ -187,6 +190,10 @@ function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered, comp
   return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}:${compact ? 'compact' : 'full'}`;
 }
 
+function getRouteMeasurementKey(pathname, key) {
+  return `${pathname || ''}:${key}`;
+}
+
 function getItemDescription({ expanded, isHovered, link }) {
   if (isHovered && !expanded && !link.isOverlay && link.type !== 'COUNTDOWN') {
     return 'click to see the pages';
@@ -274,9 +281,12 @@ function StandardItemContent({
     };
 
     return (
-      <div ref={contentContainerRef} className="flex h-5 sm:h-6 w-full items-center justify-center px-4 sm:px-5">
+      <div ref={contentContainerRef} className="flex h-5 w-full items-center justify-center px-4 sm:h-6 sm:px-5">
         <div className="min-w-0">
-          <Title text={link.title || link.name} style={{ ...compactTitleStyle, className: cn(compactTitleStyle.className, 'text-[12px] sm:text-[14px]') }} />
+          <Title
+            text={link.title || link.name}
+            style={{ ...compactTitleStyle, className: cn(compactTitleStyle.className, 'text-[12px] sm:text-[14px]') }}
+          />
         </div>
       </div>
     );
@@ -323,12 +333,12 @@ function StandardItemContent({
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
           <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <div className="flex items-center gap-1.5">
-              <Title 
-                text={link.title || link.name} 
+              <Title
+                text={link.title || link.name}
                 style={{
                   ...itemStyle.title,
-                  className: cn(itemStyle.title?.className, 'text-[14px] sm:text-[16px]')
-                }} 
+                  className: cn(itemStyle.title?.className, 'text-[14px] sm:text-[16px]'),
+                }}
               />
             </div>
             <Description text={description} style={itemStyle.description} />
@@ -403,6 +413,7 @@ const Item = memo(
       isActive,
       stackWidth,
       initialPageAnimationsEnabled,
+      isMobile,
     },
     ref
   ) {
@@ -441,7 +452,8 @@ const Item = memo(
         itemStyle.card,
         itemStyle.scale,
         !!reduceMotion,
-        cardWidth
+        cardWidth,
+        isMobile
       );
 
       if (!link.isSurface) {
@@ -452,21 +464,40 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [cardWidth, expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, reduceMotion]);
+    }, [
+      cardWidth,
+      expanded,
+      position,
+      showBorder,
+      itemStyle.card,
+      itemStyle.scale,
+      link.isSurface,
+      reduceMotion,
+      isMobile,
+    ]);
 
-    useActionHeight(onActionHeightChange, actionContainerRef, renderedActionNode, isTop);
+    useActionHeight(
+      onActionHeightChange,
+      actionContainerRef,
+      renderedActionNode,
+      isTop,
+      getRouteMeasurementKey(pathname, renderedActionNode ? 'action' : 'no-action')
+    );
 
     useElementHeight(
       onContentHeightChange,
       contentContainerRef,
       isTop,
-      getItemMeasurementKey({
-        link,
-        expanded,
-        isHovered,
-        isStackHovered,
-        compact,
-      })
+      getRouteMeasurementKey(
+        pathname,
+        getItemMeasurementKey({
+          link,
+          expanded,
+          isHovered,
+          isStackHovered,
+          compact,
+        })
+      )
     );
 
     const handleMouseEnter = () => {

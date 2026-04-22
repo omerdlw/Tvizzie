@@ -6,8 +6,10 @@ import {
   ANIMATION_EASINGS,
   ANIMATION_STAGGER,
   ANIMATION_VIEWPORTS,
+  buildRevealMotion,
   createPanelMotion,
   createSurfaceItemMotion,
+  resolvePhaseDelay,
   useInitialRevealEnabled,
 } from '@/core/animation';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -15,24 +17,31 @@ import { motion, useReducedMotion } from 'framer-motion';
 const PERSON_ROUTE_PHASES = Object.freeze({
   sidebar: Object.freeze({
     duration: ANIMATION_DURATIONS.SIDEBAR,
-    delayLead: 0.05,
-    distance: 44,
-    scale: 0.976,
     ease: ANIMATION_EASINGS.QUINT_OUT,
+    lead: 0.05,
+    offset: Object.freeze({ x: -42 }),
+    scale: 0.962,
   }),
   hero: Object.freeze({
     duration: ANIMATION_DURATIONS.HERO,
-    delayLead: 0.12,
-    distance: 52,
-    scale: 0.982,
     ease: ANIMATION_EASINGS.EXPO_OUT,
+    lead: 0.12,
+    offset: Object.freeze({ y: 52 }),
+    scale: 0.97,
   }),
   section: Object.freeze({
     duration: ANIMATION_DURATIONS.SECTION,
-    delayLead: 0.18,
-    distance: 36,
-    scale: 0.986,
     ease: ANIMATION_EASINGS.EXPO_OUT,
+    lead: 0.18,
+    offset: Object.freeze({ y: 36 }),
+    scale: 0.978,
+  }),
+  surface: Object.freeze({
+    duration: ANIMATION_DURATIONS.PANEL,
+    ease: ANIMATION_EASINGS.EXPO_OUT,
+    lead: 0.12,
+    offset: Object.freeze({ y: 18 }),
+    scale: 0.94,
   }),
 });
 
@@ -52,49 +61,56 @@ export const PERSON_ROUTE_MOTION = Object.freeze({
   }),
 });
 
-function PersonReveal({ children, className = '', delay = 0, phase = 'section' }) {
+function PersonReveal({
+  animateOnView = false,
+  axis = 'y',
+  children,
+  className = '',
+  delay = 0,
+  distance,
+  once = true,
+  phase = 'section',
+}) {
   const reduceMotion = useReducedMotion();
   const phaseConfig = PERSON_ROUTE_PHASES[phase] || PERSON_ROUTE_PHASES.section;
+  const resolvedDelay = resolvePhaseDelay({
+    delay,
+    lead: phaseConfig.lead,
+    reduceMotion,
+  });
+  const motionProps = buildRevealMotion({
+    axis,
+    delay: resolvedDelay,
+    distance: distance ?? (phaseConfig.offset?.[axis] ?? 24),
+    duration: phaseConfig.duration,
+    ease: phaseConfig.ease,
+    offset: phaseConfig.offset,
+    reduceMotion,
+    scale: phaseConfig.scale,
+  });
+
+  if (animateOnView) {
+    return (
+      <motion.div
+        className={className}
+        initial={motionProps.initial}
+        whileInView={motionProps.animate}
+        viewport={{ ...PERSON_ROUTE_MOTION.scroll.sectionViewport, once }}
+        transition={motionProps.transition}
+        style={motionProps.style}
+      >
+        {children}
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
       className={className}
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: phaseConfig.distance, scale: phaseConfig.scale }}
-      animate={
-        reduceMotion
-          ? { opacity: 1 }
-          : {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              transitionEnd: {
-                transform: 'none',
-                willChange: 'auto',
-              },
-            }
-      }
-      transition={
-        reduceMotion
-          ? { duration: ANIMATION_DURATIONS.REDUCED, ease: ANIMATION_EASINGS.EASE_OUT }
-          : {
-              opacity: {
-                duration: phaseConfig.duration * 0.65,
-                delay: delay + phaseConfig.delayLead,
-                ease: ANIMATION_EASINGS.EASE_OUT,
-              },
-              y: {
-                duration: phaseConfig.duration,
-                delay: delay + phaseConfig.delayLead,
-                ease: phaseConfig.ease,
-              },
-              scale: {
-                duration: phaseConfig.duration,
-                delay: delay + phaseConfig.delayLead,
-                ease: phaseConfig.ease,
-              },
-            }
-      }
-      style={reduceMotion ? undefined : { willChange: 'transform, opacity' }}
+      initial={motionProps.initial}
+      animate={motionProps.animate}
+      transition={motionProps.transition}
+      style={motionProps.style}
     >
       {children}
     </motion.div>
@@ -117,9 +133,29 @@ export function PersonHeroReveal({ children, className = '', delay = 0 }) {
   );
 }
 
-export function PersonSectionReveal({ children, className = '', delay = 0 }) {
+export function PersonSectionReveal({
+  children,
+  className = '',
+  delay = 0,
+  once = true,
+  animateOnView = false,
+}) {
   return (
-    <PersonReveal className={className} delay={delay} phase="section">
+    <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="section">
+      {children}
+    </PersonReveal>
+  );
+}
+
+export function PersonSurfaceReveal({
+  children,
+  className = '',
+  delay = 0,
+  once = true,
+  animateOnView = false,
+}) {
+  return (
+    <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="surface">
       {children}
     </PersonReveal>
   );
@@ -131,6 +167,7 @@ export function getPersonSurfaceItemMotion(options = {}) {
   return createSurfaceItemMotion({
     ...options,
     ease: ANIMATION_EASINGS.EXPO_OUT,
+    scale: options.scale ?? 0.976,
   });
 }
 
@@ -141,6 +178,8 @@ export function getPersonSurfacePanelMotion({ reduceMotion = false } = {}) {
     ease: ANIMATION_EASINGS.EXPO_OUT,
     exitDuration: ANIMATION_DURATIONS.PANEL * 0.55,
     exitEase: ANIMATION_EASINGS.EXPO_IN_OUT,
+    initialScale: 0.976,
+    exitScale: 0.988,
   });
 }
 

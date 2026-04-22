@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom';
 import { Z_INDEX } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { ModuleError } from '@/core/modules/error-boundary';
-import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_POSITIONS } from '@/core/modules/modal/config';
+import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_LABELS, MODAL_POSITIONS } from '@/core/modules/modal/config';
 import { useModal } from '@/core/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
@@ -70,7 +70,34 @@ function trapFocus(event, elements) {
   }
 }
 
-function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModal, registry }) {
+function getModalLabel(modalType) {
+  return MODAL_LABELS[modalType] || modalType || 'Modal';
+}
+
+function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
+  return (
+    <div className="center gap-1.5 border-t border-black/10 px-3 py-1.5">
+      <button
+        type="button"
+        onClick={onSwitchToPrevious}
+        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
+          <path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {getModalLabel(previousEntry.modalType)}
+      </button>
+
+      <span className="text-[10px] text-black/20">/</span>
+
+      <span className="rounded-[10px] bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+        {getModalLabel(currentEntry.modalType)}
+      </span>
+    </div>
+  );
+}
+
+function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModal, registry, modalStack }) {
   const modalRef = useRef(null);
   const focusableRef = useRef([]);
   const reduceMotion = useReducedMotion();
@@ -154,7 +181,8 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       className={cn(
         'fixed inset-0 flex flex-col',
         POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
-        isTopModal ? 'pointer-events-auto' : 'pointer-events-none'
+        isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
+        !(isLeftModal || isRightModal) && 'px-3 sm:px-0'
       )}
     >
       {isTopModal ? (
@@ -173,8 +201,9 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         ref={modalRef}
         className={cn(
           'relative flex max-w-full transform-gpu flex-col',
+          'w-full sm:w-auto',
           (isLeftModal || isRightModal || isTopModalPosition || isBottomModalPosition) &&
-            'w-full self-stretch sm:w-auto sm:self-auto'
+            'self-stretch sm:self-auto'
         )}
         style={{
           zIndex: modalZIndex,
@@ -214,6 +243,14 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
               data={entry.props}
             />
           </ModuleError>
+
+          {isTopModal && stackIndex > 0 && modalStack[stackIndex - 1] && (
+            <ModalLayerSwitcher
+              currentEntry={entry}
+              previousEntry={modalStack[stackIndex - 1]}
+              onSwitchToPrevious={() => closeModal(null, entry.id)}
+            />
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -269,6 +306,7 @@ export default function Modal() {
           isMobileViewport={isMobileViewport}
           closeModal={closeModal}
           registry={registry}
+          modalStack={modalStack}
         />
       ))}
     </AnimatePresence>,

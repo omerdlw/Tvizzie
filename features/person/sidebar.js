@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { PersonSurfaceReveal } from '@/app/(media)/person/[id]/motion';
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
 import { TMDB_IMG } from '@/core/constants';
@@ -93,36 +94,38 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative mx-auto aspect-2/3 w-[65%] max-w-[280px] shrink-0 overflow-hidden rounded-[20px] sm:w-full sm:max-w-[320px] lg:h-[600px] lg:w-[400px] lg:max-w-none">
-        {hasImage ? (
-          <AdaptiveImage
-            src={imageSrc}
-            alt={person?.name || 'Person portrait'}
-            fill
-            priority
-            fetchPriority="high"
-            sizes="(max-width: 1024px) 100vw, 400px"
-            quality={resolveImageQuality('hero')}
-            decoding="async"
-            placeholder="blur"
-            blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
-            onError={() => setHasImageError(true)}
-            className="object-cover"
-            wrapperClassName="h-full w-full"
-          />
-        ) : (
-          <div className="bg-primary center h-full w-full border border-black/5 text-black/60">
-            <Icon icon="solar:user-bold" size={64} className="text-black/70" />
-          </div>
-        )}
+      <PersonSurfaceReveal delay={0.04}>
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
+          {hasImage ? (
+            <AdaptiveImage
+              src={imageSrc}
+              alt={person?.name || 'Person portrait'}
+              fill
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 400px"
+              quality={resolveImageQuality('hero')}
+              decoding="async"
+              placeholder="blur"
+              blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
+              onError={() => setHasImageError(true)}
+              className="object-cover"
+              wrapperClassName="h-full w-full"
+            />
+          ) : (
+            <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
+              <Icon icon="solar:user-bold" size={64} className="text-black/70" />
+            </div>
+          )}
 
-        {person?.external_ids ? (
-          <SocialLinks
-            externalIds={person.external_ids}
-            className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
-          />
-        ) : null}
-      </div>
+          {person?.external_ids ? (
+            <SocialLinks
+              externalIds={person.external_ids}
+              className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
+            />
+          ) : null}
+        </div>
+      </PersonSurfaceReveal>
 
       <div className="flex flex-col gap-1">
         {detailRows.map((row) => (
@@ -131,10 +134,12 @@ export default function PersonSidebar({ person, age }) {
       </div>
 
       {person?.biography ? (
-        <div className="flex flex-col gap-2">
-          <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
-          <PersonBio biography={person.biography} />
-        </div>
+        <PersonSurfaceReveal delay={0.12}>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
+            <PersonBio biography={person.biography} />
+          </div>
+        </PersonSurfaceReveal>
       ) : null}
     </div>
   );
