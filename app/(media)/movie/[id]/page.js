@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { getMovieComputedData } from '@/features/movie/utils';
+import { getImdbTitleRating } from '@/core/clients/imdb/server';
 import { TMDB_IMG } from '@/core/constants';
 import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server';
 import { isDisplayableMovie } from '@/core/clients/tmdb/sanitize';
@@ -57,8 +58,13 @@ export default async function Page({ params }) {
     notFound();
   }
 
-  const computed = getMovieComputedData(movie);
   const secondaryDataPromise = getMovieSecondary(id).then((secondaryResponse) => secondaryResponse?.data || {});
+  const imdbRating = await getImdbTitleRating(movie?.imdb_id);
+  const baseComputed = getMovieComputedData(movie);
+  const computed = {
+    ...baseComputed,
+    rating: imdbRating?.value?.toFixed(1) || baseComputed.rating,
+  };
 
   return <Client key={movie.id} computed={computed} movie={movie} secondaryDataPromise={secondaryDataPromise} />;
 }

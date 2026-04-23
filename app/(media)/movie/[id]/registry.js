@@ -23,37 +23,12 @@ import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,
 } from '@/features/movie/context-menu-actions';
-
-const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
-  exitDurationFactor: 0.4,
-  transition: {
-    duration: 1.2,
-    delay: 0.4,
-    ease: [0.23, 1, 0.32, 1],
-  },
-  initial: {
-    opacity: 0,
-    scale: 1.12,
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transitionEnd: {
-      transform: 'none',
-      willChange: 'auto',
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 1.05,
-  },
-});
+import { MOVIE_BACKGROUND_ANIMATION } from './motion';
 
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
 const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';
 
-function renderMovieMetaDescription(parts = [], { compact = false } = {}) {
+function renderMovieMetaDescription(parts = [], { compact = false, hasLeadingRating = false } = {}) {
   if (!Array.isArray(parts) || parts.length === 0) {
     return null;
   }
@@ -70,7 +45,7 @@ function renderMovieMetaDescription(parts = [], { compact = false } = {}) {
       {parts.map((part, index) => {
         const key = `${String(part)}-${index}`;
 
-        if (index === 0) {
+        if (index === 0 && hasLeadingRating) {
           return (
             <span key={key} className={ratingClassName}>
               <Icon icon="solar:star-bold" size={iconSize} className="text-warning shrink-0" />
@@ -123,10 +98,15 @@ export default function Registry({
     setIsWatchProvidersVisible(false);
   }, [reviewState?.isActive, isSearching]);
 
-  const metaDescriptionParts = [rating, year, runtimeText].filter(Boolean);
-  const navDescription = renderMovieMetaDescription(metaDescriptionParts);
+  const detailMetaParts = [year, runtimeText].filter(Boolean);
+  const metaDescriptionParts = rating ? [rating, ...detailMetaParts] : detailMetaParts;
+  const hasLeadingRating = Boolean(rating);
+  const navDescription = renderMovieMetaDescription(metaDescriptionParts, {
+    hasLeadingRating,
+  });
   const contextMenuDescription = renderMovieMetaDescription(metaDescriptionParts, {
     compact: true,
+    hasLeadingRating,
   });
   const resolvedBackgroundImage =
     backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);

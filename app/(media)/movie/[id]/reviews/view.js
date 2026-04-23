@@ -5,22 +5,16 @@ import CollectionActions from '@/features/movie/collection-actions';
 import Sidebar from '@/features/movie/sidebar';
 import MediaReviews from '@/features/reviews';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '../motion';
+import { MovieClipReveal, MovieHeroReveal, MOVIE_ROUTE_TIMING, MovieSectionReveal, MovieSidebarReveal } from '../motion';
 
 import Registry from '../registry';
 
-const REVIEW_PAGE_REVEAL_TIMING = Object.freeze({
-  sidebar: 0.04,
-  title: 0.1,
-  reviews: 0.16,
-});
-
 export default function View({ computed, movie, reviewState, setReviewState }) {
-  const { certification, director, rating, runtimeText, writers, year } = computed;
+  const { certification, director, runtimeText, writers, year } = computed;
 
   return (
     <>
-      <Registry movie={movie} rating={rating} runtimeText={runtimeText} reviewState={reviewState} year={year} />
+      <Registry movie={movie} rating={null} runtimeText={runtimeText} reviewState={reviewState} year={year} />
 
       <PageGradientShell>
         <div
@@ -28,7 +22,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
         >
           <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
             <div className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-[400px]">
-              <MovieSidebarReveal delay={REVIEW_PAGE_REVEAL_TIMING.sidebar}>
+              <MovieSidebarReveal delay={MOVIE_ROUTE_TIMING.reviewsPage.sidebar}>
                 <Sidebar
                   item={movie}
                   certification={certification}
@@ -40,13 +34,13 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-6">
-              <MovieHeroReveal delay={REVIEW_PAGE_REVEAL_TIMING.title}>
+              <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.reviewsPage.title}>
                 <MovieClipReveal animateOnView={false} delay={0.08} className="min-w-0">
                   <TextAnimate
-                    animation="cinematicUp"
+                    animation="cinematicSoft"
                     by="word"
-                    delay={REVIEW_PAGE_REVEAL_TIMING.title}
-                    duration={0.68}
+                    delay={MOVIE_ROUTE_TIMING.reviewsPage.title}
+                    duration={MOVIE_ROUTE_TIMING.reviewsPage.titleDuration}
                     startOnView={false}
                     className="font-zuume text-5xl leading-none font-bold uppercase sm:text-6xl lg:text-7xl"
                   >
@@ -55,7 +49,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
                 </MovieClipReveal>
               </MovieHeroReveal>
 
-              <MovieSectionReveal delay={REVIEW_PAGE_REVEAL_TIMING.reviews}>
+              <MovieSectionReveal delay={MOVIE_ROUTE_TIMING.reviewsPage.reviews}>
                 <MediaReviews
                   entityId={movie.id}
                   entityType="movie"

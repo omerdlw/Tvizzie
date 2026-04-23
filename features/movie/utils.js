@@ -4,6 +4,8 @@ import { formatRuntime, uniqueBy } from '@/core/utils';
 const MAX_WRITERS = 10;
 const MAX_RECOMMENDATIONS = 14;
 const MAX_SIMILAR = 14;
+const MAX_HERO_GENRES = 3;
+const MAX_HERO_TAGS = 10;
 const RELATED_TITLE_STOPWORDS = new Set(['a', 'an', 'and', 'chapter', 'movie', 'of', 'part', 'the', 'vol', 'volume']);
 
 function toFiniteNumber(value) {
@@ -26,6 +28,29 @@ function tokenizeComparableText(value) {
   return normalizeComparableText(value)
     .split(' ')
     .filter((token) => token.length >= 2 && !RELATED_TITLE_STOPWORDS.has(token));
+}
+
+function getHeroGenres(movie = {}) {
+  return Array.from(
+    new Set(
+      (Array.isArray(movie?.genres) ? movie.genres : [])
+        .map((genre) => String(genre?.name || '').trim())
+        .filter(Boolean)
+    )
+  ).slice(0, MAX_HERO_GENRES);
+}
+
+function getHeroTags(movie = {}, genres = []) {
+  const genreSet = new Set(genres.map((genre) => normalizeComparableText(genre)));
+  const keywords = movie?.keywords?.keywords || movie?.keywords?.results || [];
+
+  return Array.from(
+    new Set(
+      keywords
+        .map((keyword) => String(keyword?.name || '').trim())
+        .filter((keyword) => keyword && keyword.length <= 28 && !genreSet.has(normalizeComparableText(keyword)))
+    )
+  ).slice(0, MAX_HERO_TAGS);
 }
 
 function getMovieTitleTokens(movie = {}) {
@@ -173,6 +198,8 @@ export function getMovieComputedData(movie) {
     return {};
   }
 
+  const genres = getHeroGenres(movie);
+
   const director = movie.credits?.crew?.find((member) => member.job === 'Director');
 
   const writers = uniqueBy(movie.credits?.crew?.filter((member) => member.department === 'Writing') || [], 'id').slice(
@@ -203,11 +230,12 @@ export function getMovieComputedData(movie) {
     crew,
     certification,
     director,
-    genres: movie.genres?.map((genre) => genre.name) || [],
+    genres,
     rating: movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null,
     recommendations,
     runtimeText: movie.runtime ? formatRuntime(movie.runtime) : null,
     similar,
+    tags: getHeroTags(movie, genres),
     writers,
     year: movie.release_date?.slice(0, 4),
   };

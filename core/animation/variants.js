@@ -58,6 +58,8 @@ export function buildRevealMotion({
   distance = 24,
   duration = ANIMATION_DURATIONS.SECTION,
   ease = ANIMATION_EASINGS.EXPO_OUT,
+  opacityDurationFactor = 0.65,
+  opacityEase = ANIMATION_EASINGS.EASE_OUT,
   offset = null,
   scale = 0.985,
 }) {
@@ -70,7 +72,6 @@ export function buildRevealMotion({
       scale: 1,
       ...resetOffset,
       transitionEnd: {
-        transform: 'none',
         willChange: 'auto',
       },
     },
@@ -78,6 +79,8 @@ export function buildRevealMotion({
       delay,
       duration,
       ease,
+      opacityDurationFactor,
+      opacityEase,
     }),
     style: undefined,
   };
@@ -102,7 +105,6 @@ export function buildClipRevealMotion({
       clipPath: 'inset(0% 0% 0% 0%)',
       opacity: 1,
       transitionEnd: {
-        clipPath: 'none',
         willChange: 'auto',
       },
     },
@@ -131,6 +133,8 @@ export function createSurfaceItemMotion({
   groupDelayStep = ANIMATION_STAGGER.GROUP,
   groupIndex = 0,
   index = 0,
+  opacityDurationFactor = 0.65,
+  opacityEase = ANIMATION_EASINGS.EASE_OUT,
   scale = 0.982,
 }) {
   const delay = resolveStaggerDelay({
@@ -152,6 +156,8 @@ export function createSurfaceItemMotion({
       delay,
       duration,
       ease,
+      opacityDurationFactor,
+      opacityEase,
     }),
   };
 }
@@ -161,11 +167,26 @@ export function createPanelMotion({
   ease = ANIMATION_EASINGS.EXPO_OUT,
   exitDuration = ANIMATION_DURATIONS.PANEL * 0.55,
   exitEase = ANIMATION_EASINGS.EXPO_IN_OUT,
+  opacityDurationFactor = null,
+  opacityEase = ANIMATION_EASINGS.EASE_OUT,
   y = 24,
   exitY = -14,
   initialScale = 0.984,
   exitScale = 0.99,
 }) {
+  const transition =
+    opacityDurationFactor == null
+      ? {
+          duration,
+          ease,
+        }
+      : buildRevealTransition({
+          duration,
+          ease,
+          opacityDurationFactor,
+          opacityEase,
+        });
+
   return {
     initial: {
       opacity: 0,
@@ -177,7 +198,6 @@ export function createPanelMotion({
       y: 0,
       scale: 1,
       transitionEnd: {
-        transform: 'none',
         willChange: 'auto',
       },
     },
@@ -190,9 +210,6 @@ export function createPanelMotion({
         ease: exitEase,
       },
     },
-    transition: {
-      duration,
-      ease,
-    },
+    transition,
   };
 }

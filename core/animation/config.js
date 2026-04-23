@@ -47,3 +47,53 @@ export const ANIMATION_SPRINGS = Object.freeze({
   SHARED_ELEMENT: Object.freeze({ type: 'spring', stiffness: 320, damping: 30, mass: 0.82 }),
   SEGMENTED_CONTROL: Object.freeze({ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }),
 });
+
+export const ANIMATION_PROFILES = Object.freeze({
+  SOFT: Object.freeze({
+    easings: Object.freeze({
+      reveal: ANIMATION_EASINGS.STANDARD,
+      opacity: ANIMATION_EASINGS.EASE_OUT,
+      clip: ANIMATION_EASINGS.STANDARD,
+      exit: ANIMATION_EASINGS.EASE_IN_OUT,
+      emphasis: ANIMATION_EASINGS.STANDARD,
+      sidebar: ANIMATION_EASINGS.STANDARD,
+    }),
+    durations: Object.freeze({
+      panel: 0.6,
+      item: 0.68,
+      section: 0.98,
+      sidebar: 0.94,
+      clip: 1,
+      hero: 1.12,
+      text: 0.72,
+    }),
+    offsets: Object.freeze({
+      sidebarX: 28,
+      heroY: 34,
+      sectionY: 28,
+      surfaceY: 14,
+      itemY: 18,
+      panelY: 14,
+      panelExitY: -8,
+      textY: 10,
+    }),
+    scales: Object.freeze({
+      sidebar: 0.974,
+      hero: 0.982,
+      section: 0.986,
+      surface: 0.978,
+      item: 0.988,
+      panelInitial: 0.988,
+      panelExit: 0.994,
+      text: 0.982,
+    }),
+    stagger: Object.freeze({
+      item: 0.032,
+      group: 0.11,
+      textByWord: 0.026,
+    }),
+    transition: Object.freeze({
+      opacityDurationFactor: 0.7,
+    }),
+  }),
+});

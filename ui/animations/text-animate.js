@@ -3,7 +3,7 @@
 import { useMemo, useRef } from 'react';
 
 import { motion, useInView } from 'framer-motion';
-import { ANIMATION_EASINGS } from '@/core/animation';
+import { ANIMATION_EASINGS, ANIMATION_PROFILES } from '@/core/animation';
 import { cn } from '@/core/utils';
 
 const STAGGER_BY = Object.freeze({
@@ -11,6 +11,8 @@ const STAGGER_BY = Object.freeze({
   word: 0.042,
   text: 0,
 });
+
+const SOFT_TEXT_PROFILE = ANIMATION_PROFILES.SOFT;
 
 function splitSegments(value, by) {
   if (!value) {
@@ -60,7 +62,10 @@ export function TextAnimate({
   }, [children]);
   const segments = useMemo(() => splitSegments(resolvedText, by), [resolvedText, by]);
   const resolvedDuration = duration;
-  const resolvedStagger = STAGGER_BY[by] || STAGGER_BY.word;
+  const resolvedStagger =
+    animation === 'cinematicSoft' && by === 'word'
+      ? SOFT_TEXT_PROFILE.stagger.textByWord
+      : STAGGER_BY[by] || STAGGER_BY.word;
   const shouldAnimate = startOnView ? isInView : true;
 
   const containerVariants = {
@@ -158,7 +163,24 @@ export function TextAnimate({
           duration: resolvedDuration,
           ease: ANIMATION_EASINGS.EMPHASIZED,
         },
-        transitionEnd: { filter: 'none' },
+      },
+    },
+    cinematicSoft: {
+      hidden: {
+        opacity: 0,
+        y: SOFT_TEXT_PROFILE.offsets.textY,
+        scale: SOFT_TEXT_PROFILE.scales.text,
+        filter: 'blur(8px)',
+      },
+      show: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px)',
+        transition: {
+          duration: resolvedDuration,
+          ease: SOFT_TEXT_PROFILE.easings.emphasis,
+        },
       },
     },
     scaleUp: {

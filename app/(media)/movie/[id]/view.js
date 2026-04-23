@@ -20,32 +20,14 @@ import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 import {
   MovieClipReveal,
   MovieHeroReveal,
+  MOVIE_ROUTE_TIMING,
   MovieSectionGroup,
   MovieSectionReveal,
   MovieSidebarReveal,
   MovieSurfaceReveal,
 } from './motion';
+import HeroMeta from './hero-meta';
 import Registry from './registry';
-
-const HERO_REVEAL_TIMING = Object.freeze({
-  containerDelay: 0.08,
-  titleDelay: 0.14,
-  titleClipDelay: 0.12,
-  titleDuration: 0.78,
-  socialProofDelay: 0.26,
-  taglineDelay: 0.28,
-  overviewDelay: 0.38,
-});
-
-const SECTION_REVEAL_TIMING = Object.freeze({
-  cast: 0.14,
-  reviews: 0.12,
-});
-
-const SECTION_GROUP_REVEAL_TIMING = Object.freeze({
-  delay: SECTION_REVEAL_TIMING.reviews,
-  staggerStep: 0.18,
-});
 
 function RelatedMoviesSection({ items, title, groupIndex = 0 }) {
   if (!items?.length) {
@@ -95,8 +77,8 @@ function MovieVisualMediaDeferred({
   return (
     <MovieSectionGroup
       className="mt-10 flex flex-col gap-10"
-      delay={SECTION_GROUP_REVEAL_TIMING.delay}
-      staggerStep={SECTION_GROUP_REVEAL_TIMING.staggerStep}
+      delay={MOVIE_ROUTE_TIMING.sections.groupDelay}
+      staggerStep={MOVIE_ROUTE_TIMING.sections.groupStagger}
     >
       {hasGallery ? (
         <MovieSectionReveal groupIndex={0}>
@@ -161,8 +143,8 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   return (
     <MovieSectionGroup
       className="mt-10 flex flex-col gap-10"
-      delay={SECTION_GROUP_REVEAL_TIMING.delay}
-      staggerStep={SECTION_GROUP_REVEAL_TIMING.staggerStep}
+      delay={MOVIE_ROUTE_TIMING.sections.groupDelay}
+      staggerStep={MOVIE_ROUTE_TIMING.sections.groupStagger}
     >
       {sections.map((section, index) =>
         section.key === 'videos' ? (
@@ -196,7 +178,7 @@ function MovieSecondaryContent({
   return (
     <>
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
-        <MovieSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.cast}>
+        <MovieSectionReveal className="mt-10" delay={MOVIE_ROUTE_TIMING.sections.cast}>
           <CastSection cast={computed.cast} crew={computed.crew} />
         </MovieSectionReveal>
       ) : null}
@@ -234,7 +216,7 @@ export default function MovieView({
   secondaryDataPromise,
   setReviewState,
 }) {
-  const { certification, director, rating, runtimeText, writers, year } = computed;
+  const { certification, director, genres, rating, runtimeText, tags, writers, year } = computed;
 
   return (
     <>
@@ -272,14 +254,14 @@ export default function MovieView({
 
             <div className="flex w-full min-w-0 flex-col lg:self-stretch">
               <div className="flex w-full flex-col">
-                <MovieHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
+                <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.hero.containerDelay}>
                   <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
+                    <MovieClipReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.titleClipDelay} className="min-w-0">
                       <TextAnimate
-                        animation="cinematicUp"
+                        animation="cinematicSoft"
                         by="word"
-                        delay={HERO_REVEAL_TIMING.titleDelay}
-                        duration={HERO_REVEAL_TIMING.titleDuration}
+                        delay={MOVIE_ROUTE_TIMING.hero.titleDelay}
+                        duration={MOVIE_ROUTE_TIMING.hero.titleDuration}
                         startOnView={false}
                         className="max-w-full [overflow-wrap:anywhere] font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
                       >
@@ -287,7 +269,7 @@ export default function MovieView({
                       </TextAnimate>
                     </MovieClipReveal>
 
-                    <MovieClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.socialProofDelay} direction="left">
+                    <MovieClipReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.socialProofDelay} direction="left">
                       <div>
                         <MediaSocialProof media={{ ...movie, entityType: 'movie' }} />
                       </div>
@@ -295,22 +277,26 @@ export default function MovieView({
                   </div>
                 </MovieHeroReveal>
 
-                {movie.tagline ? (
-                  <MovieHeroReveal delay={HERO_REVEAL_TIMING.taglineDelay} className="mt-4">
-                    <MovieClipReveal animateOnView={false} delay={0.04} className="w-fit">
-                      <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
-                        {movie.tagline}
-                      </p>
-                    </MovieClipReveal>
-                  </MovieHeroReveal>
-                ) : null}
+                {genres?.length || tags?.length || movie.tagline || movie.overview ? (
+                  <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.hero.taglineDelay} className="mt-4">
+                    <MovieClipReveal animateOnView={false} delay={0.04} className="w-full">
+                      <div className="flex w-full flex-col gap-4">
+                        {genres?.length || tags?.length ? <HeroMeta genres={genres} tags={tags} /> : null}
 
-                {movie.overview ? (
-                  <MovieHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
-                    <MovieClipReveal animateOnView={false} delay={0.06}>
-                      <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
-                        {movie.overview}
-                      </p>
+                        {movie.tagline ? (
+                          <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
+                            {movie.tagline}
+                          </p>
+                        ) : null}
+
+                        {movie.overview ? (
+                          <div>
+                            <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
+                              {movie.overview}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
                     </MovieClipReveal>
                   </MovieHeroReveal>
                 ) : null}
@@ -330,7 +316,7 @@ export default function MovieView({
             </div>
           </div>
 
-          <MovieSectionReveal className="w-full" delay={SECTION_REVEAL_TIMING.reviews}>
+          <MovieSectionReveal className="w-full" delay={MOVIE_ROUTE_TIMING.sections.reviews}>
             <MediaReviews
               entityId={movie.id}
               entityType="movie"

@@ -2,13 +2,13 @@
 @plugin 'tailwindcss-animate';
 
 @theme {
-  --color-white: #f5f5f5;
+  --color-white: #faf9f5;
   --color-primary: #fff;
-  --color-black: #141414;
-  --color-error: #e50815;
+  --color-black: #1a1918;
+  --color-error: #8d2625;
   --color-warning: #ffc200;
-  --color-success: #3fd75f;
-  --color-info: #0164ff;
+  --color-success: #29a642;
+  --color-info: #2976d7;
 
   --color-background: var(--color-white);
   --color-foreground: var(--color-black);

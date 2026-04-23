@@ -396,6 +396,13 @@ function getTopAssociationScore(items = [], getScore) {
   );
 }
 
+function countStrongMoviePrefixMatches(movieResults = [], normalizedQuery = '', queryTokens = []) {
+  return movieResults.filter((movie) => {
+    const score = getMovieAssociationScore(movie, normalizedQuery, queryTokens);
+    return score.textScore >= 14 && score.totalScore >= 18;
+  }).length;
+}
+
 function resolvePreferredMediaType({ movieResults = [], personResults = [], query = '' }) {
   if (!movieResults.length && !personResults.length) {
     return SEARCH_TYPES.ALL;
@@ -416,9 +423,23 @@ function resolvePreferredMediaType({ movieResults = [], personResults = [], quer
     return SEARCH_TYPES.MOVIE;
   }
 
+  const topMovieScore = getTopAssociationScore(movieResults, (movie) =>
+    getMovieAssociationScore(movie, normalizedQuery, queryTokens)
+  );
+  const topPersonScore = getTopAssociationScore(personResults, (person) =>
+    getPersonAssociationScore(person, normalizedQuery, queryTokens)
+  );
+  const strongMoviePrefixMatchCount = countStrongMoviePrefixMatches(movieResults, normalizedQuery, queryTokens);
   const hasExactMovieMatch = movieResults.some((movie) => isExactMovieTitleMatch(movie, normalizedQuery));
 
   if (hasExactMovieMatch) {
+    return SEARCH_TYPES.MOVIE;
+  }
+
+  if (
+    strongMoviePrefixMatchCount >= 2 ||
+    (topMovieScore.textScore >= 14 && topMovieScore.totalScore >= topPersonScore.totalScore + 2)
+  ) {
     return SEARCH_TYPES.MOVIE;
   }
 
@@ -427,13 +448,6 @@ function resolvePreferredMediaType({ movieResults = [], personResults = [], quer
   if (hasExactPersonMatch) {
     return SEARCH_TYPES.PERSON;
   }
-
-  const topMovieScore = getTopAssociationScore(movieResults, (movie) =>
-    getMovieAssociationScore(movie, normalizedQuery, queryTokens)
-  );
-  const topPersonScore = getTopAssociationScore(personResults, (person) =>
-    getPersonAssociationScore(person, normalizedQuery, queryTokens)
-  );
 
   if (topMovieScore.textScore === 0 && topPersonScore.textScore > 0) {
     return SEARCH_TYPES.PERSON;
