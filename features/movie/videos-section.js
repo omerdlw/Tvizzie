@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
   MovieSurfaceReveal,
@@ -20,7 +20,6 @@ function getAvailableTypes(videos) {
 }
 
 export default function VideosSection({ videos }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
 
@@ -52,7 +51,7 @@ export default function VideosSection({ videos }) {
 
     return videos.filter((video) => video.type === activeType);
   }, [videos, activeType]);
-  const panelMotion = getSurfacePanelMotion({ reduceMotion });
+  const panelMotion = getSurfacePanelMotion();
 
   if (!videos?.length) {
     return null;
@@ -86,7 +85,6 @@ export default function VideosSection({ videos }) {
                 {filteredVideos.map((video, index) => {
                   const cardMotion = getSurfaceItemMotion({
                     enabled: shouldAnimateItemReveal,
-                    reduceMotion,
                     index,
                     distance: 20,
                     scale: 0.976,
@@ -113,8 +111,8 @@ export default function VideosSection({ videos }) {
                             <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
                               <motion.div
                                 className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm"
-                                whileHover={reduceMotion ? undefined : { scale: 1.08 }}
-                                transition={reduceMotion ? undefined : { duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+                                whileHover={{ scale: 1.08 }}
+                                transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
                               >
                                 <Icon icon="solar:play-bold" size={16} />
                               </motion.div>

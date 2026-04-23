@@ -1,137 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ReactLenis } from 'lenis/react';
-
-// ─── Constants ───────────────────────────────────────────────────────────────
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollSmoother } from 'gsap/ScrollSmoother';
 
 const CONTEXT_MENU_VISIBILITY_EVENT = 'tvizzie:context-menu-visibility';
 const DETAIL_ROUTE_PREFIXES = ['/movie/', '/person/'];
+const SMOOTH_WRAPPER_ID = 'smooth-wrapper';
+const SMOOTH_CONTENT_ID = 'smooth-content';
 
-// ─── Reduced Motion ──────────────────────────────────────────────────────────
+const DESKTOP_SMOOTH_DURATION = 1.1;
+const TOUCH_SMOOTH_DURATION = 0.14;
+const VELOCITY_NORMALIZER = 2400;
 
-const prefersReducedMotion =
-  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function isTouchDevice() {
-  if (typeof window === 'undefined') return false;
-  if (window.matchMedia?.('(pointer: coarse)').matches) return true;
-  return navigator.maxTouchPoints > 0;
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
-
-// ─── Easing ──────────────────────────────────────────────────────────────────
-
-/**
- * Expo-out blended with a cosine tail.
- *
- * Eski cubic ease-out'a kıyasla bu eğri ivmeyi daha uzun tutar ve
- * sonunda "tüy gibi" iner — Awwwards sitelerinin "soft landing" hissi budur.
- */
-function premiumScrollEasing(t) {
-  if (t <= 0) return 0;
-  if (t >= 1) return 1;
-  return 1 - Math.pow(2, -10 * t) * Math.cos((t * Math.PI) / 3);
-}
-
-// ─── Options ─────────────────────────────────────────────────────────────────
-
-const PREMIUM_SCROLL_OPTIONS = Object.freeze({
-  anchors: {
-    duration: 0.5,
-    easing: premiumScrollEasing,
-  },
-  gestureOrientation: 'vertical',
-
-  /**
-   * THE en kritik parametre. 0.07 = agency standardı (Locomotive, GSAP).
-   * Eski 0.2 mekanik hissettiriyordu; düşük lerp = lüks ağırlık hissi.
-   * Reduced motion kullanıcıları için 1 (instant, lag yok).
-   */
-  lerp: prefersReducedMotion ? 1 : 0.07,
-
-  overscroll: true,
-  smoothWheel: !prefersReducedMotion,
-  stopInertiaOnNavigate: true,
-
-  /**
-   * Touch cihazlarda ayrı profile geciyoruz; masaustunde bu path kapali kalir.
-   */
-  touchMultiplier: 1.5,
-  syncTouch: false,
-  syncTouchLerp: 0.075,
-
-  /**
-   * 0.8 → içerik "ağır" hissettiriyor, buz üzerinde kaymıyor.
-   */
-  wheelMultiplier: 0.8,
-
-  autoResize: true,
-});
-
-const TOUCH_SCROLL_OPTIONS = Object.freeze({
-  ...PREMIUM_SCROLL_OPTIONS,
-  lerp: prefersReducedMotion ? 1 : 0.085,
-  smoothWheel: false,
-  syncTouch: !prefersReducedMotion,
-  syncTouchLerp: 0.11,
-  touchMultiplier: 1.1,
-  wheelMultiplier: 1,
-});
-
-// ─── CSS Custom Property Bridge ───────────────────────────────────────────────
-
-/**
- * Her Lenis tick'inde <html>'e scroll verisini CSS değişkeni olarak yazar.
- * Awwwards efektleri (skew, parallax, progress bar) buradan beslenir —
- * child component'larda sıfır ekstra JS gerekmiyor.
- *
- * Kullanılabilir değişkenler:
- *   --scroll-progress   [0 → 1]
- *   --scroll-velocity   [-1 → 1]  (normalize edilmiş, imzalı)
- *   --scroll-direction  [1 | -1]
- *
- * Örnek — velocity-driven skew (saf CSS):
- *   .card { transform: skewY(calc(var(--scroll-velocity) * 3deg)); }
- *
- * Örnek — progress bar:
- *   .bar { width: calc(var(--scroll-progress) * 100%); }
- */
-function syncScrollCSSVars(lenis) {
-  const root = document.documentElement;
-  const maxScrollable = document.body.scrollHeight - window.innerHeight;
-
-  const progress = maxScrollable > 0 ? lenis.scroll / maxScrollable : 0;
-  const velocity = Math.max(-1, Math.min(1, lenis.velocity / 80));
-
-  root.style.setProperty('--scroll-progress', progress.toFixed(5));
-  root.style.setProperty('--scroll-velocity', velocity.toFixed(5));
-  root.style.setProperty('--scroll-direction', String(lenis.direction ?? 0));
-}
-
-/**
- * <html> üzerinde scroll durumunu CSS class'larıyla yayınlar.
- * Header hide/show gibi efektler için IntersectionObserver gerekmez.
- *
- *   .is-scrolling
- *   .scrolling-down
- *   .scrolling-up
- */
-function syncScrollStateClasses(lenis) {
-  const html = document.documentElement;
-
-  html.classList.toggle('is-scrolling', lenis.isScrolling);
-
-  if (lenis.direction === 1) {
-    html.classList.add('scrolling-down');
-    html.classList.remove('scrolling-up');
-  } else if (lenis.direction === -1) {
-    html.classList.add('scrolling-up');
-    html.classList.remove('scrolling-down');
-  }
-}
-
-// ─── Navigation Helpers ───────────────────────────────────────────────────────
 
 function isReloadNavigation() {
   if (typeof window === 'undefined') return false;
@@ -145,25 +31,80 @@ function shouldResetForDetailRoute(prevPathname, nextPathname) {
   return DETAIL_ROUTE_PREFIXES.some((prefix) => nextPathname.startsWith(prefix));
 }
 
-function forceScrollToTop(lenisRef) {
-  window.scrollTo(0, 0);
-  lenisRef.current?.lenis?.scrollTo(0, { immediate: true, force: true });
+function getPrefersReducedMotion() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function scheduleScrollTopReset(lenisRef, { framePasses = 3, timeoutDelays = [] } = {}) {
-  forceScrollToTop(lenisRef);
+function syncScrollCSSVars(smoother) {
+  if (!smoother) return;
+
+  const root = document.documentElement;
+  const velocity = clamp(smoother.getVelocity() / VELOCITY_NORMALIZER, -1, 1);
+  const direction = smoother.scrollTrigger?.direction ?? (velocity === 0 ? 0 : velocity > 0 ? 1 : -1);
+  const progress = clamp(Number.isFinite(smoother.progress) ? smoother.progress : 0, 0, 1);
+
+  root.style.setProperty('--scroll-progress', progress.toFixed(5));
+  root.style.setProperty('--scroll-velocity', velocity.toFixed(5));
+  root.style.setProperty('--scroll-direction', String(direction));
+}
+
+function syncScrollStateClasses(smoother, isScrolling) {
+  const root = document.documentElement;
+  const velocity = smoother ? smoother.getVelocity() : 0;
+  const direction =
+    smoother?.scrollTrigger?.direction ?? (velocity === 0 ? 0 : velocity > 0 ? 1 : -1);
+
+  root.classList.toggle('is-scrolling', isScrolling);
+
+  if (direction > 0) {
+    root.classList.add('scrolling-down');
+    root.classList.remove('scrolling-up');
+    return;
+  }
+
+  if (direction < 0) {
+    root.classList.add('scrolling-up');
+    root.classList.remove('scrolling-down');
+    return;
+  }
+
+  root.classList.remove('scrolling-down');
+  root.classList.remove('scrolling-up');
+}
+
+function resetScrollPresentation() {
+  const root = document.documentElement;
+
+  root.style.setProperty('--scroll-progress', '0');
+  root.style.setProperty('--scroll-velocity', '0');
+  root.style.setProperty('--scroll-direction', '0');
+  root.classList.remove('is-scrolling', 'scrolling-down', 'scrolling-up');
+}
+
+function forceScrollToTop(smootherRef) {
+  window.scrollTo(0, 0);
+  smootherRef.current?.scrollTop(0);
+}
+
+function scheduleScrollTopReset(smootherRef, { framePasses = 3, timeoutDelays = [] } = {}) {
+  forceScrollToTop(smootherRef);
 
   let rafId = 0;
   let frameCount = 0;
 
   const runFrame = () => {
-    forceScrollToTop(lenisRef);
+    forceScrollToTop(smootherRef);
     frameCount += 1;
     if (frameCount < framePasses) rafId = requestAnimationFrame(runFrame);
   };
+
   rafId = requestAnimationFrame(runFrame);
 
-  const timeoutIds = timeoutDelays.map((delay) => window.setTimeout(() => forceScrollToTop(lenisRef), delay));
+  const timeoutIds = timeoutDelays.map((delay) => window.setTimeout(() => forceScrollToTop(smootherRef), delay));
 
   return () => {
     cancelAnimationFrame(rafId);
@@ -171,58 +112,117 @@ function scheduleScrollTopReset(lenisRef, { framePasses = 3, timeoutDelays = [] 
   };
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+function createSmoother({ wrapper, content, smootherRef }) {
+  gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+  ScrollSmoother.get()?.kill();
+
+  const handleScrollUpdate = () => {
+    const smoother = smootherRef.current;
+    syncScrollCSSVars(smoother);
+    syncScrollStateClasses(smoother, true);
+  };
+
+  const handleScrollStop = () => {
+    syncScrollStateClasses(smootherRef.current, false);
+  };
+
+  const smoother = ScrollSmoother.create({
+    content,
+    ease: 'expo',
+    effects: false,
+    ignoreMobileResize: true,
+    normalizeScroll: true,
+    onStop: handleScrollStop,
+    onUpdate: handleScrollUpdate,
+    smooth: DESKTOP_SMOOTH_DURATION,
+    smoothTouch: TOUCH_SMOOTH_DURATION,
+    speed: 0.95,
+    wrapper,
+  });
+
+  smootherRef.current = smoother;
+  syncScrollCSSVars(smoother);
+  syncScrollStateClasses(smoother, false);
+  ScrollTrigger.refresh();
+
+  return smoother;
+}
 
 export function SmoothScrollProvider({ children }) {
-  const lenisRef = useRef(null);
   const pathname = usePathname();
+  const wrapperRef = useRef(null);
+  const contentRef = useRef(null);
+  const smootherRef = useRef(null);
   const previousPathnameRef = useRef(pathname);
-  const lenisOptions = useMemo(
-    () => (isTouchDevice() ? TOUCH_SCROLL_OPTIONS : PREMIUM_SCROLL_OPTIONS),
-    []
-  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Her Lenis tick'inde CSS değişkenlerini ve class'ları güncelle
   useEffect(() => {
-    const lenis = lenisRef.current?.lenis;
-    if (!lenis) return;
+    const mediaQuery =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        : null;
 
-    const onScroll = () => {
-      syncScrollCSSVars(lenis);
-      syncScrollStateClasses(lenis);
+    const updatePreference = () => {
+      setPrefersReducedMotion(getPrefersReducedMotion());
     };
 
-    lenis.on('scroll', onScroll);
-    return () => lenis.off('scroll', onScroll);
+    updatePreference();
+    mediaQuery?.addEventListener?.('change', updatePreference);
+
+    return () => {
+      mediaQuery?.removeEventListener?.('change', updatePreference);
+    };
   }, []);
 
-  // Hard reload'da pozisyonu sıfırla
+  useEffect(() => {
+    if (!wrapperRef.current || !contentRef.current) return;
+
+    if (prefersReducedMotion) {
+      resetScrollPresentation();
+      smootherRef.current?.kill();
+      smootherRef.current = null;
+      return undefined;
+    }
+
+    const smoother = createSmoother({
+      wrapper: wrapperRef.current,
+      content: contentRef.current,
+      smootherRef,
+    });
+
+    return () => {
+      smoother.kill();
+      smootherRef.current = null;
+      resetScrollPresentation();
+    };
+  }, [prefersReducedMotion]);
+
   useEffect(() => {
     if (!isReloadNavigation()) return;
-    return scheduleScrollTopReset(lenisRef, {
+    return scheduleScrollTopReset(smootherRef, {
       framePasses: 2,
       timeoutDelays: [120],
     });
   }, []);
 
-  // Detail route'a geçişte pozisyonu sıfırla
   useEffect(() => {
     const previousPathname = previousPathnameRef.current;
     previousPathnameRef.current = pathname;
     if (!shouldResetForDetailRoute(previousPathname, pathname)) return;
-    return scheduleScrollTopReset(lenisRef, {
+    return scheduleScrollTopReset(smootherRef, {
       framePasses: 4,
       timeoutDelays: [120, 260],
     });
   }, [pathname]);
 
-  // Context menu açıkken scroll'u durdur
   useEffect(() => {
     const handleContextMenuVisibility = (event) => {
       const isOpen = Boolean(event?.detail?.isOpen);
-      const lenis = lenisRef.current?.lenis;
-      if (!lenis) return;
-      isOpen ? lenis.stop() : lenis.start();
+      smootherRef.current?.paused(isOpen);
+      if (!isOpen) {
+        syncScrollStateClasses(smootherRef.current, false);
+      }
     };
 
     window.addEventListener(CONTEXT_MENU_VISIBILITY_EVENT, handleContextMenuVisibility);
@@ -230,8 +230,10 @@ export function SmoothScrollProvider({ children }) {
   }, []);
 
   return (
-    <ReactLenis ref={lenisRef} root options={lenisOptions}>
-      {children}
-    </ReactLenis>
+    <div ref={wrapperRef} id={SMOOTH_WRAPPER_ID} className="h-full w-full">
+      <div ref={contentRef} id={SMOOTH_CONTENT_ID} className="min-h-screen w-full">
+        {children}
+      </div>
+    </div>
   );
 }

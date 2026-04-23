@@ -5,7 +5,7 @@ import CollectionActions from '@/features/movie/collection-actions';
 import Sidebar from '@/features/movie/sidebar';
 import MediaReviews from '@/features/reviews';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from './motion';
+import { MovieClipReveal, MovieHeroReveal, MovieSectionReveal, MovieSidebarReveal } from '../motion';
 
 import Registry from '../registry';
 

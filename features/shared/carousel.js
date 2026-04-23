@@ -1,7 +1,7 @@
 'use client';
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { useDraggableScroll } from '@/core/hooks';
 import { cn } from '@/core/utils';
@@ -44,7 +44,6 @@ function getItemStride(element) {
 
 export default function Carousel({ children, className = '', gap = 'gap-2', itemClassName = '' }) {
   const scrollRef = useDraggableScroll();
-  const reduceMotion = useReducedMotion();
 
   const [scrollState, setScrollState] = useState({
     hasOverflow: false,
@@ -106,7 +105,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
     },
     [scrollRef]
   );
-  const controlTransition = reduceMotion ? { duration: 0.16 } : { duration: 0.42, ease: ACCENT_EASING };
+  const controlTransition = { duration: 0.42, ease: ACCENT_EASING };
 
   return (
     <div className="group/carousel relative -m-1">
@@ -131,9 +130,9 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           type="button"
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 10, scale: 0.88 }}
+          initial={{ opacity: 0, x: 10, scale: 0.88 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 6, scale: 0.92 }}
+          exit={{ opacity: 0, x: 6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
             'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-[200ms] hover:bg-white hover:text-black md:left-[-16px] md:size-8'
@@ -148,9 +147,9 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           type="button"
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -10, scale: 0.88 }}
+          initial={{ opacity: 0, x: -10, scale: 0.88 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -6, scale: 0.92 }}
+          exit={{ opacity: 0, x: -6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
             'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-[10px] bg-white text-black/70 transition duration-[200ms] hover:bg-white hover:text-black md:right-[-16px] md:size-8'

@@ -1,7 +1,7 @@
 'use client';
 
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
@@ -151,7 +151,6 @@ function buildSearchHref({ pathname, query, searchParamsString, searchType, movi
 }
 
 export default function SearchClient() {
-  const reduceMotion = useReducedMotion();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -511,7 +510,7 @@ export default function SearchClient() {
                 <>
                   <div className="grid grid-cols-4 gap-3 lg:grid-cols-8">
                     {visibleResults.map((item, index) => {
-                      const itemMotion = getSearchGridItemMotion({ index, reduceMotion });
+                      const itemMotion = getSearchGridItemMotion({ index });
 
                       return (
                         <motion.div

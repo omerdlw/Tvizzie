@@ -65,11 +65,6 @@ export const NAV_BACKDROP_TRANSITION = Object.freeze({
   ease: [0.25, 0.46, 0.45, 0.94],
 });
 
-export const NAV_BACKDROP_REDUCED_TRANSITION = Object.freeze({
-  duration: 0.16,
-  ease: [0, 0, 0.2, 1],
-});
-
 export const NAV_SEARCH_REVEAL_TRANSITION = Object.freeze({
   duration: 0.2,
   ease: [0.25, 0.46, 0.45, 0.94],

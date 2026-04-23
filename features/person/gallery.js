@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
 import Carousel from '@/features/shared/carousel';
 import MediaCard from '@/features/shared/media-card';
@@ -20,7 +20,6 @@ function sortProfiles(profiles = []) {
 }
 
 export default function PersonGallery({ images, animateItemReveal = true }) {
-  const reduceMotion = useReducedMotion();
   const { openModal } = useModal();
   const profiles = useMemo(() => sortProfiles(images?.profiles || []), [images]);
 
@@ -35,7 +34,6 @@ export default function PersonGallery({ images, animateItemReveal = true }) {
           {profiles.map((image, index) => {
             const cardMotion = getPersonSurfaceItemMotion({
               enabled: animateItemReveal,
-              reduceMotion,
               index,
               distance: 16,
               scale: 0.976,

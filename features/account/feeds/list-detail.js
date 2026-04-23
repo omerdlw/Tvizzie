@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { AccountPageShell, AccountSectionReveal } from '@/features/account/shared/layout';
 import {
@@ -118,7 +118,6 @@ function ListDetailMediaGrid({
   toolbar = null,
 }) {
   const itemsPerPage = useResponsivePageSize();
-  const reduceMotion = useReducedMotion();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = items.length ? Math.ceil(items.length / itemsPerPage) : 1;
@@ -162,12 +161,12 @@ function ListDetailMediaGrid({
             <motion.div
               key={`${item.mediaKey || `${mediaType}-${mediaId}`}-${pageStart + index}`}
               layout
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.986 }}
+              initial={{ opacity: 0, y: 16, scale: 0.986 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
               transition={{
-                delay: reduceMotion ? 0 : index < 6 ? index * 0.018 : 0,
-                duration: reduceMotion ? 0.16 : 0.34,
+                delay: index < 6 ? index * 0.018 : 0,
+                duration: 0.34,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

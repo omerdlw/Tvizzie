@@ -1,10 +1,5 @@
 import { MODAL_POSITIONS } from './config';
 
-const REDUCED_TRANSITION = Object.freeze({
-  duration: 0.00001,
-  ease: 'linear',
-});
-
 const PANEL_OPACITY_ENTER_TRANSITION = Object.freeze({
   duration: 0.28,
   ease: [0, 0, 0.2, 1],
@@ -49,21 +44,7 @@ const BACKDROP_EXIT_TRANSITION = Object.freeze({
   ease: [0.25, 0.46, 0.45, 0.94],
 });
 
-function createCenterVariant(reduceMotion) {
-  if (reduceMotion) {
-    return {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: REDUCED_TRANSITION,
-      },
-      exit: {
-        opacity: 0,
-        transition: REDUCED_TRANSITION,
-      },
-    };
-  }
-
+function createCenterVariant() {
   return {
     hidden: { scale: 0.986, y: 12, opacity: 0 },
     visible: {
@@ -89,21 +70,7 @@ function createCenterVariant(reduceMotion) {
   };
 }
 
-function createDirectionalVariant(axis, hiddenValue, reduceMotion) {
-  if (reduceMotion) {
-    return {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: REDUCED_TRANSITION,
-      },
-      exit: {
-        opacity: 0,
-        transition: REDUCED_TRANSITION,
-      },
-    };
-  }
-
+function createDirectionalVariant(axis, hiddenValue) {
   return {
     hidden: { [axis]: hiddenValue, opacity: 0 },
     visible: {
@@ -126,16 +93,16 @@ function createDirectionalVariant(axis, hiddenValue, reduceMotion) {
 }
 
 const POSITION_VARIANT_BUILDERS = Object.freeze({
-  [MODAL_POSITIONS.CENTER]: (reduceMotion) => createCenterVariant(reduceMotion),
-  [MODAL_POSITIONS.TOP]: (reduceMotion) => createDirectionalVariant('y', '-100%', reduceMotion),
-  [MODAL_POSITIONS.BOTTOM]: (reduceMotion) => createDirectionalVariant('y', '100%', reduceMotion),
-  [MODAL_POSITIONS.LEFT]: (reduceMotion) => createDirectionalVariant('x', '-100%', reduceMotion),
-  [MODAL_POSITIONS.RIGHT]: (reduceMotion) => createDirectionalVariant('x', '100%', reduceMotion),
+  [MODAL_POSITIONS.CENTER]: () => createCenterVariant(),
+  [MODAL_POSITIONS.TOP]: () => createDirectionalVariant('y', '-100%'),
+  [MODAL_POSITIONS.BOTTOM]: () => createDirectionalVariant('y', '100%'),
+  [MODAL_POSITIONS.LEFT]: () => createDirectionalVariant('x', '-100%'),
+  [MODAL_POSITIONS.RIGHT]: () => createDirectionalVariant('x', '100%'),
 });
 
-export function getModalVariants(position, reduceMotion = false) {
+export function getModalVariants(position) {
   const buildVariants = POSITION_VARIANT_BUILDERS[position] || POSITION_VARIANT_BUILDERS[MODAL_POSITIONS.CENTER];
-  return buildVariants(reduceMotion);
+  return buildVariants();
 }
 
 export const POSITION_CLASSES = Object.freeze({
@@ -146,20 +113,7 @@ export const POSITION_CLASSES = Object.freeze({
   [MODAL_POSITIONS.RIGHT]: 'items-end justify-start',
 });
 
-export function getBackdropVariants(reduceMotion = false) {
-  if (reduceMotion) {
-    return {
-      hidden: {
-        opacity: 0,
-        transition: REDUCED_TRANSITION,
-      },
-      visible: {
-        opacity: 1,
-        transition: REDUCED_TRANSITION,
-      },
-    };
-  }
-
+export function getBackdropVariants() {
   return {
     hidden: {
       opacity: 0,

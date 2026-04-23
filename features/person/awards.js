@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
@@ -80,7 +80,6 @@ function AwardsState({ message, variant = 'empty' }) {
 }
 
 export default function PersonAwards({ personId }) {
-  const reduceMotion = useReducedMotion();
   const [awardsData, setAwardsData] = useState(null);
   const [status, setStatus] = useState('loading');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -154,7 +153,6 @@ export default function PersonAwards({ personId }) {
         <div className="flex w-full flex-col">
           {awardsTimeline.map(([year, entries], yearIndex) => {
             const yearMotion = getPersonSurfaceItemMotion({
-              reduceMotion,
               index: yearIndex,
               distance: 18,
               duration: 0.64,
@@ -189,7 +187,6 @@ export default function PersonAwards({ personId }) {
                       isInteractive ? 'hover:bg-primary' : 'cursor-default'
                     );
                     const entryMotion = getPersonSurfaceItemMotion({
-                      reduceMotion,
                       axis: 'x',
                       distance: -14,
                       duration: 0.48,

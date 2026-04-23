@@ -12,7 +12,7 @@ import {
   resolvePhaseDelay,
   useInitialRevealEnabled,
 } from '@/core/animation';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const PERSON_ROUTE_PHASES = Object.freeze({
   sidebar: Object.freeze({
@@ -71,12 +71,10 @@ function PersonReveal({
   once = true,
   phase = 'section',
 }) {
-  const reduceMotion = useReducedMotion();
   const phaseConfig = PERSON_ROUTE_PHASES[phase] || PERSON_ROUTE_PHASES.section;
   const resolvedDelay = resolvePhaseDelay({
     delay,
     lead: phaseConfig.lead,
-    reduceMotion,
   });
   const motionProps = buildRevealMotion({
     axis,
@@ -85,7 +83,6 @@ function PersonReveal({
     duration: phaseConfig.duration,
     ease: phaseConfig.ease,
     offset: phaseConfig.offset,
-    reduceMotion,
     scale: phaseConfig.scale,
   });
 
@@ -171,9 +168,8 @@ export function getPersonSurfaceItemMotion(options = {}) {
   });
 }
 
-export function getPersonSurfacePanelMotion({ reduceMotion = false } = {}) {
+export function getPersonSurfacePanelMotion() {
   return createPanelMotion({
-    reduceMotion,
     duration: ANIMATION_DURATIONS.PANEL,
     ease: ANIMATION_EASINGS.EXPO_OUT,
     exitDuration: ANIMATION_DURATIONS.PANEL * 0.55,

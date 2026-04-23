@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
   MovieSurfaceReveal,
@@ -75,7 +75,6 @@ function getTabItems(images, key) {
 }
 
 export default function ImagesSection({ images }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
 
@@ -96,7 +95,7 @@ export default function ImagesSection({ images }) {
 
   const currentTab = availableTabs.find((tab) => tab.key === activeKey) || null;
   const items = currentTab ? getTabItems(images, currentTab.key) : [];
-  const panelMotion = getSurfacePanelMotion({ reduceMotion });
+  const panelMotion = getSurfacePanelMotion();
 
   if (!currentTab) {
     return null;
@@ -130,7 +129,6 @@ export default function ImagesSection({ images }) {
                 {items.map((image, index) => {
                   const cardMotion = getSurfaceItemMotion({
                     enabled: shouldAnimateItemReveal,
-                    reduceMotion,
                     index,
                     distance: currentTab.key === 'posters' ? 22 : 18,
                     scale: currentTab.key === 'logos' ? 0.984 : 0.976,

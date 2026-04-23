@@ -6,7 +6,6 @@ import { cn } from '@/core/utils';
 
 import { geist, geistMono, zuume } from '../fonts';
 import './globals.css';
-import 'lenis/dist/lenis.css';
 import { AppProviders } from './providers';
 
 export const metadata = {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 
 function defaultGetKey(item) {
@@ -22,7 +22,6 @@ export default function SegmentedControl({
   value,
   renderSuffix,
 }) {
-  const reduceMotion = useReducedMotion();
   const wrapperRef = useRef(null);
   const buttonRefs = useRef(new Map());
   const [indicatorFrame, setIndicatorFrame] = useState({ x: 0, y: 0, width: 0, height: 0, ready: false });
@@ -117,9 +116,7 @@ export default function SegmentedControl({
                     opacity: 0,
                   }
             }
-            transition={
-              reduceMotion ? { duration: 0.12 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-            }
+            transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }}
           />
 
           {resolvedItems.map((item) => {

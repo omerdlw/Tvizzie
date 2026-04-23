@@ -1,20 +1,18 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import MediaCard from '@/features/shared/media-card';
 import { TMDB_IMG } from '@/core/constants';
 
 export default function RecommendationCard({ movie, index = 0, imagePriority = false, imageFetchPriority }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const resolvedTitle = movie.title || movie.original_title || 'Untitled';
   const year = movie.release_date?.slice(0, 4);
   const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
   const cardMotion = getSurfaceItemMotion({
     enabled: shouldAnimateItemReveal,
-    reduceMotion,
     index,
     distance: 20,
     scale: 0.978,

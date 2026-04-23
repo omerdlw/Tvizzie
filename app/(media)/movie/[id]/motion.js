@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import {
   ANIMATION_DURATIONS,
@@ -81,13 +81,11 @@ function MovieReveal({
   once = true,
   phase = 'section',
 }) {
-  const reduceMotion = useReducedMotion();
   const sequence = useAnimationSequence();
   const phaseConfig = MOVIE_PHASES[phase] || MOVIE_PHASES.section;
   const resolvedDelay = resolvePhaseDelay({
-    delay: delay + resolveSequenceDelay({ delay: 0, groupIndex, sequence, reduceMotion }),
+    delay: delay + resolveSequenceDelay({ delay: 0, groupIndex, sequence }),
     lead: phaseConfig.lead,
-    reduceMotion,
   });
   const motionProps = buildRevealMotion({
     axis,
@@ -96,7 +94,6 @@ function MovieReveal({
     duration: phaseConfig.duration,
     ease: phaseConfig.ease,
     offset: phaseConfig.offset,
-    reduceMotion,
     scale: phaseConfig.scale,
   });
 
@@ -149,13 +146,11 @@ export function MovieClipReveal({
   once = true,
   direction = 'up',
 }) {
-  const reduceMotion = useReducedMotion();
   const motionProps = buildClipRevealMotion({
     delay,
     direction,
     duration: ANIMATION_DURATIONS.CLIP,
     ease: ANIMATION_EASINGS.EXPO_OUT,
-    reduceMotion,
   });
 
   if (animateOnView) {
@@ -254,9 +249,8 @@ export function getSurfaceItemMotion(options = {}) {
   });
 }
 
-export function getSurfacePanelMotion({ reduceMotion = false } = {}) {
+export function getSurfacePanelMotion() {
   return createPanelMotion({
-    reduceMotion,
     duration: ANIMATION_DURATIONS.PANEL,
     ease: ANIMATION_EASINGS.EXPO_OUT,
     exitDuration: ANIMATION_DURATIONS.PANEL * 0.55,

@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { ANIMATION_EASINGS } from '@/core/animation';
 import { cn } from '@/core/utils';
 
@@ -42,7 +42,6 @@ export function TextAnimate({
   ...props
 }) {
   const ref = useRef(null);
-  const shouldReduceMotion = useReducedMotion();
   const isInView = useInView(ref, {
     once,
     amount: 0.35,
@@ -60,8 +59,8 @@ export function TextAnimate({
     return '';
   }, [children]);
   const segments = useMemo(() => splitSegments(resolvedText, by), [resolvedText, by]);
-  const resolvedDuration = shouldReduceMotion ? 0.08 : duration;
-  const resolvedStagger = shouldReduceMotion ? 0 : STAGGER_BY[by] || STAGGER_BY.word;
+  const resolvedDuration = duration;
+  const resolvedStagger = STAGGER_BY[by] || STAGGER_BY.word;
   const shouldAnimate = startOnView ? isInView : true;
 
   const containerVariants = {
@@ -91,33 +90,33 @@ export function TextAnimate({
       },
     },
     blurIn: {
-      hidden: shouldReduceMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(6px)' },
+      hidden: { opacity: 0, filter: 'blur(6px)' },
       show: {
         opacity: 1,
-        ...(shouldReduceMotion ? {} : { filter: 'blur(0px)' }),
+        filter: 'blur(0px)',
         transition: { duration: resolvedDuration },
       },
     },
     blurInUp: {
-      hidden: shouldReduceMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(6px)', y: 14 },
+      hidden: { opacity: 0, filter: 'blur(6px)', y: 14 },
       show: {
         opacity: 1,
-        ...(shouldReduceMotion ? {} : { filter: 'blur(0px)' }),
+        filter: 'blur(0px)',
         y: 0,
         transition: { duration: resolvedDuration },
       },
     },
     blurInDown: {
-      hidden: shouldReduceMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(6px)', y: -14 },
+      hidden: { opacity: 0, filter: 'blur(6px)', y: -14 },
       show: {
         opacity: 1,
-        ...(shouldReduceMotion ? {} : { filter: 'blur(0px)' }),
+        filter: 'blur(0px)',
         y: 0,
         transition: { duration: resolvedDuration },
       },
     },
     slideUp: {
-      hidden: { y: shouldReduceMotion ? 0 : 14, opacity: 0 },
+      hidden: { y: 14, opacity: 0 },
       show: {
         y: 0,
         opacity: 1,
@@ -125,7 +124,7 @@ export function TextAnimate({
       },
     },
     slideDown: {
-      hidden: { y: shouldReduceMotion ? 0 : -14, opacity: 0 },
+      hidden: { y: -14, opacity: 0 },
       show: {
         y: 0,
         opacity: 1,
@@ -133,7 +132,7 @@ export function TextAnimate({
       },
     },
     slideLeft: {
-      hidden: { x: shouldReduceMotion ? 0 : 14, opacity: 0 },
+      hidden: { x: 14, opacity: 0 },
       show: {
         x: 0,
         opacity: 1,
@@ -141,7 +140,7 @@ export function TextAnimate({
       },
     },
     slideRight: {
-      hidden: { x: shouldReduceMotion ? 0 : -14, opacity: 0 },
+      hidden: { x: -14, opacity: 0 },
       show: {
         x: 0,
         opacity: 1,
@@ -149,21 +148,21 @@ export function TextAnimate({
       },
     },
     cinematicUp: {
-      hidden: shouldReduceMotion
-        ? { opacity: 0 }
-        : { opacity: 0, y: 18, scale: 0.965, filter: 'blur(8px)' },
+      hidden: { opacity: 0, y: 18, scale: 0.965, filter: 'blur(8px)' },
       show: {
         opacity: 1,
-        ...(shouldReduceMotion ? {} : { y: 0, scale: 1, filter: 'blur(0px)' }),
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px)',
         transition: {
           duration: resolvedDuration,
           ease: ANIMATION_EASINGS.EMPHASIZED,
         },
-        transitionEnd: shouldReduceMotion ? undefined : { filter: 'none' },
+        transitionEnd: { filter: 'none' },
       },
     },
     scaleUp: {
-      hidden: { scale: shouldReduceMotion ? 1 : 0.92, opacity: 0 },
+      hidden: { scale: 0.92, opacity: 0 },
       show: {
         scale: 1,
         opacity: 1,
@@ -171,7 +170,7 @@ export function TextAnimate({
       },
     },
     scaleDown: {
-      hidden: { scale: shouldReduceMotion ? 1 : 1.08, opacity: 0 },
+      hidden: { scale: 1.08, opacity: 0 },
       show: {
         scale: 1,
         opacity: 1,

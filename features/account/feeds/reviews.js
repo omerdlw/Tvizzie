@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import {
   REVIEW_FILTER_QUERY_KEYS,
@@ -77,7 +77,6 @@ export default function AccountReviewsFeed({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsKey = searchParams?.toString?.() || '';
-  const reduceMotion = useReducedMotion();
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
   const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
   const initialReviewFilters = useMemo(
@@ -201,18 +200,18 @@ export default function AccountReviewsFeed({
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
           className={EMPTY_STATE_CLASS}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
         </motion.div>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
         <motion.div
           className={EMPTY_STATE_CLASS}
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {loadError}
         </motion.div>
@@ -238,9 +237,9 @@ export default function AccountReviewsFeed({
       {!enablePagination && hasMore && typeof onLoadMore === 'function' ? (
         <motion.div
           className="flex justify-center"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           <Button
             type="button"

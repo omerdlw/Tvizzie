@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { ANIMATION_DURATIONS, ANIMATION_EASINGS, ANIMATION_VIEWPORTS, buildRevealMotion } from '@/core/animation';
 
@@ -22,13 +22,11 @@ export function HomeSectionReveal({
   scale = 0.985,
   once = true,
 }) {
-  const reduceMotion = useReducedMotion();
   const motionProps = buildRevealMotion({
     delay,
     distance,
     duration: ANIMATION_DURATIONS.MEDIUM,
     ease: ANIMATION_EASINGS.STANDARD,
-    reduceMotion,
     scale,
   });
 

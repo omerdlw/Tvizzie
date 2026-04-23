@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const STAR_COUNT = 5;
 
@@ -27,13 +27,9 @@ function getFillPercent(starIndex, activeValue) {
 }
 
 function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, onSelectLeft, onSelectRight }) {
-  const shouldReduceMotion = useReducedMotion();
   const fillPercent = getFillPercent(starIndex, activeValue);
   const isActive = fillPercent > 0;
-
-  const springConfig = shouldReduceMotion
-    ? { duration: 0 }
-    : { type: 'spring', stiffness: 500, damping: 25, mass: 0.6 };
+  const springConfig = { type: 'spring', stiffness: 500, damping: 25, mass: 0.6 };
 
   const clipId = `star-clip-${starIndex}`;
   const fillWidth = (fillPercent / 100) * 24;

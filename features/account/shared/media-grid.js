@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import MediaCard from '@/features/shared/media-card';
 import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/constants';
@@ -156,7 +156,6 @@ export default function AccountMediaGridPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const reduceMotion = useReducedMotion();
   const isQueryPagination = typeof pageBasePath === 'string' && pageBasePath.includes('?');
   const requestedQueryPage = Number.parseInt(searchParams.get('page') || '1', 10);
   const canControlPagination = typeof onPageChange === 'function';
@@ -233,12 +232,12 @@ export default function AccountMediaGridPage({
               <motion.div
                 key={`${card.id}-${pageStart + index}`}
                 layout
-                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.986 }}
+                initial={{ opacity: 0, y: 16, scale: 0.986 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
                 transition={{
-                  delay: reduceMotion ? 0 : index < 6 ? index * 0.018 : 0,
-                  duration: reduceMotion ? 0.16 : 0.34,
+                  delay: index < 6 ? index * 0.018 : 0,
+                  duration: 0.34,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
@@ -258,10 +257,10 @@ export default function AccountMediaGridPage({
           {totalPages > 1 ? (
             <motion.div
               key={`media-grid-pagination-${activePage}-${totalPages}`}
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: reduceMotion ? 0.16 : 0.3,
+                duration: 0.3,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

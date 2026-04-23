@@ -14,7 +14,6 @@ export const ANIMATION_EASINGS = Object.freeze({
 });
 
 export const ANIMATION_DURATIONS = Object.freeze({
-  REDUCED: 0.16,
   MICRO: 0.075,
   FAST: 0.2,
   SNAPPY: 0.25,

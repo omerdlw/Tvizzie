@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -15,7 +15,6 @@ import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 import Item, { NAV_CARD_LAYOUT } from './item';
 import { NAV_HEIGHT_BUFFER } from './layout';
 import {
-  NAV_BACKDROP_REDUCED_TRANSITION,
   NAV_BACKDROP_TRANSITION,
   NAV_CONTAINER_SPRING,
   NAV_DEFAULT_TRANSITION,
@@ -98,11 +97,11 @@ function getActiveItemLayoutKey(activeItem) {
 
 // ─── Backdrop animation ──────────────────────────────────────────────────────
 
-function getBackdropAnimation(isVisible, reduceMotion) {
+function getBackdropAnimation(isVisible) {
   if (isVisible) {
     return {
       opacity: 1,
-      backdropFilter: reduceMotion ? 'blur(0px)' : 'blur(10px)',
+      backdropFilter: 'blur(10px)',
       display: 'block',
     };
   }
@@ -138,7 +137,6 @@ export default function Nav() {
 
   const { isOpen: isModalOpen } = useModal();
   const isFullscreenStateActive = useIsFullscreenStateActive();
-  const reduceMotion = useReducedMotion();
 
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [containerHeight, setContainerHeight] = useState(NAV_CARD_LAYOUT.baseHeight);
@@ -378,8 +376,8 @@ export default function Nav() {
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
         initial={initialPageAnimationsEnabled ? { opacity: 0, backdropFilter: 'blur(0px)' } : false}
-        animate={getBackdropAnimation(isBackdropVisible, !!reduceMotion)}
-        transition={reduceMotion ? NAV_BACKDROP_REDUCED_TRANSITION : NAV_BACKDROP_TRANSITION}
+        animate={getBackdropAnimation(isBackdropVisible)}
+        transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
       >
         <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-white via-white/70 to-transparent" />
@@ -390,7 +388,7 @@ export default function Nav() {
         <motion.div
           style={{ position: 'relative' }}
           animate={{ height: containerHeight }}
-          transition={reduceMotion ? { duration: 0.12, ease: 'easeOut' } : NAV_CONTAINER_SPRING}
+          transition={NAV_CONTAINER_SPRING}
         >
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {

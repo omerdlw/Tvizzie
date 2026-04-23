@@ -4,33 +4,19 @@ export function clampAnimationValue(value, min = 0, max = ANIMATION_STAGGER.MAX_
   return Math.max(min, Math.min(max, value));
 }
 
-export function resolveStaggerDelay({
-  index = 0,
-  groupIndex = 0,
-  itemStep = ANIMATION_STAGGER.CASCADE,
-  groupStep = ANIMATION_STAGGER.GROUP,
-  reduceMotion = false,
-}) {
-  if (reduceMotion) {
-    return 0;
-  }
-
+export function resolveStaggerDelay({ index = 0, groupIndex = 0, itemStep = ANIMATION_STAGGER.CASCADE, groupStep = ANIMATION_STAGGER.GROUP }) {
   return clampAnimationValue(groupIndex * groupStep + index * itemStep);
 }
 
-export function resolveSequenceDelay({ delay = 0, groupIndex = 0, sequence = null, reduceMotion = false }) {
-  if (!sequence || reduceMotion) {
+export function resolveSequenceDelay({ delay = 0, groupIndex = 0, sequence = null }) {
+  if (!sequence) {
     return 0;
   }
 
   return clampAnimationValue((sequence.delay || 0) + groupIndex * (sequence.staggerStep || 0) + delay);
 }
 
-export function resolvePhaseDelay({ delay = 0, lead = 0, reduceMotion = false }) {
-  if (reduceMotion) {
-    return 0;
-  }
-
+export function resolvePhaseDelay({ delay = 0, lead = 0 }) {
   return clampAnimationValue(lead + delay);
 }
 
@@ -38,19 +24,9 @@ export function buildRevealTransition({
   delay = 0,
   duration = ANIMATION_DURATIONS.SECTION,
   ease = ANIMATION_EASINGS.EXPO_OUT,
-  reduceMotion = false,
-  reducedDuration = ANIMATION_DURATIONS.REDUCED,
   opacityDurationFactor = 0.65,
   opacityEase = ANIMATION_EASINGS.EASE_OUT,
 }) {
-  if (reduceMotion) {
-    return {
-      duration: reducedDuration,
-      delay: 0,
-      ease: ANIMATION_EASINGS.EASE_OUT,
-    };
-  }
-
   return {
     opacity: {
       duration: duration * opacityDurationFactor,
@@ -83,29 +59,25 @@ export function buildRevealMotion({
   duration = ANIMATION_DURATIONS.SECTION,
   ease = ANIMATION_EASINGS.EXPO_OUT,
   offset = null,
-  reduceMotion = false,
   scale = 0.985,
 }) {
   const resolvedOffset = offset ? { ...(offset || {}) } : { [axis]: direction * distance };
   const resetOffset = Object.fromEntries(Object.keys(resolvedOffset).map((key) => [key, 0]));
   return {
-    initial: reduceMotion ? { opacity: 0 } : { opacity: 0, scale, ...resolvedOffset },
-    animate: reduceMotion
-      ? { opacity: 1 }
-      : {
-          opacity: 1,
-          scale: 1,
-          ...resetOffset,
-          transitionEnd: {
-            transform: 'none',
-            willChange: 'auto',
-          },
-        },
+    initial: { opacity: 0, scale, ...resolvedOffset },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      ...resetOffset,
+      transitionEnd: {
+        transform: 'none',
+        willChange: 'auto',
+      },
+    },
     transition: buildRevealTransition({
       delay,
       duration,
       ease,
-      reduceMotion,
     }),
     style: undefined,
   };
@@ -116,7 +88,6 @@ export function buildClipRevealMotion({
   direction = 'up',
   duration = ANIMATION_DURATIONS.CLIP,
   ease = ANIMATION_EASINGS.EXPO_OUT,
-  reduceMotion = false,
 }) {
   const clipInitial = {
     up: 'inset(100% 0% 0% 0%)',
@@ -126,31 +97,27 @@ export function buildClipRevealMotion({
   };
 
   return {
-    initial: reduceMotion ? { opacity: 0 } : { clipPath: clipInitial[direction] ?? clipInitial.up, opacity: 1 },
-    animate: reduceMotion
-      ? { opacity: 1 }
-      : {
-          clipPath: 'inset(0% 0% 0% 0%)',
-          opacity: 1,
-          transitionEnd: {
-            clipPath: 'none',
-            willChange: 'auto',
-          },
-        },
-    transition: reduceMotion
-      ? { duration: ANIMATION_DURATIONS.REDUCED, ease: ANIMATION_EASINGS.EASE_OUT }
-      : {
-          clipPath: {
-            duration,
-            delay: clampAnimationValue(delay),
-            ease,
-          },
-          opacity: {
-            duration: 0,
-            delay: 0,
-          },
-        },
-    style: reduceMotion ? undefined : { willChange: 'clip-path', overflow: 'hidden' },
+    initial: { clipPath: clipInitial[direction] ?? clipInitial.up, opacity: 1 },
+    animate: {
+      clipPath: 'inset(0% 0% 0% 0%)',
+      opacity: 1,
+      transitionEnd: {
+        clipPath: 'none',
+        willChange: 'auto',
+      },
+    },
+    transition: {
+      clipPath: {
+        duration,
+        delay: clampAnimationValue(delay),
+        ease,
+      },
+      opacity: {
+        duration: 0,
+        delay: 0,
+      },
+    },
+    style: { willChange: 'clip-path', overflow: 'hidden' },
   };
 }
 
@@ -164,7 +131,6 @@ export function createSurfaceItemMotion({
   groupDelayStep = ANIMATION_STAGGER.GROUP,
   groupIndex = 0,
   index = 0,
-  reduceMotion = false,
   scale = 0.982,
 }) {
   const delay = resolveStaggerDelay({
@@ -172,9 +138,8 @@ export function createSurfaceItemMotion({
     groupIndex,
     itemStep: delayStep,
     groupStep: groupDelayStep,
-    reduceMotion,
   });
-  const initial = reduceMotion ? { opacity: 0 } : { opacity: 0, scale, [axis]: distance };
+  const initial = { opacity: 0, scale, [axis]: distance };
 
   return {
     initial: enabled ? initial : false,
@@ -187,13 +152,11 @@ export function createSurfaceItemMotion({
       delay,
       duration,
       ease,
-      reduceMotion,
     }),
   };
 }
 
 export function createPanelMotion({
-  reduceMotion = false,
   duration = ANIMATION_DURATIONS.PANEL,
   ease = ANIMATION_EASINGS.EXPO_OUT,
   exitDuration = ANIMATION_DURATIONS.PANEL * 0.55,
@@ -203,18 +166,6 @@ export function createPanelMotion({
   initialScale = 0.984,
   exitScale = 0.99,
 }) {
-  if (reduceMotion) {
-    return {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-      transition: {
-        duration: ANIMATION_DURATIONS.REDUCED,
-        ease: ANIMATION_EASINGS.EASE_OUT,
-      },
-    };
-  }
-
   return {
     initial: {
       opacity: 0,

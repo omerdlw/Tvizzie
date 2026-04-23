@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
@@ -93,7 +93,6 @@ export default function AccountReviewsOverview({
   userProfile = null,
   watchedItems = [],
 }) {
-  const reduceMotion = useReducedMotion();
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
   const resolvedSummaryLabel = summaryLabel === null ? `${listedReviewCount} Reviews` : summaryLabel;
   const likedMediaKeys = useMemo(() => buildLikedMediaKeySet(likes), [likes]);
@@ -111,26 +110,26 @@ export default function AccountReviewsOverview({
       {listedReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
           className="border border-black/15 bg-white/40 p-4 text-sm text-black/70"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {emptyMessage}
         </motion.div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
         <motion.div
           className="border border-black/15 bg-white/40 p-4 text-sm text-black/70"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {loadError}
         </motion.div>
       ) : (
         <motion.div
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
         >
           <ReviewList
             currentUserId={currentUserId}
@@ -154,9 +153,9 @@ export default function AccountReviewsOverview({
       {hasMore && typeof onLoadMore === 'function' ? (
         <motion.div
           className="flex justify-center"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: reduceMotion ? 0.16 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           <Button
             type="button"

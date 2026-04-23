@@ -1,9 +1,8 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import {
-  ANIMATION_DURATIONS,
   ANIMATION_EASINGS,
   ANIMATION_SPRINGS,
   ANIMATION_STAGGER,
@@ -55,11 +54,7 @@ const ACCOUNT_PHASES = Object.freeze({
   }),
 });
 
-function getSyncedDelay(delay, phase, reduceMotion) {
-  if (reduceMotion) {
-    return 0;
-  }
-
+function getSyncedDelay(delay, phase) {
   const phaseConfig = ACCOUNT_PHASES[phase] || ACCOUNT_PHASES.section;
 
   return Math.min(
@@ -76,36 +71,32 @@ function AccountReveal({
   once = true,
   phase = 'section',
 }) {
-  const reduceMotion = useReducedMotion();
   const phaseConfig = ACCOUNT_PHASES[phase] || ACCOUNT_PHASES.section;
-  const syncedDelay = getSyncedDelay(delay, phase, reduceMotion);
+  const syncedDelay = getSyncedDelay(delay, phase);
   const motionProps = buildRevealMotion({
     delay: syncedDelay,
     distance: phaseConfig.distance,
     duration: phaseConfig.duration,
     ease: ANIMATION_EASINGS.SMOOTH,
-    reduceMotion,
     scale: phaseConfig.scale,
   });
-  const transition = reduceMotion
-    ? { duration: ANIMATION_DURATIONS.REDUCED, delay: 0, ease: ANIMATION_EASINGS.EASE_OUT }
-    : {
-        opacity: {
-          duration: Math.max(0.28, phaseConfig.duration * 0.85),
-          delay: syncedDelay,
-          ease: ANIMATION_EASINGS.EASE_OUT,
-        },
-        y: {
-          type: 'spring',
-          ...(phase === 'nav' ? ANIMATION_SPRINGS.GENTLE : ANIMATION_SPRINGS.REVEAL),
-          delay: syncedDelay,
-        },
-        scale: {
-          duration: Math.max(0.28, phaseConfig.duration * 0.92),
-          delay: syncedDelay,
-          ease: ANIMATION_EASINGS.SMOOTH,
-        },
-      };
+  const transition = {
+    opacity: {
+      duration: Math.max(0.28, phaseConfig.duration * 0.85),
+      delay: syncedDelay,
+      ease: ANIMATION_EASINGS.EASE_OUT,
+    },
+    y: {
+      type: 'spring',
+      ...(phase === 'nav' ? ANIMATION_SPRINGS.GENTLE : ANIMATION_SPRINGS.REVEAL),
+      delay: syncedDelay,
+    },
+    scale: {
+      duration: Math.max(0.28, phaseConfig.duration * 0.92),
+      delay: syncedDelay,
+      ease: ANIMATION_EASINGS.SMOOTH,
+    },
+  };
 
   if (animateOnView) {
     return (

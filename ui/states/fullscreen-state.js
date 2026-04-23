@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cn } from '@/core/utils';
 
@@ -98,11 +99,17 @@ export function FullscreenState({
   affectGlobalState = true,
 }) {
   const stateIdRef = useRef(null);
+  const [portalTarget, setPortalTarget] = useState(null);
 
   if (stateIdRef.current === null) {
     fullscreenStateIdCounter += 1;
     stateIdRef.current = `fullscreen-state-${fullscreenStateIdCounter}`;
   }
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    setPortalTarget(document.body);
+  }, []);
 
   useEffect(() => {
     const stateId = stateIdRef.current;
@@ -150,7 +157,7 @@ export function FullscreenState({
     };
   }, [affectGlobalState, lockScroll]);
 
-  return (
+  const content = (
     <div
       data-affect-global-state={affectGlobalState ? 'true' : 'false'}
       data-fullscreen-state-root="true"
@@ -160,6 +167,12 @@ export function FullscreenState({
       <div className={cn('center h-screen w-screen p-6', contentClassName)}>{children}</div>
     </div>
   );
+
+  if (!portalTarget) {
+    return content;
+  }
+
+  return createPortal(content, portalTarget);
 }
 
 export default FullscreenState;

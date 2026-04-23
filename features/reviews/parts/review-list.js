@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { normalizeFeedbackText } from '@/core/utils';
 
@@ -23,8 +23,6 @@ export default function ReviewList({
   userProfile,
   watchedMediaKeys = null,
 }) {
-  const reduceMotion = useReducedMotion();
-
   if (isLoading) {
     return <div className="py-10 text-center text-sm text-black/70">Loading reviews</div>;
   }
@@ -47,37 +45,33 @@ export default function ReviewList({
           <motion.div
             key={review.docPath || review.id || `review-${index}`}
             layout
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
-            whileInView={
-              reduceMotion
-                ? { opacity: 1 }
-                : {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    filter: 'blur(0px)',
-                    transitionEnd: {
-                      filter: 'none',
-                      transform: 'none',
-                      willChange: 'auto',
-                    },
-                  }
-            }
+            initial={{ opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              filter: 'blur(0px)',
+              transitionEnd: {
+                filter: 'none',
+                transform: 'none',
+                willChange: 'auto',
+              },
+            }}
             viewport={{ once: true, amount: 0, margin: '0px 0px 16% 0px' }}
             transition={{
               opacity: {
-                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
-                duration: reduceMotion ? 0.16 : 0.44,
+                delay: index < 6 ? index * 0.02 : 0,
+                duration: 0.44,
                 ease: [0.22, 1, 0.36, 1],
               },
               filter: {
-                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
-                duration: reduceMotion ? 0.16 : 0.34,
+                delay: index < 6 ? index * 0.02 : 0,
+                duration: 0.34,
                 ease: [0.22, 1, 0.36, 1],
               },
               scale: {
-                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
-                duration: reduceMotion ? 0.16 : 0.46,
+                delay: index < 6 ? index * 0.02 : 0,
+                duration: 0.46,
                 ease: [0.22, 1, 0.36, 1],
               },
               y: {
@@ -85,10 +79,10 @@ export default function ReviewList({
                 stiffness: 132,
                 damping: 24,
                 mass: 1,
-                delay: reduceMotion ? 0 : index < 6 ? index * 0.02 : 0,
+                delay: index < 6 ? index * 0.02 : 0,
               },
             }}
-            style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
+            style={{ willChange: 'transform, opacity, filter' }}
           >
             <ReviewCard
               className={sortedReviews[0] === review ? 'pt-0 pb-6' : ''}

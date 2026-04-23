@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { normalizeFeedbackText } from '@/core/utils';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
@@ -89,18 +89,17 @@ function ActivityLine({ item }) {
 }
 
 function ActivityItem({ index = 0, isFirst = false, item }) {
-  const reduceMotion = useReducedMotion();
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
 
   return (
     <motion.article
       className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
       transition={{
-        delay: reduceMotion ? 0 : index < 6 ? index * 0.016 : 0,
-        duration: reduceMotion ? 0.16 : 0.32,
+        delay: index < 6 ? index * 0.016 : 0,
+        duration: 0.32,
         ease: [0.22, 1, 0.36, 1],
       }}
     >

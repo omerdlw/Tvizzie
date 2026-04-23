@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
@@ -46,7 +46,6 @@ function getCreditLabel(credit) {
 }
 
 export default function PersonTimeline({ person }) {
-  const reduceMotion = useReducedMotion();
   const timeline = useMemo(() => groupByYear(getTimelineCredits(person)), [person]);
 
   if (!timeline.length) return null;
@@ -58,7 +57,6 @@ export default function PersonTimeline({ person }) {
 
         {timeline.map(([year, credits], yearIndex) => {
           const yearMotion = getPersonSurfaceItemMotion({
-            reduceMotion,
             index: yearIndex,
             distance: 18,
             duration: 0.64,
@@ -86,7 +84,6 @@ export default function PersonTimeline({ person }) {
                   const title = credit.title || credit.original_title || 'Untitled';
                   const creditLabel = getCreditLabel(credit);
                   const creditMotion = getPersonSurfaceItemMotion({
-                    reduceMotion,
                     axis: 'x',
                     distance: -14,
                     duration: 0.48,

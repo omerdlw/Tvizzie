@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -36,7 +36,6 @@ export default function MediaReviews({
   const isRecentListMode = listMode === 'recent';
   const isSortControlEnabled = enableSortControl && !isRecentListMode;
   const [sortMode, setSortMode] = useState(defaultSortMode);
-  const reduceMotion = useReducedMotion();
   const searchParams = useSearchParams();
   const querySortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
   const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
@@ -268,11 +267,11 @@ export default function MediaReviews({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={listAnimationKey}
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, filter: 'blur(3px)' }}
-            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(2px)' }}
-            transition={{ duration: reduceMotion ? 0.12 : 0.22, ease: 'easeOut' }}
-            style={reduceMotion ? undefined : { willChange: 'transform, opacity, filter' }}
+            initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -6, filter: 'blur(2px)' }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            style={{ willChange: 'transform, opacity, filter' }}
           >
             <ReviewList
               currentUserId={currentUserId}

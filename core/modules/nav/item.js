@@ -4,7 +4,7 @@ import { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
@@ -76,7 +76,7 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, reduceMotion, cardWidth, isMobile) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile) {
   const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   // Reduce gap between cards on mobile devices
   const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
@@ -86,39 +86,6 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     : {};
 
   const staggerDelay = getNavCardStaggerDelay(position, expanded);
-
-  // Reduced-motion fallback: simple and quick fade/position transitions.
-  if (reduceMotion) {
-    return {
-      className: cn(
-        'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
-        'border-black/15 bg-white/80',
-        showBorder && 'border-black/20',
-        cardStyle?.className
-      ),
-      style: { ...safeCardStyle, willChange: 'auto' },
-      animate: {
-        width: cardWidth,
-        y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
-        scale: expanded ? cardScale || 1 : collapsedScale ** position,
-        zIndex: 10 - position,
-        opacity: 1,
-      },
-      initial: { opacity: 0, scale: 0.97 },
-      exit: {
-        opacity: 0,
-        scale: 0.97,
-        transition: { duration: 0.1, ease: 'easeOut' },
-      },
-      transition: {
-        width: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
-        y: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
-        scale: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
-        opacity: { ...NAV_CONTENT_TRANSITION, delay: staggerDelay },
-        zIndex: { duration: 0, delay: staggerDelay },
-      },
-    };
-  }
 
   const spring = getNavCardSpring(position);
 
@@ -421,7 +388,6 @@ const Item = memo(
 
     const pathname = usePathname();
     const router = useRouter();
-    const reduceMotion = useReducedMotion();
 
     const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
     const ActionComponent = useActionComponent(link, pathname);
@@ -451,7 +417,6 @@ const Item = memo(
         showBorder,
         itemStyle.card,
         itemStyle.scale,
-        !!reduceMotion,
         cardWidth,
         isMobile
       );
@@ -472,7 +437,6 @@ const Item = memo(
       itemStyle.card,
       itemStyle.scale,
       link.isSurface,
-      reduceMotion,
       isMobile,
     ]);
 

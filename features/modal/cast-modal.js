@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -92,7 +92,6 @@ function CreditsGrid({ close, list, keyPrefix }) {
 }
 
 export default function CastModal({ close, data, header }) {
-  const reduceMotion = useReducedMotion();
   const contentRef = useRef(null);
 
   const castEntries = useMemo(() => normalizeEntries(data?.cast, 'Cast'), [data?.cast]);
@@ -139,7 +138,7 @@ export default function CastModal({ close, data, header }) {
     }),
   };
 
-  const transition = reduceMotion ? { duration: 0.14 } : SPRING_TRANSITION;
+  const transition = SPRING_TRANSITION;
 
   if (!hasCast && !hasCrew) {
     return (

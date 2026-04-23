@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { cn } from '@/core/utils';
@@ -56,8 +56,6 @@ function getSectionHref(username, key) {
 }
 
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
-  const reduceMotion = useReducedMotion();
-
   if (!username) {
     return null;
   }
@@ -72,11 +70,11 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
             return (
               <motion.div
                 key={item.key}
-                initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: reduceMotion ? 0 : index * 0.03,
-                  duration: reduceMotion ? 0.16 : ACCOUNT_NAV_ITEM_STAGGER.duration,
+                  delay: index * 0.03,
+                  duration: ACCOUNT_NAV_ITEM_STAGGER.duration,
                   ease: ACCOUNT_NAV_LABEL_TRANSITION.ease,
                 }}
               >
@@ -88,13 +86,13 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                       ? 'border-black bg-black text-white'
                       : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'
                   )}
-                >
-                  <motion.span
-                    animate={isActive ? { scale: 1.02 } : { scale: 1 }}
-                    transition={reduceMotion ? { duration: 0.16 } : ACCOUNT_NAV_LABEL_TRANSITION}
                   >
-                    {item.label}
-                  </motion.span>
+                    <motion.span
+                      animate={isActive ? { scale: 1.02 } : { scale: 1 }}
+                      transition={ACCOUNT_NAV_LABEL_TRANSITION}
+                    >
+                      {item.label}
+                    </motion.span>
                 </Link>
               </motion.div>
             );

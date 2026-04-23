@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
-
-import { MotionConfig, useReducedMotion } from 'framer-motion';
 
 import { isRegistryDebugPanelEnabled, isRegistryHistoryCaptureEnabled } from '@/config/project.config';
 import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/layout/interactive-boundary';
@@ -65,14 +63,6 @@ export const AppProviders = ({ children }) => {
   const pathname = usePathname();
   const [isHydrated, setIsHydrated] = useState(false);
   const showRegistryDebugPanel = isRegistryDebugPanelEnabled();
-  const shouldReduceMotion = useReducedMotion();
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return false;
-    }
-
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -87,15 +77,13 @@ export const AppProviders = ({ children }) => {
   const contentWithEnhancements = needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
 
   return (
-    <MotionConfig reducedMotion={shouldReduceMotion || prefersReducedMotion ? 'always' : 'never'}>
-      <MotionRuntimeProvider>
-        <CoreShellProviders>
-          {isHydrated && showRegistryDebugPanel ? <RegistryDebugPanel /> : null}
-          <BackgroundOverlay />
-          <LoadingOverlay />
-          <GlobalError>{contentWithEnhancements}</GlobalError>
-        </CoreShellProviders>
-      </MotionRuntimeProvider>
-    </MotionConfig>
+    <MotionRuntimeProvider>
+      <CoreShellProviders>
+        {isHydrated && showRegistryDebugPanel ? <RegistryDebugPanel /> : null}
+        <BackgroundOverlay />
+        <LoadingOverlay />
+        <GlobalError>{contentWithEnhancements}</GlobalError>
+      </CoreShellProviders>
+    </MotionRuntimeProvider>
   );
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import Carousel from '@/features/shared/carousel';
@@ -9,7 +9,6 @@ import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 
 export default function GallerySection({ images }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
 
@@ -25,7 +24,6 @@ export default function GallerySection({ images }) {
           {images.map((image, index) => {
             const cardMotion = getSurfaceItemMotion({
               enabled: shouldAnimateItemReveal,
-              reduceMotion,
               index,
               distance: 20,
               scale: 0.976,

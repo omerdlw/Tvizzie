@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -107,7 +107,6 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
 }
 
 export default function CastSection({ cast = [], crew = [], headerAction = null }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
@@ -163,7 +162,6 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
           {featured.map((person, index) => {
             const cardMotion = getSurfaceItemMotion({
               enabled: shouldAnimateItemReveal,
-              reduceMotion,
               index,
               distance: 20,
               scale: 0.978,
@@ -187,7 +185,6 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
             {compact.map((person, index) => {
               const compactMotion = getSurfaceItemMotion({
                 enabled: shouldAnimateItemReveal,
-                reduceMotion,
                 index,
                 groupIndex: 1,
                 distance: 16,
@@ -214,9 +211,9 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.952 }}
+              initial={{ opacity: 0, y: 12, scale: 0.952 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={reduceMotion ? { duration: 0.16 } : { duration: 0.48, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.48, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
               className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
@@ -259,9 +256,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
                     className="absolute inset-0"
                     initial={false}
                     animate={{ x: `${(index - activeIndex) * 100}%` }}
-                    transition={
-                      reduceMotion ? { duration: 0.14 } : { type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }
-                    }
+                    transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }}
                   >
                     {renderPanel(tab.key, tab.entries)}
                   </motion.div>

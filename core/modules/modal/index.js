@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -100,15 +100,14 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
 function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModal, registry, modalStack }) {
   const modalRef = useRef(null);
   const focusableRef = useRef([]);
-  const reduceMotion = useReducedMotion();
 
   const activePosition = useMemo(() => {
     return resolveActivePosition(entry.position, entry.responsivePosition, isMobileViewport);
   }, [entry.position, entry.responsivePosition, isMobileViewport]);
 
   const SpecificModalComponent = registry.get(entry.modalType);
-  const modalVariants = useMemo(() => getModalVariants(activePosition, reduceMotion), [activePosition, reduceMotion]);
-  const backdropVariants = useMemo(() => getBackdropVariants(reduceMotion), [reduceMotion]);
+  const modalVariants = useMemo(() => getModalVariants(activePosition), [activePosition]);
+  const backdropVariants = useMemo(() => getBackdropVariants(), []);
 
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
   const isLeftModal = activePosition === MODAL_POSITIONS.LEFT;
@@ -207,7 +206,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         )}
         style={{
           zIndex: modalZIndex,
-          willChange: reduceMotion ? 'opacity' : 'transform, opacity',
+          willChange: 'transform, opacity',
         }}
         variants={modalVariants}
         initial="hidden"

@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
 
 import { ANIMATION_STAGGER } from './config';
 import { ANIMATION_VIEWPORTS, createAnimationObserverOptions } from './viewport';
@@ -15,16 +14,10 @@ export function AnimationSequenceGroup({
   staggerStep = ANIMATION_STAGGER.GROUP,
   viewport = ANIMATION_VIEWPORTS.section,
 }) {
-  const reduceMotion = useReducedMotion();
   const containerRef = useRef(null);
-  const [isActive, setIsActive] = useState(reduceMotion);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    if (reduceMotion) {
-      setIsActive(true);
-      return undefined;
-    }
-
     if (isActive) {
       return undefined;
     }
@@ -49,7 +42,7 @@ export function AnimationSequenceGroup({
     return () => {
       observer.disconnect();
     };
-  }, [isActive, reduceMotion, viewport]);
+  }, [isActive, viewport]);
 
   const value = useMemo(
     () => ({

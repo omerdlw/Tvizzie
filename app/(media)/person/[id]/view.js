@@ -1,6 +1,6 @@
 import { Suspense, use } from 'react';
 
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import PersonAwards from '@/features/person/awards';
 import FilmographyCard from '@/features/person/filmography-card';
 import PersonGallery from '@/features/person/gallery';
@@ -54,7 +54,6 @@ function getBiographyExcerpt(biography, maxLength = 280) {
 }
 
 function PersonMainContent({ person, animateItemReveal = true }) {
-  const reduceMotion = useReducedMotion();
   const movieCredits = getFilmographyCredits(person, 'movie');
 
   return (
@@ -75,7 +74,6 @@ function PersonMainContent({ person, animateItemReveal = true }) {
                 {movieCredits.map((credit, index) => {
                   const cardMotion = getPersonSurfaceItemMotion({
                     enabled: animateItemReveal,
-                    reduceMotion,
                     index,
                     distance: 18,
                     scale: 0.976,
@@ -134,12 +132,11 @@ export default function PersonView({
   onResetPersonPoster,
   canResetPersonPoster,
 }) {
-  const reduceMotion = useReducedMotion();
   const shouldAnimateItemReveal = useInitialPersonItemRevealEnabled();
   if (!person) return null;
 
   const biographyExcerpt = getBiographyExcerpt(person.biography);
-  const viewMotion = getPersonSurfacePanelMotion({ reduceMotion });
+  const viewMotion = getPersonSurfacePanelMotion();
   const deferredFallback =
     activeView === 'timeline' ? (
       <PersonTimelineSkeleton className="mt-10" />
