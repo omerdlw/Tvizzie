@@ -9,9 +9,9 @@ export function isReservedAccountSegment(value) {
   );
 }
 
-export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 24;
-export const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 24;
+const USERNAME_PATTERN = /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/;
 
 const TURKISH_USERNAME_MAP = Object.freeze({
   ç: 'c',

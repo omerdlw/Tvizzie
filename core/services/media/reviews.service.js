@@ -10,7 +10,11 @@ import {
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
-import { ACTIVITY_EVENT_TYPES, fireActivityEvent, removeActivityEvents } from '@/core/services/activity/activity-events.service';
+import {
+  ACTIVITY_EVENT_TYPES,
+  fireActivityEvent,
+  removeActivityEvents,
+} from '@/core/services/activity/activity-events.service';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 import { updateListReviewsCount } from '@/core/services/media/lists.service';
@@ -802,25 +806,25 @@ export async function toggleListReviewLike({ ownerId, listId, review = null, rev
     const activityPayload = buildReviewLikeActivityPayload(
       review ||
         (listContext
-        ? {
-            rating: null,
-            reviewUserId,
-            subjectHref: listContext.subjectHref,
-            subjectId: listContext.subjectId,
-            subjectKey: listContext.subjectKey,
-            subjectOwnerId: listContext.subjectOwnerId,
-            subjectOwnerUsername: listContext.subjectOwnerUsername,
-            subjectPoster: listContext.subjectPoster,
-            subjectSlug: listContext.subjectSlug,
-            subjectTitle: listContext.subjectTitle,
-            subjectType: listContext.subjectType,
-            user: {
-              id: reviewUserId,
-              name: 'Anonymous User',
-              username: null,
-            },
-          }
-        : null)
+          ? {
+              rating: null,
+              reviewUserId,
+              subjectHref: listContext.subjectHref,
+              subjectId: listContext.subjectId,
+              subjectKey: listContext.subjectKey,
+              subjectOwnerId: listContext.subjectOwnerId,
+              subjectOwnerUsername: listContext.subjectOwnerUsername,
+              subjectPoster: listContext.subjectPoster,
+              subjectSlug: listContext.subjectSlug,
+              subjectTitle: listContext.subjectTitle,
+              subjectType: listContext.subjectType,
+              user: {
+                id: reviewUserId,
+                name: 'Anonymous User',
+                username: null,
+              },
+            }
+          : null)
     );
 
     if (activityPayload) {

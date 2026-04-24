@@ -2,7 +2,7 @@ export function normalizePassword(value) {
   return String(value || '');
 }
 
-export const PASSWORD_REQUIREMENTS = Object.freeze([
+const PASSWORD_REQUIREMENTS = Object.freeze([
   Object.freeze({
     id: 'length',
     label: 'At least 8 characters',

@@ -28,7 +28,7 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
       className={cn(
         'bg-primary flex items-center justify-between gap-2 border border-black/10 px-3 py-2',
         placement === 'embedded' && 'w-full border-x-0 border-t-0',
-        isAttachedTop && 'max-w-full[30px] border-b-0',
+        isAttachedTop && 'max-w-full border-b-0',
         isAttachedBottom && 'max-w-full border-t-0',
         className
       )}

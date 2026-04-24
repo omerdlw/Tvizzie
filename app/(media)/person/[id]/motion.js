@@ -10,9 +10,9 @@ import {
   createPanelMotion,
   createSurfaceItemMotion,
   resolvePhaseDelay,
-  useInitialRevealEnabled,
 } from '@/core/animation';
 import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 const PERSON_ROUTE_PHASES = Object.freeze({
   sidebar: Object.freeze({
@@ -44,6 +44,16 @@ const PERSON_ROUTE_PHASES = Object.freeze({
     scale: 0.94,
   }),
 });
+
+function useInitialRevealEnabled() {
+  const shouldAnimateRef = useRef(true);
+
+  useEffect(() => {
+    shouldAnimateRef.current = false;
+  }, []);
+
+  return shouldAnimateRef.current;
+}
 
 export const PERSON_ROUTE_MOTION = Object.freeze({
   orchestration: Object.freeze({

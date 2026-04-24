@@ -2,11 +2,11 @@
 
 import { cloneElement, isValidElement } from 'react';
 
-import AccountSocialModal from '@/features/modal/account-social-modal';
-import CreateListModal from '@/features/modal/create-list-modal';
-import ListEditorModal from '@/features/modal/list-editor-modal';
-import ListPickerModal from '@/features/modal/list-picker-modal';
-import ReviewEditorModal from '@/features/modal/review-editor-modal';
+import AccountSocialModal from '@/features/modals/account-social-modal';
+import CreateListModal from '@/features/modals/create-list-modal';
+import ListEditorModal from '@/features/modals/list-editor-modal';
+import ListPickerModal from '@/features/modals/list-picker-modal';
+import ReviewEditorModal from '@/features/modals/review-editor-modal';
 import AccountAction from '@/features/navigation/actions/account-action';
 import ReviewAction from '@/features/navigation/actions/review-action';
 import Icon from '@/ui/icon';

@@ -6,15 +6,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
 import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
-import NavHeightSpacer from '@/features/layout/nav-height-spacer';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import SearchAction from '@/features/navigation/actions/search-action';
-import {
-  SEARCH_GRID,
-  SEARCH_LIMITS,
-  SEARCH_TAB_ITEMS,
-  SEARCH_TYPES,
-} from '@/features/navigation/actions/search-action/constants';
-import SearchGridItem from '@/features/navigation/actions/search-action/parts/grid-item';
+import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
+import SearchGridItem from '@/features/search/grid-item';
 import {
   applySearchMovieFilters,
   fetchAllMedia,
@@ -24,7 +19,7 @@ import {
   mergeAllResults,
   normalizeSearchMovieFilters,
 } from '@/features/search/utils';
-import { useDebounce } from '@/core/hooks';
+import { useDebounce } from '@/core/hooks/use-debounce';
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { useRegistry } from '@/core/modules/registry';
 import { SEARCH_ROUTE_MOTION, SearchSectionReveal, getSearchGridItemMotion } from './motion';

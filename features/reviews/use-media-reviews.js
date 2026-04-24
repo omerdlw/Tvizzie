@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useNavHeight } from '@/core/modules/nav/hooks';

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { requestVerificationCode, verifyCodeRequest } from '@/features/auth/api';
+import { requestVerificationCode, verifyCodeRequest } from '@/features/auth/requests';
 import {
   formatVerificationExpiry,
   normalizeEmail,

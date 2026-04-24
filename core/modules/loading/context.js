@@ -7,6 +7,16 @@ import { useRegistryState, REGISTRY_TYPES } from '../registry/context';
 const LoadingActionsContext = createContext(null);
 const LoadingStateContext = createContext(null);
 
+function normalizeLoadingOptions(options = {}) {
+  const minDuration = Number(options?.minDuration);
+
+  return {
+    minDuration: Number.isFinite(minDuration) && minDuration > 0 ? minDuration : 0,
+    showOverlay: options?.showOverlay !== false,
+    skeleton: options?.skeleton ?? null,
+  };
+}
+
 export function LoadingProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [skeleton, setSkeleton] = useState(null);
@@ -14,6 +24,7 @@ export function LoadingProvider({ children }) {
   const [showOverlay, setShowOverlay] = useState(true);
 
   const startTimeRef = useRef(null);
+  const minDurationRef = useRef(0);
   const stopTimerRef = useRef(null);
 
   const { get } = useRegistryState();
@@ -31,34 +42,36 @@ export function LoadingProvider({ children }) {
     setSkeleton(null);
     setMinDuration(0);
     setShowOverlay(true);
+    minDurationRef.current = 0;
     startTimeRef.current = null;
   }, [clearStopTimer]);
 
   const startLoading = useCallback(
     (options = {}) => {
       clearStopTimer();
-
-      const duration = options.minDuration || 0;
+      const nextState = normalizeLoadingOptions(options);
 
       startTimeRef.current = Date.now();
+      minDurationRef.current = nextState.minDuration;
       setIsLoading(true);
-      setMinDuration(duration);
-      setShowOverlay(options.showOverlay !== false);
-      setSkeleton(options.skeleton ?? null);
+      setMinDuration(nextState.minDuration);
+      setShowOverlay(nextState.showOverlay);
+      setSkeleton(nextState.skeleton);
     },
     [clearStopTimer]
   );
 
   const stopLoading = useCallback(() => {
     const startTime = startTimeRef.current;
+    const activeMinDuration = minDurationRef.current;
 
-    if (!startTime || minDuration === 0) {
+    if (!startTime || activeMinDuration === 0) {
       resetState();
       return;
     }
 
     const elapsed = Date.now() - startTime;
-    const remaining = minDuration - elapsed;
+    const remaining = activeMinDuration - elapsed;
 
     if (remaining <= 0) {
       resetState();
@@ -70,7 +83,7 @@ export function LoadingProvider({ children }) {
     stopTimerRef.current = setTimeout(() => {
       resetState();
     }, remaining);
-  }, [clearStopTimer, minDuration, resetState]);
+  }, [clearStopTimer, resetState]);
 
   const setLoading = useCallback(
     (value) => {
@@ -79,8 +92,6 @@ export function LoadingProvider({ children }) {
     },
     [startLoading, stopLoading]
   );
-
-  const setIsLoadingAction = setLoading;
 
   useEffect(() => {
     return () => {
@@ -99,10 +110,6 @@ export function LoadingProvider({ children }) {
     } else {
       stopLoading();
     }
-
-    if (registryLoading.skeleton) {
-      setSkeleton(registryLoading.skeleton);
-    }
   }, [registryLoading, resetState, startLoading, stopLoading]);
 
   const stateValue = useMemo(
@@ -119,11 +126,11 @@ export function LoadingProvider({ children }) {
     () => ({
       startLoading,
       stopLoading,
-      setIsLoading: setIsLoadingAction,
+      setIsLoading: setLoading,
       setLoading,
       setSkeleton,
     }),
-    [startLoading, stopLoading, setIsLoadingAction, setLoading]
+    [setLoading, startLoading, stopLoading]
   );
 
   return (

@@ -9,9 +9,9 @@ import {
   getSurfacePanelMotion,
   useInitialItemRevealEnabled,
 } from '@/app/(media)/movie/[id]/motion';
-import Carousel from '@/features/shared/carousel';
-import MediaCard from '@/features/shared/media-card';
-import SegmentedControl from '@/features/shared/segmented-control';
+import Carousel from '@/ui/media/carousel';
+import MediaCard from '@/ui/media/media-card';
+import SegmentedControl from '@/ui/elements/segmented-control';
 import { useModal } from '@/core/modules/modal/context';
 import Icon from '@/ui/icon';
 

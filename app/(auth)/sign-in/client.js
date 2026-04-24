@@ -5,21 +5,21 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import {
-  AUTH_PURPOSE,
-  AUTH_ROUTES,
   assertPasswordAccountStatus,
-  buildAuthHref,
   completePasswordReset,
+} from '@/features/auth/requests';
+import { AUTH_PURPOSE, AUTH_ROUTES } from '@/features/auth/constants';
+import {
+  buildAuthHref,
   createError,
   isEmailIdentifier,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validatePassword,
-} from '@/features/auth';
+} from '@/features/auth/utils';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
-import { consumeAuthRouteNoticeCookie } from '@/core/auth/clients/auth-route-notice.client';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
-import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
+import { AUTH_ROUTE_NOTICE, AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/core/auth/route-notice';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import { useAuth } from '@/core/modules/auth';
@@ -36,6 +36,34 @@ const INITIAL_RESET_FLOW = Object.freeze({
   confirmPassword: '',
   isSubmitting: false,
 });
+
+function expireNoticeCookie() {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.cookie = `${AUTH_ROUTE_NOTICE_COOKIE_NAME}=; Max-Age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+}
+
+function consumeAuthRouteNoticeCookie() {
+  if (typeof document === 'undefined') {
+    return '';
+  }
+
+  const prefix = `${AUTH_ROUTE_NOTICE_COOKIE_NAME}=`;
+  const cookieEntry = String(document.cookie || '')
+    .split(';')
+    .map((entry) => entry.trim())
+    .find((entry) => entry.startsWith(prefix));
+
+  if (!cookieEntry) {
+    return '';
+  }
+
+  expireNoticeCookie();
+
+  return normalizeAuthRouteNotice(decodeURIComponent(cookieEntry.slice(prefix.length)));
+}
 
 export default function Client() {
   const auth = useAuth();

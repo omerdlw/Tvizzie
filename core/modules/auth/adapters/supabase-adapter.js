@@ -7,6 +7,21 @@ import { clearCanonicalSessionPayloadCache, fetchCanonicalSessionPayload } from 
 
 import { createAuthAdapter } from './create-adapter';
 
+const IGNORABLE_LOGOUT_CODES = new Set(['bad_jwt', 'refresh_token_not_found', 'session_not_found']);
+const IGNORABLE_LOGOUT_ERROR_PATTERNS = [
+  'failed to fetch',
+  'fetch failed',
+  'invalid jwt',
+  'invalid number of segments',
+  'network request failed',
+  'refresh token not found',
+  'request timed out',
+  'session not found',
+  'timeout',
+  'timed out',
+  'token is malformed',
+];
+
 function normalizeValue(value) {
   return String(value || '').trim();
 }
@@ -49,22 +64,7 @@ function isIgnorableLogoutError(error) {
   const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
   const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
-  return (
-    code === 'bad_jwt' ||
-    code === 'session_not_found' ||
-    code === 'refresh_token_not_found' ||
-    message.includes('invalid jwt') ||
-    message.includes('token is malformed') ||
-    message.includes('invalid number of segments') ||
-    message.includes('session not found') ||
-    message.includes('refresh token not found') ||
-    message.includes('request timed out') ||
-    message.includes('timed out') ||
-    message.includes('timeout') ||
-    message.includes('network request failed') ||
-    message.includes('failed to fetch') ||
-    message.includes('fetch failed')
-  );
+  return IGNORABLE_LOGOUT_CODES.has(code) || IGNORABLE_LOGOUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
 function toAdapterError(error, fallbackMessage) {
@@ -134,6 +134,46 @@ function getClient(providedClient = null) {
   return providedClient || createSupabaseClient();
 }
 
+async function readAuthJson(response, fallbackError) {
+  return response.json().catch(() => ({ error: fallbackError }));
+}
+
+async function fetchAppAuthJson(path, { body, fallbackError, headers = {} } = {}) {
+  const response = await fetch(path, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body: JSON.stringify(body || {}),
+  });
+  const result = await readAuthJson(response, fallbackError);
+
+  if (!response.ok) {
+    throw toAdapterError(result, fallbackError);
+  }
+
+  return result;
+}
+
+function createProfilePatch(payload = {}) {
+  const profilePatch = {};
+  const displayName = normalizeValue(payload.displayName);
+
+  if (payload.displayName !== undefined) {
+    profilePatch.display_name = displayName || null;
+    profilePatch.full_name = displayName || null;
+    profilePatch.name = displayName || null;
+  }
+
+  if (payload.avatarUrl !== undefined || payload.photoURL !== undefined) {
+    profilePatch.avatar_url = normalizeValue(payload.avatarUrl || payload.photoURL) || null;
+  }
+
+  return profilePatch;
+}
+
 export function createSupabaseAuthAdapter(options = {}) {
   const { client: providedClient = null, getOAuthRedirectUrl = null, oauthDefaultNextPath = '/account' } = options;
 
@@ -200,13 +240,6 @@ export function createSupabaseAuthAdapter(options = {}) {
     },
 
     async refreshSession() {
-      const client = getClient(providedClient);
-      const { error } = await client.auth.getSession();
-
-      if (error) {
-        throw toAdapterError(error, 'Session refresh failed');
-      }
-
       clearCanonicalSessionCache();
       return fetchCanonicalSession({ force: true });
     },
@@ -218,23 +251,14 @@ export function createSupabaseAuthAdapter(options = {}) {
         return signInWithOAuthProvider(payload);
       }
 
-      const response = await fetch('/api/auth/sign-in', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const result = await fetchAppAuthJson('/api/auth/sign-in', {
+        fallbackError: 'Sign in failed',
+        body: {
           identifier: String(payload.identifier || '').trim() || undefined,
           email: normalizeEmail(payload.email),
           password: String(payload.password || ''),
-        }),
+        },
       });
-      const result = await response.json().catch(() => ({ error: 'Sign in failed' }));
-
-      if (!response.ok) {
-        throw toAdapterError(result, 'Sign in failed');
-      }
 
       if (result?.requiresVerification) {
         clearCanonicalSessionCache();
@@ -291,20 +315,9 @@ export function createSupabaseAuthAdapter(options = {}) {
 
     async updateProfile(payload = {}) {
       const client = getClient(providedClient);
-      const profilePatch = {};
-
-      if (payload.displayName !== undefined) {
-        profilePatch.display_name = normalizeValue(payload.displayName) || null;
-        profilePatch.full_name = normalizeValue(payload.displayName) || null;
-        profilePatch.name = normalizeValue(payload.displayName) || null;
-      }
-
-      if (payload.avatarUrl !== undefined || payload.photoURL !== undefined) {
-        profilePatch.avatar_url = normalizeValue(payload.avatarUrl || payload.photoURL) || null;
-      }
 
       const { error } = await client.auth.updateUser({
-        data: profilePatch,
+        data: createProfilePatch(payload),
       });
 
       if (error) {
@@ -318,23 +331,15 @@ export function createSupabaseAuthAdapter(options = {}) {
     async reauthenticate(payload = {}, adapterContext = {}) {
       void adapterContext;
 
-      const response = await fetch('/api/auth/account/reauthenticate', {
-        method: 'POST',
-        credentials: 'include',
+      await fetchAppAuthJson('/api/auth/account/reauthenticate', {
+        fallbackError: 'Reauthentication failed',
         headers: {
           ...createCsrfHeaders(),
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
+        body: {
           currentPassword: String(payload.password || ''),
-        }),
+        },
       });
-
-      const result = await response.json().catch(() => ({ error: 'Reauthentication failed' }));
-
-      if (!response.ok) {
-        throw toAdapterError(result, 'Reauthentication failed');
-      }
 
       clearCanonicalSessionCache();
       const nextSession = await fetchCanonicalSession({ force: true });

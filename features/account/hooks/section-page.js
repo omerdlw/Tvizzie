@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { isProjectFeatureEnabled } from '@/config/project.config';
 import { useAccountPageActions } from '@/features/account/hooks/page-actions';
 import { useAccountPageData } from '@/features/account/hooks/page-data';
 import { getFollowState } from '@/features/account/utils';
 
 function noop() {}
 
-const IS_SOCIAL_FOLLOWS_ENABLED = isProjectFeatureEnabled('social_follows');
+const IS_SOCIAL_FOLLOWS_ENABLED = true;
 
 function scheduleDeferredTask(task) {
   if (typeof window === 'undefined') {

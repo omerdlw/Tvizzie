@@ -8,6 +8,29 @@ import { EVENT_TYPES } from '@/core/constants/events';
 import { AUTH_STATUS } from './config';
 import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';
 
+const LOCAL_PURGE_SIGN_OUT_REASONS = new Set([
+  'delete-account',
+  'email-change',
+  'password-change',
+  'password-reset',
+  'password-set',
+]);
+
+const IGNORABLE_SIGN_OUT_ERROR_PATTERNS = [
+  'authentication token has been revoked',
+  'failed to fetch',
+  'fetch failed',
+  'invalid jwt',
+  'invalid number of segments',
+  'invalid or expired authentication token',
+  'jwt expired',
+  'network request failed',
+  'request timed out',
+  'timeout',
+  'timed out',
+  'token is malformed',
+];
+
 function resolveAuthProvider(payload = {}, session = null) {
   const provider = normalizeOAuthProvider(payload?.provider || payload?.strategy || payload?.authProvider || null);
 
@@ -36,24 +59,7 @@ function isIgnorableSignOutError(error) {
     .trim()
     .toLowerCase();
 
-  if (!message) {
-    return false;
-  }
-
-  return (
-    message.includes('invalid jwt') ||
-    message.includes('token is malformed') ||
-    message.includes('invalid number of segments') ||
-    message.includes('invalid or expired authentication token') ||
-    message.includes('authentication token has been revoked') ||
-    message.includes('jwt expired') ||
-    message.includes('request timed out') ||
-    message.includes('timed out') ||
-    message.includes('timeout') ||
-    message.includes('network request failed') ||
-    message.includes('failed to fetch') ||
-    message.includes('fetch failed')
-  );
+  return Boolean(message) && IGNORABLE_SIGN_OUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
 export async function runAuthSignIn({
@@ -261,12 +267,7 @@ export async function runAuthSignOut({
   setLoadingState,
 }) {
   let signOutError = null;
-  const shouldUseLocalPurge =
-    reason === 'email-change' ||
-    reason === 'password-change' ||
-    reason === 'password-set' ||
-    reason === 'password-reset' ||
-    reason === 'delete-account';
+  const shouldUseLocalPurge = LOCAL_PURGE_SIGN_OUT_REASONS.has(reason);
 
   setLoadingState();
   emitAuthFeedback('logout', 'start', {

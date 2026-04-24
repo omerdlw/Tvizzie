@@ -9,13 +9,6 @@
   --color-warning: #ffc200;
   --color-success: #29a642;
   --color-info: #2976d7;
-
-  --color-background: var(--color-white);
-  --color-foreground: var(--color-black);
-  --color-border: var(--color-border);
-  --color-ring: var(--color-primary);
-  --color-text: var(--color-black);
-
   --font-zuume: var(--font-zuume);
   --animate-spin: spin 1s linear infinite;
   --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -37,14 +30,6 @@
   button:disabled,
   [role='button'][aria-disabled='true'] {
     cursor: not-allowed;
-  }
-
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-black;
   }
 }
 

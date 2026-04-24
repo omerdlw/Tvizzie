@@ -2,10 +2,9 @@ import {
   resolveProviderDescriptors as resolveAuthProviderDescriptors,
   resolveProviderIds,
 } from '@/core/auth/capabilities';
+import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/core/auth/oauth-providers';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
-const GOOGLE_PROVIDER_ID = 'google.com';
-const PASSWORD_PROVIDER_ID = 'password';
 const PROFILE_SELECT = ['email', 'id'].join(',');
 
 export const GOOGLE_AUTH_INTENTS = Object.freeze({

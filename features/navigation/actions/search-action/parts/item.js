@@ -13,7 +13,7 @@ import {
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
-import { SEARCH_STYLES, SEARCH_TYPES } from '../constants';
+import { SEARCH_STYLES, SEARCH_TYPES } from '@/features/search/constants';
 import { getDetailPath, getImagePath, getItemDirector, getItemTitle, getItemYear } from '@/features/search/utils';
 
 export default function SearchResultItem({ item, imageErrors, onImageError, onSelect }) {

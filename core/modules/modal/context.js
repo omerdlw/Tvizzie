@@ -82,6 +82,28 @@ function createModalState(modalStack = []) {
   };
 }
 
+function finalizeModalClose(modalId, result, { onCloseMapRef, resolveMapRef, logCloseErrors = false }) {
+  const onClose = onCloseMapRef.current.get(modalId);
+
+  if (typeof onClose === 'function') {
+    try {
+      onClose(result);
+    } catch (error) {
+      if (logCloseErrors) {
+        console.error('Modal onClose handler failed:', error);
+      }
+    }
+  }
+
+  onCloseMapRef.current.delete(modalId);
+
+  const resolve = resolveMapRef.current.get(modalId);
+  if (typeof resolve === 'function') {
+    resolve(result);
+  }
+  resolveMapRef.current.delete(modalId);
+}
+
 const INITIAL_STATE = createModalState([]);
 
 export function ModalProvider({ children }) {
@@ -154,21 +176,11 @@ export function ModalProvider({ children }) {
       const nextStack = currentStack.filter((entry) => entry.id !== modalId);
       syncModalStack(nextStack);
 
-      const onClose = onCloseMapRef.current.get(modalId);
-      if (typeof onClose === 'function') {
-        try {
-          onClose(result);
-        } catch (error) {
-          console.error('Modal onClose handler failed:', error);
-        }
-      }
-      onCloseMapRef.current.delete(modalId);
-
-      const resolve = resolveMapRef.current.get(modalId);
-      if (typeof resolve === 'function') {
-        resolve(result);
-      }
-      resolveMapRef.current.delete(modalId);
+      finalizeModalClose(modalId, result, {
+        onCloseMapRef,
+        resolveMapRef,
+        logCloseErrors: true,
+      });
     },
     [syncModalStack]
   );
@@ -183,19 +195,7 @@ export function ModalProvider({ children }) {
       syncModalStack([]);
 
       currentStack.forEach((entry) => {
-        const onClose = onCloseMapRef.current.get(entry.id);
-        if (typeof onClose === 'function') {
-          try {
-            onClose(result);
-          } catch {}
-        }
-        onCloseMapRef.current.delete(entry.id);
-
-        const resolve = resolveMapRef.current.get(entry.id);
-        if (typeof resolve === 'function') {
-          resolve(result);
-        }
-        resolveMapRef.current.delete(entry.id);
+        finalizeModalClose(entry.id, result, { onCloseMapRef, resolveMapRef });
       });
     },
     [syncModalStack]

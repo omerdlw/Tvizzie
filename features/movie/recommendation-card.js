@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
-import MediaCard from '@/features/shared/media-card';
+import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 
 export default function RecommendationCard({ movie, index = 0, imagePriority = false, imageFetchPriority }) {

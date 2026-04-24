@@ -4,23 +4,20 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
+import { assertSignUpEmailAvailable } from '@/features/auth/requests';
+import { AUTH_PURPOSE, AUTH_ROUTES } from '@/features/auth/constants';
 import {
-  AUTH_PURPOSE,
-  AUTH_ROUTES,
-  assertSignUpEmailAvailable,
   buildAuthHref,
-  createPendingSignUpPayload,
-  finalizeOAuthSignUp,
-  finalizeSignUp,
   hasSatisfiedPasswordRequirements,
   isPasswordConfirmationMismatchError,
   isPasswordRequirementError,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
-} from '@/features/auth';
+} from '@/features/auth/utils';
+import { createPendingSignUpPayload, finalizeOAuthSignUp, finalizeSignUp } from '@/features/auth/workflows';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';

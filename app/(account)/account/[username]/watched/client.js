@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
 import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/features/account/utils';
-import { logDataError } from '@/core/utils/errors';
+import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
 import { createAccountSectionClient } from '../../shared/section-factory';

@@ -34,6 +34,10 @@ export const TOAST_TYPES = {
 
 const CRITICAL_SET = new Set(Object.values(CRITICAL_TYPES));
 
+function isObjectRecord(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
 function isValidCritical(notification) {
   if (!notification?.type) return false;
   if (!CRITICAL_SET.has(notification.type)) return false;
@@ -45,26 +49,61 @@ function filterCriticalNotifications(map) {
   return Object.fromEntries(Object.entries(map).filter(([, n]) => isValidCritical(n)));
 }
 
+function readStoredCriticalNotifications() {
+  const stored = getStorageItem(STORAGE_KEY);
+
+  if (!stored) {
+    return {};
+  }
+
+  if (!isObjectRecord(stored)) {
+    removeStorageItem(STORAGE_KEY);
+    return {};
+  }
+
+  const filtered = filterCriticalNotifications(stored);
+
+  if (Object.keys(filtered).length === 0) {
+    removeStorageItem(STORAGE_KEY);
+  }
+
+  return filtered;
+}
+
+function clearNotificationTimer(id, timers) {
+  const timer = timers.get(id);
+
+  if (!timer) {
+    return;
+  }
+
+  clearTimeout(timer);
+  timers.delete(id);
+}
+
+function normalizeDuration(value) {
+  const duration = Number(value);
+  return Number.isFinite(duration) && duration > 0 ? duration : null;
+}
+
+function createNotificationEntry(id, type, data = {}) {
+  return {
+    id,
+    type,
+    timestamp: Date.now(),
+    ...data,
+  };
+}
+
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState({});
   const timersRef = useRef(new Map());
 
   useEffect(() => {
-    const stored = getStorageItem(STORAGE_KEY);
+    const storedNotifications = readStoredCriticalNotifications();
 
-    if (!stored) return;
-
-    if (typeof stored !== 'object' || Array.isArray(stored)) {
-      removeStorageItem(STORAGE_KEY);
-      return;
-    }
-
-    const filtered = filterCriticalNotifications(stored);
-
-    setNotifications(filtered);
-
-    if (Object.keys(filtered).length === 0) {
-      removeStorageItem(STORAGE_KEY);
+    if (Object.keys(storedNotifications).length > 0) {
+      setNotifications(storedNotifications);
     }
   }, []);
 
@@ -88,12 +127,7 @@ export const NotificationProvider = ({ children }) => {
   }, [notifications]);
 
   const dismissNotification = useCallback((id) => {
-    const timer = timersRef.current.get(id);
-
-    if (timer) {
-      clearTimeout(timer);
-      timersRef.current.delete(id);
-    }
+    clearNotificationTimer(id, timersRef.current);
 
     setNotifications((prev) => {
       const next = { ...prev };
@@ -105,28 +139,19 @@ export const NotificationProvider = ({ children }) => {
   const showNotification = useCallback(
     (type, data = {}) => {
       const id = data.id || type;
-
-      const existing = timersRef.current.get(id);
-      if (existing) {
-        clearTimeout(existing);
-        timersRef.current.delete(id);
-      }
+      clearNotificationTimer(id, timersRef.current);
 
       setNotifications((prev) => ({
         ...prev,
-        [id]: {
-          id,
-          type,
-          timestamp: Date.now(),
-          ...data,
-        },
+        [id]: createNotificationEntry(id, type, data),
       }));
 
-      if (data.duration) {
+      const duration = normalizeDuration(data.duration);
+
+      if (duration) {
         const timer = setTimeout(() => {
-          timersRef.current.delete(id);
           dismissNotification(id);
-        }, data.duration);
+        }, duration);
 
         timersRef.current.set(id, timer);
       }

@@ -1,7 +1,7 @@
 'use client';
 
 import { notifyAccountLoadError } from '@/features/account/utils';
-import { logDataError } from '@/core/utils/errors';
+import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   FOLLOW_STATUSES,

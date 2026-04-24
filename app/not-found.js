@@ -1,4 +1,4 @@
-import NotFoundTemplate from '@/features/shared/not-found-template';
+import NotFoundTemplate from '@/features/app-shell/not-found-template';
 
 export default function NotFound() {
   return (

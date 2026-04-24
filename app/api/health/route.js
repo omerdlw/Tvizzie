@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { ROLLOUT_CONFIG } from '@/config/rollout.config';
-import { getRealtimeMode } from '@/config/provider.config';
+import { ROLLOUT_CONFIG } from '@/core/services/shared/write-rollout.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -9,6 +8,16 @@ function normalizeValue(value) {
 
 function normalizeLowerValue(value) {
   return normalizeValue(value).toLowerCase();
+}
+
+function getRealtimeMode() {
+  const mode = normalizeLowerValue(process.env.REALTIME_MODE);
+
+  if (mode === 'sse' || mode === 'dual_observe') {
+    return mode;
+  }
+
+  return 'realtime';
 }
 
 function hasAnyConfigured(keys = []) {

@@ -1,7 +1,5 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
-
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -18,22 +16,13 @@ export function LoadingOverlay() {
   const { isLoading, skeleton, showOverlay } = useLoadingState();
   const isFullscreenStateActive = useIsFullscreenStateActive();
 
+  if (!isLoading || !showOverlay || isFullscreenStateActive) {
+    return null;
+  }
+
   return (
-    <AnimatePresence>
-      {isLoading && showOverlay && !isFullscreenStateActive && (
-        <motion.div
-          className="center fixed inset-0 h-screen w-screen"
-          initial={{}}
-          animate={{}}
-          exit={{}}
-          transition={{
-            duration: 0.3,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-        >
-          <LoadingContent skeleton={skeleton} />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="center fixed inset-0 h-screen w-screen">
+      <LoadingContent skeleton={skeleton} />
+    </div>
   );
 }

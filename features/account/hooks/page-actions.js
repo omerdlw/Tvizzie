@@ -1,7 +1,8 @@
 'use client';
 
 import { PROFILE_TABS, getMediaTitle, removeAccountCollectionItem } from '../utils';
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { getUserAvatarUrl } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';

@@ -8,8 +8,20 @@ import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from 
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
+import { cn } from '@/core/utils';
 
 const MAX_VISIBLE_PERSONS = 2;
+
+function normalizeTaxonomyItems(items = [], prefix = '') {
+  return Array.from(
+    new Set(
+      items
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+        .map((item) => `${prefix}${item.replace(/^#/, '')}`)
+    )
+  );
+}
 
 function SidebarRow({ icon, children }) {
   return (
@@ -64,12 +76,73 @@ function createRow(id, icon, content) {
   return { id, icon, content };
 }
 
-export default function Sidebar({ item, director, writers, creators, certification, topContent }) {
+function TaxonomyGroup({ items = [], label, variant = 'default' }) {
+  if (!items.length) {
+    return null;
+  }
+
+  const isTagGroup = variant === 'tags';
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">{label}</p>
+      <div
+        className={cn(
+          isTagGroup
+            ? 'grid grid-cols-[repeat(auto-fit,minmax(min(9.5rem,100%),1fr))] gap-1.5'
+            : 'flex flex-wrap gap-1.5'
+        )}
+      >
+        {items.map((item) => (
+          <span
+            key={item}
+            className={cn(
+              'bg-primary inline-flex min-h-7 max-w-full items-center rounded-[10px] border border-black/5 text-[11px] leading-none font-semibold uppercase',
+              isTagGroup
+                ? 'justify-center px-2 py-1 text-center leading-[1.15] tracking-wide text-black/60'
+                : 'px-2.5 py-1 tracking-wider'
+            )}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SidebarTaxonomy({ genres = [], tags = [] }) {
+  const normalizedGenres = normalizeTaxonomyItems(genres);
+  const normalizedTags = normalizeTaxonomyItems(tags, '#');
+
+  if (!normalizedGenres.length && !normalizedTags.length) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <TaxonomyGroup label="Genres" items={normalizedGenres} />
+      <TaxonomyGroup label="Tags" items={normalizedTags} variant="tags" />
+    </div>
+  );
+}
+
+export default function Sidebar({
+  item,
+  director,
+  writers,
+  creators,
+  certification,
+  topContent,
+  genres = [],
+  tags = [],
+}) {
   const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)?.english_name ||
     item.original_language;
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
+  const hasTaxonomy = genres?.length || tags?.length;
 
   const personGroups = [
     {
@@ -185,7 +258,17 @@ export default function Sidebar({ item, director, writers, creators, certificati
         </div>
       </MovieSurfaceReveal>
 
-      {topContent ? <MovieSurfaceReveal animateOnView={false} delay={0.12}>{topContent}</MovieSurfaceReveal> : null}
+      {topContent ? (
+        <MovieSurfaceReveal animateOnView={false} delay={0.12}>
+          {topContent}
+        </MovieSurfaceReveal>
+      ) : null}
+
+      {hasTaxonomy ? (
+        <MovieSurfaceReveal animateOnView={false} delay={0.18}>
+          <SidebarTaxonomy genres={genres} tags={tags} />
+        </MovieSurfaceReveal>
+      ) : null}
 
       <div className="flex flex-col gap-1">
         {rows.map((row) => (

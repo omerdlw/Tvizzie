@@ -9,7 +9,7 @@ import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { clearStepUpCookie, assertStepUp } from '@/core/auth/servers/security/step-up.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.service';
+import { ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.constants';
 import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { assertRecentReauth, clearRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server';
 import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';

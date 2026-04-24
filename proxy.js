@@ -1,11 +1,6 @@
 import { updateSession } from '@/core/clients/supabase/proxy';
-import { isSupabaseAuthProvider } from '@/config/provider.config';
 
 export async function proxy(request) {
-  if (!isSupabaseAuthProvider()) {
-    return undefined;
-  }
-
   return updateSession(request);
 }
 

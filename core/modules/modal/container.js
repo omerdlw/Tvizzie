@@ -32,7 +32,7 @@ function getBodyClassName(position, bodyClassName) {
   const sideModal = isSideModal(position);
 
   return cn(
-    'bg-primary overscroll-contain[16px][16px] min-h-0 w-full flex-1 overflow-y-auto',
+    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain',
     sideModal ? 'rounded-none sm:rounded-[14px]' : 'rounded-[14px]',
     bodyClassName
   );

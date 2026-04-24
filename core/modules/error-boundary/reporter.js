@@ -3,6 +3,20 @@
 const MAX_CONTEXT = 10;
 const MAX_FINGERPRINTS = 100;
 
+function getBrowserEnvironment(route) {
+  const hasWindow = typeof window !== 'undefined';
+  const hasNavigator = typeof navigator !== 'undefined';
+
+  return {
+    route: route || (hasWindow ? window.location.pathname : null),
+    userAgent: hasNavigator ? navigator.userAgent : null,
+    platform: hasNavigator ? navigator.platform : null,
+    language: hasNavigator ? navigator.language : null,
+    online: hasNavigator ? navigator.onLine : true,
+    url: hasWindow ? window.location.href : null,
+  };
+}
+
 function fingerprint(error, ctx = {}) {
   return [
     ctx.componentStack?.split('\n')[0] || '',
@@ -24,15 +38,7 @@ function createReport(error, { context = {}, tags = {} } = {}) {
 
     fingerprint: fingerprint(error, context),
     timestamp: new Date().toISOString(),
-
-    environment: {
-      route: context.route || (typeof window !== 'undefined' ? window.location.pathname : null),
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-      platform: typeof navigator !== 'undefined' ? navigator.platform : null,
-      language: typeof navigator !== 'undefined' ? navigator.language : null,
-      online: typeof navigator !== 'undefined' ? navigator.onLine : true,
-      url: typeof window !== 'undefined' ? window.location.href : null,
-    },
+    environment: getBrowserEnvironment(context.route),
 
     componentStack: context.componentStack || null,
     context,

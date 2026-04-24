@@ -2,14 +2,10 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 const REGEX_PATTERNS = {
-  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  SLUG: /^[a-z0-9]+(?:[_-][a-z0-9]+)*$/,
   URL: /^https?:\/\/.+/,
 };
 
-const DEFAULT_COLOR_FALLBACK = '#F9F8F4';
-const DEFAULT_RGB = '0, 0, 0';
-export const DEFAULT_USER_AVATAR = '/images/default-avatar.svg';
+const DEFAULT_USER_AVATAR = '/images/default-avatar.svg';
 const NEXT_IMAGE_ALLOWED_HOSTS = Object.freeze([
   'image.tmdb.org',
   'i.ytimg.com',
@@ -244,10 +240,6 @@ export function isBrowser() {
   return typeof window !== 'undefined';
 }
 
-export function isFunction(value) {
-  return typeof value === 'function';
-}
-
 export function isString(value) {
   return typeof value === 'string';
 }
@@ -287,100 +279,6 @@ export function canUseNextImageOptimization(src) {
   }
 }
 
-function normalizeHex(hex) {
-  if (!isString(hex)) return null;
-
-  const value = hex.trim().replace('#', '');
-  if (value.length === 3) {
-    return value
-      .split('')
-      .map((char) => `${char}${char}`)
-      .join('');
-  }
-
-  if (value.length === 6) return value;
-  return null;
-}
-
-function parseRgbString(color) {
-  if (!isString(color)) return null;
-
-  const trimmed = color.trim();
-  if (!/^rgba?\(/i.test(trimmed)) return null;
-
-  const channels = trimmed
-    .match(/\d+(?:\.\d+)?/g)
-    ?.slice(0, 3)
-    ?.map((value) => Math.round(Number(value)));
-
-  if (!channels || channels.length < 3) return null;
-
-  const [r, g, b] = channels;
-
-  if ([r, g, b].some((channel) => Number.isNaN(channel) || channel < 0 || channel > 255)) {
-    return null;
-  }
-
-  return `${r}, ${g}, ${b}`;
-}
-
-function resolveCssVar(value) {
-  if (!isString(value)) return value;
-
-  const trimmed = value.trim();
-  const match = trimmed.match(/^var\(\s*(--[a-zA-Z0-9_-]+)\s*(?:,\s*([^)]+)\s*)?\)$/);
-  if (!match) return trimmed;
-
-  const cssVarName = match[1];
-  const fallbackValue = match[2]?.trim() || null;
-
-  if (!isBrowser()) return fallbackValue;
-
-  const resolved = getComputedStyle(document.documentElement).getPropertyValue(cssVarName).trim();
-
-  return resolved || fallbackValue;
-}
-
-function parseColorToRgb(value) {
-  const resolved = resolveCssVar(value);
-  if (!resolved) return null;
-
-  const rgb = parseRgbString(resolved);
-  if (rgb) return rgb;
-
-  const normalizedHex = normalizeHex(resolved);
-  if (!normalizedHex) return null;
-
-  const r = parseInt(normalizedHex.slice(0, 2), 16);
-  const g = parseInt(normalizedHex.slice(2, 4), 16);
-  const b = parseInt(normalizedHex.slice(4, 6), 16);
-
-  return `${r}, ${g}, ${b}`;
-}
-
-export function hexToRgb(value, fallback = DEFAULT_COLOR_FALLBACK) {
-  return parseColorToRgb(value) || parseColorToRgb(fallback) || DEFAULT_RGB;
-}
-
-export function hexToRgba(value, alpha = 1, fallback = DEFAULT_COLOR_FALLBACK) {
-  void alpha;
-
-  const resolved = resolveCssVar(value) || resolveCssVar(fallback) || fallback;
-  const normalizedHex = normalizeHex(resolved);
-
-  if (normalizedHex) {
-    return `#${normalizedHex}`;
-  }
-
-  const rgb = parseRgbString(resolved);
-
-  if (rgb) {
-    return `rgb(${rgb})`;
-  }
-
-  return resolved;
-}
-
 export function formatDate(value) {
   if (!value) return 'N/A';
   const date = new Date(value);
@@ -414,24 +312,6 @@ export function formatCurrency(value) {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(value);
-}
-
-export function formatVotes(count) {
-  if (!count || typeof count !== 'number') return null;
-  if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M`;
-  }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toString();
-}
-
-export function formatList(items, limit = 3) {
-  if (!Array.isArray(items) || items.length === 0) return 'N/A';
-  const names = items.map((item) => (typeof item === 'string' ? item : item?.name)).filter(Boolean);
-  if (names.length === 0) return 'N/A';
-  return names.slice(0, limit).join(', ');
 }
 
 export function uniqueBy(items, key = 'id') {
@@ -506,6 +386,33 @@ export function cleanString(value) {
   return String(value).trim();
 }
 
+function getDataErrorCode(error) {
+  return typeof error?.code === 'string' ? error.code.trim().toLowerCase() : '';
+}
+
+export function isPermissionDeniedError(error) {
+  const errorCode = getDataErrorCode(error);
+
+  if (errorCode === 'permission-denied') {
+    return true;
+  }
+
+  const message = typeof error?.message === 'string' ? error.message.trim().toLowerCase() : '';
+
+  return message.includes('missing or insufficient permissions') || message.includes('permission denied');
+}
+
+export function logDataError(message, error, options = {}) {
+  const { suppressPermissionDenied = true } = options;
+
+  if (suppressPermissionDenied && isPermissionDeniedError(error)) {
+    return false;
+  }
+
+  console.error(message, error);
+  return true;
+}
+
 export function normalizeFeedbackText(value) {
   if (typeof value !== 'string') {
     return value;
@@ -537,4 +444,3 @@ export function pipe(...providers) {
     ({ children }) => <>{children}</>
   );
 }
-

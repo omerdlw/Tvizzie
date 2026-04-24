@@ -6,13 +6,11 @@ import { redirect } from 'next/navigation';
 import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
 import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server';
+import { getEditableAccountSnapshotByUserId } from '@/core/services/account/account.server';
 import {
   getAccountIdByUsername,
   getAccountProfileByUserId,
 } from '@/core/services/account/account-profile.server';
-import {
-  getCurrentEditableAccountSnapshot,
-} from '@/core/services/account/current-account-snapshot.server';
 import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
 
 const OVERVIEW_ACTIVITY_LIMIT = 36;
@@ -65,6 +63,16 @@ async function getViewerSessionContext() {
   const request = buildCookieRequest(cookieStore);
 
   return readSessionFromRequest(request).catch(() => null);
+}
+
+export async function getCurrentEditableAccountSnapshot() {
+  const sessionContext = await getViewerSessionContext();
+
+  if (!sessionContext?.userId) {
+    return null;
+  }
+
+  return getEditableAccountSnapshotByUserId(sessionContext.userId);
 }
 
 async function safeLoad(load, fallback) {

@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-import MediaCard from '@/features/shared/media-card';
-import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/constants';
+import MediaCard from '@/ui/media/media-card';
+import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -129,7 +129,7 @@ export function ProfileMediaActions({
       {typeof onRemoveItem === 'function' ? (
         <Button
           variant="destructive-icon"
-          className={`center size-8 ${MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS} rounded-[10px] disabled:cursor-default`}
+          className={`center text-error hover:border-error hover:bg-error size-8 rounded-[10px] border border-black/15 bg-white hover:text-white disabled:cursor-default`}
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}

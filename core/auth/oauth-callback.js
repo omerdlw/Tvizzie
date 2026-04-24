@@ -15,7 +15,7 @@ const BLOCKED_NEXT_PATHS = new Set([
   LEGACY_AUTH_OAUTH_CALLBACK_PATH,
 ]);
 
-export const OAUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
+const OAUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -102,21 +102,4 @@ export function buildOAuthCallbackUrl({
   url.searchParams.set('provider', normalizedProvider);
 
   return url.toString();
-}
-
-export function normalizeGoogleAuthIntent(value, fallback = 'sign-in') {
-  return normalizeOAuthIntent(value, fallback);
-}
-
-export function buildGoogleOAuthCallbackUrl({
-  intent = 'sign-in',
-  nextPath = AUTH_DEFAULT_POST_LOGIN_PATH,
-  origin,
-} = {}) {
-  return buildOAuthCallbackUrl({
-    intent,
-    nextPath,
-    origin,
-    provider: 'google',
-  });
 }

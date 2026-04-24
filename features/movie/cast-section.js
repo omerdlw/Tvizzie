@@ -8,7 +8,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
-import SegmentedControl from '@/features/shared/segmented-control';
+import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 

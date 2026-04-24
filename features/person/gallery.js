@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 
 import { motion } from 'framer-motion';
 import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
-import Carousel from '@/features/shared/carousel';
-import MediaCard from '@/features/shared/media-card';
+import Carousel from '@/ui/media/carousel';
+import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 

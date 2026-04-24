@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import MediaCard from '@/features/shared/media-card';
+import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
 import AccountSectionLayout from '../shared/section-wrapper';

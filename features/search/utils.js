@@ -1,6 +1,6 @@
-import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 
-import { SEARCH_LIMITS, SEARCH_TYPES } from '@/features/navigation/actions/search-action/constants';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/features/search/constants';
 
 const SEARCH_MOVIE_FILTER_DEFAULTS = Object.freeze({
   decade: 'all',

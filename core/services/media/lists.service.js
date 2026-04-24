@@ -16,7 +16,11 @@ import {
   resolveLimitCount,
 } from '@/core/services/shared/supabase-media-utils.service';
 import { getUserAccount } from '@/core/services/account/account.service';
-import { ACTIVITY_EVENT_TYPES, fireActivityEvent, removeActivityEvents } from '@/core/services/activity/activity-events.service';
+import {
+  ACTIVITY_EVENT_TYPES,
+  fireActivityEvent,
+  removeActivityEvents,
+} from '@/core/services/activity/activity-events.service';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 import {
@@ -833,7 +837,6 @@ export async function toggleListLike({ ownerId, listId, userId }) {
       subjectTitle: listTitle,
       subjectType: 'list',
     });
-
   }
 
   return isNowLiked;

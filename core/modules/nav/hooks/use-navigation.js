@@ -34,6 +34,9 @@ export function useNavigation() {
   }, [activeItem]);
 
   const compact = useNavigationCompact({ activeItem, expanded: isExpanded, pathname, searchQuery, compactLocked });
+  const clearHoverState = useCallback(() => {
+    setIsHovered(false);
+  }, []);
 
   const setExpanded = useCallback(
     (nextValue) => {
@@ -60,9 +63,9 @@ export function useNavigation() {
 
     if (wasSurfaceActiveRef.current) {
       wasSurfaceActiveRef.current = false;
-      setIsHovered(false);
+      clearHoverState();
     }
-  }, [isSurfaceActive]);
+  }, [clearHoverState, isSurfaceActive]);
 
   useEffect(() => {
     if (!isSurfaceActive || !isExpanded) {
@@ -86,11 +89,11 @@ export function useNavigation() {
 
       setExpanded(false);
       setSearchQuery('');
-      setIsHovered(false);
+      clearHoverState();
 
       return didNavigate;
     },
-    [navigateWithGuards, setExpanded, setSearchQuery, setIsHovered]
+    [clearHoverState, navigateWithGuards, setExpanded, setSearchQuery]
   );
 
   const { displayItems, activeIndex: layoutActiveIndex } = useNavigationLayout({
@@ -101,7 +104,6 @@ export function useNavigation() {
   });
 
   useRouteChangeEffects(pathname, setExpanded, setSearchQuery, setIsHovered);
-
 
   return {
     navigationItems: displayItems,

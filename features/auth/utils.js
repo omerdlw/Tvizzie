@@ -1,6 +1,6 @@
 'use client';
 
-import { evaluatePasswordRules, validatePasswordRules } from '@/core/auth/password-validation';
+import { arePasswordRulesSatisfied, validatePasswordRules } from '@/core/auth/password-validation';
 import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
 import { AUTH_ERROR_MESSAGES, AUTH_ERROR_MESSAGE_PATTERNS, EMAIL_DOMAIN_PATTERNS } from './constants';
 
@@ -25,7 +25,7 @@ export function validatePassword(value) {
 }
 
 export function hasSatisfiedPasswordRequirements(value) {
-  return evaluatePasswordRules(value).every((requirement) => requirement.satisfied);
+  return arePasswordRulesSatisfied(value);
 }
 
 export function isPasswordRequirementError(error) {

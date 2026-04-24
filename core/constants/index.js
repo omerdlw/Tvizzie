@@ -44,8 +44,6 @@ export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
 
 export const DESTRUCTIVE_ACTION_TONE_CLASS =
   'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-white hover:border-error';
-export const MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS =
-  'border border-black/15 bg-white text-error hover:border-error hover:bg-error hover:text-white';
 
 export const INFO_ACTION_TONE_CLASS =
   'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-white hover:border-info';

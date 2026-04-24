@@ -17,7 +17,9 @@ import {
   validatePassword,
 } from '../security';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
-import { AUTH_ROUTES, buildAuthHref, requestVerificationCode } from '@/features/auth';
+import { requestVerificationCode } from '@/features/auth/requests';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref } from '@/features/auth/utils';
 import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { useCallback } from 'react';

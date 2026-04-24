@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { HomeSectionReveal } from '@/app/(home)/motion';
-import MediaPosterCard from '@/features/shared/media-poster-card';
+import MediaPosterCard from '@/ui/media/media-poster-card';
 import { GenreChip } from './genre-chip';
 import Icon from '@/ui/icon';
 

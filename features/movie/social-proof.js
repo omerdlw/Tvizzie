@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { isProjectFeatureEnabled } from '@/config/project.config';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service';
@@ -14,7 +13,7 @@ const EMPTY_SOCIAL_PROOF = Object.freeze({
   watchlist: { count: 0, previewUsers: [], users: [] },
 });
 
-const IS_ENABLED = isProjectFeatureEnabled('media_social_proof');
+const IS_ENABLED = true;
 
 function getSummaryParts({ likes, watchlist, reviews }) {
   return [

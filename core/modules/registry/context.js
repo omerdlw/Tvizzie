@@ -16,6 +16,7 @@ export const REGISTRY_TYPES = {
 };
 
 const DEFAULT_SOURCE = 'dynamic';
+const DYNAMIC_SOURCE = 'dynamic';
 const HISTORY_LIMIT = 300;
 
 const SOURCE_PRIORITY = {
@@ -403,8 +404,12 @@ function createUnregisterOperation(type, key, sourceOrOptions) {
   };
 }
 
+function isValidRegistryTarget(type, key) {
+  return Boolean(type && key);
+}
+
 function applyOperation(state, operation) {
-  if (!operation?.type || !operation?.key) {
+  if (!isValidRegistryTarget(operation?.type, operation?.key)) {
     return state;
   }
 
@@ -420,7 +425,7 @@ function applyOperation(state, operation) {
 }
 
 function hasOperationEffect(state, operation) {
-  if (!operation?.type || !operation?.key) {
+  if (!isValidRegistryTarget(operation?.type, operation?.key)) {
     return false;
   }
 
@@ -462,6 +467,16 @@ function resolveEffectiveOperations(state, operations) {
   });
 
   return { effectiveOperations, nextState };
+}
+
+function runScopedBatch(batch, executor, createScopedQueue) {
+  if (typeof executor !== 'function') {
+    return 0;
+  }
+
+  return batch((queue) => {
+    executor(createScopedQueue(queue));
+  });
 }
 
 export function RegistryProvider({ children, enableHistory = true }) {
@@ -559,7 +574,7 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
   const register = useCallback(
     (type, key, item, sourceOrOptions = DEFAULT_SOURCE, optionsArg = {}) => {
-      if (!type || !key) return;
+      if (!isValidRegistryTarget(type, key)) return;
 
       const timestamp = Date.now();
       const operation = createRegisterOperation(type, key, item, sourceOrOptions, optionsArg, timestamp);
@@ -586,7 +601,7 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
   const unregister = useCallback(
     (type, key, sourceOrOptions = DEFAULT_SOURCE) => {
-      if (!type || !key) return;
+      if (!isValidRegistryTarget(type, key)) return;
 
       const operation = createUnregisterOperation(type, key, sourceOrOptions);
       const currentState = registriesRef.current;
@@ -615,11 +630,11 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
       const queue = {
         register: (type, key, item, sourceOrOptions = DEFAULT_SOURCE, optionsArg = {}) => {
-          if (!type || !key) return;
+          if (!isValidRegistryTarget(type, key)) return;
           operations.push(createRegisterOperation(type, key, item, sourceOrOptions, optionsArg, timestamp));
         },
         unregister: (type, key, sourceOrOptions = DEFAULT_SOURCE) => {
-          if (!type || !key) return;
+          if (!isValidRegistryTarget(type, key)) return;
           operations.push(createUnregisterOperation(type, key, sourceOrOptions));
         },
       };
@@ -798,27 +813,22 @@ function useModalRegistryActions() {
   const { batch, register, unregister } = useRegistryActions();
 
   const modalRegister = useCallback(
-    (key, component, options = {}) => register(REGISTRY_TYPES.MODAL, key, component, 'dynamic', options),
+    (key, component, options = {}) => register(REGISTRY_TYPES.MODAL, key, component, DYNAMIC_SOURCE, options),
     [register]
   );
 
-  const modalUnregister = useCallback((key) => unregister(REGISTRY_TYPES.MODAL, key, 'dynamic'), [unregister]);
+  const modalUnregister = useCallback((key) => unregister(REGISTRY_TYPES.MODAL, key, DYNAMIC_SOURCE), [unregister]);
 
   const modalBatch = useCallback(
-    (executor) => {
-      if (typeof executor !== 'function') return 0;
-
-      return batch((queue) => {
-        executor({
-          register: (key, component, options = {}) => {
-            queue.register(REGISTRY_TYPES.MODAL, key, component, 'dynamic', options);
-          },
-          unregister: (key) => {
-            queue.unregister(REGISTRY_TYPES.MODAL, key, 'dynamic');
-          },
-        });
-      });
-    },
+    (executor) =>
+      runScopedBatch(batch, executor, (queue) => ({
+        register: (key, component, options = {}) => {
+          queue.register(REGISTRY_TYPES.MODAL, key, component, DYNAMIC_SOURCE, options);
+        },
+        unregister: (key) => {
+          queue.unregister(REGISTRY_TYPES.MODAL, key, DYNAMIC_SOURCE);
+        },
+      })),
     [batch]
   );
 
@@ -847,20 +857,15 @@ export function useNavRegistryActions() {
   );
 
   const navBatch = useCallback(
-    (executor) => {
-      if (typeof executor !== 'function') return 0;
-
-      return batch((queue) => {
-        executor({
-          register: (key, config, sourceOrOptions = DEFAULT_SOURCE, options = {}) => {
-            queue.register(REGISTRY_TYPES.NAV, key, config, sourceOrOptions, options);
-          },
-          unregister: (key, sourceOrOptions = DEFAULT_SOURCE) => {
-            queue.unregister(REGISTRY_TYPES.NAV, key, sourceOrOptions);
-          },
-        });
-      });
-    },
+    (executor) =>
+      runScopedBatch(batch, executor, (queue) => ({
+        register: (key, config, sourceOrOptions = DEFAULT_SOURCE, options = {}) => {
+          queue.register(REGISTRY_TYPES.NAV, key, config, sourceOrOptions, options);
+        },
+        unregister: (key, sourceOrOptions = DEFAULT_SOURCE) => {
+          queue.unregister(REGISTRY_TYPES.NAV, key, sourceOrOptions);
+        },
+      })),
     [batch]
   );
 
@@ -919,30 +924,25 @@ export function useContextMenuRegistry() {
   const contextMenuGetAll = useCallback(() => getAll(REGISTRY_TYPES.CONTEXT_MENU), [getAll]);
 
   const contextMenuRegister = useCallback(
-    (key, config, options = {}) => register(REGISTRY_TYPES.CONTEXT_MENU, key, config, 'dynamic', options),
+    (key, config, options = {}) => register(REGISTRY_TYPES.CONTEXT_MENU, key, config, DYNAMIC_SOURCE, options),
     [register]
   );
 
   const contextMenuUnregister = useCallback(
-    (key, sourceOrOptions = 'dynamic') => unregister(REGISTRY_TYPES.CONTEXT_MENU, key, sourceOrOptions),
+    (key, sourceOrOptions = DYNAMIC_SOURCE) => unregister(REGISTRY_TYPES.CONTEXT_MENU, key, sourceOrOptions),
     [unregister]
   );
 
   const contextMenuBatch = useCallback(
-    (executor) => {
-      if (typeof executor !== 'function') return 0;
-
-      return batch((queue) => {
-        executor({
-          register: (key, config, options = {}) => {
-            queue.register(REGISTRY_TYPES.CONTEXT_MENU, key, config, 'dynamic', options);
-          },
-          unregister: (key, sourceOrOptions = 'dynamic') => {
-            queue.unregister(REGISTRY_TYPES.CONTEXT_MENU, key, sourceOrOptions);
-          },
-        });
-      });
-    },
+    (executor) =>
+      runScopedBatch(batch, executor, (queue) => ({
+        register: (key, config, options = {}) => {
+          queue.register(REGISTRY_TYPES.CONTEXT_MENU, key, config, DYNAMIC_SOURCE, options);
+        },
+        unregister: (key, sourceOrOptions = DYNAMIC_SOURCE) => {
+          queue.unregister(REGISTRY_TYPES.CONTEXT_MENU, key, sourceOrOptions);
+        },
+      })),
     [batch]
   );
 

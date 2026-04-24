@@ -6,7 +6,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { REVIEW_SORT_MODE } from '@/features/reviews/utils';
 import RatingRangeSelector from '@/features/reviews/parts/rating-range-selector';
 import { LIST_SORT_OPTIONS, MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/features/account/filtering';
-import { useDebounce } from '@/core/hooks';
+import { useDebounce } from '@/core/hooks/use-debounce';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 

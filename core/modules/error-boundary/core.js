@@ -6,6 +6,30 @@ import { globalEvents, EVENT_TYPES } from '@/core/constants/events';
 
 import { getErrorReporter } from './reporter';
 
+function isDevelopment() {
+  return process.env.NODE_ENV === 'development';
+}
+
+function getRuntimePath() {
+  return typeof window !== 'undefined' ? window.location.pathname : null;
+}
+
+function getUserAgent() {
+  return typeof navigator !== 'undefined' ? navigator.userAgent : null;
+}
+
+function createErrorContext({ errorInfo, name, title, variant }) {
+  return {
+    componentStack: errorInfo?.componentStack,
+    route: getRuntimePath(),
+    userAgent: getUserAgent(),
+    timestamp: new Date().toISOString(),
+    name: name || title,
+    variant,
+    source: 'ErrorBoundary',
+  };
+}
+
 export class ErrorBoundaryCore extends React.Component {
   constructor(props) {
     super(props);
@@ -38,21 +62,14 @@ export class ErrorBoundaryCore extends React.Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
 
-    const context = {
-      componentStack: errorInfo?.componentStack,
-      route: typeof window !== 'undefined' ? window.location.pathname : null,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-      timestamp: new Date().toISOString(),
-      name: this.props.name || this.props.title,
-      variant: this.props.variant,
-      source: 'ErrorBoundary',
-    };
+    const { message, name, onError, silent, title, variant } = this.props;
+    const context = createErrorContext({ errorInfo, name, title, variant });
 
-    this.props.onError?.(error, errorInfo, context);
+    onError?.(error, errorInfo, context);
 
-    if (!this.props.silent) {
+    if (!silent) {
       globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-        message: this.props.message || error?.message || 'An unexpected error occurred',
+        message: message || error?.message || 'An unexpected error occurred',
         error,
         errorInfo,
         resetError: this.resetError,
@@ -65,7 +82,7 @@ export class ErrorBoundaryCore extends React.Component {
       reporter.captureError(error, context);
     }
 
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevelopment()) {
       console.error('[ErrorBoundary]', error, context);
     }
   }

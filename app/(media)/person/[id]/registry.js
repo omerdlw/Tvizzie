@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import ImagePreviewModal from '@/features/modal/image-preview-modal';
+import ImagePreviewModal from '@/features/modals/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';

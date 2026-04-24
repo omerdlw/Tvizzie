@@ -1,5 +1,5 @@
-import Carousel from '@/features/shared/carousel';
-import MediaPosterCard from '@/features/shared/media-poster-card';
+import Carousel from '@/ui/media/carousel';
+import MediaPosterCard from '@/ui/media/media-poster-card';
 
 export function PosterRail({ items = [] }) {
   if (!items.length) {

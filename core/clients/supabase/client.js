@@ -2,6 +2,11 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 
+import {
+  isSupabaseProjectStorageKey,
+  listSupabaseAuthStorageKeys,
+  normalizeStorageValue,
+} from './auth-storage';
 import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './constants';
 
 if (typeof window !== 'undefined') {
@@ -15,31 +20,6 @@ if (typeof window !== 'undefined') {
 }
 
 let clientInstance = null;
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function resolveProjectRef() {
-  try {
-    const hostname = new URL(SUPABASE_URL).hostname;
-    return normalizeValue(hostname.split('.')[0] || '');
-  } catch {
-    return '';
-  }
-}
-
-function listBrowserAuthStorageKeys() {
-  const projectRef = resolveProjectRef();
-
-  if (!projectRef) {
-    return [];
-  }
-
-  const base = `sb-${projectRef}-auth-token`;
-
-  return [base, `${base}-code-verifier`, `${base}-user`];
-}
 
 function expireBrowserCookie(name) {
   if (typeof document === 'undefined' || !name) {
@@ -76,8 +56,8 @@ function purgeMatchingStorageEntries(storage, matcher) {
 }
 
 function isIgnorableSignOutError(error) {
-  const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
-  const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
+  const message = normalizeStorageValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
+  const code = normalizeStorageValue(error?.code || error?.error_code).toLowerCase();
 
   return (
     code === 'bad_jwt' ||
@@ -112,22 +92,21 @@ export async function clearBrowserSupabaseAuthState({ clearServer = true } = {})
     return;
   }
 
-  const projectRef = resolveProjectRef();
-  const cookieNames = new Set(listBrowserAuthStorageKeys());
+  const cookieNames = new Set(listSupabaseAuthStorageKeys());
 
-  normalizeValue(document.cookie)
+  normalizeStorageValue(document.cookie)
     .split(';')
-    .map((entry) => normalizeValue(entry).split('=')[0])
+    .map((entry) => normalizeStorageValue(entry).split('=')[0])
     .filter(Boolean)
     .forEach((name) => {
-      if (name.startsWith('sb-') && (!projectRef || name.startsWith(`sb-${projectRef}-`))) {
+      if (isSupabaseProjectStorageKey(name)) {
         cookieNames.add(name);
       }
     });
 
   cookieNames.forEach((name) => expireBrowserCookie(name));
 
-  const exactStorageKeys = new Set(listBrowserAuthStorageKeys());
+  const exactStorageKeys = new Set(listSupabaseAuthStorageKeys());
 
   exactStorageKeys.forEach((key) => {
     removeStorageKey(window.localStorage, key);
@@ -135,19 +114,11 @@ export async function clearBrowserSupabaseAuthState({ clearServer = true } = {})
   });
 
   purgeMatchingStorageEntries(window.localStorage, (key) => {
-    const normalizedKey = normalizeValue(key);
-
-    return Boolean(
-      normalizedKey && normalizedKey.startsWith('sb-') && (!projectRef || normalizedKey.startsWith(`sb-${projectRef}-`))
-    );
+    return isSupabaseProjectStorageKey(key);
   });
 
   purgeMatchingStorageEntries(window.sessionStorage, (key) => {
-    const normalizedKey = normalizeValue(key);
-
-    return Boolean(
-      normalizedKey && normalizedKey.startsWith('sb-') && (!projectRef || normalizedKey.startsWith(`sb-${projectRef}-`))
-    );
+    return isSupabaseProjectStorageKey(key);
   });
 
   if (clearServer) {

@@ -34,7 +34,7 @@ function buildImdbUrl(baseUrl, pathname) {
 const IMDB_API_BASE_URL = normalizeBaseUrl(process.env.IMDB_API_BASE_URL);
 const IMDB_FETCH_TIMEOUT_MS = resolveTimeoutMs(process.env.IMDB_FETCH_TIMEOUT_MS, 4500);
 
-export const IMDB_REVALIDATE = Object.freeze({
+const IMDB_REVALIDATE = Object.freeze({
   TITLE: 60 * 60 * 24,
 });
 

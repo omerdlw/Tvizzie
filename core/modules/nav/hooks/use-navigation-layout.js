@@ -113,6 +113,15 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
+function getCollapsedVisibleCount({ isHovered, isCompact, pathname, shouldShowOverlayStack, shouldShowSingleStatusCard }) {
+  if (shouldShowSingleStatusCard) {
+    return 1;
+  }
+
+  const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact);
+  return shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
+}
+
 export function useNavigationLayout({ isHovered, isCompact = false, navigationItems, activeItem } = {}) {
   const pathname = usePathname();
   const { expanded } = useNavigationContext();
@@ -134,25 +143,27 @@ export function useNavigationLayout({ isHovered, isCompact = false, navigationIt
 
     const reorderedItems = reorderItemsWithActiveFirst(itemsWithActiveItem, activeIndex);
 
+    const filteredItems = removeInactiveLoadingItems(reorderedItems, activeItem);
+
     if (expanded) {
-      const expandedItems = removeInactiveLoadingItems(reorderedItems, activeItem);
-      const expandedActiveIndex = expandedItems.findIndex((item) => isSameItem(item, activeItem));
+      const expandedActiveIndex = filteredItems.findIndex((item) => isSameItem(item, activeItem));
 
       return {
-        displayItems: expandedItems,
+        displayItems: filteredItems,
         displayActiveIndex: expandedActiveIndex,
       };
     }
 
-    const shouldRevealCollapsedStack =
-      !shouldShowSingleStatusCard && (isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact));
-    const visibleCount = shouldShowSingleStatusCard ? 1 : shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
+    const visibleCount = getCollapsedVisibleCount({
+      isHovered,
+      isCompact,
+      pathname,
+      shouldShowOverlayStack,
+      shouldShowSingleStatusCard,
+    });
 
     return {
-      displayItems: removeAncestorDuplicates(removeInactiveLoadingItems(reorderedItems, activeItem)).slice(
-        0,
-        visibleCount
-      ),
+      displayItems: removeAncestorDuplicates(filteredItems).slice(0, visibleCount),
       displayActiveIndex: reorderedItems.length > 0 ? 0 : -1,
     };
   }, [pathname, expanded, isHovered, isCompact, navigationItems, activeItem]);

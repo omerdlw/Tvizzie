@@ -5,9 +5,27 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 
 import { createAccountClient } from './client';
-import { DEFAULT_ACCOUNT_CONFIG, DEFAULT_ACCOUNT_STATE } from './config';
 
 const EMPTY_OBJECT = Object.freeze({});
+const DEFAULT_ACCOUNT_BOOTSTRAP_CONFIG = Object.freeze({
+  clearPayload: null,
+  resolvePayload: null,
+});
+const DEFAULT_ACCOUNT_CONFIG = Object.freeze({
+  adapter: null,
+  autoBootstrap: true,
+  autoSubscribeCurrentAccount: true,
+  bootstrap: DEFAULT_ACCOUNT_BOOTSTRAP_CONFIG,
+  debug: false,
+});
+const DEFAULT_ACCOUNT_STATE = Object.freeze({
+  currentAccount: null,
+  error: null,
+  isBootstrapping: false,
+  isLoading: true,
+  isReady: false,
+  lastUpdatedAt: null,
+});
 const CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 15000;
 const CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 const FALLBACK_ACCOUNT_ACTIONS = Object.freeze({
@@ -489,7 +507,7 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
   );
 }
 
-export function useAccountConfig() {
+function useAccountConfig() {
   return useContext(AccountConfigContext);
 }
 
@@ -506,11 +524,11 @@ export function useAccountClient() {
   }, [client, config]);
 }
 
-export function useAccountState() {
+function useAccountState() {
   return useContext(AccountStateContext);
 }
 
-export function useAccountActions() {
+function useAccountActions() {
   return useContext(AccountActionsContext);
 }
 

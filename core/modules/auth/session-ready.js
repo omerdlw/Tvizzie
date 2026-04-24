@@ -8,20 +8,15 @@ export function useAuthSessionReady(expectedUserId = null) {
   const authState = useAuthState();
 
   return useMemo(() => {
-    const userId = authState?.user?.id ?? null;
-
-    if (!expectedUserId) {
-      return Boolean(authState?.isReady);
-    }
-
     if (!authState?.isReady) {
       return false;
     }
 
-    if (!userId) {
-      return false;
+    if (!expectedUserId) {
+      return true;
     }
 
-    return String(userId) === String(expectedUserId);
+    const userId = authState?.user?.id ?? null;
+    return Boolean(userId) && String(userId) === String(expectedUserId);
   }, [authState, expectedUserId]);
 }

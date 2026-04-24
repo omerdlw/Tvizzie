@@ -4,7 +4,7 @@ import { startTransition, useCallback, useEffect, useState } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useDebounce } from '@/core/hooks';
+import { useDebounce } from '@/core/hooks/use-debounce';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import {
   NAV_ACTION_SPRING,
@@ -14,7 +14,7 @@ import {
 } from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
 
-import { SEARCH_LIMITS, SEARCH_TYPES } from './constants';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/features/search/constants';
 import SearchActionControls from './parts/controls';
 import SearchResultItem from './parts/item';
 import { navActionClass } from './utils';

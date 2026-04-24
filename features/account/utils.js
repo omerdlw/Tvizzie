@@ -1,7 +1,7 @@
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import { FOLLOW_STATUSES } from '@/core/services/social/follows.service';
 import { getUserAvatarUrl } from '@/core/utils';
-import { isPermissionDeniedError } from '@/core/utils/errors';
+import { isPermissionDeniedError } from '@/core/utils';
 export {
   AUTH_PURPOSE,
   EMAIL_PATTERN,

@@ -99,37 +99,3 @@ export async function updateUserMediaPosition(docRef, position) {
 
   throw new Error(`Unsupported media position table: ${ref.table}`);
 }
-
-export function normalizeTimestamp(value) {
-  if (!value) return null;
-
-  const parsedDate = new Date(value);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return null;
-  }
-
-  return parsedDate.toISOString();
-}
-
-export function normalizeUserMediaSnapshot(snapshot) {
-  return snapshot || null;
-}
-
-export function subscribeToUserMediaStatus(_docRef, callback) {
-  callback(false, null);
-  return () => {};
-}
-
-export function subscribeToUserMediaCollection(_itemsQuery, callback) {
-  callback([]);
-  return () => {};
-}
-
-export async function setUserMediaDoc() {
-  throw new Error('setUserMediaDoc is not supported after Supabase cutover');
-}
-
-export async function toggleUserMediaDoc() {
-  throw new Error('toggleUserMediaDoc is not supported after Supabase cutover');
-}

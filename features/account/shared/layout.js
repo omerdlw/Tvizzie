@@ -13,9 +13,9 @@ import {
 } from '@/app/(account)/account/motion';
 export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
 import AccountHero from './hero';
-import NavHeightSpacer from '@/features/layout/nav-height-spacer';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import NotFoundTemplate from '@/features/shared/not-found-template';
+import NotFoundTemplate from '@/features/app-shell/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 

@@ -6,25 +6,27 @@ class SmartCache {
     this.ttl = ttl;
   }
 
-  subscribe(key, cb) {
+  subscribe(key, callback) {
     if (!this.subscribers.has(key)) {
       this.subscribers.set(key, new Set());
     }
 
-    this.subscribers.get(key).add(cb);
+    const subscribers = this.subscribers.get(key);
+    subscribers.add(callback);
 
     return () => {
-      const set = this.subscribers.get(key);
-      if (!set) return;
-      set.delete(cb);
-      if (set.size === 0) this.subscribers.delete(key);
+      subscribers.delete(callback);
+
+      if (subscribers.size === 0) {
+        this.subscribers.delete(key);
+      }
     };
   }
 
   notify(key, data) {
-    const subs = this.subscribers.get(key);
-    if (!subs) return;
-    subs.forEach((cb) => cb(data));
+    this.subscribers.get(key)?.forEach((callback) => {
+      callback(data);
+    });
   }
 
   set(key, data, ttl = this.ttl) {
@@ -39,17 +41,19 @@ class SmartCache {
   get(key) {
     const entry = this.store.get(key);
 
-    if (!entry) return null;
-
-    if (Date.now() > entry.expires) {
-      this.store.delete(key);
+    if (!entry) {
       return null;
     }
 
-    return entry.data;
+    if (Date.now() <= entry.expires) {
+      return entry.data;
+    }
+
+    this.store.delete(key);
+    return null;
   }
 
-  async fetchOrGet(key, fetchFn, ttl) {
+  async fetchOrGet(key, fetcher, ttl) {
     const cached = this.get(key);
 
     if (cached !== null) {
@@ -60,7 +64,7 @@ class SmartCache {
       return this.promises.get(key);
     }
 
-    const promise = fetchFn()
+    const promise = fetcher()
       .then((data) => {
         this.set(key, data, ttl);
         return data;
@@ -81,21 +85,20 @@ class SmartCache {
 
   clear() {
     const keys = [...this.store.keys()];
+
     this.store.clear();
     this.promises.clear();
-
-    keys.forEach((k) => this.notify(k, null));
+    keys.forEach((key) => this.notify(key, null));
   }
 
   invalidatePattern(pattern) {
     const regex = new RegExp(pattern);
-
     let count = 0;
 
     for (const key of this.store.keys()) {
       if (regex.test(key)) {
         this.delete(key);
-        count++;
+        count += 1;
       }
     }
 

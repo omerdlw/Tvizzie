@@ -1,7 +1,7 @@
 'use client';
 
 import { TMDB_IMG } from '@/core/constants';
-import NavHeightSpacer from '@/features/layout/nav-height-spacer';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import Registry from './registry';
 import View from './view';
 

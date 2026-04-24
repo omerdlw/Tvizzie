@@ -1,7 +1,7 @@
-export const MOVIE_MEDIA_TYPE = 'movie';
-export const PERSON_MEDIA_TYPE = 'person';
-export const LIST_SUBJECT_TYPE = 'list';
-export const USER_SUBJECT_TYPE = 'user';
+const MOVIE_MEDIA_TYPE = 'movie';
+const PERSON_MEDIA_TYPE = 'person';
+const LIST_SUBJECT_TYPE = 'list';
+const USER_SUBJECT_TYPE = 'user';
 
 export function normalizeMediaType(value) {
   return String(value || '')
@@ -31,18 +31,6 @@ export function resolveExplicitMediaType(item = {}, fallbackValue = '') {
   }
 
   return normalizeMediaType(item?.entityType ?? item?.media_type ?? item?.type ?? fallbackValue);
-}
-
-export function hasMovieMediaType(item = {}, fallbackValue = '') {
-  return isMovieMediaType(resolveExplicitMediaType(item, fallbackValue));
-}
-
-export function filterMovieItems(items = [], fallbackValue = '') {
-  if (!Array.isArray(items)) {
-    return [];
-  }
-
-  return items.filter((item) => hasMovieMediaType(item, fallbackValue));
 }
 
 export function isTvReference(value) {

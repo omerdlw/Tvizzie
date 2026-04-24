@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import Link from 'next/link';
 
-import ListPreviewComposition from '@/features/shared/list-preview-composition';
+import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';

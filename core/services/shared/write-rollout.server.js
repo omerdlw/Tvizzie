@@ -1,7 +1,5 @@
 import { createHash } from 'crypto';
 
-import { ROLLOUT_CONFIG } from '@/config/rollout.config';
-
 function normalizeValue(value) {
   return String(value || '')
     .trim()
@@ -45,6 +43,136 @@ function toPercent(value, fallback = 0) {
 
   return Math.max(0, Math.min(100, parsed));
 }
+
+function parseConfigPatch(rawValue) {
+  const normalized = String(rawValue || '').trim();
+
+  if (!normalized) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(normalized);
+
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function deepMerge(base, patch) {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+    return base;
+  }
+
+  return Object.entries(patch).reduce(
+    (output, [key, value]) => ({
+      ...output,
+      [key]:
+        value && typeof value === 'object' && !Array.isArray(value)
+          ? deepMerge(base?.[key] || {}, value)
+          : value,
+    }),
+    { ...base }
+  );
+}
+
+function deepFreeze(target) {
+  if (!target || typeof target !== 'object' || Object.isFrozen(target)) {
+    return target;
+  }
+
+  Object.freeze(target);
+  Object.values(target).forEach(deepFreeze);
+  return target;
+}
+
+const BASE_ROLLOUT_CONFIG = {
+  defaultMode: 'shadow',
+  canaryPercent: 5,
+  domains: {
+    account: {
+      defaultMode: 'shadow',
+      endpoints: {
+        'account-media-upload': {
+          mode: 'edge_canary',
+          canaryPercent: 10,
+        },
+        'account-profile-write': {
+          mode: 'shadow',
+          canaryPercent: 10,
+        },
+      },
+    },
+    auth: {
+      defaultMode: 'shadow',
+      endpoints: {
+        'auth-challenge-write': {
+          mode: 'shadow',
+          canaryPercent: 5,
+        },
+      },
+    },
+    follows: {
+      defaultMode: 'edge_canary',
+      endpoints: {},
+    },
+    notifications: {
+      defaultMode: 'edge_canary',
+      endpoints: {},
+    },
+    reviews: {
+      defaultMode: 'shadow',
+      endpoints: {},
+    },
+  },
+};
+
+function normalizeRolloutDomains(domains = {}, defaultMode, defaultCanaryPercent) {
+  return Object.fromEntries(
+    Object.entries(domains).map(([domainKey, domainConfig]) => {
+      const normalizedDomain = normalizeValue(domainKey);
+      const rawDomainConfig = domainConfig || {};
+      const domainMode = toMode(rawDomainConfig.defaultMode, defaultMode);
+      const domainCanaryPercent = toPercent(rawDomainConfig.canaryPercent, defaultCanaryPercent);
+
+      return [
+        normalizedDomain,
+        {
+          defaultMode: domainMode,
+          canaryPercent: domainCanaryPercent,
+          endpoints: Object.fromEntries(
+            Object.entries(rawDomainConfig.endpoints || {}).map(([endpointKey, endpointConfig]) => {
+              const rawEndpointConfig = endpointConfig || {};
+
+              return [
+                normalizeValue(endpointKey),
+                {
+                  mode: toMode(rawEndpointConfig.mode, domainMode),
+                  canaryPercent: toPercent(rawEndpointConfig.canaryPercent, domainCanaryPercent),
+                },
+              ];
+            })
+          ),
+        },
+      ];
+    })
+  );
+}
+
+function createRolloutConfig() {
+  const rawConfig = deepMerge(BASE_ROLLOUT_CONFIG, parseConfigPatch(process.env.ROLLOUT_CONFIG_JSON) || {});
+  const defaultMode = toMode(process.env.ROLLOUT_DEFAULT_MODE, toMode(rawConfig.defaultMode, 'shadow'));
+  const canaryPercent = toPercent(process.env.ROLLOUT_CANARY_PERCENT, toPercent(rawConfig.canaryPercent, 5));
+
+  return deepFreeze({
+    defaultMode,
+    canaryPercent,
+    domains: normalizeRolloutDomains(rawConfig.domains || {}, defaultMode, canaryPercent),
+  });
+}
+
+export const ROLLOUT_CONFIG = createRolloutConfig();
 
 function resolveDomainConfig(domain) {
   const normalizedDomain = normalizeValue(domain);

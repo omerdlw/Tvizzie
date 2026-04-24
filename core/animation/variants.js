@@ -1,26 +1,23 @@
-import { ANIMATION_DURATIONS, ANIMATION_EASINGS, ANIMATION_STAGGER } from './config';
+import { ANIMATION_DURATIONS, ANIMATION_EASINGS, ANIMATION_STAGGER } from './tokens';
 
-export function clampAnimationValue(value, min = 0, max = ANIMATION_STAGGER.MAX_DELAY) {
+function clampAnimationValue(value, min = 0, max = ANIMATION_STAGGER.MAX_DELAY) {
   return Math.max(min, Math.min(max, value));
 }
 
-export function resolveStaggerDelay({ index = 0, groupIndex = 0, itemStep = ANIMATION_STAGGER.CASCADE, groupStep = ANIMATION_STAGGER.GROUP }) {
+function resolveStaggerDelay({
+  index = 0,
+  groupIndex = 0,
+  itemStep = ANIMATION_STAGGER.CASCADE,
+  groupStep = ANIMATION_STAGGER.GROUP,
+}) {
   return clampAnimationValue(groupIndex * groupStep + index * itemStep);
-}
-
-export function resolveSequenceDelay({ delay = 0, groupIndex = 0, sequence = null }) {
-  if (!sequence) {
-    return 0;
-  }
-
-  return clampAnimationValue((sequence.delay || 0) + groupIndex * (sequence.staggerStep || 0) + delay);
 }
 
 export function resolvePhaseDelay({ delay = 0, lead = 0 }) {
   return clampAnimationValue(lead + delay);
 }
 
-export function buildRevealTransition({
+function buildRevealTransition({
   delay = 0,
   duration = ANIMATION_DURATIONS.SECTION,
   ease = ANIMATION_EASINGS.EXPO_OUT,

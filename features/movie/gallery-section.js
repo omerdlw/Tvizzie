@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion';
 
 import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
-import Carousel from '@/features/shared/carousel';
-import MediaCard from '@/features/shared/media-card';
+import Carousel from '@/ui/media/carousel';
+import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 

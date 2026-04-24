@@ -15,6 +15,7 @@ import { useModalRegistry } from '../registry/context';
 import { getBackdropVariants, getModalVariants, POSITION_CLASSES } from './utils';
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
 
 function resolveActivePosition(position, responsivePosition, isMobileViewport) {
   if (!responsivePosition || typeof responsivePosition !== 'object') {
@@ -74,6 +75,14 @@ function getModalLabel(modalType) {
   return MODAL_LABELS[modalType] || modalType || 'Modal';
 }
 
+function isSidePosition(position) {
+  return position === MODAL_POSITIONS.LEFT || position === MODAL_POSITIONS.RIGHT;
+}
+
+function isVerticalEdgePosition(position) {
+  return position === MODAL_POSITIONS.TOP || position === MODAL_POSITIONS.BOTTOM;
+}
+
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
     <div className="center gap-1.5 border-t border-black/10 px-3 py-1.5">
@@ -83,14 +92,20 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
-          <path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M7.5 2.5L4 6l3.5 3.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         {getModalLabel(previousEntry.modalType)}
       </button>
 
       <span className="text-[10px] text-black/20">/</span>
 
-      <span className="rounded-[10px] bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="bg-primary rounded-[10px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </div>
@@ -112,9 +127,12 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
   const isLeftModal = activePosition === MODAL_POSITIONS.LEFT;
   const isRightModal = activePosition === MODAL_POSITIONS.RIGHT;
+  const isSideModal = isSidePosition(activePosition);
   const isTopModalPosition = activePosition === MODAL_POSITIONS.TOP;
   const isBottomModalPosition = activePosition === MODAL_POSITIONS.BOTTOM;
-  const isMobileSideModal = isMobileViewport && (isLeftModal || isRightModal);
+  const isVerticalEdgeModal = isVerticalEdgePosition(activePosition);
+  const isMobileSideModal = isMobileViewport && isSideModal;
+  const previousEntry = modalStack[stackIndex - 1] || null;
 
   const titleId = `modal-title-${entry.id}`;
 
@@ -181,7 +199,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         'fixed inset-0 flex flex-col',
         POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
         isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
-        !(isLeftModal || isRightModal) && 'px-3 sm:px-0'
+        !isSideModal && 'px-3 sm:px-0'
       )}
     >
       {isTopModal ? (
@@ -201,8 +219,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         className={cn(
           'relative flex max-w-full transform-gpu flex-col',
           'w-full sm:w-auto',
-          (isLeftModal || isRightModal || isTopModalPosition || isBottomModalPosition) &&
-            'self-stretch sm:self-auto'
+          (isSideModal || isVerticalEdgeModal) && 'self-stretch sm:self-auto'
         )}
         style={{
           zIndex: modalZIndex,
@@ -223,7 +240,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             isPanelChrome && isTopModalPosition && 'rounded-t-none',
             isPanelChrome && isBottomModalPosition && 'rounded-b-none',
             isPanelChrome &&
-              (isLeftModal || isRightModal) && [
+              isSideModal && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
                 isLeftModal ? 'sm:rounded-l-none sm:border-l-0' : 'sm:rounded-r-none sm:border-r-0',
               ]
@@ -243,10 +260,10 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             />
           </ModuleError>
 
-          {isTopModal && stackIndex > 0 && modalStack[stackIndex - 1] && (
+          {isTopModal && stackIndex > 0 && previousEntry && (
             <ModalLayerSwitcher
               currentEntry={entry}
-              previousEntry={modalStack[stackIndex - 1]}
+              previousEntry={previousEntry}
               onSwitchToPrevious={() => closeModal(null, entry.id)}
             />
           )}
@@ -284,9 +301,25 @@ export default function Modal() {
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    window.dispatchEvent(
+      new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
+        detail: {
+          locked: isOpen,
+          source: 'modal',
+        },
+      })
+    );
 
     return () => {
       document.body.style.overflow = 'unset';
+      window.dispatchEvent(
+        new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
+          detail: {
+            locked: false,
+            source: 'modal',
+          },
+        })
+      );
     };
   }, [isOpen]);
 

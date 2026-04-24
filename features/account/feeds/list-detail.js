@@ -32,7 +32,7 @@ import ReviewAuthFallback from '@/features/reviews/parts/review-auth-fallback';
 import ReviewHeader from '@/features/reviews/parts/review-header';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { REVIEW_SORT_MODE } from '@/features/reviews/utils';
-import MediaCard from '@/features/shared/media-card';
+import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { AuthGate } from '@/core/modules/auth';
 import { Button } from '@/ui/elements';

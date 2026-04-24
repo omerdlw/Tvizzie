@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { resolveExplicitMediaType } from '@/core/utils/media';
 import { cn } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';

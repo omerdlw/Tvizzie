@@ -93,6 +93,15 @@ function withInstanceIdForUnregister(instanceId, sourceOrOptions) {
   return { instanceId };
 }
 
+function resolveRegisterArgsWithInstance(instanceId, sourceOrOptions, optionsArg) {
+  const input = withInstanceId(instanceId, sourceOrOptions, optionsArg);
+  return [input.sourceOrOptions, input.optionsArg];
+}
+
+function resolveUnregisterArgWithInstance(instanceId, sourceOrOptions) {
+  return withInstanceIdForUnregister(instanceId, sourceOrOptions);
+}
+
 function isReactNodeLike(value) {
   return (
     value === null ||
@@ -210,16 +219,20 @@ export function useRegistry(config) {
 
   const registerWithInstance = useCallback(
     (type, key, item, sourceOrOptions, optionsArg) => {
-      const input = withInstanceId(instanceIdRef.current, sourceOrOptions, optionsArg);
+      const [resolvedSourceOrOptions, resolvedOptionsArg] = resolveRegisterArgsWithInstance(
+        instanceIdRef.current,
+        sourceOrOptions,
+        optionsArg
+      );
 
-      return register(type, key, item, input.sourceOrOptions, input.optionsArg);
+      return register(type, key, item, resolvedSourceOrOptions, resolvedOptionsArg);
     },
     [register]
   );
 
   const unregisterWithInstance = useCallback(
     (type, key, sourceOrOptions) => {
-      return unregister(type, key, withInstanceIdForUnregister(instanceIdRef.current, sourceOrOptions));
+      return unregister(type, key, resolveUnregisterArgWithInstance(instanceIdRef.current, sourceOrOptions));
     },
     [unregister]
   );
@@ -233,12 +246,16 @@ export function useRegistry(config) {
       return batch((queue) => {
         executor({
           register: (type, key, item, sourceOrOptions, optionsArg) => {
-            const input = withInstanceId(instanceIdRef.current, sourceOrOptions, optionsArg);
+            const [resolvedSourceOrOptions, resolvedOptionsArg] = resolveRegisterArgsWithInstance(
+              instanceIdRef.current,
+              sourceOrOptions,
+              optionsArg
+            );
 
-            queue.register(type, key, item, input.sourceOrOptions, input.optionsArg);
+            queue.register(type, key, item, resolvedSourceOrOptions, resolvedOptionsArg);
           },
           unregister: (type, key, sourceOrOptions) => {
-            queue.unregister(type, key, withInstanceIdForUnregister(instanceIdRef.current, sourceOrOptions));
+            queue.unregister(type, key, resolveUnregisterArgWithInstance(instanceIdRef.current, sourceOrOptions));
           },
         });
       });

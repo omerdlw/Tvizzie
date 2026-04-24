@@ -3,7 +3,7 @@
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { Z_INDEX } from '@/core/constants';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
 import { normalizeOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';

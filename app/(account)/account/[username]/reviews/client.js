@@ -7,7 +7,7 @@ import {
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
 } from '@/features/account/hooks/section-page';
-import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
+import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import {

@@ -11,15 +11,16 @@ import { getNotificationBottomOffset } from '@/core/modules/nav/layout';
 import { useNotificationActions, useNotificationState } from './context';
 import { NotificationOverlay } from './overlay';
 
+function sortNotificationsByTimestamp(notifications = {}) {
+  return Object.entries(notifications).sort((a, b) => a[1].timestamp - b[1].timestamp);
+}
+
 export function NotificationContainer() {
   const { notifications } = useNotificationState();
   const { dismissNotification } = useNotificationActions();
   const { navHeight } = useNavHeight();
 
-  const sortedNotifications = useMemo(
-    () => Object.entries(notifications).sort((a, b) => a[1].timestamp - b[1].timestamp),
-    [notifications]
-  );
+  const sortedNotifications = useMemo(() => sortNotificationsByTimestamp(notifications), [notifications]);
   const resolvedBottomOffset = getNotificationBottomOffset(navHeight);
 
   if (sortedNotifications.length === 0) return null;

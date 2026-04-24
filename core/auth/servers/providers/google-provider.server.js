@@ -1,12 +1,11 @@
 import { normalizeProvider } from '@/core/auth/capabilities';
+import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/core/auth/oauth-providers';
 import {
   GOOGLE_AUTH_INTENTS,
   GOOGLE_AUTH_RESULTS,
   resolveGoogleAuthIntent,
 } from '@/core/auth/servers/providers/google-auth-intent.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-
-export const GOOGLE_PROVIDER_ID = 'google.com';
 
 export const GOOGLE_SESSION_ERROR_CODES = Object.freeze({
   PASSWORD_LOGIN_REQUIRED: 'GOOGLE_PASSWORD_LOGIN_REQUIRED',
@@ -90,7 +89,7 @@ export function getGoogleIdentity(user = null) {
 export function isGoogleOAuthSession(decodedToken = {}) {
   const amrMethods = normalizeAmr(decodedToken?.amr);
 
-  if (amrMethods.includes('password') || amrMethods.includes('pwd') || amrMethods.includes('email')) {
+  if (amrMethods.includes(PASSWORD_PROVIDER_ID) || amrMethods.includes('pwd') || amrMethods.includes('email')) {
     return false;
   }
 

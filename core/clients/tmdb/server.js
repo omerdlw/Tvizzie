@@ -4,11 +4,7 @@ import { cache } from 'react';
 
 import { TMDB_API_URL } from '@/core/constants';
 import { isPersonMediaType, normalizeMediaType } from '@/core/utils/media';
-import {
-  sanitizeMovieDetail,
-  sanitizeMovieResults,
-  sanitizePersonDetail,
-} from '@/core/clients/tmdb/sanitize';
+import { sanitizeMovieDetail, sanitizeMovieResults, sanitizePersonDetail } from '@/core/clients/tmdb/sanitize';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 
@@ -23,7 +19,7 @@ const TMDB_HEADERS = Object.freeze({
   accept: 'application/json',
 });
 
-export const TMDB_REVALIDATE = Object.freeze({
+const TMDB_REVALIDATE = Object.freeze({
   TRENDING: 600,
   DISCOVER: 1800,
   GENRES: 60 * 60 * 24 * 7,
@@ -353,11 +349,16 @@ function buildAuthorityFallbackItems(items = [], type = 'movie') {
     return sortSearchItemsByAuthority(normalizedItems, type);
   }
 
-  return sortSearchItemsByAuthority(normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie)), type);
+  return sortSearchItemsByAuthority(
+    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie)),
+    type
+  );
 }
 
 function buildRankedMovieSearchEntries(items = [], query = '') {
-  const candidates = dedupeSearchItems(withMediaType(items, 'movie')).filter((movie) => isMovieSearchCandidate(movie, query));
+  const candidates = dedupeSearchItems(withMediaType(items, 'movie')).filter((movie) =>
+    isMovieSearchCandidate(movie, query)
+  );
 
   return candidates
     .map((movie) => {
@@ -653,7 +654,7 @@ async function getEntityDetail(id, type, { append = [], revalidate, tags = [] } 
   };
 }
 
-export async function findByExternalId(externalId, source = 'imdb_id') {
+async function findByExternalId(externalId, source = 'imdb_id') {
   return tmdbRequest(`/find/${externalId}`, {
     query: {
       external_source: source,
@@ -818,18 +819,6 @@ export const getMovieSecondary = cache(async (id) =>
   })
 );
 
-export const getMovieImages = cache(async (id) => {
-  const targetId = await resolveTmdbDetailId(id, 'movie');
-
-  return tmdbRequest(`/movie/${targetId}/images`, {
-    query: {
-      include_image_language: 'en,null',
-    },
-    revalidate: TMDB_REVALIDATE.DETAIL_SECONDARY,
-    tags: ['tmdb:movie:images', `tmdb:movie:${targetId}:images`],
-  });
-});
-
 export const getPersonBase = cache(async (id) =>
   getEntityDetail(id, 'person', {
     append: ['external_ids'],
@@ -875,10 +864,3 @@ export const getPersonSecondary = cache(async (id) =>
     };
   })
 );
-
-export function mergeDetailData(baseData, secondaryData) {
-  return {
-    ...(baseData || {}),
-    ...(secondaryData || {}),
-  };
-}

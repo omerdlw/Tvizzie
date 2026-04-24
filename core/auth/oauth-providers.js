@@ -1,16 +1,18 @@
-const PASSWORD_PROVIDER_ID = 'password';
+export const GITHUB_PROVIDER_ID = 'github';
+export const GOOGLE_PROVIDER_ID = 'google.com';
+export const PASSWORD_PROVIDER_ID = 'password';
 const DISABLED_PROVIDER_ALIASES = Object.freeze(['apple', 'apple.com']);
 
 export const OAUTH_PROVIDER_CONFIG = Object.freeze({
   github: Object.freeze({
     icon: 'mdi:github',
-    id: 'github',
+    id: GITHUB_PROVIDER_ID,
     key: 'github',
     label: 'GitHub',
   }),
   google: Object.freeze({
     icon: 'flat-color-icons:google',
-    id: 'google.com',
+    id: GOOGLE_PROVIDER_ID,
     key: 'google',
     label: 'Google',
   }),
@@ -24,7 +26,6 @@ const OAUTH_PROVIDER_ALIASES = Object.freeze({
 });
 
 export const OAUTH_PROVIDER_KEYS = Object.freeze(Object.keys(OAUTH_PROVIDER_CONFIG));
-export { PASSWORD_PROVIDER_ID };
 
 function normalizeValue(value) {
   return String(value || '')

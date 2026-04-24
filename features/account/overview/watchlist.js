@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-import MediaCard from '@/features/shared/media-card';
-import { MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS, TMDB_IMG } from '@/core/constants';
+import MediaCard from '@/ui/media/media-card';
+import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -114,7 +114,9 @@ export default function AccountWatchlistOverview({
                     <div className="absolute inset-x-0 top-0 flex justify-end p-2">
                       <Button
                         variant="destructive-icon"
-                        className={MEDIA_CARD_DESTRUCTIVE_ACTION_TONE_CLASS}
+                        className={
+                          'text-error hover:border-error hover:bg-error border border-black/15 bg-white hover:text-white'
+                        }
                         aria-label={`Remove ${card.imageAlt} from ${title.toLowerCase()}`}
                         disabled={pendingItemId === card.id}
                         onClick={async (event) => {

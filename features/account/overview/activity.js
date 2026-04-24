@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 import { useSeededFeedState } from '@/features/account/hooks/section-page';
-import { isPermissionDeniedError, logDataError } from '@/core/utils/errors';
+import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
 import AccountActivityFeed from '@/features/account/feeds/activity';
 

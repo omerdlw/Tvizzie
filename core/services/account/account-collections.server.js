@@ -410,7 +410,11 @@ export async function getAccountCollectionResource({
     assertResult(result, 'Lists could not be loaded');
 
     const rows = result.data || [];
-    const likesMap = await countListLikesByListIds(admin, assertResult, rows.map((row) => row.id));
+    const likesMap = await countListLikesByListIds(
+      admin,
+      assertResult,
+      rows.map((row) => row.id)
+    );
 
     return rows.map((row) => normalizeListRow(row, likesMap));
   }
@@ -521,7 +525,11 @@ export async function getAccountCollectionResource({
       listRows.push(...(listResult.data || []));
     }
 
-    const likesMap = await countListLikesByListIds(admin, assertResult, listRows.map((row) => row.id));
+    const likesMap = await countListLikesByListIds(
+      admin,
+      assertResult,
+      listRows.map((row) => row.id)
+    );
 
     return listRows
       .map((row) => normalizeListRow(row, likesMap))

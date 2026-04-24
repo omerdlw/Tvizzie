@@ -7,8 +7,7 @@ import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
 import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
-import { useClickOutside } from '@/core/hooks';
-import { useModal } from '@/core/modules/modal/context';
+import { useClickOutside } from '@/core/hooks/use-click-outside';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
@@ -39,11 +38,11 @@ function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeig
 
 // ─── Nav stack classname ─────────────────────────────────────────────────────
 
-function getNavStackClassName({ isModalOpen, isFullscreenStateActive }) {
+function getNavStackClassName({ isFullscreenStateActive }) {
   const baseClassName =
     'fixed right-2 bottom-0 left-2 h-auto touch-manipulation select-none transition-opacity duration-[200ms] sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
-  if (isModalOpen || isFullscreenStateActive) {
+  if (isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;
   }
 
@@ -74,6 +73,14 @@ function getNavCardWidth() {
 
 function getItemPosition(index) {
   return index;
+}
+
+function shouldSyncStackHover(pathname, compact) {
+  return pathname !== '/' || compact;
+}
+
+function canPreviewStackOnTopHover(compact, expanded) {
+  return !(compact && !expanded);
 }
 
 function getActiveItemLayoutKey(activeItem) {
@@ -135,7 +142,6 @@ export default function Nav() {
     navigate,
   } = useNavigation();
 
-  const { isOpen: isModalOpen } = useModal();
   const isFullscreenStateActive = useIsFullscreenStateActive();
 
   const [isStackHovered, setIsStackHovered] = useState(false);
@@ -149,6 +155,10 @@ export default function Nav() {
   const previousPathRef = useRef(pathname);
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
   const previousActiveItemLayoutKeyRef = useRef(activeItemLayoutKey);
+  const clearHoverState = useCallback(() => {
+    setIsStackHovered(false);
+    setIsHovered(false);
+  }, [setIsHovered]);
 
   // ─── Ref-based height batching ─────────────────────────────────────────────
   //
@@ -256,13 +266,12 @@ export default function Nav() {
     if (isOverlayActive) return;
 
     if (isCompactPreviewActive) {
-      setIsStackHovered(false);
-      setIsHovered(false);
+      clearHoverState();
       return;
     }
 
     setExpanded(false);
-  }, [isCompactPreviewActive, isOverlayActive, setExpanded, setIsHovered]);
+  }, [clearHoverState, isCompactPreviewActive, isOverlayActive, setExpanded]);
 
   // ─── Keyboard navigation ──────────────────────────────────────────────────
 
@@ -307,17 +316,15 @@ export default function Nav() {
   // ─── Focus index sync ─────────────────────────────────────────────────────
 
   useEffect(() => {
+    clearHoverState();
+
     if (expanded) {
-      setIsStackHovered(false);
-      setIsHovered(false);
       setFocusedIndex(activeIndex);
       return;
     }
 
-    setIsStackHovered(false);
-    setIsHovered(false);
     setFocusedIndex(-1);
-  }, [expanded, activeIndex, setIsHovered]);
+  }, [activeIndex, clearHoverState, expanded]);
 
   // ─── Click outside ────────────────────────────────────────────────────────
 
@@ -353,15 +360,14 @@ export default function Nav() {
   useEffect(() => {
     if (!isFullscreenStateActive) return;
     setExpanded(false);
-    setIsHovered(false);
-    setIsStackHovered(false);
-  }, [isFullscreenStateActive, setExpanded, setIsHovered]);
+    clearHoverState();
+  }, [clearHoverState, isFullscreenStateActive, setExpanded]);
 
   // ─── Stack className ──────────────────────────────────────────────────────
 
   const stackClassName = useMemo(
-    () => getNavStackClassName({ isModalOpen, isFullscreenStateActive }),
-    [isFullscreenStateActive, isModalOpen]
+    () => getNavStackClassName({ isFullscreenStateActive }),
+    [isFullscreenStateActive]
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -395,27 +401,29 @@ export default function Nav() {
               const position = getItemPosition(index);
               const isTop = position === 0;
               const isActive = getIsItemActive(link, activeItem);
+              const shouldSyncHover = shouldSyncStackHover(pathname, compact);
+              const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded);
 
               const handleMouseEnter = () => {
                 if (expanded) setFocusedIndex(index);
                 if (!isTop) return;
 
-                if (compact && !expanded) {
+                if (!canTopCardPreview) {
                   return;
                 }
 
                 setIsStackHovered(true);
-                if (pathname !== '/' || compact) setIsHovered(true);
+                if (shouldSyncHover) setIsHovered(true);
               };
 
               const handleMouseLeave = () => {
                 if (expanded) setFocusedIndex(-1);
                 if (!isTop) return;
 
-                if (compact && !expanded) return;
+                if (!canTopCardPreview) return;
 
                 setIsStackHovered(false);
-                if (pathname !== '/' || compact) setIsHovered(false);
+                if (shouldSyncHover) setIsHovered(false);
               };
 
               const handleClick = () => {
@@ -429,8 +437,7 @@ export default function Nav() {
                       return;
                     }
 
-                    setIsHovered(false);
-                    setIsStackHovered(false);
+                    clearHoverState();
                     setExpanded(true);
                   }
                   return;

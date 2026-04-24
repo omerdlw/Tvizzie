@@ -73,6 +73,27 @@ const AUTH_FLOW_STATUS = Object.freeze({
   }),
 });
 
+function normalizeAuthFlowValue(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function createAuthEventPayload(payload = {}) {
+  return {
+    timestamp: Date.now(),
+    ...payload,
+  };
+}
+
+function createSessionEventPayload(session, payload = {}) {
+  return {
+    session: session || null,
+    user: session?.user || null,
+    ...payload,
+  };
+}
+
 export function AuthProvider({ children, config = {} }) {
   const mergedConfig = useMemo(() => ({ ...DEFAULT_AUTH_CONFIG, ...config }), [config]);
 
@@ -88,20 +109,13 @@ export function AuthProvider({ children, config = {} }) {
   sessionRef.current = state.session;
 
   const emitAuthEvent = useCallback((eventType, payload = {}) => {
-    globalEvents.emit(eventType, {
-      timestamp: Date.now(),
-      ...payload,
-    });
+    globalEvents.emit(eventType, createAuthEventPayload(payload));
   }, []);
 
   const emitAuthFeedback = useCallback(
     (flow, phase, overrides = {}) => {
-      const normalizedFlow = String(flow || '')
-        .trim()
-        .toLowerCase();
-      const normalizedPhase = String(phase || '')
-        .trim()
-        .toLowerCase();
+      const normalizedFlow = normalizeAuthFlowValue(flow);
+      const normalizedPhase = normalizeAuthFlowValue(phase);
 
       if (!normalizedFlow || !normalizedPhase) {
         return;
@@ -204,11 +218,7 @@ export function AuthProvider({ children, config = {} }) {
 
   const emitSessionEvent = useCallback(
     (eventType, session, payload = {}) => {
-      emitAuthEvent(eventType, {
-        session: session || null,
-        user: session?.user || null,
-        ...payload,
-      });
+      emitAuthEvent(eventType, createSessionEventPayload(session, payload));
     },
     [emitAuthEvent]
   );

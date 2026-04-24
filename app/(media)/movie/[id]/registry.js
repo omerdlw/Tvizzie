@@ -3,12 +3,12 @@
 import { Fragment, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import CastModal from '@/features/modal/cast-modal';
-import CreateListModal from '@/features/modal/create-list-modal';
-import ImagePreviewModal from '@/features/modal/image-preview-modal';
-import ListPickerModal from '@/features/modal/list-picker-modal';
-import ReviewEditorModal from '@/features/modal/review-editor-modal';
-import VideoPreviewModal from '@/features/modal/video-preview-modal';
+import CastModal from '@/features/modals/cast-modal';
+import CreateListModal from '@/features/modals/create-list-modal';
+import ImagePreviewModal from '@/features/modals/image-preview-modal';
+import ListPickerModal from '@/features/modals/list-picker-modal';
+import ReviewEditorModal from '@/features/modals/review-editor-modal';
+import VideoPreviewModal from '@/features/modals/video-preview-modal';
 import ReviewAction from '@/features/navigation/actions/review-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
@@ -17,8 +17,8 @@ import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils'
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
-import Icon from '@/ui/icon/index';
-import MediaSocialProofModal from '@/features/modal/media-social-proof-modal';
+import Icon from '@/ui/icon';
+import MediaSocialProofModal from '@/features/modals/media-social-proof-modal';
 import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,

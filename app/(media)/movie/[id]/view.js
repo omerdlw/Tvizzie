@@ -1,6 +1,6 @@
 import { Suspense, use } from 'react';
 
-import NavHeightSpacer from '@/features/layout/nav-height-spacer';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import CastSection from '@/features/movie/cast-section';
@@ -12,8 +12,8 @@ import Sidebar from '@/features/movie/sidebar';
 import MediaSocialProof from '@/features/movie/social-proof';
 import { getGalleryImages, getMovieComputedData } from '@/features/movie/utils';
 import VideosSection from '@/features/movie/videos-section';
-import MediaReviews from '@/features/reviews';
-import Carousel from '@/features/shared/carousel';
+import MediaReviews from '@/features/reviews/media-reviews';
+import Carousel from '@/ui/media/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
@@ -26,7 +26,6 @@ import {
   MovieSidebarReveal,
   MovieSurfaceReveal,
 } from './motion';
-import HeroMeta from './hero-meta';
 import Registry from './registry';
 
 function RelatedMoviesSection({ items, title, groupIndex = 0 }) {
@@ -152,12 +151,7 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
             {section.content}
           </MovieSectionReveal>
         ) : (
-          <RelatedMoviesSection
-            key={section.key}
-            items={section.items}
-            title={section.title}
-            groupIndex={index}
-          />
+          <RelatedMoviesSection key={section.key} items={section.items} title={section.title} groupIndex={index} />
         )
       )}
     </MovieSectionGroup>
@@ -246,7 +240,9 @@ export default function MovieView({
                   item={movie}
                   certification={certification}
                   director={director}
+                  genres={genres}
                   topContent={<CollectionActions media={{ ...movie, entityType: 'movie' }} />}
+                  tags={tags}
                   writers={writers}
                 />
               </MovieSidebarReveal>
@@ -256,20 +252,28 @@ export default function MovieView({
               <div className="flex w-full flex-col">
                 <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.hero.containerDelay}>
                   <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                    <MovieClipReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.titleClipDelay} className="min-w-0">
+                    <MovieClipReveal
+                      animateOnView={false}
+                      delay={MOVIE_ROUTE_TIMING.hero.titleClipDelay}
+                      className="min-w-0"
+                    >
                       <TextAnimate
                         animation="cinematicSoft"
                         by="word"
                         delay={MOVIE_ROUTE_TIMING.hero.titleDelay}
                         duration={MOVIE_ROUTE_TIMING.hero.titleDuration}
                         startOnView={false}
-                        className="max-w-full [overflow-wrap:anywhere] font-zuume text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
+                        className="font-zuume max-w-full text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
                       >
                         {movie.title}
                       </TextAnimate>
                     </MovieClipReveal>
 
-                    <MovieClipReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.socialProofDelay} direction="left">
+                    <MovieClipReveal
+                      animateOnView={false}
+                      delay={MOVIE_ROUTE_TIMING.hero.socialProofDelay}
+                      direction="left"
+                    >
                       <div>
                         <MediaSocialProof media={{ ...movie, entityType: 'movie' }} />
                       </div>
@@ -277,12 +281,10 @@ export default function MovieView({
                   </div>
                 </MovieHeroReveal>
 
-                {genres?.length || tags?.length || movie.tagline || movie.overview ? (
+                {movie.tagline || movie.overview ? (
                   <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.hero.taglineDelay} className="mt-4">
                     <MovieClipReveal animateOnView={false} delay={0.04} className="w-full">
                       <div className="flex w-full flex-col gap-4">
-                        {genres?.length || tags?.length ? <HeroMeta genres={genres} tags={tags} /> : null}
-
                         {movie.tagline ? (
                           <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
                             {movie.tagline}

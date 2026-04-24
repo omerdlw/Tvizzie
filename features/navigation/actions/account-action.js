@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 
-import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/features/auth';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import Icon from '@/ui/icon';

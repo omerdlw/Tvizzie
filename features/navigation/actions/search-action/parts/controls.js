@@ -9,7 +9,7 @@ import { NAV_ACTION_SPRING, NAV_CONTENT_TRANSITION, NAV_SEARCH_REVEAL_TRANSITION
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '../constants';
+import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/features/search/constants';
 import { navActionClass } from '../utils';
 
 export default function SearchActionControls({

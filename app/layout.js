@@ -1,7 +1,5 @@
 import ReactDOM from 'react-dom';
 
-import { DynamicNav } from '@/features/layout/dynamic-wrappers';
-import { WebVitals } from '@/features/layout/web-vitals';
 import { cn } from '@/core/utils';
 
 import { geist, geistMono, zuume } from '../fonts';
@@ -65,9 +63,7 @@ export default function RootLayout({ children }) {
         )}
       >
         <ResourceHints />
-        <WebVitals />
         <AppProviders>
-          <DynamicNav />
           <main className="h-auto w-full flex-1">{children}</main>
         </AppProviders>
       </body>

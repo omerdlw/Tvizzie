@@ -1,8 +1,8 @@
 'use client';
 
-import { ACCOUNT_CLIENT } from '@/config/account.config';
+import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
-import { completeVerifiedSignUp } from './api';
+import { completeVerifiedSignUp } from './requests';
 
 import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './utils';
 

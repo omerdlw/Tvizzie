@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { globalEvents, EVENT_TYPES } from '@/core/constants/events';
 import { useNotificationActions, CRITICAL_TYPES } from '@/core/modules/notification/context';
 
+const SESSION_EXPIRED_MESSAGE = 'Your session has expired. Please sign in again.';
+
 export function NotificationListener() {
   const { showNotification } = useNotificationActions();
 
@@ -13,7 +15,7 @@ export function NotificationListener() {
       if (data?.source && data.source !== 'app') return;
 
       showNotification(CRITICAL_TYPES.SESSION_EXPIRED, {
-        message: 'Your session has expired Please sign in again',
+        message: SESSION_EXPIRED_MESSAGE,
       });
     });
 

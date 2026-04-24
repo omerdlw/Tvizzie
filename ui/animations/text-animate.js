@@ -3,7 +3,7 @@
 import { useMemo, useRef } from 'react';
 
 import { motion, useInView } from 'framer-motion';
-import { ANIMATION_EASINGS, ANIMATION_PROFILES } from '@/core/animation';
+import { ANIMATION_EASINGS } from '@/core/animation';
 import { cn } from '@/core/utils';
 
 const STAGGER_BY = Object.freeze({
@@ -12,7 +12,20 @@ const STAGGER_BY = Object.freeze({
   text: 0,
 });
 
-const SOFT_TEXT_PROFILE = ANIMATION_PROFILES.SOFT;
+const SOFT_TEXT_PROFILE = Object.freeze({
+  easings: Object.freeze({
+    emphasis: ANIMATION_EASINGS.STANDARD,
+  }),
+  offsets: Object.freeze({
+    textY: 10,
+  }),
+  scales: Object.freeze({
+    text: 0.982,
+  }),
+  stagger: Object.freeze({
+    textByWord: 0.026,
+  }),
+});
 
 function splitSegments(value, by) {
   if (!value) {

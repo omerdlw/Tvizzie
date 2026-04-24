@@ -6,11 +6,18 @@ import { normalizeFeedbackText } from '@/core/utils';
 
 import { useNotificationActions, TOAST_TYPES } from './context';
 
-const DURATIONS = {
+const DURATIONS = Object.freeze({
   SHORT: 3000,
   DEFAULT: 4000,
   LONG: 5000,
-};
+});
+
+function withDefaultDuration(duration, options = {}) {
+  return {
+    duration,
+    ...(options || {}),
+  };
+}
 
 function generateToastId() {
   return `toast_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -60,25 +67,13 @@ export function useToast() {
   return useMemo(
     () => ({
       success: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.SUCCESS, msg, {
-          duration: DURATIONS.SHORT,
-          ...opts,
-        }),
+        createToast(TOAST_TYPES.SUCCESS, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
       warning: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.WARNING, msg, {
-          duration: DURATIONS.DEFAULT,
-          ...opts,
-        }),
+        createToast(TOAST_TYPES.WARNING, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
       error: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.ERROR, msg, {
-          duration: DURATIONS.DEFAULT,
-          ...opts,
-        }),
+        createToast(TOAST_TYPES.ERROR, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
       info: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.INFO, msg, {
-          duration: DURATIONS.SHORT,
-          ...opts,
-        }),
+        createToast(TOAST_TYPES.INFO, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
       show: (type, msg, opts = {}) => createToast(type, msg, opts),
     }),
     [createToast]

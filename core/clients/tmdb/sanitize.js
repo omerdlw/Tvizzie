@@ -11,103 +11,12 @@ function hasText(value) {
   return getTextLength(value) > 0;
 }
 
-const COMPARABLE_TEXT_STOPWORDS = new Set([
-  'a',
-  'an',
-  'and',
-  'at',
-  'by',
-  'for',
-  'from',
-  'in',
-  'into',
-  'of',
-  'on',
-  'or',
-  'part',
-  'the',
-  'to',
-  'vol',
-  'volume',
-]);
-
 function hasMoviePoster(movie = {}) {
   return hasText(movie?.poster_path);
 }
 
 function hasMovieBackdrop(movie = {}) {
   return hasText(movie?.backdrop_path);
-}
-
-function normalizeComparableText(value) {
-  return String(value || '')
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function tokenizeComparableText(value) {
-  return normalizeComparableText(value)
-    .split(' ')
-    .filter((token) => token.length >= 2 && !COMPARABLE_TEXT_STOPWORDS.has(token));
-}
-
-function countTokenOverlap(sourceTokens = [], targetTokens = []) {
-  if (!sourceTokens.length || !targetTokens.length) {
-    return 0;
-  }
-
-  const targetSet = new Set(targetTokens);
-  return sourceTokens.filter((token) => targetSet.has(token)).length;
-}
-
-function getMovieSearchTexts(movie = {}) {
-  return [movie?.title, movie?.original_title, movie?.name, movie?.original_name].filter(Boolean);
-}
-
-function getPersonSearchTexts(person = {}) {
-  return [person?.name, person?.original_name].filter(Boolean);
-}
-
-function getBestTextMatchScore(texts = [], normalizedQuery = '', queryTokens = []) {
-  if (!normalizedQuery) {
-    return 0;
-  }
-
-  let bestScore = 0;
-
-  texts.forEach((text) => {
-    const normalizedText = normalizeComparableText(text);
-    const textTokens = tokenizeComparableText(text);
-    const tokenOverlap = countTokenOverlap(queryTokens, textTokens);
-    let score = 0;
-
-    if (normalizedText === normalizedQuery) {
-      score += 12;
-    } else if (normalizedText.startsWith(normalizedQuery)) {
-      score += 8;
-    } else if (normalizedText.includes(normalizedQuery)) {
-      score += 5;
-    }
-
-    if (queryTokens.length > 0) {
-      if (tokenOverlap === queryTokens.length) {
-        score += 6;
-      } else {
-        score += tokenOverlap * 2;
-      }
-    }
-
-    if (score > bestScore) {
-      bestScore = score;
-    }
-  });
-
-  return bestScore;
 }
 
 function getMovieRuntime(movie = {}) {
@@ -365,101 +274,6 @@ function getPersonQualityScore(person = {}, role = 'cast') {
   return score;
 }
 
-function getMovieSearchAuthorityScore(movie = {}) {
-  let score = 0;
-
-  if (hasMoviePoster(movie)) score += 2;
-  if (hasMovieBackdrop(movie)) score += 1;
-
-  const popularity = getMoviePopularity(movie);
-
-  if (popularity >= 40) {
-    score += 6;
-  } else if (popularity >= 20) {
-    score += 5;
-  } else if (popularity >= 8) {
-    score += 4;
-  } else if (popularity >= 3) {
-    score += 3;
-  } else if (popularity >= 1) {
-    score += 1;
-  }
-
-  const voteCount = getMovieVoteCount(movie);
-
-  if (voteCount >= 5000) {
-    score += 8;
-  } else if (voteCount >= 1000) {
-    score += 6;
-  } else if (voteCount >= 200) {
-    score += 4;
-  } else if (voteCount >= 50) {
-    score += 3;
-  } else if (voteCount >= 10) {
-    score += 1;
-  }
-
-  if (hasText(movie?.release_date || movie?.first_air_date)) {
-    score += 1;
-  }
-
-  return score;
-}
-
-function getPersonSearchAuthorityScore(person = {}) {
-  let score = 0;
-
-  if (hasText(person?.profile_path)) {
-    score += 3;
-  }
-
-  const popularity = getPersonPopularity(person);
-
-  if (popularity >= 40) {
-    score += 10;
-  } else if (popularity >= 20) {
-    score += 8;
-  } else if (popularity >= 8) {
-    score += 6;
-  } else if (popularity >= 3) {
-    score += 4;
-  } else if (popularity >= 1.5) {
-    score += 2;
-  }
-
-  const movieCreditCount = resolvePersonMovieCreditCount(person);
-
-  if (movieCreditCount >= 40) {
-    score += 8;
-  } else if (movieCreditCount >= 15) {
-    score += 6;
-  } else if (movieCreditCount >= 5) {
-    score += 4;
-  } else if (movieCreditCount >= 2) {
-    score += 2;
-  }
-
-  if (hasText(person?.known_for_department)) {
-    score += 2;
-  }
-
-  return score;
-}
-
-function getSearchScore(item, query, type = 'movie') {
-  const normalizedQuery = normalizeComparableText(query);
-  const queryTokens = tokenizeComparableText(query);
-  const texts = type === 'person' ? getPersonSearchTexts(item) : getMovieSearchTexts(item);
-  const textMatchScore = getBestTextMatchScore(texts, normalizedQuery, queryTokens);
-  const authorityScore = type === 'person' ? getPersonSearchAuthorityScore(item) : getMovieSearchAuthorityScore(item);
-
-  return {
-    authorityScore,
-    textMatchScore,
-    totalScore: textMatchScore + authorityScore,
-  };
-}
-
 export function isDisplayableMovie(movie, context = 'browse') {
   if (!movie || typeof movie !== 'object' || !movie?.id) {
     return false;
@@ -472,7 +286,7 @@ export function isDisplayableMovie(movie, context = 'browse') {
   return getMovieQualityScore(movie) >= getMovieListThreshold(context);
 }
 
-export function isDisplayablePerson(person, { context = 'credits', role = 'cast' } = {}) {
+function isDisplayablePerson(person, { context = 'credits', role = 'cast' } = {}) {
   if (!person || typeof person !== 'object' || !person?.id) {
     return false;
   }
@@ -490,39 +304,6 @@ export function sanitizeMovieResults(items = [], context = 'browse') {
 
 export function sanitizePersonResults(items = [], { context = 'credits', role = 'cast' } = {}) {
   return (Array.isArray(items) ? items : []).filter((item) => isDisplayablePerson(item, { context, role }));
-}
-
-export function rankSearchResults(items = [], query, type = 'movie') {
-  const safeItems = Array.isArray(items) ? items : [];
-
-  return safeItems
-    .map((item) => ({
-      item,
-      score: getSearchScore(item, query, type),
-    }))
-    .filter(({ score }) => {
-      if (type === 'person') {
-        return score.textMatchScore >= 6 && score.totalScore >= 18;
-      }
-
-      return score.textMatchScore >= 4 && score.totalScore >= 10;
-    })
-    .sort((left, right) => {
-      const totalScoreDiff = right.score.totalScore - left.score.totalScore;
-
-      if (totalScoreDiff !== 0) {
-        return totalScoreDiff;
-      }
-
-      const textMatchDiff = right.score.textMatchScore - left.score.textMatchScore;
-
-      if (textMatchDiff !== 0) {
-        return textMatchDiff;
-      }
-
-      return right.score.authorityScore - left.score.authorityScore;
-    })
-    .map(({ item }) => item);
 }
 
 export function sanitizeMovieDetail(movie) {

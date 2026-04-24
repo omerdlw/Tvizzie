@@ -1,10 +1,19 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
+import {
+  combineCookieChunks,
+  decodeBase64UrlToString,
+  getCookieChunkBaseName,
+  isSupabaseAuthCookieName,
+  normalizeStorageValue,
+  parseSupabaseSessionAccessToken,
+} from './auth-storage';
 import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './constants';
 
 const CSRF_COOKIE_NAME = 'tvz_auth_csrf';
 const CSRF_MAX_AGE_SECONDS = 12 * 60 * 60;
+
 function resolveTimeoutMs(value, fallback) {
   const parsedValue = Number(value);
   return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
@@ -12,7 +21,6 @@ function resolveTimeoutMs(value, fallback) {
 
 const SUPABASE_PROXY_TIMEOUT_MS = resolveTimeoutMs(process.env.SUPABASE_PROXY_TIMEOUT_MS, 3500);
 const SUPABASE_PROXY_REFRESH_BUFFER_MS = resolveTimeoutMs(process.env.SUPABASE_PROXY_REFRESH_BUFFER_MS, 5 * 60 * 1000);
-const SUPABASE_COOKIE_CHUNK_SUFFIX_PATTERN = /^(.*)\.(\d+)$/;
 
 let lastClaimsErrorLogAt = 0;
 
@@ -20,112 +28,8 @@ function isSecureCookieEnvironment() {
   return process.env.NODE_ENV === 'production';
 }
 
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function getCookieChunkBaseName(cookieName) {
-  const normalizedName = normalizeValue(cookieName);
-  const match = normalizedName.match(SUPABASE_COOKIE_CHUNK_SUFFIX_PATTERN);
-
-  if (!match?.[1]) {
-    return normalizedName;
-  }
-
-  return normalizeValue(match[1]);
-}
-
-function combineCookieChunks(cookieMap, cookieName) {
-  const directValue = normalizeValue(cookieMap.get(cookieName));
-
-  if (directValue) {
-    return directValue;
-  }
-
-  const chunks = [];
-
-  for (let index = 0; index < 64; index += 1) {
-    const chunkValue = normalizeValue(cookieMap.get(`${cookieName}.${index}`));
-
-    if (!chunkValue) {
-      break;
-    }
-
-    chunks.push(chunkValue);
-  }
-
-  return chunks.length > 0 ? chunks.join('') : '';
-}
-
-function decodeBase64UrlToString(value) {
-  const normalizedValue = normalizeValue(value);
-
-  if (!normalizedValue) {
-    return '';
-  }
-
-  const base64 = normalizedValue.replace(/-/g, '+').replace(/_/g, '/');
-  const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-
-  try {
-    const binary = atob(paddedBase64);
-    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-    return new TextDecoder().decode(bytes);
-  } catch {
-    return '';
-  }
-}
-
-function decodeSupabaseCookiePayload(value) {
-  const normalizedValue = normalizeValue(value);
-
-  if (!normalizedValue) {
-    return '';
-  }
-
-  if (!normalizedValue.startsWith('base64-')) {
-    return normalizedValue;
-  }
-
-  const encodedValue = normalizeValue(normalizedValue.slice('base64-'.length));
-
-  if (!encodedValue) {
-    return '';
-  }
-
-  return decodeBase64UrlToString(encodedValue);
-}
-
-function parseSupabaseSessionCookie(cookieValue) {
-  const decodedPayload = decodeSupabaseCookiePayload(cookieValue);
-
-  if (!decodedPayload) {
-    return '';
-  }
-
-  let parsedPayload;
-
-  try {
-    parsedPayload = JSON.parse(decodedPayload);
-  } catch {
-    return '';
-  }
-
-  if (Array.isArray(parsedPayload)) {
-    return normalizeValue(parsedPayload[0]);
-  }
-
-  if (!parsedPayload || typeof parsedPayload !== 'object') {
-    return '';
-  }
-
-  return normalizeValue(
-    parsedPayload?.access_token || parsedPayload?.session?.access_token || parsedPayload?.currentSession?.access_token
-  );
-}
-
 function decodeAccessTokenExpirationMs(accessToken) {
-  const normalizedToken = normalizeValue(accessToken);
+  const normalizedToken = normalizeStorageValue(accessToken);
 
   if (!normalizedToken) {
     return 0;
@@ -152,7 +56,7 @@ function decodeAccessTokenExpirationMs(accessToken) {
 }
 
 function hasAuthSessionCookie(request) {
-  return request.cookies.getAll().some(({ name }) => name.startsWith('sb-') && name.includes('-auth-token'));
+  return request.cookies.getAll().some(({ name }) => isSupabaseAuthCookieName(name));
 }
 
 function readAccessTokenFromRequestCookies(request) {
@@ -166,24 +70,24 @@ function readAccessTokenFromRequestCookies(request) {
   const candidateCookieNames = new Set();
 
   requestCookies.forEach(({ name, value }) => {
-    const normalizedName = normalizeValue(name);
+    const normalizedName = normalizeStorageValue(name);
 
     if (!normalizedName) {
       return;
     }
 
-    cookieMap.set(normalizedName, normalizeValue(value));
+    cookieMap.set(normalizedName, normalizeStorageValue(value));
 
     const baseName = getCookieChunkBaseName(normalizedName);
 
-    if (baseName.startsWith('sb-') && baseName.includes('-auth-token')) {
+    if (isSupabaseAuthCookieName(baseName)) {
       candidateCookieNames.add(baseName);
     }
   });
 
   for (const cookieName of candidateCookieNames) {
     const cookieValue = combineCookieChunks(cookieMap, cookieName);
-    const accessToken = parseSupabaseSessionCookie(cookieValue);
+    const accessToken = parseSupabaseSessionAccessToken(cookieValue);
 
     if (accessToken) {
       return accessToken;

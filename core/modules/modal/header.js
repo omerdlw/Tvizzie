@@ -1,54 +1,27 @@
 'use client';
 
+const AUTH_VERIFICATION_TITLES = Object.freeze({
+  'account-delete': 'Delete Account Verification',
+  'email-change': 'Email Verification',
+  'password-change': 'Password Verification',
+  'password-reset': 'Password Reset Verification',
+  'password-set': 'Set Password Verification',
+  'provider-link': 'Provider Verification',
+  'sign-in': 'Login Verification',
+});
+
+const FOLLOW_LIST_TITLES = Object.freeze({
+  following: 'Following',
+  requests: 'Inbox',
+});
+
 export function resolveAuthVerificationHeader(config = {}) {
   const purpose = String(config?.data?.purpose || '')
     .trim()
     .toLowerCase();
 
-  if (purpose === 'password-reset') {
-    return {
-      title: 'Password Reset Verification',
-    };
-  }
-
-  if (purpose === 'account-delete') {
-    return {
-      title: 'Delete Account Verification',
-    };
-  }
-
-  if (purpose === 'email-change') {
-    return {
-      title: 'Email Verification',
-    };
-  }
-
-  if (purpose === 'password-change') {
-    return {
-      title: 'Password Verification',
-    };
-  }
-
-  if (purpose === 'password-set') {
-    return {
-      title: 'Set Password Verification',
-    };
-  }
-
-  if (purpose === 'provider-link') {
-    return {
-      title: 'Provider Verification',
-    };
-  }
-
-  if (purpose === 'sign-in') {
-    return {
-      title: 'Login Verification',
-    };
-  }
-
   return {
-    title: 'Email Verification',
+    title: AUTH_VERIFICATION_TITLES[purpose] || 'Email Verification',
   };
 }
 
@@ -57,20 +30,8 @@ function resolveFollowListHeader(config = {}) {
     .trim()
     .toLowerCase();
 
-  if (type === 'following') {
-    return {
-      title: 'Following',
-    };
-  }
-
-  if (type === 'requests') {
-    return {
-      title: 'Inbox',
-    };
-  }
-
   return {
-    title: 'Followers',
+    title: FOLLOW_LIST_TITLES[type] || 'Followers',
   };
 }
 
@@ -101,9 +62,11 @@ function isListReviewConfig(config = {}) {
 function resolveReviewEditorHeader(config = {}) {
   const hasExistingReview = Boolean(config?.data?.review);
   const isListReview = isListReviewConfig(config);
+  const actionLabel = hasExistingReview ? 'Edit' : 'Write';
+  const subjectLabel = isListReview ? 'comment' : 'review';
 
   return {
-    title: hasExistingReview ? (isListReview ? 'Edit comment' : 'Edit review') : isListReview ? 'Write comment' : 'Write review',
+    title: `${actionLabel} ${subjectLabel}`,
   };
 }
 

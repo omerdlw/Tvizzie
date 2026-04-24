@@ -6,14 +6,18 @@ import { globalEvents, EVENT_TYPES } from '@/core/constants/events';
 
 import { getErrorReporter } from './reporter';
 
-const CONFIG = {
+const CONFIG = Object.freeze({
   maxErrors: 10,
   throttle: 2000,
-  ignored: [/ResizeObserver loop/i, /Network request failed/i, /Loading chunk/i],
-};
+  ignored: Object.freeze([/ResizeObserver loop/i, /Network request failed/i, /Loading chunk/i]),
+});
+
+function getErrorMessage(error) {
+  return String(error?.message || error?.toString?.() || '').trim();
+}
 
 function shouldIgnore(error) {
-  const msg = error?.message || error?.toString() || '';
+  const msg = getErrorMessage(error);
 
   if (error?.isNotFound?.()) return true;
 
@@ -29,13 +33,14 @@ export function GlobalErrorListener() {
 
   const handleError = useCallback((error, source = 'runtime') => {
     if (!error || shouldIgnore(error)) return;
+    const message = getErrorMessage(error);
 
     const now = Date.now();
 
     if (now - lastError.current < CONFIG.throttle) return;
     if (count.current >= CONFIG.maxErrors) return;
 
-    const key = error.message || String(error);
+    const key = message || String(error);
 
     if (shown.current.has(key)) return;
 
@@ -51,7 +56,7 @@ export function GlobalErrorListener() {
     }
 
     globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-      message: error.message || 'Unexpected error',
+      message: message || 'Unexpected error',
       error,
     });
 
