@@ -1,5 +1,7 @@
 import createBundleAnalyzer from '@next/bundle-analyzer';
 
+import { CSP_ENFORCE } from './core/services/shared/runtime-policy.constants.js';
+
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -10,7 +12,7 @@ const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   : '';
 
 const CSP_HEADER_KEY =
-  process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+  CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
 const CSP_VALUE = [
   "default-src 'self'",
   [

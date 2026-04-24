@@ -20,9 +20,8 @@ import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
 import { setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
+import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-
-const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges';
 const SIGNUP_CHALLENGE_SELECT = ['jti', 'purpose', 'signup_completed_at', 'status', 'used_at'].join(',');
 
 function normalizeValue(value) {

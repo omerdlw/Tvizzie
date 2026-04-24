@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 
 const BREVO_DEFAULT_HOST = 'smtp-relay.brevo.com';
 const BREVO_DEFAULT_PORT = 587;
+const DEFAULT_FROM_ADDRESS = 'no-reply@example.com';
 
 function normalizeEnvValue(value) {
   let normalized = String(value || '').trim();
@@ -22,39 +23,16 @@ function normalizeEnvValue(value) {
   return normalized.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\r/g, '\r').replace(/\\n/g, '\n');
 }
 
-function resolveProvider() {
-  const explicitProvider = normalizeEnvValue(process.env.EMAIL_PROVIDER).toLowerCase();
-
-  if (explicitProvider) {
-    return explicitProvider;
-  }
-
-  if (process.env.BREVO_SMTP_KEY || process.env.BREVO_SMTP_LOGIN) {
-    return 'brevo';
-  }
-
-  return 'smtp';
-}
-
-function toNumber(value, fallback) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 function resolveBrevoConfig() {
-  const host = normalizeEnvValue(process.env.BREVO_SMTP_HOST) || BREVO_DEFAULT_HOST;
-  const port = toNumber(
-    normalizeEnvValue(process.env.BREVO_SMTP_PORT) || normalizeEnvValue(process.env.SMTP_PORT),
-    BREVO_DEFAULT_PORT
-  );
-  const user = normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) || normalizeEnvValue(process.env.SMTP_USER);
-  const pass = normalizeEnvValue(process.env.BREVO_SMTP_KEY) || normalizeEnvValue(process.env.SMTP_PASS);
-  const from = normalizeEnvValue(process.env.BREVO_SMTP_FROM) || normalizeEnvValue(process.env.SMTP_FROM);
+  const host = BREVO_DEFAULT_HOST;
+  const port = BREVO_DEFAULT_PORT;
+  const user = normalizeEnvValue(process.env.BREVO_SMTP_LOGIN);
+  const pass = normalizeEnvValue(process.env.BREVO_SMTP_KEY);
+  const from =
+    normalizeEnvValue(process.env.BREVO_SMTP_FROM) || normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) || DEFAULT_FROM_ADDRESS;
 
-  if (!host || !port || !user || !pass || !from) {
-    throw new Error(
-      'Brevo SMTP configuration is incomplete. Set BREVO_SMTP_LOGIN, BREVO_SMTP_KEY, and BREVO_SMTP_FROM'
-    );
+  if (!user || !pass) {
+    throw new Error('Brevo SMTP configuration is incomplete. Set BREVO_SMTP_LOGIN and BREVO_SMTP_KEY');
   }
 
   return {
@@ -67,29 +45,7 @@ function resolveBrevoConfig() {
 }
 
 function resolveTransportConfig() {
-  const provider = resolveProvider();
-
-  if (provider === 'brevo') {
-    return resolveBrevoConfig();
-  }
-
-  const host = normalizeEnvValue(process.env.SMTP_HOST);
-  const port = toNumber(normalizeEnvValue(process.env.SMTP_PORT), 587);
-  const user = normalizeEnvValue(process.env.SMTP_USER);
-  const pass = normalizeEnvValue(process.env.SMTP_PASS);
-  const from = normalizeEnvValue(process.env.SMTP_FROM);
-
-  if (!host || !port || !user || !pass || !from) {
-    throw new Error('SMTP configuration is incomplete. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM');
-  }
-
-  return {
-    auth: { user, pass },
-    from,
-    host,
-    port,
-    secure: port === 465,
-  };
+  return resolveBrevoConfig();
 }
 
 const VERIFICATION_PURPOSES = {

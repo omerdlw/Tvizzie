@@ -7,13 +7,7 @@ import { isPersonMediaType, normalizeMediaType } from '@/core/utils/media';
 import { sanitizeMovieDetail, sanitizeMovieResults, sanitizePersonDetail } from '@/core/clients/tmdb/sanitize';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
-
-function resolveTimeoutMs(value, fallback) {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
-}
-
-const TMDB_FETCH_TIMEOUT_MS = resolveTimeoutMs(process.env.TMDB_FETCH_TIMEOUT_MS, 4500);
+const TMDB_FETCH_TIMEOUT_MS = 4500;
 
 const TMDB_HEADERS = Object.freeze({
   accept: 'application/json',

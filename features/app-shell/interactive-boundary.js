@@ -19,6 +19,7 @@ import { NotificationProvider } from '@/core/modules/notification/context';
 import { NotificationListener, NotificationBadgeListener } from '@/core/modules/notification/listener';
 import { useRegistry } from '@/core/modules/registry';
 import { SettingsProvider } from '@/core/modules/settings';
+import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
 
 const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({
@@ -82,7 +83,7 @@ function ObservabilityBootstrap() {
     }
 
     reporter.setTag('runtime', 'web');
-    reporter.setTag('transport', process.env.NEXT_PUBLIC_LIVE_TRANSPORT_MODE || process.env.REALTIME_MODE || 'sse');
+    reporter.setTag('transport', getRealtimeTransportMode());
   }, []);
 
   return null;

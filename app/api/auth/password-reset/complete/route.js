@@ -13,9 +13,8 @@ import { getRequestContext } from '@/core/auth/servers/session/request-context.s
 import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
 import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
 import { clearStepUpCookie } from '@/core/auth/servers/security/step-up.server';
+import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-
-const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges';
 
 function normalizeEmail(value) {
   return String(value || '')

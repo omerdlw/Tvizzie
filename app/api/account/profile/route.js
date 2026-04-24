@@ -39,7 +39,7 @@ function isRpcCatchTypeError(error) {
 }
 
 function resolveMediaBucket() {
-  return normalizeValue(process.env.SUPABASE_PROFILE_MEDIA_BUCKET) || DEFAULT_MEDIA_BUCKET;
+  return DEFAULT_MEDIA_BUCKET;
 }
 
 function resolveSupabaseMediaHosts() {

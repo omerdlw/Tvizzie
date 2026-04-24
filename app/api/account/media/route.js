@@ -72,7 +72,7 @@ function resolveFileExtension(mimeType) {
 }
 
 function resolveMediaBucket() {
-  return normalizeValue(process.env.SUPABASE_PROFILE_MEDIA_BUCKET) || DEFAULT_MEDIA_BUCKET;
+  return DEFAULT_MEDIA_BUCKET;
 }
 
 async function ensureBucket(client, bucket) {

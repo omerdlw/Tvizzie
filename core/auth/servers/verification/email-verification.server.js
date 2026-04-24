@@ -4,9 +4,8 @@ import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
 } from '@/core/auth/servers/security/rate-limit.server';
+import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-
-const AUTH_CHALLENGE_TABLE = process.env.AUTH_CHALLENGE_TABLE || 'auth_challenges';
 const GENERIC_VERIFY_ERROR = 'Verification could not be completed';
 const OTP_CODE_LENGTH = 6;
 const OTP_TTL_MS = 10 * 60 * 1000;

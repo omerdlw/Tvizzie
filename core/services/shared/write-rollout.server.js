@@ -1,5 +1,7 @@
 import { createHash } from 'crypto';
 
+import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from '@/core/services/shared/runtime-policy.constants';
+
 function normalizeValue(value) {
   return String(value || '')
     .trim()
@@ -162,8 +164,8 @@ function normalizeRolloutDomains(domains = {}, defaultMode, defaultCanaryPercent
 
 function createRolloutConfig() {
   const rawConfig = deepMerge(BASE_ROLLOUT_CONFIG, parseConfigPatch(process.env.ROLLOUT_CONFIG_JSON) || {});
-  const defaultMode = toMode(process.env.ROLLOUT_DEFAULT_MODE, toMode(rawConfig.defaultMode, 'shadow'));
-  const canaryPercent = toPercent(process.env.ROLLOUT_CANARY_PERCENT, toPercent(rawConfig.canaryPercent, 5));
+  const defaultMode = toMode(ROLLOUT_DEFAULT_MODE, toMode(rawConfig.defaultMode, 'shadow'));
+  const canaryPercent = toPercent(ROLLOUT_CANARY_PERCENT, toPercent(rawConfig.canaryPercent, 5));
 
   return deepFreeze({
     defaultMode,

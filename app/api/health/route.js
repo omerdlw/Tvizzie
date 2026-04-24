@@ -1,41 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { ROLLOUT_CONFIG } from '@/core/services/shared/write-rollout.server';
+import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
 
 function normalizeValue(value) {
   return String(value || '').trim();
-}
-
-function normalizeLowerValue(value) {
-  return normalizeValue(value).toLowerCase();
-}
-
-function getRealtimeMode() {
-  const mode = normalizeLowerValue(process.env.REALTIME_MODE);
-
-  if (mode === 'sse' || mode === 'dual_observe') {
-    return mode;
-  }
-
-  return 'realtime';
-}
-
-function hasAnyConfigured(keys = []) {
-  return keys.some((key) => normalizeValue(process.env[key]));
-}
-
-function resolveEmailProvider() {
-  const explicitProvider = normalizeLowerValue(process.env.EMAIL_PROVIDER);
-
-  if (explicitProvider) {
-    return explicitProvider;
-  }
-
-  if (normalizeValue(process.env.BREVO_SMTP_KEY) || normalizeValue(process.env.BREVO_SMTP_LOGIN)) {
-    return 'brevo';
-  }
-
-  return 'smtp';
 }
 
 function evaluateEnvironment() {
@@ -53,24 +22,15 @@ function evaluateEnvironment() {
     'PASSWORD_RESET_PROOF_SECRET',
     'STEP_UP_SECRET',
     'RECENT_REAUTH_SECRET',
+    'BREVO_SMTP_LOGIN',
+    'BREVO_SMTP_KEY',
   ];
-  const emailProvider = resolveEmailProvider();
-
-  if (emailProvider === 'brevo') {
-    requiredKeys.push('BREVO_SMTP_LOGIN', 'BREVO_SMTP_KEY', 'BREVO_SMTP_FROM');
-  } else {
-    requiredKeys.push('SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM');
-  }
 
   requiredKeys.forEach((key) => {
     if (!normalizeValue(process.env[key])) {
       missing.push(key);
     }
   });
-
-  if (!hasAnyConfigured(['NEXT_PUBLIC_SITE_URL', 'SITE_URL', 'VERCEL_PROJECT_PRODUCTION_URL'])) {
-    missing.push('NEXT_PUBLIC_SITE_URL|SITE_URL|VERCEL_PROJECT_PRODUCTION_URL');
-  }
 
   if (!normalizeValue(process.env.NEXT_PUBLIC_TMDB_READ_TOKEN)) {
     warnings.push('NEXT_PUBLIC_TMDB_READ_TOKEN');
@@ -81,7 +41,7 @@ function evaluateEnvironment() {
     ok: missing.length === 0,
     required: requiredKeys,
     warnings,
-    emailProvider,
+    emailProvider: 'brevo',
   };
 }
 
@@ -104,7 +64,7 @@ export async function GET() {
         domains: Object.keys(ROLLOUT_CONFIG.domains || {}),
       },
       runtime: {
-        realtimeMode: getRealtimeMode(),
+        realtimeMode: getRealtimeTransportMode(),
       },
       service: 'tvizzie-api',
     },

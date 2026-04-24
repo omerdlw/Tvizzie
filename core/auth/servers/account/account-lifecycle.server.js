@@ -1,6 +1,5 @@
+import { ACCOUNT_LIFECYCLE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-
-const ACCOUNT_LIFECYCLE_TABLE = process.env.ACCOUNT_LIFECYCLE_TABLE || 'account_lifecycle';
 
 export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({
   ACTIVE: 'ACTIVE',

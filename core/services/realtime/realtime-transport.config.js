@@ -1,25 +1,7 @@
-function normalizeValue(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
-}
-
-function normalizeTransportMode(value) {
-  const normalized = normalizeValue(value);
-
-  if (!normalized || normalized === 'polling') {
-    return 'realtime';
-  }
-
-  if (normalized === 'sse' || normalized === 'realtime' || normalized === 'dual_observe') {
-    return normalized;
-  }
-
-  return 'realtime';
-}
+export const DEFAULT_REALTIME_TRANSPORT_MODE = 'realtime';
 
 export function getRealtimeTransportMode() {
-  return normalizeTransportMode(process.env.NEXT_PUBLIC_LIVE_TRANSPORT_MODE || process.env.REALTIME_MODE);
+  return DEFAULT_REALTIME_TRANSPORT_MODE;
 }
 
 export function isRealtimeTransportEnabled() {

@@ -1,9 +1,8 @@
 import { createHash } from 'crypto';
 
+import { AUTH_AUDIT_TABLE } from '@/core/auth/auth.constants';
 import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-
-const AUTH_AUDIT_TABLE = process.env.AUTH_AUDIT_TABLE || 'auth_audit_logs';
 
 const ALLOWED_EVENT_TYPES = new Set([
   'cleanup-temp-user',
