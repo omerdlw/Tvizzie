@@ -1,6 +1,8 @@
 'use client';
 
 import AccountListCard from '@/features/account/lists/card';
+import Icon from '@/ui/icon';
+import AccountInlineSectionState from '../shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_LIST_LIMIT = 3;
@@ -9,6 +11,9 @@ export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
   icon = 'solar:list-broken',
   items = [],
+  isOwner = false,
+  onDeleteList = null,
+  onEditList = null,
   ownerUsername = null,
   showSeeMore = false,
   summaryLabel = null,
@@ -34,11 +39,39 @@ export default function AccountListsOverview({
               key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
               list={list}
               ownerUsername={resolvedOwnerUsername}
+              renderActions={
+                isOwner && (typeof onDeleteList === 'function' || typeof onEditList === 'function')
+                  ? (targetList) => (
+                      <div className="flex items-center gap-1.5">
+                        {typeof onEditList === 'function' ? (
+                          <button
+                            type="button"
+                            aria-label={`Edit ${targetList.title}`}
+                            onClick={() => onEditList(targetList)}
+                            className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
+                          >
+                            <Icon icon="solar:pen-bold" size={13} />
+                          </button>
+                        ) : null}
+                        {typeof onDeleteList === 'function' ? (
+                          <button
+                            type="button"
+                            aria-label={`Delete ${targetList.title}`}
+                            onClick={() => onDeleteList(targetList)}
+                            className="bg-primary/30 hover:bg-error flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-error hover:text-white"
+                          >
+                            <Icon icon="solar:trash-bin-trash-bold" size={13} />
+                          </button>
+                        ) : null}
+                      </div>
+                    )
+                  : null
+              }
             />
           ))}
         </div>
       ) : (
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{emptyMessage}</div>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       )}
     </AccountSectionLayout>
   );

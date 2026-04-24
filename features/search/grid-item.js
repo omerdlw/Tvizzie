@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import { getPreferredSearchImageSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 import MediaCard from '@/ui/media/media-card';
@@ -14,6 +15,11 @@ import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '@/featur
 function getImageSrc(item) {
   if (item.media_type === SEARCH_TYPES.USER) {
     return null;
+  }
+
+  const preferredImageSrc = getPreferredSearchImageSrc(item, 'w342');
+  if (preferredImageSrc) {
+    return preferredImageSrc;
   }
 
   const imagePath = getImagePath(item);
@@ -42,6 +48,7 @@ function UserAvatar({ item, title }) {
 }
 
 export default function SearchGridItem({ item, onSelect }) {
+  usePosterPreferenceVersion();
   const title = getItemTitle(item);
   const detailPath = getDetailPath(item);
   const imageSrc = getImageSrc(item);

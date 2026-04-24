@@ -199,7 +199,7 @@ export default function Registry({
                 image: resolvedBackgroundImage,
                 overlay: true,
                 overlayOpacity: 0.4,
-                overlayColor: '#faf9f5',
+                overlayColor: 'var(--white)',
                 noiseStyle: {
                   opacity: 0.13,
                 },

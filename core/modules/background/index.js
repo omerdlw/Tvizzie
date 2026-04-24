@@ -306,7 +306,7 @@ export function BackgroundOverlay() {
               className="absolute inset-0 transition-opacity"
               style={{
                 opacity: overlayOpacity,
-                backgroundColor: overlayColor || '#faf9f5',
+                backgroundColor: overlayColor || 'var(--white)',
                 ...overlayTransitionStyle,
               }}
             />

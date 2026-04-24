@@ -3,10 +3,8 @@
 import { normalizeFeedbackContent } from '@/core/utils';
 import { cn } from '@/core/utils';
 
+export const ACCOUNT_EMPTY_SECTION_CLASS = 'bg-primary center rounded-[14px] border border-black/5 p-6 text-black/50';
+
 export default function AccountInlineSectionState({ children, className = '' }) {
-  return (
-    <div className={cn('bg-primary rounded-[10px] border border-black/5 p-3 text-black/50', className)}>
-      {normalizeFeedbackContent(children)}
-    </div>
-  );
+  return <div className={cn(ACCOUNT_EMPTY_SECTION_CLASS, className)}>{normalizeFeedbackContent(children)}</div>;
 }

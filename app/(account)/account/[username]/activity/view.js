@@ -7,27 +7,35 @@ export const Registry = createAccountSectionRegistry({
   displayName: 'AccountActivityRegistry',
   navDescription: 'Activity Feed',
   navRegistrySource: 'account-activity',
-  resolveOverrides: (sectionState, { activeScope = 'user', onScopeChange = () => {} }) => ({
-    navActionOverride: (
-      <AccountAction
-        mode="tab-switch"
-        activeTab={activeScope}
-        tabs={[
-          {
-            key: 'user',
-            label: sectionState.profile?.username || sectionState.username || 'User',
-          },
-          { key: 'following', label: 'Following' },
-        ]}
-        onTabChange={onScopeChange}
-        followState={sectionState.followState}
-        isFollowLoading={sectionState.isFollowLoading}
-        isOwner={sectionState.isOwner}
-        onFollow={sectionState.handleFollow}
-        showProfileFollowAction
-      />
-    ),
-  }),
+  resolveOverrides: (sectionState, { activeScope = 'user', onScopeChange = () => {} }) => {
+    if (!sectionState.canViewProfileCollections && !sectionState.isOwner) {
+      return {
+        navActionOverride: null,
+      };
+    }
+
+    return {
+      navActionOverride: (
+        <AccountAction
+          mode="tab-switch"
+          activeTab={activeScope}
+          tabs={[
+            {
+              key: 'user',
+              label: sectionState.profile?.username || sectionState.username || 'User',
+            },
+            { key: 'following', label: 'Following' },
+          ]}
+          onTabChange={onScopeChange}
+          followState={sectionState.followState}
+          isFollowLoading={sectionState.isFollowLoading}
+          isOwner={sectionState.isOwner}
+          onFollow={sectionState.handleFollow}
+          showProfileFollowAction
+        />
+      ),
+    };
+  },
 });
 
 export default createAccountSectionView({

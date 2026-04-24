@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
 import Container from '@/core/modules/modal/container';
+import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import { cn } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -35,7 +36,9 @@ function PersonCard({ close, person }) {
 
   if (!person?.id) return null;
 
-  const imageSrc = person.profile_path && !imageError ? `${TMDB_IMG}/w185${person.profile_path}` : null;
+  const imageSrc = !imageError
+    ? getPreferredPersonPosterSrc(person, 'w185') || (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
+    : null;
 
   return (
     <Link
@@ -92,6 +95,7 @@ function CreditsGrid({ close, list, keyPrefix }) {
 }
 
 export default function CastModal({ close, data, header }) {
+  usePosterPreferenceVersion();
   const contentRef = useRef(null);
 
   const castEntries = useMemo(() => normalizeEntries(data?.cast, 'Cast'), [data?.cast]);

@@ -15,7 +15,7 @@ export default function View({ homeData = {} }) {
 
   return (
     <PageGradientShell className="overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.2),transparent_55%)] opacity-50" />
+      <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem] opacity-50" />
       <div
         className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-3 pt-20 pb-20 sm:px-4 md:px-6`}
       >

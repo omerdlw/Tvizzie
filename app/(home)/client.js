@@ -13,7 +13,7 @@ export default function Client({ data = {} }) {
     <>
       <Registry backgroundImage={activeHeroBackground} />
       <View homeData={data} />
-      <NavHeightSpacer className="w-full bg-[#FAF9F5]" />
+      <NavHeightSpacer className="w-full bg-white" />
     </>
   );
 }

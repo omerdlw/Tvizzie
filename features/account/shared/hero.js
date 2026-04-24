@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/core/utils';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl, resolveVersionedImageUrl } from '@/core/utils';
+import {
+  applyAvatarFallback,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+  resolveVersionedImageUrl,
+} from '@/core/utils';
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
@@ -10,16 +15,18 @@ import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
 const ACCOUNT_HERO_IMAGE_CLASS =
   'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
+const ACCOUNT_HERO_BANNER_WRAPPER_CLASS =
+  'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
 const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS =
-  'absolute inset-0 bg-[linear-gradient(180deg,rgba(8,14,20,0.18)_0%,rgba(8,14,20,0.14)_18%,rgba(8,14,20,0.1)_34%,rgba(4,7,10,0.24)_56%,rgba(250,249,245,0.62)_74%,rgba(250,249,245,0.88)_88%,rgba(250,249,245,0.98)_96%,rgb(250,249,245)_100%)]';
+  'account-hero-ambient-overlay absolute inset-0';
+const ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
 const ACCOUNT_HERO_LEFT_FADE_CLASS =
-  'absolute inset-0 bg-[linear-gradient(90deg,rgba(250,249,245,0.97)_0%,rgba(250,249,245,0.94)_12%,rgba(250,249,245,0.82)_24%,rgba(250,249,245,0.6)_36%,rgba(250,249,245,0.34)_50%,rgba(250,249,245,0.12)_62%,rgba(250,249,245,0.03)_70%,rgba(250,249,245,0)_76%)]';
+  'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
 const ACCOUNT_HERO_RIGHT_FADE_CLASS =
-  'absolute inset-0 bg-[linear-gradient(270deg,rgba(250,249,245,0.97)_0%,rgba(250,249,245,0.94)_12%,rgba(250,249,245,0.82)_24%,rgba(250,249,245,0.6)_36%,rgba(250,249,245,0.34)_50%,rgba(250,249,245,0.12)_62%,rgba(250,249,245,0.03)_70%,rgba(250,249,245,0)_76%)]';
+  'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
 const ACCOUNT_HERO_TOP_FADE_CLASS =
-  'absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(250,249,245,0.34)_0%,rgba(250,249,245,0.2)_38%,rgba(250,249,245,0.08)_68%,rgba(250,249,245,0)_100%)] sm:h-36';
-const ACCOUNT_HERO_TINT_CLASS =
-  'absolute inset-0 bg-[radial-gradient(90%_58%_at_50%_14%,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_34%,rgba(255,255,255,0)_64%),linear-gradient(180deg,rgba(6,10,16,0.14)_0%,rgba(6,10,16,0.04)_42%,rgba(6,10,16,0)_72%)]';
+  'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
+const ACCOUNT_HERO_TINT_CLASS = 'account-hero-tint-overlay absolute inset-0';
 const ACCOUNT_HERO_CENTER_GLOW_CLASS =
   'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
 
@@ -112,7 +119,7 @@ function HeroBioPreview({ description, onReadMore }) {
         {description}
       </p>
       {shouldShowReadMore ? (
-        <div className="absolute right-0 bottom-0 flex h-[24px] items-center justify-end bg-[linear-gradient(to_right,rgba(250,249,245,0)_0%,#faf9f5_40%,#faf9f5_100%)] pl-12">
+        <div className="account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12">
           <button className="text-sm font-semibold text-black/70 uppercase" type="button" onClick={onReadMore}>
             More
           </button>
@@ -126,7 +133,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
     <div className="w-full min-w-0 text-left">
       <div className="flex items-center gap-4">
-        <h1 className="font-zuume min-w-0 max-w-full [overflow-wrap:anywhere] text-[2.9rem] leading-none font-bold uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
+        <h1 className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
           {displayName}
         </h1>
       </div>
@@ -206,9 +213,10 @@ export default function AccountHero({
   watchlistCount = 0,
 }) {
   const heroDisplayName = String(profile?.displayName || '').trim() || 'Account';
-  const heroBannerSrc = resolveVersionedImageUrl(String(profile?.bannerUrl || ''))
-    .trim()
-    .replace(/^(null|undefined)$/i, '') || null;
+  const heroBannerSrc =
+    resolveVersionedImageUrl(String(profile?.bannerUrl || ''))
+      .trim()
+      .replace(/^(null|undefined)$/i, '') || null;
   const resolvedWatchedCount =
     watchedCount !== null && watchedCount !== undefined && Number.isFinite(Number(watchedCount))
       ? Number(watchedCount)
@@ -258,11 +266,12 @@ export default function AccountHero({
             loading="eager"
             fetchPriority="high"
             decoding="async"
-            wrapperClassName="h-full w-full"
+            wrapperClassName={ACCOUNT_HERO_BANNER_WRAPPER_CLASS}
           />
         </div>
       ) : null}
       <div className={ACCOUNT_HERO_TINT_CLASS} />
+      <div className={ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS} />
       <div className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS} />
       <div className={ACCOUNT_HERO_LEFT_FADE_CLASS} />
       <div className={ACCOUNT_HERO_RIGHT_FADE_CLASS} />

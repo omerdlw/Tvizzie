@@ -8,6 +8,7 @@ import Icon from '@/ui/icon';
 
 import { AccountSectionReveal } from './layout';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '../utils';
+import { ACCOUNT_EMPTY_SECTION_CLASS } from './section-state';
 
 export function AccountSectionHeading({
   action = null,
@@ -64,7 +65,7 @@ export function AccountSectionState({ message }) {
   return (
     <section className="relative bg-transparent">
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">
+        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
           {normalizeFeedbackContent(message)}
         </div>
       </div>

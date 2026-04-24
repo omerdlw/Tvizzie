@@ -628,7 +628,14 @@ async function hydrateMovieRuntime(item) {
 }
 
 async function sanitizeMovieResultsWithRuntime(items = [], context = 'browse') {
-  const hydratedItems = await Promise.all((Array.isArray(items) ? items : []).map((item) => hydrateMovieRuntime(item)));
+  const safeItems = Array.isArray(items) ? items : [];
+
+  if (context !== 'search') {
+    return sanitizeMovieResults(safeItems, context);
+  }
+
+  const hydratedItems = await Promise.all(safeItems.map((item) => hydrateMovieRuntime(item)));
+
   return sanitizeMovieResults(hydratedItems, context);
 }
 

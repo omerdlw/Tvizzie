@@ -1,5 +1,7 @@
 'use client';
 
+import { notifyPosterPreferenceChange } from '@/core/services/media/poster-preference-events';
+
 const STORAGE_KEY = 'tvizzie.movie.background.preferences';
 const MAX_PREFERENCES = 200;
 const PREFERENCE_KIND = Object.freeze({
@@ -292,9 +294,21 @@ export function getMoviePosterPreferenceFilePath(movieId) {
 }
 
 export function setMoviePosterPreference(movieId, filePath) {
-  return setMoviePreferenceByKind(movieId, filePath, PREFERENCE_KIND.POSTER);
+  const didSet = setMoviePreferenceByKind(movieId, filePath, PREFERENCE_KIND.POSTER);
+
+  if (didSet) {
+    notifyPosterPreferenceChange({ entityType: 'movie', entityId: movieId });
+  }
+
+  return didSet;
 }
 
 export function clearMoviePosterPreference(movieId) {
-  return clearMoviePreferenceByKind(movieId, PREFERENCE_KIND.POSTER);
+  const didClear = clearMoviePreferenceByKind(movieId, PREFERENCE_KIND.POSTER);
+
+  if (didClear) {
+    notifyPosterPreferenceChange({ entityType: 'movie', entityId: movieId });
+  }
+
+  return didClear;
 }

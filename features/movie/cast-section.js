@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
+import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -17,7 +18,7 @@ const COMPACT_COUNT = 3;
 
 function PersonImage({ person, size, quality = 72, priority = false, fetchPriority = '' }) {
   const [error, setError] = useState(false);
-  const src = person.profile_path && !error ? `${TMDB_IMG}/${size}${person.profile_path}` : null;
+  const src = !error ? getPreferredPersonPosterSrc(person, size) || (person.profile_path ? `${TMDB_IMG}/${size}${person.profile_path}` : null) : null;
 
   if (!src) {
     return (
@@ -107,6 +108,7 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
 }
 
 export default function CastSection({ cast = [], crew = [], headerAction = null }) {
+  usePosterPreferenceVersion();
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');

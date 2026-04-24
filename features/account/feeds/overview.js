@@ -36,6 +36,9 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
     handleFollow,
     handleLikeReview,
     handleOpenFollowList,
+    handleDeleteList,
+    handleEditList,
+    handleRequestRemoveLike,
     handleRequestRemoveWatchedItem,
     handleRequestRemoveWatchlistItem,
     hasMoreAuthoredReviews,
@@ -102,7 +105,18 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
           {shouldShowFavorites ? (
             <AccountFavoritesOverview
               icon="solar:star-bold"
+              isOwner={isOwner}
               items={favoriteShowcase.slice(0, OVERVIEW_FAVORITES_LIMIT)}
+              renderOverlay={(item) =>
+                isOwner ? (
+                  <ProfileMediaActions
+                    media={item}
+                    onRemoveItem={handleRequestRemoveLike}
+                    removeLabel={`Remove ${item.title || item.name} from favorites`}
+                    userId={currentUserId}
+                  />
+                ) : null
+              }
               title="Favorites"
               titleHref={likesHref}
             />
@@ -169,6 +183,9 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
             <AccountListsOverview
               icon="solar:list-broken"
               items={lists.slice(0, OVERVIEW_LIST_LIMIT)}
+              isOwner={isOwner}
+              onDeleteList={handleDeleteList}
+              onEditList={handleEditList}
               ownerUsername={profileHandle}
               showSeeMore={listCount > OVERVIEW_LIST_LIMIT}
               title="Lists"

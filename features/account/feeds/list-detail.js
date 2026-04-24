@@ -35,6 +35,7 @@ import { REVIEW_SORT_MODE } from '@/features/reviews/utils';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { AuthGate } from '@/core/modules/auth';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 
 const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`;
@@ -99,6 +100,11 @@ function useResponsivePageSize() {
 }
 
 function getPosterUrl(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -116,8 +122,10 @@ function ListDetailMediaGrid({
   items = [],
   onRemoveItem = null,
   toolbar = null,
+  userId = null,
 }) {
   const itemsPerPage = useResponsivePageSize();
+  const posterPreferenceVersion = usePosterPreferenceVersion();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = items.length ? Math.ceil(items.length / itemsPerPage) : 1;
@@ -125,7 +133,7 @@ function ListDetailMediaGrid({
   const pageStart = (safeCurrentPage - 1) * itemsPerPage;
   const visibleItems = useMemo(
     () => items.slice(pageStart, pageStart + itemsPerPage),
-    [items, pageStart, itemsPerPage]
+    [items, pageStart, itemsPerPage, posterPreferenceVersion]
   );
 
   useEffect(() => {
@@ -142,7 +150,7 @@ function ListDetailMediaGrid({
     return (
       <div className="flex flex-col gap-5">
         {toolbar}
-        <AccountInlineSectionState className="px-4 py-5">{emptyMessage}</AccountInlineSectionState>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       </div>
     );
   }
@@ -182,6 +190,7 @@ function ListDetailMediaGrid({
                       media={item}
                       onRemoveItem={onRemoveItem}
                       removeLabel={`Remove ${title} from this list`}
+                      userId={userId}
                     />
                   ) : null
                 }
@@ -466,6 +475,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                 isOwner={isOwner}
                 items={filteredListItems}
                 onRemoveItem={handleRemoveListItem}
+                userId={auth.user?.id || null}
                 toolbar={
                   hasListItems ? (
                     <>
@@ -542,7 +552,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                 </AuthGate>
               )}
               {visibleReviews.length === 0 ? (
-                <AccountInlineSectionState className="px-4 py-5">
+                <AccountInlineSectionState>
                   {hasReviewFilters && reviews.length > 0
                     ? 'No comments match the current filters.'
                     : 'No comments yet'}

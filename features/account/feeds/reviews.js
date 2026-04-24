@@ -18,12 +18,12 @@ import {
 } from '@/features/account/filtering';
 import { AccountReviewFilterBar } from '@/features/account/shared/content-filters';
 import AccountPagination from '@/features/account/shared/pagination';
+import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/shared/section-state';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
-const EMPTY_STATE_CLASS = 'bg-primary rounded-[10px] border border-black/5 p-3 text-black/50';
 
 function resolveMediaKey(item) {
   if (item?.mediaKey) {
@@ -199,7 +199,7 @@ export default function AccountReviewsFeed({
 
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
         <motion.div
-          className={EMPTY_STATE_CLASS}
+          className={ACCOUNT_EMPTY_SECTION_CLASS}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -208,7 +208,7 @@ export default function AccountReviewsFeed({
         </motion.div>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
         <motion.div
-          className={EMPTY_STATE_CLASS}
+          className={ACCOUNT_EMPTY_SECTION_CLASS}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

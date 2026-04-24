@@ -18,6 +18,7 @@ const OVERVIEW_LISTS_LIMIT = 3;
 const OVERVIEW_REVIEW_LIMIT = 3;
 const OVERVIEW_WATCHED_LIMIT = 12;
 const OVERVIEW_WATCHLIST_LIMIT = 12;
+const ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS = 2400;
 const EMPTY_ARRAY = Object.freeze([]);
 const EMPTY_ROUTE_FEED = Object.freeze({
   hasMore: false,
@@ -47,17 +48,6 @@ function buildCookieRequest(cookieStore) {
   };
 }
 
-function buildSignInHref(nextPath) {
-  const params = new URLSearchParams();
-
-  if (nextPath) {
-    params.set('next', nextPath);
-  }
-
-  const query = params.toString();
-  return query ? `/sign-in?${query}` : '/sign-in';
-}
-
 async function getViewerSessionContext() {
   const cookieStore = await cookies();
   const request = buildCookieRequest(cookieStore);
@@ -75,9 +65,34 @@ export async function getCurrentEditableAccountSnapshot() {
   return getEditableAccountSnapshotByUserId(sessionContext.userId);
 }
 
-async function safeLoad(load, fallback) {
+function createRouteLoadTimeoutError() {
+  const error = new Error('Account route optional load timed out');
+  error.code = 'ACCOUNT_ROUTE_LOAD_TIMEOUT';
+  return error;
+}
+
+async function withTimeout(loadPromise, timeoutMs = ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS) {
+  let timer = null;
+
   try {
-    return await load();
+    return await Promise.race([
+      loadPromise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(createRouteLoadTimeoutError());
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
+async function safeLoad(load, fallback, { timeoutMs = ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS } = {}) {
+  try {
+    return await withTimeout(Promise.resolve().then(load), timeoutMs);
   } catch {
     return fallback;
   }
@@ -180,10 +195,12 @@ async function loadCollectionResource(input = {}, fallback = []) {
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      const result = await getCollectionResource({
-        ...input,
-        strict: false,
-      });
+      const result = await withTimeout(
+        getCollectionResource({
+          ...input,
+          strict: false,
+        })
+      );
       return normalizeCollectionResourceValue(result, fallback);
     } catch (error) {
       if (attempt >= maxAttempts) {
@@ -342,6 +359,19 @@ function createCurrentOverviewFallback(snapshot = null) {
   };
 }
 
+function createCurrentAuthPendingRouteState() {
+  return {
+    initialActivityFeed: null,
+    initialCollections: null,
+    initialCounts: null,
+    initialProfile: null,
+    initialResolveError: null,
+    initialResolvedUserId: null,
+    initialReviewFeed: null,
+    username: null,
+  };
+}
+
 function createMissingUsernameRouteState(snapshot, username, extras = {}) {
   return createRouteState(snapshot, {
     initialCollections: null,
@@ -355,7 +385,7 @@ export async function getCurrentAccountOverviewRouteData() {
   const viewerId = sessionContext?.userId || null;
 
   if (!viewerId) {
-    redirect(buildSignInHref('/account'));
+    return createCurrentAuthPendingRouteState();
   }
 
   const snapshot = await getCurrentEditableAccountSnapshot();
@@ -403,7 +433,7 @@ export async function redirectCurrentAccountSection(sectionKey) {
   const viewerId = sessionContext?.userId || null;
 
   if (!viewerId) {
-    redirect(buildSignInHref(sectionPath));
+    redirect('/account');
   }
 
   const snapshot = await getCurrentEditableAccountSnapshot();

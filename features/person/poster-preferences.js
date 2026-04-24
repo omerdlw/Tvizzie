@@ -1,5 +1,7 @@
 'use client';
 
+import { notifyPosterPreferenceChange } from '@/core/services/media/poster-preference-events';
+
 const STORAGE_KEY = 'tvizzie.person.poster.preferences';
 const MAX_PREFERENCES = 200;
 
@@ -150,7 +152,13 @@ export function setPersonPosterPreference(personId, filePath) {
     },
   };
 
-  return writeStore(nextStore);
+  const didSet = writeStore(nextStore);
+
+  if (didSet) {
+    notifyPosterPreferenceChange({ entityType: 'person', entityId: personId });
+  }
+
+  return didSet;
 }
 
 export function clearPersonPosterPreference(personId) {
@@ -166,7 +174,13 @@ export function clearPersonPosterPreference(personId) {
 
   delete nextEntries[resolvedPersonId];
 
-  return writeStore({
+  const didClear = writeStore({
     entries: nextEntries,
   });
+
+  if (didClear) {
+    notifyPosterPreferenceChange({ entityType: 'person', entityId: personId });
+  }
+
+  return didClear;
 }

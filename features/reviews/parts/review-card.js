@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -14,6 +15,20 @@ import Icon from '@/ui/icon';
 import RatingStars from './rating-stars';
 
 function getReviewPosterSrc(review) {
+  if (review?.subjectType === 'movie') {
+    const preferredPoster = getPreferredMoviePosterSrc(
+      {
+        id: review?.subjectId,
+        poster_path: review?.subjectPoster,
+      },
+      'w342'
+    );
+
+    if (preferredPoster) {
+      return preferredPoster;
+    }
+  }
+
   const poster = String(review?.subjectPoster || '').trim();
 
   if (!poster) return null;
@@ -253,6 +268,7 @@ export default function ReviewCard({
   showSubject = false,
   watchedMediaKeys = null,
 }) {
+  usePosterPreferenceVersion();
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
 
   const isAccountVariant = displayVariant === 'account';

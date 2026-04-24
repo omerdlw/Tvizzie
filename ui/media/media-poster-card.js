@@ -3,6 +3,7 @@
 import { TMDB_IMG } from '@/core/constants';
 import { resolveExplicitMediaType } from '@/core/utils/media';
 import { cn } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import MediaCard from '@/ui/media/media-card';
 
 export default function MediaPosterCard({
@@ -14,6 +15,7 @@ export default function MediaPosterCard({
   imageFetchPriority,
   fallbackMediaType = 'movie',
 }) {
+  usePosterPreferenceVersion();
   const mediaType = resolveExplicitMediaType(item, fallbackMediaType);
 
   if (mediaType !== 'movie') {
@@ -25,11 +27,9 @@ export default function MediaPosterCard({
   const resolvedTitle = title || 'Untitled';
   const year = item.release_date?.slice(0, 4);
   const href = `/movie/${detailId}`;
-  const imageSrc = item.poster_path_full
-    ? item.poster_path_full
-    : item.poster_path
-      ? `${TMDB_IMG}/w342${item.poster_path}`
-      : null;
+  const imageSrc =
+    getPreferredMoviePosterSrc(item, 'w342') ||
+    (item.poster_path_full ? item.poster_path_full : item.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
   const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
 
   return (

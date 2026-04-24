@@ -26,6 +26,7 @@ import {
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/features/account/utils';
 import { AccountListSortBar, AccountMediaFilterBar } from '@/features/account/shared/content-filters';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 import AccountSectionLayout, { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
 import { Button } from '@/ui/elements';
@@ -67,9 +68,7 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, o
   return (
     <AccountSectionLayout icon="solar:star-bold" summaryLabel={`${items.length}/5 selected`} title="Favorites Showcase">
       {items.length === 0 ? (
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">
-          No showcase titles selected yet
-        </div>
+        <AccountInlineSectionState>No showcase titles selected yet</AccountInlineSectionState>
       ) : (
         <Reorder.Group
           as="div"

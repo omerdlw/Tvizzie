@@ -9,6 +9,7 @@ import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
 import { cn } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -18,7 +19,7 @@ const ACTION_BUTTON_CLASS =
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
 function getPreviewImage(item) {
-  return item?.poster_path_full || (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
+  return getPreferredMoviePosterSrc(item, 'w342') || item?.poster_path_full || (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
 }
 
 function getChangedListIds(lists, initialMemberships, draftMemberships) {
@@ -26,6 +27,7 @@ function getChangedListIds(lists, initialMemberships, draftMemberships) {
 }
 
 function ListPreviewStack({ list }) {
+  usePosterPreferenceVersion();
   const previewItems = Array.isArray(list?.previewItems) ? list.previewItems.slice(0, 4) : [];
 
   return (

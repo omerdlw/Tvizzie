@@ -204,7 +204,7 @@ export default function AccountPagination({
 
   if (layout === 'split') {
     const splitWrapperClassName = cn(
-      'grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-3',
+      'grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3',
       splitClassName,
       className
     );

@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
+import AccountInlineSectionState from '../shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
@@ -28,6 +30,11 @@ function getWatchedYear(item) {
 }
 
 function getWatchedPoster(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -50,6 +57,7 @@ export default function AccountWatchedOverview({
   titleHref = null,
   username,
 }) {
+  const posterPreferenceVersion = usePosterPreferenceVersion();
   const cards = useMemo(
     () =>
       items
@@ -74,7 +82,7 @@ export default function AccountWatchedOverview({
           };
         })
         .filter(Boolean),
-    [items]
+    [items, posterPreferenceVersion]
   );
 
   return (
@@ -108,7 +116,7 @@ export default function AccountWatchedOverview({
           ))}
         </div>
       ) : (
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{emptyMessage}</div>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       )}
     </AccountSectionLayout>
   );

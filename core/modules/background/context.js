@@ -9,7 +9,7 @@ const BackgroundStateContext = createContext(null);
 
 const DEFAULT_BACKGROUND = Object.freeze({
   overlayOpacity: 0.5,
-  overlayColor: '#faf9f5',
+  overlayColor: 'var(--white)',
   position: 'center',
   animation: {
     transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },

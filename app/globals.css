@@ -2,12 +2,12 @@
 @plugin 'tailwindcss-animate';
 
 @theme {
-  --color-white: #faf9f5;
+  --color-white: var(--white);
   --color-primary: #fff;
   --color-black: #1a1918;
   --color-error: #8d2625;
   --color-warning: #ffc200;
-  --color-success: #29a642;
+  --color-success: #238b45;
   --color-info: #2976d7;
   --font-zuume: var(--font-zuume);
   --animate-spin: spin 1s linear infinite;
@@ -15,6 +15,10 @@
 }
 
 @layer base {
+  :root {
+    --white: #fafaf5;
+  }
+
   html {
     color-scheme: light;
   }
@@ -45,6 +49,142 @@
 }
 
 @layer utilities {
+  .page-gradient-backdrop {
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 38%, transparent) 0%,
+      color-mix(in srgb, var(--white) 52%, transparent) 18vh,
+      color-mix(in srgb, var(--white) 68%, transparent) 34vh,
+      color-mix(in srgb, var(--white) 83%, transparent) 50vh,
+      color-mix(in srgb, var(--white) 94%, transparent) 66vh,
+      var(--white) 80vh,
+      var(--white) 100%
+    );
+  }
+
+  .home-top-radial-gradient {
+    background-image: radial-gradient(
+      circle at top,
+      color-mix(in srgb, var(--white) 20%, transparent),
+      transparent 55%
+    );
+  }
+
+  .media-reviews-backdrop-gradient {
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      color-mix(in srgb, var(--white) 84%, transparent) 12%,
+      var(--white) 34%,
+      var(--white) 100%
+    );
+  }
+
+  .account-hero-ambient-overlay {
+    background-image: linear-gradient(
+      180deg,
+      rgb(8 14 20 / 0.18) 0%,
+      rgb(8 14 20 / 0.14) 18%,
+      rgb(8 14 20 / 0.1) 34%,
+      rgb(4 7 10 / 0.24) 56%,
+      color-mix(in srgb, var(--white) 62%, transparent) 74%,
+      color-mix(in srgb, var(--white) 88%, transparent) 88%,
+      color-mix(in srgb, var(--white) 98%, transparent) 96%,
+      var(--white) 100%
+    );
+  }
+
+  .account-skeleton-hero-ambient-overlay {
+    background-image: linear-gradient(
+      180deg,
+      rgb(8 14 20 / 0.12) 0%,
+      rgb(8 14 20 / 0.08) 28%,
+      rgb(4 7 10 / 0.16) 56%,
+      color-mix(in srgb, var(--white) 66%, transparent) 76%,
+      color-mix(in srgb, var(--white) 94%, transparent) 94%,
+      var(--white) 100%
+    );
+  }
+
+  .account-hero-soften-overlay {
+    background-color: color-mix(in srgb, var(--white) 54%, transparent);
+  }
+
+  @media (min-width: 640px) {
+    .account-hero-soften-overlay {
+      background-color: color-mix(in srgb, var(--white) 50%, transparent);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .account-hero-soften-overlay {
+      background-color: color-mix(in srgb, var(--white) 46%, transparent);
+    }
+  }
+
+  .account-hero-left-fade {
+    background-image: linear-gradient(
+      90deg,
+      var(--white) 0%,
+      color-mix(in srgb, var(--white) 96%, transparent) 26%,
+      color-mix(in srgb, var(--white) 72%, transparent) 48%,
+      color-mix(in srgb, var(--white) 36%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    );
+  }
+
+  .account-hero-right-fade {
+    background-image: linear-gradient(
+      270deg,
+      var(--white) 0%,
+      color-mix(in srgb, var(--white) 96%, transparent) 26%,
+      color-mix(in srgb, var(--white) 72%, transparent) 48%,
+      color-mix(in srgb, var(--white) 36%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    );
+  }
+
+  .account-hero-top-fade {
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--white) 34%, transparent) 0%,
+      color-mix(in srgb, var(--white) 20%, transparent) 38%,
+      color-mix(in srgb, var(--white) 8%, transparent) 68%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    );
+  }
+
+  .account-hero-tint-overlay {
+    background-image:
+      radial-gradient(
+        90% 58% at 50% 14%,
+        color-mix(in srgb, var(--white) 8%, transparent) 0%,
+        color-mix(in srgb, var(--white) 3%, transparent) 34%,
+        color-mix(in srgb, var(--white) 0%, transparent) 64%
+      ),
+      linear-gradient(180deg, rgb(6 10 16 / 0.14) 0%, rgb(6 10 16 / 0.04) 42%, rgb(6 10 16 / 0) 72%);
+  }
+
+  .account-skeleton-hero-tint-overlay {
+    background-image:
+      radial-gradient(
+        90% 58% at 50% 14%,
+        color-mix(in srgb, var(--white) 8%, transparent) 0%,
+        color-mix(in srgb, var(--white) 3%, transparent) 34%,
+        color-mix(in srgb, var(--white) 0%, transparent) 64%
+      ),
+      linear-gradient(180deg, rgb(6 10 16 / 0.1) 0%, rgb(6 10 16 / 0.03) 42%, rgb(6 10 16 / 0) 72%);
+  }
+
+  .account-hero-text-fade {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      var(--white) 40%,
+      var(--white) 100%
+    );
+  }
+
   @keyframes spin {
     to {
       transform: rotate(360deg);
@@ -86,7 +226,12 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: linear-gradient(110deg, transparent 20%, rgb(255 255 255 / 0.5) 48%, transparent 78%);
+    background-image: linear-gradient(
+      110deg,
+      transparent 20%,
+      color-mix(in srgb, var(--white) 50%, transparent) 48%,
+      transparent 78%
+    );
     transform: translateX(-100%);
     animation: skeleton-shimmer 8s linear infinite;
   }

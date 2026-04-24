@@ -2,10 +2,16 @@
 
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 function getPreviewImage(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -23,6 +29,7 @@ export default function ListPreviewComposition({
   imageClassName = 'h-full w-full object-cover',
   items = [],
 }) {
+  usePosterPreferenceVersion();
   const previewItems = Array.isArray(items) ? items.slice(0, 3) : [];
 
   return (

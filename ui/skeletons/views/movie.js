@@ -43,7 +43,7 @@ function SocialProofPills() {
 
 function CastCard() {
   return (
-    <div className="bg-primary/30 skeleton-block-soft flex items-center gap-3 rounded-[14px] p-1 pr-4">
+    <div className="flex items-center gap-3 rounded-[14px] bg-black/[0.07] p-1 pr-4 backdrop-blur-xs">
       <SkeletonPoster className="h-20 w-16 shrink-0 rounded-[9px] aspect-auto" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
@@ -55,7 +55,7 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <div className="bg-primary/30 skeleton-block-soft flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] p-1 pr-2">
+    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] bg-black/[0.07] p-1 pr-2 backdrop-blur-xs">
       <SkeletonBlock className="size-8 shrink-0 rounded-[9px]" />
       <TextLine width="w-3/5" className="h-3" />
     </div>
@@ -103,18 +103,41 @@ function SidebarStat() {
 
 function SidebarActionButtons() {
   return (
-    <>
-      <div className="grid grid-cols-2 gap-2">
+    <div className="flex flex-col gap-2">
+      <SkeletonPill className="h-[42px]" soft={true} />
+      <div className="grid grid-cols-1 gap-2 min-[460px]:grid-cols-2">
         <SkeletonPill className="h-[42px]" soft={true} />
         <SkeletonPill className="h-[42px]" soft={true} />
       </div>
       <SkeletonPill className="h-[42px]" soft={true} />
-    </>
+    </div>
   );
 }
 
 function SectionAction() {
   return <TextLine width="w-16" className="h-3" soft={true} />;
+}
+
+function SidebarTaxonomySkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <TextLine width="w-14" className="h-2.5" soft={true} />
+        <div className="flex flex-wrap gap-1.5">
+          <SkeletonPill className="h-7 w-20 rounded-[10px]" soft={true} />
+          <SkeletonPill className="h-7 w-24 rounded-[10px]" soft={true} />
+          <SkeletonPill className="h-7 w-16 rounded-[10px]" soft={true} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <TextLine width="w-10" className="h-2.5" soft={true} />
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(9.5rem,100%),1fr))] gap-1.5">
+          <SkeletonPill className="h-7 rounded-[10px]" soft={true} />
+          <SkeletonPill className="h-7 rounded-[10px]" soft={true} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function MovieHeroSkeleton() {
@@ -155,7 +178,9 @@ function MovieCastSkeleton({ className = '' }) {
 
       <div className="flex h-10 items-center gap-2">
         {Array.from({ length: 3 }).map((_, index) => (
-          <CompactCastCard key={index} />
+          <div key={index} className={`min-w-0 flex-1 ${index > 1 ? 'hidden sm:block' : ''}`}>
+            <CompactCastCard />
+          </div>
         ))}
         <SkeletonPill className="size-10 shrink-0" radius="segmentedTrack" soft={true} />
       </div>
@@ -166,15 +191,16 @@ function MovieCastSkeleton({ className = '' }) {
 function MovieReviewsSkeleton({ className = '' }) {
   return (
     <section className={`relative flex w-full flex-col gap-6 overflow-hidden ${className}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <SkeletonCircle className="size-10" soft={true} />
-          <div className="flex min-w-0 flex-col gap-2">
-            <Heading width="w-28" />
-            <TextLine width="w-20" className="h-3" soft={true} />
-          </div>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-center gap-2">
+          <SkeletonCircle className="size-[30px]" soft={true} />
+          <TextLine width="w-36" className="h-4" />
         </div>
-        <TextLine width="w-16" className="h-3" soft={true} />
+        <div className="flex flex-wrap items-center gap-2">
+          <SkeletonPill className="h-9 w-28 rounded-[12px]" soft={true} />
+          <SkeletonPill className="h-9 w-32 rounded-[12px]" soft={true} />
+          <SkeletonPill className="h-9 w-24 rounded-[12px]" soft={true} />
+        </div>
       </div>
 
       <div className="flex w-full flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -187,7 +213,7 @@ function MovieReviewsSkeleton({ className = '' }) {
 
       <div className="flex flex-col gap-4">
         {Array.from({ length: 2 }).map((_, index) => (
-          <div key={index} className="flex flex-col gap-3 pb-4">
+          <div key={index} className="pb-4">
             <div className="flex items-center gap-3">
               <SkeletonCircle className="size-10" soft={true} />
               <div className="flex flex-col gap-2">
@@ -195,7 +221,7 @@ function MovieReviewsSkeleton({ className = '' }) {
                 <TextLine width="w-20" className="h-2.5" soft={true} />
               </div>
             </div>
-            <div className="flex max-w-[62ch] flex-col gap-2">
+            <div className="mt-3 flex max-w-[62ch] flex-col gap-2">
               <TextLine width="w-full" className="h-3.5" soft={true} />
               <TextLine width="w-[94%]" className="h-3.5" soft={true} />
               <TextLine width="w-[82%]" className="h-3.5" soft={true} />
@@ -251,8 +277,9 @@ function MovieContentSkeleton() {
         <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
           <div className="w-full shrink-0 self-start lg:w-[400px]">
             <div className="flex w-full flex-col gap-3">
-              <SkeletonBlock className="h-[580px] w-full" radius="hero" />
+              <SkeletonBlock className="aspect-2/3 w-full" radius="hero" />
               <SidebarActionButtons />
+              <SidebarTaxonomySkeleton />
               <div className="mt-2 flex flex-col gap-3">
                 {Array.from({ length: 7 }).map((_, index) => (
                   <SidebarStat key={index} />

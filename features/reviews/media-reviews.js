@@ -211,7 +211,7 @@ export default function MediaReviews({
     >
       {showBackdropGradient ? (
         <div
-          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(250,249,245,0)_0%,rgba(250,249,245,0.84)_12%,#faf9f5_34%,#faf9f5_100%)]"
+          className="media-reviews-backdrop-gradient pointer-events-none absolute inset-0 -z-10"
           style={{ bottom: -backdropExtension }}
         />
       ) : null}
@@ -250,7 +250,7 @@ export default function MediaReviews({
             classNames={{
               trigger:
                 'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
-              menu: 'overflow-hidden border border-black/10 bg-[#faf9f5] p-1 shadow-lg',
+              menu: 'overflow-hidden border border-black/10 bg-white p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
               option:
                 'cursor-pointer px-3 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',

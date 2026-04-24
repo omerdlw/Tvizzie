@@ -5,8 +5,10 @@ import { useMemo, useState } from 'react';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import AccountInlineSectionState from '../shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 5;
@@ -30,6 +32,11 @@ function getFavoriteYear(item) {
 }
 
 function getFavoritePoster(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -53,6 +60,7 @@ export default function AccountFavoritesOverview({
   title = 'Favorites Showcase',
   titleHref = null,
 }) {
+  const posterPreferenceVersion = usePosterPreferenceVersion();
   const [pendingItemId, setPendingItemId] = useState(null);
 
   const cards = useMemo(
@@ -79,7 +87,7 @@ export default function AccountFavoritesOverview({
           };
         })
         .filter(Boolean),
-    [items]
+    [items, posterPreferenceVersion]
   );
 
   return (
@@ -150,7 +158,7 @@ export default function AccountFavoritesOverview({
           ))}
         </div>
       ) : (
-        <div className="bg-primary rounded-[10px] border border-black/5 p-3 text-black/50">{emptyMessage}</div>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       )}
     </AccountSectionLayout>
   );

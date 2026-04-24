@@ -325,6 +325,13 @@ export function useAccountPageActions({
     async (item) => {
       if (!isOwner || !selectedList || !auth.user?.id) return;
 
+      let previousListItems = null;
+
+      setListItems((currentItems) => {
+        previousListItems = currentItems;
+        return removeAccountCollectionItem(currentItems, item);
+      });
+
       try {
         await toggleUserListItem({
           listId: selectedList.id,
@@ -333,11 +340,14 @@ export function useAccountPageActions({
         });
         setItemRemoveConfirmation(null);
       } catch (error) {
+        if (previousListItems) {
+          setListItems(previousListItems);
+        }
         toast.error(error?.message || 'The item could not be removed');
         throw error;
       }
     },
-    [auth.user?.id, isOwner, selectedList, toast]
+    [auth.user?.id, isOwner, selectedList, setListItems, toast]
   );
 
   const handleRequestRemoveListItem = useCallback(

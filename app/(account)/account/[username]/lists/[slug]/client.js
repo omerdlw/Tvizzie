@@ -11,6 +11,7 @@ import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
+import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
@@ -33,6 +34,7 @@ export default function Client({ routeData = null }) {
   const [listItems, setListItems] = useState(Array.isArray(initialListItems) ? initialListItems : []);
   const [reviews, setReviews] = useState(Array.isArray(initialListReviews) ? initialListReviews : []);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [listItemRemoveConfirmation, setListItemRemoveConfirmation] = useState(null);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const { profile: userProfile } = useAccountProfile({
     resolvedUserId: auth.user?.id || null,
@@ -50,7 +52,7 @@ export default function Client({ routeData = null }) {
     canViewPrivateContent,
     handleDeleteList,
     handleEditList,
-    handleRequestRemoveListItem,
+    handleRemoveListItem,
     handleSignInRequest,
     isOwner,
     isPrivateProfile,
@@ -247,6 +249,77 @@ export default function Client({ routeData = null }) {
       setIsLikeLoading(false);
     }
   }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast]);
+
+  const primeListItemsCache = useCallback(
+    (nextItems) => {
+      if (!resolvedUserId || !list?.id) {
+        return;
+      }
+
+      primePollingSubscription(
+        buildPollingSubscriptionKey('lists:items', {
+          hiddenIntervalMs: null,
+          intervalMs: null,
+          listId: list.id,
+          userId: resolvedUserId,
+        }),
+        nextItems,
+        { emit: false }
+      );
+    },
+    [list?.id, resolvedUserId]
+  );
+
+  const handleConfirmRemoveListItem = useCallback(
+    async (item) => {
+      if (!isOwner || !list?.id || !auth.user?.id) {
+        return;
+      }
+
+      let previousListItems = null;
+      let nextListItems = null;
+
+      setListItems((currentItems) => {
+        previousListItems = currentItems;
+        nextListItems = removeAccountCollectionItem(currentItems, item);
+        return nextListItems;
+      });
+
+      try {
+        await handleRemoveListItem(item);
+        setListItemRemoveConfirmation(null);
+
+        if (nextListItems) {
+          primeListItemsCache(nextListItems);
+        }
+      } catch (error) {
+        if (previousListItems) {
+          setListItems(previousListItems);
+          primeListItemsCache(previousListItems);
+        }
+
+        throw error;
+      }
+    },
+    [auth.user?.id, handleRemoveListItem, isOwner, list?.id, primeListItemsCache]
+  );
+
+  const handleRequestRemoveListItem = useCallback(
+    (item) => {
+      if (!isOwner) return;
+
+      setListItemRemoveConfirmation({
+        title: 'Remove List Item?',
+        description: `${getMediaTitle(item)} will be removed from this list.`,
+        confirmText: 'Remove',
+        confirmLoadingText: 'Removing',
+        isDestructive: true,
+        onCancel: () => setListItemRemoveConfirmation(null),
+        onConfirm: () => handleConfirmRemoveListItem(item),
+      });
+    },
+    [handleConfirmRemoveListItem, isOwner]
+  );
 
   const buildReviewModalUser = useCallback(
     (review = null) => {
@@ -452,7 +525,7 @@ export default function Client({ routeData = null }) {
     handleToggleLike,
     isLiked,
     isLikeLoading,
-    itemRemoveConfirmation: reviewDeleteConfirmation || itemRemoveConfirmation,
+    itemRemoveConfirmation: reviewDeleteConfirmation || listItemRemoveConfirmation || itemRemoveConfirmation,
     list,
     listDeleteConfirmation,
     listItems,

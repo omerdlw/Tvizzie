@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import Icon from '@/ui/icon';
 
 const CARD_SCALE = 1.08;
@@ -17,6 +18,11 @@ const POSTER_SPREAD = 148 * CARD_SCALE;
 const STACK_SIZE = 5;
 
 function getPreviewImage(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -173,11 +179,12 @@ function buildPreviewSlots(previewItems) {
 }
 
 export default function AccountListCard({ list, ownerUsername = null, renderActions = null }) {
+  const posterPreferenceVersion = usePosterPreferenceVersion();
   const [isHovered, setIsHovered] = useState(false);
 
   const previewItems = useMemo(
     () => (Array.isArray(list?.previewItems) ? list.previewItems.slice(0, STACK_SIZE) : []),
-    [list?.previewItems]
+    [list?.previewItems, posterPreferenceVersion]
   );
   const previewSlots = useMemo(() => buildPreviewSlots(previewItems), [previewItems]);
   const listTitle = String(list?.title || '').trim() || 'Untitled List';

@@ -40,7 +40,7 @@ export default function Registry({ backgroundImage = null, isLoading = false }) 
             image: backgroundImage,
             overlay: true,
             overlayOpacity: 0.42,
-            overlayColor: '#faf9f5',
+            overlayColor: 'var(--white)',
             noiseStyle: {
               opacity: 0.11,
             },

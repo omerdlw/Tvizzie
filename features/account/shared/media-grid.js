@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
+import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountPagination from './pagination';
@@ -36,6 +37,11 @@ function getMediaYear(item) {
 }
 
 function getMediaPoster(item) {
+  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
   if (item?.poster_path_full) {
     return item.poster_path_full;
   }
@@ -154,6 +160,7 @@ export default function AccountMediaGridPage({
   toolbar = null,
   title,
 }) {
+  const posterPreferenceVersion = usePosterPreferenceVersion();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isQueryPagination = typeof pageBasePath === 'string' && pageBasePath.includes('?');
@@ -188,7 +195,7 @@ export default function AccountMediaGridPage({
         };
       })
       .filter(Boolean);
-  }, [items]);
+  }, [items, posterPreferenceVersion]);
 
   const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0;
   const activePage = totalPages ? Math.min(resolvedCurrentPage, totalPages) : 1;
