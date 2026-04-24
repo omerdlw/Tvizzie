@@ -19,6 +19,6 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/', '.next/', 'out/', 'build/'],
+    ignores: ['node_modules/', '.next/', '.open-next/', 'out/', 'build/'],
   },
 ];
