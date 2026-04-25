@@ -26,7 +26,22 @@ const SEARCH_SCAN_CONCURRENCY = 6;
 const SEARCH_MIN_MOVIE_VOTE_COUNT = 100;
 const SEARCH_MIN_MOVIE_VOTE_AVERAGE = 4;
 const SEARCH_MIN_MOVIE_RUNTIME = 40;
-const SEARCH_RUNTIME_CHECK_LIMIT = 80;
+const SEARCH_RUNTIME_CHECK_LIMITS = Object.freeze({
+  full: 24,
+  preview: 8,
+});
+const SEARCH_SCAN_PAGE_LIMITS = Object.freeze({
+  full: Object.freeze({
+    long: 12,
+    medium: 8,
+    short: 5,
+  }),
+  preview: Object.freeze({
+    long: 5,
+    medium: 4,
+    short: 3,
+  }),
+});
 
 function resolveTmdbHeaders() {
   if (!TMDB_API_KEY) {
@@ -117,11 +132,36 @@ function withMediaType(items = [], mediaType) {
   }));
 }
 
-async function normalizeSearchResults(items = [], query = '', requestedType = 'movie') {
+function normalizeSearchScope(scope = 'preview') {
+  return scope === 'full' ? 'full' : 'preview';
+}
+
+function getSearchQueryLength(query = '') {
+  return normalizeSearchQuery(query).replace(/\s+/g, '').length;
+}
+
+function resolveSearchScanPageLimit(query = '', type = 'movie', scope = 'preview') {
+  const normalizedScope = normalizeSearchScope(scope);
+  const queryLength = getSearchQueryLength(query);
+  const limitBucket = queryLength <= 3 ? 'short' : queryLength <= 5 ? 'medium' : 'long';
+  const limit = SEARCH_SCAN_PAGE_LIMITS[normalizedScope][limitBucket];
+
+  if (isPersonMediaType(type)) {
+    return Math.min(limit, normalizedScope === 'full' ? 6 : 3);
+  }
+
+  return limit;
+}
+
+function resolveSearchRuntimeCheckLimit(scope = 'preview') {
+  return SEARCH_RUNTIME_CHECK_LIMITS[normalizeSearchScope(scope)];
+}
+
+async function normalizeSearchResults(items = [], query = '', requestedType = 'movie', options = {}) {
   const normalizedType = isPersonMediaType(requestedType) ? 'person' : 'movie';
   return normalizedType === 'person'
     ? rankResolvedPersonSearchItems(items, query)
-    : await rankResolvedMovieSearchItems(items, query);
+    : await rankResolvedMovieSearchItems(items, query, options);
 }
 
 function normalizeSearchQuery(value) {
@@ -379,9 +419,12 @@ function buildRankedMovieSearchEntries(items = [], query = '') {
     });
 }
 
-async function hydrateMovieSearchRuntimeCandidates(entries = []) {
+async function hydrateMovieSearchRuntimeCandidates(
+  entries = [],
+  { runtimeCheckLimit = SEARCH_RUNTIME_CHECK_LIMITS.preview } = {}
+) {
   const runtimeCandidates = (Array.isArray(entries) ? entries : [])
-    .slice(0, SEARCH_RUNTIME_CHECK_LIMIT)
+    .slice(0, runtimeCheckLimit)
     .filter(({ item }) => getMovieRuntimeValue(item) === null);
 
   if (!runtimeCandidates.length) {
@@ -412,9 +455,9 @@ async function hydrateMovieSearchRuntimeCandidates(entries = []) {
   });
 }
 
-async function rankResolvedMovieSearchItems(items = [], query = '') {
+async function rankResolvedMovieSearchItems(items = [], query = '', options = {}) {
   const rankedEntries = buildRankedMovieSearchEntries(items, query);
-  const hydratedEntries = await hydrateMovieSearchRuntimeCandidates(rankedEntries);
+  const hydratedEntries = await hydrateMovieSearchRuntimeCandidates(rankedEntries, options);
 
   return hydratedEntries
     .filter(({ item }) => passesMovieSearchQualityGate(item))
@@ -508,7 +551,9 @@ async function collectAllTmdbSearchItems(query, type = 'movie', totalPages = 1) 
       { length: Math.min(SEARCH_SCAN_CONCURRENCY, totalPages - startPage + 1) },
       (_, index) => startPage + index
     );
-    const batchResponses = await Promise.all(pageBatch.map((nextPage) => requestTmdbSearchPage(query, type, nextPage)));
+    const batchResponses = await Promise.all(
+      pageBatch.map((nextPage) => requestTmdbSearchPage(query, type, nextPage))
+    );
 
     batchResponses.forEach((response) => {
       const nextItems = withMediaType(response.data?.results || [], type);
@@ -522,7 +567,7 @@ async function collectAllTmdbSearchItems(query, type = 'movie', totalPages = 1) 
   return collectedItems;
 }
 
-async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = query) {
+async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = query, options = {}) {
   const response = await requestTmdbSearchPage(query, type, 1);
 
   if (!response.data?.results) {
@@ -534,11 +579,15 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
   }
 
   const totalPages = Math.max(1, Number(response.data?.total_pages) || 1);
+  const scanPageLimit = Math.max(1, resolveSearchScanPageLimit(rankingQuery, type, options.scope));
+  const scanTotalPages = Math.min(totalPages, scanPageLimit);
   const pageSize = resolveSearchPageSize(response.data.results);
   const firstPageItems = withMediaType(response.data.results, type);
-  const remainingItems = totalPages > 1 ? await collectAllTmdbSearchItems(query, type, totalPages) : [];
+  const remainingItems = scanTotalPages > 1 ? await collectAllTmdbSearchItems(query, type, scanTotalPages) : [];
   const mergedItems = dedupeSearchItems([...firstPageItems, ...remainingItems]);
-  const resolvedItems = await normalizeSearchResults(mergedItems, rankingQuery, type);
+  const resolvedItems = await normalizeSearchResults(mergedItems, rankingQuery, type, {
+    runtimeCheckLimit: resolveSearchRuntimeCheckLimit(options.scope),
+  });
   const fallbackItems = buildAuthorityFallbackItems(mergedItems, type);
 
   return {
@@ -548,8 +597,8 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
   };
 }
 
-async function requestExpandedSearchContent(query, type = 'movie', page = 1, rankingQuery = query) {
-  const { pageSize, resolvedItems, response } = await resolveExpandedSearchIndex(query, type, rankingQuery);
+async function requestExpandedSearchContent(query, type = 'movie', page = 1, rankingQuery = query, options = {}) {
+  const { pageSize, resolvedItems, response } = await resolveExpandedSearchIndex(query, type, rankingQuery, options);
   const paginatedData = paginateSearchItems(resolvedItems, page, pageSize);
 
   return {
@@ -738,9 +787,10 @@ export const discoverContent = cache(async ({ genreId, page = 1, sortBy = 'popul
   };
 });
 
-export async function searchContent(query, searchType = 'movie', page = 1) {
+export async function searchContent(query, searchType = 'movie', page = 1, options = {}) {
   const type = isPersonMediaType(searchType) ? 'person' : 'movie';
-  const response = await requestExpandedSearchContent(query, type, page, query);
+  const scope = normalizeSearchScope(options.scope);
+  const response = await requestExpandedSearchContent(query, type, page, query, { scope });
 
   if (Array.isArray(response.data?.results) && response.data.results.length > 0) {
     return response;
@@ -753,7 +803,7 @@ export async function searchContent(query, searchType = 'movie', page = 1) {
   const fallbackQueries = createSearchFallbackQueries(query);
 
   for (const fallbackQuery of fallbackQueries) {
-    const fallbackResponse = await requestExpandedSearchContent(fallbackQuery, type, page, query);
+    const fallbackResponse = await requestExpandedSearchContent(fallbackQuery, type, page, query, { scope });
 
     if (Array.isArray(fallbackResponse.data?.results) && fallbackResponse.data.results.length > 0) {
       return {

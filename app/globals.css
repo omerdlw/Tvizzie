@@ -4,11 +4,12 @@
 @theme {
   --color-white: var(--white);
   --color-primary: #fff;
-  --color-black: #1a1918;
-  --color-error: #8d2625;
-  --color-warning: #ffc200;
-  --color-success: #238b45;
-  --color-info: #2976d7;
+  --color-black: #121212;
+  --color-error: #890002;
+  --color-warning: #c67a01;
+  --color-success: #016c2b;
+  --color-info: #3b82f6;
+  --font-sans: var(--font-inter);
   --font-zuume: var(--font-zuume);
   --animate-spin: spin 1s linear infinite;
   --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -16,7 +17,7 @@
 
 @layer base {
   :root {
-    --white: #fafaf5;
+    --white: #f8f8f6;
   }
 
   html {

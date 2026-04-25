@@ -114,13 +114,13 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex snap-x snap-mandatory cursor-grab overflow-x-auto overscroll-x-contain rounded-[14px] p-1 select-none',
+          'scrollbar-hide flex scroll-smooth cursor-grab overflow-x-auto overscroll-x-contain rounded-[14px] p-1 select-none touch-pan-x',
           gap,
           className
         )}
       >
         {items.map((child, index) => (
-          <div key={child?.key ?? `carousel-item-${index}`} className={cn('shrink-0 snap-start', itemClassName)}>
+          <div key={child?.key ?? `carousel-item-${index}`} className={cn('shrink-0', itemClassName)}>
             {child}
           </div>
         ))}

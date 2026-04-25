@@ -130,8 +130,10 @@ export default function ImagesSection({ images }) {
                   const cardMotion = getSurfaceItemMotion({
                     enabled: shouldAnimateItemReveal,
                     index,
-                    distance: currentTab.key === 'posters' ? 22 : 18,
-                    scale: currentTab.key === 'logos' ? 0.984 : 0.976,
+                    delayStep: 0.075,
+                    distance: currentTab.key === 'posters' ? 26 : 22,
+                    duration: 0.9,
+                    scale: currentTab.key === 'logos' ? 0.976 : 0.968,
                   });
 
                   return (
@@ -140,6 +142,7 @@ export default function ImagesSection({ images }) {
                       initial={cardMotion.initial}
                       animate={cardMotion.animate}
                       transition={cardMotion.transition}
+                      whileHover={{ y: -3 }}
                     >
                       <MediaCard
                         imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}

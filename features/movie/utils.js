@@ -209,12 +209,7 @@ export function getMovieComputedData(movie) {
 
   const cast = uniqueBy(movie.credits?.cast || []);
   const crew = (movie.credits?.crew || []).filter((member) => member?.id && member?.name && member?.job);
-  const recommendations = rankRelatedMovies(
-    movie,
-    movie.recommendations?.results || [],
-    'recommendation',
-    MAX_RECOMMENDATIONS
-  );
+  const recommendations = uniqueBy(movie.recommendations?.results || [], 'id').slice(0, MAX_RECOMMENDATIONS);
   const similar = rankRelatedMovies(movie, movie.similar?.results || [], 'similar', MAX_SIMILAR);
 
   let certification = null;

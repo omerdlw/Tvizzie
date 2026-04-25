@@ -162,6 +162,8 @@ export async function searchUserAccounts(searchTerm, options = {}) {
       limitCount: options.limitCount ?? null,
       searchTerm: rawSearchTerm,
     },
+    retryCount: options.retryCount ?? 0,
+    timeoutMs: options.timeoutMs ?? 5000,
   });
 
   return Array.isArray(payload?.items) ? payload.items : [];

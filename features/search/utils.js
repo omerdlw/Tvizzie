@@ -749,6 +749,8 @@ export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS)
     try {
       const users = await ACCOUNT_CLIENT.searchAccounts(query, {
         limitCount,
+        retryCount: 0,
+        timeoutMs: 5000,
       });
 
       return users.map((item) => normalizeResult(item, SEARCH_TYPES.USER));
@@ -758,7 +760,7 @@ export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS)
   });
 }
 
-export async function fetchMediaPage(query, type, page = 1) {
+export async function fetchMediaPage(query, type, page = 1, options = {}) {
   if (type !== SEARCH_TYPES.MOVIE && type !== SEARCH_TYPES.PERSON) {
     return {
       page: 1,
@@ -768,12 +770,15 @@ export async function fetchMediaPage(query, type, page = 1) {
     };
   }
 
-  const cacheKey = createSearchCacheKey('media-page', [query, type, page]);
+  const scope = options.scope === 'full' ? 'full' : 'preview';
+  const cacheKey = createSearchCacheKey('media-page', [query, type, page, scope]);
 
   return withClientSearchCache(cacheKey, async () => {
     try {
       const { TmdbService } = await import('@/core/services/tmdb/tmdb.service');
-      const response = await TmdbService.searchContent(query, type, page);
+      const response = await TmdbService.searchContent(query, type, page, {
+        scope,
+      });
 
       if (response.status !== 200 || !response.data?.results) {
         return {
@@ -803,8 +808,8 @@ export async function fetchMediaPage(query, type, page = 1) {
   });
 }
 
-export async function fetchMedia(query, type) {
-  const payload = await fetchMediaPage(query, type, 1);
+export async function fetchMedia(query, type, options = {}) {
+  const payload = await fetchMediaPage(query, type, 1, options);
   return payload.results;
 }
 
@@ -829,10 +834,10 @@ function sortByPopularityDesc(first, second) {
   return toFiniteNumber(second?.vote_average) - toFiniteNumber(first?.vote_average);
 }
 
-export async function fetchAllMedia(query, page = 1) {
+export async function fetchAllMedia(query, page = 1, options = {}) {
   const [moviePayload, personPayload] = await Promise.all([
-    fetchMediaPage(query, SEARCH_TYPES.MOVIE, page),
-    fetchMediaPage(query, SEARCH_TYPES.PERSON, page),
+    fetchMediaPage(query, SEARCH_TYPES.MOVIE, page, options),
+    fetchMediaPage(query, SEARCH_TYPES.PERSON, page, options),
   ]);
 
   return rankAllMediaResults(moviePayload.results, personPayload.results, query);

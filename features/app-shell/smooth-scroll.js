@@ -12,13 +12,10 @@ const DETAIL_ROUTE_PREFIXES = ['/movie/', '/person/'];
 const SMOOTH_WRAPPER_ID = 'smooth-wrapper';
 const SMOOTH_CONTENT_ID = 'smooth-content';
 
-const DESKTOP_SMOOTH_DURATION = 1.1;
-const TOUCH_SMOOTH_DURATION = 0.14;
-const VELOCITY_NORMALIZER = 2400;
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
+const DESKTOP_SMOOTH_DURATION = 0.66;
+const DESKTOP_SCROLL_EASE = 'power2.out';
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const TOUCH_SCROLL_QUERY = '(hover: none), (pointer: coarse)';
 
 function isReloadNavigation() {
   if (typeof window === 'undefined') return false;
@@ -33,64 +30,47 @@ function shouldResetForDetailRoute(prevPathname, nextPathname) {
 }
 
 function getPrefersReducedMotion() {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return false;
-  }
-
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return getMediaQueryMatches(REDUCED_MOTION_QUERY);
 }
 
-function syncScrollCSSVars(smoother) {
-  if (!smoother) return;
+function getMediaQueryMatches(query) {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
 
-  const root = document.documentElement;
-  const velocity = clamp(smoother.getVelocity() / VELOCITY_NORMALIZER, -1, 1);
-  const direction = smoother.scrollTrigger?.direction ?? (velocity === 0 ? 0 : velocity > 0 ? 1 : -1);
-  const progress = clamp(Number.isFinite(smoother.progress) ? smoother.progress : 0, 0, 1);
-
-  root.style.setProperty('--scroll-progress', progress.toFixed(5));
-  root.style.setProperty('--scroll-velocity', velocity.toFixed(5));
-  root.style.setProperty('--scroll-direction', String(direction));
+  return window.matchMedia(query).matches;
 }
 
-function syncScrollStateClasses(smoother, isScrolling) {
-  const root = document.documentElement;
-  const velocity = smoother ? smoother.getVelocity() : 0;
-  const direction = smoother?.scrollTrigger?.direction ?? (velocity === 0 ? 0 : velocity > 0 ? 1 : -1);
+function getIsTouchScrollDevice() {
+  if (typeof window === 'undefined') return false;
 
-  root.classList.toggle('is-scrolling', isScrolling);
+  return getMediaQueryMatches(TOUCH_SCROLL_QUERY) || Number(navigator.maxTouchPoints || 0) > 0;
+}
 
-  if (direction > 0) {
-    root.classList.add('scrolling-down');
-    root.classList.remove('scrolling-up');
+function addMediaQueryListener(mediaQuery, listener) {
+  if (typeof mediaQuery?.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', listener);
     return;
   }
 
-  if (direction < 0) {
-    root.classList.add('scrolling-up');
-    root.classList.remove('scrolling-down');
+  mediaQuery?.addListener?.(listener);
+}
+
+function removeMediaQueryListener(mediaQuery, listener) {
+  if (typeof mediaQuery?.removeEventListener === 'function') {
+    mediaQuery.removeEventListener('change', listener);
     return;
   }
 
-  root.classList.remove('scrolling-down');
-  root.classList.remove('scrolling-up');
+  mediaQuery?.removeListener?.(listener);
 }
 
 function applySmoothScrollLock(smootherRef, lockSources) {
   const isLocked = lockSources.size > 0;
   smootherRef.current?.paused(isLocked);
-
-  if (!isLocked) {
-    syncScrollStateClasses(smootherRef.current, false);
-  }
 }
 
 function resetScrollPresentation() {
   const root = document.documentElement;
 
-  root.style.setProperty('--scroll-progress', '0');
-  root.style.setProperty('--scroll-velocity', '0');
-  root.style.setProperty('--scroll-direction', '0');
   root.classList.remove('is-scrolling', 'scrolling-down', 'scrolling-up');
 }
 
@@ -121,38 +101,25 @@ function scheduleScrollTopReset(smootherRef, { framePasses = 3, timeoutDelays = 
   };
 }
 
-function createSmoother({ wrapper, content, smootherRef }) {
+function createSmoother({ wrapper, content, smootherRef, isTouchScrollDevice }) {
   gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
   ScrollSmoother.get()?.kill();
-
-  const handleScrollUpdate = () => {
-    const smoother = smootherRef.current;
-    syncScrollCSSVars(smoother);
-    syncScrollStateClasses(smoother, true);
-  };
-
-  const handleScrollStop = () => {
-    syncScrollStateClasses(smootherRef.current, false);
-  };
+  const useTouchScrollProfile = isTouchScrollDevice || ScrollTrigger.isTouch === 1;
 
   const smoother = ScrollSmoother.create({
     content,
-    ease: 'expo',
+    ease: DESKTOP_SCROLL_EASE,
     effects: false,
-    ignoreMobileResize: true,
-    normalizeScroll: true,
-    onStop: handleScrollStop,
-    onUpdate: handleScrollUpdate,
-    smooth: DESKTOP_SMOOTH_DURATION,
-    smoothTouch: TOUCH_SMOOTH_DURATION,
-    speed: 0.95,
+    ignoreMobileResize: !useTouchScrollProfile,
+    normalizeScroll: false,
+    smooth: useTouchScrollProfile ? false : DESKTOP_SMOOTH_DURATION,
+    smoothTouch: useTouchScrollProfile ? false : 0,
+    speed: 1,
     wrapper,
   });
 
   smootherRef.current = smoother;
-  syncScrollCSSVars(smoother);
-  syncScrollStateClasses(smoother, false);
   ScrollTrigger.refresh();
 
   return smoother;
@@ -166,27 +133,37 @@ export function SmoothScrollProvider({ children }) {
   const previousPathnameRef = useRef(pathname);
   const scrollLockSourcesRef = useRef(new Set());
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isTouchScrollDevice, setIsTouchScrollDevice] = useState(false);
+  const [isScrollProfileReady, setIsScrollProfileReady] = useState(false);
 
   useEffect(() => {
     const mediaQuery =
       typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        ? window.matchMedia(REDUCED_MOTION_QUERY)
+        : null;
+    const touchMediaQuery =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia(TOUCH_SCROLL_QUERY)
         : null;
 
-    const updatePreference = () => {
+    const updateScrollProfile = () => {
       setPrefersReducedMotion(getPrefersReducedMotion());
+      setIsTouchScrollDevice(getIsTouchScrollDevice());
+      setIsScrollProfileReady(true);
     };
 
-    updatePreference();
-    mediaQuery?.addEventListener?.('change', updatePreference);
+    updateScrollProfile();
+    addMediaQueryListener(mediaQuery, updateScrollProfile);
+    addMediaQueryListener(touchMediaQuery, updateScrollProfile);
 
     return () => {
-      mediaQuery?.removeEventListener?.('change', updatePreference);
+      removeMediaQueryListener(mediaQuery, updateScrollProfile);
+      removeMediaQueryListener(touchMediaQuery, updateScrollProfile);
     };
   }, []);
 
   useEffect(() => {
-    if (!wrapperRef.current || !contentRef.current) return;
+    if (!isScrollProfileReady || !wrapperRef.current || !contentRef.current) return;
 
     if (prefersReducedMotion) {
       resetScrollPresentation();
@@ -199,6 +176,7 @@ export function SmoothScrollProvider({ children }) {
       wrapper: wrapperRef.current,
       content: contentRef.current,
       smootherRef,
+      isTouchScrollDevice,
     });
     applySmoothScrollLock(smootherRef, scrollLockSourcesRef.current);
 
@@ -207,7 +185,7 @@ export function SmoothScrollProvider({ children }) {
       smootherRef.current = null;
       resetScrollPresentation();
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, isScrollProfileReady, isTouchScrollDevice]);
 
   useEffect(() => {
     if (!isReloadNavigation()) return;
@@ -264,7 +242,11 @@ export function SmoothScrollProvider({ children }) {
 
   return (
     <div ref={wrapperRef} id={SMOOTH_WRAPPER_ID} className="h-full w-full">
-      <div ref={contentRef} id={SMOOTH_CONTENT_ID} className="min-h-screen w-full">
+      <div
+        ref={contentRef}
+        id={SMOOTH_CONTENT_ID}
+        className="min-h-screen w-full will-change-transform [backface-visibility:hidden] [transform-style:preserve-3d]"
+      >
         {children}
       </div>
     </div>

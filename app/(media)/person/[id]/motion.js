@@ -2,9 +2,6 @@
 
 import { MovieClipReveal } from '@/app/(media)/movie/[id]/motion';
 import {
-  ANIMATION_DURATIONS,
-  ANIMATION_EASINGS,
-  ANIMATION_STAGGER,
   ANIMATION_VIEWPORTS,
   buildRevealMotion,
   createPanelMotion,
@@ -14,34 +11,76 @@ import {
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 
+const PERSON_CINEMATIC_PROFILE = Object.freeze({
+  easings: Object.freeze({
+    reveal: [0.22, 1, 0.36, 1],
+    opacity: [0.16, 1, 0.3, 1],
+    exit: [0.4, 0, 0.2, 1],
+    sidebar: [0.22, 1, 0.36, 1],
+  }),
+  durations: Object.freeze({
+    panel: 0.74,
+    item: 0.82,
+    section: 1.16,
+    sidebar: 1.12,
+    hero: 1.28,
+    text: 0.84,
+  }),
+  offsets: Object.freeze({
+    sidebarX: 24,
+    heroY: 30,
+    sectionY: 24,
+    surfaceY: 12,
+    itemY: 16,
+    panelY: 12,
+    panelExitY: -6,
+  }),
+  scales: Object.freeze({
+    sidebar: 0.982,
+    hero: 0.988,
+    section: 0.99,
+    surface: 0.984,
+    item: 0.992,
+    panelInitial: 0.992,
+    panelExit: 0.996,
+  }),
+  stagger: Object.freeze({
+    item: 0.045,
+    yearGroup: 0.088,
+  }),
+  transition: Object.freeze({
+    opacityDurationFactor: 0.76,
+  }),
+});
+
 const PERSON_ROUTE_PHASES = Object.freeze({
   sidebar: Object.freeze({
-    duration: ANIMATION_DURATIONS.SIDEBAR,
-    ease: ANIMATION_EASINGS.QUINT_OUT,
-    lead: 0.05,
-    offset: Object.freeze({ x: -42 }),
-    scale: 0.962,
+    duration: PERSON_CINEMATIC_PROFILE.durations.sidebar,
+    ease: PERSON_CINEMATIC_PROFILE.easings.sidebar,
+    lead: 0.04,
+    offset: Object.freeze({ x: -PERSON_CINEMATIC_PROFILE.offsets.sidebarX }),
+    scale: PERSON_CINEMATIC_PROFILE.scales.sidebar,
   }),
   hero: Object.freeze({
-    duration: ANIMATION_DURATIONS.HERO,
-    ease: ANIMATION_EASINGS.EXPO_OUT,
-    lead: 0.12,
-    offset: Object.freeze({ y: 52 }),
-    scale: 0.97,
+    duration: PERSON_CINEMATIC_PROFILE.durations.hero,
+    ease: PERSON_CINEMATIC_PROFILE.easings.reveal,
+    lead: 0.1,
+    offset: Object.freeze({ y: PERSON_CINEMATIC_PROFILE.offsets.heroY }),
+    scale: PERSON_CINEMATIC_PROFILE.scales.hero,
   }),
   section: Object.freeze({
-    duration: ANIMATION_DURATIONS.SECTION,
-    ease: ANIMATION_EASINGS.EXPO_OUT,
+    duration: PERSON_CINEMATIC_PROFILE.durations.section,
+    ease: PERSON_CINEMATIC_PROFILE.easings.reveal,
     lead: 0.18,
-    offset: Object.freeze({ y: 36 }),
-    scale: 0.978,
+    offset: Object.freeze({ y: PERSON_CINEMATIC_PROFILE.offsets.sectionY }),
+    scale: PERSON_CINEMATIC_PROFILE.scales.section,
   }),
   surface: Object.freeze({
-    duration: ANIMATION_DURATIONS.PANEL,
-    ease: ANIMATION_EASINGS.EXPO_OUT,
+    duration: PERSON_CINEMATIC_PROFILE.durations.panel,
+    ease: PERSON_CINEMATIC_PROFILE.easings.reveal,
     lead: 0.12,
-    offset: Object.freeze({ y: 18 }),
-    scale: 0.94,
+    offset: Object.freeze({ y: PERSON_CINEMATIC_PROFILE.offsets.surfaceY }),
+    scale: PERSON_CINEMATIC_PROFILE.scales.surface,
   }),
 });
 
@@ -57,17 +96,40 @@ function useInitialRevealEnabled() {
 
 export const PERSON_ROUTE_MOTION = Object.freeze({
   orchestration: Object.freeze({
-    sectionDelay: 0.18,
-    itemStagger: ANIMATION_STAGGER.TIGHT,
-    yearGroupStagger: 0.088,
+    sectionDelay: 0.12,
+    itemStagger: PERSON_CINEMATIC_PROFILE.stagger.item,
+    yearGroupStagger: PERSON_CINEMATIC_PROFILE.stagger.yearGroup,
   }),
   scroll: Object.freeze({
     sectionViewport: ANIMATION_VIEWPORTS.section,
   }),
   sharedElements: Object.freeze({
     portrait: Object.freeze({
-      transition: Object.freeze({ type: 'spring', stiffness: 320, damping: 30, mass: 0.82 }),
+      transition: Object.freeze({ type: 'spring', stiffness: 240, damping: 34, mass: 1 }),
     }),
+  }),
+});
+
+export const PERSON_ROUTE_TIMING = Object.freeze({
+  hero: Object.freeze({
+    containerDelay: 0.14,
+    titleDelay: 0.16,
+    titleClipDelay: 0.1,
+    titleDuration: PERSON_CINEMATIC_PROFILE.durations.text,
+    overviewDelay: 0.36,
+  }),
+  sidebar: Object.freeze({
+    containerDelay: 0.08,
+    portraitDelay: 0.08,
+    rowsDelay: 0.22,
+    rowStagger: 0.055,
+    bioDelay: 0.36,
+  }),
+  sections: Object.freeze({
+    gallery: 0.1,
+    filmography: 0.18,
+    timeline: 0.14,
+    awards: 0.14,
   }),
 });
 
@@ -89,9 +151,11 @@ function PersonReveal({
   const motionProps = buildRevealMotion({
     axis,
     delay: resolvedDelay,
-    distance: distance ?? (phaseConfig.offset?.[axis] ?? 24),
+    distance: distance ?? phaseConfig.offset?.[axis] ?? 24,
     duration: phaseConfig.duration,
     ease: phaseConfig.ease,
+    opacityDurationFactor: PERSON_CINEMATIC_PROFILE.transition.opacityDurationFactor,
+    opacityEase: PERSON_CINEMATIC_PROFILE.easings.opacity,
     offset: phaseConfig.offset,
     scale: phaseConfig.scale,
   });
@@ -140,13 +204,7 @@ export function PersonHeroReveal({ children, className = '', delay = 0 }) {
   );
 }
 
-export function PersonSectionReveal({
-  children,
-  className = '',
-  delay = 0,
-  once = true,
-  animateOnView = false,
-}) {
+export function PersonSectionReveal({ children, className = '', delay = 0, once = true, animateOnView = false }) {
   return (
     <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="section">
       {children}
@@ -154,13 +212,7 @@ export function PersonSectionReveal({
   );
 }
 
-export function PersonSurfaceReveal({
-  children,
-  className = '',
-  delay = 0,
-  once = true,
-  animateOnView = false,
-}) {
+export function PersonSurfaceReveal({ children, className = '', delay = 0, once = true, animateOnView = false }) {
   return (
     <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="surface">
       {children}
@@ -173,19 +225,29 @@ export { MovieClipReveal as PersonClipReveal };
 export function getPersonSurfaceItemMotion(options = {}) {
   return createSurfaceItemMotion({
     ...options,
-    ease: ANIMATION_EASINGS.EXPO_OUT,
-    scale: options.scale ?? 0.976,
+    delayStep: options.delayStep ?? PERSON_ROUTE_MOTION.orchestration.itemStagger,
+    distance: options.distance ?? PERSON_CINEMATIC_PROFILE.offsets.itemY,
+    duration: options.duration ?? PERSON_CINEMATIC_PROFILE.durations.item,
+    ease: options.ease ?? PERSON_CINEMATIC_PROFILE.easings.reveal,
+    groupDelayStep: options.groupDelayStep ?? PERSON_ROUTE_MOTION.orchestration.yearGroupStagger,
+    opacityDurationFactor: options.opacityDurationFactor ?? PERSON_CINEMATIC_PROFILE.transition.opacityDurationFactor,
+    opacityEase: options.opacityEase ?? PERSON_CINEMATIC_PROFILE.easings.opacity,
+    scale: options.scale ?? PERSON_CINEMATIC_PROFILE.scales.item,
   });
 }
 
 export function getPersonSurfacePanelMotion() {
   return createPanelMotion({
-    duration: ANIMATION_DURATIONS.PANEL,
-    ease: ANIMATION_EASINGS.EXPO_OUT,
-    exitDuration: ANIMATION_DURATIONS.PANEL * 0.55,
-    exitEase: ANIMATION_EASINGS.EXPO_IN_OUT,
-    initialScale: 0.976,
-    exitScale: 0.988,
+    duration: PERSON_CINEMATIC_PROFILE.durations.panel,
+    ease: PERSON_CINEMATIC_PROFILE.easings.reveal,
+    exitDuration: PERSON_CINEMATIC_PROFILE.durations.panel * 0.62,
+    exitEase: PERSON_CINEMATIC_PROFILE.easings.exit,
+    opacityDurationFactor: PERSON_CINEMATIC_PROFILE.transition.opacityDurationFactor,
+    opacityEase: PERSON_CINEMATIC_PROFILE.easings.opacity,
+    y: PERSON_CINEMATIC_PROFILE.offsets.panelY,
+    exitY: PERSON_CINEMATIC_PROFILE.offsets.panelExitY,
+    initialScale: PERSON_CINEMATIC_PROFILE.scales.panelInitial,
+    exitScale: PERSON_CINEMATIC_PROFILE.scales.panelExit,
   });
 }
 

@@ -1,14 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
 import { NAV_CONTENT_TRANSITION, NAV_SURFACE_ITEM_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
+import {
+  DEFAULT_WATCH_REGION,
+  normalizeWatchRegion,
+  resolveWatchRegionFromBrowser,
+} from '@/core/services/tmdb/watch-region';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 
 const MAX_WATCH_PROVIDERS = 6;
-const DEFAULT_REGION = 'TR';
 
 function buildProviderList(watchProviders) {
   const providers = [
@@ -43,8 +47,51 @@ function buildProviderList(watchProviders) {
   return uniqueProviders.slice(0, MAX_WATCH_PROVIDERS);
 }
 
-export default function WatchProvidersSurface({ providers, region = DEFAULT_REGION }) {
-  const regionalProviders = providers?.results?.[region];
+async function requestWatchRegion() {
+  const response = await fetch('/api/tmdb/watch-region', {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+}
+
+export default function WatchProvidersSurface({ providers }) {
+  const [resolvedRegion, setResolvedRegion] = useState(DEFAULT_WATCH_REGION);
+  const regionalProviders = providers?.results?.[resolvedRegion];
+
+  useEffect(() => {
+    let isActive = true;
+    const browserRegion = resolveWatchRegionFromBrowser();
+
+    if (browserRegion) {
+      setResolvedRegion(browserRegion);
+    }
+
+    void requestWatchRegion()
+      .then((payload) => {
+        if (!isActive) {
+          return;
+        }
+
+        const apiRegion = normalizeWatchRegion(payload?.region);
+        const nextRegion = payload?.source === 'geo' ? apiRegion : browserRegion || apiRegion;
+
+        if (nextRegion) {
+          setResolvedRegion(nextRegion);
+        }
+      })
+      .catch(() => {
+        // Keep the browser/default region if the geo endpoint is unavailable.
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const providerList = useMemo(() => buildProviderList(regionalProviders), [regionalProviders]);
 
@@ -61,7 +108,7 @@ export default function WatchProvidersSurface({ providers, region = DEFAULT_REGI
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="text-xs font-semibold tracking-wider uppercase">Where to watch?</span>
         </div>
-        <span className="text-[10px] tracking-widest text-black/50 uppercase">{region}</span>
+        <span className="text-[10px] tracking-widest text-black/50 uppercase">{resolvedRegion}</span>
       </div>
 
       {providerList.length > 0 ? (

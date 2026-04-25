@@ -8,6 +8,7 @@ export async function GET(request) {
   const query = searchParams.get('q') || '';
   const type = searchParams.get('type') === 'person' ? 'person' : 'movie';
   const page = Number(searchParams.get('page') || 1);
+  const scope = searchParams.get('scope') === 'full' ? 'full' : 'preview';
 
   if (!query.trim()) {
     return NextResponse.json(
@@ -23,7 +24,7 @@ export async function GET(request) {
     );
   }
 
-  const response = await searchContent(query, type, page);
+  const response = await searchContent(query, type, page, { scope });
   const data = response.data || { results: [] };
 
   return NextResponse.json(data, {

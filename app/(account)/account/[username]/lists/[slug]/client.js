@@ -51,7 +51,6 @@ export default function Client({ routeData = null }) {
     canViewProfileCollections,
     canViewPrivateContent,
     handleDeleteList,
-    handleEditList,
     handleRemoveListItem,
     handleSignInRequest,
     isOwner,
@@ -304,6 +303,33 @@ export default function Client({ routeData = null }) {
     [auth.user?.id, handleRemoveListItem, isOwner, list?.id, primeListItemsCache]
   );
 
+  const handleEditListWithItems = useCallback(
+    (targetList = list) => {
+      if (!isOwner || !auth.user?.id || !targetList?.id) return;
+
+      openModal(
+        'LIST_EDITOR_MODAL',
+        { desktop: 'center', mobile: 'bottom' },
+        {
+          data: {
+            isOwner: true,
+            userId: auth.user.id,
+            initialData: targetList,
+            initialItems: listItems,
+            onItemsChange: (nextItems) => {
+              setListItems(nextItems);
+              primeListItemsCache(nextItems);
+            },
+            onSuccess: (updatedList) => {
+              setList((current) => (current?.id === updatedList?.id ? { ...current, ...updatedList } : updatedList));
+            },
+          },
+        }
+      );
+    },
+    [auth.user?.id, isOwner, list, listItems, openModal, primeListItemsCache]
+  );
+
   const handleRequestRemoveListItem = useCallback(
     (item) => {
       if (!isOwner) return;
@@ -517,7 +543,7 @@ export default function Client({ routeData = null }) {
     ...sectionState,
     handleDeleteList,
     handleDeleteRequest,
-    handleEditList,
+    handleEditList: handleEditListWithItems,
     handleLikeReview,
     handleRemoveListItem: handleRequestRemoveListItem,
     handleSignInRequest,

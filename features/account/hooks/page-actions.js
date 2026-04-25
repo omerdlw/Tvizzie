@@ -115,6 +115,7 @@ export function useAccountPageActions({
   profile,
   resolvedUserId,
   selectedList,
+  listItems = [],
   setLikes,
   setLists,
   setListItems,
@@ -150,11 +151,13 @@ export function useAccountPageActions({
             isOwner: true,
             userId: auth.user.id,
             initialData: targetList,
+            initialItems: targetList?.id === selectedList?.id ? listItems : [],
+            onItemsChange: targetList?.id === selectedList?.id ? setListItems : null,
           },
         }
       );
     },
-    [auth.user?.id, isOwner, openModal, selectedList]
+    [auth.user?.id, isOwner, listItems, openModal, selectedList, setListItems]
   );
 
   const handleDeleteList = useCallback(

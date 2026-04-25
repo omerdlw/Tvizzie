@@ -132,6 +132,34 @@ export function useAccountRelationshipData({
       setFollowerCount(publicFollowerCount);
       setFollowingCount(publicFollowingCount);
 
+      const unsubFollowers = subscribeToFollowers(
+        resolvedUserId,
+        (followers) => {
+          setFollowerCount(followers.length);
+        },
+        {
+          ...followPollingOptions,
+          onError: () => {
+            setFollowerCount(publicFollowerCount);
+          },
+          status: FOLLOW_STATUSES.ACCEPTED,
+        }
+      );
+
+      const unsubFollowing = subscribeToFollowing(
+        resolvedUserId,
+        (following) => {
+          setFollowingCount(following.length);
+        },
+        {
+          ...followPollingOptions,
+          onError: () => {
+            setFollowingCount(publicFollowingCount);
+          },
+          status: FOLLOW_STATUSES.ACCEPTED,
+        }
+      );
+
       const unsubPendingFollowers = canManageRequests
         ? subscribeToFollowers(
             resolvedUserId,
@@ -153,6 +181,8 @@ export function useAccountRelationshipData({
           })();
 
       return () => {
+        unsubFollowers();
+        unsubFollowing();
         unsubPendingFollowers();
       };
     }

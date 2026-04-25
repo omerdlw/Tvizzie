@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from 'react';
 
-import { PersonSurfaceReveal } from '@/app/(media)/person/[id]/motion';
+import { motion } from 'framer-motion';
+
+import { PERSON_ROUTE_TIMING, PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
 import { TMDB_IMG } from '@/core/constants';
@@ -51,6 +53,41 @@ function SidebarRow({ icon, label, value }) {
   );
 }
 
+function SidebarMotionItem({ children, delay = 0, index = 0 }) {
+  const itemMotion = getPersonSurfaceItemMotion({
+    delayStep: PERSON_ROUTE_TIMING.sidebar.rowStagger,
+    distance: 10,
+    duration: 0.72,
+    groupDelayStep: 0,
+    groupIndex: 0,
+    index,
+    scale: 0.996,
+  });
+
+  return (
+    <motion.div
+      initial={itemMotion.initial}
+      animate={itemMotion.animate}
+      transition={{
+        opacity: {
+          ...itemMotion.transition.opacity,
+          delay: delay + itemMotion.transition.opacity.delay,
+        },
+        y: {
+          ...itemMotion.transition.y,
+          delay: delay + itemMotion.transition.y.delay,
+        },
+        scale: {
+          ...itemMotion.transition.scale,
+          delay: delay + itemMotion.transition.scale.delay,
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function PersonSidebar({ person, age }) {
   const [hasImageError, setHasImageError] = useState(false);
   const imageSrc = getProfileImage(person?.profile_path);
@@ -94,7 +131,7 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <PersonSurfaceReveal delay={0.04}>
+      <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
           {hasImage ? (
             <AdaptiveImage
@@ -128,13 +165,19 @@ export default function PersonSidebar({ person, age }) {
       </PersonSurfaceReveal>
 
       <div className="flex flex-col gap-1">
-        {detailRows.map((row) => (
-          <SidebarRow key={`${row.label}-${row.value}`} icon={row.icon} label={row.label} value={row.value} />
+        {detailRows.map((row, index) => (
+          <SidebarMotionItem
+            key={`${row.label}-${row.value}`}
+            delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay}
+            index={index}
+          >
+            <SidebarRow icon={row.icon} label={row.label} value={row.value} />
+          </SidebarMotionItem>
         ))}
       </div>
 
       {person?.biography ? (
-        <PersonSurfaceReveal delay={0.12}>
+        <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
           <div className="flex flex-col gap-2">
             <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
             <PersonBio biography={person.biography} />

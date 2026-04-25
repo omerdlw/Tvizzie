@@ -25,8 +25,10 @@ export default function GallerySection({ images }) {
             const cardMotion = getSurfaceItemMotion({
               enabled: shouldAnimateItemReveal,
               index,
-              distance: 20,
-              scale: 0.976,
+              delayStep: 0.075,
+              distance: 24,
+              duration: 0.9,
+              scale: 0.968,
             });
 
             return (
@@ -35,6 +37,7 @@ export default function GallerySection({ images }) {
                 initial={cardMotion.initial}
                 animate={cardMotion.animate}
                 transition={cardMotion.transition}
+                whileHover={{ y: -3 }}
               >
                 <MediaCard
                   imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}

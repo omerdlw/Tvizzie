@@ -291,7 +291,9 @@ export default function SearchClient() {
       let renderableResults = getRenderableResults(mergedResults);
 
       while (renderableResults.length < nextVisibleCount && nextPage < totalPages) {
-        const payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, nextPage + 1);
+        const payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, nextPage + 1, {
+          scope: 'full',
+        });
 
         nextPage = payload.page || nextPage + 1;
         totalPages = payload.totalPages || totalPages;
@@ -401,7 +403,7 @@ export default function SearchClient() {
         if (searchType === SEARCH_TYPES.ALL) {
           const [userResults, mediaResults] = await Promise.all([
             fetchUsers(trimmedDebouncedQuery, SEARCH_LIMITS.USER_FULL_RESULTS),
-            fetchAllMedia(trimmedDebouncedQuery),
+            fetchAllMedia(trimmedDebouncedQuery, 1, { scope: 'full' }),
           ]);
 
           const mergedResults = mergeAllResults(userResults, mediaResults, null);
@@ -424,14 +426,16 @@ export default function SearchClient() {
         }
 
         const minimumCount = gridBatchSizeRef.current;
-        let payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, 1);
+        let payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, 1, { scope: 'full' });
         let mergedResults = payload.results;
         let currentPage = payload.page || 1;
         let totalPages = payload.totalPages || 0;
         let totalResults = payload.totalResults || payload.results.length;
 
         while (!isCancelled && getRenderableResults(mergedResults).length < minimumCount && currentPage < totalPages) {
-          payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, currentPage + 1);
+          payload = await fetchMediaPage(trimmedDebouncedQuery, searchType, currentPage + 1, {
+            scope: 'full',
+          });
           currentPage = payload.page || currentPage + 1;
           totalPages = payload.totalPages || totalPages;
           totalResults = payload.totalResults || totalResults;

@@ -21,6 +21,11 @@ import { EmptyState } from '@/ui/elements/empty-state';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
+import {
+  DESTRUCTIVE_ACTION_TONE_CLASS,
+  INFO_ACTION_TONE_CLASS,
+  SUCCESS_ACTION_TONE_CLASS,
+} from '@/core/constants/index';
 
 const TABS = Object.freeze({
   FOLLOWERS: 'followers',
@@ -30,9 +35,9 @@ const TABS = Object.freeze({
 
 const ROW_BUTTON_CLASS =
   'h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
-const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-error/20 bg-error/20 text-error hover:bg-error/10`;
-const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-success/20 bg-success/20 text-success hover:bg-success/10`;
-const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} border-info/20 bg-info/20 text-info hover:bg-info/10`;
+const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`;
+const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${SUCCESS_ACTION_TONE_CLASS}`;
+const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${INFO_ACTION_TONE_CLASS}`;
 
 function normalizeTab(value) {
   const normalized = String(value || '')
@@ -117,7 +122,7 @@ function SocialUserRow({ close, user, action }) {
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
-          <p className="truncate text-[10px] tracking-widest text-black/50 uppercase">@{user.username || 'user'}</p>
+          <p className="truncate text-[11px] text-black/50">@{user.username || 'username'}</p>
         </div>
       </Link>
       {action}

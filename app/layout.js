@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 
 import { cn } from '@/core/utils';
 
-import { geist, geistMono, zuume } from '../fonts';
+import { inter, zuume } from '../fonts';
 import './globals.css';
 import { AppProviders } from './providers';
 
@@ -57,8 +57,8 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={cn(
           'h-auto w-full bg-white fill-black font-normal text-black antialiased',
-          geistMono.variable,
-          geist.className,
+          inter.variable,
+          inter.className,
           zuume.variable
         )}
       >

@@ -3,6 +3,10 @@ import { TMDB_API_URL } from '@/core/constants';
 const TMDB_PUBLIC_READ_TOKEN = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN || '';
 const MOVIE_IMAGES_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
 const MOVIE_IMAGES_STORAGE_KEY_PREFIX = 'tmdb:movie-images:';
+const TMDB_SEARCH_REQUEST_TIMEOUT_MS = Object.freeze({
+  full: 12000,
+  preview: 7000,
+});
 const movieImagesMemoryCache = new Map();
 const movieImagesInFlightRequests = new Map();
 
@@ -90,14 +94,32 @@ async function requestTmdbMovieImages(id) {
   };
 }
 
-async function requestJson(url, { method = 'GET', cache = 'default' } = {}) {
-  const response = await fetch(url, {
-    method,
-    cache,
-    headers: {
-      accept: 'application/json',
-    },
-  });
+async function requestJson(url, { method = 'GET', cache = 'default', timeoutMs = 0 } = {}) {
+  const controller = new AbortController();
+  const timeoutId =
+    Number.isFinite(Number(timeoutMs)) && timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  let response;
+
+  try {
+    response = await fetch(url, {
+      method,
+      cache,
+      signal: timeoutId ? controller.signal : undefined,
+      headers: {
+        accept: 'application/json',
+      },
+    });
+  } catch (error) {
+    return {
+      data: null,
+      error: error?.name === 'AbortError' ? 'Request timed out' : error?.message || 'Request failed',
+      status: error?.name === 'AbortError' ? 408 : 503,
+    };
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 
   if (!response.ok) {
     return {
@@ -129,13 +151,19 @@ function createUrl(pathname, params = {}) {
 }
 
 export class TmdbService {
-  static async searchContent(query, searchType = 'movie', page = 1) {
+  static async searchContent(query, searchType = 'movie', page = 1, options = {}) {
+    const scope = options.scope === 'full' ? 'full' : 'preview';
+
     return requestJson(
       createUrl('/api/tmdb/search', {
         page,
         q: query,
+        scope,
         type: searchType,
-      })
+      }),
+      {
+        timeoutMs: options.timeoutMs ?? TMDB_SEARCH_REQUEST_TIMEOUT_MS[scope],
+      }
     );
   }
 

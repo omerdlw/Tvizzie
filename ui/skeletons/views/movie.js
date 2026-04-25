@@ -1,12 +1,6 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import {
-  SkeletonBlock,
-  SkeletonCircle,
-  SkeletonLine,
-  SkeletonPill,
-  SkeletonPoster,
-} from '@/ui/skeletons/primitives';
+import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
 
 function Bar({ className = '', soft = false }) {
@@ -24,7 +18,7 @@ function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
 
 function SegmentTabs() {
   return (
-    <div className="inline-flex w-fit items-center gap-1 rounded-[12px] p-0.5 skeleton-block-soft">
+    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1 rounded-[12px] p-0.5">
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
       <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
@@ -43,8 +37,8 @@ function SocialProofPills() {
 
 function CastCard() {
   return (
-    <div className="flex items-center gap-3 rounded-[14px] bg-black/[0.07] p-1 pr-4 backdrop-blur-xs">
-      <SkeletonPoster className="h-20 w-16 shrink-0 rounded-[9px] aspect-auto" radius="segmentedItem" />
+    <div className="flex items-center gap-3 rounded-[14px] bg-black/5 p-1 pr-4 backdrop-blur-xs">
+      <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0 rounded-[9px]" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
         <TextLine width="w-1/2" className="h-2.5" soft={true} />
@@ -55,7 +49,7 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] bg-black/[0.07] p-1 pr-2 backdrop-blur-xs">
+    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] bg-black/5 p-1 pr-2 backdrop-blur-xs">
       <SkeletonBlock className="size-8 shrink-0 rounded-[9px]" />
       <TextLine width="w-3/5" className="h-3" />
     </div>

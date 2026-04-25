@@ -18,7 +18,10 @@ const COMPACT_COUNT = 3;
 
 function PersonImage({ person, size, quality = 72, priority = false, fetchPriority = '' }) {
   const [error, setError] = useState(false);
-  const src = !error ? getPreferredPersonPosterSrc(person, size) || (person.profile_path ? `${TMDB_IMG}/${size}${person.profile_path}` : null) : null;
+  const src = !error
+    ? getPreferredPersonPosterSrc(person, size) ||
+      (person.profile_path ? `${TMDB_IMG}/${size}${person.profile_path}` : null)
+    : null;
 
   if (!src) {
     return (
@@ -57,7 +60,12 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
         compact ? 'h-10 min-w-0 flex-1 rounded-[12px]! p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
-      <div className={['relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}>
+      <motion.div
+        className={['relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}
+        initial={{ opacity: 0, scale: 0.92, y: 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: compact ? 0.56 : 0.68, ease: [0.22, 1, 0.36, 1] }}
+      >
         <PersonImage
           person={person}
           size={compact ? 'w92' : 'w185'}
@@ -65,15 +73,27 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
           priority={priority}
           fetchPriority={fetchPriority}
         />
-      </div>
+      </motion.div>
 
       {compact ? (
-        <span className="truncate text-xs font-semibold text-black">{person.name}</span>
+        <motion.span
+          className="truncate text-xs font-semibold text-black"
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.52, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {person.name}
+        </motion.span>
       ) : (
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-black">{person.name}</span>
-          <span className="truncate text-xs text-black/70">{person.subtitle}</span>
-        </div>
+        <motion.div
+          className="flex min-w-0 flex-col"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.58, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.span className="truncate text-sm font-semibold text-black">{person.name}</motion.span>
+          <motion.span className="truncate text-xs text-black/70">{person.subtitle}</motion.span>
+        </motion.div>
       )}
     </Link>
   );
@@ -165,8 +185,10 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
             const cardMotion = getSurfaceItemMotion({
               enabled: shouldAnimateItemReveal,
               index,
-              distance: 20,
-              scale: 0.978,
+              delayStep: 0.075,
+              distance: 26,
+              duration: 0.92,
+              scale: 0.966,
             });
 
             return (
@@ -189,8 +211,10 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
                 enabled: shouldAnimateItemReveal,
                 index,
                 groupIndex: 1,
-                distance: 16,
-                scale: 0.984,
+                delayStep: 0.06,
+                distance: 18,
+                duration: 0.8,
+                scale: 0.978,
               });
 
               // Hide the third pill on small screens to ensure the action button fits.
@@ -213,9 +237,9 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              initial={{ opacity: 0, y: 12, scale: 0.952 }}
+              initial={{ opacity: 0, y: 14, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.48, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.72, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
               className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />

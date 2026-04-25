@@ -16,14 +16,24 @@ export default function RecommendationCard({ movie, index = 0, imagePriority = f
   const cardMotion = getSurfaceItemMotion({
     enabled: shouldAnimateItemReveal,
     index,
-    distance: 20,
-    scale: 0.978,
+    delayStep: 0.075,
+    distance: 24,
+    duration: 0.9,
+    scale: 0.968,
   });
 
   return (
-    <motion.div initial={cardMotion.initial} animate={cardMotion.animate} transition={cardMotion.transition}>
+    <motion.div
+      initial={cardMotion.initial}
+      animate={cardMotion.animate}
+      transition={cardMotion.transition}
+      whileHover={{ y: -3 }}
+    >
       <MediaCard
-        imageSrc={getPreferredMoviePosterSrc(movie, 'w342') || (movie.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : null)}
+        imageSrc={
+          getPreferredMoviePosterSrc(movie, 'w342') ||
+          (movie.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : null)
+        }
         imageFetchPriority={imageFetchPriority}
         imagePriority={imagePriority}
         imagePreset="poster"

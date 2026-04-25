@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { MOVIE_ROUTE_TIMING, getSurfaceItemMotion } from '@/app/(media)/movie/[id]/motion';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { resolveExplicitMediaType } from '@/core/utils/media';
@@ -117,14 +119,51 @@ function ActionButton({
       )}
     >
       {loading ? (
-        <span>{loadingLabel}</span>
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {loadingLabel}
+        </motion.span>
       ) : (
         <>
-          <Icon icon={icon} size={16} className="transition-transform" />
-          <span>{label}</span>
+          <motion.span
+            className="inline-flex"
+            initial={{ opacity: 0, scale: 0.82, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Icon icon={icon} size={16} className="transition-transform" />
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.46, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {label}
+          </motion.span>
         </>
       )}
     </button>
+  );
+}
+
+function ActionMotionItem({ children, index = 0 }) {
+  const itemMotion = getSurfaceItemMotion({
+    delayStep: MOVIE_ROUTE_TIMING.sidebar.actionStagger,
+    distance: 10,
+    duration: 0.78,
+    groupDelayStep: 0,
+    groupIndex: 0,
+    index,
+    scale: 0.992,
+  });
+
+  return (
+    <motion.div initial={itemMotion.initial} animate={itemMotion.animate} transition={itemMotion.transition}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -409,56 +448,66 @@ export default function CollectionActions({ media }) {
   return (
     <div className="flex flex-col gap-2">
       {canGoToMovie ? (
-        <ActionButton
-          icon="solar:clapperboard-play-bold"
-          label="Go to Movie"
-          onClick={handleGoToMovie}
-          palette="neutral"
-        />
+        <ActionMotionItem index={0}>
+          <ActionButton
+            icon="solar:clapperboard-play-bold"
+            label="Go to Movie"
+            onClick={handleGoToMovie}
+            palette="neutral"
+          />
+        </ActionMotionItem>
       ) : null}
 
       {showLikeAction ? (
-        <ActionButton
-          active={state.liked}
-          disabled={state.loadingLike || state.submittingLike}
-          icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
-          label={state.liked ? 'Liked' : 'Like'}
-          loading={state.loadingLike || state.submittingLike}
-          loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
-          onClick={handleLikeClick}
-          palette="like"
-        />
+        <ActionMotionItem index={1}>
+          <ActionButton
+            active={state.liked}
+            disabled={state.loadingLike || state.submittingLike}
+            icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+            label={state.liked ? 'Liked' : 'Like'}
+            loading={state.loadingLike || state.submittingLike}
+            loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
+            onClick={handleLikeClick}
+            palette="like"
+          />
+        </ActionMotionItem>
       ) : null}
 
       <div className={cn('grid grid-cols-1 gap-2', showWatchlistAction ? 'min-[460px]:grid-cols-2' : '')}>
-        <ActionButton
-          active={state.watched}
-          disabled={state.loadingWatched || state.submittingWatched}
-          icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
-          label={state.watched ? 'Unwatch' : 'Mark Watched'}
-          loading={state.loadingWatched || state.submittingWatched}
-          loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
-          onClick={handleWatchedClick}
-          palette="watched"
-        />
+        <ActionMotionItem index={2}>
+          <ActionButton
+            active={state.watched}
+            disabled={state.loadingWatched || state.submittingWatched}
+            icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
+            label={state.watched ? 'Unwatch' : 'Mark Watched'}
+            loading={state.loadingWatched || state.submittingWatched}
+            loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
+            onClick={handleWatchedClick}
+            palette="watched"
+          />
+        </ActionMotionItem>
 
         {showWatchlistAction ? (
-          <ActionButton
-            active={state.watchlist}
-            disabled={state.loadingWatchlist || state.submittingWatchlist}
-            icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-            label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-            loading={state.loadingWatchlist || state.submittingWatchlist}
-            loadingLabel={
-              state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
-            }
-            onClick={handleWatchlistClick}
-            palette="watchlist"
-          />
+          <ActionMotionItem index={3}>
+            <ActionButton
+              active={state.watchlist}
+              disabled={state.loadingWatchlist || state.submittingWatchlist}
+              icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+              label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+              loading={state.loadingWatchlist || state.submittingWatchlist}
+              loadingLabel={
+                state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
+              }
+              onClick={handleWatchlistClick}
+              palette="watchlist"
+            />
+          </ActionMotionItem>
         ) : null}
       </div>
 
-      <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
+      <ActionMotionItem index={4}>
+        <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
+      </ActionMotionItem>
     </div>
   );
 }

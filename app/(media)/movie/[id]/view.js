@@ -23,7 +23,6 @@ import {
   MOVIE_ROUTE_TIMING,
   MovieSectionGroup,
   MovieSectionReveal,
-  MovieSidebarReveal,
   MovieSurfaceReveal,
 } from './motion';
 import Registry from './registry';
@@ -235,7 +234,7 @@ export default function MovieView({
         >
           <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:items-stretch lg:gap-12">
             <div className="w-full shrink-0 self-start lg:w-[400px] lg:self-stretch">
-              <MovieSidebarReveal className="lg:sticky lg:top-6">
+              <div className="lg:sticky lg:top-6">
                 <Sidebar
                   item={movie}
                   certification={certification}
@@ -245,7 +244,7 @@ export default function MovieView({
                   tags={tags}
                   writers={writers}
                 />
-              </MovieSidebarReveal>
+              </div>
             </div>
 
             <div className="flex w-full min-w-0 flex-col lg:self-stretch">

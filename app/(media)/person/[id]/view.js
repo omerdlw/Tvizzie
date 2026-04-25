@@ -12,6 +12,7 @@ import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import {
   PersonClipReveal,
   PersonHeroReveal,
+  PERSON_ROUTE_TIMING,
   PersonSectionReveal,
   PersonSidebarReveal,
   PersonSurfaceReveal,
@@ -23,21 +24,6 @@ import { getFilmographyCredits } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
-
-const HERO_REVEAL_TIMING = Object.freeze({
-  containerDelay: 0.1,
-  titleDelay: 0.18,
-  titleClipDelay: 0.16,
-  titleDuration: 0.82,
-  overviewDelay: 0.4,
-});
-
-const SECTION_REVEAL_TIMING = Object.freeze({
-  gallery: 0.18,
-  filmography: 0.26,
-  timeline: 0.2,
-  awards: 0.2,
-});
 
 function getBiographyExcerpt(biography, maxLength = 280) {
   const value = String(biography || '').trim();
@@ -59,13 +45,13 @@ function PersonMainContent({ person, animateItemReveal = true }) {
   return (
     <>
       {person?.images?.profiles?.length > 0 ? (
-        <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.gallery} animateOnView={false}>
+        <PersonSectionReveal className="mt-10" delay={PERSON_ROUTE_TIMING.sections.gallery} animateOnView={false}>
           <PersonGallery images={person.images} animateItemReveal={animateItemReveal} />
         </PersonSectionReveal>
       ) : null}
 
       {movieCredits.length > 0 ? (
-        <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.filmography} animateOnView={false}>
+        <PersonSectionReveal className="mt-10" delay={PERSON_ROUTE_TIMING.sections.filmography} animateOnView={false}>
           <PersonSurfaceReveal>
             <section className="flex flex-col gap-3">
               <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
@@ -112,7 +98,7 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView, anima
 
   if (activeView === 'timeline') {
     return (
-      <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.timeline} animateOnView={false}>
+      <PersonSectionReveal className="mt-10" delay={PERSON_ROUTE_TIMING.sections.timeline} animateOnView={false}>
         <PersonTimeline person={mergedPerson} />
       </PersonSectionReveal>
     );
@@ -163,23 +149,27 @@ export default function PersonView({
         >
           <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:gap-12">
             <div className="w-full shrink-0 self-start lg:sticky lg:top-6 lg:w-[400px]">
-              <PersonSidebarReveal>
+              <PersonSidebarReveal delay={PERSON_ROUTE_TIMING.sidebar.containerDelay}>
                 <PersonSidebar person={person} age={age} />
               </PersonSidebarReveal>
             </div>
 
             <div className="flex w-full min-w-0 flex-col">
               <div className="flex w-full flex-col">
-                <PersonHeroReveal delay={HERO_REVEAL_TIMING.containerDelay}>
+                <PersonHeroReveal delay={PERSON_ROUTE_TIMING.hero.containerDelay}>
                   <div className="flex min-w-0 items-end justify-between gap-3">
-                    <PersonClipReveal animateOnView={false} delay={HERO_REVEAL_TIMING.titleClipDelay} className="min-w-0">
+                    <PersonClipReveal
+                      animateOnView={false}
+                      delay={PERSON_ROUTE_TIMING.hero.titleClipDelay}
+                      className="min-w-0"
+                    >
                       <TextAnimate
                         animation="cinematicUp"
                         by="word"
-                        delay={HERO_REVEAL_TIMING.titleDelay}
-                        duration={HERO_REVEAL_TIMING.titleDuration}
+                        delay={PERSON_ROUTE_TIMING.hero.titleDelay}
+                        duration={PERSON_ROUTE_TIMING.hero.titleDuration}
                         startOnView={false}
-                        className="max-w-full [overflow-wrap:anywhere] font-zuume text-5xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
+                        className="font-zuume max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
                       >
                         {person.name}
                       </TextAnimate>
@@ -188,7 +178,7 @@ export default function PersonView({
                 </PersonHeroReveal>
 
                 {biographyExcerpt ? (
-                  <PersonHeroReveal delay={HERO_REVEAL_TIMING.overviewDelay} className="mt-4">
+                  <PersonHeroReveal delay={PERSON_ROUTE_TIMING.hero.overviewDelay} className="mt-4">
                     <PersonClipReveal animateOnView={false} delay={0.06}>
                       <p className="max-w-[72ch] text-left text-[15px] leading-6 text-black/70 sm:text-justify sm:text-base sm:leading-7">
                         {biographyExcerpt}
@@ -206,7 +196,11 @@ export default function PersonView({
                     transition={viewMotion.transition}
                   >
                     {activeView === 'awards' ? (
-                      <PersonSectionReveal className="mt-10" delay={SECTION_REVEAL_TIMING.awards} animateOnView={false}>
+                      <PersonSectionReveal
+                        className="mt-10"
+                        delay={PERSON_ROUTE_TIMING.sections.awards}
+                        animateOnView={false}
+                      >
                         <PersonAwards personId={person.id} />
                       </PersonSectionReveal>
                     ) : (

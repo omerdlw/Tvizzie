@@ -1,8 +1,11 @@
 import localFont from 'next/font/local';
-import { GeistSans } from 'geist/font';
-import { GeistMono } from 'geist/font/mono';
-export const geist = GeistSans;
-export const geistMono = GeistMono;
+import { Inter } from 'next/font/google';
+
+export const inter = Inter({
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
 
 export const zuume = localFont({
   variable: '--font-zuume',
