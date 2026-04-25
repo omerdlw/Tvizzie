@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { discoverContent } from '@/core/clients/tmdb/server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
 
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
@@ -16,8 +17,6 @@ export async function GET(request) {
 
   return NextResponse.json(response.data || { results: [] }, {
     status: response.status || 200,
-    headers: {
-      'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=86400',
-    },
+    headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_TMDB_DISCOVER),
   });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { getTrending } from '@/core/clients/tmdb/server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
 
 const DEFAULT_MOVIE_LIMIT = 3;
 const MAX_MOVIE_LIMIT = 6;
@@ -44,7 +45,7 @@ export async function GET(request) {
     const response = await getTrending('day', 'movie');
 
     if (!response.data?.results) {
-      return NextResponse.json({ movies: [], poster: null }, { headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ movies: [], poster: null }, { headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE) });
     }
 
     const candidates = response.data.results.filter(
@@ -52,7 +53,7 @@ export async function GET(request) {
     );
 
     if (candidates.length === 0) {
-      return NextResponse.json({ movies: [], poster: null }, { headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json({ movies: [], poster: null }, { headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE) });
     }
 
     const movies = pickStableMovies(candidates, limit).map(mapMovie);
@@ -64,15 +65,13 @@ export async function GET(request) {
         poster,
       },
       {
-        headers: {
-          'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
-        },
+        headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_TMDB_TRENDING),
       }
     );
   } catch {
     return NextResponse.json(
       { movies: [], poster: null },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600' } }
+      { headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_TMDB_ERROR_FALLBACK) }
     );
   }
 }

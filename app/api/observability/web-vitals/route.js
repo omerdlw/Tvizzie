@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
+
 function normalizeMetric(payload = {}) {
   const delta = Number(payload?.delta);
   const value = Number(payload?.value);
@@ -38,8 +40,6 @@ export async function POST(request) {
 
   return new NextResponse(null, {
     status: 204,
-    headers: {
-      'Cache-Control': 'no-store',
-    },
+    headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE),
   });
 }

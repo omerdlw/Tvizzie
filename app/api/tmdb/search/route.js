@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { searchContent } from '@/core/clients/tmdb/server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
 
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
@@ -17,9 +18,7 @@ export async function GET(request) {
         total_results: 0,
       },
       {
-        headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
-        },
+        headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_TMDB_SEARCH),
       }
     );
   }
@@ -29,8 +28,6 @@ export async function GET(request) {
 
   return NextResponse.json(data, {
     status: response.status || 200,
-    headers: {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
-    },
+    headers: cacheControlHeaders(CACHE_CONTROL.PUBLIC_TMDB_SEARCH),
   });
 }

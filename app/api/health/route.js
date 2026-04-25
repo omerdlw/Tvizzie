@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { ROLLOUT_CONFIG } from '@/core/services/shared/write-rollout.server';
 import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
@@ -70,6 +71,7 @@ export async function GET() {
     },
     {
       status: envStatus.ok ? 200 : 503,
+      headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE),
     }
   );
 }
