@@ -230,6 +230,17 @@ const NEXT_CONFIG = {
       },
     ];
   },
+  webpack(config) {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+
+    // Next can resolve `framer-motion` to its `./client` entry in some environments.
+    // That entry doesn't export some hooks (e.g. `useReducedMotion`), which can crash
+    // client renders in Safari/iOS. Force a single, full entrypoint.
+    config.resolve.alias['framer-motion/client'] = 'framer-motion';
+
+    return config;
+  },
 };
 
 export default withBundleAnalyzer(NEXT_CONFIG);

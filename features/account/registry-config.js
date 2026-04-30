@@ -59,6 +59,14 @@ function suppressNavOverrideProfileFollowAction(navActionOverride) {
   });
 }
 
+function hasRouteSpecificAccountAction({ isOwner, navActionOverride, onDeleteList, onEditList, onToggleLike }) {
+  return Boolean(
+    navActionOverride ||
+      (!isOwner && typeof onToggleLike === 'function') ||
+      (isOwner && typeof onEditList === 'function' && typeof onDeleteList === 'function')
+  );
+}
+
 function buildAccountLoadingState({ isLoading = false, navRegistrySource }) {
   return {
     isLoading,
@@ -204,14 +212,25 @@ export function buildAccountPageState({
   const isPrivateProfile = Boolean(profile?.isPrivate);
   const isFollowingProfile = followState === 'following';
   const hasNavActionOverride = Boolean(navActionOverride);
-  const shouldForceProfileFollowAction = !hasNavActionOverride && !isOwner && isPrivateProfile && !isFollowingProfile;
+  const hasRouteAccountAction = hasRouteSpecificAccountAction({
+    isOwner,
+    navActionOverride,
+    onDeleteList,
+    onEditList,
+    onToggleLike,
+  });
+  const shouldForceProfileFollowAction = !hasRouteAccountAction && !isOwner && isPrivateProfile && !isFollowingProfile;
   const shouldUseGuestFollowAction =
-    !authIsAuthenticated && !isOwner && Boolean(profile) && typeof handleFollow === 'function' && !hasNavActionOverride;
+    !authIsAuthenticated && !isOwner && Boolean(profile) && typeof handleFollow === 'function' && !hasRouteAccountAction;
   const shouldShowInlineProfileFollowAction = Boolean(
-    !hasNavActionOverride && (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction)
+    !hasRouteAccountAction && (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction)
   );
   const shouldShowToolbarFollowAction = Boolean(
-    showToolbarFollowActionWithOverride && hasNavActionOverride && !isOwner && profile && typeof handleFollow === 'function'
+    showToolbarFollowActionWithOverride &&
+      hasRouteAccountAction &&
+      !isOwner &&
+      profile &&
+      typeof handleFollow === 'function'
   );
   const shouldShowCurrentAccountAvatar = Boolean(authIsAuthenticated && authUser && profile && !isOwner);
   const shouldUseNavActionOverride = hasNavActionOverride;

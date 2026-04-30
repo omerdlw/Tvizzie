@@ -129,13 +129,13 @@ export default function WatchProvidersSurface({ providers }) {
                   alt={provider.provider_name}
                   loading="lazy"
                   decoding="async"
-                  className="h-7 w-7 shrink-0 rounded-[10px] object-cover"
-                  wrapperClassName="h-7 w-7 shrink-0 rounded-[10px]"
+                  className="h-7 w-7 shrink-0  object-cover"
+                  wrapperClassName="h-7 w-7 shrink-0 "
                 />
                 <span className={`truncate text-sm font-medium text-black/70`}>{provider.provider_name}</span>
               </div>
               <span
-                className={`bg-primary rounded-[10px] border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase`}
+                className={`bg-primary  border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase`}
               >
                 {provider.type}
               </span>

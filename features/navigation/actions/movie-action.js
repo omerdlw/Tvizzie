@@ -1,6 +1,7 @@
 'use client';
 
 import { REVIEW_SORT_OPTIONS } from '@/features/reviews/utils';
+import MediaSocialProof from '@/features/movie/social-proof';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 import { Select } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -11,6 +12,9 @@ export default function MovieAction({
   onToggle,
   sortMode,
   onSortChange,
+  socialProofMedia = null,
+  socialProofViewerId = null,
+  socialProofKnownMovieIds = [],
   className = 'flex-1 min-w-0 whitespace-nowrap',
 }) {
   if (mode === 'sort') {
@@ -28,13 +32,12 @@ export default function MovieAction({
             isActive: false,
           })} justify-between`,
           value: 'truncate',
-          menu: 'overflow-hidden border border-black/10 bg-white p-1 bottom-0',
+          menu: 'nav-action-select-menu overflow-hidden p-1 bottom-0',
           optionsList: 'flex flex-col gap-1',
-          option:
-            'cursor-pointer p-3 text-xs font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
-          optionActive: 'bg-black/5 text-black',
+          option: 'nav-action-select-option cursor-pointer p-3 text-xs font-semibold tracking-wide uppercase outline-none',
+          optionActive: 'nav-action-select-option-active',
           indicator: 'ml-auto text-black',
-          icon: 'text-black/50',
+          icon: 'text-black-muted',
         }}
         aria-label="Sort reviews"
       />
@@ -45,20 +48,30 @@ export default function MovieAction({
   const label = isActive ? 'Back' : 'Where to watch?';
 
   return (
-    <button
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onToggle?.();
-      }}
-      className={getNavActionClass({
-        className,
-        isActive,
-      })}
-      type="button"
-    >
-      <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
-      <span className="truncate">{label}</span>
-    </button>
+    <div className="flex flex-1 min-w-0 flex-col gap-2">
+      <button
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onToggle?.();
+        }}
+        className={getNavActionClass({
+          className,
+          isActive,
+        })}
+        type="button"
+      >
+        <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
+        <span className="truncate">{label}</span>
+      </button>
+      {socialProofMedia ? (
+        <MediaSocialProof
+          media={socialProofMedia}
+          viewerId={socialProofViewerId}
+          knownMovieIds={socialProofKnownMovieIds}
+          className="movie-action-social-proof"
+        />
+      ) : null}
+    </div>
   );
 }

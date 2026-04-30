@@ -101,7 +101,7 @@ export default function SegmentedControl({
         >
           <motion.span
             aria-hidden="true"
-            className={cn('pointer-events-none absolute left-0 top-0 rounded-[10px] bg-primary', classNames.indicator)}
+            className={cn('pointer-events-none absolute left-0 top-0  bg-primary', classNames.indicator)}
             initial={false}
             animate={
               indicatorFrame.ready

@@ -19,9 +19,9 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 rounded-[12px] border px-4 text-xs font-semibold tracking-wide uppercase transition';
+  'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
-const TOOL_BUTTON_CLASS = 'size-7 rounded-[10px] transition';
+const TOOL_BUTTON_CLASS = 'size-7  transition';
 
 const SKELETON_COUNT = 16;
 
@@ -199,7 +199,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
         isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
       )}
     >
-      <div className="center size-10 shrink-0 overflow-hidden rounded-[10px]">
+      <div className="center size-10 shrink-0 overflow-hidden ">
         {notification.actor ? (
           <AdaptiveImage
             mode="img"

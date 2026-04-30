@@ -46,7 +46,7 @@ function PersonCard({ close, person }) {
       onClick={close}
       className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2 transition-colors"
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[10px] bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden  bg-black/5">
         {imageSrc ? (
           <AdaptiveImage
             fill
@@ -134,8 +134,8 @@ export default function CastModal({ close, data, header }) {
           onChange={setActiveTab}
           items={items}
           classNames={{
-            wrapper: 'h-8 rounded-[12px] p-0.5',
-            indicator: 'rounded-[9px]',
+            wrapper: 'h-8  p-0.5',
+            indicator: '',
           }}
         />
       ),

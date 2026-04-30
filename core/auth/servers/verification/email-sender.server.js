@@ -1,8 +1,4 @@
-import nodemailer from 'nodemailer';
-
-const BREVO_DEFAULT_HOST = 'smtp-relay.brevo.com';
-const BREVO_DEFAULT_PORT = 587;
-const DEFAULT_FROM_ADDRESS = 'no-reply@example.com';
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 function normalizeEnvValue(value) {
   let normalized = String(value || '').trim();
@@ -24,28 +20,55 @@ function normalizeEnvValue(value) {
 }
 
 function resolveBrevoConfig() {
-  const host = BREVO_DEFAULT_HOST;
-  const port = BREVO_DEFAULT_PORT;
-  const user = normalizeEnvValue(process.env.BREVO_SMTP_LOGIN);
-  const pass = normalizeEnvValue(process.env.BREVO_SMTP_KEY);
-  const from =
-    normalizeEnvValue(process.env.BREVO_SMTP_FROM) || normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) || DEFAULT_FROM_ADDRESS;
+  const apiKey = normalizeEnvValue(process.env.BREVO_API_KEY);
+  const from = normalizeEnvValue(process.env.BREVO_SENDER_EMAIL) || normalizeEnvValue(process.env.BREVO_SMTP_FROM);
 
-  if (!user || !pass) {
-    throw new Error('Brevo SMTP configuration is incomplete. Set BREVO_SMTP_LOGIN and BREVO_SMTP_KEY');
+  if (!apiKey || !from) {
+    throw new Error('Brevo email configuration is incomplete. Set BREVO_API_KEY and BREVO_SENDER_EMAIL');
   }
 
   return {
-    auth: { user, pass },
+    apiKey,
     from,
-    host,
-    port,
-    secure: port === 465,
   };
 }
 
 function resolveTransportConfig() {
   return resolveBrevoConfig();
+}
+
+async function sendWithBrevoApi({ html, subject, text, to, transportConfig }) {
+  const response = await fetch(BREVO_API_URL, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': transportConfig.apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: {
+        email: transportConfig.from,
+        name: 'Tvizzie',
+      },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: html,
+    }),
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  const payload = await response.json().catch(() => null);
+  const providerMessage = normalizeEnvValue(payload?.message || payload?.error || response.statusText);
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('Email provider authentication failed. Verify Brevo API credentials');
+  }
+
+  throw new Error(providerMessage || `Email provider rejected the message with status ${response.status}`);
 }
 
 const VERIFICATION_PURPOSES = {
@@ -123,12 +146,6 @@ function resolveVerificationCopy(purpose) {
 
 export async function sendVerificationCodeEmail({ email, code, expiresAt, purpose = VERIFICATION_PURPOSES.SIGN_UP }) {
   const transportConfig = resolveTransportConfig();
-  const transporter = nodemailer.createTransport({
-    auth: transportConfig.auth,
-    host: transportConfig.host,
-    port: transportConfig.port,
-    secure: transportConfig.secure,
-  });
 
   const expiryDate = new Date(expiresAt);
   const expiresAtLabel = expiryDate.toLocaleString('en-US', {
@@ -237,14 +254,14 @@ export async function sendVerificationCodeEmail({ email, code, expiresAt, purpos
 `;
 
   try {
-    await transporter.sendMail({
-      from: transportConfig.from,
+    await sendWithBrevoApi({
       html,
-      replyTo: transportConfig.from,
       subject,
       text,
       to: email,
+      transportConfig,
     });
+    return;
   } catch (error) {
     const message = String(error?.message || '');
     if (message.includes('Invalid login') || message.includes('BadCredentials') || message.includes('535')) {

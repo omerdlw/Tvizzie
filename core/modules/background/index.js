@@ -292,15 +292,6 @@ export function BackgroundOverlay() {
 
           <BackgroundGradients count={leftGradient} direction="left" />
           <BackgroundGradients count={rightGradient} direction="right" />
-
-          <NoiseTexture
-            className="fixed inset-0 h-screen w-screen transform-gpu"
-            opacity={typeof noiseOpacity === 'number' ? noiseOpacity : 0.04}
-            blend={typeof noiseBlendMode === 'string' && noiseBlendMode.trim() ? noiseBlendMode : 'overlay'}
-            grain="medium"
-            style={noiseInlineStyle}
-          />
-
           {overlay && (
             <div
               className="absolute inset-0 transition-opacity"

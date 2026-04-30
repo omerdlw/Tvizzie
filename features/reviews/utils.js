@@ -33,6 +33,10 @@ export function parseReviewSortMode(value, fallback = REVIEW_SORT_MODE.NEWEST) {
   return isReviewSortMode(normalizedValue) ? normalizedValue : fallback;
 }
 
+export function hasReviewText(review = {}) {
+  return Boolean(String(review?.content || '').trim());
+}
+
 function normalizeTimestamp(review = {}) {
   const timestampValue = review.updatedAt || review.createdAt || 0;
   const timestamp = new Date(timestampValue).getTime();

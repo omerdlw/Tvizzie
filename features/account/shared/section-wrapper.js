@@ -24,48 +24,48 @@ export function AccountSectionHeading({
   const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
 
   return (
-    <div className={`flex w-full flex-col gap-6 ${className}`}>
-      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full min-w-0 flex-1 items-center gap-2">
+    <div className={cn('account-detail-section-heading flex w-full flex-col gap-4', className)}>
+      <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           {icon ? <Icon icon={icon} size={24} className="text-black/70" /> : null}
           {titleHref ? (
-            <Link href={titleHref} className={cn(titleClassName, 'min-w-0')}>
+            <Link href={titleHref} className={cn(titleClassName, 'min-w-0 truncate')}>
               {title}
             </Link>
           ) : (
-            <h2 className={cn(titleClassName, 'min-w-0')}>{title}</h2>
+            <h2 className={cn(titleClassName, 'min-w-0 truncate')}>{title}</h2>
           )}
         </div>
 
-        <div className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 text-left sm:w-auto sm:shrink-0 sm:justify-end sm:text-right">
+        <div className="flex shrink-0 items-center justify-end gap-3 text-right">
           {summaryLabel && titleHref ? (
-            <Link href={titleHref} className={summaryClassName}>
+            <Link href={titleHref} className={cn(summaryClassName, 'whitespace-nowrap')}>
               {summaryLabel}
             </Link>
           ) : summaryLabel ? (
-            <p className={summaryClassName}>{summaryLabel}</p>
+            <p className={cn(summaryClassName, 'whitespace-nowrap')}>{summaryLabel}</p>
           ) : null}
 
           {action}
 
           {showSeeMore && titleHref ? (
-            <Link href={titleHref} className={summaryClassName}>
+            <Link href={titleHref} className={cn(summaryClassName, 'whitespace-nowrap')}>
               See more
             </Link>
           ) : null}
         </div>
       </div>
 
-      {showDivider ? <div className="h-px bg-black/10" /> : null}
+      {showDivider ? <div className="account-detail-section-heading-rule" /> : null}
     </div>
   );
 }
 
 export function AccountSectionState({ message }) {
   return (
-    <section className="relative bg-transparent">
+    <section className="account-detail-grid-subsection bg-transparent">
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
+        <div className={cn('account-detail-section-body', ACCOUNT_EMPTY_SECTION_CLASS)}>
           {normalizeFeedbackContent(message)}
         </div>
       </div>
@@ -88,9 +88,14 @@ export default function AccountSectionLayout({
   titleHref = null,
 }) {
   return (
-    <section className="relative bg-transparent">
+    <section className="account-detail-grid-subsection bg-transparent">
       <AccountSectionReveal delay={revealDelay}>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
+        <div
+          className={cn(
+            `${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`,
+            className
+          )}
+        >
           {showHeader ? (
             <AccountSectionHeading
               action={action}
@@ -105,7 +110,7 @@ export default function AccountSectionLayout({
             <h2 className="sr-only">{title}</h2>
           ) : null}
 
-          {contentClassName ? <div className={contentClassName}>{children}</div> : children}
+          <div className={cn('account-detail-section-body', contentClassName)}>{children}</div>
         </div>
       </AccountSectionReveal>
     </section>

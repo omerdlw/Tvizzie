@@ -130,60 +130,64 @@ export default function PersonSidebar({ person, age }) {
   );
 
   return (
-    <div className="flex flex-col gap-3">
-      <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
-          {hasImage ? (
-            <AdaptiveImage
-              src={imageSrc}
-              alt={person?.name || 'Person portrait'}
-              fill
-              priority
-              fetchPriority="high"
-              sizes="(max-width: 1024px) 100vw, 400px"
-              quality={resolveImageQuality('hero')}
-              decoding="async"
-              placeholder="blur"
-              blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
-              onError={() => setHasImageError(true)}
-              className="object-cover"
-              wrapperClassName="h-full w-full"
-            />
-          ) : (
-            <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
-              <Icon icon="solar:user-bold" size={64} className="text-black/70" />
-            </div>
-          )}
+    <div className="flex flex-col gap-0">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7 grid-diamonds-bottom border-b border-black/10">
+        <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
+          <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+            {hasImage ? (
+              <AdaptiveImage
+                src={imageSrc}
+                alt={person?.name || 'Person portrait'}
+                fill
+                priority
+                fetchPriority="high"
+                sizes="(max-width: 1024px) 100vw, 400px"
+                quality={resolveImageQuality('hero')}
+                decoding="async"
+                placeholder="blur"
+                blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
+                onError={() => setHasImageError(true)}
+                className="object-cover"
+                wrapperClassName="h-full w-full"
+              />
+            ) : (
+              <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
+                <Icon icon="solar:user-bold" size={64} className="text-black/70" />
+              </div>
+            )}
 
-          {person?.external_ids ? (
-            <SocialLinks
-              externalIds={person.external_ids}
-              className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
-            />
-          ) : null}
-        </div>
-      </PersonSurfaceReveal>
-
-      <div className="flex flex-col gap-1">
-        {detailRows.map((row, index) => (
-          <SidebarMotionItem
-            key={`${row.label}-${row.value}`}
-            delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay}
-            index={index}
-          >
-            <SidebarRow icon={row.icon} label={row.label} value={row.value} />
-          </SidebarMotionItem>
-        ))}
-      </div>
-
-      {person?.biography ? (
-        <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
-          <div className="flex flex-col gap-2">
-            <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
-            <PersonBio biography={person.biography} />
+            {person?.external_ids ? (
+              <SocialLinks
+                externalIds={person.external_ids}
+                className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
+              />
+            ) : null}
           </div>
         </PersonSurfaceReveal>
-      ) : null}
+      </div>
+
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-8">
+        <div className="flex flex-col gap-1">
+          {detailRows.map((row, index) => (
+            <SidebarMotionItem
+              key={`${row.label}-${row.value}`}
+              delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay}
+              index={index}
+            >
+              <SidebarRow icon={row.icon} label={row.label} value={row.value} />
+            </SidebarMotionItem>
+          ))}
+        </div>
+
+        {person?.biography ? (
+          <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-xs font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
+              <PersonBio biography={person.biography} />
+            </div>
+          </PersonSurfaceReveal>
+        ) : null}
+      </div>
     </div>
   );
 }

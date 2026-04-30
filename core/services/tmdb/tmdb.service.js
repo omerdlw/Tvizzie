@@ -88,7 +88,7 @@ async function requestTmdbMovieImages(id) {
   }
 
   return {
-    data: await response.json(),
+    data: await response.json().catch(() => null),
     error: null,
     status: response.status,
   };
@@ -130,7 +130,7 @@ async function requestJson(url, { method = 'GET', cache = 'default', timeoutMs =
   }
 
   return {
-    data: await response.json(),
+    data: await response.json().catch(() => null),
     error: null,
     status: response.status,
   };

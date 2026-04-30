@@ -28,7 +28,7 @@ const SEARCH_MIN_MOVIE_VOTE_AVERAGE = 4;
 const SEARCH_MIN_MOVIE_RUNTIME = 40;
 const SEARCH_RUNTIME_CHECK_LIMITS = Object.freeze({
   full: 24,
-  preview: 8,
+  preview: 4,
 });
 const SEARCH_SCAN_PAGE_LIMITS = Object.freeze({
   full: Object.freeze({
@@ -37,9 +37,9 @@ const SEARCH_SCAN_PAGE_LIMITS = Object.freeze({
     short: 5,
   }),
   preview: Object.freeze({
-    long: 5,
-    medium: 4,
-    short: 3,
+    long: 4,
+    medium: 3,
+    short: 2,
   }),
 });
 
@@ -160,7 +160,7 @@ function resolveSearchRuntimeCheckLimit(scope = 'preview') {
 async function normalizeSearchResults(items = [], query = '', requestedType = 'movie', options = {}) {
   const normalizedType = isPersonMediaType(requestedType) ? 'person' : 'movie';
   return normalizedType === 'person'
-    ? rankResolvedPersonSearchItems(items, query)
+    ? rankResolvedPersonSearchItems(items, query, options)
     : await rankResolvedMovieSearchItems(items, query, options);
 }
 
@@ -177,19 +177,20 @@ function createSearchFallbackQueries(query) {
     return [];
   }
 
+  const rewrittenQueries = createSearchRewriteQueries(normalizedQuery);
   const tokens = normalizedQuery.split(' ').filter(Boolean);
 
   if (!tokens.length) {
-    return [];
+    return rewrittenQueries;
   }
 
   const lastToken = tokens[tokens.length - 1];
 
   if (lastToken.length < 5) {
-    return [];
+    return rewrittenQueries;
   }
 
-  const variants = [];
+  const variants = [...rewrittenQueries];
 
   for (let trimCount = 1; trimCount <= 2; trimCount += 1) {
     const nextToken = lastToken.slice(0, Math.max(0, lastToken.length - trimCount));
@@ -202,6 +203,28 @@ function createSearchFallbackQueries(query) {
   }
 
   return [...new Set(variants)].filter((candidate) => candidate && candidate !== normalizedQuery);
+}
+
+function createSearchRewriteQueries(query) {
+  const normalizedQuery = normalizeSearchQuery(query).toLowerCase();
+  const variants = [];
+  const joinedUponQuery = normalizedQuery.replace(/\bup\s+on\b/g, 'upon');
+
+  if (joinedUponQuery !== normalizedQuery) {
+    variants.push(joinedUponQuery);
+  }
+
+  const candidates = [normalizedQuery, joinedUponQuery];
+
+  candidates.forEach((candidate) => {
+    const expandedOnceUponTime = candidate.replace(/\bonce\s+upon\s+time\b/g, 'once upon a time');
+
+    if (expandedOnceUponTime !== candidate) {
+      variants.push(expandedOnceUponTime);
+    }
+  });
+
+  return [...new Set(variants)].filter(Boolean);
 }
 
 function normalizeSearchComparableText(value) {
@@ -321,6 +344,14 @@ function getMovieRuntimeValue(movie = {}) {
   return Number.isFinite(runtime) && runtime > 0 ? runtime : null;
 }
 
+function getPersonPopularityValue(person = {}) {
+  return Number(person?.popularity) || 0;
+}
+
+function getPersonKnownForCount(person = {}) {
+  return Array.isArray(person?.known_for) ? person.known_for.length : 0;
+}
+
 function passesMovieSearchQualityGate(movie = {}) {
   const voteCount = getMovieVoteCountValue(movie);
   const voteAverage = getMovieVoteAverageValue(movie);
@@ -341,6 +372,38 @@ function passesMovieSearchQualityGate(movie = {}) {
   return true;
 }
 
+function passesPersonSearchQualityGate(person = {}, scope = 'preview') {
+  const popularity = getPersonPopularityValue(person);
+  const knownForCount = getPersonKnownForCount(person);
+  const hasProfile = Boolean(person?.profile_path);
+  const hasDepartment = Boolean(String(person?.known_for_department || '').trim());
+  const normalizedScope = normalizeSearchScope(scope);
+
+  if (normalizedScope === 'preview') {
+    return hasProfile && (popularity >= 0.25 || knownForCount > 0 || hasDepartment);
+  }
+
+  if (hasProfile) {
+    return popularity >= 0.5 || knownForCount > 0 || hasDepartment;
+  }
+
+  return popularity >= 5 && (knownForCount > 0 || hasDepartment);
+}
+
+function isPersonPreviewQualityMatch(person = {}, textScore = 0) {
+  const popularity = getPersonPopularityValue(person);
+
+  if (popularity >= 1) {
+    return true;
+  }
+
+  if (textScore >= 1200) {
+    return true;
+  }
+
+  return popularity >= 0.5 && textScore >= 900;
+}
+
 function isMovieSearchCandidate(movie = {}, query = '') {
   if (!movie?.id || movie?.adult) {
     return false;
@@ -353,12 +416,26 @@ function isMovieSearchCandidate(movie = {}, query = '') {
   return getMovieSearchTexts(movie).length > 0 && getBestSearchTextScore(getMovieSearchTexts(movie), query) > 0;
 }
 
-function isPersonSearchCandidate(person = {}, query = '') {
+function isPersonSearchCandidate(person = {}, query = '', options = {}) {
   if (!person?.id) {
     return false;
   }
 
-  return getPersonSearchTexts(person).length > 0 && getBestSearchTextScore(getPersonSearchTexts(person), query) > 0;
+  if (!passesPersonSearchQualityGate(person, options.scope)) {
+    return false;
+  }
+
+  const textScore = getBestSearchTextScore(getPersonSearchTexts(person), query);
+
+  if (textScore <= 0) {
+    return false;
+  }
+
+  if (normalizeSearchScope(options.scope) === 'preview' && !isPersonPreviewQualityMatch(person, textScore)) {
+    return false;
+  }
+
+  return getPersonSearchTexts(person).length > 0;
 }
 
 function sortSearchItemsByAuthority(items = [], type = 'movie') {
@@ -376,11 +453,18 @@ function sortSearchItemsByAuthority(items = [], type = 'movie') {
   });
 }
 
-function buildAuthorityFallbackItems(items = [], type = 'movie') {
+function buildAuthorityFallbackItems(items = [], type = 'movie', options = {}) {
   const normalizedItems = dedupeSearchItems(withMediaType(items, type));
 
   if (type === 'person') {
-    return sortSearchItemsByAuthority(normalizedItems, type);
+    if (normalizeSearchScope(options.scope) === 'preview') {
+      return [];
+    }
+
+    return sortSearchItemsByAuthority(
+      normalizedItems.filter((person) => passesPersonSearchQualityGate(person, options.scope)),
+      type
+    );
   }
 
   return sortSearchItemsByAuthority(
@@ -475,12 +559,17 @@ async function rankResolvedMovieSearchItems(items = [], query = '', options = {}
     .map(({ item }) => item);
 }
 
-function rankResolvedPersonSearchItems(items = [], query = '') {
+function rankResolvedPersonSearchItems(items = [], query = '', options = {}) {
   const normalizedItems = dedupeSearchItems(withMediaType(items, 'person'));
-  const candidates = normalizedItems.filter((person) => isPersonSearchCandidate(person, query));
+  const qualityItems = normalizedItems.filter((person) => passesPersonSearchQualityGate(person, options.scope));
+  const candidates = qualityItems.filter((person) => isPersonSearchCandidate(person, query, options));
 
   if (!candidates.length) {
-    return sortSearchItemsByAuthority(normalizedItems, 'person');
+    if (normalizeSearchScope(options.scope) === 'preview') {
+      return [];
+    }
+
+    return sortSearchItemsByAuthority(qualityItems, 'person');
   }
 
   return candidates
@@ -588,7 +677,7 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
   const resolvedItems = await normalizeSearchResults(mergedItems, rankingQuery, type, {
     runtimeCheckLimit: resolveSearchRuntimeCheckLimit(options.scope),
   });
-  const fallbackItems = buildAuthorityFallbackItems(mergedItems, type);
+  const fallbackItems = buildAuthorityFallbackItems(mergedItems, type, options);
 
   return {
     pageSize,

@@ -28,8 +28,10 @@ function buildUserActionMap(socialProof) {
   };
 
   attachAction(socialProof?.likes?.users, 'Like');
+  attachAction(socialProof?.watched?.users, 'Watched');
   attachAction(socialProof?.watchlist?.users, 'Watchlist');
   attachAction(socialProof?.reviews?.users, 'Review');
+  attachAction(socialProof?.lists?.users, 'List');
 
   return Array.from(userMap.values());
 }
@@ -38,9 +40,11 @@ function formatActionSummary(actions = []) {
   const actionMap = {
     Review: 'Reviewed',
     Like: 'Liked',
+    Watched: 'Watched',
     Watchlist: 'Watchlisted',
+    List: 'Listed',
   };
-  const ordered = ['Review', 'Like', 'Watchlist'];
+  const ordered = ['Review', 'Like', 'Watched', 'Watchlist', 'List'];
   const phrases = ordered.filter((action) => actions.includes(action)).map((action) => actionMap[action] || action);
 
   if (phrases.length === 0) return '';
@@ -51,7 +55,7 @@ function formatActionSummary(actions = []) {
 export default function MediaSocialProofModal({ close, data, header }) {
   const userActions = buildUserActionMap(data?.socialProof);
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
-  const summaryText = (data?.summaryParts || []).join(' · ');
+  const highlights = Array.isArray(data?.socialProof?.highlights) ? data.socialProof.highlights : [];
 
   return (
     <Container
@@ -61,14 +65,27 @@ export default function MediaSocialProofModal({ close, data, header }) {
       close={close}
       header={header}
       bodyClassName="p-0"
-      footer={{
-        left: <span className="text-xs opacity-70">{userActions.length} people</span>,
-        right: summaryText ? <span className="text-xs opacity-70">{summaryText}</span> : null,
-      }}
     >
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {userActions.length === 0 ? (
+          {highlights.length > 0 ? (
+            <div className="p-3 lg:p-4">
+              <div className=" bg-black/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+                <p className="mb-2 text-[10px] font-semibold tracking-widest text-black/45 uppercase">
+                  People you follow
+                </p>
+                {highlights.map((highlight) => (
+                  <div key={highlight.key} className="flex items-start gap-2 py-1 text-sm text-black/70">
+                    <Icon icon="solar:stars-bold" size={15} className="mt-0.5 shrink-0 text-black/40" />
+                    <span>{highlight.label}</span>
+                  </div>
+                ))}
+
+              </div>
+            </div>
+          ) : null}
+
+          {userActions.length === 0 && highlights.length === 0 ? (
             <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
               No social activity from people you follow yet
             </div>
@@ -86,7 +103,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     onClick={close}
                     className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
                   >
-                    <div className="center size-10 shrink-0 overflow-hidden rounded-[10px] border border-black/5">
+                    <div className="center size-10 shrink-0 overflow-hidden  border border-black/5">
                       <AdaptiveImage
                         mode="img"
                         src={avatarSrc}
@@ -111,7 +128,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
                       <span
                         aria-hidden="true"
-                        className="center size-7 rounded-[10px] border border-black/10 text-black/70 transition"
+                        className="center size-7  border border-black/10 text-black/70 transition"
                       >
                         <Icon icon="solar:alt-arrow-right-linear" size={16} />
                       </span>

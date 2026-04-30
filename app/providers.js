@@ -110,13 +110,16 @@ export const AppProviders = ({ children }) => {
   const pathname = usePathname();
   const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
   const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
-  const needsSmoothScroll = shouldEnableSmoothScroll(pathname);
-  const shellChildren = (
-    <>
-      <Nav />
-      {children}
-    </>
-  );
+  const needsSmoothScroll = false
+  const shellChildren =
+    interactiveBoundaryVariant === 'auth' ? (
+      children
+    ) : (
+      <>
+        <Nav />
+        {children}
+      </>
+    );
 
   const content = needsInteractiveBoundary
     ? renderInteractiveBoundary(shellChildren, interactiveBoundaryVariant)

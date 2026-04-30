@@ -58,6 +58,13 @@ function getMediaSnapshot(media) {
 
   const watchProviders =
     media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+  const tags = Array.isArray(media?.tags)
+    ? media.tags
+    : Array.isArray(media?.keywords?.keywords)
+      ? media.keywords.keywords
+      : Array.isArray(media?.keywords?.results)
+        ? media.keywords.results
+        : [];
 
   return {
     entityId: media?.id,
@@ -76,6 +83,11 @@ function getMediaSnapshot(media) {
     providerNames: [],
     providers: [],
     runtime: Number.isFinite(Number(media?.runtime)) ? Number(media.runtime) : null,
+    tags: tags
+      .map((tag) => (tag && typeof tag === 'object' ? tag.name : tag))
+      .map((tag) => String(tag || '').trim())
+      .filter(Boolean)
+      .slice(0, 12),
     vote_average: media?.vote_average ?? null,
     vote_count: Number.isFinite(Number(media?.vote_count)) ? Number(media.vote_count) : null,
     watchProviders,
@@ -83,19 +95,15 @@ function getMediaSnapshot(media) {
 }
 
 function getActionPalette(palette, active) {
-  if (!active) {
-    return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80 text-black/70 hover:text-black';
-  }
-
-  if (palette === 'like') {
+  if (active && palette === 'like') {
     return 'border border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10';
   }
 
-  if (palette === 'watched' || palette === 'watchlist') {
+  if (active && (palette === 'watched' || palette === 'watchlist')) {
     return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
   }
 
-  return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
+  return 'border border-black/10 bg-primary/40 text-black/70 hover:border-black/20 hover:bg-primary/80 hover:text-black';
 }
 
 function ActionButton({
@@ -114,7 +122,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2  px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >
@@ -453,7 +461,6 @@ export default function CollectionActions({ media }) {
             icon="solar:clapperboard-play-bold"
             label="Go to Movie"
             onClick={handleGoToMovie}
-            palette="neutral"
           />
         </ActionMotionItem>
       ) : null}

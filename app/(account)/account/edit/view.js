@@ -12,10 +12,10 @@ import Icon from '@/ui/icon';
 import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'h-11 rounded-[14px] w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none transition-colors placeholder:text-black/50 focus:border-black';
+  'h-11 w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none transition-colors placeholder:text-black/50 focus:border-black';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  ' border rounded-[14px] border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
+  ' border border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
 const BUTTON_FRAME_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
 
@@ -340,12 +340,12 @@ export default function AccountEditView(props) {
                     </div>
 
                     <span
-                      className="flex h-6 w-11 rounded-full border border-black/15 bg-white p-px"
+                      className="flex h-6 w-11 border border-black/15 bg-white p-px"
                       aria-hidden="true"
                     >
                       <span
                         className={cn(
-                          'h-full w-5 rounded-full bg-black transition-transform',
+                          'h-full w-5 bg-black transition-transform',
                           form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0'
                         )}
                       />
@@ -357,7 +357,7 @@ export default function AccountEditView(props) {
               <div className="flex flex-col">
                 {!canUsePasswordSecurity ? (
                   <SectionCard title="Enable Password Sign-In">
-                    <div className="rounded-[14px] bg-black/5 p-3 text-sm leading-6 text-black/50">
+                    <div className="bg-black/5 p-3 text-sm leading-6 text-black/50">
                       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
                     </div>
                   </SectionCard>
@@ -514,7 +514,7 @@ export default function AccountEditView(props) {
                     tone="danger"
                     onClick={handleDeleteAccount}
                     disabled={deleteFlow.isSubmitting}
-                    className="w-full rounded-[14px]"
+                    className="w-full"
                   >
                     {deleteFlow.isSubmitting ? 'Deleting' : 'Delete Account'}
                   </ActionButton>

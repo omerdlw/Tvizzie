@@ -38,7 +38,7 @@ import { AuthGate } from '@/core/modules/auth';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 
-const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`;
+const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-section-body`;
 const MOBILE_MEDIA_QUERY = '(max-width: 1023px)';
 const MAX_ROWS_PER_PAGE = 8;
 const MOBILE_ITEMS_PER_PAGE = 3 * MAX_ROWS_PER_PAGE;
@@ -454,8 +454,8 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
       {canShowList && list ? (
         <>
           <AccountSectionReveal>
-            <header className="relative">
-              <div className={`${LIST_SECTION_SHELL_CLASS} pt-10 pb-8`}>
+            <header className="account-detail-grid-subsection">
+              <div className={LIST_SECTION_SHELL_CLASS}>
                 <div className="flex w-full flex-col gap-3">
                   <h1 className="w-full text-3xl font-bold tracking-tight sm:text-4xl">{list.title}</h1>
                   <p className="w-full text-sm leading-6 text-black/70">
@@ -467,121 +467,127 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
           </AccountSectionReveal>
 
           <AccountSectionReveal delay={0.06}>
-            <div className={`${LIST_SECTION_SHELL_CLASS} pb-12`}>
-              <ListDetailMediaGrid
-                emptyMessage={
-                  hasMediaFilters && listItems.length > 0 ? 'No titles match the current filters.' : undefined
-                }
-                isOwner={isOwner}
-                items={filteredListItems}
-                onRemoveItem={handleRemoveListItem}
-                userId={auth.user?.id || null}
-                toolbar={
-                  hasListItems ? (
-                    <>
-                      <AccountMediaFilterBar
-                        filters={mediaFilters}
-                        decadeOptions={decadeOptions}
-                        genreOptions={genreOptions}
-                        visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
-                        onChange={updateMediaFilters}
-                        onReset={hasMediaFilters ? resetMediaFilters : null}
-                      />
+            <div className="account-detail-grid-subsection">
+              <div className={LIST_SECTION_SHELL_CLASS}>
+                <ListDetailMediaGrid
+                  emptyMessage={
+                    hasMediaFilters && listItems.length > 0 ? 'No titles match the current filters.' : undefined
+                  }
+                  isOwner={isOwner}
+                  items={filteredListItems}
+                  onRemoveItem={handleRemoveListItem}
+                  userId={auth.user?.id || null}
+                  toolbar={
+                    hasListItems ? (
+                      <>
+                        <AccountMediaFilterBar
+                          filters={mediaFilters}
+                          decadeOptions={decadeOptions}
+                          genreOptions={genreOptions}
+                          visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
+                          onChange={updateMediaFilters}
+                          onReset={hasMediaFilters ? resetMediaFilters : null}
+                        />
 
-                      {hasMediaFilters ? (
-                        <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
-                          {filteredListItems.length} of {listItems.length} titles shown
-                        </p>
-                      ) : null}
-                    </>
-                  ) : null
-                }
-              />
+                        {hasMediaFilters ? (
+                          <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                            {filteredListItems.length} of {listItems.length} titles shown
+                          </p>
+                        ) : null}
+                      </>
+                    ) : null
+                  }
+                />
+              </div>
             </div>
           </AccountSectionReveal>
 
           <AccountSectionReveal delay={0.1}>
-            <div className={`${LIST_SECTION_SHELL_CLASS} pt-4 pb-20`}>
-              <ReviewHeader
-                itemLabel="comment"
-                showRatingSummary={false}
-                title="Comments"
-                totalReviews={reviews.length}
-              />
-
-              {hasListReviews ? (
-                <AccountReviewFilterBar
-                  className="mb-2"
-                  filters={reviewFilters}
-                  showRatingFilter={false}
-                  sortOptions={LIST_COMMENT_SORT_OPTIONS}
-                  visibilityOptions={[]}
-                  yearOptions={reviewYearOptions}
-                  onChange={updateReviewFilters}
-                  onReset={hasReviewFilters ? resetReviewFilters : null}
+            <div className="account-detail-grid-subsection">
+              <div className={LIST_SECTION_SHELL_CLASS}>
+                <ReviewHeader
+                  itemLabel="comment"
+                  showRatingSummary={false}
+                  title="Comments"
+                  totalReviews={reviews.length}
                 />
-              ) : null}
 
-              {hasListReviews && hasReviewFilters ? (
-                <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
-                  {filteredReviews.length} of {reviews.length} comments shown
-                </p>
-              ) : null}
-
-              {!isOwner && (
-                <AuthGate
-                  fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}
-                >
-                  <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
-                      <p className="text-xs text-black/70">
-                        {ownReview
-                          ? 'Open the comment composer to edit your text.'
-                          : 'Share your thoughts from the comment composer.'}
-                      </p>
-                    </div>
-                    <Button
-                      className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
-                      type="button"
-                      onClick={handleOpenReviewComposer}
-                    >
-                      {ownReview ? 'Edit Comment' : 'Add Comment'}
-                    </Button>
-                  </div>
-                </AuthGate>
-              )}
-              {visibleReviews.length === 0 ? (
-                <AccountInlineSectionState>
-                  {hasReviewFilters && reviews.length > 0
-                    ? 'No comments match the current filters.'
-                    : 'No comments yet'}
-                </AccountInlineSectionState>
-              ) : (
-                <ReviewList
-                  currentUserId={auth.user?.id || null}
-                  isLoading={false}
-                  loadError={null}
-                  onDeleteRequest={handleDeleteRequest}
-                  onEdit={handleEditReview}
-                  onLike={handleLikeReview}
-                  sortedReviews={visibleReviews}
-                  userProfile={userProfile}
-                />
-              )}
-
-              {totalReviewPages > 1 ? (
-                <div className="mt-4">
-                  <AccountPagination
-                    className="w-full"
-                    currentPage={safeCurrentReviewPage}
-                    totalPages={totalReviewPages}
-                    onPageChange={setCurrentReviewPage}
-                    prevAriaLabel="Go to previous review page"
-                    nextAriaLabel="Go to next review page"
+                {hasListReviews ? (
+                  <AccountReviewFilterBar
+                    filters={reviewFilters}
+                    showRatingFilter={false}
+                    sortOptions={LIST_COMMENT_SORT_OPTIONS}
+                    visibilityOptions={[]}
+                    yearOptions={reviewYearOptions}
+                    onChange={updateReviewFilters}
+                    onReset={hasReviewFilters ? resetReviewFilters : null}
                   />
-                </div>
-              ) : null}
+                ) : null}
+
+                {hasListReviews && hasReviewFilters ? (
+                  <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                    {filteredReviews.length} of {reviews.length} comments shown
+                  </p>
+                ) : null}
+
+                {!isOwner && (
+                  <AuthGate
+                    fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}
+                  >
+                    <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">
+                          {ownReview ? 'Update your comment' : 'Write a comment'}
+                        </p>
+                        <p className="text-xs text-black/70">
+                          {ownReview
+                            ? 'Open the comment composer to edit your text.'
+                            : 'Share your thoughts from the comment composer.'}
+                        </p>
+                      </div>
+                      <Button
+                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2  border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                        type="button"
+                        onClick={handleOpenReviewComposer}
+                      >
+                        {ownReview ? 'Edit Comment' : 'Add Comment'}
+                      </Button>
+                    </div>
+                  </AuthGate>
+                )}
+                {visibleReviews.length === 0 ? (
+                  <AccountInlineSectionState>
+                    {hasReviewFilters && reviews.length > 0
+                      ? 'No comments match the current filters.'
+                      : 'No comments yet'}
+                  </AccountInlineSectionState>
+                ) : (
+                  <ReviewList
+                    currentUserId={auth.user?.id || null}
+                    isLoading={false}
+                    loadError={null}
+                    onDeleteRequest={handleDeleteRequest}
+                    onEdit={handleEditReview}
+                    onLike={handleLikeReview}
+                    showTopBorder={false}
+                    sortedReviews={visibleReviews}
+                    userProfile={userProfile}
+                  />
+                )}
+
+                {totalReviewPages > 1 ? (
+                  <div className="mt-4">
+                    <AccountPagination
+                      className="w-full"
+                      currentPage={safeCurrentReviewPage}
+                      totalPages={totalReviewPages}
+                      onPageChange={setCurrentReviewPage}
+                      prevAriaLabel="Go to previous review page"
+                      nextAriaLabel="Go to next review page"
+                    />
+                  </div>
+                ) : null}
+              </div>
             </div>
           </AccountSectionReveal>
         </>

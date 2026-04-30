@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
-import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -99,15 +98,9 @@ export default function AccountFavoritesOverview({
       titleHref={titleHref}
     >
       {cards.length > 0 ? (
-        <div className="flex gap-3 overflow-hidden">
+        <div className="account-overview-media-grid account-overview-media-grid-favorites">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div
-              key={`${card.id}-${index}`}
-              className={cn(
-                'flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-48px)/5)]',
-                index >= 3 && 'hidden lg:block'
-              )}
-            >
+            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
               <MediaCard
                 className="w-full md:w-full lg:w-full"
                 href={card.href}

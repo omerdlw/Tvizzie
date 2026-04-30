@@ -349,7 +349,10 @@ function createDerivedActivityItem({ actor = {}, details = {}, eventType, occurr
 }
 
 function createDerivedCollectionActivityItem(resource, item, actor) {
-  const subject = resource === 'lists' ? createDerivedListSubject(item, actor) : createDerivedMediaSubject(item);
+  const subject =
+    resource === 'lists' || resource === 'liked-lists'
+      ? createDerivedListSubject(item, actor)
+      : createDerivedMediaSubject(item);
 
   if (!subject) {
     return null;
@@ -386,6 +389,13 @@ function createDerivedCollectionActivityItem(resource, item, actor) {
         actor,
         eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
         occurredAt: item?.updatedAt || item?.createdAt,
+        subject,
+      });
+    case 'liked-lists':
+      return createDerivedActivityItem({
+        actor,
+        eventType: ACTIVITY_EVENT_TYPES.LIST_LIKED,
+        occurredAt: item?.likedAt || item?.updatedAt || item?.createdAt,
         subject,
       });
     default:
@@ -431,7 +441,7 @@ function createDerivedReviewActivityItem(review = {}, actor = {}) {
 
 async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId, viewerId = null }) {
   const fetchLimit = resolveDerivedFetchLimit(offset, pageSize);
-  const [profile, likes, watchlist, watched, lists, reviewFeed] = await Promise.all([
+  const [profile, likes, watchlist, watched, lists, likedLists, reviewFeed] = await Promise.all([
     getAccountProfileByUserId(userId, { viewerId }).catch(() => null),
     getCollectionResource({
       limitCount: fetchLimit,
@@ -461,6 +471,13 @@ async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId
       userId,
       viewerId,
     }).catch(() => []),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'liked-lists',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
     fetchProfileReviewFeedServer({
       mode: 'authored',
       pageSize: fetchLimit,
@@ -477,6 +494,9 @@ async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId
     ),
     ...(Array.isArray(watched) ? watched : []).map((item) => createDerivedCollectionActivityItem('watched', item, actor)),
     ...(Array.isArray(lists) ? lists : []).map((item) => createDerivedCollectionActivityItem('lists', item, actor)),
+    ...(Array.isArray(likedLists) ? likedLists : []).map((item) =>
+      createDerivedCollectionActivityItem('liked-lists', item, actor)
+    ),
     ...(Array.isArray(reviewFeed?.items) ? reviewFeed.items : []).map((item) => createDerivedReviewActivityItem(item, actor)),
   ];
 
@@ -589,6 +609,10 @@ function projectActivityLine(item = {}, viewerId = null) {
     case ACTIVITY_EVENT_TYPES.LIST_COMMENTED:
       return {
         parts: [actorPart, createTextPart(' commented on '), ...buildListReferenceParts(item, viewerId)],
+      };
+    case ACTIVITY_EVENT_TYPES.LIST_LIKED:
+      return {
+        parts: [actorPart, createTextPart(' liked '), ...buildListReferenceParts(item, viewerId)],
       };
     case ACTIVITY_EVENT_TYPES.REVIEW_LIKED: {
       const reviewOwnerLabel = item?.details?.reviewOwnerDisplayName || item?.details?.reviewOwnerUsername || 'Someone';

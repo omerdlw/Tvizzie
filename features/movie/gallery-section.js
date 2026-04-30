@@ -18,8 +18,8 @@ export default function GallerySection({ images }) {
 
   return (
     <MovieSurfaceReveal>
-      <section className="flex w-full flex-col gap-3">
-        <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Gallery</h2>
+      <section className="movie-detail-section-content w-full">
+        <h2 className="text-xs font-semibold tracking-widest text-black/70 uppercase">Gallery</h2>
         <Carousel gap="gap-3">
           {images.map((image, index) => {
             const cardMotion = getSurfaceItemMotion({
@@ -50,7 +50,7 @@ export default function GallerySection({ images }) {
                   imagePriority={index < 3}
                   fallbackIconSize={24}
                   imageSizes="288px"
-                  className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
+                  className="movie-carousel-feature-card"
                   data-backdrop-file-path={image.file_path || ''}
                   data-context-menu-target="movie-backdrop-card"
                 />

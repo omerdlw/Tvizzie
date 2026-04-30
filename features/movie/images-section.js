@@ -20,7 +20,7 @@ const TABS = Object.freeze([
     key: 'backdrops',
     label: 'Backdrops',
     aspect: 'aspect-video',
-    width: 'w-[min(18rem,calc(100vw-4.5rem))] sm:w-72',
+    width: 'movie-carousel-feature-card',
     size: 'w780',
     sizes: '288px',
   },
@@ -28,7 +28,7 @@ const TABS = Object.freeze([
     key: 'posters',
     label: 'Posters',
     aspect: 'aspect-2/3',
-    width: 'w-36',
+    width: 'movie-carousel-poster-card',
     size: 'w342',
     sizes: '144px',
   },
@@ -36,7 +36,7 @@ const TABS = Object.freeze([
     key: 'logos',
     label: 'Logos',
     aspect: 'aspect-video',
-    width: 'w-[min(13rem,calc(100vw-5rem))] sm:w-52',
+    width: 'movie-carousel-logo-card',
     size: 'w500',
     sizes: '208px',
   },
@@ -103,13 +103,13 @@ export default function ImagesSection({ images }) {
 
   return (
     <MovieSurfaceReveal>
-      <section className="flex w-full flex-col gap-3">
+      <section className="movie-detail-section-content w-full">
         <SegmentedControl
           classNames={{
             track: ' w-auto',
-            wrapper: 'p-0.5 rounded-[12px]',
-            button: 'rounded-[9px]',
-            indicator: 'rounded-[9px]',
+            wrapper: 'p-0.5 ',
+            button: '',
+            indicator: '',
           }}
           items={availableTabs}
           value={activeKey}

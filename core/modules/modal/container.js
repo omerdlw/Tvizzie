@@ -33,7 +33,7 @@ function getBodyClassName(position, bodyClassName) {
 
   return cn(
     'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain',
-    sideModal ? 'rounded-none sm:rounded-[14px]' : 'rounded-[14px]',
+    sideModal ? ' ' : '',
     bodyClassName
   );
 }
@@ -64,7 +64,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center  border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>

@@ -509,6 +509,11 @@ export async function getAccountCollectionResource({
 
     assertResult(likesResult, 'Liked lists could not be loaded');
 
+    const likedAtByListId = new Map(
+      (likesResult.data || [])
+        .map((row) => [row.list_id, normalizeTimestamp(row.created_at)])
+        .filter(([listId]) => Boolean(listId))
+    );
     const listIds = [...new Set((likesResult.data || []).map((row) => row.list_id))];
 
     if (listIds.length === 0) {
@@ -532,10 +537,13 @@ export async function getAccountCollectionResource({
     );
 
     return listRows
-      .map((row) => normalizeListRow(row, likesMap))
+      .map((row) => ({
+        ...normalizeListRow(row, likesMap),
+        likedAt: likedAtByListId.get(row.id) || null,
+      }))
       .sort((left, right) => {
-        const leftTime = left?.updatedAt ? new Date(left.updatedAt).getTime() : 0;
-        const rightTime = right?.updatedAt ? new Date(right.updatedAt).getTime() : 0;
+        const leftTime = left?.likedAt ? new Date(left.likedAt).getTime() : 0;
+        const rightTime = right?.likedAt ? new Date(right.likedAt).getTime() : 0;
 
         if (rightTime !== leftTime) {
           return rightTime - leftTime;

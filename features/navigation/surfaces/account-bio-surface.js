@@ -10,7 +10,7 @@ export default function AccountBioSurface({ description = '', onClose = null, ti
 
   return (
     <motion.section
-      className="overflow-hidden rounded-[14px]"
+      className="overflow-hidden "
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
@@ -21,7 +21,7 @@ export default function AccountBioSurface({ description = '', onClose = null, ti
         <motion.button
           type="button"
           onClick={() => onClose?.()}
-          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center  border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
           aria-label="Close bio"
           whileTap={{ scale: 0.94 }}
           whileHover={{ scale: 1.03 }}

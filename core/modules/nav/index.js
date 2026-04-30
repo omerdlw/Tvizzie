@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -13,11 +13,7 @@ import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
 import { NAV_HEIGHT_BUFFER } from './layout';
-import {
-  NAV_BACKDROP_TRANSITION,
-  NAV_CONTAINER_SPRING,
-  NAV_DEFAULT_TRANSITION,
-} from './motion';
+import { NAV_BACKDROP_TRANSITION, NAV_CONTAINER_SPRING } from './motion';
 
 // ─── Viewport-safe height calculation ───────────────────────────────────────
 
@@ -373,7 +369,7 @@ export default function Nav() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   const navContent = (
-    <MotionConfig transition={NAV_DEFAULT_TRANSITION}>
+    <>
       {/* Backdrop */}
       <motion.div
         className="fixed inset-0 cursor-pointer"
@@ -471,7 +467,7 @@ export default function Nav() {
           </AnimatePresence>
         </motion.div>
       </div>
-    </MotionConfig>
+    </>
   );
 
   if (!portalTarget) return null;

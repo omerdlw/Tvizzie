@@ -20,7 +20,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center rounded-[12px] w-full cursor-pointer gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-[200ms]',
+    'center  w-full cursor-pointer gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-[200ms]',
     resolveButtonTone(tone),
     className
   );

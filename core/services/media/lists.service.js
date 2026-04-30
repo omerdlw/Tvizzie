@@ -798,7 +798,7 @@ export async function toggleListLike({ ownerId, listId, userId }) {
   const client = getSupabaseClient();
   const listResult = await client
     .from('lists')
-    .select('slug,title,payload')
+    .select('slug,title,payload,poster_path')
     .eq('id', listId)
     .eq('user_id', ownerId)
     .maybeSingle();
@@ -824,6 +824,7 @@ export async function toggleListLike({ ownerId, listId, userId }) {
     const listOwnerUsername = listResult.data?.payload?.ownerSnapshot?.username || null;
     const listTitle = listResult.data.title || listResult.data?.payload?.title || 'Untitled List';
     const listSlug = listResult.data.slug || listId;
+    const listPoster = listResult.data?.payload?.coverUrl || listResult.data?.poster_path || null;
 
     fireNotificationEvent(NOTIFICATION_EVENT_TYPES.LIST_LIKED, {
       listOwnerId: ownerId,
@@ -833,6 +834,28 @@ export async function toggleListLike({ ownerId, listId, userId }) {
       subjectId: listId,
       subjectOwnerId: ownerId,
       subjectOwnerUsername: listOwnerUsername,
+      subjectSlug: listSlug,
+      subjectTitle: listTitle,
+      subjectType: 'list',
+    });
+    fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_LIKED, {
+      dedupeKey: buildCanonicalActivityDedupeKey({
+        actorUserId: userId,
+        primaryRef: buildActivitySubjectRef({
+          subjectId: listId,
+          subjectType: 'list',
+        }),
+        secondaryRef: ownerId,
+        slotType: ACTIVITY_SLOT_TYPES.LIST_LIKE,
+      }),
+      listId,
+      listSlug,
+      listTitle,
+      ownerUsername: listOwnerUsername,
+      subjectId: listId,
+      subjectOwnerId: ownerId,
+      subjectOwnerUsername: listOwnerUsername,
+      subjectPoster: listPoster,
       subjectSlug: listSlug,
       subjectTitle: listTitle,
       subjectType: 'list',

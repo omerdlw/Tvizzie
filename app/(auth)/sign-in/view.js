@@ -39,12 +39,9 @@ export default function View({
 
   if (isResetMode) {
     return (
-      <AuthPageShell>
-        <form onSubmit={handleResetSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3">
-          <div className="text-center">
-            <h1 className="text-3xl font-semibold sm:text-4xl">Reset Password</h1>
-            <p className="mt-2 text-base text-black/50">{resetFlow.email}</p>
-          </div>
+      <AuthPageShell title="Reset Password">
+        <form onSubmit={handleResetSubmit} className="flex w-full flex-col gap-4">
+          <p className="text-center text-base text-black/50">{resetFlow.email}</p>
 
           <Input
             id="reset-password"
@@ -110,16 +107,9 @@ export default function View({
   }
 
   return (
-    <AuthPageShell>
-      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3">
-        <div className="flex flex-col items-center text-center">
-          <Link href="/" className="mb-6 block transition-transform hover:scale-[1.02]">
-            <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
-          </Link>
-          <h1 className="text-3xl font-semibold sm:text-4xl">Welcome back</h1>
-        </div>
-
-        <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
+    <AuthPageShell title="Welcome back">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+        <AuthField htmlFor="sign-in-identifier" label="Username or Email">
           <Input
             id="sign-in-identifier"
             value={identifier}
@@ -164,7 +154,7 @@ export default function View({
           <div className="h-px grow bg-black/10" />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {OAUTH_PROVIDER_KEYS.map((provider) => (
             <OAuthProviderButton
               key={provider}

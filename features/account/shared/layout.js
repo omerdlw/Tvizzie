@@ -14,7 +14,6 @@ import {
 export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
 import AccountHero from './hero';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
-import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import NotFoundTemplate from '@/features/app-shell/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
@@ -31,6 +30,19 @@ const SECTION_ITEMS = [
 
 const DEFAULT_NOT_FOUND_DESCRIPTION =
   "We couldn't load this account. It may have been removed, or the link may be invalid.";
+
+function AccountHeroGridDivider() {
+  return (
+    <div className="account-detail-grid-divider" aria-hidden="true">
+      <span className="account-detail-grid-divider-startcap">
+        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-start" />
+      </span>
+      <span className="account-detail-grid-divider-endcap">
+        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-end" />
+      </span>
+    </div>
+  );
+}
 
 function getSectionHref(username, key) {
   const basePath = `/account/${username}`;
@@ -81,7 +93,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-[14px] border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
+                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center  border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
                     isActive
                       ? 'border-black bg-black text-white'
                       : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'
@@ -177,27 +189,32 @@ export default function ProfileLayout({
   const profileHandle = username || profile?.username || null;
 
   return (
-    <PageGradientShell className="overflow-hidden">
-      <div className="relative">
-        <AccountHeroReveal>
-          <AccountHero
-            profile={profile}
-            likesCount={likesCount}
-            followerCount={followerCount}
-            followingCount={followingCount}
-            listsCount={listsCount}
-            onOpenFollowList={onOpenFollowList}
-            watchedCount={watchedCount}
-            watchlistCount={watchlistCount}
-            onReadMore={onReadMore}
-          />
-        </AccountHeroReveal>
-        <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
-          <AccountSectionNav activeKey={activeSection} username={profileHandle} />
-        </AccountNavReveal>
+    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-white">
+      <div className={cn('account-detail-grid-frame relative flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}>
+        <div className="relative">
+          <AccountHeroReveal>
+            <AccountHero
+              profile={profile}
+              likesCount={likesCount}
+              followerCount={followerCount}
+              followingCount={followingCount}
+              listsCount={listsCount}
+              onOpenFollowList={onOpenFollowList}
+              watchedCount={watchedCount}
+              watchlistCount={watchlistCount}
+              onReadMore={onReadMore}
+            />
+          </AccountHeroReveal>
+          <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+            <AccountSectionNav activeKey={activeSection} username={profileHandle} />
+          </AccountNavReveal>
+        </div>
+        <div className="account-detail-hero-divider">
+          <AccountHeroGridDivider />
+        </div>
+        <main className="account-detail-grid-main">{children}</main>
+        <NavHeightSpacer />
       </div>
-      <main>{children}</main>
-      <NavHeightSpacer />
-    </PageGradientShell>
+    </div>
   );
 }

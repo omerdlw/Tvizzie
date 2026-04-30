@@ -289,6 +289,20 @@ function buildEventRecord({ actor, eventType, occurredAt, payload = {}, visibili
         version: 2,
         visibility,
       };
+    case ACTIVITY_EVENT_TYPES.LIST_LIKED:
+      return {
+        details: {},
+        eventType,
+        occurredAt,
+        primaryRef: subjectRef,
+        renderKind: 'text',
+        reviewCard: null,
+        secondaryRef: subject.ownerId || '-',
+        slotType: ACTIVITY_SLOT_TYPES.LIST_LIKE,
+        subject,
+        version: 2,
+        visibility,
+      };
     case ACTIVITY_EVENT_TYPES.REVIEW_LIKED: {
       const details = buildReviewLikeDetails(payload);
 
@@ -509,6 +523,13 @@ export async function deleteActivityEvents({ action, actorUserId, listId, subjec
       admin,
       buildActivityDedupeLikePattern({
         slotType: ACTIVITY_SLOT_TYPES.LIST_OPINION,
+        primaryRef,
+      })
+    );
+    await deleteByDedupePattern(
+      admin,
+      buildActivityDedupeLikePattern({
+        slotType: ACTIVITY_SLOT_TYPES.LIST_LIKE,
         primaryRef,
       })
     );

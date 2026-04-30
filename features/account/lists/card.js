@@ -117,10 +117,10 @@ function PreviewPoster({ index, isHovered, item, total }) {
           <motion.img
             src={imageSrc}
             alt={item.title || item.name || 'Poster'}
-            className="h-full w-full rounded-[10px] object-cover"
+            className="h-full w-full  object-cover"
             initial={false}
             animate={{
-              filter: `brightness(${brightness}) rounded-[10px] contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75}px)`,
+              filter: `brightness(${brightness})  contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75}px)`,
             }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           />
@@ -156,7 +156,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
       style={{ zIndex }}
     >
       <div
-        className="rounded-[10px] border border-dashed border-black/10 bg-white"
+        className=" border border border-black/10 bg-white"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -226,7 +226,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <motion.div
-            className="relative z-0 rounded-[14px] border border-black/10 bg-white"
+            className="relative z-0  border border-black/10 bg-white"
             initial={false}
             animate={{
               rotateX: isHovered ? 12 : 0,
@@ -282,7 +282,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-[14px] border border-black/10 bg-white/80"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  border border-black/10 bg-white/80"
             initial={false}
             animate={{
               rotateX: isHovered ? -20 : 0,

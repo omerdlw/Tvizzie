@@ -89,7 +89,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
       <button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5  px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -105,7 +105,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
 
       <span className="text-[10px] text-black/20">/</span>
 
-      <span className="bg-primary rounded-[10px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="bg-primary  px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </div>
@@ -233,16 +233,16 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         <div
           className={cn(
             'relative flex flex-col',
-            isMobileSideModal ? 'rounded-none' : 'rounded-[20px]',
+            isMobileSideModal ? '' : '',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && 'rounded-t-none',
-            isPanelChrome && isBottomModalPosition && 'rounded-b-none',
+            isPanelChrome && isTopModalPosition && '',
+            isPanelChrome && isBottomModalPosition && '',
             isPanelChrome &&
               isSideModal && [
                 'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
-                isLeftModal ? 'sm:rounded-l-none sm:border-l-0' : 'sm:rounded-r-none sm:border-r-0',
+                isLeftModal ? ' sm:border-l-0' : ' sm:border-r-0',
               ]
           )}
         >

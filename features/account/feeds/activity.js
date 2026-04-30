@@ -12,9 +12,9 @@ import AccountPagination from '@/features/account/shared/pagination';
 import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '../shared/section-wrapper';
+import AccountInlineSectionState from '../shared/section-state';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
-const STATE_MESSAGE_CLASS = 'bg-primary rounded-[10px] text-black/50 border border-black/5 p-3';
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -178,13 +178,15 @@ export default function AccountActivityFeed({
   let content = null;
 
   if (!hasVisibleItems && isLoading) {
-    content = <div className={STATE_MESSAGE_CLASS}>Loading activity</div>;
+    content = <AccountInlineSectionState>Loading activity</AccountInlineSectionState>;
   } else if (listedActivityCount === 0 && !isLoading && !loadError) {
     content = (
-      <div className={STATE_MESSAGE_CLASS}>{hasFilters ? 'No activity matches the current filters' : emptyMessage}</div>
+      <AccountInlineSectionState>
+        {hasFilters ? 'No activity matches the current filters' : emptyMessage}
+      </AccountInlineSectionState>
     );
   } else if (listedActivityCount === 0 && !isLoading && loadError) {
-    content = <div className={STATE_MESSAGE_CLASS}>{normalizeFeedbackText(loadError)}</div>;
+    content = <AccountInlineSectionState>{normalizeFeedbackText(loadError)}</AccountInlineSectionState>;
   } else {
     content = (
       <div>

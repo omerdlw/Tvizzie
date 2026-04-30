@@ -1,14 +1,14 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import { MovieSurfaceReveal, getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
+import { getSurfaceItemMotion, getSurfacePanelMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
@@ -25,7 +25,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
 
   if (!src) {
     return (
-      <div className="center h-full w-full rounded">
+      <div className="center h-full w-full ">
         <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-black/50" />
       </div>
     );
@@ -43,7 +43,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className="rounded-[9px] object-cover"
+      className=" object-cover"
       onError={() => setError(true)}
       wrapperClassName="h-full w-full"
     />
@@ -56,8 +56,8 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1 rounded-[12px]! p-1 pr-2' : 'p-1 pr-4',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3  border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
       <motion.div
@@ -132,6 +132,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   const shouldAnimateItemReveal = useInitialItemRevealEnabled();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
+  const panelMotion = getSurfacePanelMotion();
 
   const castEntries = useMemo(() => buildEntries(cast, 'character'), [cast]);
   const crewEntries = useMemo(
@@ -240,7 +241,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               initial={{ opacity: 0, y: 14, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.72, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0  border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </motion.button>
@@ -251,47 +252,34 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   };
 
   return (
-    <MovieSurfaceReveal>
-      <section className="relative flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <SegmentedControl
-            classNames={{
-              wrapper: 'p-0.5 rounded-[12px] backdrop-blur-xs bg-primary/30',
-              indicator: 'rounded-[9px]',
-            }}
-            value={activeTab}
-            onChange={setActiveTab}
-            items={tabs.map(({ key, label }) => ({ key, label }))}
-          />
-          {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
-        </div>
+    <section className="movie-detail-section-content relative w-full">
+      <div className="flex items-center justify-between gap-3">
+        <SegmentedControl
+          classNames={{
+            wrapper: 'p-0.5  backdrop-blur-xs bg-black/5 border border-black/10',
+            indicator: 'bg-primary',
+          }}
+          value={activeTab}
+          onChange={setActiveTab}
+          items={tabs.map(({ key, label }) => ({ key, label }))}
+        />
+        {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
+      </div>
 
-        <div className="relative overflow-hidden">
-          {tabs.length === 1 ? (
-            renderPanel(activeTabData.key, activeTabData.entries)
-          ) : (
-            <>
-              <div aria-hidden="true" className="invisible">
-                {renderPanel(activeTabData.key, activeTabData.entries)}
-              </div>
-
-              <div className="absolute inset-0 flex">
-                {tabs.map((tab, index) => (
-                  <motion.div
-                    key={tab.key}
-                    className="absolute inset-0"
-                    initial={false}
-                    animate={{ x: `${(index - activeIndex) * 100}%` }}
-                    transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }}
-                  >
-                    {renderPanel(tab.key, tab.entries)}
-                  </motion.div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-    </MovieSurfaceReveal>
+      <div className="relative w-full overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTabData.key}
+            initial={tabs.length > 1 ? panelMotion.initial : false}
+            animate={panelMotion.animate}
+            exit={tabs.length > 1 ? panelMotion.exit : undefined}
+            transition={panelMotion.transition}
+            className="w-full"
+          >
+            {renderPanel(activeTabData.key, activeTabData.entries)}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </section>
   );
 }

@@ -1,12 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
 import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
-import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
+import {
+  canUseNextImageOptimization,
+  cn,
+  formatDate,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+  resolveImageQuality,
+} from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
@@ -167,7 +174,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center  border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -177,7 +184,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
       <Button
         variant="destructive"
         disabled={disabled}
-        className="size-8 rounded-[10px]"
+        className="size-8 "
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -188,29 +195,45 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
   );
 }
 
-function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
+function ReviewVisual({ alt, fallbackSrc = null, isAccountVariant, isListSubject = false, previewItems = [], src }) {
+  const [resolvedSrc, setResolvedSrc] = useState(src || null);
+
+  useEffect(() => {
+    setResolvedSrc(src || null);
+  }, [src]);
+
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-[14px]'
-    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 rounded-[14px]';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] '
+    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 ';
+
+  const handleImageError = () => {
+    if (fallbackSrc && resolvedSrc !== fallbackSrc) {
+      setResolvedSrc(fallbackSrc);
+      return;
+    }
+
+    setResolvedSrc(null);
+  };
 
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
         <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
-      ) : src ? (
+      ) : resolvedSrc ? (
         <AdaptiveImage
           className={cn('object-cover', !isAccountVariant && '')}
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           fill
           sizes={isAccountVariant ? '(max-width: 640px) 64px, 72px' : '56px'}
           quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
           decoding="async"
-          unoptimized={!canUseNextImageOptimization(src)}
+          onError={handleImageError}
+          unoptimized={!canUseNextImageOptimization(resolvedSrc)}
           wrapperClassName="h-full w-full"
         />
       ) : (
-        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10">
+        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10 text-black/60">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -219,6 +242,10 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
       )}
     </div>
   );
+}
+
+function ReviewMetaSeparator() {
+  return <span className="text-black/35" aria-hidden="true">•</span>;
 }
 
 function isInteractiveTarget(target) {
@@ -233,7 +260,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[14px] border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3  border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
@@ -247,7 +274,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info group-hover:bg-primary shrink-0 rounded-[8px] p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
+      <span className="text-info group-hover:bg-primary shrink-0  p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
         Show
       </span>
     </button>
@@ -291,6 +318,7 @@ export default function ReviewCard({
   const formattedDate = timestamp ? formatDate(timestamp) : 'Just now';
   const accountHref = `/account/${username || review.user?.id || review.id}`;
   const visualSrc = isSubjectCardVariant ? getReviewPosterSrc(review) : getUserAvatarUrl(review.user);
+  const visualFallbackSrc = isSubjectCardVariant ? null : getUserAvatarFallbackUrl(review.user);
   const subjectHref = resolveSubjectHref(review, isSubjectCardVariant);
   const previewItems = Array.isArray(review.subjectPreviewItems) ? review.subjectPreviewItems : [];
   const reviewSubjectKey = review.subjectKey || review.mediaKey || null;
@@ -318,7 +346,7 @@ export default function ReviewCard({
       onClick={handleCardClick}
       className={cn(
         'relative border-b border-black/10 last:border-b-0',
-        isAccountVariant ? 'py-4 sm:py-5' : 'py-4 sm:py-5',
+        isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
         isSpoilerHidden && 'cursor-pointer',
         className
       )}
@@ -328,6 +356,7 @@ export default function ReviewCard({
           <div className="relative shrink-0">
             <ReviewVisual
               alt={isSubjectCardVariant ? review.subjectTitle || 'Poster' : displayName}
+              fallbackSrc={visualFallbackSrc}
               isAccountVariant={isSubjectCardVariant}
               isListSubject={review.subjectType === 'list'}
               previewItems={previewItems}
@@ -365,13 +394,17 @@ export default function ReviewCard({
                       {isOwnReview && <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm text-black/70">
                       {hasRating && <RatingStars rating={resolvedRating} />}
-                      {hasLikedSubject && <Icon icon="solar:heart-bold" size={16} className="text-error" />}
-                      {hasWatchedSubject && isRewatch && (
-                        <Icon icon="solar:refresh-bold" size={16} className="text-success" />
-                      )}
-                      <span>{activityLabel}</span>
+                      {hasRating && <ReviewMetaSeparator />}
+                      <span className="inline-flex items-center gap-1.5">
+                        {hasLikedSubject && <Icon icon="solar:heart-bold" size={16} className="text-error" />}
+                        {hasWatchedSubject && isRewatch && (
+                          <Icon icon="solar:refresh-bold" size={16} className="text-success" />
+                        )}
+                        <span>{activityLabel}</span>
+                      </span>
+                      <ReviewMetaSeparator />
                       <span className="text-xs sm:text-sm">{formattedDate}</span>
                     </div>
                   </>
@@ -413,12 +446,16 @@ export default function ReviewCard({
               <>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-black/70 sm:text-sm">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-black/70 sm:text-sm">
                       {hasRating && <RatingStars rating={resolvedRating} />}
-                      <span>{activityLabel}</span>
-                      <Link href={accountHref} className="font-semibold text-black transition-colors">
-                        {displayName}
-                      </Link>
+                      {hasRating && <ReviewMetaSeparator />}
+                      <span className="inline-flex items-center gap-1.5">
+                        <span>{activityLabel}</span>
+                        <Link href={accountHref} className="font-semibold text-black transition-colors">
+                          {displayName}
+                        </Link>
+                      </span>
+                      <ReviewMetaSeparator />
                       <span>{formattedDate}</span>
                     </div>
 
@@ -426,7 +463,7 @@ export default function ReviewCard({
                       isSpoilerHidden ? (
                         <SpoilerNotice onReveal={revealSpoiler} />
                       ) : (
-                        <p className="mt-1 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-base sm:leading-[1.65]">
+                        <p className="movie-detail-reading-measure mt-1 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-base sm:leading-[1.65]">
                           {review.content}
                         </p>
                       )

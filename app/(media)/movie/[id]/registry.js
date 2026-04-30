@@ -37,7 +37,7 @@ function renderMovieMetaDescription(parts = [], { compact = false, hasLeadingRat
   const containerClassName = ['flex items-center', compact ? 'gap-1' : 'gap-1.5'].join(' ');
   const ratingClassName = [
     'text-warning inline-flex items-center font-semibold leading-none',
-    compact ? 'gap-1 text-[11px]' : 'gap-1.5 text-sm',
+    compact ? 'gap-1 text-xs' : 'gap-1.5 text-sm',
   ].join(' ');
 
   return (
@@ -165,6 +165,7 @@ export default function Registry({
         mode={isMovieReviewsRoute ? 'sort' : 'watch'}
         isActive={isWatchProvidersVisible}
         onToggle={() => setIsWatchProvidersVisible((value) => !value)}
+        socialProofMedia={{ ...movie, entityType: 'movie' }}
         sortMode={activeSortMode}
         onSortChange={handleSortChange}
       />

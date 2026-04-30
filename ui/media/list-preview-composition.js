@@ -33,12 +33,12 @@ export default function ListPreviewComposition({
   const previewItems = Array.isArray(items) ? items.slice(0, 3) : [];
 
   return (
-    <div className={cn('grid h-full w-full grid-cols-3 overflow-hidden border border-[#0284c7]', className)}>
+    <div className={cn('grid h-full w-full grid-cols-3 overflow-hidden', className)}>
       {previewItems.length > 0 ? (
         previewItems.map((item, index) => (
           <div
             key={item.mediaKey || `${item.entityType || 'movie'}-${item.entityId || item.id || index}-${index}`}
-            className="h-full overflow-hidden border-r border-[#0284c7] last:border-r-0"
+            className="h-full overflow-hidden"
           >
             {getPreviewImage(item) ? (
               <AdaptiveImage

@@ -56,18 +56,11 @@ export default function SignUpView({
               : 'Verify and create';
 
   return (
-    <AuthPageShell>
-      <form onSubmit={handleStepSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3">
-        <div className="flex flex-col items-center text-center">
-          <Link href="/" className="mb-6 block transition-transform hover:scale-[1.02]">
-            <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
-          </Link>
-          <h1 className="text-3xl font-semibold sm:text-4xl">{stepTitle}</h1>
-        </div>
-
+    <AuthPageShell title={stepTitle}>
+      <form onSubmit={handleStepSubmit} className="flex w-full flex-col gap-4">
         {currentStep === 0 ? (
           <>
-            <AuthField className="pt-1" htmlFor="sign-up-email" label="Email">
+            <AuthField htmlFor="sign-up-email" label="Email">
               <Input
                 id="sign-up-email"
                 type="email"
@@ -89,7 +82,7 @@ export default function SignUpView({
               <div className="h-px grow bg-black/10" />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {OAUTH_PROVIDER_KEYS.map((provider) => (
                 <OAuthProviderButton
                   key={provider}
@@ -106,7 +99,7 @@ export default function SignUpView({
 
         {currentStep === 1 ? (
           <>
-            <AuthField className="pt-1" htmlFor="sign-up-username" label="Username">
+            <AuthField htmlFor="sign-up-username" label="Username">
               <Input
                 id="sign-up-username"
                 value={form.username}
@@ -132,7 +125,7 @@ export default function SignUpView({
 
         {currentStep === 2 ? (
           <>
-            <AuthField className="pt-1" htmlFor="sign-up-password" label="Password">
+            <AuthField htmlFor="sign-up-password" label="Password">
               <Input
                 id="sign-up-password"
                 type={showPassword ? 'text' : 'password'}
@@ -158,7 +151,7 @@ export default function SignUpView({
                     size={16}
                     className="shrink-0"
                   />
-                  <span>{requirement.label}</span>
+                  <span className="min-w-0">{requirement.label}</span>
                 </div>
               ))}
             </div>

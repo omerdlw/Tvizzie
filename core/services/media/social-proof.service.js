@@ -18,25 +18,52 @@ function createEmptyProofGroup() {
 
 function createEmptyMediaSocialProof() {
   return {
-    reviews: createEmptyProofGroup(),
+    followingCount: 0,
+    highlights: [],
     likes: createEmptyProofGroup(),
+    lists: {
+      count: 0,
+      previewLists: [],
+      previewUsers: [],
+      users: [],
+    },
+    scope: 'following',
+    reviews: createEmptyProofGroup(),
+    similarTaste: {
+      count: 0,
+      previewTitles: [],
+    },
+    watched: createEmptyProofGroup(),
     watchlist: createEmptyProofGroup(),
   };
 }
 
-async function fetchMediaSocialProof({ media, viewerId }) {
+function normalizeKnownMovieIds(value = []) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .map((item) => String(item?.id ?? item?.entityId ?? item ?? '').trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 30);
+}
+
+async function fetchMediaSocialProof({ media, viewerId, knownMovieIds = [] }) {
   if (!viewerId || !media) {
     return createEmptyMediaSocialProof();
   }
 
   const mediaSnapshot = createMediaSnapshot(media);
 
-  if (
-    !isMovieMediaType(mediaSnapshot.entityType) ||
-    !mediaSnapshot.entityType ||
-    !mediaSnapshot.entityId ||
-    !mediaSnapshot.title
-  ) {
+  if (!mediaSnapshot.entityType || !mediaSnapshot.entityId || !mediaSnapshot.title) {
+    return createEmptyMediaSocialProof();
+  }
+
+  if (!isMovieMediaType(mediaSnapshot.entityType)) {
     return createEmptyMediaSocialProof();
   }
 
@@ -44,18 +71,20 @@ async function fetchMediaSocialProof({ media, viewerId }) {
     query: {
       entityId: mediaSnapshot.entityId,
       entityType: mediaSnapshot.entityType,
+      knownMovieIds: normalizeKnownMovieIds(knownMovieIds).join(','),
     },
   });
 
   return payload?.data || createEmptyMediaSocialProof();
 }
 
-export function subscribeToMediaSocialProof({ media, viewerId }, callback, options = {}) {
-  return createPollingSubscription(() => fetchMediaSocialProof({ media, viewerId }), callback, {
+export function subscribeToMediaSocialProof({ media, viewerId, knownMovieIds = [] }, callback, options = {}) {
+  return createPollingSubscription(() => fetchMediaSocialProof({ media, viewerId, knownMovieIds }), callback, {
     ...options,
     subscriptionKey: buildPollingSubscriptionKey('social-proof:media', {
       entityId: media?.entityId ?? media?.id ?? null,
       entityType: media?.entityType ?? media?.media_type ?? null,
+      knownMovieIds: normalizeKnownMovieIds(knownMovieIds).join('|'),
       viewerId,
     }),
   });

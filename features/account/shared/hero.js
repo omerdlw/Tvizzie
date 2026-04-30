@@ -12,23 +12,14 @@ import Link from 'next/link';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
-const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
-const ACCOUNT_HERO_IMAGE_CLASS =
-  'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
-const ACCOUNT_HERO_BANNER_WRAPPER_CLASS =
-  'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
-const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS =
-  'account-hero-ambient-overlay absolute inset-0';
-const ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const ACCOUNT_HERO_LEFT_FADE_CLASS =
-  'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const ACCOUNT_HERO_RIGHT_FADE_CLASS =
-  'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const ACCOUNT_HERO_TOP_FADE_CLASS =
-  'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
-const ACCOUNT_HERO_TINT_CLASS = 'account-hero-tint-overlay absolute inset-0';
-const ACCOUNT_HERO_CENTER_GLOW_CLASS =
-  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
+const ACCOUNT_HERO_HEIGHT_CLASS = 'account-hero-height';
+const ACCOUNT_HERO_IMAGE_CLASS = 'account-hero-image';
+const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = 'account-hero-banner-wrapper';
+const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = 'account-hero-bottom-gradient absolute inset-x-0 bottom-0';
+const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS =
+  'account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0';
+const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS =
+  'account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -255,7 +246,7 @@ export default function AccountHero({
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
 
   return (
-    <section className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}>
+    <section className={`relative w-full overflow-hidden ${ACCOUNT_HERO_HEIGHT_CLASS}`}>
       {heroBannerSrc ? (
         <div className="absolute inset-0">
           <AdaptiveImage
@@ -270,22 +261,18 @@ export default function AccountHero({
           />
         </div>
       ) : null}
-      <div className={ACCOUNT_HERO_TINT_CLASS} />
-      <div className={ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS} />
-      <div className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS} />
-      <div className={ACCOUNT_HERO_LEFT_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_RIGHT_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_TOP_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_CENTER_GLOW_CLASS} />
+      <div className={ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS} aria-hidden="true" />
+      <div className={ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS} aria-hidden="true" />
+      <div className={ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS} aria-hidden="true" />
       <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
+        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative z-10 flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <AdaptiveImage
                 mode="img"
-                className="h-full w-full rounded-[20px] object-cover"
+                className="h-full w-full object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
                 decoding="async"

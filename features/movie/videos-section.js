@@ -59,13 +59,13 @@ export default function VideosSection({ videos }) {
 
   return (
     <MovieSurfaceReveal>
-      <section className="flex w-full flex-col gap-3">
+      <section className="movie-detail-section-content w-full">
         <SegmentedControl
           classNames={{
             track: ' w-auto',
-            wrapper: 'p-0.5 rounded-[12px]',
-            button: 'rounded-[9px]',
-            indicator: 'rounded-[9px]',
+            wrapper: 'p-0.5 ',
+            button: '',
+            indicator: '',
           }}
           items={items}
           value={activeType}
@@ -113,7 +113,7 @@ export default function VideosSection({ videos }) {
                           <>
                             <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
                               <motion.div
-                                className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm"
+                                className="center text-primary size-8  border border-white/20 bg-white/20 backdrop-blur-sm"
                                 whileHover={{ scale: 1.08 }}
                                 transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
                               >

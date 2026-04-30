@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/core/utils';
+import { cn, normalizeFeedbackText } from '@/core/utils';
 
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';
@@ -10,6 +10,7 @@ import ReviewCard from './review-card';
 export default function ReviewList({
   currentUserId,
   displayVariant = 'media',
+  emptyMessage = 'No written reviews yet',
   isLoading,
   likedMediaKeys = null,
   loadError,
@@ -18,6 +19,7 @@ export default function ReviewList({
   onLike,
   rewatchMediaKeys = null,
   showOwnActions = true,
+  showTopBorder = true,
   showSubject = false,
   sortedReviews,
   userProfile,
@@ -32,11 +34,19 @@ export default function ReviewList({
   }
 
   if (sortedReviews.length === 0) {
-    return <div className="py-4 text-center text-sm leading-relaxed text-black/70">No ratings or reviews yet</div>;
+    return <div className="py-4 text-center text-sm leading-relaxed text-black/70">{emptyMessage}</div>;
   }
 
+  const isAccountVariant = displayVariant === 'account';
+
   return (
-    <div className="flex flex-col">
+    <div
+      className={cn(
+        'flex flex-col',
+        isAccountVariant && 'account-review-list-frame',
+        !isAccountVariant && showTopBorder && 'media-reviews-plus-line border-t border-black/10 grid-diamonds-top'
+      )}
+    >
       {sortedReviews.map((review, index) => {
         const isOwnReview = review.user?.id === currentUserId;
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
@@ -45,6 +55,12 @@ export default function ReviewList({
           <motion.div
             key={review.docPath || review.id || `review-${index}`}
             layout
+            className={cn(
+              'relative',
+              isAccountVariant && 'account-review-list-item',
+              index < sortedReviews.length - 1 && 'border-b border-black/10',
+              !isAccountVariant && index < sortedReviews.length - 1 && 'grid-diamonds-bottom'
+            )}
             initial={{ opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
             whileInView={{
               opacity: 1,
@@ -85,7 +101,7 @@ export default function ReviewList({
             style={{ willChange: 'transform, opacity, filter' }}
           >
             <ReviewCard
-              className={sortedReviews[0] === review ? 'pt-0 pb-6' : ''}
+              className="!border-b-0"
               review={mergedReview}
               currentUserId={currentUserId}
               displayVariant={displayVariant}

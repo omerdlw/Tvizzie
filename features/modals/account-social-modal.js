@@ -34,7 +34,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0  border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
 const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`;
 const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${SUCCESS_ACTION_TONE_CLASS}`;
 const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${INFO_ACTION_TONE_CLASS}`;
@@ -88,10 +88,10 @@ function LoadingList() {
     <div>
       {Array.from({ length: 10 }, (_, index) => (
         <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+          <div className="size-10 shrink-0 animate-pulse  bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse rounded-[10px] bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse rounded-[10px] bg-black/5" />
+            <div className="h-3 w-3/5 animate-pulse  bg-black/5" />
+            <div className="h-2 w-2/5 animate-pulse  bg-black/5" />
           </div>
         </div>
       ))}
@@ -116,9 +116,9 @@ function SocialUserRow({ close, user, action }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0 rounded-[10px] object-cover"
+          className="size-10 shrink-0  object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0 rounded-[10px]"
+          wrapperClassName="size-10 shrink-0 "
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
@@ -483,8 +483,8 @@ export default function AccountSocialModal({ close, data }) {
           items={tabs}
           classNames={{
             wrapper: 'bg-transparent border-none',
-            button: 'flex-1 justify-center rounded-[16px] px-4 py-2 text-[13px]',
-            indicator: 'rounded-[16px] bg-black',
+            button: 'flex-1 justify-center  px-4 py-2 text-[13px]',
+            indicator: ' bg-black',
             inactive: 'text-black/50 hover:text-black',
             active: 'text-white font-semibold',
           }}

@@ -2,6 +2,7 @@
   "name": "tvizzie",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
     "analyze": "ANALYZE=true next build --webpack",
@@ -34,7 +35,6 @@
     "gsap": "^3.15.0",
     "lucide-react": "^0.577.0",
     "next": "^16.2.4",
-    "nodemailer": "^8.0.5",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "server-only": "^0.0.1",

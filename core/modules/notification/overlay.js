@@ -49,7 +49,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       }}
       transition={{ type: 'spring', bounce: 0.3, duration: 0.3 }}
       className={cn(
-        'pointer-events-auto w-full rounded-[20px] border-[1.5px] border-black/10 backdrop-blur-lg',
+        'pointer-events-auto w-full  border-[1.5px] border-black/10 backdrop-blur-lg',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}
@@ -71,7 +71,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 rounded-[14px] border border-black/5 bg-black/5 px-3 text-sm font-semibold transition-colors hover:border-black/10 hover:bg-black/10"
+                className="min-h-10 flex-1  border border-black/5 bg-black/5 px-3 text-sm font-semibold transition-colors hover:border-black/10 hover:bg-black/10"
               >
                 {action.label}
               </button>

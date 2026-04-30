@@ -28,7 +28,7 @@ export function LegalPageShell({ children, description, lastUpdated, title }) {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-          <article className="bg-primary space-y-8 rounded-[14px] border border-black/5 p-6 sm:p-8">{children}</article>
+          <article className="bg-primary space-y-8  border border-black/5 p-6 sm:p-8">{children}</article>
 
           <aside className="p-5 text-sm leading-7 text-black/70">
             <p className="font-semibold text-black">Quick links</p>

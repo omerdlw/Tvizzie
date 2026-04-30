@@ -237,7 +237,7 @@ export function DiscoverSection({ initialDiscoverItems = [], initialGenres = [],
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <div
           ref={scrollContainerRef}
-          className="scrollbar-hide overflow-x-auto rounded-[14px] cursor-grab active:cursor-grabbing select-none"
+          className="scrollbar-hide overflow-x-auto  cursor-grab active:cursor-grabbing select-none"
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
@@ -264,19 +264,19 @@ export function DiscoverSection({ initialDiscoverItems = [], initialGenres = [],
 
           {isFiltering
             ? Array.from({ length: batchSize }).map((_, index) => (
-              <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full rounded-[14px]" />
+              <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full " />
             ))
             : null}
         </div>
 
         {gridError ? (
-          <div className="rounded-[10px] border border-black/10 bg-white/70 p-3 text-sm text-black/50">
+          <div className=" border border-black/10 bg-white/70 p-3 text-sm text-black/50">
             {gridError}
           </div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="rounded-[10px] border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+          <div className=" border border-black/10 bg-white/70 p-4 text-sm text-black/50">
             No movies found for this genre.
           </div>
         ) : null}
@@ -287,7 +287,7 @@ export function DiscoverSection({ initialDiscoverItems = [], initialGenres = [],
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 rounded-[14px] border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2  border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

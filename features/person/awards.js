@@ -79,6 +79,12 @@ function AwardsState({ message, variant = 'empty' }) {
   );
 }
 
+function AwardStatus({ type }) {
+  const isWinner = isWinType(type);
+
+  return <span className={cn('shrink-0', isWinner ? 'font-bold text-warning' : 'font-semibold text-black/45')}>{type}</span>;
+}
+
 export default function PersonAwards({ personId }) {
   const [awardsData, setAwardsData] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -124,7 +130,7 @@ export default function PersonAwards({ personId }) {
   const awardsTimeline = useMemo(() => buildAwardsTimeline(awardsData?.organizations || []), [awardsData]);
 
   if (status === 'loading') {
-    return <PersonAwardsSkeleton className="mt-10" />;
+    return <PersonAwardsSkeleton />;
   }
 
   if (status === 'error') {
@@ -178,12 +184,10 @@ export default function PersonAwards({ personId }) {
                 <div className="flex flex-col sm:ml-16">
                   {entries.map((entry, entryIndex) => {
                     const isInteractive = Boolean(entry.projectId);
+                    const hasProject = Boolean(entry.project);
                     const title = entry.project || entry.category;
-                    const detail = entry.project
-                      ? `${entry.organization} / ${entry.type} · ${entry.category}`
-                      : `${entry.organization} / ${entry.type}`;
                     const rowClassName = cn(
-                      'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
+                      'group flex items-center gap-3  border-transparent p-1 transition-colors',
                       isInteractive ? 'hover:bg-primary' : 'cursor-default'
                     );
                     const entryMotion = getPersonSurfaceItemMotion({
@@ -198,13 +202,23 @@ export default function PersonAwards({ personId }) {
                     });
                     const content = (
                       <>
-                        <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
+                        <MediaThumb poster={entry.poster} alt={title} className="" />
                         <div className="flex min-w-0 flex-1 flex-col">
                           <div className="flex items-center gap-2">
                             <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
                           </div>
 
-                          <span className="truncate text-xs text-black/50 sm:text-sm">{detail}</span>
+                          <div className="mt-1 flex min-w-0 flex-col gap-0.5 text-xs leading-snug text-black/50 sm:text-sm">
+                            <span className="truncate">{entry.organization}</span>
+                            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                              <AwardStatus type={entry.type} />
+                              {hasProject && (
+                                <span className="min-w-0 flex-1 truncate text-black/45 sm:line-clamp-1">
+                                  {entry.category}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </>
                     );

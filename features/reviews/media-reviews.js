@@ -13,7 +13,14 @@ import ReviewAuthFallback from './parts/review-auth-fallback';
 import ReviewHeader from './parts/review-header';
 import ReviewList from './parts/review-list';
 import { useMediaReviews } from './use-media-reviews';
-import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS, getRatingStats, parseReviewSortMode, sortReviewsByMode } from './utils';
+import {
+  REVIEW_SORT_MODE,
+  REVIEW_SORT_OPTIONS,
+  getRatingStats,
+  hasReviewText,
+  parseReviewSortMode,
+  sortReviewsByMode,
+} from './utils';
 
 export default function MediaReviews({
   entityId,
@@ -24,7 +31,7 @@ export default function MediaReviews({
   headerTitle = 'Community Reviews',
   listMode = 'all',
   allReviewsHref,
-  sectionClassName = 'mt-12 md:mt-16',
+  sectionClassName = '',
   showBackdropGradient = true,
   enableSortControl = false,
   defaultSortMode = REVIEW_SORT_MODE.NEWEST,
@@ -100,8 +107,8 @@ export default function MediaReviews({
           },
           onSuccess: targetReview
             ? (updatedReview) => {
-                applyOptimisticReviewUpdate(targetReview, updatedReview);
-              }
+              applyOptimisticReviewUpdate(targetReview, updatedReview);
+            }
             : null,
           review: targetReview,
           user: buildReviewUser(targetReview),
@@ -164,6 +171,7 @@ export default function MediaReviews({
       return username === normalizedUser || userId === normalizedUser;
     });
   }, [queryReviewUser, reviews, useQueryUserFilter]);
+  const visibleReviews = useMemo(() => filteredReviews.filter(hasReviewText), [filteredReviews]);
 
   const effectiveRatingStats = useMemo(() => {
     if (!useQueryUserFilter || !queryReviewUser) {
@@ -175,20 +183,20 @@ export default function MediaReviews({
 
   const defaultOrderedReviews = useMemo(() => {
     if (!useQueryUserFilter || !queryReviewUser) {
-      return sortedReviews;
+      return sortedReviews.filter(hasReviewText);
     }
 
-    return sortReviewsByMode(filteredReviews, REVIEW_SORT_MODE.NEWEST);
-  }, [filteredReviews, queryReviewUser, sortedReviews, useQueryUserFilter]);
+    return sortReviewsByMode(visibleReviews, REVIEW_SORT_MODE.NEWEST);
+  }, [queryReviewUser, sortedReviews, useQueryUserFilter, visibleReviews]);
 
-  const recentReviews = [...filteredReviews].sort((first, second) => {
+  const recentReviews = [...visibleReviews].sort((first, second) => {
     const firstTime = new Date(first.updatedAt || first.createdAt || 0).getTime();
     const secondTime = new Date(second.updatedAt || second.createdAt || 0).getTime();
     return secondTime - firstTime;
   });
   const sortedByModeReviews = useMemo(
-    () => sortReviewsByMode(filteredReviews, activeSortMode),
-    [activeSortMode, filteredReviews]
+    () => sortReviewsByMode(visibleReviews, activeSortMode),
+    [activeSortMode, visibleReviews]
   );
   const hasMoreThanRecentLimit = isRecentListMode && recentReviews.length > 5;
   const shouldUseCustomSort = isSortControlEnabled || useQuerySortMode;
@@ -200,63 +208,67 @@ export default function MediaReviews({
       : defaultOrderedReviews;
   const shouldHideRecentList =
     hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
-  const shouldShowComposer = !ownReview;
+  const shouldShowComposer = !ownReview || !hasReviewText(ownReview);
 
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
 
   return (
     <section
       data-community-reviews="true"
-      className={`relative isolate z-0 flex w-full flex-col gap-6 overflow-hidden ${sectionClassName}`}
+      className={`relative isolate z-0 flex w-full flex-col gap-0 ${sectionClassName}`}
     >
       {showBackdropGradient ? (
-        <div
-          className="media-reviews-backdrop-gradient pointer-events-none absolute inset-0 -z-10"
-          style={{ bottom: -backdropExtension }}
-        />
+        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none ">
+          <div
+            className="media-reviews-backdrop-gradient absolute inset-0"
+            style={{ bottom: -backdropExtension }}
+          />
+        </div>
       ) : null}
-      <ReviewHeader
-        ratingStats={effectiveRatingStats}
-        title={headerTitle}
-        allReviewsHref={allReviewsHref}
-        totalReviews={filteredReviews.length}
-        onDeleteOwnReview={ownReview ? handleDeleteRequest : null}
-        onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
-      />
+      <div className="p-5">
+        <ReviewHeader
+          ratingStats={effectiveRatingStats}
+          title={headerTitle}
+          allReviewsHref={allReviewsHref}
+          totalReviews={visibleReviews.length}
+          onDeleteOwnReview={ownReview ? handleDeleteRequest : null}
+          onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
+        />
+      </div>
       {shouldShowComposer ? (
         <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
-          <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold">Rate or review this title</p>
-              <p className="text-xs text-black/70">Share your rating and thoughts from the review modal.</p>
+          <div className="media-reviews-plus-line border-grid-line relative w-full border-t grid-diamonds-top">
+            <div className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Rate or review this title</p>
+                <p className="text-black-soft text-xs leading-5">Share your rating and thoughts from the review modal.</p>
+              </div>
+              <Button
+                className="media-review-composer-button inline-flex min-h-10 w-full items-center justify-center gap-2 border px-4 py-2 text-xs font-semibold tracking-wide uppercase transition ease-in-out sm:w-auto"
+                type="button"
+                onClick={() => openReviewModal()}
+              >
+                Add Review
+              </Button>
             </div>
-            <Button
-              className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
-              type="button"
-              onClick={() => openReviewModal()}
-            >
-              Add Review
-            </Button>
           </div>
         </AuthGate>
       ) : null}
       {isSortControlEnabled ? (
-        <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
-          <span className="text-[11px] font-semibold tracking-wider text-black/50 uppercase">Sort</span>
+        <div className="media-reviews-plus-line border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5">
+          <span className="text-black-muted text-xs font-semibold tracking-wider uppercase">Sort</span>
           <Select
             value={sortMode}
             onChange={setSortMode}
             options={REVIEW_SORT_OPTIONS}
             classNames={{
-              trigger:
-                'bg-primary/30 inline-flex h-10 min-w-[290px] justify-between border border-black/10 px-3 text-[11px] font-semibold tracking-wide text-black/70 uppercase',
-              menu: 'overflow-hidden border border-black/10 bg-white p-1 shadow-lg',
+              trigger: 'media-review-sort-trigger inline-flex h-10 justify-between border px-3 text-xs font-semibold tracking-wide uppercase',
+              menu: 'media-review-sort-menu overflow-hidden p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
-              option:
-                'cursor-pointer px-3 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase outline-none data-[highlighted]:bg-black/5 data-[highlighted]:text-black',
-              optionActive: 'bg-black/5 text-black',
+              option: 'media-review-sort-option cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
+              optionActive: 'media-review-sort-option-active',
               indicator: 'ml-auto text-black',
-              icon: 'text-black/50',
+              icon: 'text-black-muted',
             }}
             aria-label="Sort reviews"
           />
@@ -275,6 +287,7 @@ export default function MediaReviews({
           >
             <ReviewList
               currentUserId={currentUserId}
+              emptyMessage="No written reviews yet"
               isLoading={isLoading}
               loadError={loadError}
               onDeleteRequest={handleDeleteRequest}
