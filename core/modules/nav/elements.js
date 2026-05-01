@@ -92,7 +92,7 @@ function IconOverlay({ overlay }) {
       title={title || undefined}
       aria-label={title || 'Open current account'}
       className={cn(
-        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden  transition-transform hover:scale-[1.04]',
+        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden transition-transform hover:scale-[1.04]',
         typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default'
       )}
     >
@@ -135,14 +135,14 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
     <div className="relative">
       {isImageSource ? (
         <motion.div
-          className={cn('size-10 sm:size-12 shrink-0   bg-cover bg-center bg-no-repeat', className)}
+          className={cn('size-10 shrink-0 bg-cover bg-center bg-no-repeat sm:size-12', className)}
           transition={NAV_CONTENT_TRANSITION}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
           className={cn(
-            'center size-10 sm:size-12   bg-black/5 transition-colors duration-[300ms]',
+            'center size-10 bg-black/5 transition-colors duration-[300ms] sm:size-12',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className

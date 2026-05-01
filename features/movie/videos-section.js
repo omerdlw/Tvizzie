@@ -113,7 +113,7 @@ export default function VideosSection({ videos }) {
                           <>
                             <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
                               <motion.div
-                                className="center text-primary size-8  border border-white/20 bg-white/20 backdrop-blur-sm"
+                                className="center text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm"
                                 whileHover={{ scale: 1.08 }}
                                 transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
                               >

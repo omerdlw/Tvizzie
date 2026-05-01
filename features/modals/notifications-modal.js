@@ -18,8 +18,7 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
 const TOOL_BUTTON_CLASS = 'size-7  transition';
 
@@ -199,7 +198,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
         isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
       )}
     >
-      <div className="center size-10 shrink-0 overflow-hidden ">
+      <div className="center size-10 shrink-0 overflow-hidden">
         {notification.actor ? (
           <AdaptiveImage
             mode="img"

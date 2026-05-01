@@ -193,8 +193,7 @@ export function useDraggableScroll() {
       if (!maxScrollLeft) return;
 
       const delta = getWheelDelta(e, el);
-      const canMove =
-        (delta > 0 && el.scrollLeft < maxScrollLeft - 1) || (delta < 0 && el.scrollLeft > 1);
+      const canMove = (delta > 0 && el.scrollLeft < maxScrollLeft - 1) || (delta < 0 && el.scrollLeft > 1);
 
       if (!canMove) {
         return;

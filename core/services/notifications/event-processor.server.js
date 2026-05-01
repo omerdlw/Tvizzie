@@ -164,10 +164,7 @@ function mapEventToNotification(eventType, payload = {}, actor = {}) {
 }
 
 function resolveNotificationSubject(eventType, payload = {}) {
-  if (
-    eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED ||
-    eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED
-  ) {
+  if (eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED || eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED) {
     return buildSubject({
       ...payload,
       subjectId: payload.listId || payload.subjectId,

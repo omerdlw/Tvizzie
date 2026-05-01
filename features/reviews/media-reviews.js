@@ -37,7 +37,6 @@ export default function MediaReviews({
   defaultSortMode = REVIEW_SORT_MODE.NEWEST,
   useQuerySortMode = false,
   useQueryUserFilter = false,
-  hideWhenEmpty = false,
   onReviewStateChange,
 }) {
   const isRecentListMode = listMode === 'recent';
@@ -107,8 +106,8 @@ export default function MediaReviews({
           },
           onSuccess: targetReview
             ? (updatedReview) => {
-              applyOptimisticReviewUpdate(targetReview, updatedReview);
-            }
+                applyOptimisticReviewUpdate(targetReview, updatedReview);
+              }
             : null,
           review: targetReview,
           user: buildReviewUser(targetReview),
@@ -206,8 +205,6 @@ export default function MediaReviews({
     : shouldUseCustomSort
       ? sortedByModeReviews
       : defaultOrderedReviews;
-  const shouldHideRecentList =
-    hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
   const shouldShowComposer = !ownReview || !hasReviewText(ownReview);
 
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
@@ -218,14 +215,11 @@ export default function MediaReviews({
       className={`relative isolate z-0 flex w-full flex-col gap-0 ${sectionClassName}`}
     >
       {showBackdropGradient ? (
-        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none ">
-          <div
-            className="media-reviews-backdrop-gradient absolute inset-0"
-            style={{ bottom: -backdropExtension }}
-          />
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="media-reviews-backdrop-gradient absolute inset-0" style={{ bottom: -backdropExtension }} />
         </div>
       ) : null}
-      <div className="p-5">
+      <div className="media-reviews-header-plus p-5">
         <ReviewHeader
           ratingStats={effectiveRatingStats}
           title={headerTitle}
@@ -235,37 +229,21 @@ export default function MediaReviews({
           onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
         />
       </div>
-      {shouldShowComposer ? (
-        <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
-          <div className="media-reviews-plus-line border-grid-line relative w-full border-t grid-diamonds-top">
-            <div className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">Rate or review this title</p>
-                <p className="text-black-soft text-xs leading-5">Share your rating and thoughts from the review modal.</p>
-              </div>
-              <Button
-                className="media-review-composer-button inline-flex min-h-10 w-full items-center justify-center gap-2 border px-4 py-2 text-xs font-semibold tracking-wide uppercase transition ease-in-out sm:w-auto"
-                type="button"
-                onClick={() => openReviewModal()}
-              >
-                Add Review
-              </Button>
-            </div>
-          </div>
-        </AuthGate>
-      ) : null}
+
       {isSortControlEnabled ? (
-        <div className="media-reviews-plus-line border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5">
+        <div className="border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5">
           <span className="text-black-muted text-xs font-semibold tracking-wider uppercase">Sort</span>
           <Select
             value={sortMode}
             onChange={setSortMode}
             options={REVIEW_SORT_OPTIONS}
             classNames={{
-              trigger: 'media-review-sort-trigger inline-flex h-10 justify-between border px-3 text-xs font-semibold tracking-wide uppercase',
+              trigger:
+                'media-review-sort-trigger inline-flex h-10 justify-between border px-3 text-xs font-semibold tracking-wide uppercase',
               menu: 'media-review-sort-menu overflow-hidden p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
-              option: 'media-review-sort-option cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
+              option:
+                'media-review-sort-option cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
               optionActive: 'media-review-sort-option-active',
               indicator: 'ml-auto text-black',
               icon: 'text-black-muted',
@@ -275,31 +253,29 @@ export default function MediaReviews({
         </div>
       ) : null}
 
-      {!shouldHideRecentList ? (
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={listAnimationKey}
-            initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -6, filter: 'blur(2px)' }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            style={{ willChange: 'transform, opacity, filter' }}
-          >
-            <ReviewList
-              currentUserId={currentUserId}
-              emptyMessage="No written reviews yet"
-              isLoading={isLoading}
-              loadError={loadError}
-              onDeleteRequest={handleDeleteRequest}
-              onEdit={handleEditReview}
-              onLike={handleLike}
-              showOwnActions={false}
-              sortedReviews={displayedReviews}
-              userProfile={userProfile}
-            />
-          </motion.div>
-        </AnimatePresence>
-      ) : null}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={listAnimationKey}
+          initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -6, filter: 'blur(2px)' }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          style={{ willChange: 'transform, opacity, filter' }}
+        >
+          <ReviewList
+            currentUserId={currentUserId}
+            emptyMessage="No written reviews yet"
+            isLoading={isLoading}
+            loadError={loadError}
+            onDeleteRequest={handleDeleteRequest}
+            onEdit={handleEditReview}
+            onLike={handleLike}
+            showOwnActions={false}
+            sortedReviews={displayedReviews}
+            userProfile={userProfile}
+          />
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }

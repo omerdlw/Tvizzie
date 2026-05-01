@@ -44,11 +44,7 @@ function normalizeKnownMovieIds(value = []) {
   }
 
   return Array.from(
-    new Set(
-      value
-        .map((item) => String(item?.id ?? item?.entityId ?? item ?? '').trim())
-        .filter(Boolean)
-    )
+    new Set(value.map((item) => String(item?.id ?? item?.entityId ?? item ?? '').trim()).filter(Boolean))
   ).slice(0, 30);
 }
 

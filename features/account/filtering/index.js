@@ -1,11 +1,6 @@
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 import { REVIEW_SORT_MODE, sortReviewsByMode } from '@/features/reviews/utils';
-export {
-  buildCollectionBasePath,
-  buildManagedQueryString,
-  parsePageFromSearch,
-  normalizePage,
-} from './query-utils';
+export { buildCollectionBasePath, buildManagedQueryString, parsePageFromSearch, normalizePage } from './query-utils';
 export { getStarStepValues } from './shared';
 export {
   ACTIVITY_FILTER_QUERY_KEYS,

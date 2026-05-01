@@ -21,7 +21,7 @@
 
 @layer base {
   :root {
-    --white: #f7f7f7;
+    --white: #f6f5f4;
   }
 
   html {
@@ -160,21 +160,19 @@
   }
 
   .account-hero-tint-overlay {
-    background-image:
-      radial-gradient(
-        90% 58% at 50% 14%,
-        color-mix(in srgb, var(--white) 4%, transparent) 0%,
-        color-mix(in srgb, var(--white) 0%, transparent) 62%
-      );
+    background-image: radial-gradient(
+      90% 58% at 50% 14%,
+      color-mix(in srgb, var(--white) 4%, transparent) 0%,
+      color-mix(in srgb, var(--white) 0%, transparent) 62%
+    );
   }
 
   .account-skeleton-hero-tint-overlay {
-    background-image:
-      radial-gradient(
-        90% 58% at 50% 14%,
-        color-mix(in srgb, var(--white) 5%, transparent) 0%,
-        color-mix(in srgb, var(--white) 0%, transparent) 64%
-      );
+    background-image: radial-gradient(
+      90% 58% at 50% 14%,
+      color-mix(in srgb, var(--white) 5%, transparent) 0%,
+      color-mix(in srgb, var(--white) 0%, transparent) 64%
+    );
   }
 
   .account-hero-text-fade {
@@ -203,8 +201,14 @@
     );
     --account-detail-divider-diamond-size: calc(var(--account-detail-divider-diamond-box-size) / 1.41421);
     --account-detail-grid-line-color: color-mix(in srgb, var(--color-black) 10%, transparent);
-    --account-detail-grid-strong-line-color: color-mix(in srgb, var(--color-black) 15%, transparent);
+    --account-detail-plus-color: var(--color-black);
+    --account-detail-plus-size: 1rem;
     border-inline: 1px solid var(--account-detail-grid-line-color);
+  }
+
+  .account-detail-grid-content > .account-detail-grid-frame,
+  .account-detail-grid-content > main > .account-detail-grid-frame:not(.content-detail-grid-frame) {
+    min-height: 100dvh;
   }
 
   @media (min-width: 640px) {
@@ -296,17 +300,15 @@
   .account-detail-grid-subsection::before,
   .account-detail-grid-subsection::after,
   .account-detail-section-heading-rule::before,
-  .account-detail-section-heading-rule::after,
-  .account-review-list-frame::before,
-  .account-review-list-frame::after {
+  .account-detail-section-heading-rule::after {
     content: '';
     position: absolute;
-    width: var(--account-detail-divider-height, 1rem);
-    height: var(--account-detail-divider-height, 1rem);
+    width: var(--account-detail-plus-size);
+    height: var(--account-detail-plus-size);
     pointer-events: none;
     background-image:
-      linear-gradient(var(--account-detail-grid-strong-line-color), var(--account-detail-grid-strong-line-color)),
-      linear-gradient(var(--account-detail-grid-strong-line-color), var(--account-detail-grid-strong-line-color));
+      linear-gradient(var(--account-detail-plus-color), var(--account-detail-plus-color)),
+      linear-gradient(var(--account-detail-plus-color), var(--account-detail-plus-color));
     background-position: 50%;
     background-repeat: no-repeat;
     background-size:
@@ -315,25 +317,28 @@
   }
 
   .account-detail-grid-subsection::before {
-    top: 0;
+    top: calc(var(--account-detail-divider-line-width) / -2);
     left: calc(var(--account-detail-divider-line-width) / -2);
     transform: translate(-50%, -50%);
   }
 
   .account-detail-grid-subsection::after {
-    top: 0;
+    top: calc(var(--account-detail-divider-line-width) / -2);
     right: calc(var(--account-detail-divider-line-width) / -2);
     transform: translate(50%, -50%);
   }
 
+  .account-detail-section-heading-rule::before,
+  .account-detail-section-heading-rule::after {
+    top: calc(var(--account-detail-divider-line-width) / 2);
+  }
+
   .account-detail-section-heading-rule::before {
-    top: 50%;
     left: calc(var(--account-detail-divider-line-width) / -2);
     transform: translate(-50%, -50%);
   }
 
   .account-detail-section-heading-rule::after {
-    top: 50%;
     right: calc(var(--account-detail-divider-line-width) / -2);
     transform: translate(50%, -50%);
   }
@@ -384,9 +389,7 @@
     background-image:
       linear-gradient(var(--account-detail-resolved-line-color), var(--account-detail-resolved-line-color)),
       linear-gradient(var(--account-detail-resolved-line-color), var(--account-detail-resolved-line-color));
-    background-position:
-      top,
-      bottom;
+    background-position: top, bottom;
     background-repeat: no-repeat;
     background-size:
       100% var(--account-detail-divider-line-width),
@@ -455,8 +458,11 @@
   }
 
   .auth-detail-grid-frame {
+    --auth-detail-grid-line-width: 1px;
+    --auth-detail-grid-line-center: calc(var(--auth-detail-grid-line-width) / 2);
     --auth-detail-grid-line-color: color-mix(in srgb, var(--color-black) 15%, transparent);
-    --auth-detail-grid-strong-line-color: color-mix(in srgb, var(--color-black) 20%, transparent);
+    --auth-detail-grid-plus-color: var(--color-black);
+    --auth-detail-grid-plus-size: 1rem;
     position: relative;
     display: flex;
     height: 100%;
@@ -464,7 +470,27 @@
     width: min(100%, 46rem);
     align-items: center;
     justify-content: center;
-    border-inline: 1px solid var(--auth-detail-grid-line-color);
+  }
+
+  .auth-detail-grid-frame::before,
+  .auth-detail-grid-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--auth-detail-grid-line-width);
+    pointer-events: none;
+    background-color: var(--auth-detail-grid-line-color);
+  }
+
+  .auth-detail-grid-frame::before {
+    left: 0;
+    transform: translateX(-50%);
+  }
+
+  .auth-detail-grid-frame::after {
+    right: 0;
+    transform: translateX(50%);
   }
 
   .auth-detail-panel {
@@ -480,7 +506,7 @@
     position: absolute;
     left: 50%;
     width: 100vw;
-    height: 1px;
+    height: var(--auth-detail-grid-line-width);
     pointer-events: none;
     background-color: var(--auth-detail-grid-line-color);
     transform: translateX(-50%);
@@ -510,37 +536,38 @@
 
   .auth-detail-grid-plus {
     position: absolute;
-    width: 1rem;
-    height: 1rem;
+    z-index: 1;
+    width: var(--auth-detail-grid-plus-size);
+    height: var(--auth-detail-grid-plus-size);
     pointer-events: none;
     background-image:
-      linear-gradient(var(--auth-detail-grid-strong-line-color), var(--auth-detail-grid-strong-line-color)),
-      linear-gradient(var(--auth-detail-grid-strong-line-color), var(--auth-detail-grid-strong-line-color));
+      linear-gradient(var(--auth-detail-grid-plus-color), var(--auth-detail-grid-plus-color)),
+      linear-gradient(var(--auth-detail-grid-plus-color), var(--auth-detail-grid-plus-color));
     background-position: 50%;
     background-repeat: no-repeat;
     background-size:
-      100% 1px,
-      1px 100%;
+      100% var(--auth-detail-grid-line-width),
+      var(--auth-detail-grid-line-width) 100%;
     transform: translate(-50%, -50%);
   }
 
   .auth-detail-grid-plus-top-start {
-    top: 0;
+    top: var(--auth-detail-grid-line-center);
     left: 0;
   }
 
   .auth-detail-grid-plus-top-end {
-    top: 0;
+    top: var(--auth-detail-grid-line-center);
     left: 100%;
   }
 
   .auth-detail-grid-plus-bottom-start {
-    top: 100%;
+    top: calc(100% - var(--auth-detail-grid-line-center));
     left: 0;
   }
 
   .auth-detail-grid-plus-bottom-end {
-    top: 100%;
+    top: calc(100% - var(--auth-detail-grid-line-center));
     left: 100%;
   }
 
@@ -714,6 +741,12 @@
     gap: var(--movie-detail-section-content-gap);
   }
 
+  .movie-detail-primary-cast-block {
+    position: relative;
+    padding-block-start: var(--movie-detail-grid-band-pad);
+    border-block-start: 1px solid var(--grid-line-color);
+  }
+
   .text-black-soft {
     color: color-mix(in srgb, var(--color-black) 70%, transparent);
   }
@@ -728,6 +761,38 @@
 
   .border-grid-line {
     border-color: var(--grid-line-color);
+  }
+
+  .media-reviews-header-plus {
+    position: relative;
+  }
+
+  .media-reviews-header-plus::before,
+  .media-reviews-header-plus::after {
+    content: '';
+    position: absolute;
+    top: calc(100% + (var(--movie-detail-divider-line-width) / 2));
+    z-index: 1;
+    width: var(--movie-detail-divider-height);
+    height: var(--movie-detail-divider-height);
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--color-black), var(--color-black)), linear-gradient(var(--color-black), var(--color-black));
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size:
+      100% var(--movie-detail-divider-line-width),
+      var(--movie-detail-divider-line-width) 100%;
+  }
+
+  .media-reviews-header-plus::before {
+    left: calc(var(--movie-detail-divider-line-width) / -2);
+    transform: translate(-50%, -50%);
+  }
+
+  .media-reviews-header-plus::after {
+    right: calc(var(--movie-detail-divider-line-width) / -2);
+    transform: translate(50%, -50%);
   }
 
   .nav-action-select-menu,
@@ -868,6 +933,13 @@
     }
   }
 
+  @media (min-width: 1024px) {
+    .movie-carousel-recommendation-item {
+      width: calc((100% - 3.75rem) / 6);
+      min-width: 0;
+    }
+  }
+
   .movie-detail-grid-subsection-content {
     padding-block-start: var(--movie-detail-divider-height);
   }
@@ -881,6 +953,8 @@
     height: var(--movie-detail-divider-height);
     isolation: isolate;
     pointer-events: none;
+    background-color: var(--white);
+    z-index: 10;
   }
 
   .movie-detail-grid-divider::before {
@@ -892,9 +966,7 @@
     background-image:
       linear-gradient(var(--grid-line-color), var(--grid-line-color)),
       linear-gradient(var(--grid-line-color), var(--grid-line-color));
-    background-position:
-      top,
-      bottom;
+    background-position: top, bottom;
     background-repeat: no-repeat;
     background-size:
       100% var(--movie-detail-divider-line-width),
@@ -936,6 +1008,11 @@
     inset-inline: 0;
   }
 
+  .movie-detail-primary-grid-divider {
+    inset-inline: 0;
+    display: none;
+  }
+
   .movie-detail-grid-divider-diamond {
     position: absolute;
     top: 50%;
@@ -960,6 +1037,10 @@
   }
 
   @media (min-width: 1024px) {
+    .movie-detail-primary-grid-divider {
+      display: block;
+    }
+
     .movie-detail-grid-sidebar {
       border-block-end: 0;
       border-inline-end: 1px solid var(--grid-line-color);
@@ -974,39 +1055,6 @@
     .movie-detail-grid-content::before {
       background-size: 24px 24px;
     }
-  }
-
-  .media-reviews-plus-line {
-    position: relative;
-  }
-
-  .media-reviews-plus-line::before,
-  .media-reviews-plus-line::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    z-index: 2;
-    width: 1rem;
-    height: 1rem;
-    pointer-events: none;
-    background-image:
-      linear-gradient(var(--grid-line-color), var(--grid-line-color)),
-      linear-gradient(var(--grid-line-color), var(--grid-line-color));
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-size:
-      100% var(--movie-detail-divider-line-width),
-      var(--movie-detail-divider-line-width) 100%;
-  }
-
-  .media-reviews-plus-line::before {
-    left: calc(var(--movie-detail-divider-line-width) / -2);
-    transform: translate(-50%, -50%);
-  }
-
-  .media-reviews-plus-line::after {
-    right: calc(var(--movie-detail-divider-line-width) / -2);
-    transform: translate(50%, -50%);
   }
 
   .person-detail-grid-primary {
@@ -1084,20 +1132,6 @@
 
   .account-review-list-frame {
     position: relative;
-  }
-
-  .account-review-list-frame::before {
-    top: 0;
-    left: calc(var(--account-detail-divider-line-width) / -2);
-    display: none;
-    transform: translate(-50%, -50%);
-  }
-
-  .account-review-list-frame::after {
-    top: 0;
-    right: calc(var(--account-detail-divider-line-width) / -2);
-    display: none;
-    transform: translate(50%, -50%);
   }
 
   .account-review-list-item {

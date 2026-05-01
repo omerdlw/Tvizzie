@@ -32,7 +32,10 @@ export default function FilmographyCard({ credit, className = '', imagePriority 
     <MediaCard
       href={`/movie/${credit.id}`}
       className={`w-full ${className}`.trim()}
-      imageSrc={getPreferredMoviePosterSrc(credit, 'w342') || (credit.poster_path ? `${TMDB_IMG}/w342${credit.poster_path}` : null)}
+      imageSrc={
+        getPreferredMoviePosterSrc(credit, 'w342') ||
+        (credit.poster_path ? `${TMDB_IMG}/w342${credit.poster_path}` : null)
+      }
       imageAlt={resolvedTitle}
       imageSizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
       imagePriority={imagePriority}

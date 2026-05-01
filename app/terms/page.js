@@ -39,8 +39,8 @@ export default function TermsPage() {
         <LegalSection title="What Tvizzie provides">
           <p>
             Tvizzie is a web product for discovering films and TV content, signing in, maintaining a profile, tracking
-            what you watch, building lists, writing reviews, and interacting with other user-created content. Some
-            parts of the service rely on third-party providers and data sources.
+            what you watch, building lists, writing reviews, and interacting with other user-created content. Some parts
+            of the service rely on third-party providers and data sources.
           </p>
         </LegalSection>
 
@@ -70,8 +70,8 @@ export default function TermsPage() {
             according to your account settings and the feature you used.
           </p>
           <p>
-            You are responsible for ensuring that the content you publish is lawful and that you have the right to
-            share it.
+            You are responsible for ensuring that the content you publish is lawful and that you have the right to share
+            it.
           </p>
         </LegalSection>
 
@@ -83,8 +83,7 @@ export default function TermsPage() {
             <li>Upload malicious code, interfere with the service, or attempt to bypass security controls.</li>
             <li>Spam the product with automated or repetitive content.</li>
             <li>
-              Scrape or extract data from the service in a way that harms the product, its users, or its
-              infrastructure.
+              Scrape or extract data from the service in a way that harms the product, its users, or its infrastructure.
             </li>
             <li>Post content that you do not have the right to publish.</li>
           </ul>
@@ -104,25 +103,25 @@ export default function TermsPage() {
 
         <LegalSection title="Availability and changes">
           <p>
-            Tvizzie is provided on an evolving basis. Features may be added, changed, limited, or removed without
-            prior notice. We may also modify or discontinue the service, in whole or in part, when needed for
-            technical, security, operational, or product reasons.
+            Tvizzie is provided on an evolving basis. Features may be added, changed, limited, or removed without prior
+            notice. We may also modify or discontinue the service, in whole or in part, when needed for technical,
+            security, operational, or product reasons.
           </p>
         </LegalSection>
 
         <LegalSection title="Termination">
           <p>
             You may stop using Tvizzie at any time. Tvizzie may suspend or terminate access to the service if you
-            violate these terms, create risk for the service or other users, or use the product in a way that is
-            abusive or technically harmful.
+            violate these terms, create risk for the service or other users, or use the product in a way that is abusive
+            or technically harmful.
           </p>
         </LegalSection>
 
         <LegalSection title="Disclaimers">
           <p>
             Tvizzie is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not guarantee
-            uninterrupted access, perfect availability, or that every feature, recommendation, profile page, review,
-            or third-party media data point will always be accurate, complete, or current.
+            uninterrupted access, perfect availability, or that every feature, recommendation, profile page, review, or
+            third-party media data point will always be accurate, complete, or current.
           </p>
         </LegalSection>
 
@@ -130,8 +129,8 @@ export default function TermsPage() {
           <p>
             To the maximum extent permitted by applicable law, Tvizzie and its operators will not be liable for
             indirect, incidental, special, consequential, exemplary, or punitive damages arising out of or related to
-            your use of the service. If liability cannot be excluded, it will be limited to the minimum amount
-            permitted by law.
+            your use of the service. If liability cannot be excluded, it will be limited to the minimum amount permitted
+            by law.
           </p>
         </LegalSection>
 

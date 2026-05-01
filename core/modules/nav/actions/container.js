@@ -224,7 +224,7 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer  border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black"
+        className="center relative cursor-pointer border border-transparent p-1 text-black/70 transition-all hover:bg-black/10 hover:text-black"
         onClick={action.onClick}
         type="button"
         whileTap={{ scale: 0.92 }}
@@ -235,7 +235,7 @@ export function NavAction({ action }) {
         <AnimatePresence initial={false}>
           {action.badge ? (
             <motion.span
-              className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4  p-1 text-[11px] leading-none font-semibold text-white"
+              className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-white"
               initial={initialPageAnimationsEnabled ? { scale: 0.6, opacity: 0 } : false}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}

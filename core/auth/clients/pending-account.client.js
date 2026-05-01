@@ -24,16 +24,13 @@ export function setPendingAccountBootstrap(payload = {}) {
     return;
   }
 
-  writeSessionStorageJson(
-    STORAGE_KEY,
-    {
-      createdAt: Date.now(),
-      displayName,
-      email,
-      expiresAt: Date.now() + PENDING_PROFILE_TTL_MS,
-      username,
-    }
-  );
+  writeSessionStorageJson(STORAGE_KEY, {
+    createdAt: Date.now(),
+    displayName,
+    email,
+    expiresAt: Date.now() + PENDING_PROFILE_TTL_MS,
+    username,
+  });
 }
 
 export function getPendingAccountBootstrap(user = null) {

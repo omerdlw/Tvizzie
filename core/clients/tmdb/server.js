@@ -640,9 +640,7 @@ async function collectAllTmdbSearchItems(query, type = 'movie', totalPages = 1) 
       { length: Math.min(SEARCH_SCAN_CONCURRENCY, totalPages - startPage + 1) },
       (_, index) => startPage + index
     );
-    const batchResponses = await Promise.all(
-      pageBatch.map((nextPage) => requestTmdbSearchPage(query, type, nextPage))
-    );
+    const batchResponses = await Promise.all(pageBatch.map((nextPage) => requestTmdbSearchPage(query, type, nextPage)));
 
     batchResponses.forEach((response) => {
       const nextItems = withMediaType(response.data?.results || [], type);

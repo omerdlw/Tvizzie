@@ -131,7 +131,7 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7 grid-diamonds-bottom border-b border-black/10">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-black/10 py-5 lg:py-7">
         <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
           <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
             {hasImage ? (
@@ -166,7 +166,7 @@ export default function PersonSidebar({ person, age }) {
         </PersonSurfaceReveal>
       </div>
 
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-8">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7">
         <div className="flex flex-col gap-1">
           {detailRows.map((row, index) => (
             <SidebarMotionItem

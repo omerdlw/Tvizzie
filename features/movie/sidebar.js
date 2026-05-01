@@ -182,10 +182,10 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
           <SidebarMotionChip key={item} delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger} index={index}>
             <span
               className={cn(
-                'inline-flex max-w-full items-center text-[11px] font-semibold bg-primary',
+                'bg-primary inline-flex max-w-full items-center text-[11px] font-semibold',
                 isTagGroup
                   ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-black/70'
-                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wider uppercase text-black/80'
+                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wider text-black/80 uppercase'
               )}
             >
               {item}
@@ -200,7 +200,7 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
             index={visibleItems.length}
           >
             <Tooltip text={hiddenItems.join(', ')} position="top">
-              <span className="inline-flex min-h-7 items-center px-2.5 py-1 text-[11px] bg-primary leading-none font-semibold tracking-wide text-black/70">
+              <span className="bg-primary inline-flex min-h-7 items-center px-2.5 py-1 text-[11px] leading-none font-semibold tracking-wide text-black/70">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
@@ -232,16 +232,13 @@ function SidebarTaxonomy({ delay = 0, genres = [], tags = [] }) {
   );
 }
 
-export function MovieSidebarPrimary({ item, topContent, withDivider = true }) {
+export function MovieSidebarPrimary({ item, topContent }) {
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
 
   return (
     <div
       data-movie-sidebar-primary="true"
-      className={cn(
-        'movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-5 lg:py-7 grid-diamonds-bottom',
-        withDivider ? 'border-b border-black/10' : ''
-      )}
+      className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
     >
       <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
@@ -273,15 +270,7 @@ export function MovieSidebarPrimary({ item, topContent, withDivider = true }) {
   );
 }
 
-export function MovieSidebarDetails({
-  item,
-  director,
-  writers,
-  creators,
-  certification,
-  genres = [],
-  tags = [],
-}) {
+export function MovieSidebarDetails({ item, director, writers, creators, certification, genres = [], tags = [] }) {
   const episodeRuntime = item.episode_run_time?.[0] || item.last_episode_to_air?.runtime || null;
   const originalLanguageName =
     item.spoken_languages?.find((language) => language.iso_639_1 === item.original_language)?.english_name ||
@@ -305,14 +294,14 @@ export function MovieSidebarDetails({
 
   const rows = [
     director &&
-    createRow(
-      'director',
-      'solar:camera-minimalistic-bold',
-      <>
-        <span className="mr-1">Directed by</span>
-        <PersonLink person={director} />
-      </>
-    ),
+      createRow(
+        'director',
+        'solar:camera-minimalistic-bold',
+        <>
+          <span className="mr-1">Directed by</span>
+          <PersonLink person={director} />
+        </>
+      ),
 
     ...personGroups
       .filter((group) => group.persons?.length)
@@ -321,82 +310,80 @@ export function MovieSidebarDetails({
       }),
 
     certification &&
-    createRow(
-      'certification',
-      'solar:shield-bold',
-      <>
-        Rated <span className="text-black/70">{certification}</span>
-      </>
-    ),
+      createRow(
+        'certification',
+        'solar:shield-bold',
+        <>
+          Rated <span className="text-black/70">{certification}</span>
+        </>
+      ),
 
     originalLanguageName &&
-    createRow(
-      'language',
-      'solar:globus-bold',
-      <>
-        Original Language: <span className="text-black/70">{originalLanguageName}</span>
-      </>
-    ),
+      createRow(
+        'language',
+        'solar:globus-bold',
+        <>
+          Original Language: <span className="text-black/70">{originalLanguageName}</span>
+        </>
+      ),
 
     item.status &&
-    createRow(
-      'status',
-      'solar:info-circle-bold',
-      <>
-        Status: <span className="text-black/70">{item.status}</span>
-      </>
-    ),
+      createRow(
+        'status',
+        'solar:info-circle-bold',
+        <>
+          Status: <span className="text-black/70">{item.status}</span>
+        </>
+      ),
 
     episodeRuntime &&
-    createRow(
-      'runtime',
-      'solar:clock-circle-bold',
-      <>
-        ~<span className="text-black/70">{episodeRuntime}</span> min / episode
-      </>
-    ),
+      createRow(
+        'runtime',
+        'solar:clock-circle-bold',
+        <>
+          ~<span className="text-black/70">{episodeRuntime}</span> min / episode
+        </>
+      ),
 
     item.budget > 0 &&
-    createRow(
-      'budget',
-      'solar:dollar-bold',
-      <>
-        Budget: <span className="text-black/70">{formatCurrency(item.budget)}</span>
-      </>
-    ),
+      createRow(
+        'budget',
+        'solar:dollar-bold',
+        <>
+          Budget: <span className="text-black/70">{formatCurrency(item.budget)}</span>
+        </>
+      ),
 
     item.revenue > 0 &&
-    createRow(
-      'revenue',
-      'solar:graph-up-bold',
-      <>
-        Revenue: <span className="text-black/70">{formatCurrency(item.revenue)}</span>
-      </>
-    ),
+      createRow(
+        'revenue',
+        'solar:graph-up-bold',
+        <>
+          Revenue: <span className="text-black/70">{formatCurrency(item.revenue)}</span>
+        </>
+      ),
   ].filter(Boolean);
 
-  return (
-    hasTaxonomy || rows.length ? (
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-8">
-        {hasTaxonomy ? (
-          <SidebarTaxonomy delay={MOVIE_ROUTE_TIMING.sidebar.taxonomyDelay} genres={genres} tags={tags} />
-        ) : null}
+  return hasTaxonomy || rows.length ? (
+    <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7">
+      {hasTaxonomy ? (
+        <SidebarTaxonomy delay={MOVIE_ROUTE_TIMING.sidebar.taxonomyDelay} genres={genres} tags={tags} />
+      ) : null}
 
-        <div className="flex flex-col gap-1">
-          {rows.map((row, index) => (
-            <SidebarMotionItem key={row.id} delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
-              <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-            </SidebarMotionItem>
-          ))}
-        </div>
+      <div className="flex flex-col gap-1">
+        {rows.map((row, index) => (
+          <SidebarMotionItem key={row.id} delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
+            <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
+          </SidebarMotionItem>
+        ))}
       </div>
-    ) : null
-  );
+    </div>
+  ) : null;
 }
 
 export default function Sidebar(props) {
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex h-full flex-col gap-0">
       <MovieSidebarPrimary item={props.item} topContent={props.topContent} />
       <MovieSidebarDetails
         item={props.item}

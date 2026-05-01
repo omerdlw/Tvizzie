@@ -13,6 +13,12 @@ export const NAV_CONFIG = {
         },
       },
     },
+    top250: {
+      path: '/top250',
+      title: 'IMDB Top 250',
+      description: 'The top 250 movies of all time',
+      icon: 'cib:imdb',
+    },
     profile: {
       name: 'account',
       path: '/account',

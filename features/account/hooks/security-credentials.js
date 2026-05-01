@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  clearAccountFeedback,
-  emitAccountFeedback,
-  normalizeEmail,
-} from '../utils';
+import { clearAccountFeedback, emitAccountFeedback, normalizeEmail } from '../utils';
 import {
   AUTH_PURPOSE,
   EMAIL_PATTERN,

@@ -63,14 +63,7 @@ function getSyncedDelay(delay, phase) {
   );
 }
 
-function AccountReveal({
-  animateOnView = false,
-  children,
-  className = '',
-  delay = 0,
-  once = true,
-  phase = 'section',
-}) {
+function AccountReveal({ animateOnView = false, children, className = '', delay = 0, once = true, phase = 'section' }) {
   const phaseConfig = ACCOUNT_PHASES[phase] || ACCOUNT_PHASES.section;
   const syncedDelay = getSyncedDelay(delay, phase);
   const motionProps = buildRevealMotion({
@@ -144,13 +137,7 @@ export function AccountNavReveal({ children, className = '' }) {
 
 export function AccountSectionReveal({ animateOnView = false, children, className = '', delay = 0, once = true }) {
   return (
-    <AccountReveal
-      className={className}
-      phase="section"
-      delay={delay}
-      animateOnView={animateOnView}
-      once={once}
-    >
+    <AccountReveal className={className} phase="section" delay={delay} animateOnView={animateOnView} once={once}>
       {children}
     </AccountReveal>
   );

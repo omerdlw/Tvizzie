@@ -361,10 +361,7 @@ export default function Nav() {
 
   // ─── Stack className ──────────────────────────────────────────────────────
 
-  const stackClassName = useMemo(
-    () => getNavStackClassName({ isFullscreenStateActive }),
-    [isFullscreenStateActive]
-  );
+  const stackClassName = useMemo(() => getNavStackClassName({ isFullscreenStateActive }), [isFullscreenStateActive]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 

@@ -90,12 +90,7 @@ export default function AccountSectionLayout({
   return (
     <section className="account-detail-grid-subsection bg-transparent">
       <AccountSectionReveal delay={revealDelay}>
-        <div
-          className={cn(
-            `${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`,
-            className
-          )}
-        >
+        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
           {showHeader ? (
             <AccountSectionHeading
               action={action}

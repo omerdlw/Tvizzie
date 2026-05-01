@@ -7,7 +7,9 @@ import View from './view';
 
 export default function Client({ data = {} }) {
   const activeHeroItem = Array.isArray(data.initialDiscoverItems) ? data.initialDiscoverItems[0] : null;
-  const activeHeroBackground = activeHeroItem?.backdrop_path ? `${TMDB_IMG}/original${activeHeroItem.backdrop_path}` : null;
+  const activeHeroBackground = activeHeroItem?.backdrop_path
+    ? `${TMDB_IMG}/original${activeHeroItem.backdrop_path}`
+    : null;
 
   return (
     <>

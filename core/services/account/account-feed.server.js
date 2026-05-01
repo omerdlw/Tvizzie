@@ -2,7 +2,11 @@ import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_EVENT_TYPES } from '@/core/services/activity/activity-events.constants';
-import { canViewerAccessUserContent, createPrivateProfileError, getAccountProfileByUserId } from '@/core/services/account/account-profile.server';
+import {
+  canViewerAccessUserContent,
+  createPrivateProfileError,
+  getAccountProfileByUserId,
+} from '@/core/services/account/account-profile.server';
 import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
 import { normalizeTimestamp } from '@/core/utils';
@@ -142,7 +146,9 @@ function filterActivityItemsBySubject(items = [], subject = 'all') {
     return Array.isArray(items) ? items : [];
   }
 
-  return (Array.isArray(items) ? items : []).filter((item) => normalizeMediaType(item?.subject?.type) === normalizedSubject);
+  return (Array.isArray(items) ? items : []).filter(
+    (item) => normalizeMediaType(item?.subject?.type) === normalizedSubject
+  );
 }
 
 function sortActivityItemsForMode(items = [], sort = 'newest') {
@@ -309,7 +315,14 @@ function createDerivedReviewCard(review = {}) {
   });
 }
 
-function createDerivedActivityItem({ actor = {}, details = {}, eventType, occurredAt, reviewCard = null, subject = null }) {
+function createDerivedActivityItem({
+  actor = {},
+  details = {},
+  eventType,
+  occurredAt,
+  reviewCard = null,
+  subject = null,
+}) {
   if (!subject) {
     return null;
   }
@@ -492,12 +505,16 @@ async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId
     ...(Array.isArray(watchlist) ? watchlist : []).map((item) =>
       createDerivedCollectionActivityItem('watchlist', item, actor)
     ),
-    ...(Array.isArray(watched) ? watched : []).map((item) => createDerivedCollectionActivityItem('watched', item, actor)),
+    ...(Array.isArray(watched) ? watched : []).map((item) =>
+      createDerivedCollectionActivityItem('watched', item, actor)
+    ),
     ...(Array.isArray(lists) ? lists : []).map((item) => createDerivedCollectionActivityItem('lists', item, actor)),
     ...(Array.isArray(likedLists) ? likedLists : []).map((item) =>
       createDerivedCollectionActivityItem('liked-lists', item, actor)
     ),
-    ...(Array.isArray(reviewFeed?.items) ? reviewFeed.items : []).map((item) => createDerivedReviewActivityItem(item, actor)),
+    ...(Array.isArray(reviewFeed?.items) ? reviewFeed.items : []).map((item) =>
+      createDerivedReviewActivityItem(item, actor)
+    ),
   ];
 
   return derivedItems.filter(isVisibleActivityItem);
@@ -566,14 +583,23 @@ function createSubjectPart(subject = {}) {
 
 function buildListReferenceParts(item, viewerId = null) {
   const isViewerActor = normalizeValue(item?.actor?.id) && normalizeValue(item.actor.id) === normalizeValue(viewerId);
-  const isOwnList = normalizeValue(item?.subject?.ownerId) && normalizeValue(item.subject.ownerId) === normalizeValue(item?.actor?.id);
+  const isOwnList =
+    normalizeValue(item?.subject?.ownerId) && normalizeValue(item.subject.ownerId) === normalizeValue(item?.actor?.id);
 
   if (isOwnList) {
-    return [createTextPart(isViewerActor ? 'your own ' : 'their own '), createSubjectPart(item.subject), createTextPart(' list')];
+    return [
+      createTextPart(isViewerActor ? 'your own ' : 'their own '),
+      createSubjectPart(item.subject),
+      createTextPart(' list'),
+    ];
   }
 
   const ownerLabel = item?.subject?.ownerUsername || 'someone';
-  return [createTextPart(`${ownerLabel}${getPossessiveSuffix(ownerLabel)}`), createSubjectPart(item.subject), createTextPart(' list')];
+  return [
+    createTextPart(`${ownerLabel}${getPossessiveSuffix(ownerLabel)}`),
+    createSubjectPart(item.subject),
+    createTextPart(' list'),
+  ];
 }
 
 function projectActivityLine(item = {}, viewerId = null) {
@@ -584,7 +610,12 @@ function projectActivityLine(item = {}, viewerId = null) {
   switch (item.eventType) {
     case ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED:
       return {
-        parts: [actorPart, createTextPart(' added '), subjectPart, createTextPart(actorPart.text === 'You' ? ' to your watchlist' : ' to their watchlist')],
+        parts: [
+          actorPart,
+          createTextPart(' added '),
+          subjectPart,
+          createTextPart(actorPart.text === 'You' ? ' to your watchlist' : ' to their watchlist'),
+        ],
       };
     case ACTIVITY_EVENT_TYPES.LIKED_ADDED:
       return {
@@ -596,7 +627,12 @@ function projectActivityLine(item = {}, viewerId = null) {
       };
     case ACTIVITY_EVENT_TYPES.RATING_LOGGED:
       return {
-        parts: [actorPart, createTextPart(' rated '), subjectPart, ...(ratingPart ? [createTextPart(' '), ratingPart] : [])],
+        parts: [
+          actorPart,
+          createTextPart(' rated '),
+          subjectPart,
+          ...(ratingPart ? [createTextPart(' '), ratingPart] : []),
+        ],
       };
     case ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED:
       return {
@@ -718,7 +754,11 @@ async function fetchActivitiesForSources(admin, sourceIds = [], pageSize = null)
 }
 
 async function fetchAcceptedFollowingIds(admin, userId) {
-  const result = await admin.from('follows').select('following_id').eq('follower_id', userId).eq('status', FOLLOW_STATUS_ACCEPTED);
+  const result = await admin
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+    .eq('status', FOLLOW_STATUS_ACCEPTED);
 
   if (result.error) {
     throw new Error(result.error.message || 'Following list could not be loaded');
@@ -778,12 +818,14 @@ export async function fetchAccountActivityFeedServer({
   }));
   const derivedUserActivityItems =
     rawActivityItems.length === 0 && scope === 'user'
-      ? (await fetchDerivedUserActivityItems({
-          offset: normalizedOffset,
-          pageSize: normalizedPageSize,
-          userId,
-          viewerId,
-        })).map((item) => ({
+      ? (
+          await fetchDerivedUserActivityItems({
+            offset: normalizedOffset,
+            pageSize: normalizedPageSize,
+            userId,
+            viewerId,
+          })
+        ).map((item) => ({
           ...item,
           isFromFollowing: false,
         }))

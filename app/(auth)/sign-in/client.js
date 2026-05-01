@@ -4,10 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  assertPasswordAccountStatus,
-  completePasswordReset,
-} from '@/features/auth/requests';
+import { assertPasswordAccountStatus, completePasswordReset } from '@/features/auth/requests';
 import { AUTH_PURPOSE, AUTH_ROUTES } from '@/features/auth/constants';
 import {
   buildAuthHref,

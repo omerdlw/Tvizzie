@@ -327,7 +327,7 @@ export default function SearchAction({
                   type="button"
                   className={navActionClass({
                     button:
-                      'relative w-full shrink-0  px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
+                      'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
                     cn,
                   })}
                   onClick={handleSeeAllResults}

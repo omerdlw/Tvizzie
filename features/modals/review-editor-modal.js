@@ -205,13 +205,13 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
 
       <span
         className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 items-center  border p-px transition-all',
+          'relative inline-flex h-6 w-11 shrink-0 items-center border p-px transition-all',
           checked && !disabled ? 'border-error bg-error' : 'border-black/5 bg-black/5'
         )}
       >
         <span
           className={cn(
-            'bg-primary size-5  transition-all',
+            'bg-primary size-5 transition-all',
             checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0'
           )}
         />
@@ -352,7 +352,9 @@ export default function ReviewEditorModal({ close, data }) {
               disabled={isSaving || Boolean(validationError)}
               className={PRIMARY_BUTTON_CLASS}
             >
-              {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, isList: isListSubject, rating, reviewText })}
+              {isSaving
+                ? 'Saving'
+                : getPrimaryActionLabel({ hasExistingReview, isList: isListSubject, rating, reviewText })}
             </Button>
           </>
         ),

@@ -41,14 +41,14 @@ function SocialDockSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7 grid-diamonds-bottom border-b border-black/10">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-black/10 py-5 lg:py-7">
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           <SkeletonBlock className="h-full w-full" radius="hero" />
           <SocialDockSkeleton />
         </div>
       </div>
 
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-8">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7">
         <div className="flex flex-col gap-1">
           {Array.from({ length: 5 }).map((_, index) => (
             <SidebarRowSkeleton key={index} />
@@ -149,7 +149,9 @@ function PersonContentSkeleton() {
       >
         <div className="person-detail-grid-primary">
           <div className="movie-detail-grid-sidebar w-full shrink-0">
-            <SidebarSkeleton />
+            <div className="lg:sticky lg:top-0">
+              <SidebarSkeleton />
+            </div>
           </div>
 
           <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
@@ -178,8 +180,8 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-3  p-1">
-      <SkeletonPoster className="aspect-2/3 w-16 shrink-0  sm:w-20" radius="field" />
+    <div className="flex items-end gap-3 p-1">
+      <SkeletonPoster className="aspect-2/3 w-16 shrink-0 sm:w-20" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
         <TextLine width="w-4/5" soft={true} />

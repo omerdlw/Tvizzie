@@ -180,7 +180,9 @@ async function getFollowResourceInternal({
 
     assertResult(result, 'Follow collection could not be loaded');
 
-    return sortFollowSnapshots((result.data || []).map((row) => normalizeFollowRecord(normalizeTimestamp, row, direction)));
+    return sortFollowSnapshots(
+      (result.data || []).map((row) => normalizeFollowRecord(normalizeTimestamp, row, direction))
+    );
   }
 
   if (resource === 'relationship') {

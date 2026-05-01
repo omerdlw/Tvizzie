@@ -228,10 +228,7 @@ export default function PersonView({
                     transition={viewMotion.transition}
                   >
                     {activeView === 'awards' ? (
-                      <PersonSectionReveal
-                        delay={PERSON_ROUTE_TIMING.sections.awards}
-                        animateOnView={false}
-                      >
+                      <PersonSectionReveal delay={PERSON_ROUTE_TIMING.sections.awards} animateOnView={false}>
                         <PersonGridSection>
                           <PersonAwards personId={person.id} />
                         </PersonGridSection>

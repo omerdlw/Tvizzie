@@ -41,7 +41,7 @@ const Tooltip = forwardRef(
               className={cn(
                 'animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-(--z-tooltip) font-medium',
                 'duration-[200ms] ease-[cubic-bezier(0.25,0.1,0.25,1)]',
-                ' bg-black px-2.5 py-1.5 text-xs font-semibold text-white',
+                'bg-black px-2.5 py-1.5 text-xs font-semibold text-white',
                 classes.content,
                 classes.root
               )}

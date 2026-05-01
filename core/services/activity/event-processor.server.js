@@ -1,8 +1,16 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { buildActivityDedupeLikePattern, buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
-import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_EVENT_TYPES, ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
+import {
+  buildActivityDedupeLikePattern,
+  buildActivitySubjectRef,
+  buildCanonicalActivityDedupeKey,
+} from '@/core/services/activity/canonical-key';
+import {
+  ACTIVITY_EVENT_TYPE_SET,
+  ACTIVITY_EVENT_TYPES,
+  ACTIVITY_SLOT_TYPES,
+} from '@/core/services/activity/activity-events.constants';
 
 const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'is_private', 'username'].join(',');
 
@@ -124,7 +132,9 @@ function buildReviewCardSnapshot({ actor, occurredAt, payload = {}, subject }) {
     reviewUserId: actor.id,
     subjectHref: subject.href,
     subjectId: subject.id,
-    subjectKey: normalizeValue(payload.subjectKey || buildActivitySubjectRef({ subjectId: subject.id, subjectType: subject.type })),
+    subjectKey: normalizeValue(
+      payload.subjectKey || buildActivitySubjectRef({ subjectId: subject.id, subjectType: subject.type })
+    ),
     subjectOwnerId: subject.ownerId || null,
     subjectOwnerUsername: subject.ownerUsername || null,
     subjectPreviewItems: normalizePreviewItems(payload.subjectPreviewItems),
@@ -346,7 +356,12 @@ async function getExistingActivity(admin, userId, dedupeKey) {
     return null;
   }
 
-  const result = await admin.from('activity').select('id').eq('user_id', userId).eq('dedupe_key', dedupeKey).maybeSingle();
+  const result = await admin
+    .from('activity')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('dedupe_key', dedupeKey)
+    .maybeSingle();
 
   if (result.error) {
     throw new Error(result.error.message || 'Activity event could not be loaded');

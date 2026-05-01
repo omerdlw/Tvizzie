@@ -8,7 +8,11 @@ import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import { getSurfaceItemMotion, getSurfacePanelMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
+import {
+  getSurfaceItemMotion,
+  getSurfacePanelMotion,
+  useInitialItemRevealEnabled,
+} from '@/app/(media)/movie/[id]/motion';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
@@ -25,7 +29,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
 
   if (!src) {
     return (
-      <div className="center h-full w-full ">
+      <div className="center h-full w-full">
         <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-black/50" />
       </div>
     );
@@ -43,7 +47,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className=" object-cover"
+      className="object-cover"
       onError={() => setError(true)}
       wrapperClassName="h-full w-full"
     />
@@ -56,7 +60,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3  border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
@@ -241,7 +245,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               initial={{ opacity: 0, y: 14, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.72, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0  border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </motion.button>

@@ -13,7 +13,7 @@ import { SmoothScrollProvider } from '@/features/app-shell/smooth-scroll';
 import { BackgroundOverlay, BackgroundProvider } from '@/core/modules/background';
 import { GlobalError } from '@/core/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/core/modules/loading';
-import { NavigationProvider } from '@/core/modules/nav/context';
+import { NavigationProvider, useNavigationState } from '@/core/modules/nav/context';
 import { RegistryProvider } from '@/core/modules/registry/context';
 
 const Nav = dynamic(() => import('@/core/modules/nav'));
@@ -32,13 +32,11 @@ function shouldEnableInteractiveBoundary(pathname = '/') {
 }
 
 function resolveInteractiveBoundaryVariant(pathname = '/') {
-  return (
-    pathname === '/' ||
+  return pathname === '/' ||
     pathname.startsWith('/search') ||
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account')
-  )
     ? 'full'
     : pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')
       ? 'auth'
@@ -106,26 +104,30 @@ function WebVitals() {
   return null;
 }
 
-export const AppProviders = ({ children }) => {
-  const pathname = usePathname();
-  const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
-  const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
-  const needsSmoothScroll = false
-  const shellChildren =
-    interactiveBoundaryVariant === 'auth' ? (
-      children
-    ) : (
-      <>
-        <Nav />
-        {children}
-      </>
-    );
+function AppShellContent({ children, interactiveBoundaryVariant, needsInteractiveBoundary, needsSmoothScroll }) {
+  const { isSurfaceOpen } = useNavigationState();
+  const shouldRenderNav = interactiveBoundaryVariant !== 'auth' || isSurfaceOpen;
+  const shellChildren = shouldRenderNav ? (
+    <>
+      <Nav />
+      {children}
+    </>
+  ) : (
+    children
+  );
 
   const content = needsInteractiveBoundary
     ? renderInteractiveBoundary(shellChildren, interactiveBoundaryVariant)
     : shellChildren;
 
-  const contentWithEnhancements = needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
+  return needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
+}
+
+export const AppProviders = ({ children }) => {
+  const pathname = usePathname();
+  const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
+  const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
+  const needsSmoothScroll = false;
 
   return (
     <MotionRuntimeProvider>
@@ -133,7 +135,15 @@ export const AppProviders = ({ children }) => {
       <CoreShellProviders>
         <BackgroundOverlay />
         <LoadingOverlay />
-        <GlobalError>{contentWithEnhancements}</GlobalError>
+        <GlobalError>
+          <AppShellContent
+            interactiveBoundaryVariant={interactiveBoundaryVariant}
+            needsInteractiveBoundary={needsInteractiveBoundary}
+            needsSmoothScroll={needsSmoothScroll}
+          >
+            {children}
+          </AppShellContent>
+        </GlobalError>
       </CoreShellProviders>
     </MotionRuntimeProvider>
   );

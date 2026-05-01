@@ -27,7 +27,7 @@ export default function ReviewHeader({
     <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-6">
       <div className="flex min-w-0 items-center gap-3">
         <Icon icon="solar:face-scan-circle-bold" size={30} className="text-info" />
-        <h2 className="min-w-0 text-base font-semibold tracking-wider uppercase [text-wrap:balance]">{title}</h2>
+        <h2 className="min-w-0 text-base font-semibold tracking-wider [text-wrap:balance] uppercase">{title}</h2>
       </div>
       <div className="movie-detail-meta-cluster flex flex-wrap items-center gap-2 lg:justify-end lg:justify-self-end">
         <div className={REVIEW_HEADER_BADGE_CLASS}>
@@ -44,10 +44,7 @@ export default function ReviewHeader({
           </div>
         )}
         {hasAllReviewsLink ? (
-          <Link
-            href={allReviewsHref}
-            className={REVIEW_HEADER_BADGE_CLASS}
-          >
+          <Link href={allReviewsHref} className={REVIEW_HEADER_BADGE_CLASS}>
             All reviews
           </Link>
         ) : null}
@@ -55,7 +52,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center  border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             aria-label="Edit your review"
             title="Edit your review"
           >

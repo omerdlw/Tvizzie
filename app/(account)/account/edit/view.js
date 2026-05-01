@@ -339,10 +339,7 @@ export default function AccountEditView(props) {
                       </span>
                     </div>
 
-                    <span
-                      className="flex h-6 w-11 border border-black/15 bg-white p-px"
-                      aria-hidden="true"
-                    >
+                    <span className="flex h-6 w-11 border border-black/15 bg-white p-px" aria-hidden="true">
                       <span
                         className={cn(
                           'h-full w-5 bg-black transition-transform',

@@ -8,11 +8,24 @@ function normalizeMetric(payload = {}) {
 
   return {
     delta: Number.isFinite(delta) ? delta : 0,
-    id: String(payload?.id || '').trim().slice(0, 120),
-    name: String(payload?.name || '').trim().slice(0, 40),
-    navigationType: String(payload?.navigationType || '').trim().slice(0, 40) || 'navigate',
-    pathname: String(payload?.pathname || '').trim().slice(0, 200) || '/',
-    rating: String(payload?.rating || '').trim().slice(0, 40) || 'unknown',
+    id: String(payload?.id || '')
+      .trim()
+      .slice(0, 120),
+    name: String(payload?.name || '')
+      .trim()
+      .slice(0, 40),
+    navigationType:
+      String(payload?.navigationType || '')
+        .trim()
+        .slice(0, 40) || 'navigate',
+    pathname:
+      String(payload?.pathname || '')
+        .trim()
+        .slice(0, 200) || '/',
+    rating:
+      String(payload?.rating || '')
+        .trim()
+        .slice(0, 40) || 'unknown',
     value: Number.isFinite(value) ? value : 0,
   };
 }

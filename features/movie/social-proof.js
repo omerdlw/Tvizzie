@@ -66,11 +66,7 @@ function SocialAvatarStack({ users = [] }) {
         const label = user?.displayName || user?.username || 'User';
 
         return (
-          <span
-            key={user.id}
-            className="media-social-avatar center"
-            aria-hidden="true"
-          >
+          <span key={user.id} className="media-social-avatar center" aria-hidden="true">
             <AdaptiveImage
               mode="img"
               src={avatarSrc}
@@ -101,7 +97,13 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
 
   const resolvedViewerId = viewerId || auth.user?.id || null;
   const knownMovieIdsKey = useMemo(
-    () => (Array.isArray(knownMovieIds) ? knownMovieIds.map((id) => String(id || '').trim()).filter(Boolean).join(',') : ''),
+    () =>
+      Array.isArray(knownMovieIds)
+        ? knownMovieIds
+            .map((id) => String(id || '').trim())
+            .filter(Boolean)
+            .join(',')
+        : '',
     [knownMovieIds]
   );
   const summaryParts = getSummaryParts(socialProof);
@@ -141,18 +143,11 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
       type="button"
       aria-label="Open social activity"
       onClick={handleOpenModal}
-      className={cn(
-        'media-social-proof-button group',
-        className
-      )}
+      className={cn('media-social-proof-button group', className)}
     >
       <SocialAvatarStack users={previewUsers} />
       <span className="min-w-0 flex-1 truncate">{compactLabel}</span>
-      {highlights.length > 1 ? (
-        <span className="media-social-proof-count">
-          +{highlights.length - 1}
-        </span>
-      ) : null}
+      {highlights.length > 1 ? <span className="media-social-proof-count">+{highlights.length - 1}</span> : null}
       <span className="media-social-proof-icon center">
         <Icon icon="solar:alt-arrow-right-linear" size={14} />
       </span>

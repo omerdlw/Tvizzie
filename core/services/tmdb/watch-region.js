@@ -58,19 +58,14 @@ export function resolveWatchRegionFromBrowser() {
     return null;
   }
 
-  const locales = [
-    ...(Array.isArray(navigator.languages) ? navigator.languages : []),
-    navigator.language,
-  ];
+  const locales = [...(Array.isArray(navigator.languages) ? navigator.languages : []), navigator.language];
 
   return locales.map((locale) => resolveWatchRegionFromLocale(locale)).find(Boolean) || null;
 }
 
 export function resolveWatchRegionFromRequestHeaders(requestHeaders) {
   const getHeader =
-    requestHeaders && typeof requestHeaders.get === 'function'
-      ? (key) => requestHeaders.get(key)
-      : () => null;
+    requestHeaders && typeof requestHeaders.get === 'function' ? (key) => requestHeaders.get(key) : () => null;
 
   for (const headerName of GEO_COUNTRY_HEADERS) {
     const region = normalizeWatchRegion(getHeader(headerName));

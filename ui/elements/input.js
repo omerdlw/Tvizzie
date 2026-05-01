@@ -28,7 +28,7 @@ const Input = forwardRef(
           type={type}
           autoCapitalize={autoCapitalize}
           autoCorrect={autoCorrect}
-          className={cn('min-w-0 flex-1 appearance-none bg-transparent m-0 p-0', classes.input, classes.root)}
+          className={cn('m-0 min-w-0 flex-1 appearance-none bg-transparent p-0', classes.input, classes.root)}
           {...props}
         />
         {rightIcon && <span className={cn('shrink-0', classes.rightIcon)}>{rightIcon}</span>}

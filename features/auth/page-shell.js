@@ -2,10 +2,7 @@
 
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 
-export default function AuthPageShell({
-  children,
-  title,
-}) {
+export default function AuthPageShell({ children, title }) {
   return (
     <>
       <PageGradientShell className="overflow-hidden" contentClassName="account-detail-grid-content">
@@ -20,9 +17,7 @@ export default function AuthPageShell({
                 <img src="/tvizzie.png" alt="Tvizzie" className="auth-detail-logo size-10" />
                 <h1 className="text-3xl font-semibold text-balance text-black sm:text-4xl">{title}</h1>
               </div>
-              <div className="auth-detail-form-surface">
-                {children}
-              </div>
+              <div className="auth-detail-form-surface">{children}</div>
             </div>
           </div>
         </main>

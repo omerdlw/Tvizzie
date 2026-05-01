@@ -73,7 +73,7 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center border-info bg-primary/30 hover:bg-primary/50 h-13  border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
+                'center border-info bg-primary/30 hover:bg-primary/50 h-13 border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
@@ -405,7 +405,7 @@ export default function AuthVerificationForm({
       ) : null}
       <div className="grid gap-2">
         <Button
-          className="hover:bg-info h-11 w-full flex-auto  border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+          className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"

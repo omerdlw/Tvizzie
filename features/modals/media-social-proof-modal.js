@@ -70,7 +70,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           {highlights.length > 0 ? (
             <div className="p-3 lg:p-4">
-              <div className=" bg-black/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+              <div className="bg-black/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
                 <p className="mb-2 text-[10px] font-semibold tracking-widest text-black/45 uppercase">
                   People you follow
                 </p>
@@ -80,7 +80,6 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     <span>{highlight.label}</span>
                   </div>
                 ))}
-
               </div>
             </div>
           ) : null}
@@ -103,7 +102,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     onClick={close}
                     className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
                   >
-                    <div className="center size-10 shrink-0 overflow-hidden  border border-black/5">
+                    <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
                       <AdaptiveImage
                         mode="img"
                         src={avatarSrc}
@@ -128,7 +127,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
                       <span
                         aria-hidden="true"
-                        className="center size-7  border border-black/10 text-black/70 transition"
+                        className="center size-7 border border-black/10 text-black/70 transition"
                       >
                         <Icon icon="solar:alt-arrow-right-linear" size={16} />
                       </span>

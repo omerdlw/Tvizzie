@@ -73,7 +73,9 @@ export default function SearchGridItem({ item, onSelect }) {
             </div>
           )
         }
-        tooltipText={item.media_type === SEARCH_TYPES.MOVIE && getItemYear(item) ? `${title} (${getItemYear(item)})` : title}
+        tooltipText={
+          item.media_type === SEARCH_TYPES.MOVIE && getItemYear(item) ? `${title} (${getItemYear(item)})` : title
+        }
       />
     </>
   );

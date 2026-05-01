@@ -37,7 +37,8 @@ function PersonCard({ close, person }) {
   if (!person?.id) return null;
 
   const imageSrc = !imageError
-    ? getPreferredPersonPosterSrc(person, 'w185') || (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
+    ? getPreferredPersonPosterSrc(person, 'w185') ||
+      (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
     : null;
 
   return (
@@ -46,7 +47,7 @@ function PersonCard({ close, person }) {
       onClick={close}
       className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2 transition-colors"
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden  bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
         {imageSrc ? (
           <AdaptiveImage
             fill

@@ -9,7 +9,10 @@ export default function RatingStars({ className = '', rating }) {
   const normalized = rating > 5 ? rating / 2 : Math.max(0, Math.min(5, rating));
 
   return (
-    <span className={cn('text-success inline-flex items-center gap-0.5 align-middle', className)} aria-label={`${normalized}/5`}>
+    <span
+      className={cn('text-success inline-flex items-center gap-0.5 align-middle', className)}
+      aria-label={`${normalized}/5`}
+    >
       {Array.from({ length: 5 }, (_, index) => {
         const fill = Math.max(0, Math.min(1, normalized - index));
 

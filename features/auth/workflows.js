@@ -49,11 +49,6 @@ export async function createPendingSignUpPayload(form = {}) {
     throw new Error('Password confirmation does not match');
   }
 
-  const existingUserId = await ACCOUNT_CLIENT.getAccountIdByUsername(username);
-  if (existingUserId) {
-    throw createError('USERNAME_TAKEN');
-  }
-
   return {
     displayName,
     email,

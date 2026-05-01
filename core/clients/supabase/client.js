@@ -2,11 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 
-import {
-  isSupabaseProjectStorageKey,
-  listSupabaseAuthStorageKeys,
-  normalizeStorageValue,
-} from './auth-storage';
+import { isSupabaseProjectStorageKey, listSupabaseAuthStorageKeys, normalizeStorageValue } from './auth-storage';
 import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './constants';
 
 if (typeof window !== 'undefined') {

@@ -70,10 +70,7 @@ function deepMerge(base, patch) {
   return Object.entries(patch).reduce(
     (output, [key, value]) => ({
       ...output,
-      [key]:
-        value && typeof value === 'object' && !Array.isArray(value)
-          ? deepMerge(base?.[key] || {}, value)
-          : value,
+      [key]: value && typeof value === 'object' && !Array.isArray(value) ? deepMerge(base?.[key] || {}, value) : value,
     }),
     { ...base }
   );

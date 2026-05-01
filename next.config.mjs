@@ -11,8 +11,7 @@ const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   ? SUPABASE_ORIGIN.replace(/^https:\/\//i, 'wss://')
   : '';
 
-const CSP_HEADER_KEY =
-  CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+const CSP_HEADER_KEY = CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
 const CSP_VALUE = [
   "default-src 'self'",
   [

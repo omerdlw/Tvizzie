@@ -66,14 +66,10 @@ export function useToast() {
 
   return useMemo(
     () => ({
-      success: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.SUCCESS, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
-      warning: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.WARNING, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
-      error: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.ERROR, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
-      info: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.INFO, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
+      success: (msg, opts = {}) => createToast(TOAST_TYPES.SUCCESS, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
+      warning: (msg, opts = {}) => createToast(TOAST_TYPES.WARNING, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
+      error: (msg, opts = {}) => createToast(TOAST_TYPES.ERROR, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
+      info: (msg, opts = {}) => createToast(TOAST_TYPES.INFO, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
       show: (type, msg, opts = {}) => createToast(type, msg, opts),
     }),
     [createToast]

@@ -185,7 +185,7 @@ function VideoOverlayIcon({ icon }) {
     <motion.div
       className={cn(
         'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : ' border border-black/5 bg-white'
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
       transition={NAV_MICRO_SPRING}
@@ -205,7 +205,7 @@ function Badge({ badge }) {
       {badge.visible && (
         <motion.div
           className={cn(
-            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5  px-1.5 py-0.5 text-[11px] font-semibold ring'
+            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
           initial={initialPageAnimationsEnabled ? { scale: 0, opacity: 0 } : false}
           animate={{ scale: 1, opacity: 1 }}
@@ -429,16 +429,7 @@ const Item = memo(
         ...resolvedCardProps,
         className: cn(resolvedCardProps.className, 'cursor-default'),
       };
-    }, [
-      cardWidth,
-      expanded,
-      position,
-      showBorder,
-      itemStyle.card,
-      itemStyle.scale,
-      link.isSurface,
-      isMobile,
-    ]);
+    }, [cardWidth, expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, isMobile]);
 
     useActionHeight(
       onActionHeightChange,

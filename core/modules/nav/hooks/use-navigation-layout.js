@@ -113,7 +113,13 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
-function getCollapsedVisibleCount({ isHovered, isCompact, pathname, shouldShowOverlayStack, shouldShowSingleStatusCard }) {
+function getCollapsedVisibleCount({
+  isHovered,
+  isCompact,
+  pathname,
+  shouldShowOverlayStack,
+  shouldShowSingleStatusCard,
+}) {
   if (shouldShowSingleStatusCard) {
     return 1;
   }

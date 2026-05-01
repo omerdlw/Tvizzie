@@ -106,7 +106,7 @@ export default function FileUploadSurface({ close, data }) {
           event.stopPropagation();
           dismissSurface(close);
         }}
-        className="center bg-primary absolute top-0 right-0 z-10 cursor-pointer  border border-black/10 p-1 transition-all"
+        className="center bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-black/10 p-1 transition-all"
         aria-label="Close media upload"
         whileTap={{ scale: 0.94 }}
         whileHover={{ scale: 1.03 }}
@@ -146,14 +146,14 @@ export default function FileUploadSurface({ close, data }) {
         }}
         onDrop={handleDrop}
         className={cn(
-          'flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-3  border border px-6 py-8 text-center transition-colors',
+          'flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-3 border px-6 py-8 text-center transition-colors',
           isDragActive ? 'border-info bg-info/20' : 'bg-primary border-black/10 hover:bg-transparent'
         )}
         animate={isDragActive ? { scale: 1.01 } : { scale: 1 }}
         transition={NAV_SURFACE_ITEM_SPRING}
       >
         <motion.div
-          className="center size-14  border border-black/10 bg-white text-black/70"
+          className="center size-14 border border-black/10 bg-white text-black/70"
           animate={isDragActive ? { scale: 1.06, y: -2 } : { scale: 1, y: 0 }}
           transition={NAV_SURFACE_ITEM_SPRING}
         >
@@ -171,7 +171,7 @@ export default function FileUploadSurface({ close, data }) {
             event.stopPropagation();
             inputRef.current?.click();
           }}
-          className="hover:text-primary inline-flex h-10 items-center justify-center  border border-black/5 bg-white px-4 text-[11px] font-semibold text-black uppercase transition-colors hover:bg-black"
+          className="hover:text-primary inline-flex h-10 items-center justify-center border border-black/5 bg-white px-4 text-[11px] font-semibold text-black uppercase transition-colors hover:bg-black"
           whileTap={{ scale: 0.98 }}
           whileHover={{ scale: 1.02 }}
           transition={NAV_ACTION_SPRING}

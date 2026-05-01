@@ -179,7 +179,7 @@ function ErrorActions({ onRetry, onRefresh }) {
   return (
     <div className="mt-2.5 flex items-center gap-2">
       <Button
-        className="center w-full cursor-pointer transition-colors duration-200  bg-primary/60 hover:bg-primary px-4 py-2 text-sm font-semibold text-black hover:text-error"
+        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-black transition-colors duration-200"
         onClick={(event) => {
           event.stopPropagation();
           onRetry();
@@ -189,7 +189,7 @@ function ErrorActions({ onRetry, onRefresh }) {
       </Button>
 
       <Button
-        className="center w-full cursor-pointer transition-colors duration-200  bg-primary/60 hover:bg-primary px-4 py-2 text-sm font-semibold text-black hover:text-error"
+        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-black transition-colors duration-200"
         onClick={(event) => {
           event.stopPropagation();
           onRefresh();
@@ -233,12 +233,12 @@ function createErrorStatus({ type, title, description, icon, style, onRetry, cle
   const retryHandler =
     typeof onRetry === 'function'
       ? () => {
-        clearStatus();
-        onRetry();
-      }
+          clearStatus();
+          onRetry();
+        }
       : () => {
-        window.location.reload();
-      };
+          window.location.reload();
+        };
 
   return createOverlayStatus({
     type,
@@ -494,12 +494,12 @@ export function useNavigationStatus() {
           icon: 'solar:danger-triangle-bold',
           onRetry: resetError
             ? () => {
-              resetError();
+                resetError();
 
-              if (typeof navigator !== 'undefined' && !navigator.onLine) {
-                dispatchOfflineEvent();
+                if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                  dispatchOfflineEvent();
+                }
               }
-            }
             : undefined,
           style: getStatusTheme('APP_ERROR'),
           clearStatus,

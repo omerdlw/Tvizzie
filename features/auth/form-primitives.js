@@ -32,12 +32,7 @@ export function AuthField({ children, className = '', htmlFor, label }) {
   );
 }
 
-export function PasswordToggleButton({
-  visible,
-  onClick,
-  showLabel = 'Show password',
-  hideLabel = 'Hide password',
-}) {
+export function PasswordToggleButton({ visible, onClick, showLabel = 'Show password', hideLabel = 'Hide password' }) {
   return (
     <button
       type="button"

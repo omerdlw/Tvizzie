@@ -100,13 +100,7 @@ function filterNavigationItems(items, searchQuery) {
   });
 }
 
-function buildNavigationItems({
-  rawItems,
-  expanded,
-  searchQuery,
-  isNotFoundPage,
-  countdownItem,
-}) {
+function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage, countdownItem }) {
   if (countdownItem) {
     return [countdownItem];
   }

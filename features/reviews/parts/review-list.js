@@ -30,21 +30,32 @@ export default function ReviewList({
   }
 
   if (loadError) {
-    return <div className="text-error py-10 text-center text-sm leading-relaxed">{normalizeFeedbackText(loadError)}</div>;
-  }
-
-  if (sortedReviews.length === 0) {
-    return <div className="py-4 text-center text-sm leading-relaxed text-black/70">{emptyMessage}</div>;
+    return (
+      <div className="text-error py-10 text-center text-sm leading-relaxed">{normalizeFeedbackText(loadError)}</div>
+    );
   }
 
   const isAccountVariant = displayVariant === 'account';
+
+  if (sortedReviews.length === 0) {
+    return (
+      <div
+        className={cn(
+          'py-10 text-center text-sm leading-relaxed text-black-muted',
+          !isAccountVariant && showTopBorder && 'border-grid-line border-y'
+        )}
+      >
+        {emptyMessage}
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
         'flex flex-col',
         isAccountVariant && 'account-review-list-frame',
-        !isAccountVariant && showTopBorder && 'media-reviews-plus-line border-t border-black/10 grid-diamonds-top'
+        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-black/10'
       )}
     >
       {sortedReviews.map((review, index) => {

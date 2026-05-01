@@ -79,7 +79,12 @@ export async function isUserMediaWatched({ mediaKey, userId }) {
   }
 
   const client = getSupabaseClient();
-  const result = await client.from('watched').select('media_key').eq('media_key', mediaKey).eq('user_id', userId).maybeSingle();
+  const result = await client
+    .from('watched')
+    .select('media_key')
+    .eq('media_key', mediaKey)
+    .eq('user_id', userId)
+    .maybeSingle();
 
   assertSupabaseResult(result, 'Watched state could not be loaded');
 

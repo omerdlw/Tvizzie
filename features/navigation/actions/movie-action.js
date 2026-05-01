@@ -34,7 +34,8 @@ export default function MovieAction({
           value: 'truncate',
           menu: 'nav-action-select-menu overflow-hidden p-1 bottom-0',
           optionsList: 'flex flex-col gap-1',
-          option: 'nav-action-select-option cursor-pointer p-3 text-xs font-semibold tracking-wide uppercase outline-none',
+          option:
+            'nav-action-select-option cursor-pointer p-3 text-xs font-semibold tracking-wide uppercase outline-none',
           optionActive: 'nav-action-select-option-active',
           indicator: 'ml-auto text-black',
           icon: 'text-black-muted',
@@ -48,7 +49,7 @@ export default function MovieAction({
   const label = isActive ? 'Back' : 'Where to watch?';
 
   return (
-    <div className="flex flex-1 min-w-0 flex-col gap-2">
+    <div className="flex min-w-0 flex-1 flex-col gap-2">
       <button
         onClick={(event) => {
           event.preventDefault();

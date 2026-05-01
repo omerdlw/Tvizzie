@@ -88,10 +88,10 @@ function LoadingList() {
     <div>
       {Array.from({ length: 10 }, (_, index) => (
         <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse  bg-black/5" />
+          <div className="size-10 shrink-0 animate-pulse bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse  bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse  bg-black/5" />
+            <div className="h-3 w-3/5 animate-pulse bg-black/5" />
+            <div className="h-2 w-2/5 animate-pulse bg-black/5" />
           </div>
         </div>
       ))}
@@ -116,7 +116,7 @@ function SocialUserRow({ close, user, action }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0  object-cover"
+          className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           wrapperClassName="size-10 shrink-0 "
         />

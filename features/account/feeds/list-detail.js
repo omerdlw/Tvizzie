@@ -536,9 +536,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                   >
                     <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold">
-                          {ownReview ? 'Update your comment' : 'Write a comment'}
-                        </p>
+                        <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
                         <p className="text-xs text-black/70">
                           {ownReview
                             ? 'Open the comment composer to edit your text.'
@@ -546,7 +544,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                         </p>
                       </div>
                       <Button
-                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2  border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
                         type="button"
                         onClick={handleOpenReviewComposer}
                       >

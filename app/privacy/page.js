@@ -29,8 +29,8 @@ export default function PrivacyPage() {
         <LegalSection title="Overview">
           <p>
             Tvizzie is a movie and TV discovery app that lets people sign in, manage a profile, track what they watch,
-            build lists, publish reviews, and interact with other public content. We only try to collect the
-            information needed to operate those features, secure accounts, and improve reliability.
+            build lists, publish reviews, and interact with other public content. We only try to collect the information
+            needed to operate those features, secure accounts, and improve reliability.
           </p>
           <p>
             If you have privacy questions, you can contact{' '}
@@ -65,8 +65,8 @@ export default function PrivacyPage() {
               CSRF tokens, short-lived verification state, trusted-device markers, and account-security audit events.
             </li>
             <li>
-              Performance and diagnostics data, including Web Vitals measurements such as CLS, FCP, INP, LCP, TTFB,
-              the current pathname, and a generated metric identifier.
+              Performance and diagnostics data, including Web Vitals measurements such as CLS, FCP, INP, LCP, TTFB, the
+              current pathname, and a generated metric identifier.
             </li>
             <li>
               Local browser storage used for app preferences and temporary client-side state, such as poster/background
@@ -82,9 +82,8 @@ export default function PrivacyPage() {
               provider, such as your email address, name, and profile image.
             </li>
             <li>
-              Movie, TV, person, genre, and artwork data shown in the product is fetched from third-party media
-              sources, primarily TMDB. That content is used to power discovery and browsing features, not to identify
-              you.
+              Movie, TV, person, genre, and artwork data shown in the product is fetched from third-party media sources,
+              primarily TMDB. That content is used to power discovery and browsing features, not to identify you.
             </li>
           </ul>
         </LegalSection>
@@ -106,13 +105,12 @@ export default function PrivacyPage() {
         <LegalSection title="When information is visible to other people">
           <p>
             Tvizzie includes public-facing profile and content features. If your profile is public, other users may be
-            able to view information such as your username, display name, avatar, biography, watched titles,
-            watchlist, favorites, lists, reviews, likes, and activity history, depending on the feature.
+            able to view information such as your username, display name, avatar, biography, watched titles, watchlist,
+            favorites, lists, reviews, likes, and activity history, depending on the feature.
           </p>
           <p>
-            If you switch your profile to private, the app restricts access to profile sections for other users.
-            Private mode is an app-level control, not an absolute guarantee against every possible exposure or cached
-            copy.
+            If you switch your profile to private, the app restricts access to profile sections for other users. Private
+            mode is an app-level control, not an absolute guarantee against every possible exposure or cached copy.
           </p>
         </LegalSection>
 
@@ -148,18 +146,18 @@ export default function PrivacyPage() {
           <p>
             Tvizzie uses cookies and similar browser storage to keep you signed in, maintain security state, remember
             app preferences, and support parts of the UI. Some storage is necessary for the app to function, including
-            authentication cookies and CSRF protection. Some storage is used for convenience, such as visual
-            preferences and temporary cached media data.
+            authentication cookies and CSRF protection. Some storage is used for convenience, such as visual preferences
+            and temporary cached media data.
           </p>
         </LegalSection>
 
         <LegalSection title="Retention">
           <p>
-            We keep account and content data for as long as it is needed to operate the service, comply with
-            legitimate security needs, and preserve the content you choose to keep in your account. If you delete
-            content, it may disappear from active views before it disappears from backups or logs. If you delete your
-            account, we aim to remove or deactivate associated account data within the normal operation of the product,
-            subject to limited retention for security, abuse prevention, and system integrity.
+            We keep account and content data for as long as it is needed to operate the service, comply with legitimate
+            security needs, and preserve the content you choose to keep in your account. If you delete content, it may
+            disappear from active views before it disappears from backups or logs. If you delete your account, we aim to
+            remove or deactivate associated account data within the normal operation of the product, subject to limited
+            retention for security, abuse prevention, and system integrity.
           </p>
         </LegalSection>
 

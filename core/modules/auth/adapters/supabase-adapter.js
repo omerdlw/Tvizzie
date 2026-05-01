@@ -64,7 +64,9 @@ function isIgnorableLogoutError(error) {
   const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
   const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
-  return IGNORABLE_LOGOUT_CODES.has(code) || IGNORABLE_LOGOUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+  return (
+    IGNORABLE_LOGOUT_CODES.has(code) || IGNORABLE_LOGOUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  );
 }
 
 function toAdapterError(error, fallbackMessage) {

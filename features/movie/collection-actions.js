@@ -12,6 +12,7 @@ import { resolveExplicitMediaType } from '@/core/utils/media';
 import { cn } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
+import { useMediaReviews } from '@/features/reviews/use-media-reviews';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   ensureLegacyFavoritesBackfilled,
@@ -122,7 +123,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2  px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >
@@ -204,6 +205,13 @@ export default function CollectionActions({ media }) {
     likeIntent: null,
     watchlistIntent: null,
     watchedIntent: null,
+  });
+
+  const { ownReview } = useMediaReviews({
+    entityId: mediaSnapshot.entityId,
+    entityType: mediaSnapshot.entityType,
+    posterPath: mediaSnapshot.posterPath,
+    title: mediaSnapshot.title,
   });
 
   useEffect(() => {
@@ -441,6 +449,31 @@ export default function CollectionActions({ media }) {
     });
   }
 
+  async function handleWriteReview() {
+    const resolvedUserId = await ensureSignedIn();
+    if (!resolvedUserId) {
+      return;
+    }
+
+    openModal('REVIEW_EDITOR_MODAL', 'center', {
+      data: {
+        media: {
+          entityId: mediaSnapshot.entityId,
+          entityType: mediaSnapshot.entityType,
+          posterPath: mediaSnapshot.posterPath,
+          title: mediaSnapshot.title,
+        },
+        review: ownReview,
+        user: {
+          id: resolvedUserId,
+          name: auth.user?.name || auth.user?.displayName || 'Anonymous User',
+          username: auth.user?.username || null,
+          avatarUrl: auth.user?.avatarUrl || auth.user?.photoURL || null,
+        },
+      },
+    });
+  }
+
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
   const canGoToMovie = Boolean(mediaSnapshot?.entityId) && isMovieReviewsRoute;
@@ -457,30 +490,26 @@ export default function CollectionActions({ media }) {
     <div className="flex flex-col gap-2">
       {canGoToMovie ? (
         <ActionMotionItem index={0}>
-          <ActionButton
-            icon="solar:clapperboard-play-bold"
-            label="Go to Movie"
-            onClick={handleGoToMovie}
-          />
+          <ActionButton icon="solar:clapperboard-play-bold" label="Go to Movie" onClick={handleGoToMovie} />
         </ActionMotionItem>
       ) : null}
 
-      {showLikeAction ? (
-        <ActionMotionItem index={1}>
-          <ActionButton
-            active={state.liked}
-            disabled={state.loadingLike || state.submittingLike}
-            icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
-            label={state.liked ? 'Liked' : 'Like'}
-            loading={state.loadingLike || state.submittingLike}
-            loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
-            onClick={handleLikeClick}
-            palette="like"
-          />
-        </ActionMotionItem>
-      ) : null}
+      <div className={cn('grid grid-cols-1 gap-2', showLikeAction ? 'min-[460px]:grid-cols-2' : '')}>
+        {showLikeAction ? (
+          <ActionMotionItem index={1}>
+            <ActionButton
+              active={state.liked}
+              disabled={state.loadingLike || state.submittingLike}
+              icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+              label={state.liked ? 'Liked' : 'Like'}
+              loading={state.loadingLike || state.submittingLike}
+              loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
+              onClick={handleLikeClick}
+              palette="like"
+            />
+          </ActionMotionItem>
+        ) : null}
 
-      <div className={cn('grid grid-cols-1 gap-2', showWatchlistAction ? 'min-[460px]:grid-cols-2' : '')}>
         <ActionMotionItem index={2}>
           <ActionButton
             active={state.watched}
@@ -493,26 +522,31 @@ export default function CollectionActions({ media }) {
             palette="watched"
           />
         </ActionMotionItem>
-
-        {showWatchlistAction ? (
-          <ActionMotionItem index={3}>
-            <ActionButton
-              active={state.watchlist}
-              disabled={state.loadingWatchlist || state.submittingWatchlist}
-              icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-              label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-              loading={state.loadingWatchlist || state.submittingWatchlist}
-              loadingLabel={
-                state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
-              }
-              onClick={handleWatchlistClick}
-              palette="watchlist"
-            />
-          </ActionMotionItem>
-        ) : null}
       </div>
 
+      <ActionMotionItem index={3}>
+        <ActionButton
+          active={state.watchlist}
+          disabled={state.loadingWatchlist || state.submittingWatchlist}
+          icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+          label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+          loading={state.loadingWatchlist || state.submittingWatchlist}
+          loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
+          onClick={handleWatchlistClick}
+          palette="watchlist"
+        />
+      </ActionMotionItem>
+
       <ActionMotionItem index={4}>
+        <ActionButton
+          icon={ownReview ? 'solar:pen-new-square-bold' : 'solar:pen-new-square-linear'}
+          label={ownReview ? 'Edit Review' : 'Add Review'}
+          onClick={handleWriteReview}
+          palette="neutral"
+        />
+      </ActionMotionItem>
+
+      <ActionMotionItem index={5}>
         <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
       </ActionMotionItem>
     </div>

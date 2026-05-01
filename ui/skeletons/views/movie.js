@@ -14,7 +14,7 @@ function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
 
 function SegmentTabs() {
   return (
-    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1  p-0.5">
+    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1 p-0.5">
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
       <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
@@ -24,8 +24,8 @@ function SegmentTabs() {
 
 function CastCard() {
   return (
-    <div className="flex items-center gap-3  bg-black/5 p-1 pr-4 backdrop-blur-xs">
-      <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0 " radius="segmentedItem" />
+    <div className="flex items-center gap-3 bg-black/5 p-1 pr-4 backdrop-blur-xs">
+      <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
         <TextLine width="w-1/2" className="h-2.5" soft={true} />
@@ -36,8 +36,8 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2  bg-black/5 p-1 pr-2 backdrop-blur-xs">
-      <SkeletonBlock className="size-8 shrink-0 " />
+    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 bg-black/5 p-1 pr-2 backdrop-blur-xs">
+      <SkeletonBlock className="size-8 shrink-0" />
       <TextLine width="w-3/5" className="h-3" />
     </div>
   );
@@ -46,7 +46,7 @@ function CompactCastCard() {
 function CarouselCard({ className = '', aspectClass = 'aspect-video', soft = false }) {
   return (
     <div className={`w-72 shrink-0 ${className}`}>
-      <SkeletonBlock className={`${aspectClass} w-full `} soft={soft} />
+      <SkeletonBlock className={`${aspectClass} w-full`} soft={soft} />
     </div>
   );
 }
@@ -64,11 +64,11 @@ function LandscapeCarouselStrip() {
 function PosterCarouselStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
-      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
-      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
-      <CarouselCard className="w-36" aspectClass="aspect-2/3" />
-      <CarouselCard className="w-16" aspectClass="aspect-2/3" soft={true} />
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="movie-carousel-recommendation-item shrink-0">
+          <SkeletonPoster soft={index > 3} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -105,16 +105,16 @@ function SidebarTaxonomySkeleton() {
       <div className="flex flex-col gap-2">
         <TextLine width="w-14" className="h-2.5" soft={true} />
         <div className="flex flex-wrap gap-1.5">
-          <SkeletonPill className="h-7 w-20 " soft={true} />
-          <SkeletonPill className="h-7 w-24 " soft={true} />
-          <SkeletonPill className="h-7 w-16 " soft={true} />
+          <SkeletonPill className="h-7 w-20" soft={true} />
+          <SkeletonPill className="h-7 w-24" soft={true} />
+          <SkeletonPill className="h-7 w-16" soft={true} />
         </div>
       </div>
       <div className="flex flex-col gap-2">
         <TextLine width="w-10" className="h-2.5" soft={true} />
         <div className="grid grid-cols-2 gap-1.5">
-          <SkeletonPill className="h-7 " soft={true} />
-          <SkeletonPill className="h-7 " soft={true} />
+          <SkeletonPill className="h-7" soft={true} />
+          <SkeletonPill className="h-7" soft={true} />
         </div>
       </div>
     </div>
@@ -123,12 +123,12 @@ function SidebarTaxonomySkeleton() {
 
 function MovieHeroSkeleton() {
   return (
-    <div className="movie-detail-shell-inset pb-8">
+    <div className="movie-detail-shell-inset flex flex-col gap-4">
       <div className="flex flex-col items-start gap-1.5">
         <SkeletonBlock className="h-20 w-2/3 sm:h-24 lg:h-28" radius="hero" />
       </div>
 
-      <div className="mt-4 flex w-full flex-col gap-4">
+      <div className="flex w-full flex-col gap-4">
         <TextLine width="w-2/3" className="h-3" soft={true} />
         <div className="movie-detail-reading-measure flex flex-col gap-2">
           <TextLine soft={true} />
@@ -175,9 +175,9 @@ function MovieReviewsSkeleton({ className = '' }) {
           <TextLine width="w-36" className="h-4" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SkeletonPill className="h-9 w-28 " soft={true} />
-          <SkeletonPill className="h-9 w-32 " soft={true} />
-          <SkeletonPill className="h-9 w-24 " soft={true} />
+          <SkeletonPill className="h-9 w-28" soft={true} />
+          <SkeletonPill className="h-9 w-32" soft={true} />
+          <SkeletonPill className="h-9 w-24" soft={true} />
         </div>
       </div>
 
@@ -261,9 +261,9 @@ export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
   }
 
   return (
-    <section className={`movie-detail-grid-subsection px-4 sm:px-6 lg:px-8 ${className}`}>
+    <section className={`movie-detail-grid-subsection ${className}`}>
       <MovieGridDivider inset={true} />
-      <div className="movie-detail-grid-subsection-content">
+      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">
         <MovieSectionContentSkeleton variant={variant} />
       </div>
     </section>
@@ -272,15 +272,15 @@ export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
 
 function SidebarSkeleton() {
   return (
-    <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-5 lg:py-7 grid-diamonds-bottom border-b border-black/10">
+    <div className="flex h-full flex-col gap-0">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7">
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
         <SidebarActionButtons />
       </div>
 
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-8">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7">
         <SidebarTaxonomySkeleton />
         <div className="flex flex-col gap-3">
           {Array.from({ length: 7 }).map((_, index) => (
@@ -300,23 +300,32 @@ function MovieContentSkeleton() {
       >
         <div className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0">
           <div className="movie-detail-grid-sidebar w-full shrink-0">
-            <div className="lg:sticky lg:top-0">
+            <div className="h-full lg:sticky lg:top-0">
               <SidebarSkeleton />
             </div>
           </div>
 
-          <div className="movie-detail-grid-main movie-detail-section-band flex w-full min-w-0 flex-col">
+          <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
             <div className="flex w-full flex-col">
-              <MovieHeroSkeleton />
-              <MovieSectionSkeleton variant="cast" />
+              <div className="movie-detail-primary-stage flex flex-col py-7">
+                <div className="movie-detail-primary-stage-shell flex flex-1 flex-col justify-between gap-8">
+                  <MovieHeroSkeleton />
+                  <div className="movie-detail-primary-cast-block">
+                    <div className="movie-detail-shell-inset">
+                      <MovieCastSkeleton />
+                    </div>
+                  </div>
+                </div>
+              </div>
               <MovieSectionSkeleton variant="gallery" />
               <MovieSectionSkeleton variant="images" />
-              <MovieSectionSkeleton variant="videos" />
-              <MovieSectionSkeleton variant="recommendations" />
-              <MovieSectionSkeleton variant="recommendations" />
             </div>
           </div>
         </div>
+
+        <MovieSectionSkeleton variant="videos" />
+        <MovieSectionSkeleton variant="recommendations" />
+        <MovieSectionSkeleton variant="recommendations" />
 
         <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
           <MovieGridDivider />

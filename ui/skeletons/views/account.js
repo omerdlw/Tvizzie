@@ -1,18 +1,15 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/core/constants';
 import { cn } from '@/core/utils';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 
 const HERO_HEIGHT_CLASS = 'account-hero-height';
 const HERO_BANNER_WRAPPER_CLASS = 'account-hero-banner-wrapper';
-const HERO_AMBIENT_OVERLAY_CLASS =
-  'account-skeleton-hero-ambient-overlay absolute inset-0';
+const HERO_AMBIENT_OVERLAY_CLASS = 'account-skeleton-hero-ambient-overlay absolute inset-0';
 const HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const HERO_LEFT_FADE_CLASS =
-  'account-hero-side-fade account-hero-left-fade absolute inset-y-0 left-0';
-const HERO_RIGHT_FADE_CLASS =
-  'account-hero-side-fade account-hero-right-fade absolute inset-y-0 right-0';
-const HERO_TOP_FADE_CLASS =
-  'account-hero-top-fade absolute inset-x-0 top-0';
+const HERO_LEFT_FADE_CLASS = 'account-hero-side-fade account-hero-left-fade absolute inset-y-0 left-0';
+const HERO_RIGHT_FADE_CLASS = 'account-hero-side-fade account-hero-right-fade absolute inset-y-0 right-0';
+const HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0';
 const HERO_TINT_CLASS = 'account-skeleton-hero-tint-overlay absolute inset-0';
 const ACCOUNT_SKELETON_ROUTE_VARIANTS = Object.freeze([
   { pattern: /\/lists\/[^/]+(?:\/)?$/, variant: 'list-detail' },
@@ -157,7 +154,7 @@ function AccountHeroSkeleton() {
           <div className="account-skeleton-hero-bio">
             <div className="mt-2 flex max-w-3xl flex-col gap-2">
               <Line className="h-3.5 w-full" soft={true} />
-              <Line className="h-3.5 account-skeleton-hero-bio-trail" soft={true} />
+              <Line className="account-skeleton-hero-bio-trail h-3.5" soft={true} />
             </div>
           </div>
         </div>
@@ -201,8 +198,7 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
 }
 
 function PosterStripSkeleton({ count = 6 }) {
-  const gridClassName =
-    count > 5 ? 'account-overview-media-grid-standard' : 'account-overview-media-grid-favorites';
+  const gridClassName = count > 5 ? 'account-overview-media-grid-standard' : 'account-overview-media-grid-favorites';
 
   return (
     <div className={`account-overview-media-grid ${gridClassName}`}>
@@ -246,7 +242,7 @@ function FilterBarSkeleton({ count = 2 }) {
   return (
     <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
       {Array.from({ length: count }).map((_, index) => (
-        <Pill key={index} className="h-9 min-w-40 flex-1 " soft={true} />
+        <Pill key={index} className="h-9 min-w-40 flex-1" soft={true} />
       ))}
     </div>
   );
@@ -256,7 +252,7 @@ function PaginationSkeleton() {
   return (
     <div className="grid w-full grid-cols-3 items-center gap-2 sm:gap-3">
       <div className="flex justify-start">
-        <Pill className="h-10 min-w-24  sm:min-w-28" soft={true} />
+        <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
       <div className="flex items-center justify-center gap-3 sm:gap-4">
         <Line className="h-3.5 w-3" />
@@ -264,7 +260,7 @@ function PaginationSkeleton() {
         <Line className="h-3.5 w-3" soft={true} />
       </div>
       <div className="flex justify-end">
-        <Pill className="h-10 min-w-24  sm:min-w-28" soft={true} />
+        <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
     </div>
   );
@@ -280,8 +276,8 @@ function ListPreviewStackSkeleton() {
   ];
 
   return (
-    <div className="relative h-48  bg-white">
-      <Bar className="absolute inset-0 " soft={true} />
+    <div className="relative h-48 bg-white">
+      <Bar className="absolute inset-0" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
         <div key={transformClass} className={`absolute top-0 left-1/2 h-40 w-28 ${transformClass}`}>
@@ -297,7 +293,7 @@ function ListCardSkeleton() {
     <div className="relative w-full">
       <ListPreviewStackSkeleton />
 
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  bg-white/80 backdrop-blur-md">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden bg-white/80 backdrop-blur-md">
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-4 w-3/4" />
@@ -346,7 +342,7 @@ function ReviewCardSkeleton() {
     <article className="py-4 sm:py-5">
       <div className="relative transition-all duration-300">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <div className="relative h-24 w-16 shrink-0 overflow-hidden  sm:h-28 sm:w-20">
+          <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-20">
             <Poster radius="card" />
           </div>
 
@@ -573,14 +569,14 @@ function ListDetailSkeleton() {
               <SkeletonCircle className="size-8" soft={true} />
               <Line className="h-4 w-28" />
             </div>
-            <Pill className="h-9 w-28 " soft={true} />
+            <Pill className="h-9 w-28" soft={true} />
           </div>
           <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Line className="h-3.5 w-36" />
               <Line className="h-3 w-64 max-w-full" soft={true} />
             </div>
-            <Pill className="h-10 w-full  sm:w-36" soft={true} />
+            <Pill className="h-10 w-full sm:w-36" soft={true} />
           </div>
           <ReviewCardSkeleton />
         </SectionBodySkeleton>
@@ -638,7 +634,7 @@ function ListBuilderSkeleton() {
     <div>
       <SectionShell>
         <SectionBodySkeleton>
-          <div className="skeleton-block-soft overflow-hidden ">
+          <div className="skeleton-block-soft overflow-hidden">
             <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-2">
               <section className="flex min-h-0 flex-col">
                 <div className="p-4 sm:p-5">
@@ -669,9 +665,9 @@ function ListBuilderSkeleton() {
 
                 <div className="mt-4 flex flex-col gap-3">
                   {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="skeleton-block-soft flex items-center gap-3  p-2.5">
+                    <div key={index} className="skeleton-block-soft flex items-center gap-3 p-2.5">
                       <Line className="h-3 w-4" soft={true} />
-                      <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0 " radius="field" />
+                      <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0" radius="field" />
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
                         <Line className="h-3 w-4/5" />
                         <Line className="h-2.5 w-1/2" soft={true} />
@@ -714,20 +710,19 @@ function renderVariant(variant) {
 export function Skeleton({ variant = 'overview' }) {
   return (
     <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-white">
-      <main className="relative min-h-screen overflow-hidden bg-white">
-        <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`}>
-          <div className="relative">
-            <AccountHeroSkeleton />
-            <div className="absolute inset-x-0 top-0 z-20">
-              <AccountNavSkeleton />
-            </div>
+      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`}>
+        <div className="relative">
+          <AccountHeroSkeleton />
+          <div className="absolute inset-x-0 top-0 z-20">
+            <AccountNavSkeleton />
           </div>
-          <div className="account-detail-hero-divider">
-            <SkeletonGridDivider />
-          </div>
-          <div className="account-detail-grid-main">{renderVariant(variant)}</div>
         </div>
-      </main>
+        <div className="account-detail-hero-divider">
+          <SkeletonGridDivider />
+        </div>
+        <main className="account-detail-grid-main">{renderVariant(variant)}</main>
+        <NavHeightSpacer />
+      </div>
     </div>
   );
 }

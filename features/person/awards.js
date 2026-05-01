@@ -82,7 +82,9 @@ function AwardsState({ message, variant = 'empty' }) {
 function AwardStatus({ type }) {
   const isWinner = isWinType(type);
 
-  return <span className={cn('shrink-0', isWinner ? 'font-bold text-warning' : 'font-semibold text-black/45')}>{type}</span>;
+  return (
+    <span className={cn('shrink-0', isWinner ? 'text-warning font-bold' : 'font-semibold text-black/45')}>{type}</span>
+  );
 }
 
 export default function PersonAwards({ personId }) {

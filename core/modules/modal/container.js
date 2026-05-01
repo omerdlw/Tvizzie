@@ -31,11 +31,7 @@ function getContainerClassName({ className, position }) {
 function getBodyClassName(position, bodyClassName) {
   const sideModal = isSideModal(position);
 
-  return cn(
-    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain',
-    sideModal ? ' ' : '',
-    bodyClassName
-  );
+  return cn('bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain', sideModal ? ' ' : '', bodyClassName);
 }
 
 function resolveHeaderActions(actions, close) {
@@ -64,7 +60,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center  border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>
@@ -124,11 +120,7 @@ export default function Container({ children, className, bodyClassName, header =
         </div>
       ) : null}
 
-      <div
-        data-lenis-prevent
-        data-lenis-prevent-wheel
-        className={getBodyClassName(position, bodyClassName)}
-      >
+      <div data-lenis-prevent data-lenis-prevent-wheel className={getBodyClassName(position, bodyClassName)}>
         {children}
       </div>
 
