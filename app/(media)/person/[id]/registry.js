@@ -91,7 +91,7 @@ export default function Registry({
                 animation: PERSON_BACKGROUND_ANIMATION,
                 image: backgroundImage,
                 overlay: true,
-                overlayOpacity: 0.4,
+                overlayOpacity: 0.6,
                 overlayColor: 'var(--white)',
                 noiseStyle: {
                   opacity: 0.13,

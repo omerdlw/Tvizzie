@@ -9,9 +9,9 @@ import { NAV_ACTION_SPRING, NAV_CONTENT_TRANSITION, NAV_SURFACE_SPRING } from '@
 import { getNavConfirmationKey } from '@/core/modules/nav/utils';
 
 const BUTTON_TONES = Object.freeze({
-  danger: 'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-white hover:border-error',
-  muted: 'border border-black/10 bg-primary hover:bg-white',
-  primary: 'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-white hover:border-info',
+  danger: 'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-black hover:border-error',
+  muted: 'border border-white/10 bg-primary hover:bg-black',
+  primary: 'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-black hover:border-info',
 });
 
 function resolveButtonTone(tone) {

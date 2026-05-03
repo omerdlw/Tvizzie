@@ -20,14 +20,14 @@ export function AccountSectionHeading({
   title,
   titleHref = null,
 }) {
-  const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-black/70 transition';
-  const summaryClassName = 'text-xs font-semibold tracking-widest text-black/50 uppercase';
+  const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-white/70 transition';
+  const summaryClassName = 'text-xs font-semibold tracking-widest text-white/50 uppercase';
 
   return (
     <div className={cn('account-detail-section-heading flex w-full flex-col gap-4', className)}>
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          {icon ? <Icon icon={icon} size={24} className="text-black/70" /> : null}
+          {icon ? <Icon icon={icon} size={24} className="text-white/70" /> : null}
           {titleHref ? (
             <Link href={titleHref} className={cn(titleClassName, 'min-w-0 truncate')}>
               {title}

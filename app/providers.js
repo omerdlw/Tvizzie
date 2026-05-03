@@ -8,7 +8,6 @@ import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/
 import { MotionRuntimeProvider } from '@/features/motion-runtime';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { pipe } from '@/core/utils';
-import { SmoothScrollProvider } from '@/features/app-shell/smooth-scroll';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/core/modules/background';
 import { GlobalError } from '@/core/modules/error-boundary';
@@ -120,14 +119,13 @@ function AppShellContent({ children, interactiveBoundaryVariant, needsInteractiv
     ? renderInteractiveBoundary(shellChildren, interactiveBoundaryVariant)
     : shellChildren;
 
-  return needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
+  return content;
 }
 
 export const AppProviders = ({ children }) => {
   const pathname = usePathname();
   const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
   const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
-  const needsSmoothScroll = false;
 
   return (
     <MotionRuntimeProvider>
@@ -139,7 +137,6 @@ export const AppProviders = ({ children }) => {
           <AppShellContent
             interactiveBoundaryVariant={interactiveBoundaryVariant}
             needsInteractiveBoundary={needsInteractiveBoundary}
-            needsSmoothScroll={needsSmoothScroll}
           >
             {children}
           </AppShellContent>

@@ -34,7 +34,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0  border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0 rounded-xs border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-white/10';
 const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`;
 const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${SUCCESS_ACTION_TONE_CLASS}`;
 const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${INFO_ACTION_TONE_CLASS}`;
@@ -87,11 +87,11 @@ function LoadingList() {
   return (
     <div>
       {Array.from({ length: 10 }, (_, index) => (
-        <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+        <div key={index} className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
+          <div className="size-10 shrink-0 animate-pulse rounded-xs bg-white/10" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+            <div className="h-3 w-3/5 animate-pulse rounded-xs bg-white/10" />
+            <div className="h-2 w-2/5 animate-pulse rounded-xs bg-white/10" />
           </div>
         </div>
       ))}
@@ -104,7 +104,7 @@ function SocialUserRow({ close, user, action }) {
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4">
+    <div className="flex items-center justify-between gap-3 border-b border-white/10 p-3 transition-colors last:border-none hover:bg-white/10 lg:p-4">
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -118,11 +118,11 @@ function SocialUserRow({ close, user, action }) {
           decoding="async"
           className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0 "
+          wrapperClassName="size-10 shrink-0 rounded-xs overflow-hidden"
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
-          <p className="truncate text-[11px] text-black/50">@{user.username || 'username'}</p>
+          <p className="truncate text-[11px] text-white/50">@{user.username || 'username'}</p>
         </div>
       </Link>
       {action}
@@ -484,9 +484,9 @@ export default function AccountSocialModal({ close, data }) {
           classNames={{
             wrapper: 'bg-transparent border-none',
             button: 'flex-1 justify-center  px-4 py-2 text-[13px]',
-            indicator: ' bg-black',
-            inactive: 'text-black/50 hover:text-black',
-            active: 'text-white font-semibold',
+            indicator: ' bg-white',
+            inactive: 'text-white/50 hover:text-white',
+            active: 'text-black font-semibold',
           }}
         />
       }

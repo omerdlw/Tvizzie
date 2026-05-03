@@ -9,7 +9,7 @@ import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 rounded border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 
 function getItemKey(item) {
   return String(item?.mediaKey || `${item?.entityType || item?.media_type || 'movie'}-${item?.entityId || item?.id}`)
@@ -25,15 +25,15 @@ function ListItemRow({ item, onRemove }) {
   const title = getItemTitle(item);
 
   return (
-    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 transition-colors hover:border-black/10">
+    <div className="group bg-primary flex min-h-10 items-center gap-3 rounded border border-white/10 px-3 py-1.5 transition-colors hover:border-white/10">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
+        <p className="truncate text-sm font-semibold text-white">{title}</p>
       </div>
 
       <button
         type="button"
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-black/35 opacity-100 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 rounded-xs border border-transparent text-white/40 opacity-100 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
@@ -151,7 +151,7 @@ export default function ListEditorModal({ close, data, header }) {
       bodyClassName="flex overflow-hidden p-3"
       footer={{
         left: (
-          <span className="text-xs text-black/50">
+          <span className="text-xs text-white/50">
             {isEditing ? `${draftItems.length} ${draftItems.length === 1 ? 'title' : 'titles'}` : 'Create a new list'}
           </span>
         ),
@@ -161,7 +161,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={`${ACTION_BUTTON_CLASS} text-black/70 hover:bg-black/5 hover:text-black`}
+              className={`${ACTION_BUTTON_CLASS} text-white/70 hover:bg-white/10 hover:text-white`}
             >
               Cancel
             </Button>
@@ -169,7 +169,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
             >
               {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
             </Button>
@@ -186,8 +186,8 @@ export default function ListEditorModal({ close, data, header }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+                'flex h-10 items-center rounded border border-white/10 bg-white/10 px-3.5 transition focus-within:border-white/20',
+              input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
             }}
           />
           <Textarea
@@ -197,9 +197,9 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={120}
             className={{
               wrapper:
-                'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 transition focus-within:border-black/20 sm:min-h-10',
+                'flex min-h-10 rounded border border-white/10 bg-white/10 px-3.5 py-2.5 transition focus-within:border-white/20 sm:min-h-10',
               textarea:
-                'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
+                'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-white outline-none placeholder:text-white/50',
             }}
           />
         </div>
@@ -213,9 +213,9 @@ export default function ListEditorModal({ close, data, header }) {
             {draftItems.length > 0 ? (
               draftItems.map((item) => <ListItemRow key={getItemKey(item)} item={item} onRemove={handleRemoveItem} />)
             ) : (
-              <div className="flex h-28 flex-col items-center justify-center gap-2 border border-black/10 bg-black/5 text-center">
-                <Icon icon="solar:list-broken" size={24} className="text-black/50" />
-                <p className="text-xs text-black/50">No titles in this list</p>
+              <div className="flex h-28 flex-col items-center justify-center gap-2 rounded border border-white/10 bg-white/10 text-center">
+                <Icon icon="solar:list-broken" size={24} className="text-white/50" />
+                <p className="text-xs text-white/50">No titles in this list</p>
               </div>
             )}
           </div>

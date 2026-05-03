@@ -239,7 +239,16 @@ export function DiscoverSection({
 
   return (
     <HomeSectionReveal delay={0.08} distance={18}>
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+      <section className="home-section-shell flex w-full flex-col gap-5">
+        <div className="home-section-heading flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold tracking-widest text-white-muted uppercase">Browse</p>
+            <h2 className="font-zuume text-5xl leading-none font-bold text-white uppercase sm:text-6xl">
+              Discover movies
+            </h2>
+          </div>
+        </div>
+
         <div
           ref={scrollContainerRef}
           className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing"
@@ -275,11 +284,11 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="border border-black/10 bg-white/70 p-3 text-sm text-black/50">{gridError}</div>
+          <div className="rounded border border-grid-line bg-primary p-3 text-sm text-white-muted">{gridError}</div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+          <div className="rounded border border-grid-line bg-primary p-4 text-sm text-white-muted">
             No movies found for this genre.
           </div>
         ) : null}
@@ -290,7 +299,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 rounded border border-grid-line bg-primary px-5 text-xs font-semibold tracking-widest text-white-soft uppercase transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

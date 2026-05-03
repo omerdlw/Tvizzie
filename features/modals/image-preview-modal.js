@@ -56,7 +56,7 @@ export default function ImagePreviewModal({ close, data }) {
           fill
         />
         {!isLoaded && (
-          <div className="center absolute inset-0 animate-pulse bg-black/5">
+          <div className="center absolute inset-0 animate-pulse bg-white/10">
             <Spinner size={40} />
           </div>
         )}

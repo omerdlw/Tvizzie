@@ -27,9 +27,9 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-start gap-2 py-1.5 text-sm text-black">
+    <div className="flex items-start gap-2 py-1.5 text-sm text-white">
       <motion.span
-        className="mt-0.5 inline-flex shrink-0 text-black/70"
+        className="mt-0.5 inline-flex shrink-0 text-white/70"
         initial={{ opacity: 0, scale: 0.82, y: 4 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
@@ -121,7 +121,7 @@ function SidebarMotionChip({ children, delay = 0, index = 0 }) {
 
 function PersonLink({ person }) {
   return (
-    <Link href={`/person/${person.id}`} className="text-black/70 transition-colors">
+    <Link href={`/person/${person.id}`} className="text-white/70 transition-colors">
       {person.name}
     </Link>
   );
@@ -143,13 +143,13 @@ function PersonsDisplay({ persons, label }) {
         {visible.map((person, index) => (
           <div key={person.id} className="flex items-center gap-1">
             <PersonLink person={person} />
-            {index < visible.length - 1 && <span className="text-black/50">,</span>}
+            {index < visible.length - 1 && <span className="text-white/50">,</span>}
           </div>
         ))}
 
         {hidden.length > 0 && (
           <Tooltip text={hidden.map((person) => person.name).join(', ')} position="top">
-            <span className="shrink-0 cursor-help text-xs font-bold text-black/70 transition-colors">
+            <span className="shrink-0 cursor-help text-xs font-bold text-white/70 transition-colors">
               +{hidden.length}
             </span>
           </Tooltip>
@@ -175,17 +175,17 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
   return (
     <div className="flex flex-col gap-2.5">
       <SidebarMotionItem delay={delay} index={0}>
-        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">{label}</p>
+        <p className="text-[11px] leading-none font-semibold tracking-widest text-white/50 uppercase">{label}</p>
       </SidebarMotionItem>
       <div className={cn('flex flex-wrap', isTagGroup ? 'gap-1.5' : 'gap-2')}>
         {visibleItems.map((item, index) => (
           <SidebarMotionChip key={item} delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger} index={index}>
             <span
               className={cn(
-                'bg-primary inline-flex max-w-full items-center text-[11px] font-semibold',
+                'inline-flex max-w-full items-center rounded bg-white/5 text-[11px] font-semibold',
                 isTagGroup
-                  ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-black/70'
-                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wider text-black/80 uppercase'
+                  ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-white/60'
+                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wide text-white/80 uppercase'
               )}
             >
               {item}
@@ -200,7 +200,7 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
             index={visibleItems.length}
           >
             <Tooltip text={hiddenItems.join(', ')} position="top">
-              <span className="bg-primary inline-flex min-h-7 items-center px-2.5 py-1 text-[11px] leading-none font-semibold tracking-wide text-black/70">
+              <span className="inline-flex min-h-7 items-center rounded bg-white/5 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/80">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
@@ -241,7 +241,7 @@ export function MovieSidebarPrimary({ item, topContent }) {
       className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
     >
       <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
           {posterSrc ? (
             <AdaptiveImage
               fill
@@ -254,11 +254,11 @@ export function MovieSidebarPrimary({ item, topContent }) {
               decoding="async"
               placeholder="blur"
               blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
-              className="object-cover"
+              className="rounded object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="bg-primary center h-full w-full text-black/50">
+            <div className="center h-full w-full bg-white/5 text-white/50">
               <Icon icon="solar:clapperboard-play-bold" size={40} />
             </div>
           )}
@@ -314,7 +314,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'certification',
         'solar:shield-bold',
         <>
-          Rated <span className="text-black/70">{certification}</span>
+          Rated <span className="text-white/70">{certification}</span>
         </>
       ),
 
@@ -323,7 +323,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'language',
         'solar:globus-bold',
         <>
-          Original Language: <span className="text-black/70">{originalLanguageName}</span>
+          Original Language: <span className="text-white/70">{originalLanguageName}</span>
         </>
       ),
 
@@ -332,7 +332,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'status',
         'solar:info-circle-bold',
         <>
-          Status: <span className="text-black/70">{item.status}</span>
+          Status: <span className="text-white/70">{item.status}</span>
         </>
       ),
 
@@ -341,7 +341,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'runtime',
         'solar:clock-circle-bold',
         <>
-          ~<span className="text-black/70">{episodeRuntime}</span> min / episode
+          ~<span className="text-white/70">{episodeRuntime}</span> min / episode
         </>
       ),
 
@@ -350,7 +350,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'budget',
         'solar:dollar-bold',
         <>
-          Budget: <span className="text-black/70">{formatCurrency(item.budget)}</span>
+          Budget: <span className="text-white/70">{formatCurrency(item.budget)}</span>
         </>
       ),
 
@@ -359,7 +359,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
         'revenue',
         'solar:graph-up-bold',
         <>
-          Revenue: <span className="text-black/70">{formatCurrency(item.revenue)}</span>
+          Revenue: <span className="text-white/70">{formatCurrency(item.revenue)}</span>
         </>
       ),
   ].filter(Boolean);

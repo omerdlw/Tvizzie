@@ -541,7 +541,7 @@ export default function SearchClient() {
                   ) : null}
                 </>
               ) : loading ? null : (
-                <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+                <div className="mx-auto w-full max-w-4xl border border-white/10 bg-white/10 px-4 py-3 text-xs font-medium text-white/70">
                   {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
                     ? 'No results found for the selected movie filters'
                     : 'No results found'}
@@ -550,7 +550,7 @@ export default function SearchClient() {
             </div>
           </SearchSectionReveal>
         ) : (
-          <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+          <div className="mx-auto w-full max-w-4xl rounded-xs border-[0.5px] border-white/10 bg-white/5 px-4 py-3 text-xs font-medium text-white/70">
             Start typing to see all results
           </div>
         )}

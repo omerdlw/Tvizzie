@@ -107,8 +107,8 @@ function BackgroundGradients({ count, direction }) {
       key={`${direction}-${index}`}
       className={
         direction === 'left'
-          ? 'pointer-events-none absolute inset-0 bg-linear-to-r from-white via-transparent to-transparent'
-          : 'pointer-events-none absolute inset-0 bg-linear-to-l from-white via-transparent to-transparent'
+          ? 'pointer-events-none absolute inset-0 bg-linear-to-r from-black via-transparent to-transparent'
+          : 'pointer-events-none absolute inset-0 bg-linear-to-l from-black via-transparent to-transparent'
       }
     />
   ));

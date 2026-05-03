@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { MovieGridDivider } from '@/features/movie/grid-animation';
+
 const DESKTOP_BREAKPOINT = 1024;
 
 function getDesktopSidebarPrimary() {
@@ -55,18 +57,5 @@ export default function MoviePrimaryGridDivider() {
     return null;
   }
 
-  return (
-    <div
-      className="movie-detail-grid-divider movie-detail-primary-grid-divider"
-      style={dividerStyle}
-      aria-hidden="true"
-    >
-      <span className="movie-detail-grid-divider-startcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="movie-detail-grid-divider-endcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </span>
-    </div>
-  );
+  return <MovieGridDivider className="movie-detail-primary-grid-divider" style={dividerStyle} />;
 }

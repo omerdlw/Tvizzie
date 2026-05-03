@@ -13,8 +13,8 @@ function resolveStaggerDelay({
   return clampAnimationValue(groupIndex * groupStep + index * itemStep);
 }
 
-export function resolvePhaseDelay({ delay = 0, lead = 0 }) {
-  return clampAnimationValue(lead + delay);
+export function resolvePhaseDelay({ delay = 0, lead = 0, maxDelay = ANIMATION_STAGGER.MAX_DELAY }) {
+  return clampAnimationValue(lead + delay, 0, maxDelay);
 }
 
 function buildRevealTransition({
@@ -120,7 +120,96 @@ export function buildClipRevealMotion({
   };
 }
 
+export function buildGridLineMotion({
+  axis = 'x',
+  delay = 0,
+  direction = 'forward',
+  duration = ANIMATION_DURATIONS.SLOWER,
+  ease = ANIMATION_EASINGS.QUINT_OUT,
+  opacityDurationFactor = 0.42,
+}) {
+  const scaleProperty = axis === 'y' ? 'scaleY' : 'scaleX';
+  const transformOrigin =
+    axis === 'y'
+      ? direction === 'reverse'
+        ? 'bottom'
+        : 'top'
+      : direction === 'reverse'
+        ? 'right'
+        : 'left';
+  const resolvedDelay = clampAnimationValue(delay, 0, 3.6);
+
+  return {
+    initial: {
+      opacity: 0,
+      [scaleProperty]: 0,
+    },
+    animate: {
+      opacity: 1,
+      [scaleProperty]: 1,
+      transitionEnd: {
+        willChange: 'auto',
+      },
+    },
+    transition: {
+      opacity: {
+        duration: duration * opacityDurationFactor,
+        delay: resolvedDelay,
+        ease: ANIMATION_EASINGS.EASE_OUT,
+      },
+      [scaleProperty]: {
+        duration,
+        delay: resolvedDelay,
+        ease,
+      },
+    },
+    style: {
+      transformOrigin,
+      willChange: 'transform, opacity',
+    },
+  };
+}
+
+export function buildGridNodeMotion({
+  delay = 0,
+  duration = ANIMATION_DURATIONS.MEDIUM,
+  ease = ANIMATION_EASINGS.QUINT_OUT,
+  scale = 0.64,
+}) {
+  const resolvedDelay = clampAnimationValue(delay, 0, 3.6);
+
+  return {
+    initial: {
+      opacity: 0,
+      scale,
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transitionEnd: {
+        willChange: 'auto',
+      },
+    },
+    transition: {
+      opacity: {
+        duration: duration * 0.72,
+        delay: resolvedDelay,
+        ease: ANIMATION_EASINGS.EASE_OUT,
+      },
+      scale: {
+        duration,
+        delay: resolvedDelay,
+        ease,
+      },
+    },
+    style: {
+      willChange: 'transform, opacity',
+    },
+  };
+}
+
 export function createSurfaceItemMotion({
+  active = true,
   axis = 'y',
   delayStep = ANIMATION_STAGGER.CASCADE,
   distance = 28,
@@ -141,14 +230,15 @@ export function createSurfaceItemMotion({
     groupStep: groupDelayStep,
   });
   const initial = { opacity: 0, scale, [axis]: distance };
+  const animate = {
+    opacity: 1,
+    scale: 1,
+    [axis]: 0,
+  };
 
   return {
     initial: enabled ? initial : false,
-    animate: {
-      opacity: 1,
-      scale: 1,
-      [axis]: 0,
-    },
+    animate: enabled && !active ? initial : animate,
     transition: buildRevealTransition({
       delay,
       duration,

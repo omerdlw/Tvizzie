@@ -41,7 +41,7 @@ export default function View({
     return (
       <AuthPageShell title="Reset Password">
         <form onSubmit={handleResetSubmit} className="flex w-full flex-col gap-4">
-          <p className="text-center text-base text-black/50">{resetFlow.email}</p>
+          <p className="text-center text-base text-white/50">{resetFlow.email}</p>
 
           <Input
             id="reset-password"
@@ -138,7 +138,7 @@ export default function View({
             type="button"
             onClick={handleRequestPasswordReset}
             disabled={isSignInBusy}
-            className="text-black/50 transition hover:text-black"
+            className="text-white/50 transition hover:text-white"
           >
             {isPreparingReset ? 'Checking' : 'Forgot password?'}
           </button>
@@ -149,9 +149,9 @@ export default function View({
         </Button>
 
         <div className="relative flex items-center py-1.5">
-          <div className="h-px grow bg-black/10" />
-          <span className="px-4 text-sm font-medium text-black/50">Or</span>
-          <div className="h-px grow bg-black/10" />
+          <div className="h-px grow bg-white/10" />
+          <span className="px-4 text-sm font-medium text-white/50">Or</span>
+          <div className="h-px grow bg-white/10" />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -167,9 +167,9 @@ export default function View({
           ))}
         </div>
 
-        <p className="mt-2 text-center text-sm font-medium text-black/50">
+        <p className="mt-2 text-center text-sm font-medium text-white/50">
           Don&apos;t have an account?{' '}
-          <Link href={signUpHref} className="text-black">
+          <Link href={signUpHref} className="text-white">
             Sign Up
           </Link>
         </p>

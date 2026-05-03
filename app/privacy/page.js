@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           </p>
           <p>
             If you have privacy questions, you can contact{' '}
-            <a className="underline decoration-black/20 underline-offset-4" href="mailto:omerdeliavci@outlook.com">
+            <a className="underline decoration-white/20 underline-offset-4" href="mailto:omerdeliavci@outlook.com">
               omerdeliavci@outlook.com
             </a>
             .
@@ -198,7 +198,7 @@ export default function PrivacyPage() {
         <LegalSection title="Related document">
           <p>
             Please also review the{' '}
-            <Link className="underline decoration-black/20 underline-offset-4" href="/terms">
+            <Link className="underline decoration-white/20 underline-offset-4" href="/terms">
               Terms of Service
             </Link>
             .

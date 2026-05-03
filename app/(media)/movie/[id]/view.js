@@ -9,6 +9,7 @@ import ImagesSection from '@/features/movie/images-section';
 import RecommendationCard from '@/features/movie/recommendation-card';
 import Sidebar from '@/features/movie/sidebar';
 import MovieHeroStage from '@/features/movie/hero-stage';
+import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import MoviePrimaryGridDivider from '@/features/movie/primary-grid-divider';
 import { getGalleryImages, getMovieComputedData } from '@/features/movie/utils';
 import VideosSection from '@/features/movie/videos-section';
@@ -26,19 +27,6 @@ import {
   MovieSurfaceReveal,
 } from './motion';
 import Registry from './registry';
-
-function MovieGridDivider({ inset = false }) {
-  return (
-    <div className={`movie-detail-grid-divider${inset ? ' movie-detail-grid-divider-inset' : ''}`} aria-hidden="true">
-      <span className="movie-detail-grid-divider-startcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="movie-detail-grid-divider-endcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </span>
-    </div>
-  );
-}
 
 function MovieGridSection({ children, className = '', insetDivider = true, hideDivider = false }) {
   return (
@@ -59,7 +47,7 @@ function RelatedMoviesSection({ items, title, groupIndex = 0, hideDivider = fals
       <MovieGridSection hideDivider={hideDivider}>
         <MovieSurfaceReveal>
           <div className="flex flex-col gap-3">
-            <h2 className="text-black-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
+            <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
             <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
               {items.map((item, index) => (
                 <RecommendationCard
@@ -243,11 +231,9 @@ export default function MovieView({
       />
 
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-        <div
-          className={`movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
-        >
+        <MovieGridFrame className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}>
           <div className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0">
-            <div className="movie-detail-grid-sidebar w-full shrink-0">
+            <div className="movie-detail-grid-sidebar relative w-full shrink-0">
               <div className="h-full lg:sticky lg:top-0">
                 <Sidebar
                   item={movie}
@@ -259,6 +245,7 @@ export default function MovieView({
                   writers={writers}
                 />
               </div>
+              <MovieGridSidebarBoundary />
             </div>
             <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
               <div className="flex w-full flex-col">
@@ -331,7 +318,7 @@ export default function MovieView({
             </div>
           </section>
           <NavHeightSpacer className="w-full" />
-        </div>
+        </MovieGridFrame>
       </PageGradientShell>
     </>
   );

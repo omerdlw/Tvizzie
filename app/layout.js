@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
       <body
         suppressHydrationWarning
         className={cn(
-          'h-auto w-full bg-white fill-black font-normal text-black antialiased',
+          'h-auto w-full bg-black fill-white font-normal text-white antialiased',
           inter.variable,
           inter.className,
           zuume.variable

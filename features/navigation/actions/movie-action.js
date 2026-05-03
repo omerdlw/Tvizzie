@@ -32,13 +32,13 @@ export default function MovieAction({
             isActive: false,
           })} justify-between`,
           value: 'truncate',
-          menu: 'nav-action-select-menu overflow-hidden p-1 bottom-0',
+          menu: 'nav-action-select-menu bottom-0 overflow-hidden rounded p-1',
           optionsList: 'flex flex-col gap-1',
           option:
-            'nav-action-select-option cursor-pointer p-3 text-xs font-semibold tracking-wide uppercase outline-none',
+            'nav-action-select-option cursor-pointer rounded-xs p-3 text-xs font-semibold tracking-wide uppercase outline-none',
           optionActive: 'nav-action-select-option-active',
-          indicator: 'ml-auto text-black',
-          icon: 'text-black-muted',
+          indicator: 'ml-auto text-white',
+          icon: 'text-white-muted',
         }}
         aria-label="Sort reviews"
       />

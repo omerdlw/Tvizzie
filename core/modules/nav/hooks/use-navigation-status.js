@@ -179,7 +179,7 @@ function ErrorActions({ onRetry, onRefresh }) {
   return (
     <div className="mt-2.5 flex items-center gap-2">
       <Button
-        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-black transition-colors duration-200"
+        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-white transition-colors duration-200"
         onClick={(event) => {
           event.stopPropagation();
           onRetry();
@@ -189,7 +189,7 @@ function ErrorActions({ onRetry, onRefresh }) {
       </Button>
 
       <Button
-        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-black transition-colors duration-200"
+        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-white transition-colors duration-200"
         onClick={(event) => {
           event.stopPropagation();
           onRefresh();

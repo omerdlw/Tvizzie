@@ -18,7 +18,7 @@ export default function RatingStars({ className = '', rating }) {
 
         return (
           <span key={index} className="relative size-4">
-            <span className="absolute inset-0 text-black/10">
+            <span className="absolute inset-0 text-white/20">
               <Icon icon="solar:star-bold" size={16} />
             </span>
             <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>

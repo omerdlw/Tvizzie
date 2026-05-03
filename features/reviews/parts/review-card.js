@@ -155,10 +155,10 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
       type="button"
       className={cn(
         'inline-flex items-center gap-1.5 text-sm font-medium transition-colors disabled:cursor-default disabled:opacity-50',
-        hasLiked ? 'text-error' : 'text-black/50 hover:text-black/70'
+        hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70'
       )}
     >
-      <Icon icon="solar:heart-bold" size={16} className={hasLiked ? 'text-error' : 'text-black/50'} />
+      <Icon icon="solar:heart-bold" size={16} className={hasLiked ? 'text-error' : 'text-white/50'} />
       <span>{getReviewLikeText(likesCount)}</span>
     </button>
   );
@@ -174,7 +174,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xs border border-white/10 text-white/70 transition-colors hover:border-white/15 hover:text-white"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -203,8 +203,8 @@ function ReviewVisual({ alt, fallbackSrc = null, isAccountVariant, isListSubject
   }, [src]);
 
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] '
-    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 ';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded '
+    : 'relative size-14 shrink-0 overflow-hidden border-[0.5px] border-white/10 bg-white/5 rounded ';
 
   const handleImageError = () => {
     if (fallbackSrc && resolvedSrc !== fallbackSrc) {
@@ -233,7 +233,7 @@ function ReviewVisual({ alt, fallbackSrc = null, isAccountVariant, isListSubject
           wrapperClassName="h-full w-full"
         />
       ) : (
-        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10 text-black/60">
+        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-white/10 text-white/60">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -246,7 +246,7 @@ function ReviewVisual({ alt, fallbackSrc = null, isAccountVariant, isListSubject
 
 function ReviewMetaSeparator() {
   return (
-    <span className="text-black/35" aria-hidden="true">
+    <span className="text-white/40" aria-hidden="true">
       •
     </span>
   );
@@ -264,21 +264,21 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded border border-white/10 p-3 text-left transition-all hover:border-white/15 hover:bg-white/10',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-wider text-black/50 uppercase transition-colors group-hover:text-black/70">
+        <span className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase transition-colors group-hover:text-white/70">
           Spoiler warning
         </span>
-        <span className="block text-sm leading-6 text-black/70 transition-colors group-hover:text-black">
+        <span className="block text-sm leading-6 text-white/70 transition-colors group-hover:text-white">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
 
-      <span className="text-info group-hover:bg-primary shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
+      <span className="text-info group-hover:bg-primary shrink-0 rounded-xs p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-white">
         Show
       </span>
     </button>
@@ -349,7 +349,7 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-black/10 last:border-b-0',
+        'relative border-b border-white/10 last:border-b-0',
         isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
         isSpoilerHidden && 'cursor-pointer',
         className
@@ -400,7 +400,7 @@ export default function ReviewCard({
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm text-black/70">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm text-white/70">
                       {hasRating && <RatingStars rating={resolvedRating} />}
                       {hasRating && <ReviewMetaSeparator />}
                       <span className="inline-flex items-center gap-1.5">
@@ -415,7 +415,7 @@ export default function ReviewCard({
                     </div>
                   </>
                 ) : hasRating ? (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-white/70">
                     <RatingStars rating={resolvedRating} />
                   </div>
                 ) : null}
@@ -454,12 +454,12 @@ export default function ReviewCard({
               <>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-black/70 sm:text-sm">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-white/70 sm:text-sm">
                       {hasRating && <RatingStars rating={resolvedRating} />}
                       {hasRating && <ReviewMetaSeparator />}
                       <span className="inline-flex items-center gap-1.5">
                         <span>{activityLabel}</span>
-                        <Link href={accountHref} className="font-semibold text-black transition-colors">
+                        <Link href={accountHref} className="font-semibold text-white transition-colors">
                           {displayName}
                         </Link>
                       </span>

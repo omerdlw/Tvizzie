@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { MOVIE_ROUTE_TIMING, MovieSurfaceReveal } from '@/app/(media)/movie/[id]/motion';
 import CastSection from '@/features/movie/cast-section';
+import { MovieGridCastBoundary } from '@/features/movie/grid-animation';
 import MovieOverview from '@/features/movie/overview';
 import { cn } from '@/ui/elements/utils';
 
@@ -64,29 +66,44 @@ export default function MovieHeroStage({
     };
   }, []);
 
-  const stageStyle = useMemo(() => (stageHeight > 0 ? { minHeight: `${stageHeight}px` } : undefined), [stageHeight]);
+  const stageStyle = useMemo(
+    () => (hasCast && stageHeight > 0 ? { height: `${stageHeight}px` } : undefined),
+    [hasCast, stageHeight]
+  );
 
   return (
-    <div className={cn('movie-detail-primary-stage flex flex-col', className)} style={stageStyle}>
-      <div className="movie-detail-primary-stage-shell flex flex-1 flex-col justify-between gap-8">
-        <div className="movie-detail-shell-inset flex flex-col gap-4">
-          {titleBlock}
+    <div className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)} style={stageStyle}>
+      <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
+        <div className="movie-detail-shell-inset flex min-h-0 flex-col gap-4 overflow-hidden">
+          <div className="shrink-0">{titleBlock}</div>
 
           {tagline || overview ? (
-            <div className="flex w-full flex-col gap-4">
+            <div className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}>
               {tagline ? (
-                <p className="text-black-strong text-xs font-semibold tracking-widest uppercase sm:text-sm">
-                  {tagline}
-                </p>
+                <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.taglineDelay}>
+                  <p className="text-white-strong w-full shrink-0 text-xs font-semibold tracking-widest uppercase sm:text-sm">
+                    {tagline}
+                  </p>
+                </MovieSurfaceReveal>
               ) : null}
 
-              {overview ? <MovieOverview overview={overview} maxLines={4} /> : null}
+              {overview ? (
+                <MovieSurfaceReveal
+                  animateOnView={false}
+                  className="min-h-0 flex-1"
+                  contentClassName="flex min-h-0 flex-1"
+                  delay={MOVIE_ROUTE_TIMING.hero.taglineDelay + 0.16}
+                >
+                  <MovieOverview overview={overview} className="flex-1" />
+                </MovieSurfaceReveal>
+              ) : null}
             </div>
           ) : null}
         </div>
 
         {hasCast ? (
-          <div className="movie-detail-primary-cast-block">
+          <div className="movie-detail-primary-cast-block shrink-0">
+            <MovieGridCastBoundary />
             <div className="movie-detail-shell-inset">
               <CastSection cast={cast} crew={crew} />
             </div>

@@ -97,14 +97,14 @@ function getMediaSnapshot(media) {
 
 function getActionPalette(palette, active) {
   if (active && palette === 'like') {
-    return 'border border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10';
+    return 'rounded border-[0.5px] border-success/10 bg-success/10 text-success hover:border-success/15 hover:bg-success/15';
   }
 
   if (active && (palette === 'watched' || palette === 'watchlist')) {
-    return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
+    return 'rounded border-[0.5px] border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
   }
 
-  return 'border border-black/10 bg-primary/40 text-black/70 hover:border-black/20 hover:bg-primary/80 hover:text-black';
+  return 'rounded border-[0.5px] border-white/10 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white';
 }
 
 function ActionButton({
@@ -531,7 +531,9 @@ export default function CollectionActions({ media }) {
           icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
           label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
           loading={state.loadingWatchlist || state.submittingWatchlist}
-          loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
+          loadingLabel={
+            state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
+          }
           onClick={handleWatchlistClick}
           palette="watchlist"
         />

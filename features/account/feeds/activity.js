@@ -93,7 +93,7 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
 
   return (
     <motion.article
-      className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
+      className={`border-b border-white/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}

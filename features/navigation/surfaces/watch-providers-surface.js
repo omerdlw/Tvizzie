@@ -108,7 +108,7 @@ export default function WatchProvidersSurface({ providers }) {
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="text-xs font-semibold tracking-wider uppercase">Where to watch?</span>
         </div>
-        <span className="text-[10px] tracking-widest text-black/50 uppercase">{resolvedRegion}</span>
+        <span className="text-[10px] tracking-widest text-white/50 uppercase">{resolvedRegion}</span>
       </div>
 
       {providerList.length > 0 ? (
@@ -116,7 +116,7 @@ export default function WatchProvidersSurface({ providers }) {
           {providerList.map((provider, index) => (
             <motion.div
               key={`${provider.provider_id}-${provider.type}`}
-              className="flex items-center justify-between border-b border-black/10 py-3 last:border-b-0"
+              className="flex items-center justify-between border-b border-white/10 py-3 last:border-b-0"
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 8 }}
@@ -130,12 +130,12 @@ export default function WatchProvidersSurface({ providers }) {
                   loading="lazy"
                   decoding="async"
                   className="h-7 w-7 shrink-0 object-cover"
-                  wrapperClassName="h-7 w-7 shrink-0 "
+                  wrapperClassName="h-7 w-7 shrink-0 overflow-hidden rounded-xs"
                 />
-                <span className={`truncate text-sm font-medium text-black/70`}>{provider.provider_name}</span>
+                <span className={`truncate text-sm font-medium text-white/70`}>{provider.provider_name}</span>
               </div>
               <span
-                className={`bg-primary border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase`}
+                className={`bg-primary rounded-xs border border-white/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-white/50 uppercase`}
               >
                 {provider.type}
               </span>

@@ -50,7 +50,7 @@ function ReorderableListItem({ item, renderEditAction }) {
 
   return (
     <Reorder.Item as="div" value={item} dragListener={false} dragControls={controls} className="relative w-full">
-      <div className="flex w-full items-center gap-2 border border-black/15 bg-white/40 px-4 py-3">
+      <div className="flex w-full items-center gap-2 rounded border border-white/15 bg-black/40 px-4 py-3">
         <div
           onPointerDown={(event) => controls.start(event)}
           className="center size-8 shrink-0 cursor-grab text-[#475569] transition"
@@ -86,6 +86,7 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, o
                   variant="destructive-icon"
                   aria-label={`Remove ${entry?.title || entry?.name || 'title'} from favorites showcase`}
                   disabled={isSaving}
+                  className="rounded-xs"
                   onClick={() => onRemoveItem(entry)}
                 >
                   <Icon icon="solar:trash-bin-trash-bold" size={16} />

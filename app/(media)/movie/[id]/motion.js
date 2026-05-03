@@ -22,21 +22,21 @@ const MOVIE_CINEMATIC_PROFILE = Object.freeze({
     sidebar: [0.22, 1, 0.36, 1],
   }),
   durations: Object.freeze({
-    panel: 0.74,
-    item: 0.82,
-    section: 1.16,
-    sidebar: 1.12,
-    clip: 1.16,
-    hero: 1.28,
-    text: 0.84,
+    panel: 1.28,
+    item: 1.24,
+    section: 1.8,
+    sidebar: 1.9,
+    clip: 1.7,
+    hero: 2.05,
+    text: 1.18,
   }),
   offsets: Object.freeze({
-    sidebarX: 24,
-    heroY: 30,
-    sectionY: 24,
-    surfaceY: 12,
-    itemY: 16,
-    panelY: 12,
+    sidebarX: 32,
+    heroY: 38,
+    sectionY: 34,
+    surfaceY: 18,
+    itemY: 22,
+    panelY: 18,
     panelExitY: -6,
   }),
   scales: Object.freeze({
@@ -49,15 +49,19 @@ const MOVIE_CINEMATIC_PROFILE = Object.freeze({
     panelExit: 0.996,
   }),
   stagger: Object.freeze({
-    item: 0.055,
-    group: 0.17,
+    item: 0.09,
+    group: 0.32,
   }),
   transition: Object.freeze({
-    opacityDurationFactor: 0.76,
+    opacityDurationFactor: 0.68,
   }),
 });
 
 const MovieSequenceContext = createContext(null);
+const MovieSurfaceRevealContext = createContext({
+  isActive: true,
+  shouldAnimateItems: false,
+});
 
 function useInitialRevealEnabled() {
   const shouldAnimateRef = useRef(true);
@@ -71,41 +75,41 @@ function useInitialRevealEnabled() {
 
 export const MOVIE_ROUTE_TIMING = Object.freeze({
   hero: Object.freeze({
-    backgroundDelay: 0,
-    containerDelay: 0.14,
-    titleDelay: 0.16,
-    titleClipDelay: 0.1,
+    backgroundDelay: 0.08,
+    containerDelay: 0.62,
+    titleDelay: 0.74,
+    titleClipDelay: 0.48,
     titleDuration: MOVIE_CINEMATIC_PROFILE.durations.text,
-    socialProofDelay: 0.32,
-    taglineDelay: 0.36,
+    socialProofDelay: 1.02,
+    taglineDelay: 1.08,
   }),
   sidebar: Object.freeze({
-    posterDelay: 0.18,
-    actionsDelay: 0.38,
-    actionStagger: 0.085,
-    taxonomyDelay: 0.58,
-    taxonomyStagger: 0.07,
-    rowsDelay: 0.76,
-    rowStagger: 0.075,
+    posterDelay: 0.54,
+    actionsDelay: 0.9,
+    actionStagger: 0.12,
+    taxonomyDelay: 1.16,
+    taxonomyStagger: 0.11,
+    rowsDelay: 1.42,
+    rowStagger: 0.1,
   }),
   sections: Object.freeze({
-    cast: 0.2,
-    reviews: 0.24,
-    groupDelay: 0.18,
+    cast: 0.76,
+    reviews: 0.88,
+    groupDelay: 0.6,
     groupStagger: MOVIE_CINEMATIC_PROFILE.stagger.group,
   }),
   reviewsPage: Object.freeze({
-    sidebar: 0.04,
-    title: 0.1,
-    titleDuration: 0.72,
-    reviews: 0.16,
+    sidebar: 0.46,
+    title: 0.68,
+    titleDuration: 1.08,
+    reviews: 1.08,
   }),
 });
 
 export const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
   exitDurationFactor: 0.6,
   transition: Object.freeze({
-    duration: 1.18,
+    duration: 2.2,
     delay: MOVIE_ROUTE_TIMING.hero.backgroundDelay,
     ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
   }),
@@ -193,11 +197,15 @@ function getMovieSequenceDelay({ groupIndex = 0, sequence = null }) {
     return 0;
   }
 
-  return Math.min(0.72, Math.max(0, (sequence.delay || 0) + groupIndex * (sequence.staggerStep || 0)));
+  return Math.min(1.6, Math.max(0, (sequence.delay || 0) + groupIndex * (sequence.staggerStep || 0)));
 }
 
 function useMovieAnimationSequence() {
   return useContext(MovieSequenceContext);
+}
+
+export function useMovieSurfaceRevealState() {
+  return useContext(MovieSurfaceRevealContext);
 }
 
 function MovieReveal({
@@ -216,6 +224,7 @@ function MovieReveal({
   const resolvedDelay = resolvePhaseDelay({
     delay: delay + getMovieSequenceDelay({ groupIndex, sequence }),
     lead: phaseConfig.lead,
+    maxDelay: 1.8,
   });
   const motionProps = buildRevealMotion({
     axis,
@@ -395,28 +404,72 @@ export function MovieSectionReveal({
 export function MovieSurfaceReveal({
   children,
   className = '',
+  contentClassName = 'w-full',
   delay = 0,
   once = true,
   animateOnView = true,
   groupIndex = 0,
 }) {
+  const containerRef = useRef(null);
+  const [isActive, setIsActive] = useState(!animateOnView);
+
+  useEffect(() => {
+    if (!animateOnView || isActive) {
+      return undefined;
+    }
+
+    const target = containerRef.current;
+
+    if (!target) {
+      return undefined;
+    }
+
+    const observerOptions = createMovieObserverOptions();
+    const threshold = Number(observerOptions.threshold?.[1] ?? 0);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting || entry?.intersectionRatio >= threshold) {
+        setIsActive(true);
+        observer.disconnect();
+      }
+    }, observerOptions);
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [animateOnView, isActive]);
+
+  const value = useMemo(
+    () => ({
+      isActive,
+      shouldAnimateItems: true,
+    }),
+    [isActive]
+  );
+
   return (
-    <MovieReveal
-      className={className}
-      delay={delay}
-      once={once}
-      animateOnView={animateOnView}
-      groupIndex={groupIndex}
-      phase="surface"
-    >
-      {children}
-    </MovieReveal>
+    <MovieSurfaceRevealContext.Provider value={value}>
+      <MovieReveal
+        className={className}
+        delay={delay}
+        once={once}
+        animateOnView={animateOnView}
+        groupIndex={groupIndex}
+        phase="surface"
+      >
+        <div ref={containerRef} className={contentClassName}>
+          {children}
+        </div>
+      </MovieReveal>
+    </MovieSurfaceRevealContext.Provider>
   );
 }
 
 export function getSurfaceItemMotion(options = {}) {
   return createSurfaceItemMotion({
     ...options,
+    active: options.active ?? true,
     delayStep: options.delayStep ?? MOVIE_ROUTE_MOTION.orchestration.itemStagger,
     distance: options.distance ?? MOVIE_CINEMATIC_PROFILE.offsets.itemY,
     duration: options.duration ?? MOVIE_CINEMATIC_PROFILE.durations.item,

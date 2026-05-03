@@ -29,14 +29,14 @@ export const SEARCH_TAB_ITEMS = Object.freeze([
 
 export const SEARCH_STYLES = Object.freeze({
   action: Object.freeze({
-    muted: 'border border-black/5 bg-black/5 text-black/70 hover:bg-black/10',
-    active: 'border border-black/15 bg-primary/50 hover:bg-primary/70 text-black',
+    muted: 'border-[0.5px] border-white/10 bg-white/5 text-white/70 hover:bg-white/10',
+    active: 'border-[0.5px] border-white/10 bg-white/10 hover:bg-white/5 text-white',
   }),
-  input: 'flex w-full  text-sm items-center p-2 pl-4 transition-colors duration-[200ms]',
-  tabButton: 'relative  shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
+  input: 'rounded-xs flex w-full text-sm items-center p-2 pl-4 transition-colors duration-[200ms]',
+  tabButton: 'rounded-xs relative shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
   tabList: 'hide-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1',
   resultItem:
-    'group flex  cursor-pointer items-center justify-between transition-all p-1 duration-[200ms] hover:bg-primary/70',
-  thumbnail: 'relative h-20 w-16  shrink-0 overflow-hidden',
-  metaBadge: 'flex w-fit  items-center gap-1 border border-black/5',
+    'group flex rounded cursor-pointer items-center justify-between transition-all p-0.5 duration-[200ms] hover:bg-white/10',
+  thumbnail: 'rounded-xs relative h-20 w-16  shrink-0 overflow-hidden',
+  metaBadge: 'flex rounded-xs w-fit  items-center gap-1 border border-white/10',
 });

@@ -15,7 +15,7 @@ import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 rounded border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 
 function normalizeSearchResult(item = {}) {
   const entityType = String(item?.media_type || item?.entityType || '')
@@ -73,23 +73,23 @@ function SearchResultRow({ item, isAdded, onAdd }) {
       disabled={isAdded}
       onClick={() => onAdd(item)}
       className={cn(
-        'group flex w-full items-center gap-3 border px-3 py-2.5 text-left transition-all',
+        'group flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left transition-all',
         isAdded
-          ? 'cursor-default border-black/10 bg-black/5 opacity-70'
-          : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
+          ? 'cursor-default border-white/10 bg-white/10 opacity-70'
+          : 'cursor-pointer border-white/10 hover:border-white/15 hover:bg-white/10'
       )}
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
-        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
+        <p className="truncate text-sm font-semibold text-white">{title}</p>
+        {year !== 'N/A' && <p className="text-[11px] font-medium text-white/50">{year}</p>}
       </div>
 
       <span
         className={cn(
-          'flex size-6 shrink-0 items-center justify-center border transition-all',
+          'flex size-6 shrink-0 items-center justify-center rounded-xs border transition-all',
           isAdded
-            ? 'border-info bg-info text-white'
-            : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
+            ? 'border-info bg-info text-black'
+            : 'border-white/10 text-white/50 group-hover:border-white/15 group-hover:text-white'
         )}
       >
         <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={16} />
@@ -103,12 +103,12 @@ function DraftItemRow({ index, item, onRemove }) {
   const year = getItemYear(item);
 
   return (
-    <div className="group bg-primary flex items-center gap-3 border border-black/5 px-3 py-2 transition-all hover:border-black/10">
-      <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
+    <div className="group bg-primary flex items-center gap-3 rounded border border-white/10 px-3 py-2 transition-all hover:border-white/10">
+      <span className="w-5 text-center text-[11px] font-bold tracking-widest text-white/50">{index + 1}</span>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
-        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
+        <p className="truncate text-sm font-semibold text-white">{title}</p>
+        {year !== 'N/A' && <p className="text-[11px] font-medium text-white/50">{year}</p>}
       </div>
 
       <Button
@@ -257,7 +257,7 @@ export default function CreateListModal({ close, data }) {
       bodyClassName="flex overflow-hidden p-3"
       footer={{
         left: (
-          <span className="text-xs text-black/50">
+          <span className="text-xs text-white/50">
             {draftItems.length} {draftItems.length === 1 ? 'title' : 'titles'}
           </span>
         ),
@@ -267,7 +267,7 @@ export default function CreateListModal({ close, data }) {
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={`${ACTION_BUTTON_CLASS} text-black/70 hover:bg-black/5 hover:text-black`}
+              className={`${ACTION_BUTTON_CLASS} text-white/70 hover:bg-white/10 hover:text-white`}
             >
               Cancel
             </Button>
@@ -275,7 +275,7 @@ export default function CreateListModal({ close, data }) {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
             >
               {isSaving ? 'Creating' : 'Create List'}
             </Button>
@@ -292,8 +292,8 @@ export default function CreateListModal({ close, data }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+                'flex h-10 items-center rounded border border-white/10 bg-white/10 px-3.5 transition focus-within:border-white/20',
+              input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
             }}
           />
           <Input
@@ -302,8 +302,8 @@ export default function CreateListModal({ close, data }) {
             placeholder="Description (optional)"
             className={{
               wrapper:
-                'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+                'flex h-10 items-center rounded border border-white/10 bg-white/10 px-3.5 transition focus-within:border-white/20',
+              input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
             }}
           />
         </div>
@@ -318,14 +318,14 @@ export default function CreateListModal({ close, data }) {
             }
           }}
           placeholder="Search movies to add"
-          leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
+          leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-white/50" />}
           rightIcon={
-            isSearching ? <Icon icon="solar:spinner-bold" size={16} className="animate-spin text-black/50" /> : null
+            isSearching ? <Icon icon="solar:spinner-bold" size={16} className="animate-spin text-white/50" /> : null
           }
           className={{
             wrapper:
-              'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
-            input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+              'flex h-10 items-center rounded border border-white/10 bg-white/10 px-3.5 transition focus-within:border-white/20',
+            input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
             leftIcon: 'flex shrink-0 items-center pr-2.5',
             rightIcon: 'flex shrink-0 items-center pl-2.5',
           }}
@@ -347,22 +347,22 @@ export default function CreateListModal({ close, data }) {
                 />
               ))}
               {isSearching && searchResults.length === 0 && (
-                <div className="flex h-20 items-center justify-center text-sm text-black/70">Searching</div>
+                <div className="flex h-20 items-center justify-center text-sm text-white/70">Searching</div>
               )}
             </>
           ) : (
             <>
               {draftItems.length > 0 && (
-                <p className="px-1 text-[10px] font-bold tracking-widest text-black/50 uppercase">Draft</p>
+                <p className="px-1 text-[10px] font-bold tracking-widest text-white/50 uppercase">Draft</p>
               )}
               {draftItems.length > 0 ? (
                 draftItems.map((item, index) => (
                   <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
                 ))
               ) : (
-                <div className="flex h-28 flex-col items-center justify-center gap-2 border border-black/10 bg-black/5 text-center">
-                  <Icon icon="solar:list-bold" size={24} className="text-black/50" />
-                  <p className="text-xs text-black/50">Search movies above to start building your list</p>
+                <div className="flex h-28 flex-col items-center justify-center gap-2 rounded border border-white/10 bg-white/10 text-center">
+                  <Icon icon="solar:list-bold" size={24} className="text-white/50" />
+                  <p className="text-xs text-white/50">Search movies above to start building your list</p>
                 </div>
               )}
             </>

@@ -41,8 +41,8 @@ function SocialDockSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-black/10 py-5 lg:py-7">
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-white/10 py-5 lg:py-7">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
           <SkeletonBlock className="h-full w-full" radius="hero" />
           <SocialDockSkeleton />
         </div>
@@ -102,25 +102,83 @@ function PersonGridDivider() {
   );
 }
 
+function PersonGridSectionSkeleton({ children, divider = 'decorative' }) {
+  const isPlainDivider = divider === 'plain';
+
+  return (
+    <div className={`movie-detail-grid-subsection ${isPlainDivider ? 'person-detail-plain-section' : ''}`}>
+      {isPlainDivider ? null : <PersonGridDivider />}
+      <div
+        className={
+          isPlainDivider ? 'movie-detail-shell-inset' : 'movie-detail-grid-subsection-content movie-detail-shell-inset'
+        }
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function PersonGallerySectionSkeleton() {
+  return (
+    <PersonGridSectionSkeleton divider="plain">
+      <section className="flex w-full flex-col gap-3">
+        <Heading width="w-20" />
+        <GalleryStripSkeleton />
+      </section>
+    </PersonGridSectionSkeleton>
+  );
+}
+
+function PersonFilmographySectionSkeleton({ divider = 'decorative' }) {
+  return (
+    <PersonGridSectionSkeleton divider={divider}>
+      <section className="flex w-full flex-col gap-3">
+        <Heading width="w-28" />
+        <FilmographyGridSkeleton />
+      </section>
+    </PersonGridSectionSkeleton>
+  );
+}
+
 function PersonMainSectionsSkeleton({ className = '' }) {
   return (
     <div className={`flex w-full flex-col gap-0 ${className}`}>
-      <div className="movie-detail-grid-subsection">
-        <PersonGridDivider />
-        <div className="movie-detail-grid-subsection-content movie-detail-shell-inset flex w-full flex-col gap-3">
-          <Heading width="w-20" />
-          <GalleryStripSkeleton />
-        </div>
-      </div>
-
-      <div className="movie-detail-grid-subsection">
-        <PersonGridDivider />
-        <div className="movie-detail-grid-subsection-content movie-detail-shell-inset flex w-full flex-col gap-3">
-          <Heading width="w-28" />
-          <FilmographyGridSkeleton />
-        </div>
-      </div>
+      <PersonGallerySectionSkeleton />
+      <PersonFilmographySectionSkeleton />
     </div>
+  );
+}
+
+function PersonDeferredMainSkeleton({ className = '' }) {
+  return (
+    <div className={`flex w-full flex-col gap-0 ${className}`}>
+      <PersonGallerySectionSkeleton />
+      <PersonFilmographySectionSkeleton />
+    </div>
+  );
+}
+
+function PersonAwardsContentSkeleton() {
+  return (
+    <PersonGridSectionSkeleton divider="plain">
+      <section className="flex w-full flex-col gap-3">
+        <div className="flex items-end justify-between gap-3">
+          <Heading width="w-28" />
+          <TextLine width="w-36" soft={true} />
+        </div>
+        {Array.from({ length: 3 }).map((_, groupIndex) => (
+          <div key={groupIndex} className="mt-4 first:mt-0">
+            <YearHeaderSkeleton />
+            <div className="ml-0 flex flex-col gap-1 sm:ml-16">
+              {Array.from({ length: 3 }).map((__, rowIndex) => (
+                <TimelineRowSkeleton key={`${groupIndex}-${rowIndex}`} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+    </PersonGridSectionSkeleton>
   );
 }
 
@@ -180,7 +238,7 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-3 p-1">
+    <div className="flex items-end gap-3 rounded p-1">
       <SkeletonPoster className="aspect-2/3 w-16 shrink-0 sm:w-20" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
@@ -191,7 +249,7 @@ function TimelineRowSkeleton() {
 }
 
 export function PersonSectionSkeleton({ className = '' }) {
-  return <PersonMainSectionsSkeleton className={className} />;
+  return <PersonDeferredMainSkeleton className={className} />;
 }
 
 export function PersonTimelineSkeleton({ className = '' }) {
@@ -214,22 +272,9 @@ export function PersonTimelineSkeleton({ className = '' }) {
 
 export function PersonAwardsSkeleton({ className = '' }) {
   return (
-    <section className={`flex w-full flex-col gap-3 ${className}`}>
-      <div className="flex items-end justify-between gap-3">
-        <Heading width="w-20" />
-        <TextLine width="w-36" soft={true} />
-      </div>
-      {Array.from({ length: 3 }).map((_, groupIndex) => (
-        <div key={groupIndex} className="mt-4 first:mt-0">
-          <YearHeaderSkeleton />
-          <div className="ml-0 flex flex-col gap-1 sm:ml-16">
-            {Array.from({ length: 3 }).map((__, rowIndex) => (
-              <TimelineRowSkeleton key={`${groupIndex}-${rowIndex}`} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </section>
+    <div className={`flex w-full flex-col gap-0 ${className}`}>
+      <PersonAwardsContentSkeleton />
+    </div>
   );
 }
 

@@ -29,7 +29,7 @@ export default function TermsPage() {
         <LegalSection title="Acceptance of these terms">
           <p>
             By accessing or using Tvizzie, you agree to these Terms of Service and to the{' '}
-            <Link className="underline decoration-black/20 underline-offset-4" href="/privacy">
+            <Link className="underline decoration-white/20 underline-offset-4" href="/privacy">
               Privacy Policy
             </Link>
             . If you do not agree, do not use the service.
@@ -144,7 +144,7 @@ export default function TermsPage() {
         <LegalSection title="Contact">
           <p>
             Questions about these terms can be sent to{' '}
-            <a className="underline decoration-black/20 underline-offset-4" href="mailto:omerdeliavci@outlook.com">
+            <a className="underline decoration-white/20 underline-offset-4" href="mailto:omerdeliavci@outlook.com">
               omerdeliavci@outlook.com
             </a>
             .

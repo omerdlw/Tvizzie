@@ -11,7 +11,11 @@ import {
   assertVerificationPurpose,
   createEmailVerificationChallenge,
 } from '@/core/auth/servers/verification/email-verification.server';
-import { assertPendingSignIn } from '@/core/auth/servers/verification/login-verification.server';
+import {
+  assertPendingSignIn,
+  createPendingSignInToken,
+  setPendingSignInCookie,
+} from '@/core/auth/servers/verification/login-verification.server';
 import {
   lookupAccountByEmail,
   lookupPasswordAccountByEmail,
@@ -112,6 +116,7 @@ export async function POST(request) {
   const requestContext = getRequestContext(request);
   let email = null;
   let purpose = PURPOSES.SIGN_UP;
+  let pendingSignIn = null;
   let userId = null;
 
   try {
@@ -164,7 +169,7 @@ export async function POST(request) {
       }
     } else {
       if (purpose === PURPOSES.SIGN_IN) {
-        const pendingSignIn = assertPendingSignIn(request, {
+        pendingSignIn = assertPendingSignIn(request, {
           deviceHash: requestContext.deviceHash,
           email: body?.email,
         });
@@ -221,7 +226,24 @@ export async function POST(request) {
       });
     }
 
-    return NextResponse.json(normalizeSuccessPayload(challenge));
+    const response = NextResponse.json(normalizeSuccessPayload(challenge));
+
+    if (purpose === PURPOSES.SIGN_IN && pendingSignIn) {
+      setPendingSignInCookie(
+        response,
+        createPendingSignInToken({
+          accessToken: pendingSignIn.accessToken,
+          deviceHash: pendingSignIn.deviceHash,
+          email: pendingSignIn.email,
+          provider: pendingSignIn.provider,
+          refreshToken: pendingSignIn.refreshToken,
+          user: pendingSignIn.user,
+          userId: pendingSignIn.userId,
+        })
+      );
+    }
+
+    return response;
   } catch (error) {
     const message = String(error?.message || 'Could not send verification code');
     const rateLimitError = message.includes('Too many') || message.includes('Please wait');

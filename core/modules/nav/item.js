@@ -91,9 +91,9 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px]  p-1.5 sm:p-2 backdrop-blur-lg',
-      'border-black/15 bg-white/80',
-      showBorder && 'border-black/20',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border p-1.5 sm:p-2 rounded backdrop-blur-xl',
+      'border-white/10 bg-black/60',
+      showBorder && 'border-white/15',
       cardStyle?.className
     ),
     style: {
@@ -185,7 +185,7 @@ function VideoOverlayIcon({ icon }) {
     <motion.div
       className={cn(
         'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-white/10 bg-black'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
       transition={NAV_MICRO_SPRING}

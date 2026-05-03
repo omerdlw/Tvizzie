@@ -16,12 +16,12 @@ export default function AccountBioSurface({ description = '', onClose = null, ti
       exit={{ opacity: 0, y: -8 }}
       transition={NAV_SURFACE_SPRING}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-black/5 p-3">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 p-3">
         <p className={`text-sm font-bold tracking-wide uppercase`}>{title}</p>
         <motion.button
           type="button"
           onClick={() => onClose?.()}
-          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center rounded-xs border border-white/10 text-white/70 transition hover:bg-white/10 hover:text-white"
           aria-label="Close bio"
           whileTap={{ scale: 0.94 }}
           whileHover={{ scale: 1.03 }}
@@ -31,7 +31,7 @@ export default function AccountBioSurface({ description = '', onClose = null, ti
         </motion.button>
       </div>
       <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto p-3">
-        <p className={`text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/70`}>
+        <p className={`text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white/70`}>
           {normalizedDescription}
         </p>
       </div>

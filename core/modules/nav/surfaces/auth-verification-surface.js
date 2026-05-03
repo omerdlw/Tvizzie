@@ -97,10 +97,8 @@ export default function AuthVerificationSurface({ close, data, header }) {
           event.stopPropagation();
           dismissSurface(close);
         }}
-        className={`center bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-black/10 p-1 transition-all`}
+        className={`center center absolute top-0 right-0 z-10 size-8 cursor-pointer border-[0.5px] border-transparent p-1 transition-all hover:border-white/10 hover:bg-white/5`}
         aria-label="Close verification"
-        whileTap={{ scale: 0.94 }}
-        whileHover={{ scale: 1.03 }}
         transition={NAV_ACTION_SPRING}
       >
         <Icon icon="material-symbols:close-rounded" size={20} />

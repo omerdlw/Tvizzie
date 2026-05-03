@@ -31,7 +31,7 @@ function getContainerClassName({ className, position }) {
 function getBodyClassName(position, bodyClassName) {
   const sideModal = isSideModal(position);
 
-  return cn('bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain', sideModal ? ' ' : '', bodyClassName);
+  return cn('bg-black min-h-0 w-full flex-1 overflow-y-auto overscroll-contain', sideModal ? ' ' : '', bodyClassName);
 }
 
 function resolveHeaderActions(actions, close) {
@@ -60,7 +60,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="center size-8 border-[0.5px] border-transparent bg-transparent text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>
@@ -78,7 +78,7 @@ export default function Container({ children, className, bodyClassName, header =
     ? null
     : (headerConfig?.left ??
       (headerConfig?.title ? (
-        <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-black">
+        <h2 id={headerConfig.titleId} className="truncate text-sm font-semibold text-white">
           {headerConfig.title}
         </h2>
       ) : null));
@@ -110,7 +110,7 @@ export default function Container({ children, className, bodyClassName, header =
         <div
           className={cn(
             hasSlotContent(headerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-3 px-4 py-3',
+            'items-center gap-3 bg-white/5! px-4 py-3',
             headerIsSticky && 'sticky top-0 z-10'
           )}
         >
@@ -128,7 +128,7 @@ export default function Container({ children, className, bodyClassName, header =
         <div
           className={cn(
             hasSlotContent(footerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-3 px-4 py-3',
+            'items-center gap-3 bg-white/5! px-4 py-3',
             footerIsSticky && 'sticky bottom-0'
           )}
         >

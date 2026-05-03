@@ -174,7 +174,7 @@ function invokeSafely(handler, ...args) {
 
 function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
   const iconClassName = [
-    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-black/5 text-black/50',
+    'flex size-10 shrink-0 items-center bg-center bg-cover justify-center overflow-hidden bg-white/10 text-white/50',
     classNames.headerIcon,
   ]
     .filter(Boolean)
@@ -199,14 +199,14 @@ function ContextMenuHeader({ classNames, header, metrics }) {
     return null;
   }
 
-  const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-black/10 pb-2', classNames.header]
+  const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-white/10 pb-2', classNames.header]
     .filter(Boolean)
     .join(' ');
-  const eyebrowClassName = ['text-[11px] font-bold tracking- text-black/50 uppercase', classNames.headerEyebrow]
+  const eyebrowClassName = ['text-[11px] font-bold tracking- text-white/50 uppercase', classNames.headerEyebrow]
     .filter(Boolean)
     .join(' ');
   const titleClassName = ['truncate text-sm font-semibold', classNames.headerTitle].filter(Boolean).join(' ');
-  const descriptionClassName = ['text-[11px] text-black/70', classNames.headerDescription].filter(Boolean).join(' ');
+  const descriptionClassName = ['text-[11px] text-white/70', classNames.headerDescription].filter(Boolean).join(' ');
 
   return (
     <div className={containerClassName}>
@@ -222,13 +222,13 @@ function ContextMenuHeader({ classNames, header, metrics }) {
 
 function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelect, setButtonRef }) {
   if (item.type === 'separator') {
-    const separatorClassName = ['my-1 h-px bg-black/10', classNames.separator].filter(Boolean).join(' ');
+    const separatorClassName = ['my-1 h-px bg-white/10', classNames.separator].filter(Boolean).join(' ');
 
     return <div className={separatorClassName} role="separator" />;
   }
 
   const itemClassName = [
-    'flex w-full items-center gap-2 px-2.5 py-2 text-left text-[13px] font-medium text-black/70 hover:text-black transition-colors hover:bg-black/5 focus-visible:outline-none data-[active=true]:bg-black/10 disabled:pointer-events-none disabled:opacity-50',
+    'flex w-full items-center gap-2 px-2.5 py-2 text-left text-[13px] font-medium text-white/70 hover:text-white transition-colors hover:bg-white/10 focus-visible:outline-none data-[active=true]:bg-white/10 disabled:pointer-events-none disabled:opacity-50',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -236,12 +236,12 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   ]
     .filter(Boolean)
     .join(' ');
-  const itemIconClassName = ['shrink-0 text-black/65', classNames.itemIcon, item.itemIconClassName]
+  const itemIconClassName = ['shrink-0 text-white/70', classNames.itemIcon, item.itemIconClassName]
     .filter(Boolean)
     .join(' ');
   const itemLabelClassName = ['grow truncate', classNames.itemLabel].filter(Boolean).join(' ');
   const itemShortcutClassName = [
-    'ml-2 shrink-0 text-[10px] tracking-wide text-black/50 uppercase',
+    'ml-2 shrink-0 text-[10px] tracking-wide text-white/50 uppercase',
     classNames.itemShortcut,
   ]
     .filter(Boolean)
@@ -453,7 +453,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={[
-          'max-w-[320px] min-w-[240px] overflow-hidden border border-black/10 bg-white/80 shadow-[0_20px_44px_-22px_rgba(0,0,0,0.45)] backdrop-blur-lg',
+          'max-w-xs min-w-60 overflow-hidden border border-white/10 bg-black/80 shadow-2xl backdrop-blur-lg',
           classNames.content,
         ]
           .filter(Boolean)

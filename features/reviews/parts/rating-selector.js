@@ -47,7 +47,7 @@ function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, o
           </clipPath>
         </defs>
 
-        <path d={STAR_PATH} className="fill-black/10" />
+        <path d={STAR_PATH} className="fill-white/10" />
 
         {fillPercent > 0 && (
           <path

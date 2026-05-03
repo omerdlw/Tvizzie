@@ -49,7 +49,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       }}
       transition={{ type: 'spring', bounce: 0.3, duration: 0.3 }}
       className={cn(
-        'pointer-events-auto w-full border-[1.5px] border-black/10 backdrop-blur-lg',
+        'pointer-events-auto w-full border-[1.5px] border-white/10 backdrop-blur-lg',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}
@@ -57,7 +57,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       <div className="flex flex-col gap-3 p-4">
         <div className="space-y-1">
           <p className="text-sm leading-5 font-semibold">{primaryText}</p>
-          {secondaryText ? <p className="text-sm leading-5 text-black/70">{secondaryText}</p> : null}
+          {secondaryText ? <p className="text-sm leading-5 text-white/70">{secondaryText}</p> : null}
         </div>
         {actions.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -71,7 +71,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold transition-colors hover:border-black/10 hover:bg-black/10"
+                className="min-h-10 flex-1 border border-white/10 bg-white/10 px-3 text-sm font-semibold transition-colors hover:border-white/10 hover:bg-white/10"
               >
                 {action.label}
               </button>

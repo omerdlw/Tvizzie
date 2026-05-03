@@ -12,7 +12,7 @@ import { cn } from '@/core/utils';
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 rounded border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
 function createFeedbackId() {
   return `feedback_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -129,7 +129,7 @@ export default function FeedbackModal({ close, header }) {
             <Button
               type="button"
               onClick={close}
-              className={cn(ACTION_BUTTON_CLASS, 'border-black/10 text-black/70 hover:bg-black/5 hover:text-black')}
+              className={cn(ACTION_BUTTON_CLASS, 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white')}
             >
               Cancel
             </Button>
@@ -139,7 +139,7 @@ export default function FeedbackModal({ close, header }) {
               disabled={isSaving}
               className={cn(
                 ACTION_BUTTON_CLASS,
-                'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50'
+                'hover:bg-info hover:border-info hover:text-primary border-white bg-white text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50'
               )}
             >
               {isSaving ? 'Sending' : 'Send feedback'}
@@ -150,8 +150,8 @@ export default function FeedbackModal({ close, header }) {
     >
       <form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>
-          <h2 className="text-[16px] font-semibold text-black">What should improve on Tvizzie?</h2>
-          <p className="text-sm font-medium text-black/50">Share general product, UX, or quality feedback.</p>
+          <h2 className="text-[16px] font-semibold text-white">What should improve on Tvizzie?</h2>
+          <p className="text-sm font-medium text-white/50">Share general product, UX, or quality feedback.</p>
         </div>
 
         <div className="space-y-2">
@@ -162,9 +162,9 @@ export default function FeedbackModal({ close, header }) {
             placeholder="Your message"
             className={{
               wrapper:
-                'focus-within:bg-primary border border-black/10 bg-white transition focus-within:border-black/15 hover:border-black/15',
+                'focus-within:bg-primary rounded border border-white/10 bg-black transition focus-within:border-white/15 hover:border-white/15',
               textarea:
-                'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/50',
+                'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-white/50',
             }}
           />
         </div>

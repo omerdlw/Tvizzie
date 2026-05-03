@@ -15,7 +15,7 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 rounded border border-white/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
 function getPreviewImage(item) {
@@ -37,7 +37,7 @@ function ListPreviewStack({ list }) {
   return (
     <div className="relative h-[68px] w-[82px] shrink-0">
       {previewItems.length === 0 ? (
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-black/10 bg-white text-black/50">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] rounded-xs border border-white/10 bg-black text-white/50">
           <Icon icon="solar:list-bold" size={20} />
         </div>
       ) : (
@@ -47,7 +47,7 @@ function ListPreviewStack({ list }) {
           return (
             <div
               key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="border-primary absolute bottom-0 overflow-hidden border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
+              className="border-primary absolute bottom-0 overflow-hidden rounded-xs border-[1.5px] bg-black shadow-xs ring-1 ring-white/10"
               style={{
                 width: '46px',
                 height: `${68 - index * 6}px`,
@@ -66,7 +66,7 @@ function ListPreviewStack({ list }) {
                   wrapperClassName="h-full w-full"
                 />
               ) : (
-                <div className="center bg-primary h-full w-full text-black/50">
+                <div className="center bg-primary h-full w-full text-white/50">
                   <Icon icon="solar:videocamera-record-bold" size={14} />
                 </div>
               )}
@@ -265,7 +265,7 @@ export default function ListPickerModal({ close, data }) {
       bodyClassName="p-4"
       footer={{
         left: (
-          <span className="text-xs text-black/70">
+          <span className="text-xs text-white/70">
             {selectedCount} selected • {pendingChangesCount} pending
           </span>
         ),
@@ -275,7 +275,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={close}
               disabled={isApplying}
-              className={`${ACTION_BUTTON_CLASS} text-black/70 hover:bg-black/5 hover:text-black`}
+              className={`${ACTION_BUTTON_CLASS} text-white/70 hover:bg-white/10 hover:text-white`}
             >
               Cancel
             </Button>
@@ -283,7 +283,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>
@@ -293,12 +293,12 @@ export default function ListPickerModal({ close, data }) {
     >
       <section className="flex min-h-0 flex-col gap-3">
         <header className="mb-1 flex items-center justify-between gap-3 px-1">
-          <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Your Lists</h2>
+          <h2 className="text-[11px] font-bold tracking-widest text-white/50 uppercase">Your Lists</h2>
           <Button
             type="button"
             onClick={handleOpenCreator}
             disabled={isApplying}
-            className={`${ACTION_BUTTON_CLASS} text-black/70 hover:bg-black/5 hover:text-black`}
+            className={`${ACTION_BUTTON_CLASS} text-white/70 hover:bg-white/10 hover:text-white`}
           >
             Create new list
           </Button>
@@ -310,13 +310,13 @@ export default function ListPickerModal({ close, data }) {
               {Array.from({ length: 10 }).map((_, index) => (
                 <div
                   key={`list-picker-skeleton-${index}`}
-                  className="flex h-24 animate-pulse items-center gap-4 border border-black/10 bg-white/80 p-3"
+                  className="flex h-24 animate-pulse items-center gap-4 rounded border border-white/10 bg-black/80 p-3"
                 >
                   <div className="relative h-[68px] w-[82px] shrink-0">
                     {[0, 1, 2, 3].map((stackIndex) => (
                       <div
                         key={`list-picker-skeleton-stack-${index}-${stackIndex}`}
-                        className="absolute bottom-0 overflow-hidden border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                        className="absolute bottom-0 overflow-hidden rounded-xs border border-white/10 shadow-sm"
                         style={{
                           backgroundColor:
                             LIST_PICKER_STACK_SKELETON_BACKGROUNDS[stackIndex] ||
@@ -327,24 +327,24 @@ export default function ListPickerModal({ close, data }) {
                           zIndex: 4 - stackIndex,
                         }}
                       >
-                        <div className="absolute inset-x-0 bottom-0 h-7 bg-black/[0.04]" />
+                        <div className="absolute inset-x-0 bottom-0 h-7 bg-white/10" />
                       </div>
                     ))}
                   </div>
                   <div className="min-w-0 flex-1 space-y-2">
-                    <div className="h-4 w-2/5 bg-black/[0.09]" />
-                    <div className="h-3 w-4/5 bg-black/[0.07]" />
+                    <div className="h-4 w-2/5 rounded-xs bg-white/10" />
+                    <div className="h-3 w-4/5 rounded-xs bg-white/10" />
                   </div>
-                  <div className="size-[22px] shrink-0 border border-black/10 bg-black/[0.06]" />
+                  <div className="size-[22px] shrink-0 rounded-xs border border-white/10 bg-white/10" />
                 </div>
               ))}
             </div>
           )}
 
           {!isLoading && lists.length === 0 && (
-            <div className="flex min-h-40 flex-col items-center justify-center border border-black/15 bg-black/2 text-center">
-              <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">No lists yet</p>
-              <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
+            <div className="flex min-h-40 flex-col items-center justify-center rounded border border-white/15 bg-white/2 text-center">
+              <p className="text-[11px] font-bold tracking-widest text-white/50 uppercase">No lists yet</p>
+              <p className="mt-1 text-sm text-white/70">Create your first list with the button above.</p>
             </div>
           )}
 
@@ -359,25 +359,25 @@ export default function ListPickerModal({ close, data }) {
                   type="button"
                   onClick={() => handleToggleDraft(list.id)}
                   className={cn(
-                    'group flex w-full items-center gap-4 border p-3 text-left transition-all',
-                    isSelected ? 'bg-info/20 border-black/20' : 'hover:bg-primary border-black/10 hover:border-black/15'
+                    'group flex w-full items-center gap-4 rounded border p-3 text-left transition-all',
+                    isSelected ? 'bg-info/20 border-white/20' : 'hover:bg-primary border-white/10 hover:border-white/15'
                   )}
                 >
                   <ListPreviewStack list={list} />
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold text-black">{list.title}</p>
+                    <p className="truncate text-base font-semibold text-white">{list.title}</p>
                     {list.description && (
-                      <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>
+                      <p className="line-clamp-2 text-sm leading-snug text-white/70">{list.description}</p>
                     )}
                   </div>
 
                   <span
                     className={cn(
-                      'flex size-[22px] shrink-0 items-center justify-center border transition-all',
+                      'flex size-[22px] shrink-0 items-center justify-center rounded-xs border transition-all',
                       isSelected
                         ? 'border-info bg-info text-primary'
-                        : 'border-black/10 text-black/50 group-hover:border-black/40 group-hover:text-black/70'
+                        : 'border-white/10 text-white/50 group-hover:border-white/40 group-hover:text-white/70'
                     )}
                   >
                     <Icon icon="material-symbols:check-rounded" size={16} />

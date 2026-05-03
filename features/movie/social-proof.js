@@ -143,7 +143,7 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
       type="button"
       aria-label="Open social activity"
       onClick={handleOpenModal}
-      className={cn('media-social-proof-button group', className)}
+      className={cn('media-social-proof-button tracking-wide uppercase', className)}
     >
       <SocialAvatarStack users={previewUsers} />
       <span className="min-w-0 flex-1 truncate">{compactLabel}</span>

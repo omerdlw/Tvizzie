@@ -458,7 +458,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
               <div className={LIST_SECTION_SHELL_CLASS}>
                 <div className="flex w-full flex-col gap-3">
                   <h1 className="w-full text-3xl font-bold tracking-tight sm:text-4xl">{list.title}</h1>
-                  <p className="w-full text-sm leading-6 text-black/70">
+                  <p className="w-full text-sm leading-6 text-white/70">
                     {String(list?.description || '').trim() || 'No description provided.'}
                   </p>
                 </div>
@@ -490,7 +490,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                         />
 
                         {hasMediaFilters ? (
-                          <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                          <p className="text-xs font-semibold tracking-widest text-white/50 uppercase">
                             {filteredListItems.length} of {listItems.length} titles shown
                           </p>
                         ) : null}
@@ -525,7 +525,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                 ) : null}
 
                 {hasListReviews && hasReviewFilters ? (
-                  <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
+                  <p className="text-xs font-semibold tracking-widest text-white/50 uppercase">
                     {filteredReviews.length} of {reviews.length} comments shown
                   </p>
                 ) : null}
@@ -534,17 +534,17 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                   <AuthGate
                     fallback={<ReviewAuthFallback mode="comment" onSignIn={handleSignInRequest} title={list.title} />}
                   >
-                    <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex w-full flex-col items-start gap-3 border-y border-white/10 py-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
-                        <p className="text-xs text-black/70">
+                        <p className="text-xs text-white/70">
                           {ownReview
                             ? 'Open the comment composer to edit your text.'
                             : 'Share your thoughts from the comment composer.'}
                         </p>
                       </div>
                       <Button
-                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded border border-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-white/70 uppercase transition ease-in-out hover:bg-white hover:text-black sm:w-auto sm:justify-between"
                         type="button"
                         onClick={handleOpenReviewComposer}
                       >

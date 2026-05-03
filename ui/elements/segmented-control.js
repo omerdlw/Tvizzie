@@ -13,6 +13,15 @@ function defaultGetLabel(item) {
   return item?.label;
 }
 
+function hasPaddingOverride(className) {
+  return typeof className === 'string' && /\bp(?:x|y|s|e|t|r|b|l)?-/.test(className);
+}
+
+function parsePixelValue(value) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function SegmentedControl({
   classNames = {},
   getLabel = defaultGetLabel,
@@ -26,6 +35,7 @@ export default function SegmentedControl({
   const buttonRefs = useRef(new Map());
   const [indicatorFrame, setIndicatorFrame] = useState({ x: 0, y: 0, width: 0, height: 0, ready: false });
   const resolvedItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+  const hasCustomWrapperPadding = hasPaddingOverride(classNames.wrapper);
   const activeItemKey = useMemo(() => {
     if (!resolvedItems.length) {
       return null;
@@ -47,10 +57,33 @@ export default function SegmentedControl({
     }
 
     const updateIndicatorFrame = () => {
-      const nextX = activeButton.offsetLeft;
-      const nextY = activeButton.offsetTop;
-      const nextWidth = activeButton.offsetWidth;
-      const nextHeight = activeButton.offsetHeight;
+      const wrapperStyle = window.getComputedStyle(wrapper);
+      const shouldUseEqualItemFrame = wrapperStyle.getPropertyValue('--segmented-control-equal-items').trim() === '1';
+      let nextX = activeButton.offsetLeft;
+      let nextY = activeButton.offsetTop;
+      let nextWidth = activeButton.offsetWidth;
+      let nextHeight = activeButton.offsetHeight;
+
+      if (shouldUseEqualItemFrame) {
+        const activeIndex = Math.max(
+          0,
+          resolvedItems.findIndex((item) => getKey(item) === activeItemKey)
+        );
+        const itemCount = Math.max(1, resolvedItems.length);
+        const paddingLeft = parsePixelValue(wrapperStyle.paddingLeft);
+        const paddingRight = parsePixelValue(wrapperStyle.paddingRight);
+        const paddingTop = parsePixelValue(wrapperStyle.paddingTop);
+        const paddingBottom = parsePixelValue(wrapperStyle.paddingBottom);
+        const gap = parsePixelValue(wrapperStyle.columnGap || wrapperStyle.gap);
+        const contentWidth = Math.max(0, wrapper.clientWidth - paddingLeft - paddingRight);
+        const contentHeight = Math.max(0, wrapper.clientHeight - paddingTop - paddingBottom);
+        const itemWidth = Math.max(0, (contentWidth - gap * (itemCount - 1)) / itemCount);
+
+        nextX = paddingLeft + activeIndex * (itemWidth + gap);
+        nextY = paddingTop;
+        nextWidth = itemWidth;
+        nextHeight = contentHeight;
+      }
 
       setIndicatorFrame((current) => {
         if (
@@ -82,7 +115,7 @@ export default function SegmentedControl({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [activeItemKey, resolvedItems]);
+  }, [activeItemKey, getKey, resolvedItems]);
 
   if (!resolvedItems.length) {
     return null;
@@ -94,14 +127,14 @@ export default function SegmentedControl({
         <div
           ref={wrapperRef}
           className={cn(
-            'relative flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
-            'p-1',
+            'segmented-control-wrapper relative flex min-w-full items-stretch gap-1 rounded',
+            !hasCustomWrapperPadding && 'p-1',
             classNames.wrapper
           )}
         >
           <motion.span
             aria-hidden="true"
-            className={cn('bg-primary pointer-events-none absolute top-0 left-0', classNames.indicator)}
+            className={cn('segmented-control-indicator pointer-events-none absolute top-0 left-0', classNames.indicator)}
             initial={false}
             animate={
               indicatorFrame.ready
@@ -137,12 +170,14 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-[200ms]',
-                  isActive ? classNames.active || 'text-black' : classNames.inactive || 'text-black/70',
+                  'segmented-control-button relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium leading-none whitespace-nowrap transition-colors duration-200',
+                  isActive
+                    ? classNames.active || 'segmented-control-button-active'
+                    : classNames.inactive || 'segmented-control-button-inactive',
                   classNames.button
                 )}
               >
-                <span className="relative z-10 inline-flex items-center gap-1">
+                <span className="relative z-10 inline-flex items-center justify-center gap-1 leading-none">
                   {getLabel(item)}
                   {typeof renderSuffix === 'function' ? renderSuffix(item) : null}
                 </span>

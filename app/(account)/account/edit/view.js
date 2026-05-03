@@ -12,12 +12,12 @@ import Icon from '@/ui/icon';
 import Registry from './registry';
 
 const INPUT_BASE_CLASSES =
-  'h-11 w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none transition-colors placeholder:text-black/50 focus:border-black';
+  'h-11 w-full rounded border border-white/15 bg-primary px-3 text-sm text-white outline-none transition-colors placeholder:text-white/50 focus:border-white';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  ' border border-black/15 bg-white px-3 py-2 text-black transition-colors hover:bg-black/5 disabled:opacity-60';
+  'border border-white/15 bg-black px-3 py-2 text-white transition-colors hover:bg-white/10 disabled:opacity-60';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
+  'inline-flex h-10 items-center justify-center gap-2 rounded px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
 
 function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
@@ -38,10 +38,10 @@ function ActionButton({ children, className, tone = 'default', icon = null, ...p
 function StatusState({ title, description }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="w-full max-w-xl border border-black/15 bg-white p-6 text-center">
+      <div className="w-full max-w-xl rounded border border-white/15 bg-black p-6 text-center">
         <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-black">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-black/70">{description}</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">{title}</h1>
+        <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
       </div>
     </div>
   );
@@ -53,7 +53,7 @@ function SectionCard({ title, description, children, className, contentClassName
       <AccountSectionReveal>
         <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
-          {description ? <p className="text-sm leading-6 text-black/70">{description}</p> : null}
+          {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}
           <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
         </div>
       </AccountSectionReveal>
@@ -64,9 +64,9 @@ function SectionCard({ title, description, children, className, contentClassName
 function Field({ label, hint, children, className }) {
   return (
     <label className={cn('flex flex-col gap-2', className)}>
-      <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">{label}</span>
+      <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">{label}</span>
       {children}
-      {hint ? <span className="text-xs leading-5 text-black/70">{hint}</span> : null}
+      {hint ? <span className="text-xs leading-5 text-white/70">{hint}</span> : null}
     </label>
   );
 }
@@ -116,7 +116,7 @@ function MediaField({
       </div>
 
       <div>
-        <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
+        <div className={cn('overflow-hidden rounded border border-white/10 bg-white/10', previewClassName)}>
           {preview ? (
             <AdaptiveImage
               mode="img"
@@ -127,7 +127,7 @@ function MediaField({
               wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-black/5 text-black/70">
+            <div className="flex h-full w-full items-center justify-center bg-white/10 text-white/70">
               <Icon icon="solar:gallery-bold" size={20} />
             </div>
           )}
@@ -306,7 +306,7 @@ export default function AccountEditView(props) {
                     onOpenUpload={() => handleOpenMediaUpload('avatar')}
                   />
 
-                  <div className="h-px w-full bg-black/10" />
+                  <div className="h-px w-full bg-white/10" />
 
                   <MediaField
                     fieldLabel="Logo URL"
@@ -329,20 +329,20 @@ export default function AccountEditView(props) {
                     className="flex w-full items-center justify-between gap-3 text-left"
                   >
                     <div className="flex flex-col gap-2">
-                      <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">
+                      <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">
                         {form.isPrivate ? 'Private profile' : 'Public profile'}
                       </span>
-                      <span className="text-xs leading-5 text-black/70">
+                      <span className="text-xs leading-5 text-white/70">
                         {form.isPrivate
                           ? 'Only approved followers can inspect your collections.'
                           : 'Anyone can inspect your collections and profile activity.'}
                       </span>
                     </div>
 
-                    <span className="flex h-6 w-11 border border-black/15 bg-white p-px" aria-hidden="true">
+                    <span className="flex h-6 w-11 rounded border border-white/15 bg-black p-px" aria-hidden="true">
                       <span
                         className={cn(
-                          'h-full w-5 bg-black transition-transform',
+                          'h-full w-5 rounded-xs bg-white transition-transform',
                           form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0'
                         )}
                       />
@@ -354,7 +354,7 @@ export default function AccountEditView(props) {
               <div className="flex flex-col">
                 {!canUsePasswordSecurity ? (
                   <SectionCard title="Enable Password Sign-In">
-                    <div className="bg-black/5 p-3 text-sm leading-6 text-black/50">
+                    <div className="rounded bg-white/10 p-3 text-sm leading-6 text-white/50">
                       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
                     </div>
                   </SectionCard>
@@ -365,7 +365,7 @@ export default function AccountEditView(props) {
                     title="Change Email"
                     summaryLabel={
                       currentAuthEmail && (
-                        <span className="text-[10px] font-medium tracking-normal text-black/40 lowercase">
+                        <span className="text-[10px] font-medium tracking-normal text-white/40 lowercase">
                           {currentAuthEmail}
                         </span>
                       )

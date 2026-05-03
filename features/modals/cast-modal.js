@@ -15,7 +15,7 @@ import Icon from '@/ui/icon';
 
 const DESKTOP_COLUMNS = 3;
 const GRID_CLASS =
-  'grid grid-cols-1 divide-y divide-black/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 lg:divide-x-0 lg:divide-y-0';
+  'grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 lg:divide-x-0 lg:divide-y-0';
 
 const SPRING_TRANSITION = {
   type: 'spring',
@@ -45,9 +45,9 @@ function PersonCard({ close, person }) {
     <Link
       href={`/person/${person.id}`}
       onClick={close}
-      className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2 transition-colors"
+      className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 rounded p-2 transition-colors"
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-xs bg-white/10">
         {imageSrc ? (
           <AdaptiveImage
             fill
@@ -61,14 +61,14 @@ function PersonCard({ close, person }) {
           />
         ) : (
           <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={18} className="text-black/50" />
+            <Icon icon="solar:user-bold" size={18} className="text-white/50" />
           </div>
         )}
       </div>
 
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
-        <p className="truncate text-xs text-black/70">{person.subtitle}</p>
+        <p className="truncate text-sm font-semibold text-white">{person.name || 'Unknown'}</p>
+        <p className="truncate text-xs text-white/70">{person.subtitle}</p>
       </div>
     </Link>
   );
@@ -83,7 +83,7 @@ function CreditsGrid({ close, list, keyPrefix }) {
         <div
           key={`${keyPrefix}-${person.id || person.name || 'credit'}-${index}`}
           className={cn(
-            'lg:border-black/10',
+            'lg:border-white/10',
             (index + 1) % DESKTOP_COLUMNS !== 0 && 'lg:border-r',
             index < lastRowStart && 'lg:border-b'
           )}
@@ -135,7 +135,7 @@ export default function CastModal({ close, data, header }) {
           onChange={setActiveTab}
           items={items}
           classNames={{
-            wrapper: 'h-8  p-0.5',
+            wrapper: 'h-8 rounded p-0.5',
             indicator: '',
           }}
         />
@@ -153,7 +153,7 @@ export default function CastModal({ close, data, header }) {
         header={resolvedHeader}
         bodyClassName="bg-transparent p-0"
       >
-        <div className="center min-h-32 text-sm text-black/70">No credits found.</div>
+        <div className="center min-h-32 text-sm text-white/70">No credits found.</div>
       </Container>
     );
   }

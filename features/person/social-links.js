@@ -59,7 +59,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
   return (
     <div
       className={cn(
-        'bg-primary/70 inline-flex h-10 w-fit items-center overflow-hidden border border-black/10 text-black/70 backdrop-blur-md',
+        'inline-flex h-10 w-fit items-center overflow-hidden rounded border-[0.5px] border-white/10 bg-black/60 text-white/70 backdrop-blur-md',
         className
       )}
     >
@@ -67,15 +67,18 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
         const isLast = index === availableLinks.length - 1;
 
         return (
-          <div key={link.key} className={cn('flex h-10 items-center', !isLast && 'border-r border-black/10')}>
-            <Tooltip className="bg-white text-black" text={link.label}>
+          <div
+            key={link.key}
+            className={cn('flex h-10 items-center p-0.5', !isLast && 'border-r-[0.5px] border-white/10')}
+          >
+            <Tooltip className="bg-black text-white" text={link.label}>
               <a
                 href={link.getUrl(externalIds[link.key])}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={link.label}
                 className={cn(
-                  'center hover:text-info h-full shrink-0 p-1 px-2 transition-all duration-[300ms] hover:bg-white',
+                  'center hover:text-info hover:bg-info/20 h-full shrink-0 rounded-xs p-1 px-2 transition-all duration-[300ms]',
                   linkClassName
                 )}
               >

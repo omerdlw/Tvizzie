@@ -93,10 +93,10 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
+                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-xs border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
                     isActive
-                      ? 'border-black bg-black text-white'
-                      : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'
+                      ? 'border-white bg-white text-black'
+                      : 'border-white/15 bg-black/40 text-white/70 hover:bg-black/80 hover:text-white'
                   )}
                 >
                   <motion.span
@@ -189,7 +189,7 @@ export default function ProfileLayout({
   const profileHandle = username || profile?.username || null;
 
   return (
-    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-white">
+    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
       <div className={cn('account-detail-grid-frame relative flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}>
         <div className="relative">
           <AccountHeroReveal>

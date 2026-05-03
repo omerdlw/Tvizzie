@@ -108,11 +108,9 @@ export default function Registry({
     compact: true,
     hasLeadingRating,
   });
-  const shouldClearBackgroundForReviews = isMovieReviewsRoute;
-  const resolvedBackgroundImage = shouldClearBackgroundForReviews
-    ? undefined
-    : backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
-  const shouldResetBackgroundForLoading = !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
+  const resolvedBackgroundImage =
+    backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
+  const shouldResetBackgroundForLoading = isLoading && !resolvedBackgroundImage;
 
   const navSurface =
     !isMovieReviewsRoute && !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
@@ -194,18 +192,15 @@ export default function Registry({
       surface: navSurface,
       title: movie?.title || movie?.original_title || (isLoading ? '' : undefined),
     },
-    ...(shouldClearBackgroundForReviews || resolvedBackgroundImage || shouldResetBackgroundForLoading
+    ...(resolvedBackgroundImage || shouldResetBackgroundForLoading
       ? {
           background: resolvedBackgroundImage
             ? {
                 animation: MOVIE_BACKGROUND_ANIMATION,
                 image: resolvedBackgroundImage,
                 overlay: true,
-                overlayOpacity: 0.4,
+                overlayOpacity: 0.6,
                 overlayColor: 'var(--white)',
-                noiseStyle: {
-                  opacity: 0.13,
-                },
               }
             : {
                 image: null,

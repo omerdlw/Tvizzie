@@ -31,7 +31,7 @@ export default function SearchActionControls({
         onFocus={() => setIsActive(true)}
         onBlur={() => setIsActive(false)}
         classNames={{
-          input: 'w-full text-sm placeholder:text-black/50 outline-none',
+          input: 'w-full text-sm placeholder:text-white/50 outline-none',
           wrapper: navActionClass({
             cn,
             button: SEARCH_STYLES.input,
@@ -42,7 +42,7 @@ export default function SearchActionControls({
         enterKeyHint="search"
         leftIcon={
           <Icon
-            className={`${query ? 'text-black' : 'text-black/50'} transition-colors duration-[300ms]`}
+            className={`${query ? 'text-white' : 'text-white/50'} transition-colors duration-[300ms]`}
             icon="solar:magnifer-linear"
             size={16}
           />

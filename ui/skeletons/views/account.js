@@ -106,7 +106,7 @@ function HeroEdgeMetric() {
 
 function AccountHeroSkeleton() {
   return (
-    <section className={`relative w-full overflow-hidden bg-white ${HERO_HEIGHT_CLASS}`}>
+    <section className={`relative w-full overflow-hidden bg-black ${HERO_HEIGHT_CLASS}`}>
       <div className="absolute inset-0">
         <div className={`${HERO_BANNER_WRAPPER_CLASS} opacity-70`}>
           <SkeletonBlock className="h-full w-full" soft={true} />
@@ -123,7 +123,7 @@ function AccountHeroSkeleton() {
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <div className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
@@ -240,7 +240,7 @@ function ToolbarSkeleton({ firstWidth = 'sm:w-44', secondWidth = 'sm:w-40', extr
 
 function FilterBarSkeleton({ count = 2 }) {
   return (
-    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
+    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden border-b border-white/10 pb-5">
       {Array.from({ length: count }).map((_, index) => (
         <Pill key={index} className="h-9 min-w-40 flex-1" soft={true} />
       ))}
@@ -276,7 +276,7 @@ function ListPreviewStackSkeleton() {
   ];
 
   return (
-    <div className="relative h-48 bg-white">
+    <div className="relative h-48 rounded bg-black">
       <Bar className="absolute inset-0" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
@@ -293,7 +293,7 @@ function ListCardSkeleton() {
     <div className="relative w-full">
       <ListPreviewStackSkeleton />
 
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden bg-white/80 backdrop-blur-md">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded bg-black/80 backdrop-blur-md">
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-4 w-3/4" />
@@ -339,10 +339,10 @@ function ActivityItemSkeleton({ isFirst = false }) {
 
 function ReviewCardSkeleton() {
   return (
-    <article className="py-4 sm:py-5">
+    <article className="account-review-list-item border-b border-white/10 py-4 last:border-b-0 sm:py-5">
       <div className="relative transition-all duration-300">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-20">
+          <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded sm:h-28 sm:w-20">
             <Poster radius="card" />
           </div>
 
@@ -495,7 +495,7 @@ function ReviewsSkeleton() {
       <SectionShell>
         <SectionBodySkeleton>
           <FilterBarSkeleton count={5} />
-          <div>
+          <div className="account-review-list-frame">
             {Array.from({ length: 4 }).map((_, index) => (
               <ReviewCardSkeleton key={index} />
             ))}
@@ -571,7 +571,7 @@ function ListDetailSkeleton() {
             </div>
             <Pill className="h-9 w-28" soft={true} />
           </div>
-          <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col items-start gap-3 border-y border-white/10 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Line className="h-3.5 w-36" />
               <Line className="h-3 w-64 max-w-full" soft={true} />
@@ -634,7 +634,7 @@ function ListBuilderSkeleton() {
     <div>
       <SectionShell>
         <SectionBodySkeleton>
-          <div className="skeleton-block-soft overflow-hidden">
+          <div className="skeleton-block-soft overflow-hidden rounded">
             <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-2">
               <section className="flex min-h-0 flex-col">
                 <div className="p-4 sm:p-5">
@@ -709,7 +709,7 @@ function renderVariant(variant) {
 
 export function Skeleton({ variant = 'overview' }) {
   return (
-    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-white">
+    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
       <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`}>
         <div className="relative">
           <AccountHeroSkeleton />

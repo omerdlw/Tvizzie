@@ -109,7 +109,7 @@ export function ProfileMediaActions({
           key={`${action.label || action.icon || 'media-action'}-${index}`}
           type="button"
           aria-label={action.label}
-          className="center size-8 border border-black/15 bg-white text-black transition disabled:cursor-default"
+          className="center size-8 rounded-xs border border-white/15 bg-black text-white transition disabled:cursor-default"
           disabled={Boolean(action.disabled)}
           onClick={(event) => {
             event.preventDefault();
@@ -125,7 +125,7 @@ export function ProfileMediaActions({
         <button
           type="button"
           aria-label="Add to list"
-          className="center size-8 border border-black/15 bg-white text-black transition disabled:cursor-default"
+          className="center size-8 rounded-xs border border-white/15 bg-black text-white transition disabled:cursor-default"
           onClick={handleOpenListPicker}
         >
           <Icon icon="solar:list-check-minimalistic-bold" size={12} />
@@ -135,7 +135,7 @@ export function ProfileMediaActions({
       {typeof onRemoveItem === 'function' ? (
         <Button
           variant="destructive-icon"
-          className={`center text-error hover:border-error hover:bg-error size-8 border border-black/15 bg-white hover:text-white disabled:cursor-default`}
+          className={`center text-error hover:border-error hover:bg-error size-8 rounded-xs border border-white/15 bg-black hover:text-black disabled:cursor-default`}
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}

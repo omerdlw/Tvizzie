@@ -44,10 +44,10 @@ function SidebarRow({ icon, label, value }) {
   }
 
   return (
-    <div className="flex items-start gap-2 py-1.5 text-sm text-black">
-      <Icon icon={icon} size={18} className="mt-0.5 shrink-0 text-black/70" />
+    <div className="flex items-start gap-2 py-1.5 text-sm text-white">
+      <Icon icon={icon} size={18} className="mt-0.5 shrink-0 text-white/70" />
       <div className="flex-1 leading-relaxed font-medium">
-        {label}: <span className="text-black/70">{value}</span>
+        {label}: <span className="text-white/70">{value}</span>
       </div>
     </div>
   );
@@ -131,9 +131,9 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-black/10 py-5 lg:py-7">
+      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-white/10 py-5 lg:py-7">
         <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
-          <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+          <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
             {hasImage ? (
               <AdaptiveImage
                 src={imageSrc}
@@ -151,8 +151,8 @@ export default function PersonSidebar({ person, age }) {
                 wrapperClassName="h-full w-full"
               />
             ) : (
-              <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
-                <Icon icon="solar:user-bold" size={64} className="text-black/70" />
+              <div className="bg-primary center h-full w-full border border-white/10 text-white/50">
+                <Icon icon="solar:user-bold" size={64} className="text-white/70" />
               </div>
             )}
 
@@ -182,7 +182,7 @@ export default function PersonSidebar({ person, age }) {
         {person?.biography ? (
           <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
             <div className="flex flex-col gap-2">
-              <h2 className="text-xs font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
+              <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Bio</h2>
               <PersonBio biography={person.biography} />
             </div>
           </PersonSurfaceReveal>

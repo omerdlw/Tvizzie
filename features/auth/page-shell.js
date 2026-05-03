@@ -14,8 +14,7 @@ export default function AuthPageShell({ children, title }) {
               <span aria-hidden="true" className="auth-detail-grid-plus auth-detail-grid-plus-bottom-start" />
               <span aria-hidden="true" className="auth-detail-grid-plus auth-detail-grid-plus-bottom-end" />
               <div className="auth-detail-header flex flex-col items-center text-center">
-                <img src="/tvizzie.png" alt="Tvizzie" className="auth-detail-logo size-10" />
-                <h1 className="text-3xl font-semibold text-balance text-black sm:text-4xl">{title}</h1>
+                <h1 className="text-3xl font-semibold text-balance sm:text-4xl">{title}</h1>
               </div>
               <div className="auth-detail-form-surface">{children}</div>
             </div>

@@ -5,7 +5,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
+import {
+  PersonSurfaceReveal,
+  getPersonSurfaceItemMotion,
+  usePersonSurfaceRevealState,
+} from '@/app/(media)/person/[id]/motion';
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
@@ -74,7 +78,7 @@ function buildAwardsTimeline(organizations = []) {
 function AwardsState({ message, variant = 'empty' }) {
   return (
     <div className="flex w-full justify-center py-20">
-      <p className={cn('text-sm font-medium text-black/70', variant === 'error' && 'text-error')}>{message}</p>
+      <p className={cn('text-sm font-medium text-white/70', variant === 'error' && 'text-error')}>{message}</p>
     </div>
   );
 }
@@ -83,7 +87,7 @@ function AwardStatus({ type }) {
   const isWinner = isWinType(type);
 
   return (
-    <span className={cn('shrink-0', isWinner ? 'text-warning font-bold' : 'font-semibold text-black/45')}>{type}</span>
+    <span className={cn('shrink-0', isWinner ? 'text-warning font-bold' : 'font-semibold text-white/50')}>{type}</span>
   );
 }
 
@@ -147,117 +151,129 @@ export default function PersonAwards({ personId }) {
 
   return (
     <PersonSurfaceReveal>
-      <section className="flex w-full flex-col gap-3">
-        <div className="flex items-end justify-between gap-3">
-          <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Awards</h2>
-          {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
-            <div className="text-xs font-semibold text-black/50 sm:text-sm">
-              {stats.totalNominations} Nominations
-              {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
-            </div>
-          )}
-        </div>
+      <PersonAwardsSurface awardsTimeline={awardsTimeline} stats={stats} />
+    </PersonSurfaceReveal>
+  );
+}
 
-        <div className="flex w-full flex-col">
-          {awardsTimeline.map(([year, entries], yearIndex) => {
-            const yearMotion = getPersonSurfaceItemMotion({
-              index: yearIndex,
-              distance: 18,
-              duration: 0.64,
-              delayStep: 0.088,
-              scale: 0.986,
-            });
+function PersonAwardsSurface({ awardsTimeline, stats }) {
+  const surfaceReveal = usePersonSurfaceRevealState();
 
-            return (
-              <motion.div
-                key={year}
-                className="mt-4 first:mt-0"
-                initial={yearMotion.initial}
-                animate={yearMotion.animate}
-                transition={yearMotion.transition}
-              >
-                <div className="mb-2 flex items-center gap-2 sm:gap-3">
-                  <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
-                    {year}
-                  </span>
-                  <div className="h-px flex-1 bg-black/20" />
-                </div>
+  return (
+    <section className="flex w-full flex-col gap-3">
+      <div className="flex items-end justify-between gap-3">
+        <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Awards</h2>
+        {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
+          <div className="text-xs font-semibold text-white/50 sm:text-sm">
+            {stats.totalNominations} Nominations
+            {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
+          </div>
+        )}
+      </div>
 
-                <div className="flex flex-col sm:ml-16">
-                  {entries.map((entry, entryIndex) => {
-                    const isInteractive = Boolean(entry.projectId);
-                    const hasProject = Boolean(entry.project);
-                    const title = entry.project || entry.category;
-                    const rowClassName = cn(
-                      'group flex items-center gap-3  border-transparent p-1 transition-colors',
-                      isInteractive ? 'hover:bg-primary' : 'cursor-default'
-                    );
-                    const entryMotion = getPersonSurfaceItemMotion({
-                      axis: 'x',
-                      distance: -14,
-                      duration: 0.48,
-                      groupIndex: yearIndex,
-                      groupDelayStep: 0.088,
-                      index: entryIndex,
-                      delayStep: 0.028,
-                      scale: 0.992,
-                    });
-                    const content = (
-                      <>
-                        <MediaThumb poster={entry.poster} alt={title} className="" />
-                        <div className="flex min-w-0 flex-1 flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
-                          </div>
+      <div className="flex w-full flex-col">
+        {awardsTimeline.map(([year, entries], yearIndex) => {
+          const yearMotion = getPersonSurfaceItemMotion({
+            active: surfaceReveal.isActive,
+            enabled: surfaceReveal.shouldAnimateItems,
+            index: yearIndex,
+            distance: 18,
+            duration: 0.84,
+            delayStep: 0.1,
+            scale: 0.986,
+          });
 
-                          <div className="mt-1 flex min-w-0 flex-col gap-0.5 text-xs leading-snug text-black/50 sm:text-sm">
-                            <span className="truncate">{entry.organization}</span>
-                            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-                              <AwardStatus type={entry.type} />
-                              {hasProject && (
-                                <span className="min-w-0 flex-1 truncate text-black/45 sm:line-clamp-1">
-                                  {entry.category}
-                                </span>
-                              )}
-                            </div>
+          return (
+            <motion.div
+              key={year}
+              className="mt-4 first:mt-0"
+              initial={yearMotion.initial}
+              animate={yearMotion.animate}
+              transition={yearMotion.transition}
+            >
+              <div className="mb-2 flex items-center gap-2 sm:gap-3">
+                <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">
+                  {year}
+                </span>
+                <div className="h-px flex-1 bg-white/20" />
+              </div>
+
+              <div className="flex flex-col sm:ml-16">
+                {entries.map((entry, entryIndex) => {
+                  const isInteractive = Boolean(entry.projectId);
+                  const hasProject = Boolean(entry.project);
+                  const title = entry.project || entry.category;
+                  const rowClassName = cn(
+                    'group flex items-center gap-3 rounded border-transparent p-1 transition-colors',
+                    isInteractive ? 'hover:bg-white/10' : 'cursor-default'
+                  );
+                  const entryMotion = getPersonSurfaceItemMotion({
+                    active: surfaceReveal.isActive,
+                    axis: 'x',
+                    distance: -14,
+                    duration: 0.72,
+                    enabled: surfaceReveal.shouldAnimateItems,
+                    groupIndex: yearIndex,
+                    groupDelayStep: 0.12,
+                    index: entryIndex,
+                    delayStep: 0.04,
+                    scale: 0.992,
+                  });
+                  const content = (
+                    <>
+                      <MediaThumb poster={entry.poster} alt={title} className="" />
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+                        </div>
+
+                        <div className="mt-1 flex min-w-0 flex-col gap-0.5 text-xs leading-snug text-white/50 sm:text-sm">
+                          <span className="truncate">{entry.organization}</span>
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <AwardStatus type={entry.type} />
+                            {hasProject && (
+                              <span className="min-w-0 flex-1 truncate text-white/50 sm:line-clamp-1">
+                                {entry.category}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </>
-                    );
+                      </div>
+                    </>
+                  );
 
-                    if (isInteractive) {
-                      return (
-                        <motion.div
-                          key={entry.key}
-                          initial={entryMotion.initial}
-                          animate={entryMotion.animate}
-                          transition={entryMotion.transition}
-                        >
-                          <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
-                            {content}
-                          </Link>
-                        </motion.div>
-                      );
-                    }
-
+                  if (isInteractive) {
                     return (
                       <motion.div
                         key={entry.key}
                         initial={entryMotion.initial}
                         animate={entryMotion.animate}
                         transition={entryMotion.transition}
-                        className={rowClassName}
                       >
-                        {content}
+                        <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+                          {content}
+                        </Link>
                       </motion.div>
                     );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-    </PersonSurfaceReveal>
+                  }
+
+                  return (
+                    <motion.div
+                      key={entry.key}
+                      initial={entryMotion.initial}
+                      animate={entryMotion.animate}
+                      transition={entryMotion.transition}
+                      className={rowClassName}
+                    >
+                      {content}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

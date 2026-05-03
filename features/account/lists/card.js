@@ -107,7 +107,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
       style={{ zIndex }}
     >
       <div
-        className="overflow-hidden"
+        className="overflow-hidden rounded-xs"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -125,7 +125,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
             transition={{ duration: 0.2, ease: 'easeOut' }}
           />
         ) : (
-          <div className="center h-full w-full bg-white/50 text-black/50">
+          <div className="center h-full w-full bg-black/50 text-white/50">
             <Icon icon="solar:videocamera-record-bold" size={20} />
           </div>
         )}
@@ -156,7 +156,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
       style={{ zIndex }}
     >
       <div
-        className="border border-black/10 bg-white"
+        className="rounded-xs border border-white/10 bg-black"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -226,7 +226,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <motion.div
-            className="relative z-0 border border-black/10 bg-white"
+            className="relative z-0 rounded border border-white/10 bg-black"
             initial={false}
             animate={{
               rotateX: isHovered ? 12 : 0,
@@ -282,7 +282,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </motion.div>
 
           <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/10 bg-white/80"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded border border-white/10 bg-black/80"
             initial={false}
             animate={{
               rotateX: isHovered ? -20 : 0,
@@ -301,13 +301,13 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             }}
           >
             <div className="relative px-4 py-4">
-              <h3 className="line-clamp-2 min-h-[2.6rem] text-[19px] leading-[1.22] font-semibold text-black">
+              <h3 className="line-clamp-2 min-h-[2.6rem] text-[19px] leading-[1.22] font-semibold text-white">
                 {listTitle}
               </h3>
             </div>
 
-            <div className="relative h-11 border-t border-black/10">
-              <div className="absolute inset-0 flex items-center justify-between px-3 text-[13px] text-black/70">
+            <div className="relative h-11 border-t border-white/10">
+              <div className="absolute inset-0 flex items-center justify-between px-3 text-[13px] text-white/70">
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <Icon icon="solar:calendar-mark-bold" size={14} />
                   <span>{updatedLabel}</span>

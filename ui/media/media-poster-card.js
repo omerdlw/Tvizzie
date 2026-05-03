@@ -14,6 +14,7 @@ export default function MediaPosterCard({
   imagePriority = false,
   imageFetchPriority,
   fallbackMediaType = 'movie',
+  onSelect,
 }) {
   usePosterPreferenceVersion();
   const mediaType = resolveExplicitMediaType(item, fallbackMediaType);
@@ -27,6 +28,7 @@ export default function MediaPosterCard({
   const resolvedTitle = title || 'Untitled';
   const year = item.release_date?.slice(0, 4);
   const href = `/movie/${detailId}`;
+  const isSelectable = typeof onSelect === 'function';
   const imageSrc =
     getPreferredMoviePosterSrc(item, 'w342') ||
     (item.poster_path_full ? item.poster_path_full : item.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
@@ -34,7 +36,8 @@ export default function MediaPosterCard({
 
   return (
     <MediaCard
-      href={href}
+      href={isSelectable ? undefined : href}
+      onClick={isSelectable ? () => onSelect(item) : undefined}
       className={cn('w-full', className)}
       aspectClass={aspectSquare ? 'aspect-square' : 'aspect-2/3'}
       imageSrc={imageSrc}

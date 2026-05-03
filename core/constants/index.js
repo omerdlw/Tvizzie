@@ -43,16 +43,16 @@ export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
 });
 
 export const DESTRUCTIVE_ACTION_TONE_CLASS =
-  'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-white hover:border-error';
+  'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-black hover:border-error';
 
 export const INFO_ACTION_TONE_CLASS =
-  'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-white hover:border-info';
+  'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-black hover:border-info';
 
 export const SUCCESS_ACTION_TONE_CLASS =
-  'border border-success/20 bg-success/20 text-success hover:bg-success hover:text-white hover:border-success';
+  'border border-success/20 bg-success/20 text-success hover:bg-success hover:text-black hover:border-success';
 
 export const WARNING_ACTION_TONE_CLASS =
-  'border border-warning/20 bg-warning/20 text-warning hover:bg-warning hover:text-white hover:border-warning';
+  'border border-warning/20 bg-warning/20 text-warning hover:bg-warning hover:text-black hover:border-warning';
 
 export const API_URL = '';
 export const AUTH_API_URL = '';

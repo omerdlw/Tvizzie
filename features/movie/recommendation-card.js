@@ -2,23 +2,24 @@
 
 import { motion } from 'framer-motion';
 
-import { getSurfaceItemMotion, useInitialItemRevealEnabled } from '@/app/(media)/movie/[id]/motion';
+import { getSurfaceItemMotion, useMovieSurfaceRevealState } from '@/app/(media)/movie/[id]/motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 
 export default function RecommendationCard({ movie, index = 0, imagePriority = false, imageFetchPriority }) {
   usePosterPreferenceVersion();
-  const shouldAnimateItemReveal = useInitialItemRevealEnabled();
+  const surfaceReveal = useMovieSurfaceRevealState();
   const resolvedTitle = movie.title || movie.original_title || 'Untitled';
   const year = movie.release_date?.slice(0, 4);
   const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
   const cardMotion = getSurfaceItemMotion({
-    enabled: shouldAnimateItemReveal,
+    active: surfaceReveal.isActive,
+    enabled: surfaceReveal.shouldAnimateItems,
     index,
-    delayStep: 0.075,
-    distance: 24,
-    duration: 0.9,
+    delayStep: 0.12,
+    distance: 30,
+    duration: 1.18,
     scale: 0.968,
   });
 

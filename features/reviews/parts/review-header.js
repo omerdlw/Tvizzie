@@ -5,7 +5,9 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const REVIEW_HEADER_BADGE_CLASS =
-  'bg-primary/30 hover:bg-primary/60 inline-flex min-h-10 items-center justify-center gap-1.5  border  border-black/10 px-4 py-2 text-xs font-semibold text-black/70 uppercase transition-colors tabular-nums';
+  'bg-white/5 hover:bg-white/10 backdrop-blur rounded inline-flex h-10 min-w-28 items-center justify-center gap-1.5 border-[0.5px] border-white/10 px-4 text-xs font-semibold text-white/70 uppercase transition-colors tabular-nums';
+const REVIEW_HEADER_RATING_BADGE_CLASS = `${REVIEW_HEADER_BADGE_CLASS} sm:min-w-56`;
+const REVIEW_HEADER_ICON_BUTTON_CLASS = 'size-10 backdrop-blur shrink-0 border-[0.5px] rounded-xs';
 
 export default function ReviewHeader({
   allReviewsHref = null,
@@ -35,7 +37,7 @@ export default function ReviewHeader({
           {totalReviews === 1 ? '' : 's'}
         </div>
         {hasRatingSummary && (
-          <div className={REVIEW_HEADER_BADGE_CLASS}>
+          <div className={REVIEW_HEADER_RATING_BADGE_CLASS}>
             <Icon icon="solar:star-bold" className="text-warning" size={16} />
             <span>
               {ratingStats?.average}/5 avg
@@ -49,20 +51,21 @@ export default function ReviewHeader({
           </Link>
         ) : null}
         {hasEditOwnReview ? (
-          <button
+          <Button
             type="button"
+            variant="info"
+            className={REVIEW_HEADER_ICON_BUTTON_CLASS}
             onClick={onEditOwnReview}
-            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             aria-label="Edit your review"
             title="Edit your review"
           >
             <Icon icon="solar:pen-bold" size={16} />
-          </button>
+          </Button>
         ) : null}
         {hasDeleteOwnReview ? (
           <Button
             variant="destructive-icon"
-            className=""
+            className={REVIEW_HEADER_ICON_BUTTON_CLASS}
             onClick={onDeleteOwnReview}
             aria-label="Delete your review"
             title="Delete your review"

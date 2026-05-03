@@ -18,9 +18,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 rounded border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
-const TOOL_BUTTON_CLASS = 'size-7  transition';
+const TOOL_BUTTON_CLASS = 'size-7 rounded-xs transition';
 
 const SKELETON_COUNT = 16;
 
@@ -93,7 +93,7 @@ function getNotificationSubject(payload, type) {
 }
 
 function InlineEntity({ href, children, muted = false }) {
-  const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
+  const className = muted ? 'font-semibold text-white/70' : 'font-semibold';
 
   return href ? (
     <Link href={href} className={className}>
@@ -167,7 +167,7 @@ function NotificationContent({ type, actor, payload }) {
 
     default:
       return (
-        <p className="text-sm text-black/70">
+        <p className="text-sm text-white/70">
           <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> interacted with you
         </p>
       );
@@ -176,11 +176,11 @@ function NotificationContent({ type, actor, payload }) {
 
 function NotificationSkeleton() {
   return (
-    <div className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-      <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+    <div className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
+      <div className="size-10 shrink-0 animate-pulse rounded-xs bg-white/10" />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-3/5 animate-pulse bg-black/5" />
-        <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+        <div className="h-3 w-3/5 animate-pulse rounded-xs bg-white/10" />
+        <div className="h-2 w-2/5 animate-pulse rounded-xs bg-white/10" />
       </div>
     </div>
   );
@@ -194,11 +194,11 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
   return (
     <div
       className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
-        isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
+        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 p-3 transition-colors last:border-none lg:p-4',
+        isUnread ? 'bg-white/10 hover:bg-white/10' : 'hover:bg-white/10'
       )}
     >
-      <div className="center size-10 shrink-0 overflow-hidden">
+      <div className="center size-10 shrink-0 overflow-hidden rounded-xs">
         {notification.actor ? (
           <AdaptiveImage
             mode="img"
@@ -211,13 +211,13 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
             wrapperClassName="size-full"
           />
         ) : (
-          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
+          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-white/70" />
         )}
       </div>
 
       <div className="flex w-full flex-col">
         <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
-        <span className="text-[10px] tracking-widest text-black/50 uppercase">
+        <span className="text-[10px] tracking-widest text-white/50 uppercase">
           {formatRelativeTime(notification.createdAt)}
         </span>
       </div>
@@ -400,7 +400,7 @@ export default function NotificationsModal({ close, header, data }) {
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className={cn(ACTION_BUTTON_CLASS, 'border-black/10 text-black/70 hover:bg-black/5 hover:text-black')}
+                className={cn(ACTION_BUTTON_CLASS, 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white')}
               >
                 Clear all
               </Button>
@@ -411,7 +411,7 @@ export default function NotificationsModal({ close, header, data }) {
                   onClick={handleMarkAllRead}
                   className={cn(
                     ACTION_BUTTON_CLASS,
-                    'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50'
+                    'hover:bg-info hover:border-info hover:text-primary border-white bg-white text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50'
                   )}
                 >
                   Mark all as read
@@ -425,7 +425,7 @@ export default function NotificationsModal({ close, header, data }) {
         {isLoading ? (
           Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
         ) : notifications.length === 0 ? (
-          <div className="center h-screen text-sm font-medium text-black/50">You have no notifications yet</div>
+          <div className="center h-screen text-sm font-medium text-white/50">You have no notifications yet</div>
         ) : (
           notifications.map((notification) => (
             <NotificationRow

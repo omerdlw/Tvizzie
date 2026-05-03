@@ -379,7 +379,7 @@ export default function Nav() {
         transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
       >
-        <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-white via-white/70 to-transparent" />
+        <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-black via-black/70 to-transparent" />
       </motion.div>
 
       {/* Card stack */}

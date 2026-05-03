@@ -111,7 +111,7 @@ function HeroBioPreview({ description, onReadMore }) {
       </p>
       {shouldShowReadMore ? (
         <div className="account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12">
-          <button className="text-sm font-semibold text-black/70 uppercase" type="button" onClick={onReadMore}>
+          <button className="text-sm font-semibold text-white/70 uppercase" type="button" onClick={onReadMore}>
             More
           </button>
         </div>
@@ -137,7 +137,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
               item={item}
               className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
               valueClassName="text-base font-semibold leading-none tracking-tight"
-              labelClassName="max-w-full truncate text-[13px] leading-none text-black/75"
+              labelClassName="max-w-full truncate text-[13px] leading-none text-white/75"
             />
           ))}
         </div>
@@ -149,7 +149,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
               item={item}
               className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
               valueClassName="text-base font-semibold leading-none tracking-tight "
-              labelClassName="text-base leading-none text-black/75"
+              labelClassName="text-base leading-none text-white/75"
             />
           ))}
         </div>
@@ -269,7 +269,7 @@ export default function AccountHero({
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <div className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <AdaptiveImage
                 mode="img"
                 className="h-full w-full object-cover"
@@ -295,7 +295,7 @@ export default function AccountHero({
                 className="grid grid-cols-2 gap-6 text-center"
                 itemClassName="inline-flex min-w-0 items-baseline gap-1.5 py-1 whitespace-nowrap lg:flex-col lg:items-center lg:gap-0.5 lg:py-0"
                 valueClassName="text-base font-semibold leading-none tracking-tight sm:text-lg lg:text-[2.4rem]"
-                labelClassName="text-base leading-none text-black/75 lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
+                labelClassName="text-base leading-none text-white/75 lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
               />
             </div>
           </div>

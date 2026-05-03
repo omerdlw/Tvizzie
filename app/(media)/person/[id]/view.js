@@ -7,6 +7,7 @@ import PersonGallery from '@/features/person/gallery';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
+import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import { TextAnimate } from '@/ui/animations/text-animate';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import {
@@ -19,30 +20,24 @@ import {
   getPersonSurfaceItemMotion,
   getPersonSurfacePanelMotion,
   useInitialPersonItemRevealEnabled,
+  usePersonSurfaceRevealState,
 } from './motion';
 import { getFilmographyCredits } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
 
-function PersonGridDivider() {
-  return (
-    <div className="movie-detail-grid-divider" aria-hidden="true">
-      <span className="movie-detail-grid-divider-startcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="movie-detail-grid-divider-endcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </span>
-    </div>
-  );
-}
+function PersonGridSection({ children, className = '', divider = 'decorative' }) {
+  const isPlainDivider = divider === 'plain';
 
-function PersonGridSection({ children, className = '' }) {
   return (
-    <div className={`movie-detail-grid-subsection ${className}`}>
-      <PersonGridDivider />
-      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">{children}</div>
+    <div
+      className={`movie-detail-grid-subsection ${isPlainDivider ? 'person-detail-plain-section' : ''} ${className}`}
+    >
+      <MovieGridDivider className={isPlainDivider ? 'person-detail-grid-divider-plain' : ''} />
+      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">
+        {children}
+      </div>
     </div>
   );
 }
@@ -61,14 +56,52 @@ function getBiographyExcerpt(biography, maxLength = 280) {
   return `${value.slice(0, maxLength).replace(/\s+\S*$/, '')}...`;
 }
 
+function PersonFilmographySurface({ credits, animateItemReveal }) {
+  const surfaceReveal = usePersonSurfaceRevealState();
+
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Filmography</h2>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        {credits.map((credit, index) => {
+          const cardMotion = getPersonSurfaceItemMotion({
+            active: surfaceReveal.isActive,
+            enabled: animateItemReveal && surfaceReveal.shouldAnimateItems,
+            index,
+            distance: 18,
+            scale: 0.976,
+          });
+
+          return (
+            <motion.div
+              key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
+              initial={cardMotion.initial}
+              animate={cardMotion.animate}
+              transition={cardMotion.transition}
+            >
+              <FilmographyCard
+                credit={credit}
+                imagePriority={index < 8}
+                imageFetchPriority={index < 8 ? 'high' : undefined}
+              />
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function PersonMainContent({ person, animateItemReveal = true }) {
   const movieCredits = getFilmographyCredits(person, 'movie');
+  const hasGallery = person?.images?.profiles?.length > 0;
 
   return (
     <>
-      {person?.images?.profiles?.length > 0 ? (
+      {hasGallery ? (
         <PersonSectionReveal delay={PERSON_ROUTE_TIMING.sections.gallery} animateOnView={false}>
-          <PersonGridSection>
+          <PersonGridSection divider="plain">
             <PersonGallery images={person.images} animateItemReveal={animateItemReveal} />
           </PersonGridSection>
         </PersonSectionReveal>
@@ -76,37 +109,9 @@ function PersonMainContent({ person, animateItemReveal = true }) {
 
       {movieCredits.length > 0 ? (
         <PersonSectionReveal delay={PERSON_ROUTE_TIMING.sections.filmography} animateOnView={false}>
-          <PersonGridSection>
+          <PersonGridSection divider={hasGallery ? 'decorative' : 'plain'}>
             <PersonSurfaceReveal>
-              <section className="flex flex-col gap-3">
-                <h2 className="text-xs font-semibold tracking-widest text-black/70 uppercase">Filmography</h2>
-
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                  {movieCredits.map((credit, index) => {
-                    const cardMotion = getPersonSurfaceItemMotion({
-                      enabled: animateItemReveal,
-                      index,
-                      distance: 18,
-                      scale: 0.976,
-                    });
-
-                    return (
-                      <motion.div
-                        key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
-                        initial={cardMotion.initial}
-                        animate={cardMotion.animate}
-                        transition={cardMotion.transition}
-                      >
-                        <FilmographyCard
-                          credit={credit}
-                          imagePriority={index < 8}
-                          imageFetchPriority={index < 8 ? 'high' : undefined}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </section>
+              <PersonFilmographySurface credits={movieCredits} animateItemReveal={animateItemReveal} />
             </PersonSurfaceReveal>
           </PersonGridSection>
         </PersonSectionReveal>
@@ -125,7 +130,7 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView, anima
   if (activeView === 'timeline') {
     return (
       <PersonSectionReveal delay={PERSON_ROUTE_TIMING.sections.timeline} animateOnView={false}>
-        <PersonGridSection>
+        <PersonGridSection divider="plain">
           <PersonTimeline person={mergedPerson} />
         </PersonGridSection>
       </PersonSectionReveal>
@@ -172,11 +177,13 @@ export default function PersonView({
       />
 
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-        <div
-          className={`movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
+        <MovieGridFrame
+          routeKey={`person-${person.id}`}
+          className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
         >
           <div className="person-detail-grid-primary">
-            <div className="movie-detail-grid-sidebar w-full shrink-0">
+            <div className="movie-detail-grid-sidebar relative w-full shrink-0">
+              <MovieGridSidebarBoundary />
               <div className="lg:sticky lg:top-0">
                 <PersonSidebarReveal delay={PERSON_ROUTE_TIMING.sidebar.containerDelay}>
                   <PersonSidebar person={person} age={age} />
@@ -211,7 +218,7 @@ export default function PersonView({
                   {biographyExcerpt ? (
                     <PersonHeroReveal delay={PERSON_ROUTE_TIMING.hero.overviewDelay} className="mt-4">
                       <PersonClipReveal animateOnView={false} delay={0.06}>
-                        <p className="movie-detail-reading-measure text-left text-base leading-7 text-black/70 sm:text-justify">
+                        <p className="movie-detail-reading-measure text-left text-base leading-7 text-white/70 sm:text-justify">
                           {biographyExcerpt}
                         </p>
                       </PersonClipReveal>
@@ -229,7 +236,7 @@ export default function PersonView({
                   >
                     {activeView === 'awards' ? (
                       <PersonSectionReveal delay={PERSON_ROUTE_TIMING.sections.awards} animateOnView={false}>
-                        <PersonGridSection>
+                        <PersonGridSection divider="plain">
                           <PersonAwards personId={person.id} />
                         </PersonGridSection>
                       </PersonSectionReveal>
@@ -249,7 +256,7 @@ export default function PersonView({
               <NavHeightSpacer className="w-full" />
             </div>
           </div>
-        </div>
+        </MovieGridFrame>
       </PageGradientShell>
     </>
   );

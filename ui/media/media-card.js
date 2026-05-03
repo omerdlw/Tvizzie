@@ -109,7 +109,7 @@ export default function MediaCard({
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden transition ease-in-out', className)}
+      className={cn('group flex shrink-0 flex-col overflow-hidden rounded transition ease-in-out', className)}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
@@ -137,7 +137,7 @@ export default function MediaCard({
             />
           ) : (
             fallbackContent || (
-              <div className="center h-full w-full border border-black/5 bg-black/5">
+              <div className="center h-full w-full border border-white/10 bg-white/10">
                 <Icon icon={fallbackIcon} size={fallbackIconSize} className={fallbackIconClassName} />
               </div>
             )

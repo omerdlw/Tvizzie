@@ -3,7 +3,11 @@
 import { useMemo } from 'react';
 
 import { motion } from 'framer-motion';
-import { PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/app/(media)/person/[id]/motion';
+import {
+  PersonSurfaceReveal,
+  getPersonSurfaceItemMotion,
+  usePersonSurfaceRevealState,
+} from '@/app/(media)/person/[id]/motion';
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
@@ -27,45 +31,54 @@ export default function PersonGallery({ images, animateItemReveal = true }) {
 
   return (
     <PersonSurfaceReveal>
-      <section className="flex w-full flex-col gap-3">
-        <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Gallery</h2>
-
-        <Carousel gap="gap-3">
-          {profiles.map((image, index) => {
-            const cardMotion = getPersonSurfaceItemMotion({
-              enabled: animateItemReveal,
-              index,
-              distance: 16,
-              scale: 0.976,
-            });
-
-            return (
-              <motion.div
-                key={image.file_path || index}
-                initial={cardMotion.initial}
-                animate={cardMotion.animate}
-                transition={cardMotion.transition}
-              >
-                <MediaCard
-                  className="w-[min(14rem,calc(100vw-4.5rem))] sm:w-60"
-                  aspectClass="aspect-2/3"
-                  imageSrc={image.file_path ? `${TMDB_IMG}/w342${image.file_path}` : null}
-                  imageAlt={`${index + 1}. portrait`}
-                  imageSizes="(min-width: 1024px) 240px, (min-width: 768px) 31vw, 38vw"
-                  imagePriority={index < 4}
-                  imageFetchPriority={index < 4 ? 'high' : undefined}
-                  imagePreset="feature"
-                  fallbackIcon="solar:user-bold"
-                  fallbackIconSize={24}
-                  onClick={() => openModal?.('PREVIEW_MODAL', 'center', { data: image })}
-                  data-poster-file-path={image.file_path || ''}
-                  data-context-menu-target="person-poster-card"
-                />
-              </motion.div>
-            );
-          })}
-        </Carousel>
-      </section>
+      <PersonGallerySurface profiles={profiles} openModal={openModal} animateItemReveal={animateItemReveal} />
     </PersonSurfaceReveal>
+  );
+}
+
+function PersonGallerySurface({ profiles, openModal, animateItemReveal }) {
+  const surfaceReveal = usePersonSurfaceRevealState();
+
+  return (
+    <section className="flex w-full flex-col gap-3">
+      <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Gallery</h2>
+
+      <Carousel gap="gap-3">
+        {profiles.map((image, index) => {
+          const cardMotion = getPersonSurfaceItemMotion({
+            active: surfaceReveal.isActive,
+            enabled: animateItemReveal && surfaceReveal.shouldAnimateItems,
+            index,
+            distance: 16,
+            scale: 0.976,
+          });
+
+          return (
+            <motion.div
+              key={image.file_path || index}
+              initial={cardMotion.initial}
+              animate={cardMotion.animate}
+              transition={cardMotion.transition}
+            >
+              <MediaCard
+                className="person-gallery-card sm:w-60"
+                aspectClass="aspect-2/3"
+                imageSrc={image.file_path ? `${TMDB_IMG}/w342${image.file_path}` : null}
+                imageAlt={`${index + 1}. portrait`}
+                imageSizes="(min-width: 1024px) 240px, (min-width: 768px) 31vw, 38vw"
+                imagePriority={index < 4}
+                imageFetchPriority={index < 4 ? 'high' : undefined}
+                imagePreset="feature"
+                fallbackIcon="solar:user-bold"
+                fallbackIconSize={24}
+                onClick={() => openModal?.('PREVIEW_MODAL', 'center', { data: image })}
+                data-poster-file-path={image.file_path || ''}
+                data-context-menu-target="person-poster-card"
+              />
+            </motion.div>
+          );
+        })}
+      </Carousel>
+    </section>
   );
 }

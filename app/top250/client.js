@@ -73,7 +73,7 @@ function Top250MovieCard({ item, index }) {
     <motion.div initial={itemMotion.initial} animate={itemMotion.animate} transition={itemMotion.transition}>
       <MediaCard
         href={href}
-        className="bg-primary w-full border border-black/10 transition-transform duration-200 ease-out hover:scale-105 active:scale-95"
+        className="bg-primary w-full border border-white/10 transition-transform duration-200 ease-out hover:scale-105 active:scale-95"
         imageSrc={posterSrc}
         imageAlt={item.title}
         imageSizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
@@ -137,7 +137,7 @@ export default function Top250Client({ data }) {
                           ))}
                         </section>
                       ) : (
-                        <section className="bg-primary border border-black/10 px-4 py-5 text-sm font-medium text-black/60">
+                        <section className="bg-primary border border-white/10 px-4 py-5 text-sm font-medium text-white/60">
                           No Top 250 movies found.
                         </section>
                       )}
@@ -149,7 +149,7 @@ export default function Top250Client({ data }) {
           </div>
         </main>
       </PageGradientShell>
-      <NavHeightSpacer className="w-full bg-white" />
+      <NavHeightSpacer className="w-full bg-black" />
     </>
   );
 }

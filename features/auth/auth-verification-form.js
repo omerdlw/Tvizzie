@@ -73,16 +73,10 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center border-info bg-primary/30 hover:bg-primary/50 h-13 border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
-                hasError &&
-                  digit &&
-                  'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
-                isActive &&
-                  !digit &&
-                  'border border-black/10 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
-                digit &&
-                  !hasError &&
-                  'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border'
+                'center h-13 rounded-xs border-[0.5px] border-white/10 bg-transparent text-lg font-semibold transition-colors',
+                hasError && digit && 'border-error/20 bg-error/10 text-error border-[0.5px]',
+                isActive && !digit && 'border-[0.5px] border-white/10 bg-white/5 text-white',
+                digit && !hasError && 'border-success/20 bg-success/10 text-success border-[0.5px]'
               )}
             >
               {digit || <span className="invisible">0</span>}
@@ -390,7 +384,6 @@ export default function AuthVerificationForm({
         setIsFocused={setIsCodeFocused}
         setCode={setCode}
       />
-
       {shouldShowRememberDevice ? (
         <label className="mx-1 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
           <input
@@ -405,7 +398,7 @@ export default function AuthVerificationForm({
       ) : null}
       <div className="grid gap-2">
         <Button
-          className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+          className="hover:bg-info h-11 w-full flex-auto rounded-xs border-[0.5px] border-white/10 bg-white/5 px-6 text-xs font-bold tracking-widest text-white/70 uppercase transition hover:text-white"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"

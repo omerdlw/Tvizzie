@@ -65,12 +65,12 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
         <div className="flex items-center gap-2">
           {year && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-black/70">{year}</span>
+              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70">{year}</span>
             </div>
           )}
           {director && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-black/70">{director}</span>
+              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70">{director}</span>
             </div>
           )}
         </div>

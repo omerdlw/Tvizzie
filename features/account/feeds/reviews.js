@@ -245,7 +245,7 @@ export default function AccountReviewsFeed({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase transition"
+            className="rounded border border-white/10 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

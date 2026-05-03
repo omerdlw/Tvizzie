@@ -77,9 +77,9 @@ export default function SignUpView({
             </Button>
 
             <div className="relative flex items-center py-1.5">
-              <div className="h-px grow bg-black/10" />
-              <span className="px-4 text-sm font-medium text-black/50">Or</span>
-              <div className="h-px grow bg-black/10" />
+              <div className="h-px grow bg-white/10" />
+              <span className="px-4 text-sm font-medium text-white/50">Or</span>
+              <div className="h-px grow bg-white/10" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -201,9 +201,9 @@ export default function SignUpView({
           </div>
         ) : null}
 
-        <p className="mt-2 text-center text-sm font-medium text-black/50">
+        <p className="mt-2 text-center text-sm font-medium text-white/50">
           Already have an account?{' '}
-          <Link href={signInHref} className="text-black">
+          <Link href={signInHref} className="text-white">
             Sign In
           </Link>
         </p>

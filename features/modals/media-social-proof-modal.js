@@ -70,13 +70,13 @@ export default function MediaSocialProofModal({ close, data, header }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           {highlights.length > 0 ? (
             <div className="p-3 lg:p-4">
-              <div className="bg-black/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
-                <p className="mb-2 text-[10px] font-semibold tracking-widest text-black/45 uppercase">
+              <div className="rounded bg-white/10 p-3 shadow-inner">
+                <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50 uppercase">
                   People you follow
                 </p>
                 {highlights.map((highlight) => (
-                  <div key={highlight.key} className="flex items-start gap-2 py-1 text-sm text-black/70">
-                    <Icon icon="solar:stars-bold" size={15} className="mt-0.5 shrink-0 text-black/40" />
+                  <div key={highlight.key} className="flex items-start gap-2 py-1 text-sm text-white/70">
+                    <Icon icon="solar:stars-bold" size={15} className="mt-0.5 shrink-0 text-white/40" />
                     <span>{highlight.label}</span>
                   </div>
                 ))}
@@ -85,7 +85,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
           ) : null}
 
           {userActions.length === 0 && highlights.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
+            <div className={cn('center h-full w-full py-20 text-sm font-medium text-white/50')}>
               No social activity from people you follow yet
             </div>
           ) : (
@@ -100,9 +100,9 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     key={user.id}
                     href={`/account/${username}`}
                     onClick={close}
-                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
+                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 p-3 transition-colors last:border-none hover:bg-white/10 lg:p-4"
                   >
-                    <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
+                    <div className="center size-10 shrink-0 overflow-hidden rounded-xs border border-white/10">
                       <AdaptiveImage
                         mode="img"
                         src={avatarSrc}
@@ -119,7 +119,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                       <span className="truncate text-sm">
                         <span className="font-semibold">@{username}</span> engaged with this title.
                       </span>
-                      <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
+                      <span className="truncate text-[10px] tracking-widest text-white/50 uppercase">
                         {formatActionSummary(actions)}
                       </span>
                     </div>
@@ -127,7 +127,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
                       <span
                         aria-hidden="true"
-                        className="center size-7 border border-black/10 text-black/70 transition"
+                        className="center size-7 rounded-xs border border-white/10 text-white/70 transition"
                       >
                         <Icon icon="solar:alt-arrow-right-linear" size={16} />
                       </span>

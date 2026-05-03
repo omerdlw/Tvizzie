@@ -85,11 +85,11 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center gap-1.5 border-t border-black/10 px-3 py-1.5">
+    <div className="center gap-1.5 border-t border-white/10 px-3 py-1.5">
       <button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase transition-colors hover:bg-white/10 hover:text-white"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -103,7 +103,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         {getModalLabel(previousEntry.modalType)}
       </button>
 
-      <span className="text-[10px] text-black/20">/</span>
+      <span className="text-[10px] text-white/20">/</span>
 
       <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
@@ -204,7 +204,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     >
       {isTopModal ? (
         <motion.div
-          className="fixed inset-0 bg-white/50 backdrop-blur-md"
+          className="fixed inset-0 bg-black/50 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
           variants={backdropVariants}
           initial="hidden"
@@ -235,7 +235,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             'relative flex flex-col',
             isMobileSideModal ? '' : '',
             isPanelChrome
-              ? 'overflow-hidden border border-black/10 bg-white/80'
+              ? 'overflow-hidden border border-white/10 bg-black/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome && isTopModalPosition && '',
             isPanelChrome && isBottomModalPosition && '',

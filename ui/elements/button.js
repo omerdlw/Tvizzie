@@ -4,15 +4,16 @@ import { forwardRef, useState } from 'react';
 
 import * as Toggle from '@radix-ui/react-toggle';
 
-import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
+import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/core/constants';
 import { cn, resolveSlotClasses } from './utils';
+import { SUCCESS_ACTION_TONE_CLASS, WARNING_ACTION_TONE_CLASS } from '@/core/constants/index';
 
 const SEMANTIC_VARIANT_CLASSES = Object.freeze({
   danger: DESTRUCTIVE_ACTION_TONE_CLASS,
   destructive: DESTRUCTIVE_ACTION_TONE_CLASS,
-  info: 'border border-[#0284c7] bg-[#dbeafe] text-[#0c4a6e]',
-  success: 'border border-[#16a34a] bg-[#bbf7d0] text-[#14532d]',
-  warning: 'border border-[#d97706] bg-[#fef3c7] text-[#78350f]',
+  info: INFO_ACTION_TONE_CLASS,
+  success: SUCCESS_ACTION_TONE_CLASS,
+  warning: WARNING_ACTION_TONE_CLASS,
 });
 
 const Button = forwardRef(
@@ -62,7 +63,7 @@ const Button = forwardRef(
           className={cn(
             baseClasses,
             semanticVariantClasses,
-            'h-9 gap-2 px-4 text-[10px] font-bold tracking-widest uppercase',
+            'gap-2 px-4 text-[10px] font-bold tracking-widest uppercase',
             classes.root
           )}
           {...props}

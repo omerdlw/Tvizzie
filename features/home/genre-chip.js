@@ -4,10 +4,10 @@ export function GenreChip({ genre, isActive, onClick }) {
       type="button"
       onClick={onClick}
       aria-pressed={isActive}
-      className={`inline-flex shrink-0 items-center border px-4 py-2 text-[11px] tracking-wide text-black/70 transition ${
+      className={`inline-flex min-h-10 shrink-0 items-center rounded border px-4 py-2 text-xs font-semibold tracking-wide transition ${
         isActive
-          ? 'border-black bg-black font-semibold text-white'
-          : 'hover:bg-primary border-black/15 bg-white/50 backdrop-blur-sm hover:text-black'
+          ? 'border-white bg-white font-semibold text-black'
+          : 'border-grid-line bg-primary text-white-soft backdrop-blur-sm hover:text-white'
       }`}
     >
       {genre.name}

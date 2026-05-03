@@ -3,9 +3,89 @@
 import { motion } from 'framer-motion';
 
 import { cn, normalizeFeedbackText } from '@/core/utils';
+import { SkeletonBlock, SkeletonCircle, SkeletonLine } from '@/ui/skeletons/primitives';
 
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';
+
+const SKELETON_STAR_ITEMS = [0, 1, 2, 3, 4];
+const SKELETON_REVIEW_ITEMS = [0, 1, 2, 3];
+
+function ReviewListSkeletonMeta() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+      <div className="flex items-center gap-1">
+        {SKELETON_STAR_ITEMS.map((item) => (
+          <SkeletonBlock key={item} className="size-3" />
+        ))}
+      </div>
+      <SkeletonCircle className="size-1" soft />
+      <SkeletonLine className="w-24" size="sm" />
+      <SkeletonCircle className="size-1" soft />
+      <SkeletonLine className="w-20" size="sm" soft />
+    </div>
+  );
+}
+
+function ReviewListSkeletonItem({ index, isAccountVariant, isLast }) {
+  return (
+    <div
+      className={cn(
+        'relative',
+        isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
+        isAccountVariant && 'account-review-list-item',
+        !isLast && 'border-b border-white/10',
+        !isAccountVariant && !isLast && 'grid-diamonds-bottom'
+      )}
+    >
+      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+        <SkeletonBlock className={cn('shrink-0', isAccountVariant ? 'h-24 w-16 sm:h-28 sm:w-20' : 'size-14')} />
+
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          {isAccountVariant && <SkeletonLine className="w-48 max-w-full" size="lg" />}
+
+          <ReviewListSkeletonMeta />
+
+          <div className="flex flex-col gap-2">
+            <SkeletonLine className={cn('max-w-full', index % 2 === 0 ? 'w-full' : 'w-11/12')} size="md" />
+            <SkeletonLine className={cn('max-w-xl', index % 2 === 0 ? 'w-2/3' : 'w-4/5')} size="md" soft />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <SkeletonCircle className="size-4" soft />
+            <SkeletonLine className="w-16" size="sm" soft />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReviewListSkeleton({ displayVariant, showTopBorder }) {
+  const isAccountVariant = displayVariant === 'account';
+
+  return (
+    <div
+      className={cn(
+        'flex flex-col',
+        isAccountVariant && 'account-review-list-frame',
+        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-white/10'
+      )}
+      role="status"
+      aria-label="Loading reviews"
+    >
+      <span className="sr-only">Loading reviews</span>
+      {SKELETON_REVIEW_ITEMS.map((item, index) => (
+        <ReviewListSkeletonItem
+          key={item}
+          index={index}
+          isAccountVariant={isAccountVariant}
+          isLast={index === SKELETON_REVIEW_ITEMS.length - 1}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function ReviewList({
   currentUserId,
@@ -25,8 +105,10 @@ export default function ReviewList({
   userProfile,
   watchedMediaKeys = null,
 }) {
+  const isAccountVariant = displayVariant === 'account';
+
   if (isLoading) {
-    return <div className="py-10 text-center text-sm text-black/70">Loading reviews</div>;
+    return <ReviewListSkeleton displayVariant={displayVariant} showTopBorder={showTopBorder} />;
   }
 
   if (loadError) {
@@ -35,13 +117,11 @@ export default function ReviewList({
     );
   }
 
-  const isAccountVariant = displayVariant === 'account';
-
   if (sortedReviews.length === 0) {
     return (
       <div
         className={cn(
-          'py-10 text-center text-sm leading-relaxed text-black-muted',
+          'py-10 text-center text-sm leading-relaxed text-white-muted',
           !isAccountVariant && showTopBorder && 'border-grid-line border-y'
         )}
       >
@@ -55,7 +135,7 @@ export default function ReviewList({
       className={cn(
         'flex flex-col',
         isAccountVariant && 'account-review-list-frame',
-        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-black/10'
+        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-white/10'
       )}
     >
       {sortedReviews.map((review, index) => {
@@ -69,7 +149,7 @@ export default function ReviewList({
             className={cn(
               'relative',
               isAccountVariant && 'account-review-list-item',
-              index < sortedReviews.length - 1 && 'border-b border-black/10',
+              index < sortedReviews.length - 1 && 'border-b border-white/10',
               !isAccountVariant && index < sortedReviews.length - 1 && 'grid-diamonds-bottom'
             )}
             initial={{ opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}

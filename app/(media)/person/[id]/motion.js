@@ -1,5 +1,7 @@
 'use client';
 
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+
 import { MovieClipReveal } from '@/app/(media)/movie/[id]/motion';
 import {
   ANIMATION_VIEWPORTS,
@@ -9,7 +11,6 @@ import {
   resolvePhaseDelay,
 } from '@/core/animation';
 import { motion } from 'framer-motion';
-import { useEffect, useRef } from 'react';
 
 const PERSON_CINEMATIC_PROFILE = Object.freeze({
   easings: Object.freeze({
@@ -19,20 +20,20 @@ const PERSON_CINEMATIC_PROFILE = Object.freeze({
     sidebar: [0.22, 1, 0.36, 1],
   }),
   durations: Object.freeze({
-    panel: 0.74,
-    item: 0.82,
-    section: 1.16,
-    sidebar: 1.12,
-    hero: 1.28,
-    text: 0.84,
+    panel: 1.28,
+    item: 1.24,
+    section: 1.8,
+    sidebar: 1.9,
+    hero: 2.05,
+    text: 1.18,
   }),
   offsets: Object.freeze({
-    sidebarX: 24,
-    heroY: 30,
-    sectionY: 24,
-    surfaceY: 12,
-    itemY: 16,
-    panelY: 12,
+    sidebarX: 32,
+    heroY: 38,
+    sectionY: 34,
+    surfaceY: 18,
+    itemY: 22,
+    panelY: 18,
     panelExitY: -6,
   }),
   scales: Object.freeze({
@@ -45,12 +46,17 @@ const PERSON_CINEMATIC_PROFILE = Object.freeze({
     panelExit: 0.996,
   }),
   stagger: Object.freeze({
-    item: 0.045,
-    yearGroup: 0.088,
+    item: 0.09,
+    yearGroup: 0.32,
   }),
   transition: Object.freeze({
-    opacityDurationFactor: 0.76,
+    opacityDurationFactor: 0.68,
   }),
+});
+
+const PersonSurfaceRevealContext = createContext({
+  isActive: true,
+  shouldAnimateItems: false,
 });
 
 const PERSON_ROUTE_PHASES = Object.freeze({
@@ -112,26 +118,39 @@ export const PERSON_ROUTE_MOTION = Object.freeze({
 
 export const PERSON_ROUTE_TIMING = Object.freeze({
   hero: Object.freeze({
-    containerDelay: 0.14,
-    titleDelay: 0.16,
-    titleClipDelay: 0.1,
+    containerDelay: 0.62,
+    titleDelay: 0.74,
+    titleClipDelay: 0.48,
     titleDuration: PERSON_CINEMATIC_PROFILE.durations.text,
-    overviewDelay: 0.36,
+    overviewDelay: 1.08,
   }),
   sidebar: Object.freeze({
-    containerDelay: 0.08,
-    portraitDelay: 0.08,
-    rowsDelay: 0.22,
-    rowStagger: 0.055,
-    bioDelay: 0.36,
+    containerDelay: 0.5,
+    portraitDelay: 0.54,
+    rowsDelay: 1.16,
+    rowStagger: 0.1,
+    bioDelay: 1.42,
   }),
   sections: Object.freeze({
-    gallery: 0.1,
-    filmography: 0.18,
-    timeline: 0.14,
-    awards: 0.14,
+    gallery: 0.76,
+    filmography: 0.88,
+    timeline: 0.76,
+    awards: 0.76,
   }),
 });
+
+function createPersonObserverOptions(viewport = PERSON_ROUTE_MOTION.scroll.sectionViewport) {
+  const amount = Number(viewport?.amount);
+
+  return {
+    threshold: [0, Number.isFinite(amount) ? amount : PERSON_ROUTE_MOTION.scroll.sectionViewport.amount, 1],
+    rootMargin: viewport?.margin || PERSON_ROUTE_MOTION.scroll.sectionViewport.margin,
+  };
+}
+
+export function usePersonSurfaceRevealState() {
+  return useContext(PersonSurfaceRevealContext);
+}
 
 function PersonReveal({
   animateOnView = false,
@@ -147,6 +166,7 @@ function PersonReveal({
   const resolvedDelay = resolvePhaseDelay({
     delay,
     lead: phaseConfig.lead,
+    maxDelay: 1.8,
   });
   const motionProps = buildRevealMotion({
     axis,
@@ -212,11 +232,60 @@ export function PersonSectionReveal({ children, className = '', delay = 0, once 
   );
 }
 
-export function PersonSurfaceReveal({ children, className = '', delay = 0, once = true, animateOnView = false }) {
+export function PersonSurfaceReveal({
+  children,
+  className = '',
+  contentClassName = 'w-full',
+  delay = 0,
+  once = true,
+  animateOnView = true,
+}) {
+  const containerRef = useRef(null);
+  const [isActive, setIsActive] = useState(!animateOnView);
+
+  useEffect(() => {
+    if (!animateOnView || isActive) {
+      return undefined;
+    }
+
+    const target = containerRef.current;
+
+    if (!target) {
+      return undefined;
+    }
+
+    const observerOptions = createPersonObserverOptions();
+    const threshold = Number(observerOptions.threshold?.[1] ?? 0);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting || entry?.intersectionRatio >= threshold) {
+        setIsActive(true);
+        observer.disconnect();
+      }
+    }, observerOptions);
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [animateOnView, isActive]);
+
+  const value = useMemo(
+    () => ({
+      isActive,
+      shouldAnimateItems: true,
+    }),
+    [isActive]
+  );
+
   return (
-    <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="surface">
-      {children}
-    </PersonReveal>
+    <PersonSurfaceRevealContext.Provider value={value}>
+      <PersonReveal className={className} delay={delay} once={once} animateOnView={animateOnView} phase="surface">
+        <div ref={containerRef} className={contentClassName}>
+          {children}
+        </div>
+      </PersonReveal>
+    </PersonSurfaceRevealContext.Provider>
   );
 }
 
@@ -225,6 +294,7 @@ export { MovieClipReveal as PersonClipReveal };
 export function getPersonSurfaceItemMotion(options = {}) {
   return createSurfaceItemMotion({
     ...options,
+    active: options.active ?? true,
     delayStep: options.delayStep ?? PERSON_ROUTE_MOTION.orchestration.itemStagger,
     distance: options.distance ?? PERSON_CINEMATIC_PROFILE.offsets.itemY,
     duration: options.duration ?? PERSON_CINEMATIC_PROFILE.durations.item,

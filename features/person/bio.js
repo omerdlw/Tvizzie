@@ -14,7 +14,7 @@ export default function PersonBio({ biography }) {
   return (
     <div className="flex w-full flex-col gap-2">
       <p
-        className="text-sm leading-relaxed text-pretty text-black/70 transition-all duration-[300ms]"
+        className="text-sm leading-relaxed text-pretty text-white/70 transition-all duration-[300ms]"
         style={
           !expanded && isLong
             ? {
@@ -33,7 +33,7 @@ export default function PersonBio({ biography }) {
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="cursor-pointer self-start text-[11px] font-semibold tracking-widest text-black/50 uppercase transition-colors hover:text-black"
+          className="cursor-pointer self-start text-[11px] font-semibold tracking-widest text-white/50 uppercase transition-colors hover:text-white"
         >
           {expanded ? 'Show Less' : 'Read More'}
         </button>
