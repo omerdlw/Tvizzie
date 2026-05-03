@@ -97,7 +97,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           event.stopPropagation();
           dismissSurface(close);
         }}
-        className={`center center absolute top-0 right-0 z-10 size-8 cursor-pointer border-[0.5px] border-transparent p-1 transition-all hover:border-white/10 hover:bg-white/5`}
+        className={`center center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-transparent p-1 transition-all hover:border-white/10 hover:bg-white/5`}
         aria-label="Close verification"
         transition={NAV_ACTION_SPRING}
       >

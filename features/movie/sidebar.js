@@ -3,7 +3,12 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-import { MOVIE_ROUTE_TIMING, MovieSurfaceReveal, getSurfaceItemMotion } from '@/app/(media)/movie/[id]/motion';
+import {
+  MOVIE_ROUTE_TIMING,
+  MovieSurfaceReveal,
+  getMovieDelayedTransition,
+  getSurfaceItemMotion,
+} from '@/app/(media)/movie/[id]/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -28,55 +33,25 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 function SidebarRow({ icon, children }) {
   return (
     <div className="flex items-start gap-2 py-1.5 text-sm text-white">
-      <motion.span
-        className="mt-0.5 inline-flex shrink-0 text-white/70"
-        initial={{ opacity: 0, scale: 0.82, y: 4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <span className="mt-0.5 inline-flex shrink-0 text-white/70">
         <Icon icon={icon} size={18} />
-      </motion.span>
-      <motion.div
-        className="flex-1 leading-relaxed font-medium"
-        initial={{ opacity: 0, y: 5 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {children}
-      </motion.div>
+      </span>
+      <div className="flex-1 leading-relaxed font-medium">{children}</div>
     </div>
   );
 }
 
 function SidebarMotionItem({ children, delay = 0, index = 0 }) {
   const itemMotion = getSurfaceItemMotion({
-    delayStep: MOVIE_ROUTE_TIMING.sidebar.rowStagger,
-    distance: 10,
-    duration: 0.72,
-    groupDelayStep: 0,
-    groupIndex: 0,
+    preset: 'sidebarRow',
     index,
-    scale: 0.996,
   });
 
   return (
     <motion.div
       initial={itemMotion.initial}
       animate={itemMotion.animate}
-      transition={{
-        opacity: {
-          ...itemMotion.transition.opacity,
-          delay: delay + itemMotion.transition.opacity.delay,
-        },
-        y: {
-          ...itemMotion.transition.y,
-          delay: delay + itemMotion.transition.y.delay,
-        },
-        scale: {
-          ...itemMotion.transition.scale,
-          delay: delay + itemMotion.transition.scale.delay,
-        },
-      }}
+      transition={getMovieDelayedTransition(itemMotion.transition, delay)}
     >
       {children}
     </motion.div>
@@ -85,13 +60,8 @@ function SidebarMotionItem({ children, delay = 0, index = 0 }) {
 
 function SidebarMotionChip({ children, delay = 0, index = 0 }) {
   const itemMotion = getSurfaceItemMotion({
-    delayStep: MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger,
-    distance: 8,
-    duration: 0.74,
-    groupDelayStep: 0,
-    groupIndex: 0,
+    preset: 'sidebarChip',
     index,
-    scale: 0.98,
   });
 
   return (
@@ -99,20 +69,7 @@ function SidebarMotionChip({ children, delay = 0, index = 0 }) {
       className="inline-flex"
       initial={itemMotion.initial}
       animate={itemMotion.animate}
-      transition={{
-        opacity: {
-          ...itemMotion.transition.opacity,
-          delay: delay + itemMotion.transition.opacity.delay,
-        },
-        y: {
-          ...itemMotion.transition.y,
-          delay: delay + itemMotion.transition.y.delay,
-        },
-        scale: {
-          ...itemMotion.transition.scale,
-          delay: delay + itemMotion.transition.scale.delay,
-        },
-      }}
+      transition={getMovieDelayedTransition(itemMotion.transition, delay)}
     >
       {children}
     </motion.span>
@@ -238,7 +195,7 @@ export function MovieSidebarPrimary({ item, topContent }) {
   return (
     <div
       data-movie-sidebar-primary="true"
-      className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
+      className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7")}
     >
       <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
@@ -365,7 +322,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
   ].filter(Boolean);
 
   return hasTaxonomy || rows.length ? (
-    <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7">
+    <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7")}>
       {hasTaxonomy ? (
         <SidebarTaxonomy delay={MOVIE_ROUTE_TIMING.sidebar.taxonomyDelay} genres={genres} tags={tags} />
       ) : null}

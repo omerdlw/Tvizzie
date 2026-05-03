@@ -2,7 +2,11 @@
 
 import { motion } from 'framer-motion';
 
-import { getSurfaceItemMotion, useMovieSurfaceRevealState } from '@/app/(media)/movie/[id]/motion';
+import {
+  MOVIE_INTERACTION_MOTION,
+  getSurfaceItemMotion,
+  useMovieSurfaceRevealState,
+} from '@/app/(media)/movie/[id]/motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
@@ -15,12 +19,10 @@ export default function RecommendationCard({ movie, index = 0, imagePriority = f
   const tooltipText = year ? `${resolvedTitle} (${year})` : resolvedTitle;
   const cardMotion = getSurfaceItemMotion({
     active: surfaceReveal.isActive,
+    baseDelay: surfaceReveal.itemBaseDelay,
     enabled: surfaceReveal.shouldAnimateItems,
     index,
-    delayStep: 0.12,
-    distance: 30,
-    duration: 1.18,
-    scale: 0.968,
+    preset: 'mediaCard',
   });
 
   return (
@@ -28,7 +30,7 @@ export default function RecommendationCard({ movie, index = 0, imagePriority = f
       initial={cardMotion.initial}
       animate={cardMotion.animate}
       transition={cardMotion.transition}
-      whileHover={{ y: -3 }}
+      whileHover={MOVIE_INTERACTION_MOTION.cardHover}
     >
       <MediaCard
         imageSrc={

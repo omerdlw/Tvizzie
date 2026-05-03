@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { motion } from 'framer-motion';
 
+import { ACCOUNT_LIST_CARD_MOTION } from '@/app/(account)/account/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import Icon from '@/ui/icon';
@@ -98,12 +99,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
         rotate,
         scale,
       }}
-      transition={{
-        type: 'spring',
-        stiffness: 110,
-        damping: 18,
-        mass: 0.95,
-      }}
+      transition={ACCOUNT_LIST_CARD_MOTION.posterSpring}
       style={{ zIndex }}
     >
       <div
@@ -122,7 +118,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
             animate={{
               filter: `brightness(${brightness})  contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75}px)`,
             }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            transition={ACCOUNT_LIST_CARD_MOTION.imageTransition}
           />
         ) : (
           <div className="center h-full w-full bg-black/50 text-white/50">
@@ -147,12 +143,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
         rotate,
         scale,
       }}
-      transition={{
-        type: 'spring',
-        stiffness: 110,
-        damping: 18,
-        mass: 0.95,
-      }}
+      transition={ACCOUNT_LIST_CARD_MOTION.posterSpring}
       style={{ zIndex }}
     >
       <div
@@ -209,12 +200,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
         scale: isHovered ? 1.02 : 1,
         y: isHovered ? -5 : 0,
       }}
-      transition={{
-        type: 'spring',
-        stiffness: 220,
-        damping: 22,
-        mass: 0.9,
-      }}
+      transition={ACCOUNT_LIST_CARD_MOTION.cardSpring}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -231,12 +217,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             animate={{
               rotateX: isHovered ? 12 : 0,
             }}
-            transition={{
-              type: 'spring',
-              stiffness: 180,
-              damping: 22,
-              mass: 0.85,
-            }}
+            transition={ACCOUNT_LIST_CARD_MOTION.panelSpring}
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
@@ -249,12 +230,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               animate={{
                 rotateX: isHovered ? -12 : 0,
               }}
-              transition={{
-                type: 'spring',
-                stiffness: 180,
-                damping: 22,
-                mass: 0.85,
-              }}
+              transition={ACCOUNT_LIST_CARD_MOTION.panelSpring}
               style={{
                 transformOrigin: 'center bottom',
                 transformStyle: 'flat',
@@ -287,12 +263,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             animate={{
               rotateX: isHovered ? -20 : 0,
             }}
-            transition={{
-              type: 'spring',
-              stiffness: 170,
-              damping: 22,
-              mass: 0.85,
-            }}
+            transition={ACCOUNT_LIST_CARD_MOTION.titleSpring}
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',

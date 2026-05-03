@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
+import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 function buildLikedMediaKeySet(items = []) {
   return new Set(
@@ -108,29 +108,23 @@ export default function AccountReviewsOverview({
       titleHref={titleHref}
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <motion.div
+        <AccountMotionItem
           className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="reviewSurface"
         >
           {emptyMessage}
-        </motion.div>
+        </AccountMotionItem>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <motion.div
+        <AccountMotionItem
           className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="reviewSurface"
         >
           {loadError}
-        </motion.div>
+        </AccountMotionItem>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <AccountMotionItem animateOnView={false} preset="reviewSurface">
           <ReviewList
             currentUserId={currentUserId}
             displayVariant="account"
@@ -147,15 +141,14 @@ export default function AccountReviewsOverview({
             userProfile={userProfile}
             watchedMediaKeys={watchedMediaKeys}
           />
-        </motion.div>
+        </AccountMotionItem>
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <motion.div
+        <AccountMotionItem
           className="flex justify-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="control"
         >
           <Button
             type="button"
@@ -165,7 +158,7 @@ export default function AccountReviewsOverview({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </motion.div>
+        </AccountMotionItem>
       ) : null}
     </AccountSectionLayout>
   );

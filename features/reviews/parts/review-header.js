@@ -5,9 +5,9 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const REVIEW_HEADER_BADGE_CLASS =
-  'bg-white/5 hover:bg-white/10 backdrop-blur rounded inline-flex h-10 min-w-28 items-center justify-center gap-1.5 border-[0.5px] border-white/10 px-4 text-xs font-semibold text-white/70 uppercase transition-colors tabular-nums';
+  'bg-white/5 hover:bg-white/10 backdrop-blur rounded inline-flex h-10 min-w-28 items-center justify-center gap-1.5 border border-white/10 px-4 text-xs font-semibold text-white/70 uppercase transition-colors tabular-nums';
 const REVIEW_HEADER_RATING_BADGE_CLASS = `${REVIEW_HEADER_BADGE_CLASS} sm:min-w-56`;
-const REVIEW_HEADER_ICON_BUTTON_CLASS = 'size-10 backdrop-blur shrink-0 border-[0.5px] rounded-xs';
+const REVIEW_HEADER_ICON_BUTTON_CLASS = 'size-10 backdrop-blur shrink-0 border rounded-xs';
 
 export default function ReviewHeader({
   allReviewsHref = null,

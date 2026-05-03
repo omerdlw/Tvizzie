@@ -64,7 +64,7 @@ export default function RootLayout({ children }) {
       >
         <ResourceHints />
         <AppProviders>
-          <main className="h-auto w-full flex-1">{children}</main>
+          <main className="min-h-dvh w-full flex-1">{children}</main>
         </AppProviders>
       </body>
     </html>

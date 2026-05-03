@@ -59,14 +59,14 @@ function SocialAvatarStack({ users = [] }) {
   }
 
   return (
-    <span className="media-social-avatar-stack">
+    <span className={cn("media-social-avatar-stack")}>
       {visibleUsers.map((user) => {
         const avatarSrc = getUserAvatarUrl(user);
         const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
         const label = user?.displayName || user?.username || 'User';
 
         return (
-          <span key={user.id} className="media-social-avatar center" aria-hidden="true">
+          <span key={user.id} className={cn("media-social-avatar center")} aria-hidden="true">
             <AdaptiveImage
               mode="img"
               src={avatarSrc}
@@ -147,8 +147,8 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
     >
       <SocialAvatarStack users={previewUsers} />
       <span className="min-w-0 flex-1 truncate">{compactLabel}</span>
-      {highlights.length > 1 ? <span className="media-social-proof-count">+{highlights.length - 1}</span> : null}
-      <span className="media-social-proof-icon center">
+      {highlights.length > 1 ? <span className={cn("media-social-proof-count")}>+{highlights.length - 1}</span> : null}
+      <span className={cn("media-social-proof-icon center")}>
         <Icon icon="solar:alt-arrow-right-linear" size={14} />
       </span>
     </button>

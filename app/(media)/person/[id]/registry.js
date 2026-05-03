@@ -5,35 +5,10 @@ import { useState } from 'react';
 import ImagePreviewModal from '@/features/modals/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
+import { MOVIE_BACKGROUND_ANIMATION } from '@/app/(media)/movie/[id]/motion';
 import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
-
-const PERSON_BACKGROUND_ANIMATION = Object.freeze({
-  exitDurationFactor: 0.4,
-  transition: {
-    duration: 1.2,
-    delay: 0.4,
-    ease: [0.23, 1, 0.32, 1],
-  },
-  initial: {
-    opacity: 0,
-    scale: 1.12,
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transitionEnd: {
-      transform: 'none',
-      willChange: 'auto',
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 1.05,
-  },
-});
 
 const PERSON_POSTER_CONTEXT_TARGET = '[data-context-menu-target="person-poster-card"]';
 
@@ -88,13 +63,13 @@ export default function Registry({
       ? {
           background: backgroundImage
             ? {
-                animation: PERSON_BACKGROUND_ANIMATION,
+                animation: MOVIE_BACKGROUND_ANIMATION,
                 image: backgroundImage,
                 overlay: true,
                 overlayOpacity: 0.6,
                 overlayColor: 'var(--white)',
                 noiseStyle: {
-                  opacity: 0.13,
+                  opacity: 0.15,
                 },
               }
             : {

@@ -3,13 +3,13 @@
 import { useEffect, useMemo } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 
 import AccountListCard from './card';
 import AccountSectionLayout from '../shared/section-wrapper';
 import AccountPagination from '../shared/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
 import AccountInlineSectionState from '../shared/section-state';
+import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
@@ -86,17 +86,11 @@ export default function AccountPaginatedListGrid({
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
             {visibleLists.map((list, index) => (
-              <motion.div
+              <AccountMotionItem
                 key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
                 layout
-                initial={{ opacity: 0, y: 16, scale: 0.99 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
-                transition={{
-                  delay: index < 6 ? index * 0.02 : 0,
-                  duration: 0.34,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+                index={index}
+                preset="listCard"
               >
                 <AccountListCard
                   layout="grid"
@@ -104,19 +98,15 @@ export default function AccountPaginatedListGrid({
                   ownerUsername={ownerUsername}
                   renderActions={renderActions}
                 />
-              </motion.div>
+              </AccountMotionItem>
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <motion.div
+            <AccountMotionItem
               key={`list-grid-pagination-${activePage}-${totalPages}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: [0.22, 1, 0.36, 1],
-              }}
+              animateOnView={false}
+              preset="control"
             >
               <AccountPagination
                 className="w-full"
@@ -125,7 +115,7 @@ export default function AccountPaginatedListGrid({
                 totalPages={totalPages}
                 getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
               />
-            </motion.div>
+            </AccountMotionItem>
           ) : null}
         </>
       )}

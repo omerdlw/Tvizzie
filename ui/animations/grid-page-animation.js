@@ -5,7 +5,7 @@ import { createContext, useContext, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
-import { ANIMATION_VIEWPORTS, buildGridLineMotion, buildGridNodeMotion } from '@/core/animation';
+import { ANIMATION_DURATIONS, ANIMATION_VIEWPORTS, buildGridLineMotion, buildGridNodeMotion } from '@/core/animation';
 import { cn } from '@/ui/elements/utils';
 
 const GridPageAnimationContext = createContext({
@@ -46,7 +46,11 @@ export function GridPageLine({
   delay = 0,
   direction = 'forward',
   duration,
+  ease,
   once = true,
+  opacityDurationFactor,
+  reducedMotionDuration = ANIMATION_DURATIONS.NORMAL,
+  reducedMotionOpacity = 1,
 }) {
   const { reducedMotion } = useContext(GridPageAnimationContext);
   const resolvedDelay = useGridMotionDelay(delay);
@@ -55,18 +59,35 @@ export function GridPageLine({
     delay: resolvedDelay,
     direction,
     duration,
+    ease,
+    opacityDurationFactor,
   });
-  const initial = reducedMotion ? false : motionProps.initial;
+  const reducedMotionProps = {
+    initial: { opacity: reducedMotionOpacity },
+    animate: {
+      opacity: 1,
+      transitionEnd: motionProps.animate?.transitionEnd,
+    },
+    transition: {
+      opacity: {
+        duration: reducedMotionDuration,
+        delay: 0,
+        ease: motionProps.transition?.opacity?.ease,
+      },
+    },
+    style: undefined,
+  };
+  const resolvedMotionProps = reducedMotion ? reducedMotionProps : motionProps;
 
   if (typeof active === 'boolean') {
     return (
       <motion.span
         aria-hidden="true"
         className={cn('grid-page-line', className)}
-        initial={initial}
-        animate={active || reducedMotion ? motionProps.animate : motionProps.initial}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        initial={resolvedMotionProps.initial}
+        animate={active || reducedMotion ? resolvedMotionProps.animate : resolvedMotionProps.initial}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       />
     );
   }
@@ -76,11 +97,11 @@ export function GridPageLine({
       <motion.span
         aria-hidden="true"
         className={cn('grid-page-line', className)}
-        initial={initial}
-        whileInView={motionProps.animate}
+        initial={resolvedMotionProps.initial}
+        whileInView={resolvedMotionProps.animate}
         viewport={{ ...ANIMATION_VIEWPORTS.section, once }}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       />
     );
   }
@@ -89,10 +110,10 @@ export function GridPageLine({
     <motion.span
       aria-hidden="true"
       className={cn('grid-page-line', className)}
-      initial={initial}
-      animate={motionProps.animate}
-      transition={motionProps.transition}
-      style={motionProps.style}
+      initial={resolvedMotionProps.initial}
+      animate={resolvedMotionProps.animate}
+      transition={resolvedMotionProps.transition}
+      style={resolvedMotionProps.style}
     />
   );
 }
@@ -104,6 +125,7 @@ export function GridPageNode({
   className = '',
   delay = 0,
   duration,
+  ease,
   once = true,
 }) {
   const { reducedMotion } = useContext(GridPageAnimationContext);
@@ -111,18 +133,34 @@ export function GridPageNode({
   const motionProps = buildGridNodeMotion({
     delay: resolvedDelay,
     duration,
+    ease,
   });
-  const initial = reducedMotion ? false : motionProps.initial;
+  const reducedMotionProps = {
+    initial: { opacity: 0 },
+    animate: {
+      opacity: 1,
+      transitionEnd: motionProps.animate?.transitionEnd,
+    },
+    transition: {
+      opacity: {
+        duration: ANIMATION_DURATIONS.NORMAL,
+        delay: 0,
+        ease: motionProps.transition?.opacity?.ease,
+      },
+    },
+    style: undefined,
+  };
+  const resolvedMotionProps = reducedMotion ? reducedMotionProps : motionProps;
 
   if (typeof active === 'boolean') {
     return (
       <motion.span
         aria-hidden="true"
         className={className}
-        initial={initial}
-        animate={active || reducedMotion ? motionProps.animate : motionProps.initial}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        initial={resolvedMotionProps.initial}
+        animate={active || reducedMotion ? resolvedMotionProps.animate : resolvedMotionProps.initial}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       >
         {children}
       </motion.span>
@@ -134,11 +172,11 @@ export function GridPageNode({
       <motion.span
         aria-hidden="true"
         className={className}
-        initial={initial}
-        whileInView={motionProps.animate}
+        initial={resolvedMotionProps.initial}
+        whileInView={resolvedMotionProps.animate}
         viewport={{ ...ANIMATION_VIEWPORTS.section, once }}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       >
         {children}
       </motion.span>
@@ -149,10 +187,10 @@ export function GridPageNode({
     <motion.span
       aria-hidden="true"
       className={className}
-      initial={initial}
-      animate={motionProps.animate}
-      transition={motionProps.transition}
-      style={motionProps.style}
+      initial={resolvedMotionProps.initial}
+      animate={resolvedMotionProps.animate}
+      transition={resolvedMotionProps.transition}
+      style={resolvedMotionProps.style}
     >
       {children}
     </motion.span>

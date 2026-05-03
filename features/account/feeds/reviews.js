@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 
 import {
   REVIEW_FILTER_QUERY_KEYS,
@@ -22,6 +21,7 @@ import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/shared/section-s
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
+import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 
@@ -198,23 +198,21 @@ export default function AccountReviewsFeed({
       ) : null}
 
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
-        <motion.div
+        <AccountMotionItem
           className={ACCOUNT_EMPTY_SECTION_CLASS}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="reviewSurface"
         >
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
-        </motion.div>
+        </AccountMotionItem>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
-        <motion.div
+        <AccountMotionItem
           className={ACCOUNT_EMPTY_SECTION_CLASS}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="reviewSurface"
         >
           {loadError}
-        </motion.div>
+        </AccountMotionItem>
       ) : (
         <ReviewList
           currentUserId={currentUserId}
@@ -235,11 +233,10 @@ export default function AccountReviewsFeed({
       )}
 
       {!enablePagination && hasMore && typeof onLoadMore === 'function' ? (
-        <motion.div
+        <AccountMotionItem
           className="flex justify-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          animateOnView={false}
+          preset="control"
         >
           <Button
             type="button"
@@ -249,7 +246,7 @@ export default function AccountReviewsFeed({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </motion.div>
+        </AccountMotionItem>
       ) : null}
 
       {enablePagination && filteredReviewCount > 0 ? (

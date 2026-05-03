@@ -1,3 +1,4 @@
+import { cn } from '@/core/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
@@ -41,14 +42,14 @@ function SocialDockSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-white/10 py-5 lg:py-7">
+      <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 border-b border-white/10 py-5 lg:py-7")}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
           <SkeletonBlock className="h-full w-full" radius="hero" />
           <SocialDockSkeleton />
         </div>
       </div>
 
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7">
+      <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7")}>
         <div className="flex flex-col gap-1">
           {Array.from({ length: 5 }).map((_, index) => (
             <SidebarRowSkeleton key={index} />
@@ -91,14 +92,7 @@ function FilmographyGridSkeleton() {
 
 function PersonGridDivider() {
   return (
-    <div className="movie-detail-grid-divider" aria-hidden="true">
-      <span className="movie-detail-grid-divider-startcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="movie-detail-grid-divider-endcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </span>
-    </div>
+    <div className={cn("movie-detail-grid-divider")} aria-hidden="true" />
   );
 }
 
@@ -106,11 +100,11 @@ function PersonGridSectionSkeleton({ children, divider = 'decorative' }) {
   const isPlainDivider = divider === 'plain';
 
   return (
-    <div className={`movie-detail-grid-subsection ${isPlainDivider ? 'person-detail-plain-section' : ''}`}>
+    <div className={cn(`movie-detail-grid-subsection ${isPlainDivider ? cn('person-detail-plain-section') : ''}`)}>
       {isPlainDivider ? null : <PersonGridDivider />}
       <div
         className={
-          isPlainDivider ? 'movie-detail-shell-inset' : 'movie-detail-grid-subsection-content movie-detail-shell-inset'
+          isPlainDivider ? cn('movie-detail-shell-inset') : cn('movie-detail-grid-subsection-content movie-detail-shell-inset')
         }
       >
         {children}
@@ -189,7 +183,7 @@ function PersonHeroSkeleton() {
         <SkeletonBlock className="h-16 w-1/2" radius="hero" />
       </div>
 
-      <div className="movie-detail-reading-measure mt-4 flex flex-col gap-2">
+      <div className={cn("movie-detail-reading-measure mt-4 flex flex-col gap-2")}>
         <TextLine />
         <TextLine width="w-11/12" soft={true} />
         <TextLine width="w-5/6" soft={true} />
@@ -201,20 +195,20 @@ function PersonHeroSkeleton() {
 
 function PersonContentSkeleton() {
   return (
-    <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
+    <PageGradientShell className="overflow-hidden" contentClassName={cn("movie-detail-grid-content")}>
       <div
-        className={`movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
+        className={cn(`movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`)}
       >
-        <div className="person-detail-grid-primary">
+        <div className={cn("person-detail-grid-primary")}>
           <div className="movie-detail-grid-sidebar w-full shrink-0">
             <div className="lg:sticky lg:top-0">
               <SidebarSkeleton />
             </div>
           </div>
 
-          <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
+          <div className={cn("movie-detail-grid-main flex w-full min-w-0 flex-col")}>
             <div className="flex w-full flex-col">
-              <div className="movie-detail-section-band movie-detail-shell-inset">
+              <div className={cn("movie-detail-section-band movie-detail-shell-inset")}>
                 <PersonHeroSkeleton />
               </div>
               <PersonMainSectionsSkeleton />

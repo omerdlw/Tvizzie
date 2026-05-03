@@ -74,14 +74,14 @@ export default function MovieHeroStage({
   return (
     <div className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)} style={stageStyle}>
       <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
-        <div className="movie-detail-shell-inset flex min-h-0 flex-col gap-4 overflow-hidden">
+        <div className={cn("movie-detail-shell-inset flex min-h-0 flex-col gap-4 overflow-hidden")}>
           <div className="shrink-0">{titleBlock}</div>
 
           {tagline || overview ? (
             <div className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}>
               {tagline ? (
                 <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.taglineDelay}>
-                  <p className="text-white-strong w-full shrink-0 text-xs font-semibold tracking-widest uppercase sm:text-sm">
+                  <p className={cn("text-white-strong w-full shrink-0 text-xs font-semibold tracking-widest uppercase sm:text-sm")}>
                     {tagline}
                   </p>
                 </MovieSurfaceReveal>
@@ -92,7 +92,7 @@ export default function MovieHeroStage({
                   animateOnView={false}
                   className="min-h-0 flex-1"
                   contentClassName="flex min-h-0 flex-1"
-                  delay={MOVIE_ROUTE_TIMING.hero.taglineDelay + 0.16}
+                  delay={MOVIE_ROUTE_TIMING.hero.overviewDelay}
                 >
                   <MovieOverview overview={overview} className="flex-1" />
                 </MovieSurfaceReveal>
@@ -102,9 +102,9 @@ export default function MovieHeroStage({
         </div>
 
         {hasCast ? (
-          <div className="movie-detail-primary-cast-block shrink-0">
+          <div className={cn("movie-detail-primary-cast-block shrink-0")}>
             <MovieGridCastBoundary />
-            <div className="movie-detail-shell-inset">
+            <div className={cn("movie-detail-shell-inset")}>
               <CastSection cast={cast} crew={crew} />
             </div>
           </div>

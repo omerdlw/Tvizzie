@@ -3,14 +3,14 @@ import { cn } from '@/core/utils';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 
-const HERO_HEIGHT_CLASS = 'account-hero-height';
-const HERO_BANNER_WRAPPER_CLASS = 'account-hero-banner-wrapper';
-const HERO_AMBIENT_OVERLAY_CLASS = 'account-skeleton-hero-ambient-overlay absolute inset-0';
-const HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const HERO_LEFT_FADE_CLASS = 'account-hero-side-fade account-hero-left-fade absolute inset-y-0 left-0';
-const HERO_RIGHT_FADE_CLASS = 'account-hero-side-fade account-hero-right-fade absolute inset-y-0 right-0';
-const HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0';
-const HERO_TINT_CLASS = 'account-skeleton-hero-tint-overlay absolute inset-0';
+const HERO_HEIGHT_CLASS = cn('account-hero-height');
+const HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
+const HERO_AMBIENT_OVERLAY_CLASS = cn('account-skeleton-hero-ambient-overlay absolute inset-0');
+const HERO_SOFTEN_OVERLAY_CLASS = cn('account-hero-soften-overlay absolute inset-0');
+const HERO_LEFT_FADE_CLASS = cn('account-hero-side-fade account-hero-left-fade absolute inset-y-0 left-0');
+const HERO_RIGHT_FADE_CLASS = cn('account-hero-side-fade account-hero-right-fade absolute inset-y-0 right-0');
+const HERO_TOP_FADE_CLASS = cn('account-hero-top-fade absolute inset-x-0 top-0');
+const HERO_TINT_CLASS = cn('account-skeleton-hero-tint-overlay absolute inset-0');
 const ACCOUNT_SKELETON_ROUTE_VARIANTS = Object.freeze([
   { pattern: /\/lists\/[^/]+(?:\/)?$/, variant: 'list-detail' },
   { pattern: /\/activity(?:\/)?$/, variant: 'activity' },
@@ -57,7 +57,7 @@ function Poster({ className = '', radius = 'card', soft = false }) {
 
 function SectionShell({ children, className = '' }) {
   return (
-    <section className="account-detail-grid-subsection bg-transparent">
+    <section className={cn("account-detail-grid-subsection bg-transparent")}>
       <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>{children}</div>
     </section>
   );
@@ -69,12 +69,12 @@ function SectionBodySkeleton({ children, className = '' }) {
 
 function SkeletonGridDivider() {
   return (
-    <div className="account-detail-grid-divider" aria-hidden="true">
-      <span className="account-detail-grid-divider-startcap">
-        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-start" />
+    <div className={cn("account-detail-grid-divider")} aria-hidden="true">
+      <span className={cn("account-detail-grid-divider-startcap")}>
+        <span className={cn("account-detail-grid-divider-diamond account-detail-grid-divider-diamond-start")} />
       </span>
-      <span className="account-detail-grid-divider-endcap">
-        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-end" />
+      <span className={cn("account-detail-grid-divider-endcap")}>
+        <span className={cn("account-detail-grid-divider-diamond account-detail-grid-divider-diamond-end")} />
       </span>
     </div>
   );
@@ -122,13 +122,13 @@ function AccountHeroSkeleton() {
         className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
-          <div className="account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0">
+          <div className={cn("account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0")}>
             <div className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <SkeletonBlock className="account-skeleton-hero-title" />
+                <SkeletonBlock className={cn("account-skeleton-hero-title")} />
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <HeroCountItem key={index} mobile={true} />
@@ -151,10 +151,10 @@ function AccountHeroSkeleton() {
             </div>
           </div>
 
-          <div className="account-skeleton-hero-bio">
+          <div className={cn("account-skeleton-hero-bio")}>
             <div className="mt-2 flex max-w-3xl flex-col gap-2">
               <Line className="h-3.5 w-full" soft={true} />
-              <Line className="account-skeleton-hero-bio-trail h-3.5" soft={true} />
+              <Line className={cn("account-skeleton-hero-bio-trail h-3.5")} soft={true} />
             </div>
           </div>
         </div>
@@ -179,7 +179,7 @@ function AccountNavSkeleton() {
 
 function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
   return (
-    <div className="account-detail-section-heading flex w-full flex-col gap-4">
+    <div className={cn("account-detail-section-heading flex w-full flex-col gap-4")}>
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <SkeletonCircle className="size-6" soft={true} />
@@ -192,16 +192,16 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
         </div>
       </div>
 
-      <div className="account-detail-section-heading-rule" />
+      <div className={cn("account-detail-section-heading-rule")} />
     </div>
   );
 }
 
 function PosterStripSkeleton({ count = 6 }) {
-  const gridClassName = count > 5 ? 'account-overview-media-grid-standard' : 'account-overview-media-grid-favorites';
+  const gridClassName = count > 5 ? cn('account-overview-media-grid-standard') : cn('account-overview-media-grid-favorites');
 
   return (
-    <div className={`account-overview-media-grid ${gridClassName}`}>
+    <div className={cn(`account-overview-media-grid ${gridClassName}`)}>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="flex h-full min-w-0 flex-col">
           <Poster />
@@ -339,7 +339,7 @@ function ActivityItemSkeleton({ isFirst = false }) {
 
 function ReviewCardSkeleton() {
   return (
-    <article className="account-review-list-item border-b border-white/10 py-4 last:border-b-0 sm:py-5">
+    <article className={cn("account-review-list-item border-b border-white/10 py-4 last:border-b-0 sm:py-5")}>
       <div className="relative transition-all duration-300">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded sm:h-28 sm:w-20">
@@ -495,7 +495,7 @@ function ReviewsSkeleton() {
       <SectionShell>
         <SectionBodySkeleton>
           <FilterBarSkeleton count={5} />
-          <div className="account-review-list-frame">
+          <div className={cn("account-review-list-frame")}>
             {Array.from({ length: 4 }).map((_, index) => (
               <ReviewCardSkeleton key={index} />
             ))}
@@ -709,18 +709,18 @@ function renderVariant(variant) {
 
 export function Skeleton({ variant = 'overview' }) {
   return (
-    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
-      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`}>
+    <div className={cn("account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black")}>
+      <div className={cn(`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`)}>
         <div className="relative">
           <AccountHeroSkeleton />
           <div className="absolute inset-x-0 top-0 z-20">
             <AccountNavSkeleton />
           </div>
         </div>
-        <div className="account-detail-hero-divider">
+        <div className={cn("account-detail-hero-divider")}>
           <SkeletonGridDivider />
         </div>
-        <main className="account-detail-grid-main">{renderVariant(variant)}</main>
+        <main className={cn("account-detail-grid-main")}>{renderVariant(variant)}</main>
         <NavHeightSpacer />
       </div>
     </div>

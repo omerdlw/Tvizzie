@@ -73,10 +73,10 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center h-13 rounded-xs border-[0.5px] border-white/10 bg-transparent text-lg font-semibold transition-colors',
-                hasError && digit && 'border-error/20 bg-error/10 text-error border-[0.5px]',
-                isActive && !digit && 'border-[0.5px] border-white/10 bg-white/5 text-white',
-                digit && !hasError && 'border-success/20 bg-success/10 text-success border-[0.5px]'
+                'center h-13 rounded-xs border border-white/10 bg-transparent text-lg font-semibold transition-colors',
+                hasError && digit && 'border-error/20 bg-error/10 text-error border',
+                isActive && !digit && 'border border-white/10 bg-white/5 text-white',
+                digit && !hasError && 'border-success/20 bg-success/10 text-success border'
               )}
             >
               {digit || <span className="invisible">0</span>}
@@ -398,7 +398,7 @@ export default function AuthVerificationForm({
       ) : null}
       <div className="grid gap-2">
         <Button
-          className="hover:bg-info h-11 w-full flex-auto rounded-xs border-[0.5px] border-white/10 bg-white/5 px-6 text-xs font-bold tracking-widest text-white/70 uppercase transition hover:text-white"
+          className="hover:bg-info h-11 w-full flex-auto rounded-xs border border-white/10 bg-white/5 px-6 text-xs font-bold tracking-widest text-white/70 uppercase transition hover:text-white"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"

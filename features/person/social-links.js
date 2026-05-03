@@ -59,7 +59,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
   return (
     <div
       className={cn(
-        'inline-flex h-10 w-fit items-center overflow-hidden rounded border-[0.5px] border-white/10 bg-black/60 text-white/70 backdrop-blur-md',
+        'inline-flex h-10 w-fit items-center overflow-hidden rounded border border-white/10 bg-black/60 text-white/70 backdrop-blur-md',
         className
       )}
     >

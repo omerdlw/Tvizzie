@@ -175,12 +175,10 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
         {awardsTimeline.map(([year, entries], yearIndex) => {
           const yearMotion = getPersonSurfaceItemMotion({
             active: surfaceReveal.isActive,
+            baseDelay: surfaceReveal.itemBaseDelay,
             enabled: surfaceReveal.shouldAnimateItems,
             index: yearIndex,
-            distance: 18,
-            duration: 0.84,
-            delayStep: 0.1,
-            scale: 0.986,
+            preset: 'awardYear',
           });
 
           return (
@@ -209,15 +207,11 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
                   );
                   const entryMotion = getPersonSurfaceItemMotion({
                     active: surfaceReveal.isActive,
-                    axis: 'x',
-                    distance: -14,
-                    duration: 0.72,
+                    baseDelay: surfaceReveal.itemBaseDelay,
                     enabled: surfaceReveal.shouldAnimateItems,
                     groupIndex: yearIndex,
-                    groupDelayStep: 0.12,
                     index: entryIndex,
-                    delayStep: 0.04,
-                    scale: 0.992,
+                    preset: 'awardEntry',
                   });
                   const content = (
                     <>

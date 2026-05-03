@@ -161,7 +161,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
       <div className="relative min-h-0 w-full flex-1 overflow-hidden">
         <p
           ref={textRef}
-          className="text-white-soft w-full text-sm leading-6 text-pretty transition-all duration-300 sm:text-base sm:leading-7"
+          className={cn("text-white-soft w-full text-sm leading-6 text-pretty transition-colors duration-300 sm:text-base sm:leading-7")}
           style={
             layoutState.canExpand && layoutState.maxLines
               ? {
@@ -182,7 +182,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
           ref={buttonRef}
           type="button"
           onClick={handleReadMore}
-          className="text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase transition-colors hover:text-white"
+          className={cn("text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase transition-colors hover:text-white")}
         >
           Read More
         </button>

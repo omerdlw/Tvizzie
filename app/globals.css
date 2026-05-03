@@ -29,17 +29,27 @@
     --surface: #000;
     --foreground: #f8f8f6;
     --white: var(--canvas);
-    --account-detail-plus-color: color-mix(in srgb, var(--color-white) 30%, var(--color-black));
+    --account-detail-plus-color: color-mix(in srgb, var(--color-white) 10%, transparent);
   }
 
   html {
+    min-height: 100%;
     color-scheme: dark;
+    background-color: var(--color-black);
+    overscroll-behavior: none;
+    overflow-x: clip;
   }
 
   body {
     position: relative;
+    width: 100%;
+    min-width: 0;
     min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--color-black);
     isolation: isolate;
+    overscroll-behavior: none;
+    overflow-x: clip;
   }
 
   button:not(:disabled),
@@ -65,6 +75,13 @@
 
 *::-webkit-scrollbar {
   display: none;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 @layer utilities {
@@ -100,10 +117,6 @@
     --movie-detail-divider-cap-offset: calc(
       (var(--movie-detail-divider-height) + var(--movie-detail-divider-line-width)) / -2
     );
-    --movie-detail-divider-diamond-box-size: calc(
-      var(--movie-detail-divider-height) - (var(--movie-detail-divider-line-width) * 2)
-    );
-    --movie-detail-divider-diamond-size: calc(var(--movie-detail-divider-diamond-box-size) / 1.41421);
     border-inline: 1px solid var(--grid-line-color);
   }
 
@@ -575,7 +588,7 @@
   .auth-detail-grid-frame {
     --auth-detail-grid-line-width: 1px;
     --auth-detail-grid-line-center: calc(var(--auth-detail-grid-line-width) / 2);
-    --auth-detail-grid-line-color: color-mix(in srgb, var(--color-white) 15%, transparent);
+    --auth-detail-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
     --auth-detail-grid-plus-color: var(--account-detail-plus-color);
     --auth-detail-grid-plus-size: 1rem;
     position: relative;
@@ -768,12 +781,8 @@
     --movie-detail-divider-cap-offset: calc(
       (var(--movie-detail-divider-height) + var(--movie-detail-divider-line-width)) / -2
     );
-    --movie-detail-divider-diamond-box-size: calc(
-      var(--movie-detail-divider-height) - (var(--movie-detail-divider-line-width) * 2)
-    );
-    --movie-detail-divider-diamond-size: calc(var(--movie-detail-divider-diamond-box-size) / 1.41421);
     --grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-    --grid-line-draw-color: color-mix(in srgb, var(--color-white) 20%, transparent);
+    --grid-line-draw-color: color-mix(in srgb, var(--color-white) 10%, transparent);
   }
 
   @media (min-width: 640px) {
@@ -952,35 +961,6 @@
 
   .media-reviews-header-plus {
     position: relative;
-  }
-
-  .media-reviews-header-plus::before,
-  .media-reviews-header-plus::after {
-    content: '';
-    position: absolute;
-    top: calc(100% + (var(--movie-detail-divider-line-width) / 2));
-    z-index: 1;
-    width: var(--movie-detail-divider-height);
-    height: var(--movie-detail-divider-height);
-    pointer-events: none;
-    background-image:
-      linear-gradient(var(--account-detail-plus-color), var(--account-detail-plus-color)),
-      linear-gradient(var(--account-detail-plus-color), var(--account-detail-plus-color));
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-size:
-      100% var(--movie-detail-divider-line-width),
-      var(--movie-detail-divider-line-width) 100%;
-  }
-
-  .media-reviews-header-plus::before {
-    left: calc(var(--movie-detail-divider-line-width) / -2);
-    transform: translate(-50%, -50%);
-  }
-
-  .media-reviews-header-plus::after {
-    right: calc(var(--movie-detail-divider-line-width) / -2);
-    transform: translate(50%, -50%);
   }
 
   .nav-action-select-menu,
@@ -1231,29 +1211,6 @@
   .movie-detail-primary-grid-divider {
     inset-inline: 0;
     display: none;
-  }
-
-  .movie-detail-grid-divider-diamond {
-    position: absolute;
-    top: 50%;
-    z-index: 3;
-    width: var(--movie-detail-divider-diamond-size);
-    height: var(--movie-detail-divider-diamond-size);
-    border: var(--movie-detail-divider-line-width) solid var(--grid-line-color);
-    background-color: var(--white);
-    transform: translateY(-50%) rotate(45deg);
-  }
-
-  .movie-detail-grid-divider-diamond-start {
-    left: calc((var(--movie-detail-divider-height) - var(--movie-detail-divider-diamond-size)) / 2);
-    transform: translateY(-50%) rotate(45deg);
-  }
-
-  .movie-detail-grid-divider-diamond-end {
-    top: 50%;
-    right: auto;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(45deg);
   }
 
   @media (min-width: 1024px) {

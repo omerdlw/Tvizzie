@@ -30,32 +30,32 @@ import Icon from '@/ui/icon';
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
     ? media.genres
-        .map((genre) => {
-          if (!genre) {
-            return null;
-          }
+      .map((genre) => {
+        if (!genre) {
+          return null;
+        }
 
-          if (typeof genre === 'object') {
-            return {
-              id: genre.id ?? null,
-              name: genre.name || null,
-            };
-          }
-
+        if (typeof genre === 'object') {
           return {
-            id: null,
-            name: String(genre),
+            id: genre.id ?? null,
+            name: genre.name || null,
           };
-        })
-        .filter(Boolean)
+        }
+
+        return {
+          id: null,
+          name: String(genre),
+        };
+      })
+      .filter(Boolean)
     : [];
 
   const genreIds = Array.isArray(media?.genre_ids)
     ? media.genre_ids
     : normalizedGenres
-        .map((genre) => genre.id)
-        .filter((value) => Number.isFinite(Number(value)))
-        .map((value) => Number(value));
+      .map((genre) => genre.id)
+      .filter((value) => Number.isFinite(Number(value)))
+      .map((value) => Number(value));
 
   const watchProviders =
     media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
@@ -97,14 +97,14 @@ function getMediaSnapshot(media) {
 
 function getActionPalette(palette, active) {
   if (active && palette === 'like') {
-    return 'rounded border-[0.5px] border-success/10 bg-success/10 text-success hover:border-success/15 hover:bg-success/15';
+    return 'rounded border border-success/10 bg-success/10 text-success hover:border-success/15 hover:bg-success/15';
   }
 
   if (active && (palette === 'watched' || palette === 'watchlist')) {
-    return 'rounded border-[0.5px] border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
+    return 'rounded border border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
   }
 
-  return 'rounded border-[0.5px] border-white/10 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white';
+  return 'rounded border border-white/10 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white';
 }
 
 function ActionButton({
@@ -123,35 +123,18 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-colors duration-300 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >
       {loading ? (
-        <motion.span
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {loadingLabel}
-        </motion.span>
+        <span>{loadingLabel}</span>
       ) : (
         <>
-          <motion.span
-            className="inline-flex"
-            initial={{ opacity: 0, scale: 0.82, y: 4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <span className="inline-flex">
             <Icon icon={icon} size={16} className="transition-transform" />
-          </motion.span>
-          <motion.span
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.46, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {label}
-          </motion.span>
+          </span>
+          <span>{label}</span>
         </>
       )}
     </button>
@@ -160,13 +143,9 @@ function ActionButton({
 
 function ActionMotionItem({ children, index = 0 }) {
   const itemMotion = getSurfaceItemMotion({
-    delayStep: MOVIE_ROUTE_TIMING.sidebar.actionStagger,
-    distance: 10,
-    duration: 0.78,
-    groupDelayStep: 0,
-    groupIndex: 0,
+    baseDelay: MOVIE_ROUTE_TIMING.sidebar.actionsDelay,
+    preset: 'action',
     index,
-    scale: 0.992,
   });
 
   return (
@@ -239,9 +218,9 @@ export default function CollectionActions({ media }) {
     }
 
     let active = true;
-    let unsubLike = () => {};
-    let unsubWatchlist = () => {};
-    let unsubWatched = () => {};
+    let unsubLike = () => { };
+    let unsubWatchlist = () => { };
+    let unsubWatched = () => { };
 
     setState((prev) => ({
       ...prev,

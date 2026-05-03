@@ -33,9 +33,9 @@ function ReviewListSkeletonItem({ index, isAccountVariant, isLast }) {
       className={cn(
         'relative',
         isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
-        isAccountVariant && 'account-review-list-item',
+        isAccountVariant && cn('account-review-list-item'),
         !isLast && 'border-b border-white/10',
-        !isAccountVariant && !isLast && 'grid-diamonds-bottom'
+        !isAccountVariant && !isLast && ''
       )}
     >
       <div className="flex min-w-0 items-start gap-3 sm:gap-4">
@@ -68,8 +68,8 @@ function ReviewListSkeleton({ displayVariant, showTopBorder }) {
     <div
       className={cn(
         'flex flex-col',
-        isAccountVariant && 'account-review-list-frame',
-        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-white/10'
+        isAccountVariant && cn('account-review-list-frame'),
+        !isAccountVariant && showTopBorder && 'border-t border-white/10'
       )}
       role="status"
       aria-label="Loading reviews"
@@ -121,8 +121,8 @@ export default function ReviewList({
     return (
       <div
         className={cn(
-          'py-10 text-center text-sm leading-relaxed text-white-muted',
-          !isAccountVariant && showTopBorder && 'border-grid-line border-y'
+          cn('py-10 text-center text-sm leading-relaxed text-white-muted'),
+          !isAccountVariant && showTopBorder && cn('border-grid-line border-y')
         )}
       >
         {emptyMessage}
@@ -134,8 +134,8 @@ export default function ReviewList({
     <div
       className={cn(
         'flex flex-col',
-        isAccountVariant && 'account-review-list-frame',
-        !isAccountVariant && showTopBorder && 'grid-diamonds-top border-t border-white/10'
+        isAccountVariant && cn('account-review-list-frame'),
+        !isAccountVariant && showTopBorder && 'border-t border-white/10'
       )}
     >
       {sortedReviews.map((review, index) => {
@@ -148,9 +148,9 @@ export default function ReviewList({
             layout
             className={cn(
               'relative',
-              isAccountVariant && 'account-review-list-item',
+              isAccountVariant && cn('account-review-list-item'),
               index < sortedReviews.length - 1 && 'border-b border-white/10',
-              !isAccountVariant && index < sortedReviews.length - 1 && 'grid-diamonds-bottom'
+              !isAccountVariant && index < sortedReviews.length - 1 && ''
             )}
             initial={{ opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
             whileInView={{

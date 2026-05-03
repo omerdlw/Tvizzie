@@ -12,14 +12,14 @@ import Link from 'next/link';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
-const ACCOUNT_HERO_HEIGHT_CLASS = 'account-hero-height';
-const ACCOUNT_HERO_IMAGE_CLASS = 'account-hero-image';
-const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = 'account-hero-banner-wrapper';
-const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = 'account-hero-bottom-gradient absolute inset-x-0 bottom-0';
+const ACCOUNT_HERO_HEIGHT_CLASS = cn('account-hero-height');
+const ACCOUNT_HERO_IMAGE_CLASS = cn('account-hero-image');
+const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
+const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = cn('account-hero-bottom-gradient absolute inset-x-0 bottom-0');
 const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS =
-  'account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0';
+  cn('account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0');
 const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS =
-  'account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0';
+  cn('account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0');
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -110,7 +110,7 @@ function HeroBioPreview({ description, onReadMore }) {
         {description}
       </p>
       {shouldShowReadMore ? (
-        <div className="account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12">
+        <div className={cn("account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12")}>
           <button className="text-sm font-semibold text-white/70 uppercase" type="button" onClick={onReadMore}>
             More
           </button>

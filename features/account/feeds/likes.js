@@ -53,7 +53,7 @@ function ReorderableListItem({ item, renderEditAction }) {
       <div className="flex w-full items-center gap-2 rounded border border-white/15 bg-black/40 px-4 py-3">
         <div
           onPointerDown={(event) => controls.start(event)}
-          className="center size-8 shrink-0 cursor-grab text-[#475569] transition"
+          className="center size-8 shrink-0 cursor-grab text-white/50 transition"
         >
           <Icon icon="solar:reorder-bold" size={18} />
         </div>

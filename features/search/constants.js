@@ -29,8 +29,8 @@ export const SEARCH_TAB_ITEMS = Object.freeze([
 
 export const SEARCH_STYLES = Object.freeze({
   action: Object.freeze({
-    muted: 'border-[0.5px] border-white/10 bg-white/5 text-white/70 hover:bg-white/10',
-    active: 'border-[0.5px] border-white/10 bg-white/10 hover:bg-white/5 text-white',
+    muted: 'border border-white/10 bg-white/5 text-white/70 hover:bg-white/10',
+    active: 'border border-white/10 bg-white/10 hover:bg-white/5 text-white',
   }),
   input: 'rounded-xs flex w-full text-sm items-center p-2 pl-4 transition-colors duration-[200ms]',
   tabButton: 'rounded-xs relative shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',

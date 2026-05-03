@@ -135,7 +135,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           exit={{ opacity: 0, x: 6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
-            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border-[0.5px] border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:left-[-16px] md:size-8'
+            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:left-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
@@ -152,7 +152,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           exit={{ opacity: 0, x: -6, scale: 0.92 }}
           transition={controlTransition}
           className={cn(
-            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border-[0.5px] border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:right-[-16px] md:size-8'
+            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:right-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />

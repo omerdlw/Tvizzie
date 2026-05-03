@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import {
   ANIMATION_VIEWPORTS,
@@ -13,52 +13,134 @@ import {
   resolvePhaseDelay,
 } from '@/core/animation';
 
-const MOVIE_CINEMATIC_PROFILE = Object.freeze({
+export const MOVIE_CINEMATIC_PROFILE = Object.freeze({
   easings: Object.freeze({
-    reveal: [0.22, 1, 0.36, 1],
-    opacity: [0.16, 1, 0.3, 1],
-    clip: [0.22, 1, 0.36, 1],
+    reveal: [0.16, 1, 0.3, 1],
+    opacity: [0.2, 0.72, 0.18, 1],
+    clip: [0.18, 1, 0.28, 1],
     exit: [0.4, 0, 0.2, 1],
-    sidebar: [0.22, 1, 0.36, 1],
+    sidebar: [0.18, 1, 0.3, 1],
+    grid: [0.2, 0.72, 0.08, 1],
+    micro: [0.32, 0.72, 0.08, 1],
   }),
   durations: Object.freeze({
-    panel: 1.28,
-    item: 1.24,
-    section: 1.8,
-    sidebar: 1.9,
-    clip: 1.7,
-    hero: 2.05,
-    text: 1.18,
+    micro: 0.36,
+    component: 0.94,
+    panel: 1.14,
+    panelExit: 0.58,
+    item: 1.02,
+    section: 1.34,
+    gridFrame: 2.2,
+    gridFrameViewport: 2.15,
+    gridFrameMax: 24,
+    gridLine: 1.82,
+    gridDivider: 1.58,
+    gridNode: 0.78,
+    sidebar: 1.42,
+    clip: 1.24,
+    hero: 1.58,
+    background: 1.86,
+    text: 1.16,
   }),
   offsets: Object.freeze({
-    sidebarX: 32,
-    heroY: 38,
-    sectionY: 34,
+    sidebarX: 30,
+    heroY: 34,
+    sectionY: 32,
     surfaceY: 18,
-    itemY: 22,
-    panelY: 18,
+    itemY: 20,
+    panelY: 16,
     panelExitY: -6,
   }),
   scales: Object.freeze({
-    sidebar: 0.982,
-    hero: 0.988,
-    section: 0.99,
-    surface: 0.984,
+    sidebar: 0.986,
+    hero: 0.99,
+    section: 0.992,
+    surface: 0.988,
     item: 0.992,
-    panelInitial: 0.992,
-    panelExit: 0.996,
+    mediaItem: 0.972,
+    castItem: 0.974,
+    panelInitial: 0.994,
+    panelExit: 0.997,
   }),
   stagger: Object.freeze({
+    micro: 0.05,
     item: 0.09,
-    group: 0.32,
+    mediaItem: 0.1,
+    group: 0.24,
   }),
   transition: Object.freeze({
-    opacityDurationFactor: 0.68,
+    opacityDurationFactor: 0.74,
+    gridOpacityDurationFactor: 0.56,
+  }),
+  reducedMotion: Object.freeze({
+    duration: 0.2,
+    opacity: 0.86,
+  }),
+});
+
+export const MOVIE_SURFACE_ITEM_PRESETS = Object.freeze({
+  action: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    distance: 10,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.component,
+    groupDelayStep: 0,
+    scale: MOVIE_CINEMATIC_PROFILE.scales.item,
+  }),
+  sidebarRow: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    distance: 10,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.component,
+    groupDelayStep: 0,
+    scale: 0.996,
+  }),
+  sidebarChip: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.micro,
+    distance: 8,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.component,
+    groupDelayStep: 0,
+    scale: 0.984,
+  }),
+  control: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    distance: 12,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.component,
+    groupDelayStep: 0,
+    scale: MOVIE_CINEMATIC_PROFILE.scales.item,
+  }),
+  castFeatured: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.mediaItem,
+    distance: 22,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.item,
+    groupDelayStep: 0,
+    scale: MOVIE_CINEMATIC_PROFILE.scales.castItem,
+  }),
+  castCompact: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    distance: 16,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.component,
+    groupDelayStep: 0,
+    scale: MOVIE_CINEMATIC_PROFILE.scales.item,
+  }),
+  mediaCard: Object.freeze({
+    delayStep: MOVIE_CINEMATIC_PROFILE.stagger.mediaItem,
+    distance: 26,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.item,
+    scale: MOVIE_CINEMATIC_PROFILE.scales.mediaItem,
+  }),
+});
+
+export const MOVIE_INTERACTION_MOTION = Object.freeze({
+  cardHover: Object.freeze({ y: -3 }),
+  playHover: Object.freeze({ scale: 1.08 }),
+  transition: Object.freeze({
+    duration: MOVIE_CINEMATIC_PROFILE.durations.micro,
+    ease: MOVIE_CINEMATIC_PROFILE.easings.micro,
   }),
 });
 
 const MovieSequenceContext = createContext(null);
 const MovieSurfaceRevealContext = createContext({
+  itemBaseDelay: 0,
   isActive: true,
   shouldAnimateItems: false,
 });
@@ -74,42 +156,58 @@ function useInitialRevealEnabled() {
 }
 
 export const MOVIE_ROUTE_TIMING = Object.freeze({
+  page: Object.freeze({
+    gridFrame: 0,
+    frameVertical: 0,
+    primaryStructure: 0.36,
+    sidebarPoster: 0.46,
+    heroTitle: 0.58,
+    sidebarActions: 0.76,
+    metadata: 0.9,
+    overview: 1.02,
+    cast: 1.18,
+    secondarySections: 0.18,
+  }),
   hero: Object.freeze({
     backgroundDelay: 0.08,
-    containerDelay: 0.62,
-    titleDelay: 0.74,
-    titleClipDelay: 0.48,
+    containerDelay: 0.58,
+    titleDelay: 0.72,
+    titleClipDelay: 0.42,
     titleDuration: MOVIE_CINEMATIC_PROFILE.durations.text,
-    socialProofDelay: 1.02,
-    taglineDelay: 1.08,
+    socialProofDelay: 0.86,
+    taglineDelay: 1.02,
+    overviewDelay: 1.16,
   }),
   sidebar: Object.freeze({
-    posterDelay: 0.54,
-    actionsDelay: 0.9,
-    actionStagger: 0.12,
-    taxonomyDelay: 1.16,
-    taxonomyStagger: 0.11,
-    rowsDelay: 1.42,
-    rowStagger: 0.1,
+    posterDelay: 0.46,
+    actionsDelay: 0.78,
+    actionStagger: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    taxonomyDelay: 0.96,
+    taxonomyStagger: MOVIE_CINEMATIC_PROFILE.stagger.micro,
+    rowsDelay: 1.16,
+    rowStagger: MOVIE_CINEMATIC_PROFILE.stagger.item,
   }),
   sections: Object.freeze({
-    cast: 0.76,
-    reviews: 0.88,
-    groupDelay: 0.6,
+    cast: 1.1,
+    reviews: 0.28,
+    groupDelay: 0.18,
     groupStagger: MOVIE_CINEMATIC_PROFILE.stagger.group,
+    gridLead: 0,
+    surfaceDelay: 0.18,
+    itemDelay: 0.26,
   }),
   reviewsPage: Object.freeze({
-    sidebar: 0.46,
-    title: 0.68,
-    titleDuration: 1.08,
-    reviews: 1.08,
+    sidebar: 0.42,
+    title: 0.58,
+    titleDuration: MOVIE_CINEMATIC_PROFILE.durations.text,
+    reviews: 0.82,
   }),
 });
 
 export const MOVIE_BACKGROUND_ANIMATION = Object.freeze({
   exitDurationFactor: 0.6,
   transition: Object.freeze({
-    duration: 2.2,
+    duration: MOVIE_CINEMATIC_PROFILE.durations.background,
     delay: MOVIE_ROUTE_TIMING.hero.backgroundDelay,
     ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
   }),
@@ -149,14 +247,14 @@ const MOVIE_PHASES = Object.freeze({
   section: Object.freeze({
     duration: MOVIE_CINEMATIC_PROFILE.durations.section,
     ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
-    lead: 0.18,
+    lead: 0.2,
     offset: Object.freeze({ y: MOVIE_CINEMATIC_PROFILE.offsets.sectionY }),
     scale: MOVIE_CINEMATIC_PROFILE.scales.section,
   }),
   surface: Object.freeze({
     duration: MOVIE_CINEMATIC_PROFILE.durations.panel,
     ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
-    lead: 0.12,
+    lead: 0.16,
     offset: Object.freeze({ y: MOVIE_CINEMATIC_PROFILE.offsets.surfaceY }),
     scale: MOVIE_CINEMATIC_PROFILE.scales.surface,
   }),
@@ -164,9 +262,10 @@ const MOVIE_PHASES = Object.freeze({
 
 export const MOVIE_ROUTE_MOTION = Object.freeze({
   orchestration: Object.freeze({
-    sectionDelay: 0.12,
+    sectionDelay: MOVIE_ROUTE_TIMING.sections.surfaceDelay,
     groupStagger: MOVIE_ROUTE_TIMING.sections.groupStagger,
     itemStagger: MOVIE_CINEMATIC_PROFILE.stagger.item,
+    itemLead: MOVIE_ROUTE_TIMING.sections.itemDelay,
   }),
   scroll: Object.freeze({
     sectionViewport: ANIMATION_VIEWPORTS.section,
@@ -178,7 +277,10 @@ export const MOVIE_ROUTE_MOTION = Object.freeze({
       transition: Object.freeze({ type: 'spring', stiffness: 240, damping: 34, mass: 1 }),
     }),
     backdrop: Object.freeze({
-      transition: Object.freeze({ duration: 0.92, ease: MOVIE_CINEMATIC_PROFILE.easings.reveal }),
+      transition: Object.freeze({
+        duration: MOVIE_CINEMATIC_PROFILE.durations.panel,
+        ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
+      }),
     }),
   }),
 });
@@ -208,6 +310,68 @@ export function useMovieSurfaceRevealState() {
   return useContext(MovieSurfaceRevealContext);
 }
 
+export function useMovieSurfaceInitialRevealState() {
+  const surfaceReveal = useMovieSurfaceRevealState();
+  const [hasPlayedReveal, setHasPlayedReveal] = useState(false);
+
+  useEffect(() => {
+    if (!surfaceReveal.isActive || !surfaceReveal.shouldAnimateItems || hasPlayedReveal) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(
+      () => setHasPlayedReveal(true),
+      (surfaceReveal.itemBaseDelay + MOVIE_CINEMATIC_PROFILE.durations.item + MOVIE_CINEMATIC_PROFILE.stagger.group) *
+        1000
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [hasPlayedReveal, surfaceReveal.isActive, surfaceReveal.itemBaseDelay, surfaceReveal.shouldAnimateItems]);
+
+  return useMemo(
+    () => ({
+      itemBaseDelay: surfaceReveal.itemBaseDelay,
+      ...surfaceReveal,
+      shouldAnimateItems: surfaceReveal.shouldAnimateItems && !hasPlayedReveal,
+    }),
+    [hasPlayedReveal, surfaceReveal]
+  );
+}
+
+export function useMovieReducedMotion() {
+  return Boolean(useReducedMotion());
+}
+
+function getReducedRevealMotion(motionProps) {
+  return {
+    initial: { opacity: MOVIE_CINEMATIC_PROFILE.reducedMotion.opacity },
+    animate: {
+      opacity: 1,
+      transitionEnd: motionProps.animate?.transitionEnd,
+    },
+    transition: {
+      opacity: {
+        duration: MOVIE_CINEMATIC_PROFILE.reducedMotion.duration,
+        delay: 0,
+        ease: MOVIE_CINEMATIC_PROFILE.easings.opacity,
+      },
+    },
+    style: undefined,
+  };
+}
+
+export function getMovieDelayedTransition(transition, delay = 0) {
+  return Object.fromEntries(
+    Object.entries(transition || {}).map(([key, value]) => [
+      key,
+      {
+        ...value,
+        delay: delay + (value?.delay || 0),
+      },
+    ])
+  );
+}
+
 function MovieReveal({
   animateOnView = false,
   axis = 'y',
@@ -220,6 +384,7 @@ function MovieReveal({
   phase = 'section',
 }) {
   const sequence = useMovieAnimationSequence();
+  const reducedMotion = useMovieReducedMotion();
   const phaseConfig = MOVIE_PHASES[phase] || MOVIE_PHASES.section;
   const resolvedDelay = resolvePhaseDelay({
     delay: delay + getMovieSequenceDelay({ groupIndex, sequence }),
@@ -237,16 +402,17 @@ function MovieReveal({
     offset: phaseConfig.offset,
     scale: phaseConfig.scale,
   });
+  const resolvedMotionProps = reducedMotion ? getReducedRevealMotion(motionProps) : motionProps;
 
   if (animateOnView) {
     return (
       <motion.div
         className={className}
-        initial={motionProps.initial}
-        whileInView={motionProps.animate}
+        initial={resolvedMotionProps.initial}
+        whileInView={resolvedMotionProps.animate}
         viewport={{ ...MOVIE_ROUTE_MOTION.scroll.sectionViewport, once }}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       >
         {children}
       </motion.div>
@@ -256,10 +422,16 @@ function MovieReveal({
   return (
     <motion.div
       className={className}
-      initial={motionProps.initial}
-      animate={sequence ? (sequence.isActive ? motionProps.animate : motionProps.initial) : motionProps.animate}
-      transition={motionProps.transition}
-      style={motionProps.style}
+      initial={resolvedMotionProps.initial}
+      animate={
+        sequence
+          ? sequence.isActive || reducedMotion
+            ? resolvedMotionProps.animate
+            : resolvedMotionProps.initial
+          : resolvedMotionProps.animate
+      }
+      transition={resolvedMotionProps.transition}
+      style={resolvedMotionProps.style}
     >
       {children}
     </motion.div>
@@ -328,22 +500,24 @@ export function MovieClipReveal({
   once = true,
   direction = 'up',
 }) {
+  const reducedMotion = useMovieReducedMotion();
   const motionProps = buildClipRevealMotion({
     delay,
     direction,
     duration: MOVIE_CINEMATIC_PROFILE.durations.clip,
     ease: MOVIE_CINEMATIC_PROFILE.easings.clip,
   });
+  const resolvedMotionProps = reducedMotion ? getReducedRevealMotion(motionProps) : motionProps;
 
   if (animateOnView) {
     return (
       <motion.div
         className={className}
-        initial={motionProps.initial}
-        whileInView={motionProps.animate}
+        initial={resolvedMotionProps.initial}
+        whileInView={resolvedMotionProps.animate}
         viewport={{ ...MOVIE_ROUTE_MOTION.scroll.sectionViewport, once }}
-        transition={motionProps.transition}
-        style={motionProps.style}
+        transition={resolvedMotionProps.transition}
+        style={resolvedMotionProps.style}
       >
         {children}
       </motion.div>
@@ -353,10 +527,10 @@ export function MovieClipReveal({
   return (
     <motion.div
       className={className}
-      initial={motionProps.initial}
-      animate={motionProps.animate}
-      transition={motionProps.transition}
-      style={motionProps.style}
+      initial={resolvedMotionProps.initial}
+      animate={resolvedMotionProps.animate}
+      transition={resolvedMotionProps.transition}
+      style={resolvedMotionProps.style}
     >
       {children}
     </motion.div>
@@ -405,11 +579,12 @@ export function MovieSurfaceReveal({
   children,
   className = '',
   contentClassName = 'w-full',
-  delay = 0,
+  delay = MOVIE_ROUTE_MOTION.orchestration.sectionDelay,
   once = true,
   animateOnView = true,
   groupIndex = 0,
 }) {
+  const reducedMotion = useMovieReducedMotion();
   const containerRef = useRef(null);
   const [isActive, setIsActive] = useState(!animateOnView);
 
@@ -442,10 +617,11 @@ export function MovieSurfaceReveal({
 
   const value = useMemo(
     () => ({
-      isActive,
-      shouldAnimateItems: true,
+      itemBaseDelay: reducedMotion ? 0 : delay + MOVIE_ROUTE_MOTION.orchestration.itemLead,
+      isActive: isActive || reducedMotion,
+      shouldAnimateItems: !reducedMotion,
     }),
-    [isActive]
+    [delay, isActive, reducedMotion]
   );
 
   return (
@@ -467,25 +643,36 @@ export function MovieSurfaceReveal({
 }
 
 export function getSurfaceItemMotion(options = {}) {
-  return createSurfaceItemMotion({
+  const preset = MOVIE_SURFACE_ITEM_PRESETS[options.preset] || null;
+  const itemMotion = createSurfaceItemMotion({
+    ...preset,
     ...options,
     active: options.active ?? true,
-    delayStep: options.delayStep ?? MOVIE_ROUTE_MOTION.orchestration.itemStagger,
-    distance: options.distance ?? MOVIE_CINEMATIC_PROFILE.offsets.itemY,
-    duration: options.duration ?? MOVIE_CINEMATIC_PROFILE.durations.item,
-    ease: options.ease ?? MOVIE_CINEMATIC_PROFILE.easings.reveal,
-    groupDelayStep: options.groupDelayStep ?? MOVIE_ROUTE_MOTION.orchestration.groupStagger,
+    delayStep: options.delayStep ?? preset?.delayStep ?? MOVIE_ROUTE_MOTION.orchestration.itemStagger,
+    distance: options.distance ?? preset?.distance ?? MOVIE_CINEMATIC_PROFILE.offsets.itemY,
+    duration: options.duration ?? preset?.duration ?? MOVIE_CINEMATIC_PROFILE.durations.item,
+    ease: options.ease ?? preset?.ease ?? MOVIE_CINEMATIC_PROFILE.easings.reveal,
+    groupDelayStep: options.groupDelayStep ?? preset?.groupDelayStep ?? MOVIE_ROUTE_MOTION.orchestration.groupStagger,
     opacityDurationFactor: options.opacityDurationFactor ?? MOVIE_CINEMATIC_PROFILE.transition.opacityDurationFactor,
     opacityEase: options.opacityEase ?? MOVIE_CINEMATIC_PROFILE.easings.opacity,
-    scale: options.scale ?? MOVIE_CINEMATIC_PROFILE.scales.item,
+    scale: options.scale ?? preset?.scale ?? MOVIE_CINEMATIC_PROFILE.scales.item,
   });
+
+  if (!options.baseDelay) {
+    return itemMotion;
+  }
+
+  return {
+    ...itemMotion,
+    transition: getMovieDelayedTransition(itemMotion.transition, options.baseDelay),
+  };
 }
 
-export function getSurfacePanelMotion() {
+export function getSurfacePanelMotion(options = {}) {
   return createPanelMotion({
     duration: MOVIE_CINEMATIC_PROFILE.durations.panel,
     ease: MOVIE_CINEMATIC_PROFILE.easings.reveal,
-    exitDuration: MOVIE_CINEMATIC_PROFILE.durations.panel * 0.62,
+    exitDuration: options.exitDuration ?? MOVIE_CINEMATIC_PROFILE.durations.panelExit,
     exitEase: MOVIE_CINEMATIC_PROFILE.easings.exit,
     opacityDurationFactor: MOVIE_CINEMATIC_PROFILE.transition.opacityDurationFactor,
     opacityEase: MOVIE_CINEMATIC_PROFILE.easings.opacity,

@@ -127,22 +127,6 @@ export function MovieGridDivider({ className = '', inset = false, style = undefi
         duration={MOVIE_GRID_TIMELINE.durations.line}
         className="movie-detail-grid-divider-pattern"
       />
-      <GridPageNode
-        active={isInView}
-        delay={MOVIE_GRID_TIMELINE.divider.node}
-        duration={MOVIE_GRID_TIMELINE.durations.node}
-        className="movie-detail-grid-divider-startcap"
-      >
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </GridPageNode>
-      <GridPageNode
-        active={isInView}
-        delay={MOVIE_GRID_TIMELINE.divider.node}
-        duration={MOVIE_GRID_TIMELINE.durations.node}
-        className="movie-detail-grid-divider-endcap"
-      >
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </GridPageNode>
     </div>
   );
 }

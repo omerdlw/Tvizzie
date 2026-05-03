@@ -60,7 +60,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="center size-8 border-[0.5px] border-transparent bg-transparent text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
+      className="center size-8 border border-transparent bg-transparent text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>

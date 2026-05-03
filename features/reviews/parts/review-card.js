@@ -204,7 +204,7 @@ function ReviewVisual({ alt, fallbackSrc = null, isAccountVariant, isListSubject
 
   const wrapperClass = isAccountVariant
     ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded '
-    : 'relative size-14 shrink-0 overflow-hidden border-[0.5px] border-white/10 bg-white/5 rounded ';
+    : 'relative size-14 shrink-0 overflow-hidden border border-white/10 bg-white/5 rounded ';
 
   const handleImageError = () => {
     if (fallbackSrc && resolvedSrc !== fallbackSrc) {
@@ -471,7 +471,7 @@ export default function ReviewCard({
                       isSpoilerHidden ? (
                         <SpoilerNotice onReveal={revealSpoiler} />
                       ) : (
-                        <p className="movie-detail-reading-measure mt-1 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-base sm:leading-[1.65]">
+                        <p className={cn("movie-detail-reading-measure mt-1 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-base sm:leading-[1.65]")}>
                           {review.content}
                         </p>
                       )
