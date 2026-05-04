@@ -1,7 +1,6 @@
 'use client';
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 
 import { useDraggableScroll } from '@/core/hooks/use-draggable-scroll';
 import { cn } from '@/core/utils';
@@ -10,7 +9,6 @@ import Icon from '@/ui/icon';
 const SCROLL_STEP = 2;
 const SCROLL_THRESHOLD = 4;
 const FALLBACK_CARD_WIDTH = 288;
-const ACCENT_EASING = [0.32, 0.72, 0, 1];
 
 function getScrollState(element) {
   return {
@@ -100,12 +98,11 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
 
       element.scrollBy({
         left: itemStride * SCROLL_STEP * direction,
-        behavior: 'smooth',
+        behavior: 'auto',
       });
     },
     [scrollRef]
   );
-  const controlTransition = { duration: 0.42, ease: ACCENT_EASING };
 
   return (
     <div className="group/carousel relative -mx-1">
@@ -114,49 +111,47 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth px-1 select-none',
+          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain px-1 select-none',
           gap,
           className
         )}
       >
         {items.map((child, index) => (
-          <div key={child?.key ?? `carousel-item-${index}`} className={cn('shrink-0', itemClassName)}>
+          <div
+            key={child?.key ?? `carousel-item-${index}`}
+            className={cn(
+              'carousel-item-wrapper shrink-0 transition-transform duration-300',
+              itemClassName
+            )}
+          >
             {child}
           </div>
         ))}
       </div>
       {scrollState.canScrollLeft && (
-        <motion.button
+        <button
           type="button"
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
-          initial={{ opacity: 0, x: 10, scale: 0.88 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: 6, scale: 0.92 }}
-          transition={controlTransition}
           className={cn(
             'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:left-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
-        </motion.button>
+        </button>
       )}
 
       {scrollState.canScrollRight && (
-        <motion.button
+        <button
           type="button"
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
-          initial={{ opacity: 0, x: -10, scale: 0.88 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -6, scale: 0.92 }}
-          transition={controlTransition}
           className={cn(
             'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded border border-white/10 bg-black text-white/70 transition duration-[200ms] hover:bg-black hover:text-white md:right-[-16px] md:size-8'
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />
-        </motion.button>
+        </button>
       )}
     </div>
   );

@@ -1,14 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 
-import {
-  MovieSurfaceReveal,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
-  useMovieSurfaceRevealState,
-} from '@/app/(media)/movie/[id]/motion';
+
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
@@ -20,7 +14,6 @@ function getAvailableTypes(videos) {
 }
 
 function VideosSectionContent({ videos }) {
-  const surfaceReveal = useMovieSurfaceRevealState();
   const { openModal } = useModal();
 
   const availableTypes = useMemo(() => getAvailableTypes(videos), [videos]);
@@ -51,16 +44,6 @@ function VideosSectionContent({ videos }) {
 
     return videos.filter((video) => video.type === activeType);
   }, [videos, activeType]);
-  const panelMotion = getSurfacePanelMotion();
-  const controlMotion = getSurfaceItemMotion({
-    active: surfaceReveal.isActive,
-    enabled: surfaceReveal.shouldAnimateItems,
-    index: 0,
-    delayStep: 0.12,
-    distance: 14,
-    duration: 0.92,
-    scale: 0.984,
-  });
 
   if (!videos?.length) {
     return null;
@@ -68,7 +51,7 @@ function VideosSectionContent({ videos }) {
 
   return (
     <section className="movie-detail-section-content w-full">
-      <motion.div initial={controlMotion.initial} animate={controlMotion.animate} transition={controlMotion.transition}>
+      <div>
         <SegmentedControl
           classNames={{
             track: ' w-auto',
@@ -80,73 +63,45 @@ function VideosSectionContent({ videos }) {
           value={activeType}
           onChange={setActiveType}
         />
-      </motion.div>
+      </div>
 
       <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`movie-videos-${activeType || 'all'}`}
-            initial={panelMotion.initial}
-            animate={surfaceReveal.isActive ? panelMotion.animate : panelMotion.initial}
-            exit={panelMotion.exit}
-            transition={panelMotion.transition}
-          >
-            <Carousel gap="gap-3">
-              {filteredVideos.map((video, index) => {
-                const cardMotion = getSurfaceItemMotion({
-                  active: surfaceReveal.isActive,
-                  enabled: surfaceReveal.shouldAnimateItems,
-                  index: index + 1,
-                  delayStep: 0.12,
-                  distance: 30,
-                  duration: 1.18,
-                  scale: 0.968,
-                });
-
-                return (
-                  <motion.div
-                    key={video.id}
-                    initial={cardMotion.initial}
-                    animate={cardMotion.animate}
-                    transition={cardMotion.transition}
-                    whileHover={{ y: -3 }}
-                  >
-                    <MediaCard
-                      className="w-72"
-                      aspectClass="aspect-video"
-                      imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
-                      imageAlt={video.name}
-                      imageSizes="288px"
-                      imagePreset="grid"
-                      fallbackIcon="solar:video-library-bold"
-                      fallbackIconSize={24}
-                      overlay={
-                        <>
-                          <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
-                            <motion.div
-                              className="center size-8 rounded-xs border border-white/20 bg-white/20 text-white backdrop-blur-sm"
-                              whileHover={{ scale: 1.08 }}
-                              transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
-                            >
-                              <Icon icon="solar:play-bold" size={16} />
-                            </motion.div>
+        <div key={`movie-videos-${activeType || 'all'}`}>
+          <Carousel gap="gap-3">
+            {filteredVideos.map((video) => {
+              return (
+                <div key={video.id}>
+                  <MediaCard
+                    className="w-72"
+                    aspectClass="aspect-video"
+                    imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
+                    imageAlt={video.name}
+                    imageSizes="288px"
+                    imagePreset="grid"
+                    fallbackIcon="solar:video-library-bold"
+                    fallbackIconSize={24}
+                    overlay={
+                      <>
+                        <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
+                          <div className="center size-8 rounded-xs border border-white/20 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 hover:scale-[1.08]">
+                            <Icon icon="solar:play-bold" size={16} />
                           </div>
+                        </div>
 
-                          <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
-                            <span className="line-clamp-1 text-xs font-bold tracking-tight text-white/90 uppercase drop-shadow-sm transition-colors group-hover:text-white">
-                              {video.name}
-                            </span>
-                          </div>
-                        </>
-                      }
-                      onClick={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
-                    />
-                  </motion.div>
-                );
-              })}
-            </Carousel>
-          </motion.div>
-        </AnimatePresence>
+                        <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
+                          <span className="line-clamp-1 text-xs font-bold tracking-tight text-white/90 uppercase drop-shadow-sm transition-colors group-hover:text-white">
+                            {video.name}
+                          </span>
+                        </div>
+                      </>
+                    }
+                    onClick={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
+                  />
+                </div>
+              );
+            })}
+          </Carousel>
+        </div>
       </div>
     </section>
   );
@@ -154,8 +109,8 @@ function VideosSectionContent({ videos }) {
 
 export default function VideosSection({ videos }) {
   return (
-    <MovieSurfaceReveal>
+    <div className="w-full">
       <VideosSectionContent videos={videos} />
-    </MovieSurfaceReveal>
+    </div>
   );
 }

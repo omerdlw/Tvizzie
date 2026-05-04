@@ -204,7 +204,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     >
       {isTopModal ? (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-md"
+          className="fixed inset-0 bg-black/50 backdrop-blur-xl"
           style={{ zIndex: backdropZIndex }}
           variants={backdropVariants}
           initial="hidden"

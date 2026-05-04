@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { MOVIE_ROUTE_TIMING, getSurfaceItemMotion } from '@/app/(media)/movie/[id]/motion';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
 import { resolveExplicitMediaType } from '@/core/utils/media';
@@ -141,17 +139,11 @@ function ActionButton({
   );
 }
 
-function ActionMotionItem({ children, index = 0 }) {
-  const itemMotion = getSurfaceItemMotion({
-    baseDelay: MOVIE_ROUTE_TIMING.sidebar.actionsDelay,
-    preset: 'action',
-    index,
-  });
-
+function ActionMotionItem({ children }) {
   return (
-    <motion.div initial={itemMotion.initial} animate={itemMotion.animate} transition={itemMotion.transition}>
+    <div>
       {children}
-    </motion.div>
+    </div>
   );
 }
 

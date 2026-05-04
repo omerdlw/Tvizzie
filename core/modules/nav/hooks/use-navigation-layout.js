@@ -116,7 +116,6 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
 function getCollapsedVisibleCount({
   isHovered,
   isCompact,
-  pathname,
   shouldShowOverlayStack,
   shouldShowSingleStatusCard,
 }) {
@@ -124,7 +123,10 @@ function getCollapsedVisibleCount({
     return 1;
   }
 
-  const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact);
+  // Same stacked preview on every route when not scroll-compact (not only "/").
+  // Otherwise off-home collapsed mode renders a single card and "collapse" removes
+  // siblings immediately, so the stack motion never plays.
+  const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || !isCompact;
   return shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
 }
 
@@ -163,7 +165,6 @@ export function useNavigationLayout({ isHovered, isCompact = false, navigationIt
     const visibleCount = getCollapsedVisibleCount({
       isHovered,
       isCompact,
-      pathname,
       shouldShowOverlayStack,
       shouldShowSingleStatusCard,
     });

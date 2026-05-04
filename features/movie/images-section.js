@@ -1,14 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 
-import {
-  MovieSurfaceReveal,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
-  useMovieSurfaceRevealState,
-} from '@/app/(media)/movie/[id]/motion';
+
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
@@ -75,7 +69,6 @@ function getTabItems(images, key) {
 }
 
 function ImagesSectionContent({ images }) {
-  const surfaceReveal = useMovieSurfaceRevealState();
   const { openModal } = useModal();
 
   const availableTabs = useMemo(() => TABS.filter((tab) => getTabItems(images, tab.key).length > 0), [images]);
@@ -95,16 +88,6 @@ function ImagesSectionContent({ images }) {
 
   const currentTab = availableTabs.find((tab) => tab.key === activeKey) || null;
   const items = currentTab ? getTabItems(images, currentTab.key) : [];
-  const panelMotion = getSurfacePanelMotion();
-  const controlMotion = getSurfaceItemMotion({
-    active: surfaceReveal.isActive,
-    enabled: surfaceReveal.shouldAnimateItems,
-    index: 0,
-    delayStep: 0.12,
-    distance: 14,
-    duration: 0.92,
-    scale: 0.984,
-  });
 
   if (!currentTab) {
     return null;
@@ -112,7 +95,7 @@ function ImagesSectionContent({ images }) {
 
   return (
     <section className="movie-detail-section-content w-full">
-      <motion.div initial={controlMotion.initial} animate={controlMotion.animate} transition={controlMotion.transition}>
+      <div>
         <SegmentedControl
           classNames={{
             track: ' w-auto',
@@ -124,68 +107,44 @@ function ImagesSectionContent({ images }) {
           value={activeKey}
           onChange={setActiveKey}
         />
-      </motion.div>
+      </div>
 
       <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`movie-images-${currentTab.key}`}
-            initial={panelMotion.initial}
-            animate={surfaceReveal.isActive ? panelMotion.animate : panelMotion.initial}
-            exit={panelMotion.exit}
-            transition={panelMotion.transition}
-          >
-            <Carousel gap="gap-3">
-              {items.map((image, index) => {
-                const cardMotion = getSurfaceItemMotion({
-                  active: surfaceReveal.isActive,
-                  enabled: surfaceReveal.shouldAnimateItems,
-                  index: index + 1,
-                  delayStep: 0.12,
-                  distance: currentTab.key === 'posters' ? 32 : 28,
-                  duration: 1.18,
-                  scale: currentTab.key === 'logos' ? 0.976 : 0.968,
-                });
-
-                return (
-                  <motion.div
-                    key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                    initial={cardMotion.initial}
-                    animate={cardMotion.animate}
-                    transition={cardMotion.transition}
-                    whileHover={{ y: -3 }}
-                  >
-                    <MediaCard
-                      imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
-                      imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
-                      onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
-                      imageFetchPriority={index < 3 ? 'high' : undefined}
-                      imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
-                      fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
-                      imageAlt={`${currentTab.label} ${index + 1}`}
-                      className={`shrink-0 ${currentTab.width}`}
-                      aspectClass={currentTab.aspect}
-                      imageSizes={currentTab.sizes}
-                      imagePriority={index < 3}
-                      fallbackIconSize={24}
-                      {...(currentTab.key === 'backdrops'
+        <div key={`movie-images-${currentTab.key}`}>
+          <Carousel gap="gap-3">
+            {items.map((image, index) => {
+              return (
+                <div key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}>
+                  <MediaCard
+                    imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
+                    imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
+                    onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
+                    imageFetchPriority={index < 3 ? 'high' : undefined}
+                    imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
+                    fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
+                    imageAlt={`${currentTab.label} ${index + 1}`}
+                    className={`shrink-0 ${currentTab.width}`}
+                    aspectClass={currentTab.aspect}
+                    imageSizes={currentTab.sizes}
+                    imagePriority={index < 3}
+                    fallbackIconSize={24}
+                    {...(currentTab.key === 'backdrops'
+                      ? {
+                          'data-backdrop-file-path': image.file_path || '',
+                          'data-context-menu-target': 'movie-backdrop-card',
+                        }
+                      : currentTab.key === 'posters'
                         ? {
-                            'data-backdrop-file-path': image.file_path || '',
-                            'data-context-menu-target': 'movie-backdrop-card',
+                            'data-poster-file-path': image.file_path || '',
+                            'data-context-menu-target': 'movie-poster-card',
                           }
-                        : currentTab.key === 'posters'
-                          ? {
-                              'data-poster-file-path': image.file_path || '',
-                              'data-context-menu-target': 'movie-poster-card',
-                            }
-                          : {})}
-                    />
-                  </motion.div>
-                );
-              })}
-            </Carousel>
-          </motion.div>
-        </AnimatePresence>
+                        : {})}
+                  />
+                </div>
+              );
+            })}
+          </Carousel>
+        </div>
       </div>
     </section>
   );
@@ -193,8 +152,8 @@ function ImagesSectionContent({ images }) {
 
 export default function ImagesSection({ images }) {
   return (
-    <MovieSurfaceReveal>
+    <div className="w-full">
       <ImagesSectionContent images={images} />
-    </MovieSurfaceReveal>
+    </div>
   );
 }

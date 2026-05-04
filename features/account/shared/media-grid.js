@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
 
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
@@ -235,18 +234,9 @@ export default function AccountMediaGridPage({
       ) : (
         <>
           <div className="account-media-grid-page">
-            {visibleCards.map((card, index) => (
-              <motion.div
-                key={`${card.id}-${pageStart + index}`}
-                layout
-                initial={{ opacity: 0, y: 16, scale: 0.986 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
-                transition={{
-                  delay: index < 6 ? index * 0.018 : 0,
-                  duration: 0.34,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+            {visibleCards.map((card) => (
+              <div
+                key={card.id}
               >
                 <MediaCard
                   href={card.href}
@@ -257,20 +247,12 @@ export default function AccountMediaGridPage({
                   topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
                   tooltipText={card.tooltipText}
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <motion.div
-              key={`media-grid-pagination-${activePage}-${totalPages}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
+            <div key={`media-grid-pagination-${activePage}-${totalPages}`}>
               <AccountPagination
                 className="w-full"
                 currentPage={activePage}
@@ -278,7 +260,7 @@ export default function AccountMediaGridPage({
                 totalPages={totalPages}
                 getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
               />
-            </motion.div>
+            </div>
           ) : null}
         </>
       )}

@@ -2,14 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-import {
-  PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
-  usePersonSurfaceRevealState,
-} from '@/app/(media)/person/[id]/motion';
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
@@ -150,15 +144,13 @@ export default function PersonAwards({ personId }) {
   const stats = awardsData?.stats;
 
   return (
-    <PersonSurfaceReveal>
+    <div className="w-full">
       <PersonAwardsSurface awardsTimeline={awardsTimeline} stats={stats} />
-    </PersonSurfaceReveal>
+    </div>
   );
 }
 
 function PersonAwardsSurface({ awardsTimeline, stats }) {
-  const surfaceReveal = usePersonSurfaceRevealState();
-
   return (
     <section className="flex w-full flex-col gap-3">
       <div className="flex items-end justify-between gap-3">
@@ -172,22 +164,11 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
       </div>
 
       <div className="flex w-full flex-col">
-        {awardsTimeline.map(([year, entries], yearIndex) => {
-          const yearMotion = getPersonSurfaceItemMotion({
-            active: surfaceReveal.isActive,
-            baseDelay: surfaceReveal.itemBaseDelay,
-            enabled: surfaceReveal.shouldAnimateItems,
-            index: yearIndex,
-            preset: 'awardYear',
-          });
-
+        {awardsTimeline.map(([year, entries]) => {
           return (
-            <motion.div
+            <div
               key={year}
               className="mt-4 first:mt-0"
-              initial={yearMotion.initial}
-              animate={yearMotion.animate}
-              transition={yearMotion.transition}
             >
               <div className="mb-2 flex items-center gap-2 sm:gap-3">
                 <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">
@@ -197,7 +178,7 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
               </div>
 
               <div className="flex flex-col sm:ml-16">
-                {entries.map((entry, entryIndex) => {
+                {entries.map((entry) => {
                   const isInteractive = Boolean(entry.projectId);
                   const hasProject = Boolean(entry.project);
                   const title = entry.project || entry.category;
@@ -205,14 +186,6 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
                     'group flex items-center gap-3 rounded border-transparent p-1 transition-colors',
                     isInteractive ? 'hover:bg-white/10' : 'cursor-default'
                   );
-                  const entryMotion = getPersonSurfaceItemMotion({
-                    active: surfaceReveal.isActive,
-                    baseDelay: surfaceReveal.itemBaseDelay,
-                    enabled: surfaceReveal.shouldAnimateItems,
-                    groupIndex: yearIndex,
-                    index: entryIndex,
-                    preset: 'awardEntry',
-                  });
                   const content = (
                     <>
                       <MediaThumb poster={entry.poster} alt={title} className="" />
@@ -238,33 +211,25 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
 
                   if (isInteractive) {
                     return (
-                      <motion.div
-                        key={entry.key}
-                        initial={entryMotion.initial}
-                        animate={entryMotion.animate}
-                        transition={entryMotion.transition}
-                      >
+                      <div key={entry.key}>
                         <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
                           {content}
                         </Link>
-                      </motion.div>
+                      </div>
                     );
                   }
 
                   return (
-                    <motion.div
+                    <div
                       key={entry.key}
-                      initial={entryMotion.initial}
-                      animate={entryMotion.animate}
-                      transition={entryMotion.transition}
                       className={rowClassName}
                     >
                       {content}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

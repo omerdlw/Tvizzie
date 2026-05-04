@@ -1,6 +1,5 @@
 'use client';
 
-import { HomeSectionReveal } from '@/app/(home)/motion';
 import { PosterRail } from './poster-rail';
 
 function getUniqueItems(items = [], limit = items.length) {
@@ -17,7 +16,7 @@ function getUniqueItems(items = [], limit = items.length) {
     .slice(0, limit);
 }
 
-export function TrendingSection({ title, items = [], delay = 0.12, distance = 18 }) {
+export function TrendingSection({ title, items = [] }) {
   const railItems = getUniqueItems(items, 12);
 
   if (!railItems.length) {
@@ -25,13 +24,13 @@ export function TrendingSection({ title, items = [], delay = 0.12, distance = 18
   }
 
   return (
-    <HomeSectionReveal delay={delay} distance={distance}>
+    <div className="w-full">
       <section className="home-section-shell flex w-full flex-col gap-4">
         <div className="home-section-heading">
           <h2 className="text-xs font-semibold tracking-widest text-white-soft uppercase">{title}</h2>
         </div>
         <PosterRail items={railItems} />
       </section>
-    </HomeSectionReveal>
+    </div>
   );
 }

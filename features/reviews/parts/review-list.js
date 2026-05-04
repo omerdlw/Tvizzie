@@ -1,7 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 import { cn, normalizeFeedbackText } from '@/core/utils';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine } from '@/ui/skeletons/primitives';
 
@@ -143,53 +141,14 @@ export default function ReviewList({
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
 
         return (
-          <motion.div
+          <div
             key={review.docPath || review.id || `review-${index}`}
-            layout
             className={cn(
               'relative',
               isAccountVariant && cn('account-review-list-item'),
               index < sortedReviews.length - 1 && 'border-b border-white/10',
               !isAccountVariant && index < sortedReviews.length - 1 && ''
             )}
-            initial={{ opacity: 0, y: 24, scale: 0.976, filter: 'blur(7px)' }}
-            whileInView={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              filter: 'blur(0px)',
-              transitionEnd: {
-                filter: 'none',
-                transform: 'none',
-                willChange: 'auto',
-              },
-            }}
-            viewport={{ once: true, amount: 0, margin: '0px 0px 16% 0px' }}
-            transition={{
-              opacity: {
-                delay: index < 6 ? index * 0.02 : 0,
-                duration: 0.44,
-                ease: [0.22, 1, 0.36, 1],
-              },
-              filter: {
-                delay: index < 6 ? index * 0.02 : 0,
-                duration: 0.34,
-                ease: [0.22, 1, 0.36, 1],
-              },
-              scale: {
-                delay: index < 6 ? index * 0.02 : 0,
-                duration: 0.46,
-                ease: [0.22, 1, 0.36, 1],
-              },
-              y: {
-                type: 'spring',
-                stiffness: 132,
-                damping: 24,
-                mass: 1,
-                delay: index < 6 ? index * 0.02 : 0,
-              },
-            }}
-            style={{ willChange: 'transform, opacity, filter' }}
           >
             <ReviewCard
               className="!border-b-0"
@@ -205,7 +164,7 @@ export default function ReviewList({
               showSubject={showSubject}
               watchedMediaKeys={watchedMediaKeys}
             />
-          </motion.div>
+          </div>
         );
       })}
     </div>

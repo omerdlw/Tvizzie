@@ -5,7 +5,6 @@ import { useState } from 'react';
 import ImagePreviewModal from '@/features/modals/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
-import { MOVIE_BACKGROUND_ANIMATION } from '@/app/(media)/movie/[id]/motion';
 import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
@@ -63,7 +62,6 @@ export default function Registry({
       ? {
           background: backgroundImage
             ? {
-                animation: MOVIE_BACKGROUND_ANIMATION,
                 image: backgroundImage,
                 overlay: true,
                 overlayOpacity: 0.6,

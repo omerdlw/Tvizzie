@@ -2,16 +2,8 @@
 
 import { startTransition, useCallback, useEffect, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
-
 import { useDebounce } from '@/core/hooks/use-debounce';
 import { useNavigation } from '@/core/modules/nav/hooks';
-import {
-  NAV_ACTION_SPRING,
-  NAV_CONTENT_TRANSITION,
-  NAV_SEARCH_REVEAL_TRANSITION,
-  NAV_SURFACE_ITEM_SPRING,
-} from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
 
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/features/search/constants';
@@ -272,7 +264,7 @@ export default function SearchAction({
   }, [isPageVariant, loading, query, results.length, setCompactLock]);
 
   return (
-    <motion.div className="mt-2.5 w-full" layout="position" transition={NAV_CONTENT_TRANSITION}>
+    <div className="mt-2.5 w-full">
       <SearchActionControls
         loading={loading}
         query={query}
@@ -284,63 +276,38 @@ export default function SearchAction({
       />
       {!isPageVariant ? (
         <>
-          <AnimatePresence initial={false}>
-            {results.length > 0 && query ? (
-              <motion.div
-                layout="position"
-                className="mt-2 flex flex-col gap-1 overflow-hidden"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={NAV_SEARCH_REVEAL_TRANSITION}
-              >
-                {results.map((item, index) => (
-                  <motion.div
-                    key={`${item.media_type}-${item.id}`}
-                    initial={{ opacity: 0, y: 6, scale: 0.985 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.985 }}
-                    transition={{ ...NAV_SURFACE_ITEM_SPRING, delay: Math.min(index * 0.018, 0.08) }}
-                  >
-                    <SearchResultItem
-                      item={item}
-                      imageErrors={imageErrors}
-                      onImageError={handleImageError}
-                      onSelect={handleSelect}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
+          {results.length > 0 && query ? (
+            <div className="mt-2 flex flex-col gap-1 overflow-hidden">
+              {results.map((item) => (
+                <div key={`${item.media_type}-${item.id}`}>
+                  <SearchResultItem
+                    item={item}
+                    imageErrors={imageErrors}
+                    onImageError={handleImageError}
+                    onSelect={handleSelect}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
 
-          <AnimatePresence initial={false}>
-            {query.trim() ? (
-              <motion.div
-                className="mt-2 overflow-hidden"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={NAV_SEARCH_REVEAL_TRANSITION}
+          {query.trim() ? (
+            <div className="mt-2 overflow-hidden">
+              <button
+                type="button"
+                className={navActionClass({
+                  button:
+                    'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
+                  cn,
+                })}
+                onClick={handleSeeAllResults}
               >
-                <motion.button
-                  type="button"
-                  className={navActionClass({
-                    button:
-                      'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
-                    cn,
-                  })}
-                  onClick={handleSeeAllResults}
-                  whileTap={{ scale: 0.985 }}
-                  transition={NAV_ACTION_SPRING}
-                >
-                  See all results
-                </motion.button>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
+                See all results
+              </button>
+            </div>
+          ) : null}
         </>
       ) : null}
-    </motion.div>
+    </div>
   );
 }

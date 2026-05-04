@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
-import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 function buildLikedMediaKeySet(items = []) {
   return new Set(
@@ -108,23 +107,15 @@ export default function AccountReviewsOverview({
       titleHref={titleHref}
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <AccountMotionItem
-          className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70"
-          animateOnView={false}
-          preset="reviewSurface"
-        >
+        <div className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70">
           {emptyMessage}
-        </AccountMotionItem>
+        </div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <AccountMotionItem
-          className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70"
-          animateOnView={false}
-          preset="reviewSurface"
-        >
+        <div className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70">
           {loadError}
-        </AccountMotionItem>
+        </div>
       ) : (
-        <AccountMotionItem animateOnView={false} preset="reviewSurface">
+        <div>
           <ReviewList
             currentUserId={currentUserId}
             displayVariant="account"
@@ -141,15 +132,11 @@ export default function AccountReviewsOverview({
             userProfile={userProfile}
             watchedMediaKeys={watchedMediaKeys}
           />
-        </AccountMotionItem>
+        </div>
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <AccountMotionItem
-          className="flex justify-center"
-          animateOnView={false}
-          preset="control"
-        >
+        <div className="flex justify-center">
           <Button
             type="button"
             onClick={onLoadMore}
@@ -158,7 +145,7 @@ export default function AccountReviewsOverview({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </AccountMotionItem>
+        </div>
       ) : null}
     </AccountSectionLayout>
   );

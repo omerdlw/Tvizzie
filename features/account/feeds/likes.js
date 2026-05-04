@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Reorder, useDragControls } from 'framer-motion';
 
 import {
   LIST_FILTER_QUERY_KEYS,
@@ -46,37 +45,23 @@ function parseLikesMediaFilters(search) {
 }
 
 function ReorderableListItem({ item, renderEditAction }) {
-  const controls = useDragControls();
-
   return (
-    <Reorder.Item as="div" value={item} dragListener={false} dragControls={controls} className="relative w-full">
+    <div className="relative w-full">
       <div className="flex w-full items-center gap-2 rounded border border-white/15 bg-black/40 px-4 py-3">
-        <div
-          onPointerDown={(event) => controls.start(event)}
-          className="center size-8 shrink-0 cursor-grab text-white/50 transition"
-        >
-          <Icon icon="solar:reorder-bold" size={18} />
-        </div>
         <p className="min-w-0 flex-1 truncate text-sm font-semibold">{getAccountMediaTitle(item)}</p>
         {typeof renderEditAction === 'function' ? <div className="shrink-0">{renderEditAction(item)}</div> : null}
       </div>
-    </Reorder.Item>
+    </div>
   );
 }
 
-function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, onReorder }) {
+function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem }) {
   return (
     <AccountSectionLayout icon="solar:star-bold" summaryLabel={`${items.length}/5 selected`} title="Favorites Showcase">
       {items.length === 0 ? (
         <AccountInlineSectionState>No showcase titles selected yet</AccountInlineSectionState>
       ) : (
-        <Reorder.Group
-          as="div"
-          axis="y"
-          values={items}
-          onReorder={typeof onReorder === 'function' ? onReorder : () => {}}
-          className="list-none space-y-2"
-        >
+        <div className="space-y-2">
           {items.map((item, index) => (
             <ReorderableListItem
               key={`${item.id || item.mediaKey || item.entityId || 'media-item'}-${index}`}
@@ -94,7 +79,7 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, o
               )}
             />
           ))}
-        </Reorder.Group>
+        </div>
       )}
     </AccountSectionLayout>
   );

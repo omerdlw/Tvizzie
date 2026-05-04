@@ -2,12 +2,6 @@
 
 import { useMemo } from 'react';
 
-import { motion } from 'framer-motion';
-import {
-  PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
-  usePersonSurfaceRevealState,
-} from '@/app/(media)/person/[id]/motion';
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
@@ -23,43 +17,28 @@ function sortProfiles(profiles = []) {
     .slice(0, 20);
 }
 
-export default function PersonGallery({ images, animateItemReveal = true }) {
+export default function PersonGallery({ images }) {
   const { openModal } = useModal();
   const profiles = useMemo(() => sortProfiles(images?.profiles || []), [images]);
 
   if (!profiles.length) return null;
 
   return (
-    <PersonSurfaceReveal>
-      <PersonGallerySurface profiles={profiles} openModal={openModal} animateItemReveal={animateItemReveal} />
-    </PersonSurfaceReveal>
+    <div className="w-full">
+      <PersonGallerySurface profiles={profiles} openModal={openModal} />
+    </div>
   );
 }
 
-function PersonGallerySurface({ profiles, openModal, animateItemReveal }) {
-  const surfaceReveal = usePersonSurfaceRevealState();
-
+function PersonGallerySurface({ profiles, openModal }) {
   return (
     <section className="flex w-full flex-col gap-3">
       <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Gallery</h2>
 
       <Carousel gap="gap-3">
         {profiles.map((image, index) => {
-          const cardMotion = getPersonSurfaceItemMotion({
-            active: surfaceReveal.isActive,
-            enabled: animateItemReveal && surfaceReveal.shouldAnimateItems,
-            index,
-            distance: 16,
-            scale: 0.976,
-          });
-
           return (
-            <motion.div
-              key={image.file_path || index}
-              initial={cardMotion.initial}
-              animate={cardMotion.animate}
-              transition={cardMotion.transition}
-            >
+            <div key={image.file_path || index}>
               <MediaCard
                 className="person-gallery-card sm:w-60"
                 aspectClass="aspect-2/3"
@@ -75,7 +54,7 @@ function PersonGallerySurface({ profiles, openModal, animateItemReveal }) {
                 data-poster-file-path={image.file_path || ''}
                 data-context-menu-target="person-poster-card"
               />
-            </motion.div>
+            </div>
           );
         })}
       </Carousel>

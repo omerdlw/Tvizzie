@@ -49,7 +49,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
       }}
       transition={{ type: 'spring', bounce: 0.3, duration: 0.3 }}
       className={cn(
-        'pointer-events-auto w-full border-[1.5px] border-white/10 backdrop-blur-lg',
+        'pointer-events-auto w-full border border-white/10 backdrop-blur-lg',
         dismissible && 'cursor-grab touch-pan-y',
         config.colorClass
       )}

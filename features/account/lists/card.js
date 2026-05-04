@@ -4,9 +4,6 @@ import { useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
-import { motion } from 'framer-motion';
-
-import { ACCOUNT_LIST_CARD_MOTION } from '@/app/(account)/account/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import Icon from '@/ui/icon';
@@ -82,25 +79,21 @@ function getPosterMetrics(index, count, isHovered) {
     x: isHovered ? baseX * 1.12 : baseX,
     y: (isHovered ? -18 : -8) * CARD_SCALE + liftByDepth,
     zIndex: 10 - depth,
+    blur: isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75,
   };
 }
 
 function PreviewPoster({ index, isHovered, item, total }) {
   const imageSrc = getPreviewImage(item);
-  const { brightness, rotate, scale, x, y, zIndex } = getPosterMetrics(index, total, isHovered);
+  const { brightness, rotate, scale, x, y, zIndex, blur } = getPosterMetrics(index, total, isHovered);
 
   return (
-    <motion.div
-      className="absolute top-0 left-1/2"
-      initial={false}
-      animate={{
-        x: `calc(-50% + ${x}px)`,
-        y,
-        rotate,
-        scale,
+    <div
+      className="absolute top-0 left-1/2 transition-all duration-300 ease-out"
+      style={{
+        zIndex,
+        transform: `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rotate}deg) scale(${scale})`,
       }}
-      transition={ACCOUNT_LIST_CARD_MOTION.posterSpring}
-      style={{ zIndex }}
     >
       <div
         className="overflow-hidden rounded-xs"
@@ -110,15 +103,13 @@ function PreviewPoster({ index, isHovered, item, total }) {
         }}
       >
         {imageSrc ? (
-          <motion.img
+          <img
             src={imageSrc}
             alt={item.title || item.name || 'Poster'}
-            className="h-full w-full object-cover"
-            initial={false}
-            animate={{
-              filter: `brightness(${brightness})  contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75}px)`,
+            className="h-full w-full object-cover transition-[filter] duration-300"
+            style={{
+              filter: `brightness(${brightness}) contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${blur}px)`,
             }}
-            transition={ACCOUNT_LIST_CARD_MOTION.imageTransition}
           />
         ) : (
           <div className="center h-full w-full bg-black/50 text-white/50">
@@ -126,7 +117,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -134,17 +125,12 @@ function PlaceholderPoster({ index, isHovered, total }) {
   const { rotate, scale, x, y, zIndex } = getPosterMetrics(index, total, isHovered);
 
   return (
-    <motion.div
-      className="absolute top-0 left-1/2"
-      initial={false}
-      animate={{
-        x: `calc(-50% + ${x}px)`,
-        y,
-        rotate,
-        scale,
+    <div
+      className="absolute top-0 left-1/2 transition-all duration-300 ease-out"
+      style={{
+        zIndex,
+        transform: `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rotate}deg) scale(${scale})`,
       }}
-      transition={ACCOUNT_LIST_CARD_MOTION.posterSpring}
-      style={{ zIndex }}
     >
       <div
         className="rounded-xs border border-white/10 bg-black"
@@ -153,7 +139,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
           width: `${POSTER_WIDTH}px`,
         }}
       />
-    </motion.div>
+    </div>
   );
 }
 
@@ -193,14 +179,11 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
   const reviewsCount = Number.isFinite(Number(list?.reviewsCount)) ? Number(list.reviewsCount) : 0;
 
   return (
-    <motion.article
-      className="relative w-full"
-      initial={false}
-      animate={{
-        scale: isHovered ? 1.02 : 1,
-        y: isHovered ? -5 : 0,
+    <article
+      className="relative w-full transition-all duration-300 ease-out"
+      style={{
+        transform: isHovered ? 'translateY(-5px) scale(1.02)' : 'translateY(0) scale(1)',
       }}
-      transition={ACCOUNT_LIST_CARD_MOTION.cardSpring}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -211,29 +194,21 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
             perspective: '1200px',
           }}
         >
-          <motion.div
-            className="relative z-0 rounded border border-white/10 bg-black"
-            initial={false}
-            animate={{
-              rotateX: isHovered ? 12 : 0,
-            }}
-            transition={ACCOUNT_LIST_CARD_MOTION.panelSpring}
+          <div
+            className="relative z-0 rounded border border-white/10 bg-black transition-transform duration-300 ease-out"
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
               transformStyle: 'preserve-3d',
+              transform: isHovered ? 'rotateX(12deg)' : 'rotateX(0deg)',
             }}
           >
-            <motion.div
-              className="absolute inset-0"
-              initial={false}
-              animate={{
-                rotateX: isHovered ? -12 : 0,
-              }}
-              transition={ACCOUNT_LIST_CARD_MOTION.panelSpring}
+            <div
+              className="absolute inset-0 transition-transform duration-300 ease-out"
               style={{
                 transformOrigin: 'center bottom',
                 transformStyle: 'flat',
+                transform: isHovered ? 'rotateX(-12deg)' : 'rotateX(0deg)',
               }}
             >
               {previewSlots.map((item, index) =>
@@ -254,21 +229,17 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                   />
                 )
               )}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded border border-white/10 bg-black/80"
-            initial={false}
-            animate={{
-              rotateX: isHovered ? -20 : 0,
-            }}
-            transition={ACCOUNT_LIST_CARD_MOTION.titleSpring}
+          <div
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded border border-white/10 bg-black/80 transition-transform duration-300 ease-out"
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               transformOrigin: 'center bottom',
               transformStyle: 'preserve-3d',
+              transform: isHovered ? 'rotateX(-20deg)' : 'rotateX(0deg)',
             }}
           >
             <div className="relative px-4 py-4">
@@ -313,9 +284,9 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </Link>
-    </motion.article>
+    </article>
   );
 }

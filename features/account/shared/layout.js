@@ -1,18 +1,21 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { cn } from '@/core/utils';
-import {
-  ACCOUNT_NAV_ITEM_STAGGER,
-  ACCOUNT_NAV_LABEL_TRANSITION,
-  AccountHeroReveal,
-  AccountNavReveal,
-  AccountSectionReveal,
-} from '@/app/(account)/account/motion';
-export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
+export function AccountHeroReveal({ children, className }) {
+  return <div className={className}>{children}</div>;
+}
+
+export function AccountNavReveal({ children, className }) {
+  return <div className={className}>{children}</div>;
+}
+
+export function AccountSectionReveal({ children, className }) {
+  return <div className={className}>{children}</div>;
+}
 import AccountHero from './hero';
+import { AccountGridDivider, AccountGridFrame } from './grid-animation';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import NotFoundTemplate from '@/features/app-shell/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
@@ -30,19 +33,6 @@ const SECTION_ITEMS = [
 
 const DEFAULT_NOT_FOUND_DESCRIPTION =
   "We couldn't load this account. It may have been removed, or the link may be invalid.";
-
-function AccountHeroGridDivider() {
-  return (
-    <div className="account-detail-grid-divider" aria-hidden="true">
-      <span className="account-detail-grid-divider-startcap">
-        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="account-detail-grid-divider-endcap">
-        <span className="account-detail-grid-divider-diamond account-detail-grid-divider-diamond-end" />
-      </span>
-    </div>
-  );
-}
 
 function getSectionHref(username, key) {
   const basePath = `/account/${username}`;
@@ -76,19 +66,12 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
     <div className={cn('bg-transparent', className)}>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
         <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 sm:justify-center sm:px-8 sm:py-4">
-          {SECTION_ITEMS.map((item, index) => {
+          {SECTION_ITEMS.map((item) => {
             const isActive = item.key === activeKey;
 
             return (
-              <motion.div
+              <div
                 key={item.key}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: index * 0.03,
-                  duration: ACCOUNT_NAV_ITEM_STAGGER.duration,
-                  ease: ACCOUNT_NAV_LABEL_TRANSITION.ease,
-                }}
               >
                 <Link
                   href={getSectionHref(username, item.key)}
@@ -99,14 +82,11 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                       : 'border-white/15 bg-black/40 text-white/70 hover:bg-black/80 hover:text-white'
                   )}
                 >
-                  <motion.span
-                    animate={isActive ? { scale: 1.02 } : { scale: 1 }}
-                    transition={ACCOUNT_NAV_LABEL_TRANSITION}
-                  >
+                  <span>
                     {item.label}
-                  </motion.span>
+                  </span>
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -190,7 +170,10 @@ export default function ProfileLayout({
 
   return (
     <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
-      <div className={cn('account-detail-grid-frame relative flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}>
+      <AccountGridFrame
+        routeKey={profileHandle ? `account-${profileHandle}` : 'account-current'}
+        className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
+      >
         <div className="relative">
           <AccountHeroReveal>
             <AccountHero
@@ -210,11 +193,11 @@ export default function ProfileLayout({
           </AccountNavReveal>
         </div>
         <div className="account-detail-hero-divider">
-          <AccountHeroGridDivider />
+          <AccountGridDivider />
         </div>
         <main className="account-detail-grid-main">{children}</main>
         <NavHeightSpacer />
-      </div>
+      </AccountGridFrame>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
@@ -8,91 +7,12 @@ import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import {
-  MOVIE_ROUTE_TIMING,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
-  useMovieSurfaceRevealState,
-} from '@/app/(media)/movie/[id]/motion';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
-const CAST_STAGGER_STEP = MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger;
-const CAST_GROUP_BASE_DELAY = CAST_STAGGER_STEP * 2;
-
-function buildDelayedTransition(transition, delay = 0) {
-  return {
-    opacity: {
-      ...transition.opacity,
-      delay: delay + transition.opacity.delay,
-    },
-    scale: {
-      ...transition.scale,
-      delay: delay + transition.scale.delay,
-    },
-    y: {
-      ...transition.y,
-      delay: delay + transition.y.delay,
-    },
-  };
-}
-
-function CastMotionItem({
-  active,
-  baseDelay = CAST_GROUP_BASE_DELAY,
-  children,
-  className = '',
-  compact = false,
-  index = 0,
-}) {
-  const itemMotion = getSurfaceItemMotion({
-    active,
-    delayStep: compact ? MOVIE_ROUTE_TIMING.sidebar.rowStagger : CAST_STAGGER_STEP,
-    distance: compact ? 18 : 24,
-    duration: compact ? 0.92 : 1.08,
-    enabled: true,
-    groupDelayStep: 0,
-    index,
-    scale: compact ? 0.978 : 0.966,
-  });
-
-  return (
-    <motion.div
-      className={className}
-      initial={itemMotion.initial}
-      animate={itemMotion.animate}
-      transition={buildDelayedTransition(itemMotion.transition, baseDelay)}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function CastControlMotion({ active, children }) {
-  const itemMotion = getSurfaceItemMotion({
-    active,
-    delayStep: CAST_STAGGER_STEP,
-    distance: 12,
-    duration: 0.92,
-    enabled: true,
-    groupDelayStep: 0,
-    index: 0,
-    scale: 0.984,
-  });
-
-  return (
-    <motion.div
-      initial={itemMotion.initial}
-      animate={itemMotion.animate}
-      transition={buildDelayedTransition(itemMotion.transition, CAST_GROUP_BASE_DELAY)}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 function PersonImage({ person, size, quality = 72, priority = false, fetchPriority = '' }) {
   const [error, setError] = useState(false);
@@ -134,16 +54,11 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group flex items-center gap-3 rounded border border-white/10 bg-white/5 backdrop-blur-xs transition-all hover:bg-black/30',
+        'group flex transform-gpu items-center gap-3 rounded border bg-white/5 backdrop-blur border-white/5 transition-colors duration-200 hover:bg-black/30 hover:border-white/10 isolate',
         compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4',
       ].join(' ')}
     >
-      <motion.div
-        className={['relative shrink-0 overflow-hidden rounded-xs', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}
-        initial={{ opacity: 0, scale: 0.92, y: 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: compact ? 0.56 : 0.68, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <div className={['relative shrink-0 overflow-hidden rounded-xs', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}>
         <PersonImage
           person={person}
           size={compact ? 'w92' : 'w185'}
@@ -151,27 +66,15 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
           priority={priority}
           fetchPriority={fetchPriority}
         />
-      </motion.div>
+      </div>
 
       {compact ? (
-        <motion.span
-          className="truncate text-xs font-semibold text-white"
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.52, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {person.name}
-        </motion.span>
+        <span className="truncate text-xs font-semibold text-white">{person.name}</span>
       ) : (
-        <motion.div
-          className="flex min-w-0 flex-col"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.58, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <motion.span className="truncate text-sm font-semibold text-white">{person.name}</motion.span>
-          <motion.span className="truncate text-xs text-white/70">{person.subtitle}</motion.span>
-        </motion.div>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-semibold text-white">{person.name}</span>
+          <span className="truncate text-xs text-white/70">{person.subtitle}</span>
+        </div>
       )}
     </Link>
   );
@@ -207,16 +110,9 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
 
 export default function CastSection({ cast = [], crew = [], headerAction = null }) {
   usePosterPreferenceVersion();
-  const surfaceReveal = useMovieSurfaceRevealState();
   const sectionRef = useRef(null);
-  const sectionInView = useInView(sectionRef, {
-    amount: 0.24,
-    margin: '0px 0px -8% 0px',
-    once: true,
-  });
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
-  const panelMotion = getSurfacePanelMotion();
 
   const castEntries = useMemo(() => buildEntries(cast, 'character'), [cast]);
   const crewEntries = useMemo(
@@ -245,7 +141,6 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
 
   const activeIndex = tabs.findIndex((tab) => tab.key === activeTab);
   const activeTabData = tabs[activeIndex] || tabs[0];
-  const canAnimateItems = surfaceReveal.isActive && sectionInView;
 
   const handleOpenModal = () => {
     openModal(
@@ -269,13 +164,9 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {featured.map((person, index) => {
             return (
-              <CastMotionItem
-                key={buildPersonEntryKey(tabKey, person, index, 'featured')}
-                active={canAnimateItems}
-                index={index}
-              >
+              <div key={buildPersonEntryKey(tabKey, person, index, 'featured')}>
                 <PersonCard person={person} priority={index < 4} fetchPriority={index < 4 ? 'high' : undefined} />
-              </CastMotionItem>
+              </div>
             );
           })}
         </div>
@@ -286,30 +177,23 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               const responsiveClass = index > 1 ? 'hidden sm:block' : '';
 
               return (
-                <CastMotionItem
+                <div
                   key={buildPersonEntryKey(tabKey, person, index, 'compact')}
-                  active={canAnimateItems}
-                  baseDelay={CAST_GROUP_BASE_DELAY + CAST_STAGGER_STEP * (featured.length + 2)}
                   className={`min-w-0 flex-1 ${responsiveClass}`}
-                  compact
-                  index={index}
                 >
                   <PersonCard person={person} compact />
-                </CastMotionItem>
+                </div>
               );
             })}
 
-            <motion.button
+            <button
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              initial={{ opacity: 0, y: 14, scale: 0.94 }}
-              animate={canAnimateItems ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 14, scale: 0.94 }}
-              transition={{ duration: 1, delay: 1.12, ease: [0.22, 1, 0.36, 1] }}
-              className="center size-10 shrink-0 rounded border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-black/30 hover:text-white"
+              className="center size-10 shrink-0 rounded border border-white/5 bg-white/5 text-white/70 transition-colors hover:bg-black/30 hover:text-white"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
-            </motion.button>
+            </button>
           </div>
         )}
       </div>
@@ -319,33 +203,22 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   return (
     <section ref={sectionRef} className="movie-detail-section-content relative w-full">
       <div className="flex items-center justify-between gap-3">
-        <CastControlMotion active={canAnimateItems}>
-          <SegmentedControl
-            classNames={{
-              wrapper: 'movie-cast-segmented-control h-7 p-0.5 backdrop-blur-xs',
-              button: 'min-w-0 flex-1 basis-0',
-            }}
-            value={activeTab}
-            onChange={setActiveTab}
-            items={tabs.map(({ key, label }) => ({ key, label }))}
-          />
-        </CastControlMotion>
+        <SegmentedControl
+          classNames={{
+            wrapper: 'movie-cast-segmented-control h-7 p-0.5 backdrop-blur',
+            button: 'min-w-0 flex-1 basis-0',
+          }}
+          value={activeTab}
+          onChange={setActiveTab}
+          items={tabs.map(({ key, label }) => ({ key, label }))}
+        />
         {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
       </div>
 
       <div className="relative w-full overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTabData.key}
-            initial={false}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={tabs.length > 1 ? panelMotion.exit : undefined}
-            transition={panelMotion.transition}
-            className="w-full"
-          >
-            {renderPanel(activeTabData.key, activeTabData.entries)}
-          </motion.div>
-        </AnimatePresence>
+        <div key={activeTabData.key} className="w-full">
+          {renderPanel(activeTabData.key, activeTabData.entries)}
+        </div>
       </div>
     </section>
   );

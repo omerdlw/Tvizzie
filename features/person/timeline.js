@@ -1,15 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-import {
-  PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
-  usePersonSurfaceRevealState,
-} from '@/app/(media)/person/[id]/motion';
 import MediaThumb from './media-thumb';
 import { getTimelineCredits } from './utils';
 
@@ -55,36 +48,18 @@ export default function PersonTimeline({ person }) {
   if (!timeline.length) return null;
 
   return (
-    <PersonSurfaceReveal>
-      <PersonTimelineSurface timeline={timeline} />
-    </PersonSurfaceReveal>
+    <PersonTimelineSurface timeline={timeline} />
   );
 }
 
 function PersonTimelineSurface({ timeline }) {
-  const surfaceReveal = usePersonSurfaceRevealState();
-
   return (
     <section className="flex w-full flex-col gap-3">
       <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Timeline</h2>
 
-      {timeline.map(([year, credits], yearIndex) => {
-        const yearMotion = getPersonSurfaceItemMotion({
-          active: surfaceReveal.isActive,
-          baseDelay: surfaceReveal.itemBaseDelay,
-          enabled: surfaceReveal.shouldAnimateItems,
-          index: yearIndex,
-          preset: 'timelineYear',
-        });
-
+      {timeline.map(([year, credits]) => {
         return (
-          <motion.div
-            key={year}
-            className="mt-4 first:mt-0"
-            initial={yearMotion.initial}
-            animate={yearMotion.animate}
-            transition={yearMotion.transition}
-          >
+          <div key={year} className="mt-4 first:mt-0">
             <div className="mb-2 flex items-center gap-2 sm:gap-3">
               <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">
                 {year}
@@ -93,25 +68,12 @@ function PersonTimelineSurface({ timeline }) {
             </div>
 
             <div className="ml-0 flex flex-col sm:ml-16">
-              {credits.map((credit, creditIndex) => {
+              {credits.map((credit) => {
                 const title = credit.title || credit.original_title || 'Untitled';
                 const creditLabel = getCreditLabel(credit);
-                const creditMotion = getPersonSurfaceItemMotion({
-                  active: surfaceReveal.isActive,
-                  baseDelay: surfaceReveal.itemBaseDelay,
-                  enabled: surfaceReveal.shouldAnimateItems,
-                  groupIndex: yearIndex,
-                  index: creditIndex,
-                  preset: 'timelineEntry',
-                });
 
                 return (
-                  <motion.div
-                    key={`${credit.credit_id || credit.id}-${credit.media_type}`}
-                    initial={creditMotion.initial}
-                    animate={creditMotion.animate}
-                    transition={creditMotion.transition}
-                  >
+                  <div key={`${credit.credit_id || credit.id}-${credit.media_type}`}>
                     <Link
                       href={`/movie/${credit.id}`}
                       className="group flex items-end gap-3 rounded border border-transparent p-1 transition hover:bg-white/10"
@@ -126,11 +88,11 @@ function PersonTimelineSurface({ timeline }) {
                         )}
                       </div>
                     </Link>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
-          </motion.div>
+          </div>
         );
       })}
     </section>

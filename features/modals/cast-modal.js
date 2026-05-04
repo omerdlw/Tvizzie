@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -16,13 +15,6 @@ import Icon from '@/ui/icon';
 const DESKTOP_COLUMNS = 3;
 const GRID_CLASS =
   'grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 lg:divide-x-0 lg:divide-y-0';
-
-const SPRING_TRANSITION = {
-  type: 'spring',
-  stiffness: 380,
-  damping: 34,
-  mass: 0.75,
-};
 
 function normalizeEntries(list, fallbackKey) {
   return (Array.isArray(list) ? list : []).map((member) => ({
@@ -143,8 +135,6 @@ export default function CastModal({ close, data, header }) {
     }),
   };
 
-  const transition = SPRING_TRANSITION;
-
   if (!hasCast && !hasCrew) {
     return (
       <Container
@@ -166,36 +156,10 @@ export default function CastModal({ close, data, header }) {
       bodyClassName="bg-transparent p-0"
     >
       <div ref={contentRef} className="relative overflow-hidden">
-        {!hasBoth ? (
-          <CreditsGrid close={close} list={hasCast ? castEntries : crewEntries} keyPrefix={hasCast ? 'cast' : 'crew'} />
+        {activeTab === 'cast' ? (
+          <CreditsGrid close={close} list={castEntries} keyPrefix="cast" />
         ) : (
-          <>
-            <div aria-hidden="true" className="invisible">
-              <CreditsGrid
-                close={close}
-                list={activeTab === 'cast' ? castEntries : crewEntries}
-                keyPrefix={`${activeTab}-measure`}
-              />
-            </div>
-
-            <motion.div
-              className="absolute inset-0"
-              initial={false}
-              animate={{ x: activeTab === 'cast' ? '0%' : '-100%' }}
-              transition={transition}
-            >
-              <CreditsGrid close={close} list={castEntries} keyPrefix="cast" />
-            </motion.div>
-
-            <motion.div
-              className="absolute inset-0"
-              initial={false}
-              animate={{ x: activeTab === 'cast' ? '100%' : '0%' }}
-              transition={transition}
-            >
-              <CreditsGrid close={close} list={crewEntries} keyPrefix="crew" />
-            </motion.div>
-          </>
+          <CreditsGrid close={close} list={crewEntries} keyPrefix="crew" />
         )}
       </div>
     </Container>

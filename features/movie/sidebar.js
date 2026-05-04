@@ -1,14 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-import {
-  MOVIE_ROUTE_TIMING,
-  MovieSurfaceReveal,
-  getMovieDelayedTransition,
-  getSurfaceItemMotion,
-} from '@/app/(media)/movie/[id]/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -38,41 +31,6 @@ function SidebarRow({ icon, children }) {
       </span>
       <div className="flex-1 leading-relaxed font-medium">{children}</div>
     </div>
-  );
-}
-
-function SidebarMotionItem({ children, delay = 0, index = 0 }) {
-  const itemMotion = getSurfaceItemMotion({
-    preset: 'sidebarRow',
-    index,
-  });
-
-  return (
-    <motion.div
-      initial={itemMotion.initial}
-      animate={itemMotion.animate}
-      transition={getMovieDelayedTransition(itemMotion.transition, delay)}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function SidebarMotionChip({ children, delay = 0, index = 0 }) {
-  const itemMotion = getSurfaceItemMotion({
-    preset: 'sidebarChip',
-    index,
-  });
-
-  return (
-    <motion.span
-      className="inline-flex"
-      initial={itemMotion.initial}
-      animate={itemMotion.animate}
-      transition={getMovieDelayedTransition(itemMotion.transition, delay)}
-    >
-      {children}
-    </motion.span>
   );
 }
 
@@ -120,7 +78,7 @@ function createRow(id, icon, content) {
   return { id, icon, content };
 }
 
-function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
+function TaxonomyGroup({ items = [], label, variant = 'default' }) {
   if (!items.length) {
     return null;
   }
@@ -131,12 +89,12 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <SidebarMotionItem delay={delay} index={0}>
+      <div>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-white/50 uppercase">{label}</p>
-      </SidebarMotionItem>
+      </div>
       <div className={cn('flex flex-wrap', isTagGroup ? 'gap-1.5' : 'gap-2')}>
-        {visibleItems.map((item, index) => (
-          <SidebarMotionChip key={item} delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger} index={index}>
+        {visibleItems.map((item) => (
+          <span key={item} className="inline-flex">
             <span
               className={cn(
                 'inline-flex max-w-full items-center rounded bg-white/5 text-[11px] font-semibold',
@@ -147,28 +105,24 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
             >
               {item}
             </span>
-          </SidebarMotionChip>
+          </span>
         ))}
 
         {hiddenItems.length > 0 ? (
-          <SidebarMotionChip
-            key="hidden-tags"
-            delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger}
-            index={visibleItems.length}
-          >
+          <span key="hidden-tags" className="inline-flex">
             <Tooltip text={hiddenItems.join(', ')} position="top">
               <span className="inline-flex min-h-7 items-center rounded bg-white/5 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/80">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
-          </SidebarMotionChip>
+          </span>
         ) : null}
       </div>
     </div>
   );
 }
 
-function SidebarTaxonomy({ delay = 0, genres = [], tags = [] }) {
+function SidebarTaxonomy({ genres = [], tags = [] }) {
   const normalizedGenres = normalizeTaxonomyItems(genres);
   const normalizedTags = normalizeTaxonomyItems(tags, '#');
 
@@ -178,13 +132,8 @@ function SidebarTaxonomy({ delay = 0, genres = [], tags = [] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <TaxonomyGroup delay={delay} label="Genres" items={normalizedGenres} />
-      <TaxonomyGroup
-        delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger * (normalizedGenres.length + 1)}
-        label="Tags"
-        items={normalizedTags}
-        variant="tags"
-      />
+      <TaxonomyGroup label="Genres" items={normalizedGenres} />
+      <TaxonomyGroup label="Tags" items={normalizedTags} variant="tags" />
     </div>
   );
 }
@@ -197,30 +146,28 @@ export function MovieSidebarPrimary({ item, topContent }) {
       data-movie-sidebar-primary="true"
       className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7")}
     >
-      <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
-          {posterSrc ? (
-            <AdaptiveImage
-              fill
-              priority
-              src={posterSrc}
-              alt={item.title || item.name}
-              fetchPriority="high"
-              sizes="(max-width: 1024px) 100vw, 400px"
-              quality={resolveImageQuality('hero')}
-              decoding="async"
-              placeholder="blur"
-              blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
-              className="rounded object-cover"
-              wrapperClassName="h-full w-full"
-            />
-          ) : (
-            <div className="center h-full w-full bg-white/5 text-white/50">
-              <Icon icon="solar:clapperboard-play-bold" size={40} />
-            </div>
-          )}
-        </div>
-      </MovieSurfaceReveal>
+      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+        {posterSrc ? (
+          <AdaptiveImage
+            fill
+            priority
+            src={posterSrc}
+            alt={item.title || item.name}
+            fetchPriority="high"
+            sizes="(max-width: 1024px) 100vw, 400px"
+            quality={resolveImageQuality('hero')}
+            decoding="async"
+            placeholder="blur"
+            blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
+            className="rounded object-cover"
+            wrapperClassName="h-full w-full"
+          />
+        ) : (
+          <div className="center h-full w-full bg-white/5 text-white/50">
+            <Icon icon="solar:clapperboard-play-bold" size={40} />
+          </div>
+        )}
+      </div>
 
       {topContent || null}
     </div>
@@ -324,14 +271,14 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
   return hasTaxonomy || rows.length ? (
     <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7")}>
       {hasTaxonomy ? (
-        <SidebarTaxonomy delay={MOVIE_ROUTE_TIMING.sidebar.taxonomyDelay} genres={genres} tags={tags} />
+        <SidebarTaxonomy genres={genres} tags={tags} />
       ) : null}
 
       <div className="flex flex-col gap-1">
-        {rows.map((row, index) => (
-          <SidebarMotionItem key={row.id} delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
+        {rows.map((row) => (
+          <div key={row.id}>
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </SidebarMotionItem>
+          </div>
         ))}
       </div>
     </div>

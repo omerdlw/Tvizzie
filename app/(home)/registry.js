@@ -3,31 +3,6 @@
 import SearchAction from '@/features/navigation/actions/search-action';
 import { useRegistry } from '@/core/modules/registry';
 
-const HOME_BACKGROUND_ANIMATION = Object.freeze({
-  exitDurationFactor: 0.42,
-  transition: {
-    duration: 1.15,
-    delay: 0.08,
-    ease: [0.23, 1, 0.32, 1],
-  },
-  initial: {
-    opacity: 0,
-    scale: 1.06,
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    transitionEnd: {
-      transform: 'none',
-      willChange: 'auto',
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 1.03,
-  },
-});
-
 export default function Registry({ backgroundImage = null, isLoading = false }) {
   useRegistry({
     nav: {
@@ -36,7 +11,6 @@ export default function Registry({ backgroundImage = null, isLoading = false }) 
     ...(backgroundImage
       ? {
           background: {
-            animation: HOME_BACKGROUND_ANIMATION,
             image: backgroundImage,
             overlay: true,
             overlayOpacity: 0.42,

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 
 function defaultGetKey(item) {
@@ -132,15 +131,13 @@ export default function SegmentedControl({
             classNames.wrapper
           )}
         >
-          <motion.span
+          <span
             aria-hidden="true"
             className={cn('segmented-control-indicator pointer-events-none absolute top-0 left-0', classNames.indicator)}
-            initial={false}
-            animate={
+            style={
               indicatorFrame.ready
                 ? {
-                    x: indicatorFrame.x,
-                    y: indicatorFrame.y,
+                    transform: `translate3d(${indicatorFrame.x}px, ${indicatorFrame.y}px, 0)`,
                     width: indicatorFrame.width,
                     height: indicatorFrame.height,
                     opacity: 1,
@@ -149,7 +146,6 @@ export default function SegmentedControl({
                     opacity: 0,
                   }
             }
-            transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }}
           />
 
           {resolvedItems.map((item) => {

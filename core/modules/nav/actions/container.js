@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigationState } from '@/core/modules/nav/context';
 import { useToast } from '@/core/modules/notification/hooks';
@@ -219,7 +218,6 @@ export function useNavActions({ activeItem } = {}) {
 }
 
 export function NavAction({ action }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
 
   return (
     <Tooltip className="px-2" text={action.tooltip}>
@@ -232,11 +230,11 @@ export function NavAction({ action }) {
         transition={NAV_ACTION_SPRING}
       >
         <Icon icon={action.icon} size={16} />
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={true}>
           {action.badge ? (
             <motion.span
               className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-black"
-              initial={initialPageAnimationsEnabled ? { scale: 0.6, opacity: 0 } : false}
+              initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}
               transition={NAV_BADGE_SPRING}
@@ -251,17 +249,16 @@ export function NavAction({ action }) {
 }
 
 export function NavActionsContainer({ activeItem }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const actions = useNavActions({ activeItem });
 
   return (
     <motion.div className="mr-2 flex shrink-0 items-center gap-1" layout="position" transition={NAV_CONTENT_TRANSITION}>
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={true}>
         {actions.map((action, index) => (
           <motion.div
             key={`${action.key || action.icon || 'nav-action'}-${index}`}
             layout="position"
-            initial={initialPageAnimationsEnabled ? { opacity: 0, scale: 0.84, y: 4 } : false}
+            initial={{ opacity: 0, scale: 0.84, y: 4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.84, y: -4 }}
             transition={NAV_ACTION_SPRING}

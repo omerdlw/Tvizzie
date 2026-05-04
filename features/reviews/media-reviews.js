@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -253,29 +252,20 @@ export default function MediaReviews({
         </div>
       ) : null}
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={listAnimationKey}
-          initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -6, filter: 'blur(2px)' }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
-          style={{ willChange: 'transform, opacity, filter' }}
-        >
-          <ReviewList
-            currentUserId={currentUserId}
-            emptyMessage="No written reviews yet"
-            isLoading={isLoading}
-            loadError={loadError}
-            onDeleteRequest={handleDeleteRequest}
-            onEdit={handleEditReview}
-            onLike={handleLike}
-            showOwnActions={false}
-            sortedReviews={displayedReviews}
-            userProfile={userProfile}
-          />
-        </motion.div>
-      </AnimatePresence>
+      <div key={listAnimationKey}>
+        <ReviewList
+          currentUserId={currentUserId}
+          emptyMessage="No written reviews yet"
+          isLoading={isLoading}
+          loadError={loadError}
+          onDeleteRequest={handleDeleteRequest}
+          onEdit={handleEditReview}
+          onLike={handleLike}
+          showOwnActions={false}
+          sortedReviews={displayedReviews}
+          userProfile={userProfile}
+        />
+      </div>
     </section>
   );
 }

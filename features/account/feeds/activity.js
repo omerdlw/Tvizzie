@@ -3,13 +3,11 @@
 import { useCallback, useMemo } from 'react';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
 
 import { normalizeFeedbackText } from '@/core/utils';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
 import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
 import AccountPagination from '@/features/account/shared/pagination';
-import { ACCOUNT_ROUTE_MOTION, getAccountSurfaceItemMotion } from '@/app/(account)/account/motion';
 import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '../shared/section-wrapper';
@@ -89,22 +87,12 @@ function ActivityLine({ item }) {
   return <>{parts.map((part, index) => renderLinePart(part, index))}</>;
 }
 
-function ActivityItem({ index = 0, isFirst = false, item }) {
-  const reducedMotion = useReducedMotion();
+function ActivityItem({ isFirst = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
-  const itemMotion = getAccountSurfaceItemMotion({
-    index,
-    preset: 'activityItem',
-    reducedMotion,
-  });
 
   return (
-    <motion.article
+    <article
       className={`border-b border-white/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
-      initial={itemMotion.initial}
-      whileInView={itemMotion.animate}
-      viewport={{ once: true, ...ACCOUNT_ROUTE_MOTION.scroll.sectionViewport }}
-      transition={itemMotion.transition}
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
@@ -119,7 +107,7 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
           <ReviewCard className="border-b-0 py-0" displayVariant="activity" review={item.reviewCard} />
         </div>
       ) : null}
-    </motion.article>
+    </article>
   );
 }
 

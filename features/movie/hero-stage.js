@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { MOVIE_ROUTE_TIMING, MovieSurfaceReveal } from '@/app/(media)/movie/[id]/motion';
 import CastSection from '@/features/movie/cast-section';
 import { MovieGridCastBoundary } from '@/features/movie/grid-animation';
 import MovieOverview from '@/features/movie/overview';
@@ -74,28 +73,23 @@ export default function MovieHeroStage({
   return (
     <div className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)} style={stageStyle}>
       <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
-        <div className={cn("movie-detail-shell-inset flex min-h-0 flex-col gap-4 overflow-hidden")}>
+        <div className={cn("movie-detail-shell-inset flex min-h-0 flex-1 flex-col gap-4 overflow-hidden")}>
           <div className="shrink-0">{titleBlock}</div>
 
           {tagline || overview ? (
             <div className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}>
               {tagline ? (
-                <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.hero.taglineDelay}>
+                <div className="w-full shrink-0">
                   <p className={cn("text-white-strong w-full shrink-0 text-xs font-semibold tracking-widest uppercase sm:text-sm")}>
                     {tagline}
                   </p>
-                </MovieSurfaceReveal>
+                </div>
               ) : null}
 
               {overview ? (
-                <MovieSurfaceReveal
-                  animateOnView={false}
-                  className="min-h-0 flex-1"
-                  contentClassName="flex min-h-0 flex-1"
-                  delay={MOVIE_ROUTE_TIMING.hero.overviewDelay}
-                >
+                <div className="min-h-0 flex-1 flex">
                   <MovieOverview overview={overview} className="flex-1" />
-                </MovieSurfaceReveal>
+                </div>
               ) : null}
             </div>
           ) : null}

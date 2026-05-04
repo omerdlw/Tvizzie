@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useReportWebVitals } from 'next/web-vitals';
 
 import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/app-shell/interactive-boundary';
-import { MotionRuntimeProvider } from '@/features/motion-runtime';
+import { SmoothScrollProvider } from '@/features/app-shell/smooth-scroll';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { pipe } from '@/core/utils';
 
@@ -103,7 +103,7 @@ function WebVitals() {
   return null;
 }
 
-function AppShellContent({ children, interactiveBoundaryVariant, needsInteractiveBoundary, needsSmoothScroll }) {
+function AppShellContent({ children, interactiveBoundaryVariant, needsInteractiveBoundary }) {
   const { isSurfaceOpen } = useNavigationState();
   const shouldRenderNav = interactiveBoundaryVariant !== 'auth' || isSurfaceOpen;
   const shellChildren = shouldRenderNav ? (
@@ -126,22 +126,25 @@ export const AppProviders = ({ children }) => {
   const pathname = usePathname();
   const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
   const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
+  const needsSmoothScroll = shouldEnableSmoothScroll(pathname);
 
   return (
-    <MotionRuntimeProvider>
+    <>
       <WebVitals />
       <CoreShellProviders>
-        <BackgroundOverlay />
-        <LoadingOverlay />
-        <GlobalError>
-          <AppShellContent
-            interactiveBoundaryVariant={interactiveBoundaryVariant}
-            needsInteractiveBoundary={needsInteractiveBoundary}
-          >
-            {children}
-          </AppShellContent>
-        </GlobalError>
+        <SmoothScrollProvider enabled={needsSmoothScroll}>
+          <BackgroundOverlay />
+          <LoadingOverlay />
+          <GlobalError>
+            <AppShellContent
+              interactiveBoundaryVariant={interactiveBoundaryVariant}
+              needsInteractiveBoundary={needsInteractiveBoundary}
+            >
+              {children}
+            </AppShellContent>
+          </GlobalError>
+        </SmoothScrollProvider>
       </CoreShellProviders>
-    </MotionRuntimeProvider>
+    </>
   );
 };

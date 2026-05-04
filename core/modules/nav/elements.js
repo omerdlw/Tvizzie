@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { cn } from '@/core/utils';
 import Iconify from '@/ui/icon';
 
@@ -44,20 +43,19 @@ function getLineClampStyle(maxLines, style) {
 }
 
 export function Description({ text, style, maxLines = 1 }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
 
   return (
     <div className="relative w-full text-xs sm:text-sm">
-      <AnimatePresence initial={false} mode="wait">
+      <AnimatePresence initial={true} mode="wait">
         <motion.p
           className={cn('text-white', isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate', className)}
           animate={{ ...getDescriptionAnimation().animate, opacity }}
           transition={getDescriptionAnimation().transition}
           style={getLineClampStyle(maxLines, restStyle)}
-          initial={initialPageAnimationsEnabled ? getDescriptionAnimation().initial : false}
+          initial={getDescriptionAnimation().initial}
           exit={getDescriptionAnimation().exit}
           key={typeof text === 'string' || typeof text === 'number' ? text : undefined}
         >

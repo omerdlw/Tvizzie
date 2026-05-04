@@ -2,7 +2,6 @@ import { Suspense, use } from 'react';
 
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import { TextAnimate } from '@/ui/animations/text-animate';
 import CollectionActions from '@/features/movie/collection-actions';
 import GallerySection from '@/features/movie/gallery-section';
 import ImagesSection from '@/features/movie/images-section';
@@ -18,14 +17,6 @@ import Carousel from '@/ui/media/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
-import {
-  MovieClipReveal,
-  MovieHeroReveal,
-  MOVIE_ROUTE_TIMING,
-  MovieSectionGroup,
-  MovieSectionReveal,
-  MovieSurfaceReveal,
-} from './motion';
 import Registry from './registry';
 
 function MovieGridSection({ children, className = '', insetDivider = true, hideDivider = false }) {
@@ -37,32 +28,30 @@ function MovieGridSection({ children, className = '', insetDivider = true, hideD
   );
 }
 
-function RelatedMoviesSection({ items, title, groupIndex = 0, hideDivider = false }) {
+function RelatedMoviesSection({ items, title, hideDivider = false }) {
   if (!items?.length) {
     return null;
   }
 
   return (
-    <MovieSectionReveal groupIndex={groupIndex}>
+    <div className="w-full">
       <MovieGridSection hideDivider={hideDivider}>
-        <MovieSurfaceReveal>
-          <div className="flex flex-col gap-3">
-            <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
-            <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
-              {items.map((item, index) => (
-                <RecommendationCard
-                  key={`${item.id}-${index}`}
-                  movie={item}
-                  index={index}
-                  imagePriority={index < 4}
-                  imageFetchPriority={index < 4 ? 'high' : undefined}
-                />
-              ))}
-            </Carousel>
-          </div>
-        </MovieSurfaceReveal>
+        <div className="flex flex-col gap-3">
+          <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
+          <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
+            {items.map((item, index) => (
+              <RecommendationCard
+                key={`${item.id}-${index}`}
+                movie={item}
+                index={index}
+                imagePriority={index < 4}
+                imageFetchPriority={index < 4 ? 'high' : undefined}
+              />
+            ))}
+          </Carousel>
+        </div>
       </MovieGridSection>
-    </MovieSectionReveal>
+    </div>
   );
 }
 
@@ -86,12 +75,9 @@ function MovieVisualMediaDeferred({
   }
 
   return (
-    <MovieSectionGroup
-      delay={MOVIE_ROUTE_TIMING.sections.groupDelay}
-      staggerStep={MOVIE_ROUTE_TIMING.sections.groupStagger}
-    >
+    <div className="flex flex-col">
       {hasGallery ? (
-        <MovieSectionReveal groupIndex={0}>
+        <div className="w-full">
           <MovieGridSection hideDivider={!showLeadingDivider}>
             <GallerySection
               images={galleryImages}
@@ -100,11 +86,11 @@ function MovieVisualMediaDeferred({
               canResetMovieBackground={canResetMovieBackground}
             />
           </MovieGridSection>
-        </MovieSectionReveal>
+        </div>
       ) : null}
 
       {hasImages ? (
-        <MovieSectionReveal groupIndex={hasGallery ? 1 : 0}>
+        <div className="w-full">
           <MovieGridSection hideDivider={!hasGallery && !showLeadingDivider}>
             <ImagesSection
               images={secondaryMovie.images}
@@ -116,9 +102,9 @@ function MovieVisualMediaDeferred({
               canResetMoviePoster={canResetMoviePoster}
             />
           </MovieGridSection>
-        </MovieSectionReveal>
+        </div>
       ) : null}
-    </MovieSectionGroup>
+    </div>
   );
 }
 
@@ -160,28 +146,24 @@ function MovieDiscoveryDeferred({
   }
 
   return (
-    <MovieSectionGroup
-      delay={MOVIE_ROUTE_TIMING.sections.groupDelay}
-      staggerStep={MOVIE_ROUTE_TIMING.sections.groupStagger}
-    >
+    <div className="flex flex-col">
       {sections.map((section, index) =>
         section.key === 'videos' ? (
-          <MovieSectionReveal key={section.key} groupIndex={index}>
+          <div key={section.key} className="w-full">
             <MovieGridSection hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}>
               {section.content}
             </MovieGridSection>
-          </MovieSectionReveal>
+          </div>
         ) : (
           <RelatedMoviesSection
             key={section.key}
             items={section.items}
             title={section.title}
-            groupIndex={index}
             hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}
           />
         )
       )}
-    </MovieSectionGroup>
+    </div>
   );
 }
 
@@ -245,9 +227,9 @@ export default function MovieView({
                   writers={writers}
                 />
               </div>
-              <MovieGridSidebarBoundary />
             </div>
-            <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
+            <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
+              <MovieGridSidebarBoundary />
               <div className="flex w-full flex-col">
                 <MovieHeroStage
                   cast={computed.cast}
@@ -256,26 +238,15 @@ export default function MovieView({
                   tagline={movie.tagline}
                   className="py-7"
                   titleBlock={
-                    <MovieHeroReveal delay={MOVIE_ROUTE_TIMING.hero.containerDelay}>
-                      <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                        <MovieClipReveal
-                          animateOnView={false}
-                          delay={MOVIE_ROUTE_TIMING.hero.titleClipDelay}
-                          className="min-w-0"
+                    <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
+                      <div className="min-w-0">
+                        <div
+                          className="font-zuume max-w-full text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
                         >
-                          <TextAnimate
-                            animation="cinematicSoft"
-                            by="word"
-                            delay={MOVIE_ROUTE_TIMING.hero.titleDelay}
-                            duration={MOVIE_ROUTE_TIMING.hero.titleDuration}
-                            startOnView={false}
-                            className="font-zuume max-w-full text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
-                          >
-                            {movie.title}
-                          </TextAnimate>
-                        </MovieClipReveal>
+                          {movie.title}
+                        </div>
                       </div>
-                    </MovieHeroReveal>
+                    </div>
                   }
                 />
 
@@ -301,7 +272,7 @@ export default function MovieView({
           <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
             <MovieGridDivider />
             <div className="movie-detail-grid-subsection-content">
-              <MovieSectionReveal className="w-full" delay={MOVIE_ROUTE_TIMING.sections.reviews}>
+              <div className="w-full">
                 <MediaReviews
                   entityId={movie.id}
                   entityType="movie"
@@ -314,7 +285,7 @@ export default function MovieView({
                   backdropPath={movie.backdrop_path}
                   onReviewStateChange={setReviewState}
                 />
-              </MovieSectionReveal>
+              </div>
             </div>
           </section>
           <NavHeightSpacer className="w-full" />

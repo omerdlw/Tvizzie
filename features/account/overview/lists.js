@@ -4,7 +4,6 @@ import AccountListCard from '@/features/account/lists/card';
 import Icon from '@/ui/icon';
 import AccountInlineSectionState from '../shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
-import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const OVERVIEW_LIST_LIMIT = 3;
 
@@ -36,10 +35,8 @@ export default function AccountListsOverview({
       {visibleLists.length > 0 ? (
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {visibleLists.map((list, index) => (
-            <AccountMotionItem
+            <div
               key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
-              index={index}
-              preset="listCard"
             >
               <AccountListCard
                 list={list}
@@ -73,7 +70,7 @@ export default function AccountListsOverview({
                     : null
                 }
               />
-            </AccountMotionItem>
+            </div>
           ))}
         </div>
       ) : (

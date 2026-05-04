@@ -47,7 +47,7 @@ function ListPreviewStack({ list }) {
           return (
             <div
               key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="border-primary absolute bottom-0 overflow-hidden rounded-xs border-[1.5px] bg-black shadow-xs ring-1 ring-white/10"
+              className="border-primary absolute bottom-0 overflow-hidden rounded-xs border bg-black shadow-xs ring-1 ring-white/10"
               style={{
                 width: '46px',
                 height: `${68 - index * 6}px`,

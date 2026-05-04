@@ -1,12 +1,17 @@
 import { cn } from '@/core/utils';
-import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import { useNavHeight } from '@/core/modules/nav/hooks';
-import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/features/account/shared/layout';
+import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
+import {
+  AccountHeroReveal,
+  AccountNavReveal,
+  AccountSectionNav,
+  AccountSectionReveal,
+} from '@/features/account/shared/layout';
+import { AccountGridDivider, AccountGridFrame } from '@/features/account/shared/grid-animation';
 import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import AccountHero from '@/features/account/shared/hero';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
-import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import Icon from '@/ui/icon';
 import Registry from './registry';
@@ -37,27 +42,111 @@ function ActionButton({ children, className, tone = 'default', icon = null, ...p
 
 function StatusState({ title, description }) {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="w-full max-w-xl rounded border border-white/15 bg-black p-6 text-center">
-        <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
-      </div>
+    <section className="account-detail-grid-subsection bg-transparent">
+      <AccountSectionReveal>
+        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex min-h-[42vh] items-center justify-center`)}>
+          <div className="w-full max-w-xl rounded border border-white/15 bg-black p-6 text-center">
+            <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">{title}</h1>
+            <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
+          </div>
+        </div>
+      </AccountSectionReveal>
+    </section>
+  );
+}
+
+function EditGridShell({
+  children,
+  heroProfile,
+  likesCount,
+  followerCount,
+  followingCount,
+  listsCount,
+  watchedCount,
+  watchlistCount,
+  profileHandle,
+}) {
+  return (
+    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
+      <AccountGridFrame
+        routeKey={profileHandle ? `account-edit-${profileHandle}` : 'account-edit'}
+        className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
+      >
+        <div className="relative">
+          <AccountHeroReveal>
+            <AccountHero
+              profile={heroProfile}
+              likesCount={likesCount}
+              followerCount={followerCount}
+              followingCount={followingCount}
+              listsCount={listsCount}
+              watchedCount={watchedCount}
+              watchlistCount={watchlistCount}
+            />
+          </AccountHeroReveal>
+          <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+            <AccountSectionNav activeKey="overview" username={profileHandle} />
+          </AccountNavReveal>
+        </div>
+        <div className="account-detail-hero-divider">
+          <AccountGridDivider />
+        </div>
+        <main className="account-detail-grid-main">{children}</main>
+        <NavHeightSpacer />
+      </AccountGridFrame>
     </div>
   );
 }
 
-function SectionCard({ title, description, children, className, contentClassName, summaryLabel }) {
+function SectionCard({ title, description, children, className, contentClassName, revealDelay = 0, summaryLabel }) {
   return (
-    <section className="relative bg-transparent">
-      <AccountSectionReveal>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
+    <section className="account-detail-grid-subsection bg-transparent">
+      <AccountSectionReveal delay={revealDelay}>
+        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
-          {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}
-          <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
+          <div className={cn('account-detail-section-body', contentClassName)}>
+            {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}
+            {children}
+          </div>
         </div>
       </AccountSectionReveal>
     </section>
+  );
+}
+
+function SecuritySectionStack({ children }) {
+  return (
+    <section className="account-detail-grid-subsection bg-transparent">
+      <AccountSectionReveal>
+        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`)}>
+          <AccountSectionHeading title="Security" />
+          <div className="account-detail-section-body grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.62fr)]">
+            {children}
+          </div>
+        </div>
+      </AccountSectionReveal>
+    </section>
+  );
+}
+
+function SecurityCard({ title, children, className, summaryLabel }) {
+  return (
+    <div className={cn('flex min-w-0 flex-col gap-4 rounded border border-white/10 bg-black/40 p-4', className)}>
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <h3 className="min-w-0 text-sm font-semibold tracking-widest text-white/70 uppercase">{title}</h3>
+        {summaryLabel ? <div className="min-w-0 text-right">{summaryLabel}</div> : null}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EnablePasswordNotice() {
+  return (
+    <div className="rounded border border-white/10 bg-white/10 p-4 text-sm leading-6 text-white/70 lg:col-span-2">
+      Email/password sign-in is not linked yet. Complete the set password flow below to continue.
+    </div>
   );
 }
 
@@ -87,7 +176,7 @@ function MediaField({
   const shouldDisableActions = isDisabled || isUploading;
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_172px] lg:items-start">
+    <div className="account-edit-media-field">
       <div className="space-y-3">
         <Field label={fieldLabel}>
           <input
@@ -115,8 +204,13 @@ function MediaField({
         </div>
       </div>
 
-      <div>
-        <div className={cn('overflow-hidden rounded border border-white/10 bg-white/10', previewClassName)}>
+      <div className="account-edit-media-preview-wrap">
+        <div
+          className={cn(
+            'account-edit-media-preview overflow-hidden rounded border border-white/10 bg-white/10',
+            previewClassName
+          )}
+        >
           {preview ? (
             <AdaptiveImage
               mode="img"
@@ -138,7 +232,6 @@ function MediaField({
 }
 
 export default function AccountEditView(props) {
-  const { navHeight } = useNavHeight();
   const {
     currentAuthEmail,
     auth,
@@ -184,7 +277,7 @@ export default function AccountEditView(props) {
     setPasswordFlow,
     setDeleteFlow,
   } = props;
-  const resolvedNavHeight = Math.max(0, Math.round(navHeight || 0));
+  const profileHandle = profile?.username || heroProfile?.username || null;
 
   const editRegistry = (
     <Registry
@@ -216,19 +309,21 @@ export default function AccountEditView(props) {
     return (
       <>
         {editRegistry}
-        <PageGradientShell>
-          <main
-            className="relative min-h-screen overflow-hidden"
-            style={{ paddingBottom: `calc(${resolvedNavHeight}px + 1rem)` }}
-          >
-            <div className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 p-4`}>
-              <StatusState
-                title="Account data unavailable"
-                description="We could not load your editable profile data right now."
-              />
-            </div>
-          </main>
-        </PageGradientShell>
+        <EditGridShell
+          heroProfile={heroProfile}
+          likesCount={likesCount}
+          followerCount={followerCount}
+          followingCount={followingCount}
+          listsCount={listsCount}
+          watchedCount={watchedCount}
+          watchlistCount={watchlistCount}
+          profileHandle={profileHandle}
+        >
+          <StatusState
+            title="Account data unavailable"
+            description="We could not load your editable profile data right now."
+          />
+        </EditGridShell>
       </>
     );
   }
@@ -236,27 +331,16 @@ export default function AccountEditView(props) {
   return (
     <>
       {editRegistry}
-      <PageGradientShell>
-        <main
-          className="relative min-h-screen overflow-hidden"
-          style={{ paddingBottom: `calc(${resolvedNavHeight}px + 1rem)` }}
-        >
-          <div className="relative">
-            <AccountHero
-              profile={heroProfile}
-              likesCount={likesCount}
-              followerCount={followerCount}
-              followingCount={followingCount}
-              listsCount={listsCount}
-              watchedCount={watchedCount}
-              watchlistCount={watchlistCount}
-            />
-            <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
-              <AccountSectionNav activeKey="overview" username={profile?.username || heroProfile?.username || null} />
-            </AccountNavReveal>
-          </div>
-
-          <div className="relative">
+      <EditGridShell
+        heroProfile={heroProfile}
+        likesCount={likesCount}
+        followerCount={followerCount}
+        followingCount={followingCount}
+        listsCount={listsCount}
+        watchedCount={watchedCount}
+        watchlistCount={watchlistCount}
+        profileHandle={profileHandle}
+      >
             {activeTab === 'general' ? (
               <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col">
                 <SectionCard title="Identity">
@@ -298,7 +382,6 @@ export default function AccountEditView(props) {
                     value={form.avatarUrl}
                     preview={avatarPreview}
                     previewAlt={`${heroDisplayName} avatar preview`}
-                    previewClassName="aspect-square"
                     isUploading={Boolean(mediaUploadState?.avatar)}
                     isDisabled={isSaving || isAnyMediaUploading}
                     onChange={(value) => handleChange('avatarUrl', value)}
@@ -313,7 +396,7 @@ export default function AccountEditView(props) {
                     value={form.bannerUrl}
                     preview={bannerPreview}
                     previewAlt={`${heroDisplayName} logo preview`}
-                    previewClassName="aspect-[16/7]"
+                    previewClassName="account-edit-media-preview-banner"
                     isUploading={Boolean(mediaUploadState?.banner)}
                     isDisabled={isSaving || isAnyMediaUploading}
                     onChange={(value) => handleChange('bannerUrl', value)}
@@ -351,17 +434,11 @@ export default function AccountEditView(props) {
                 </SectionCard>
               </form>
             ) : (
-              <div className="flex flex-col">
-                {!canUsePasswordSecurity ? (
-                  <SectionCard title="Enable Password Sign-In">
-                    <div className="rounded bg-white/10 p-3 text-sm leading-6 text-white/50">
-                      Email/password sign-in is not linked yet. Complete the set password flow below to continue.
-                    </div>
-                  </SectionCard>
-                ) : null}
+              <SecuritySectionStack>
+                {!canUsePasswordSecurity ? <EnablePasswordNotice /> : null}
 
                 {canUsePasswordSecurity ? (
-                  <SectionCard
+                  <SecurityCard
                     title="Change Email"
                     summaryLabel={
                       currentAuthEmail && (
@@ -409,10 +486,10 @@ export default function AccountEditView(props) {
                     >
                       {emailFlow.isSubmitting ? 'Verifying' : 'Verify and Update'}
                     </ActionButton>
-                  </SectionCard>
+                  </SecurityCard>
                 ) : null}
 
-                <SectionCard title={isPasswordLinked ? 'Change Password' : 'Set Password'}>
+                <SecurityCard title={isPasswordLinked ? 'Change Password' : 'Set Password'}>
                   {isPasswordLinked ? (
                     <Field label="Current Password">
                       <input
@@ -473,9 +550,9 @@ export default function AccountEditView(props) {
                         ? 'Verify and Update'
                         : 'Verify and Set Password'}
                   </ActionButton>
-                </SectionCard>
+                </SecurityCard>
 
-                <SectionCard title="Delete Account">
+                <SecurityCard title="Delete Account" className="lg:col-span-2">
                   <Field label="Type DELETE to Confirm">
                     <input
                       value={deleteFlow.confirmText}
@@ -515,12 +592,10 @@ export default function AccountEditView(props) {
                   >
                     {deleteFlow.isSubmitting ? 'Deleting' : 'Delete Account'}
                   </ActionButton>
-                </SectionCard>
-              </div>
+                </SecurityCard>
+              </SecuritySectionStack>
             )}
-          </div>
-        </main>
-      </PageGradientShell>
+      </EditGridShell>
     </>
   );
 }

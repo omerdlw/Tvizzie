@@ -21,7 +21,6 @@ import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/shared/section-s
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '../shared/section-wrapper';
-import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 
@@ -198,21 +197,13 @@ export default function AccountReviewsFeed({
       ) : null}
 
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
-        <AccountMotionItem
-          className={ACCOUNT_EMPTY_SECTION_CLASS}
-          animateOnView={false}
-          preset="reviewSurface"
-        >
+        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
-        </AccountMotionItem>
+        </div>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
-        <AccountMotionItem
-          className={ACCOUNT_EMPTY_SECTION_CLASS}
-          animateOnView={false}
-          preset="reviewSurface"
-        >
+        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
           {loadError}
-        </AccountMotionItem>
+        </div>
       ) : (
         <ReviewList
           currentUserId={currentUserId}
@@ -233,11 +224,7 @@ export default function AccountReviewsFeed({
       )}
 
       {!enablePagination && hasMore && typeof onLoadMore === 'function' ? (
-        <AccountMotionItem
-          className="flex justify-center"
-          animateOnView={false}
-          preset="control"
-        >
+        <div className="flex justify-center">
           <Button
             type="button"
             onClick={onLoadMore}
@@ -246,7 +233,7 @@ export default function AccountReviewsFeed({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </AccountMotionItem>
+        </div>
       ) : null}
 
       {enablePagination && filteredReviewCount > 0 ? (

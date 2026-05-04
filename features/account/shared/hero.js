@@ -35,6 +35,14 @@ function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, 
   };
 }
 
+function HeroRevealItem({ children, className = '' }) {
+  return (
+    <div className={className}>
+      {children}
+    </div>
+  );
+}
+
 function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '' }) {
   const content = (
     <>
@@ -105,52 +113,64 @@ function HeroBioPreview({ description, onReadMore }) {
   }
 
   return (
-    <div className="relative mt-2 w-full">
+    <HeroRevealItem className="relative mt-2 w-full">
       <p ref={textRef} className={cn('line-clamp-2 text-sm leading-6 wrap-break-word')}>
         {description}
       </p>
       {shouldShowReadMore ? (
-        <div className={cn("account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12")}>
+        <div
+          className={cn(
+            'account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12'
+          )}
+        >
           <button className="text-sm font-semibold text-white/70 uppercase" type="button" onClick={onReadMore}>
             More
           </button>
         </div>
       ) : null}
-    </div>
+    </HeroRevealItem>
   );
 }
 
 function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
     <div className="w-full min-w-0 text-left">
-      <div className="flex items-center gap-4">
-        <h1 className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
+      <HeroRevealItem className="flex items-center gap-4">
+        <h1
+          className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]"
+        >
           {displayName}
         </h1>
-      </div>
+      </HeroRevealItem>
 
       <div className="mt-2 flex flex-col gap-0.5 text-sm">
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 min-[420px]:grid-cols-3 lg:hidden">
           {mobileStats.map((item, index) => (
-            <HeroInlineMetric
+            <HeroRevealItem
               key={`${item.label}-${item.value}-${index}`}
-              item={item}
-              className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
-              valueClassName="text-base font-semibold leading-none tracking-tight"
-              labelClassName="max-w-full truncate text-[13px] leading-none text-white/75"
-            />
+            >
+              <HeroInlineMetric
+                item={item}
+                className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
+                valueClassName="text-base font-semibold leading-none tracking-tight"
+                labelClassName="max-w-full truncate text-[13px] leading-none text-white/75"
+              />
+            </HeroRevealItem>
           ))}
         </div>
 
         <div className="hidden items-center gap-x-6 gap-y-2 lg:flex lg:gap-x-7">
           {countsLabel.map((item, index) => (
-            <HeroInlineMetric
+            <HeroRevealItem
               key={`${item.label}-${item.value}-${index}`}
-              item={item}
-              className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
-              valueClassName="text-base font-semibold leading-none tracking-tight "
-              labelClassName="text-base leading-none text-white/75"
-            />
+            >
+              <HeroInlineMetric
+                item={item}
+                className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
+                valueClassName="text-base font-semibold leading-none tracking-tight "
+                labelClassName="text-base leading-none text-white/75"
+              />
+            </HeroRevealItem>
           ))}
         </div>
       </div>
@@ -161,33 +181,36 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
 function HeroStatsGrid({ stats, className = '', itemClassName = '', labelClassName = '', valueClassName = '' }) {
   return (
     <div className={className}>
-      {stats.map((stat, index) =>
-        stat.href ? (
-          <Link
+      {stats.map((stat, index) => {
+        const content = (
+          <>
+            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
+            <div className={labelClassName}>{stat.label}</div>
+          </>
+        );
+
+        return (
+          <HeroRevealItem
             key={`${stat.label}-${stat.value}-${index}`}
-            href={stat.href}
-            className={cn(itemClassName, 'transition-opacity')}
           >
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </Link>
-        ) : typeof stat.onClick === 'function' ? (
-          <button
-            key={`${stat.label}-${stat.value}-${index}`}
-            type="button"
-            onClick={stat.onClick}
-            className={cn('border-0 bg-transparent p-0', itemClassName, 'transition-opacity')}
-          >
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </button>
-        ) : (
-          <div key={`${stat.label}-${stat.value}-${index}`} className={itemClassName}>
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </div>
-        )
-      )}
+            {stat.href ? (
+              <Link href={stat.href} className={cn(itemClassName, 'transition-opacity')}>
+                {content}
+              </Link>
+            ) : typeof stat.onClick === 'function' ? (
+              <button
+                type="button"
+                onClick={stat.onClick}
+                className={cn('border-0 bg-transparent p-0', itemClassName, 'transition-opacity')}
+              >
+                {content}
+              </button>
+            ) : (
+              <div className={itemClassName}>{content}</div>
+            )}
+          </HeroRevealItem>
+        );
+      })}
     </div>
   );
 }
@@ -269,7 +292,9 @@ export default function AccountHero({
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <HeroRevealItem
+              className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end"
+            >
               <AdaptiveImage
                 mode="img"
                 className="h-full w-full object-cover"
@@ -279,7 +304,7 @@ export default function AccountHero({
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
                 wrapperClassName="h-full w-full"
               />
-            </div>
+            </HeroRevealItem>
 
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <HeroTextContent

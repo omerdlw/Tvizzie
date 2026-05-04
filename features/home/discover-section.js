@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { HomeSectionReveal } from '@/app/(home)/motion';
 import MediaPosterCard from '@/ui/media/media-poster-card';
 import { GenreChip } from './genre-chip';
 import Icon from '@/ui/icon';
@@ -238,7 +237,7 @@ export function DiscoverSection({
   ]);
 
   return (
-    <HomeSectionReveal delay={0.08} distance={18}>
+    <div className="w-full">
       <section className="home-section-shell flex w-full flex-col gap-5">
         <div className="home-section-heading flex flex-col gap-2">
           <div className="flex flex-col gap-1">
@@ -270,10 +269,10 @@ export function DiscoverSection({
         </div>
 
         <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
-          {gridItems.map((item, index) => (
-            <HomeSectionReveal key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
+          {gridItems.map((item) => (
+            <div key={item.id}>
               <MediaPosterCard item={item} className="w-full" />
-            </HomeSectionReveal>
+            </div>
           ))}
 
           {isFiltering
@@ -311,6 +310,6 @@ export function DiscoverSection({
           ) : null}
         </div>
       </section>
-    </HomeSectionReveal>
+    </div>
   );
 }

@@ -55,6 +55,10 @@ function Poster({ className = '', radius = 'card', soft = false }) {
   return <SkeletonPoster className={className} radius={radius} soft={soft} />;
 }
 
+export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
+  return <SkeletonPoster className={className} radius={'card'} soft={false} />;
+}
+
 function SectionShell({ children, className = '' }) {
   return (
     <section className={cn("account-detail-grid-subsection bg-transparent")}>
@@ -63,22 +67,10 @@ function SectionShell({ children, className = '' }) {
   );
 }
 
-function SectionBodySkeleton({ children, className = '' }) {
-  return <div className={cn('account-detail-section-body', className)}>{children}</div>;
+function SectionBodySkeleton({ children }) {
+  return <div className={cn('account-detail-section-body')}>{children}</div>;
 }
 
-function SkeletonGridDivider() {
-  return (
-    <div className={cn("account-detail-grid-divider")} aria-hidden="true">
-      <span className={cn("account-detail-grid-divider-startcap")}>
-        <span className={cn("account-detail-grid-divider-diamond account-detail-grid-divider-diamond-start")} />
-      </span>
-      <span className={cn("account-detail-grid-divider-endcap")}>
-        <span className={cn("account-detail-grid-divider-diamond account-detail-grid-divider-diamond-end")} />
-      </span>
-    </div>
-  );
-}
 
 function HeroCountItem({ mobile = false }) {
   return (
@@ -179,7 +171,7 @@ function AccountNavSkeleton() {
 
 function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
   return (
-    <div className={cn("account-detail-section-heading flex w-full flex-col gap-4")}>
+    <div className="movie-detail-grid-subsection">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <SkeletonCircle className="size-6" soft={true} />
@@ -191,8 +183,6 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
           {seeMore ? <Line className="h-3 w-16" soft={true} /> : null}
         </div>
       </div>
-
-      <div className={cn("account-detail-section-heading-rule")} />
     </div>
   );
 }
@@ -240,7 +230,7 @@ function ToolbarSkeleton({ firstWidth = 'sm:w-44', secondWidth = 'sm:w-40', extr
 
 function FilterBarSkeleton({ count = 2 }) {
   return (
-    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden border-b border-white/10 pb-5">
+    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
       {Array.from({ length: count }).map((_, index) => (
         <Pill key={index} className="h-9 min-w-40 flex-1" soft={true} />
       ))}
@@ -306,8 +296,6 @@ function ListCardSkeleton() {
           </div>
         </div>
 
-        <SkeletonBlock className="h-px w-full" />
-
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <Line className="h-2.5 w-24" soft={true} />
           <div className="flex items-center gap-3">
@@ -339,7 +327,7 @@ function ActivityItemSkeleton({ isFirst = false }) {
 
 function ReviewCardSkeleton() {
   return (
-    <article className={cn("account-review-list-item border-b border-white/10 py-4 last:border-b-0 sm:py-5")}>
+    <article className={cn("account-review-list-item py-4 sm:py-5")}>
       <div className="relative transition-all duration-300">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded sm:h-28 sm:w-20">
@@ -571,7 +559,7 @@ function ListDetailSkeleton() {
             </div>
             <Pill className="h-9 w-28" soft={true} />
           </div>
-          <div className="flex w-full flex-col items-start gap-3 border-y border-white/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Line className="h-3.5 w-36" />
               <Line className="h-3 w-64 max-w-full" soft={true} />
@@ -716,9 +704,6 @@ export function Skeleton({ variant = 'overview' }) {
           <div className="absolute inset-x-0 top-0 z-20">
             <AccountNavSkeleton />
           </div>
-        </div>
-        <div className={cn("account-detail-hero-divider")}>
-          <SkeletonGridDivider />
         </div>
         <main className={cn("account-detail-grid-main")}>{renderVariant(variant)}</main>
         <NavHeightSpacer />

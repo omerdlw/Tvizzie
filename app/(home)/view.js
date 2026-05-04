@@ -34,12 +34,8 @@ function getMovieYear(item) {
 function HomeGridDivider() {
   return (
     <div className="movie-detail-grid-divider" aria-hidden="true">
-      <span className="movie-detail-grid-divider-startcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-start" />
-      </span>
-      <span className="movie-detail-grid-divider-endcap">
-        <span className="movie-detail-grid-divider-diamond movie-detail-grid-divider-diamond-end" />
-      </span>
+      <span className="movie-detail-grid-divider-startcap" />
+      <span className="movie-detail-grid-divider-endcap" />
     </div>
   );
 }

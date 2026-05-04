@@ -6,7 +6,6 @@ import { normalizeFeedbackContent } from '@/core/utils';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
-import { AccountSectionReveal } from './layout';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '../utils';
 import { ACCOUNT_EMPTY_SECTION_CLASS } from './section-state';
 
@@ -79,7 +78,6 @@ export default function AccountSectionLayout({
   className = '',
   contentClassName = '',
   icon,
-  revealDelay = 0,
   showHeader = true,
   showDivider = true,
   showSeeMore = false,
@@ -89,25 +87,23 @@ export default function AccountSectionLayout({
 }) {
   return (
     <section className="account-detail-grid-subsection bg-transparent">
-      <AccountSectionReveal delay={revealDelay}>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
-          {showHeader ? (
-            <AccountSectionHeading
-              action={action}
-              icon={icon}
-              showDivider={showDivider}
-              showSeeMore={showSeeMore}
-              summaryLabel={summaryLabel}
-              title={title}
-              titleHref={titleHref}
-            />
-          ) : title ? (
-            <h2 className="sr-only">{title}</h2>
-          ) : null}
+      <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
+        {showHeader ? (
+          <AccountSectionHeading
+            action={action}
+            icon={icon}
+            showDivider={showDivider}
+            showSeeMore={showSeeMore}
+            summaryLabel={summaryLabel}
+            title={title}
+            titleHref={titleHref}
+          />
+        ) : title ? (
+          <h2 className="sr-only">{title}</h2>
+        ) : null}
 
-          <div className={cn('account-detail-section-body', contentClassName)}>{children}</div>
-        </div>
-      </AccountSectionReveal>
+        <div className={cn('account-detail-section-body', contentClassName)}>{children}</div>
+      </div>
     </section>
   );
 }

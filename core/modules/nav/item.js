@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
 import { default as Iconify } from '@/ui/icon';
 import { Skeleton } from '@/ui/skeletons/components/nav';
@@ -52,13 +51,13 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
   transition: Object.freeze({
-    ease: [0.23, 1, 0.32, 1],
-    duration: 0.25,
+    ease: [0.22, 1, 0.36, 1],
+    duration: 0.35,
     type: 'tween',
   }),
 });
 
-const BLUR_AMOUNT = 7;
+const BLUR_AMOUNT = 8;
 
 const COMPACT_CARD_MIN_WIDTH = 148;
 const COMPACT_CARD_HORIZONTAL_PADDING = 56;
@@ -91,14 +90,14 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border p-1.5 sm:p-2 rounded backdrop-blur-xl',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border p-1.5 sm:p-2 rounded backdrop-blur-2xl',
       'border-white/10 bg-black/60',
       showBorder && 'border-white/15',
       cardStyle?.className
     ),
     style: {
       ...safeCardStyle,
-      willChange: position <= 1 ? 'transform, opacity, filter' : 'auto',
+      willChange: 'transform, opacity',
     },
     animate: {
       width: cardWidth,
@@ -106,24 +105,23 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
       zIndex: 10 - position,
       opacity: 1,
-      filter: 'blur(0px)',
     },
     initial: {
       opacity: 0,
       scale: 0.94,
-      y: 10,
-      filter: `blur(${BLUR_AMOUNT}px)`,
+      y: 0,
     },
+
     exit: {
       opacity: 0,
-      scale: 0.92,
-      filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
+      scale: 0.9,
+      y: 0,
       transition: {
-        duration: 0.15,
-        ease: [0.23, 1, 0.32, 1],
-        filter: { duration: 0.14 },
+        duration: 0.25,
+        ease: [0.22, 1, 0.36, 1],
       },
     },
+
     transition: {
       width: { ...NAV_CARD_WIDTH_SPRING, delay: staggerDelay },
       y: { ...spring, delay: staggerDelay },
@@ -134,6 +132,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     },
   };
 }
+
 
 function isImageIconSource(icon) {
   return (
@@ -179,7 +178,6 @@ function getActionNode(link, ActionComponent) {
 
 function VideoOverlayIcon({ icon }) {
   const isImageIcon = isImageIconSource(icon);
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
 
   return (
     <motion.div
@@ -189,7 +187,7 @@ function VideoOverlayIcon({ icon }) {
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
       transition={NAV_MICRO_SPRING}
-      initial={initialPageAnimationsEnabled ? { opacity: 0, scale: 0.7 } : false}
+      initial={{ opacity: 0, scale: 0.84 }}
       animate={{ opacity: 1, scale: 1 }}
     >
       {!isImageIcon && <Iconify icon={icon} size={14} className={'text-[#831843]'} />}
@@ -198,16 +196,15 @@ function VideoOverlayIcon({ icon }) {
 }
 
 function Badge({ badge }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={true} mode="sync">
       {badge.visible && (
         <motion.div
           className={cn(
             'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
-          initial={initialPageAnimationsEnabled ? { scale: 0, opacity: 0 } : false}
+          initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={NAV_BADGE_SPRING}
@@ -379,9 +376,9 @@ const Item = memo(
       link,
       isActive,
       stackWidth,
-      initialPageAnimationsEnabled,
       isMobile,
     },
+
     ref
   ) {
     const [isHovered, setIsHovered] = useState(false);
@@ -410,26 +407,7 @@ const Item = memo(
     }, [link, ActionComponent]);
     const renderedActionNode = compact ? null : actionNode;
 
-    const cardProps = useMemo(() => {
-      const resolvedCardProps = getNavItemCardProps(
-        expanded,
-        position,
-        showBorder,
-        itemStyle.card,
-        itemStyle.scale,
-        cardWidth,
-        isMobile
-      );
 
-      if (!link.isSurface) {
-        return resolvedCardProps;
-      }
-
-      return {
-        ...resolvedCardProps,
-        className: cn(resolvedCardProps.className, 'cursor-default'),
-      };
-    }, [cardWidth, expanded, position, showBorder, itemStyle.card, itemStyle.scale, link.isSurface, isMobile]);
 
     useActionHeight(
       onActionHeightChange,
@@ -513,8 +491,15 @@ const Item = memo(
     return (
       <motion.div
         ref={ref}
-        {...cardProps}
-        initial={initialPageAnimationsEnabled ? cardProps.initial : false}
+        {...getNavItemCardProps(
+          expanded,
+          position,
+          showBorder,
+          itemStyle.card,
+          itemStyle.scale,
+          cardWidth,
+          isMobile
+        )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}

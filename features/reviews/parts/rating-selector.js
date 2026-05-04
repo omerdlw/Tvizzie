@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
 
 const STAR_COUNT = 5;
 
@@ -28,18 +27,12 @@ function getFillPercent(starIndex, activeValue) {
 
 function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, onSelectLeft, onSelectRight }) {
   const fillPercent = getFillPercent(starIndex, activeValue);
-  const isActive = fillPercent > 0;
-  const springConfig = { type: 'spring', stiffness: 500, damping: 25, mass: 0.6 };
 
   const clipId = `star-clip-${starIndex}`;
   const fillWidth = (fillPercent / 100) * 24;
 
   return (
-    <motion.div
-      className="relative h-10 w-10 sm:h-12 sm:w-12"
-      animate={{ scale: isActive ? 1 : 0.92 }}
-      transition={springConfig}
-    >
+    <div className="relative h-10 w-10 sm:h-12 sm:w-12">
       <svg viewBox="0 0 24 24" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
           <clipPath id={clipId}>
@@ -74,7 +67,7 @@ function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, o
         onFocus={onHoverRight}
         onClick={onSelectRight}
       />
-    </motion.div>
+    </div>
   );
 }
 

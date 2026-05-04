@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { NoiseTexture } from '@/ui/elements/noise-texture';
 
 import { useBackgroundActions, useBackgroundState } from './context';
@@ -115,7 +114,6 @@ function BackgroundGradients({ count, direction }) {
 }
 
 export function BackgroundOverlay() {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const {
     hasBackground,
     overlayOpacity,
@@ -217,11 +215,11 @@ export function BackgroundOverlay() {
   }
 
   return (
-    <AnimatePresence initial={false} mode="sync">
+    <AnimatePresence initial={true} mode="sync">
       {hasBackground && (
         <motion.div
           key={backgroundKey}
-          initial={initialPageAnimationsEnabled ? motionConfig.initial : false}
+          initial={motionConfig.initial}
           animate={{
             ...motionConfig.animate,
             transition: motionConfig.transition,

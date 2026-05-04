@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useClickOutside } from '@/core/hooks/use-click-outside';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
@@ -52,7 +51,7 @@ function getItemKey(link, index) {
   const namePart = String(link?.name || '').trim() || 'no-name';
   const typePart = String(link?.type || '').trim() || 'no-type';
 
-  return `${pathPart}::${namePart}::${typePart}::${index}`;
+  return `${pathPart}::${namePart}::${typePart}`;
 }
 
 function getIsItemActive(link, activeItem) {
@@ -104,9 +103,10 @@ function getBackdropAnimation(isVisible) {
   if (isVisible) {
     return {
       opacity: 1,
-      backdropFilter: 'blur(10px)',
+      backdropFilter: 'blur(12px)',
       display: 'block',
     };
+
   }
 
   return {
@@ -116,6 +116,7 @@ function getBackdropAnimation(isVisible) {
   };
 }
 
+
 // ─── Layout effect isomorphic shim ──────────────────────────────────────────
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -123,7 +124,6 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
 // ─── Main Nav component ──────────────────────────────────────────────────────
 
 export default function Nav() {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const {
     activeItemHasAction,
     activeItem,
@@ -374,7 +374,7 @@ export default function Nav() {
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
-        initial={initialPageAnimationsEnabled ? { opacity: 0, backdropFilter: 'blur(0px)' } : false}
+        initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
         animate={getBackdropAnimation(isBackdropVisible)}
         transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
@@ -389,6 +389,7 @@ export default function Nav() {
           animate={{ height: containerHeight }}
           transition={NAV_CONTAINER_SPRING}
         >
+
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {
               const position = getItemPosition(index);
@@ -443,7 +444,6 @@ export default function Nav() {
                 <Item
                   key={getItemKey(link, index)}
                   link={link}
-                  initialPageAnimationsEnabled={initialPageAnimationsEnabled}
                   expanded={expanded}
                   compact={compact && isTop && !isCompactPreviewActive}
                   position={position}

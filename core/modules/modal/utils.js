@@ -1,76 +1,69 @@
 import { MODAL_POSITIONS } from './config';
 
+const MODAL_SPRING_ENTER = Object.freeze({
+  type: 'spring',
+  stiffness: 280,
+  damping: 32,
+  mass: 1.1,
+});
+
+const MODAL_SPRING_EXIT = Object.freeze({
+  type: 'spring',
+  stiffness: 320,
+  damping: 38,
+  mass: 1,
+});
+
 const PANEL_OPACITY_ENTER_TRANSITION = Object.freeze({
-  duration: 0.28,
-  ease: [0, 0, 0.2, 1],
+  duration: 0.4,
+  ease: [0.19, 1, 0.22, 1],
 });
 
 const PANEL_OPACITY_EXIT_TRANSITION = Object.freeze({
-  duration: 0.22,
-  ease: [0.4, 0, 0.2, 1],
-});
-
-const CENTER_PANEL_ENTER_TRANSITION = Object.freeze({
-  type: 'tween',
-  duration: 0.5,
-  ease: [0.25, 0.46, 0.45, 0.94],
-});
-
-const CENTER_PANEL_EXIT_TRANSITION = Object.freeze({
-  type: 'tween',
-  duration: 0.2,
-  ease: [0.25, 0.46, 0.45, 0.94],
-});
-
-const EDGE_PANEL_ENTER_TRANSITION = Object.freeze({
-  type: 'tween',
-  duration: 0.5,
-  ease: [0.25, 0.46, 0.45, 0.94],
-});
-
-const EDGE_PANEL_EXIT_TRANSITION = Object.freeze({
-  type: 'tween',
-  duration: 0.45,
-  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.3,
+  ease: [0.19, 1, 0.22, 1],
 });
 
 const BACKDROP_TRANSITION = Object.freeze({
-  duration: 0.45,
-  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.6,
+  ease: [0.19, 1, 0.22, 1],
 });
 
 const BACKDROP_EXIT_TRANSITION = Object.freeze({
-  duration: 0.3,
-  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.4,
+  ease: [0.19, 1, 0.22, 1],
 });
 
 function createCenterVariant() {
   return {
-    hidden: { scale: 0.986, y: 12, opacity: 0 },
+    hidden: { scale: 0.96, y: 16, opacity: 0 },
     visible: {
       scale: 1,
       y: 0,
       opacity: 1,
       transition: {
         opacity: PANEL_OPACITY_ENTER_TRANSITION,
-        scale: CENTER_PANEL_ENTER_TRANSITION,
-        y: CENTER_PANEL_ENTER_TRANSITION,
+        scale: MODAL_SPRING_ENTER,
+        y: MODAL_SPRING_ENTER,
       },
     },
     exit: {
-      scale: 0.992,
-      y: 8,
+      scale: 0.98,
+      y: 12,
       opacity: 0,
       transition: {
         opacity: PANEL_OPACITY_EXIT_TRANSITION,
-        scale: CENTER_PANEL_EXIT_TRANSITION,
-        y: CENTER_PANEL_EXIT_TRANSITION,
+        scale: MODAL_SPRING_EXIT,
+        y: MODAL_SPRING_EXIT,
       },
     },
   };
 }
 
 function createDirectionalVariant(axis, hiddenValue) {
+  const isHorizontal = axis === 'x';
+  const exitValue = typeof hiddenValue === 'string' ? hiddenValue : hiddenValue * 0.8;
+
   return {
     hidden: { [axis]: hiddenValue, opacity: 0 },
     visible: {
@@ -78,15 +71,15 @@ function createDirectionalVariant(axis, hiddenValue) {
       opacity: 1,
       transition: {
         opacity: PANEL_OPACITY_ENTER_TRANSITION,
-        [axis]: EDGE_PANEL_ENTER_TRANSITION,
+        [axis]: MODAL_SPRING_ENTER,
       },
     },
     exit: {
-      [axis]: hiddenValue,
+      [axis]: exitValue,
       opacity: 0,
       transition: {
         opacity: PANEL_OPACITY_EXIT_TRANSITION,
-        [axis]: EDGE_PANEL_EXIT_TRANSITION,
+        [axis]: MODAL_SPRING_EXIT,
       },
     },
   };
@@ -125,3 +118,4 @@ export function getBackdropVariants() {
     },
   };
 }
+

@@ -1,4 +1,11 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import MoviePrimaryGridDivider from '@/features/movie/primary-grid-divider';
+import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
+import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
@@ -24,7 +31,7 @@ function SegmentTabs() {
 
 function CastCard() {
   return (
-    <div className="flex items-center gap-3 rounded bg-white/10 p-1 pr-4 backdrop-blur-xs">
+    <div className="flex items-center gap-3 rounded bg-white/5 p-0.5 pr-4 backdrop-blur-xs">
       <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
@@ -36,27 +43,21 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded bg-white/10 p-1 pr-2 backdrop-blur-xs">
+    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded bg-white/5 p-1 pr-2 backdrop-blur-xs">
       <SkeletonBlock className="size-8 shrink-0" radius="segmentedItem" />
       <TextLine width="w-3/5" className="h-3" />
     </div>
   );
 }
 
-function CarouselCard({ className = '', aspectClass = 'aspect-video', soft = false }) {
-  return (
-    <div className={`w-72 shrink-0 ${className}`}>
-      <SkeletonBlock className={`${aspectClass} w-full`} soft={soft} />
-    </div>
-  );
-}
-
-function LandscapeCarouselStrip() {
+function FeatureGalleryStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
-      <CarouselCard />
-      <CarouselCard />
-      <CarouselCard className="w-20" soft={true} />
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="movie-carousel-feature-card shrink-0">
+          <SkeletonBlock className="aspect-video w-full" soft={index > 2} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -169,7 +170,7 @@ function MovieCastSkeleton({ className = '' }) {
 function MovieReviewsSkeleton({ className = '' }) {
   return (
     <section className={`relative isolate z-0 flex w-full flex-col gap-0 overflow-hidden rounded ${className}`}>
-      <div className="media-reviews-header-plus p-5">
+      <div className="p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
           <div className="flex min-w-0 items-center gap-3">
             <SkeletonCircle className="size-8" soft={true} />
@@ -182,12 +183,11 @@ function MovieReviewsSkeleton({ className = '' }) {
           </div>
         </div>
       </div>
-
-      <div className="grid-diamonds-top flex flex-col border-t border-white/10">
+      <div className="flex flex-col">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className={`relative p-5 ${index < 3 ? 'grid-diamonds-bottom border-b border-white/10' : ''}`}
+            className="relative p-5"
           >
             <div className="flex min-w-0 items-start gap-3 sm:gap-4">
               <SkeletonBlock className="size-14 shrink-0" radius="field" />
@@ -222,18 +222,12 @@ function MovieReviewsSkeleton({ className = '' }) {
   );
 }
 
-function MovieGridDivider({ inset = false }) {
-  return (
-    <div className={`movie-detail-grid-divider${inset ? ' movie-detail-grid-divider-inset' : ''}`} aria-hidden="true" />
-  );
-}
-
 function MovieSectionContentSkeleton({ variant = 'gallery' }) {
   if (variant === 'images' || variant === 'videos') {
     return (
       <section className="movie-detail-section-content w-full">
         <SegmentTabs />
-        <LandscapeCarouselStrip />
+        <FeatureGalleryStrip />
       </section>
     );
   }
@@ -254,19 +248,18 @@ function MovieSectionContentSkeleton({ variant = 'gallery' }) {
   return (
     <section className="movie-detail-section-content w-full">
       <Heading width="w-20" />
-      <LandscapeCarouselStrip />
+      <FeatureGalleryStrip />
     </section>
   );
 }
 
-export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
+export function MovieSectionSkeleton({ className = '', variant = 'gallery', hideDivider = false }) {
   if (variant === 'reviews') {
     return <MovieReviewsSkeleton className={className} />;
   }
 
   return (
     <section className={`movie-detail-grid-subsection ${className}`}>
-      <MovieGridDivider inset={true} />
       <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">
         <MovieSectionContentSkeleton variant={variant} />
       </div>
@@ -277,7 +270,10 @@ export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
 function SidebarSkeleton() {
   return (
     <div className="flex h-full flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7">
+      <div
+        data-movie-sidebar-primary="true"
+        className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
+      >
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
@@ -299,7 +295,10 @@ function SidebarSkeleton() {
 function MovieReviewsSidebarSkeleton() {
   return (
     <div className="flex h-full flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7">
+      <div
+        data-movie-sidebar-primary="true"
+        className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
+      >
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
@@ -321,31 +320,58 @@ function MovieReviewsHeroSkeleton() {
 }
 
 function MovieContentSkeleton() {
+  const [stageHeight, setStageHeight] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateLayout = () => {
+      const sidebarPrimary = document.querySelector('[data-movie-sidebar-primary="true"]');
+      if (window.innerWidth >= 1024 && sidebarPrimary) {
+        setStageHeight(sidebarPrimary.getBoundingClientRect().height);
+      } else {
+        setStageHeight(0);
+      }
+    };
+
+    updateLayout();
+    const resizeObserver = new ResizeObserver(updateLayout);
+    const sidebarPrimary = document.querySelector('[data-movie-sidebar-primary="true"]');
+    if (sidebarPrimary) resizeObserver.observe(sidebarPrimary);
+    window.addEventListener('resize', updateLayout);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateLayout);
+    };
+  }, []);
+
   return (
     <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-      <div
-        className={`movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
-      >
+      <MovieGridFrame className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}>
         <div className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0">
-          <div className="movie-detail-grid-sidebar w-full shrink-0">
+          <div className="movie-detail-grid-sidebar relative w-full shrink-0">
             <div className="h-full lg:sticky lg:top-0">
               <SidebarSkeleton />
             </div>
           </div>
 
-          <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
+          <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
             <div className="flex w-full flex-col">
-              <div className="movie-detail-primary-stage flex flex-col py-7">
-                <div className="movie-detail-primary-stage-shell flex flex-1 flex-col justify-between gap-8">
+              <div
+                className="movie-detail-primary-stage flex flex-col overflow-hidden py-7"
+                style={stageHeight > 0 ? { height: `${stageHeight}px` } : undefined}
+              >
+                <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
                   <MovieHeroSkeleton />
-                  <div className="movie-detail-primary-cast-block">
+                  <div className="movie-detail-primary-cast-block shrink-0">
                     <div className="movie-detail-shell-inset">
                       <MovieCastSkeleton />
                     </div>
                   </div>
                 </div>
               </div>
-              <MovieSectionSkeleton variant="gallery" />
+              <MovieSectionSkeleton variant="gallery" hideDivider={true} />
               <MovieSectionSkeleton variant="images" />
             </div>
           </div>
@@ -356,12 +382,13 @@ function MovieContentSkeleton() {
         <MovieSectionSkeleton variant="recommendations" />
 
         <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
-          <MovieGridDivider />
           <div className="movie-detail-grid-subsection-content">
             <MovieReviewsSkeleton />
           </div>
         </section>
-      </div>
+
+        <NavHeightSpacer className="w-full" />
+      </MovieGridFrame>
     </PageGradientShell>
   );
 }
@@ -374,24 +401,26 @@ export function MovieReviewsPageSkeleton() {
       contentClassName="h-screen w-screen !block !p-0 overflow-y-auto"
     >
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-        <div
-          className={`movie-detail-grid-frame overflow-anchor-none relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
+        <MovieGridFrame
+          className={`overflow-anchor-none mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
         >
           <section className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout movie-reviews-primary-layout items-stretch border-t-0">
-            <div className="movie-detail-grid-sidebar w-full shrink-0">
+            <div className="movie-detail-grid-sidebar relative w-full shrink-0">
               <div className="h-full lg:sticky lg:top-0">
                 <MovieReviewsSidebarSkeleton />
               </div>
             </div>
 
-            <div className="movie-detail-grid-main flex w-full min-w-0 flex-col">
+            <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
               <div className="flex w-full flex-col py-7 sm:py-8 lg:py-12">
                 <MovieReviewsHeroSkeleton />
                 <MovieReviewsSkeleton className="movie-reviews-panel mt-1 md:mt-2" />
               </div>
             </div>
           </section>
-        </div>
+
+          <NavHeightSpacer className="w-full" />
+        </MovieGridFrame>
       </PageGradientShell>
     </FullscreenState>
   );

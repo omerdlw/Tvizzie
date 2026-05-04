@@ -51,6 +51,11 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
     }
 
     const rootHeight = rootNode.clientHeight;
+    
+    if (rootHeight <= 0) {
+      return;
+    }
+
     const rootStyle = window.getComputedStyle(rootNode);
     const rowGap = Number.parseFloat(rootStyle.rowGap) || 0;
     const maxLinesWithoutButton = getLineClamp(rootHeight, 0, textNode);
@@ -75,7 +80,10 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
     const fullHeight = textNode.scrollHeight;
     const computedStyle = window.getComputedStyle(textNode);
     const lineHeight = Number.parseFloat(computedStyle.lineHeight);
-    const nextCanExpand = Number.isFinite(lineHeight) && fullHeight > rootHeight + lineHeight / 2;
+    
+    // Check if it really overflows the container
+    const nextCanExpand = Number.isFinite(lineHeight) && fullHeight > rootHeight + 2;
+    
     const reservedHeight = nextCanExpand
       ? getReadMoreReserveHeight({
           buttonNode: buttonRef.current,
@@ -83,6 +91,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
           rowGap,
         })
       : 0;
+      
     const maxLines = getLineClamp(rootHeight, reservedHeight, textNode);
 
     textNode.style.WebkitLineClamp = previousWebkitLineClamp;
@@ -102,7 +111,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
         maxLines: nextMaxLines,
       };
     });
-  }, [layoutState.canExpand]);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     measureOverflow();
@@ -138,7 +147,11 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
 
     const resizeObserver = new ResizeObserver(() => measureOverflow());
     resizeObserver.observe(buttonNode);
-    measureOverflow();
+    measureObserver();
+
+    function measureObserver() {
+       measureOverflow();
+    }
 
     return () => {
       resizeObserver.disconnect();

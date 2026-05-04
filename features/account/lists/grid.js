@@ -9,7 +9,6 @@ import AccountSectionLayout from '../shared/section-wrapper';
 import AccountPagination from '../shared/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
 import AccountInlineSectionState from '../shared/section-state';
-import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
@@ -85,12 +84,9 @@ export default function AccountPaginatedListGrid({
       ) : (
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-            {visibleLists.map((list, index) => (
-              <AccountMotionItem
+            {visibleLists.map((list) => (
+              <div
                 key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
-                layout
-                index={index}
-                preset="listCard"
               >
                 <AccountListCard
                   layout="grid"
@@ -98,15 +94,13 @@ export default function AccountPaginatedListGrid({
                   ownerUsername={ownerUsername}
                   renderActions={renderActions}
                 />
-              </AccountMotionItem>
+              </div>
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <AccountMotionItem
+            <div
               key={`list-grid-pagination-${activePage}-${totalPages}`}
-              animateOnView={false}
-              preset="control"
             >
               <AccountPagination
                 className="w-full"
@@ -115,7 +109,7 @@ export default function AccountPaginatedListGrid({
                 totalPages={totalPages}
                 getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
               />
-            </AccountMotionItem>
+            </div>
           ) : null}
         </>
       )}
