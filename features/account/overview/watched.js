@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import AccountInlineSectionState from '../shared/section-state';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
@@ -95,10 +95,7 @@ export default function AccountWatchedOverview({
       {cards.length > 0 ? (
         <div className="account-overview-media-grid account-overview-media-grid-standard">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div
-              key={`${card.id}-${index}`}
-              className="flex h-full min-w-0 flex-col"
-            >
+            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
               <MediaCard
                 href={card.href}
                 className="w-full md:w-full lg:w-full"

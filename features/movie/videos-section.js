@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
@@ -52,54 +51,19 @@ function VideosSectionContent({ videos }) {
   return (
     <section className="movie-detail-section-content w-full">
       <div>
-        <SegmentedControl
-          classNames={{
-            track: ' w-auto',
-            wrapper: 'p-0.5 h-7 ',
-            button: '',
-            indicator: '',
-          }}
-          items={items}
-          value={activeType}
-          onChange={setActiveType}
-        />
+        <SegmentedControl items={items} value={activeType} onChange={setActiveType} />
       </div>
 
       <div className="relative">
         <div key={`movie-videos-${activeType || 'all'}`}>
           <Carousel gap="gap-3">
-            {filteredVideos.map((video) => {
-              return (
-                <div key={video.id}>
-                  <MediaCard
-                    className="w-72"
-                    aspectClass="aspect-video"
-                    imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
-                    imageAlt={video.name}
-                    imageSizes="288px"
-                    imagePreset="grid"
-                    fallbackIcon="solar:video-library-bold"
-                    fallbackIconSize={24}
-                    overlay={
-                      <>
-                        <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
-                          <div className="center size-8 rounded-xs border border-white/20 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 hover:scale-[1.08]">
-                            <Icon icon="solar:play-bold" size={16} />
-                          </div>
-                        </div>
-
-                        <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
-                          <span className="line-clamp-1 text-xs font-bold tracking-tight text-white/90 uppercase drop-shadow-sm transition-colors group-hover:text-white">
-                            {video.name}
-                          </span>
-                        </div>
-                      </>
-                    }
-                    onClick={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
-                  />
-                </div>
-              );
-            })}
+            {filteredVideos.map((video) => (
+              <VideoCard
+                key={video.id}
+                video={video}
+                onPreview={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
+              />
+            ))}
           </Carousel>
         </div>
       </div>
@@ -108,9 +72,40 @@ function VideosSectionContent({ videos }) {
 }
 
 export default function VideosSection({ videos }) {
+  return <VideosSectionContent videos={videos} />;
+}
+
+function VideoCard({ onPreview, video }) {
   return (
-    <div className="w-full">
-      <VideosSectionContent videos={videos} />
-    </div>
+    <MediaCard
+      className="w-72"
+      aspectClass="aspect-video"
+      imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
+      imageAlt={video.name}
+      imageSizes="288px"
+      imagePreset="grid"
+      fallbackIcon="solar:video-library-bold"
+      fallbackIconSize={24}
+      overlay={<VideoOverlay title={video.name} />}
+      onClick={onPreview}
+    />
+  );
+}
+
+function VideoOverlay({ title }) {
+  return (
+    <>
+      <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
+        <div className="center size-8  border border-white/20 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 hover:scale-[1.08]">
+          <Icon icon="solar:play-bold" size={16} />
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
+        <span className="line-clamp-1 text-xs font-bold tracking-tight uppercase drop-shadow-sm transition-colors group-hover:text-white">
+          {title}
+        </span>
+      </div>
+    </>
   );
 }

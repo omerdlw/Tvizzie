@@ -1,29 +1,29 @@
 const NAV_CARD_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 260,
-  damping: 38,
-  mass: 0.85,
+  stiffness: 300,
+  damping: 32,
+  mass: 0.8,
 });
 
 
 export const NAV_DEFAULT_TRANSITION = Object.freeze({
   ease: [0.22, 1, 0.36, 1],
-  duration: 0.35,
+  duration: 0.28,
   type: 'tween',
 });
 
 export const NAV_CONTAINER_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 280,
-  damping: 36,
-  mass: 0.8,
+  stiffness: 320,
+  damping: 30,
+  mass: 0.75,
 });
 
 export const NAV_CARD_WIDTH_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
-  damping: 34,
-  mass: 0.8,
+  stiffness: 350,
+  damping: 28,
+  mass: 0.75,
 });
 
 
@@ -49,22 +49,22 @@ export const NAV_BADGE_SPRING = Object.freeze({
 });
 
 export const NAV_CONTENT_TRANSITION = Object.freeze({
-  duration: 0.25,
+  duration: 0.2,
   ease: [0.22, 1, 0.36, 1],
 });
 
 export const NAV_CARD_OPACITY_TRANSITION = Object.freeze({
-  duration: 0.28,
+  duration: 0.22,
   ease: [0.22, 1, 0.36, 1],
 });
 
 export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
-  duration: 0.3,
+  duration: 0.24,
   ease: [0.22, 1, 0.36, 1],
 });
 
 export const NAV_BACKDROP_TRANSITION = Object.freeze({
-  duration: 0.35,
+  duration: 0.28,
   ease: [0.32, 0.72, 0, 1],
 });
 

@@ -23,6 +23,7 @@ function parsePixelValue(value) {
 
 export default function SegmentedControl({
   classNames = {},
+  equalItems = false,
   getLabel = defaultGetLabel,
   getKey = defaultGetKey,
   items = [],
@@ -57,7 +58,8 @@ export default function SegmentedControl({
 
     const updateIndicatorFrame = () => {
       const wrapperStyle = window.getComputedStyle(wrapper);
-      const shouldUseEqualItemFrame = wrapperStyle.getPropertyValue('--segmented-control-equal-items').trim() === '1';
+      const shouldUseEqualItemFrame =
+        equalItems || wrapperStyle.getPropertyValue('--segmented-control-equal-items').trim() === '1';
       let nextX = activeButton.offsetLeft;
       let nextY = activeButton.offsetTop;
       let nextWidth = activeButton.offsetWidth;
@@ -76,11 +78,13 @@ export default function SegmentedControl({
         const gap = parsePixelValue(wrapperStyle.columnGap || wrapperStyle.gap);
         const contentWidth = Math.max(0, wrapper.clientWidth - paddingLeft - paddingRight);
         const contentHeight = Math.max(0, wrapper.clientHeight - paddingTop - paddingBottom);
-        const itemWidth = Math.max(0, (contentWidth - gap * (itemCount - 1)) / itemCount);
+        const availableWidth = Math.max(0, contentWidth - gap * (itemCount - 1));
+        const start = paddingLeft + (availableWidth * activeIndex) / itemCount + gap * activeIndex;
+        const end = paddingLeft + (availableWidth * (activeIndex + 1)) / itemCount + gap * activeIndex;
 
-        nextX = paddingLeft + activeIndex * (itemWidth + gap);
+        nextX = start;
         nextY = paddingTop;
-        nextWidth = itemWidth;
+        nextWidth = Math.max(0, end - start);
         nextHeight = contentHeight;
       }
 
@@ -121,19 +125,19 @@ export default function SegmentedControl({
   }
 
   return (
-    <div className="flex items-center">
-      <div className={cn('hide-scrollbar w-full overflow-x-auto', classNames.track)}>
+    <div className="flex w-auto items-center">
+      <div className={cn('hide-scrollbar w-auto overflow-x-auto', classNames.track)}>
         <div
           ref={wrapperRef}
           className={cn(
-            'segmented-control-wrapper relative flex min-w-full items-stretch gap-1 rounded',
-            !hasCustomWrapperPadding && 'p-1',
+            'relative flex h-7 w-auto min-w-full items-stretch gap-1 border border-white/5 bg-white/5',
+            !hasCustomWrapperPadding && 'p-0.5',
             classNames.wrapper
           )}
         >
           <span
             aria-hidden="true"
-            className={cn('segmented-control-indicator pointer-events-none absolute top-0 left-0', classNames.indicator)}
+            className={cn('pointer-events-none absolute top-0 left-0 bg-white/10', classNames.indicator)}
             style={
               indicatorFrame.ready
                 ? {
@@ -166,10 +170,9 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'segmented-control-button relative isolate z-10 cursor-pointer appearance-none border-0 bg-transparent px-3 py-1 text-[11px] font-medium leading-none whitespace-nowrap transition-colors duration-200',
-                  isActive
-                    ? classNames.active || 'segmented-control-button-active'
-                    : classNames.inactive || 'segmented-control-button-inactive',
+                  'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap transition-colors duration-200',
+                  equalItems && 'min-w-0 flex-1 basis-0',
+                  isActive ? classNames.active || 'text-white' : classNames.inactive || 'text-white/70',
                   classNames.button
                 )}
               >

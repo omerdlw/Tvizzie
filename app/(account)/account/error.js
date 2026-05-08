@@ -1,23 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
-
-import { FullscreenState } from '@/ui/states/fullscreen-state';
-import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
-import { getErrorReporter } from '@/core/modules/error-boundary/reporter';
+import RouteErrorState from '@/ui/states/route-error';
 
 export default function AccountError({ error, reset }) {
-  useEffect(() => {
-    getErrorReporter().captureError(error, {
-      source: 'Nextjs-Account-Error-File',
-    });
-
-    globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-      message: error?.message || 'An error occurred on the account page',
-      resetError: reset,
-      error,
-    });
-  }, [error, reset]);
-
-  return <FullscreenState />;
+  return (
+    <RouteErrorState
+      error={error}
+      fallbackMessage="An error occurred on the account page"
+      reset={reset}
+      source="Nextjs-Account-Error-File"
+    />
+  );
 }

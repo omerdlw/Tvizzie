@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <path d="M0 0.5H48" stroke="currentColor" stroke-width="1" />
+  <path d="M0 24.5H48" stroke="currentColor" stroke-width="1" />
+  <path d="M0.5 0V48" stroke="currentColor" stroke-width="1" />
+  <path d="M24.5 0V48" stroke="currentColor" stroke-width="1" />
+</svg>

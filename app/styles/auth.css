@@ -1,0 +1,110 @@
+@layer utilities {
+  .auth-detail-viewport {
+    --auth-detail-viewport-block-pad: 1rem;
+    display: flex;
+    height: 100dvh;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .auth-detail-grid-frame {
+    --auth-detail-grid-line-width: 1px;
+    --auth-detail-grid-line-center: calc(var(--auth-detail-grid-line-width) / 2);
+    --auth-detail-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    position: relative;
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    width: min(100%, 46rem);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-detail-grid-frame::before,
+  .auth-detail-grid-frame::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--auth-detail-viewport-block-pad) * -1);
+    bottom: calc(var(--auth-detail-viewport-block-pad) * -1);
+    width: var(--auth-detail-grid-line-width);
+    pointer-events: none;
+    background-color: var(--auth-detail-grid-line-color);
+    display: none;
+  }
+
+  .auth-detail-grid-frame::before {
+    left: 0;
+    transform: translateX(-50%);
+  }
+
+  .auth-detail-grid-frame::after {
+    right: 0;
+    transform: translateX(50%);
+  }
+
+  .auth-detail-panel {
+    position: relative;
+    width: 100%;
+    padding-block: 2rem;
+    padding-inline: 1rem;
+  }
+
+  .auth-detail-panel::before,
+  .auth-detail-panel::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 100vw;
+    height: var(--auth-detail-grid-line-width);
+    pointer-events: none;
+    background-color: var(--auth-detail-grid-line-color);
+    transform: translateX(-50%);
+  }
+
+  .auth-detail-panel::before {
+    top: 0;
+  }
+
+  .auth-detail-panel::after {
+    bottom: 0;
+  }
+
+  .auth-detail-form-surface {
+    width: min(100%, 36rem);
+    margin-inline: auto;
+  }
+
+  .auth-detail-header {
+    margin-block-end: 1.5rem;
+  }
+
+  .auth-detail-logo {
+    margin-block-end: 1rem;
+    object-fit: contain;
+  }
+
+  @media (min-width: 640px) {
+    .auth-detail-grid-frame::before,
+    .auth-detail-grid-frame::after {
+      display: block;
+    }
+
+    .auth-detail-viewport {
+      --auth-detail-viewport-block-pad: 1.5rem;
+      align-items: center;
+    }
+
+    .auth-detail-panel {
+      padding-block: 4rem;
+    }
+
+    .auth-detail-header {
+      margin-block-end: 2rem;
+    }
+
+    .auth-detail-logo {
+      margin-block-end: 1.5rem;
+    }
+  }
+}

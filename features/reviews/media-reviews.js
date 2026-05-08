@@ -51,8 +51,10 @@ export default function MediaReviews({
     handleDelete,
     handleLike,
     handleSignInRequest,
+    isCurrentMediaLiked,
     isLoading,
     loadError,
+    mediaKey,
     navHeight,
     ownReview,
     applyOptimisticReviewUpdate,
@@ -207,6 +209,13 @@ export default function MediaReviews({
   const shouldShowComposer = !ownReview || !hasReviewText(ownReview);
 
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
+  const likedMediaKeys = useMemo(() => {
+    if (!isCurrentMediaLiked || !mediaKey) {
+      return null;
+    }
+
+    return new Set([mediaKey]);
+  }, [isCurrentMediaLiked, mediaKey]);
 
   return (
     <section
@@ -238,11 +247,11 @@ export default function MediaReviews({
             options={REVIEW_SORT_OPTIONS}
             classNames={{
               trigger:
-                'media-review-sort-trigger inline-flex h-10 justify-between rounded border px-3 text-xs font-semibold tracking-wide uppercase',
-              menu: 'media-review-sort-menu overflow-hidden rounded p-1 shadow-lg',
+                'media-review-sort-trigger inline-flex h-10 justify-between  border px-3 text-xs font-semibold tracking-wide uppercase',
+              menu: 'media-review-sort-menu overflow-hidden  p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
               option:
-                'media-review-sort-option cursor-pointer rounded-xs px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
+                'media-review-sort-option cursor-pointer  px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
               optionActive: 'media-review-sort-option-active',
               indicator: 'ml-auto text-white',
               icon: 'text-white-muted',
@@ -257,6 +266,7 @@ export default function MediaReviews({
           currentUserId={currentUserId}
           emptyMessage="No written reviews yet"
           isLoading={isLoading}
+          likedMediaKeys={likedMediaKeys}
           loadError={loadError}
           onDeleteRequest={handleDeleteRequest}
           onEdit={handleEditReview}

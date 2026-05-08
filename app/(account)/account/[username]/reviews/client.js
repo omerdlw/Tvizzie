@@ -16,7 +16,7 @@ import {
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
 import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ReviewsView from './view';
 
 function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionState }) {

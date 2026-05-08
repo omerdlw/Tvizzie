@@ -1,0 +1,503 @@
+@layer utilities {
+  .movie-detail-grid-frame {
+    --movie-detail-grid-frame-width: 72rem;
+    --movie-detail-grid-inline-pad: 1rem;
+    --movie-detail-grid-band-pad: 1rem;
+    --movie-detail-grid-stack-gap: 1.5rem;
+    --movie-detail-reading-measure: 60ch;
+    --movie-detail-meta-cluster-width: 30rem;
+    --movie-detail-section-content-gap: 0.75rem;
+    --movie-detail-grid-sidebar-width: 424px;
+    --movie-detail-divider-height: 1rem;
+    --movie-detail-divider-line-width: 1px;
+    --movie-detail-side-grid-opacity-start: 40%;
+    --movie-detail-side-grid-opacity-end: 25%;
+    --movie-detail-divider-cap-offset: calc(
+      (var(--movie-detail-divider-height) + var(--movie-detail-divider-line-width)) / -2
+    );
+    --grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    --grid-line-draw-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+  }
+
+  .movie-detail-grid-frame {
+    position: relative;
+  }
+
+  .movie-detail-grid-frame::before,
+  .movie-detail-grid-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100vw;
+    background-color: var(--grid-line-color);
+    mask-image: url('/svgs/square-grid.svg');
+    -webkit-mask-image: url('/svgs/square-grid.svg');
+    mask-size: 48px 48px;
+    -webkit-mask-size: 48px 48px;
+    mask-repeat: repeat;
+    -webkit-mask-repeat: repeat;
+    opacity: var(--movie-detail-side-grid-opacity-start);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .movie-detail-grid-frame::before,
+    .movie-detail-grid-frame::after {
+      animation-name: movie-detail-side-grid-fade;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes movie-detail-side-grid-fade {
+    from {
+      opacity: var(--movie-detail-side-grid-opacity-start);
+    }
+
+    to {
+      opacity: var(--movie-detail-side-grid-opacity-end);
+    }
+  }
+
+  .movie-detail-grid-frame::before {
+    right: 100%;
+    mask-position: right 13px top 12px;
+    -webkit-mask-position: right 13px top 12px;
+  }
+
+  .movie-detail-grid-frame::after {
+    left: 100%;
+    mask-position: left 12px top 12px;
+    -webkit-mask-position: left 12px top 12px;
+  }
+
+  @media (min-width: 640px) {
+    .movie-detail-grid-frame {
+      --movie-detail-grid-inline-pad: 1.5rem;
+      --movie-detail-grid-band-pad: 1.5rem;
+      --movie-detail-meta-cluster-width: 34rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .movie-detail-grid-frame {
+      --movie-detail-grid-inline-pad: 2rem;
+      --movie-detail-grid-band-pad: 2rem;
+      --movie-detail-meta-cluster-width: 38rem;
+    }
+  }
+
+  .movie-detail-grid-frame > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .movie-detail-grid-frame > .movie-detail-grid-frame-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    width: var(--movie-detail-divider-line-width);
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .movie-detail-grid-frame > .movie-detail-grid-frame-line {
+      display: block;
+    }
+  }
+
+  .movie-detail-grid-frame-line-left {
+    left: 0;
+  }
+
+  .movie-detail-grid-frame-line-right {
+    right: 0;
+  }
+
+  .movie-detail-grid-subsection {
+    position: relative;
+    padding-block: var(--movie-detail-grid-band-pad);
+  }
+
+  .movie-detail-grid-reviews {
+    padding-block: 0;
+    border-block-end: 0 !important;
+  }
+
+  .movie-detail-grid-primary {
+    border-block-start: 0 !important;
+  }
+
+  .movie-detail-grid-primary-layout {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .movie-reviews-primary-layout {
+    min-height: 100dvh;
+  }
+
+  .movie-reviews-sidebar-actions {
+    --movie-reviews-sidebar-actions-inset: var(--movie-detail-grid-inline-pad);
+    margin-inline: calc(var(--movie-reviews-sidebar-actions-inset) * -1);
+    padding-inline: var(--movie-reviews-sidebar-actions-inset);
+    padding-block-end: 1.75rem;
+    position: relative;
+  }
+
+  .movie-reviews-sidebar-actions::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    inset-inline: var(--movie-detail-divider-line-width);
+    height: 1px;
+    background-color: var(--grid-line-color);
+    z-index: 2;
+  }
+
+  .movie-reviews-panel {
+    --movie-reviews-panel-inset: var(--movie-detail-grid-inline-pad);
+    width: 100%;
+    position: relative;
+  }
+
+  .movie-reviews-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline: var(--movie-detail-divider-line-width);
+    height: 1px;
+    background-color: var(--grid-line-color);
+    z-index: 2;
+  }
+
+  .movie-reviews-panel .media-review-sort-panel,
+  .movie-reviews-panel article {
+    padding-inline: var(--movie-reviews-panel-inset);
+  }
+
+  [data-community-reviews='true'] .media-review-list-item-divider {
+    border-bottom: 0;
+  }
+
+  [data-community-reviews='true'] .media-review-list-top-divider {
+    position: relative;
+    border-top: 0;
+  }
+
+  [data-community-reviews='true'] .media-review-list-top-divider::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline: var(--movie-detail-divider-line-width);
+    height: 1px;
+    background-color: var(--grid-line-color);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  [data-community-reviews='true'] .media-review-list-item-divider::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    inset-inline: var(--movie-detail-divider-line-width);
+    height: 1px;
+    background-color: var(--grid-line-color);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .movie-detail-shell-inset {
+    padding-inline: var(--movie-detail-grid-inline-pad);
+  }
+
+  .media-detail-poster-shell {
+    padding-inline: var(--movie-detail-grid-inline-pad);
+    padding-block: var(--movie-detail-grid-inline-pad);
+  }
+
+  @media (min-width: 1024px) {
+    .media-detail-poster-shell {
+      padding-inline: 1.75rem;
+      padding-block: 1.75rem;
+    }
+
+    .movie-detail-shell-inset-compact {
+      padding-inline: 1.75rem;
+    }
+
+    .movie-reviews-sidebar-actions {
+      --movie-reviews-sidebar-actions-inset: 1.75rem;
+    }
+
+    .movie-reviews-panel {
+      --movie-reviews-panel-inset: var(--movie-detail-grid-inline-pad);
+    }
+  }
+
+  .movie-detail-section-band {
+    padding-block: var(--movie-detail-grid-band-pad);
+  }
+
+  .movie-detail-grid-main {
+    padding-block-end: 0;
+  }
+
+  .movie-detail-section-stack {
+    gap: var(--movie-detail-grid-stack-gap);
+  }
+
+  .movie-detail-reading-measure {
+    max-width: var(--movie-detail-reading-measure);
+  }
+
+  .movie-detail-meta-cluster {
+    width: min(100%, var(--movie-detail-meta-cluster-width));
+  }
+
+  .movie-detail-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--movie-detail-section-content-gap);
+  }
+
+  .movie-detail-primary-cast-block {
+    position: relative;
+    padding-block-start: var(--movie-detail-grid-band-pad);
+  }
+
+  .movie-detail-grid-cast-line {
+    position: absolute;
+    inset-inline: var(--movie-detail-divider-line-width);
+    top: 0;
+    height: var(--movie-detail-divider-line-width);
+    background-color: var(--grid-line-color);
+  }
+
+  .movie-detail-grid-sidebar-line {
+    position: absolute;
+    z-index: 3;
+  }
+
+  .movie-detail-grid-sidebar-line-mobile {
+    inset-inline: var(--movie-detail-divider-line-width);
+    bottom: 0;
+    height: var(--movie-detail-divider-line-width);
+    background-color: var(--grid-line-color);
+  }
+
+  .movie-detail-grid-sidebar-line-desktop {
+    display: none;
+  }
+
+  .movie-carousel-feature-card {
+    width: min(18rem, calc(100vw - 4.5rem));
+  }
+
+  .movie-carousel-logo-card {
+    width: min(13rem, calc(100vw - 5rem));
+  }
+
+  .movie-carousel-poster-card,
+  .movie-carousel-recommendation-item {
+    width: 9rem;
+  }
+
+  @media (min-width: 640px) {
+    .movie-carousel-feature-card {
+      width: calc((100% - 1.5rem) / 3);
+      min-width: 18rem;
+    }
+
+    .movie-carousel-logo-card,
+    .movie-carousel-recommendation-item {
+      width: calc((100% - 1.5rem) / 3);
+      min-width: 13rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .movie-carousel-feature-card {
+      width: calc((100% - 2.25rem) / 4);
+      min-width: 18rem;
+    }
+
+    .movie-carousel-recommendation-item {
+      width: calc((100% - 2.25rem) / 4);
+      min-width: 9rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .movie-carousel-recommendation-item {
+      width: calc((100% - 3.75rem) / 6);
+      min-width: 0;
+    }
+  }
+
+  .movie-detail-grid-subsection-content {
+    padding-block-start: var(--movie-detail-divider-height);
+  }
+
+  .movie-detail-grid-divider {
+    position: absolute;
+    inset-inline: var(--movie-detail-divider-line-width);
+    top: 0;
+    display: block;
+    flex: none;
+    height: var(--movie-detail-divider-height);
+    isolation: isolate;
+    pointer-events: none;
+    background-color: var(--white);
+    z-index: 10;
+  }
+
+  .movie-detail-grid-divider::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset-block: 0;
+    inset-inline: 0;
+    background-image:
+      linear-gradient(var(--grid-line-color), var(--grid-line-color)),
+      linear-gradient(var(--grid-line-color), var(--grid-line-color));
+    background-position: top, bottom;
+    background-repeat: no-repeat;
+    background-size:
+      100% var(--movie-detail-divider-line-width),
+      100% var(--movie-detail-divider-line-width);
+  }
+
+  .movie-detail-grid-divider::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block: var(--movie-detail-divider-line-width);
+    inset-inline: 0;
+    background-color: var(--grid-line-color);
+    mask-image: url('/svgs/line-grid.svg');
+    mask-position: 50%;
+    mask-size: auto 100%;
+    mask-repeat: repeat-x;
+  }
+
+  .movie-detail-grid-divider-animated::before,
+  .movie-detail-grid-divider-animated::after {
+    content: none;
+  }
+
+  .movie-detail-grid-divider-line {
+    position: absolute;
+    inset-inline: 0;
+    z-index: 1;
+    height: var(--movie-detail-divider-line-width);
+  }
+
+  .movie-detail-grid-divider-line-top {
+    top: 0;
+  }
+
+  .movie-detail-grid-divider-line-bottom {
+    bottom: 0;
+  }
+
+  .movie-detail-grid-divider-pattern {
+    position: absolute;
+    z-index: 0;
+    inset-block: var(--movie-detail-divider-line-width);
+    inset-inline: 0;
+    mask-image: url('/svgs/line-grid.svg');
+    mask-position: 50%;
+    mask-size: auto 100%;
+    mask-repeat: repeat-x;
+  }
+
+  .movie-detail-grid-divider-startcap,
+  .movie-detail-grid-divider-endcap {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: var(--movie-detail-divider-height);
+    height: var(--movie-detail-divider-height);
+    transform: translateY(-50%);
+  }
+
+  .movie-detail-grid-divider-startcap {
+    left: var(--movie-detail-divider-cap-offset);
+  }
+
+  .movie-detail-grid-divider-endcap {
+    right: var(--movie-detail-divider-cap-offset);
+  }
+
+  .movie-detail-grid-divider-inset {
+    inset-inline: var(--movie-detail-divider-line-width);
+  }
+
+  .movie-detail-primary-grid-divider {
+    inset-inline: var(--movie-detail-divider-line-width);
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .movie-detail-primary-grid-divider {
+      display: block;
+    }
+
+    .movie-detail-grid-sidebar-line-mobile {
+      display: none;
+    }
+
+    .movie-detail-grid-sidebar-line-desktop {
+      top: 0;
+      left: 0;
+      bottom: 0;
+      display: block;
+      width: var(--movie-detail-divider-line-width);
+    }
+
+    .movie-detail-grid-primary-layout {
+      grid-template-columns: var(--movie-detail-grid-sidebar-width) minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .movie-detail-grid-frame::before,
+    .movie-detail-grid-frame::after {
+      mask-size: 48px 48px;
+      -webkit-mask-size: 48px 48px;
+    }
+  }
+
+  .person-detail-grid-primary {
+    display: grid;
+    width: 100%;
+    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr);
+    border-block-start: 0 !important;
+  }
+
+  .person-detail-plain-section {
+    border-block-start: 0 !important;
+  }
+
+  .person-detail-grid-divider-plain {
+    background-color: transparent;
+  }
+
+  .person-gallery-card {
+    width: min(14rem, calc(100vw - 4.5rem));
+  }
+
+  @media (min-width: 1024px) {
+    .person-detail-grid-primary {
+      grid-template-columns: var(--movie-detail-grid-sidebar-width) minmax(0, 1fr);
+    }
+  }
+}

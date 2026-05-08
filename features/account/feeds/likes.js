@@ -47,7 +47,7 @@ function parseLikesMediaFilters(search) {
 function ReorderableListItem({ item, renderEditAction }) {
   return (
     <div className="relative w-full">
-      <div className="flex w-full items-center gap-2 rounded border border-white/15 bg-black/40 px-4 py-3">
+      <div className="flex w-full items-center gap-2  border border-white/15 bg-black/40 px-4 py-3">
         <p className="min-w-0 flex-1 truncate text-sm font-semibold">{getAccountMediaTitle(item)}</p>
         {typeof renderEditAction === 'function' ? <div className="shrink-0">{renderEditAction(item)}</div> : null}
       </div>
@@ -71,7 +71,7 @@ function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem })
                   variant="destructive-icon"
                   aria-label={`Remove ${entry?.title || entry?.name || 'title'} from favorites showcase`}
                   disabled={isSaving}
-                  className="rounded-xs"
+                  className=""
                   onClick={() => onRemoveItem(entry)}
                 >
                   <Icon icon="solar:trash-bin-trash-bold" size={16} />

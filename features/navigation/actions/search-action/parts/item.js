@@ -55,22 +55,22 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             wrapperClassName="h-full w-full"
           />
         ) : (
-          <div className={`center h-full w-full text-[#7f1d1d]`}>
+          <div className="flex h-full w-full items-center justify-center text-error">
             <Icon icon={item.media_type === SEARCH_TYPES.PERSON ? 'solar:user-bold' : 'solar:gallery-bold'} size={18} />
           </div>
         )}
       </div>
       <div className="mr-2.5 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-        <span className={`truncate leading-tight font-bold uppercase transition-all`}>{title}</span>
+        <span className="truncate leading-tight font-bold uppercase transition-all">{title}</span>
         <div className="flex items-center gap-2">
           {year && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70">{year}</span>
+              <span className="px-2 py-1 text-[10px] font-bold text-white/70">{year}</span>
             </div>
           )}
           {director && (
             <div className={SEARCH_STYLES.metaBadge}>
-              <span className="px-2 py-1 text-[10px] font-bold tracking-tight text-white/70">{director}</span>
+              <span className="px-2 py-1 text-[10px] font-bold text-white/70">{director}</span>
             </div>
           )}
         </div>

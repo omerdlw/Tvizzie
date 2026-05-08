@@ -1,0 +1,96 @@
+@layer utilities {
+  .top250-section-body {
+    padding-block-start: 0;
+  }
+
+  .top250-filter-bar {
+    margin-block-start: 0;
+    padding-block-start: 1rem;
+  }
+
+  .top250-section-body > .top250-filter-bar.account-filter-bar:first-child {
+    margin-block-start: 0;
+  }
+
+  .top250-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .top250-filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .top250-filter-grid {
+      grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .top250-filter-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .top250-filter-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-white) 50%, transparent);
+  }
+
+  .top250-filter-input {
+    height: 2.5rem;
+    width: 100%;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    padding-inline: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-white) 80%, transparent);
+    transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+  }
+
+  .top250-filter-input::placeholder {
+    color: color-mix(in srgb, var(--color-white) 50%, transparent);
+    text-transform: none;
+  }
+
+  .top250-filter-input:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--color-white) 20%, transparent);
+    background-color: color-mix(in srgb, var(--color-white) 15%, transparent);
+    color: var(--color-white);
+  }
+
+  .top250-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .top250-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 768px) {
+    .top250-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .top250-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+}

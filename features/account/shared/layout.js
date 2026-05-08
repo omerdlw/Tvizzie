@@ -3,6 +3,13 @@
 import Link from 'next/link';
 
 import { cn } from '@/core/utils';
+import AccountHero from './hero';
+import { AccountGridDivider, AccountGridFrame } from './grid-animation';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
+import NotFoundTemplate from '@/ui/states/not-found-template';
+import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
+
 export function AccountHeroReveal({ children, className }) {
   return <div className={className}>{children}</div>;
 }
@@ -14,12 +21,6 @@ export function AccountNavReveal({ children, className }) {
 export function AccountSectionReveal({ children, className }) {
   return <div className={className}>{children}</div>;
 }
-import AccountHero from './hero';
-import { AccountGridDivider, AccountGridFrame } from './grid-animation';
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
-import NotFoundTemplate from '@/features/app-shell/not-found-template';
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
 const SECTION_ITEMS = [
   { key: 'overview', label: 'Overview' },
@@ -70,21 +71,17 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
             const isActive = item.key === activeKey;
 
             return (
-              <div
-                key={item.key}
-              >
+              <div key={item.key}>
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-xs border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
+                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center  border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
                     isActive
                       ? 'border-white bg-white text-black'
                       : 'border-white/15 bg-black/40 text-white/70 hover:bg-black/80 hover:text-white'
                   )}
                 >
-                  <span>
-                    {item.label}
-                  </span>
+                  <span>{item.label}</span>
                 </Link>
               </div>
             );

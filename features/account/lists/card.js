@@ -79,13 +79,14 @@ function getPosterMetrics(index, count, isHovered) {
     x: isHovered ? baseX * 1.12 : baseX,
     y: (isHovered ? -18 : -8) * CARD_SCALE + liftByDepth,
     zIndex: 10 - depth,
-    blur: isHovered ? 0 : Math.abs(index - (total - 1) / 2) * 0.75,
+    saturate: 1 - depth * 0.2,
+    blur: isHovered ? 0 : depth * 0.75,
   };
 }
 
 function PreviewPoster({ index, isHovered, item, total }) {
   const imageSrc = getPreviewImage(item);
-  const { brightness, rotate, scale, x, y, zIndex, blur } = getPosterMetrics(index, total, isHovered);
+  const { brightness, rotate, scale, x, y, zIndex, saturate, blur } = getPosterMetrics(index, total, isHovered);
 
   return (
     <div
@@ -96,7 +97,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
       }}
     >
       <div
-        className="overflow-hidden rounded-xs"
+        className="overflow-hidden "
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -108,7 +109,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
             alt={item.title || item.name || 'Poster'}
             className="h-full w-full object-cover transition-[filter] duration-300"
             style={{
-              filter: `brightness(${brightness}) contrast(1.08) saturate(${1 - Math.abs(index - (total - 1) / 2) * 0.2}) blur(${blur}px)`,
+              filter: `brightness(${brightness}) contrast(1.08) saturate(${saturate}) blur(${blur}px)`,
             }}
           />
         ) : (
@@ -133,7 +134,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
       }}
     >
       <div
-        className="rounded-xs border border-white/10 bg-black"
+        className=" border border-white/5 bg-black"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -195,7 +196,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <div
-            className="relative z-0 rounded border border-white/10 bg-black transition-transform duration-300 ease-out"
+            className="relative z-0  border border-white/5 bg-black transition-transform duration-300 ease-out"
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
@@ -233,7 +234,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </div>
 
           <div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded border border-white/10 bg-black/80 transition-transform duration-300 ease-out"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  border border-white/5 bg-black/80 transition-transform duration-300 ease-out"
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',

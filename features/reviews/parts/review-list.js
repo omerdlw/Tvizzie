@@ -31,9 +31,8 @@ function ReviewListSkeletonItem({ index, isAccountVariant, isLast }) {
       className={cn(
         'relative',
         isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
-        isAccountVariant && cn('account-review-list-item'),
-        !isLast && 'border-b border-white/10',
-        !isAccountVariant && !isLast && ''
+        isAccountVariant && cn('account-review-list-item account-detail-full-width-item'),
+        !isLast && (isAccountVariant ? 'border-b border-white/10' : 'media-review-list-item-divider')
       )}
     >
       <div className="flex min-w-0 items-start gap-3 sm:gap-4">
@@ -67,7 +66,7 @@ function ReviewListSkeleton({ displayVariant, showTopBorder }) {
       className={cn(
         'flex flex-col',
         isAccountVariant && cn('account-review-list-frame'),
-        !isAccountVariant && showTopBorder && 'border-t border-white/10'
+        !isAccountVariant && showTopBorder && 'media-review-list-top-divider'
       )}
       role="status"
       aria-label="Loading reviews"
@@ -119,7 +118,7 @@ export default function ReviewList({
     return (
       <div
         className={cn(
-          cn('py-10 text-center text-sm leading-relaxed text-white-muted'),
+          cn('text-white-muted py-10 text-center text-sm leading-relaxed'),
           !isAccountVariant && showTopBorder && cn('border-grid-line border-y')
         )}
       >
@@ -133,7 +132,7 @@ export default function ReviewList({
       className={cn(
         'flex flex-col',
         isAccountVariant && cn('account-review-list-frame'),
-        !isAccountVariant && showTopBorder && 'border-t border-white/10'
+        !isAccountVariant && showTopBorder && 'media-review-list-top-divider'
       )}
     >
       {sortedReviews.map((review, index) => {
@@ -145,9 +144,9 @@ export default function ReviewList({
             key={review.docPath || review.id || `review-${index}`}
             className={cn(
               'relative',
-              isAccountVariant && cn('account-review-list-item'),
-              index < sortedReviews.length - 1 && 'border-b border-white/10',
-              !isAccountVariant && index < sortedReviews.length - 1 && ''
+              isAccountVariant && cn('account-review-list-item account-detail-full-width-item'),
+              index < sortedReviews.length - 1 &&
+                (isAccountVariant ? 'border-b border-white/10' : 'media-review-list-item-divider')
             )}
           >
             <ReviewCard

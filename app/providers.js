@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useReportWebVitals } from 'next/web-vitals';
 
-import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/app-shell/interactive-boundary';
-import { SmoothScrollProvider } from '@/features/app-shell/smooth-scroll';
+import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/app/_shell/interactive-boundary';
+import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { pipe } from '@/core/utils';
 
@@ -33,6 +33,7 @@ function shouldEnableInteractiveBoundary(pathname = '/') {
 function resolveInteractiveBoundaryVariant(pathname = '/') {
   return pathname === '/' ||
     pathname.startsWith('/search') ||
+    pathname.startsWith('/top250') ||
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account')
@@ -132,18 +133,16 @@ export const AppProviders = ({ children }) => {
     <>
       <WebVitals />
       <CoreShellProviders>
-        <SmoothScrollProvider enabled={needsSmoothScroll}>
-          <BackgroundOverlay />
-          <LoadingOverlay />
-          <GlobalError>
-            <AppShellContent
-              interactiveBoundaryVariant={interactiveBoundaryVariant}
-              needsInteractiveBoundary={needsInteractiveBoundary}
-            >
-              {children}
-            </AppShellContent>
-          </GlobalError>
-        </SmoothScrollProvider>
+        <BackgroundOverlay />
+        <LoadingOverlay />
+        <GlobalError>
+          <AppShellContent
+            interactiveBoundaryVariant={interactiveBoundaryVariant}
+            needsInteractiveBoundary={needsInteractiveBoundary}
+          >
+            {children}
+          </AppShellContent>
+        </GlobalError>
       </CoreShellProviders>
     </>
   );

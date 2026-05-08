@@ -6,8 +6,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
-import { resolveExplicitMediaType } from '@/core/utils/media';
-import { cn } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useMediaReviews } from '@/features/reviews/use-media-reviews';
@@ -23,40 +21,39 @@ import {
   subscribeToWatchedStatus,
 } from '@/core/services/media/watched.service';
 import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/services/media/watchlist.service';
+import { cn } from '@/core/utils';
+import { resolveExplicitMediaType } from '@/core/utils/media';
 import Icon from '@/ui/icon';
 
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
     ? media.genres
-      .map((genre) => {
-        if (!genre) {
-          return null;
-        }
+        .map((genre) => {
+          if (!genre) {
+            return null;
+          }
 
-        if (typeof genre === 'object') {
+          if (typeof genre === 'object') {
+            return {
+              id: genre.id ?? null,
+              name: genre.name || null,
+            };
+          }
+
           return {
-            id: genre.id ?? null,
-            name: genre.name || null,
+            id: null,
+            name: String(genre),
           };
-        }
-
-        return {
-          id: null,
-          name: String(genre),
-        };
-      })
-      .filter(Boolean)
+        })
+        .filter(Boolean)
     : [];
 
   const genreIds = Array.isArray(media?.genre_ids)
     ? media.genre_ids
     : normalizedGenres
-      .map((genre) => genre.id)
-      .filter((value) => Number.isFinite(Number(value)))
-      .map((value) => Number(value));
-
-  const watchProviders =
-    media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+        .map((genre) => genre.id)
+        .filter((value) => Number.isFinite(Number(value)))
+        .map((value) => Number(value));
   const tags = Array.isArray(media?.tags)
     ? media.tags
     : Array.isArray(media?.keywords?.keywords)
@@ -89,20 +86,20 @@ function getMediaSnapshot(media) {
       .slice(0, 12),
     vote_average: media?.vote_average ?? null,
     vote_count: Number.isFinite(Number(media?.vote_count)) ? Number(media.vote_count) : null,
-    watchProviders,
+    watchProviders: media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null,
   };
 }
 
 function getActionPalette(palette, active) {
   if (active && palette === 'like') {
-    return 'rounded border border-success/10 bg-success/10 text-success hover:border-success/15 hover:bg-success/15';
+    return ' border border-success/10 bg-success/10 text-success hover:border-success/15 hover:bg-success/15';
   }
 
   if (active && (palette === 'watched' || palette === 'watchlist')) {
-    return 'rounded border border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
+    return ' border border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
   }
 
-  return 'rounded border border-white/10 bg-white/5 text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white';
+  return ' border border-white/5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white';
 }
 
 function ActionButton({
@@ -139,10 +136,69 @@ function ActionButton({
   );
 }
 
-function ActionMotionItem({ children }) {
+function CollectionActionsView({
+  canGoToMovie,
+  onGoToMovie,
+  onLike,
+  onOpenListPicker,
+  onWatched,
+  onWatchlist,
+  onWriteReview,
+  ownReview,
+  showLikeAction,
+  state,
+}) {
   return (
-    <div>
-      {children}
+    <div className="flex flex-col gap-2">
+      {canGoToMovie ? (
+        <ActionButton icon="solar:clapperboard-play-bold" label="Go to Movie" onClick={onGoToMovie} />
+      ) : null}
+
+      <div className={cn('grid grid-cols-1 gap-2', showLikeAction ? 'min-[460px]:grid-cols-2' : '')}>
+        {showLikeAction ? (
+          <ActionButton
+            active={state.liked}
+            disabled={state.loadingLike || state.submittingLike}
+            icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+            label={state.liked ? 'Liked' : 'Like'}
+            loading={state.loadingLike || state.submittingLike}
+            loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
+            onClick={onLike}
+            palette="like"
+          />
+        ) : null}
+
+        <ActionButton
+          active={state.watched}
+          disabled={state.loadingWatched || state.submittingWatched}
+          icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
+          label={state.watched ? 'Unwatch' : 'Mark Watched'}
+          loading={state.loadingWatched || state.submittingWatched}
+          loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
+          onClick={onWatched}
+          palette="watched"
+        />
+      </div>
+
+      <ActionButton
+        active={state.watchlist}
+        disabled={state.loadingWatchlist || state.submittingWatchlist}
+        icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+        label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+        loading={state.loadingWatchlist || state.submittingWatchlist}
+        loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
+        onClick={onWatchlist}
+        palette="watchlist"
+      />
+
+      <ActionButton
+        icon={ownReview ? 'solar:pen-new-square-bold' : 'solar:pen-new-square-linear'}
+        label={ownReview ? 'Edit Review' : 'Add Review'}
+        onClick={onWriteReview}
+        palette="neutral"
+      />
+
+      <ActionButton icon="solar:list-broken" label="Add To List" onClick={onOpenListPicker} palette="neutral" />
     </div>
   );
 }
@@ -210,9 +266,9 @@ export default function CollectionActions({ media }) {
     }
 
     let active = true;
-    let unsubLike = () => { };
-    let unsubWatchlist = () => { };
-    let unsubWatched = () => { };
+    let unsubLike = () => {};
+    let unsubWatchlist = () => {};
+    let unsubWatched = () => {};
 
     setState((prev) => ({
       ...prev,
@@ -446,7 +502,6 @@ export default function CollectionActions({ media }) {
   }
 
   const showLikeAction = state.watched;
-  const showWatchlistAction = !state.watched;
   const canGoToMovie = Boolean(mediaSnapshot?.entityId) && isMovieReviewsRoute;
 
   function handleGoToMovie() {
@@ -458,70 +513,17 @@ export default function CollectionActions({ media }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {canGoToMovie ? (
-        <ActionMotionItem index={0}>
-          <ActionButton icon="solar:clapperboard-play-bold" label="Go to Movie" onClick={handleGoToMovie} />
-        </ActionMotionItem>
-      ) : null}
-
-      <div className={cn('grid grid-cols-1 gap-2', showLikeAction ? 'min-[460px]:grid-cols-2' : '')}>
-        {showLikeAction ? (
-          <ActionMotionItem index={1}>
-            <ActionButton
-              active={state.liked}
-              disabled={state.loadingLike || state.submittingLike}
-              icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
-              label={state.liked ? 'Liked' : 'Like'}
-              loading={state.loadingLike || state.submittingLike}
-              loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
-              onClick={handleLikeClick}
-              palette="like"
-            />
-          </ActionMotionItem>
-        ) : null}
-
-        <ActionMotionItem index={2}>
-          <ActionButton
-            active={state.watched}
-            disabled={state.loadingWatched || state.submittingWatched}
-            icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
-            label={state.watched ? 'Unwatch' : 'Mark Watched'}
-            loading={state.loadingWatched || state.submittingWatched}
-            loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
-            onClick={handleWatchedClick}
-            palette="watched"
-          />
-        </ActionMotionItem>
-      </div>
-
-      <ActionMotionItem index={3}>
-        <ActionButton
-          active={state.watchlist}
-          disabled={state.loadingWatchlist || state.submittingWatchlist}
-          icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-          label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-          loading={state.loadingWatchlist || state.submittingWatchlist}
-          loadingLabel={
-            state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
-          }
-          onClick={handleWatchlistClick}
-          palette="watchlist"
-        />
-      </ActionMotionItem>
-
-      <ActionMotionItem index={4}>
-        <ActionButton
-          icon={ownReview ? 'solar:pen-new-square-bold' : 'solar:pen-new-square-linear'}
-          label={ownReview ? 'Edit Review' : 'Add Review'}
-          onClick={handleWriteReview}
-          palette="neutral"
-        />
-      </ActionMotionItem>
-
-      <ActionMotionItem index={5}>
-        <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
-      </ActionMotionItem>
-    </div>
+    <CollectionActionsView
+      canGoToMovie={canGoToMovie}
+      onGoToMovie={handleGoToMovie}
+      onLike={handleLikeClick}
+      onOpenListPicker={handleOpenListPicker}
+      onWatched={handleWatchedClick}
+      onWatchlist={handleWatchlistClick}
+      onWriteReview={handleWriteReview}
+      ownReview={ownReview}
+      showLikeAction={showLikeAction}
+      state={state}
+    />
   );
 }

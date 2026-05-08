@@ -1,14 +1,16 @@
 'use client';
 
 import { startTransition, useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { useDebounce } from '@/core/hooks/use-debounce';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { cn } from '@/core/utils';
 
-import { SEARCH_LIMITS, SEARCH_TYPES } from '@/features/search/constants';
+import { SEARCH_ACTION_TAB_ITEMS, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
 import SearchActionControls from './parts/controls';
 import SearchResultItem from './parts/item';
+import { SEARCH_ACTION_EXIT_TRANSITION, SEARCH_ACTION_REVEAL_TRANSITION, getSearchResultDelay } from './motion';
 import { navActionClass } from './utils';
 import {
   fetchAllMedia,
@@ -24,6 +26,12 @@ const SEARCH_ACTION_VARIANTS = Object.freeze({
   DEFAULT: 'default',
   PAGE: 'page',
 });
+
+const SEARCH_ACTION_ALLOWED_TYPES = new Set([SEARCH_TYPES.ALL, SEARCH_TYPES.MOVIE, SEARCH_TYPES.PERSON, SEARCH_TYPES.USER]);
+
+function resolveSearchActionType(type) {
+  return SEARCH_ACTION_ALLOWED_TYPES.has(type) ? type : SEARCH_TYPES.ALL;
+}
 
 export default function SearchAction({
   loading: controlledLoading = false,
@@ -45,7 +53,8 @@ export default function SearchAction({
   const [imageErrors, setImageErrors] = useState({});
 
   const query = isQueryControlled ? controlledQuery : localQuery;
-  const searchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
+  const rawSearchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
+  const searchType = isPageVariant ? rawSearchType : resolveSearchActionType(rawSearchType);
   const loading = isPageVariant ? Boolean(controlledLoading) : localLoading;
   const debouncedQuery = useDebounce(query, 500);
   const { expanded, navigate, setCompactLock, setExpanded } = useNavigation();
@@ -172,11 +181,14 @@ export default function SearchAction({
           userResults = fetchedUsers;
           mediaResults = fetchedMedia;
 
-          nextSearchType = inferSearchType({
-            normalizedQuery,
-            userResults,
-            mediaResults,
-          });
+          nextSearchType = resolveSearchActionType(
+            inferSearchType({
+              communityResults: [],
+              normalizedQuery,
+              userResults,
+              mediaResults,
+            })
+          );
 
           if (!isCancelled && !isSearchTypeControlled) {
             startTransition(() => {
@@ -198,6 +210,8 @@ export default function SearchAction({
 
           return;
         }
+
+        nextSearchType = resolveSearchActionType(nextSearchType);
 
         if (nextSearchType === SEARCH_TYPES.ALL) {
           if (!userResults.length) {
@@ -270,42 +284,75 @@ export default function SearchAction({
         query={query}
         searchType={searchType}
         showTabsWhenEmpty={isPageVariant}
+        tabItems={isPageVariant ? SEARCH_TAB_ITEMS : SEARCH_ACTION_TAB_ITEMS}
         onClear={handleClear}
         onQueryChange={handleQueryChange}
         onSearchTypeChange={handleSearchTypeChange}
       />
       {!isPageVariant ? (
         <>
-          {results.length > 0 && query ? (
-            <div className="mt-2 flex flex-col gap-1 overflow-hidden">
-              {results.map((item) => (
-                <div key={`${item.media_type}-${item.id}`}>
-                  <SearchResultItem
-                    item={item}
-                    imageErrors={imageErrors}
-                    onImageError={handleImageError}
-                    onSelect={handleSelect}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {query.trim() ? (
-            <div className="mt-2 overflow-hidden">
-              <button
-                type="button"
-                className={navActionClass({
-                  button:
-                    'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
-                  cn,
-                })}
-                onClick={handleSeeAllResults}
+          <AnimatePresence initial={false}>
+            {results.length > 0 && query ? (
+              <motion.div
+                key="search-results"
+                className="mt-2 flex flex-col gap-1 overflow-hidden"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
+                transition={SEARCH_ACTION_REVEAL_TRANSITION}
               >
-                See all results
-              </button>
-            </div>
-          ) : null}
+                {results.map((item, index) => (
+                  <motion.div
+                    key={`${item.media_type}-${item.id}`}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
+                    transition={{
+                      ...SEARCH_ACTION_REVEAL_TRANSITION,
+                      delay: getSearchResultDelay(index),
+                    }}
+                  >
+                    <SearchResultItem
+                      key={`${item.media_type}-${item.id}`}
+                      item={item}
+                      imageErrors={imageErrors}
+                      onImageError={handleImageError}
+                      onSelect={handleSelect}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          <AnimatePresence initial={false}>
+            {query.trim() ? (
+              <motion.div
+                key="search-see-all"
+                className="mt-2 overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: SEARCH_ACTION_EXIT_TRANSITION }}
+                transition={SEARCH_ACTION_REVEAL_TRANSITION}
+              >
+                <motion.button
+                  key={`see-all-${searchType}`}
+                  type="button"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
+                  transition={{ ...SEARCH_ACTION_REVEAL_TRANSITION, delay: 0.12 }}
+                  className={navActionClass({
+                    button: 'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
+                    cn,
+                  })}
+                  onClick={handleSeeAllResults}
+                >
+                  See all results
+                </motion.button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </>
       ) : null}
     </div>

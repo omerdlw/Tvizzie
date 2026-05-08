@@ -56,7 +56,7 @@ export default function ImagePreviewModal({ close, data }) {
           fill
         />
         {!isLoaded && (
-          <div className="center absolute inset-0 animate-pulse bg-white/10">
+          <div className="skeleton-block-soft center absolute inset-0">
             <Spinner size={40} />
           </div>
         )}

@@ -1,13 +1,8 @@
 'use client';
 
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import { AccountSectionLoading } from '@/features/account/route/loading-state';
 import Registry from './registry';
 
 export default function AccountEditLoading() {
-  return (
-    <>
-      <Registry isLoading={true} />
-      <AccountRouteSkeleton variant="edit" />
-    </>
-  );
+  return <AccountSectionLoading Registry={Registry} registryProps={{ isLoading: true }} variant="edit" />;
 }

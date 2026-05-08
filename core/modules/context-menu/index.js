@@ -199,7 +199,7 @@ function ContextMenuHeader({ classNames, header, metrics }) {
     return null;
   }
 
-  const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-white/10 pb-2', classNames.header]
+  const containerClassName = ['mb-1.5 flex items-center gap-2 border-b border-white/5 pb-2', classNames.header]
     .filter(Boolean)
     .join(' ');
   const eyebrowClassName = ['text-[11px] font-bold tracking- text-white/50 uppercase', classNames.headerEyebrow]
@@ -453,7 +453,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={[
-          'max-w-xs min-w-60 overflow-hidden border border-white/10 bg-black/80 shadow-2xl backdrop-blur-lg',
+          'max-w-xs min-w-60 overflow-hidden border border-white/5 bg-black/80 shadow-2xl backdrop-blur-lg',
           classNames.content,
         ]
           .filter(Boolean)

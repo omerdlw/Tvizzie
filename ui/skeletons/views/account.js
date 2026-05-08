@@ -1,7 +1,9 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/core/constants';
 import { cn } from '@/core/utils';
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
+import { AccountGridDivider, AccountGridFrame } from '@/features/account/shared/grid-animation';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
+import AccountSectionLayout from '@/features/account/shared/section-wrapper';
 
 const HERO_HEIGHT_CLASS = cn('account-hero-height');
 const HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
@@ -61,16 +63,15 @@ export function MovieSectionSkeleton({ className = '', variant = 'gallery' }) {
 
 function SectionShell({ children, className = '' }) {
   return (
-    <section className={cn("account-detail-grid-subsection bg-transparent")}>
+    <section className={cn('account-detail-grid-subsection bg-transparent')}>
       <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>{children}</div>
     </section>
   );
 }
 
-function SectionBodySkeleton({ children }) {
-  return <div className={cn('account-detail-section-body')}>{children}</div>;
+function SectionBodySkeleton({ children, className = '' }) {
+  return <div className={cn('account-detail-section-body', className)}>{children}</div>;
 }
-
 
 function HeroCountItem({ mobile = false }) {
   return (
@@ -114,13 +115,13 @@ function AccountHeroSkeleton() {
         className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
-          <div className={cn("account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0")}>
-            <div className="h-24 w-24 justify-self-start overflow-hidden rounded sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+          <div className={cn('account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0')}>
+            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <SkeletonBlock className={cn("account-skeleton-hero-title")} />
+                <SkeletonBlock className={cn('account-skeleton-hero-title')} />
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <HeroCountItem key={index} mobile={true} />
@@ -143,10 +144,10 @@ function AccountHeroSkeleton() {
             </div>
           </div>
 
-          <div className={cn("account-skeleton-hero-bio")}>
+          <div className={cn('account-skeleton-hero-bio')}>
             <div className="mt-2 flex max-w-3xl flex-col gap-2">
               <Line className="h-3.5 w-full" soft={true} />
-              <Line className={cn("account-skeleton-hero-bio-trail h-3.5")} soft={true} />
+              <Line className={cn('account-skeleton-hero-bio-trail h-3.5')} soft={true} />
             </div>
           </div>
         </div>
@@ -171,7 +172,7 @@ function AccountNavSkeleton() {
 
 function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
   return (
-    <div className="movie-detail-grid-subsection">
+    <div className="account-detail-section-heading flex w-full flex-col gap-4">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <SkeletonCircle className="size-6" soft={true} />
@@ -183,12 +184,14 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
           {seeMore ? <Line className="h-3 w-16" soft={true} /> : null}
         </div>
       </div>
+      <SkeletonBlock className="h-px w-full" soft={true} />
     </div>
   );
 }
 
 function PosterStripSkeleton({ count = 6 }) {
-  const gridClassName = count > 5 ? cn('account-overview-media-grid-standard') : cn('account-overview-media-grid-favorites');
+  const gridClassName =
+    count > 5 ? cn('account-overview-media-grid-standard') : cn('account-overview-media-grid-favorites');
 
   return (
     <div className={cn(`account-overview-media-grid ${gridClassName}`)}>
@@ -228,12 +231,19 @@ function ToolbarSkeleton({ firstWidth = 'sm:w-44', secondWidth = 'sm:w-40', extr
   );
 }
 
-function FilterBarSkeleton({ count = 2 }) {
+function FilterBarSkeleton({ triggerCount = 2, withSearch = false }) {
   return (
-    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
-      {Array.from({ length: count }).map((_, index) => (
-        <Pill key={index} className="h-9 min-w-40 flex-1" soft={true} />
-      ))}
+    <div className="account-filter-bar account-detail-full-width-item !-mt-8 flex flex-col !p-0">
+      <div className="flex w-full items-center justify-between gap-3 !p-4">
+        <div className="scrollbar-none flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+          {withSearch ? <Pill className="h-9 w-9 shrink-0" soft={true} /> : null}
+          {Array.from({ length: triggerCount }).map((_, index) => (
+            <Pill key={index} className="h-9 w-44 shrink-0" soft={true} />
+          ))}
+        </div>
+        <Line className="h-3 w-10 shrink-0" soft={true} />
+      </div>
+      <div className="account-detail-section-heading-rule" />
     </div>
   );
 }
@@ -266,7 +276,7 @@ function ListPreviewStackSkeleton() {
   ];
 
   return (
-    <div className="relative h-48 rounded bg-black">
+    <div className="relative h-48 bg-black">
       <Bar className="absolute inset-0" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
@@ -283,7 +293,7 @@ function ListCardSkeleton() {
     <div className="relative w-full">
       <ListPreviewStackSkeleton />
 
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded bg-black/80 backdrop-blur-md">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden bg-black/80">
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-4 w-3/4" />
@@ -311,7 +321,7 @@ function ListCardSkeleton() {
 
 function ActivityItemSkeleton({ isFirst = false }) {
   return (
-    <article className={isFirst ? 'pt-0 pb-5' : 'py-5'}>
+    <article className={cn('account-detail-full-width-item border-b border-white/10', isFirst ? 'pt-0 pb-5' : 'py-5')}>
       <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
           <Line className="h-4 w-16" />
@@ -327,10 +337,10 @@ function ActivityItemSkeleton({ isFirst = false }) {
 
 function ReviewCardSkeleton() {
   return (
-    <article className={cn("account-review-list-item py-4 sm:py-5")}>
+    <article className={cn('account-detail-full-width-item border-b border-white/5 py-4 last:border-b-0 sm:py-5')}>
       <div className="relative transition-all duration-300">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded sm:h-28 sm:w-20">
+          <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-20">
             <Poster radius="card" />
           </div>
 
@@ -464,7 +474,7 @@ function CollectionPageSkeleton({ filterCount = 5, itemCount = 12 }) {
     <div className="flex flex-col">
       <SectionShell>
         <SectionBodySkeleton>
-          <FilterBarSkeleton count={filterCount} />
+          <FilterBarSkeleton triggerCount={Math.max(0, filterCount - 1)} withSearch={true} />
           <PosterGridSkeleton count={itemCount} />
           <PaginationSkeleton />
         </SectionBodySkeleton>
@@ -481,9 +491,9 @@ function ReviewsSkeleton() {
   return (
     <div className="flex flex-col">
       <SectionShell>
-        <SectionBodySkeleton>
-          <FilterBarSkeleton count={5} />
-          <div className={cn("account-review-list-frame")}>
+        <SectionBodySkeleton className="py-0">
+          <FilterBarSkeleton triggerCount={4} withSearch={false} />
+          <div className={cn('account-review-list-frame')}>
             {Array.from({ length: 4 }).map((_, index) => (
               <ReviewCardSkeleton key={index} />
             ))}
@@ -502,8 +512,8 @@ function ActivitySkeleton() {
   return (
     <div className="flex flex-col">
       <SectionShell>
-        <SectionBodySkeleton>
-          <FilterBarSkeleton count={2} />
+        <SectionBodySkeleton className="py-0">
+          <FilterBarSkeleton triggerCount={2} withSearch={false} />
           <div>
             {Array.from({ length: 5 }).map((_, index) => (
               <ActivityItemSkeleton key={index} isFirst={index === 0} />
@@ -520,7 +530,7 @@ function ListsSkeleton() {
     <div className="flex flex-col">
       <SectionShell>
         <SectionBodySkeleton>
-          <FilterBarSkeleton count={1} />
+          <FilterBarSkeleton triggerCount={1} withSearch={false} />
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <ListCardSkeleton key={index} />
@@ -544,7 +554,7 @@ function ListDetailSkeleton() {
 
       <SectionShell>
         <SectionBodySkeleton>
-          <FilterBarSkeleton count={5} />
+          <FilterBarSkeleton triggerCount={4} withSearch={true} />
           <PosterGridSkeleton count={12} compact={true} />
           <PaginationSkeleton />
         </SectionBodySkeleton>
@@ -622,7 +632,7 @@ function ListBuilderSkeleton() {
     <div>
       <SectionShell>
         <SectionBodySkeleton>
-          <div className="skeleton-block-soft overflow-hidden rounded">
+          <SkeletonBlock className="overflow-hidden" soft={true}>
             <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-2">
               <section className="flex min-h-0 flex-col">
                 <div className="p-4 sm:p-5">
@@ -653,7 +663,7 @@ function ListBuilderSkeleton() {
 
                 <div className="mt-4 flex flex-col gap-3">
                   {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="skeleton-block-soft flex items-center gap-3 p-2.5">
+                    <SkeletonBlock key={index} className="flex items-center gap-3 p-2.5" soft={true}>
                       <Line className="h-3 w-4" soft={true} />
                       <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0" radius="field" />
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -661,12 +671,12 @@ function ListBuilderSkeleton() {
                         <Line className="h-2.5 w-1/2" soft={true} />
                       </div>
                       <Pill className="size-8" soft={true} />
-                    </div>
+                    </SkeletonBlock>
                   ))}
                 </div>
               </aside>
             </div>
-          </div>
+          </SkeletonBlock>
         </SectionBodySkeleton>
       </SectionShell>
     </div>
@@ -697,17 +707,23 @@ function renderVariant(variant) {
 
 export function Skeleton({ variant = 'overview' }) {
   return (
-    <div className={cn("account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black")}>
-      <div className={cn(`${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-grid-frame relative z-10 flex flex-col gap-0 px-0`)}>
+    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
+      <AccountGridFrame
+        routeKey={`account-skeleton-${variant}`}
+        className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
+      >
         <div className="relative">
           <AccountHeroSkeleton />
           <div className="absolute inset-x-0 top-0 z-20">
             <AccountNavSkeleton />
           </div>
         </div>
-        <main className={cn("account-detail-grid-main")}>{renderVariant(variant)}</main>
+        <div className="account-detail-hero-divider">
+          <AccountGridDivider />
+        </div>
+        <main className="account-detail-grid-main">{renderVariant(variant)}</main>
         <NavHeightSpacer />
-      </div>
+      </AccountGridFrame>
     </div>
   );
 }

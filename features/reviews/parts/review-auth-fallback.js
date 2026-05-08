@@ -17,7 +17,7 @@ export default function ReviewAuthFallback({ mode = 'review', onSignIn, title })
         </div>
         <Button
           type="button"
-          className="bg-primary/40 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded border border-white/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase transition ease-in-out hover:bg-white hover:text-black sm:w-auto"
+          className="bg-primary/40 inline-flex min-h-10 w-full items-center justify-center gap-2  border border-white/5 px-4 py-2 text-[11px] font-semibold tracking-wide text-white/70 uppercase transition ease-in-out hover:bg-white hover:text-black sm:w-auto"
           onClick={onSignIn}
         >
           Sign In

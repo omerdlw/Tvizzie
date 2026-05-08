@@ -4,49 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import { useSeededFeedState } from '@/features/account/hooks/section-page';
-import {
-  buildManagedQueryString,
-  normalizePage,
-  parseActivityFilters,
-  parsePageFromSearch,
-  toActivityQueryValues,
-} from '@/features/account/filtering';
+import { normalizePage } from '@/features/account/filtering';
 import { logDataError } from '@/core/utils';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ActivityView from './view';
-
-const ACTIVITY_FETCH_PAGE_SIZE = 36;
-
-function normalizeScope(value) {
-  return value === 'following' ? 'following' : 'user';
-}
-
-function parseInitialActivityControls(searchParams) {
-  const filters = parseActivityFilters(searchParams);
-
-  return {
-    filters: {
-      sort: filters.sort,
-      subject: filters.subject,
-    },
-    page: parsePageFromSearch(searchParams),
-    scope: normalizeScope(searchParams?.get?.('scope')),
-  };
-}
-
-function hasMatchingSeededActivityFeed({ filters, initialFeed = null, page, resolvedUserId = null, scope = 'user' }) {
-  if (!initialFeed?.userId || !resolvedUserId || initialFeed.userId !== resolvedUserId) {
-    return false;
-  }
-
-  return (
-    normalizeScope(initialFeed?.scope) === normalizeScope(scope) &&
-    normalizePage(initialFeed?.page) === normalizePage(page) &&
-    String(initialFeed?.subject || 'all') === String(filters?.subject || 'all') &&
-    String(initialFeed?.sort || 'newest') === String(filters?.sort || 'newest')
-  );
-}
+import {
+  ACTIVITY_FETCH_PAGE_SIZE,
+  hasMatchingSeededActivityFeed,
+  normalizeActivityScope,
+  parseInitialActivityControls,
+  replaceActivityHistory,
+} from './activity-state';
 
 function useActivityClientState({ auth, routeData, sectionProviderValue, sectionState }) {
   const { initialActivityFeed = null, initialResolvedUserId = null } = routeData || {};
@@ -98,33 +67,12 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
 
   const replaceActivityUrl = useCallback(
     (nextScope, nextFilters, nextPage) => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      const params = new URLSearchParams(window.location.search);
-
-      if (normalizeScope(nextScope) === 'user') {
-        params.delete('scope');
-      } else {
-        params.set('scope', 'following');
-      }
-
-      const queryString = buildManagedQueryString(params, {
-        managedKeys: ['asub', 'asort'],
-        resetPage: false,
-        values: toActivityQueryValues(nextFilters),
+      replaceActivityHistory({
+        filters: nextFilters,
+        page: nextPage,
+        pathname,
+        scope: nextScope,
       });
-      const nextParams = new URLSearchParams(queryString);
-
-      if (normalizePage(nextPage) <= 1) {
-        nextParams.delete('page');
-      } else {
-        nextParams.set('page', String(normalizePage(nextPage)));
-      }
-
-      const nextQuery = nextParams.toString();
-      window.history.replaceState({}, '', nextQuery ? `${pathname}?${nextQuery}` : pathname);
     },
     [pathname]
   );
@@ -221,7 +169,7 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
 
   const handleScopeChange = useCallback(
     (nextScope) => {
-      const normalizedScope = nextScope === 'following' ? 'following' : 'user';
+      const normalizedScope = normalizeActivityScope(nextScope);
 
       if (normalizedScope === activeScope) {
         return;

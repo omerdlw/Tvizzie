@@ -105,15 +105,12 @@ export default function AccountReviewsOverview({
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
+      contentClassName="py-0"
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <div className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70">
-          {emptyMessage}
-        </div>
+        <div className=" border border-white/15 bg-black/40 p-4 text-sm text-white/70">{emptyMessage}</div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <div className="rounded border border-white/15 bg-black/40 p-4 text-sm text-white/70">
-          {loadError}
-        </div>
+        <div className=" border border-white/15 bg-black/40 p-4 text-sm text-white/70">{loadError}</div>
       ) : (
         <div>
           <ReviewList
@@ -141,7 +138,7 @@ export default function AccountReviewsOverview({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="rounded border border-white/10 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
+            className=" border border-white/5 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

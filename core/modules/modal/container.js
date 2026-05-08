@@ -31,7 +31,7 @@ function getContainerClassName({ className, position }) {
 function getBodyClassName(position, bodyClassName) {
   const sideModal = isSideModal(position);
 
-  return cn('bg-black min-h-0 w-full flex-1 overflow-y-auto overscroll-contain', sideModal ? ' ' : '', bodyClassName);
+  return cn('min-h-0 w-full flex-1 overflow-y-auto overscroll-contain', sideModal ? ' ' : '', bodyClassName);
 }
 
 function resolveHeaderActions(actions, close) {
@@ -110,7 +110,7 @@ export default function Container({ children, className, bodyClassName, header =
         <div
           className={cn(
             hasSlotContent(headerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-3 bg-white/5! px-4 py-3',
+            'items-center gap-2 p-2',
             headerIsSticky && 'sticky top-0 z-10'
           )}
         >
@@ -128,7 +128,7 @@ export default function Container({ children, className, bodyClassName, header =
         <div
           className={cn(
             hasSlotContent(footerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-3 bg-white/5! px-4 py-3',
+            'items-center gap-2 p-2',
             footerIsSticky && 'sticky bottom-0'
           )}
         >

@@ -34,12 +34,8 @@ function PersonCard({ close, person }) {
     : null;
 
   return (
-    <Link
-      href={`/person/${person.id}`}
-      onClick={close}
-      className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 rounded p-2 transition-colors"
-    >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-xs bg-white/10">
+    <Link href={`/person/${person.id}`} onClick={close} className="flex items-center gap-3 p-2 transition-colors">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-white/10">
         {imageSrc ? (
           <AdaptiveImage
             fill
@@ -123,12 +119,13 @@ export default function CastModal({ close, data, header }) {
     ...(hasBoth && {
       center: (
         <SegmentedControl
+          equalItems
           value={activeTab}
           onChange={setActiveTab}
           items={items}
           classNames={{
-            wrapper: 'h-8 rounded p-0.5',
-            indicator: '',
+            track: 'w-full',
+            wrapper: 'w-full backdrop-blur',
           }}
         />
       ),

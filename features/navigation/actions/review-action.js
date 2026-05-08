@@ -14,9 +14,7 @@ export default function ReviewAction({ reviewState }) {
           e.stopPropagation();
           if (!isSubmitting) submitReview?.(e);
         }}
-        className={getNavActionClass({
-          className: '',
-        })}
+        className={getNavActionClass()}
         disabled={isSubmitting || !canSubmit}
         type="button"
       >

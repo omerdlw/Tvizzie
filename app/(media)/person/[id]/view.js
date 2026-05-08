@@ -3,13 +3,14 @@ import { Suspense, use } from 'react';
 import PersonAwards from '@/features/person/awards';
 import FilmographyCard from '@/features/person/filmography-card';
 import PersonGallery from '@/features/person/gallery';
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
 import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { getFilmographyCredits } from '@/features/person/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { cn } from '@/core/utils';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
 
@@ -17,14 +18,10 @@ function PersonGridSection({ children, className = '', divider = 'decorative' })
   const isPlainDivider = divider === 'plain';
 
   return (
-    <div
-      className={`movie-detail-grid-subsection ${isPlainDivider ? 'person-detail-plain-section' : ''} ${className}`}
-    >
+    <section className={cn('movie-detail-grid-subsection', isPlainDivider && 'person-detail-plain-section', className)}>
       <MovieGridDivider className={isPlainDivider ? 'person-detail-grid-divider-plain' : ''} />
-      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">
-        {children}
-      </div>
-    </div>
+      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">{children}</div>
+    </section>
   );
 }
 
@@ -48,17 +45,14 @@ function PersonFilmographySurface({ credits }) {
       <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Filmography</h2>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-        {credits.map((credit, index) => {
-          return (
-            <div key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}>
-              <FilmographyCard
-                credit={credit}
-                imagePriority={index < 8}
-                imageFetchPriority={index < 8 ? 'high' : undefined}
-              />
-            </div>
-          );
-        })}
+        {credits.map((credit, index) => (
+          <FilmographyCard
+            key={`${credit.media_type}-${credit.id}-${credit.credit_id}`}
+            credit={credit}
+            imagePriority={index < 8}
+            imageFetchPriority={index < 8 ? 'high' : undefined}
+          />
+        ))}
       </div>
     </section>
   );
@@ -71,19 +65,15 @@ function PersonMainContent({ person }) {
   return (
     <>
       {hasGallery ? (
-        <div className="w-full">
-          <PersonGridSection divider="plain">
-            <PersonGallery images={person.images} />
-          </PersonGridSection>
-        </div>
+        <PersonGridSection divider="plain">
+          <PersonGallery images={person.images} />
+        </PersonGridSection>
       ) : null}
 
       {movieCredits.length > 0 ? (
-        <div className="w-full">
-          <PersonGridSection divider={hasGallery ? 'decorative' : 'plain'}>
-            <PersonFilmographySurface credits={movieCredits} />
-          </PersonGridSection>
-        </div>
+        <PersonGridSection divider={hasGallery ? 'decorative' : 'plain'}>
+          <PersonFilmographySurface credits={movieCredits} />
+        </PersonGridSection>
       ) : null}
     </>
   );
@@ -98,11 +88,9 @@ function PersonDeferredContent({ person, secondaryDataPromise, activeView }) {
 
   if (activeView === 'timeline') {
     return (
-      <div className="w-full">
-        <PersonGridSection divider="plain">
-          <PersonTimeline person={mergedPerson} />
-        </PersonGridSection>
-      </div>
+      <PersonGridSection divider="plain">
+        <PersonTimeline person={mergedPerson} />
+      </PersonGridSection>
     );
   }
 
@@ -146,7 +134,7 @@ export default function PersonView({
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
         <MovieGridFrame
           routeKey={`person-${person.id}`}
-          className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
+          className={cn('mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}
         >
           <div className="person-detail-grid-primary">
             <div className="movie-detail-grid-sidebar relative w-full shrink-0">
@@ -159,38 +147,28 @@ export default function PersonView({
 
             <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
               <MovieGridSidebarBoundary />
-              <div className="flex w-full flex-col">
+              <div className="flex flex-col">
                 <div className="movie-detail-section-band movie-detail-shell-inset">
-                  <div className="w-full">
-                    <div className="flex min-w-0 items-end justify-between gap-3">
-                      <div className="min-w-0">
-                        <div
-                          className="font-zuume max-w-full text-5xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
-                        >
-                          {person.name}
-                        </div>
+                  <div className="flex min-w-0 items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-zuume max-w-full text-5xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl">
+                        {person.name}
                       </div>
                     </div>
                   </div>
 
                   {biographyExcerpt ? (
-                    <div className="mt-4 w-full">
-                      <div className="w-full">
-                        <p className="movie-detail-reading-measure text-left text-base leading-7 text-white/70 sm:text-justify">
-                          {biographyExcerpt}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="movie-detail-reading-measure mt-4 text-left text-base leading-7 text-white/70 sm:text-justify">
+                      {biographyExcerpt}
+                    </p>
                   ) : null}
                 </div>
 
                 <div key={`person-view-${activeView}`}>
                   {activeView === 'awards' ? (
-                    <div className="w-full">
-                      <PersonGridSection divider="plain">
-                        <PersonAwards personId={person.id} />
-                      </PersonGridSection>
-                    </div>
+                    <PersonGridSection divider="plain">
+                      <PersonAwards personId={person.id} />
+                    </PersonGridSection>
                   ) : (
                     <Suspense fallback={deferredFallback}>
                       <PersonDeferredContent

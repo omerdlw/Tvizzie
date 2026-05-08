@@ -18,9 +18,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 rounded border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
-const TOOL_BUTTON_CLASS = 'size-7 rounded-xs transition';
+const TOOL_BUTTON_CLASS = 'size-7  transition';
 
 const SKELETON_COUNT = 16;
 
@@ -176,11 +176,11 @@ function NotificationContent({ type, actor, payload }) {
 
 function NotificationSkeleton() {
   return (
-    <div className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
-      <div className="size-10 shrink-0 animate-pulse rounded-xs bg-white/10" />
+    <div className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
+      <div className="skeleton-block size-10 shrink-0" />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-3/5 animate-pulse rounded-xs bg-white/10" />
-        <div className="h-2 w-2/5 animate-pulse rounded-xs bg-white/10" />
+        <div className="skeleton-block h-3 w-3/5" />
+        <div className="skeleton-block-soft h-2 w-2/5" />
       </div>
     </div>
   );
@@ -194,11 +194,11 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
   return (
     <div
       className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 p-3 transition-colors last:border-none lg:p-4',
+        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-colors last:border-none lg:p-4',
         isUnread ? 'bg-white/10 hover:bg-white/10' : 'hover:bg-white/10'
       )}
     >
-      <div className="center size-10 shrink-0 overflow-hidden rounded-xs">
+      <div className="center size-10 shrink-0 overflow-hidden">
         {notification.actor ? (
           <AdaptiveImage
             mode="img"

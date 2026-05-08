@@ -204,7 +204,7 @@ export async function sendVerificationCodeEmail({ email, code, expiresAt, purpos
             cellspacing="0"
             cellpadding="0"
             border="0"
-            style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 1px solid #e8e3d7; border-radius: 12px;"
+            style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 0.5px solid #e8e3d7; border-radius: 12px;"
           >
             <tr>
               <td style="padding: 22px 22px 18px;">

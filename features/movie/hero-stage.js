@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import CastSection from '@/features/movie/cast-section';
 import { MovieGridCastBoundary } from '@/features/movie/grid-animation';
 import MovieOverview from '@/features/movie/overview';
-import { cn } from '@/ui/elements/utils';
+import { cn } from '@/core/utils';
 
 const DESKTOP_BREAKPOINT = 1024;
 
@@ -73,21 +73,21 @@ export default function MovieHeroStage({
   return (
     <div className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)} style={stageStyle}>
       <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
-        <div className={cn("movie-detail-shell-inset flex min-h-0 flex-1 flex-col gap-4 overflow-hidden")}>
+        <div className="movie-detail-shell-inset flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           <div className="shrink-0">{titleBlock}</div>
 
           {tagline || overview ? (
             <div className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}>
               {tagline ? (
                 <div className="w-full shrink-0">
-                  <p className={cn("text-white-strong w-full shrink-0 text-xs font-semibold tracking-widest uppercase sm:text-sm")}>
+                  <p className="w-full shrink-0 text-xs font-semibold tracking-widest text-white/70 uppercase sm:text-sm">
                     {tagline}
                   </p>
                 </div>
               ) : null}
 
               {overview ? (
-                <div className="min-h-0 flex-1 flex">
+                <div className="flex min-h-0 flex-1">
                   <MovieOverview overview={overview} className="flex-1" />
                 </div>
               ) : null}
@@ -96,9 +96,9 @@ export default function MovieHeroStage({
         </div>
 
         {hasCast ? (
-          <div className={cn("movie-detail-primary-cast-block shrink-0")}>
+          <div className="movie-detail-primary-cast-block shrink-0">
             <MovieGridCastBoundary />
-            <div className={cn("movie-detail-shell-inset")}>
+            <div className="movie-detail-shell-inset">
               <CastSection cast={cast} crew={crew} />
             </div>
           </div>

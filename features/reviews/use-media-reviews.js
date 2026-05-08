@@ -10,7 +10,9 @@ import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useNavHeight } from '@/core/modules/nav/hooks';
 import { useToast } from '@/core/modules/notification/hooks';
+import { subscribeToLikeStatus } from '@/core/services/media/likes.service';
 import { deleteMediaReview, subscribeToMediaReviews, toggleReviewLike } from '@/core/services/media/reviews.service';
+import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 
 import { getRatingStats, sortReviews } from './utils';
 
@@ -47,6 +49,7 @@ export function useMediaReviews({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [navConfirmation, setNavConfirmation] = useState(null);
+  const [isCurrentMediaLiked, setIsCurrentMediaLiked] = useState(false);
   const pendingLikesRef = useRef(new Map());
 
   const currentUserId = auth.user?.id;
@@ -65,6 +68,17 @@ export function useMediaReviews({
     }),
     [backdropPath, entityId, entityType, posterPath, title]
   );
+  const mediaKey = useMemo(() => {
+    if (!entityType || entityId === undefined || entityId === null) {
+      return null;
+    }
+
+    try {
+      return buildMediaItemKey(entityType, entityId);
+    } catch {
+      return null;
+    }
+  }, [entityId, entityType]);
 
   useEffect(() => {
     let isMounted = true;
@@ -117,6 +131,25 @@ export function useMediaReviews({
       unsubscribe();
     };
   }, [currentUserId, limitCount, media]);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      setIsCurrentMediaLiked(false);
+      return;
+    }
+
+    const unsubscribe = subscribeToLikeStatus(
+      { media, userId: currentUserId },
+      (isLiked) => {
+        setIsCurrentMediaLiked(Boolean(isLiked));
+      },
+      {
+        onError: () => setIsCurrentMediaLiked(false),
+      }
+    );
+
+    return () => unsubscribe();
+  }, [currentUserId, media]);
 
   const ownReview = useMemo(() => {
     if (!currentUserId) {
@@ -247,6 +280,8 @@ export function useMediaReviews({
     loadError,
     navHeight,
     ownReview,
+    isCurrentMediaLiked,
+    mediaKey,
     ratingStats,
     reviews,
     setNavConfirmation,

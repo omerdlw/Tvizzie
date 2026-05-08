@@ -10,7 +10,7 @@ import { getNavConfirmationKey } from '@/core/modules/nav/utils';
 
 const BUTTON_TONES = Object.freeze({
   danger: 'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-black hover:border-error',
-  muted: 'border border-white/10 bg-primary hover:bg-black',
+  muted: 'border border-white/5 bg-primary hover:bg-black',
   primary: 'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-black hover:border-info',
 });
 

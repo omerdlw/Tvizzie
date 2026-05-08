@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
@@ -96,53 +95,21 @@ function ImagesSectionContent({ images }) {
   return (
     <section className="movie-detail-section-content w-full">
       <div>
-        <SegmentedControl
-          classNames={{
-            track: ' w-auto',
-            wrapper: 'p-0.5 h-7',
-            button: '',
-            indicator: '',
-          }}
-          items={availableTabs}
-          value={activeKey}
-          onChange={setActiveKey}
-        />
+        <SegmentedControl items={availableTabs} value={activeKey} onChange={setActiveKey} />
       </div>
 
       <div className="relative">
         <div key={`movie-images-${currentTab.key}`}>
           <Carousel gap="gap-3">
-            {items.map((image, index) => {
-              return (
-                <div key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}>
-                  <MediaCard
-                    imageSrc={image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null}
-                    imageClassName={currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
-                    onClick={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
-                    imageFetchPriority={index < 3 ? 'high' : undefined}
-                    imagePreset={currentTab.key === 'posters' ? 'poster' : 'feature'}
-                    fallbackIcon={PLACEHOLDER_ICONS[currentTab.key]}
-                    imageAlt={`${currentTab.label} ${index + 1}`}
-                    className={`shrink-0 ${currentTab.width}`}
-                    aspectClass={currentTab.aspect}
-                    imageSizes={currentTab.sizes}
-                    imagePriority={index < 3}
-                    fallbackIconSize={24}
-                    {...(currentTab.key === 'backdrops'
-                      ? {
-                          'data-backdrop-file-path': image.file_path || '',
-                          'data-context-menu-target': 'movie-backdrop-card',
-                        }
-                      : currentTab.key === 'posters'
-                        ? {
-                            'data-poster-file-path': image.file_path || '',
-                            'data-context-menu-target': 'movie-poster-card',
-                          }
-                        : {})}
-                  />
-                </div>
-              );
-            })}
+            {items.map((image, index) => (
+              <ImageCard
+                key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
+                image={image}
+                index={index}
+                tab={currentTab}
+                onPreview={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
+              />
+            ))}
           </Carousel>
         </div>
       </div>
@@ -151,9 +118,46 @@ function ImagesSectionContent({ images }) {
 }
 
 export default function ImagesSection({ images }) {
+  return <ImagesSectionContent images={images} />;
+}
+
+function getImageContextAttributes(tabKey, filePath) {
+  if (tabKey === 'backdrops') {
+    return {
+      'data-backdrop-file-path': filePath || '',
+      'data-context-menu-target': 'movie-backdrop-card',
+    };
+  }
+
+  if (tabKey === 'posters') {
+    return {
+      'data-poster-file-path': filePath || '',
+      'data-context-menu-target': 'movie-poster-card',
+    };
+  }
+
+  return {};
+}
+
+function ImageCard({ image, index, onPreview, tab }) {
+  const filePath = image.file_path || '';
+  const isPriority = index < 3;
+
   return (
-    <div className="w-full">
-      <ImagesSectionContent images={images} />
-    </div>
+    <MediaCard
+      imageSrc={filePath ? `${TMDB_IMG}/${tab.size}${filePath}` : null}
+      imageClassName={tab.key === 'logos' ? 'object-contain p-4' : 'object-cover'}
+      onClick={onPreview}
+      imageFetchPriority={isPriority ? 'high' : undefined}
+      imagePreset={tab.key === 'posters' ? 'poster' : 'feature'}
+      fallbackIcon={PLACEHOLDER_ICONS[tab.key]}
+      imageAlt={`${tab.label} ${index + 1}`}
+      className={`shrink-0 ${tab.width}`}
+      aspectClass={tab.aspect}
+      imageSizes={tab.sizes}
+      imagePriority={isPriority}
+      fallbackIconSize={24}
+      {...getImageContextAttributes(tab.key, filePath)}
+    />
   );
 }

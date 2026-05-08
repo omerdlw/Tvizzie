@@ -7,7 +7,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import AccountInlineSectionState from '../shared/section-state';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 import AccountSectionLayout from '../shared/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 5;
@@ -100,10 +100,7 @@ export default function AccountFavoritesOverview({
       {cards.length > 0 ? (
         <div className="account-overview-media-grid account-overview-media-grid-favorites">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div
-              key={`${card.id}-${index}`}
-              className="flex h-full min-w-0 flex-col"
-            >
+            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
               <MediaCard
                 className="w-full md:w-full lg:w-full"
                 href={card.href}
@@ -119,7 +116,7 @@ export default function AccountFavoritesOverview({
                         aria-label={`Remove ${card.imageAlt} from favorites showcase`}
                         variant="destructive-icon"
                         className={
-                          'text-error hover:border-error hover:bg-error rounded-xs border border-white/15 bg-black hover:text-black'
+                          'text-error hover:border-error hover:bg-error  border border-white/15 bg-black hover:text-black'
                         }
                         disabled={pendingItemId === card.id}
                         onClick={async (event) => {

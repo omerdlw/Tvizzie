@@ -6,7 +6,7 @@ import Icon from '@/ui/icon';
 
 export const PROVIDER_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'center w-full gap-3 h-12 px-4 bg-white/5 rounded hover:bg-white hover:text-black transition border border-white/10 disabled:cursor-not-allowed disabled:opacity-50',
+    'center w-full gap-3 h-12 px-4 bg-white/5  hover:bg-white hover:text-black transition border border-white/5 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export default function OAuthProviderButton({ disabled = false, isBusy = false, mode = 'sign-in', onClick, provider }) {

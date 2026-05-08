@@ -52,7 +52,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
   transition: Object.freeze({
     ease: [0.22, 1, 0.36, 1],
-    duration: 0.35,
+    duration: 0.28,
     type: 'tween',
   }),
 });
@@ -90,7 +90,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border p-1.5 sm:p-2 rounded backdrop-blur-2xl',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border p-1.5 sm:p-2  backdrop-blur-2xl',
       'border-white/10 bg-black/60',
       showBorder && 'border-white/15',
       cardStyle?.className
@@ -117,7 +117,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       scale: 0.9,
       y: 0,
       transition: {
-        duration: 0.25,
+        duration: 0.2,
         ease: [0.22, 1, 0.36, 1],
       },
     },
@@ -183,7 +183,7 @@ function VideoOverlayIcon({ icon }) {
     <motion.div
       className={cn(
         'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-white/10 bg-black'
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-white/5 bg-black'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
       transition={NAV_MICRO_SPRING}

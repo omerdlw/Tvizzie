@@ -1,6 +1,6 @@
 import AccountListsFeed from '@/features/account/feeds/lists';
 import AccountAction from '@/features/navigation/actions/account-action';
-import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
+import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountListsRegistry',

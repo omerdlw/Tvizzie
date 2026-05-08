@@ -1,6 +1,6 @@
 'use client';
 
-import { createAccountSectionRegistry } from './shared/section-factory';
+import { createAccountSectionRegistry } from '@/features/account/route/section-factory';
 
 export default createAccountSectionRegistry({
   displayName: 'AccountOverviewRegistry',

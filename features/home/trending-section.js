@@ -27,7 +27,9 @@ export function TrendingSection({ title, items = [] }) {
     <div className="w-full">
       <section className="home-section-shell flex w-full flex-col gap-4">
         <div className="home-section-heading">
-          <h2 className="text-xs font-semibold tracking-widest text-white-soft uppercase">{title}</h2>
+          <h2 className="font-zuume text-3xl leading-none font-bold text-white uppercase sm:text-4xl lg:text-5xl">
+            {title}
+          </h2>
         </div>
         <PosterRail items={railItems} />
       </section>

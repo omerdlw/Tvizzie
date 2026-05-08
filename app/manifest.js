@@ -5,8 +5,6 @@ export default function manifest() {
     description: 'Discover, track, and review your favorite movies',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#ffffff',
     icons: [
       {
         src: '/tvizzie.png',

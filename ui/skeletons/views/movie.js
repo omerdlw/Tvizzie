@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import MoviePrimaryGridDivider from '@/features/movie/primary-grid-divider';
 import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
@@ -21,32 +21,32 @@ function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
 
 function SegmentTabs() {
   return (
-    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1 rounded p-0.5">
+    <SkeletonBlock className="inline-flex w-fit items-center gap-1  p-0.5" soft={true}>
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
       <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
-    </div>
+    </SkeletonBlock>
   );
 }
 
 function CastCard() {
   return (
-    <div className="flex items-center gap-3 rounded bg-white/5 p-0.5 pr-4 backdrop-blur-xs">
+    <SkeletonBlock className="flex items-center gap-3  p-0.5 pr-4" soft={true}>
       <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
         <TextLine width="w-1/2" className="h-2.5" soft={true} />
       </div>
-    </div>
+    </SkeletonBlock>
   );
 }
 
 function CompactCastCard() {
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded bg-white/5 p-1 pr-2 backdrop-blur-xs">
+    <SkeletonBlock className="flex h-10 min-w-0 flex-1 items-center gap-2  p-1 pr-2" soft={true}>
       <SkeletonBlock className="size-8 shrink-0" radius="segmentedItem" />
       <TextLine width="w-3/5" className="h-3" />
-    </div>
+    </SkeletonBlock>
   );
 }
 
@@ -169,7 +169,7 @@ function MovieCastSkeleton({ className = '' }) {
 
 function MovieReviewsSkeleton({ className = '' }) {
   return (
-    <section className={`relative isolate z-0 flex w-full flex-col gap-0 overflow-hidden rounded ${className}`}>
+    <section className={`relative isolate z-0 flex w-full flex-col gap-0 overflow-hidden ${className}`}>
       <div className="p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
           <div className="flex min-w-0 items-center gap-3">
@@ -185,10 +185,7 @@ function MovieReviewsSkeleton({ className = '' }) {
       </div>
       <div className="flex flex-col">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="relative p-5"
-          >
+          <div key={index} className={`relative p-5 ${index < 3 ? 'border-b border-white/10' : ''}`}>
             <div className="flex min-w-0 items-start gap-3 sm:gap-4">
               <SkeletonBlock className="size-14 shrink-0" radius="field" />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -253,13 +250,19 @@ function MovieSectionContentSkeleton({ variant = 'gallery' }) {
   );
 }
 
-export function MovieSectionSkeleton({ className = '', variant = 'gallery', hideDivider = false }) {
+export function MovieSectionSkeleton({
+  className = '',
+  variant = 'gallery',
+  hideDivider = false,
+  insetDivider = true,
+}) {
   if (variant === 'reviews') {
     return <MovieReviewsSkeleton className={className} />;
   }
 
   return (
     <section className={`movie-detail-grid-subsection ${className}`}>
+      {!hideDivider && <MovieGridDivider inset={insetDivider} />}
       <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">
         <MovieSectionContentSkeleton variant={variant} />
       </div>
@@ -274,7 +277,7 @@ function SidebarSkeleton() {
         data-movie-sidebar-primary="true"
         className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
       >
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
         <SidebarActionButtons />
@@ -299,7 +302,7 @@ function MovieReviewsSidebarSkeleton() {
         data-movie-sidebar-primary="true"
         className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
       >
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
       </div>
@@ -357,6 +360,7 @@ function MovieContentSkeleton() {
           </div>
 
           <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
+            <MovieGridSidebarBoundary />
             <div className="flex w-full flex-col">
               <div
                 className="movie-detail-primary-stage flex flex-col overflow-hidden py-7"
@@ -375,6 +379,8 @@ function MovieContentSkeleton() {
               <MovieSectionSkeleton variant="images" />
             </div>
           </div>
+
+          <MoviePrimaryGridDivider />
         </div>
 
         <MovieSectionSkeleton variant="videos" />
@@ -382,6 +388,7 @@ function MovieContentSkeleton() {
         <MovieSectionSkeleton variant="recommendations" />
 
         <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
+          <MovieGridDivider />
           <div className="movie-detail-grid-subsection-content">
             <MovieReviewsSkeleton />
           </div>
@@ -412,6 +419,7 @@ export function MovieReviewsPageSkeleton() {
             </div>
 
             <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
+              <MovieGridSidebarBoundary />
               <div className="flex w-full flex-col py-7 sm:py-8 lg:py-12">
                 <MovieReviewsHeroSkeleton />
                 <MovieReviewsSkeleton className="movie-reviews-panel mt-1 md:mt-2" />

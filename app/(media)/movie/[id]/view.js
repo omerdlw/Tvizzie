@@ -1,6 +1,6 @@
 import { Suspense, use } from 'react';
 
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import CollectionActions from '@/features/movie/collection-actions';
 import GallerySection from '@/features/movie/gallery-section';
@@ -15,13 +15,14 @@ import VideosSection from '@/features/movie/videos-section';
 import MediaReviews from '@/features/reviews/media-reviews';
 import Carousel from '@/ui/media/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
+import { cn } from '@/core/utils';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
 
 import Registry from './registry';
 
 function MovieGridSection({ children, className = '', insetDivider = true, hideDivider = false }) {
   return (
-    <section className={`movie-detail-grid-subsection ${className}`}>
+    <section className={cn('movie-detail-grid-subsection', className)}>
       {!hideDivider && <MovieGridDivider inset={insetDivider} />}
       <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">{children}</div>
     </section>
@@ -34,24 +35,22 @@ function RelatedMoviesSection({ items, title, hideDivider = false }) {
   }
 
   return (
-    <div className="w-full">
-      <MovieGridSection hideDivider={hideDivider}>
-        <div className="flex flex-col gap-3">
-          <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
-          <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
-            {items.map((item, index) => (
-              <RecommendationCard
-                key={`${item.id}-${index}`}
-                movie={item}
-                index={index}
-                imagePriority={index < 4}
-                imageFetchPriority={index < 4 ? 'high' : undefined}
-              />
-            ))}
-          </Carousel>
-        </div>
-      </MovieGridSection>
-    </div>
+    <MovieGridSection hideDivider={hideDivider}>
+      <div className="flex flex-col gap-3">
+        <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
+        <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
+          {items.map((item, index) => (
+            <RecommendationCard
+              key={`${item.id}-${index}`}
+              movie={item}
+              index={index}
+              imagePriority={index < 4}
+              imageFetchPriority={index < 4 ? 'high' : undefined}
+            />
+          ))}
+        </Carousel>
+      </div>
+    </MovieGridSection>
   );
 }
 
@@ -77,32 +76,28 @@ function MovieVisualMediaDeferred({
   return (
     <div className="flex flex-col">
       {hasGallery ? (
-        <div className="w-full">
-          <MovieGridSection hideDivider={!showLeadingDivider}>
-            <GallerySection
-              images={galleryImages}
-              onSetMovieBackground={onSetMovieBackground}
-              onResetMovieBackground={onResetMovieBackground}
-              canResetMovieBackground={canResetMovieBackground}
-            />
-          </MovieGridSection>
-        </div>
+        <MovieGridSection hideDivider={!showLeadingDivider}>
+          <GallerySection
+            images={galleryImages}
+            onSetMovieBackground={onSetMovieBackground}
+            onResetMovieBackground={onResetMovieBackground}
+            canResetMovieBackground={canResetMovieBackground}
+          />
+        </MovieGridSection>
       ) : null}
 
       {hasImages ? (
-        <div className="w-full">
-          <MovieGridSection hideDivider={!hasGallery && !showLeadingDivider}>
-            <ImagesSection
-              images={secondaryMovie.images}
-              onSetMovieBackground={onSetMovieBackground}
-              onSetMoviePoster={onSetMoviePoster}
-              onResetMovieBackground={onResetMovieBackground}
-              onResetMoviePoster={onResetMoviePoster}
-              canResetMovieBackground={canResetMovieBackground}
-              canResetMoviePoster={canResetMoviePoster}
-            />
-          </MovieGridSection>
-        </div>
+        <MovieGridSection hideDivider={!hasGallery && !showLeadingDivider}>
+          <ImagesSection
+            images={secondaryMovie.images}
+            onSetMovieBackground={onSetMovieBackground}
+            onSetMoviePoster={onSetMoviePoster}
+            onResetMovieBackground={onResetMovieBackground}
+            onResetMoviePoster={onResetMoviePoster}
+            canResetMovieBackground={canResetMovieBackground}
+            canResetMoviePoster={canResetMoviePoster}
+          />
+        </MovieGridSection>
       ) : null}
     </div>
   );
@@ -148,12 +143,13 @@ function MovieDiscoveryDeferred({
   return (
     <div className="flex flex-col">
       {sections.map((section, index) =>
-        section.key === 'videos' ? (
-          <div key={section.key} className="w-full">
-            <MovieGridSection hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}>
-              {section.content}
-            </MovieGridSection>
-          </div>
+        section.content ? (
+          <MovieGridSection
+            key={section.key}
+            hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}
+          >
+            {section.content}
+          </MovieGridSection>
         ) : (
           <RelatedMoviesSection
             key={section.key}
@@ -213,7 +209,7 @@ export default function MovieView({
       />
 
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-        <MovieGridFrame className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}>
+        <MovieGridFrame className={cn('mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}>
           <div className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0">
             <div className="movie-detail-grid-sidebar relative w-full shrink-0">
               <div className="h-full lg:sticky lg:top-0">
@@ -230,7 +226,7 @@ export default function MovieView({
             </div>
             <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
               <MovieGridSidebarBoundary />
-              <div className="flex w-full flex-col">
+              <div className="flex flex-col">
                 <MovieHeroStage
                   cast={computed.cast}
                   crew={computed.crew}
@@ -240,9 +236,7 @@ export default function MovieView({
                   titleBlock={
                     <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
                       <div className="min-w-0">
-                        <div
-                          className="font-zuume max-w-full text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl"
-                        >
+                        <div className="font-zuume max-w-full text-6xl leading-none font-bold uppercase sm:text-7xl lg:text-8xl">
                           {movie.title}
                         </div>
                       </div>
@@ -272,20 +266,18 @@ export default function MovieView({
           <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
             <MovieGridDivider />
             <div className="movie-detail-grid-subsection-content">
-              <div className="w-full">
-                <MediaReviews
-                  entityId={movie.id}
-                  entityType="movie"
-                  title={movie.title}
-                  headerTitle="Recent Reviews"
-                  listMode="recent"
-                  showBackdropGradient={false}
-                  allReviewsHref={`/movie/${movie.id}/reviews`}
-                  posterPath={movie.poster_path}
-                  backdropPath={movie.backdrop_path}
-                  onReviewStateChange={setReviewState}
-                />
-              </div>
+              <MediaReviews
+                entityId={movie.id}
+                entityType="movie"
+                title={movie.title}
+                headerTitle="Recent Reviews"
+                listMode="recent"
+                showBackdropGradient={false}
+                allReviewsHref={`/movie/${movie.id}/reviews`}
+                posterPath={movie.poster_path}
+                backdropPath={movie.backdrop_path}
+                onReviewStateChange={setReviewState}
+              />
             </div>
           </section>
           <NavHeightSpacer className="w-full" />

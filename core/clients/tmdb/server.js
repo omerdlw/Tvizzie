@@ -4,7 +4,12 @@ import { cache } from 'react';
 
 import { TMDB_API_URL } from '@/core/constants';
 import { isPersonMediaType, normalizeMediaType } from '@/core/utils/media';
-import { sanitizeMovieDetail, sanitizeMovieResults, sanitizePersonDetail } from '@/core/clients/tmdb/sanitize';
+import {
+  isDisplayableMovie,
+  sanitizeMovieDetail,
+  sanitizeMovieResults,
+  sanitizePersonDetail,
+} from '@/core/clients/tmdb/sanitize';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 const TMDB_FETCH_TIMEOUT_MS = 4500;
@@ -344,6 +349,10 @@ function getMovieRuntimeValue(movie = {}) {
   return Number.isFinite(runtime) && runtime > 0 ? runtime : null;
 }
 
+function isDisplayableMovieForDetail(movie = {}) {
+  return isDisplayableMovie(movie, 'detail');
+}
+
 function getPersonPopularityValue(person = {}) {
   return Number(person?.popularity) || 0;
 }
@@ -352,21 +361,33 @@ function getPersonKnownForCount(person = {}) {
   return Array.isArray(person?.known_for) ? person.known_for.length : 0;
 }
 
-function passesMovieSearchQualityGate(movie = {}) {
+function passesMovieSearchQualityGate(movie = {}, options = {}) {
   const voteCount = getMovieVoteCountValue(movie);
   const voteAverage = getMovieVoteAverageValue(movie);
   const runtime = getMovieRuntimeValue(movie);
+  const textScore = Number(options.textScore) || 0;
+  const queryLength = getSearchQueryLength(options.query || '');
+  const hasVisual = Boolean(movie?.poster_path || movie?.backdrop_path);
+  const isStrongExactMatch = textScore >= 1200;
+  const isStrongPrefixMatch = textScore >= 900 && queryLength >= 4;
+  const canRelaxQualityGate = isStrongExactMatch || (isStrongPrefixMatch && hasVisual);
 
   if (voteCount < SEARCH_MIN_MOVIE_VOTE_COUNT) {
-    return false;
+    if (!canRelaxQualityGate || voteCount < 5) {
+      return false;
+    }
   }
 
   if (voteAverage < SEARCH_MIN_MOVIE_VOTE_AVERAGE) {
-    return false;
+    if (!canRelaxQualityGate || voteAverage <= 0) {
+      return false;
+    }
   }
 
   if (runtime !== null && runtime < SEARCH_MIN_MOVIE_RUNTIME) {
-    return false;
+    if (!canRelaxQualityGate) {
+      return false;
+    }
   }
 
   return true;
@@ -390,8 +411,39 @@ function passesPersonSearchQualityGate(person = {}, scope = 'preview') {
   return popularity >= 5 && (knownForCount > 0 || hasDepartment);
 }
 
-function isPersonPreviewQualityMatch(person = {}, textScore = 0) {
+function isPersonPreviewQualityMatch(person = {}, textScore = 0, query = '') {
   const popularity = getPersonPopularityValue(person);
+  const knownForCount = getPersonKnownForCount(person);
+  const hasProfile = Boolean(person?.profile_path);
+  const queryLength = getSearchQueryLength(query);
+
+  if (!hasProfile) {
+    return false;
+  }
+
+  if (queryLength <= 3) {
+    if (popularity >= 2) {
+      return true;
+    }
+
+    if (textScore >= 1200 && popularity >= 0.5) {
+      return true;
+    }
+
+    return knownForCount >= 3;
+  }
+
+  if (queryLength <= 5) {
+    if (popularity >= 1) {
+      return true;
+    }
+
+    if (textScore >= 1200) {
+      return true;
+    }
+
+    return popularity >= 0.5 && textScore >= 900 && knownForCount > 0;
+  }
 
   if (popularity >= 1) {
     return true;
@@ -409,11 +461,14 @@ function isMovieSearchCandidate(movie = {}, query = '') {
     return false;
   }
 
-  if (!passesMovieSearchQualityGate(movie)) {
+  const texts = getMovieSearchTexts(movie);
+  const textScore = getBestSearchTextScore(texts, query);
+
+  if (!passesMovieSearchQualityGate(movie, { query, textScore })) {
     return false;
   }
 
-  return getMovieSearchTexts(movie).length > 0 && getBestSearchTextScore(getMovieSearchTexts(movie), query) > 0;
+  return texts.length > 0 && textScore > 0;
 }
 
 function isPersonSearchCandidate(person = {}, query = '', options = {}) {
@@ -431,7 +486,7 @@ function isPersonSearchCandidate(person = {}, query = '', options = {}) {
     return false;
   }
 
-  if (normalizeSearchScope(options.scope) === 'preview' && !isPersonPreviewQualityMatch(person, textScore)) {
+  if (normalizeSearchScope(options.scope) === 'preview' && !isPersonPreviewQualityMatch(person, textScore, query)) {
     return false;
   }
 
@@ -468,7 +523,7 @@ function buildAuthorityFallbackItems(items = [], type = 'movie', options = {}) {
   }
 
   return sortSearchItemsByAuthority(
-    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie)),
+    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie) && isDisplayableMovieForDetail(movie)),
     type
   );
 }
@@ -544,7 +599,10 @@ async function rankResolvedMovieSearchItems(items = [], query = '', options = {}
   const hydratedEntries = await hydrateMovieSearchRuntimeCandidates(rankedEntries, options);
 
   return hydratedEntries
-    .filter(({ item }) => passesMovieSearchQualityGate(item))
+    .filter(
+      ({ item, textScore }) =>
+        passesMovieSearchQualityGate(item, { query, textScore }) && isDisplayableMovieForDetail(item)
+    )
     .sort((left, right) => {
       if (right.totalScore !== left.totalScore) {
         return right.totalScore - left.totalScore;

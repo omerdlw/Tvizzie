@@ -222,7 +222,7 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer rounded-xs p-1 text-white/70 transition-all hover:bg-white/10 hover:text-white"
+        className="center relative cursor-pointer  p-1 text-white/70 transition-all hover:bg-white/10 hover:text-white"
         onClick={action.onClick}
         type="button"
         whileTap={{ scale: 0.92 }}

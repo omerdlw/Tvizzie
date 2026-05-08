@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 import { pipe } from '@/core/utils';
 import { ACCOUNT_PROVIDER_CONFIG } from '@/core/services/account/account-client';
-import GlobalContextMenuRegistry from '@/features/app-shell/global-context-menu-registry';
+import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import NotificationsModal from '@/features/modals/notifications-modal';
 import AccountNavRegistry from '@/features/navigation/account-nav-registry';
 import { AccountProvider } from '@/core/modules/account';

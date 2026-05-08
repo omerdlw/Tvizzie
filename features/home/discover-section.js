@@ -239,13 +239,10 @@ export function DiscoverSection({
   return (
     <div className="w-full">
       <section className="home-section-shell flex w-full flex-col gap-5">
-        <div className="home-section-heading flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-semibold tracking-widest text-white-muted uppercase">Browse</p>
-            <h2 className="font-zuume text-5xl leading-none font-bold text-white uppercase sm:text-6xl">
-              Discover movies
-            </h2>
-          </div>
+        <div className="home-section-heading">
+          <h2 className="font-zuume text-3xl leading-none font-bold text-white uppercase sm:text-4xl lg:text-5xl">
+            Discover movies
+          </h2>
         </div>
 
         <div
@@ -283,11 +280,11 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="rounded border border-grid-line bg-primary p-3 text-sm text-white-muted">{gridError}</div>
+          <div className="border-grid-line bg-primary text-white-muted  border p-3 text-sm">{gridError}</div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="rounded border border-grid-line bg-primary p-4 text-sm text-white-muted">
+          <div className="border-grid-line bg-primary text-white-muted  border p-4 text-sm">
             No movies found for this genre.
           </div>
         ) : null}
@@ -298,7 +295,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 rounded border border-grid-line bg-primary px-5 text-xs font-semibold tracking-widest text-white-soft uppercase transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
+              className="border-grid-line bg-primary text-white-soft inline-flex h-10 items-center gap-2  border px-5 text-xs font-semibold tracking-widest uppercase transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

@@ -2,6 +2,7 @@
 
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
+import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 
 function getCreditRole(credit) {
@@ -31,7 +32,7 @@ export default function FilmographyCard({ credit, className = '', imagePriority 
   return (
     <MediaCard
       href={`/movie/${credit.id}`}
-      className={`w-full ${className}`.trim()}
+      className={cn('w-full', className)}
       imageSrc={
         getPreferredMoviePosterSrc(credit, 'w342') ||
         (credit.poster_path ? `${TMDB_IMG}/w342${credit.poster_path}` : null)

@@ -1,6 +1,6 @@
 'use client';
 
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import Registry from './registry';
 import View from './view';
 

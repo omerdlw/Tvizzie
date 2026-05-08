@@ -17,9 +17,22 @@ import { NAV_BACKDROP_TRANSITION, NAV_CONTAINER_SPRING } from './motion';
 // ─── Viewport-safe height calculation ───────────────────────────────────────
 
 const VIEWPORT_MARGIN = 24; // px from top of viewport
+const NAV_SPACER_BOTTOM_LOCK_DISTANCE = 40;
+
 function getViewportMaxHeight() {
   if (typeof window === 'undefined') return Infinity;
   return window.innerHeight - VIEWPORT_MARGIN;
+}
+
+function getDistanceToBottom() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return Infinity;
+  }
+
+  const root = document.documentElement;
+  const maxScrollY = Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
+  const scrollY = window.scrollY || 0;
+  return Math.max(maxScrollY - scrollY, 0);
 }
 
 function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact }) {
@@ -194,9 +207,11 @@ export default function Nav() {
         cardContentHeight: content,
         compact: compactRef.current,
       });
+      const isBottomLockedForSpacer = getDistanceToBottom() <= NAV_SPACER_BOTTOM_LOCK_DISTANCE;
+      const spacerBaseHeight = isBottomLockedForSpacer ? NAV_CARD_LAYOUT.compactHeight : height;
 
       setContainerHeight(height);
-      setNavHeight(height + NAV_HEIGHT_BUFFER);
+      setNavHeight(spacerBaseHeight + NAV_HEIGHT_BUFFER);
     });
   }, [setNavHeight]);
 

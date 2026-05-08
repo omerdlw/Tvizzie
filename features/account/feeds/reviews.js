@@ -24,9 +24,15 @@ import AccountSectionLayout from '../shared/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 
+function normalizeMediaKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
 function resolveMediaKey(item) {
   if (item?.mediaKey) {
-    return item.mediaKey;
+    return normalizeMediaKey(item.mediaKey);
   }
 
   const entityType = item?.entityType || item?.media_type || null;
@@ -36,16 +42,29 @@ function resolveMediaKey(item) {
     return null;
   }
 
-  return `${entityType}_${entityId}`;
+  return normalizeMediaKey(`${entityType}_${entityId}`);
 }
 
 function buildMediaKeySet(items = [], shouldInclude = () => true) {
-  return new Set(
-    items
-      .filter((item) => shouldInclude(item))
-      .map((item) => resolveMediaKey(item))
-      .filter(Boolean)
-  );
+  const set = new Set();
+
+  items
+    .filter((item) => shouldInclude(item))
+    .map((item) => resolveMediaKey(item))
+    .filter(Boolean)
+    .forEach((key) => {
+      set.add(key);
+
+      if (key.includes(':')) {
+        set.add(key.replace(/:/g, '_'));
+      }
+
+      if (key.includes('_')) {
+        set.add(key.replace(/_/g, ':'));
+      }
+    });
+
+  return set;
 }
 
 export default function AccountReviewsFeed({
@@ -229,7 +248,7 @@ export default function AccountReviewsFeed({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="rounded border border-white/10 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
+            className=" border border-white/5 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

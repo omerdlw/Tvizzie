@@ -1,13 +1,8 @@
 'use client';
 
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import { AccountSectionLoading } from '@/features/account/route/loading-state';
 import { Registry } from './view';
 
 export default function Loading() {
-  return (
-    <>
-      <Registry isPageLoading={true} />
-      <AccountRouteSkeleton variant="list-detail" />
-    </>
-  );
+  return <AccountSectionLoading Registry={Registry} variant="list-detail" />;
 }

@@ -1,5 +1,5 @@
 import AccountOverviewFeed from '@/features/account/feeds/overview';
-import { useAccountSectionState } from './shared/section-state';
+import { useAccountSectionState } from '@/features/account/route/section-state';
 import Registry from './registry';
 
 export default function AccountView({ overviewData = null, RegistryComponent = Registry }) {

@@ -34,7 +34,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 rounded-xs border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-white/10';
+  'h-8 w-auto shrink-0  border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-white/10';
 const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`;
 const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${SUCCESS_ACTION_TONE_CLASS}`;
 const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${INFO_ACTION_TONE_CLASS}`;
@@ -87,11 +87,11 @@ function LoadingList() {
   return (
     <div>
       {Array.from({ length: 10 }, (_, index) => (
-        <div key={index} className="flex items-center gap-3 border-b border-white/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse rounded-xs bg-white/10" />
+        <div key={index} className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
+          <div className="skeleton-block size-10 shrink-0 " />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse rounded-xs bg-white/10" />
-            <div className="h-2 w-2/5 animate-pulse rounded-xs bg-white/10" />
+            <div className="skeleton-block h-3 w-3/5 " />
+            <div className="skeleton-block-soft h-2 w-2/5 " />
           </div>
         </div>
       ))}
@@ -104,7 +104,7 @@ function SocialUserRow({ close, user, action }) {
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-white/10 p-3 transition-colors last:border-none hover:bg-white/10 lg:p-4">
+    <div className="flex items-center justify-between gap-3 border-b border-white/5 p-3 transition-colors last:border-none hover:bg-white/10 lg:p-4">
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -118,7 +118,7 @@ function SocialUserRow({ close, user, action }) {
           decoding="async"
           className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0 rounded-xs overflow-hidden"
+          wrapperClassName="size-10 shrink-0  overflow-hidden"
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
@@ -407,7 +407,7 @@ export default function AccountSocialModal({ close, data }) {
   const activeErrorMessage = activeError ? resolveCollectionErrorMessage(activeError, activeTab) : null;
   const emptyDescription = activeTab === TABS.INBOX ? 'No pending follow requests' : `No ${activeTab} yet`;
 
-  async function runUserAction(targetUserId, actionKey, action, successMessage, errorMessage) {
+  async function runUserAction(targetUserId, actionKey, action, errorMessage) {
     if (!authUserId || pendingActionByUserId[targetUserId]) return;
 
     setPendingActionByUserId((current) => ({ ...current, [targetUserId]: actionKey }));
@@ -431,7 +431,6 @@ export default function AccountSocialModal({ close, data }) {
       requesterId,
       'accept',
       () => acceptFollowRequest(authUserId, requesterId),
-      'Follow request accepted',
       'Request could not be accepted'
     );
 
@@ -440,7 +439,6 @@ export default function AccountSocialModal({ close, data }) {
       requesterId,
       'reject',
       () => rejectFollowRequest(authUserId, requesterId),
-      'Follow request rejected',
       'Request could not be rejected'
     );
 
@@ -449,7 +447,6 @@ export default function AccountSocialModal({ close, data }) {
       targetUserId,
       'unfollow',
       () => unfollowUser(authUserId, targetUserId),
-      'User unfollowed',
       'Could not unfollow this user'
     );
 
@@ -458,18 +455,11 @@ export default function AccountSocialModal({ close, data }) {
       followerId,
       'remove-follower',
       () => removeFollower(authUserId, followerId),
-      'Follower removed',
       'Could not remove follower'
     );
 
   const handleFollow = (targetUserId) =>
-    runUserAction(
-      targetUserId,
-      'follow',
-      () => followUser(authUserId, targetUserId),
-      'Follow state updated',
-      'Could not follow this user'
-    );
+    runUserAction(targetUserId, 'follow', () => followUser(authUserId, targetUserId), 'Could not follow this user');
 
   return (
     <Container

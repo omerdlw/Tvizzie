@@ -3,11 +3,10 @@
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
-import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
+import { cn, formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
-import { cn } from '@/core/utils';
 
 const MAX_VISIBLE_PERSONS = 2;
 const MAX_VISIBLE_TAGS = 8;
@@ -97,10 +96,10 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
           <span key={item} className="inline-flex">
             <span
               className={cn(
-                'inline-flex max-w-full items-center rounded bg-white/5 text-[11px] font-semibold',
+                'inline-flex max-w-full items-center  bg-white/10 text-[11px] font-semibold',
                 isTagGroup
-                  ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-white/60'
-                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wide text-white/80 uppercase'
+                  ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-white/50'
+                  : 'min-h-7 px-2.5 py-1 leading-none tracking-wide text-white/70 uppercase'
               )}
             >
               {item}
@@ -111,7 +110,7 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
         {hiddenItems.length > 0 ? (
           <span key="hidden-tags" className="inline-flex">
             <Tooltip text={hiddenItems.join(', ')} position="top">
-              <span className="inline-flex min-h-7 items-center rounded bg-white/5 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/80">
+              <span className="inline-flex min-h-7 items-center  bg-white/10 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/70">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
@@ -144,9 +143,9 @@ export function MovieSidebarPrimary({ item, topContent }) {
   return (
     <div
       data-movie-sidebar-primary="true"
-      className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7")}
+      className="media-detail-poster-shell flex flex-col gap-2"
     >
-      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
         {posterSrc ? (
           <AdaptiveImage
             fill
@@ -159,11 +158,11 @@ export function MovieSidebarPrimary({ item, topContent }) {
             decoding="async"
             placeholder="blur"
             blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
-            className="rounded object-cover"
+            className=" object-cover"
             wrapperClassName="h-full w-full"
           />
         ) : (
-          <div className="center h-full w-full bg-white/5 text-white/50">
+          <div className="center h-full w-full bg-white/10 text-white/50">
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}
@@ -182,18 +181,8 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
   const hasTaxonomy = genres?.length || tags?.length;
 
   const personGroups = [
-    {
-      id: 'writers',
-      label: 'Written by',
-      icon: 'solar:pen-bold',
-      persons: writers,
-    },
-    {
-      id: 'creators',
-      label: 'Created by',
-      icon: 'solar:pen-bold',
-      persons: creators,
-    },
+    { id: 'writers', label: 'Written by', icon: 'solar:pen-bold', persons: writers },
+    { id: 'creators', label: 'Created by', icon: 'solar:pen-bold', persons: creators },
   ];
 
   const rows = [
@@ -209,9 +198,7 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
 
     ...personGroups
       .filter((group) => group.persons?.length)
-      .map((group) => {
-        return createRow(group.id, group.icon, <PersonsDisplay persons={group.persons} label={group.label} />);
-      }),
+      .map((group) => createRow(group.id, group.icon, <PersonsDisplay persons={group.persons} label={group.label} />)),
 
     certification &&
       createRow(
@@ -269,10 +256,8 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
   ].filter(Boolean);
 
   return hasTaxonomy || rows.length ? (
-    <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7")}>
-      {hasTaxonomy ? (
-        <SidebarTaxonomy genres={genres} tags={tags} />
-      ) : null}
+    <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7">
+      {hasTaxonomy ? <SidebarTaxonomy genres={genres} tags={tags} /> : null}
 
       <div className="flex flex-col gap-1">
         {rows.map((row) => (

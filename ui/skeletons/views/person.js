@@ -1,6 +1,7 @@
 import { cn } from '@/core/utils';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
-import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
+import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
+import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import {
   SkeletonBlock,
@@ -42,14 +43,14 @@ function SocialDockSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-0">
-      <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7")}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+      <div className={cn('movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7')}>
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
           <SkeletonBlock className="h-full w-full" radius="hero" />
           <SocialDockSkeleton />
         </div>
       </div>
 
-      <div className={cn("movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7")}>
+      <div className={cn('movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7')}>
         <div className="flex flex-col gap-1">
           {Array.from({ length: 5 }).map((_, index) => (
             <SidebarRowSkeleton key={index} />
@@ -93,12 +94,15 @@ function FilmographyGridSkeleton() {
   );
 }
 
-function PersonGridSectionSkeleton({ children, divider = 'decorative' }) {
+function PersonGridSectionSkeleton({ children, className = '', divider = 'decorative' }) {
   const isPlainDivider = divider === 'plain';
 
   return (
-    <div className={cn(`movie-detail-grid-subsection ${isPlainDivider ? cn('person-detail-plain-section') : ''}`)}>
-      <div className={cn('movie-detail-grid-subsection-content movie-detail-shell-inset')}>{children}</div>
+    <div
+      className={cn(`movie-detail-grid-subsection ${isPlainDivider ? 'person-detail-plain-section' : ''} ${className}`)}
+    >
+      <MovieGridDivider className={isPlainDivider ? 'person-detail-grid-divider-plain' : ''} />
+      <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">{children}</div>
     </div>
   );
 }
@@ -186,11 +190,7 @@ function PersonHeroSkeleton() {
 function PersonContentSkeleton() {
   return (
     <PageGradientShell className="overflow-hidden" contentClassName={cn('movie-detail-grid-content')}>
-      <div
-        className={cn(
-          `movie-detail-grid-frame relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`
-        )}
-      >
+      <MovieGridFrame className={`mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}>
         <div className={cn('person-detail-grid-primary')}>
           <div className="movie-detail-grid-sidebar relative w-full shrink-0">
             <div className="lg:sticky lg:top-0">
@@ -198,7 +198,8 @@ function PersonContentSkeleton() {
             </div>
           </div>
 
-          <div className="flex w-full min-w-0 flex-col">
+          <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
+            <MovieGridSidebarBoundary />
             <div className="flex w-full flex-col">
               <div className={cn('movie-detail-section-band movie-detail-shell-inset')}>
                 <PersonHeroSkeleton />
@@ -208,7 +209,7 @@ function PersonContentSkeleton() {
             <NavHeightSpacer className="w-full" />
           </div>
         </div>
-      </div>
+      </MovieGridFrame>
     </PageGradientShell>
   );
 }
@@ -223,7 +224,7 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-3 rounded p-1">
+    <div className="flex items-end gap-3  p-1">
       <SkeletonPoster className="aspect-2/3 w-16 shrink-0 sm:w-20" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
@@ -239,19 +240,21 @@ export function PersonSectionSkeleton({ className = '' }) {
 
 export function PersonTimelineSkeleton({ className = '' }) {
   return (
-    <section className={`flex w-full flex-col gap-3 ${className}`}>
-      <Heading width="w-20" />
-      {Array.from({ length: 3 }).map((_, groupIndex) => (
-        <div key={groupIndex} className="mt-4 first:mt-0">
-          <YearHeaderSkeleton />
-          <div className="ml-0 flex flex-col gap-1 sm:ml-16">
-            {Array.from({ length: 3 }).map((__, rowIndex) => (
-              <TimelineRowSkeleton key={`${groupIndex}-${rowIndex}`} />
-            ))}
+    <PersonGridSectionSkeleton divider="plain" className={className}>
+      <section className="flex w-full flex-col gap-3">
+        <Heading width="w-20" />
+        {Array.from({ length: 3 }).map((_, groupIndex) => (
+          <div key={groupIndex} className="mt-4 first:mt-0">
+            <YearHeaderSkeleton />
+            <div className="ml-0 flex flex-col gap-1 sm:ml-16">
+              {Array.from({ length: 3 }).map((__, rowIndex) => (
+                <TimelineRowSkeleton key={`${groupIndex}-${rowIndex}`} />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-    </section>
+        ))}
+      </section>
+    </PersonGridSectionSkeleton>
   );
 }
 

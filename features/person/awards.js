@@ -143,11 +143,7 @@ export default function PersonAwards({ personId }) {
 
   const stats = awardsData?.stats;
 
-  return (
-    <div className="w-full">
-      <PersonAwardsSurface awardsTimeline={awardsTimeline} stats={stats} />
-    </div>
-  );
+  return <PersonAwardsSurface awardsTimeline={awardsTimeline} stats={stats} />;
 }
 
 function PersonAwardsSurface({ awardsTimeline, stats }) {
@@ -164,75 +160,68 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
       </div>
 
       <div className="flex w-full flex-col">
-        {awardsTimeline.map(([year, entries]) => {
-          return (
-            <div
-              key={year}
-              className="mt-4 first:mt-0"
-            >
-              <div className="mb-2 flex items-center gap-2 sm:gap-3">
-                <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">
-                  {year}
-                </span>
-                <div className="h-px flex-1 bg-white/20" />
-              </div>
-
-              <div className="flex flex-col sm:ml-16">
-                {entries.map((entry) => {
-                  const isInteractive = Boolean(entry.projectId);
-                  const hasProject = Boolean(entry.project);
-                  const title = entry.project || entry.category;
-                  const rowClassName = cn(
-                    'group flex items-center gap-3 rounded border-transparent p-1 transition-colors',
-                    isInteractive ? 'hover:bg-white/10' : 'cursor-default'
-                  );
-                  const content = (
-                    <>
-                      <MediaThumb poster={entry.poster} alt={title} className="" />
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
-                        </div>
-
-                        <div className="mt-1 flex min-w-0 flex-col gap-0.5 text-xs leading-snug text-white/50 sm:text-sm">
-                          <span className="truncate">{entry.organization}</span>
-                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-                            <AwardStatus type={entry.type} />
-                            {hasProject && (
-                              <span className="min-w-0 flex-1 truncate text-white/50 sm:line-clamp-1">
-                                {entry.category}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  );
-
-                  if (isInteractive) {
-                    return (
-                      <div key={entry.key}>
-                        <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
-                          {content}
-                        </Link>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={entry.key}
-                      className={rowClassName}
-                    >
-                      {content}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        {awardsTimeline.map(([year, entries]) => (
+          <AwardYearGroup key={year} year={year} entries={entries} />
+        ))}
       </div>
     </section>
+  );
+}
+
+function AwardYearGroup({ year, entries }) {
+  return (
+    <div className="mt-4 first:mt-0">
+      <div className="mb-2 flex items-center gap-2 sm:gap-3">
+        <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">{year}</span>
+        <div className="h-px flex-1 bg-white/20" />
+      </div>
+
+      <div className="flex flex-col sm:ml-16">
+        {entries.map((entry) => (
+          <AwardEntry key={entry.key} entry={entry} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AwardEntry({ entry }) {
+  const isInteractive = Boolean(entry.projectId);
+  const title = entry.project || entry.category;
+  const rowClassName = cn(
+    'group flex items-center gap-3  border-transparent p-1 transition-colors',
+    isInteractive ? 'hover:bg-white/10' : 'cursor-default'
+  );
+  const content = <AwardEntryContent entry={entry} title={title} />;
+
+  return isInteractive ? (
+    <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+      {content}
+    </Link>
+  ) : (
+    <div className={rowClassName}>{content}</div>
+  );
+}
+
+function AwardEntryContent({ entry, title }) {
+  return (
+    <>
+      <MediaThumb poster={entry.poster} alt={title} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>
+        </div>
+
+        <div className="mt-1 flex min-w-0 flex-col gap-0.5 text-xs leading-snug text-white/50 sm:text-sm">
+          <span className="truncate">{entry.organization}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+            <AwardStatus type={entry.type} />
+            {entry.project ? (
+              <span className="min-w-0 flex-1 truncate text-white/50 sm:line-clamp-1">{entry.category}</span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

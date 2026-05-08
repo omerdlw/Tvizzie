@@ -51,7 +51,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
     }
 
     const rootHeight = rootNode.clientHeight;
-    
+
     if (rootHeight <= 0) {
       return;
     }
@@ -80,10 +80,10 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
     const fullHeight = textNode.scrollHeight;
     const computedStyle = window.getComputedStyle(textNode);
     const lineHeight = Number.parseFloat(computedStyle.lineHeight);
-    
+
     // Check if it really overflows the container
     const nextCanExpand = Number.isFinite(lineHeight) && fullHeight > rootHeight + 2;
-    
+
     const reservedHeight = nextCanExpand
       ? getReadMoreReserveHeight({
           buttonNode: buttonRef.current,
@@ -91,7 +91,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
           rowGap,
         })
       : 0;
-      
+
     const maxLines = getLineClamp(rootHeight, reservedHeight, textNode);
 
     textNode.style.WebkitLineClamp = previousWebkitLineClamp;
@@ -150,7 +150,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
     measureObserver();
 
     function measureObserver() {
-       measureOverflow();
+      measureOverflow();
     }
 
     return () => {
@@ -174,7 +174,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
       <div className="relative min-h-0 w-full flex-1 overflow-hidden">
         <p
           ref={textRef}
-          className={cn("text-white-soft w-full text-sm leading-6 text-pretty transition-colors duration-300 sm:text-base sm:leading-7")}
+          className="text-white-soft w-full text-sm leading-6 text-pretty transition-colors duration-300 sm:text-base sm:leading-7"
           style={
             layoutState.canExpand && layoutState.maxLines
               ? {
@@ -195,7 +195,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
           ref={buttonRef}
           type="button"
           onClick={handleReadMore}
-          className={cn("text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase transition-colors hover:text-white")}
+          className="text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase transition-colors hover:text-white"
         >
           Read More
         </button>

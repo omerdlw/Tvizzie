@@ -7,7 +7,7 @@ import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } fr
 import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import WatchedView from './view';
 
 function useWatchedClientState({ auth, routeData: resolvedRouteData, sectionProviderValue, sectionState }) {

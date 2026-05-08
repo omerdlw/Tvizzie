@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
-import LegalNavRegistry from '@/features/legal/registry';
-import { LegalPageShell, LegalSection } from '@/features/legal/page-shell';
+import LegalNavRegistry from '@/app/_legal/registry';
+import { LegalPageShell, LegalSection } from '@/app/_legal/page-shell';
 
 export const metadata = {
   title: 'Privacy Policy',

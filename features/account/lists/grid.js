@@ -8,7 +8,7 @@ import AccountListCard from './card';
 import AccountSectionLayout from '../shared/section-wrapper';
 import AccountPagination from '../shared/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
-import AccountInlineSectionState from '../shared/section-state';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
 
@@ -85,9 +85,7 @@ export default function AccountPaginatedListGrid({
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
             {visibleLists.map((list) => (
-              <div
-                key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
-              >
+              <div key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}>
                 <AccountListCard
                   layout="grid"
                   list={list}
@@ -99,9 +97,7 @@ export default function AccountPaginatedListGrid({
           </div>
 
           {totalPages > 1 ? (
-            <div
-              key={`list-grid-pagination-${activePage}-${totalPages}`}
-            >
+            <div key={`list-grid-pagination-${activePage}-${totalPages}`}>
               <AccountPagination
                 className="w-full"
                 currentPage={activePage}

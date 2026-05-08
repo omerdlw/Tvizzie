@@ -85,7 +85,7 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center gap-1.5 border-t border-white/10 px-3 py-1.5">
+    <div className="center gap-1.5 border-t border-white/5 px-3 py-1.5">
       <button
         type="button"
         onClick={onSwitchToPrevious}
@@ -103,7 +103,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         {getModalLabel(previousEntry.modalType)}
       </button>
 
-      <span className="text-[10px] text-white/20">/</span>
+      <span className="text-[10px] text-white/30">/</span>
 
       <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
@@ -235,7 +235,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             'relative flex flex-col',
             isMobileSideModal ? '' : '',
             isPanelChrome
-              ? 'overflow-hidden border border-white/10 bg-black/80'
+              ? 'overflow-hidden border border-white/5 bg-black/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome && isTopModalPosition && '',
             isPanelChrome && isBottomModalPosition && '',

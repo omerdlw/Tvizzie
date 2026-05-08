@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
-import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
+import { cn, resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
 import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -41,7 +41,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className="rounded-xs object-cover"
+      className=" object-cover"
       onError={() => setError(true)}
       wrapperClassName="h-full w-full"
     />
@@ -53,12 +53,13 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
     <Link
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
-      className={[
-        'group flex transform-gpu items-center gap-3 rounded border bg-white/5 backdrop-blur border-white/5 transition-colors duration-200 hover:bg-black/30 hover:border-white/10 isolate',
-        compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4',
-      ].join(' ')}
+      className={cn(
+        'group isolate flex items-center gap-3  border border-white/5 bg-white/5 backdrop-blur transition-colors duration-200 hover:bg-black/30',
+        'overflow-hidden [backface-visibility:hidden]',
+        compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4'
+      )}
     >
-      <div className={['relative shrink-0 overflow-hidden rounded-xs', compact ? 'h-8 w-8' : 'h-20 w-16'].join(' ')}>
+      <div className={cn('relative shrink-0 overflow-hidden ', compact ? 'h-8 w-8' : 'h-20 w-16')}>
         <PersonImage
           person={person}
           size={compact ? 'w92' : 'w185'}
@@ -84,6 +85,13 @@ function buildEntries(list = [], fallbackKey) {
   return list.map((item) => ({
     ...item,
     subtitle: item?.[fallbackKey] || (fallbackKey === 'character' ? 'Cast' : 'Crew'),
+  }));
+}
+
+function buildCrewEntries(crew = []) {
+  return crew.map((item) => ({
+    ...item,
+    subtitle: item?.job || item?.department || 'Crew',
   }));
 }
 
@@ -115,14 +123,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   const [activeTab, setActiveTab] = useState('cast');
 
   const castEntries = useMemo(() => buildEntries(cast, 'character'), [cast]);
-  const crewEntries = useMemo(
-    () =>
-      crew.map((item) => ({
-        ...item,
-        subtitle: item?.job || item?.department || 'Crew',
-      })),
-    [crew]
-  );
+  const crewEntries = useMemo(() => buildCrewEntries(crew), [crew]);
 
   const tabs = useMemo(() => {
     const items = [];
@@ -156,60 +157,16 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
     );
   };
 
-  const renderPanel = (tabKey, entries) => {
-    const { featured, compact } = splitEntries(entries);
-
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {featured.map((person, index) => {
-            return (
-              <div key={buildPersonEntryKey(tabKey, person, index, 'featured')}>
-                <PersonCard person={person} priority={index < 4} fetchPriority={index < 4 ? 'high' : undefined} />
-              </div>
-            );
-          })}
-        </div>
-
-        {!!compact.length && (
-          <div className="flex h-10 items-center gap-2">
-            {compact.map((person, index) => {
-              const responsiveClass = index > 1 ? 'hidden sm:block' : '';
-
-              return (
-                <div
-                  key={buildPersonEntryKey(tabKey, person, index, 'compact')}
-                  className={`min-w-0 flex-1 ${responsiveClass}`}
-                >
-                  <PersonCard person={person} compact />
-                </div>
-              );
-            })}
-
-            <button
-              type="button"
-              aria-label="Show full cast"
-              onClick={handleOpenModal}
-              className="center size-10 shrink-0 rounded border border-white/5 bg-white/5 text-white/70 transition-colors hover:bg-black/30 hover:text-white"
-            >
-              <Icon icon="solar:alt-arrow-right-linear" size={16} />
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <section ref={sectionRef} className="movie-detail-section-content relative w-full">
       <div className="flex items-center justify-between gap-3">
         <SegmentedControl
-          classNames={{
-            wrapper: 'movie-cast-segmented-control h-7 p-0.5 backdrop-blur',
-            button: 'min-w-0 flex-1 basis-0',
-          }}
+          equalItems
           value={activeTab}
           onChange={setActiveTab}
+          classNames={{
+            wrapper: 'backdrop-blur',
+          }}
           items={tabs.map(({ key, label }) => ({ key, label }))}
         />
         {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
@@ -217,9 +174,50 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
 
       <div className="relative w-full overflow-hidden">
         <div key={activeTabData.key} className="w-full">
-          {renderPanel(activeTabData.key, activeTabData.entries)}
+          <CastPanel tabKey={activeTabData.key} entries={activeTabData.entries} onOpenModal={handleOpenModal} />
         </div>
       </div>
     </section>
+  );
+}
+
+function CastPanel({ tabKey, entries, onOpenModal }) {
+  const { featured, compact } = splitEntries(entries);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {featured.map((person, index) => (
+          <PersonCard
+            key={buildPersonEntryKey(tabKey, person, index, 'featured')}
+            person={person}
+            priority={index < 4}
+            fetchPriority={index < 4 ? 'high' : undefined}
+          />
+        ))}
+      </div>
+
+      {compact.length ? (
+        <div className="flex h-10 items-center gap-2">
+          {compact.map((person, index) => (
+            <div
+              key={buildPersonEntryKey(tabKey, person, index, 'compact')}
+              className={cn('min-w-0 flex-1', index > 1 && 'hidden sm:block')}
+            >
+              <PersonCard person={person} compact />
+            </div>
+          ))}
+
+          <button
+            type="button"
+            aria-label="Show full cast"
+            onClick={onOpenModal}
+            className="center size-10 shrink-0  border border-white/5 bg-white/5 text-white/70 transition-colors hover:bg-black/30 hover:text-white"
+          >
+            <Icon icon="solar:alt-arrow-right-linear" size={16} />
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

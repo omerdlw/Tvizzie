@@ -93,8 +93,8 @@ export default function PersonSidebar({ person, age }) {
 
   return (
     <div className="flex flex-col gap-0">
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact grid-diamonds-bottom flex flex-col gap-3 border-b border-white/10 py-5 lg:py-7">
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded">
+      <div className="media-detail-poster-shell grid-diamonds-bottom flex flex-col gap-3 border-b border-white/5">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           {hasImage ? (
             <AdaptiveImage
               src={imageSrc}
@@ -112,16 +112,13 @@ export default function PersonSidebar({ person, age }) {
               wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="bg-primary center h-full w-full border border-white/10 text-white/50">
+            <div className="bg-primary center h-full w-full border border-white/5 text-white/50">
               <Icon icon="solar:user-bold" size={64} className="text-white/70" />
             </div>
           )}
 
           {person?.external_ids ? (
-            <SocialLinks
-              externalIds={person.external_ids}
-              className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
-            />
+            <SocialLinks externalIds={person.external_ids} className="absolute right-0 bottom-0 left-0" />
           ) : null}
         </div>
       </div>

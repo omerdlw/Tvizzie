@@ -15,7 +15,7 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
-import { AccountSectionStateProvider, useAccountSectionEngine } from './shared/section-state';
+import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;

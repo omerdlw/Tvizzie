@@ -11,7 +11,7 @@ import AccountPagination from '@/features/account/shared/pagination';
 import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '../shared/section-wrapper';
-import AccountInlineSectionState from '../shared/section-state';
+import AccountInlineSectionState from '@/features/account/shared/section-state';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 
@@ -91,9 +91,7 @@ function ActivityItem({ isFirst = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
 
   return (
-    <article
-      className={`border-b border-white/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
-    >
+    <article className="account-detail-full-width-item border-b border-white/5 py-5 last:border-b-0">
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
           <ActivityLine item={item} />
@@ -196,6 +194,7 @@ export default function AccountActivityFeed({
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
+      contentClassName="py-0"
     >
       {shouldShowFilterBar ? (
         <AccountActivityFilterBar

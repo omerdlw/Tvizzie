@@ -19,16 +19,16 @@ export function LegalPageShell({ children, description, lastUpdated, title }) {
         className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-4 pt-24 pb-20 sm:px-6 sm:pt-28`}
       >
         <header className="max-w-3xl space-y-4">
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-white/50 uppercase">Legal</p>
+          <p className="text-[11px] font-semibold tracking-widest text-white/50 uppercase">Legal</p>
           <div className="space-y-3">
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{title}</h1>
             <p className="max-w-2xl text-sm leading-7 text-white/70 sm:text-[15px]">{description}</p>
           </div>
-          <p className="text-xs tracking-wide text-white/40 uppercase">Last updated {lastUpdated}</p>
+          <p className="text-xs tracking-wide text-white/50 uppercase">Last updated {lastUpdated}</p>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-          <article className="bg-primary space-y-8 rounded border border-white/10 p-6 sm:p-8">{children}</article>
+          <article className="bg-primary space-y-8  border border-white/5 p-6 sm:p-8">{children}</article>
 
           <aside className="p-5 text-sm leading-7 text-white/70">
             <p className="font-semibold text-white">Quick links</p>

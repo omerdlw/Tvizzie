@@ -22,7 +22,7 @@ import {
   subscribeToListReviews,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews.service';
-import { useAccountSectionEngine } from '../../../shared/section-state';
+import { useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 
 export default function Client({ routeData = null }) {
