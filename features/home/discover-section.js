@@ -280,11 +280,11 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="border-grid-line bg-primary text-white-muted  border p-3 text-sm">{gridError}</div>
+          <div className="border-grid-line bg-primary text-white-muted border p-3 text-sm">{gridError}</div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="border-grid-line bg-primary text-white-muted  border p-4 text-sm">
+          <div className="border-grid-line bg-primary text-white-muted border p-4 text-sm">
             No movies found for this genre.
           </div>
         ) : null}
@@ -295,12 +295,12 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="border-grid-line bg-primary text-white-soft inline-flex h-10 items-center gap-2  border px-5 text-xs font-semibold tracking-widest uppercase transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
+              className="border-grid-line bg-primary text-white-soft inline-flex h-10 items-center gap-2 border px-5 text-xs font-semibold tracking-widest uppercase hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
                 size={14}
-                className={isLoadingMore ? 'animate-spin' : ''}
+                className={isLoadingMore ? '' : ''}
               />
               {isLoadingMore ? 'Loading' : 'Load more'}
             </button>

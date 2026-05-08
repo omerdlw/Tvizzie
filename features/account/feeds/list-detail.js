@@ -266,7 +266,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
                         </p>
                       </div>
                       <Button
-                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-white/5 px-4 py-2 text-xs font-semibold tracking-wide text-white/70 uppercase transition ease-in-out hover:bg-white hover:text-black sm:w-auto sm:justify-between"
+                        className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-white/5 px-4 py-2 text-xs font-semibold tracking-wide text-white/70 uppercase hover:bg-white hover:text-black sm:w-auto sm:justify-between"
                         type="button"
                         onClick={handleOpenReviewComposer}
                       >

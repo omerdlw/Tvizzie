@@ -99,16 +99,11 @@
   .account-detail-grid-frame {
     --account-detail-grid-inline-pad: 1rem;
     --account-detail-grid-band-pad: 1rem;
-    --account-detail-divider-height: 1rem;
-    --account-detail-divider-line-width: 1px;
-    --account-detail-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    --account-detail-divider-height: var(--route-grid-divider-height);
+    --account-detail-divider-line-width: var(--route-grid-divider-line-width);
+    --account-detail-divider-cap-offset: var(--route-grid-divider-cap-offset);
+    --account-detail-grid-line-color: var(--route-grid-line-color);
     --account-detail-resolved-line-color: var(--account-detail-grid-line-color);
-    --grid-line-color: var(--account-detail-grid-line-color);
-    --grid-line-draw-color: var(--account-detail-grid-line-color);
-    border-inline: 0;
-  }
-
-  .account-detail-grid-frame-animated {
     border-inline: 0;
   }
 
@@ -121,37 +116,7 @@
     .account-detail-grid-frame {
       --account-detail-grid-inline-pad: 2rem;
       --account-detail-grid-band-pad: 2rem;
-      border-inline: 1px solid var(--account-detail-grid-line-color);
     }
-  }
-
-  .account-detail-grid-frame > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .account-detail-grid-frame-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 2;
-    width: var(--account-detail-divider-line-width);
-    background-color: var(--account-detail-grid-line-color);
-    display: none;
-  }
-
-  @media (min-width: 640px) {
-    .account-detail-grid-frame-line {
-      display: block;
-    }
-  }
-
-  .account-detail-grid-frame-line-left {
-    left: 0;
-  }
-
-  .account-detail-grid-frame-line-right {
-    right: 0;
   }
 
   .account-detail-grid-main {
@@ -246,6 +211,155 @@
     margin-block-start: -1rem;
   }
 
+  .account-detail-section-body > .account-filter-bar.account-filter-bar-flush:first-child {
+    margin-block-start: 0 !important;
+  }
+
+  .account-filter-trigger {
+    display: inline-flex;
+    height: 2.25rem;
+    min-width: fit-content;
+    max-width: 100%;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.375rem;
+    white-space: nowrap;
+    border: var(--account-detail-divider-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: var(--color-black);
+    padding-inline: 0.75rem;
+    color: color-mix(in srgb, var(--color-white) 70%, transparent);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .account-filter-icon-button {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: var(--account-detail-divider-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: var(--color-black);
+    color: color-mix(in srgb, var(--color-white) 70%, transparent);
+  }
+
+  .account-filter-input-wrap {
+    display: flex;
+    height: 2.25rem;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.75rem;
+    border: var(--account-detail-divider-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: var(--color-black);
+    padding-inline: 0.75rem;
+  }
+
+  .account-filter-select {
+    width: 100%;
+    height: 2rem;
+    border: var(--account-detail-divider-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: var(--color-black);
+    padding-inline: 0.5rem;
+    color: var(--color-white);
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .account-filter-trigger:hover,
+  .account-filter-trigger:focus-visible,
+  .account-filter-trigger[data-state='open'],
+  .account-filter-icon-button:hover,
+  .account-filter-icon-button:focus-visible,
+  .account-filter-input-wrap:focus-within,
+  .account-filter-select:focus {
+    border-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+  }
+
+  .account-filter-trigger:hover,
+  .account-filter-trigger:focus-visible,
+  .account-filter-trigger[data-state='open'],
+  .account-filter-icon-button:hover,
+  .account-filter-icon-button:focus-visible {
+    background-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    color: var(--color-white);
+  }
+
+  .account-filter-trigger-active {
+    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+    background-color: color-mix(in srgb, var(--color-info) 10%, transparent);
+    color: var(--color-info);
+  }
+
+  .account-filter-skeleton-main {
+    display: flex;
+    width: 100%;
+    min-height: calc(2rem + 2.25rem);
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .account-filter-skeleton-inner {
+    scrollbar-width: none;
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .account-filter-skeleton-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .account-filter-skeleton-trigger,
+  .account-filter-skeleton-search {
+    display: inline-flex;
+    height: 2.25rem;
+    align-items: center;
+  }
+
+  .account-filter-skeleton-trigger {
+    flex: 1 1 auto;
+    min-width: 8.75rem;
+    width: 11rem;
+  }
+
+  .account-filter-skeleton-search {
+    flex: 0 0 auto;
+    width: 2.25rem;
+  }
+
+  .account-filter-skeleton-trigger-rating {
+    width: 13.75rem;
+  }
+
+  .account-filter-skeleton-trigger-year {
+    width: 15rem;
+  }
+
+  .account-filter-skeleton-trigger-sort {
+    width: 17rem;
+  }
+
+  .account-filter-skeleton-trigger-visibility {
+    width: 8.75rem;
+  }
+
+  .account-filter-skeleton-trigger-default {
+    width: 11rem;
+  }
+
+  .account-filter-skeleton-rule {
+    height: var(--account-detail-divider-line-width);
+    width: 100%;
+    background-color: var(--account-detail-grid-line-color);
+  }
+
   .account-detail-section-heading + .account-detail-section-body {
     padding-block-start: var(--account-detail-grid-band-pad, 2rem);
   }
@@ -290,101 +404,6 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-  }
-
-  .account-detail-grid-divider {
-    --account-detail-resolved-line-color: var(
-      --account-detail-grid-line-color,
-      color-mix(in srgb, var(--color-white) 10%, transparent)
-    );
-    --grid-line-color: var(--account-detail-resolved-line-color);
-    --grid-line-draw-color: var(--account-detail-resolved-line-color);
-    position: absolute;
-    inset-inline: var(--account-detail-divider-line-width);
-    top: 0;
-    display: block;
-    height: var(--account-detail-divider-height, 1rem);
-    isolation: isolate;
-    pointer-events: none;
-  }
-
-  .account-detail-grid-divider::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    inset-block: 0;
-    inset-inline: 0;
-    background-image:
-      linear-gradient(var(--account-detail-resolved-line-color), var(--account-detail-resolved-line-color)),
-      linear-gradient(var(--account-detail-resolved-line-color), var(--account-detail-resolved-line-color));
-    background-position: top, bottom;
-    background-repeat: no-repeat;
-    background-size:
-      100% var(--account-detail-divider-line-width),
-      100% var(--account-detail-divider-line-width);
-  }
-
-  .account-detail-grid-divider::after {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    inset-block: var(--account-detail-divider-line-width);
-    inset-inline: 0;
-    background-color: var(--account-detail-resolved-line-color);
-    mask-image: url('/svgs/line-grid.svg');
-    mask-position: 50%;
-    mask-size: auto 100%;
-    mask-repeat: repeat-x;
-  }
-
-  .account-detail-grid-divider-animated::before,
-  .account-detail-grid-divider-animated::after {
-    content: none;
-  }
-
-  .account-detail-grid-divider-line {
-    position: absolute;
-    inset-inline: 0;
-    z-index: 1;
-    height: var(--account-detail-divider-line-width);
-    background-color: var(--account-detail-resolved-line-color);
-  }
-
-  .account-detail-grid-divider-line-top {
-    top: 0;
-  }
-
-  .account-detail-grid-divider-line-bottom {
-    bottom: 0;
-  }
-
-  .account-detail-grid-divider-pattern {
-    position: absolute;
-    z-index: 0;
-    inset-block: var(--account-detail-divider-line-width);
-    inset-inline: 0;
-    background-color: var(--account-detail-resolved-line-color);
-    mask-image: url('/svgs/line-grid.svg');
-    mask-position: 50%;
-    mask-size: auto 100%;
-    mask-repeat: repeat-x;
-  }
-
-  .account-detail-grid-divider-startcap,
-  .account-detail-grid-divider-endcap {
-    position: absolute;
-    top: calc(50% - (var(--account-detail-divider-height, 1rem) / 2));
-    z-index: 2;
-    width: var(--account-detail-divider-height, 1rem);
-    height: var(--account-detail-divider-height, 1rem);
-  }
-
-  .account-detail-grid-divider-startcap {
-    left: var(--account-detail-divider-cap-offset);
-  }
-
-  .account-detail-grid-divider-endcap {
-    right: var(--account-detail-divider-cap-offset);
   }
 
   @media (min-width: 30rem) {

@@ -12,7 +12,7 @@ export default function AccountBioSurface({ description = '', onClose = null, ti
         <button
           type="button"
           onClick={() => onClose?.()}
-          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border border-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border border-white/5 text-white/70 hover:bg-white/10 hover:text-white"
           aria-label="Close bio"
         >
           <Icon icon="material-symbols:close-rounded" size={16} />

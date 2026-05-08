@@ -50,7 +50,6 @@
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--grid-line-color);
-    border-radius: var(--radius-sm);
     background-color: color-mix(in srgb, var(--color-white) 5%, transparent);
     color: color-mix(in srgb, var(--color-white) 70%, transparent);
     font-size: 0.75rem;
@@ -82,7 +81,6 @@
     width: 1.25rem;
     height: 1.25rem;
     overflow: hidden;
-    border-radius: var(--radius-xs);
     border: 1px solid color-mix(in srgb, var(--color-primary) 90%, transparent);
     background-color: color-mix(in srgb, var(--color-white) 5%, transparent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-white) 10%, transparent);

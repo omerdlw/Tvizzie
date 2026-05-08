@@ -3,28 +3,31 @@
     overflow-anchor: none;
   }
 
-  .app-noise-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2147483647;
-    pointer-events: none;
+  .app-noise-surface {
     background-image: url('/images/noise.webp');
     background-repeat: repeat;
     background-size: auto;
     image-rendering: auto;
     mix-blend-mode: multiply;
-    opacity: 10%;
+  }
+
+  .background-noise-surface {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 
   .page-gradient-backdrop {
-    background-image: linear-gradient(to bottom,
-        color-mix(in srgb, var(--white) 38%, transparent) 0%,
-        color-mix(in srgb, var(--white) 52%, transparent) 18vh,
-        color-mix(in srgb, var(--white) 68%, transparent) 34vh,
-        color-mix(in srgb, var(--white) 83%, transparent) 50vh,
-        color-mix(in srgb, var(--white) 94%, transparent) 66vh,
-        var(--white) 80vh,
-        var(--white) 100%);
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 38%, transparent) 0%,
+      color-mix(in srgb, var(--white) 52%, transparent) 18vh,
+      color-mix(in srgb, var(--white) 68%, transparent) 34vh,
+      color-mix(in srgb, var(--white) 83%, transparent) 50vh,
+      color-mix(in srgb, var(--white) 94%, transparent) 66vh,
+      var(--white) 80vh,
+      var(--white) 100%
+    );
   }
 
   .grid-page-line {
@@ -49,31 +52,10 @@
     border-color: var(--grid-line-color);
   }
 
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes skeleton-shimmer {
-    from {
-      transform: translateX(-100%);
-    }
-
-    to {
-      transform: translateX(100%);
-    }
-  }
-
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-
   .skeleton-block,
   .skeleton-block-soft {
     position: relative;
     overflow: hidden;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   .skeleton-block {
@@ -82,20 +64,6 @@
 
   .skeleton-block-soft {
     background-color: color-mix(in srgb, var(--color-white) 3%, transparent);
-  }
-
-  .skeleton-block::after,
-  .skeleton-block-soft::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: linear-gradient(110deg,
-        transparent 25%,
-        color-mix(in srgb, var(--white) 10%, transparent) 50%,
-        transparent 75%);
-    transform: translateX(-100%);
-    animation: skeleton-shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   .center {

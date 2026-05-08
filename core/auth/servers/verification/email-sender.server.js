@@ -184,72 +184,72 @@ export async function sendVerificationCodeEmail({ email, code, expiresAt, purpos
   const html = `
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light only" />
-    <meta name="supported-color-schemes" content="light only" />
-    <title>${copy.title}</title>
-  </head>
-  <body style="margin: 0; padding: 24px 12px; background-color: #f0f0ed; color: #18181b; font-family: Inter, Geist, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
-    <span style="display: none; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0; overflow: hidden;">
-      Tvizzie ${copy.subjectSuffix} code: ${normalizedCode}
-    </span>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-      <tr>
-        <td align="center">
-          <table
-            role="presentation"
-            width="100%"
-            cellspacing="0"
-            cellpadding="0"
-            border="0"
-            style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 0.5px solid #e8e3d7; border-radius: 12px;"
-          >
-            <tr>
-              <td style="padding: 22px 22px 18px;">
-                <p style="margin: 0; font-size: 28px; line-height: 1; font-weight: 700; color: #18181b;">Tvizzie</p>
-                <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: #4f4b45;">
-                  ${copy.description}
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 0 22px;">
-                <div style="height: 1px; background-color: #ece7dc; font-size: 0; line-height: 0;">&nbsp;</div>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 20px 22px 22px;">
-                <p style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; color: #18181b;">${copy.heading}</p>
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  border="0"
-                  style="margin-top: 18px; background-color: #ffffff; border-radius: 10px;"
-                >
-                  <tr>
-                    <td align="center" style="padding: 18px 16px;">
-                      <p
-                        style="margin: 0; font-size: 36px; line-height: 1; font-weight: 800; color: #18181b; letter-spacing: 0.28em; text-align: center; font-family: Geist Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;"
-                      >
-                        ${codeWithSpacing}
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin: 14px 0 0; font-size: 14px; line-height: 1.6; color: #4f4b45;">Expires at: ${expiresAtLabel}</p>
-                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: #18181b;">Never share this code with anyone.</p>
-                <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: #5e5a54;">If you did not request this email, ignore it.</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
+ <head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta name="color-scheme" content="light only" />
+ <meta name="supported-color-schemes" content="light only" />
+ <title>${copy.title}</title>
+ </head>
+ <body style="margin: 0; padding: 24px 12px; background-color: #f0f0ed; color: #18181b; font-family: Inter, Geist, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+ <span style="display: none; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0; overflow: hidden;">
+ Tvizzie ${copy.subjectSuffix} code: ${normalizedCode}
+ </span>
+ <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+ <tr>
+ <td align="center">
+ <table
+ role="presentation"
+ width="100%"
+ cellspacing="0"
+ cellpadding="0"
+ border="0"
+ style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 0.5px solid #e8e3d7;"
+ >
+ <tr>
+ <td style="padding: 22px 22px 18px;">
+ <p style="margin: 0; font-size: 28px; line-height: 1; font-weight: 700; color: #18181b;">Tvizzie</p>
+ <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: #4f4b45;">
+ ${copy.description}
+ </p>
+ </td>
+ </tr>
+ <tr>
+ <td style="padding: 0 22px;">
+ <div style="height: 1px; background-color: #ece7dc; font-size: 0; line-height: 0;">&nbsp;</div>
+ </td>
+ </tr>
+ <tr>
+ <td style="padding: 20px 22px 22px;">
+ <p style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; color: #18181b;">${copy.heading}</p>
+ <table
+ role="presentation"
+ width="100%"
+ cellspacing="0"
+ cellpadding="0"
+ border="0"
+ style="margin-top: 18px; background-color: #ffffff;"
+ >
+ <tr>
+ <td align="center" style="padding: 18px 16px;">
+ <p
+ style="margin: 0; font-size: 36px; line-height: 1; font-weight: 800; color: #18181b; letter-spacing: 0.28em; text-align: center; font-family: Geist Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;"
+ >
+ ${codeWithSpacing}
+ </p>
+ </td>
+ </tr>
+ </table>
+ <p style="margin: 14px 0 0; font-size: 14px; line-height: 1.6; color: #4f4b45;">Expires at: ${expiresAtLabel}</p>
+ <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: #18181b;">Never share this code with anyone.</p>
+ <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: #5e5a54;">If you did not request this email, ignore it.</p>
+ </td>
+ </tr>
+ </table>
+ </td>
+ </tr>
+ </table>
+ </body>
 </html>
 `;
 

@@ -15,11 +15,10 @@ import { cn, formatYear } from '@/core/utils';
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border px-4 text-xs font-semibold uppercase tracking-wide transition whitespace-nowrap';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold uppercase tracking-wide whitespace-nowrap';
 
 const INPUT_STYLES = {
-  wrapper: 'flex h-10 items-center  border border-white/5 bg-white/5 px-3.5 transition focus-within:border-white/10',
+  wrapper: 'flex h-10 items-center border border-white/5 bg-white/5 px-3.5 focus-within:border-white/10',
   input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
 };
 
@@ -97,7 +96,7 @@ function SearchResultRow({ item, isAdded, onAdd }) {
       disabled={isAdded}
       onClick={() => onAdd(item)}
       className={cn(
-        'group flex w-full items-center gap-2 border px-3 py-2.5 text-left transition-all',
+        'group flex w-full items-center gap-2 border px-3 py-2.5 text-left',
         isAdded
           ? 'cursor-default border-white/5 bg-white/5'
           : 'cursor-pointer border-white/5 hover:border-white/10 hover:bg-white/5'
@@ -107,7 +106,7 @@ function SearchResultRow({ item, isAdded, onAdd }) {
 
       <span
         className={cn(
-          'center size-6 shrink-0 border transition-all',
+          'center size-6 shrink-0 border',
           isAdded
             ? 'border-info bg-info text-white'
             : 'border-white/5 text-white/70 group-hover:border-white/10 group-hover:text-white'
@@ -123,7 +122,7 @@ function DraftItemRow({ index, item, onRemove }) {
   const title = getMediaTitle(item);
 
   return (
-    <div className="group flex items-center gap-2 border border-white/5 px-3 py-2 transition-all hover:border-white/10">
+    <div className="group flex items-center gap-2 border border-white/5 px-3 py-2 hover:border-white/10">
       <span className="w-5 text-center text-[11px] font-bold tracking-widest text-white/50">{index + 1}</span>
 
       <MediaMeta item={item} />
@@ -132,7 +131,7 @@ function DraftItemRow({ index, item, onRemove }) {
         variant="destructive-icon"
         onClick={() => onRemove(item)}
         aria-label={`Remove ${title}`}
-        className="size-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        className="size-7 shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
       </Button>
@@ -328,7 +327,7 @@ export default function CreateListModal({ close, data }) {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
+              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
             >
               {isSaving ? 'Creating' : 'Create List'}
             </Button>
@@ -365,9 +364,7 @@ export default function CreateListModal({ close, data }) {
             }
           }}
           leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-white/50" />}
-          rightIcon={
-            isSearching ? <Icon icon="solar:spinner-bold" size={16} className="animate-spin text-white/50" /> : null
-          }
+          rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-white/50" /> : null}
           className={{
             ...INPUT_STYLES,
             leftIcon: 'flex shrink-0 items-center pr-2.5',

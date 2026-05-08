@@ -20,7 +20,6 @@ export default function RootLayout({ children }) {
         )}
       >
         <ResourceHints />
-        <div aria-hidden="true" className="app-noise-overlay" />
         <AppProviders>
           <main className="min-h-dvh w-full flex-1">{children}</main>
         </AppProviders>

@@ -16,10 +16,12 @@ const ACCOUNT_HERO_HEIGHT_CLASS = cn('account-hero-height');
 const ACCOUNT_HERO_IMAGE_CLASS = cn('account-hero-image');
 const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
 const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = cn('account-hero-bottom-gradient absolute inset-x-0 bottom-0');
-const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS =
-  cn('account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0');
-const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS =
-  cn('account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0');
+const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS = cn(
+  'account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0'
+);
+const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS = cn(
+  'account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0'
+);
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -36,11 +38,7 @@ function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, 
 }
 
 function HeroRevealItem({ children, className = '' }) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '' }) {
@@ -50,7 +48,7 @@ function HeroInlineMetric({ item, className = '', labelClassName = '', valueClas
       <span className={labelClassName}>{item.label}</span>
     </>
   );
-  const wrapperClassName = cn(className, (item.href || typeof item.onClick === 'function') && 'transition-opacity ');
+  const wrapperClassName = cn(className, (item.href || typeof item.onClick === 'function') && ' ');
 
   if (item.href) {
     return (
@@ -136,9 +134,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
     <div className="w-full min-w-0 text-left">
       <HeroRevealItem className="flex items-center gap-4">
-        <h1
-          className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]"
-        >
+        <h1 className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
           {displayName}
         </h1>
       </HeroRevealItem>
@@ -146,9 +142,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
       <div className="mt-2 flex flex-col gap-0.5 text-sm">
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 min-[420px]:grid-cols-3 lg:hidden">
           {mobileStats.map((item, index) => (
-            <HeroRevealItem
-              key={`${item.label}-${item.value}-${index}`}
-            >
+            <HeroRevealItem key={`${item.label}-${item.value}-${index}`}>
               <HeroInlineMetric
                 item={item}
                 className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
@@ -161,9 +155,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
 
         <div className="hidden items-center gap-x-6 gap-y-2 lg:flex lg:gap-x-7">
           {countsLabel.map((item, index) => (
-            <HeroRevealItem
-              key={`${item.label}-${item.value}-${index}`}
-            >
+            <HeroRevealItem key={`${item.label}-${item.value}-${index}`}>
               <HeroInlineMetric
                 item={item}
                 className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
@@ -190,18 +182,16 @@ function HeroStatsGrid({ stats, className = '', itemClassName = '', labelClassNa
         );
 
         return (
-          <HeroRevealItem
-            key={`${stat.label}-${stat.value}-${index}`}
-          >
+          <HeroRevealItem key={`${stat.label}-${stat.value}-${index}`}>
             {stat.href ? (
-              <Link href={stat.href} className={cn(itemClassName, 'transition-opacity')}>
+              <Link href={stat.href} className={cn(itemClassName, '')}>
                 {content}
               </Link>
             ) : typeof stat.onClick === 'function' ? (
               <button
                 type="button"
                 onClick={stat.onClick}
-                className={cn('border-0 bg-transparent p-0', itemClassName, 'transition-opacity')}
+                className={cn('border-0 bg-transparent p-0', itemClassName, '')}
               >
                 {content}
               </button>
@@ -292,9 +282,7 @@ export default function AccountHero({
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <HeroRevealItem
-              className="h-24 w-24 justify-self-start overflow-hidden  sm:h-32 sm:w-32 lg:row-span-2 lg:self-end"
-            >
+            <HeroRevealItem className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <AdaptiveImage
                 mode="img"
                 className="h-full w-full object-cover"

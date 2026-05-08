@@ -11,29 +11,23 @@ export const UI = {
   main: 'flex w-full items-center justify-between gap-3 !p-4',
   inner: 'flex min-w-0 flex-1 items-center gap-2 overflow-x-auto scrollbar-none',
   rule: 'h-px w-full bg-white/10',
-  trigger:
-    'inline-flex h-9 w-fit max-w-full shrink-0 items-center gap-1.5 whitespace-nowrap  border border-white/5 bg-black px-3 text-[11px] font-semibold uppercase tracking-widest text-white/70 transition hover:border-white/10 hover:bg-white/10 hover:text-white',
-  triggerActive: 'border-info/50 bg-info/10 text-info',
-  iconButton:
-    'inline-flex h-9 w-9 shrink-0 items-center justify-center  border border-white/5 bg-black text-white/70 transition hover:border-white/10 hover:bg-white/10',
-  resetButton:
-    'shrink-0 text-[10px] font-semibold uppercase tracking-widest text-white/50 transition hover:text-white/70',
-  menu: 'z-50 overflow-y-auto overscroll-contain  border border-white/5 bg-black p-1 shadow-lg',
+  trigger: 'account-filter-trigger tracking-widest',
+  triggerActive: 'account-filter-trigger-active',
+  iconButton: 'account-filter-icon-button',
+  resetButton: 'shrink-0 text-[10px] font-semibold uppercase tracking-widest text-white/50 hover:text-white/70',
+  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/5 bg-black p-1 shadow-lg',
   sectionLabel: 'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50',
-  menuItem:
-    'flex w-full items-center justify-between  px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10',
+  menuItem: 'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10',
   menuItemActive: 'bg-white/10 font-medium text-white',
   divider: 'border-t border-white/10',
-  inputWrap:
-    'flex h-9 min-w-0 flex-1 items-center gap-3  border border-white/5 bg-black px-3 transition focus-within:border-white/20',
+  inputWrap: 'account-filter-input-wrap',
   input: 'min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/50',
-  select:
-    'h-8 w-full  border border-white/5 bg-black px-2 text-sm text-white outline-none transition focus:border-white/20',
+  select: 'account-filter-select',
   helperText: 'px-1 text-[10px] text-white/50',
   visibilityItem:
-    'flex w-full items-center justify-between  px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10',
+    'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10',
   visibilityItemActive: 'bg-white/10 font-medium text-white',
-  dot: 'h-2.5 w-2.5  border border-white/20',
+  dot: 'h-2.5 w-2.5 border border-white/20',
   dotActive: 'bg-white',
   dotInactive: 'bg-white/20',
 };

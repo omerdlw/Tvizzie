@@ -19,8 +19,7 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border px-4 text-xs font-semibold uppercase tracking-wide whitespace-nowrap transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold uppercase tracking-wide whitespace-nowrap ';
 
 const LIST_PICKER_STACK_SKELETON_CLASSES = [
   'skeleton-block',
@@ -133,7 +132,7 @@ function ListRow({ list, isSelected, onToggle }) {
       type="button"
       onClick={() => onToggle(list.id)}
       className={cn(
-        'group flex w-full items-center gap-4 border p-2 text-left transition-all',
+        'group flex w-full items-center gap-4 border p-2 text-left',
         isSelected ? 'bg-info/20 border-white/20' : 'hover:bg-primary border-white/5 hover:border-white/15'
       )}
     >
@@ -147,7 +146,7 @@ function ListRow({ list, isSelected, onToggle }) {
 
       <span
         className={cn(
-          'flex size-[22px] shrink-0 items-center justify-center border transition-all',
+          'flex size-[22px] shrink-0 items-center justify-center border',
           isSelected
             ? 'border-info bg-info text-primary'
             : 'border-white/5 text-white/50 group-hover:border-white/10 group-hover:text-white'
@@ -401,7 +400,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
+              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>

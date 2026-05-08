@@ -6,7 +6,7 @@ import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[96px] items-center justify-center  border border-white/5 bg-black px-3 text-[11px] font-semibold tracking-widest text-white/70 uppercase transition hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+  'inline-flex h-10 min-w-[96px] items-center justify-center border border-white/5 bg-black px-3 text-[11px] font-semibold tracking-widest text-white/70 uppercase hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
 
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {

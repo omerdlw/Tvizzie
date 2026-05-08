@@ -34,9 +34,7 @@ const Switch = forwardRef(
           )}
           {...props}
         >
-          <SwitchPrimitive.Thumb
-            className={cn(classes.circle, isChecked && classes.circleActive, 'block transition-transform')}
-          />
+          <SwitchPrimitive.Thumb className={cn(classes.circle, isChecked && classes.circleActive, 'block')} />
         </SwitchPrimitive.Root>
 
         {children && <span className={cn(classes.label)}>{children}</span>}

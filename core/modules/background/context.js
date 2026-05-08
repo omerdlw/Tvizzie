@@ -11,12 +11,6 @@ const DEFAULT_BACKGROUND = Object.freeze({
   overlayOpacity: 0.5,
   overlayColor: 'var(--white)',
   position: 'center',
-  animation: {
-    transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
-    initial: {},
-    animate: {},
-    exit: {},
-  },
   videoOptions: {
     playbackRate: 1,
     autoplay: true,
@@ -38,10 +32,6 @@ function mergeBackgroundState(baseState, patch = {}) {
   return {
     ...baseState,
     ...patch,
-    animation: {
-      ...baseState.animation,
-      ...(patch.animation || {}),
-    },
     imageStyle: {
       ...baseState.imageStyle,
       ...(patch.imageStyle || {}),
@@ -131,7 +121,6 @@ export function BackgroundProvider({ children }) {
       overlayColor: background.overlayColor,
       videoOptions: background.videoOptions,
       videoElement: background.videoElement,
-      animation: background.animation,
       videoStyle: background.videoStyle,
       imageStyle: background.imageStyle,
       noiseStyle: background.noiseStyle,

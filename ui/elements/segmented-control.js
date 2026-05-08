@@ -170,7 +170,7 @@ export default function SegmentedControl({
                 }}
                 onClick={() => onChange?.(itemKey)}
                 className={cn(
-                  'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap transition-colors duration-200',
+                  'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap',
                   equalItems && 'min-w-0 flex-1 basis-0',
                   isActive ? classNames.active || 'text-white' : classNames.inactive || 'text-white/70',
                   classNames.button

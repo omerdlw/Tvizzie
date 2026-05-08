@@ -19,7 +19,7 @@ export function AccountSectionHeading({
   title,
   titleHref = null,
 }) {
-  const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-white/70 transition';
+  const titleClassName = 'text-xs font-semibold tracking-widest uppercase text-white/70 ';
   const summaryClassName = 'text-xs font-semibold tracking-widest text-white/50 uppercase';
 
   return (

@@ -65,6 +65,13 @@ export function AccountMediaFilterBar({
       : 'Release Date: Newest release first';
   }, [filters?.sort]);
   const isDefaultSort = filters?.sort === 'release_desc';
+  const canReset =
+    typeof onReset === 'function' &&
+    (Boolean(searchQuery) ||
+      (filters?.decade ?? 'all') !== 'all' ||
+      (filters?.genre ?? 'all') !== 'all' ||
+      (filters?.sort ?? 'release_desc') !== 'release_desc' ||
+      selectedEyeFlags.size > 0);
 
   useEffect(() => {
     if (searchQuery) setIsSearchOpen(true);
@@ -140,7 +147,7 @@ export function AccountMediaFilterBar({
           )}
         </div>
 
-        {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? <ResetButton onClick={onReset} /> : null}
       </div>
       <div className={UI.rule} />
     </div>
@@ -162,6 +169,12 @@ export function AccountReviewFilterBar({
   const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
   const sortLabel = resolveOptionLabel(sortOptions, filters?.sort, 'When Reviewed (Newest)');
   const isDefaultSort = filters?.sort === REVIEW_SORT_MODE.NEWEST;
+  const canReset =
+    typeof onReset === 'function' &&
+    ((showRatingFilter && (filters?.ratingMode ?? 'any') !== 'any') ||
+      (filters?.year ?? 'all') !== 'all' ||
+      (filters?.sort ?? REVIEW_SORT_MODE.NEWEST) !== REVIEW_SORT_MODE.NEWEST ||
+      selectedEyeFlags.size > 0);
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -218,7 +231,7 @@ export function AccountReviewFilterBar({
           ) : null}
         </div>
 
-        {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? <ResetButton onClick={onReset} /> : null}
       </div>
       <div className={UI.rule} />
     </div>
@@ -229,6 +242,9 @@ export function AccountActivityFilterBar({ className = '', filters, onChange, on
   const subjectLabel = resolveOptionLabel(subjectOptions, filters?.subject, 'Any content');
   const sortLabel = resolveOptionLabel(ACTIVITY_SORT_OPTIONS, filters?.sort, 'Newest First');
   const isDefaultSort = filters?.sort === 'newest';
+  const canReset =
+    typeof onReset === 'function' &&
+    ((filters?.subject ?? 'all') !== 'all' || (filters?.sort ?? 'newest') !== 'newest');
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -257,7 +273,7 @@ export function AccountActivityFilterBar({ className = '', filters, onChange, on
           </FilterPopover>
         </div>
 
-        {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? <ResetButton onClick={onReset} /> : null}
       </div>
       <div className={UI.rule} />
     </div>
@@ -267,6 +283,7 @@ export function AccountActivityFilterBar({ className = '', filters, onChange, on
 export function AccountListSortBar({ className = '', sort = 'updated_desc', onChange, onReset }) {
   const sortLabel = resolveOptionLabel(LIST_SORT_OPTIONS, sort, 'Recently Updated');
   const isDefaultSort = sort === 'updated_desc';
+  const canReset = typeof onReset === 'function' && sort !== 'updated_desc';
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -283,7 +300,7 @@ export function AccountListSortBar({ className = '', sort = 'updated_desc', onCh
           </FilterPopover>
         </div>
 
-        {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? <ResetButton onClick={onReset} /> : null}
       </div>
     </div>
   );
@@ -301,6 +318,9 @@ export function SearchMovieFilterBar({
   const decadeLabel = resolveOptionLabel(decadeOptions, filters?.decade, 'Any decade');
   const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
   const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
+  const canReset =
+    typeof onReset === 'function' &&
+    ((filters?.decade ?? 'all') !== 'all' || (filters?.genre ?? 'all') !== 'all' || (filters?.year ?? 'all') !== 'all');
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -331,7 +351,7 @@ export function SearchMovieFilterBar({
           </FilterPopover>
         </div>
 
-        {typeof onReset === 'function' ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? <ResetButton onClick={onReset} /> : null}
       </div>
     </div>
   );

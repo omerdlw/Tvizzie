@@ -83,7 +83,7 @@ export default function MediaCard({
   imageQuality,
   onImageError,
   imageClassName,
-  imageBaseClassName = 'object-cover transition-transform duration-[300ms] ',
+  imageBaseClassName = 'object-cover ',
   fallbackIcon = 'solar:gallery-bold',
   fallbackIconClassName = '',
   fallbackIconSize = 20,
@@ -109,7 +109,7 @@ export default function MediaCard({
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden  transition ease-in-out', className)}
+      className={cn('group flex shrink-0 flex-col overflow-hidden', className)}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>

@@ -45,9 +45,9 @@ function renderControl({ definition, value, onChange }) {
         onCheckedChange={onChange}
         className={{
           wrapper: 'w-full items-center justify-between gap-3',
-          track: 'h-6 w-11 p-px transition-colors duration-200',
+          track: 'h-6 w-11 p-px',
           trackActive: '',
-          circle: 'h-5 w-5 translate-x-0 duration-200',
+          circle: 'h-5 w-5 translate-x-0',
           circleActive: 'translate-x-5',
           label: 'text-sm font-medium',
         }}
@@ -62,7 +62,7 @@ function renderControl({ definition, value, onChange }) {
       <select
         value={value ?? ''}
         onChange={(event) => onChange(event.target.value)}
-        className="placeholder: w-full border border-[#0284c7] px-4 py-3 text-sm font-medium transition-colors outline-none"
+        className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium outline-none"
       >
         <option value="" disabled>
           {definition.placeholder || 'Select'}
@@ -86,7 +86,7 @@ function renderControl({ definition, value, onChange }) {
           onChange(nextValue === '' ? '' : Number(nextValue));
         }}
         placeholder={definition.placeholder || ''}
-        className="placeholder: w-full border border-[#0284c7] px-4 py-3 text-sm font-medium transition-colors outline-none"
+        className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium outline-none"
       />
     );
   }
@@ -97,7 +97,7 @@ function renderControl({ definition, value, onChange }) {
       value={value ?? ''}
       onChange={(event) => onChange(event.target.value)}
       placeholder={definition.placeholder || ''}
-      className="placeholder: w-full border border-[#0284c7] px-4 py-3 text-sm font-medium transition-colors outline-none"
+      className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium outline-none"
     />
   );
 }
@@ -130,7 +130,7 @@ export default function SettingsModal({ close, header }) {
       close={close}
     >
       <div className="flex w-full flex-col gap-3 p-4 text-sm">
-        <div className="flex items-center justify-between gap-2 border border-[#0284c7] px-4 py-3">
+        <div className="border-info flex items-center justify-between gap-2 border px-4 py-3">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold tracking-widest uppercase">Storage</span>
             <span className="font-medium">{storageKey}</span>
@@ -138,7 +138,7 @@ export default function SettingsModal({ close, header }) {
           {hasDefinitions ? (
             <button
               type="button"
-              className="h-11 w-full flex-auto border border-[#0284c7] px-6 text-[11px] font-bold tracking-widest uppercase transition"
+              className="border-info h-11 w-full flex-auto border px-6 text-[11px] font-bold tracking-widest uppercase"
               onClick={() => resetSettings()}
             >
               Reset all
@@ -146,10 +146,10 @@ export default function SettingsModal({ close, header }) {
           ) : null}
         </div>
 
-        {!isHydrated ? <div className="border border-[#0284c7] px-4 py-3 text-sm">Loading settings</div> : null}
+        {!isHydrated ? <div className="border-info border px-4 py-3 text-sm">Loading settings</div> : null}
 
         {isHydrated && !hasDefinitions ? (
-          <div className="border border-[#0284c7] px-4 py-3 text-sm">
+          <div className="border-info border px-4 py-3 text-sm">
             No setting definitions are registered yet. The module is ready and persists decisions centrally under{' '}
             <strong>{storageKey}</strong>. Register definitions through the Settings API to render controls dynamically
             in this modal
@@ -166,7 +166,7 @@ export default function SettingsModal({ close, header }) {
                   const control = inferControl(definition, currentValue);
 
                   return (
-                    <div key={definition.path} className="flex flex-col gap-2 border border-[#0284c7] p-4">
+                    <div key={definition.path} className="border-info flex flex-col gap-2 border p-4">
                       {control === 'switch' ? (
                         renderControl({
                           definition,
@@ -182,7 +182,7 @@ export default function SettingsModal({ close, header }) {
                               </span>
                               <button
                                 type="button"
-                                className="text-[10px] font-bold tracking-widest uppercase transition"
+                                className="text-[10px] font-bold tracking-widest uppercase"
                                 onClick={() => resetSettings(definition.path)}
                               >
                                 Reset
@@ -203,7 +203,7 @@ export default function SettingsModal({ close, header }) {
                           <span className="text-xs">{definition.description || definition.path}</span>
                           <button
                             type="button"
-                            className="text-[10px] font-bold tracking-widest uppercase transition"
+                            className="text-[10px] font-bold tracking-widest uppercase"
                             onClick={() => resetSettings(definition.path)}
                           >
                             Reset
@@ -215,7 +215,7 @@ export default function SettingsModal({ close, header }) {
                         {definition.storage.map((target) => (
                           <span
                             key={target}
-                            className="border border-[#0284c7] px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase"
+                            className="border-info border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase"
                           >
                             {target}
                           </span>

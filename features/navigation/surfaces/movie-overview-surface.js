@@ -12,7 +12,7 @@ export default function MovieOverviewSurface({ close = null, overview = '', titl
         <button
           type="button"
           onClick={() => close?.()}
-          className="border-grid-line text-white-muted bg-primary inline-flex size-8 shrink-0 items-center justify-center border transition-colors hover:text-white"
+          className="border-grid-line text-white-muted bg-primary inline-flex size-8 shrink-0 items-center justify-center border hover:text-white"
           aria-label="Close overview"
         >
           <Icon icon="material-symbols:close-rounded" size={16} />

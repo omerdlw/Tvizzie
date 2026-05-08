@@ -44,7 +44,7 @@ function SidebarSkeleton() {
   return (
     <div className="flex flex-col gap-0">
       <div className={cn('movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-3 py-5 lg:py-7')}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           <SkeletonBlock className="h-full w-full" radius="hero" />
           <SocialDockSkeleton />
         </div>
@@ -224,7 +224,7 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-3  p-1">
+    <div className="flex items-end gap-3 p-1">
       <SkeletonPoster className="aspect-2/3 w-16 shrink-0 sm:w-20" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />

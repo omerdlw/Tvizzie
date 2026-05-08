@@ -18,9 +18,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase ';
 
-const TOOL_BUTTON_CLASS = 'size-7  transition';
+const TOOL_BUTTON_CLASS = 'size-7 ';
 
 const SKELETON_COUNT = 16;
 
@@ -194,7 +194,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
   return (
     <div
       className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-colors last:border-none lg:p-4',
+        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4',
         isUnread ? 'bg-white/10 hover:bg-white/10' : 'hover:bg-white/10'
       )}
     >

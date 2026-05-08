@@ -102,13 +102,13 @@ export function ProfileMediaActions({
   );
 
   return (
-    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
       {extraActions.map((action, index) => (
         <button
           key={`${action.label || action.icon || 'media-action'}-${index}`}
           type="button"
           aria-label={action.label}
-          className="center size-8  border border-white/15 bg-black text-white transition disabled:cursor-default"
+          className="center size-8 border border-white/15 bg-black text-white disabled:cursor-default"
           disabled={Boolean(action.disabled)}
           onClick={(event) => {
             event.preventDefault();
@@ -124,7 +124,7 @@ export function ProfileMediaActions({
         <button
           type="button"
           aria-label="Add to list"
-          className="center size-8  border border-white/15 bg-black text-white transition disabled:cursor-default"
+          className="center size-8 border border-white/15 bg-black text-white disabled:cursor-default"
           onClick={handleOpenListPicker}
         >
           <Icon icon="solar:list-check-minimalistic-bold" size={12} />
@@ -134,12 +134,12 @@ export function ProfileMediaActions({
       {typeof onRemoveItem === 'function' ? (
         <Button
           variant="destructive-icon"
-          className={`center text-error hover:border-error hover:bg-error size-8  border border-white/15 bg-black hover:text-black disabled:cursor-default`}
+          className={`center text-error hover:border-error hover:bg-error size-8 border border-white/15 bg-black hover:text-black disabled:cursor-default`}
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}
         >
-          <Icon icon="solar:trash-bin-trash-bold" size={16} className={isRemoving ? 'animate-pulse' : ''} />
+          <Icon icon="solar:trash-bin-trash-bold" size={16} className={isRemoving ? '' : ''} />
         </Button>
       ) : null}
     </div>
@@ -235,9 +235,7 @@ export default function AccountMediaGridPage({
         <>
           <div className="account-media-grid-page">
             {visibleCards.map((card) => (
-              <div
-                key={card.id}
-              >
+              <div key={card.id}>
                 <MediaCard
                   href={card.href}
                   className="w-full"

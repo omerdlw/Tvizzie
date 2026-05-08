@@ -41,7 +41,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className=" object-cover"
+      className="object-cover"
       onError={() => setError(true)}
       wrapperClassName="h-full w-full"
     />
@@ -54,12 +54,12 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group isolate flex items-center gap-3  border border-white/5 bg-white/5 backdrop-blur transition-colors duration-200 hover:bg-black/30',
+        'group isolate flex items-center gap-3 border border-white/5 bg-white/5 backdrop-blur hover:bg-black/30',
         'overflow-hidden [backface-visibility:hidden]',
         compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4'
       )}
     >
-      <div className={cn('relative shrink-0 overflow-hidden ', compact ? 'h-8 w-8' : 'h-20 w-16')}>
+      <div className={cn('relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16')}>
         <PersonImage
           person={person}
           size={compact ? 'w92' : 'w185'}
@@ -212,7 +212,7 @@ function CastPanel({ tabKey, entries, onOpenModal }) {
             type="button"
             aria-label="Show full cast"
             onClick={onOpenModal}
-            className="center size-10 shrink-0  border border-white/5 bg-white/5 text-white/70 transition-colors hover:bg-black/30 hover:text-white"
+            className="center size-10 shrink-0 border border-white/5 bg-white/5 text-white/70 hover:bg-black/30 hover:text-white"
           >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </button>

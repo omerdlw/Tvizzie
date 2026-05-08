@@ -47,9 +47,7 @@ export default function PersonTimeline({ person }) {
 
   if (!timeline.length) return null;
 
-  return (
-    <PersonTimelineSurface timeline={timeline} />
-  );
+  return <PersonTimelineSurface timeline={timeline} />;
 }
 
 function PersonTimelineSurface({ timeline }) {
@@ -76,7 +74,7 @@ function PersonTimelineSurface({ timeline }) {
                   <div key={`${credit.credit_id || credit.id}-${credit.media_type}`}>
                     <Link
                       href={`/movie/${credit.id}`}
-                      className="group flex items-end gap-3  border border-transparent p-1 transition hover:bg-white/10"
+                      className="group flex items-end gap-3 border border-transparent p-1 hover:bg-white/10"
                     >
                       <MediaThumb poster={credit.poster_path} alt={title} className="" />
                       <div className="flex min-w-0 flex-1 flex-col">

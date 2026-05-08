@@ -21,7 +21,7 @@ function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
 
 function SegmentTabs() {
   return (
-    <SkeletonBlock className="inline-flex w-fit items-center gap-1  p-0.5" soft={true}>
+    <SkeletonBlock className="inline-flex w-fit items-center gap-1 p-0.5" soft={true}>
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
       <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
@@ -31,7 +31,7 @@ function SegmentTabs() {
 
 function CastCard() {
   return (
-    <SkeletonBlock className="flex items-center gap-3  p-0.5 pr-4" soft={true}>
+    <SkeletonBlock className="flex items-center gap-3 p-0.5 pr-4" soft={true}>
       <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
@@ -43,7 +43,7 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <SkeletonBlock className="flex h-10 min-w-0 flex-1 items-center gap-2  p-1 pr-2" soft={true}>
+    <SkeletonBlock className="flex h-10 min-w-0 flex-1 items-center gap-2 p-1 pr-2" soft={true}>
       <SkeletonBlock className="size-8 shrink-0" radius="segmentedItem" />
       <TextLine width="w-3/5" className="h-3" />
     </SkeletonBlock>
@@ -277,7 +277,7 @@ function SidebarSkeleton() {
         data-movie-sidebar-primary="true"
         className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
       >
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
         <SidebarActionButtons />
@@ -302,7 +302,7 @@ function MovieReviewsSidebarSkeleton() {
         data-movie-sidebar-primary="true"
         className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-2 py-7"
       >
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           <SkeletonBlock className="h-full w-full" radius="hero" />
         </div>
       </div>

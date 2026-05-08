@@ -75,7 +75,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
                 <Link
                   href={getSectionHref(username, item.key)}
                   className={cn(
-                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center  border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
+                    'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
                     isActive
                       ? 'border-white bg-white text-black'
                       : 'border-white/15 bg-black/40 text-white/70 hover:bg-black/80 hover:text-white'

@@ -77,17 +77,11 @@
     border: 1px solid color-mix(in srgb, var(--color-white) 10%, transparent);
     background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
     padding: 0.75rem;
-    transition-property: background-color, border-color, transform;
-    transition-duration: 200ms;
   }
 
   .search-community-card:hover {
     border-color: color-mix(in srgb, var(--color-white) 20%, transparent);
     background-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-  }
-
-  .search-community-card:active {
-    transform: scale(0.96);
   }
 
   .search-community-copy {
@@ -169,13 +163,10 @@
 
   .search-card-arrow {
     color: color-mix(in srgb, var(--color-white) 60%, transparent);
-    transition-property: color, transform;
-    transition-duration: 200ms;
   }
 
   .search-community-card:hover .search-card-arrow {
     color: var(--color-white);
-    transform: translate(2px, -2px);
   }
 
   .search-empty-state {
@@ -207,17 +198,11 @@
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
-    transition-property: background-color, border-color, transform;
-    transition-duration: 200ms;
   }
 
   .search-load-more-button:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--color-white) 20%, transparent);
     background-color: color-mix(in srgb, var(--color-white) 15%, transparent);
-  }
-
-  .search-load-more-button:active:not(:disabled) {
-    transform: scale(0.96);
   }
 
   .search-load-more-button:disabled {
@@ -234,8 +219,6 @@
   .search-grid-media-card {
     width: 100%;
     overflow: hidden;
-    transition-property: transform;
-    transition-duration: 200ms;
   }
 
   .search-grid-avatar,

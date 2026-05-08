@@ -41,7 +41,7 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
         type="button"
         aria-label={`Edit ${list.title}`}
         onClick={handleEditClick}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 transition-colors hover:border-white/20"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 hover:border-white/20"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>

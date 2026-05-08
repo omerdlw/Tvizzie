@@ -34,7 +34,7 @@ function PersonCard({ close, person }) {
     : null;
 
   return (
-    <Link href={`/person/${person.id}`} onClick={close} className="flex items-center gap-3 p-2 transition-colors">
+    <Link href={`/person/${person.id}`} onClick={close} className="flex items-center gap-3 p-2">
       <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-white/10">
         {imageSrc ? (
           <AdaptiveImage

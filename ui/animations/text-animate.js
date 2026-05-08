@@ -6,13 +6,10 @@ export function TextAnimate({
   children,
   className,
   as: Component = 'p',
-  delay,
-  duration,
   segmentClassName,
   startOnView,
   once,
   by,
-  animation,
   ...props
 }) {
   return (

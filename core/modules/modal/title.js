@@ -8,7 +8,7 @@ function CloseButton({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="bg-primary inline-flex size-7 shrink-0 cursor-pointer items-center justify-center border border-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+      className="bg-primary inline-flex size-7 shrink-0 cursor-pointer items-center justify-center border border-white/5 text-white/70 hover:bg-white/10 hover:text-white"
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
     </button>

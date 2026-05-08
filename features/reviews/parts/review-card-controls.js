@@ -17,7 +17,7 @@ export function ReviewLikeButton({ disabled = false, hasLiked = false, likesCoun
       onClick={onClick}
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 text-sm font-medium transition-colors disabled:cursor-default disabled:opacity-50',
+        'inline-flex items-center gap-1.5 text-sm font-medium disabled:cursor-default disabled:opacity-50',
         hasLiked ? 'text-error' : 'text-white/50 hover:text-white/70'
       )}
     >
@@ -37,7 +37,7 @@ export function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = fals
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 transition-colors hover:border-white/10 hover:text-white"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 hover:border-white/10 hover:text-white"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -73,8 +73,8 @@ export function ReviewVisual({
   }, [src]);
 
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden  sm:h-28 sm:w-[72px]'
-    : 'relative size-14 shrink-0 overflow-hidden  border border-white/5 bg-white/10';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
+    : 'relative size-14 shrink-0 overflow-hidden border border-white/5 bg-white/10';
 
   const handleImageError = () => {
     if (fallbackSrc && resolvedSrc !== fallbackSrc) {
@@ -128,21 +128,21 @@ export function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-white/5 p-3 text-left transition-all hover:border-white/10 hover:bg-white/10',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-white/5 p-3 text-left hover:border-white/10 hover:bg-white/10',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase transition-colors group-hover:text-white/70">
+        <span className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase group-hover:text-white/70">
           Spoiler warning
         </span>
-        <span className="block text-sm leading-6 text-white/70 transition-colors group-hover:text-white">
+        <span className="block text-sm leading-6 text-white/70 group-hover:text-white">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
 
-      <span className="text-info group-hover:bg-primary shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-white">
+      <span className="text-info group-hover:bg-primary shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase group-hover:text-white">
         Show
       </span>
     </button>

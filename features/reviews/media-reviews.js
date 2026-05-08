@@ -247,11 +247,11 @@ export default function MediaReviews({
             options={REVIEW_SORT_OPTIONS}
             classNames={{
               trigger:
-                'media-review-sort-trigger inline-flex h-10 justify-between  border px-3 text-xs font-semibold tracking-wide uppercase',
-              menu: 'media-review-sort-menu overflow-hidden  p-1 shadow-lg',
+                'media-review-sort-trigger inline-flex h-10 justify-between border px-3 text-xs font-semibold tracking-wide uppercase',
+              menu: 'media-review-sort-menu overflow-hidden p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
               option:
-                'media-review-sort-option cursor-pointer  px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
+                'media-review-sort-option cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
               optionActive: 'media-review-sort-option-active',
               indicator: 'ml-auto text-white',
               icon: 'text-white-muted',

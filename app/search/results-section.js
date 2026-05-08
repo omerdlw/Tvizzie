@@ -239,19 +239,6 @@ function SearchIntroSection({ trimmedQuery, visibleCount }) {
           summaryLabel={trimmedQuery ? `${visibleCount} Visible` : 'Index Ready'}
           title="Search"
         />
-        <div className="account-detail-section-body search-intro-body">
-          <p className="search-intro-copy">
-            Search keeps catalog and community results in one grid-aware surface without leaving the Tvizzie route
-            system.
-          </p>
-          <div className="search-scope-grid" aria-label="Search scopes">
-            <span>Movies</span>
-            <span>People</span>
-            <span>Users</span>
-            <span>Lists</span>
-            <span>Reviews</span>
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -283,31 +270,22 @@ export default function SearchResultsSection({
   return (
     <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
       <AccountGridFrame routeKey="search" className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}>
-        <SearchIntroSection trimmedQuery={trimmedQuery} visibleCount={visibleResults.length} />
-
         <div className="account-detail-hero-divider">
           <AccountGridDivider />
         </div>
 
         <main className="account-detail-grid-main search-page-main">
           {shouldShowMovieFilters ? (
-            <AccountSectionLayout
-              icon="solar:tuning-2-bold"
-              summaryLabel={hasActiveMovieFilters ? 'Filtered' : 'Any movie'}
-              title="Movie Filters"
-              contentClassName="search-filter-body"
-            >
-              <div className="account-filter-bar account-detail-full-width-item search-filter-panel">
-                <SearchMovieFilterBar
-                  decadeOptions={decadeOptions}
-                  filters={movieFilters}
-                  genreOptions={genreOptions}
-                  onChange={onMovieFiltersChange}
-                  onReset={hasActiveMovieFilters ? onMovieFiltersReset : undefined}
-                  yearOptions={yearOptions}
-                />
-              </div>
-            </AccountSectionLayout>
+            <div className="account-filter-bar account-detail-full-width-item search-filter-panel">
+              <SearchMovieFilterBar
+                decadeOptions={decadeOptions}
+                filters={movieFilters}
+                genreOptions={genreOptions}
+                onChange={onMovieFiltersChange}
+                onReset={hasActiveMovieFilters ? onMovieFiltersReset : undefined}
+                yearOptions={yearOptions}
+              />
+            </div>
           ) : null}
 
           {!trimmedQuery ? (

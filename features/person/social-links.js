@@ -59,7 +59,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
   return (
     <div
       className={cn(
-        'inline-flex h-10 w-auto items-center overflow-hidden  border-t border-white/5 bg-black/50 text-white/70 backdrop-blur-md',
+        'inline-flex h-10 w-auto items-center overflow-hidden border-t border-white/5 bg-black/50 text-white/70 backdrop-blur-md',
         className
       )}
     >
@@ -77,10 +77,7 @@ export default function SocialLinks({ externalIds, className = '', linkClassName
                 target="_blank"
                 rel="noopener noreferrer"
                 title={link.label}
-                className={cn(
-                  'center hover:text-info hover:bg-info/20 h-full w-full shrink-0  p-1 transition-all duration-[300ms]',
-                  linkClassName
-                )}
+                className={cn('center hover:text-info hover:bg-info/20 h-full w-full shrink-0 p-1', linkClassName)}
               >
                 <Icon icon={link.icon} size={20} />
               </a>

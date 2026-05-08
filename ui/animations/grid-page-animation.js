@@ -10,7 +10,7 @@ const GridPageAnimationContext = createContext({
 
 export function GridPageAnimationRoot({ baseDelay = 0, children, routeKey = null }) {
   const pathname = usePathname();
-  const animationKey = routeKey ?? pathname ?? 'grid-page';
+  const contextKey = routeKey ?? pathname ?? 'grid-page';
   const value = useMemo(
     () => ({
       baseDelay,
@@ -19,27 +19,19 @@ export function GridPageAnimationRoot({ baseDelay = 0, children, routeKey = null
   );
 
   return (
-    <GridPageAnimationContext.Provider key={animationKey} value={value}>
+    <GridPageAnimationContext.Provider key={contextKey} value={value}>
       {children}
     </GridPageAnimationContext.Provider>
   );
 }
 
 export function GridPageLine({ className = '' }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn('grid-page-line', className)}
-    />
-  );
+  return <span aria-hidden="true" className={cn('grid-page-line', className)} />;
 }
 
 export function GridPageNode({ children, className = '' }) {
   return (
-    <span
-      aria-hidden="true"
-      className={className}
-    >
+    <span aria-hidden="true" className={className}>
       {children}
     </span>
   );

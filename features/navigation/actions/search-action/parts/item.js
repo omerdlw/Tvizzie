@@ -33,7 +33,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
         {item.media_type === SEARCH_TYPES.USER ? (
           <AdaptiveImage
             mode="img"
-            className="h-full w-full object-cover transition-transform duration-[500ms]"
+            className="h-full w-full object-cover"
             src={userAvatarSrc}
             alt={title}
             loading="lazy"
@@ -45,7 +45,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
           <AdaptiveImage
             fill
             alt={title}
-            className="object-cover transition-transform duration-[500ms]"
+            className="object-cover"
             onError={() => onImageError(itemKey)}
             src={`${TMDB_IMG}/w92${imagePath}`}
             sizes="64px"
@@ -55,13 +55,13 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
             wrapperClassName="h-full w-full"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-error">
+          <div className="text-error flex h-full w-full items-center justify-center">
             <Icon icon={item.media_type === SEARCH_TYPES.PERSON ? 'solar:user-bold' : 'solar:gallery-bold'} size={18} />
           </div>
         )}
       </div>
       <div className="mr-2.5 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-        <span className="truncate leading-tight font-bold uppercase transition-all">{title}</span>
+        <span className="truncate leading-tight font-bold uppercase">{title}</span>
         <div className="flex items-center gap-2">
           {year && (
             <div className={SEARCH_STYLES.metaBadge}>

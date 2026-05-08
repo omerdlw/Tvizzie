@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './styles/globals.utilities.css';
+@import './styles/grid-system.css';
 @import './styles/home.css';
 @import './styles/account.css';
 @import './styles/auth.css';
@@ -7,7 +8,6 @@
 @import './styles/reviews.css';
 @import './styles/search.css';
 @import './styles/top250.css';
-@plugin 'tailwindcss-animate';
 
 @theme {
   --color-white: var(--foreground);
@@ -19,8 +19,6 @@
   --color-info: #1285fe;
   --font-sans: var(--font-inter);
   --font-zuume: var(--font-zuume);
-  --animate-spin: spin 1s linear infinite;
-  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @layer base {

@@ -231,19 +231,47 @@ function ToolbarSkeleton({ firstWidth = 'sm:w-44', secondWidth = 'sm:w-40', extr
   );
 }
 
-function FilterBarSkeleton({ triggerCount = 2, withSearch = false }) {
+function FilterTriggerSkeleton({ index = 0 }) {
+  const widthClassName =
+    [
+      'account-filter-skeleton-trigger-rating',
+      'account-filter-skeleton-trigger-year',
+      'account-filter-skeleton-trigger-sort',
+      'account-filter-skeleton-trigger-visibility',
+    ][index] || 'account-filter-skeleton-trigger-default';
+
   return (
-    <div className="account-filter-bar account-detail-full-width-item !-mt-8 flex flex-col !p-0">
-      <div className="flex w-full items-center justify-between gap-3 !p-4">
-        <div className="scrollbar-none flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-          {withSearch ? <Pill className="h-9 w-9 shrink-0" soft={true} /> : null}
+    <div className={cn('account-filter-skeleton-trigger', widthClassName)} aria-hidden="true">
+      <SkeletonBlock className="h-full w-full" soft={true} />
+    </div>
+  );
+}
+
+function FilterSearchSkeleton() {
+  return (
+    <div className="account-filter-skeleton-search" aria-hidden="true">
+      <SkeletonBlock className="h-full w-full" soft={true} />
+    </div>
+  );
+}
+
+function FilterBarSkeleton({ flush = false, triggerCount = 2, withSearch = false }) {
+  return (
+    <div
+      className={cn(
+        'account-filter-bar account-detail-full-width-item !-mt-8 flex flex-col !p-0',
+        flush && 'account-filter-bar-flush'
+      )}
+    >
+      <div className="account-filter-skeleton-main">
+        <div className="account-filter-skeleton-inner">
+          {withSearch ? <FilterSearchSkeleton /> : null}
           {Array.from({ length: triggerCount }).map((_, index) => (
-            <Pill key={index} className="h-9 w-44 shrink-0" soft={true} />
+            <FilterTriggerSkeleton key={index} index={index} />
           ))}
         </div>
-        <Line className="h-3 w-10 shrink-0" soft={true} />
       </div>
-      <div className="account-detail-section-heading-rule" />
+      <div className="account-filter-skeleton-rule" />
     </div>
   );
 }
@@ -338,7 +366,7 @@ function ActivityItemSkeleton({ isFirst = false }) {
 function ReviewCardSkeleton() {
   return (
     <article className={cn('account-detail-full-width-item border-b border-white/5 py-4 last:border-b-0 sm:py-5')}>
-      <div className="relative transition-all duration-300">
+      <div className="relative">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-20">
             <Poster radius="card" />
@@ -513,7 +541,7 @@ function ActivitySkeleton() {
     <div className="flex flex-col">
       <SectionShell>
         <SectionBodySkeleton className="py-0">
-          <FilterBarSkeleton triggerCount={2} withSearch={false} />
+          <FilterBarSkeleton flush={true} triggerCount={2} withSearch={false} />
           <div>
             {Array.from({ length: 5 }).map((_, index) => (
               <ActivityItemSkeleton key={index} isFirst={index === 0} />

@@ -46,7 +46,7 @@ function Top250MovieCard({ item, index }) {
     <div>
       <MediaCard
         href={href}
-        className="bg-primary w-full border border-white/5 transition-transform duration-200 ease-out hover:scale-105 active:scale-95"
+        className="bg-primary w-full border border-white/5"
         imageSrc={posterSrc}
         imageAlt={item.title}
         imageSizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"

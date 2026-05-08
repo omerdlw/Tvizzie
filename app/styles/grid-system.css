@@ -1,0 +1,249 @@
+@layer utilities {
+  .route-grid-frame,
+  .movie-detail-grid-frame,
+  .account-detail-grid-frame,
+  .home-grid-frame,
+  .legal-grid-frame {
+    --route-grid-line-width: 1px;
+    --route-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    --route-grid-side-opacity: 40%;
+    --route-grid-side-opacity-end: 20%;
+    --route-grid-cell: 48px;
+    --route-grid-square-size: calc(var(--route-grid-cell) / 2);
+    --route-grid-divider-height: 1rem;
+    --route-grid-divider-line-width: var(--route-grid-line-width);
+    --route-grid-divider-cap-offset: calc(
+      (var(--route-grid-divider-height) + var(--route-grid-divider-line-width)) / -2
+    );
+    --grid-line-color: var(--route-grid-line-color);
+    --grid-line-draw-color: var(--route-grid-line-color);
+    position: relative;
+    border-inline: 0;
+  }
+
+  .auth-detail-viewport {
+    --route-grid-line-width: 1px;
+    --route-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
+    --route-grid-side-opacity-end: 20%;
+    --route-grid-cell: 48px;
+  }
+
+  .route-grid-frame::before,
+  .route-grid-frame::after,
+  .movie-detail-grid-frame::before,
+  .movie-detail-grid-frame::after,
+  .account-detail-grid-frame::before,
+  .account-detail-grid-frame::after,
+  .home-grid-frame::before,
+  .home-grid-frame::after,
+  .legal-grid-frame::before,
+  .legal-grid-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100vw;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(
+        to right,
+        var(--route-grid-line-color) 0,
+        var(--route-grid-line-color) var(--route-grid-line-width),
+        transparent var(--route-grid-line-width)
+      ),
+      linear-gradient(
+        to bottom,
+        var(--route-grid-line-color) 0,
+        var(--route-grid-line-color) var(--route-grid-line-width),
+        transparent var(--route-grid-line-width)
+      );
+    background-size:
+      var(--route-grid-square-size) var(--route-grid-square-size),
+      var(--route-grid-square-size) var(--route-grid-square-size);
+    background-repeat: repeat;
+    opacity: var(--route-grid-side-opacity);
+  }
+
+  .route-grid-frame::before,
+  .movie-detail-grid-frame::before,
+  .account-detail-grid-frame::before,
+  .home-grid-frame::before,
+  .legal-grid-frame::before {
+    right: 100%;
+    background-position:
+      right calc(var(--route-grid-square-size) / 2) top 12px,
+      right 0 top 12px;
+  }
+
+  .route-grid-frame::after,
+  .movie-detail-grid-frame::after,
+  .account-detail-grid-frame::after,
+  .home-grid-frame::after,
+  .legal-grid-frame::after {
+    left: 100%;
+    background-position:
+      left calc(var(--route-grid-square-size) / 2) top 12px,
+      left 0 top 12px;
+  }
+
+  .route-grid-frame > *,
+  .movie-detail-grid-frame > *,
+  .account-detail-grid-frame > *,
+  .home-grid-frame > *,
+  .legal-grid-frame > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .route-grid-frame-line,
+  .movie-detail-grid-frame > .movie-detail-grid-frame-line,
+  .account-detail-grid-frame-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: none;
+    width: var(--route-grid-line-width);
+    pointer-events: none;
+    background-color: var(--route-grid-line-color);
+  }
+
+  .route-grid-frame-line,
+  .movie-detail-grid-frame > .movie-detail-grid-frame-line {
+    z-index: 20;
+  }
+
+  .account-detail-grid-frame-line {
+    z-index: 2;
+  }
+
+  @media (min-width: 640px) {
+    .route-grid-frame:not(.route-grid-frame-managed),
+    .movie-detail-grid-frame:not(.route-grid-frame-managed),
+    .account-detail-grid-frame:not(.route-grid-frame-managed),
+    .home-grid-frame:not(.route-grid-frame-managed),
+    .legal-grid-frame:not(.route-grid-frame-managed) {
+      border-inline: var(--route-grid-line-width) solid var(--route-grid-line-color);
+    }
+
+    .route-grid-frame-line,
+    .movie-detail-grid-frame > .movie-detail-grid-frame-line,
+    .account-detail-grid-frame-line {
+      display: block;
+    }
+  }
+
+  .route-grid-frame-line-left,
+  .movie-detail-grid-frame-line-left,
+  .account-detail-grid-frame-line-left {
+    left: 0;
+  }
+
+  .route-grid-frame-line-right,
+  .movie-detail-grid-frame-line-right,
+  .account-detail-grid-frame-line-right {
+    right: 0;
+  }
+
+  .route-grid-divider,
+  .movie-detail-grid-divider,
+  .account-detail-grid-divider {
+    --route-grid-divider-height: 1rem;
+    --route-grid-divider-line-width: var(--route-grid-line-width);
+    --route-grid-divider-color: var(--grid-line-color, var(--route-grid-line-color));
+    --route-grid-divider-draw-color: var(--grid-line-draw-color, var(--route-grid-divider-color));
+    --route-grid-divider-cap-offset: calc(
+      (var(--route-grid-divider-height) + var(--route-grid-divider-line-width)) / -2
+    );
+    position: absolute;
+    inset-inline: var(--route-grid-divider-line-width);
+    top: 0;
+    display: block;
+    flex: none;
+    height: var(--route-grid-divider-height);
+    isolation: isolate;
+    pointer-events: none;
+    background-color: var(--route-grid-divider-fill, transparent);
+    z-index: 10;
+  }
+
+  .route-grid-divider::before,
+  .movie-detail-grid-divider::before,
+  .account-detail-grid-divider::before {
+    content: none;
+  }
+
+  .route-grid-divider::after,
+  .movie-detail-grid-divider::after,
+  .account-detail-grid-divider::after {
+    content: none;
+  }
+
+  .route-grid-divider-line,
+  .movie-detail-grid-divider-line,
+  .account-detail-grid-divider-line {
+    position: absolute;
+    inset-inline: 0;
+    z-index: 1;
+    height: var(--route-grid-divider-line-width);
+    background-color: var(--route-grid-divider-draw-color);
+  }
+
+  .route-grid-divider-line-top,
+  .movie-detail-grid-divider-line-top,
+  .account-detail-grid-divider-line-top {
+    top: 0;
+  }
+
+  .route-grid-divider-line-bottom,
+  .movie-detail-grid-divider-line-bottom,
+  .account-detail-grid-divider-line-bottom {
+    bottom: 0;
+  }
+
+  .route-grid-divider-pattern,
+  .movie-detail-grid-divider-pattern,
+  .account-detail-grid-divider-pattern {
+    position: absolute;
+    z-index: 0;
+    inset-block: var(--route-grid-divider-line-width);
+    inset-inline: 0;
+    background-color: var(--route-grid-divider-draw-color);
+    mask-image: url('/svgs/line-grid.svg');
+    mask-position: 50%;
+    mask-size: auto 100%;
+    mask-repeat: repeat-x;
+  }
+
+  .route-grid-divider-startcap,
+  .route-grid-divider-endcap,
+  .movie-detail-grid-divider-startcap,
+  .movie-detail-grid-divider-endcap,
+  .account-detail-grid-divider-startcap,
+  .account-detail-grid-divider-endcap {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: var(--route-grid-divider-height);
+    height: var(--route-grid-divider-height);
+    transform: translateY(-50%);
+  }
+
+  .route-grid-divider-startcap,
+  .movie-detail-grid-divider-startcap,
+  .account-detail-grid-divider-startcap {
+    left: var(--route-grid-divider-cap-offset);
+  }
+
+  .route-grid-divider-endcap,
+  .movie-detail-grid-divider-endcap,
+  .account-detail-grid-divider-endcap {
+    right: var(--route-grid-divider-cap-offset);
+  }
+
+  .route-grid-divider-inset,
+  .movie-detail-grid-divider-inset,
+  .account-detail-grid-divider-inset {
+    inset-inline: var(--route-grid-divider-line-width);
+  }
+}

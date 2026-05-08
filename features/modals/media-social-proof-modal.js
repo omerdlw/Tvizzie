@@ -70,7 +70,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           {highlights.length > 0 ? (
             <div className="p-3 lg:p-4">
-              <div className=" bg-white/10 p-3 shadow-inner">
+              <div className="bg-white/10 p-3 shadow-inner">
                 <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50 uppercase">
                   People you follow
                 </p>
@@ -100,9 +100,9 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     key={user.id}
                     href={`/account/${username}`}
                     onClick={close}
-                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 transition-colors last:border-none hover:bg-white/10 lg:p-4"
+                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 last:border-none hover:bg-white/10 lg:p-4"
                   >
-                    <div className="center size-10 shrink-0 overflow-hidden  border border-white/10">
+                    <div className="center size-10 shrink-0 overflow-hidden border border-white/10">
                       <AdaptiveImage
                         mode="img"
                         src={avatarSrc}
@@ -125,10 +125,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1.5 self-center">
-                      <span
-                        aria-hidden="true"
-                        className="center size-7  border border-white/5 text-white/70 transition"
-                      >
+                      <span aria-hidden="true" className="center size-7 border border-white/5 text-white/70">
                         <Icon icon="solar:alt-arrow-right-linear" size={16} />
                       </span>
                     </div>

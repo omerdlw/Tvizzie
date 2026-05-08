@@ -15,7 +15,7 @@ import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({
-  wrapperRadius: 20,
+  wrapperRadius: 0,
   wrapperPadding: 6,
 });
 
@@ -228,7 +228,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   }
 
   const itemClassName = [
-    'flex w-full items-center gap-2 px-2.5 py-2 text-left text-[13px] font-medium text-white/70 hover:text-white transition-colors hover:bg-white/10 focus-visible:outline-none data-[active=true]:bg-white/10 disabled:pointer-events-none disabled:opacity-50',
+    'flex w-full items-center gap-2 px-2.5 py-2 text-left text-[13px] font-medium text-white/70 hover:text-white hover:bg-white/10 focus-visible:outline-none data-[active=true]:bg-white/10 disabled:pointer-events-none disabled:opacity-50',
     classNames.item,
     item.className,
     item.danger && 'text-error',

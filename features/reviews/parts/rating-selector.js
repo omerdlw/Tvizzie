@@ -43,11 +43,7 @@ function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, o
         <path d={STAR_PATH} className="fill-white/10" />
 
         {fillPercent > 0 && (
-          <path
-            d={STAR_PATH}
-            className={isHovering ? 'fill-success transition-colors' : 'fill-success transition-colors'}
-            clipPath={`url(#${clipId})`}
-          />
+          <path d={STAR_PATH} className={isHovering ? 'fill-success' : 'fill-success'} clipPath={`url(#${clipId})`} />
         )}
       </svg>
 

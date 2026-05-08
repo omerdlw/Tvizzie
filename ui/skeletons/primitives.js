@@ -39,7 +39,9 @@ function resolveLineHeight(size) {
 
 export function SkeletonBlock({ children = null, className = '', radius = null, soft = false }) {
   return (
-    <div className={cn(soft ? SKELETON_TOKENS.tone.soft : SKELETON_TOKENS.tone.solid, resolveRadius(radius), className)}>
+    <div
+      className={cn(soft ? SKELETON_TOKENS.tone.soft : SKELETON_TOKENS.tone.solid, resolveRadius(radius), className)}
+    >
       {children}
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import Link from 'next/link';
 
@@ -59,7 +59,7 @@ function formatListDate(value) {
   }).format(date);
 }
 
-function getPosterMetrics(index, count, isHovered) {
+function getPosterMetrics(index, count) {
   const centerIndex = (count - 1) / 2;
   const distance = index - centerIndex;
   const depth = Math.abs(distance);
@@ -73,31 +73,31 @@ function getPosterMetrics(index, count, isHovered) {
   const baseScale = depth === 0 ? 1.04 : depth === 1 ? 0.94 : 0.85;
 
   return {
-    brightness: depth === 0 ? 1 : depth === 1 ? (isHovered ? 0.74 : 0.55) : isHovered ? 0.48 : 0.3,
-    rotate: isHovered ? baseRotate * 1.15 : baseRotate,
-    scale: isHovered ? baseScale * 1.02 : baseScale,
-    x: isHovered ? baseX * 1.12 : baseX,
-    y: (isHovered ? -18 : -8) * CARD_SCALE + liftByDepth,
+    brightness: depth === 0 ? 1 : depth === 1 ? 0.55 : 0.3,
+    rotate: baseRotate,
+    scale: baseScale,
+    x: baseX,
+    y: -8 * CARD_SCALE + liftByDepth,
     zIndex: 10 - depth,
     saturate: 1 - depth * 0.2,
-    blur: isHovered ? 0 : depth * 0.75,
+    blur: depth * 0.75,
   };
 }
 
-function PreviewPoster({ index, isHovered, item, total }) {
+function PreviewPoster({ index, item, total }) {
   const imageSrc = getPreviewImage(item);
-  const { brightness, rotate, scale, x, y, zIndex, saturate, blur } = getPosterMetrics(index, total, isHovered);
+  const { brightness, rotate, scale, x, y, zIndex, saturate, blur } = getPosterMetrics(index, total);
 
   return (
     <div
-      className="absolute top-0 left-1/2 transition-all duration-300 ease-out"
+      className="absolute top-0 left-1/2"
       style={{
         zIndex,
         transform: `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rotate}deg) scale(${scale})`,
       }}
     >
       <div
-        className="overflow-hidden "
+        className="overflow-hidden"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -107,7 +107,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
           <img
             src={imageSrc}
             alt={item.title || item.name || 'Poster'}
-            className="h-full w-full object-cover transition-[filter] duration-300"
+            className="h-full w-full object-cover"
             style={{
               filter: `brightness(${brightness}) contrast(1.08) saturate(${saturate}) blur(${blur}px)`,
             }}
@@ -122,19 +122,19 @@ function PreviewPoster({ index, isHovered, item, total }) {
   );
 }
 
-function PlaceholderPoster({ index, isHovered, total }) {
-  const { rotate, scale, x, y, zIndex } = getPosterMetrics(index, total, isHovered);
+function PlaceholderPoster({ index, total }) {
+  const { rotate, scale, x, y, zIndex } = getPosterMetrics(index, total);
 
   return (
     <div
-      className="absolute top-0 left-1/2 transition-all duration-300 ease-out"
+      className="absolute top-0 left-1/2"
       style={{
         zIndex,
         transform: `translateX(calc(-50% + ${x}px)) translateY(${y}px) rotate(${rotate}deg) scale(${scale})`,
       }}
     >
       <div
-        className=" border border-white/5 bg-black"
+        className="border border-white/5 bg-black"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -158,7 +158,6 @@ function buildPreviewSlots(previewItems) {
 
 export default function AccountListCard({ list, ownerUsername = null, renderActions = null }) {
   const posterPreferenceVersion = usePosterPreferenceVersion();
-  const [isHovered, setIsHovered] = useState(false);
 
   const previewItems = useMemo(
     () => (Array.isArray(list?.previewItems) ? list.previewItems.slice(0, STACK_SIZE) : []),
@@ -180,14 +179,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
   const reviewsCount = Number.isFinite(Number(list?.reviewsCount)) ? Number(list.reviewsCount) : 0;
 
   return (
-    <article
-      className="relative w-full transition-all duration-300 ease-out"
-      style={{
-        transform: isHovered ? 'translateY(-5px) scale(1.02)' : 'translateY(0) scale(1)',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <article className="relative w-full">
       <Link href={getListHref(list, ownerUsername)} className="block">
         <div
           className="relative w-full"
@@ -196,20 +188,18 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <div
-            className="relative z-0  border border-white/5 bg-black transition-transform duration-300 ease-out"
+            className="relative z-0 border border-white/5 bg-black"
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
               transformStyle: 'preserve-3d',
-              transform: isHovered ? 'rotateX(12deg)' : 'rotateX(0deg)',
             }}
           >
             <div
-              className="absolute inset-0 transition-transform duration-300 ease-out"
+              className="absolute inset-0"
               style={{
                 transformOrigin: 'center bottom',
                 transformStyle: 'flat',
-                transform: isHovered ? 'rotateX(-12deg)' : 'rotateX(0deg)',
               }}
             >
               {previewSlots.map((item, index) =>
@@ -217,30 +207,23 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                   <PreviewPoster
                     key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
                     index={index}
-                    isHovered={isHovered}
                     item={item}
                     total={previewSlots.length}
                   />
                 ) : (
-                  <PlaceholderPoster
-                    key={`placeholder-${index}`}
-                    index={index}
-                    isHovered={isHovered}
-                    total={previewSlots.length}
-                  />
+                  <PlaceholderPoster key={`placeholder-${index}`} index={index} total={previewSlots.length} />
                 )
               )}
             </div>
           </div>
 
           <div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden  border border-white/5 bg-black/80 transition-transform duration-300 ease-out"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/5 bg-black/80"
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               transformOrigin: 'center bottom',
               transformStyle: 'preserve-3d',
-              transform: isHovered ? 'rotateX(-20deg)' : 'rotateX(0deg)',
             }}
           >
             <div className="relative px-4 py-4">

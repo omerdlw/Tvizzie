@@ -50,7 +50,7 @@ export default function AccountListsOverview({
                               type="button"
                               aria-label={`Edit ${targetList.title}`}
                               onClick={() => onEditList(targetList)}
-                              className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center  border border-white/5 text-white/70 transition-colors hover:border-white/20"
+                              className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-white/5 text-white/70 hover:border-white/20"
                             >
                               <Icon icon="solar:pen-bold" size={13} />
                             </button>
@@ -60,7 +60,7 @@ export default function AccountListsOverview({
                               type="button"
                               aria-label={`Delete ${targetList.title}`}
                               onClick={() => onDeleteList(targetList)}
-                              className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center  border border-white/5 text-white/70 transition-colors hover:text-black"
+                              className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center border border-white/5 text-white/70 hover:text-black"
                             >
                               <Icon icon="solar:trash-bin-trash-bold" size={13} />
                             </button>

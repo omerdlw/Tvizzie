@@ -2,8 +2,6 @@
 
 import { useMemo } from 'react';
 
-import { AnimatePresence } from 'framer-motion';
-
 import { Z_INDEX } from '@/core/constants';
 import { useNavHeight } from '@/core/modules/nav/hooks';
 import { getNotificationBottomOffset } from '@/core/modules/nav/layout';
@@ -32,11 +30,9 @@ export function NotificationContainer() {
       className="pointer-events-none fixed right-2 bottom-0 left-2 flex flex-col gap-1 sm:right-auto sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2"
       style={{ bottom: `${resolvedBottomOffset}px`, zIndex: Z_INDEX.NOTIFICATION }}
     >
-      <AnimatePresence mode="popLayout">
-        {sortedNotifications.map(([id, notification]) => (
-          <NotificationOverlay key={id} notification={notification} onDismiss={() => dismissNotification(id)} />
-        ))}
-      </AnimatePresence>
+      {sortedNotifications.map(([id, notification]) => (
+        <NotificationOverlay key={id} notification={notification} onDismiss={() => dismissNotification(id)} />
+      ))}
     </div>
   );
 }

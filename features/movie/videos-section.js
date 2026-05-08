@@ -95,14 +95,14 @@ function VideoCard({ onPreview, video }) {
 function VideoOverlay({ title }) {
   return (
     <>
-      <div className="center absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
-        <div className="center size-8  border border-white/20 bg-white/20 text-white backdrop-blur-sm transition-transform duration-300 hover:scale-[1.08]">
+      <div className="center absolute inset-0 group-hover:opacity-0">
+        <div className="center size-8 border border-white/20 bg-white/20 text-white backdrop-blur-sm">
           <Icon icon="solar:play-bold" size={16} />
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 transition-opacity duration-300 group-hover:from-black/90">
-        <span className="line-clamp-1 text-xs font-bold tracking-tight uppercase drop-shadow-sm transition-colors group-hover:text-white">
+      <div className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-3 pt-8 pb-3 group-hover:from-black/90">
+        <span className="line-clamp-1 text-xs font-bold tracking-tight uppercase drop-shadow-sm group-hover:text-white">
           {title}
         </span>
       </div>

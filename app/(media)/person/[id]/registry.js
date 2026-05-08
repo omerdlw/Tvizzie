@@ -67,7 +67,7 @@ export default function Registry({
                 overlayOpacity: 0.6,
                 overlayColor: 'var(--white)',
                 noiseStyle: {
-                  opacity: 0.15,
+                  opacity: 40,
                 },
               }
             : {

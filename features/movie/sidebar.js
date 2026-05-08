@@ -35,7 +35,7 @@ function SidebarRow({ icon, children }) {
 
 function PersonLink({ person }) {
   return (
-    <Link href={`/person/${person.id}`} className="text-white/70 transition-colors">
+    <Link href={`/person/${person.id}`} className="text-white/70">
       {person.name}
     </Link>
   );
@@ -63,9 +63,7 @@ function PersonsDisplay({ persons, label }) {
 
         {hidden.length > 0 && (
           <Tooltip text={hidden.map((person) => person.name).join(', ')} position="top">
-            <span className="shrink-0 cursor-help text-xs font-bold text-white/70 transition-colors">
-              +{hidden.length}
-            </span>
+            <span className="shrink-0 cursor-help text-xs font-bold text-white/70">+{hidden.length}</span>
           </Tooltip>
         )}
       </div>
@@ -96,7 +94,7 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
           <span key={item} className="inline-flex">
             <span
               className={cn(
-                'inline-flex max-w-full items-center  bg-white/10 text-[11px] font-semibold',
+                'inline-flex max-w-full items-center bg-white/10 text-[11px] font-semibold',
                 isTagGroup
                   ? 'min-h-7 px-2.5 py-1 leading-snug tracking-wide text-white/50'
                   : 'min-h-7 px-2.5 py-1 leading-none tracking-wide text-white/70 uppercase'
@@ -110,7 +108,7 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
         {hiddenItems.length > 0 ? (
           <span key="hidden-tags" className="inline-flex">
             <Tooltip text={hiddenItems.join(', ')} position="top">
-              <span className="inline-flex min-h-7 items-center  bg-white/10 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/70">
+              <span className="inline-flex min-h-7 items-center bg-white/10 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/70">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
@@ -141,11 +139,8 @@ export function MovieSidebarPrimary({ item, topContent }) {
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
 
   return (
-    <div
-      data-movie-sidebar-primary="true"
-      className="media-detail-poster-shell flex flex-col gap-2"
-    >
-      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden ">
+    <div data-movie-sidebar-primary="true" className="media-detail-poster-shell flex flex-col gap-2">
+      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
         {posterSrc ? (
           <AdaptiveImage
             fill
@@ -158,7 +153,7 @@ export function MovieSidebarPrimary({ item, topContent }) {
             decoding="async"
             placeholder="blur"
             blurDataURL={getImagePlaceholderDataUrl(`${item.id || item.title || item.name}-${item.poster_path}`)}
-            className=" object-cover"
+            className="object-cover"
             wrapperClassName="h-full w-full"
           />
         ) : (

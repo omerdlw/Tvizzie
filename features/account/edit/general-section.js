@@ -102,13 +102,8 @@ export default function AccountEditGeneralSection({
             </span>
           </div>
 
-          <span className="flex h-6 w-11  border border-white/15 bg-black p-px" aria-hidden="true">
-            <span
-              className={cn(
-                'h-full w-5  bg-white transition-transform',
-                form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0'
-              )}
-            />
+          <span className="flex h-6 w-11 border border-white/15 bg-black p-px" aria-hidden="true">
+            <span className={cn('h-full w-5 bg-white', form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0')} />
           </span>
         </button>
       </SectionCard>

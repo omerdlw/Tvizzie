@@ -8,71 +8,11 @@
     --movie-detail-meta-cluster-width: 30rem;
     --movie-detail-section-content-gap: 0.75rem;
     --movie-detail-grid-sidebar-width: 424px;
-    --movie-detail-divider-height: 1rem;
-    --movie-detail-divider-line-width: 1px;
-    --movie-detail-side-grid-opacity-start: 40%;
-    --movie-detail-side-grid-opacity-end: 25%;
-    --movie-detail-divider-cap-offset: calc(
-      (var(--movie-detail-divider-height) + var(--movie-detail-divider-line-width)) / -2
-    );
-    --grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-    --grid-line-draw-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-  }
-
-  .movie-detail-grid-frame {
-    position: relative;
-  }
-
-  .movie-detail-grid-frame::before,
-  .movie-detail-grid-frame::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100vw;
-    background-color: var(--grid-line-color);
-    mask-image: url('/svgs/square-grid.svg');
-    -webkit-mask-image: url('/svgs/square-grid.svg');
-    mask-size: 48px 48px;
-    -webkit-mask-size: 48px 48px;
-    mask-repeat: repeat;
-    -webkit-mask-repeat: repeat;
-    opacity: var(--movie-detail-side-grid-opacity-start);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @supports (animation-timeline: scroll()) {
-    .movie-detail-grid-frame::before,
-    .movie-detail-grid-frame::after {
-      animation-name: movie-detail-side-grid-fade;
-      animation-duration: 1s;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: scroll(root block);
-    }
-  }
-
-  @keyframes movie-detail-side-grid-fade {
-    from {
-      opacity: var(--movie-detail-side-grid-opacity-start);
-    }
-
-    to {
-      opacity: var(--movie-detail-side-grid-opacity-end);
-    }
-  }
-
-  .movie-detail-grid-frame::before {
-    right: 100%;
-    mask-position: right 13px top 12px;
-    -webkit-mask-position: right 13px top 12px;
-  }
-
-  .movie-detail-grid-frame::after {
-    left: 100%;
-    mask-position: left 12px top 12px;
-    -webkit-mask-position: left 12px top 12px;
+    --route-grid-divider-fill: var(--white);
+    --movie-detail-divider-height: var(--route-grid-divider-height);
+    --movie-detail-divider-line-width: var(--route-grid-divider-line-width);
+    --movie-detail-divider-cap-offset: var(--route-grid-divider-cap-offset);
+    border-inline: 0;
   }
 
   @media (min-width: 640px) {
@@ -89,34 +29,6 @@
       --movie-detail-grid-band-pad: 2rem;
       --movie-detail-meta-cluster-width: 38rem;
     }
-  }
-
-  .movie-detail-grid-frame > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .movie-detail-grid-frame > .movie-detail-grid-frame-line {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 20;
-    width: var(--movie-detail-divider-line-width);
-    display: none;
-  }
-
-  @media (min-width: 640px) {
-    .movie-detail-grid-frame > .movie-detail-grid-frame-line {
-      display: block;
-    }
-  }
-
-  .movie-detail-grid-frame-line-left {
-    left: 0;
-  }
-
-  .movie-detail-grid-frame-line-right {
-    right: 0;
   }
 
   .movie-detail-grid-subsection {
@@ -345,101 +257,6 @@
     padding-block-start: var(--movie-detail-divider-height);
   }
 
-  .movie-detail-grid-divider {
-    position: absolute;
-    inset-inline: var(--movie-detail-divider-line-width);
-    top: 0;
-    display: block;
-    flex: none;
-    height: var(--movie-detail-divider-height);
-    isolation: isolate;
-    pointer-events: none;
-    background-color: var(--white);
-    z-index: 10;
-  }
-
-  .movie-detail-grid-divider::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    inset-block: 0;
-    inset-inline: 0;
-    background-image:
-      linear-gradient(var(--grid-line-color), var(--grid-line-color)),
-      linear-gradient(var(--grid-line-color), var(--grid-line-color));
-    background-position: top, bottom;
-    background-repeat: no-repeat;
-    background-size:
-      100% var(--movie-detail-divider-line-width),
-      100% var(--movie-detail-divider-line-width);
-  }
-
-  .movie-detail-grid-divider::after {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    inset-block: var(--movie-detail-divider-line-width);
-    inset-inline: 0;
-    background-color: var(--grid-line-color);
-    mask-image: url('/svgs/line-grid.svg');
-    mask-position: 50%;
-    mask-size: auto 100%;
-    mask-repeat: repeat-x;
-  }
-
-  .movie-detail-grid-divider-animated::before,
-  .movie-detail-grid-divider-animated::after {
-    content: none;
-  }
-
-  .movie-detail-grid-divider-line {
-    position: absolute;
-    inset-inline: 0;
-    z-index: 1;
-    height: var(--movie-detail-divider-line-width);
-  }
-
-  .movie-detail-grid-divider-line-top {
-    top: 0;
-  }
-
-  .movie-detail-grid-divider-line-bottom {
-    bottom: 0;
-  }
-
-  .movie-detail-grid-divider-pattern {
-    position: absolute;
-    z-index: 0;
-    inset-block: var(--movie-detail-divider-line-width);
-    inset-inline: 0;
-    mask-image: url('/svgs/line-grid.svg');
-    mask-position: 50%;
-    mask-size: auto 100%;
-    mask-repeat: repeat-x;
-  }
-
-  .movie-detail-grid-divider-startcap,
-  .movie-detail-grid-divider-endcap {
-    position: absolute;
-    top: 50%;
-    z-index: 2;
-    width: var(--movie-detail-divider-height);
-    height: var(--movie-detail-divider-height);
-    transform: translateY(-50%);
-  }
-
-  .movie-detail-grid-divider-startcap {
-    left: var(--movie-detail-divider-cap-offset);
-  }
-
-  .movie-detail-grid-divider-endcap {
-    right: var(--movie-detail-divider-cap-offset);
-  }
-
-  .movie-detail-grid-divider-inset {
-    inset-inline: var(--movie-detail-divider-line-width);
-  }
-
   .movie-detail-primary-grid-divider {
     inset-inline: var(--movie-detail-divider-line-width);
     display: none;
@@ -464,14 +281,6 @@
 
     .movie-detail-grid-primary-layout {
       grid-template-columns: var(--movie-detail-grid-sidebar-width) minmax(0, 1fr);
-    }
-  }
-
-  @media (max-width: 639px) {
-    .movie-detail-grid-frame::before,
-    .movie-detail-grid-frame::after {
-      mask-size: 48px 48px;
-      -webkit-mask-size: 48px 48px;
     }
   }
 

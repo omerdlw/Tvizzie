@@ -44,11 +44,10 @@ export const SEARCH_STYLES = Object.freeze({
     muted: 'border border-white/5 bg-white/5 text-white/70 hover:bg-white/10',
     active: 'border border-white/5 bg-white/10 hover:bg-white/10 focus-within:bg-white/10 text-white',
   }),
-  input: ' flex w-full text-sm items-center p-2 pl-3 transition-colors duration-[200ms]',
-  tabButton: ' relative shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-colors',
+  input: ' flex w-full text-sm items-center p-2 pl-3 ',
+  tabButton: ' relative shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto ',
   tabList: 'hide-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1',
-  resultItem:
-    'group flex  cursor-pointer items-center justify-between transition-all p-0.5 duration-[200ms] hover:bg-white/10',
+  resultItem: 'group flex cursor-pointer items-center justify-between p-0.5 hover:bg-white/10',
   thumbnail: ' relative h-20 w-16 shrink-0 overflow-hidden',
-  metaBadge: 'flex  w-fit  items-center gap-1 border border-white/10',
+  metaBadge: 'flex w-fit items-center gap-1 border border-white/10',
 });

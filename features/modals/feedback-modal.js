@@ -12,7 +12,7 @@ import { cn } from '@/core/utils';
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0  border px-4 text-xs font-semibold tracking-wide uppercase transition';
+const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase ';
 
 function createFeedbackId() {
   return `feedback_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -162,7 +162,7 @@ export default function FeedbackModal({ close, header }) {
             placeholder="Your message"
             className={{
               wrapper:
-                'focus-within:bg-primary  border border-white/5 bg-black transition focus-within:border-white/15 hover:border-white/15',
+                'focus-within:bg-primary border border-white/5 bg-black focus-within:border-white/15 hover:border-white/15',
               textarea:
                 'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-white/50',
             }}

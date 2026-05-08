@@ -34,7 +34,7 @@ const Button = forwardRef(
   ) => {
     const [isActive, setIsActive] = useState(defaultActive);
     const classes = resolveSlotClasses(className, classNames);
-    const baseClasses = 'flex cursor-pointer items-center justify-center transition disabled:cursor-not-allowed ';
+    const baseClasses = 'flex cursor-pointer items-center justify-center disabled:cursor-not-allowed ';
     const semanticIconVariantClasses = SEMANTIC_VARIANT_CLASSES[variant.replace(/-icon$/, '')] || null;
     const semanticVariantClasses = SEMANTIC_VARIANT_CLASSES[variant] || null;
 

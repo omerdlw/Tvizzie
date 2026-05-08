@@ -189,7 +189,7 @@ function AwardEntry({ entry }) {
   const isInteractive = Boolean(entry.projectId);
   const title = entry.project || entry.category;
   const rowClassName = cn(
-    'group flex items-center gap-3  border-transparent p-1 transition-colors',
+    'group flex items-center gap-3 border-transparent p-1 ',
     isInteractive ? 'hover:bg-white/10' : 'cursor-default'
   );
   const content = <AwardEntryContent entry={entry} title={title} />;

@@ -103,7 +103,7 @@ function SubjectHeader({
           {showSubject && subjectHref && review.subjectTitle ? (
             <Link
               href={subjectHref}
-              className="block min-w-0 text-lg font-semibold tracking-tight transition sm:text-xl"
+              className="block min-w-0 text-lg font-semibold tracking-tight sm:text-xl"
               style={{
                 display: '-webkit-box',
                 overflow: 'hidden',
@@ -173,7 +173,7 @@ export function FeedReviewContent({
             {hasRating || hasLikedSubject ? <ReviewMetaSeparator /> : null}
             <span className="inline-flex items-center gap-1.5">
               <span>{activityLabel}</span>
-              <Link href={accountHref} className="font-semibold text-white transition-colors">
+              <Link href={accountHref} className="font-semibold text-white">
                 {displayName}
               </Link>
             </span>
@@ -212,7 +212,7 @@ function SubjectLink({ review, subjectHref }) {
   return (
     <Link
       href={subjectHref}
-      className="text-info mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase transition"
+      className="text-info mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase"
     >
       <Icon icon={review.subjectType === 'list' ? 'solar:list-broken' : 'solar:clapperboard-play-bold'} size={14} />
       <span>

@@ -63,7 +63,7 @@ function renderLinePart(part, index) {
       <Link
         key={`${part.kind || 'link'}-${index}`}
         href={part.href}
-        className={part.kind === 'actor' || part.kind === 'account' ? 'font-semibold transition' : 'transition'}
+        className={part.kind === 'actor' || part.kind === 'account' ? 'font-semibold' : ''}
       >
         {part.text}
       </Link>
@@ -198,6 +198,7 @@ export default function AccountActivityFeed({
     >
       {shouldShowFilterBar ? (
         <AccountActivityFilterBar
+          className="account-filter-bar-flush"
           filters={filters}
           subjectOptions={subjectOptions}
           onChange={updateFilters}

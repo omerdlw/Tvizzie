@@ -17,10 +17,10 @@ import { cn } from '@/core/utils';
 const REVIEW_MIN_LENGTH = getReviewMinLength();
 
 const SECONDARY_BUTTON_CLASS =
-  'h-8 shrink-0  border border-white/5 px-4 text-xs font-semibold tracking-wide uppercase text-white/70 transition hover:bg-white/10 hover:text-white';
+  'h-8 shrink-0 border border-white/5 px-4 text-xs font-semibold tracking-wide uppercase text-white/70 hover:bg-white/10 hover:text-white';
 
 const PRIMARY_BUTTON_CLASS =
-  'h-8  border border-white bg-white px-4 text-xs font-semibold tracking-wide uppercase text-black transition hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50';
+  'h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide uppercase text-black hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50';
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject?.subjectType === 'list') {
@@ -189,7 +189,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center justify-between border-t p-4 text-left transition',
+        'flex w-full items-center justify-between border-t p-4 text-left',
         disabled && 'cursor-not-allowed border-white/5 text-white/50',
         !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-white/10',
         !disabled && !checked && 'bg-primary border-white/5 hover:bg-white/10',
@@ -205,15 +205,12 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
 
       <span
         className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 items-center border p-px transition-all',
+          'relative inline-flex h-6 w-11 shrink-0 items-center border p-px',
           checked && !disabled ? 'border-error bg-error' : 'border-white/10 bg-white/10'
         )}
       >
         <span
-          className={cn(
-            'bg-primary size-5 transition-all',
-            checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0'
-          )}
+          className={cn('bg-primary size-5', checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0')}
         />
       </span>
     </button>

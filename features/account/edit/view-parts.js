@@ -15,13 +15,13 @@ import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import Icon from '@/ui/icon';
 
 export const INPUT_BASE_CLASSES =
-  'h-11 w-full  border border-white/15 bg-primary px-3 text-sm text-white outline-none transition-colors placeholder:text-white/50 focus:border-white';
+  'h-11 w-full border border-white/15 bg-primary px-3 text-sm text-white outline-none placeholder:text-white/50 focus:border-white';
 export const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 
 const BUTTON_BASE_CLASSES =
-  'border border-white/15 bg-black px-3 py-2 text-white transition-colors hover:bg-white/10 disabled:opacity-60';
+  'border border-white/15 bg-black px-3 py-2 text-white hover:bg-white/10 disabled:opacity-60';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-10 items-center justify-center gap-2  px-4 text-[11px] font-bold tracking-widest uppercase transition-colors disabled:cursor-not-allowed';
+  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed';
 
 export function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
@@ -44,7 +44,7 @@ export function StatusState({ title, description }) {
     <section className="account-detail-grid-subsection bg-transparent">
       <AccountSectionReveal>
         <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex min-h-[42vh] items-center justify-center`)}>
-          <div className="w-full max-w-xl  border border-white/15 bg-black p-6 text-center">
+          <div className="w-full max-w-xl border border-white/15 bg-black p-6 text-center">
             <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">{title}</h1>
             <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
@@ -139,7 +139,7 @@ export function SecuritySectionStack({ children }) {
 
 export function SecurityCard({ title, children, className, summaryLabel }) {
   return (
-    <div className={cn('flex min-w-0 flex-col gap-4  border border-white/5 bg-black/40 p-4', className)}>
+    <div className={cn('flex min-w-0 flex-col gap-4 border border-white/5 bg-black/40 p-4', className)}>
       <div className="flex min-w-0 items-center justify-between gap-3">
         <h3 className="min-w-0 text-sm font-semibold tracking-widest text-white/70 uppercase">{title}</h3>
         {summaryLabel ? <div className="min-w-0 text-right">{summaryLabel}</div> : null}
@@ -151,7 +151,7 @@ export function SecurityCard({ title, children, className, summaryLabel }) {
 
 export function EnablePasswordNotice() {
   return (
-    <div className=" border border-white/5 bg-white/10 p-4 text-sm leading-6 text-white/70 lg:col-span-2">
+    <div className="border border-white/5 bg-white/10 p-4 text-sm leading-6 text-white/70 lg:col-span-2">
       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
     </div>
   );
@@ -214,7 +214,7 @@ export function MediaField({
       <div className="account-edit-media-preview-wrap">
         <div
           className={cn(
-            'account-edit-media-preview overflow-hidden  border border-white/5 bg-white/10',
+            'account-edit-media-preview overflow-hidden border border-white/5 bg-white/10',
             previewClassName
           )}
         >

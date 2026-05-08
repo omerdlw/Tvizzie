@@ -138,7 +138,7 @@ export default function View({
             type="button"
             onClick={handleRequestPasswordReset}
             disabled={isSignInBusy}
-            className="text-white/50 transition hover:text-white"
+            className="text-white/50 hover:text-white"
           >
             {isPreparingReset ? 'Checking' : 'Forgot password?'}
           </button>

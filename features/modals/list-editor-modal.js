@@ -9,7 +9,7 @@ import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0  border border-white/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 border border-white/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase ';
 
 function getItemKey(item) {
   return String(item?.mediaKey || `${item?.entityType || item?.media_type || 'movie'}-${item?.entityId || item?.id}`)
@@ -25,7 +25,7 @@ function ListItemRow({ item, onRemove }) {
   const title = getItemTitle(item);
 
   return (
-    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-white/5 px-3 py-1.5 transition-colors hover:border-white/10">
+    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-white/5 px-3 py-1.5 hover:border-white/10">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-white">{title}</p>
       </div>
@@ -33,7 +33,7 @@ function ListItemRow({ item, onRemove }) {
       <button
         type="button"
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-white/50 opacity-100 transition-colors sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-white/50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
@@ -169,7 +169,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
             >
               {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
             </Button>
@@ -185,8 +185,7 @@ export default function ListEditorModal({ close, data, header }) {
             placeholder="List title"
             autoFocus
             className={{
-              wrapper:
-                'flex h-10 items-center border border-white/5 bg-white/10 px-3.5 transition focus-within:border-white/20',
+              wrapper: 'flex h-10 items-center border border-white/5 bg-white/10 px-3.5 focus-within:border-white/20',
               input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
             }}
           />
@@ -197,7 +196,7 @@ export default function ListEditorModal({ close, data, header }) {
             maxHeight={120}
             className={{
               wrapper:
-                'flex min-h-10 border border-white/5 bg-white/10 px-3.5 py-2.5 transition focus-within:border-white/20 sm:min-h-10',
+                'flex min-h-10 border border-white/5 bg-white/10 px-3.5 py-2.5 focus-within:border-white/20 sm:min-h-10',
               textarea:
                 'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-white outline-none placeholder:text-white/50',
             }}

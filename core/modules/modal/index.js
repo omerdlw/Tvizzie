@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -12,7 +11,7 @@ import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_LABELS, MODAL_POSITIONS } from '
 import { useModal } from '@/core/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
-import { getBackdropVariants, getModalVariants, POSITION_CLASSES } from './utils';
+import { POSITION_CLASSES } from './utils';
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
@@ -89,7 +88,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
       <button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase transition-colors hover:bg-white/10 hover:text-white"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white/10 hover:text-white"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -121,9 +120,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   }, [entry.position, entry.responsivePosition, isMobileViewport]);
 
   const SpecificModalComponent = registry.get(entry.modalType);
-  const modalVariants = useMemo(() => getModalVariants(activePosition), [activePosition]);
-  const backdropVariants = useMemo(() => getBackdropVariants(), []);
-
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
   const isLeftModal = activePosition === MODAL_POSITIONS.LEFT;
   const isRightModal = activePosition === MODAL_POSITIONS.RIGHT;
@@ -189,7 +185,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   }
 
   return (
-    <motion.div
+    <div
       key={entry.id}
       role="dialog"
       aria-modal={isTopModal}
@@ -203,32 +199,23 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       )}
     >
       {isTopModal ? (
-        <motion.div
+        <div
           className="fixed inset-0 bg-black/50 backdrop-blur-xl"
           style={{ zIndex: backdropZIndex }}
-          variants={backdropVariants}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
           onClick={() => closeModal(null, entry.id)}
         />
       ) : null}
 
-      <motion.div
+      <div
         ref={modalRef}
         className={cn(
-          'relative flex max-w-full transform-gpu flex-col',
+          'relative flex max-w-full flex-col',
           'w-full sm:w-auto',
           (isSideModal || isVerticalEdgeModal) && 'self-stretch sm:self-auto'
         )}
         style={{
           zIndex: modalZIndex,
-          willChange: 'transform, opacity',
         }}
-        variants={modalVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
       >
         <div
           className={cn(
@@ -268,8 +255,8 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             />
           )}
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -328,7 +315,7 @@ export default function Modal() {
   }
 
   return createPortal(
-    <AnimatePresence mode="sync">
+    <>
       {modalStack.map((entry, index) => (
         <ModalLayer
           key={entry.id}
@@ -341,7 +328,7 @@ export default function Modal() {
           modalStack={modalStack}
         />
       ))}
-    </AnimatePresence>,
+    </>,
     document.body
   );
 }

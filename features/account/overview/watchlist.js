@@ -116,7 +116,7 @@ export default function AccountWatchlistOverview({
                       <Button
                         variant="destructive-icon"
                         className={
-                          'text-error hover:border-error hover:bg-error  border border-white/15 bg-black hover:text-black'
+                          'text-error hover:border-error hover:bg-error border border-white/15 bg-black hover:text-black'
                         }
                         aria-label={`Remove ${card.imageAlt} from ${title.toLowerCase()}`}
                         disabled={pendingItemId === card.id}
@@ -140,7 +140,7 @@ export default function AccountWatchlistOverview({
                         <Icon
                           icon="solar:trash-bin-trash-bold"
                           size={16}
-                          className={pendingItemId === card.id ? 'animate-pulse' : ''}
+                          className={pendingItemId === card.id ? '' : ''}
                         />
                       </Button>
                     </div>

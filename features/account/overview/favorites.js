@@ -116,7 +116,7 @@ export default function AccountFavoritesOverview({
                         aria-label={`Remove ${card.imageAlt} from favorites showcase`}
                         variant="destructive-icon"
                         className={
-                          'text-error hover:border-error hover:bg-error  border border-white/15 bg-black hover:text-black'
+                          'text-error hover:border-error hover:bg-error border border-white/15 bg-black hover:text-black'
                         }
                         disabled={pendingItemId === card.id}
                         onClick={async (event) => {
@@ -137,7 +137,7 @@ export default function AccountFavoritesOverview({
                         }}
                       >
                         <Icon
-                          className={pendingItemId === card.id ? 'animate-pulse' : ''}
+                          className={pendingItemId === card.id ? '' : ''}
                           icon="solar:trash-bin-trash-bold"
                           size={16}
                         />

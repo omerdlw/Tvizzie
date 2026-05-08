@@ -5,8 +5,6 @@ import { useEffect, useId, useRef } from 'react';
 const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
 const DRAG_SPEED = 1.35;
 const DRAG_THRESHOLD = 6;
-const DRAG_EASE = 0.34;
-const WHEEL_EASE = 0.16;
 const WHEEL_IDLE_DELAY = 120;
 const PIXELS_PER_LINE = 16;
 const DOM_DELTA_LINE = 1;
@@ -59,8 +57,6 @@ export function useDraggableScroll() {
     let startX = 0;
     let scrollLeft = 0;
     let isDragging = false;
-    let targetScrollLeft = el.scrollLeft;
-    let animationFrame = 0;
     let wheelIdleTimeout = 0;
     let lastPointerX = 0;
     let lastPointerTime = 0;
@@ -91,47 +87,18 @@ export function useDraggableScroll() {
       el.style.scrollBehavior = 'auto';
     };
 
-    const stopAnimation = () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
-      }
-    };
-
     const releaseInteraction = () => {
       if (isDown || isWheelActive) return;
       setSmoothScrollLocked(false);
     };
 
-    const animateToTarget = (ease = DRAG_EASE) => {
-      if (animationFrame) return;
-
-      const step = () => {
-        const distance = targetScrollLeft - el.scrollLeft;
-
-        if (Math.abs(distance) < 0.5) {
-          el.scrollLeft = targetScrollLeft;
-          animationFrame = 0;
-          restoreScrollBehavior();
-          return;
-        }
-
-        el.scrollLeft += distance * ease;
-        animationFrame = requestAnimationFrame(step);
-      };
-
-      animationFrame = requestAnimationFrame(step);
-    };
-
     const handleMouseDown = (e) => {
-      stopAnimation();
       isDown = true;
       isDragging = false;
       el.classList.add('cursor-grabbing');
       el.classList.remove('cursor-pointer');
       startX = e.pageX - el.offsetLeft;
       scrollLeft = el.scrollLeft;
-      targetScrollLeft = el.scrollLeft;
       lastPointerX = e.pageX;
       lastPointerTime = performance.now();
       pointerVelocity = 0;
@@ -150,8 +117,9 @@ export function useDraggableScroll() {
       el.classList.remove('cursor-grabbing');
 
       if (isDragging) {
-        targetScrollLeft = clamp(el.scrollLeft - pointerVelocity * 220, 0, getMaxScrollLeft(el));
-        animateToTarget(WHEEL_EASE);
+        el.scrollLeft = clamp(el.scrollLeft - pointerVelocity * 220, 0, getMaxScrollLeft(el));
+        restoreScrollBehavior();
+        releaseInteraction();
       } else {
         restoreScrollBehavior();
         releaseInteraction();
@@ -181,8 +149,7 @@ export function useDraggableScroll() {
 
       if (isDragging) {
         e.preventDefault();
-        targetScrollLeft = clamp(scrollLeft - walk, 0, getMaxScrollLeft(el));
-        animateToTarget(DRAG_EASE);
+        el.scrollLeft = clamp(scrollLeft - walk, 0, getMaxScrollLeft(el));
       }
     };
 
@@ -205,9 +172,7 @@ export function useDraggableScroll() {
       isWheelActive = true;
       setSmoothScrollLocked(true);
       suppressNativeSmooth();
-      const scrollStart = animationFrame ? targetScrollLeft : el.scrollLeft;
-      targetScrollLeft = clamp(scrollStart + delta * 0.9, 0, maxScrollLeft);
-      animateToTarget(WHEEL_EASE);
+      el.scrollLeft = clamp(el.scrollLeft + delta * 0.9, 0, maxScrollLeft);
 
       window.clearTimeout(wheelIdleTimeout);
       wheelIdleTimeout = window.setTimeout(() => {
@@ -233,7 +198,6 @@ export function useDraggableScroll() {
     el.addEventListener('click', handleBlur, true);
 
     return () => {
-      stopAnimation();
       window.clearTimeout(wheelIdleTimeout);
       setSmoothScrollLocked(false);
       el.removeEventListener('mousedown', handleMouseDown);

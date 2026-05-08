@@ -84,13 +84,13 @@ export default function ReviewCard({
   const reviewSubjectKey =
     review.subjectKey ||
     review.mediaKey ||
-    (review.subjectType && review.subjectId ? `${normalizeKey(review.subjectType)}_${normalizeKey(review.subjectId)}` : null);
+    (review.subjectType && review.subjectId
+      ? `${normalizeKey(review.subjectType)}_${normalizeKey(review.subjectId)}`
+      : null);
   const hasLikedSubjectFromSet =
     review.subjectType !== 'list' &&
     getSubjectKeyVariants(reviewSubjectKey).some((keyVariant) => likedMediaKeys?.has?.(keyVariant));
-  const hasLikedSubject = Boolean(
-    hasLikedSubjectFromSet || review.authorHasLikedSubject
-  );
+  const hasLikedSubject = Boolean(hasLikedSubjectFromSet || review.authorHasLikedSubject);
   const hasWatchedSubject = Boolean(
     review.subjectType !== 'list' && reviewSubjectKey && watchedMediaKeys?.has?.(reviewSubjectKey)
   );
@@ -118,7 +118,7 @@ export default function ReviewCard({
         className
       )}
     >
-      <div className="relative transition-all duration-[300ms]">
+      <div className="relative">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative shrink-0">
             <ReviewVisual

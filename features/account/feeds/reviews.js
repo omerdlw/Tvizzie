@@ -220,9 +220,7 @@ export default function AccountReviewsFeed({
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
         </div>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
-        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
-          {loadError}
-        </div>
+        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{loadError}</div>
       ) : (
         <ReviewList
           currentUserId={currentUserId}
@@ -248,7 +246,7 @@ export default function AccountReviewsFeed({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className=" border border-white/5 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase transition"
+            className="border border-white/5 bg-black/50 px-6 py-3 text-xs font-semibold tracking-widest text-white/70 uppercase"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

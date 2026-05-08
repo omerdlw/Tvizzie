@@ -99,7 +99,7 @@ function getActionPalette(palette, active) {
     return ' border border-info/10 bg-info/10 text-info hover:border-info/15 hover:bg-info/15';
   }
 
-  return ' border border-white/5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white';
+  return ' border border-white/5 bg-white/5 hover:bg-black/30 text-white/70 hover:text-white';
 }
 
 function ActionButton({
@@ -118,7 +118,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-colors duration-300 disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >
@@ -127,7 +127,7 @@ function ActionButton({
       ) : (
         <>
           <span className="inline-flex">
-            <Icon icon={icon} size={16} className="transition-transform" />
+            <Icon icon={icon} size={16} className="" />
           </span>
           <span>{label}</span>
         </>

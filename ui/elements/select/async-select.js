@@ -100,7 +100,7 @@ const AsyncSelect = forwardRef(
             <div className={cn(classes.optionsList)}>
               {isLoading ? (
                 <div className={cn(classes.loading, externalClasses.loading)}>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="" />
                   <span>Loading</span>
                 </div>
               ) : options.length === 0 ? (
