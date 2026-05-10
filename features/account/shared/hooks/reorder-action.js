@@ -1,8 +1,6 @@
 'use client';
 
-import { getLikeDocRef } from '@/core/services/media/likes.service';
-import { getWatchlistDocRef } from '@/core/services/media/watchlist.service';
-import { updateUserMediaPosition } from '@/core/services/media/user-media.service';
+import { getLikeDocRef, getWatchlistDocRef, updateUserMediaPosition } from '@/core/services/media';
 import { useCallback } from 'react';
 
 function getReorderDocRef({ item, selectedList, tab, userId }) {

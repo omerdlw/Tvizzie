@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
+import { getOrLoadCachedValue } from '@/core/services/shared';
 import { normalizeTimestamp } from '@/core/utils';
 
 const DEFAULT_LIMIT = 8;

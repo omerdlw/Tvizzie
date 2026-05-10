@@ -1,11 +1,11 @@
 import 'server-only';
 
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
+import { readSessionFromRequest } from '@/core/auth/servers/session.js';
 import { getFollowResource } from '@/core/services/social/follow-resources.server';
-import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
-import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared';
+import { invokeInternalEdgeFunction } from '@/core/services/shared';
+import { getOrLoadCachedValue } from '@/core/services/shared';
 import { invalidateNotificationCachesForUsers, publishFollowChange } from './follows.events.server';
 import {
   createRequestMeta,

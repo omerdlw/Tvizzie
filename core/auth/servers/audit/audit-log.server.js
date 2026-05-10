@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 
 import { AUTH_AUDIT_TABLE } from '@/core/auth/auth.constants';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { getRequestContext } from '../session/request-context.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 const ALLOWED_EVENT_TYPES = new Set([

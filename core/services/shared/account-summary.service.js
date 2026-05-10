@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  invalidatePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
+import { buildPollingSubscriptionKey, invalidatePollingSubscription } from '@/core/services/shared/polling-subscription.service';
 
 const ACCOUNT_REFRESH_TIMERS = new Map();
 const DEFAULT_REFRESH_DELAY_MS = 250;

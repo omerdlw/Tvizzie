@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { buildApiErrorResult, buildApiSuccessResult } from '@/core/services/shared/api-result';
-import { setResponseRequestMeta } from '@/core/services/shared/request-meta.server';
+import { buildApiErrorResult, buildApiSuccessResult } from './api-result.js';
+import { setResponseRequestMeta } from './request-meta.server.js';
 
 function normalizeValue(value) {
   return String(value || '').trim();

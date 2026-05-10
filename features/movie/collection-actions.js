@@ -13,15 +13,14 @@ import { useMediaReviews } from '@/features/reviews/use-media-reviews';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   ensureLegacyFavoritesBackfilled,
-  subscribeToLikeStatus,
-  toggleUserLike,
-} from '@/core/services/media/likes.service';
-import {
   markUserWatched,
   removeUserWatchedItem,
+  subscribeToLikeStatus,
   subscribeToWatchedStatus,
-} from '@/core/services/media/watched.service';
-import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/services/media/watchlist.service';
+  subscribeToWatchlistStatus,
+  toggleUserLike,
+  toggleUserWatchlistItem,
+} from '@/core/services/media';
 import { cn } from '@/core/utils';
 import { resolveExplicitMediaType } from '@/core/utils/media';
 import Icon from '@/ui/icon';

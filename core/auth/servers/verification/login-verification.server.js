@@ -4,7 +4,7 @@ import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 const PENDING_SIGN_IN_COOKIE_NAME = 'tvz_login_pending';
 const TRUSTED_DEVICE_COOKIE_PREFIX = 'tvz_login_trust_';

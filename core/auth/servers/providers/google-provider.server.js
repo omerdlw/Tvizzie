@@ -4,7 +4,7 @@ import {
   GOOGLE_AUTH_INTENTS,
   GOOGLE_AUTH_RESULTS,
   resolveGoogleAuthIntent,
-} from '@/core/auth/servers/providers/google-auth-intent.server';
+} from './google-auth-intent.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 
 export const GOOGLE_SESSION_ERROR_CODES = Object.freeze({

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
+import { writeAuthAuditLog } from '@/core/auth/servers/audit.js';
 
 export async function POST(request) {
   try {

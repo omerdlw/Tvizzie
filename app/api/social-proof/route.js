@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { resolveOptionalSessionRequest } from '@/core/auth/servers/session.js';
+import { getOrLoadCachedValue } from '@/core/services/shared';
+import { invokeInternalEdgeFunction } from '@/core/services/shared';
 
 function normalizeValue(value) {
   return String(value || '').trim();

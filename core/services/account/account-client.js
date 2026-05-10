@@ -1,6 +1,6 @@
 'use client';
 
-import { clearPendingAccountBootstrap, getPendingAccountBootstrap } from '@/core/auth/clients/pending-account.client';
+import { clearPendingAccountBootstrap, getPendingAccountBootstrap } from '@/core/auth/clients';
 import { createAccountAdapter, createAccountClient } from '@/core/modules/account';
 import {
   ensureUserAccount,

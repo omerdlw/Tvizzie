@@ -155,7 +155,8 @@ export class TmdbService {
     const scope = options.scope === 'full' ? 'full' : 'preview';
 
     return requestJson(
-      createUrl('/api/tmdb/search', {
+      createUrl('/api/tmdb', {
+        action: 'search',
         page,
         q: query,
         scope,
@@ -223,12 +224,13 @@ export class TmdbService {
   }
 
   static async getGenres() {
-    return requestJson('/api/tmdb/genres');
+    return requestJson('/api/tmdb?action=genres');
   }
 
   static async discoverContent({ genreId, page = 1, sortBy = 'popularity.desc' }) {
     return requestJson(
-      createUrl('/api/tmdb/discover', {
+      createUrl('/api/tmdb', {
+        action: 'discover',
         genreId,
         page,
         sortBy,

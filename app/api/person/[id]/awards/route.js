@@ -5,8 +5,8 @@ import * as cheerio from 'cheerio';
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+} from '@/core/auth/servers/security.js';
+import { getRequestContext } from '@/core/auth/servers/session.js';
 
 const PERSON_ID_PATTERN = /^\d+$/;
 

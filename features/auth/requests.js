@@ -1,6 +1,6 @@
 'use client';
 
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { createCsrfHeaders } from '@/core/auth/clients';
 
 const PASSWORD_STATUS_CACHE_TTL_MS = 4000;
 const passwordStatusCache = new Map();
@@ -69,8 +69,9 @@ function resolvePasswordAccountStatus({ email, identifier, intent }) {
   }
 
   const requestPromise = postAuthJson(
-    '/api/auth/account/password-status',
+    '/api/auth/account',
     {
+      action: 'password-status',
       email,
       identifier,
       intent,
@@ -107,8 +108,9 @@ export function assertSignUpEmailAvailable({ email }) {
 
 export function requestVerificationCode({ email, identifier, forceNew = false, purpose }) {
   return postAuthJson(
-    '/api/auth/verification/send-code',
+    '/api/auth/verification',
     {
+      action: 'resend',
       email,
       identifier,
       forceNew,
@@ -124,8 +126,9 @@ export function requestVerificationCode({ email, identifier, forceNew = false, p
 
 export function verifyCodeRequest({ challengeToken, code, email, rememberDevice = false, purpose }) {
   return postAuthJson(
-    '/api/auth/verification/verify-code',
+    '/api/auth/verification',
     {
+      action: 'verify',
       challengeToken,
       code,
       email,

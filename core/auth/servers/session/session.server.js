@@ -2,10 +2,10 @@ import { randomBytes } from 'crypto';
 
 import { createServerClient } from '@supabase/ssr';
 
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
-import { assertSessionNotRevoked } from '@/core/auth/servers/session/revocation.server';
+import { createAdminAuthFacade } from './supabase-admin-auth.server';
+import { assertSessionNotRevoked } from './revocation.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, assertSupabaseBrowserEnv } from '@/core/clients/supabase/constants';
-import { assertGoogleSessionConsistency } from '@/core/auth/servers/providers/google-provider.server';
+import { assertGoogleSessionConsistency } from '../providers/google-provider.server';
 import {
   AUTH_COOKIE_PATH,
   CSRF_COOKIE_NAME,

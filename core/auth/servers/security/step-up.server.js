@@ -7,7 +7,7 @@ import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 const PURPOSE_SEPARATOR = ':';
 

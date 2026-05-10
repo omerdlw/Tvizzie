@@ -12,7 +12,7 @@ import {
 import { requestVerificationCode } from '@/features/auth/requests';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref } from '@/features/auth/utils';
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
+import { logAuthAuditEvent } from '@/core/auth/clients';
 import { useCallback } from 'react';
 
 export function useAccountEmailCredentialAction({

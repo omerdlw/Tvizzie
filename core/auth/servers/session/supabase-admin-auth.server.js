@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { resolveProviderDescriptors } from '@/core/auth/capabilities';
-import { invokeSessionControl } from '@/core/auth/servers/session/revocation.server';
+import { invokeSessionControl } from './revocation.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

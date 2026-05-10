@@ -9,7 +9,7 @@ import { useAuth } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import { createUserListWithItems } from '@/core/services/media/lists.service';
+import { createUserListWithItems } from '@/core/services/media';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
 import {

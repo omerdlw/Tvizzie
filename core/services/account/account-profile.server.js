@@ -3,8 +3,8 @@ import 'server-only';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { ACCOUNT_READ_FUNCTION, FOLLOW_STATUS_ACCEPTED } from '@/core/services/account/account.constants';
 import { getAccountSnapshotByUserId } from '@/core/services/account/account.server';
+import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server.js';
 import { cleanString } from '@/core/utils';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
 import { cache } from 'react';
 import { normalizeValue } from './account.normalizers';
 

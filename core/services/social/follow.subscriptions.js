@@ -1,8 +1,8 @@
 'use client';
 
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
-import { createPollingSubscription } from '@/core/services/shared/polling-subscription.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { createPollingSubscription } from '@/core/services/shared/polling-subscription.service';
 import { createEmptyRelationshipState, FOLLOW_STATUSES } from './follow.constants';
 import {
   FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,

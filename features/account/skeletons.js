@@ -19,12 +19,18 @@ export function Skeleton({ variant = 'overview' }) {
         routeKey={`account-skeleton-${variant}`}
         className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
       >
-        <div className="relative">
-          <AccountHeroSkeleton />
-          <div className="absolute inset-x-0 top-0 z-20">
+        {variant === 'overview' ? (
+          <div className="relative">
+            <AccountHeroSkeleton />
+            <div className="absolute inset-x-0 top-0 z-20">
+              <AccountNavSkeleton />
+            </div>
+          </div>
+        ) : (
+          <div className="relative z-20">
             <AccountNavSkeleton />
           </div>
-        </div>
+        )}
         <div className="account-detail-hero-divider">
           <AccountGridDivider />
         </div>

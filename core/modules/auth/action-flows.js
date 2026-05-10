@@ -1,6 +1,6 @@
 'use client';
 
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
+import { logAuthAuditEvent } from '@/core/auth/clients';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { EVENT_TYPES } from '@/core/constants/events';
 

@@ -166,24 +166,30 @@ export default function ProfileLayout({
         routeKey={profileHandle ? `account-${profileHandle}` : 'account-current'}
         className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
       >
-        <div className="relative">
-          <AccountHeroReveal>
-            <AccountHero
-              profile={profile}
-              likesCount={likesCount}
-              followerCount={followerCount}
-              followingCount={followingCount}
-              listsCount={listsCount}
-              onOpenFollowList={onOpenFollowList}
-              watchedCount={watchedCount}
-              watchlistCount={watchlistCount}
-              onReadMore={onReadMore}
-            />
-          </AccountHeroReveal>
-          <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+        {activeSection === 'overview' ? (
+          <div className="relative">
+            <AccountHeroReveal>
+              <AccountHero
+                profile={profile}
+                likesCount={likesCount}
+                followerCount={followerCount}
+                followingCount={followingCount}
+                listsCount={listsCount}
+                onOpenFollowList={onOpenFollowList}
+                watchedCount={watchedCount}
+                watchlistCount={watchlistCount}
+                onReadMore={onReadMore}
+              />
+            </AccountHeroReveal>
+            <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+              <AccountSectionNav activeKey={activeSection} username={profileHandle} />
+            </AccountNavReveal>
+          </div>
+        ) : (
+          <AccountNavReveal className="relative z-20">
             <AccountSectionNav activeKey={activeSection} username={profileHandle} />
           </AccountNavReveal>
-        </div>
+        )}
         <div className="account-detail-hero-divider">
           <AccountGridDivider />
         </div>

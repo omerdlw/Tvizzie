@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/core/modules/notification/hooks';
-import { subscribeToUserListItems } from '@/core/services/media/lists.service';
+import { subscribeToUserListItems } from '@/core/services/media';
 import { notifyAccountLoadError } from '@/features/account/shared/load-error';
 import { useEffect, useState } from 'react';
 

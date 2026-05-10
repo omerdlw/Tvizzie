@@ -22,7 +22,7 @@ import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
-import { setPendingAccountBootstrap } from '@/core/auth/clients/pending-account.client';
+import { setPendingAccountBootstrap } from '@/core/auth/clients';
 import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { useToast } from '@/core/modules/notification/hooks';

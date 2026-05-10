@@ -48,7 +48,7 @@ function buildProviderList(watchProviders) {
 }
 
 async function requestWatchRegion() {
-  const response = await fetch('/api/tmdb/watch-region', {
+  const response = await fetch('/api/tmdb?action=watch-region', {
     cache: 'no-store',
   });
 

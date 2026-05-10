@@ -1,10 +1,7 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  invalidatePollingSubscriptions,
-} from '@/core/services/shared/polling-subscription.service';
 import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
+import { buildPollingSubscriptionKey, invalidatePollingSubscriptions } from '@/core/services/shared/polling-subscription.service';
 import { FOLLOW_STATUSES } from './follow.constants';
 
 export const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 2500;

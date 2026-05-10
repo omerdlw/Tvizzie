@@ -14,12 +14,7 @@ import {
   FEATURE_MODAL_ACTION_MOTION,
   getFeatureModalSectionMotion,
 } from '@/features/motion';
-import {
-  getReviewMinLength,
-  getReviewValidationError,
-  upsertListReview,
-  upsertMediaReview,
-} from '@/core/services/media/reviews.service';
+import { getReviewMinLength, getReviewValidationError, upsertListReview, upsertMediaReview } from '@/core/services/media';
 import RatingSelector from '@/features/reviews/parts/rating-selector';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';

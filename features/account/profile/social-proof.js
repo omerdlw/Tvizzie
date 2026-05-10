@@ -1,7 +1,7 @@
 'use client';
 
 import { logDataError } from '@/core/utils';
-import { getAccountSocialProof } from '@/core/services/media/social-proof.service';
+import { getAccountSocialProof } from '@/core/services/media';
 import { useEffect, useState } from 'react';
 
 export function useAccountSocialProof({

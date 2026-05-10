@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import {
   deleteAllUserNotifications,
   deleteUserNotification,
@@ -9,11 +9,11 @@ import {
 } from '@/core/services/notifications/notification-resources.server';
 import { NOTIFICATION_TYPE_SET } from '@/core/services/notifications/notifications.constants';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
-import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
-import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/core/services/shared/memory-cache.server';
-import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
-import { executeWriteRollout } from '@/core/services/shared/write-rollout.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared';
+import { getOrLoadCachedValue, invalidateCachedValuesWhere } from '@/core/services/shared';
+import { buildInternalRequestMeta } from '@/core/services/shared';
+import { invokeInternalEdgeFunction } from '@/core/services/shared';
+import { executeWriteRollout } from '@/core/services/shared';
 
 function normalizeValue(value) {
   return String(value || '').trim();

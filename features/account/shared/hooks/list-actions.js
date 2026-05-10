@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteUserList } from '@/core/services/media/lists.service';
+import { deleteUserList } from '@/core/services/media';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 

@@ -3,7 +3,7 @@ import 'server-only';
 import { ACTIVITY_EVENT_TYPES } from '@/core/services/activity/activity-events.constants';
 import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { getAccountProfileByUserId } from '@/core/services/account/account-profile.server';
-import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
+import { fetchProfileReviewFeedServer } from '@/core/services/media/reviews/server.js';
 import { normalizeTimestamp } from '@/core/utils';
 import { normalizeMediaType } from '@/core/utils/media';
 import {

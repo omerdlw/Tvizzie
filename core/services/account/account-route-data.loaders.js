@@ -2,7 +2,7 @@ import 'server-only';
 
 import { getCollectionResource } from '@/core/services/account/account-collections.server';
 import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server';
-import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
+import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews/server.js';
 import {
   ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS,
   EMPTY_ARRAY,

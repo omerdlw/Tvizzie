@@ -10,8 +10,7 @@ import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useNavHeight } from '@/core/modules/nav/hooks';
 import { useToast } from '@/core/modules/notification/hooks';
-import { subscribeToLikeStatus } from '@/core/services/media/likes.service';
-import { deleteMediaReview, subscribeToMediaReviews, toggleReviewLike } from '@/core/services/media/reviews.service';
+import { deleteMediaReview, subscribeToLikeStatus, subscribeToMediaReviews, toggleReviewLike } from '@/core/services/media';
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 
 import { getRatingStats, sortReviews } from './utils';

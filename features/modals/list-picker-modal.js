@@ -10,7 +10,7 @@ import Container from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 
-import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
+import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media';
 
 import { cn } from '@/core/utils';
 import {

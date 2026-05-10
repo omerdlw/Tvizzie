@@ -1,4 +1,4 @@
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { assertMovieMedia, buildMediaItemKey } from './media-key.service.js';
 import { normalizeTimestamp } from '@/core/utils';
 import { isMovieMediaType } from '@/core/utils/media';
 

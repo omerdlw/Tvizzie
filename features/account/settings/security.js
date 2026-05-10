@@ -1,4 +1,4 @@
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { createCsrfHeaders } from '@/core/auth/clients';
 import { validatePasswordRules } from '@/core/auth/password-validation';
 
 export const AUTH_PURPOSE = {
@@ -153,7 +153,7 @@ export function validatePassword(value) {
 }
 
 export async function deleteAccountRequest({ currentPassword }) {
-  const response = await fetch('/api/auth/account/delete', {
+  const response = await fetch('/api/auth/account', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -161,6 +161,7 @@ export async function deleteAccountRequest({ currentPassword }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      action: 'delete',
       currentPassword: currentPassword || null,
     }),
   });
@@ -175,7 +176,7 @@ export async function deleteAccountRequest({ currentPassword }) {
 }
 
 export async function completeEmailChangeRequest({ newEmail }) {
-  const response = await fetch('/api/auth/account/change-email', {
+  const response = await fetch('/api/auth/account', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -183,7 +184,8 @@ export async function completeEmailChangeRequest({ newEmail }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      newEmail,
+      action: 'change-email',
+      email: newEmail,
     }),
   });
 
@@ -197,7 +199,7 @@ export async function completeEmailChangeRequest({ newEmail }) {
 }
 
 export async function completePasswordChangeRequest({ currentPassword, newPassword }) {
-  const response = await fetch('/api/auth/account/change-password', {
+  const response = await fetch('/api/auth/account', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -205,6 +207,7 @@ export async function completePasswordChangeRequest({ currentPassword, newPasswo
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      action: 'change-password',
       currentPassword,
       newPassword,
     }),
@@ -220,7 +223,7 @@ export async function completePasswordChangeRequest({ currentPassword, newPasswo
 }
 
 export async function completePasswordSetRequest({ newPassword }) {
-  const response = await fetch('/api/auth/account/set-password', {
+  const response = await fetch('/api/auth/account', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -228,6 +231,7 @@ export async function completePasswordSetRequest({ newPassword }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      action: 'set-password',
       newPassword,
     }),
   });

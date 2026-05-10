@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { buildMediaItemKey } from '@/core/services/shared';
 import { MEDIA_COLLECTION_SELECT, WATCHED_SELECT } from './account-collections.constants';
 import { normalizeMediaPayload, normalizeWatchedRow } from './account-collections.normalizers';
 

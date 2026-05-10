@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
+import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service.js';
 import { normalizeTimestamp } from '@/core/utils';
 
 export function normalizeValue(value) {

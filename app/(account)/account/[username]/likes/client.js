@@ -10,10 +10,13 @@ import {
 } from '@/features/account/shared/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
-import { fetchProfileLikedLists } from '@/core/services/media/lists.service';
-import { updateFavoriteShowcase } from '@/core/services/media/likes.service';
-import { fetchProfileReviewFeed, toggleStoredReviewLike } from '@/core/services/media/reviews.service';
-import { subscribeToUserWatched } from '@/core/services/media/watched.service';
+import {
+  fetchProfileLikedLists,
+  fetchProfileReviewFeed,
+  subscribeToUserWatched,
+  toggleStoredReviewLike,
+  updateFavoriteShowcase,
+} from '@/core/services/media';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import LikesView from './view';
 

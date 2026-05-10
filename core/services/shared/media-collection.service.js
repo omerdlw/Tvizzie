@@ -1,7 +1,7 @@
-import { scheduleAccountSummaryRefresh } from '@/core/services/shared/account-summary.service';
-import { requestApiJson } from '@/core/services/shared/api-request.service';
-import { buildPollingSubscriptionKey } from '@/core/services/shared/polling-subscription.service';
-import { resolveLimitCount } from '@/core/services/shared/supabase-media-utils.service';
+import { scheduleAccountSummaryRefresh } from './account-summary.service.js';
+import { requestApiJson } from './api-request.service.js';
+import { buildPollingSubscriptionKey } from './polling-subscription.service.js';
+import { resolveLimitCount } from './supabase-media-utils.service.js';
 
 export function resolveMediaCollectionRpcRow(data) {
   if (Array.isArray(data)) {

@@ -10,12 +10,7 @@ import {
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  deleteStoredReview,
-  fetchProfileReviewFeed,
-  toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service';
-import { subscribeToUserWatched } from '@/core/services/media/watched.service';
+import { deleteStoredReview, fetchProfileReviewFeed, subscribeToUserWatched, toggleStoredReviewLike } from '@/core/services/media';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ReviewsView from './view';
 

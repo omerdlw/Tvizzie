@@ -1,6 +1,6 @@
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
-import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared';
+import { buildInternalRequestMeta } from '@/core/services/shared';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
 
 export const runtime = 'nodejs';

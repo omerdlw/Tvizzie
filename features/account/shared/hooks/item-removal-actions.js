@@ -1,10 +1,7 @@
 'use client';
 
 import { getMediaTitle, removeAccountCollectionItem } from '../../collections/item-utils';
-import { removeUserLike } from '@/core/services/media/likes.service';
-import { toggleUserListItem } from '@/core/services/media/lists.service';
-import { removeUserWatchedItem } from '@/core/services/media/watched.service';
-import { removeUserWatchlistItem } from '@/core/services/media/watchlist.service';
+import { removeUserLike, removeUserWatchedItem, removeUserWatchlistItem, toggleUserListItem } from '@/core/services/media';
 import { useCallback } from 'react';
 
 function buildRemoveConfirmation({ description, handler, item, setItemRemoveConfirmation, title }) {

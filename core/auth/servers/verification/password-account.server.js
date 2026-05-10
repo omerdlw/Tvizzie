@@ -1,4 +1,4 @@
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
+import { createAdminAuthFacade } from '../session/supabase-admin-auth.server';
 import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { validateUsername } from '@/core/utils/account';

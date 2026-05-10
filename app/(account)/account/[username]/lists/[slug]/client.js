@@ -7,21 +7,16 @@ import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  buildPollingSubscriptionKey,
-  primePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
+import { buildPollingSubscriptionKey, primePollingSubscription } from '@/core/services/shared/polling-subscription.service';
 import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
-import {
-  subscribeToUserListBySlug,
-  subscribeToUserListItems,
-  toggleListLike,
-} from '@/core/services/media/lists.service';
 import {
   deleteListReview,
   subscribeToListReviews,
+  subscribeToUserListBySlug,
+  subscribeToUserListItems,
+  toggleListLike,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service';
+} from '@/core/services/media';
 import { useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 

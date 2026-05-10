@@ -1,13 +1,9 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  createPollingSubscription,
-  invalidatePollingSubscriptions,
-} from '@/core/services/shared/polling-subscription.service';
 import { NOTIFICATION_TYPES } from '@/core/services/notifications/notifications.constants';
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { buildPollingSubscriptionKey, createPollingSubscription, invalidatePollingSubscriptions } from '@/core/services/shared/polling-subscription.service';
 
 const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 3000;

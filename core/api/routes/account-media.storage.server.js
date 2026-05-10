@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { invokeInternalEdgeFunction } from '@/core/services/shared';
 import { ALLOWED_MIME_TYPES, DEFAULT_MEDIA_BUCKET, MAX_UPLOAD_BYTES } from './account-media.constants';
 import { createHttpError, normalizeValue } from './account-media.shared';
 

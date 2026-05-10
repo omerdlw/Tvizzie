@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from '@/core/services/shared/runtime-policy.constants';
+import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from './runtime-policy.constants.js';
 
 function normalizeValue(value) {
   return String(value || '')

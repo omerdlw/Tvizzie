@@ -1,4 +1,4 @@
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
+import { logAuthAuditEvent } from '@/core/auth/clients';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref } from '@/features/auth/utils';
 import { clearAccountFeedback, emitAccountFeedback } from '../account-feedback';

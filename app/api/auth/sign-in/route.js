@@ -5,16 +5,16 @@ import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/
 import {
   lookupPasswordAccountByEmail,
   resolvePasswordAccountIdentifier,
-} from '@/core/auth/servers/verification/password-account.server';
-import { createPendingPasswordSignIn } from '@/core/auth/servers/security/password-security.server';
-import { applySessionCookies, clearAuthCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
-import { getRequestContext, setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
+} from '@/core/auth/servers/verification.js';
+import { createPendingPasswordSignIn } from '@/core/auth/servers/security.js';
+import { applySessionCookies, clearAuthCookies, createCsrfToken } from '@/core/auth/servers/session.js';
+import { getRequestContext, setDeviceIdCookie } from '@/core/auth/servers/session.js';
 import {
   clearPendingSignInCookie,
   createPendingSignInToken,
   hasTrustedLoginDevice,
   setPendingSignInCookie,
-} from '@/core/auth/servers/verification/login-verification.server';
+} from '@/core/auth/servers/verification.js';
 
 function normalizeValue(value) {
   return String(value || '').trim();

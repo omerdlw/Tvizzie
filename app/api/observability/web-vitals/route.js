@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared';
 
 function normalizeMetric(payload = {}) {
   const delta = Number(payload?.delta);

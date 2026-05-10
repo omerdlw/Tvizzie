@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 
-import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
+import { readSessionFromRequest } from '@/core/auth/servers/session.js';
 
 function buildCookieRequest(cookieStore) {
   return {

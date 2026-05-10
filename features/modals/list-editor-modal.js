@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
-import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists.service';
+import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media';
 import {
   MODAL_ACTION_BUTTON_PRIMARY_CLASS,
   MODAL_ACTION_BUTTON_SECONDARY_CLASS,

@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { validateUsername } from '@/core/utils/account';
-import { ensureAccountLifecycle } from '@/core/auth/servers/account/account-lifecycle.server';
+import { ensureAccountLifecycle } from './account-lifecycle.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

@@ -1,4 +1,4 @@
-import { lookupAccountByEmail } from '@/core/auth/servers/verification/password-account.server';
+import { lookupAccountByEmail } from '../verification/password-account.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 export const EMAIL_ACCOUNT_STATES = Object.freeze({

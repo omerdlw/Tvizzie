@@ -3,7 +3,7 @@ import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+} from '../security/rate-limit.server';
 import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 const GENERIC_VERIFY_ERROR = 'Verification could not be completed';

@@ -42,13 +42,7 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `app/api/activity/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/activity/events/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/auth/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/change-email/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/change-password/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/delete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/password-status/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/reauthenticate/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/account/set-password/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/`: Auth account security API route'u; `action` bazlı olarak password status, reauthenticate, email change, password set/change ve delete işlemlerini tek entrypointte toplar.
 - `app/api/auth/audit/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
 - `app/api/auth/password-reset/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
 - `app/api/auth/password-reset/complete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
@@ -56,10 +50,8 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `app/api/auth/sign-in/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
 - `app/api/auth/sign-up/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
 - `app/api/auth/sign-up/complete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/verification/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/verification/send-code/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/auth/verification/verify-code/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-- `app/api/collections/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/auth/verification/`: Auth verification API route'u; `action` bazlı olarak resend/send-code ve verify-code akışlarını tek entrypointte toplar.
+- `app/api/collections/`: Collection/list read API route'u; account collections, list detail, list item ve status okuma isteklerini resource parametresiyle yöneten tek entrypoint.
 - `app/api/feedback/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/follows/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/health/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
@@ -82,12 +74,7 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `app/api/social-proof/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/system/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
 - `app/api/system/rollout/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
-- `app/api/tmdb/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-- `app/api/tmdb/discover/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-- `app/api/tmdb/genres/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-- `app/api/tmdb/search/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-- `app/api/tmdb/trending/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-- `app/api/tmdb/watch-region/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/`: TMDB proxy/lookup API route'u; `action` bazlı olarak discover, genres, search, trending ve watch-region isteklerini tek GET entrypointte toplar.
 - `app/privacy/`: Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
 - `app/search/`: Search sayfası route kodu; URL state, grid state, client ve results section.
 - `app/styles/`: Route/global CSS parçaları; Tailwind ile taşınamayan grid, mask, variable ve pseudo-element stilleri.
@@ -386,19 +373,8 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `events/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
           - `route.js`
       - `auth/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-        - `account/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-          - `change-email/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `change-password/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `delete/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `password-status/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `reauthenticate/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `set-password/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
+        - `account/` - Auth account security API route'u; `action` bazlı security işlemlerini tek entrypointte toplar.
+          - `route.js`
         - `audit/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
           - `route.js`
         - `password-reset/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
@@ -411,12 +387,9 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `sign-up/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
           - `complete/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
             - `route.js`
-        - `verification/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-          - `send-code/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-          - `verify-code/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
-            - `route.js`
-      - `collections/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `verification/` - Auth verification API route'u; resend/send-code ve verify-code akışlarını `action` bazlı tek entrypointte toplar.
+          - `route.js`
+      - `collections/` - Collection/list read API route'u; resource parametresiyle collections, list detail ve status okumalarını yöneten tek entrypoint.
         - `route.js`
       - `feedback/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
         - `route.js`
@@ -455,17 +428,8 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
       - `system/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
         - `rollout/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
           - `route.js`
-      - `tmdb/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-        - `discover/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-          - `route.js`
-        - `genres/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-          - `route.js`
-        - `search/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-          - `route.js`
-        - `trending/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-          - `route.js`
-        - `watch-region/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
-          - `route.js`
+      - `tmdb/` - TMDB proxy/lookup API route'u; discover, genres, search, trending ve watch-region aksiyonlarını `action` search param ile handle eden tek entrypoint.
+        - `route.js`
     - `privacy/` - Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
       - `page.js`
     - `search/` - Search sayfası route kodu; URL state, grid state, client ve results section.

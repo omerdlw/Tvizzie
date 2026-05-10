@@ -1,4 +1,4 @@
-import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { buildMediaItemKey } from '@/core/services/shared';
 import { normalizeTimestamp } from '@/core/utils';
 import { isMovieMediaType } from '@/core/utils/media';
 

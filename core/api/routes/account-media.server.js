@@ -2,15 +2,15 @@ import 'server-only';
 
 import { NextResponse } from 'next/server';
 
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { assertCsrfRequest } from '@/core/auth/servers/security/csrf.server';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { requireSessionRequest } from '@/core/auth/servers/session.js';
+import { assertCsrfRequest } from '@/core/auth/servers/security.js';
+import { getRequestContext } from '@/core/auth/servers/session.js';
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
-import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
-import { executeWriteRollout } from '@/core/services/shared/write-rollout.server';
+} from '@/core/auth/servers/security.js';
+import { buildInternalRequestMeta } from '@/core/services/shared';
+import { executeWriteRollout } from '@/core/services/shared';
 import {
   assertMimeSignature,
   createHttpError,

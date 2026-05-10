@@ -1,8 +1,8 @@
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
-import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
-import { executeWriteRollout } from '@/core/services/shared/write-rollout.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared';
+import { buildInternalRequestMeta } from '@/core/services/shared';
+import { executeWriteRollout } from '@/core/services/shared';
 import { executeLegacyReviewWriteAction } from './reviews-write.legacy.server';
 import { normalizePayloadObject, normalizeValue, resolveWriteStatusCode } from './reviews-write.shared';
 

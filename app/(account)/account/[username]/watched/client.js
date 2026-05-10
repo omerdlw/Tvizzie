@@ -6,7 +6,7 @@ import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/col
 import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/features/account/utils';
 import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
-import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media/watched.service';
+import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import WatchedView from './view';
 

@@ -5,7 +5,7 @@ import {
   normalizeStoredEmail,
   readSessionStorageJson,
   writeSessionStorageJson,
-} from '@/core/auth/clients/session-storage.client';
+} from './session-storage.client';
 
 const STORAGE_KEY = 'tvizzie:pending-account-bootstrap';
 const PENDING_PROFILE_TTL_MS = 10 * 60 * 1000;

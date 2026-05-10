@@ -1,24 +1,24 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
-import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
-import { ensurePasswordAccountRecord } from '@/core/auth/servers/account/account-bootstrap.server';
-import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
+import { writeAuthAuditLog } from '@/core/auth/servers/audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy.js';
+import { ensurePasswordAccountRecord } from '@/core/auth/servers/account.js';
+import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account.js';
 import {
   createPendingPasswordSignIn,
   validateStrongPassword,
-} from '@/core/auth/servers/security/password-security.server';
+} from '@/core/auth/servers/security.js';
 import { validateUsername } from '@/core/utils/account';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   enforceAuthRateLimit,
-} from '@/core/auth/servers/security/rate-limit-policies.server';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
-import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
-import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server';
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
-import { setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
+} from '@/core/auth/servers/security.js';
+import { getRequestContext } from '@/core/auth/servers/session.js';
+import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/session.js';
+import { verifySignUpProofToken } from '@/core/auth/servers/verification.js';
+import { createAdminAuthFacade } from '@/core/auth/servers/session.js';
+import { setDeviceIdCookie } from '@/core/auth/servers/session.js';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';

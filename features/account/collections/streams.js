@@ -1,10 +1,13 @@
 'use client';
 
 import { notifyAccountLoadError } from '@/features/account/shared/load-error';
-import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/core/services/media/likes.service';
-import { subscribeToUserLists } from '@/core/services/media/lists.service';
-import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { subscribeToUserWatchlist } from '@/core/services/media/watchlist.service';
+import {
+  ensureLegacyFavoritesBackfilled,
+  subscribeToUserLikes,
+  subscribeToUserLists,
+  subscribeToUserWatched,
+  subscribeToUserWatchlist,
+} from '@/core/services/media';
 import { mergeCollectionItemsWithExistingMetadata } from './metadata';
 
 function updatePreviewCount(setCollectionCounts, key, itemCount) {

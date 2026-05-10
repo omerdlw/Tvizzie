@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/api-response.server';
-import { buildInternalRequestMeta } from '@/core/services/shared/request-meta.server';
+import { createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared';
+import { buildInternalRequestMeta } from '@/core/services/shared';
 
 export function normalizeValue(value) {
   return String(value || '').trim();

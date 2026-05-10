@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { processNotificationEvent } from '@/core/services/notifications/event-processor.server';
 
 export const runtime = 'nodejs';

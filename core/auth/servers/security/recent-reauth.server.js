@@ -4,7 +4,7 @@ import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 export const RECENT_REAUTH_COOKIE_NAME = 'tvz_recent_reauth';
 export const RECENT_REAUTH_MAX_AGE_MS = 5 * 60 * 1000;

@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
-import { invalidateCachedValuesWhere } from '@/core/services/shared/memory-cache.server';
+import { invalidateCachedValuesWhere } from '@/core/services/shared';
 import { normalizeValue } from './follows.shared';
 
 export function publishFollowChange({ followerId, followingId, reason, status = null, traceId = null }) {

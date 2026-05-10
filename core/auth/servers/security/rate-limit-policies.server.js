@@ -1,7 +1,7 @@
 import {
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security/rate-limit.server';
+} from './rate-limit.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

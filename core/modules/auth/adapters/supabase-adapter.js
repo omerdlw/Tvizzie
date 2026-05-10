@@ -1,5 +1,5 @@
 import { resolveAuthCapabilities } from '@/core/auth/capabilities';
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { createCsrfHeaders } from '@/core/auth/clients';
 import { buildOAuthCallbackUrl, resolveOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
 import { getOAuthProviderLabel, isSupportedOAuthProvider, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient, terminateBrowserSession } from '@/core/clients/supabase/client';
@@ -333,12 +333,13 @@ export function createSupabaseAuthAdapter(options = {}) {
     async reauthenticate(payload = {}, adapterContext = {}) {
       void adapterContext;
 
-      await fetchAppAuthJson('/api/auth/account/reauthenticate', {
+      await fetchAppAuthJson('/api/auth/account', {
         fallbackError: 'Reauthentication failed',
         headers: {
           ...createCsrfHeaders(),
         },
         body: {
+          action: 'reauthenticate',
           currentPassword: String(payload.password || ''),
         },
       });

@@ -1,4 +1,4 @@
-import { readSessionFromRequest, isTransientSessionError } from '@/core/auth/servers/session/session.server';
+import { readSessionFromRequest, isTransientSessionError } from './session.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

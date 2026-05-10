@@ -5,7 +5,7 @@ import {
   createCsrfToken,
   getCookieValue,
   setCsrfCookie,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

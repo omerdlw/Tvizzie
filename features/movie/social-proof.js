@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
-import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service';
+import { subscribeToMediaSocialProof } from '@/core/services/media';
 import Icon from '@/ui/icon';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { MOVIE_FEATURE_ACTION_MOTION, MOVIE_FEATURE_SECTION_MOTION } from '@/features/movie/motion';

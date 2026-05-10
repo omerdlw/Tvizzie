@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { deleteActivityEvents, processActivityEvent } from '@/core/services/activity/event-processor.server';
 
 export const runtime = 'nodejs';

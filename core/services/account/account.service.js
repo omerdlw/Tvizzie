@@ -1,16 +1,12 @@
 'use client';
 
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { createCsrfHeaders } from '@/core/auth/clients';
 import { normalizeAccountDisplayNameSearchValue, validateUsername } from '@/core/utils/account';
 import { isValidUrl } from '@/core/utils';
 import { cleanString, normalizeTimestamp } from '@/core/utils';
-import {
-  buildPollingSubscriptionKey,
-  createPollingSubscription,
-  primePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
-import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { buildPollingSubscriptionKey, createPollingSubscription, primePollingSubscription } from '@/core/services/shared/polling-subscription.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/core/services/shared/supabase-data.service';
 import { normalizeFavoriteShowcaseItems } from '@/core/services/shared/supabase-media-utils.service';
 export { sanitizeUsername, validateUsername } from '@/core/utils/account';
 

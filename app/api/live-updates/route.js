@@ -1,7 +1,7 @@
-import { requireAuthenticatedRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { createUserEventStream } from '@/core/services/realtime/user-events.server';
-import { isTransientSessionError } from '@/core/auth/servers/session/session.server';
-import { buildInternalRequestMeta, setResponseRequestMeta } from '@/core/services/shared/request-meta.server';
+import { isTransientSessionError } from '@/core/auth/servers/session.js';
+import { buildInternalRequestMeta, setResponseRequestMeta } from '@/core/services/shared';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

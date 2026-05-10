@@ -1,12 +1,8 @@
 import 'server-only';
 
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import {
-  buildInternalRequestMeta,
-  resolveIdempotencyKey,
-  resolveRequestId,
-} from '@/core/services/shared/request-meta.server';
-import { normalizeApiResultEnvelope } from '@/core/services/shared/api-result';
+import { normalizeApiResultEnvelope } from './api-result.js';
+import { buildInternalRequestMeta, resolveIdempotencyKey, resolveRequestId } from './request-meta.server.js';
 
 function normalizeValue(value) {
   return String(value || '').trim();
