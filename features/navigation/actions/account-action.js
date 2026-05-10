@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
@@ -10,6 +11,12 @@ import Icon from '@/ui/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, WARNING_ACTION_TONE_CLASS } from '@/core/constants/index';
+import {
+  FEATURE_NAV_ACTION_BUTTON_MOTION,
+  FEATURE_NAV_ACTION_ROW_MOTION,
+  getFeatureNavActionItemMotion,
+  getFeatureNavSubmittingMotion,
+} from '@/features/motion';
 
 const PROFILE_FOLLOW_ACTIONS = Object.freeze({
   follow: {
@@ -58,9 +65,23 @@ function getProfileFollowAction(state) {
 
 function AccountActionButton({ children, className = '', disabled = false, onClick, tone = 'muted' }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className={actionClass({ tone, className })}>
+    <motion.button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={actionClass({ tone, className })}
+      {...FEATURE_NAV_ACTION_BUTTON_MOTION}
+    >
       {children}
-    </button>
+    </motion.button>
+  );
+}
+
+function AccountActionRow({ children, className = NAV_ACTION_STYLES.row }) {
+  return (
+    <motion.div className={className} {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -75,7 +96,7 @@ function IconLabel({ icon, children }) {
 
 function NavTabButton({ active, children, icon, onClick }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={active}
@@ -83,10 +104,12 @@ function NavTabButton({ active, children, icon, onClick }) {
         tone: active ? 'active' : 'muted',
         className: 'justify-center',
       })}
+      animate={getFeatureNavSubmittingMotion(false)}
+      {...FEATURE_NAV_ACTION_BUTTON_MOTION}
     >
       {icon ? <Icon icon={icon} size={NAV_ACTION_STYLES.icon} /> : null}
       {children}
-    </button>
+    </motion.button>
   );
 }
 
@@ -164,23 +187,27 @@ export default function AccountAction(props) {
     const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
 
     return (
-      <div className="mt-2.5 flex w-full flex-col gap-2">
+      <AccountActionRow className="mt-2.5 flex w-full flex-col gap-2">
         <div className="grid w-full gap-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
-          {tabs.map((tab) => (
-            <NavTabButton key={tab.key} active={activeTab === tab.key} onClick={() => onTabChange?.(tab.key)}>
-              {tab.label}
-            </NavTabButton>
+          {tabs.map((tab, index) => (
+            <motion.div key={tab.key} {...getFeatureNavActionItemMotion(index)}>
+              <NavTabButton active={activeTab === tab.key} onClick={() => onTabChange?.(tab.key)}>
+                {tab.label}
+              </NavTabButton>
+            </motion.div>
           ))}
         </div>
 
-        {canShowFollowAction ? (
-          <div className="flex w-full gap-2">
-            <AccountActionButton onClick={onFollow} disabled={isFollowLoading} tone={followAction.tone}>
-              {isFollowLoading ? 'Updating' : <IconLabel icon={followAction.icon}>{followAction.label}</IconLabel>}
-            </AccountActionButton>
-          </div>
-        ) : null}
-      </div>
+        <AnimatePresence initial={false}>
+          {canShowFollowAction ? (
+            <motion.div className="flex w-full gap-2" {...getFeatureNavActionItemMotion(tabs.length)}>
+              <AccountActionButton onClick={onFollow} disabled={isFollowLoading} tone={followAction.tone}>
+                {isFollowLoading ? 'Updating' : <IconLabel icon={followAction.icon}>{followAction.label}</IconLabel>}
+              </AccountActionButton>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </AccountActionRow>
     );
   }
 
@@ -191,60 +218,69 @@ export default function AccountAction(props) {
     const shouldShowBottomRow = canShowUploadAction || canShowCancelAction || showSaveAction;
 
     return (
-      <div className="mt-2.5 flex w-full flex-col gap-2">
-        {shouldShowTabRow ? (
-          <div className="grid w-full grid-cols-2 gap-2">
-            {editTabs.map((tab) => (
-              <NavTabButton
-                key={tab.key}
-                active={activeEditTab === tab.key}
-                icon={tab.icon}
-                onClick={() => onEditTabChange?.(tab.key)}
-              >
-                {tab.label}
-              </NavTabButton>
-            ))}
-          </div>
-        ) : null}
+      <AccountActionRow className="mt-2.5 flex w-full flex-col gap-2">
+        <AnimatePresence initial={false}>
+          {shouldShowTabRow ? (
+            <motion.div className="grid w-full grid-cols-2 gap-2" {...getFeatureNavActionItemMotion(0)}>
+              {editTabs.map((tab, index) => (
+                <motion.div key={tab.key} {...getFeatureNavActionItemMotion(index)}>
+                  <NavTabButton
+                    active={activeEditTab === tab.key}
+                    icon={tab.icon}
+                    onClick={() => onEditTabChange?.(tab.key)}
+                  >
+                    {tab.label}
+                  </NavTabButton>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
-        {shouldShowBottomRow ? (
-          <div className="flex w-full gap-2">
-            {canShowUploadAction ? (
-              <AccountActionButton
-                onClick={onOpenMediaUpload}
-                disabled={isUploadDisabled}
-                tone="info"
-                className={showSaveAction ? 'flex-1' : ''}
-              >
-                <IconLabel icon="solar:upload-bold">{uploadLabel}</IconLabel>
-              </AccountActionButton>
-            ) : null}
+        <AnimatePresence initial={false}>
+          {shouldShowBottomRow ? (
+            <motion.div className="flex w-full gap-2" {...getFeatureNavActionItemMotion(1)}>
+              {canShowUploadAction ? (
+                <AccountActionButton
+                  onClick={onOpenMediaUpload}
+                  disabled={isUploadDisabled}
+                  tone="info"
+                  className={showSaveAction ? 'flex-1' : ''}
+                >
+                  <IconLabel icon="solar:upload-bold">{uploadLabel}</IconLabel>
+                </AccountActionButton>
+              ) : null}
 
-            {canShowCancelAction ? (
-              <AccountActionButton onClick={onCancel} disabled={isCancelDisabled} className="flex-1">
-                <IconLabel icon="material-symbols:close-rounded">{cancelLabel}</IconLabel>
-              </AccountActionButton>
-            ) : null}
+              {canShowCancelAction ? (
+                <AccountActionButton onClick={onCancel} disabled={isCancelDisabled} className="flex-1">
+                  <IconLabel icon="material-symbols:close-rounded">{cancelLabel}</IconLabel>
+                </AccountActionButton>
+              ) : null}
 
-            {showSaveAction ? (
-              <AccountActionButton
-                onClick={onSave}
-                disabled={isSaveLoading || isSaveDisabled}
-                tone={isSaveDisabled ? 'muted' : 'success'}
-                className={canShowUploadAction || canShowCancelAction ? 'flex-1' : ''}
-              >
-                {isSaveLoading ? 'Saving' : <IconLabel icon="material-symbols:check-rounded">{saveLabel}</IconLabel>}
-              </AccountActionButton>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
+              {showSaveAction ? (
+                <AccountActionButton
+                  onClick={onSave}
+                  disabled={isSaveLoading || isSaveDisabled}
+                  tone={isSaveDisabled ? 'muted' : 'success'}
+                  className={canShowUploadAction || canShowCancelAction ? 'flex-1' : ''}
+                >
+                  {isSaveLoading ? (
+                    'Saving'
+                  ) : (
+                    <IconLabel icon="material-symbols:check-rounded">{saveLabel}</IconLabel>
+                  )}
+                </AccountActionButton>
+              ) : null}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </AccountActionRow>
     );
   }
 
   if (mode === 'save') {
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         <AccountActionButton
           onClick={onSave}
           disabled={isSaveLoading || isSaveDisabled}
@@ -252,25 +288,25 @@ export default function AccountAction(props) {
         >
           {isSaveLoading ? 'Saving' : <IconLabel icon="material-symbols:check-rounded">{saveLabel}</IconLabel>}
         </AccountActionButton>
-      </div>
+      </AccountActionRow>
     );
   }
 
   if (mode === 'single-action') {
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         <AccountActionButton onClick={onAction} tone={actionTone}>
           {actionIcon ? <IconLabel icon={actionIcon}>{actionLabel}</IconLabel> : actionLabel}
         </AccountActionButton>
-      </div>
+      </AccountActionRow>
     );
   }
 
   if (isNotFound) {
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         <AccountActionButton onClick={() => (window.location.href = '/')}>Back Home</AccountActionButton>
-      </div>
+      </AccountActionRow>
     );
   }
 
@@ -281,31 +317,35 @@ export default function AccountAction(props) {
     const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;
 
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         {canShowFollowAction ? (
-          <AccountActionButton onClick={onFollow} disabled={isFollowLoading} tone={followAction.tone}>
-            {isFollowLoading ? 'Updating' : <IconLabel icon={followAction.icon}>{followAction.label}</IconLabel>}
-          </AccountActionButton>
+          <motion.div className="min-w-0 flex-1" {...getFeatureNavActionItemMotion(0)}>
+            <AccountActionButton onClick={onFollow} disabled={isFollowLoading} tone={followAction.tone}>
+              {isFollowLoading ? 'Updating' : <IconLabel icon={followAction.icon}>{followAction.label}</IconLabel>}
+            </AccountActionButton>
+          </motion.div>
         ) : null}
 
         {canShowLikeListAction ? (
-          <AccountActionButton onClick={onToggleLike} disabled={isLikeLoading} tone={isLiked ? 'success' : 'muted'}>
-            {isLikeLoading ? (
-              'Updating'
-            ) : (
-              <IconLabel icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}>
-                {isLiked ? 'Liked' : 'Like List'}
-              </IconLabel>
-            )}
-          </AccountActionButton>
+          <motion.div className="min-w-0 flex-1" {...getFeatureNavActionItemMotion(1)}>
+            <AccountActionButton onClick={onToggleLike} disabled={isLikeLoading} tone={isLiked ? 'success' : 'muted'}>
+              {isLikeLoading ? (
+                'Updating'
+              ) : (
+                <IconLabel icon={isLiked ? 'solar:heart-bold' : 'solar:heart-linear'}>
+                  {isLiked ? 'Liked' : 'Like List'}
+                </IconLabel>
+              )}
+            </AccountActionButton>
+          </motion.div>
         ) : null}
-      </div>
+      </AccountActionRow>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         <AccountActionButton
           onClick={() => {
             if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
@@ -318,7 +358,7 @@ export default function AccountAction(props) {
         >
           <IconLabel icon={guestIcon}>{guestLabel}</IconLabel>
         </AccountActionButton>
-      </div>
+      </AccountActionRow>
     );
   }
 
@@ -331,22 +371,26 @@ export default function AccountAction(props) {
     }
 
     return (
-      <div className={NAV_ACTION_STYLES.row}>
+      <AccountActionRow>
         {showListActions ? (
           <>
-            <AccountActionButton onClick={() => onEditList?.()}>
-              <IconLabel icon="solar:pen-bold">Edit List</IconLabel>
-            </AccountActionButton>
-            <AccountActionButton onClick={() => onDeleteList?.()} tone="danger">
-              <IconLabel icon="solar:trash-bin-trash-bold">Delete List</IconLabel>
-            </AccountActionButton>
+            <motion.div className="min-w-0 flex-1" {...getFeatureNavActionItemMotion(0)}>
+              <AccountActionButton onClick={() => onEditList?.()}>
+                <IconLabel icon="solar:pen-bold">Edit List</IconLabel>
+              </AccountActionButton>
+            </motion.div>
+            <motion.div className="min-w-0 flex-1" {...getFeatureNavActionItemMotion(1)}>
+              <AccountActionButton onClick={() => onDeleteList?.()} tone="danger">
+                <IconLabel icon="solar:trash-bin-trash-bold">Delete List</IconLabel>
+              </AccountActionButton>
+            </motion.div>
           </>
         ) : shouldShowInboxAction ? (
           <AccountActionButton onClick={onOpenInbox} tone="info">
             <IconLabel icon="solar:inbox-bold">Inbox {inboxCount}</IconLabel>
           </AccountActionButton>
         ) : null}
-      </div>
+      </AccountActionRow>
     );
   }
 

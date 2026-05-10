@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import MovieOverviewSurface from '@/features/navigation/surfaces/movie-overview-surface';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { cn } from '@/core/utils';
+import { getMovieFeatureItemMotion, MOVIE_FEATURE_ACTION_MOTION } from '@/features/movie/motion';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -170,8 +172,12 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
   };
 
   return (
-    <div ref={rootRef} className={cn('flex min-h-0 w-full flex-col items-start gap-3 overflow-hidden', className)}>
-      <div className="relative min-h-0 w-full flex-1 overflow-hidden">
+    <motion.div
+      ref={rootRef}
+      className={cn('flex min-h-0 w-full flex-col items-start gap-3 overflow-hidden', className)}
+      {...getMovieFeatureItemMotion(0)}
+    >
+      <motion.div className="relative min-h-0 w-full flex-1 overflow-hidden" {...getMovieFeatureItemMotion(1)}>
         <p
           ref={textRef}
           className="text-white-soft w-full text-sm leading-6 text-pretty sm:text-base sm:leading-7"
@@ -188,18 +194,20 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
         >
           {overview}
         </p>
-      </div>
+      </motion.div>
 
       {layoutState.canExpand ? (
-        <button
+        <motion.button
           ref={buttonRef}
           type="button"
           onClick={handleReadMore}
           className="text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase hover:text-white"
+          {...getMovieFeatureItemMotion(2)}
+          {...MOVIE_FEATURE_ACTION_MOTION}
         >
           Read More
-        </button>
+        </motion.button>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

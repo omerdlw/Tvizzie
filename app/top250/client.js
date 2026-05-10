@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import { AppRouteItem, AppRouteSection, AppRouteShell } from '@/app/motion';
 import { ACCOUNT_ROUTE_SHELL_CLASS, TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import { cn } from '@/core/utils';
@@ -43,7 +44,7 @@ function Top250MovieCard({ item, index }) {
   const href = item.tmdbId ? `/movie/${item.tmdbId}` : item.imdbUrl;
 
   return (
-    <div>
+    <AppRouteItem index={index}>
       <MediaCard
         href={href}
         className="bg-primary w-full border border-white/5"
@@ -55,7 +56,7 @@ function Top250MovieCard({ item, index }) {
         imagePriority={index < 4}
         tooltipText={`${item.title}${item.year ? ` (${item.year})` : ''}`}
       />
-    </div>
+    </AppRouteItem>
   );
 }
 
@@ -176,63 +177,46 @@ export default function Top250Client({ data }) {
       icon: 'cib:imdb',
       action: <SearchAction />,
     },
-    background: backgroundImage
-      ? {
-          image: backgroundImage,
-          overlay: true,
-          overlayOpacity: 0.5,
-          overlayColor: 'var(--white)',
-          noiseStyle: {
-            opacity: 0.1,
-          },
-          imageStyle: {
-            opacity: 0.9,
-          },
-        }
-      : {
-          image: null,
-          video: null,
-          overlay: false,
-          overlayOpacity: 0,
-        },
   });
 
   return (
     <>
-      <PageGradientShell className="overflow-hidden" contentClassName="account-detail-grid-content">
-        <main className="pt-0">
+      <PageGradientShell className="overflow-hidden" contentClassName="account-detail-grid-content isolate">
+        <AppRouteShell as="main" className="pt-0">
           <div className={cn(ACCOUNT_ROUTE_SHELL_CLASS, 'account-detail-grid-frame')}>
-            <div className="account-detail-grid-main">
-              <section className="account-detail-grid-subsection bg-transparent">
+            <div className="account-detail-grid-main flex w-full min-w-0 flex-col">
+              <AppRouteSection className="account-detail-grid-subsection bg-transparent" index={0}>
                 <div className="account-detail-section-shell flex flex-col">
-                  <AccountSectionHeading
-                    icon="cib:imdb"
-                    showSeeMore={false}
-                    summaryLabel={`${stats.totalCount} films${stats.averageRating ? ` • Avg ${stats.averageRating}` : ''}`}
-                    title="IMDb Top 250"
-                    showDivider={true}
-                  />
+                  <AppRouteItem index={0}>
+                    <AccountSectionHeading
+                      icon="cib:imdb"
+                      showSeeMore={false}
+                      summaryLabel={`${stats.totalCount} films${stats.averageRating ? ` • Avg ${stats.averageRating}` : ''}`}
+                      title="IMDb Top 250"
+                      showDivider={true}
+                    />
+                  </AppRouteItem>
 
-                  <div className="account-detail-section-body top250-section-body">
-                    <div className="account-filter-bar account-detail-full-width-item top250-filter-bar">
-                      <div className="top250-filter-grid">
-                        <label className="top250-filter-field">
-                          <span className="top250-filter-label">Search</span>
+                  <div className="account-detail-section-body pt-0">
+                    <AppRouteItem className="account-filter-bar account-detail-full-width-item mt-0 pt-4" index={1}>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+                        <label className="flex min-w-0 flex-col gap-1.5">
+                          <span className="text-[0.625rem] font-semibold text-white/50 uppercase">Search</span>
                           <input
                             type="text"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             placeholder="Title, cast, director, genre..."
-                            className="top250-filter-input"
+                            className="h-10 w-full min-w-0 border border-white/10 bg-white/10 px-3 text-xs font-semibold text-white/80 uppercase placeholder:text-white/50 placeholder:normal-case focus:border-white/20 focus:bg-white/15 focus:text-white focus:outline-none"
                           />
                         </label>
 
-                        <label className="top250-filter-field">
-                          <span className="top250-filter-label">Genre</span>
+                        <label className="flex min-w-0 flex-col gap-1.5">
+                          <span className="text-[0.625rem] font-semibold text-white/50 uppercase">Genre</span>
                           <select
                             value={genreFilter}
                             onChange={(event) => setGenreFilter(event.target.value)}
-                            className="top250-filter-input"
+                            className="h-10 w-full min-w-0 border border-white/10 bg-white/10 px-3 text-xs font-semibold text-white/80 uppercase focus:border-white/20 focus:bg-white/15 focus:text-white focus:outline-none"
                           >
                             <option value="all">All genres</option>
                             {availableGenres.map((genre) => (
@@ -243,12 +227,12 @@ export default function Top250Client({ data }) {
                           </select>
                         </label>
 
-                        <label className="top250-filter-field">
-                          <span className="top250-filter-label">Decade</span>
+                        <label className="flex min-w-0 flex-col gap-1.5">
+                          <span className="text-[0.625rem] font-semibold text-white/50 uppercase">Decade</span>
                           <select
                             value={yearFilter}
                             onChange={(event) => setYearFilter(event.target.value)}
-                            className="top250-filter-input"
+                            className="h-10 w-full min-w-0 border border-white/10 bg-white/10 px-3 text-xs font-semibold text-white/80 uppercase focus:border-white/20 focus:bg-white/15 focus:text-white focus:outline-none"
                           >
                             <option value="all">All decades</option>
                             {availableYears.map((yearValue) => (
@@ -259,12 +243,12 @@ export default function Top250Client({ data }) {
                           </select>
                         </label>
 
-                        <label className="top250-filter-field">
-                          <span className="top250-filter-label">Sort</span>
+                        <label className="flex min-w-0 flex-col gap-1.5">
+                          <span className="text-[0.625rem] font-semibold text-white/50 uppercase">Sort</span>
                           <select
                             value={sortMode}
                             onChange={(event) => setSortMode(event.target.value)}
-                            className="top250-filter-input"
+                            className="h-10 w-full min-w-0 border border-white/10 bg-white/10 px-3 text-xs font-semibold text-white/80 uppercase focus:border-white/20 focus:bg-white/15 focus:text-white focus:outline-none"
                           >
                             <option value="rank-asc">Rank (1 → 250)</option>
                             <option value="rank-desc">Rank (250 → 1)</option>
@@ -275,10 +259,10 @@ export default function Top250Client({ data }) {
                           </select>
                         </label>
                       </div>
-                    </div>
+                    </AppRouteItem>
 
                     {filteredItems.length ? (
-                      <section className="top250-grid">
+                      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {filteredItems.map((item, index) => (
                           <Top250MovieCard key={item.imdbId} item={item} index={index} />
                         ))}
@@ -290,14 +274,14 @@ export default function Top250Client({ data }) {
                     )}
                   </div>
                 </div>
-              </section>
+              </AppRouteSection>
 
-              <section className="account-detail-grid-subsection bg-transparent">
+              <AppRouteSection className="account-detail-grid-subsection bg-transparent" index={1}>
                 <NavHeightSpacer className="w-full" />
-              </section>
+              </AppRouteSection>
             </div>
           </div>
-        </main>
+        </AppRouteShell>
       </PageGradientShell>
     </>
   );

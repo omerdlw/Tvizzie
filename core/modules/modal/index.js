@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -9,6 +10,13 @@ import { cn } from '@/core/utils';
 import { ModuleError } from '@/core/modules/error-boundary';
 import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_LABELS, MODAL_POSITIONS } from '@/core/modules/modal/config';
 import { useModal } from '@/core/modules/modal/context';
+import {
+  getModalPanelMotion,
+  MODAL_ACTION_MOTION,
+  MODAL_BACKDROP_MOTION,
+  MODAL_LAYER_MOTION,
+  MODAL_LAYER_SWITCHER_MOTION,
+} from '@/core/modules/motion';
 
 import { useModalRegistry } from '../registry/context';
 import { POSITION_CLASSES } from './utils';
@@ -84,11 +92,12 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center gap-1.5 border-t border-white/5 px-3 py-1.5">
-      <button
+    <motion.div className="center gap-1.5 border-t border-white/10 px-3 py-1.5" {...MODAL_LAYER_SWITCHER_MOTION}>
+      <motion.button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase hover:bg-white/10 hover:text-white"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        {...MODAL_ACTION_MOTION}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -100,14 +109,14 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
           />
         </svg>
         {getModalLabel(previousEntry.modalType)}
-      </button>
+      </motion.button>
 
       <span className="text-[10px] text-white/30">/</span>
 
       <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -185,7 +194,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   }
 
   return (
-    <div
+    <motion.div
       key={entry.id}
       role="dialog"
       aria-modal={isTopModal}
@@ -197,16 +206,18 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
         !isSideModal && 'px-3 sm:px-0'
       )}
+      {...MODAL_LAYER_MOTION}
     >
       {isTopModal ? (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-xl"
+        <motion.div
+          className="fixed inset-0 bg-primary/70"
           style={{ zIndex: backdropZIndex }}
           onClick={() => closeModal(null, entry.id)}
+          {...MODAL_BACKDROP_MOTION}
         />
       ) : null}
 
-      <div
+      <motion.div
         ref={modalRef}
         className={cn(
           'relative flex max-w-full flex-col',
@@ -216,22 +227,24 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         style={{
           zIndex: modalZIndex,
         }}
+        {...getModalPanelMotion(activePosition, isTopModal)}
       >
-        <div
+        <motion.div
           className={cn(
             'relative flex flex-col',
             isMobileSideModal ? '' : '',
             isPanelChrome
-              ? 'overflow-hidden border border-white/5 bg-black/80'
+              ? 'overflow-hidden border border-white/10 bg-primary/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && '',
-            isPanelChrome && isBottomModalPosition && '',
+            isPanelChrome && isTopModalPosition && 'border-t-0',
+            isPanelChrome && isBottomModalPosition && 'border-b-0',
             isPanelChrome &&
               isSideModal && [
-                'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
+                'h-screen max-h-screen w-full self-stretch border-y-0 sm:w-auto sm:self-auto',
                 isLeftModal ? 'sm:border-l-0' : 'sm:border-r-0',
               ]
           )}
+          layout="position"
         >
           <ModuleError name={entry.modalType}>
             <SpecificModalComponent
@@ -254,9 +267,9 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
               onSwitchToPrevious={() => closeModal(null, entry.id)}
             />
           )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -315,7 +328,7 @@ export default function Modal() {
   }
 
   return createPortal(
-    <>
+    <AnimatePresence initial={false}>
       {modalStack.map((entry, index) => (
         <ModalLayer
           key={entry.id}
@@ -328,7 +341,7 @@ export default function Modal() {
           modalStack={modalStack}
         />
       ))}
-    </>,
+    </AnimatePresence>,
     document.body
   );
 }

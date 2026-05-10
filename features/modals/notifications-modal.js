@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import Container from '@/core/modules/modal/container';
@@ -14,11 +15,15 @@ import {
   subscribeToNotifications,
 } from '@/core/services/notifications/notifications.service';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_SCROLLABLE_BODY_CLASS,
+} from '@/features/modals/constants';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase ';
 
 const TOOL_BUTTON_CLASS = 'size-7 ';
 
@@ -174,78 +179,82 @@ function NotificationContent({ type, actor, payload }) {
   }
 }
 
-function NotificationSkeleton() {
+function NotificationSkeleton({ index = 0 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
-      <div className="skeleton-block size-10 shrink-0" />
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="skeleton-block h-3 w-3/5" />
-        <div className="skeleton-block-soft h-2 w-2/5" />
+    <motion.div {...getFeatureModalItemMotion(index)}>
+      <div className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
+        <div className="skeleton-block size-10 shrink-0" />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="skeleton-block h-3 w-3/5" />
+          <div className="skeleton-block-soft h-2 w-2/5" />
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function NotificationRow({ notification, onMarkRead, onDelete }) {
+function NotificationRow({ notification, onMarkRead, onDelete, index = 0 }) {
   const avatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
   const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
   const isUnread = !notification.read;
 
   return (
-    <div
-      className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4',
-        isUnread ? 'bg-white/10 hover:bg-white/10' : 'hover:bg-white/10'
-      )}
-    >
-      <div className="center size-10 shrink-0 overflow-hidden">
-        {notification.actor ? (
-          <AdaptiveImage
-            mode="img"
-            src={avatarSrc}
-            alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full object-cover"
-            loading="lazy"
-            decoding="async"
-            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-            wrapperClassName="size-full"
-          />
-        ) : (
-          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-white/70" />
+    <motion.div {...getFeatureModalItemMotion(index)}>
+      <div
+        className={cn(
+          'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4',
+          isUnread ? 'bg-white/10 hover:bg-white/10' : 'hover:bg-white/10'
         )}
-      </div>
+      >
+        <div className="center size-10 shrink-0 overflow-hidden">
+          {notification.actor ? (
+            <AdaptiveImage
+              mode="img"
+              src={avatarSrc}
+              alt={notification.actor?.displayName || 'Avatar'}
+              className="size-full object-cover"
+              loading="lazy"
+              decoding="async"
+              onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+              wrapperClassName="size-full"
+            />
+          ) : (
+            <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-white/70" />
+          )}
+        </div>
 
-      <div className="flex w-full flex-col">
-        <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
-        <span className="text-[10px] tracking-widest text-white/50 uppercase">
-          {formatRelativeTime(notification.createdAt)}
-        </span>
-      </div>
+        <div className="flex w-full flex-col">
+          <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
+          <span className="text-[10px] tracking-widest text-white/50 uppercase">
+            {formatRelativeTime(notification.createdAt)}
+          </span>
+        </div>
 
-      <div className="flex items-center gap-1.5">
-        {isUnread && (
+        <div className="flex items-center gap-1.5">
+          {isUnread && (
+            <Button
+              onClick={(event) => onMarkRead(notification.id, event)}
+              title="Mark as read"
+              className={cn(
+                TOOL_BUTTON_CLASS,
+                'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
+              )}
+            >
+              <Icon icon="material-symbols:check-rounded" size={16} />
+            </Button>
+          )}
+
           <Button
-            onClick={(event) => onMarkRead(notification.id, event)}
-            title="Mark as read"
-            className={cn(
-              TOOL_BUTTON_CLASS,
-              'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
-            )}
+            onClick={(event) => onDelete(notification.id, event)}
+            title="Delete notification"
+            variant="destructive"
+            className={TOOL_BUTTON_CLASS}
           >
-            <Icon icon="material-symbols:check-rounded" size={16} />
+            <Icon icon="solar:trash-bin-trash-linear" size={16} />
           </Button>
-        )}
-
-        <Button
-          onClick={(event) => onDelete(notification.id, event)}
-          title="Delete notification"
-          variant="destructive"
-          className={TOOL_BUTTON_CLASS}
-        >
-          <Icon icon="solar:trash-bin-trash-linear" size={16} />
-        </Button>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -400,7 +409,7 @@ export default function NotificationsModal({ close, header, data }) {
               <Button
                 type="button"
                 onClick={handleDeleteAll}
-                className={cn(ACTION_BUTTON_CLASS, 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white')}
+                className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}
               >
                 Clear all
               </Button>
@@ -409,10 +418,7 @@ export default function NotificationsModal({ close, header, data }) {
                 <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className={cn(
-                    ACTION_BUTTON_CLASS,
-                    'hover:bg-info hover:border-info hover:text-primary border-white bg-white text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50'
-                  )}
+                  className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
                 >
                   Mark all as read
                 </Button>
@@ -421,22 +427,25 @@ export default function NotificationsModal({ close, header, data }) {
           ) : null,
       }}
     >
-      <div className="min-h-0 overflow-y-auto">
+      <motion.div className={MODAL_SCROLLABLE_BODY_CLASS} {...getFeatureModalSectionMotion(0)}>
         {isLoading ? (
-          Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
+          Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} index={index} />)
         ) : notifications.length === 0 ? (
-          <div className="center h-screen text-sm font-medium text-white/50">You have no notifications yet</div>
+          <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+            <div className="text-white-muted center h-screen text-sm font-medium">You have no notifications yet</div>
+          </motion.div>
         ) : (
-          notifications.map((notification) => (
+          notifications.map((notification, index) => (
             <NotificationRow
               key={notification.id}
               notification={notification}
+              index={index}
               onMarkRead={handleMarkRead}
               onDelete={handleDelete}
             />
           ))
         )}
-      </div>
+      </motion.div>
     </Container>
   );
 }

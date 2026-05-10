@@ -2,7 +2,10 @@
 
 import { useMemo } from 'react';
 
+import { motion } from 'framer-motion';
+
 import Container from '@/core/modules/modal/container';
+import { MODAL_ACTION_MOTION, getModalContentMotion } from '@/core/modules/motion';
 import { Switch } from '@/ui/elements';
 
 import { useSettings } from './context';
@@ -129,44 +132,53 @@ export default function SettingsModal({ close, header }) {
       }}
       close={close}
     >
-      <div className="flex w-full flex-col gap-3 p-4 text-sm">
-        <div className="border-info flex items-center justify-between gap-2 border px-4 py-3">
+      <motion.div className="flex w-full flex-col gap-3 p-4 text-sm" {...getModalContentMotion(0)}>
+        <motion.div className="border-info flex items-center justify-between gap-2 border px-4 py-3" {...getModalContentMotion(1)}>
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold tracking-widest uppercase">Storage</span>
             <span className="font-medium">{storageKey}</span>
           </div>
           {hasDefinitions ? (
-            <button
+            <motion.button
               type="button"
-              className="border-info h-11 w-full flex-auto border px-6 text-[11px] font-bold tracking-widest uppercase"
+              className="h-11 w-full flex-auto border border-white/10 bg-transparent px-6 text-[11px] font-bold tracking-wide uppercase text-white/70 transition-colors hover:border-white/15 hover:bg-white/10 hover:text-white"
               onClick={() => resetSettings()}
+              {...MODAL_ACTION_MOTION}
             >
               Reset all
-            </button>
+            </motion.button>
           ) : null}
-        </div>
+        </motion.div>
 
-        {!isHydrated ? <div className="border-info border px-4 py-3 text-sm">Loading settings</div> : null}
+        {!isHydrated ? (
+          <motion.div className="border-info border px-4 py-3 text-sm" {...getModalContentMotion(2)}>
+            Loading settings
+          </motion.div>
+        ) : null}
 
         {isHydrated && !hasDefinitions ? (
-          <div className="border-info border px-4 py-3 text-sm">
+          <motion.div className="border-info border px-4 py-3 text-sm" {...getModalContentMotion(2)}>
             No setting definitions are registered yet. The module is ready and persists decisions centrally under{' '}
             <strong>{storageKey}</strong>. Register definitions through the Settings API to render controls dynamically
             in this modal
-          </div>
+          </motion.div>
         ) : null}
 
         {isHydrated && hasDefinitions
-          ? Object.entries(definitionGroups).map(([groupKey, groupDefinitions]) => (
-              <section key={groupKey} className="flex flex-col gap-2">
+          ? Object.entries(definitionGroups).map(([groupKey, groupDefinitions], groupIndex) => (
+              <motion.section key={groupKey} className="flex flex-col gap-2" {...getModalContentMotion(groupIndex + 2)}>
                 <div className="px-1 text-[10px] font-bold tracking-widest uppercase">{groupKey}</div>
 
-                {groupDefinitions.map((definition) => {
+                {groupDefinitions.map((definition, definitionIndex) => {
                   const currentValue = getSetting(definition.path, definition.defaultValue);
                   const control = inferControl(definition, currentValue);
 
                   return (
-                    <div key={definition.path} className="border-info flex flex-col gap-2 border p-4">
+                    <motion.div
+                      key={definition.path}
+                      className="border-info flex flex-col gap-2 border p-4"
+                      {...getModalContentMotion(groupIndex + definitionIndex + 3)}
+                    >
                       {control === 'switch' ? (
                         renderControl({
                           definition,
@@ -180,13 +192,14 @@ export default function SettingsModal({ close, header }) {
                               <span className="text-sm font-semibold">
                                 {definition.label || formatLabel(definition.path)}
                               </span>
-                              <button
+                              <motion.button
                                 type="button"
                                 className="text-[10px] font-bold tracking-widest uppercase"
                                 onClick={() => resetSettings(definition.path)}
+                                {...MODAL_ACTION_MOTION}
                               >
                                 Reset
-                              </button>
+                              </motion.button>
                             </div>
                             <span className="text-xs">{definition.description || definition.path}</span>
                           </div>
@@ -201,13 +214,14 @@ export default function SettingsModal({ close, header }) {
                       {control === 'switch' ? (
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs">{definition.description || definition.path}</span>
-                          <button
+                          <motion.button
                             type="button"
                             className="text-[10px] font-bold tracking-widest uppercase"
                             onClick={() => resetSettings(definition.path)}
+                            {...MODAL_ACTION_MOTION}
                           >
                             Reset
-                          </button>
+                          </motion.button>
                         </div>
                       ) : null}
 
@@ -221,13 +235,13 @@ export default function SettingsModal({ close, header }) {
                           </span>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </section>
+              </motion.section>
             ))
           : null}
-      </div>
+      </motion.div>
     </Container>
   );
 }

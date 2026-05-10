@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import ListPreviewComposition from '@/ui/media/list-preview-composition';
+import ListPreviewComposition from '@/features/media/list-preview-composition';
 import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';

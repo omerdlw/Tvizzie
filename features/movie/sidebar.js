@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -7,9 +8,46 @@ import { cn, formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } f
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
+import {
+  getMovieFeatureItemMotion,
+  MOVIE_FEATURE_SOFT_STAGGER,
+  MOVIE_FEATURE_SECTION_MOTION,
+} from '@/features/movie/motion';
 
 const MAX_VISIBLE_PERSONS = 2;
 const MAX_VISIBLE_TAGS = 8;
+const TAXONOMY_STAGGER_PARENT = Object.freeze({
+  initial: 'hidden',
+  animate: 'visible',
+  variants: Object.freeze({
+    hidden: {},
+    visible: Object.freeze({
+      transition: Object.freeze({
+        delayChildren: MOVIE_FEATURE_SOFT_STAGGER.delay,
+        staggerChildren: MOVIE_FEATURE_SOFT_STAGGER.interval,
+      }),
+    }),
+  }),
+});
+
+const TAXONOMY_STAGGER_CHILD = Object.freeze({
+  variants: Object.freeze({
+    hidden: Object.freeze({
+      opacity: 0,
+      y: MOVIE_FEATURE_SOFT_STAGGER.initialY,
+      scale: MOVIE_FEATURE_SOFT_STAGGER.initialScale,
+    }),
+    visible: Object.freeze({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: Object.freeze({
+        type: 'tween',
+        duration: MOVIE_FEATURE_SOFT_STAGGER.duration,
+      }),
+    }),
+  }),
+});
 
 function normalizeTaxonomyItems(items = [], prefix = '') {
   return Array.from(
@@ -24,12 +62,12 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-start gap-2 py-1.5 text-sm text-white">
+    <motion.div className="flex items-start gap-2 py-1.5 text-sm text-white" {...getMovieFeatureItemMotion(0)}>
       <span className="mt-0.5 inline-flex shrink-0 text-white/70">
         <Icon icon={icon} size={18} />
       </span>
       <div className="flex-1 leading-relaxed font-medium">{children}</div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -75,7 +113,7 @@ function createRow(id, icon, content) {
   return { id, icon, content };
 }
 
-function TaxonomyGroup({ items = [], label, variant = 'default' }) {
+function TaxonomyGroup({ items = [], label, variant = 'default', motionIndex = 0 }) {
   if (!items.length) {
     return null;
   }
@@ -85,13 +123,13 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
   const hiddenItems = isTagGroup ? items.slice(MAX_VISIBLE_TAGS) : [];
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <div>
+    <motion.div className="flex flex-col gap-2.5" {...getMovieFeatureItemMotion(motionIndex)}>
+      <motion.div {...getMovieFeatureItemMotion(motionIndex + 1)}>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-white/50 uppercase">{label}</p>
-      </div>
-      <div className={cn('flex flex-wrap', isTagGroup ? 'gap-1.5' : 'gap-2')}>
-        {visibleItems.map((item) => (
-          <span key={item} className="inline-flex">
+      </motion.div>
+      <motion.div className={cn('flex flex-wrap', isTagGroup ? 'gap-1.5' : 'gap-2')} {...TAXONOMY_STAGGER_PARENT}>
+        {visibleItems.map((item, index) => (
+          <motion.span key={item} className="inline-flex" {...TAXONOMY_STAGGER_CHILD}>
             <span
               className={cn(
                 'inline-flex max-w-full items-center bg-white/10 text-[11px] font-semibold',
@@ -102,20 +140,24 @@ function TaxonomyGroup({ items = [], label, variant = 'default' }) {
             >
               {item}
             </span>
-          </span>
+          </motion.span>
         ))}
 
         {hiddenItems.length > 0 ? (
-          <span key="hidden-tags" className="inline-flex">
+          <motion.span
+            key="hidden-tags"
+            className="inline-flex"
+            {...TAXONOMY_STAGGER_CHILD}
+          >
             <Tooltip text={hiddenItems.join(', ')} position="top">
               <span className="inline-flex min-h-7 items-center bg-white/10 px-2.5 py-1 text-[11px] leading-none font-semibold text-white/70">
                 +{hiddenItems.length}
               </span>
             </Tooltip>
-          </span>
+          </motion.span>
         ) : null}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -129,8 +171,8 @@ function SidebarTaxonomy({ genres = [], tags = [] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <TaxonomyGroup label="Genres" items={normalizedGenres} />
-      <TaxonomyGroup label="Tags" items={normalizedTags} variant="tags" />
+      <TaxonomyGroup label="Genres" items={normalizedGenres} motionIndex={2} />
+      <TaxonomyGroup label="Tags" items={normalizedTags} variant="tags" motionIndex={6} />
     </div>
   );
 }
@@ -139,8 +181,8 @@ export function MovieSidebarPrimary({ item, topContent }) {
   const posterSrc = item.poster_path ? `${TMDB_IMG}/w780${item.poster_path}` : null;
 
   return (
-    <div data-movie-sidebar-primary="true" className="media-detail-poster-shell flex flex-col gap-2">
-      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+    <motion.div data-movie-sidebar-primary="true" className="media-detail-poster-shell flex flex-col gap-2" {...MOVIE_FEATURE_SECTION_MOTION}>
+      <motion.div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden" {...getMovieFeatureItemMotion(0)}>
         {posterSrc ? (
           <AdaptiveImage
             fill
@@ -161,10 +203,10 @@ export function MovieSidebarPrimary({ item, topContent }) {
             <Icon icon="solar:clapperboard-play-bold" size={40} />
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {topContent || null}
-    </div>
+      {topContent ? <motion.div {...getMovieFeatureItemMotion(1)}>{topContent}</motion.div> : null}
+    </motion.div>
   );
 }
 
@@ -251,23 +293,26 @@ export function MovieSidebarDetails({ item, director, writers, creators, certifi
   ].filter(Boolean);
 
   return hasTaxonomy || rows.length ? (
-    <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7">
+    <motion.div
+      className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col justify-center gap-5 py-6 lg:flex-1 lg:py-7"
+      {...MOVIE_FEATURE_SECTION_MOTION}
+    >
       {hasTaxonomy ? <SidebarTaxonomy genres={genres} tags={tags} /> : null}
 
       <div className="flex flex-col gap-1">
-        {rows.map((row) => (
-          <div key={row.id}>
+        {rows.map((row, index) => (
+          <motion.div key={row.id} {...getMovieFeatureItemMotion(index + 10)}>
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   ) : null;
 }
 
 export default function Sidebar(props) {
   return (
-    <div className="flex h-full flex-col gap-0">
+    <motion.div className="flex h-full flex-col gap-0" {...MOVIE_FEATURE_SECTION_MOTION}>
       <MovieSidebarPrimary item={props.item} topContent={props.topContent} />
       <MovieSidebarDetails
         item={props.item}
@@ -278,6 +323,6 @@ export default function Sidebar(props) {
         genres={props.genres}
         tags={props.tags}
       />
-    </div>
+    </motion.div>
   );
 }

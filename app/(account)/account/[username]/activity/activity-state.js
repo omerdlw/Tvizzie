@@ -4,7 +4,7 @@ import {
   parseActivityFilters,
   parsePageFromSearch,
   toActivityQueryValues,
-} from '@/features/account/filtering';
+} from '@/features/account/filters';
 
 export const ACTIVITY_FETCH_PAGE_SIZE = 36;
 

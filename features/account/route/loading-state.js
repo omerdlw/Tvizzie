@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 
-import AccountRouteSkeleton, { resolveAccountSkeletonVariant } from '@/ui/skeletons/views/account';
+import AccountRouteSkeleton, { resolveAccountSkeletonVariant } from '@/features/account/skeletons';
 
 export function AccountSectionLoading({ Registry, registryProps = null, variant }) {
   return (

@@ -1,6 +1,9 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import Container from '@/core/modules/modal/container';
+import { FEATURE_MODAL_MEDIA_MOTION } from '@/features/motion';
 
 export default function VideoPreviewModal({ close, data }) {
   if (!data?.key) return null;
@@ -15,7 +18,7 @@ export default function VideoPreviewModal({ close, data }) {
         center: data?.name || 'Video preview',
       }}
     >
-      <div className="relative aspect-video h-auto w-full">
+      <motion.div className="relative aspect-video h-auto w-full" {...FEATURE_MODAL_MEDIA_MOTION}>
         <iframe
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           src={`https://www.youtube.com/embed/${data.key}?autoplay=1`}
@@ -23,7 +26,7 @@ export default function VideoPreviewModal({ close, data }) {
           title={data.name}
           allowFullScreen
         />
-      </div>
+      </motion.div>
     </Container>
   );
 }

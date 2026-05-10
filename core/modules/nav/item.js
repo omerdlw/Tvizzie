@@ -16,15 +16,15 @@ import { NavActionsContainer } from './actions/container';
 import { Icon as BadgeIcon, Description, Title } from './elements';
 import { getNavStackOffset } from './layout';
 import {
-  getNavCardSpring,
-  getNavCardStaggerDelay,
-  NAV_BADGE_SPRING,
-  NAV_CARD_BLUR_TRANSITION,
-  NAV_CARD_OPACITY_TRANSITION,
-  NAV_CARD_WIDTH_SPRING,
-  NAV_CONTENT_TRANSITION,
-  NAV_MICRO_SPRING,
-} from './motion';
+  getNavCardInteractionMotion,
+  getNavCardTransition,
+  NAV_ACTION_PANEL_MOTION,
+  NAV_BADGE_MOTION,
+  NAV_CARD_EXIT,
+  NAV_CARD_INITIAL,
+  NAV_DEFAULT_TRANSITION,
+  NAV_VIDEO_ICON_MOTION,
+} from '@/core/modules/motion';
 import ConfirmationSurface from './surfaces/confirmation-surface';
 import { resolveNavVisualStyle } from './utils';
 
@@ -50,11 +50,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   chromeHeight: NAV_CARD_DIMENSIONS.chromeHeight,
   compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
-  transition: Object.freeze({
-    ease: [0.22, 1, 0.36, 1],
-    duration: 0.28,
-    type: 'tween',
-  }),
+  transition: NAV_DEFAULT_TRANSITION,
 });
 
 const BLUR_AMOUNT = 8;
@@ -75,7 +71,7 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile, isInteractive) {
   const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   // Reduce gap between cards on mobile devices
   const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
@@ -83,10 +79,6 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
     : {};
-
-  const staggerDelay = getNavCardStaggerDelay(position, expanded);
-
-  const spring = getNavCardSpring(position);
 
   return {
     className: cn(
@@ -106,30 +98,10 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       zIndex: 10 - position,
       opacity: 1,
     },
-    initial: {
-      opacity: 0,
-      scale: 0.94,
-      y: 0,
-    },
-
-    exit: {
-      opacity: 0,
-      scale: 0.9,
-      y: 0,
-      transition: {
-        duration: 0.2,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
-
-    transition: {
-      width: { ...NAV_CARD_WIDTH_SPRING, delay: staggerDelay },
-      y: { ...spring, delay: staggerDelay },
-      scale: { ...spring, delay: staggerDelay },
-      opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay: staggerDelay },
-      filter: { ...NAV_CARD_BLUR_TRANSITION, delay: staggerDelay },
-      zIndex: { duration: 0, delay: staggerDelay },
-    },
+    initial: NAV_CARD_INITIAL,
+    exit: NAV_CARD_EXIT,
+    transition: getNavCardTransition({ position, expanded }),
+    ...getNavCardInteractionMotion(isInteractive),
   };
 }
 
@@ -186,11 +158,9 @@ function VideoOverlayIcon({ icon }) {
         isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-white/5 bg-black'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
-      transition={NAV_MICRO_SPRING}
-      initial={{ opacity: 0, scale: 0.84 }}
-      animate={{ opacity: 1, scale: 1 }}
+      {...NAV_VIDEO_ICON_MOTION}
     >
-      {!isImageIcon && <Iconify icon={icon} size={14} className={'text-[#831843]'} />}
+      {!isImageIcon && <Iconify icon={icon} size={14} className="text-info" />}
     </motion.div>
   );
 }
@@ -198,16 +168,13 @@ function VideoOverlayIcon({ icon }) {
 function Badge({ badge }) {
 
   return (
-    <AnimatePresence initial={true} mode="sync">
+    <AnimatePresence initial={false} mode="sync">
       {badge.visible && (
         <motion.div
           className={cn(
             'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={NAV_BADGE_SPRING}
+          {...NAV_BADGE_MOTION}
         >
           {badge.value}
         </motion.div>
@@ -457,6 +424,29 @@ const Item = memo(
       }
     };
 
+    const handleFocus = () => {
+      if (link.isOverlay) return;
+
+      setIsHovered(true);
+      onMouseEnter?.();
+    };
+
+    const handleBlur = () => {
+      if (link.isOverlay) return;
+
+      setIsHovered(false);
+      onMouseLeave?.();
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      event.preventDefault();
+      onClick?.(event);
+    };
+
     const renderContent = () => {
       if (link.isLoading) {
         return <LoadingItemContent contentContainerRef={contentContainerRef} />;
@@ -498,19 +488,32 @@ const Item = memo(
           itemStyle.card,
           itemStyle.scale,
           cardWidth,
-          isMobile
+          isMobile,
+          link.type !== 'COUNTDOWN' && !link.isOverlay
         )}
+        role="button"
+        tabIndex={link.isOverlay ? -1 : 0}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
         {renderContent()}
 
-        {renderedActionNode && (
-          <div ref={actionContainerRef} onClick={(event) => event.stopPropagation()}>
-            <Suspense>{renderedActionNode}</Suspense>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {renderedActionNode ? (
+            <motion.div
+              key="nav-action-component"
+              ref={actionContainerRef}
+              onClick={(event) => event.stopPropagation()}
+              {...NAV_ACTION_PANEL_MOTION}
+            >
+              <Suspense>{renderedActionNode}</Suspense>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </motion.div>
     );
   })

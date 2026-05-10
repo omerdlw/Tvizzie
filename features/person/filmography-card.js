@@ -1,9 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
+import { PERSON_FEATURE_ACTION_MOTION } from '@/features/person/motion';
 
 function getCreditRole(credit) {
   if (credit?.character) {
@@ -30,18 +32,20 @@ export default function FilmographyCard({ credit, className = '', imagePriority 
   const tooltipText = role ? `${tooltipBase} ${role}` : tooltipBase;
 
   return (
-    <MediaCard
-      href={`/movie/${credit.id}`}
-      className={cn('w-full', className)}
-      imageSrc={
-        getPreferredMoviePosterSrc(credit, 'w342') ||
-        (credit.poster_path ? `${TMDB_IMG}/w342${credit.poster_path}` : null)
-      }
-      imageAlt={resolvedTitle}
-      imageSizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-      imagePriority={imagePriority}
-      imageFetchPriority={imageFetchPriority}
-      tooltipText={tooltipText}
-    />
+    <motion.div {...PERSON_FEATURE_ACTION_MOTION}>
+      <MediaCard
+        href={`/movie/${credit.id}`}
+        className={cn('w-full', className)}
+        imageSrc={
+          getPreferredMoviePosterSrc(credit, 'w342') ||
+          (credit.poster_path ? `${TMDB_IMG}/w342${credit.poster_path}` : null)
+        }
+        imageAlt={resolvedTitle}
+        imageSizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        imagePriority={imagePriority}
+        imageFetchPriority={imageFetchPriority}
+        tooltipText={tooltipText}
+      />
+    </motion.div>
   );
 }

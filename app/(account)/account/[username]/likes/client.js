@@ -7,7 +7,7 @@ import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
-} from '@/features/account/hooks/section-page';
+} from '@/features/account/shared/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import { fetchProfileLikedLists } from '@/core/services/media/lists.service';

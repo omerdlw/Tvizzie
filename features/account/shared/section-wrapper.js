@@ -7,6 +7,7 @@ import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 import { ACCOUNT_SECTION_SHELL_CLASS } from '../utils';
+import { AccountSectionReveal } from './layout';
 import { ACCOUNT_EMPTY_SECTION_CLASS } from './section-state';
 
 export function AccountSectionHeading({
@@ -63,11 +64,11 @@ export function AccountSectionHeading({
 export function AccountSectionState({ message }) {
   return (
     <section className="account-detail-grid-subsection bg-transparent">
-      <div className={ACCOUNT_SECTION_SHELL_CLASS}>
+      <AccountSectionReveal className={ACCOUNT_SECTION_SHELL_CLASS}>
         <div className={cn('account-detail-section-body', ACCOUNT_EMPTY_SECTION_CLASS)}>
           {normalizeFeedbackContent(message)}
         </div>
-      </div>
+      </AccountSectionReveal>
     </section>
   );
 }
@@ -82,12 +83,16 @@ export default function AccountSectionLayout({
   showDivider = true,
   showSeeMore = false,
   summaryLabel = null,
+  revealIndex = 0,
   title,
   titleHref = null,
 }) {
   return (
     <section className="account-detail-grid-subsection bg-transparent">
-      <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
+      <AccountSectionReveal
+        className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}
+        index={revealIndex}
+      >
         {showHeader ? (
           <AccountSectionHeading
             action={action}
@@ -103,7 +108,7 @@ export default function AccountSectionLayout({
         ) : null}
 
         <div className={cn('account-detail-section-body', contentClassName)}>{children}</div>
-      </div>
+      </AccountSectionReveal>
     </section>
   );
 }

@@ -3,7 +3,7 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
+import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filters';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
 import { dedupeResults, getSearchGridBatchSize } from './grid-state';

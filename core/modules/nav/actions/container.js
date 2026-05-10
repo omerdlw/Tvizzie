@@ -12,7 +12,12 @@ import { useToast } from '@/core/modules/notification/hooks';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
-import { NAV_ACTION_SPRING, NAV_BADGE_SPRING, NAV_CONTENT_TRANSITION } from '../motion';
+import {
+  getNavActionItemMotion,
+  NAV_ACTION_GROUP_MOTION,
+  NAV_BADGE_MOTION,
+  NAV_BUTTON_INTERACTION_MOTION,
+} from '@/core/modules/motion';
 
 const ACTION_KEYS = Object.freeze({
   NOTIFICATIONS: 'notifications',
@@ -222,22 +227,17 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer  p-1 text-white/70 transition-all hover:bg-white/10 hover:text-white"
+        className="center relative cursor-pointer p-1 text-white-soft transition-colors hover:bg-primary hover:text-white"
         onClick={action.onClick}
         type="button"
-        whileTap={{ scale: 0.92 }}
-        whileHover={{ scale: 1.04 }}
-        transition={NAV_ACTION_SPRING}
+        {...NAV_BUTTON_INTERACTION_MOTION}
       >
         <Icon icon={action.icon} size={16} />
-        <AnimatePresence initial={true}>
+        <AnimatePresence initial={false}>
           {action.badge ? (
             <motion.span
               className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-black"
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={NAV_BADGE_SPRING}
+              {...NAV_BADGE_MOTION}
             >
               {action.badge}
             </motion.span>
@@ -252,16 +252,12 @@ export function NavActionsContainer({ activeItem }) {
   const actions = useNavActions({ activeItem });
 
   return (
-    <motion.div className="mr-2 flex shrink-0 items-center gap-1" layout="position" transition={NAV_CONTENT_TRANSITION}>
-      <AnimatePresence initial={true}>
+    <motion.div className="mr-2 flex shrink-0 items-center gap-1" {...NAV_ACTION_GROUP_MOTION}>
+      <AnimatePresence initial={false}>
         {actions.map((action, index) => (
           <motion.div
             key={`${action.key || action.icon || 'nav-action'}-${index}`}
-            layout="position"
-            initial={{ opacity: 0, scale: 0.84, y: 4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.84, y: -4 }}
-            transition={NAV_ACTION_SPRING}
+            {...getNavActionItemMotion(index)}
           >
             <NavAction action={action} />
           </motion.div>

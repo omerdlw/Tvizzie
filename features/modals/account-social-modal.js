@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
@@ -17,6 +18,12 @@ import {
   unfollowUser,
 } from '@/core/services/social/follows.service';
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_SCROLLABLE_BODY_CLASS,
+} from '@/features/modals/constants';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 import { EmptyState } from '@/ui/elements/empty-state';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -26,6 +33,7 @@ import {
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,
 } from '@/core/constants/index';
+import { cn } from '@/ui/elements/utils';
 
 const TABS = Object.freeze({
   FOLLOWERS: 'followers',
@@ -33,8 +41,7 @@ const TABS = Object.freeze({
   INBOX: 'inbox',
 });
 
-const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-white/10';
+const ROW_BUTTON_CLASS = `${MODAL_ACTION_BUTTON_SECONDARY_CLASS} w-auto px-2.5 py-1 text-[11px]`;
 const ERROR_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`;
 const SUCCESS_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${SUCCESS_ACTION_TONE_CLASS}`;
 const INFO_BUTTON_CLASS = `${ROW_BUTTON_CLASS} ${INFO_ACTION_TONE_CLASS}`;
@@ -87,46 +94,50 @@ function LoadingList() {
   return (
     <div>
       {Array.from({ length: 10 }, (_, index) => (
-        <div key={index} className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
-          <div className="skeleton-block size-10 shrink-0" />
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="skeleton-block h-3 w-3/5" />
-            <div className="skeleton-block-soft h-2 w-2/5" />
+        <motion.div key={index} {...getFeatureModalItemMotion(index)}>
+          <div className="flex items-center gap-3 border-b border-white/5 p-3 last:border-none lg:p-4">
+            <div className="skeleton-block size-10 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="skeleton-block h-3 w-3/5" />
+              <div className="skeleton-block-soft h-2 w-2/5" />
+            </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
 }
 
-function SocialUserRow({ close, user, action }) {
+function SocialUserRow({ close, user, action, index = 0 }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-white/5 p-3 last:border-none hover:bg-white/10 lg:p-4">
-      <Link
-        href={`/account/${user.username || user.id}`}
-        onClick={close}
-        className="flex min-w-0 flex-1 items-center gap-2.5"
-      >
-        <AdaptiveImage
-          mode="img"
-          src={avatarSrc}
-          alt={user.displayName}
-          loading="lazy"
-          decoding="async"
-          className="size-10 shrink-0 object-cover"
-          onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0 overflow-hidden"
-        />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">{user.displayName}</p>
-          <p className="truncate text-[11px] text-white/50">@{user.username || 'username'}</p>
-        </div>
-      </Link>
-      {action}
-    </div>
+    <motion.div {...getFeatureModalItemMotion(index)}>
+      <div className="flex items-center justify-between gap-3 border-b border-white/5 p-3 last:border-none hover:bg-white/10 lg:p-4">
+        <Link
+          href={`/account/${user.username || user.id}`}
+          onClick={close}
+          className="flex min-w-0 flex-1 items-center gap-2.5"
+        >
+          <AdaptiveImage
+            mode="img"
+            src={avatarSrc}
+            alt={user.displayName}
+            loading="lazy"
+            decoding="async"
+            className="size-10 shrink-0 object-cover"
+            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+            wrapperClassName="size-10 shrink-0 overflow-hidden"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{user.displayName}</p>
+            <p className="truncate text-[11px] text-white/50">@{user.username || 'username'}</p>
+          </div>
+        </Link>
+        {action}
+      </div>
+    </motion.div>
   );
 }
 
@@ -481,20 +492,25 @@ export default function AccountSocialModal({ close, data }) {
         />
       }
     >
-      <div className="flex h-full min-h-0 flex-col">
+      <motion.div className="flex h-full min-h-0 flex-col" {...getFeatureModalSectionMotion(0)}>
         {isLoading ? (
           <LoadingList />
         ) : activeErrorMessage ? (
-          <EmptyState description={activeErrorMessage} className="h-full" />
+          <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+            <EmptyState description={activeErrorMessage} className="h-full" />
+          </motion.div>
         ) : list.length === 0 ? (
-          <EmptyState description={emptyDescription} className="h-full min-h-96" />
+          <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+            <EmptyState description={emptyDescription} className="h-full min-h-96" />
+          </motion.div>
         ) : (
-          <div className="min-h-96 flex-1 overflow-y-auto">
-            {list.map((user) => (
+          <motion.div className={cn(MODAL_SCROLLABLE_BODY_CLASS, 'min-h-96')} {...getFeatureModalSectionMotion(1)}>
+            {list.map((user, index) => (
               <SocialUserRow
                 key={user.id}
                 close={close}
                 user={user}
+                index={index}
                 action={
                   <UserAction
                     tab={activeTab}
@@ -512,9 +528,9 @@ export default function AccountSocialModal({ close, data }) {
                 }
               />
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </Container>
   );
 }

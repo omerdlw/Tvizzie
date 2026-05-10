@@ -1,4 +1,4 @@
-import AccountReviewFeed from '@/features/account/feeds/reviews';
+import AccountReviewFeed from '@/features/account/reviews/feed';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 

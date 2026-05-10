@@ -92,10 +92,6 @@
     );
   }
 
-  .account-detail-grid-content {
-    isolation: isolate;
-  }
-
   .account-detail-grid-frame {
     --account-detail-grid-inline-pad: 1rem;
     --account-detail-grid-band-pad: 1rem;
@@ -117,13 +113,6 @@
       --account-detail-grid-inline-pad: 2rem;
       --account-detail-grid-band-pad: 2rem;
     }
-  }
-
-  .account-detail-grid-main {
-    display: flex;
-    min-width: 0;
-    width: 100%;
-    flex-direction: column;
   }
 
   .account-detail-grid-subsection {
@@ -389,50 +378,6 @@
     height: var(--account-detail-divider-height, 1rem);
   }
 
-  .account-overview-media-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .account-overview-media-grid-favorites,
-  .account-overview-media-grid-standard {
-    --account-overview-desktop-columns: 5;
-  }
-
-  .account-media-grid-page {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  @media (min-width: 30rem) {
-    .account-overview-media-grid,
-    .account-media-grid-page {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 40rem) {
-    .account-media-grid-page {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 64rem) {
-    .account-overview-media-grid {
-      grid-template-columns: repeat(var(--account-overview-desktop-columns), minmax(0, 1fr));
-    }
-
-    .account-overview-media-grid-standard {
-      --account-overview-desktop-columns: 6;
-    }
-
-    .account-media-grid-page {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-  }
-
   .account-hero-height {
     min-height: 460px;
   }
@@ -501,28 +446,6 @@
     border-color: var(--account-detail-grid-line-color);
   }
 
-  .account-edit-media-field {
-    display: grid;
-    align-items: start;
-    gap: 1.5rem;
-  }
-
-  .account-edit-media-preview-wrap {
-    display: flex;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .account-edit-media-preview {
-    aspect-ratio: 1;
-    width: 12rem;
-  }
-
-  .account-edit-media-preview-banner {
-    aspect-ratio: 16 / 9;
-    width: 20rem;
-  }
-
   .account-skeleton-hero-title {
     width: 68%;
     max-width: 34rem;
@@ -575,13 +498,6 @@
       height: 9rem;
     }
 
-    .account-edit-media-field {
-      grid-template-columns: minmax(0, 1fr) 20rem;
-    }
-
-    .account-edit-media-preview-wrap {
-      justify-content: flex-end;
-    }
   }
 
   @media (min-width: 1024px) {

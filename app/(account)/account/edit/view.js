@@ -1,7 +1,7 @@
-import AccountEditGeneralSection from '@/features/account/edit/general-section';
-import AccountEditSecuritySection from '@/features/account/edit/security-section';
-import { EditGridShell, StatusState } from '@/features/account/edit/view-parts';
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import AccountEditGeneralSection from '@/features/account/settings/general-section';
+import AccountEditSecuritySection from '@/features/account/settings/security-section';
+import { EditGridShell, StatusState } from '@/features/account/settings/view-parts';
+import AccountRouteSkeleton from '@/features/account/skeletons';
 import Registry from './registry';
 
 export default function AccountEditView(props) {

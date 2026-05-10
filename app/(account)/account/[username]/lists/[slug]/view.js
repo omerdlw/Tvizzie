@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import AccountListDetailFeed from '@/features/account/feeds/list-detail';
+import AccountListDetailFeed from '@/features/account/collections/list-detail-feed';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { noopAccountRegistryHandler } from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';

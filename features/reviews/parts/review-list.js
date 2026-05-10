@@ -1,7 +1,10 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import { cn, normalizeFeedbackText } from '@/core/utils';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine } from '@/ui/skeletons/primitives';
+import { getReviewsFeatureItemMotion } from '@/features/reviews/motion';
 
 import { mergeReviewUser } from '../utils';
 import ReviewCard from './review-card';
@@ -140,7 +143,7 @@ export default function ReviewList({
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
 
         return (
-          <div
+          <motion.div
             key={review.docPath || review.id || `review-${index}`}
             className={cn(
               'relative',
@@ -148,6 +151,7 @@ export default function ReviewList({
               index < sortedReviews.length - 1 &&
                 (isAccountVariant ? 'border-b border-white/10' : 'media-review-list-item-divider')
             )}
+            {...getReviewsFeatureItemMotion(index)}
           >
             <ReviewCard
               className="!border-b-0"
@@ -163,7 +167,7 @@ export default function ReviewList({
               showSubject={showSubject}
               watchedMediaKeys={watchedMediaKeys}
             />
-          </div>
+          </motion.div>
         );
       })}
     </div>

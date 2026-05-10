@@ -1,11 +1,12 @@
 'use client';
 
 import { RouteGridDivider, RouteGridFrame } from '@/ui/elements/route-grid-frame';
+import { ACCOUNT_ROUTE_MOTION } from '@/app/(account)/account/motion';
 
 export function AccountGridFrame({ children, className = '', routeKey = null }) {
   return (
     <RouteGridFrame
-      baseDelay={0.22}
+      baseDelay={ACCOUNT_ROUTE_MOTION.frameBaseDelay}
       className={className}
       frameClassName="account-detail-grid-frame"
       lineClassName="account-detail-grid-frame-line"

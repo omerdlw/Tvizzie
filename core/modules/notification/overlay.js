@@ -1,5 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
+import { NOTIFICATION_CONTENT_MOTION, getNotificationActionMotion } from '@/core/modules/motion';
 import { normalizeFeedbackText } from '@/core/utils';
 import { cn } from '@/core/utils';
 
@@ -23,12 +26,13 @@ export function NotificationOverlay({ notification, onDismiss }) {
   }
 
   return (
-    <div
+    <motion.section
       className={cn(
-        'pointer-events-auto w-full border border-white/5 backdrop-blur-lg',
+        'pointer-events-auto w-full border border-white/10 backdrop-blur-lg',
         dismissible && 'touch-pan-y',
         config.colorClass
       )}
+      {...NOTIFICATION_CONTENT_MOTION}
     >
       <div className="flex flex-col gap-3 p-4">
         <div className="space-y-1">
@@ -38,7 +42,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
         {actions.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {actions.map((action, index) => (
-              <button
+              <motion.button
                 key={action.label || index}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
@@ -47,14 +51,15 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 border border-white/5 bg-white/10 px-3 text-sm font-semibold hover:border-white/10 hover:bg-white/10"
+                className="min-h-10 flex-1 border border-white/10 bg-white/10 px-3 text-sm font-semibold hover:border-white/15 hover:bg-white/10"
+                {...getNotificationActionMotion(index)}
               >
                 {action.label}
-              </button>
+              </motion.button>
             ))}
           </div>
         ) : null}
       </div>
-    </div>
+    </motion.section>
   );
 }

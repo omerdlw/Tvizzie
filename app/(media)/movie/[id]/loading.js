@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@/ui/skeletons/views/movie';
+import { Skeleton } from '@/features/movie/skeletons';
 import Registry from './registry';
 
 export default function Loading() {

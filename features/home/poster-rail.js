@@ -1,5 +1,5 @@
 import Carousel from '@/ui/media/carousel';
-import MediaPosterCard from '@/ui/media/media-poster-card';
+import MediaPosterCard from '@/features/media/media-poster-card';
 
 export function PosterRail({ items = [] }) {
   if (!items.length) {

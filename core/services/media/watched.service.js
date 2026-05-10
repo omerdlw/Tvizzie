@@ -1,16 +1,11 @@
 'use client';
 
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { assertMovieMedia } from '@/core/services/shared/media-key.service';
 import {
-  createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
 import {
-  buildMediaCollectionStatusSubscriptionKey,
-  buildUserMediaCollectionSubscriptionKey,
-  fetchMediaCollectionStatus,
-  fetchUserMediaCollection,
   refreshMediaCollectionAccountSummary,
   resolveMediaCollectionRpcRow,
 } from '@/core/services/shared/media-collection.service';
@@ -23,97 +18,19 @@ import {
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
+import {
+  createWatchedRef,
+  getUserWatchedSubscriptionKey,
+  getUserWatchlistSubscriptionKey,
+  getWatchedStatusSubscriptionKey,
+  getWatchlistStatusSubscriptionKey,
+} from './watched.shared';
 
-function createWatchedRef(userId, media) {
-  ensureUserId(userId, 'Authenticated user is required to manage watched items');
-
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watched items');
-
-  return {
-    id: buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
-    table: 'watched',
-    userId,
-  };
-}
-
-function getWatchedStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watched', { media, userId });
-}
-
-function getUserWatchedSubscriptionKey(userId) {
-  return buildUserMediaCollectionSubscriptionKey('watched', userId);
-}
-
-function getUserWatchlistSubscriptionKey(userId) {
-  return buildUserMediaCollectionSubscriptionKey('watchlist', userId);
-}
-
-function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
-}
-
-async function fetchWatchedStatus({ media, userId }) {
-  return fetchMediaCollectionStatus({
-    emptyValue: {
-      isWatched: false,
-      watched: null,
-    },
-    media,
-    mediaKey: userId && media ? createWatchedRef(userId, media).id : null,
-    resource: 'watched-status',
-    userId,
-  });
-}
-
-async function fetchWatchedList(userId, options = {}) {
-  return fetchUserMediaCollection('watched', userId, options);
-}
+export { isUserMediaWatched } from './watched.queries';
+export { subscribeToUserWatched, subscribeToWatchedStatus } from './watched.subscriptions';
 
 export function getWatchedDocRef(userId, media) {
   return createWatchedRef(userId, media);
-}
-
-export async function isUserMediaWatched({ mediaKey, userId }) {
-  if (!mediaKey || !userId) {
-    return false;
-  }
-
-  const client = getSupabaseClient();
-  const result = await client
-    .from('watched')
-    .select('media_key')
-    .eq('media_key', mediaKey)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  assertSupabaseResult(result, 'Watched state could not be loaded');
-
-  return Boolean(result.data?.media_key);
-}
-
-export function subscribeToWatchedStatus({ media, userId }, callback, options = {}) {
-  return createPollingSubscription(
-    () => fetchWatchedStatus({ media, userId }),
-    (result) => {
-      callback(Boolean(result?.isWatched), result?.watched || null);
-    },
-    {
-      ...options,
-      subscriptionKey: getWatchedStatusSubscriptionKey({ media, userId }),
-    }
-  );
-}
-
-export function subscribeToUserWatched(userId, callback, options = {}) {
-  if (!userId) {
-    callback([]);
-    return () => {};
-  }
-
-  return createPollingSubscription(() => fetchWatchedList(userId, options), callback, {
-    ...options,
-    subscriptionKey: getUserWatchedSubscriptionKey(userId),
-  });
 }
 
 export async function markUserWatched({ media, sourceLastAction = 'watched', userId, watchedAt = new Date() }) {

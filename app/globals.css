@@ -6,8 +6,6 @@
 @import './styles/auth.css';
 @import './styles/media.css';
 @import './styles/reviews.css';
-@import './styles/search.css';
-@import './styles/top250.css';
 
 @theme {
   --color-white: var(--foreground);

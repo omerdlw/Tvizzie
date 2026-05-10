@@ -5,13 +5,20 @@ import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
 import { useNavigationContext } from '@/core/modules/nav/context';
-import { NAV_ACTION_SPRING, NAV_CONTENT_TRANSITION, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
+import {
+  getNavSubmittingMotion,
+  NAV_ACTION_SPRING,
+  NAV_BUTTON_INTERACTION_MOTION,
+  NAV_BUTTON_TAP_MOTION,
+  NAV_CONTENT_TRANSITION,
+  NAV_SURFACE_MOTION,
+} from '@/core/modules/motion';
 import { getNavConfirmationKey } from '@/core/modules/nav/utils';
 
 const BUTTON_TONES = Object.freeze({
-  danger: 'border border-error/20 bg-error/20 text-error hover:bg-error hover:text-black hover:border-error',
-  muted: 'border border-white/5 bg-primary hover:bg-black',
-  primary: 'border border-info/20 bg-info/20 text-info hover:bg-info hover:text-black hover:border-info',
+  danger: 'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error',
+  muted: 'border border-white/5 bg-white/5 hover:bg-transparent',
+  primary: 'border border-info/20 bg-info/10 text-info hover:bg-info hover:text-white hover:border-info',
 });
 
 function resolveButtonTone(tone) {
@@ -113,10 +120,7 @@ export default function ConfirmationSurface({ item }) {
   return (
     <motion.div
       className="mt-2.5 flex w-full flex-col items-center gap-2 sm:flex-row"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={NAV_SURFACE_SPRING}
+      {...NAV_SURFACE_MOTION}
       layout="position"
     >
       <motion.button
@@ -127,8 +131,7 @@ export default function ConfirmationSurface({ item }) {
           tone: 'muted',
           className: 'disabled:cursor-not-allowed',
         })}
-        whileTap={{ scale: 0.985 }}
-        transition={NAV_ACTION_SPRING}
+        {...NAV_BUTTON_INTERACTION_MOTION}
       >
         {cancelText}
       </motion.button>
@@ -141,8 +144,10 @@ export default function ConfirmationSurface({ item }) {
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
-        animate={isSubmitting ? { scale: 0.985 } : { scale: 1 }}
-        whileTap={{ scale: 0.985 }}
+        animate={getNavSubmittingMotion(isSubmitting)}
+        whileHover={NAV_BUTTON_INTERACTION_MOTION.whileHover}
+        whileFocus={NAV_BUTTON_INTERACTION_MOTION.whileFocus}
+        whileTap={NAV_BUTTON_TAP_MOTION.whileTap}
         transition={isSubmitting ? NAV_CONTENT_TRANSITION : NAV_ACTION_SPRING}
       >
         {isSubmitting ? confirmLoadingText : confirmText}

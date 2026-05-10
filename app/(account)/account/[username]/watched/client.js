@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/hooks';
 import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/features/account/utils';
 import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';

@@ -28,6 +28,19 @@
     --route-grid-cell: 48px;
   }
 
+  .legal-route-panel {
+    border: 1px solid color-mix(in srgb, var(--color-white) 10%, transparent);
+    background-color: var(--color-primary);
+  }
+
+  .legal-route-muted {
+    color: color-mix(in srgb, var(--color-white) 70%, transparent);
+  }
+
+  .legal-route-soft {
+    color: color-mix(in srgb, var(--color-white) 50%, transparent);
+  }
+
   .route-grid-frame::before,
   .route-grid-frame::after,
   .movie-detail-grid-frame::before,

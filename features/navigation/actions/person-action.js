@@ -1,20 +1,24 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import Icon from '@/ui/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { FEATURE_NAV_ACTION_BUTTON_MOTION, FEATURE_NAV_ACTION_ROW_MOTION } from '@/features/motion';
 
 export default function PersonAction({ activeView, setActiveView }) {
   const toggle = (view) => setActiveView(activeView === view ? 'main' : view);
 
   return (
-    <div className={NAV_ACTION_STYLES.row}>
-      <button
+    <motion.div className={NAV_ACTION_STYLES.row} {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      <motion.button
         type="button"
         onClick={() => toggle('timeline')}
         className={getNavActionClass({
           className: 'flex-1',
           isActive: activeView === 'timeline',
         })}
+        {...FEATURE_NAV_ACTION_BUTTON_MOTION}
       >
         {activeView === 'timeline' ? (
           <>
@@ -27,15 +31,16 @@ export default function PersonAction({ activeView, setActiveView }) {
             Timeline
           </>
         )}
-      </button>
+      </motion.button>
 
-      <button
+      <motion.button
         type="button"
         onClick={() => toggle('awards')}
         className={getNavActionClass({
           className: 'flex-1',
           isActive: activeView === 'awards',
         })}
+        {...FEATURE_NAV_ACTION_BUTTON_MOTION}
       >
         {activeView === 'awards' ? (
           <>
@@ -48,7 +53,7 @@ export default function PersonAction({ activeView, setActiveView }) {
             Awards
           </>
         )}
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

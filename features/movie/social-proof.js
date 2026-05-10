@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
@@ -8,6 +9,7 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service';
 import Icon from '@/ui/icon';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
+import { MOVIE_FEATURE_ACTION_MOTION, MOVIE_FEATURE_SECTION_MOTION } from '@/features/movie/motion';
 
 const EMPTY_SOCIAL_PROOF = Object.freeze({
   followingCount: 0,
@@ -59,14 +61,18 @@ function SocialAvatarStack({ users = [] }) {
   }
 
   return (
-    <span className="media-social-avatar-stack">
+    <span className="flex shrink-0">
       {visibleUsers.map((user) => {
         const avatarSrc = getUserAvatarUrl(user);
         const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
         const label = user?.displayName || user?.username || 'User';
 
         return (
-          <span key={user.id} className="media-social-avatar center" aria-hidden="true">
+          <span
+            key={user.id}
+            className="media-social-avatar center -ml-1.5 h-5 w-5 overflow-hidden first:ml-0"
+            aria-hidden="true"
+          >
             <AdaptiveImage
               mode="img"
               src={avatarSrc}
@@ -139,18 +145,25 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
   };
 
   return (
-    <button
+    <motion.button
       type="button"
       aria-label="Open social activity"
       onClick={handleOpenModal}
-      className={cn('media-social-proof-button tracking-wide uppercase', className)}
+      className={cn(
+        'media-social-proof-button flex min-h-10 w-full max-w-none items-center justify-start gap-2 whitespace-nowrap p-3 text-left text-xs font-bold leading-none tracking-wide uppercase',
+        className
+      )}
+      {...MOVIE_FEATURE_SECTION_MOTION}
+      {...MOVIE_FEATURE_ACTION_MOTION}
     >
       <SocialAvatarStack users={previewUsers} />
       <span className="min-w-0 flex-1 truncate">{compactLabel}</span>
-      {highlights.length > 1 ? <span className="media-social-proof-count">+{highlights.length - 1}</span> : null}
-      <span className="media-social-proof-icon center">
+      {highlights.length > 1 ? (
+        <span className="media-social-proof-count shrink-0 text-xs tabular-nums">+{highlights.length - 1}</span>
+      ) : null}
+      <span className="media-social-proof-icon center size-5 shrink-0">
         <Icon icon="solar:alt-arrow-right-linear" size={14} />
       </span>
-    </button>
+    </motion.button>
   );
 }

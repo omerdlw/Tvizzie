@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
+import { PersonAwardsSkeleton } from '@/features/person/skeletons';
+import { getPersonFeatureItemMotion, PERSON_FEATURE_SECTION_MOTION } from '@/features/person/motion';
 
 import MediaThumb from './media-thumb';
 
@@ -148,8 +150,8 @@ export default function PersonAwards({ personId }) {
 
 function PersonAwardsSurface({ awardsTimeline, stats }) {
   return (
-    <section className="flex w-full flex-col gap-3">
-      <div className="flex items-end justify-between gap-3">
+    <motion.section className="flex w-full flex-col gap-3" {...PERSON_FEATURE_SECTION_MOTION}>
+      <motion.div className="flex items-end justify-between gap-3" {...getPersonFeatureItemMotion(0)}>
         <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Awards</h2>
         {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
           <div className="text-xs font-semibold text-white/50 sm:text-sm">
@@ -157,14 +159,16 @@ function PersonAwardsSurface({ awardsTimeline, stats }) {
             {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
           </div>
         )}
-      </div>
+      </motion.div>
 
       <div className="flex w-full flex-col">
-        {awardsTimeline.map(([year, entries]) => (
-          <AwardYearGroup key={year} year={year} entries={entries} />
+        {awardsTimeline.map(([year, entries], index) => (
+          <motion.div key={year} {...getPersonFeatureItemMotion(index + 1)}>
+            <AwardYearGroup year={year} entries={entries} />
+          </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -189,7 +193,8 @@ function AwardEntry({ entry }) {
   const isInteractive = Boolean(entry.projectId);
   const title = entry.project || entry.category;
   const rowClassName = cn(
-    'group flex items-center gap-3 border-transparent p-1 ',
+    'group flex items-center gap-3 border-transparent p-1',
+    isInteractive && 'tvz-soft-hover-row',
     isInteractive ? 'hover:bg-white/10' : 'cursor-default'
   );
   const content = <AwardEntryContent entry={entry} title={title} />;

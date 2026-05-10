@@ -1,12 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
+import {
+  getMovieFeatureItemMotion,
+  getMovieFeatureTabItemMotion,
+  MOVIE_FEATURE_SECTION_MOTION,
+  MOVIE_FEATURE_TAB_STAGGER_MOTION,
+} from '@/features/movie/motion';
 
 const TABS = Object.freeze([
   {
@@ -93,27 +100,33 @@ function ImagesSectionContent({ images }) {
   }
 
   return (
-    <section className="movie-detail-section-content w-full">
-      <div>
+    <motion.section className="movie-detail-section-content w-full" {...MOVIE_FEATURE_SECTION_MOTION}>
+      <motion.div {...getMovieFeatureItemMotion(0)}>
         <SegmentedControl items={availableTabs} value={activeKey} onChange={setActiveKey} />
-      </div>
+      </motion.div>
 
       <div className="relative">
-        <div key={`movie-images-${currentTab.key}`}>
-          <Carousel gap="gap-3">
-            {items.map((image, index) => (
-              <ImageCard
-                key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                image={image}
-                index={index}
-                tab={currentTab}
-                onPreview={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
-              />
-            ))}
-          </Carousel>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={`movie-images-${currentTab.key}`} {...MOVIE_FEATURE_TAB_STAGGER_MOTION}>
+            <Carousel gap="gap-3">
+              {items.map((image, index) => (
+                <motion.div
+                  key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
+                  {...getMovieFeatureTabItemMotion(index + 1)}
+                >
+                  <ImageCard
+                    image={image}
+                    index={index}
+                    tab={currentTab}
+                    onPreview={() => openModal('PREVIEW_MODAL', 'center', { data: image })}
+                  />
+                </motion.div>
+              ))}
+            </Carousel>
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

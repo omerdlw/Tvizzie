@@ -1,11 +1,18 @@
 'use client';
 
 import { isValidElement } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 import { MODAL_POSITIONS } from '@/core/modules/modal/config';
+import {
+  MODAL_ACTION_MOTION,
+  MODAL_BODY_MOTION,
+  MODAL_FOOTER_MOTION,
+  MODAL_HEADER_MOTION,
+} from '@/core/modules/motion';
 
 const HEIGHT_CONSTRAINT_PATTERN = /(^|\s)(?:[\w-]+:)*(?:h|max-h)-/;
 
@@ -56,14 +63,15 @@ function CloseButton({ close, label = 'Close modal' }) {
   }
 
   return (
-    <button
+    <motion.button
       type="button"
       aria-label={label}
       onClick={close}
-      className="center size-8 border border-transparent bg-transparent text-white/70 hover:border-white/10 hover:bg-white/5 hover:text-white"
+      className="center size-8 border border-transparent bg-transparent text-white/70 transition-colors hover:border-white/10 hover:bg-white/10 hover:text-white"
+      {...MODAL_ACTION_MOTION}
     >
       <Icon icon="material-symbols:close-rounded" size={18} />
-    </button>
+    </motion.button>
   );
 }
 
@@ -106,39 +114,54 @@ export default function Container({ children, className, bodyClassName, header =
 
   return (
     <div className={getContainerClassName({ className, position })}>
-      {shouldRenderHeader ? (
-        <div
-          className={cn(
-            hasSlotContent(headerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-2 p-2',
-            headerIsSticky && 'sticky top-0 z-10'
-          )}
-        >
-          <div className="min-w-0">{headerLeft}</div>
-          {hasSlotContent(headerCenter) && <div className="flex items-center justify-center">{headerCenter}</div>}
-          <div className="min-w-0">{headerRight}</div>
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {shouldRenderHeader ? (
+          <motion.div
+            className={cn(
+              hasSlotContent(headerCenter)
+                ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+                : 'flex justify-between',
+              'items-center gap-2 p-2',
+              headerIsSticky && 'sticky top-0 z-10'
+            )}
+            {...MODAL_HEADER_MOTION}
+          >
+            <div className="min-w-0">{headerLeft}</div>
+            {hasSlotContent(headerCenter) && <div className="flex items-center justify-center">{headerCenter}</div>}
+            <div className="min-w-0">{headerRight}</div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      <div data-lenis-prevent data-lenis-prevent-wheel className={getBodyClassName(position, bodyClassName)}>
+      <motion.div
+        data-lenis-prevent
+        data-lenis-prevent-wheel
+        className={getBodyClassName(position, bodyClassName)}
+        {...MODAL_BODY_MOTION}
+      >
         {children}
-      </div>
+      </motion.div>
 
-      {shouldRenderFooter ? (
-        <div
-          className={cn(
-            hasSlotContent(footerCenter) ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'flex justify-between',
-            'items-center gap-2 p-2',
-            footerIsSticky && 'sticky bottom-0'
-          )}
-        >
-          <div className="min-w-0">{footerLeft}</div>
-          {hasSlotContent(footerCenter) && <div className="flex items-center justify-center">{footerCenter}</div>}
-          <div className={cn('flex items-center gap-2', hasSlotContent(footerCenter) ? 'w-full justify-end' : null)}>
-            {footerRight}
-          </div>
-        </div>
-      ) : null}
+      <AnimatePresence initial={false}>
+        {shouldRenderFooter ? (
+          <motion.div
+            className={cn(
+              hasSlotContent(footerCenter)
+                ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+                : 'flex justify-between',
+              'items-center gap-2 p-2',
+              footerIsSticky && 'sticky bottom-0'
+            )}
+            {...MODAL_FOOTER_MOTION}
+          >
+            <div className="min-w-0">{footerLeft}</div>
+            {hasSlotContent(footerCenter) && <div className="flex items-center justify-center">{footerCenter}</div>}
+            <div className={cn('flex items-center gap-2', hasSlotContent(footerCenter) ? 'w-full justify-end' : null)}>
+              {footerRight}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

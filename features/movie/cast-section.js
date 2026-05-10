@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -10,6 +11,12 @@ import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/featu
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
+import {
+  getMovieFeatureItemMotion,
+  MOVIE_FEATURE_ACTION_MOTION,
+  MOVIE_FEATURE_SOFT_STAGGER,
+  MOVIE_FEATURE_SECTION_MOTION,
+} from '@/features/movie/motion';
 
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
@@ -53,13 +60,17 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
     <Link
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
+      data-soft-hover="card"
       className={cn(
         'group isolate flex items-center gap-3 border border-white/5 bg-white/5 backdrop-blur hover:bg-black/30',
         'overflow-hidden [backface-visibility:hidden]',
         compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4'
       )}
     >
-      <div className={cn('relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16')}>
+      <div
+        data-soft-hover="media"
+        className={cn('relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16')}
+      >
         <PersonImage
           person={person}
           size={compact ? 'w92' : 'w185'}
@@ -158,8 +169,8 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
   };
 
   return (
-    <section ref={sectionRef} className="movie-detail-section-content relative w-full">
-      <div className="flex items-center justify-between gap-3">
+    <motion.section ref={sectionRef} className="movie-detail-section-content relative w-full" {...MOVIE_FEATURE_SECTION_MOTION}>
+      <motion.div className="flex items-center justify-between gap-3" {...getMovieFeatureItemMotion(0)}>
         <SegmentedControl
           equalItems
           value={activeTab}
@@ -170,52 +181,97 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
           items={tabs.map(({ key, label }) => ({ key, label }))}
         />
         {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
-      </div>
+      </motion.div>
 
-      <div className="relative w-full overflow-hidden">
-        <div key={activeTabData.key} className="w-full">
-          <CastPanel tabKey={activeTabData.key} entries={activeTabData.entries} onOpenModal={handleOpenModal} />
-        </div>
-      </div>
-    </section>
+      <motion.div className="relative w-full overflow-hidden" {...getMovieFeatureItemMotion(1)}>
+        {tabs.length === 1 ? (
+          <CastPanel
+            tabKey={activeTabData.key}
+            entries={activeTabData.entries}
+            onOpenModal={handleOpenModal}
+          />
+        ) : (
+          <>
+            <div aria-hidden="true" className="invisible">
+              <CastPanel
+                tabKey={activeTabData.key}
+                entries={activeTabData.entries}
+                onOpenModal={handleOpenModal}
+              />
+            </div>
+
+            <div className="absolute inset-0 flex">
+              {tabs.map((tab, index) => (
+                <motion.div
+                  key={tab.key}
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={{ x: `${(index - activeIndex) * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.75 }}
+                >
+                  <CastPanel
+                    tabKey={tab.key}
+                    entries={tab.entries}
+                    onOpenModal={handleOpenModal}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </>
+        )}
+      </motion.div>
+    </motion.section>
   );
 }
 
 function CastPanel({ tabKey, entries, onOpenModal }) {
   const { featured, compact } = splitEntries(entries);
+  const getCardMotion = (index) => ({
+    initial: {
+      opacity: 0,
+      y: MOVIE_FEATURE_SOFT_STAGGER.initialY,
+      scale: MOVIE_FEATURE_SOFT_STAGGER.initialScale,
+    },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    transition: {
+      type: 'tween',
+      duration: MOVIE_FEATURE_SOFT_STAGGER.duration,
+      delay: MOVIE_FEATURE_SOFT_STAGGER.delay + index * MOVIE_FEATURE_SOFT_STAGGER.interval,
+    },
+  });
 
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {featured.map((person, index) => (
-          <PersonCard
-            key={buildPersonEntryKey(tabKey, person, index, 'featured')}
-            person={person}
-            priority={index < 4}
-            fetchPriority={index < 4 ? 'high' : undefined}
-          />
+          <motion.div key={buildPersonEntryKey(tabKey, person, index, 'featured')} {...getCardMotion(index)}>
+            <PersonCard person={person} priority={index < 4} fetchPriority={index < 4 ? 'high' : undefined} />
+          </motion.div>
         ))}
       </div>
 
       {compact.length ? (
         <div className="flex h-10 items-center gap-2">
           {compact.map((person, index) => (
-            <div
+            <motion.div
               key={buildPersonEntryKey(tabKey, person, index, 'compact')}
               className={cn('min-w-0 flex-1', index > 1 && 'hidden sm:block')}
+              {...getCardMotion(index + 7)}
             >
               <PersonCard person={person} compact />
-            </div>
+            </motion.div>
           ))}
 
-          <button
+          <motion.button
             type="button"
             aria-label="Show full cast"
             onClick={onOpenModal}
             className="center size-10 shrink-0 border border-white/5 bg-white/5 text-white/70 hover:bg-black/30 hover:text-white"
+            {...getCardMotion(10)}
+            {...MOVIE_FEATURE_ACTION_MOTION}
           >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
-          </button>
+          </motion.button>
         </div>
       ) : null}
     </div>

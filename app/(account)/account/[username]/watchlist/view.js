@@ -1,4 +1,4 @@
-import AccountWatchlistFeed from '@/features/account/feeds/watchlist';
+import AccountWatchlistFeed from '@/features/account/collections/watchlist-feed';
 import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 
 export const Registry = createAccountSectionRegistry({

@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
-import { hasMatchingSeededFeed, useDeferredPreviewFeed } from '@/features/account/hooks/section-page';
+import { hasMatchingSeededFeed, useDeferredPreviewFeed } from '@/features/account/shared/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';

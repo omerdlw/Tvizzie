@@ -1,4 +1,11 @@
+import { motion } from 'framer-motion';
+
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import {
+  FEATURE_NAV_ACTION_BUTTON_MOTION,
+  FEATURE_NAV_ACTION_ROW_MOTION,
+  getFeatureNavSubmittingMotion,
+} from '@/features/motion';
 
 export default function ReviewAction({ reviewState }) {
   const { canSubmit = true, isSubmitting, loadingLabel, ownReview, submitLabel, submitReview } = reviewState || {};
@@ -7,8 +14,8 @@ export default function ReviewAction({ reviewState }) {
   const fallbackLoadingLabel = ownReview ? 'Updating' : 'Publishing';
 
   return (
-    <div className={NAV_ACTION_STYLES.row}>
-      <button
+    <motion.div className={NAV_ACTION_STYLES.row} {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      <motion.button
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -17,9 +24,11 @@ export default function ReviewAction({ reviewState }) {
         className={getNavActionClass()}
         disabled={isSubmitting || !canSubmit}
         type="button"
+        animate={getFeatureNavSubmittingMotion(isSubmitting)}
+        {...FEATURE_NAV_ACTION_BUTTON_MOTION}
       >
         {isSubmitting ? loadingLabel || fallbackLoadingLabel : submitLabel || fallbackSubmitLabel}
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

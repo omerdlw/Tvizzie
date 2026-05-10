@@ -1,9 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import Container from '@/core/modules/modal/container';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
@@ -69,67 +71,72 @@ export default function MediaSocialProofModal({ close, data, header }) {
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
           {highlights.length > 0 ? (
-            <div className="p-3 lg:p-4">
+            <motion.div className="p-3 lg:p-4" {...getFeatureModalSectionMotion(0)}>
               <div className="bg-white/10 p-3 shadow-inner">
-                <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50 uppercase">
+                <p className="text-white-muted mb-2 text-[10px] font-semibold tracking-widest uppercase">
                   People you follow
                 </p>
-                {highlights.map((highlight) => (
-                  <div key={highlight.key} className="flex items-start gap-2 py-1 text-sm text-white/70">
-                    <Icon icon="solar:stars-bold" size={15} className="mt-0.5 shrink-0 text-white/50" />
-                    <span>{highlight.label}</span>
-                  </div>
+                {highlights.map((highlight, index) => (
+                  <motion.div key={highlight.key} {...getFeatureModalItemMotion(index)}>
+                    <div className="text-white-soft flex items-start gap-2 py-1 text-sm">
+                      <Icon icon="solar:stars-bold" size={15} className="text-white-muted mt-0.5 shrink-0" />
+                      <span>{highlight.label}</span>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ) : null}
 
           {userActions.length === 0 && highlights.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-white/50')}>
-              No social activity from people you follow yet
-            </div>
+            <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+              <div className={cn('text-white-muted center h-full w-full py-20 text-sm font-medium')}>
+                No social activity from people you follow yet
+              </div>
+            </motion.div>
           ) : (
             <div className="flex min-h-0 flex-col">
-              {userActions.map(({ actions, user }) => {
+              {userActions.map(({ actions, user }, index) => {
                 const avatarSrc = getUserAvatarUrl(user);
                 const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
                 const username = user?.username || 'user';
 
                 return (
-                  <Link
-                    key={user.id}
-                    href={`/account/${username}`}
-                    onClick={close}
-                    className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 p-3 last:border-none hover:bg-white/10 lg:p-4"
-                  >
-                    <div className="center size-10 shrink-0 overflow-hidden border border-white/10">
-                      <AdaptiveImage
-                        mode="img"
-                        src={avatarSrc}
-                        alt={user?.displayName || username}
-                        className="size-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-                        wrapperClassName="size-full"
-                      />
-                    </div>
+                  <motion.div key={user.id} {...getFeatureModalItemMotion(index)}>
+                    <Link
+                      href={`/account/${username}`}
+                      onClick={close}
+                      className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 p-3 transition-colors hover:bg-white/10 last:border-none lg:p-4"
+                    >
+                      <div className="center size-10 shrink-0 overflow-hidden border border-white/10">
+                        <AdaptiveImage
+                          mode="img"
+                          src={avatarSrc}
+                          alt={user?.displayName || username}
+                          className="size-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+                          wrapperClassName="size-full"
+                        />
+                      </div>
 
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm">
-                        <span className="font-semibold">@{username}</span> engaged with this title.
-                      </span>
-                      <span className="truncate text-[10px] tracking-widest text-white/50 uppercase">
-                        {formatActionSummary(actions)}
-                      </span>
-                    </div>
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-sm">
+                          <span className="font-semibold">@{username}</span> engaged with this title.
+                        </span>
+                        <span className="text-white-muted truncate text-[10px] tracking-widest uppercase">
+                          {formatActionSummary(actions)}
+                        </span>
+                      </div>
 
-                    <div className="flex shrink-0 items-center gap-1.5 self-center">
-                      <span aria-hidden="true" className="center size-7 border border-white/5 text-white/70">
-                        <Icon icon="solar:alt-arrow-right-linear" size={16} />
-                      </span>
-                    </div>
-                  </Link>
+                      <div className="flex shrink-0 items-center gap-1.5 self-center">
+                        <span aria-hidden="true" className="center size-7 border border-white/10 text-white/70">
+                          <Icon icon="solar:alt-arrow-right-linear" size={16} />
+                        </span>
+                      </div>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>

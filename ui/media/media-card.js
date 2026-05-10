@@ -109,11 +109,11 @@ export default function MediaCard({
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden', className)}
+      className={cn('tvz-soft-hover-card group flex shrink-0 flex-col overflow-hidden', className)}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
-        <div className={cn('relative h-full w-full overflow-hidden', innerClassName)}>
+        <div className={cn('tvz-soft-hover-media relative h-full w-full overflow-hidden', innerClassName)}>
           {hasImage ? (
             <AdaptiveImage
               src={imageSrc}

@@ -1,0 +1,163 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { usePathname, useSearchParams } from 'next/navigation';
+
+import {
+  MEDIA_FILTER_QUERY_KEYS,
+  applyMediaFilters,
+  buildCollectionBasePath,
+  buildManagedQueryString,
+  buildMediaKeySet,
+  collectMediaGenreOptions,
+  getDecadeOptions,
+  hasActiveMediaFilters,
+  parseMediaFilters,
+  parsePageFromSearch,
+  toMediaQueryValues,
+} from '@/features/account/filters';
+import { AccountMediaFilterBar } from '@/features/account/shared/content-filters';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
+import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+
+const WATCHLIST_VISIBILITY_OPTIONS = Object.freeze([
+  Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
+  Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
+]);
+const WATCHLIST_ALLOWED_EYE_FLAGS = WATCHLIST_VISIBILITY_OPTIONS.map((option) => option.key);
+
+function parseWatchlistMediaFilters(search) {
+  return parseMediaFilters(search, {
+    allowedEyeFlags: WATCHLIST_ALLOWED_EYE_FLAGS,
+  });
+}
+
+export default function AccountWatchlistFeed({ auth, canShowWatchlistGrid, isOwner, watchlist, onRemoveItem }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString?.() || '';
+  const initialMediaFilters = useMemo(
+    () => parseWatchlistMediaFilters(new URLSearchParams(searchParamsKey)),
+    [searchParamsKey]
+  );
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
+  const [activePage, setActivePage] = useState(initialPage);
+  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
+  const currentUserId = auth.user?.id || null;
+  const decadeOptions = useMemo(() => getDecadeOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(watchlist), [watchlist]);
+  const watchlistKeys = useMemo(() => buildMediaKeySet(watchlist), [watchlist]);
+  const filteredWatchlist = useMemo(
+    () => applyMediaFilters(watchlist, mediaFilters, { watchlistKeys }),
+    [mediaFilters, watchlist, watchlistKeys]
+  );
+  const hasFilters = hasActiveMediaFilters(mediaFilters);
+  useEffect(() => {
+    setMediaFilters(initialMediaFilters);
+    setActivePage(initialPage);
+  }, [initialMediaFilters, initialPage]);
+
+  const updateUrl = useCallback(
+    (nextFilters, nextPage) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const queryString = buildManagedQueryString(new URLSearchParams(window.location.search), {
+        managedKeys: MEDIA_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toMediaQueryValues(nextFilters),
+      });
+      const params = new URLSearchParams(queryString);
+
+      if (nextPage > 1) {
+        params.set('page', String(nextPage));
+      } else {
+        params.delete('page');
+      }
+
+      const nextQuery = params.toString();
+      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
+    },
+    [collectionRootPath]
+  );
+
+  const updateFilters = useCallback(
+    (updates = {}) => {
+      const nextFilters = {
+        ...mediaFilters,
+        ...updates,
+      };
+      setMediaFilters(nextFilters);
+      setActivePage(1);
+      updateUrl(nextFilters, 1);
+    },
+    [mediaFilters, updateUrl]
+  );
+
+  const handleResetFilters = useCallback(() => {
+    const defaultFilters = parseWatchlistMediaFilters(new URLSearchParams());
+
+    setMediaFilters(defaultFilters);
+    setActivePage(1);
+    updateUrl(defaultFilters, 1);
+  }, [updateUrl]);
+
+  const handlePageChange = useCallback(
+    (nextPage) => {
+      setActivePage(nextPage);
+      updateUrl(mediaFilters, nextPage);
+    },
+    [mediaFilters, updateUrl]
+  );
+
+  if (!canShowWatchlistGrid) {
+    return <AccountSectionState message="This profile is private." />;
+  }
+
+  return (
+    <AccountMediaGridPage
+      currentPage={activePage}
+      emptyMessage="No watchlist yet"
+      icon="solar:bookmark-bold"
+      items={filteredWatchlist}
+      onPageChange={handlePageChange}
+      pageBasePath={collectionRootPath}
+      showHeader={false}
+      renderOverlay={(item) =>
+        isOwner ? (
+          <ProfileMediaActions
+            media={item}
+            onRemoveItem={onRemoveItem}
+            removeLabel={`Remove ${item.title || item.name} from watchlist`}
+            userId={currentUserId}
+          />
+        ) : null
+      }
+      toolbar={
+        watchlist.length > 0 ? (
+          <AccountMediaFilterBar
+            filters={mediaFilters}
+            decadeOptions={decadeOptions}
+            genreOptions={genreOptions}
+            visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
+            onChange={updateFilters}
+            onReset={hasFilters ? handleResetFilters : null}
+          />
+        ) : hasFilters ? (
+          <AccountMediaFilterBar
+            filters={mediaFilters}
+            decadeOptions={decadeOptions}
+            genreOptions={genreOptions}
+            visibilityOptions={WATCHLIST_VISIBILITY_OPTIONS}
+            onChange={updateFilters}
+            onReset={handleResetFilters}
+          />
+        ) : null
+      }
+      title="Watchlist"
+    />
+  );
+}

@@ -51,18 +51,6 @@
       radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--color-black) 30%, transparent) 0%, transparent 100%);
   }
 
-  .home-grid-section-content {
-    padding: 0;
-  }
-
-  .home-section-shell {
-    min-width: 0;
-  }
-
-  .home-section-heading {
-    min-width: 0;
-  }
-
   .home-poster-rail-item {
     width: calc((100% - 1.5rem) / 3);
     flex-shrink: 0;

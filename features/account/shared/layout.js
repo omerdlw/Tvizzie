@@ -3,24 +3,19 @@
 import Link from 'next/link';
 
 import { cn } from '@/core/utils';
-import AccountHero from './hero';
+import {
+  AccountHeroReveal,
+  AccountNavReveal,
+  AccountSectionReveal,
+} from '@/app/(account)/account/motion';
+import AccountHero from '../profile/hero';
 import { AccountGridDivider, AccountGridFrame } from './grid-animation';
 import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import NotFoundTemplate from '@/ui/states/not-found-template';
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
+import AccountRouteSkeleton from '@/features/account/skeletons';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 
-export function AccountHeroReveal({ children, className }) {
-  return <div className={className}>{children}</div>;
-}
-
-export function AccountNavReveal({ children, className }) {
-  return <div className={className}>{children}</div>;
-}
-
-export function AccountSectionReveal({ children, className }) {
-  return <div className={className}>{children}</div>;
-}
+export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
 
 const SECTION_ITEMS = [
   { key: 'overview', label: 'Overview' },
@@ -166,7 +161,7 @@ export default function ProfileLayout({
   const profileHandle = username || profile?.username || null;
 
   return (
-    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
+    <div className="account-detail-grid-content relative isolate min-h-dvh w-full overflow-hidden bg-black">
       <AccountGridFrame
         routeKey={profileHandle ? `account-${profileHandle}` : 'account-current'}
         className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}
@@ -192,7 +187,7 @@ export default function ProfileLayout({
         <div className="account-detail-hero-divider">
           <AccountGridDivider />
         </div>
-        <main className="account-detail-grid-main">{children}</main>
+        <main className="account-detail-grid-main flex w-full min-w-0 flex-col">{children}</main>
         <NavHeightSpacer />
       </AccountGridFrame>
     </div>

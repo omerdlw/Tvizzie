@@ -1,6 +1,6 @@
 'use client';
 
-import { MovieReviewsPageSkeleton } from '@/ui/skeletons/views/movie';
+import { MovieReviewsPageSkeleton } from '@/features/movie/skeletons';
 import Registry from '../registry';
 
 export default function Loading() {

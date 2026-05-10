@@ -6,11 +6,13 @@ import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
 import {
-  NAV_ACTION_SPRING,
+  getNavDragIconMotion,
+  getNavDragSurfaceMotion,
+  NAV_BUTTON_INTERACTION_MOTION,
   NAV_CONTENT_TRANSITION,
   NAV_SURFACE_ITEM_SPRING,
-  NAV_SURFACE_SPRING,
-} from '@/core/modules/nav/motion';
+  NAV_SURFACE_MOTION,
+} from '@/core/modules/motion';
 import Icon from '@/ui/icon';
 
 const DEFAULT_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
@@ -95,10 +97,7 @@ export default function FileUploadSurface({ close, data }) {
       aria-modal="true"
       aria-labelledby="file-upload-surface-title"
       className="relative flex flex-col gap-3"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={NAV_SURFACE_SPRING}
+      {...NAV_SURFACE_MOTION}
     >
       <motion.button
         type="button"
@@ -106,11 +105,9 @@ export default function FileUploadSurface({ close, data }) {
           event.stopPropagation();
           dismissSurface(close);
         }}
-        className="center bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-white/5 p-1 transition-all"
+        className="center bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-primary p-1 transition-colors"
         aria-label="Close media upload"
-        whileTap={{ scale: 0.94 }}
-        whileHover={{ scale: 1.03 }}
-        transition={NAV_ACTION_SPRING}
+        {...NAV_BUTTON_INTERACTION_MOTION}
       >
         <Icon icon="material-symbols:close-rounded" size={20} />
       </motion.button>
@@ -149,12 +146,12 @@ export default function FileUploadSurface({ close, data }) {
           'flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-3 border px-6 py-8 text-center transition-colors',
           isDragActive ? 'border-info bg-info/20' : 'bg-primary border-white/5 hover:bg-transparent'
         )}
-        animate={isDragActive ? { scale: 1.01 } : { scale: 1 }}
+        animate={getNavDragSurfaceMotion(isDragActive)}
         transition={NAV_SURFACE_ITEM_SPRING}
       >
         <motion.div
           className="center size-14 border border-white/5 bg-black text-white/70"
-          animate={isDragActive ? { scale: 1.06, y: -2 } : { scale: 1, y: 0 }}
+          animate={getNavDragIconMotion(isDragActive)}
           transition={NAV_SURFACE_ITEM_SPRING}
         >
           <Icon icon="solar:cloud-upload-bold" size={24} />
@@ -172,9 +169,7 @@ export default function FileUploadSurface({ close, data }) {
             inputRef.current?.click();
           }}
           className="hover:text-primary inline-flex h-10 items-center justify-center border border-white/5 bg-black px-4 text-[11px] font-semibold text-white uppercase transition-colors hover:bg-white"
-          whileTap={{ scale: 0.98 }}
-          whileHover={{ scale: 1.02 }}
-          transition={NAV_ACTION_SPRING}
+          {...NAV_BUTTON_INTERACTION_MOTION}
         >
           {buttonLabel}
         </motion.button>

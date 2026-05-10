@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 import { resolveAuthVerificationHeader } from '@/core/modules/modal/header';
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
-import { NAV_ACTION_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
+import { NAV_BUTTON_TAP_MOTION, NAV_SURFACE_MOTION } from '@/core/modules/motion';
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -86,10 +86,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       aria-modal="true"
       aria-labelledby="auth-verification-surface-title"
       className="relative flex flex-col gap-3"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={NAV_SURFACE_SPRING}
+      {...NAV_SURFACE_MOTION}
     >
       <motion.button
         type="button"
@@ -99,7 +96,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
         }}
         className={`center center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-transparent p-1 transition-all hover:border-white/10 hover:bg-white/5`}
         aria-label="Close verification"
-        transition={NAV_ACTION_SPRING}
+        {...NAV_BUTTON_TAP_MOTION}
       >
         <Icon icon="material-symbols:close-rounded" size={20} />
       </motion.button>

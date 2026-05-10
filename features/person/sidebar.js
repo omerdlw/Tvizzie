@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
@@ -8,6 +9,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
+import { getPersonFeatureItemMotion, PERSON_FEATURE_SECTION_MOTION } from '@/features/person/motion';
 
 function getProfileImage(path) {
   if (!path) {
@@ -92,9 +94,12 @@ export default function PersonSidebar({ person, age }) {
   );
 
   return (
-    <div className="flex flex-col gap-0">
-      <div className="media-detail-poster-shell grid-diamonds-bottom flex flex-col gap-3 border-b border-white/5">
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+    <motion.div className="flex flex-col gap-0" {...PERSON_FEATURE_SECTION_MOTION}>
+      <motion.div
+        className="media-detail-poster-shell grid-diamonds-bottom flex flex-col gap-3 border-b border-white/5"
+        {...PERSON_FEATURE_SECTION_MOTION}
+      >
+        <motion.div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden" {...getPersonFeatureItemMotion(0)}>
           {hasImage ? (
             <AdaptiveImage
               src={imageSrc}
@@ -120,23 +125,28 @@ export default function PersonSidebar({ person, age }) {
           {person?.external_ids ? (
             <SocialLinks externalIds={person.external_ids} className="absolute right-0 bottom-0 left-0" />
           ) : null}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7">
+      <motion.div
+        className="movie-detail-shell-inset movie-detail-shell-inset-compact flex flex-col gap-5 py-6 lg:py-7"
+        {...PERSON_FEATURE_SECTION_MOTION}
+      >
         <div className="flex flex-col gap-1">
-          {detailRows.map((row) => (
-            <SidebarRow key={`${row.label}-${row.value}`} icon={row.icon} label={row.label} value={row.value} />
+          {detailRows.map((row, index) => (
+            <motion.div key={`${row.label}-${row.value}`} {...getPersonFeatureItemMotion(index + 3)}>
+              <SidebarRow icon={row.icon} label={row.label} value={row.value} />
+            </motion.div>
           ))}
         </div>
 
         {person?.biography ? (
-          <div className="flex flex-col gap-2">
+          <motion.div className="flex flex-col gap-2" {...getPersonFeatureItemMotion(10)}>
             <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Bio</h2>
             <PersonBio biography={person.biography} />
-          </div>
+          </motion.div>
         ) : null}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

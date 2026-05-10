@@ -1,4 +1,4 @@
-import AccountActivityFeed from '@/features/account/feeds/activity';
+import AccountActivityFeed from '@/features/account/activity/feed';
 import { AccountSectionState } from '@/features/account/shared/section-wrapper';
 import AccountAction from '@/features/navigation/actions/account-action';
 import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';

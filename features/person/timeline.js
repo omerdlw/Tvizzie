@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import MediaThumb from './media-thumb';
 import { getTimelineCredits } from './utils';
+import { getPersonFeatureItemMotion, PERSON_FEATURE_SECTION_MOTION } from '@/features/person/motion';
 
 function groupByYear(credits) {
   const grouped = {};
@@ -52,12 +54,14 @@ export default function PersonTimeline({ person }) {
 
 function PersonTimelineSurface({ timeline }) {
   return (
-    <section className="flex w-full flex-col gap-3">
-      <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Timeline</h2>
+    <motion.section className="flex w-full flex-col gap-3" {...PERSON_FEATURE_SECTION_MOTION}>
+      <motion.h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase" {...getPersonFeatureItemMotion(0)}>
+        Timeline
+      </motion.h2>
 
       {timeline.map(([year, credits]) => {
         return (
-          <div key={year} className="mt-4 first:mt-0">
+          <motion.div key={year} className="mt-4 first:mt-0" {...getPersonFeatureItemMotion(1)}>
             <div className="mb-2 flex items-center gap-2 sm:gap-3">
               <span className="w-9 shrink-0 text-right text-xs font-semibold text-white/70 sm:w-12 sm:text-sm">
                 {year}
@@ -66,14 +70,18 @@ function PersonTimelineSurface({ timeline }) {
             </div>
 
             <div className="ml-0 flex flex-col sm:ml-16">
-              {credits.map((credit) => {
+              {credits.map((credit, index) => {
                 const title = credit.title || credit.original_title || 'Untitled';
                 const creditLabel = getCreditLabel(credit);
 
                 return (
-                  <div key={`${credit.credit_id || credit.id}-${credit.media_type}`}>
+                  <motion.div
+                    key={`${credit.credit_id || credit.id}-${credit.media_type}`}
+                    {...getPersonFeatureItemMotion(index + 2)}
+                  >
                     <Link
                       href={`/movie/${credit.id}`}
+                      data-soft-hover="row"
                       className="group flex items-end gap-3 border border-transparent p-1 hover:bg-white/10"
                     >
                       <MediaThumb poster={credit.poster_path} alt={title} className="" />
@@ -86,13 +94,13 @@ function PersonTimelineSurface({ timeline }) {
                         )}
                       </div>
                     </Link>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         );
       })}
-    </section>
+    </motion.section>
   );
 }

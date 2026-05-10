@@ -102,7 +102,7 @@ export function FilterPopover({ label, active = false, children }) {
   return (
     <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
       <PopoverPrimitive.Trigger asChild>
-        <button type="button" className={cn(UI.trigger, active && UI.triggerActive)}>
+        <button type="button" data-soft-hover="control" className={cn(UI.trigger, active && UI.triggerActive)}>
           <span>{label}</span>
           <Icon icon="solar:alt-arrow-down-linear" size={14} />
         </button>
@@ -217,7 +217,13 @@ export function SearchChip({ value, open, onOpen, onClose, onChange, inputRef })
 
   if (!open) {
     return (
-      <button type="button" aria-label="Search titles" onClick={onOpen} className={UI.iconButton}>
+      <button
+        type="button"
+        data-soft-hover="control"
+        aria-label="Search titles"
+        onClick={onOpen}
+        className={UI.iconButton}
+      >
         <Icon icon="solar:magnifer-linear" size={16} />
       </button>
     );
@@ -240,7 +246,7 @@ export function SearchChip({ value, open, onOpen, onClose, onChange, inputRef })
         />
       </label>
 
-      <button type="button" onClick={handleClose} className={UI.resetButton}>
+      <button type="button" data-soft-hover="control" onClick={handleClose} className={UI.resetButton}>
         Close
       </button>
     </div>

@@ -1,4 +1,4 @@
-import AccountLikesFeed from '@/features/account/feeds/likes';
+import AccountLikesFeed from '@/features/account/collections/likes-feed';
 import AccountAction from '@/features/navigation/actions/account-action';
 import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 

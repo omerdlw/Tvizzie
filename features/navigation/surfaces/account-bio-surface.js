@@ -1,28 +1,32 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import Icon from '@/ui/icon';
+import { FEATURE_NAV_ACTION_BUTTON_MOTION, FEATURE_NAV_ACTION_ROW_MOTION } from '@/features/motion';
 
 export default function AccountBioSurface({ description = '', onClose = null, title = 'About' }) {
   const normalizedDescription = String(description || '').trim();
 
   return (
-    <section className="overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-white/5 p-3">
+    <motion.section className="overflow-hidden" {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      <div className="border-grid-line flex items-center justify-between gap-3 border-b p-3">
         <p className="text-sm font-bold tracking-wide uppercase">{title}</p>
-        <button
+        <motion.button
           type="button"
           onClick={() => onClose?.()}
-          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border border-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+          className="border-grid-line text-white-muted bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border hover:text-white"
           aria-label="Close bio"
+          {...FEATURE_NAV_ACTION_BUTTON_MOTION}
         >
           <Icon icon="material-symbols:close-rounded" size={16} />
-        </button>
+        </motion.button>
       </div>
       <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto p-3">
-        <p className="text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-white/70">
+        <p className="text-white-muted text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap">
           {normalizedDescription}
         </p>
       </div>
-    </section>
+    </motion.section>
   );
 }

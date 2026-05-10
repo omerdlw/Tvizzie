@@ -1,4 +1,5 @@
 import { Suspense, use } from 'react';
+import { motion } from 'framer-motion';
 
 import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
@@ -16,26 +17,27 @@ import MediaReviews from '@/features/reviews/media-reviews';
 import Carousel from '@/ui/media/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { cn } from '@/core/utils';
-import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
+import { MovieSectionSkeleton } from '@/features/movie/skeletons';
+import { getMovieRouteSectionMotion, MOVIE_ROUTE_MOTION } from './motion';
 
 import Registry from './registry';
 
-function MovieGridSection({ children, className = '', insetDivider = true, hideDivider = false }) {
+function MovieGridSection({ children, className = '', insetDivider = true, hideDivider = false, motionIndex = 0 }) {
   return (
-    <section className={cn('movie-detail-grid-subsection', className)}>
+    <motion.section className={cn('movie-detail-grid-subsection', className)} {...getMovieRouteSectionMotion(motionIndex)}>
       {!hideDivider && <MovieGridDivider inset={insetDivider} />}
       <div className="movie-detail-grid-subsection-content movie-detail-shell-inset">{children}</div>
-    </section>
+    </motion.section>
   );
 }
 
-function RelatedMoviesSection({ items, title, hideDivider = false }) {
+function RelatedMoviesSection({ items, title, hideDivider = false, motionIndex = 0 }) {
   if (!items?.length) {
     return null;
   }
 
   return (
-    <MovieGridSection hideDivider={hideDivider}>
+    <MovieGridSection hideDivider={hideDivider} motionIndex={motionIndex}>
       <div className="flex flex-col gap-3">
         <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
         <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
@@ -63,6 +65,7 @@ function MovieVisualMediaDeferred({
   canResetMoviePoster,
   secondaryDataPromise,
   showLeadingDivider = false,
+  motionIndexBase = 2,
 }) {
   const secondaryMovie = use(secondaryDataPromise);
   const galleryImages = getGalleryImages(secondaryMovie?.images);
@@ -76,7 +79,7 @@ function MovieVisualMediaDeferred({
   return (
     <div className="flex flex-col">
       {hasGallery ? (
-        <MovieGridSection hideDivider={!showLeadingDivider}>
+        <MovieGridSection hideDivider={!showLeadingDivider} motionIndex={motionIndexBase}>
           <GallerySection
             images={galleryImages}
             onSetMovieBackground={onSetMovieBackground}
@@ -87,7 +90,7 @@ function MovieVisualMediaDeferred({
       ) : null}
 
       {hasImages ? (
-        <MovieGridSection hideDivider={!hasGallery && !showLeadingDivider}>
+        <MovieGridSection hideDivider={!hasGallery && !showLeadingDivider} motionIndex={motionIndexBase + 1}>
           <ImagesSection
             images={secondaryMovie.images}
             onSetMovieBackground={onSetMovieBackground}
@@ -108,6 +111,7 @@ function MovieDiscoveryDeferred({
   videos = [],
   hasPreviousSecondaryContent = false,
   showLeadingDivider = false,
+  motionIndexBase = 4,
 }) {
   const secondaryMovie = use(secondaryDataPromise);
   const deferredComputed = getMovieComputedData(secondaryMovie);
@@ -147,6 +151,7 @@ function MovieDiscoveryDeferred({
           <MovieGridSection
             key={section.key}
             hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}
+            motionIndex={motionIndexBase + index}
           >
             {section.content}
           </MovieGridSection>
@@ -156,6 +161,7 @@ function MovieDiscoveryDeferred({
             items={section.items}
             title={section.title}
             hideDivider={index === 0 && !hasPreviousSecondaryContent && !showLeadingDivider}
+            motionIndex={motionIndexBase + index}
           />
         )
       )}
@@ -163,13 +169,14 @@ function MovieDiscoveryDeferred({
   );
 }
 
-function MovieSecondaryContent({ movie, secondaryDataPromise }) {
+function MovieSecondaryContent({ movie, secondaryDataPromise, motionIndexBase = 4 }) {
   return (
     <Suspense fallback={null}>
       <MovieDiscoveryDeferred
         secondaryDataPromise={secondaryDataPromise}
         videos={movie.videos?.results || []}
         showLeadingDivider
+        motionIndexBase={motionIndexBase}
       />
     </Suspense>
   );
@@ -209,8 +216,15 @@ export default function MovieView({
       />
 
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
-        <MovieGridFrame className={cn('mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}>
-          <div className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0">
+        <MovieGridFrame
+          baseDelay={MOVIE_ROUTE_MOTION.gridFrameBaseDelay}
+          className={cn('mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}
+          routeKey={`movie-${movie.id}`}
+        >
+          <motion.div
+            className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout items-stretch border-t-0"
+            {...getMovieRouteSectionMotion(0)}
+          >
             <div className="movie-detail-grid-sidebar relative w-full shrink-0">
               <div className="h-full lg:sticky lg:top-0">
                 <Sidebar
@@ -224,7 +238,7 @@ export default function MovieView({
                 />
               </div>
             </div>
-            <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col">
+            <div className="movie-detail-grid-main relative flex w-full min-w-0 flex-col pb-0">
               <MovieGridSidebarBoundary />
               <div className="flex flex-col">
                 <MovieHeroStage
@@ -250,20 +264,26 @@ export default function MovieView({
                     onSetMoviePoster={onSetMoviePoster}
                     onResetMovieBackground={onResetMovieBackground}
                     onResetMoviePoster={onResetMoviePoster}
-                    canResetMovieBackground={canResetMovieBackground}
-                    canResetMoviePoster={canResetMoviePoster}
-                    secondaryDataPromise={secondaryDataPromise}
-                  />
+                  canResetMovieBackground={canResetMovieBackground}
+                  canResetMoviePoster={canResetMoviePoster}
+                  secondaryDataPromise={secondaryDataPromise}
+                  motionIndexBase={2}
+                />
                 </Suspense>
               </div>
             </div>
 
             <MoviePrimaryGridDivider />
-          </div>
+          </motion.div>
 
-          <MovieSecondaryContent movie={movie} secondaryDataPromise={secondaryDataPromise} />
+          <motion.div {...getMovieRouteSectionMotion(1)}>
+            <MovieSecondaryContent movie={movie} secondaryDataPromise={secondaryDataPromise} motionIndexBase={4} />
+          </motion.div>
 
-          <section className="movie-detail-grid-section movie-detail-grid-reviews w-full">
+          <motion.section
+            className="movie-detail-grid-section movie-detail-grid-reviews w-full"
+            {...getMovieRouteSectionMotion(2)}
+          >
             <MovieGridDivider />
             <div className="movie-detail-grid-subsection-content">
               <MediaReviews
@@ -279,7 +299,7 @@ export default function MovieView({
                 onReviewStateChange={setReviewState}
               />
             </div>
-          </section>
+          </motion.section>
           <NavHeightSpacer className="w-full" />
         </MovieGridFrame>
       </PageGradientShell>

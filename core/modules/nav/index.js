@@ -12,7 +12,13 @@ import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item, { NAV_CARD_LAYOUT } from './item';
 import { NAV_HEIGHT_BUFFER } from './layout';
-import { NAV_BACKDROP_TRANSITION, NAV_CONTAINER_SPRING } from './motion';
+import {
+  getNavBackdropMotion,
+  getNavContainerMotion,
+  NAV_BACKDROP_INITIAL,
+  NAV_BACKDROP_TRANSITION,
+  NAV_CONTAINER_SPRING,
+} from '@/core/modules/motion';
 
 // ─── Viewport-safe height calculation ───────────────────────────────────────
 
@@ -109,26 +115,6 @@ function getActiveItemLayoutKey(activeItem) {
     activeItem.action ? 'action' : 'no-action',
   ].join('::');
 }
-
-// ─── Backdrop animation ──────────────────────────────────────────────────────
-
-function getBackdropAnimation(isVisible) {
-  if (isVisible) {
-    return {
-      opacity: 1,
-      backdropFilter: 'blur(12px)',
-      display: 'block',
-    };
-
-  }
-
-  return {
-    opacity: 0,
-    backdropFilter: 'blur(0px)',
-    transitionEnd: { display: 'none' },
-  };
-}
-
 
 // ─── Layout effect isomorphic shim ──────────────────────────────────────────
 
@@ -389,8 +375,8 @@ export default function Nav() {
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
-        initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-        animate={getBackdropAnimation(isBackdropVisible)}
+        initial={NAV_BACKDROP_INITIAL}
+        animate={getNavBackdropMotion(isBackdropVisible)}
         transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
       >
@@ -401,7 +387,7 @@ export default function Nav() {
       <div id="nav-card-stack" ref={navRef} className={stackClassName} style={{ zIndex: Z_INDEX.NAV }}>
         <motion.div
           style={{ position: 'relative' }}
-          animate={{ height: containerHeight }}
+          animate={getNavContainerMotion(containerHeight)}
           transition={NAV_CONTAINER_SPRING}
         >
 

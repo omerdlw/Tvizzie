@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
 
@@ -12,14 +13,19 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
 
 import { cn } from '@/core/utils';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_EMPTY_PANEL_CLASS,
+  MODAL_SCROLLABLE_BODY_CLASS,
+} from '@/features/modals/constants';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold uppercase tracking-wide whitespace-nowrap ';
 
 const LIST_PICKER_STACK_SKELETON_CLASSES = [
   'skeleton-block',
@@ -95,7 +101,7 @@ function ListPreviewStack({ list }) {
 
 function ListSkeletonRow({ index }) {
   return (
-    <div className="flex h-24 items-center gap-4 border border-white/5 p-2">
+    <motion.div className="flex h-24 items-center gap-4 border border-white/5 p-2" {...getFeatureModalItemMotion(index)}>
       <div className="relative h-[68px] w-[82px] shrink-0">
         {[0, 1, 2, 3].map((stackIndex) => (
           <div
@@ -122,39 +128,41 @@ function ListSkeletonRow({ index }) {
       </div>
 
       <div className="skeleton-block size-[22px] shrink-0 border border-white/10" />
-    </div>
+    </motion.div>
   );
 }
 
-function ListRow({ list, isSelected, onToggle }) {
+function ListRow({ list, isSelected, onToggle, index = 0 }) {
   return (
-    <button
-      type="button"
-      onClick={() => onToggle(list.id)}
-      className={cn(
-        'group flex w-full items-center gap-4 border p-2 text-left',
-        isSelected ? 'bg-info/20 border-white/20' : 'hover:bg-primary border-white/5 hover:border-white/15'
-      )}
-    >
-      <ListPreviewStack list={list} />
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-semibold text-white">{list.title}</p>
-
-        {list.description && <p className="line-clamp-2 text-sm leading-snug text-white/70">{list.description}</p>}
-      </div>
-
-      <span
+    <motion.div {...getFeatureModalItemMotion(index)}>
+      <button
+        type="button"
+        onClick={() => onToggle(list.id)}
         className={cn(
-          'flex size-[22px] shrink-0 items-center justify-center border',
-          isSelected
-            ? 'border-info bg-info text-primary'
-            : 'border-white/5 text-white/50 group-hover:border-white/10 group-hover:text-white'
+          'group flex w-full items-center gap-4 border p-2 text-left',
+          isSelected ? 'bg-info/20 border-white/20' : 'hover:bg-primary border-white/5 hover:border-white/15'
         )}
       >
-        <Icon icon="material-symbols:check-rounded" size={16} />
-      </span>
-    </button>
+        <ListPreviewStack list={list} />
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-base font-semibold text-white">{list.title}</p>
+
+          {list.description && <p className="line-clamp-2 text-sm leading-snug text-white/70">{list.description}</p>}
+        </div>
+
+        <span
+          className={cn(
+            'flex size-[22px] shrink-0 items-center justify-center border',
+            isSelected
+              ? 'border-info bg-info text-primary'
+              : 'border-white/5 text-white/50 group-hover:border-white/10 group-hover:text-white'
+          )}
+        >
+          <Icon icon="material-symbols:check-rounded" size={16} />
+        </span>
+      </button>
+    </motion.div>
   );
 }
 
@@ -391,7 +399,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={close}
               disabled={isApplying}
-              className={cn(ACTION_BUTTON_CLASS, 'border-white/5 text-white/70 hover:bg-white/10 hover:text-white')}
+              className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}
             >
               Cancel
             </Button>
@@ -400,7 +408,7 @@ export default function ListPickerModal({ close, data }) {
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
+              className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>
@@ -408,24 +416,26 @@ export default function ListPickerModal({ close, data }) {
         ),
       }}
     >
-      <section className="flex min-h-0 flex-col gap-2">
-        <header className="flex items-center justify-between gap-2">
+      <motion.section className="flex min-h-0 flex-col gap-2" {...getFeatureModalSectionMotion(0)}>
+        <motion.header className="flex items-center justify-between gap-2" {...getFeatureModalSectionMotion(1)}>
           <h2 className="text-[11px] font-bold tracking-widest text-white/50 uppercase">Your Lists</h2>
 
           <Button
             type="button"
             onClick={handleOpenCreator}
             disabled={isApplying}
-            className={cn(
-              ACTION_BUTTON_CLASS,
-              'border-dashed border-white/5 text-white/70 hover:bg-white/5 hover:text-white'
-            )}
+            className={cn(MODAL_ACTION_BUTTON_SECONDARY_CLASS, 'border-dashed hover:bg-primary')}
           >
             Create new list
           </Button>
-        </header>
+        </motion.header>
 
-        <div className="max-h-[56dvh] min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
+        <motion.div
+          className={cn(MODAL_SCROLLABLE_BODY_CLASS, 'max-h-[56dvh]')}
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          {...getFeatureModalSectionMotion(2)}
+        >
           {isLoading && (
             <div className="space-y-2.5">
               {Array.from({
@@ -437,25 +447,27 @@ export default function ListPickerModal({ close, data }) {
           )}
 
           {!isLoading && lists.length === 0 && (
-            <div className="flex min-h-40 flex-col items-center justify-center border border-dashed border-white/5 text-center">
-              <p className="text-[11px] font-bold tracking-widest text-white/50 uppercase">No lists yet</p>
-
-              <p className="mt-1 text-sm text-white/70">Create your first list with the button above.</p>
-            </div>
+            <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+              <div className={cn(MODAL_EMPTY_PANEL_CLASS, 'min-h-40 border-dashed')}>
+                <p className="text-[11px] font-bold tracking-widest uppercase">No lists yet</p>
+                <p className="text-white-soft mt-1 text-sm">Create your first list with the button above.</p>
+              </div>
+            </motion.div>
           )}
 
           {!isLoading &&
             lists.length > 0 &&
-            lists.map((list) => (
+            lists.map((list, index) => (
               <ListRow
                 key={list.id}
                 list={list}
+                index={index}
                 isSelected={Boolean(draftMemberships[list.id])}
                 onToggle={handleToggleDraft}
               />
             ))}
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
     </Container>
   );
 }

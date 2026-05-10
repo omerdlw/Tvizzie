@@ -1,0 +1,1135 @@
+# File Structure
+
+Bu doküman Tvizzie projesindeki kaynak dizinlerini, bu dizinlerin sorumluluklarını ve içlerindeki dosyaları özetler.
+
+Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.wrangler`, `.vercel`, `coverage`, `dist`, `supabase/.temp`, `.DS_Store`, `.env`. Bunlar build çıktısı, cache, dependency veya local secret yüzeyleridir.
+
+## Dizin Rehberi
+
+- `app/`: Next.js App Router katmanı; route entrypointleri, layouts, global providers, API route wrapperları ve route-level CSS/motion burada durur.
+- `app/_legal/`: Legal sayfaların ortak shell ve registry parçaları.
+- `app/_shell/`: Uygulama shell yardımcıları; global context menu, metadata, interactive boundary ve smooth-scroll.
+- `app/(account)/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/activity/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/likes/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/lists/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/lists/[slug]/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/reviews/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/watched/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/[username]/watchlist/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(account)/account/edit/`: Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+- `app/(auth)/`: Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+- `app/(auth)/callback/`: Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+- `app/(auth)/sign-in/`: Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+- `app/(auth)/sign-up/`: Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+- `app/(home)/`: Ana sayfa route grubu; home data, registry, client ve view yüzeyleri.
+- `app/(media)/`: Media route grubu; movie/person gibi medya detay sayfalarının route entrypointleri.
+- `app/(media)/movie/`: Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+- `app/(media)/movie/[id]/`: Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+- `app/(media)/movie/[id]/reviews/`: Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+- `app/(media)/person/`: Person detail route grubu; person page, loading, motion ve registry entrypointleri.
+- `app/(media)/person/[id]/`: Person detail route grubu; person page, loading, motion ve registry entrypointleri.
+- `app/api/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/account/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/activity/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/media/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/profile/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/resolve/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/reviews/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/account/search/`: Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+- `app/api/activity/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/activity/events/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/auth/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/change-email/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/change-password/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/delete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/password-status/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/reauthenticate/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/account/set-password/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/audit/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/password-reset/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/password-reset/complete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/session/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/sign-in/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/sign-up/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/sign-up/complete/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/verification/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/verification/send-code/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/auth/verification/verify-code/`: Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+- `app/api/collections/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/feedback/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/follows/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/health/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/internal/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/internal/jobs/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/internal/jobs/app-events/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/live-updates/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/live-updates/events/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/notifications/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/notifications/events/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/observability/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/observability/web-vitals/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/person/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/person/[id]/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/person/[id]/awards/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/reviews/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/reviews/write/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/search/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/search/community/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/social-proof/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/system/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/system/rollout/`: Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+- `app/api/tmdb/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/discover/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/genres/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/search/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/trending/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/api/tmdb/watch-region/`: TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+- `app/privacy/`: Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
+- `app/search/`: Search sayfası route kodu; URL state, grid state, client ve results section.
+- `app/styles/`: Route/global CSS parçaları; Tailwind ile taşınamayan grid, mask, variable ve pseudo-element stilleri.
+- `app/terms/`: Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
+- `app/top250/`: Top250 sayfası route kodu ve data loader yüzeyleri.
+- `config/`: Statik uygulama konfigürasyonları.
+- `core/`: Framework ve domain altyapısı; route bağımsız servisler, clientlar, auth, modules, constants ve shared utils.
+- `core/animation/`: Animasyon tokenları, builderları ve route/feature motion için ortak primitive katmanı.
+- `core/api/`: API cache ve route server helper katmanı.
+- `core/api/routes/`: API route iş mantığı; app/api route handlerlarının çağırdığı server-side handlerlar.
+- `core/auth/`: Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+- `core/auth/clients/`: Client-side auth yardımcıları; CSRF, audit, pending account ve session storage.
+- `core/auth/servers/`: Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+- `core/auth/servers/account/`: Server-side account lifecycle, deletion, bootstrap ve state işlemleri.
+- `core/auth/servers/audit/`: Server-side auth audit log işlemleri.
+- `core/auth/servers/notice/`: Auth route notice/feedback server yardımcıları.
+- `core/auth/servers/policy/`: Auth route policy server kontrolleri.
+- `core/auth/servers/providers/`: OAuth provider server işlemleri ve Google intent/provider akışı.
+- `core/auth/servers/security/`: CSRF, rate-limit, recent reauth, step-up ve password security server logic.
+- `core/auth/servers/session/`: Auth session cookie, request context, revocation ve Supabase admin auth server logic.
+- `core/auth/servers/verification/`: Email/login/signup/password verification server akışları.
+- `core/clients/`: Harici servis clientları.
+- `core/clients/imdb/`: IMDb veri/client entegrasyonu.
+- `core/clients/supabase/`: Supabase admin, browser/server client, proxy ve auth storage bağlantıları.
+- `core/clients/tmdb/`: TMDB request/config/sanitize/search-ranking ve server client katmanı.
+- `core/constants/`: Uygulama genelinde kullanılan class, token ve sabit değerler.
+- `core/constants/events/`: Global event type ve event bus sabitleri.
+- `core/hooks/`: Framework-agnostic React hook yardımcıları.
+- `core/modules/`: Uygulama genelinde kullanılan provider/module katmanı.
+- `core/modules/account/`: Account context module; app genelinde account state erişimi.
+- `core/modules/api/`: Client/API cache ve API module entrypointleri.
+- `core/modules/auth/`: Auth context, adapters, guards, action flows ve session-ready client module.
+- `core/modules/auth/adapters/`: Auth context, adapters, guards, action flows ve session-ready client module.
+- `core/modules/background/`: Global background context module.
+- `core/modules/context-menu/`: Context menu engine ve provider module.
+- `core/modules/countdown/`: Countdown gate/context/config module.
+- `core/modules/error-boundary/`: Error boundary, reporter, listener ve entegrasyon katmanı.
+- `core/modules/loading/`: Global loading context module.
+- `core/modules/modal/`: Modal container, context, header/title ve modal utilities.
+- `core/modules/nav/`: Global navigation state machine, layout, guards, item ve event module.
+- `core/modules/nav/actions/`: Navigation action container ve action styling/helpers.
+- `core/modules/nav/hooks/`: Navigation layout, display, status, countdown, compact/expanded hookları.
+- `core/modules/nav/surfaces/`: Nav içinde açılan auth verification, confirmation ve file upload surface bileşenleri.
+- `core/modules/notification/`: Notification context, overlay, listener ve toast hookları.
+- `core/modules/registry/`: Route/module registry store, injector, debug panel ve provider.
+- `core/modules/registry/plugins/`: Registry plugin meta ve plugin entrypointleri.
+- `core/modules/settings/`: Global settings context, modal, storage ve config module.
+- `core/services/`: Domain servis katmanı; server/client iş mantığı burada toplanır.
+- `core/services/account/`: Account profile, collections, feed ve route data server/client servisleri.
+- `core/services/activity/`: Activity event canonicalization, processing ve activity service katmanı.
+- `core/services/jobs/`: Internal job/event queue servisleri.
+- `core/services/media/`: Likes, watched, watchlist, lists, reviews, social proof ve poster preference medya servisleri.
+- `core/services/notifications/`: Notification event processor, resources ve notification service katmanı.
+- `core/services/realtime/`: Live update, realtime broadcast, transport config ve user event servisleri.
+- `core/services/search/`: Search quality/event server servisleri.
+- `core/services/shared/`: Servisler arası ortak API response/request, cache, media-key, polling, Supabase ve runtime helperları.
+- `core/services/social/`: Follow/follower sosyal graph servisleri, mutations, subscriptions ve resources.
+- `core/services/tmdb/`: TMDB domain servisleri ve watch-region helperları.
+- `core/utils/`: Shared utility fonksiyonları; account, media ve client helpers.
+- `docs/`: Proje dokümantasyonu.
+- `docs/architecture/`: Mimari kararlar ve sahiplik dokümanları.
+- `features/`: Feature-level UI ve domain logic; route entrypoint değil, route tarafından tüketilen uygulama özellikleri.
+- `features/account/`: Account feature domaini; profile, activity, collections, reviews, settings ve shared parçalar.
+- `features/account/activity/`: Account activity feed ve overview feature parçaları.
+- `features/account/collections/`: Account likes, watched, watchlist, lists, list detail ve collection grid/card logic.
+- `features/account/filters/`: Account collection/review/activity/list filtre parsing, query ve resolver katmanı.
+- `features/account/profile/`: Account profile hero, overview, relationship, list item ve social proof feature parçaları.
+- `features/account/registry/`: Account route registry state builderları ve nav/modal registry config.
+- `features/account/reviews/`: Account reviews feed, overview ve media-key state parçaları.
+- `features/account/route/`: Account route composition helperları; section factory, loading/registry/section state.
+- `features/account/settings/`: Account edit/settings UI, security sections, feedback ve normalizer logic.
+- `features/account/settings/hooks/`: Account edit/security form hookları ve security action orchestration.
+- `features/account/shared/`: Account feature ortak layout, grid, pagination, section, media grid ve filter primitives.
+- `features/account/shared/filters/`: Account/search filtre bar bileşenlerinin ayrılmış UI parçaları.
+- `features/account/shared/hooks/`: Account shared hooks; collection actions, page data, follow actions, feed state ve reorder logic.
+- `features/account/skeletons/`: Account route skeleton shell, hero, variants ve shared skeleton parçaları.
+- `features/auth/`: Auth feature UI, forms, route registry, requests, workflows ve auth utilities.
+- `features/home/`: Home page feature bileşenleri; discovery, trending, poster rail ve genre chips.
+- `features/media/`: Medya kartları, list preview composition ve poster override feature helperları.
+- `features/modals/`: Uygulama modal bileşenleri; list editor/picker, review editor, social proof, image/video preview.
+- `features/movie/`: Movie detail feature bileşenleri; hero, cast, gallery, videos, sidebar, recommendations, motion ve skeleton.
+- `features/navigation/`: Feature-level navigation registry, account nav links ve nav action/surface bileşenleri.
+- `features/navigation/actions/`: Nav içindeki account/movie/person/review/search action bileşenleri.
+- `features/navigation/actions/search-action/`: Search navigation action component ve utilities.
+- `features/navigation/actions/search-action/parts/`: Search nav action iç parçaları.
+- `features/navigation/surfaces/`: Navigation surface bileşenleri; account bio, movie overview ve watch providers.
+- `features/person/`: Person detail feature parçaları; bio, filmography, gallery, awards, timeline, sidebar, motion ve skeleton.
+- `features/reviews/`: Review feature; media reviews, hooks, motion ve utility logic.
+- `features/reviews/parts/`: Review card/list/header/rating selector gibi review UI alt bileşenleri.
+- `features/search/`: Search feature; ranking, text utils, client cache/data, movie filters ve result grid item.
+- `fonts/`: Font registration ve font assetleri.
+- `fonts/zuume/`: Zuume font dosyaları.
+- `public/`: Statik public assetleri ve deploy header dosyası.
+- `public/data/`: Public JSON data dosyaları.
+- `public/images/`: Public image assetleri.
+- `public/svgs/`: Public SVG grid/texture assetleri.
+- `supabase/`: Supabase edge function ve migration kaynakları.
+- `supabase/functions/`: Supabase Edge Function kaynakları.
+- `supabase/functions/social-proof-read/`: Supabase Edge Function kaynakları.
+- `supabase/migrations/`: Supabase database migration SQL dosyaları.
+- `ui/`: Domain bilmeyen reusable UI primitive, loading, media, skeleton ve state bileşenleri.
+- `ui/animations/`: Generic animation UI primitives.
+- `ui/elements/`: Reusable button, input, popover, tooltip, switch, segmented control ve layout elementleri.
+- `ui/elements/select/`: Reusable select/combobox/multiselect bileşen ailesi.
+- `ui/loadings/`: Loading spinner ve loading UI primitives.
+- `ui/media/`: Domain-agnostic media UI bileşenleri.
+- `ui/skeletons/`: Skeleton primitive ve bileşenleri.
+- `ui/skeletons/components/`: Reusable skeleton component özel parçaları.
+- `ui/states/`: Fullscreen, not-found ve route-error state bileşenleri.
+
+## Dosya Agaci
+
+- `.` - Proje kökü; paket, build, deploy, tooling ve ana uygulama klasörlerini bir arada tutar.
+  - `.gitattributes` - Git attributes ayarları.
+  - `.gitignore` - Git ignore kuralları.
+  - `.prettierignore` - Prettier ignore kuralları.
+  - `.prettierrc.cjs` - Prettier format ayarı.
+  - `CODEX.md` - Codex çalışma notları/talimatları.
+  - `File Structure.md` - Bu dosya; proje dizin ve dosya haritası.
+  - `eslint.config.mjs` - ESLint konfigürasyonu.
+  - `jsconfig.json` - Path alias ve JS project config.
+  - `middleware.js` - Next.js middleware entrypoint.
+  - `next.config.mjs` - Next.js konfigürasyonu.
+  - `open-next.config.ts` - OpenNext/Cloudflare deploy konfigürasyonu.
+  - `package-lock.json` - NPM lockfile.
+  - `package.json` - Paket scriptleri ve bağımlılıklar.
+  - `postcss.config.mjs` - PostCSS konfigürasyonu.
+  - `tailwind.config.js` - Tailwind konfigürasyonu.
+  - `wrangler.jsonc` - Cloudflare Wrangler konfigürasyonu.
+  - `.codex/` - Codex/agent çalışma ayarları ve proje içi skill tanımları.
+    - `config.toml`
+    - `skills/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+      - `gsap-core/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-frameworks/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-performance/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-plugins/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-react/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-scrolltrigger/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-timeline/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `gsap-utils/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+      - `make-interfaces-feel-better/` - Codex skill dokümanları; animasyon, UI polish ve benzeri çalışma talimatları.
+        - `SKILL.md`
+        - `animations.md`
+        - `performance.md`
+        - `surfaces.md`
+        - `typography.md`
+  - `app/` - Next.js App Router katmanı; route entrypointleri, layouts, global providers, API route wrapperları ve route-level CSS/motion burada durur.
+    - `error.js`
+    - `global-error.js`
+    - `globals.css`
+    - `layout.js`
+    - `manifest.js`
+    - `motion.js`
+    - `not-found.js`
+    - `providers.js`
+    - `template.js`
+    - `_legal/` - Legal sayfaların ortak shell ve registry parçaları.
+      - `page-shell.js`
+      - `registry.js`
+    - `_shell/` - Uygulama shell yardımcıları; global context menu, metadata, interactive boundary ve smooth-scroll.
+      - `global-context-menu-registry.js`
+      - `interactive-boundary.js`
+      - `metadata.js`
+      - `smooth-scroll.js`
+    - `(account)/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+      - `account/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+        - `client.js`
+        - `error.js`
+        - `loading.js`
+        - `motion.js`
+        - `not-found.js`
+        - `page.js`
+        - `registry.js`
+        - `view.js`
+        - `[username]/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+          - `client.js`
+          - `loading.js`
+          - `not-found.js`
+          - `page.js`
+          - `registry.js`
+          - `activity/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `activity-state.js`
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+          - `likes/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+          - `lists/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+            - `[slug]/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+              - `client.js`
+              - `loading.js`
+              - `page.js`
+              - `view.js`
+          - `reviews/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+          - `watched/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+          - `watchlist/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `page.js`
+            - `view.js`
+        - `edit/` - Account route grubu; profil, koleksiyon, activity, reviews, edit ve loading/error entrypointleri.
+          - `client.js`
+          - `loading.js`
+          - `not-found.js`
+          - `page.js`
+          - `registry.js`
+          - `view.js`
+    - `(auth)/` - Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+      - `callback/` - Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+        - `client.js`
+        - `page.js`
+      - `sign-in/` - Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+        - `client.js`
+        - `page.js`
+        - `registry.js`
+        - `sign-in-state.js`
+        - `view.js`
+      - `sign-up/` - Auth route grubu; sign-in, sign-up ve callback sayfa entrypointleri.
+        - `client.js`
+        - `page.js`
+        - `registry.js`
+        - `view.js`
+    - `(home)/` - Ana sayfa route grubu; home data, registry, client ve view yüzeyleri.
+      - `client.js`
+      - `data.js`
+      - `page.js`
+      - `registry.js`
+      - `view.js`
+    - `(media)/` - Media route grubu; movie/person gibi medya detay sayfalarının route entrypointleri.
+      - `movie/` - Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+        - `[id]/` - Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+          - `client.js`
+          - `loading.js`
+          - `motion.js`
+          - `not-found.js`
+          - `page-data.js`
+          - `page.js`
+          - `registry.js`
+          - `view.js`
+          - `reviews/` - Movie detail route grubu; movie page, reviews alt rotası, loading, motion ve registry entrypointleri.
+            - `client.js`
+            - `loading.js`
+            - `motion.js`
+            - `page-data.js`
+            - `page.js`
+            - `view.js`
+      - `person/` - Person detail route grubu; person page, loading, motion ve registry entrypointleri.
+        - `[id]/` - Person detail route grubu; person page, loading, motion ve registry entrypointleri.
+          - `client.js`
+          - `loading.js`
+          - `motion.js`
+          - `not-found.js`
+          - `page-data.js`
+          - `page.js`
+          - `registry.js`
+          - `view.js`
+    - `api/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+      - `account/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+        - `activity/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+        - `media/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+        - `profile/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+        - `resolve/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+        - `reviews/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+        - `search/` - Account API route wrapperları; account media, profile, resolve, reviews, search ve activity isteklerini core servislerine yönlendirir.
+          - `route.js`
+      - `activity/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `events/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `auth/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+        - `account/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `change-email/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `change-password/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `delete/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `password-status/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `reauthenticate/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `set-password/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+        - `audit/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `route.js`
+        - `password-reset/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `complete/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+        - `session/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `route.js`
+        - `sign-in/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `route.js`
+        - `sign-up/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `complete/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+        - `verification/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+          - `send-code/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+          - `verify-code/` - Auth API route wrapperları; sign-in, sign-up, verification, session, account security ve audit istekleri.
+            - `route.js`
+      - `collections/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+      - `feedback/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+      - `follows/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+      - `health/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+      - `internal/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `jobs/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `app-events/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+            - `route.js`
+      - `live-updates/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+        - `events/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `notifications/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+        - `events/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `observability/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `web-vitals/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `person/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `[id]/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `awards/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+            - `route.js`
+      - `reviews/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+        - `write/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `search/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `community/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `social-proof/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `route.js`
+      - `system/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+        - `rollout/` - Next.js route handler katmanı; request parsing ve response mapping yapan ince API entrypointleri.
+          - `route.js`
+      - `tmdb/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+        - `discover/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+          - `route.js`
+        - `genres/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+          - `route.js`
+        - `search/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+          - `route.js`
+        - `trending/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+          - `route.js`
+        - `watch-region/` - TMDB proxy/lookup route wrapperları; discover, genres, search, trending ve watch-region uçları.
+          - `route.js`
+    - `privacy/` - Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
+      - `page.js`
+    - `search/` - Search sayfası route kodu; URL state, grid state, client ve results section.
+      - `client.js`
+      - `grid-state.js`
+      - `page.js`
+      - `results-section.js`
+      - `url-state.js`
+    - `styles/` - Route/global CSS parçaları; Tailwind ile taşınamayan grid, mask, variable ve pseudo-element stilleri.
+      - `account.css`
+      - `auth.css`
+      - `globals.utilities.css`
+      - `grid-system.css`
+      - `home.css`
+      - `media.css`
+      - `reviews.css`
+    - `terms/` - Alt modül; bulunduğu üst dizinin sorumluluğunu daha küçük dosya gruplarına böler.
+      - `page.js`
+    - `top250/` - Top250 sayfası route kodu ve data loader yüzeyleri.
+      - `client.js`
+      - `data.js`
+      - `page.js`
+  - `config/` - Statik uygulama konfigürasyonları.
+    - `nav.config.js`
+  - `core/` - Framework ve domain altyapısı; route bağımsız servisler, clientlar, auth, modules, constants ve shared utils.
+    - `animation/` - Animasyon tokenları, builderları ve route/feature motion için ortak primitive katmanı.
+      - `builders.js`
+      - `index.js`
+      - `profile.js`
+      - `tokens.js`
+      - `utils.js`
+    - `api/` - API cache ve route server helper katmanı.
+      - `routes/` - API route iş mantığı; app/api route handlerlarının çağırdığı server-side handlerlar.
+        - `account-media.constants.js`
+        - `account-media.server.js`
+        - `account-media.shared.js`
+        - `account-media.storage.server.js`
+        - `follows.events.server.js`
+        - `follows.server.js`
+        - `follows.shared.js`
+        - `notifications.server.js`
+        - `reviews-write.legacy.server.js`
+        - `reviews-write.server.js`
+        - `reviews-write.shared.js`
+    - `auth/` - Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+      - `auth.constants.js`
+      - `capabilities.js`
+      - `oauth-callback.js`
+      - `oauth-providers.js`
+      - `password-validation.js`
+      - `route-notice.js`
+      - `clients/` - Client-side auth yardımcıları; CSRF, audit, pending account ve session storage.
+        - `audit.client.js`
+        - `csrf.client.js`
+        - `pending-account.client.js`
+        - `session-storage.client.js`
+      - `servers/` - Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+        - `account/` - Server-side account lifecycle, deletion, bootstrap ve state işlemleri.
+          - `account-bootstrap.server.js`
+          - `account-deletion.server.js`
+          - `account-lifecycle.server.js`
+          - `account-state.server.js`
+        - `audit/` - Server-side auth audit log işlemleri.
+          - `audit-log.server.js`
+        - `notice/` - Auth route notice/feedback server yardımcıları.
+          - `auth-route-notice.server.js`
+        - `policy/` - Auth route policy server kontrolleri.
+          - `auth-route-policy.server.js`
+        - `providers/` - OAuth provider server işlemleri ve Google intent/provider akışı.
+          - `google-auth-intent.server.js`
+          - `google-provider.server.js`
+        - `security/` - CSRF, rate-limit, recent reauth, step-up ve password security server logic.
+          - `csrf.server.js`
+          - `password-security.server.js`
+          - `rate-limit-policies.server.js`
+          - `rate-limit.server.js`
+          - `recent-reauth.server.js`
+          - `step-up.server.js`
+        - `session/` - Auth session cookie, request context, revocation ve Supabase admin auth server logic.
+          - `authenticated-request.server.js`
+          - `request-context.server.js`
+          - `revocation.server.js`
+          - `session.builder.js`
+          - `session.constants.js`
+          - `session.cookies.server.js`
+          - `session.server.js`
+          - `session.shared.js`
+          - `supabase-admin-auth.server.js`
+        - `verification/` - Email/login/signup/password verification server akışları.
+          - `email-sender.server.js`
+          - `email-verification.server.js`
+          - `login-verification.server.js`
+          - `password-account.server.js`
+          - `password-reset-proof.server.js`
+          - `signup-proof.server.js`
+    - `clients/` - Harici servis clientları.
+      - `imdb/` - IMDb veri/client entegrasyonu.
+        - `server.js`
+      - `supabase/` - Supabase admin, browser/server client, proxy ve auth storage bağlantıları.
+        - `admin.js`
+        - `auth-storage.js`
+        - `client.js`
+        - `constants.js`
+        - `proxy.js`
+        - `server.js`
+      - `tmdb/` - TMDB request/config/sanitize/search-ranking ve server client katmanı.
+        - `config.js`
+        - `request.js`
+        - `sanitize.js`
+        - `search-ranking.js`
+        - `server.js`
+    - `constants/` - Uygulama genelinde kullanılan class, token ve sabit değerler.
+      - `index.js`
+      - `events/` - Global event type ve event bus sabitleri.
+        - `index.js`
+    - `hooks/` - Framework-agnostic React hook yardımcıları.
+      - `use-click-outside.js`
+      - `use-debounce.js`
+      - `use-draggable-scroll.js`
+    - `modules/` - Uygulama genelinde kullanılan provider/module katmanı.
+      - `motion.js`
+      - `account/` - Account context module; app genelinde account state erişimi.
+        - `client.js`
+        - `context-utils.js`
+        - `context.js`
+        - `hooks.js`
+        - `index.js`
+      - `api/` - Client/API cache ve API module entrypointleri.
+        - `cache.js`
+        - `index.js`
+      - `auth/` - Auth context, adapters, guards, action flows ve session-ready client module.
+        - `action-flow-utils.js`
+        - `action-flows.js`
+        - `config.js`
+        - `context-utils.js`
+        - `context.js`
+        - `guards.js`
+        - `index.js`
+        - `session-client.js`
+        - `session-ready.js`
+        - `storage.js`
+        - `utils.js`
+        - `adapters/` - Auth context, adapters, guards, action flows ve session-ready client module.
+          - `api-adapter.js`
+          - `create-adapter.js`
+          - `supabase-adapter.js`
+      - `background/` - Global background context module.
+        - `context.js`
+        - `index.js`
+      - `context-menu/` - Context menu engine ve provider module.
+        - `context.js`
+        - `index.js`
+        - `menu-engine.js`
+      - `countdown/` - Countdown gate/context/config module.
+        - `config.js`
+        - `context.js`
+        - `gate.js`
+        - `index.js`
+      - `error-boundary/` - Error boundary, reporter, listener ve entegrasyon katmanı.
+        - `core.js`
+        - `index.js`
+        - `integrations.js`
+        - `listener.js`
+        - `reporter.js`
+      - `loading/` - Global loading context module.
+        - `context.js`
+        - `index.js`
+      - `modal/` - Modal container, context, header/title ve modal utilities.
+        - `config.js`
+        - `container.js`
+        - `context.js`
+        - `header.js`
+        - `index.js`
+        - `title.js`
+        - `utils.js`
+      - `nav/` - Global navigation state machine, layout, guards, item ve event module.
+        - `context.js`
+        - `elements.js`
+        - `events.js`
+        - `guards.js`
+        - `index.js`
+        - `item.js`
+        - `layout.js`
+        - `state-machine.js`
+        - `utils.js`
+        - `actions/` - Navigation action container ve action styling/helpers.
+          - `container.js`
+          - `media-action.js`
+          - `not-found-action.js`
+          - `styles.js`
+        - `hooks/` - Navigation layout, display, status, countdown, compact/expanded hookları.
+          - `index.js`
+          - `use-action-component.js`
+          - `use-action-height.js`
+          - `use-element-height.js`
+          - `use-nav-badge.js`
+          - `use-nav-height.js`
+          - `use-navigation-compact.js`
+          - `use-navigation-core.js`
+          - `use-navigation-countdown.js`
+          - `use-navigation-display.js`
+          - `use-navigation-effects.js`
+          - `use-navigation-expanded.js`
+          - `use-navigation-items.js`
+          - `use-navigation-layout.js`
+          - `use-navigation-status.js`
+          - `use-navigation.js`
+        - `surfaces/` - Nav içinde açılan auth verification, confirmation ve file upload surface bileşenleri.
+          - `auth-verification-surface.js`
+          - `confirmation-surface.js`
+          - `file-upload-surface.js`
+      - `notification/` - Notification context, overlay, listener ve toast hookları.
+        - `config.js`
+        - `context.js`
+        - `hooks.js`
+        - `index.js`
+        - `listener.js`
+        - `overlay.js`
+      - `registry/` - Route/module registry store, injector, debug panel ve provider.
+        - `constants.js`
+        - `context.js`
+        - `debug-panel.js`
+        - `index.js`
+        - `injector.js`
+        - `store.js`
+        - `use-registry.js`
+        - `plugins/` - Registry plugin meta ve plugin entrypointleri.
+          - `index.js`
+          - `registry-meta.js`
+      - `settings/` - Global settings context, modal, storage ve config module.
+        - `config.js`
+        - `context.js`
+        - `index.js`
+        - `modal.js`
+        - `storage.js`
+        - `utils.js`
+    - `services/` - Domain servis katmanı; server/client iş mantığı burada toplanır.
+      - `account/` - Account profile, collections, feed ve route data server/client servisleri.
+        - `account-client.js`
+        - `account-collections.constants.js`
+        - `account-collections.normalizers.js`
+        - `account-collections.server.js`
+        - `account-collections.shared.server.js`
+        - `account-collections.status.server.js`
+        - `account-feed.constants.js`
+        - `account-feed.derived.js`
+        - `account-feed.normalizers.js`
+        - `account-feed.projector.js`
+        - `account-feed.server.js`
+        - `account-profile.server.js`
+        - `account-route-data.constants.js`
+        - `account-route-data.loaders.js`
+        - `account-route-data.server.js`
+        - `account-route-data.session.js`
+        - `account-route-data.snapshot.js`
+        - `account-route-data.state.js`
+        - `account.constants.js`
+        - `account.normalizers.js`
+        - `account.server.js`
+        - `account.service.js`
+      - `activity/` - Activity event canonicalization, processing ve activity service katmanı.
+        - `activity-events.constants.js`
+        - `activity-events.service.js`
+        - `activity.service.js`
+        - `canonical-key.js`
+        - `event-processor.constants.js`
+        - `event-processor.queries.js`
+        - `event-processor.server.js`
+        - `event-processor.shared.js`
+      - `jobs/` - Internal job/event queue servisleri.
+        - `app-event-queue.server.js`
+      - `media/` - Likes, watched, watchlist, lists, reviews, social proof ve poster preference medya servisleri.
+        - `likes.queries.js`
+        - `likes.service.js`
+        - `likes.shared.js`
+        - `likes.subscriptions.js`
+        - `lists.constants.js`
+        - `lists.derived-state.js`
+        - `lists.item-mutations.js`
+        - `lists.like-mutations.js`
+        - `lists.list-mutations.js`
+        - `lists.mutations.js`
+        - `lists.queries.js`
+        - `lists.service.js`
+        - `lists.shared.js`
+        - `lists.subscriptions.js`
+        - `poster-preference-events.js`
+        - `reviews.constants.js`
+        - `reviews.context.js`
+        - `reviews.list-mutations.js`
+        - `reviews.media-mutations.js`
+        - `reviews.mutation-shared.js`
+        - `reviews.mutations.js`
+        - `reviews.server.constants.js`
+        - `reviews.server.context.js`
+        - `reviews.server.js`
+        - `reviews.server.list-feed.js`
+        - `reviews.server.profile-feed.js`
+        - `reviews.server.queries.js`
+        - `reviews.server.shared.js`
+        - `reviews.service.js`
+        - `reviews.shared.js`
+        - `reviews.stored-mutations.js`
+        - `reviews.subscriptions.js`
+        - `reviews.validation.js`
+        - `social-proof.service.js`
+        - `user-media.service.js`
+        - `watched.queries.js`
+        - `watched.service.js`
+        - `watched.shared.js`
+        - `watched.subscriptions.js`
+        - `watchlist.queries.js`
+        - `watchlist.service.js`
+        - `watchlist.shared.js`
+        - `watchlist.subscriptions.js`
+      - `notifications/` - Notification event processor, resources ve notification service katmanı.
+        - `event-processor.server.js`
+        - `notification-events.constants.js`
+        - `notification-events.service.js`
+        - `notification-resources.server.js`
+        - `notifications.constants.js`
+        - `notifications.service.js`
+      - `realtime/` - Live update, realtime broadcast, transport config ve user event servisleri.
+        - `live-updates.service.js`
+        - `realtime-broadcast.server.js`
+        - `realtime-transport.config.js`
+        - `user-events.server.js`
+      - `search/` - Search quality/event server servisleri.
+        - `search-quality.server.js`
+      - `shared/` - Servisler arası ortak API response/request, cache, media-key, polling, Supabase ve runtime helperları.
+        - `account-summary.service.js`
+        - `api-request.service.js`
+        - `api-response.server.js`
+        - `api-result.js`
+        - `cache-policy.server.js`
+        - `media-collection.service.js`
+        - `media-key.service.js`
+        - `memory-cache.server.js`
+        - `polling-subscription.constants.js`
+        - `polling-subscription.service.js`
+        - `polling-subscription.shared.js`
+        - `request-meta.server.js`
+        - `runtime-policy.constants.js`
+        - `supabase-data.service.js`
+        - `supabase-edge-internal.server.js`
+        - `supabase-media-utils.service.js`
+        - `write-rollout.server.js`
+      - `social/` - Follow/follower sosyal graph servisleri, mutations, subscriptions ve resources.
+        - `follow-resources.server.js`
+        - `follow.client-shared.js`
+        - `follow.constants.js`
+        - `follow.mutations.js`
+        - `follow.subscriptions.js`
+        - `follows.service.js`
+      - `tmdb/` - TMDB domain servisleri ve watch-region helperları.
+        - `tmdb.service.js`
+        - `watch-region.js`
+    - `utils/` - Shared utility fonksiyonları; account, media ve client helpers.
+      - `account.js`
+      - `client-utils.js`
+      - `index.js`
+      - `media.js`
+  - `docs/` - Proje dokümantasyonu.
+    - `architecture/` - Mimari kararlar ve sahiplik dokümanları.
+      - `motion-ownership.md`
+  - `features/` - Feature-level UI ve domain logic; route entrypoint değil, route tarafından tüketilen uygulama özellikleri.
+    - `motion.js`
+    - `account/` - Account feature domaini; profile, activity, collections, reviews, settings ve shared parçalar.
+      - `registry-config.js`
+      - `skeletons.js`
+      - `utils.js`
+      - `activity/` - Account activity feed ve overview feature parçaları.
+        - `feed.js`
+        - `overview.js`
+      - `collections/` - Account likes, watched, watchlist, lists, list detail ve collection grid/card logic.
+        - `favorites-overview.js`
+        - `favorites-showcase-manager.js`
+        - `hooks.js`
+        - `item-utils.js`
+        - `likes-feed.js`
+        - `likes-filter-options.js`
+        - `list-card-preview.js`
+        - `list-card-utils.js`
+        - `list-card.js`
+        - `list-detail-feed.js`
+        - `list-detail-filters.js`
+        - `list-detail-media-grid.js`
+        - `list-detail-registry.js`
+        - `list-detail-sections.js`
+        - `list-grid.js`
+        - `lists-feed.js`
+        - `lists-overview.js`
+        - `metadata.js`
+        - `seed-state.js`
+        - `streams.js`
+        - `subscription-scope.js`
+        - `watched-feed.js`
+        - `watched-overview.js`
+        - `watchlist-feed.js`
+        - `watchlist-overview.js`
+      - `filters/` - Account collection/review/activity/list filtre parsing, query ve resolver katmanı.
+        - `activity.js`
+        - `index.js`
+        - `lists.js`
+        - `media-apply.js`
+        - `media-identity.js`
+        - `media-option-resolvers.js`
+        - `media-options.js`
+        - `media-query.js`
+        - `media-resolvers.js`
+        - `media-sort.js`
+        - `media-values.js`
+        - `media.js`
+        - `query-utils.js`
+        - `reviews.js`
+        - `shared.js`
+      - `profile/` - Account profile hero, overview, relationship, list item ve social proof feature parçaları.
+        - `hero-bio.js`
+        - `hero-metrics.js`
+        - `hero.js`
+        - `list-items.js`
+        - `nav-utils.js`
+        - `overview-feed.js`
+        - `relationship-data.js`
+        - `relationship-subscriptions.js`
+        - `relationships.js`
+        - `social-proof.js`
+      - `registry/` - Account route registry state builderları ve nav/modal registry config.
+        - `common.js`
+        - `edit-state.js`
+        - `page-state.js`
+      - `reviews/` - Account reviews feed, overview ve media-key state parçaları.
+        - `feed.js`
+        - `media-key-state.js`
+        - `overview.js`
+      - `route/` - Account route composition helperları; section factory, loading/registry/section state.
+        - `loading-state.js`
+        - `registry-state.js`
+        - `route-page.js`
+        - `section-factory.js`
+        - `section-state.js`
+      - `settings/` - Account edit/settings UI, security sections, feedback ve normalizer logic.
+        - `account-feedback.js`
+        - `general-section.js`
+        - `normalizers.js`
+        - `security-section.js`
+        - `security.js`
+        - `view-parts.js`
+        - `hooks/` - Account edit/security form hookları ve security action orchestration.
+          - `delete-account-action.js`
+          - `edit-data.js`
+          - `email-credentials.js`
+          - `google-linking-action.js`
+          - `password-credentials.js`
+          - `password-flow-helpers.js`
+          - `security-actions.js`
+          - `security-credentials.js`
+          - `security-verification.js`
+      - `shared/` - Account feature ortak layout, grid, pagination, section, media grid ve filter primitives.
+        - `content-filter-primitives.js`
+        - `content-filters.js`
+        - `grid-animation.js`
+        - `layout.js`
+        - `load-error.js`
+        - `media-actions.js`
+        - `media-grid-utils.js`
+        - `media-grid.js`
+        - `pagination.js`
+        - `section-state.js`
+        - `section-wrapper.js`
+        - `filters/` - Account/search filtre bar bileşenlerinin ayrılmış UI parçaları.
+          - `activity-filter-bar.js`
+          - `filter-options.js`
+          - `list-sort-bar.js`
+          - `media-filter-bar.js`
+          - `review-filter-bar.js`
+          - `search-movie-filter-bar.js`
+        - `hooks/` - Account shared hooks; collection actions, page data, follow actions, feed state ve reorder logic.
+          - `collection-actions.js`
+          - `feed-state.js`
+          - `follow-actions.js`
+          - `hero-height.js`
+          - `item-removal-actions.js`
+          - `list-actions.js`
+          - `page-actions.js`
+          - `page-data.js`
+          - `page-query-state.js`
+          - `reorder-action.js`
+          - `section-page.js`
+      - `skeletons/` - Account route skeleton shell, hero, variants ve shared skeleton parçaları.
+        - `hero-shell.js`
+        - `route-variants.js`
+        - `shared.js`
+        - `variants.js`
+    - `auth/` - Auth feature UI, forms, route registry, requests, workflows ve auth utilities.
+      - `auth-verification-form.js`
+      - `constants.js`
+      - `form-primitives.js`
+      - `oauth-provider-button.js`
+      - `page-shell.js`
+      - `requests.js`
+      - `route-registry.js`
+      - `utils.js`
+      - `workflows.js`
+    - `home/` - Home page feature bileşenleri; discovery, trending, poster rail ve genre chips.
+      - `discover-section.js`
+      - `genre-chip.js`
+      - `grid-animation.js`
+      - `poster-rail.js`
+      - `trending-section.js`
+    - `media/` - Medya kartları, list preview composition ve poster override feature helperları.
+      - `list-preview-composition.js`
+      - `media-poster-card.js`
+      - `poster-overrides.js`
+    - `modals/` - Uygulama modal bileşenleri; list editor/picker, review editor, social proof, image/video preview.
+      - `account-social-modal.js`
+      - `cast-modal.js`
+      - `constants.js`
+      - `create-list-modal.js`
+      - `feedback-modal.js`
+      - `image-preview-modal.js`
+      - `list-editor-modal.js`
+      - `list-picker-modal.js`
+      - `media-social-proof-modal.js`
+      - `notifications-modal.js`
+      - `review-editor-modal.js`
+      - `video-preview-modal.js`
+    - `movie/` - Movie detail feature bileşenleri; hero, cast, gallery, videos, sidebar, recommendations, motion ve skeleton.
+      - `background-preferences.js`
+      - `cast-section.js`
+      - `collection-actions.js`
+      - `context-menu-actions.js`
+      - `gallery-section.js`
+      - `grid-animation.js`
+      - `hero-stage.js`
+      - `images-section.js`
+      - `motion.js`
+      - `overview.js`
+      - `primary-grid-divider.js`
+      - `recommendation-card.js`
+      - `sidebar.js`
+      - `skeletons.js`
+      - `social-proof.js`
+      - `utils.js`
+      - `videos-section.js`
+    - `navigation/` - Feature-level navigation registry, account nav links ve nav action/surface bileşenleri.
+      - `account-nav-links.js`
+      - `account-nav-registry.js`
+      - `actions/` - Nav içindeki account/movie/person/review/search action bileşenleri.
+        - `account-action.js`
+        - `movie-action.js`
+        - `person-action.js`
+        - `review-action.js`
+        - `search-action/` - Search navigation action component ve utilities.
+          - `index.js`
+          - `utils.js`
+          - `parts/` - Search nav action iç parçaları.
+            - `controls.js`
+            - `item.js`
+      - `surfaces/` - Navigation surface bileşenleri; account bio, movie overview ve watch providers.
+        - `account-bio-surface.js`
+        - `movie-overview-surface.js`
+        - `watch-providers-surface.js`
+    - `person/` - Person detail feature parçaları; bio, filmography, gallery, awards, timeline, sidebar, motion ve skeleton.
+      - `awards.js`
+      - `bio.js`
+      - `filmography-card.js`
+      - `gallery.js`
+      - `media-thumb.js`
+      - `motion.js`
+      - `poster-preferences.js`
+      - `sidebar.js`
+      - `skeletons.js`
+      - `social-links.js`
+      - `timeline.js`
+      - `utils.js`
+    - `reviews/` - Review feature; media reviews, hooks, motion ve utility logic.
+      - `media-reviews.js`
+      - `motion.js`
+      - `use-media-reviews.js`
+      - `utils.js`
+      - `parts/` - Review card/list/header/rating selector gibi review UI alt bileşenleri.
+        - `rating-range-selector.js`
+        - `rating-selector.js`
+        - `rating-stars.js`
+        - `review-auth-fallback.js`
+        - `review-card-content.js`
+        - `review-card-controls.js`
+        - `review-card-utils.js`
+        - `review-card.js`
+        - `review-header.js`
+        - `review-list.js`
+    - `search/` - Search feature; ranking, text utils, client cache/data, movie filters ve result grid item.
+      - `client-cache.js`
+      - `client-data.js`
+      - `constants.js`
+      - `grid-item.js`
+      - `movie-filters.js`
+      - `ranking.js`
+      - `result.js`
+      - `text.js`
+      - `utils.js`
+  - `fonts/` - Font registration ve font assetleri.
+    - `index.js`
+    - `zuume/` - Zuume font dosyaları.
+      - `Zuume-Bold.woff2`
+  - `public/` - Statik public assetleri ve deploy header dosyası.
+    - `_headers`
+    - `tvizzie.png`
+    - `data/` - Public JSON data dosyaları.
+      - `top250.json`
+    - `images/` - Public image assetleri.
+      - `default-avatar.svg`
+      - `noise.webp`
+    - `svgs/` - Public SVG grid/texture assetleri.
+      - `dot-grid.svg`
+      - `line-grid.svg`
+      - `square-grid.svg`
+  - `supabase/` - Supabase edge function ve migration kaynakları.
+    - `functions/` - Supabase Edge Function kaynakları.
+      - `social-proof-read/` - Supabase Edge Function kaynakları.
+        - `index.ts`
+    - `migrations/` - Supabase database migration SQL dosyaları.
+      - `20260427090000_search_quality_events.sql`
+      - `20260428100000_remove_recommendation_infra.sql`
+      - `20260429110000_cron_queues.sql`
+  - `ui/` - Domain bilmeyen reusable UI primitive, loading, media, skeleton ve state bileşenleri.
+    - `icon.js`
+    - `animations/` - Generic animation UI primitives.
+      - `grid-page-animation.js`
+      - `text-animate.js`
+    - `elements/` - Reusable button, input, popover, tooltip, switch, segmented control ve layout elementleri.
+      - `adaptive-image.js`
+      - `button.js`
+      - `checkbox.js`
+      - `empty-state.js`
+      - `index.js`
+      - `input.js`
+      - `nav-height-spacer.js`
+      - `page-gradient-shell.js`
+      - `popover.js`
+      - `route-grid-frame.js`
+      - `segmented-control.js`
+      - `switch.js`
+      - `textarea.js`
+      - `tooltip.js`
+      - `utils.js`
+      - `select/` - Reusable select/combobox/multiselect bileşen ailesi.
+        - `async-select.js`
+        - `combobox.js`
+        - `default-select.js`
+        - `index.js`
+        - `multi-select.js`
+        - `searchable-select.js`
+    - `loadings/` - Loading spinner ve loading UI primitives.
+      - `spinner.js`
+    - `media/` - Domain-agnostic media UI bileşenleri.
+      - `carousel.js`
+      - `media-card.js`
+    - `skeletons/` - Skeleton primitive ve bileşenleri.
+      - `primitives.js`
+      - `components/` - Reusable skeleton component özel parçaları.
+        - `nav.js`
+    - `states/` - Fullscreen, not-found ve route-error state bileşenleri.
+      - `fullscreen-state.js`
+      - `not-found-template.js`
+      - `route-error.js`

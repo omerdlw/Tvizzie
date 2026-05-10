@@ -1,18 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
 import { requestApiJson } from '@/core/services/shared/api-request.service';
 import { getStorageItem, setStorageItem } from '@/core/utils/client-utils';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_TEXTAREA_CLASSNAMES,
+} from '@/features/modals/constants';
+import { getFeatureModalSectionMotion } from '@/features/motion';
 import { Button, Textarea } from '@/ui/elements';
-import { cn } from '@/core/utils';
 
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
-
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase ';
 
 function createFeedbackId() {
   return `feedback_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -129,7 +133,7 @@ export default function FeedbackModal({ close, header }) {
             <Button
               type="button"
               onClick={close}
-              className={cn(ACTION_BUTTON_CLASS, 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white')}
+              className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}
             >
               Cancel
             </Button>
@@ -137,10 +141,7 @@ export default function FeedbackModal({ close, header }) {
               type="submit"
               form={formId}
               disabled={isSaving}
-              className={cn(
-                ACTION_BUTTON_CLASS,
-                'hover:bg-info hover:border-info hover:text-primary border-white bg-white text-black disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50'
-              )}
+              className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
             >
               {isSaving ? 'Sending' : 'Send feedback'}
             </Button>
@@ -148,27 +149,26 @@ export default function FeedbackModal({ close, header }) {
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <div>
+      <motion.form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-5" {...getFeatureModalSectionMotion(0)}>
+        <motion.div {...getFeatureModalSectionMotion(1)}>
           <h2 className="text-[16px] font-semibold text-white">What should improve on Tvizzie?</h2>
           <p className="text-sm font-medium text-white/50">Share general product, UX, or quality feedback.</p>
-        </div>
+        </motion.div>
 
-        <div className="space-y-2">
+        <motion.div className="space-y-2" {...getFeatureModalSectionMotion(2)}>
           <Textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             maxHeight={220}
             placeholder="Your message"
             className={{
-              wrapper:
-                'focus-within:bg-primary border border-white/5 bg-black focus-within:border-white/15 hover:border-white/15',
-              textarea:
-                'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-white/50',
+              ...MODAL_TEXTAREA_CLASSNAMES,
+              wrapper: `${MODAL_TEXTAREA_CLASSNAMES.wrapper} min-h-[160px]`,
+              textarea: 'min-h-[160px] w-full resize-none bg-transparent px-4 py-3 text-sm leading-5 text-white outline-none placeholder:text-white/50',
             }}
           />
-        </div>
-      </form>
+        </motion.div>
+      </motion.form>
     </Container>
   );
 }

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from 'react';
 
-import { useAccountSectionPage } from '@/features/account/hooks/section-page';
+import { useAccountSectionPage } from '@/features/account/shared/hooks/section-page';
 import { EMPTY_ACCOUNT_REGISTRY_AUTH, noopAccountRegistryHandler } from '@/features/account/registry-config';
 
 const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({

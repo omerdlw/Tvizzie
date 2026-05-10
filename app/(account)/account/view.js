@@ -1,4 +1,4 @@
-import AccountOverviewFeed from '@/features/account/feeds/overview';
+import AccountOverviewFeed from '@/features/account/profile/overview-feed';
 import { useAccountSectionState } from '@/features/account/route/section-state';
 import Registry from './registry';
 

@@ -1,16 +1,11 @@
 'use client';
 
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
+import { assertMovieMedia } from '@/core/services/shared/media-key.service';
 import {
-  createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/core/services/shared/polling-subscription.service';
 import {
-  buildMediaCollectionStatusSubscriptionKey,
-  buildUserMediaCollectionSubscriptionKey,
-  fetchMediaCollectionStatus,
-  fetchUserMediaCollection,
   refreshMediaCollectionAccountSummary,
   resolveMediaCollectionRpcRow,
 } from '@/core/services/shared/media-collection.service';
@@ -23,68 +18,16 @@ import {
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
+import {
+  createWatchlistRef,
+  getUserWatchlistSubscriptionKey,
+  getWatchlistStatusSubscriptionKey,
+} from './watchlist.shared';
 
-function createWatchlistRef(userId, media) {
-  ensureUserId(userId, 'Authenticated user is required to manage watchlist items');
-
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watchlist');
-
-  return {
-    id: buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
-    table: 'watchlist',
-    userId,
-  };
-}
-
-function getWatchlistStatusSubscriptionKey({ media, userId }) {
-  return buildMediaCollectionStatusSubscriptionKey('watchlist', { media, userId });
-}
-
-function getUserWatchlistSubscriptionKey(userId, options = {}) {
-  return buildUserMediaCollectionSubscriptionKey('watchlist', userId, {
-    limitCount: options.limitCount ?? null,
-  });
-}
-
-async function fetchWatchlistStatus({ media, userId }) {
-  return fetchMediaCollectionStatus({
-    emptyValue: {
-      isInWatchlist: false,
-      item: null,
-    },
-    media,
-    mediaKey: userId && media ? createWatchlistRef(userId, media).id : null,
-    resource: 'watchlist-status',
-    userId,
-  });
-}
-
-async function fetchWatchlist(userId, options = {}) {
-  return fetchUserMediaCollection('watchlist', userId, options);
-}
+export { subscribeToUserWatchlist, subscribeToWatchlistStatus } from './watchlist.subscriptions';
 
 export function getWatchlistDocRef(userId, media) {
   return createWatchlistRef(userId, media);
-}
-
-export function subscribeToWatchlistStatus({ media, userId }, callback, options = {}) {
-  return createPollingSubscription(
-    () => fetchWatchlistStatus({ media, userId }),
-    (result) => {
-      callback(Boolean(result?.isInWatchlist), result?.item || null);
-    },
-    {
-      ...options,
-      subscriptionKey: getWatchlistStatusSubscriptionKey({ media, userId }),
-    }
-  );
-}
-
-export function subscribeToUserWatchlist(userId, callback, options = {}) {
-  return createPollingSubscription(() => fetchWatchlist(userId, options), callback, {
-    ...options,
-    subscriptionKey: getUserWatchlistSubscriptionKey(userId, options),
-  });
 }
 
 export async function toggleUserWatchlistItem({ media, userId }) {

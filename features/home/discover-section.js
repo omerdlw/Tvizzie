@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import MediaPosterCard from '@/ui/media/media-poster-card';
+import MediaPosterCard from '@/features/media/media-poster-card';
 import { GenreChip } from './genre-chip';
 import Icon from '@/ui/icon';
 
@@ -238,8 +238,8 @@ export function DiscoverSection({
 
   return (
     <div className="w-full">
-      <section className="home-section-shell flex w-full flex-col gap-5">
-        <div className="home-section-heading">
+      <section className="flex w-full min-w-0 flex-col gap-5">
+        <div className="min-w-0">
           <h2 className="font-zuume text-3xl leading-none font-bold text-white uppercase sm:text-4xl lg:text-5xl">
             Discover movies
           </h2>

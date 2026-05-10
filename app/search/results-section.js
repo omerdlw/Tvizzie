@@ -2,17 +2,22 @@
 
 import Link from 'next/link';
 
+import { AppRouteItem, AppRouteShell } from '@/app/motion';
 import { TMDB_IMG } from '@/core/constants';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
 import { AccountGridDivider, AccountGridFrame } from '@/features/account/shared/grid-animation';
-import AccountSectionLayout, { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
+import AccountSectionLayout from '@/features/account/shared/section-wrapper';
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
 import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 import { SEARCH_TYPES } from '@/features/search/constants';
 import SearchGridItem from '@/features/search/grid-item';
+
+const SEARCH_COMMUNITY_CARD_CLASS =
+  'group relative grid min-h-28 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border border-white/10 bg-primary/80 p-3 transition-colors hover:border-white/20 hover:bg-white/10';
+const SEARCH_MEDIA_FRAME_CLASS = 'border border-white/10 bg-white/10 text-white/60';
 
 function isMediaResult(item) {
   return item?.media_type === SEARCH_TYPES.MOVIE || item?.media_type === SEARCH_TYPES.PERSON;
@@ -56,8 +61,12 @@ function SearchUserCard({ item }) {
   ].filter(Boolean);
 
   return (
-    <Link href={detailPath} className="search-community-card search-community-card-user">
-      <div className="search-avatar-frame">
+    <Link
+      href={detailPath}
+      className={SEARCH_COMMUNITY_CARD_CLASS}
+      data-soft-hover="row"
+    >
+      <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'relative h-18 w-18 overflow-hidden')}>
         <AdaptiveImage
           mode="img"
           className="h-full w-full object-cover"
@@ -69,13 +78,19 @@ function SearchUserCard({ item }) {
           wrapperClassName="h-full w-full"
         />
       </div>
-      <div className="search-community-copy">
-        <span className="search-result-kicker">User</span>
-        <strong className="search-result-title">{title}</strong>
-        <span className="search-result-meta">@{item.username || item.id}</span>
-        {stats.length ? <span className="search-result-detail">{stats.join(' - ')}</span> : null}
+      <div className="flex min-w-0 flex-col gap-1">
+        <span className="text-[0.6875rem] leading-none font-bold text-white/60 uppercase">User</span>
+        <strong className="overflow-hidden truncate text-base leading-tight text-white uppercase">{title}</strong>
+        <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/70">
+          @{item.username || item.id}
+        </span>
+        {stats.length ? (
+          <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/60">
+            {stats.join(' - ')}
+          </span>
+        ) : null}
       </div>
-      <Icon className="search-card-arrow" icon="solar:arrow-right-up-linear" size={18} />
+      <Icon className="text-white/60 group-hover:text-white" icon="solar:arrow-right-up-linear" size={18} />
     </Link>
   );
 }
@@ -85,14 +100,14 @@ function SearchListCover({ item }) {
 
   if (!imageSrc) {
     return (
-      <div className="search-list-cover search-list-cover-empty">
+      <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'center relative h-[5.75rem] w-18 overflow-hidden')}>
         <Icon icon="solar:list-bold" size={22} />
       </div>
     );
   }
 
   return (
-    <div className="search-list-cover">
+    <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'relative h-[5.75rem] w-18 overflow-hidden')}>
       <AdaptiveImage
         fill
         alt={item.title || 'List cover'}
@@ -119,25 +134,44 @@ function SearchListCard({ item }) {
   const card = (
     <>
       <SearchListCover item={item} />
-      <div className="search-community-copy">
-        <span className="search-result-kicker">List</span>
-        <strong className="search-result-title">{item.title || 'Untitled List'}</strong>
-        <span className="search-result-meta">
+      <div className="flex min-w-0 flex-col gap-1">
+        <span className="text-[0.6875rem] leading-none font-bold text-white/60 uppercase">List</span>
+        <strong className="overflow-hidden truncate text-base leading-tight text-white uppercase">
+          {item.title || 'Untitled List'}
+        </strong>
+        <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/70">
           by {item.owner?.displayName || item.owner?.username || 'Anonymous User'}
         </span>
-        {item.description ? <span className="search-result-detail">{item.description}</span> : null}
-        {stats ? <span className="search-result-detail search-result-detail-compact">{stats}</span> : null}
+        {item.description ? (
+          <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/60">
+            {item.description}
+          </span>
+        ) : null}
+        {stats ? (
+          <span className="overflow-hidden truncate text-xs font-bold text-white/60 uppercase">{stats}</span>
+        ) : null}
       </div>
-      <Icon className="search-card-arrow" icon="solar:arrow-right-up-linear" size={18} />
+      <Icon className="text-white/60 group-hover:text-white" icon="solar:arrow-right-up-linear" size={18} />
     </>
   );
 
   if (!detailPath) {
-    return <article className="search-community-card">{card}</article>;
+    return (
+      <article
+        className={SEARCH_COMMUNITY_CARD_CLASS}
+        data-soft-hover="row"
+      >
+        {card}
+      </article>
+    );
   }
 
   return (
-    <Link href={detailPath} className="search-community-card">
+    <Link
+      href={detailPath}
+      className={SEARCH_COMMUNITY_CARD_CLASS}
+      data-soft-hover="row"
+    >
       {card}
     </Link>
   );
@@ -148,14 +182,14 @@ function SearchReviewPoster({ item }) {
 
   if (!imageSrc) {
     return (
-      <div className="search-review-poster search-review-poster-empty">
+      <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'center relative h-[5.75rem] w-15 overflow-hidden')}>
         <Icon icon="solar:chat-round-like-bold" size={22} />
       </div>
     );
   }
 
   return (
-    <div className="search-review-poster">
+    <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'relative h-[5.75rem] w-15 overflow-hidden')}>
       <AdaptiveImage
         fill
         alt={item.subject?.title || 'Review subject'}
@@ -176,27 +210,40 @@ function SearchReviewCard({ item }) {
   const card = (
     <>
       <SearchReviewPoster item={item} />
-      <div className="search-community-copy">
-        <span className="search-result-kicker">Review</span>
-        <strong className="search-result-title">{item.subject?.title || 'Untitled'}</strong>
-        <span className="search-result-meta">
+      <div className="flex min-w-0 flex-col gap-1">
+        <span className="text-[0.6875rem] leading-none font-bold text-white/60 uppercase">Review</span>
+        <strong className="overflow-hidden truncate text-base leading-tight text-white uppercase">
+          {item.subject?.title || 'Untitled'}
+        </strong>
+        <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/70">
           {item.user?.displayName || item.user?.username || 'Anonymous User'}
           {rating ? ` - ${rating}` : ''}
         </span>
-        <span className="search-result-detail">
+        <span className="overflow-hidden truncate text-[0.8125rem] leading-snug text-white/60">
           {item.isSpoiler ? 'Spoiler review' : item.content || 'Review without text'}
         </span>
       </div>
-      <Icon className="search-card-arrow" icon="solar:arrow-right-up-linear" size={18} />
+      <Icon className="text-white/60 group-hover:text-white" icon="solar:arrow-right-up-linear" size={18} />
     </>
   );
 
   if (!detailPath) {
-    return <article className="search-community-card">{card}</article>;
+    return (
+      <article
+        className={SEARCH_COMMUNITY_CARD_CLASS}
+        data-soft-hover="row"
+      >
+        {card}
+      </article>
+    );
   }
 
   return (
-    <Link href={detailPath} className="search-community-card">
+    <Link
+      href={detailPath}
+      className={SEARCH_COMMUNITY_CARD_CLASS}
+      data-soft-hover="row"
+    >
       {card}
     </Link>
   );
@@ -222,25 +269,10 @@ function SearchEmptyState({ hasActiveMovieFilters, searchType, trimmedQuery }) {
       : 'No results found for this query.';
 
   return (
-    <div className="search-empty-state">
+    <div className="flex min-h-20 items-center gap-3 border border-white/10 bg-primary/80 p-4 text-sm font-bold text-white/70">
       <Icon icon="solar:magnifer-linear" size={20} />
       <span>{message}</span>
     </div>
-  );
-}
-
-function SearchIntroSection({ trimmedQuery, visibleCount }) {
-  return (
-    <section className="account-detail-grid-subsection bg-transparent">
-      <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'search-intro-section flex flex-col')}>
-        <AccountSectionHeading
-          icon="solar:magnifer-linear"
-          showSeeMore={false}
-          summaryLabel={trimmedQuery ? `${visibleCount} Visible` : 'Index Ready'}
-          title="Search"
-        />
-      </div>
-    </section>
   );
 }
 
@@ -268,15 +300,18 @@ export default function SearchResultsSection({
   const showEmpty = Boolean(trimmedQuery) && !loading && !visibleResults.length;
 
   return (
-    <div className="account-detail-grid-content relative min-h-dvh w-full overflow-hidden bg-black">
+    <AppRouteShell className="account-detail-grid-content relative isolate min-h-dvh w-full overflow-hidden bg-black">
       <AccountGridFrame routeKey="search" className={cn('flex flex-col gap-0 px-0', ACCOUNT_ROUTE_SHELL_CLASS)}>
         <div className="account-detail-hero-divider">
           <AccountGridDivider />
         </div>
 
-        <main className="account-detail-grid-main search-page-main">
+        <main className="account-detail-grid-main flex w-full min-w-0 flex-col gap-0">
           {shouldShowMovieFilters ? (
-            <div className="account-filter-bar account-detail-full-width-item search-filter-panel">
+            <AppRouteItem
+              className="account-filter-bar account-detail-full-width-item border-y border-white/10 bg-primary/80 py-3"
+              index={0}
+            >
               <SearchMovieFilterBar
                 decadeOptions={decadeOptions}
                 filters={movieFilters}
@@ -285,11 +320,11 @@ export default function SearchResultsSection({
                 onReset={hasActiveMovieFilters ? onMovieFiltersReset : undefined}
                 yearOptions={yearOptions}
               />
-            </div>
+            </AppRouteItem>
           ) : null}
 
           {!trimmedQuery ? (
-            <AccountSectionLayout icon="solar:keyboard-bold" summaryLabel="Waiting" title="Ready">
+            <AccountSectionLayout icon="solar:keyboard-bold" revealIndex={1} summaryLabel="Waiting" title="Ready">
               <SearchEmptyState trimmedQuery={trimmedQuery} />
             </AccountSectionLayout>
           ) : null}
@@ -297,14 +332,15 @@ export default function SearchResultsSection({
           {showMedia ? (
             <AccountSectionLayout
               icon={searchType === SEARCH_TYPES.PERSON ? 'solar:user-bold' : 'solar:clapperboard-play-bold'}
+              revealIndex={1}
               summaryLabel={`${mediaResults.length} Visible`}
               title={searchType === SEARCH_TYPES.PERSON ? 'People Results' : 'Movies And People'}
             >
-              <div className="search-media-grid">
-                {mediaResults.map((item) => (
-                  <div key={`${item.media_type}-${item.id}`}>
+              <div className="grid grid-cols-3 gap-3 md:grid-cols-5 xl:grid-cols-8">
+                {mediaResults.map((item, index) => (
+                  <AppRouteItem key={`${item.media_type}-${item.id}`} index={index}>
                     <SearchGridItem item={item} />
-                  </div>
+                  </AppRouteItem>
                 ))}
               </div>
             </AccountSectionLayout>
@@ -313,19 +349,27 @@ export default function SearchResultsSection({
           {showCommunity ? (
             <AccountSectionLayout
               icon="solar:users-group-rounded-bold"
+              revealIndex={2}
               summaryLabel={`${communityResults.length} Visible`}
               title="Community Results"
             >
-              <div className="search-community-grid">
-                {communityResults.map((item) => (
-                  <SearchCommunityCard key={`${item.media_type}-${item.id}`} item={item} />
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {communityResults.map((item, index) => (
+                  <AppRouteItem key={`${item.media_type}-${item.id}`} index={index}>
+                    <SearchCommunityCard item={item} />
+                  </AppRouteItem>
                 ))}
               </div>
             </AccountSectionLayout>
           ) : null}
 
           {showEmpty ? (
-            <AccountSectionLayout icon="solar:danger-triangle-bold" summaryLabel="Empty" title="No Results">
+            <AccountSectionLayout
+              icon="solar:danger-triangle-bold"
+              revealIndex={1}
+              summaryLabel="Empty"
+              title="No Results"
+            >
               <SearchEmptyState
                 hasActiveMovieFilters={hasActiveMovieFilters}
                 searchType={searchType}
@@ -336,17 +380,23 @@ export default function SearchResultsSection({
 
           {canLoadMore ? (
             <section className="account-detail-grid-subsection bg-transparent">
-              <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'search-load-more-section')}>
-                <button type="button" className="search-load-more-button" disabled={loadingMore} onClick={onLoadMore}>
+              <AppRouteItem className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'flex justify-center px-4 py-8')} index={3}>
+                <button
+                  type="button"
+                  className="min-h-11 min-w-56 border border-white/10 bg-white/10 px-5 text-xs font-extrabold text-white uppercase transition-colors hover:border-white/20 hover:bg-white/15 disabled:text-white/60"
+                  data-soft-hover="control"
+                  disabled={loadingMore}
+                  onClick={onLoadMore}
+                >
                   {loadingMore ? 'Loading' : 'Load more results'}
                 </button>
-              </div>
+              </AppRouteItem>
             </section>
           ) : null}
         </main>
 
         <NavHeightSpacer />
       </AccountGridFrame>
-    </div>
+    </AppRouteShell>
   );
 }

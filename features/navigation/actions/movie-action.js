@@ -1,10 +1,16 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import { REVIEW_SORT_OPTIONS } from '@/features/reviews/utils';
 import MediaSocialProof from '@/features/movie/social-proof';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 import { Select } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import {
+  FEATURE_NAV_ACTION_BUTTON_MOTION,
+  FEATURE_NAV_ACTION_ROW_MOTION,
+} from '@/features/motion';
 
 export default function MovieAction({
   mode = 'watch',
@@ -49,8 +55,8 @@ export default function MovieAction({
   const label = isActive ? 'Back' : 'Where to watch?';
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2">
-      <button
+    <motion.div className="flex min-w-0 flex-1 flex-col gap-2" {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      <motion.button
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -61,18 +67,19 @@ export default function MovieAction({
           isActive,
         })}
         type="button"
+        {...FEATURE_NAV_ACTION_BUTTON_MOTION}
       >
         <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
         <span className="truncate">{label}</span>
-      </button>
+      </motion.button>
       {socialProofMedia ? (
         <MediaSocialProof
           media={socialProofMedia}
           viewerId={socialProofViewerId}
           knownMovieIds={socialProofKnownMovieIds}
-          className="movie-action-social-proof"
+          className="mt-0"
         />
       ) : null}
-    </div>
+    </motion.div>
   );
 }

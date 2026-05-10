@@ -1,150 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import MediaCard from '@/ui/media/media-card';
-import { TMDB_IMG } from '@/core/constants';
-import { useModal } from '@/core/modules/modal/context';
-import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import { Button } from '@/ui/elements';
-import Icon from '@/ui/icon';
+import { usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AccountPagination from './pagination';
-import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
+import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../collections/item-utils';
 import AccountInlineSectionState from './section-state';
 import AccountSectionLayout from './section-wrapper';
+import { AccountMotionItem } from '@/app/(account)/account/motion';
+import { ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE, buildAccountMediaGridCards } from './media-grid-utils';
 
-const ITEMS_PER_PAGE = 36;
-
-function getMediaType(item) {
-  const explicitType = item?.media_type || item?.entityType;
-
-  if (explicitType === 'movie') {
-    return explicitType;
-  }
-
-  return null;
-}
-
-function getMediaTitle(item) {
-  return item?.title || item?.original_title || 'Untitled';
-}
-
-function getMediaYear(item) {
-  return item?.release_date?.slice?.(0, 4) || null;
-}
-
-function getMediaPoster(item) {
-  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
-  if (preferredPoster) {
-    return preferredPoster;
-  }
-
-  if (item?.poster_path_full) {
-    return item.poster_path_full;
-  }
-
-  if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`;
-  }
-
-  return null;
-}
-
-export function ProfileMediaActions({
-  extraActions = [],
-  media,
-  onRemoveItem = null,
-  removeLabel = 'Remove item',
-  userId = null,
-}) {
-  const { openModal } = useModal();
-  const [isRemoving, setIsRemoving] = useState(false);
-
-  const handleOpenListPicker = useCallback(
-    (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (!userId || !media) {
-        return;
-      }
-
-      openModal('LIST_PICKER_MODAL', 'center', {
-        data: {
-          media,
-          userId,
-        },
-      });
-    },
-    [media, openModal, userId]
-  );
-
-  const handleRemove = useCallback(
-    async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      if (isRemoving || typeof onRemoveItem !== 'function') {
-        return;
-      }
-
-      setIsRemoving(true);
-
-      try {
-        await onRemoveItem(media);
-      } finally {
-        setIsRemoving(false);
-      }
-    },
-    [isRemoving, media, onRemoveItem]
-  );
-
-  return (
-    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
-      {extraActions.map((action, index) => (
-        <button
-          key={`${action.label || action.icon || 'media-action'}-${index}`}
-          type="button"
-          aria-label={action.label}
-          className="center size-8 border border-white/15 bg-black text-white disabled:cursor-default"
-          disabled={Boolean(action.disabled)}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            action.onClick?.(media);
-          }}
-        >
-          <Icon icon={action.icon} size={12} />
-        </button>
-      ))}
-
-      {userId ? (
-        <button
-          type="button"
-          aria-label="Add to list"
-          className="center size-8 border border-white/15 bg-black text-white disabled:cursor-default"
-          onClick={handleOpenListPicker}
-        >
-          <Icon icon="solar:list-check-minimalistic-bold" size={12} />
-        </button>
-      ) : null}
-
-      {typeof onRemoveItem === 'function' ? (
-        <Button
-          variant="destructive-icon"
-          className={`center text-error hover:border-error hover:bg-error size-8 border border-white/15 bg-black hover:text-black disabled:cursor-default`}
-          aria-label={removeLabel}
-          disabled={isRemoving}
-          onClick={handleRemove}
-        >
-          <Icon icon="solar:trash-bin-trash-bold" size={16} className={isRemoving ? '' : ''} />
-        </Button>
-      ) : null}
-    </div>
-  );
-}
+export { default as ProfileMediaActions } from './media-actions';
 
 export default function AccountMediaGridPage({
   currentPage = 1,
@@ -153,6 +22,7 @@ export default function AccountMediaGridPage({
   items = [],
   onPageChange = null,
   pageBasePath,
+  revealIndex = 0,
   renderHeaderAction = null,
   renderOverlay = null,
   showHeader = true,
@@ -172,36 +42,15 @@ export default function AccountMediaGridPage({
       : currentPage;
 
   const cards = useMemo(() => {
-    return items
-      .map((item) => {
-        const mediaType = getMediaType(item);
-        const detailId = item?.entityId || item?.id;
-
-        if (!detailId || mediaType !== 'movie') {
-          return null;
-        }
-
-        const mediaTitle = getMediaTitle(item);
-        const year = getMediaYear(item);
-
-        return {
-          href: `/${mediaType}/${detailId}`,
-          id: item?.mediaKey || `${mediaType}-${detailId}`,
-          imageAlt: mediaTitle,
-          imageSrc: getMediaPoster(item),
-          item,
-          tooltipText: year ? `${mediaTitle} (${year})` : mediaTitle,
-        };
-      })
-      .filter(Boolean);
+    return buildAccountMediaGridCards(items);
   }, [items, posterPreferenceVersion]);
 
-  const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0;
+  const totalPages = cards.length ? Math.ceil(cards.length / ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE) : 0;
   const activePage = totalPages ? Math.min(resolvedCurrentPage, totalPages) : 1;
-  const pageStart = (activePage - 1) * ITEMS_PER_PAGE;
-  const visibleCards = cards.slice(pageStart, pageStart + ITEMS_PER_PAGE);
+  const pageStart = (activePage - 1) * ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE;
+  const visibleCards = cards.slice(pageStart, pageStart + ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE);
   const paginationSummaryLabel = formatPaginationSummaryLabel({
-    pageSize: ITEMS_PER_PAGE,
+    pageSize: ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE,
     startIndex: pageStart,
     totalCount: cards.length,
   });
@@ -226,16 +75,17 @@ export default function AccountMediaGridPage({
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
+      revealIndex={revealIndex}
     >
-      {toolbar}
+      {toolbar ? <AccountMotionItem index={0}>{toolbar}</AccountMotionItem> : null}
 
       {cards.length === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>
-          <div className="account-media-grid-page">
-            {visibleCards.map((card) => (
-              <div key={card.id}>
+          <div className="grid grid-cols-2 gap-4 min-[30rem]:grid-cols-3 min-[40rem]:grid-cols-4 min-[64rem]:grid-cols-6">
+            {visibleCards.map((card, index) => (
+              <AccountMotionItem key={card.id} index={index + 1}>
                 <MediaCard
                   href={card.href}
                   className="w-full"
@@ -245,12 +95,15 @@ export default function AccountMediaGridPage({
                   topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
                   tooltipText={card.tooltipText}
                 />
-              </div>
+              </AccountMotionItem>
             ))}
           </div>
 
           {totalPages > 1 ? (
-            <div key={`media-grid-pagination-${activePage}-${totalPages}`}>
+            <AccountMotionItem
+              key={`media-grid-pagination-${activePage}-${totalPages}`}
+              index={visibleCards.length + 1}
+            >
               <AccountPagination
                 className="w-full"
                 currentPage={activePage}
@@ -258,7 +111,7 @@ export default function AccountMediaGridPage({
                 totalPages={totalPages}
                 getPageHref={canControlPagination ? null : (page) => buildAccountCollectionPageHref(pageBasePath, page)}
               />
-            </div>
+            </AccountMotionItem>
           ) : null}
         </>
       )}

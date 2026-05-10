@@ -2,14 +2,22 @@
 
 import { useState } from 'react';
 
+import { motion } from 'framer-motion';
+
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
 import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists.service';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_EMPTY_PANEL_CLASS,
+  MODAL_INPUT_CLASSNAMES,
+  MODAL_SCROLLABLE_BODY_CLASS,
+  MODAL_TEXTAREA_CLASSNAMES,
+} from '@/features/modals/constants';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
-
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 border border-white/5 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase ';
 
 function getItemKey(item) {
   return String(item?.mediaKey || `${item?.entityType || item?.media_type || 'movie'}-${item?.entityId || item?.id}`)
@@ -161,7 +169,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={`${ACTION_BUTTON_CLASS} text-white/70 hover:bg-white/10 hover:text-white`}
+              className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}
             >
               Cancel
             </Button>
@@ -169,7 +177,7 @@ export default function ListEditorModal({ close, data, header }) {
               type="submit"
               form={formId}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50"
+              className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
             >
               {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
             </Button>
@@ -177,49 +185,53 @@ export default function ListEditorModal({ close, data, header }) {
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
-        <div className="flex flex-col gap-2.5">
+      <motion.form
+        id={formId}
+        onSubmit={handleSubmit}
+        className="flex min-h-0 flex-1 flex-col gap-3"
+        {...getFeatureModalSectionMotion(0)}
+      >
+        <motion.div className="flex flex-col gap-2.5" {...getFeatureModalSectionMotion(1)}>
           <Input
             value={form.title}
             onChange={(event) => handleChange('title', event.target.value)}
             placeholder="List title"
             autoFocus
-            className={{
-              wrapper: 'flex h-10 items-center border border-white/5 bg-white/10 px-3.5 focus-within:border-white/20',
-              input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
-            }}
+            className={MODAL_INPUT_CLASSNAMES}
           />
           <Textarea
             value={form.description}
             onChange={(event) => handleChange('description', event.target.value)}
             placeholder="Description (optional)"
             maxHeight={120}
-            className={{
-              wrapper:
-                'flex min-h-10 border border-white/5 bg-white/10 px-3.5 py-2.5 focus-within:border-white/20 sm:min-h-10',
-              textarea:
-                'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-white outline-none placeholder:text-white/50',
-            }}
+            className={MODAL_TEXTAREA_CLASSNAMES}
           />
-        </div>
+        </motion.div>
 
         {isEditing ? (
-          <div
+          <motion.div
             data-lenis-prevent
             data-lenis-prevent-wheel
-            className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
+            className={MODAL_SCROLLABLE_BODY_CLASS}
+            {...getFeatureModalSectionMotion(2)}
           >
             {draftItems.length > 0 ? (
-              draftItems.map((item) => <ListItemRow key={getItemKey(item)} item={item} onRemove={handleRemoveItem} />)
+              draftItems.map((item, index) => (
+                <motion.div key={getItemKey(item)} {...getFeatureModalItemMotion(index)}>
+                  <ListItemRow item={item} onRemove={handleRemoveItem} />
+                </motion.div>
+              ))
             ) : (
-              <div className="flex h-28 flex-col items-center justify-center gap-2 border border-white/5 bg-white/10 text-center">
-                <Icon icon="solar:list-broken" size={24} className="text-white/50" />
-                <p className="text-xs text-white/50">No titles in this list</p>
-              </div>
+              <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+                <div className={MODAL_EMPTY_PANEL_CLASS}>
+                  <Icon icon="solar:list-broken" size={24} />
+                  <p className="text-xs">No titles in this list</p>
+                </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         ) : null}
-      </form>
+      </motion.form>
     </Container>
   );
 }

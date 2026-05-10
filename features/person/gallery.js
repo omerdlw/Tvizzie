@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal/context';
+import { getPersonFeatureItemMotion, PERSON_FEATURE_SECTION_MOTION } from '@/features/person/motion';
 
 function sortProfiles(profiles = []) {
   return [...profiles]
@@ -32,13 +34,15 @@ export default function PersonGallery({ images }) {
 
 function PersonGallerySurface({ profiles, openModal }) {
   return (
-    <section className="flex w-full flex-col gap-3">
-      <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">Gallery</h2>
+    <motion.section className="flex w-full flex-col gap-3" {...PERSON_FEATURE_SECTION_MOTION}>
+      <motion.h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase" {...getPersonFeatureItemMotion(0)}>
+        Gallery
+      </motion.h2>
 
       <Carousel gap="gap-3">
         {profiles.map((image, index) => {
           return (
-            <div key={image.file_path || index}>
+            <motion.div key={image.file_path || index} {...getPersonFeatureItemMotion(index + 1)}>
               <MediaCard
                 className="person-gallery-card sm:w-60"
                 aspectClass="aspect-2/3"
@@ -54,10 +58,10 @@ function PersonGallerySurface({ profiles, openModal }) {
                 data-poster-file-path={image.file_path || ''}
                 data-context-menu-target="person-poster-card"
               />
-            </div>
+            </motion.div>
           );
         })}
       </Carousel>
-    </section>
+    </motion.section>
   );
 }

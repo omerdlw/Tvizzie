@@ -8,7 +8,7 @@ export function Spinner({ className, size = 15 }) {
       aria-label="Loading"
       role="status"
     >
-      <Icon icon="mingcute:loading-3-fill" size={size} />
+      <Icon className="center animate-spin motion-reduce:animate-none" icon="mingcute:loading-3-fill" size={size} />
     </div>
   );
 }

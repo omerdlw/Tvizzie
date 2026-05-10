@@ -9,7 +9,11 @@ import Icon from '@/ui/icon';
 
 import { SEARCH_ACTION_TAB_ITEMS, SEARCH_STYLES } from '@/features/search/constants';
 import { navActionClass } from '../utils';
-import { SEARCH_ACTION_EXIT_TRANSITION, SEARCH_ACTION_REVEAL_TRANSITION } from '../motion';
+import {
+  FEATURE_NAV_ACTION_BUTTON_MOTION,
+  SEARCH_ACTION_PANEL_MOTION,
+  getSearchActionItemMotion,
+} from '@/features/motion';
 
 export default function SearchActionControls({
   loading = false,
@@ -64,20 +68,15 @@ export default function SearchActionControls({
           <motion.div
             key="search-tabs"
             className="mt-2 overflow-hidden"
-            initial={{ opacity: 0, y: -8, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -8, height: 0, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-            transition={SEARCH_ACTION_REVEAL_TRANSITION}
+            {...SEARCH_ACTION_PANEL_MOTION}
           >
             <div className={SEARCH_STYLES.tabList}>
               {tabItems.map((item, index) => (
                 <motion.button
                   key={item.key}
                   type="button"
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-                  transition={{ ...SEARCH_ACTION_REVEAL_TRANSITION, delay: Math.min(index * 0.05, 0.15) }}
+                  {...FEATURE_NAV_ACTION_BUTTON_MOTION}
+                  {...getSearchActionItemMotion(index, 'searchTabs')}
                   className={cn(
                     navActionClass({
                       cn,
@@ -113,8 +112,13 @@ function SearchActionRightIcon({ loading, query, onClear }) {
   }
 
   return (
-    <button type="button" className="center text-error shrink-0 cursor-pointer" onClick={onClear}>
+    <motion.button
+      type="button"
+      className="center text-error shrink-0 cursor-pointer"
+      onClick={onClear}
+      {...FEATURE_NAV_ACTION_BUTTON_MOTION}
+    >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </button>
+    </motion.button>
   );
 }

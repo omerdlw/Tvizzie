@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/hooks/collections';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/hooks';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -20,6 +21,7 @@ import {
   parseReviewSortMode,
   sortReviewsByMode,
 } from './utils';
+import { getReviewsFeatureItemMotion, REVIEWS_FEATURE_SECTION_MOTION } from './motion';
 
 export default function MediaReviews({
   entityId,
@@ -218,16 +220,17 @@ export default function MediaReviews({
   }, [isCurrentMediaLiked, mediaKey]);
 
   return (
-    <section
+    <motion.section
       data-community-reviews="true"
       className={`relative isolate z-0 flex w-full flex-col gap-0 ${sectionClassName}`}
+      {...REVIEWS_FEATURE_SECTION_MOTION}
     >
       {showBackdropGradient ? (
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="media-reviews-backdrop-gradient absolute inset-0" style={{ bottom: -backdropExtension }} />
         </div>
       ) : null}
-      <div className="media-reviews-header-plus p-5">
+      <motion.div className="media-reviews-header-plus p-5" {...getReviewsFeatureItemMotion(0)}>
         <ReviewHeader
           ratingStats={effectiveRatingStats}
           title={headerTitle}
@@ -236,10 +239,13 @@ export default function MediaReviews({
           onDeleteOwnReview={ownReview ? handleDeleteRequest : null}
           onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
         />
-      </div>
+      </motion.div>
 
       {isSortControlEnabled ? (
-        <div className="border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5">
+        <motion.div
+          className="border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5"
+          {...getReviewsFeatureItemMotion(1)}
+        >
           <span className="text-white-muted text-xs font-semibold tracking-wider uppercase">Sort</span>
           <Select
             value={sortMode}
@@ -258,10 +264,10 @@ export default function MediaReviews({
             }}
             aria-label="Sort reviews"
           />
-        </div>
+        </motion.div>
       ) : null}
 
-      <div key={listAnimationKey}>
+      <motion.div key={listAnimationKey} {...getReviewsFeatureItemMotion(isSortControlEnabled ? 2 : 1)}>
         <ReviewList
           currentUserId={currentUserId}
           emptyMessage="No written reviews yet"
@@ -275,7 +281,7 @@ export default function MediaReviews({
           sortedReviews={displayedReviews}
           userProfile={userProfile}
         />
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }

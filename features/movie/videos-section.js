@@ -1,12 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import { useModal } from '@/core/modules/modal/context';
 import Icon from '@/ui/icon';
+import {
+  getMovieFeatureItemMotion,
+  getMovieFeatureTabItemMotion,
+  MOVIE_FEATURE_SECTION_MOTION,
+  MOVIE_FEATURE_TAB_STAGGER_MOTION,
+} from '@/features/movie/motion';
 
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
@@ -49,25 +56,25 @@ function VideosSectionContent({ videos }) {
   }
 
   return (
-    <section className="movie-detail-section-content w-full">
-      <div>
+    <motion.section className="movie-detail-section-content w-full" {...MOVIE_FEATURE_SECTION_MOTION}>
+      <motion.div {...getMovieFeatureItemMotion(0)}>
         <SegmentedControl items={items} value={activeType} onChange={setActiveType} />
-      </div>
+      </motion.div>
 
       <div className="relative">
-        <div key={`movie-videos-${activeType || 'all'}`}>
-          <Carousel gap="gap-3">
-            {filteredVideos.map((video) => (
-              <VideoCard
-                key={video.id}
-                video={video}
-                onPreview={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })}
-              />
-            ))}
-          </Carousel>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={`movie-videos-${activeType || 'all'}`} {...MOVIE_FEATURE_TAB_STAGGER_MOTION}>
+            <Carousel gap="gap-3">
+              {filteredVideos.map((video, index) => (
+                <motion.div key={video.id} {...getMovieFeatureTabItemMotion(index + 1)}>
+                  <VideoCard video={video} onPreview={() => openModal('VIDEO_PREVIEW_MODAL', 'center', { data: video })} />
+                </motion.div>
+              ))}
+            </Carousel>
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

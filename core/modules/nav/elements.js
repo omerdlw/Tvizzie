@@ -3,7 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import Iconify from '@/ui/icon';
 
-import { NAV_CONTENT_TRANSITION, NAV_MICRO_SPRING } from './motion';
+import {
+  getNavDescriptionAnimate,
+  NAV_CONTENT_TRANSITION,
+  NAV_DESCRIPTION_MOTION,
+  NAV_ICON_OVERLAY_MOTION,
+  NAV_MICRO_SPRING,
+} from '@/core/modules/motion';
 
 function isImageIconSource(icon) {
   return (
@@ -16,15 +22,6 @@ function splitStyle(style = {}) {
   return {
     className,
     inlineStyle,
-  };
-}
-
-function getDescriptionAnimation() {
-  return {
-    initial: { opacity: 0, y: 8 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -8 },
-    transition: NAV_CONTENT_TRANSITION,
   };
 }
 
@@ -49,14 +46,14 @@ export function Description({ text, style, maxLines = 1 }) {
 
   return (
     <div className="relative w-full text-xs sm:text-sm">
-      <AnimatePresence initial={true} mode="wait">
+      <AnimatePresence initial={false} mode="wait">
         <motion.p
           className={cn('text-white', isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate', className)}
-          animate={{ ...getDescriptionAnimation().animate, opacity }}
-          transition={getDescriptionAnimation().transition}
+          animate={getNavDescriptionAnimate(opacity)}
+          transition={NAV_DESCRIPTION_MOTION.transition}
           style={getLineClampStyle(maxLines, restStyle)}
-          initial={getDescriptionAnimation().initial}
-          exit={getDescriptionAnimation().exit}
+          initial={NAV_DESCRIPTION_MOTION.initial}
+          exit={NAV_DESCRIPTION_MOTION.exit}
           key={typeof text === 'string' || typeof text === 'number' ? text : undefined}
         >
           {text}
@@ -80,7 +77,7 @@ function IconOverlay({ overlay }) {
   const isImageSource = isImageIconSource(icon);
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={(event) => {
         event.stopPropagation();
@@ -90,16 +87,17 @@ function IconOverlay({ overlay }) {
       title={title || undefined}
       aria-label={title || 'Open current account'}
       className={cn(
-        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden  transition-transform hover:scale-[1.04]',
+        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden',
         typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default'
       )}
+      {...NAV_ICON_OVERLAY_MOTION}
     >
       {isImageSource ? (
         <span className="size-full bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${icon})` }} />
       ) : (
         <span className="text-white">{renderIconNode(icon, 12)}</span>
       )}
-    </button>
+    </motion.button>
   );
 }
 

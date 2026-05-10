@@ -32,7 +32,7 @@ function UserAvatar({ item, title }) {
   const avatarSrc = getUserAvatarUrl(item) || fallbackSrc;
 
   return (
-    <div className="search-grid-avatar">
+    <div className="flex h-full w-full items-center justify-center border border-white/10 bg-white/10">
       <AdaptiveImage
         mode="img"
         className="h-full w-full object-cover"
@@ -56,7 +56,7 @@ export default function SearchGridItem({ item, onSelect }) {
   const cardContent = (
     <>
       <MediaCard
-        className={cn('search-grid-media-card')}
+        className={cn('w-full overflow-hidden border border-white/10 bg-white/10')}
         imageSrc={imageSrc}
         imageAlt={title}
         imageSizes="(max-width: 1023px) 16.66vw, 8.33vw"
@@ -65,7 +65,7 @@ export default function SearchGridItem({ item, onSelect }) {
           item.media_type === SEARCH_TYPES.USER ? (
             <UserAvatar item={item} title={title} />
           ) : (
-            <div className="search-grid-fallback">
+            <div className="flex h-full w-full items-center justify-center border border-white/10 bg-white/10 text-white/40">
               <Icon
                 icon={item.media_type === SEARCH_TYPES.PERSON ? 'solar:user-bold' : 'solar:gallery-bold'}
                 size={22}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 
 import { TMDB_IMG } from '@/core/constants';
@@ -9,6 +10,7 @@ import Container from '@/core/modules/modal/container';
 import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import { cn } from '@/core/utils';
+import { FEATURE_MODAL_CONTENT_MOTION, FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion } from '@/features/motion';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
@@ -68,16 +70,16 @@ function CreditsGrid({ close, list, keyPrefix }) {
   return (
     <div className={GRID_CLASS}>
       {list.map((person, index) => (
-        <div
+        <motion.div
           key={`${keyPrefix}-${person.id || person.name || 'credit'}-${index}`}
-          className={cn(
-            'lg:border-white/10',
-            (index + 1) % DESKTOP_COLUMNS !== 0 && 'lg:border-r',
-            index < lastRowStart && 'lg:border-b'
-          )}
+          {...getFeatureModalItemMotion(index)}
         >
-          <PersonCard close={close} person={person} />
-        </div>
+          <div
+            className={cn('border-white/10', (index + 1) % DESKTOP_COLUMNS !== 0 && 'lg:border-r', index < lastRowStart && 'lg:border-b')}
+          >
+            <PersonCard close={close} person={person} />
+          </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -137,10 +139,12 @@ export default function CastModal({ close, data, header }) {
       <Container
         className={cn('max-h-[85vh]', isEdgePosition ? 'w-full' : 'w-[min(94vw,980px)]')}
         close={close}
-        header={resolvedHeader}
-        bodyClassName="bg-transparent p-0"
-      >
-        <div className="center min-h-32 text-sm text-white/70">No credits found.</div>
+      header={resolvedHeader}
+      bodyClassName="bg-transparent p-0"
+    >
+        <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+          <div className="text-white-soft center min-h-32 text-sm">No credits found.</div>
+        </motion.div>
       </Container>
     );
   }
@@ -152,13 +156,19 @@ export default function CastModal({ close, data, header }) {
       header={resolvedHeader}
       bodyClassName="bg-transparent p-0"
     >
-      <div ref={contentRef} className="relative overflow-hidden">
-        {activeTab === 'cast' ? (
-          <CreditsGrid close={close} list={castEntries} keyPrefix="cast" />
-        ) : (
-          <CreditsGrid close={close} list={crewEntries} keyPrefix="crew" />
-        )}
-      </div>
+      <motion.div ref={contentRef} className="relative overflow-hidden" {...FEATURE_MODAL_CONTENT_MOTION}>
+        <AnimatePresence initial={false} mode="wait">
+          {activeTab === 'cast' ? (
+            <motion.div key="cast" {...FEATURE_MODAL_CONTENT_MOTION}>
+              <CreditsGrid close={close} list={castEntries} keyPrefix="cast" />
+            </motion.div>
+          ) : (
+            <motion.div key="crew" {...FEATURE_MODAL_CONTENT_MOTION}>
+              <CreditsGrid close={close} list={crewEntries} keyPrefix="crew" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </Container>
   );
 }

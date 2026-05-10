@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
@@ -24,6 +25,7 @@ import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/serv
 import { cn } from '@/core/utils';
 import { resolveExplicitMediaType } from '@/core/utils/media';
 import Icon from '@/ui/icon';
+import { getMovieFeatureItemMotion, MOVIE_FEATURE_ACTION_MOTION, MOVIE_FEATURE_SECTION_MOTION } from '@/features/movie/motion';
 
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
@@ -113,7 +115,7 @@ function ActionButton({
   palette,
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -121,6 +123,7 @@ function ActionButton({
         'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
+      {...MOVIE_FEATURE_ACTION_MOTION}
     >
       {loading ? (
         <span>{loadingLabel}</span>
@@ -132,7 +135,7 @@ function ActionButton({
           <span>{label}</span>
         </>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -149,12 +152,17 @@ function CollectionActionsView({
   state,
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <motion.div className="flex flex-col gap-2" {...MOVIE_FEATURE_SECTION_MOTION}>
       {canGoToMovie ? (
-        <ActionButton icon="solar:clapperboard-play-bold" label="Go to Movie" onClick={onGoToMovie} />
+        <motion.div {...getMovieFeatureItemMotion(0)}>
+          <ActionButton icon="solar:clapperboard-play-bold" label="Go to Movie" onClick={onGoToMovie} />
+        </motion.div>
       ) : null}
 
-      <div className={cn('grid grid-cols-1 gap-2', showLikeAction ? 'min-[460px]:grid-cols-2' : '')}>
+      <motion.div
+        className={cn('grid grid-cols-1 gap-2', showLikeAction ? 'min-[460px]:grid-cols-2' : '')}
+        {...getMovieFeatureItemMotion(1)}
+      >
         {showLikeAction ? (
           <ActionButton
             active={state.liked}
@@ -178,28 +186,34 @@ function CollectionActionsView({
           onClick={onWatched}
           palette="watched"
         />
-      </div>
+      </motion.div>
 
-      <ActionButton
-        active={state.watchlist}
-        disabled={state.loadingWatchlist || state.submittingWatchlist}
-        icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
-        label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
-        loading={state.loadingWatchlist || state.submittingWatchlist}
-        loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
-        onClick={onWatchlist}
-        palette="watchlist"
-      />
+      <motion.div {...getMovieFeatureItemMotion(2)}>
+        <ActionButton
+          active={state.watchlist}
+          disabled={state.loadingWatchlist || state.submittingWatchlist}
+          icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+          label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+          loading={state.loadingWatchlist || state.submittingWatchlist}
+          loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'}
+          onClick={onWatchlist}
+          palette="watchlist"
+        />
+      </motion.div>
 
-      <ActionButton
-        icon={ownReview ? 'solar:pen-new-square-bold' : 'solar:pen-new-square-linear'}
-        label={ownReview ? 'Edit Review' : 'Add Review'}
-        onClick={onWriteReview}
-        palette="neutral"
-      />
+      <motion.div {...getMovieFeatureItemMotion(3)}>
+        <ActionButton
+          icon={ownReview ? 'solar:pen-new-square-bold' : 'solar:pen-new-square-linear'}
+          label={ownReview ? 'Edit Review' : 'Add Review'}
+          onClick={onWriteReview}
+          palette="neutral"
+        />
+      </motion.div>
 
-      <ActionButton icon="solar:list-broken" label="Add To List" onClick={onOpenListPicker} palette="neutral" />
-    </div>
+      <motion.div {...getMovieFeatureItemMotion(4)}>
+        <ActionButton icon="solar:list-broken" label="Add To List" onClick={onOpenListPicker} palette="neutral" />
+      </motion.div>
+    </motion.div>
   );
 }
 

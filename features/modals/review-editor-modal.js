@@ -1,9 +1,19 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_TEXTAREA_CLASSNAMES,
+} from '@/features/modals/constants';
+import {
+  FEATURE_MODAL_ACTION_MOTION,
+  getFeatureModalSectionMotion,
+} from '@/features/motion';
 import {
   getReviewMinLength,
   getReviewValidationError,
@@ -15,12 +25,6 @@ import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
-
-const SECONDARY_BUTTON_CLASS =
-  'h-8 shrink-0 border border-white/5 px-4 text-xs font-semibold tracking-wide uppercase text-white/70 hover:bg-white/10 hover:text-white';
-
-const PRIMARY_BUTTON_CLASS =
-  'h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide uppercase text-black hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50';
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject?.subjectType === 'list') {
@@ -182,7 +186,7 @@ function FooterMeta({ hasText, isList = false, trimmedTextLength, validationErro
 
 function SpoilerToggle({ disabled, checked, invalid, onClick }) {
   return (
-    <button
+    <motion.button
       type="button"
       role="switch"
       aria-checked={!disabled && checked}
@@ -195,6 +199,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
         !disabled && !checked && 'bg-primary border-white/5 hover:bg-white/10',
         invalid && 'border-t'
       )}
+      {...FEATURE_MODAL_ACTION_MOTION}
     >
       <div>
         <div className="text-sm font-semibold">Contains spoilers</div>
@@ -213,7 +218,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
           className={cn('bg-primary size-5', checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0')}
         />
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -340,14 +345,14 @@ export default function ReviewEditorModal({ close, data }) {
         ),
         right: (
           <>
-            <Button type="button" onClick={close} className={SECONDARY_BUTTON_CLASS}>
+            <Button type="button" onClick={close} className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}>
               Cancel
             </Button>
             <Button
               type="submit"
               form={formId}
               disabled={isSaving || Boolean(validationError)}
-              className={PRIMARY_BUTTON_CLASS}
+              className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
             >
               {isSaving
                 ? 'Saving'
@@ -357,7 +362,7 @@ export default function ReviewEditorModal({ close, data }) {
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit}>
+      <motion.form id={formId} onSubmit={handleSubmit} {...getFeatureModalSectionMotion(0)}>
         <Textarea
           maxLength={800}
           value={reviewText}
@@ -368,18 +373,20 @@ export default function ReviewEditorModal({ close, data }) {
           }
           onChange={handleTextChange}
           className={{
-            wrapper: 'flex',
-            textarea:
-              'min-h-[180px] w-full resize-none p-3 text-sm leading-normal outline-none placeholder:text-white/50',
+            ...MODAL_TEXTAREA_CLASSNAMES,
+            wrapper: `${MODAL_TEXTAREA_CLASSNAMES.wrapper} min-h-[180px] p-3`,
+            textarea: 'min-h-[180px] w-full resize-none bg-transparent p-3 text-sm leading-normal text-white outline-none placeholder:text-white/50',
           }}
         />
-        <SpoilerToggle
-          disabled={!hasText}
-          checked={isSpoiler}
-          invalid={Boolean(validationError)}
-          onClick={handleSpoilerToggle}
-        />
-      </form>
+        <motion.div {...getFeatureModalSectionMotion(1)}>
+          <SpoilerToggle
+            disabled={!hasText}
+            checked={isSpoiler}
+            invalid={Boolean(validationError)}
+            onClick={handleSpoilerToggle}
+          />
+        </motion.div>
+      </motion.form>
     </Container>
   );
 }

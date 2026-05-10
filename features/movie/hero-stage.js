@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import CastSection from '@/features/movie/cast-section';
 import { MovieGridCastBoundary } from '@/features/movie/grid-animation';
 import MovieOverview from '@/features/movie/overview';
 import { cn } from '@/core/utils';
+import { getMovieFeatureItemMotion, MOVIE_FEATURE_SECTION_MOTION } from '@/features/movie/motion';
 
 const DESKTOP_BREAKPOINT = 1024;
 
@@ -71,39 +73,48 @@ export default function MovieHeroStage({
   );
 
   return (
-    <div className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)} style={stageStyle}>
+    <motion.div
+      className={cn('movie-detail-primary-stage flex flex-col overflow-hidden', className)}
+      style={stageStyle}
+      {...MOVIE_FEATURE_SECTION_MOTION}
+    >
       <div className="movie-detail-primary-stage-shell flex min-h-0 flex-1 flex-col justify-between gap-8">
         <div className="movie-detail-shell-inset flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-          <div className="shrink-0">{titleBlock}</div>
+          <motion.div className="shrink-0" {...getMovieFeatureItemMotion(0)}>
+            {titleBlock}
+          </motion.div>
 
           {tagline || overview ? (
-            <div className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}>
+            <motion.div
+              className={cn('flex w-full flex-col gap-4', overview ? 'min-h-0 flex-1 overflow-hidden' : '')}
+              {...getMovieFeatureItemMotion(1)}
+            >
               {tagline ? (
-                <div className="w-full shrink-0">
+                <motion.div className="w-full shrink-0" {...getMovieFeatureItemMotion(2)}>
                   <p className="w-full shrink-0 text-xs font-semibold tracking-widest text-white/70 uppercase sm:text-sm">
                     {tagline}
                   </p>
-                </div>
+                </motion.div>
               ) : null}
 
               {overview ? (
-                <div className="flex min-h-0 flex-1">
+                <motion.div className="flex min-h-0 flex-1" {...getMovieFeatureItemMotion(3)}>
                   <MovieOverview overview={overview} className="flex-1" />
-                </div>
+                </motion.div>
               ) : null}
-            </div>
+            </motion.div>
           ) : null}
         </div>
 
         {hasCast ? (
-          <div className="movie-detail-primary-cast-block shrink-0">
+          <motion.div className="movie-detail-primary-cast-block shrink-0" {...getMovieFeatureItemMotion(4)}>
             <MovieGridCastBoundary />
             <div className="movie-detail-shell-inset">
               <CastSection cast={cast} crew={crew} />
             </div>
-          </div>
+          </motion.div>
         ) : null}
       </div>
-    </div>
+    </motion.div>
   );
 }

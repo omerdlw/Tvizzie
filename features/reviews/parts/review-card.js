@@ -110,6 +110,7 @@ export default function ReviewCard({
   return (
     <article
       onClick={handleCardClick}
+      data-soft-hover="row"
       className={cn(
         'relative border-b border-white/5 last:border-b-0',
         isSubjectCardVariant && 'account-detail-full-width-item',

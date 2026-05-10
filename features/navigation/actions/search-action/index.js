@@ -10,7 +10,12 @@ import { cn } from '@/core/utils';
 import { SEARCH_ACTION_TAB_ITEMS, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
 import SearchActionControls from './parts/controls';
 import SearchResultItem from './parts/item';
-import { SEARCH_ACTION_EXIT_TRANSITION, SEARCH_ACTION_REVEAL_TRANSITION, getSearchResultDelay } from './motion';
+import {
+  FEATURE_NAV_ACTION_BUTTON_MOTION,
+  SEARCH_ACTION_FADE_MOTION,
+  SEARCH_ACTION_PANEL_MOTION,
+  getSearchActionItemMotion,
+} from '@/features/motion';
 import { navActionClass } from './utils';
 import {
   fetchAllMedia,
@@ -296,21 +301,12 @@ export default function SearchAction({
               <motion.div
                 key="search-results"
                 className="mt-2 flex flex-col gap-1 overflow-hidden"
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-                transition={SEARCH_ACTION_REVEAL_TRANSITION}
+                {...SEARCH_ACTION_PANEL_MOTION}
               >
                 {results.map((item, index) => (
                   <motion.div
                     key={`${item.media_type}-${item.id}`}
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-                    transition={{
-                      ...SEARCH_ACTION_REVEAL_TRANSITION,
-                      delay: getSearchResultDelay(index),
-                    }}
+                    {...getSearchActionItemMotion(index)}
                   >
                     <SearchResultItem
                       key={`${item.media_type}-${item.id}`}
@@ -330,18 +326,13 @@ export default function SearchAction({
               <motion.div
                 key="search-see-all"
                 className="mt-2 overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-                transition={SEARCH_ACTION_REVEAL_TRANSITION}
+                {...SEARCH_ACTION_FADE_MOTION}
               >
                 <motion.button
                   key={`see-all-${searchType}`}
                   type="button"
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8, transition: SEARCH_ACTION_EXIT_TRANSITION }}
-                  transition={{ ...SEARCH_ACTION_REVEAL_TRANSITION, delay: 0.12 }}
+                  {...FEATURE_NAV_ACTION_BUTTON_MOTION}
+                  {...getSearchActionItemMotion(2, 'searchTabs')}
                   className={navActionClass({
                     button: 'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap transition-colors',
                     cn,

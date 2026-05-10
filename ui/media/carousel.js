@@ -111,7 +111,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain px-1 select-none',
+          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain px-1 select-none',
           gap,
           className
         )}

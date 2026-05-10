@@ -1,4 +1,61 @@
 @layer utilities {
+  .tvz-soft-hover-card,
+  [data-soft-hover='card'] {
+    transition-property: filter, color, background-color, border-color, opacity;
+    transition-duration: 280ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .tvz-soft-hover-card:hover,
+  .tvz-soft-hover-card:focus-visible,
+  .tvz-soft-hover-card:focus-within,
+  [data-soft-hover='card']:hover,
+  [data-soft-hover='card']:focus-visible,
+  [data-soft-hover='card']:focus-within {
+    filter: brightness(1.04);
+  }
+
+  .tvz-soft-hover-media,
+  [data-soft-hover='media'] {
+    transition-property: filter, color, background-color, border-color, opacity;
+    transition-duration: 420ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .tvz-soft-hover-card:hover .tvz-soft-hover-media,
+  .tvz-soft-hover-card:focus-visible .tvz-soft-hover-media,
+  .tvz-soft-hover-card:focus-within .tvz-soft-hover-media,
+  [data-soft-hover='card']:hover [data-soft-hover='media'],
+  [data-soft-hover='card']:focus-visible [data-soft-hover='media'],
+  [data-soft-hover='card']:focus-within [data-soft-hover='media'] {
+    filter: brightness(1.06);
+  }
+
+  .tvz-soft-hover-row,
+  [data-soft-hover='row'] {
+    transition-property: filter, color, background-color, border-color, opacity;
+    transition-duration: 240ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .tvz-soft-hover-row:hover,
+  .tvz-soft-hover-row:focus-within,
+  [data-soft-hover='row']:hover,
+  [data-soft-hover='row']:focus-within {
+    filter: brightness(1.04);
+  }
+
+  [data-soft-hover='control'] {
+    transition-property: filter, color, background-color, border-color, opacity;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  [data-soft-hover='control']:hover,
+  [data-soft-hover='control']:focus-visible {
+    filter: brightness(1.05);
+  }
+
   .movie-detail-grid-frame {
     --movie-detail-grid-frame-width: 72rem;
     --movie-detail-grid-inline-pad: 1rem;
@@ -49,10 +106,6 @@
     display: grid;
     width: 100%;
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .movie-reviews-primary-layout {
-    min-height: 100dvh;
   }
 
   .movie-reviews-sidebar-actions {
@@ -155,10 +208,6 @@
 
   .movie-detail-section-band {
     padding-block: var(--movie-detail-grid-band-pad);
-  }
-
-  .movie-detail-grid-main {
-    padding-block-end: 0;
   }
 
   .movie-detail-section-stack {

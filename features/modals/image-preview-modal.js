@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from 'react';
 
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 import { TMDB_IMG } from '@/core/constants';
 import Container from '@/core/modules/modal/container';
+import { FEATURE_MODAL_MEDIA_MOTION } from '@/features/motion';
 import { Spinner } from '@/ui/loadings/spinner';
 
 function getAspectRatio(data) {
@@ -45,7 +47,7 @@ export default function ImagePreviewModal({ close, data }) {
       bodyClassName="p-0"
       footer={false}
     >
-      <div className="relative h-auto w-full" style={{ aspectRatio: String(aspectRatio) }}>
+      <motion.div className="relative h-auto w-full" style={{ aspectRatio: String(aspectRatio) }} {...FEATURE_MODAL_MEDIA_MOTION}>
         <Image
           src={`${TMDB_IMG}/original${filePath}`}
           className={`object-contain ${isLoaded ? 'visible' : 'invisible'}`}
@@ -60,7 +62,7 @@ export default function ImagePreviewModal({ close, data }) {
             <Spinner size={40} />
           </div>
         )}
-      </div>
+      </motion.div>
     </Container>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils';
 
@@ -135,21 +136,26 @@ export default function SegmentedControl({
             classNames.wrapper
           )}
         >
-          <span
+          <motion.span
             aria-hidden="true"
             className={cn('pointer-events-none absolute top-0 left-0 bg-white/10', classNames.indicator)}
-            style={
+            animate={
               indicatorFrame.ready
                 ? {
-                    transform: `translate3d(${indicatorFrame.x}px, ${indicatorFrame.y}px, 0)`,
+                    x: indicatorFrame.x,
+                    y: indicatorFrame.y,
                     width: indicatorFrame.width,
                     height: indicatorFrame.height,
                     opacity: 1,
                   }
-                : {
-                    opacity: 0,
-                  }
+                : { opacity: 0 }
             }
+            transition={{
+              type: 'spring',
+              stiffness: 300,
+              damping: 30,
+              mass: 0.72,
+            }}
           />
 
           {resolvedItems.map((item) => {
@@ -169,6 +175,7 @@ export default function SegmentedControl({
                   buttonRefs.current.delete(itemKey);
                 }}
                 onClick={() => onChange?.(itemKey)}
+                data-soft-hover="control"
                 className={cn(
                   'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap',
                   equalItems && 'min-w-0 flex-1 basis-0',

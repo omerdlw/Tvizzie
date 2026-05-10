@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@/ui/skeletons/views/person';
+import { Skeleton } from '@/features/person/skeletons';
 import Registry from './registry';
 
 export default function Loading() {

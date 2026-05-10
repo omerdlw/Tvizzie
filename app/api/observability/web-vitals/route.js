@@ -49,8 +49,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Metric name and id are required' }, { status: 400 });
   }
 
-  console.info('[web-vitals]', JSON.stringify(metric));
-
   return new NextResponse(null, {
     status: 204,
     headers: cacheControlHeaders(CACHE_CONTROL.NO_STORE),

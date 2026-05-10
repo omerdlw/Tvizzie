@@ -2,6 +2,7 @@
 
 import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/core/modules/auth';
@@ -11,16 +12,17 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { createUserListWithItems } from '@/core/services/media/lists.service';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
+import {
+  MODAL_ACTION_BUTTON_PRIMARY_CLASS,
+  MODAL_ACTION_BUTTON_SECONDARY_CLASS,
+  MODAL_EMPTY_PANEL_CLASS,
+  MODAL_INPUT_CLASSNAMES,
+  MODAL_SCROLLABLE_BODY_CLASS,
+} from '@/features/modals/constants';
+import { FEATURE_MODAL_EMPTY_MOTION, getFeatureModalItemMotion, getFeatureModalSectionMotion } from '@/features/motion';
 
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
-
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold uppercase tracking-wide whitespace-nowrap';
-
-const INPUT_STYLES = {
-  wrapper: 'flex h-10 items-center border border-white/5 bg-white/5 px-3.5 focus-within:border-white/10',
-  input: 'h-full w-full bg-transparent text-sm text-white outline-none placeholder:text-white/50',
-};
 
 function normalizeSearchResult(item = {}) {
   const mediaType = String(item?.media_type || item?.entityType || '')
@@ -318,7 +320,7 @@ export default function CreateListModal({ close, data }) {
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={cn(ACTION_BUTTON_CLASS, 'border-white/5 text-white/70 hover:bg-white/10 hover:text-white')}
+              className={MODAL_ACTION_BUTTON_SECONDARY_CLASS}
             >
               Cancel
             </Button>
@@ -327,7 +329,7 @@ export default function CreateListModal({ close, data }) {
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info h-8 border border-white bg-white px-4 text-xs font-semibold tracking-wide text-black uppercase hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/5 disabled:text-white/50"
+              className={MODAL_ACTION_BUTTON_PRIMARY_CLASS}
             >
               {isSaving ? 'Creating' : 'Create List'}
             </Button>
@@ -335,61 +337,63 @@ export default function CreateListModal({ close, data }) {
         ),
       }}
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-2">
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <motion.div className="flex min-h-0 flex-1 flex-col gap-2" {...getFeatureModalSectionMotion(0)}>
+        <motion.div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" {...getFeatureModalSectionMotion(1)}>
           <Input
             autoFocus
             value={draftTitle}
             placeholder="List title"
             onChange={(event) => setDraftTitle(event.target.value)}
-            className={INPUT_STYLES}
+            className={MODAL_INPUT_CLASSNAMES}
           />
 
           <Input
             value={draftDescription}
             placeholder="Description (optional)"
             onChange={(event) => setDraftDescription(event.target.value)}
-            className={INPUT_STYLES}
+            className={MODAL_INPUT_CLASSNAMES}
           />
-        </div>
+        </motion.div>
 
-        <Input
-          value={searchQuery}
-          placeholder="Search movies to add"
-          onChange={(event) => setSearchQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              handleQuickAdd();
-            }
-          }}
-          leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-white/50" />}
-          rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-white/50" /> : null}
-          className={{
-            ...INPUT_STYLES,
-            leftIcon: 'flex shrink-0 items-center pr-2.5',
-            rightIcon: 'flex shrink-0 items-center pl-2.5',
-          }}
-        />
+        <motion.div {...getFeatureModalSectionMotion(2)}>
+          <Input
+            value={searchQuery}
+            placeholder="Search movies to add"
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleQuickAdd();
+              }
+            }}
+            leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-white/50" />}
+            rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-white/50" /> : null}
+            className={{
+              ...MODAL_INPUT_CLASSNAMES,
+              leftIcon: 'flex shrink-0 items-center pr-2.5',
+              rightIcon: 'flex shrink-0 items-center pl-2.5',
+            }}
+          />
+        </motion.div>
 
-        <div
+        <motion.div
           data-lenis-prevent
           data-lenis-prevent-wheel
-          className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
+          className={MODAL_SCROLLABLE_BODY_CLASS}
+          {...getFeatureModalSectionMotion(3)}
         >
           {hasSearchResults ? (
             <>
-              {searchResults.map((item) => (
-                <SearchResultRow
-                  key={getMediaKey(item)}
-                  item={item}
-                  onAdd={handleAdd}
-                  isAdded={selectedKeys.has(getMediaKey(item))}
-                />
+              {searchResults.map((item, index) => (
+                <motion.div key={getMediaKey(item)} {...getFeatureModalItemMotion(index)}>
+                  <SearchResultRow item={item} onAdd={handleAdd} isAdded={selectedKeys.has(getMediaKey(item))} />
+                </motion.div>
               ))}
 
               {isSearching && searchResults.length === 0 && (
-                <div className="flex h-20 items-center justify-center text-sm text-white/70">Searching</div>
+                <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+                  <div className="text-white-soft flex h-20 items-center justify-center text-sm">Searching</div>
+                </motion.div>
               )}
             </>
           ) : (
@@ -400,19 +404,22 @@ export default function CreateListModal({ close, data }) {
 
               {draftItems.length > 0 ? (
                 draftItems.map((item, index) => (
-                  <DraftItemRow key={getMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
+                  <motion.div key={getMediaKey(item)} {...getFeatureModalItemMotion(index)}>
+                    <DraftItemRow index={index} item={item} onRemove={handleRemove} />
+                  </motion.div>
                 ))
               ) : (
-                <div className="flex h-28 flex-col items-center justify-center gap-2 border border-white/5 bg-white/10 text-center">
-                  <Icon icon="solar:list-bold" size={24} className="text-white/50" />
-
-                  <p className="text-xs text-white/50">Search movies above to start building your list</p>
-                </div>
+                <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
+                  <div className={cn(MODAL_EMPTY_PANEL_CLASS, 'border-dashed')}>
+                    <Icon icon="solar:list-bold" size={24} />
+                    <p className="text-xs">Search movies above to start building your list</p>
+                  </div>
+                </motion.div>
               )}
             </>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Container>
   );
 }
