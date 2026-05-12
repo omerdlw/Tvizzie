@@ -8,7 +8,7 @@ import {
   normalizeEmail,
   resolveVerificationErrorMessage,
   resolveVerificationTimestamp,
-} from '@/features/auth/utils';
+} from '@/features/auth/auth-flow';
 import { cn } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import { Button } from '@/ui/elements';

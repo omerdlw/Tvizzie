@@ -1,5 +1,5 @@
 import { SEARCH_TYPES } from '@/features/search/constants';
-import { hasActiveSearchMovieFilters, normalizeSearchMovieFilters } from '@/features/search/utils';
+import { hasActiveSearchMovieFilters, normalizeSearchMovieFilters } from '@/features/search/movie-filters';
 
 export const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
   decade: 'all',

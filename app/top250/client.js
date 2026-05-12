@@ -8,7 +8,7 @@ import { useRegistry } from '@/core/modules/registry';
 import { cn } from '@/core/utils';
 import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import SearchAction from '@/features/navigation/actions/search-action';
-import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
+import { AccountSectionHeading } from '@/features/account/components/section-wrapper';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import MediaCard from '@/ui/media/media-card';

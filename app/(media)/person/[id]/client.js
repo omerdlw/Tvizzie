@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { getPreferredMovieBackground } from '@/features/movie/utils';
+import { getPreferredMovieBackground } from '@/features/movie/movie-data';
 import {
   clearPersonPosterPreference,
   getPersonPosterPreferenceFilePath,
   setPersonPosterPreference,
 } from '@/features/person/poster-preferences';
-import { calculateAge, getBackgroundMovieCandidates } from '@/features/person/utils';
+import { calculateAge, getBackgroundMovieCandidates } from '@/features/person/person-data';
 import { TMDB_IMG } from '@/core/constants';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import PersonView from './view';

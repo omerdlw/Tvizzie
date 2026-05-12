@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useMediaReviews } from '@/features/reviews/use-media-reviews';
@@ -118,6 +118,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      data-soft-hover="card"
       className={cn(
         'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)

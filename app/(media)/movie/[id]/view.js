@@ -11,7 +11,7 @@ import Sidebar from '@/features/movie/sidebar';
 import MovieHeroStage from '@/features/movie/hero-stage';
 import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import MoviePrimaryGridDivider from '@/features/movie/primary-grid-divider';
-import { getGalleryImages, getMovieComputedData } from '@/features/movie/utils';
+import { getGalleryImages, getMovieComputedData } from '@/features/movie/movie-data';
 import VideosSection from '@/features/movie/videos-section';
 import MediaReviews from '@/features/reviews/media-reviews';
 import Carousel from '@/ui/media/carousel';

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import MediaThumb from './media-thumb';
-import { getTimelineCredits } from './utils';
+import { getTimelineCredits } from './person-data';
 import { getPersonFeatureItemMotion, PERSON_FEATURE_SECTION_MOTION } from '@/features/person/motion';
 
 function groupByYear(credits) {

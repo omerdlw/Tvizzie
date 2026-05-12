@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/hooks';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/collection-state';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { buildPollingSubscriptionKey, primePollingSubscription } from '@/core/services/shared/polling-subscription.service';
-import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
+import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/collections/item-utils';
 import {
   deleteListReview,
   subscribeToListReviews,

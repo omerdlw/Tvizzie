@@ -15,7 +15,7 @@ import {
   getFeatureModalSectionMotion,
 } from '@/features/motion';
 import { getReviewMinLength, getReviewValidationError, upsertListReview, upsertMediaReview } from '@/core/services/media';
-import RatingSelector from '@/features/reviews/parts/rating-selector';
+import RatingSelector from '@/features/reviews/components/rating-selector';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
 

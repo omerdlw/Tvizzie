@@ -9,9 +9,9 @@ import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { Button, Select } from '@/ui/elements';
 
-import ReviewAuthFallback from './parts/review-auth-fallback';
-import ReviewHeader from './parts/review-header';
-import ReviewList from './parts/review-list';
+import ReviewAuthFallback from './components/review-auth-fallback';
+import ReviewHeader from './components/review-header';
+import ReviewList from './components/review-list';
 import { useMediaReviews } from './use-media-reviews';
 import {
   REVIEW_SORT_MODE,
@@ -20,7 +20,7 @@ import {
   hasReviewText,
   parseReviewSortMode,
   sortReviewsByMode,
-} from './utils';
+} from './review-data';
 import { getReviewsFeatureItemMotion, REVIEWS_FEATURE_SECTION_MOTION } from './motion';
 
 export default function MediaReviews({

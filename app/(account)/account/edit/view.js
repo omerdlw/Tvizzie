@@ -1,6 +1,6 @@
 import AccountEditGeneralSection from '@/features/account/settings/general-section';
 import AccountEditSecuritySection from '@/features/account/settings/security-section';
-import { EditGridShell, StatusState } from '@/features/account/settings/view-parts';
+import { EditGridShell, StatusState } from '@/features/account/settings/components';
 import AccountRouteSkeleton from '@/features/account/skeletons';
 import Registry from './registry';
 

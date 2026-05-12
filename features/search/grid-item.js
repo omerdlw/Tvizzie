@@ -10,7 +10,7 @@ import Icon from '@/ui/icon';
 import MediaCard from '@/ui/media/media-card';
 
 import { SEARCH_TYPES } from './constants';
-import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '@/features/search/utils';
+import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '@/features/search/result';
 
 function getImageSrc(item) {
   if (item.media_type === SEARCH_TYPES.USER) {

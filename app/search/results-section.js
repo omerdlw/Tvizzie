@@ -3,12 +3,11 @@
 import Link from 'next/link';
 
 import { AppRouteItem, AppRouteShell } from '@/app/motion';
-import { TMDB_IMG } from '@/core/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS, TMDB_IMG } from '@/core/constants';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
-import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
-import { AccountGridDivider, AccountGridFrame } from '@/features/account/shared/grid-animation';
-import AccountSectionLayout from '@/features/account/shared/section-wrapper';
-import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
+import SearchMovieFilterBar from '@/features/account/filters/media/search-movie-bar';
+import { AccountGridDivider, AccountGridFrame } from '@/features/account/components/grid-animation';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';

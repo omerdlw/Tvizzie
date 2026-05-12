@@ -5,7 +5,7 @@ import {
   MediaField,
   SectionCard,
   TEXTAREA_BASE_CLASSES,
-} from '@/features/account/settings/view-parts';
+} from '@/features/account/settings/components';
 
 export default function AccountEditGeneralSection({
   avatarPreview,

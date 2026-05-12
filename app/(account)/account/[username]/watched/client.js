@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/hooks';
-import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/features/account/utils';
+import { mergeCollectionItemsWithExistingMetadata } from '@/features/account/collections/collection-state';
+import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/collections/item-utils';
+import { notifyAccountLoadError } from '@/features/account/feedback/account-feedback';
 import { logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import { removeUserWatchedItem, subscribeToUserWatched } from '@/core/services/media';

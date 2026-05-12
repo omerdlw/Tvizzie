@@ -1,6 +1,6 @@
 'use client';
 
-import { AccountSectionLoading } from '@/features/account/route/loading-state';
+import { AccountSectionLoading } from '@/features/account/route/section-state';
 import { Registry } from './view';
 
 export default function Loading() {

@@ -200,13 +200,80 @@
     margin-block-start: -1rem;
   }
 
+  .account-detail-section-body > :first-child > .account-filter-bar:first-child {
+    margin-block-start: -1rem;
+  }
+
   .account-detail-section-body > .account-filter-bar.account-filter-bar-flush:first-child {
     margin-block-start: 0 !important;
   }
 
+  .account-detail-section-body > :first-child > .account-filter-bar.account-filter-bar-flush:first-child {
+    margin-block-start: 0 !important;
+  }
+
+  .account-filter-bar {
+    position: relative;
+    border-block: var(--account-detail-divider-line-width) solid var(--account-detail-grid-line-color);
+    background-color: var(--color-black);
+  }
+
+  .account-filter-bar.account-detail-full-width-item {
+    padding-inline: 1rem;
+  }
+
+  .account-detail-grid-main > .account-filter-bar:first-child,
+  .account-detail-grid-main > :first-child.account-filter-bar,
+  .account-detail-grid-main
+    > .account-detail-grid-subsection:first-child
+    .account-detail-section-body
+    > .account-filter-bar:first-child,
+  .account-detail-grid-main
+    > .account-detail-grid-subsection:first-child
+    .account-detail-section-body
+    > :first-child
+    .account-filter-bar:first-child {
+    border-block-start: 0;
+  }
+
+  .account-filter-main,
+  .account-filter-skeleton-main {
+    display: flex;
+    width: 100%;
+    min-height: calc(2.5rem + 2rem);
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1rem;
+  }
+
+  .account-filter-inner,
+  .account-filter-skeleton-inner {
+    scrollbar-width: none;
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .account-filter-rule,
+  .account-filter-skeleton-rule {
+    display: none;
+  }
+
+  .account-filter-skeleton-main {
+    padding-inline: 1rem;
+  }
+
+  .account-filter-inner::-webkit-scrollbar,
+  .account-filter-skeleton-inner::-webkit-scrollbar {
+    display: none;
+  }
+
   .account-filter-trigger {
     display: inline-flex;
-    height: 2.25rem;
+    min-height: 2.5rem;
     min-width: fit-content;
     max-width: 100%;
     flex: 1 1 auto;
@@ -225,8 +292,8 @@
 
   .account-filter-icon-button {
     display: inline-flex;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
@@ -237,7 +304,7 @@
 
   .account-filter-input-wrap {
     display: flex;
-    height: 2.25rem;
+    min-height: 2.5rem;
     min-width: 0;
     flex: 1 1 auto;
     align-items: center;
@@ -245,6 +312,19 @@
     border: var(--account-detail-divider-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
     background-color: var(--color-black);
     padding-inline: 0.75rem;
+  }
+
+  .account-filter-input {
+    min-width: 0;
+    flex: 1 1 auto;
+    background-color: transparent;
+    color: var(--color-white);
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .account-filter-input::placeholder {
+    color: color-mix(in srgb, var(--color-white) 50%, transparent);
   }
 
   .account-filter-select {
@@ -283,32 +363,10 @@
     color: var(--color-info);
   }
 
-  .account-filter-skeleton-main {
-    display: flex;
-    width: 100%;
-    min-height: calc(2rem + 2.25rem);
-    align-items: center;
-    padding: 1rem;
-  }
-
-  .account-filter-skeleton-inner {
-    scrollbar-width: none;
-    display: flex;
-    min-width: 0;
-    flex: 1 1 auto;
-    align-items: center;
-    gap: 0.5rem;
-    overflow-x: auto;
-  }
-
-  .account-filter-skeleton-inner::-webkit-scrollbar {
-    display: none;
-  }
-
   .account-filter-skeleton-trigger,
   .account-filter-skeleton-search {
     display: inline-flex;
-    height: 2.25rem;
+    height: 2.5rem;
     align-items: center;
   }
 
@@ -320,7 +378,7 @@
 
   .account-filter-skeleton-search {
     flex: 0 0 auto;
-    width: 2.25rem;
+    width: 2.5rem;
   }
 
   .account-filter-skeleton-trigger-rating {
@@ -341,12 +399,6 @@
 
   .account-filter-skeleton-trigger-default {
     width: 11rem;
-  }
-
-  .account-filter-skeleton-rule {
-    height: var(--account-detail-divider-line-width);
-    width: 100%;
-    background-color: var(--account-detail-grid-line-color);
   }
 
   .account-detail-section-heading + .account-detail-section-body {

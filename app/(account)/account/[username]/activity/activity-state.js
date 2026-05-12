@@ -1,10 +1,12 @@
 import {
   buildManagedQueryString,
   normalizePage,
-  parseActivityFilters,
   parsePageFromSearch,
+} from '@/features/account/filters/query-utils';
+import {
+  parseActivityFilters,
   toActivityQueryValues,
-} from '@/features/account/filters';
+} from '@/features/account/filters/activity/query';
 
 export const ACTIVITY_FETCH_PAGE_SIZE = 36;
 

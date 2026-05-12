@@ -1,9 +1,16 @@
 'use client';
 
 import { createContext, useContext, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 
-import { useAccountSectionPage } from '@/features/account/shared/hooks/section-page';
-import { EMPTY_ACCOUNT_REGISTRY_AUTH, noopAccountRegistryHandler } from '@/features/account/registry-config';
+import { useAccountSectionPage } from '@/features/account/route/hooks/section-page';
+import AccountRouteSkeleton, { resolveAccountSkeletonVariant } from '@/features/account/skeletons';
+
+export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
+  isAuthenticated: false,
+});
+
+export function noopAccountRegistryHandler() {}
 
 const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   auth: EMPTY_ACCOUNT_REGISTRY_AUTH,
@@ -113,4 +120,19 @@ export function buildAccountPageShellProps(sectionState, overrides = null) {
     watchedCount: sectionState.profile?.watchedCount ?? 0,
     watchlistCount: sectionState.watchlistCount,
   };
+}
+
+export function AccountSectionLoading({ Registry, registryProps = null, variant }) {
+  return (
+    <>
+      <Registry {...(registryProps || { isPageLoading: true })} />
+      <AccountRouteSkeleton variant={variant} />
+    </>
+  );
+}
+
+export function AccountPathLoading({ Registry }) {
+  const pathname = usePathname();
+
+  return <AccountSectionLoading Registry={Registry} variant={resolveAccountSkeletonVariant(pathname)} />;
 }

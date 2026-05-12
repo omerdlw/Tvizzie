@@ -21,8 +21,8 @@
 
 @layer base {
   :root {
-    --canvas: #1f1f1e;
-    --surface: #121212;
+    --canvas: #121212;
+    --surface: #1f1f1e;
     --foreground: #f9f9f7;
     --white: var(--canvas);
     --default-border-width: 1px;

@@ -3,7 +3,7 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filters';
+import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filters/media/option-resolvers';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
 import { dedupeResults, getSearchGridBatchSize } from './grid-state';
@@ -18,15 +18,17 @@ import {
   resolveSearchType,
 } from './url-state';
 import {
-  applySearchMovieFilters,
   fetchCommunity,
   fetchAllMedia,
   fetchMediaPage,
   fetchUsers,
-  hasActiveSearchMovieFilters,
   mergeAllResults,
+} from '@/features/search/client-data';
+import {
+  applySearchMovieFilters,
+  hasActiveSearchMovieFilters,
   normalizeSearchMovieFilters,
-} from '@/features/search/utils';
+} from '@/features/search/movie-filters';
 import { useDebounce } from '@/core/hooks/use-debounce';
 import { useRegistry } from '@/core/modules/registry';
 

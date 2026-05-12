@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-import { useSeededFeedState } from '@/features/account/shared/hooks/section-page';
-import { normalizePage } from '@/features/account/filters';
+import { useSeededFeedState } from '@/features/account/collections/feed-state';
+import { normalizePage } from '@/features/account/filters/query-utils';
 import { logDataError } from '@/core/utils';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';

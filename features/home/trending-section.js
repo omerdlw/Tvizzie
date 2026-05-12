@@ -1,6 +1,7 @@
 'use client';
 
-import { PosterRail } from './poster-rail';
+import Carousel from '@/ui/media/carousel';
+import MediaPosterCard from '@/features/media/media-poster-card';
 
 function getUniqueItems(items = [], limit = items.length) {
   const seen = new Set();
@@ -31,7 +32,11 @@ export function TrendingSection({ title, items = [] }) {
             {title}
           </h2>
         </div>
-        <PosterRail items={railItems} />
+        <Carousel gap="gap-3" itemClassName="home-poster-rail-item">
+          {railItems.map((item) => (
+            <MediaPosterCard key={item.id} item={item} />
+          ))}
+        </Carousel>
       </section>
     </div>
   );

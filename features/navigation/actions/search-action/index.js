@@ -7,25 +7,24 @@ import { useDebounce } from '@/core/hooks/use-debounce';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { cn } from '@/core/utils';
 
-import { SEARCH_ACTION_TAB_ITEMS, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
-import SearchActionControls from './parts/controls';
-import SearchResultItem from './parts/item';
+import { SEARCH_ACTION_TAB_ITEMS, SEARCH_LIMITS, SEARCH_STYLES, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';
+import SearchActionControls from './components/controls';
+import SearchResultItem from './components/item';
 import {
   FEATURE_NAV_ACTION_BUTTON_MOTION,
   SEARCH_ACTION_FADE_MOTION,
   SEARCH_ACTION_PANEL_MOTION,
   getSearchActionItemMotion,
 } from '@/features/motion';
-import { navActionClass } from './utils';
 import {
   fetchAllMedia,
   fetchMedia,
   fetchUsers,
-  getDetailPath,
-  inferSearchType,
   limitMediaResults,
   mergeAllResults,
-} from '@/features/search/utils';
+} from '@/features/search/client-data';
+import { inferSearchType } from '@/features/search/ranking';
+import { getDetailPath } from '@/features/search/result';
 
 const SEARCH_ACTION_VARIANTS = Object.freeze({
   DEFAULT: 'default',
@@ -36,6 +35,18 @@ const SEARCH_ACTION_ALLOWED_TYPES = new Set([SEARCH_TYPES.ALL, SEARCH_TYPES.MOVI
 
 function resolveSearchActionType(type) {
   return SEARCH_ACTION_ALLOWED_TYPES.has(type) ? type : SEARCH_TYPES.ALL;
+}
+
+function resolveNavActionTone(tone, isActive) {
+  if (!tone || tone === 'toggle') {
+    return isActive ? SEARCH_STYLES.action.active : SEARCH_STYLES.action.muted;
+  }
+
+  return SEARCH_STYLES.action[tone] || SEARCH_STYLES.action.muted;
+}
+
+function navActionClass({ button = '', isActive = false, tone, className } = {}) {
+  return cn(button, resolveNavActionTone(tone, isActive), className);
 }
 
 export default function SearchAction({

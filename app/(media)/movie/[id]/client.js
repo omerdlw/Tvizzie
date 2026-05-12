@@ -14,7 +14,7 @@ import {
   createMovieBackdropImageUrl,
   createMoviePosterImageUrl,
   getPreferredMovieBackground,
-} from '@/features/movie/utils';
+} from '@/features/movie/movie-data';
 
 import MovieView from './view';
 

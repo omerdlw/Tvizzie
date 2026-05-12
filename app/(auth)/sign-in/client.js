@@ -13,7 +13,7 @@ import {
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validatePassword,
-} from '@/features/auth/utils';
+} from '@/features/auth/auth-flow';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';

@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import AccountListDetailFeed from '@/features/account/collections/list-detail-feed';
+import AccountListDetailFeed from '@/features/account/collections/list-detail/feed';
 import SearchAction from '@/features/navigation/actions/search-action';
-import { noopAccountRegistryHandler } from '@/features/account/registry-config';
+import { noopAccountRegistryHandler } from '@/features/account/route/section-state';
 import { useRegistry } from '@/core/modules/registry';
 import { buildAccountRegistryState } from '@/features/account/route/registry-state';
 

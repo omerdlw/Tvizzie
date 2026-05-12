@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRegistry } from '@/core/modules/registry';
 import { useAuth } from '@/core/modules/auth';
 import SearchAction from '@/features/navigation/actions/search-action';
-import { AccountPageShell } from '@/features/account/shared/layout';
+import { AccountPageShell } from '@/features/account/components/layout';
 import { buildAccountRegistryState } from './registry-state';
 import {
   AccountSectionStateProvider,

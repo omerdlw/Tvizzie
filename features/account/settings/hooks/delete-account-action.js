@@ -1,10 +1,10 @@
 'use client';
 
-import { clearAccountFeedback, emitAccountFeedback } from '../account-feedback';
+import { clearAccountFeedback, emitAccountFeedback } from '../../feedback/account-feedback';
 import { AUTH_PURPOSE, deleteAccountRequest, resolveSecurityErrorMessage } from '../security';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef } from 'react';
-import { openAccountVerificationPrompt } from './security-credentials';
+import { openAccountVerificationPrompt } from './security-actions';
 
 export function useAccountDeleteAction({
   auth,

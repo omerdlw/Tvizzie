@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import MediaPosterCard from '@/features/media/media-poster-card';
-import { GenreChip } from './genre-chip';
 import Icon from '@/ui/icon';
 
 const ALL_GENRE_ID = 'all';
@@ -27,6 +26,23 @@ function getUniqueItems(items = [], limit = items.length) {
 
 function getDiscoverBatchSize(isMobileGrid) {
   return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
+}
+
+function GenreChip({ genre, isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={`inline-flex h-9 shrink-0 items-center justify-center border px-5 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase sm:text-xs ${
+        isActive
+          ? 'border-white bg-white text-black'
+          : 'border-grid-line bg-primary text-white-muted hover:bg-white hover:text-black'
+      }`}
+    >
+      {genre.name}
+    </button>
+  );
 }
 
 export function DiscoverSection({

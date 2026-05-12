@@ -7,7 +7,7 @@ import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
-} from '@/features/account/shared/hooks/section-page';
+} from '@/features/account/collections/feed-state';
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useToast } from '@/core/modules/notification/hooks';
 import {

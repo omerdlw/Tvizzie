@@ -1,0 +1,324 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { usePathname, useSearchParams } from 'next/navigation';
+
+import {
+  LIST_FILTER_QUERY_KEYS,
+  hasActiveListFilters,
+  parseListFilters,
+  sortProfileLists,
+  toListQueryValues,
+} from '@/features/account/filters/lists/query';
+import {
+  applyMediaFilters,
+  buildMediaKeySet,
+} from '@/features/account/filters/media/apply';
+import { MEDIA_FILTER_QUERY_KEYS } from '@/features/account/filters/media/options';
+import {
+  collectMediaGenreOptions,
+  getDecadeOptions,
+} from '@/features/account/filters/media/option-resolvers';
+import {
+  hasActiveMediaFilters,
+  parseMediaFilters,
+  toMediaQueryValues,
+} from '@/features/account/filters/media/query';
+import { buildCollectionBasePath, buildManagedQueryString, parsePageFromSearch } from '@/features/account/filters/query-utils';
+import AccountPaginatedListGrid from '@/features/account/collections/lists/grid';
+import AccountListSortBar from '@/features/account/filters/lists/sort-bar';
+import AccountMediaFilterBar from '@/features/account/filters/media/bar';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/components/media-grid';
+import AccountReviewsFeed from '@/features/account/collections/reviews/feed';
+import FavoriteShowcaseManager from '@/features/account/collections/favorites/showcase-manager';
+
+const LIKES_VISIBILITY_OPTIONS = Object.freeze([
+  Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
+  Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
+]);
+
+const LIKES_ALLOWED_EYE_FLAGS = LIKES_VISIBILITY_OPTIONS.map((option) => option.key);
+
+function parseLikesMediaFilters(search) {
+  return parseMediaFilters(search, {
+    allowedEyeFlags: LIKES_ALLOWED_EYE_FLAGS,
+  });
+}
+
+export default function AccountLikesFeed({
+  activeSegment,
+  auth,
+  canShowLikesGrid,
+  favoriteShowcase,
+  handleLike,
+  handleRequestRemoveLike,
+  handleToggleShowcase,
+  isLikedListsLoading,
+  isOwner,
+  isReviewsLoading,
+  isShowcaseSaving,
+  likedLists,
+  likedListsError,
+  likes,
+  reviews,
+  reviewsTotalCount,
+  reviewsError,
+  showcaseMap,
+  watchedItems,
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString?.() || '';
+  const initialMediaFilters = useMemo(
+    () => parseLikesMediaFilters(new URLSearchParams(searchParamsKey)),
+    [searchParamsKey]
+  );
+  const initialListFilters = useMemo(() => parseListFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
+  const [mediaFilters, setMediaFilters] = useState(initialMediaFilters);
+  const [listFilters, setListFilters] = useState(initialListFilters);
+  const [activePage, setActivePage] = useState(initialPage);
+  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
+  const decadeOptions = useMemo(() => getDecadeOptions(), []);
+  const genreOptions = useMemo(() => collectMediaGenreOptions(likes), [likes]);
+  const likedKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const filteredLikes = useMemo(
+    () => applyMediaFilters(likes, mediaFilters, { likedKeys }),
+    [likedKeys, likes, mediaFilters]
+  );
+  const sortedLikedLists = useMemo(
+    () => sortProfileLists(likedLists, listFilters.sort),
+    [likedLists, listFilters.sort]
+  );
+  const hasMediaFilters = hasActiveMediaFilters(mediaFilters);
+  const hasListFilters = hasActiveListFilters(listFilters);
+
+  useEffect(() => {
+    setMediaFilters(initialMediaFilters);
+    setListFilters(initialListFilters);
+    setActivePage(initialPage);
+  }, [initialListFilters, initialMediaFilters, initialPage]);
+
+  const updateUrl = useCallback(
+    ({ nextListSort, nextMediaFilters, nextPage } = {}) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const resolvedListSort = nextListSort ?? listFilters.sort;
+      const resolvedMediaFilters = nextMediaFilters ?? mediaFilters;
+      const resolvedPage = nextPage ?? activePage;
+      const mediaQueryString = buildManagedQueryString(new URLSearchParams(window.location.search), {
+        managedKeys: MEDIA_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toMediaQueryValues(resolvedMediaFilters),
+      });
+      const listQueryString = buildManagedQueryString(new URLSearchParams(mediaQueryString), {
+        managedKeys: LIST_FILTER_QUERY_KEYS,
+        resetPage: false,
+        values: toListQueryValues({ sort: resolvedListSort }),
+      });
+      const params = new URLSearchParams(listQueryString);
+
+      if (resolvedPage > 1) {
+        params.set('page', String(resolvedPage));
+      } else {
+        params.delete('page');
+      }
+
+      const nextQuery = params.toString();
+      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
+    },
+    [activePage, collectionRootPath, listFilters.sort, mediaFilters]
+  );
+
+  const updateMediaFilters = useCallback(
+    (updates = {}) => {
+      const nextFilters = {
+        ...mediaFilters,
+        ...updates,
+      };
+      setMediaFilters(nextFilters);
+      setActivePage(1);
+      updateUrl({
+        nextListSort: listFilters.sort,
+        nextMediaFilters: nextFilters,
+        nextPage: 1,
+      });
+    },
+    [listFilters.sort, mediaFilters, updateUrl]
+  );
+
+  const resetMediaFilters = useCallback(() => {
+    const defaultFilters = parseLikesMediaFilters(new URLSearchParams());
+    setMediaFilters(defaultFilters);
+    setActivePage(1);
+    updateUrl({
+      nextListSort: listFilters.sort,
+      nextMediaFilters: defaultFilters,
+      nextPage: 1,
+    });
+  }, [listFilters.sort, updateUrl]);
+
+  const updateListSort = useCallback(
+    (nextSort) => {
+      setListFilters({ sort: nextSort });
+      setActivePage(1);
+      updateUrl({
+        nextListSort: nextSort,
+        nextMediaFilters: mediaFilters,
+        nextPage: 1,
+      });
+    },
+    [mediaFilters, updateUrl]
+  );
+
+  const resetListFilters = useCallback(() => {
+    const defaultSort = parseListFilters(new URLSearchParams()).sort;
+    setListFilters({ sort: defaultSort });
+    setActivePage(1);
+    updateUrl({
+      nextListSort: defaultSort,
+      nextMediaFilters: mediaFilters,
+      nextPage: 1,
+    });
+  }, [mediaFilters, updateUrl]);
+
+  const handlePageChange = useCallback(
+    (nextPage) => {
+      setActivePage(nextPage);
+      updateUrl({
+        nextListSort: listFilters.sort,
+        nextMediaFilters: mediaFilters,
+        nextPage,
+      });
+    },
+    [listFilters.sort, mediaFilters, updateUrl]
+  );
+  const reviewsSummaryLabel = Number.isFinite(Number(reviewsTotalCount))
+    ? `${Number(reviewsTotalCount)} Reviews`
+    : null;
+  const isFilmsSegment = activeSegment === 'films';
+  const isReviewsSegment = activeSegment === 'reviews';
+  let segmentContent = null;
+
+  if (isFilmsSegment) {
+    segmentContent = (
+      <AccountMediaGridPage
+        currentPage={activePage}
+        emptyMessage="No liked films yet"
+        icon="solar:heart-bold"
+        items={filteredLikes}
+        onPageChange={handlePageChange}
+        pageBasePath={collectionRootPath}
+        revealIndex={isOwner ? 1 : 0}
+        showHeader={false}
+        renderOverlay={(item) =>
+          isOwner ? (
+            <ProfileMediaActions
+              extraActions={[
+                {
+                  disabled: !showcaseMap.has(item.mediaKey) && favoriteShowcase.length >= 5,
+                  icon: showcaseMap.has(item.mediaKey) ? 'solar:star-bold' : 'solar:star-linear',
+                  label: showcaseMap.has(item.mediaKey)
+                    ? 'Remove from favorites showcase'
+                    : 'Add to favorites showcase',
+                  onClick: handleToggleShowcase,
+                },
+              ]}
+              media={item}
+              onRemoveItem={handleRequestRemoveLike}
+              removeLabel={`Remove ${item.title || item.name} from likes`}
+              userId={auth.user?.id || null}
+            />
+          ) : null
+        }
+        toolbar={
+          likes.length > 0 ? (
+            <AccountMediaFilterBar
+              filters={mediaFilters}
+              decadeOptions={decadeOptions}
+              genreOptions={genreOptions}
+              visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+              onChange={updateMediaFilters}
+              onReset={hasMediaFilters ? resetMediaFilters : null}
+            />
+          ) : hasMediaFilters ? (
+            <AccountMediaFilterBar
+              filters={mediaFilters}
+              decadeOptions={decadeOptions}
+              genreOptions={genreOptions}
+              visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+              onChange={updateMediaFilters}
+              onReset={resetMediaFilters}
+            />
+          ) : null
+        }
+        title="Films"
+      />
+    );
+  } else if (isReviewsSegment) {
+    segmentContent = (
+      <AccountReviewsFeed
+        enablePagination={true}
+        currentUserId={auth.user?.id || null}
+        emptyMessage="No liked reviews yet"
+        icon="solar:chat-round-bold"
+        isLoading={isReviewsLoading}
+        items={reviews}
+        loadError={reviewsError}
+        onLike={handleLike}
+        revealIndex={isOwner ? 1 : 0}
+        showOwnActions={false}
+        showHeader={false}
+        summaryLabel={reviewsSummaryLabel}
+        title="Reviews"
+        watchedItems={watchedItems}
+      />
+    );
+  } else {
+    segmentContent = (
+      <AccountPaginatedListGrid
+        currentPage={activePage}
+        emptyMessage="No liked lists yet"
+        icon="solar:list-broken"
+        isLoading={isLikedListsLoading}
+        lists={sortedLikedLists}
+        loadError={likedListsError}
+        onPageChange={handlePageChange}
+        pageBasePath={collectionRootPath}
+        revealIndex={isOwner ? 1 : 0}
+        showHeader={false}
+        title="Lists"
+        toolbar={
+          likedLists.length > 0 ? (
+            <AccountListSortBar
+              sort={listFilters.sort}
+              onChange={updateListSort}
+              onReset={hasListFilters ? resetListFilters : null}
+            />
+          ) : hasListFilters ? (
+            <AccountListSortBar sort={listFilters.sort} onChange={updateListSort} onReset={resetListFilters} />
+          ) : null
+        }
+      />
+    );
+  }
+
+  return (
+    <>
+      {isOwner && isFilmsSegment ? (
+        <FavoriteShowcaseManager
+          items={favoriteShowcase}
+          isSaving={isShowcaseSaving}
+          onRemoveItem={handleToggleShowcase}
+          revealIndex={0}
+        />
+      ) : null}
+
+      {canShowLikesGrid ? segmentContent : <AccountSectionState message="This profile is private." />}
+    </>
+  );
+}

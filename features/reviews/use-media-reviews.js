@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useNavHeight } from '@/core/modules/nav/hooks';
@@ -13,7 +13,7 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { deleteMediaReview, subscribeToLikeStatus, subscribeToMediaReviews, toggleReviewLike } from '@/core/services/media';
 import { buildMediaItemKey } from '@/core/services/shared/media-key.service';
 
-import { getRatingStats, sortReviews } from './utils';
+import { getRatingStats, sortReviews } from './review-data';
 
 function createReviewNavState({ confirmation = null, ownReview = null }) {
   return {

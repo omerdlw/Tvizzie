@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { REVIEW_SORT_OPTIONS } from '@/features/reviews/utils';
+import { REVIEW_SORT_OPTIONS } from '@/features/reviews/review-data';
 import MediaSocialProof from '@/features/movie/social-proof';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
 import { Select } from '@/ui/elements';

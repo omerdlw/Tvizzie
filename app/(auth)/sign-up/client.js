@@ -16,7 +16,7 @@ import {
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
-} from '@/features/auth/utils';
+} from '@/features/auth/auth-flow';
 import { createPendingSignUpPayload, finalizeOAuthSignUp, finalizeSignUp } from '@/features/auth/workflows';
 import AuthVerificationForm from '@/features/auth/auth-verification-form';
 import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';

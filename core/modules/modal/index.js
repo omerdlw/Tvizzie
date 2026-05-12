@@ -92,11 +92,11 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <motion.div className="center gap-1.5 border-t border-white/10 px-3 py-1.5" {...MODAL_LAYER_SWITCHER_MOTION}>
+    <motion.div className="center gap-1.5 border-t border-white/5 px-3 py-1.5" {...MODAL_LAYER_SWITCHER_MOTION}>
       <motion.button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-white/70 uppercase transition-colors hover:bg-white/10 hover:text-white"
         {...MODAL_ACTION_MOTION}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
@@ -210,7 +210,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     >
       {isTopModal ? (
         <motion.div
-          className="fixed inset-0 bg-primary/70"
+          className="fixed inset-0 bg-black/70"
           style={{ zIndex: backdropZIndex }}
           onClick={() => closeModal(null, entry.id)}
           {...MODAL_BACKDROP_MOTION}
@@ -234,7 +234,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
             'relative flex flex-col',
             isMobileSideModal ? '' : '',
             isPanelChrome
-              ? 'overflow-hidden border border-white/10 bg-primary/80'
+              ? 'overflow-hidden border border-white/5 bg-black/50'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome && isTopModalPosition && 'border-t-0',
             isPanelChrome && isBottomModalPosition && 'border-b-0',

@@ -1,6 +1,6 @@
 'use client';
 
-import { clearAccountFeedback, emitAccountFeedback } from '../account-feedback';
+import { clearAccountFeedback, emitAccountFeedback } from '../../feedback/account-feedback';
 import { normalizeEmail } from '../normalizers';
 import {
   AUTH_PURPOSE,
@@ -11,7 +11,7 @@ import {
 } from '../security';
 import { requestVerificationCode } from '@/features/auth/requests';
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref } from '@/features/auth/utils';
+import { buildAuthHref } from '@/features/auth/auth-flow';
 import { logAuthAuditEvent } from '@/core/auth/clients';
 import { useCallback } from 'react';
 

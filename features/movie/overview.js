@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
-import MovieOverviewSurface from '@/features/navigation/surfaces/movie-overview-surface';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { cn } from '@/core/utils';
+import Icon from '@/ui/icon';
+import { FEATURE_NAV_ACTION_BUTTON_MOTION, FEATURE_NAV_ACTION_ROW_MOTION } from '@/features/motion';
 import { getMovieFeatureItemMotion, MOVIE_FEATURE_ACTION_MOTION } from '@/features/movie/motion';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -32,6 +33,30 @@ function getReadMoreReserveHeight({ buttonNode = null, lineHeight = 0, rowGap = 
   const buttonHeight = buttonNode?.offsetHeight || Math.ceil(lineHeight);
 
   return buttonHeight > 0 ? buttonHeight + rowGap : 0;
+}
+
+function MovieOverviewSurface({ close = null, overview = '', title = 'Overview' }) {
+  const normalizedOverview = String(overview || '').trim();
+
+  return (
+    <motion.section className="flex max-h-screen w-full flex-col overflow-hidden" {...FEATURE_NAV_ACTION_ROW_MOTION}>
+      <div className="border-grid-line flex items-center justify-between gap-3 border-b p-3">
+        <p className="min-w-0 truncate text-sm font-bold tracking-wide uppercase">{title}</p>
+        <motion.button
+          type="button"
+          onClick={() => close?.()}
+          className="border-grid-line text-white-muted bg-primary inline-flex size-8 shrink-0 items-center justify-center border hover:text-white"
+          aria-label="Close overview"
+          {...FEATURE_NAV_ACTION_BUTTON_MOTION}
+        >
+          <Icon icon="material-symbols:close-rounded" size={16} />
+        </motion.button>
+      </div>
+      <div className="min-h-0 w-full overflow-y-auto p-3">
+        <p className="text-white-soft text-sm leading-relaxed break-words whitespace-pre-wrap">{normalizedOverview}</p>
+      </div>
+    </motion.section>
+  );
 }
 
 export default function MovieOverview({ overview, className = '', surfaceTitle = 'Overview' }) {

@@ -9,14 +9,62 @@ import {
   validatePassword,
 } from '../security';
 import { useCallback } from 'react';
-import {
-  clearPasswordFeedback,
-  completePasswordFeedback,
-  logPasswordAuditFailure,
-  logPasswordAuditSuccess,
-  redirectToSignIn,
-  startPasswordFeedback,
-} from './password-flow-helpers';
+import { logAuthAuditEvent } from '@/core/auth/clients';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref } from '@/features/auth/auth-flow';
+import { clearAccountFeedback, emitAccountFeedback } from '../../feedback/account-feedback';
+
+function redirectToSignIn(currentAuthEmail) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.location.replace(
+    buildAuthHref(AUTH_ROUTES.SIGN_IN, {
+      email: currentAuthEmail || '',
+    })
+  );
+}
+
+function startPasswordFeedback(flow) {
+  emitAccountFeedback(flow, 'start');
+}
+
+function completePasswordFeedback(flow) {
+  emitAccountFeedback(flow, 'success');
+}
+
+function clearPasswordFeedback(flow) {
+  clearAccountFeedback(flow);
+}
+
+function logPasswordAuditSuccess({ currentAuthEmail, eventType, userId }) {
+  logAuthAuditEvent({
+    email: currentAuthEmail || null,
+    eventType,
+    metadata: {
+      source: 'app/account/edit',
+    },
+    provider: 'password',
+    status: 'success',
+    userId: userId || null,
+  });
+}
+
+function logPasswordAuditFailure({ action, currentAuthEmail, error, userId }) {
+  logAuthAuditEvent({
+    email: currentAuthEmail || null,
+    eventType: 'failed-attempt',
+    metadata: {
+      action,
+      message: error?.message || 'Password action failed',
+      source: 'app/account/edit',
+    },
+    provider: 'password',
+    status: 'failure',
+    userId: userId || null,
+  });
+}
 
 export function useAccountPasswordCredentialActions({
   auth,

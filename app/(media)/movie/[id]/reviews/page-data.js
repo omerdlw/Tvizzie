@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/features/movie/utils';
+import { getMovieComputedData } from '@/features/movie/movie-data';
 import { TMDB_IMG } from '@/core/constants';
 import { getMovieBase } from '@/core/clients/tmdb/server';
 import { isDisplayableMovie } from '@/core/clients/tmdb/sanitize';

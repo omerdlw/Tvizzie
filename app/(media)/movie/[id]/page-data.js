@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/features/movie/utils';
+import { getMovieComputedData } from '@/features/movie/movie-data';
 import { getImdbTitleRating } from '@/core/clients/imdb/server';
 import { TMDB_IMG } from '@/core/constants';
 import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server';

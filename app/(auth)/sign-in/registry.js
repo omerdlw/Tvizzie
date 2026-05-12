@@ -1,6 +1,6 @@
 'use client';
 
-import AuthRouteRegistry from '@/features/auth/route-registry';
+import { AuthRouteRegistry } from '@/features/auth/page-shell';
 
 export default function Registry({ authIsReady, isResetMode }) {
   return (

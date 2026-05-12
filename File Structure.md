@@ -85,17 +85,17 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `core/animation/`: Animasyon tokenları, builderları ve route/feature motion için ortak primitive katmanı.
 - `core/api/`: API cache ve route server helper katmanı.
 - `core/api/routes/`: API route iş mantığı; app/api route handlerlarının çağırdığı server-side handlerlar.
-- `core/auth/`: Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+- `core/auth/`: Auth domain çekirdeği; root entrypoint, client/server namespace exports, constants ve auth helperları.
 - `core/auth/clients/`: Client-side auth yardımcıları; CSRF, audit, pending account ve session storage.
-- `core/auth/servers/`: Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
-- `core/auth/servers/account/`: Server-side account lifecycle, deletion, bootstrap ve state işlemleri.
-- `core/auth/servers/audit/`: Server-side auth audit log işlemleri.
-- `core/auth/servers/notice/`: Auth route notice/feedback server yardımcıları.
-- `core/auth/servers/policy/`: Auth route policy server kontrolleri.
-- `core/auth/servers/providers/`: OAuth provider server işlemleri ve Google intent/provider akışı.
-- `core/auth/servers/security/`: CSRF, rate-limit, recent reauth, step-up ve password security server logic.
-- `core/auth/servers/session/`: Auth session cookie, request context, revocation ve Supabase admin auth server logic.
-- `core/auth/servers/verification/`: Email/login/signup/password verification server akışları.
+- `core/auth/servers/`: Server-side auth domaini; domain entrypoint dosyaları (`account.js`, `session.js`, `verification.js` vb.) ve bunların altında implementation klasörleri.
+- `core/auth/servers/account/`: Server-side account lifecycle, deletion, bootstrap ve state implementation dosyaları.
+- `core/auth/servers/audit/`: Server-side auth audit log implementation dosyaları.
+- `core/auth/servers/notice/`: Auth route notice/feedback server implementation dosyaları.
+- `core/auth/servers/policy/`: Auth route policy server implementation dosyaları.
+- `core/auth/servers/providers/`: OAuth provider server işlemleri ve Google intent/provider akışı implementation dosyaları.
+- `core/auth/servers/security/`: CSRF, rate-limit, recent reauth, step-up ve password security server implementation dosyaları.
+- `core/auth/servers/session/`: Auth session cookie, request context, revocation ve Supabase admin auth server implementation dosyaları.
+- `core/auth/servers/verification/`: Email/login/signup/password verification server implementation dosyaları.
 - `core/clients/`: Harici servis clientları.
 - `core/clients/imdb/`: IMDb veri/client entegrasyonu.
 - `core/clients/supabase/`: Supabase admin, browser/server client, proxy ve auth storage bağlantıları.
@@ -126,7 +126,7 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `core/services/account/`: Account profile, collections, feed ve route data server/client servisleri.
 - `core/services/activity/`: Activity event canonicalization, processing ve activity service katmanı.
 - `core/services/jobs/`: Internal job/event queue servisleri.
-- `core/services/media/`: Likes, watched, watchlist, lists, reviews, social proof ve poster preference medya servisleri.
+- `core/services/media/`: Media servis domaini; `likes`, `lists`, `reviews`, `watched-watchlist`, `social-proof` ve `user-media` alt domain klasörleri ile root namespace export yüzeyi.
 - `core/services/notifications/`: Notification event processor, resources ve notification service katmanı.
 - `core/services/realtime/`: Live update, realtime broadcast, transport config ve user event servisleri.
 - `core/services/search/`: Search quality/event server servisleri.
@@ -137,19 +137,18 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
 - `docs/`: Proje dokümantasyonu.
 - `docs/architecture/`: Mimari kararlar ve sahiplik dokümanları.
 - `features/`: Feature-level UI ve domain logic; route entrypoint değil, route tarafından tüketilen uygulama özellikleri.
-- `features/account/`: Account feature domaini; profile, activity, collections, reviews, settings ve shared parçalar.
+- `features/account/`: Account feature domaini; profile, activity, collections, filters, hooks, components, reviews, settings ve route registry parçaları.
 - `features/account/activity/`: Account activity feed ve overview feature parçaları.
 - `features/account/collections/`: Account likes, watched, watchlist, lists, list detail ve collection grid/card logic.
-- `features/account/filters/`: Account collection/review/activity/list filtre parsing, query ve resolver katmanı.
-- `features/account/profile/`: Account profile hero, overview, relationship, list item ve social proof feature parçaları.
+- `features/account/components/`: Account surface ortak UI/state parçaları; grid, pagination, media grid, section wrapper ve layout yardımcıları.
+- `features/account/filters/`: Account collection/review/activity/list filtre parsing, query, resolver ve filter bar UI katmanı.
+- `features/account/hooks/`: Account route ve surface orchestration hookları; collection actions, page data/state, feed ve reorder akışları.
+- `features/account/profile/`: Account profile hero, overview, relationship subscription/data, list item ve social proof parçaları.
 - `features/account/registry/`: Account route registry state builderları ve nav/modal registry config.
 - `features/account/reviews/`: Account reviews feed, overview ve media-key state parçaları.
 - `features/account/route/`: Account route composition helperları; section factory, loading/registry/section state.
 - `features/account/settings/`: Account edit/settings UI, security sections, feedback ve normalizer logic.
-- `features/account/settings/hooks/`: Account edit/security form hookları ve security action orchestration.
-- `features/account/shared/`: Account feature ortak layout, grid, pagination, section, media grid ve filter primitives.
-- `features/account/shared/filters/`: Account/search filtre bar bileşenlerinin ayrılmış UI parçaları.
-- `features/account/shared/hooks/`: Account shared hooks; collection actions, page data, follow actions, feed state ve reorder logic.
+- `features/account/hooks/settings/`: Account edit/security form hookları ve security action orchestration.
 - `features/account/skeletons/`: Account route skeleton shell, hero, variants ve shared skeleton parçaları.
 - `features/auth/`: Auth feature UI, forms, route registry, requests, workflows ve auth utilities.
 - `features/home/`: Home page feature bileşenleri; discovery, trending, poster rail ve genre chips.
@@ -486,7 +485,16 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `csrf.client.js`
         - `pending-account.client.js`
         - `session-storage.client.js`
-      - `servers/` - Auth domain çekirdeği; constants, capabilities, providers, password validation ve route notice.
+      - `servers/` - Server-side auth domaini; domain entrypoint dosyaları ve bunların altında implementation klasörleri.
+        - `account.js`
+        - `audit.js`
+        - `index.js`
+        - `notice.js`
+        - `policy.js`
+        - `providers.js`
+        - `security.js`
+        - `session.js`
+        - `verification.js`
         - `account/` - Server-side account lifecycle, deletion, bootstrap ve state işlemleri.
           - `account-bootstrap.server.js`
           - `account-deletion.server.js`
@@ -701,50 +709,63 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `event-processor.shared.js`
       - `jobs/` - Internal job/event queue servisleri.
         - `app-event-queue.server.js`
-      - `media/` - Likes, watched, watchlist, lists, reviews, social proof ve poster preference medya servisleri.
-        - `likes.queries.js`
-        - `likes.service.js`
-        - `likes.shared.js`
-        - `likes.subscriptions.js`
-        - `lists.constants.js`
-        - `lists.derived-state.js`
-        - `lists.item-mutations.js`
-        - `lists.like-mutations.js`
-        - `lists.list-mutations.js`
-        - `lists.mutations.js`
-        - `lists.queries.js`
-        - `lists.service.js`
-        - `lists.shared.js`
-        - `lists.subscriptions.js`
-        - `poster-preference-events.js`
-        - `reviews.constants.js`
-        - `reviews.context.js`
-        - `reviews.list-mutations.js`
-        - `reviews.media-mutations.js`
-        - `reviews.mutation-shared.js`
-        - `reviews.mutations.js`
-        - `reviews.server.constants.js`
-        - `reviews.server.context.js`
-        - `reviews.server.js`
-        - `reviews.server.list-feed.js`
-        - `reviews.server.profile-feed.js`
-        - `reviews.server.queries.js`
-        - `reviews.server.shared.js`
-        - `reviews.service.js`
-        - `reviews.shared.js`
-        - `reviews.stored-mutations.js`
-        - `reviews.subscriptions.js`
-        - `reviews.validation.js`
-        - `social-proof.service.js`
-        - `user-media.service.js`
-        - `watched.queries.js`
-        - `watched.service.js`
-        - `watched.shared.js`
-        - `watched.subscriptions.js`
-        - `watchlist.queries.js`
-        - `watchlist.service.js`
-        - `watchlist.shared.js`
-        - `watchlist.subscriptions.js`
+      - `media/` - Media servis domaini; root namespace export yüzeyi ve domain bazlı alt klasörler.
+        - `index.js`
+        - `likes/`
+          - `index.js`
+          - `queries.js`
+          - `service.js`
+          - `shared.js`
+          - `subscriptions.js`
+        - `lists/`
+          - `constants.js`
+          - `derived-state.js`
+          - `index.js`
+          - `item-mutations.js`
+          - `like-mutations.js`
+          - `list-mutations.js`
+          - `mutations.js`
+          - `queries.js`
+          - `service.js`
+          - `shared.js`
+          - `subscriptions.js`
+        - `reviews/`
+          - `constants.js`
+          - `context.js`
+          - `index.js`
+          - `list-mutations.js`
+          - `media-mutations.js`
+          - `mutation-shared.js`
+          - `mutations.js`
+          - `server.constants.js`
+          - `server.context.js`
+          - `server.js`
+          - `server.list-feed.js`
+          - `server.profile-feed.js`
+          - `server.queries.js`
+          - `server.shared.js`
+          - `service.js`
+          - `shared.js`
+          - `stored-mutations.js`
+          - `subscriptions.js`
+          - `validation.js`
+        - `social-proof/`
+          - `index.js`
+          - `service.js`
+        - `user-media/`
+          - `index.js`
+          - `poster-preference-events.js`
+          - `service.js`
+        - `watched-watchlist/`
+          - `index.js`
+          - `watched.queries.js`
+          - `watched.service.js`
+          - `watched.shared.js`
+          - `watched.subscriptions.js`
+          - `watchlist.queries.js`
+          - `watchlist.service.js`
+          - `watchlist.shared.js`
+          - `watchlist.subscriptions.js`
       - `notifications/` - Notification event processor, resources ve notification service katmanı.
         - `event-processor.server.js`
         - `notification-events.constants.js`
@@ -797,22 +818,23 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
       - `motion-ownership.md`
   - `features/` - Feature-level UI ve domain logic; route entrypoint değil, route tarafından tüketilen uygulama özellikleri.
     - `motion.js`
-    - `account/` - Account feature domaini; profile, activity, collections, reviews, settings ve shared parçalar.
+    - `account/` - Account feature domaini; profile, activity, collections, filters, hooks, components, reviews ve settings parçaları.
+      - `index.js`
+      - `load-error.js`
       - `registry-config.js`
       - `skeletons.js`
       - `utils.js`
       - `activity/` - Account activity feed ve overview feature parçaları.
+        - `index.js`
         - `feed.js`
         - `overview.js`
       - `collections/` - Account likes, watched, watchlist, lists, list detail ve collection grid/card logic.
+        - `index.js`
         - `favorites-overview.js`
         - `favorites-showcase-manager.js`
         - `hooks.js`
         - `item-utils.js`
         - `likes-feed.js`
-        - `likes-filter-options.js`
-        - `list-card-preview.js`
-        - `list-card-utils.js`
         - `list-card.js`
         - `list-detail-feed.js`
         - `list-detail-filters.js`
@@ -830,11 +852,26 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `watched-overview.js`
         - `watchlist-feed.js`
         - `watchlist-overview.js`
-      - `filters/` - Account collection/review/activity/list filtre parsing, query ve resolver katmanı.
-        - `activity.js`
+      - `components/` - Account surface ortak UI/state parçaları; grid, pagination, media grid ve section wrapper helperları.
         - `index.js`
+        - `grid-animation.js`
+        - `layout.js`
+        - `media-actions.js`
+        - `media-grid-utils.js`
+        - `media-grid.js`
+        - `pagination.js`
+        - `section-state.js`
+        - `section-wrapper.js`
+      - `filters/` - Account collection/review/activity/list filtre parsing, query, resolver ve filter bar UI katmanı.
+        - `activity-filter-bar.js`
+        - `activity.js`
+        - `content-filter-primitives.js`
+        - `filter-options.js`
+        - `index.js`
+        - `list-sort-bar.js`
         - `lists.js`
         - `media-apply.js`
+        - `media-filter-bar.js`
         - `media-identity.js`
         - `media-option-resolvers.js`
         - `media-options.js`
@@ -844,9 +881,25 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `media-values.js`
         - `media.js`
         - `query-utils.js`
+        - `review-filter-bar.js`
         - `reviews.js`
+        - `search-movie-filter-bar.js`
         - `shared.js`
+      - `hooks/` - Account route ve surface orchestration hookları; collection actions, page data/state, feed ve reorder akışları.
+        - `index.js`
+        - `collection-actions.js`
+        - `feed-state.js`
+        - `follow-actions.js`
+        - `hero-height.js`
+        - `item-removal-actions.js`
+        - `list-actions.js`
+        - `page-actions.js`
+        - `page-data.js`
+        - `page-query-state.js`
+        - `reorder-action.js`
+        - `section-page.js`
       - `profile/` - Account profile hero, overview, relationship, list item ve social proof feature parçaları.
+        - `index.js`
         - `hero-bio.js`
         - `hero-metrics.js`
         - `hero.js`
@@ -855,17 +908,19 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `overview-feed.js`
         - `relationship-data.js`
         - `relationship-subscriptions.js`
-        - `relationships.js`
         - `social-proof.js`
       - `registry/` - Account route registry state builderları ve nav/modal registry config.
         - `common.js`
         - `edit-state.js`
+        - `index.js`
         - `page-state.js`
       - `reviews/` - Account reviews feed, overview ve media-key state parçaları.
+        - `index.js`
         - `feed.js`
         - `media-key-state.js`
         - `overview.js`
       - `route/` - Account route composition helperları; section factory, loading/registry/section state.
+        - `index.js`
         - `loading-state.js`
         - `registry-state.js`
         - `route-page.js`
@@ -878,47 +933,14 @@ Hariç tutulan dizin/dosyalar: `.git`, `.next`, `node_modules`, `.open-next`, `.
         - `security-section.js`
         - `security.js`
         - `view-parts.js`
-        - `hooks/` - Account edit/security form hookları ve security action orchestration.
-          - `delete-account-action.js`
-          - `edit-data.js`
-          - `email-credentials.js`
-          - `google-linking-action.js`
-          - `password-credentials.js`
-          - `password-flow-helpers.js`
-          - `security-actions.js`
-          - `security-credentials.js`
-          - `security-verification.js`
-      - `shared/` - Account feature ortak layout, grid, pagination, section, media grid ve filter primitives.
-        - `content-filter-primitives.js`
-        - `content-filters.js`
-        - `grid-animation.js`
-        - `layout.js`
-        - `load-error.js`
-        - `media-actions.js`
-        - `media-grid-utils.js`
-        - `media-grid.js`
-        - `pagination.js`
-        - `section-state.js`
-        - `section-wrapper.js`
-        - `filters/` - Account/search filtre bar bileşenlerinin ayrılmış UI parçaları.
-          - `activity-filter-bar.js`
-          - `filter-options.js`
-          - `list-sort-bar.js`
-          - `media-filter-bar.js`
-          - `review-filter-bar.js`
-          - `search-movie-filter-bar.js`
-        - `hooks/` - Account shared hooks; collection actions, page data, follow actions, feed state ve reorder logic.
-          - `collection-actions.js`
-          - `feed-state.js`
-          - `follow-actions.js`
-          - `hero-height.js`
-          - `item-removal-actions.js`
-          - `list-actions.js`
-          - `page-actions.js`
-          - `page-data.js`
-          - `page-query-state.js`
-          - `reorder-action.js`
-          - `section-page.js`
+      - `hooks/settings/` - Account edit/security form hookları ve security action orchestration.
+        - `index.js`
+        - `delete-account-action.js`
+        - `edit-data.js`
+        - `email-credentials.js`
+        - `password-credentials.js`
+        - `security-actions.js`
+        - `security-verification.js`
       - `skeletons/` - Account route skeleton shell, hero, variants ve shared skeleton parçaları.
         - `hero-shell.js`
         - `route-variants.js`

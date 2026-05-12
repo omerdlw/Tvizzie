@@ -4,7 +4,7 @@ import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { completeVerifiedSignUp } from './requests';
 
-import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './utils';
+import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './auth-flow';
 
 export async function resolveSignInEmail(identifier) {
   const normalizedIdentifier = String(identifier || '').trim();

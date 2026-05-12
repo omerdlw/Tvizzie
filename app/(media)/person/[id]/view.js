@@ -9,7 +9,7 @@ import PersonSidebar from '@/features/person/sidebar';
 import PersonTimeline from '@/features/person/timeline';
 import { MovieGridDivider, MovieGridFrame, MovieGridSidebarBoundary } from '@/features/movie/grid-animation';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import { getFilmographyCredits } from '@/features/person/utils';
+import { getFilmographyCredits } from '@/features/person/person-data';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/features/person/skeletons';

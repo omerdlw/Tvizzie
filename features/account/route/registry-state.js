@@ -1,7 +1,8 @@
 'use client';
 
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
-import { EMPTY_ACCOUNT_REGISTRY_AUTH, buildAccountPageState } from '@/features/account/registry-config';
+import AccountBioSurface from '@/features/account/profile/bio-surface';
+import { EMPTY_ACCOUNT_REGISTRY_AUTH } from './section-state';
+import { buildAccountPageState } from '@/features/account/route/page-state';
 
 function buildAccountBioSurface({ isBioSurfaceOpen = false, profile = null, setIsBioSurfaceOpen }) {
   if (!isBioSurfaceOpen || !profile?.description) {

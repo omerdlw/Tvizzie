@@ -1,7 +1,22 @@
 'use client';
 
 import { AppRouteItem, AppRouteSection, AppRouteShell } from '@/app/motion';
+import { useRegistry } from '@/core/modules/registry';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+
+export function AuthRouteRegistry({ authIsReady, description, icon, title }) {
+  useRegistry({
+    nav: {
+      title,
+      description,
+      icon,
+      action: null,
+    },
+    loading: { isLoading: !authIsReady },
+  });
+
+  return null;
+}
 
 export default function AuthPageShell({ children, title }) {
   return (

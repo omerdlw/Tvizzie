@@ -1,6 +1,6 @@
 'use client';
 
-import { notifyAccountLoadError } from '@/features/account/shared/load-error';
+import { notifyAccountLoadError } from '@/features/account/feedback/account-feedback';
 import { useAccountClient } from '@/core/modules/account';
 import { useAuthSessionReady } from '@/core/modules/auth';
 import { useCallback, useEffect, useState } from 'react';

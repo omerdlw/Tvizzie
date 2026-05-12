@@ -5,7 +5,7 @@ import {
   INPUT_BASE_CLASSES,
   SecurityCard,
   SecuritySectionStack,
-} from '@/features/account/settings/view-parts';
+} from '@/features/account/settings/components';
 
 export default function AccountEditSecuritySection({
   canUsePasswordSecurity,

@@ -5,18 +5,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { INITIAL_DELETE_FLOW, INITIAL_EMAIL_FLOW, INITIAL_PASSWORD_FLOW } from '@/features/account/settings/security';
-import { useAccountSecurityActions } from '@/features/account/settings/hooks/security-actions';
 import { useAccountEditData } from '@/features/account/settings/hooks/edit-data';
+import { useAccountSecurityActions } from '@/features/account/settings/hooks/security-actions';
 import {
   clearAccountFeedback,
   emitAccountFeedback,
-  getAvatarFallback,
+} from '@/features/account/feedback/account-feedback';
+import { getAvatarFallback } from '@/features/account/route/nav-utils';
+import {
   normalizeEmail,
   normalizeOptionalText,
   normalizeProviderIds,
-} from '@/features/account/utils';
+} from '@/features/account/settings/normalizers';
 import { logDataError } from '@/core/utils';
 import { uploadAccountMediaFile } from '@/core/services/account/account.service';
 import { useAccount } from '@/core/modules/account';
