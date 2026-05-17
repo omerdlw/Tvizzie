@@ -33,7 +33,7 @@ function ReviewListSkeletonItem({ index, isAccountVariant, isLast }) {
     <div
       className={cn(
         'relative',
-        isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
+        isAccountVariant ? (index === 0 ? 'pb-4 pt-0' : 'py-4') : 'p-5',
         isAccountVariant && cn('account-review-list-item account-detail-full-width-item'),
         !isLast && (isAccountVariant ? 'border-b border-white/10' : 'media-review-list-item-divider')
       )}
@@ -121,8 +121,8 @@ export default function ReviewList({
     return (
       <div
         className={cn(
-          cn('text-white-muted py-10 text-center text-sm leading-relaxed'),
-          !isAccountVariant && showTopBorder && cn('border-grid-line border-y')
+          'py-10 text-center text-sm leading-relaxed text-white/50',
+          !isAccountVariant && showTopBorder && 'border-y border-white/10'
         )}
       >
         {emptyMessage}
@@ -154,7 +154,7 @@ export default function ReviewList({
             {...getReviewsFeatureItemMotion(index)}
           >
             <ReviewCard
-              className="!border-b-0"
+              className={cn('!border-b-0', isAccountVariant && index === 0 && '!pt-0')}
               review={mergedReview}
               currentUserId={currentUserId}
               displayVariant={displayVariant}

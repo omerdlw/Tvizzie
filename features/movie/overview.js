@@ -40,12 +40,12 @@ function MovieOverviewSurface({ close = null, overview = '', title = 'Overview' 
 
   return (
     <motion.section className="flex max-h-screen w-full flex-col overflow-hidden" {...FEATURE_NAV_ACTION_ROW_MOTION}>
-      <div className="border-grid-line flex items-center justify-between gap-3 border-b p-3">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 p-3">
         <p className="min-w-0 truncate text-sm font-bold tracking-wide uppercase">{title}</p>
         <motion.button
           type="button"
           onClick={() => close?.()}
-          className="border-grid-line text-white-muted bg-primary inline-flex size-8 shrink-0 items-center justify-center border hover:text-white"
+          className="inline-flex size-8 shrink-0 items-center justify-center border border-white/10 bg-primary text-white/50 hover:text-white"
           aria-label="Close overview"
           {...FEATURE_NAV_ACTION_BUTTON_MOTION}
         >
@@ -53,7 +53,7 @@ function MovieOverviewSurface({ close = null, overview = '', title = 'Overview' 
         </motion.button>
       </div>
       <div className="min-h-0 w-full overflow-y-auto p-3">
-        <p className="text-white-soft text-sm leading-relaxed break-words whitespace-pre-wrap">{normalizedOverview}</p>
+        <p className="text-sm leading-relaxed text-white/70 break-words whitespace-pre-wrap">{normalizedOverview}</p>
       </div>
     </motion.section>
   );
@@ -205,7 +205,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
       <motion.div className="relative min-h-0 w-full flex-1 overflow-hidden" {...getMovieFeatureItemMotion(1)}>
         <p
           ref={textRef}
-          className="text-white-soft w-full text-sm leading-6 text-pretty sm:text-base sm:leading-7"
+          className="w-full text-sm leading-6 text-pretty text-white/70 sm:text-base sm:leading-7"
           style={
             layoutState.canExpand && layoutState.maxLines
               ? {
@@ -226,7 +226,7 @@ export default function MovieOverview({ overview, className = '', surfaceTitle =
           ref={buttonRef}
           type="button"
           onClick={handleReadMore}
-          className="text-white-muted shrink-0 text-xs font-semibold tracking-widest uppercase hover:text-white"
+          className="shrink-0 text-xs font-semibold tracking-widest text-white/50 uppercase hover:text-white"
           {...getMovieFeatureItemMotion(2)}
           {...MOVIE_FEATURE_ACTION_MOTION}
         >

@@ -39,8 +39,11 @@ function RelatedMoviesSection({ items, title, hideDivider = false, motionIndex =
   return (
     <MovieGridSection hideDivider={hideDivider} motionIndex={motionIndex}>
       <div className="flex flex-col gap-3">
-        <h2 className="text-white-soft text-xs font-semibold tracking-widest uppercase">{title}</h2>
-        <Carousel gap="gap-3" itemClassName="movie-carousel-recommendation-item">
+        <h2 className="text-xs font-semibold tracking-widest text-white/70 uppercase">{title}</h2>
+        <Carousel
+          gap="gap-3"
+          itemClassName="w-36 shrink-0 sm:min-w-[13rem] sm:w-[calc((100%-1.5rem)/3)] md:min-w-36 md:w-[calc((100%-2.25rem)/4)] lg:min-w-0 lg:w-[calc((100%-3.75rem)/6)]"
+        >
           {items.map((item, index) => (
             <RecommendationCard
               key={`${item.id}-${index}`}

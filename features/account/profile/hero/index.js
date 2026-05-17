@@ -18,16 +18,39 @@ import {
   formatHeroCount,
 } from './metrics';
 
-const ACCOUNT_HERO_HEIGHT_CLASS = cn('account-hero-height');
-const ACCOUNT_HERO_IMAGE_CLASS = cn('account-hero-image');
-const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
-const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = cn('account-hero-bottom-gradient absolute inset-x-0 bottom-0');
-const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS = cn(
-  'account-hero-edge-gradient account-hero-left-edge-gradient absolute inset-y-0 left-0'
-);
-const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS = cn(
-  'account-hero-edge-gradient account-hero-right-edge-gradient absolute inset-y-0 right-0'
-);
+const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
+const ACCOUNT_HERO_IMAGE_CLASS = 'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
+const ACCOUNT_HERO_BANNER_WRAPPER_CLASS = 'mx-auto h-full w-full opacity-50';
+const ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS = 'pointer-events-none absolute inset-x-0 bottom-0 h-[56%] sm:h-[52%]';
+const ACCOUNT_HERO_EDGE_GRADIENT_CLASS = 'pointer-events-none absolute inset-y-0 w-[10%] sm:w-[14%] lg:w-[18%]';
+const ACCOUNT_HERO_BOTTOM_GRADIENT_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      color-mix(in srgb, var(--white) 14%, transparent) 24%,
+      color-mix(in srgb, var(--white) 54%, transparent) 64%,
+      color-mix(in srgb, var(--white) 88%, transparent) 92%,
+      var(--white) 100%
+    )`,
+});
+const ACCOUNT_HERO_LEFT_EDGE_GRADIENT_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      to right,
+      var(--white) 0%,
+      color-mix(in srgb, var(--white) 72%, transparent) 38%,
+      color-mix(in srgb, var(--white) 22%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    )`,
+});
+const ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      to left,
+      var(--white) 0%,
+      color-mix(in srgb, var(--white) 72%, transparent) 38%,
+      color-mix(in srgb, var(--white) 22%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    )`,
+});
 
 export default function AccountHero({
   likesCount = 0,
@@ -98,9 +121,17 @@ export default function AccountHero({
           />
         </div>
       ) : null}
-      <div className={ACCOUNT_HERO_LEFT_EDGE_GRADIENT_CLASS} aria-hidden="true" />
-      <div className={ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_CLASS} aria-hidden="true" />
-      <div className={ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS} aria-hidden="true" />
+      <div
+        className={cn(ACCOUNT_HERO_EDGE_GRADIENT_CLASS, 'left-0')}
+        style={ACCOUNT_HERO_LEFT_EDGE_GRADIENT_STYLE}
+        aria-hidden="true"
+      />
+      <div
+        className={cn(ACCOUNT_HERO_EDGE_GRADIENT_CLASS, 'right-0')}
+        style={ACCOUNT_HERO_RIGHT_EDGE_GRADIENT_STYLE}
+        aria-hidden="true"
+      />
+      <div className={ACCOUNT_HERO_BOTTOM_GRADIENT_CLASS} style={ACCOUNT_HERO_BOTTOM_GRADIENT_STYLE} aria-hidden="true" />
       <div
         className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative z-10 flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >

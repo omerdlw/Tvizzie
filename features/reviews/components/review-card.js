@@ -110,11 +110,10 @@ export default function ReviewCard({
   return (
     <article
       onClick={handleCardClick}
-      data-soft-hover="row"
       className={cn(
-        'relative border-b border-white/5 last:border-b-0',
+        'relative border-b border-white/5 transition-[filter,color,background-color,border-color,opacity] [transition-duration:240ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-within:brightness-105 last:border-b-0',
         isSubjectCardVariant && 'account-detail-full-width-item',
-        isAccountVariant ? 'py-4 sm:py-5' : 'p-5',
+        isAccountVariant ? 'py-4' : 'p-5',
         isSpoilerHidden && 'cursor-pointer',
         className
       )}

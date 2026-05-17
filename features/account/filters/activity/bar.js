@@ -1,45 +1,38 @@
 import { cn } from '@/core/utils';
-import { DefaultMenuItem, FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from '../content-filter-primitives';
+import { FilterSelect } from '../components';
 import { ACTIVITY_SORT_OPTIONS } from '../filter-options';
 
 export default function AccountActivityFilterBar({ className = '', filters, onChange, onReset, subjectOptions = [] }) {
-  const subjectLabel = resolveOptionLabel(subjectOptions, filters?.subject, 'Any content');
-  const sortLabel = resolveOptionLabel(ACTIVITY_SORT_OPTIONS, filters?.sort, 'Newest First');
-  const isDefaultSort = filters?.sort === 'newest';
   const canReset =
     typeof onReset === 'function' &&
     ((filters?.subject ?? 'all') !== 'all' || (filters?.sort ?? 'newest') !== 'newest');
 
   return (
-    <div className={cn(UI.bar, className)}>
-      <div className={UI.main}>
-        <div className={UI.inner}>
-          <FilterPopover label={`Content: ${subjectLabel}`} active={filters?.subject !== 'all'}>
-            <OptionSection
-              options={subjectOptions}
-              value={filters?.subject}
-              onChange={(value) => onChange({ subject: value })}
-            />
-          </FilterPopover>
+    <div className={cn('w-full', className)}>
+      <div className="flex w-full flex-col gap-2 lg:flex-row">
+        <FilterSelect
+          value={filters?.subject ?? 'all'}
+          onChange={(event) => onChange({ subject: event.target.value })}
+          options={subjectOptions}
+          labelPrefix="Content"
+        />
 
-          <FilterPopover label={`${sortLabel}`} active={filters?.sort !== 'newest'}>
-            <DefaultMenuItem
-              active={isDefaultSort}
-              label="Default sort: Newest first"
-              onClick={() => onChange({ sort: 'newest' })}
-            />
+        <FilterSelect
+          value={filters?.sort ?? 'newest'}
+          onChange={(event) => onChange({ sort: event.target.value })}
+          options={ACTIVITY_SORT_OPTIONS}
+        />
 
-            <OptionSection
-              options={ACTIVITY_SORT_OPTIONS}
-              value={filters?.sort}
-              onChange={(value) => onChange({ sort: value })}
-            />
-          </FilterPopover>
-        </div>
-
-        {canReset ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="h-10 shrink-0 border border-white/10 bg-black px-4 text-xs font-semibold tracking-widest text-white/50 uppercase hover:text-white/70"
+          >
+            Reset
+          </button>
+        ) : null}
       </div>
-      <div className={UI.rule} />
     </div>
   );
 }

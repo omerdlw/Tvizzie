@@ -4,11 +4,11 @@ import Icon from '@/ui/icon';
 export function Spinner({ className, size = 15 }) {
   return (
     <div
-      className={cn('inline-flex items-center justify-center align-middle leading-none', className)}
+      className={cn('inline-flex animate-spin items-center justify-center align-middle leading-none motion-reduce:animate-none', className)}
       aria-label="Loading"
       role="status"
     >
-      <Icon className="center animate-spin motion-reduce:animate-none" icon="mingcute:loading-3-fill" size={size} />
+      <Icon className="center" icon="mingcute:loading-3-fill" size={size} />
     </div>
   );
 }

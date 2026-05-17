@@ -450,7 +450,7 @@ export default function ListPickerModal({ close, data }) {
             <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
               <div className={cn(MODAL_EMPTY_PANEL_CLASS, 'min-h-40 border-dashed')}>
                 <p className="text-[11px] font-bold tracking-widest uppercase">No lists yet</p>
-                <p className="text-white-soft mt-1 text-sm">Create your first list with the button above.</p>
+                <p className="mt-1 text-sm text-white/70">Create your first list with the button above.</p>
               </div>
             </motion.div>
           )}

@@ -15,7 +15,8 @@ import { AccountSectionState } from '@/features/account/components/section-wrapp
 import ListDetailRegistry from './registry';
 import { ListDetailCommentsSection, ListDetailHeaderSection, ListDetailItemsSection } from './sections';
 
-const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} account-detail-section-body`;
+const LIST_HEADER_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} p-6`;
+const LIST_CONTENT_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} px-0 pb-6 pt-0`;
 
 export default function AccountListDetailFeed({ model = null, RegistryComponent = null }) {
   const {
@@ -139,7 +140,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
     >
       {canShowList && list ? (
         <>
-          <ListDetailHeaderSection list={list} sectionShellClass={LIST_SECTION_SHELL_CLASS} />
+          <ListDetailHeaderSection list={list} sectionShellClass={LIST_HEADER_SECTION_SHELL_CLASS} />
 
           <ListDetailItemsSection
             auth={auth}
@@ -154,7 +155,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
             onRemoveListItem={handleRemoveListItem}
             onResetMediaFilters={resetMediaFilters}
             onUpdateMediaFilters={updateMediaFilters}
-            sectionShellClass={LIST_SECTION_SHELL_CLASS}
+            sectionShellClass={LIST_CONTENT_SECTION_SHELL_CLASS}
             visibilityOptions={LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS}
           />
 
@@ -177,7 +178,7 @@ export default function AccountListDetailFeed({ model = null, RegistryComponent 
             reviewYearOptions={reviewYearOptions}
             reviews={reviews}
             safeCurrentReviewPage={safeCurrentReviewPage}
-            sectionShellClass={LIST_SECTION_SHELL_CLASS}
+            sectionShellClass={LIST_CONTENT_SECTION_SHELL_CLASS}
             setCurrentReviewPage={setCurrentReviewPage}
             totalReviewPages={totalReviewPages}
             updateReviewFilters={updateReviewFilters}

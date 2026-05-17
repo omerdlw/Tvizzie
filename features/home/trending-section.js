@@ -32,7 +32,10 @@ export function TrendingSection({ title, items = [] }) {
             {title}
           </h2>
         </div>
-        <Carousel gap="gap-3" itemClassName="home-poster-rail-item">
+        <Carousel
+          gap="gap-3"
+          itemClassName="w-[calc((100%-1.5rem)/3)] shrink-0 lg:w-[calc((100%-3.75rem)/6)]"
+        >
           {railItems.map((item) => (
             <MediaPosterCard key={item.id} item={item} />
           ))}

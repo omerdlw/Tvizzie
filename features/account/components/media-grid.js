@@ -8,8 +8,7 @@ import MediaCard from '@/ui/media/media-card';
 import { usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AccountPagination from './pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../collections/item-utils';
-import AccountInlineSectionState from './section-wrapper';
-import AccountSectionLayout from './section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from './section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 import { ACCOUNT_MEDIA_GRID_ITEMS_PER_PAGE, buildAccountMediaGridCards } from './media-grid-utils';
 
@@ -71,14 +70,13 @@ export default function AccountMediaGridPage({
   return (
     <AccountSectionLayout
       icon={icon}
+      headerToolbar={toolbar ? <AccountMotionItem index={0}>{toolbar}</AccountMotionItem> : null}
       showHeader={showHeader}
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
       revealIndex={revealIndex}
     >
-      {toolbar ? <AccountMotionItem index={0}>{toolbar}</AccountMotionItem> : null}
-
       {cards.length === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (

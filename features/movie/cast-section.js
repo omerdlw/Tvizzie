@@ -60,16 +60,17 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
     <Link
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
-      data-soft-hover="card"
       className={cn(
-        'group isolate flex items-center gap-3 border border-white/5 bg-white/5 backdrop-blur hover:bg-black/30',
+        'group isolate flex items-center gap-3 border border-white/5 bg-white/5 backdrop-blur transition-[filter,color,background-color,border-color,opacity] [transition-duration:280ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:bg-black/30 hover:brightness-105 focus-visible:brightness-105 focus-within:brightness-105',
         'overflow-hidden [backface-visibility:hidden]',
         compact ? 'h-10 min-w-0 flex-1 p-1' : 'p-0.5 pr-4'
       )}
     >
       <div
-        data-soft-hover="media"
-        className={cn('relative shrink-0 overflow-hidden', compact ? 'h-8 w-8' : 'h-20 w-16')}
+        className={cn(
+          'relative shrink-0 overflow-hidden transition-[filter,color,background-color,border-color,opacity] [transition-duration:420ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] group-hover:brightness-105 group-focus-visible:brightness-105 group-focus-within:brightness-105',
+          compact ? 'h-8 w-8' : 'h-20 w-16'
+        )}
       >
         <PersonImage
           person={person}

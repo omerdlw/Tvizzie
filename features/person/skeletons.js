@@ -74,7 +74,7 @@ function GalleryStripSkeleton() {
   return (
     <div className="flex w-full gap-3 overflow-hidden">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className={cn('person-gallery-card shrink-0 sm:w-60')}>
+        <div key={index} className="w-[min(14rem,calc(100vw-4.5rem))] shrink-0 sm:w-60">
           <SkeletonPoster soft={index > 2} />
         </div>
       ))}

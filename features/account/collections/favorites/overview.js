@@ -7,8 +7,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
-import AccountSectionLayout from '../../components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const OVERVIEW_ROW_CARD_LIMIT = 5;

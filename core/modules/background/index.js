@@ -252,8 +252,13 @@ export function BackgroundOverlay() {
         />
       )}
       <div
-        className="app-noise-surface background-noise-surface"
+        className="pointer-events-none absolute inset-0"
         style={{
+          backgroundImage: "url('/images/noise.webp')",
+          backgroundRepeat: 'repeat',
+          backgroundSize: 'auto',
+          imageRendering: 'auto',
+          mixBlendMode: 'multiply',
           opacity: resolvedNoiseOpacity,
         }}
       />

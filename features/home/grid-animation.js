@@ -7,9 +7,15 @@ export function HomeGridFrame({ children, className = '', routeKey = 'home' }) {
     <RouteGridFrame
       baseDelay={0.12}
       className={className}
-      frameClassName="home-grid-frame"
+      frameClassName="route-grid-frame"
       lineClassName="route-grid-frame-line"
       routeKey={routeKey}
+      style={{
+        '--movie-detail-divider-cap-offset': 'var(--route-grid-divider-cap-offset)',
+        '--movie-detail-divider-height': 'var(--route-grid-divider-height)',
+        '--movie-detail-divider-line-width': 'var(--route-grid-divider-line-width)',
+        '--route-grid-divider-fill': 'var(--white)',
+      }}
     >
       {children}
     </RouteGridFrame>

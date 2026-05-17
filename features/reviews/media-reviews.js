@@ -23,6 +23,16 @@ import {
 } from './review-data';
 import { getReviewsFeatureItemMotion, REVIEWS_FEATURE_SECTION_MOTION } from './motion';
 
+const REVIEWS_BACKDROP_GRADIENT_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      color-mix(in srgb, var(--white) 84%, transparent) 12%,
+      var(--white) 34%,
+      var(--white) 100%
+    )`,
+});
+
 export default function MediaReviews({
   entityId,
   entityType,
@@ -227,7 +237,7 @@ export default function MediaReviews({
     >
       {showBackdropGradient ? (
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="media-reviews-backdrop-gradient absolute inset-0" style={{ bottom: -backdropExtension }} />
+          <div className="absolute inset-0" style={{ ...REVIEWS_BACKDROP_GRADIENT_STYLE, bottom: -backdropExtension }} />
         </div>
       ) : null}
       <motion.div className="media-reviews-header-plus p-5" {...getReviewsFeatureItemMotion(0)}>
@@ -243,24 +253,24 @@ export default function MediaReviews({
 
       {isSortControlEnabled ? (
         <motion.div
-          className="border-grid-line grid-diamonds-top flex items-center justify-between border-t p-5"
+          className="grid-diamonds-top flex items-center justify-between border-t border-white/10 p-5"
           {...getReviewsFeatureItemMotion(1)}
         >
-          <span className="text-white-muted text-xs font-semibold tracking-wider uppercase">Sort</span>
+          <span className="text-xs font-semibold tracking-wider text-white/50 uppercase">Sort</span>
           <Select
             value={sortMode}
             onChange={setSortMode}
             options={REVIEW_SORT_OPTIONS}
             classNames={{
               trigger:
-                'media-review-sort-trigger inline-flex h-10 justify-between border px-3 text-xs font-semibold tracking-wide uppercase',
-              menu: 'media-review-sort-menu overflow-hidden p-1 shadow-lg',
+                'inline-flex h-10 justify-between border border-white/10 bg-primary/30 px-3 text-xs font-semibold tracking-wide text-white/70 uppercase',
+              menu: 'overflow-hidden border border-white/10 bg-primary p-1 shadow-lg',
               optionsList: 'flex flex-col gap-1',
               option:
-                'media-review-sort-option cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide uppercase outline-none',
-              optionActive: 'media-review-sort-option-active',
+                'cursor-pointer px-3 py-2 text-xs font-semibold tracking-wide text-white/70 uppercase outline-none data-[highlighted]:bg-white/10 data-[highlighted]:text-white',
+              optionActive: 'bg-white/10 text-white',
               indicator: 'ml-auto text-white',
-              icon: 'text-white-muted',
+              icon: 'text-white/50',
             }}
             aria-label="Sort reviews"
           />

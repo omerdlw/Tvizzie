@@ -38,13 +38,13 @@ export default function MovieAction({
             isActive: false,
           })} justify-between`,
           value: 'truncate',
-          menu: 'nav-action-select-menu bottom-0 overflow-hidden  p-1',
+          menu: 'bottom-0 overflow-hidden border border-white/10 bg-primary p-1',
           optionsList: 'flex flex-col gap-1',
           option:
-            'nav-action-select-option cursor-pointer  p-3 text-xs font-semibold tracking-wide uppercase outline-none',
-          optionActive: 'nav-action-select-option-active',
+            'cursor-pointer p-3 text-xs font-semibold tracking-wide text-white/70 uppercase outline-none data-[highlighted]:bg-white/10 data-[highlighted]:text-white',
+          optionActive: 'bg-white/10 text-white',
           indicator: 'ml-auto text-white',
-          icon: 'text-white-muted',
+          icon: 'text-white/50',
         }}
         aria-label="Sort reviews"
       />

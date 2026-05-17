@@ -175,9 +175,8 @@ export default function SegmentedControl({
                   buttonRefs.current.delete(itemKey);
                 }}
                 onClick={() => onChange?.(itemKey)}
-                data-soft-hover="control"
                 className={cn(
-                  'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap',
+                  'relative isolate z-10 inline-flex cursor-pointer appearance-none items-center justify-center border-0 bg-transparent px-3 py-1 text-[11px] leading-none font-medium whitespace-nowrap transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105',
                   equalItems && 'min-w-0 flex-1 basis-0',
                   isActive ? classNames.active || 'text-white' : classNames.inactive || 'text-white/70',
                   classNames.button

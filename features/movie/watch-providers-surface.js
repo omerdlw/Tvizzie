@@ -101,7 +101,7 @@ export default function WatchProvidersSurface({ providers }) {
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="text-xs font-semibold tracking-wider uppercase">Where to watch?</span>
         </div>
-        <span className="text-white-muted text-[10px] tracking-widest uppercase">{resolvedRegion}</span>
+        <span className="text-[10px] tracking-widest text-white/50 uppercase">{resolvedRegion}</span>
       </div>
 
       <AnimatePresence initial={false} mode="popLayout">
@@ -125,7 +125,7 @@ export default function WatchProvidersSurface({ providers }) {
                   />
                   <span className="truncate text-sm font-medium text-white/70">{provider.provider_name}</span>
                 </div>
-                <span className="text-white-muted border border-white/5 px-2 py-1 text-[10px] font-semibold tracking-wide uppercase">
+                <span className="border border-white/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-white/50 uppercase">
                   {provider.type}
                 </span>
               </motion.div>

@@ -2,8 +2,7 @@
 
 import AccountListCard from '@/features/account/collections/lists/card';
 import Icon from '@/ui/icon';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
-import AccountSectionLayout from '../../components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const OVERVIEW_LIST_LIMIT = 3;

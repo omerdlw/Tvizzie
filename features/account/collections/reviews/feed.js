@@ -15,10 +15,9 @@ import {
 import { buildCollectionBasePath, buildManagedQueryString, parsePageFromSearch } from '@/features/account/filters/query-utils';
 import AccountReviewFilterBar from '@/features/account/filters/reviews/bar';
 import AccountPagination from '@/features/account/components/pagination';
-import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/components/section-wrapper';
 import ReviewList from '@/features/reviews/components/review-list';
 import { Button } from '@/ui/elements';
-import AccountSectionLayout from '../../components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 import { buildReviewMediaKeySet } from './media-key-state';
 
@@ -157,6 +156,18 @@ export default function AccountReviewsFeed({
 
   return (
     <AccountSectionLayout
+      headerToolbar={
+        listedReviewCount > 0 || hasFilters ? (
+          <AccountMotionItem index={0}>
+            <AccountReviewFilterBar
+              filters={reviewFilters}
+              yearOptions={yearOptions}
+              onChange={updateFilters}
+              onReset={hasFilters ? resetFilters : null}
+            />
+          </AccountMotionItem>
+        ) : null
+      }
       icon={icon}
       showHeader={showHeader}
       showSeeMore={showSeeMore}
@@ -165,23 +176,12 @@ export default function AccountReviewsFeed({
       title={title}
       titleHref={titleHref}
     >
-      {listedReviewCount > 0 || hasFilters ? (
-        <AccountMotionItem index={0}>
-          <AccountReviewFilterBar
-            filters={reviewFilters}
-            yearOptions={yearOptions}
-            onChange={updateFilters}
-            onReset={hasFilters ? resetFilters : null}
-          />
-        </AccountMotionItem>
-      ) : null}
-
       {filteredReviewCount === 0 && !isLoading && !loadError ? (
-        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
+        <AccountInlineSectionState>
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
-        </div>
+        </AccountInlineSectionState>
       ) : filteredReviewCount === 0 && !isLoading && loadError ? (
-        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{loadError}</div>
+        <AccountInlineSectionState>{loadError}</AccountInlineSectionState>
       ) : (
         <AccountMotionItem index={1}>
           <ReviewList

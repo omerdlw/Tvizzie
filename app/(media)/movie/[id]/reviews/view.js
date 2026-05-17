@@ -31,7 +31,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
         <MovieGridFrame
           baseDelay={MOVIE_REVIEWS_ROUTE_MOTION.frameBaseDelay}
-          className={cn('overflow-anchor-none mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}
+          className={cn('[overflow-anchor:none] mx-auto flex w-full flex-col gap-0 px-0', PAGE_SHELL_MAX_WIDTH_CLASS)}
           routeKey={`movie-reviews-${movie.id}`}
         >
           <motion.section

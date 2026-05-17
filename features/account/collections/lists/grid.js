@@ -5,10 +5,9 @@ import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import AccountListCard from './card';
-import AccountSectionLayout from '../../components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import AccountPagination from '../../components/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../item-utils';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
@@ -72,14 +71,13 @@ export default function AccountPaginatedListGrid({
   return (
     <AccountSectionLayout
       icon={icon}
+      headerToolbar={toolbar ? <AccountMotionItem index={0}>{toolbar}</AccountMotionItem> : null}
       showHeader={showHeader}
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
       revealIndex={revealIndex}
     >
-      {toolbar ? <AccountMotionItem index={0}>{toolbar}</AccountMotionItem> : null}
-
       {isLoading && lists.length === 0 ? (
         <AccountInlineSectionState>Loading lists</AccountInlineSectionState>
       ) : lists.length === 0 ? (

@@ -31,7 +31,7 @@ function GallerySectionContent({ images }) {
                 imagePriority={index < 3}
                 fallbackIconSize={24}
                 imageSizes="288px"
-                className="movie-carousel-feature-card"
+                className="w-[min(18rem,calc(100vw-4.5rem))] shrink-0 sm:min-w-[18rem] sm:w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-2.25rem)/4)]"
                 data-backdrop-file-path={image.file_path || ''}
                 data-context-menu-target="movie-backdrop-card"
               />

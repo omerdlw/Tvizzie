@@ -37,7 +37,7 @@ export function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = fals
     >
       <button
         disabled={disabled}
-        className="border-grid-line text-white-muted bg-primary flex size-8 items-center justify-center border hover:text-white"
+        className="bg-primary flex size-8 items-center justify-center border border-white/10 text-white/50 hover:text-white"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -74,7 +74,7 @@ export function ReviewVisual({
 
   const wrapperClass = isAccountVariant
     ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]'
-    : 'border-grid-line bg-primary relative size-14 shrink-0 overflow-hidden border hover:bg-white';
+    : 'relative size-14 shrink-0 overflow-hidden border border-white/10 bg-primary hover:bg-white';
 
   const handleImageError = () => {
     if (fallbackSrc && resolvedSrc !== fallbackSrc) {
@@ -128,7 +128,7 @@ export function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'border-grid-line group bg-primary inline-flex w-full items-center justify-between gap-3 border p-3 text-left hover:bg-white hover:text-black',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-white/10 p-3 text-left hover:text-black',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
@@ -137,13 +137,11 @@ export function SpoilerNotice({ compact = false, onReveal }) {
         <span className="block text-[11px] font-semibold tracking-wider text-white/50 uppercase group-hover:text-white/70">
           Spoiler warning
         </span>
-        <span className="text-white-muted block text-sm leading-6 group-hover:text-black">
+        <span className="block text-sm leading-6 text-white/50">
           This review contains spoilers. Click to show the full review.
         </span>
       </span>
-      <span className="text-info shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase group-hover:text-black">
-        Show
-      </span>
+      <span className="text-info shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase">Show</span>
     </button>
   );
 }

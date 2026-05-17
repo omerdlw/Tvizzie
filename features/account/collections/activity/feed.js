@@ -1,17 +1,17 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
-import { normalizeFeedbackText } from '@/core/utils';
+import { cn, normalizeFeedbackText } from '@/core/utils';
 import AccountActivityFilterBar from '@/features/account/filters/activity/bar';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filters/activity/query';
 import AccountPagination from '@/features/account/components/pagination';
-import ReviewCard from '@/features/reviews/components/review-card';
 import RatingStars from '@/features/reviews/components/rating-stars';
-import AccountSectionLayout from '../../components/section-wrapper';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
+import { ReviewVisual, SpoilerNotice } from '@/features/reviews/components/review-card-controls';
+import { getReviewPosterSrc, resolveSubjectHref } from '@/features/reviews/components/review-card-utils';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
@@ -88,12 +88,70 @@ function ActivityLine({ item }) {
   return <>{parts.map((part, index) => renderLinePart(part, index))}</>;
 }
 
+function ActivityReviewPreview({ review }) {
+  const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+  const subjectHref = resolveSubjectHref(review, true);
+  const posterSrc = getReviewPosterSrc(review);
+  const hasRating = Number.isFinite(Number(review?.rating));
+  const hasText = Boolean(review?.content?.trim());
+  const isSpoilerHidden = Boolean(review?.isSpoiler) && !isSpoilerVisible;
+  const title = review?.subjectTitle || 'Untitled';
+
+  return (
+    <div className="mt-3 grid gap-3 sm:grid-cols-[72px_minmax(0,1fr)] sm:items-start sm:gap-4">
+      <div className="hidden sm:block">
+        {subjectHref ? (
+          <Link href={subjectHref} className="block">
+            <ReviewVisual
+              alt={title}
+              isAccountVariant
+              isListSubject={review?.subjectType === 'list'}
+              previewItems={review?.subjectPreviewItems}
+              src={posterSrc}
+            />
+          </Link>
+        ) : (
+          <ReviewVisual
+            alt={title}
+            isAccountVariant
+            isListSubject={review?.subjectType === 'list'}
+            previewItems={review?.subjectPreviewItems}
+            src={posterSrc}
+          />
+        )}
+      </div>
+
+      <div className="min-w-0 space-y-2">
+        {hasRating ? <RatingStars rating={Number(review.rating)} /> : null}
+
+        {hasText ? (
+          isSpoilerHidden ? (
+            <SpoilerNotice compact onReveal={() => setIsSpoilerVisible(true)} />
+          ) : (
+            <p
+              className="min-w-0 text-sm leading-6 text-white/70 [overflow-wrap:anywhere] break-words"
+              style={{
+                display: '-webkit-box',
+                overflow: 'hidden',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 3,
+              }}
+            >
+              {review.content}
+            </p>
+          )
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function ActivityItem({ item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
 
   return (
-    <div data-soft-hover="row">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+    <div className="transition-[filter,color,background-color,border-color,opacity] [transition-duration:240ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-within:brightness-105">
+      <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0 text-[1.02rem] leading-7">
           <ActivityLine item={item} />
         </div>
@@ -102,9 +160,7 @@ function ActivityItem({ item }) {
       </div>
 
       {item?.renderKind === 'text_with_review' && item?.reviewCard ? (
-        <div className="mt-3">
-          <ReviewCard className="border-b-0 py-0" displayVariant="activity" review={item.reviewCard} />
-        </div>
+        <ActivityReviewPreview review={item.reviewCard} />
       ) : null}
     </div>
   );
@@ -138,6 +194,7 @@ export default function AccountActivityFeed({
   const activePage = Math.min(Math.max(1, currentPage), totalPages);
   const pageStart = (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE;
   const hasVisibleItems = visibleItems.length > 0;
+  const totalVisibleItems = visibleItems.length;
   const shouldShowFilterBar = typeof onFiltersChange === 'function' && (listedActivityCount > 0 || hasFilters);
   const shouldShowPagination = listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && typeof onPageChange === 'function';
   const resolvedSummaryLabel = useMemo(() => {
@@ -185,7 +242,16 @@ export default function AccountActivityFeed({
           <AccountMotionItem
             key={getActivityItemKey(item, index)}
             as="article"
-            className="account-detail-full-width-item border-b border-white/10 py-5 last:border-b-0"
+            className={cn(
+              'account-detail-full-width-item border-b border-white/10 last:border-b-0',
+              index === 0 && !shouldShowFilterBar
+                ? index === totalVisibleItems - 1
+                  ? 'px-4 pb-0 pt-0'
+                  : 'px-4 pb-4 pt-0'
+                : index === totalVisibleItems - 1
+                  ? 'px-4 pb-0 pt-4'
+                  : 'p-4'
+            )}
             index={index}
           >
             <ActivityItem item={item} />
@@ -197,27 +263,26 @@ export default function AccountActivityFeed({
 
   return (
     <AccountSectionLayout
+      headerToolbar={
+        shouldShowFilterBar ? (
+          <AccountActivityFilterBar
+            filters={filters}
+            subjectOptions={subjectOptions}
+            onChange={updateFilters}
+            onReset={hasFilters ? resetFilters : null}
+          />
+        ) : null
+      }
       icon={icon}
       showHeader={showHeader}
       showSeeMore={showSeeMore}
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
-      contentClassName="gap-0 py-0"
+      contentClassName="gap-0"
       revealIndex={revealIndex}
     >
-      {shouldShowFilterBar ? (
-        <AccountActivityFilterBar
-          className="account-filter-bar-flush"
-          filters={filters}
-          subjectOptions={subjectOptions}
-          onChange={updateFilters}
-          onReset={hasFilters ? resetFilters : null}
-        />
-      ) : null}
-
       {content}
-
       {shouldShowPagination ? (
         <AccountMotionItem index={visibleItems.length + 1}>
           <AccountPagination

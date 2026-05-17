@@ -37,7 +37,7 @@ function GenreChip({ genre, isActive, onClick }) {
       className={`inline-flex h-9 shrink-0 items-center justify-center border px-5 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase sm:text-xs ${
         isActive
           ? 'border-white bg-white text-black'
-          : 'border-grid-line bg-primary text-white-muted hover:bg-white hover:text-black'
+          : 'border-white/10 bg-primary text-white/50 hover:bg-white hover:text-black'
       }`}
     >
       {genre.name}
@@ -296,11 +296,11 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="border-grid-line bg-primary text-white-muted border p-3 text-sm">{gridError}</div>
+          <div className="border border-white/10 bg-primary p-3 text-sm text-white/50">{gridError}</div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="border-grid-line bg-primary text-white-muted border p-4 text-sm">
+          <div className="border border-white/10 bg-primary p-4 text-sm text-white/50">
             No movies found for this genre.
           </div>
         ) : null}
@@ -311,7 +311,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="border-grid-line bg-primary text-white-soft inline-flex h-10 items-center gap-2 border px-5 text-xs font-semibold tracking-widest uppercase hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 border border-white/10 bg-primary px-5 text-xs font-semibold tracking-widest text-white/70 uppercase hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

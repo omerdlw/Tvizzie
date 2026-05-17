@@ -85,54 +85,6 @@
 
   }
 
-  .auth-field-label {
-    color: color-mix(in srgb, var(--color-white) 50%, transparent);
-    font-size: clamp(0.8125rem, 2.8vw, 0.875rem);
-  }
-
-  .auth-input-control,
-  .auth-secondary-button,
-  .auth-oauth-button {
-    border: var(--auth-detail-grid-line-width) solid color-mix(in srgb, var(--color-white) 10%, transparent);
-    background-color: color-mix(in srgb, var(--color-white) 5%, transparent);
-  }
-
-  .auth-input-control:focus-within {
-    border-color: color-mix(in srgb, var(--color-white) 15%, transparent);
-    background-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-  }
-
-  .auth-input-native {
-    color: var(--color-white);
-    font-size: clamp(0.9375rem, 4vw, 1rem);
-  }
-
-  .auth-input-native::placeholder {
-    color: color-mix(in srgb, var(--color-white) 50%, transparent);
-  }
-
-  .auth-primary-button {
-    background-color: var(--color-white);
-    color: var(--color-black);
-  }
-
-  .auth-primary-button:hover {
-    background-color: color-mix(in srgb, var(--color-white) 70%, transparent);
-  }
-
-  .auth-secondary-button:hover,
-  .auth-oauth-button:hover {
-    background-color: var(--color-white);
-    color: var(--color-black);
-  }
-
-  .auth-primary-button:disabled,
-  .auth-secondary-button:disabled,
-  .auth-oauth-button:disabled {
-    cursor: not-allowed;
-    opacity: 50%;
-  }
-
   @media (max-width: 420px) {
     .auth-detail-viewport {
       --auth-detail-wrapper-width: 100%;

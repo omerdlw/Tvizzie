@@ -143,7 +143,7 @@ export default function CastModal({ close, data, header }) {
       bodyClassName="bg-transparent p-0"
     >
         <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
-          <div className="text-white-soft center min-h-32 text-sm">No credits found.</div>
+          <div className="center min-h-32 text-sm text-white/70">No credits found.</div>
         </motion.div>
       </Container>
     );

@@ -7,25 +7,28 @@ import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
 export const UI = {
-  bar: 'account-filter-bar account-detail-full-width-item flex flex-col',
-  main: 'account-filter-main',
-  inner: 'account-filter-inner',
-  rule: 'account-filter-rule',
-  trigger: 'account-filter-trigger tracking-widest',
-  triggerActive: 'account-filter-trigger-active',
-  iconButton: 'account-filter-icon-button',
+  bar: 'w-full',
+  main: 'flex w-full items-center gap-0 py-0',
+  inner: 'flex min-w-0 flex-1 items-center gap-0 overflow-x-auto',
+  rule: 'hidden',
+  trigger:
+    'inline-flex min-h-10 min-w-fit max-w-full flex-1 items-center justify-between gap-0 border border-white/10 bg-black px-0 text-[11px] font-semibold tracking-widest text-white/70 whitespace-nowrap uppercase',
+  triggerActive: 'border-white/30 text-white',
+  iconButton:
+    'inline-flex h-10 w-10 shrink-0 items-center justify-center border border-white/10 bg-black text-white/70 hover:bg-white/10 hover:text-white',
   resetButton: 'shrink-0 text-[10px] font-semibold uppercase tracking-widest text-white/50 hover:text-white/70',
-  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/5 bg-black p-1 shadow-lg',
-  sectionLabel: 'px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50',
-  menuItem: 'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10',
+  menu: 'z-50 overflow-y-auto overscroll-contain border border-white/10 bg-black p-0 shadow-lg',
+  sectionLabel: 'px-0 py-0 text-[10px] font-semibold uppercase tracking-wide text-white/50',
+  menuItem: 'flex w-full items-center justify-between px-0 py-0 text-left text-sm text-white/70 hover:bg-white/10',
   menuItemActive: 'bg-white/10 font-medium text-white',
   divider: 'border-t border-white/10',
-  inputWrap: 'account-filter-input-wrap',
-  input: 'account-filter-input',
-  select: 'account-filter-select',
-  helperText: 'px-1 text-[10px] text-white/50',
+  inputWrap:
+    'flex min-h-10 min-w-0 flex-1 items-center gap-0 border border-white/10 bg-black px-0 focus-within:border-white/20',
+  input: 'min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/50',
+  select: 'h-10 w-full border border-white/10 bg-black px-0 text-sm text-white outline-none focus:border-white/20',
+  helperText: 'px-0 text-[10px] text-white/50',
   visibilityItem:
-    'flex w-full items-center justify-between px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10',
+    'flex w-full items-center justify-between px-0 py-0 text-left text-sm text-white/70 hover:bg-white/10',
   visibilityItemActive: 'bg-white/10 font-medium text-white',
   dot: 'h-2.5 w-2.5 border border-white/20',
   dotActive: 'bg-white',
@@ -82,7 +85,7 @@ function FilterMenuItem({ active = false, children, onClick }) {
 
 export function DefaultMenuItem({ active = false, label = 'Default', onClick }) {
   return (
-    <div className="space-y-1 pb-1">
+    <div className="space-y-0 pb-0">
       <FilterMenuItem active={active} onClick={onClick}>
         {label}
       </FilterMenuItem>
@@ -102,7 +105,14 @@ export function FilterPopover({ label, active = false, children }) {
   return (
     <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
       <PopoverPrimitive.Trigger asChild>
-        <button type="button" data-soft-hover="control" className={cn(UI.trigger, active && UI.triggerActive)}>
+        <button
+          type="button"
+          className={cn(
+            UI.trigger,
+            'transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105',
+            active && UI.triggerActive
+          )}
+        >
           <span>{label}</span>
           <Icon icon="solar:alt-arrow-down-linear" size={14} />
         </button>
@@ -130,7 +140,7 @@ export function FilterPopover({ label, active = false, children }) {
 
 export function OptionSection({ title = '', options, value, onChange }) {
   return (
-    <div className="space-y-1 pb-1">
+    <div className="space-y-0 pb-0">
       {title ? <SectionLabel>{title}</SectionLabel> : null}
       {options.map((option) => (
         <FilterMenuItem key={option.value} active={value === option.value} onClick={() => onChange(option.value)}>
@@ -143,10 +153,10 @@ export function OptionSection({ title = '', options, value, onChange }) {
 
 export function RatingRangeEditor({ filters, onChange }) {
   return (
-    <div className={cn(UI.divider, 'mt-1 space-y-2 px-2 pt-3')}>
-      <div className="space-y-1">
+    <div className={cn(UI.divider, 'mt-0 space-y-0 px-0 pt-0')}>
+      <div className="space-y-0">
         <span className="block text-[10px] font-semibold tracking-wide text-white/50 uppercase">Rating (or range)</span>
-        <div className="border border-white/5 bg-black px-2 py-2">
+        <div className="border border-white/10 bg-black px-0 py-0">
           <RatingRangeSelector maxValue={filters.maxRating} minValue={filters.minRating} onChange={onChange} />
         </div>
       </div>
@@ -160,11 +170,11 @@ export function VisibilityGroup({ title = '', options = [], selectedFlags, onTog
   const { close } = useContext(FilterPopoverContext);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-0">
       {title ? <SectionLabel>{title}</SectionLabel> : null}
 
       {options.length === 0 ? (
-        <p className="px-2 py-2 text-xs text-white/50">No visibility filters available.</p>
+        <p className="px-0 py-0 text-xs text-white/50">No visibility filters available.</p>
       ) : (
         options.map((option) => {
           const active = selectedFlags.has(option.key);
@@ -219,10 +229,12 @@ export function SearchChip({ value, open, onOpen, onClose, onChange, inputRef })
     return (
       <button
         type="button"
-        data-soft-hover="control"
         aria-label="Search titles"
         onClick={onOpen}
-        className={UI.iconButton}
+        className={cn(
+          UI.iconButton,
+          'transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105'
+        )}
       >
         <Icon icon="solar:magnifer-linear" size={16} />
       </button>
@@ -230,7 +242,7 @@ export function SearchChip({ value, open, onOpen, onClose, onChange, inputRef })
   }
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="flex min-w-0 flex-1 items-center gap-0">
       <label className={UI.inputWrap}>
         <Icon icon="solar:magnifer-linear" size={18} className="shrink-0 text-white/50" />
         <input
@@ -246,7 +258,14 @@ export function SearchChip({ value, open, onOpen, onClose, onChange, inputRef })
         />
       </label>
 
-      <button type="button" data-soft-hover="control" onClick={handleClose} className={UI.resetButton}>
+      <button
+        type="button"
+        onClick={handleClose}
+        className={cn(
+          UI.resetButton,
+          'transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105'
+        )}
+      >
         Close
       </button>
     </div>

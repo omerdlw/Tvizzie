@@ -1,20 +1,25 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 
-import { MEDIA_SORT_GROUPS } from './options';
-import { resolveMediaSortOption } from './option-resolvers';
 import { cn } from '@/core/utils';
-import {
-  DefaultMenuItem,
-  FilterPopover,
-  OptionSection,
-  ResetButton,
-  SearchChip,
-  UI,
-  VisibilityGroup,
-  resolveOptionLabel,
-} from '../content-filter-primitives';
+import { FilterSelect } from '../components';
+import { MEDIA_SORT_GROUPS } from './options';
+
+function resolveSelectedVisibilityValue(selectedFlags = new Set()) {
+  const iterator = selectedFlags.values();
+  const first = iterator.next();
+  return first.done ? 'all' : first.value;
+}
+
+function buildSortOptions() {
+  return MEDIA_SORT_GROUPS.flatMap((group) =>
+    group.options.map((option) => ({
+      label: `${group.label}: ${option.label}`,
+      value: option.value,
+    }))
+  );
+}
 
 export default function AccountMediaFilterBar({
   className = '',
@@ -25,106 +30,76 @@ export default function AccountMediaFilterBar({
   onReset,
   visibilityOptions = [],
 }) {
-  const searchInputRef = useRef(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(Boolean(filters?.query));
-
   const selectedEyeFlags = filters?.eyeFlags instanceof Set ? filters.eyeFlags : new Set();
-  const searchQuery = typeof filters?.query === 'string' ? filters.query : '';
-  const decadeLabel = resolveOptionLabel(decadeOptions, filters?.decade, 'Any decade');
-  const genreLabel = resolveOptionLabel(genreOptions, filters?.genre, 'Any genre');
-
-  const sortLabel = useMemo(() => {
-    const selectedOption = resolveMediaSortOption(filters?.sort);
-    return selectedOption
-      ? `${selectedOption.groupLabel}: ${selectedOption.label}`
-      : 'Release Date: Newest release first';
-  }, [filters?.sort]);
-  const isDefaultSort = filters?.sort === 'release_desc';
+  const selectedVisibility = resolveSelectedVisibilityValue(selectedEyeFlags);
+  const sortOptions = useMemo(() => buildSortOptions(), []);
   const canReset =
     typeof onReset === 'function' &&
-    (Boolean(searchQuery) ||
+    (Boolean(filters?.query) ||
       (filters?.decade ?? 'all') !== 'all' ||
       (filters?.genre ?? 'all') !== 'all' ||
       (filters?.sort ?? 'release_desc') !== 'release_desc' ||
       selectedEyeFlags.size > 0);
 
-  useEffect(() => {
-    if (searchQuery) setIsSearchOpen(true);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    if (isSearchOpen) searchInputRef.current?.focus();
-  }, [isSearchOpen]);
+  const visibilityOptionsFormatted = useMemo(() => {
+    return [
+      { value: 'all', label: 'Any' },
+      ...visibilityOptions.map((opt) => ({ value: opt.key, label: opt.label })),
+    ];
+  }, [visibilityOptions]);
 
   return (
-    <div className={cn(UI.bar, className)}>
-      <div className={UI.main}>
-        <div className={UI.inner}>
-          <SearchChip
-            value={searchQuery}
-            open={isSearchOpen}
-            onOpen={() => setIsSearchOpen(true)}
-            onClose={() => setIsSearchOpen(false)}
-            onChange={(query) => onChange({ query })}
-            inputRef={searchInputRef}
+    <div className={cn('w-full', className)}>
+      <div className="flex w-full flex-col gap-2 lg:flex-row">
+        <input
+          type="text"
+          value={typeof filters?.query === 'string' ? filters.query : ''}
+          onChange={(event) => onChange({ query: event.target.value })}
+          placeholder="Search titles"
+          className="h-10 min-w-0 flex-1 border border-white/10 bg-black px-4 text-sm text-white/70 outline-none placeholder:text-white/50 focus:border-white/20"
+        />
+
+        <FilterSelect
+          value={filters?.decade ?? 'all'}
+          onChange={(event) => onChange({ decade: event.target.value })}
+          options={decadeOptions}
+          labelPrefix="Decade"
+        />
+
+        <FilterSelect
+          value={filters?.genre ?? 'all'}
+          onChange={(event) => onChange({ genre: event.target.value })}
+          options={genreOptions}
+          labelPrefix="Genre"
+        />
+
+        <FilterSelect
+          value={filters?.sort ?? 'release_desc'}
+          onChange={(event) => onChange({ sort: event.target.value })}
+          options={sortOptions}
+        />
+
+        {visibilityOptions.length > 0 && (
+          <FilterSelect
+            value={selectedVisibility}
+            onChange={(event) =>
+              onChange({ eyeFlags: event.target.value === 'all' ? new Set() : new Set([event.target.value]) })
+            }
+            options={visibilityOptionsFormatted}
+            labelPrefix="Visibility"
           />
+        )}
 
-          {!isSearchOpen && (
-            <>
-              <FilterPopover label={`Decade: ${decadeLabel}`} active={filters?.decade !== 'all'}>
-                <OptionSection
-                  options={decadeOptions}
-                  value={filters?.decade}
-                  onChange={(value) => onChange({ decade: value })}
-                />
-              </FilterPopover>
-              <FilterPopover label={`Genre: ${genreLabel}`} active={filters?.genre !== 'all'}>
-                <OptionSection
-                  options={genreOptions}
-                  value={filters?.genre}
-                  onChange={(value) => onChange({ genre: value })}
-                />
-              </FilterPopover>
-
-              <FilterPopover label={`${sortLabel}`} active={filters?.sort !== 'release_desc'}>
-                <DefaultMenuItem
-                  active={isDefaultSort}
-                  label="Default sort: Release date, newest first"
-                  onClick={() => onChange({ sort: 'release_desc' })}
-                />
-
-                {MEDIA_SORT_GROUPS.map((group) => (
-                  <OptionSection
-                    key={group.label}
-                    title={group.label}
-                    options={group.options}
-                    value={filters?.sort}
-                    onChange={(value) => onChange({ sort: value })}
-                  />
-                ))}
-              </FilterPopover>
-
-              <FilterPopover label="Visibility" active={selectedEyeFlags.size > 0}>
-                <VisibilityGroup
-                  options={visibilityOptions}
-                  selectedFlags={selectedEyeFlags}
-                  onToggle={(key) => {
-                    const nextFlags = new Set(selectedEyeFlags);
-
-                    if (nextFlags.has(key)) nextFlags.delete(key);
-                    else nextFlags.add(key);
-
-                    onChange({ eyeFlags: nextFlags });
-                  }}
-                />
-              </FilterPopover>
-            </>
-          )}
-        </div>
-
-        {canReset ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="h-10 shrink-0 border border-white/10 bg-black px-4 text-xs font-semibold tracking-widest text-white/50 uppercase hover:text-white/70"
+          >
+            Reset
+          </button>
+        ) : null}
       </div>
-      <div className={UI.rule} />
     </div>
   );
 }

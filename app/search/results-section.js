@@ -15,7 +15,7 @@ import { SEARCH_TYPES } from '@/features/search/constants';
 import SearchGridItem from '@/features/search/grid-item';
 
 const SEARCH_COMMUNITY_CARD_CLASS =
-  'group relative grid min-h-28 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border border-white/10 bg-primary/80 p-3 transition-colors hover:border-white/20 hover:bg-white/10';
+  'group relative grid min-h-28 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border border-white/10 bg-primary/80 p-3 transition-[filter,color,background-color,border-color,opacity] [transition-duration:240ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:border-white/20 hover:bg-white/10 hover:brightness-105 focus-within:brightness-105';
 const SEARCH_MEDIA_FRAME_CLASS = 'border border-white/10 bg-white/10 text-white/60';
 
 function isMediaResult(item) {
@@ -60,11 +60,7 @@ function SearchUserCard({ item }) {
   ].filter(Boolean);
 
   return (
-    <Link
-      href={detailPath}
-      className={SEARCH_COMMUNITY_CARD_CLASS}
-      data-soft-hover="row"
-    >
+    <Link href={detailPath} className={SEARCH_COMMUNITY_CARD_CLASS}>
       <div className={cn(SEARCH_MEDIA_FRAME_CLASS, 'relative h-18 w-18 overflow-hidden')}>
         <AdaptiveImage
           mode="img"
@@ -156,21 +152,14 @@ function SearchListCard({ item }) {
 
   if (!detailPath) {
     return (
-      <article
-        className={SEARCH_COMMUNITY_CARD_CLASS}
-        data-soft-hover="row"
-      >
+      <article className={SEARCH_COMMUNITY_CARD_CLASS}>
         {card}
       </article>
     );
   }
 
   return (
-    <Link
-      href={detailPath}
-      className={SEARCH_COMMUNITY_CARD_CLASS}
-      data-soft-hover="row"
-    >
+    <Link href={detailPath} className={SEARCH_COMMUNITY_CARD_CLASS}>
       {card}
     </Link>
   );
@@ -228,21 +217,14 @@ function SearchReviewCard({ item }) {
 
   if (!detailPath) {
     return (
-      <article
-        className={SEARCH_COMMUNITY_CARD_CLASS}
-        data-soft-hover="row"
-      >
+      <article className={SEARCH_COMMUNITY_CARD_CLASS}>
         {card}
       </article>
     );
   }
 
   return (
-    <Link
-      href={detailPath}
-      className={SEARCH_COMMUNITY_CARD_CLASS}
-      data-soft-hover="row"
-    >
+    <Link href={detailPath} className={SEARCH_COMMUNITY_CARD_CLASS}>
       {card}
     </Link>
   );
@@ -382,8 +364,7 @@ export default function SearchResultsSection({
               <AppRouteItem className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'flex justify-center px-4 py-8')} index={3}>
                 <button
                   type="button"
-                  className="min-h-11 min-w-56 border border-white/10 bg-white/10 px-5 text-xs font-extrabold text-white uppercase transition-colors hover:border-white/20 hover:bg-white/15 disabled:text-white/60"
-                  data-soft-hover="control"
+                  className="min-h-11 min-w-56 border border-white/10 bg-white/10 px-5 text-xs font-extrabold text-white uppercase transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:border-white/20 hover:bg-white/15 hover:brightness-105 focus-visible:brightness-105 disabled:text-white/60"
                   disabled={loadingMore}
                   onClick={onLoadMore}
                 >

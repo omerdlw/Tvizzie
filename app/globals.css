@@ -1,11 +1,9 @@
 @import 'tailwindcss';
 @import './styles/globals.utilities.css';
 @import './styles/grid-system.css';
-@import './styles/home.css';
 @import './styles/account.css';
 @import './styles/auth.css';
 @import './styles/media.css';
-@import './styles/reviews.css';
 
 @theme {
   --color-white: var(--foreground);
@@ -21,7 +19,7 @@
 
 @layer base {
   :root {
-    --canvas: #121212;
+    --canvas: #121214;
     --surface: #1f1f1e;
     --foreground: #f9f9f7;
     --white: var(--canvas);

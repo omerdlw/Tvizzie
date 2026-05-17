@@ -73,13 +73,13 @@ export default function MediaSocialProofModal({ close, data, header }) {
           {highlights.length > 0 ? (
             <motion.div className="p-3 lg:p-4" {...getFeatureModalSectionMotion(0)}>
               <div className="bg-white/10 p-3 shadow-inner">
-                <p className="text-white-muted mb-2 text-[10px] font-semibold tracking-widest uppercase">
+                <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50 uppercase">
                   People you follow
                 </p>
                 {highlights.map((highlight, index) => (
                   <motion.div key={highlight.key} {...getFeatureModalItemMotion(index)}>
-                    <div className="text-white-soft flex items-start gap-2 py-1 text-sm">
-                      <Icon icon="solar:stars-bold" size={15} className="text-white-muted mt-0.5 shrink-0" />
+                    <div className="flex items-start gap-2 py-1 text-sm text-white/70">
+                      <Icon icon="solar:stars-bold" size={15} className="mt-0.5 shrink-0 text-white/50" />
                       <span>{highlight.label}</span>
                     </div>
                   </motion.div>
@@ -90,7 +90,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
 
           {userActions.length === 0 && highlights.length === 0 ? (
             <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
-              <div className={cn('text-white-muted center h-full w-full py-20 text-sm font-medium')}>
+              <div className={cn('center h-full w-full py-20 text-sm font-medium text-white/50')}>
                 No social activity from people you follow yet
               </div>
             </motion.div>
@@ -125,7 +125,7 @@ export default function MediaSocialProofModal({ close, data, header }) {
                         <span className="truncate text-sm">
                           <span className="font-semibold">@{username}</span> engaged with this title.
                         </span>
-                        <span className="text-white-muted truncate text-[10px] tracking-widest uppercase">
+                        <span className="truncate text-[10px] tracking-widest text-white/50 uppercase">
                           {formatActionSummary(actions)}
                         </span>
                       </div>

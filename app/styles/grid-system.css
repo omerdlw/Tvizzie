@@ -2,12 +2,11 @@
   .route-grid-frame,
   .movie-detail-grid-frame,
   .account-detail-grid-frame,
-  .home-grid-frame,
   .legal-grid-frame {
     --route-grid-line-width: 1px;
     --route-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-    --route-grid-side-opacity: 40%;
-    --route-grid-side-opacity-end: 20%;
+    --route-grid-side-opacity: 15%;
+    --route-grid-side-opacity-end: 15%;
     --route-grid-cell: 48px;
     --route-grid-square-size: calc(var(--route-grid-cell) / 2);
     --route-grid-divider-height: 1rem;
@@ -24,21 +23,8 @@
   .auth-detail-viewport {
     --route-grid-line-width: 1px;
     --route-grid-line-color: color-mix(in srgb, var(--color-white) 10%, transparent);
-    --route-grid-side-opacity-end: 20%;
+    --route-grid-side-opacity-end: 15%;
     --route-grid-cell: 48px;
-  }
-
-  .legal-route-panel {
-    border: 1px solid color-mix(in srgb, var(--color-white) 10%, transparent);
-    background-color: var(--color-primary);
-  }
-
-  .legal-route-muted {
-    color: color-mix(in srgb, var(--color-white) 70%, transparent);
-  }
-
-  .legal-route-soft {
-    color: color-mix(in srgb, var(--color-white) 50%, transparent);
   }
 
   .route-grid-frame::before,
@@ -47,8 +33,6 @@
   .movie-detail-grid-frame::after,
   .account-detail-grid-frame::before,
   .account-detail-grid-frame::after,
-  .home-grid-frame::before,
-  .home-grid-frame::after,
   .legal-grid-frame::before,
   .legal-grid-frame::after {
     content: '';
@@ -81,7 +65,6 @@
   .route-grid-frame::before,
   .movie-detail-grid-frame::before,
   .account-detail-grid-frame::before,
-  .home-grid-frame::before,
   .legal-grid-frame::before {
     right: 100%;
     background-position:
@@ -92,7 +75,6 @@
   .route-grid-frame::after,
   .movie-detail-grid-frame::after,
   .account-detail-grid-frame::after,
-  .home-grid-frame::after,
   .legal-grid-frame::after {
     left: 100%;
     background-position:
@@ -103,7 +85,6 @@
   .route-grid-frame > *,
   .movie-detail-grid-frame > *,
   .account-detail-grid-frame > *,
-  .home-grid-frame > *,
   .legal-grid-frame > * {
     position: relative;
     z-index: 1;
@@ -134,7 +115,6 @@
     .route-grid-frame:not(.route-grid-frame-managed),
     .movie-detail-grid-frame:not(.route-grid-frame-managed),
     .account-detail-grid-frame:not(.route-grid-frame-managed),
-    .home-grid-frame:not(.route-grid-frame-managed),
     .legal-grid-frame:not(.route-grid-frame-managed) {
       border-inline: var(--route-grid-line-width) solid var(--route-grid-line-color);
     }

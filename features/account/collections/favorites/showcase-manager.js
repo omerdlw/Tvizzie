@@ -2,8 +2,7 @@
 
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 import { getMediaTitle as getAccountMediaTitle } from '../item-utils';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
-import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '@/features/account/components/section-wrapper';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
@@ -19,6 +18,8 @@ function ReorderableListItem({ item, renderEditAction }) {
 }
 
 export default function FavoriteShowcaseManager({ items = [], isSaving = false, onRemoveItem, revealIndex = 0 }) {
+  const isEmpty = items.length === 0;
+
   return (
     <AccountSectionLayout
       icon="solar:star-bold"
@@ -26,7 +27,7 @@ export default function FavoriteShowcaseManager({ items = [], isSaving = false, 
       summaryLabel={`${items.length} of 5 selected`}
       title="Favorites Showcase"
     >
-      {items.length === 0 ? (
+      {isEmpty ? (
         <AccountInlineSectionState>No showcase titles selected yet</AccountInlineSectionState>
       ) : (
         <div className="space-y-2">

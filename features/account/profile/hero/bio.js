@@ -5,6 +5,15 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/core/utils';
 import { HeroRevealItem } from './metrics';
 
+const ACCOUNT_HERO_TEXT_FADE_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      to right,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      var(--white) 40%,
+      var(--white) 100%
+    )`,
+});
+
 export default function HeroBioPreview({ description, onReadMore }) {
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -49,9 +58,8 @@ export default function HeroBioPreview({ description, onReadMore }) {
       </p>
       {shouldShowReadMore ? (
         <div
-          className={cn(
-            'account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12'
-          )}
+          className={cn('absolute right-0 bottom-0 flex h-6 items-center justify-end pl-12')}
+          style={ACCOUNT_HERO_TEXT_FADE_STYLE}
         >
           <button className="text-sm font-semibold text-white/70 uppercase" type="button" onClick={onReadMore}>
             More

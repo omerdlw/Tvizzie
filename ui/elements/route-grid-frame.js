@@ -10,10 +10,11 @@ export function RouteGridFrame({
   frameClassName = 'route-grid-frame',
   lineClassName = 'route-grid-frame-line',
   routeKey = null,
+  style = undefined,
 }) {
   return (
     <GridPageAnimationRoot baseDelay={baseDelay} routeKey={routeKey}>
-      <div className={cn(frameClassName, 'route-grid-frame-managed relative', className)}>
+      <div className={cn(frameClassName, 'route-grid-frame-managed relative', className)} style={style}>
         {children}
         <GridPageLine className={cn(lineClassName, `${lineClassName}-left`)} />
         <GridPageLine className={cn(lineClassName, `${lineClassName}-right`)} />

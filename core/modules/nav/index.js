@@ -44,7 +44,8 @@ function getDistanceToBottom() {
 function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact }) {
   const minCardHeight = compact ? NAV_CARD_LAYOUT.compactHeight : NAV_CARD_LAYOUT.baseHeight;
   const nextCardHeight = Math.max(minCardHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
-  const rawHeight = nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
+  const nextActionHeight = !compact && activeItemHasAction && actionHeight > 0 ? actionHeight : 0;
+  const rawHeight = nextCardHeight + nextActionHeight;
 
   // Clamp to viewport so nav never goes off-screen
   return Math.min(rawHeight, getViewportMaxHeight());

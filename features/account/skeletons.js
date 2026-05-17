@@ -223,7 +223,7 @@ function ListCardSkeleton() {
 
 function ActivityItemSkeleton({ isFirst = false }) {
   return (
-    <article className={cn('account-detail-full-width-item border-grid-line border-b', isFirst ? 'pt-0 pb-5' : 'py-5')}>
+    <article className={cn('account-detail-full-width-item border-b border-white/10', isFirst ? 'pt-0 pb-4' : 'py-4')}>
       <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
           <Line className="h-4 w-16" />
@@ -239,7 +239,7 @@ function ActivityItemSkeleton({ isFirst = false }) {
 
 function ReviewCardSkeleton() {
   return (
-    <article className={cn('account-detail-full-width-item border-grid-line border-b py-4 last:border-b-0 sm:py-5')}>
+    <article className={cn('account-detail-full-width-item border-b border-white/10 py-4 last:border-b-0')}>
       <div className="relative">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-20">
@@ -316,14 +316,56 @@ function MediaFieldSkeleton({ large = false }) {
 }
 
 
-const HERO_HEIGHT_CLASS = cn('account-hero-height');
-const HERO_BANNER_WRAPPER_CLASS = cn('account-hero-banner-wrapper');
-const HERO_AMBIENT_OVERLAY_CLASS = cn('account-skeleton-hero-ambient-overlay absolute inset-0');
-const HERO_SOFTEN_OVERLAY_CLASS = cn('account-hero-soften-overlay absolute inset-0');
-const HERO_LEFT_FADE_CLASS = cn('account-hero-side-fade account-hero-left-fade absolute inset-y-0 left-0');
-const HERO_RIGHT_FADE_CLASS = cn('account-hero-side-fade account-hero-right-fade absolute inset-y-0 right-0');
-const HERO_TOP_FADE_CLASS = cn('account-hero-top-fade absolute inset-x-0 top-0');
-const HERO_TINT_CLASS = cn('account-skeleton-hero-tint-overlay absolute inset-0');
+const HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
+const HERO_BANNER_WRAPPER_CLASS = 'mx-auto h-full w-full opacity-50';
+const HERO_AMBIENT_OVERLAY_CLASS = 'absolute inset-0';
+const HERO_SOFTEN_OVERLAY_CLASS = 'absolute inset-0 bg-white/20 sm:bg-white/15';
+const HERO_SIDE_FADE_CLASS = 'absolute inset-y-0 w-[6%] sm:w-[6%]';
+const HERO_TOP_FADE_CLASS = 'absolute inset-x-0 top-0 h-32 sm:h-36';
+const HERO_TINT_CLASS = 'absolute inset-0';
+const HERO_AMBIENT_OVERLAY_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--white) 0%, transparent) 0%,
+      color-mix(in srgb, var(--white) 0%, transparent) 48%,
+      color-mix(in srgb, var(--white) 46%, transparent) 78%,
+      color-mix(in srgb, var(--white) 86%, transparent) 94%,
+      var(--white) 100%
+    )`,
+});
+const HERO_TOP_FADE_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--white) 22%, transparent) 0%,
+      color-mix(in srgb, var(--white) 10%, transparent) 48%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    )`,
+});
+const HERO_TINT_STYLE = Object.freeze({
+  backgroundImage: `radial-gradient(
+      90% 58% at 50% 14%,
+      color-mix(in srgb, var(--white) 5%, transparent) 0%,
+      color-mix(in srgb, var(--white) 0%, transparent) 64%
+    )`,
+});
+const HERO_LEFT_FADE_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--white) 80%, transparent) 0%,
+      color-mix(in srgb, var(--white) 42%, transparent) 36%,
+      color-mix(in srgb, var(--white) 16%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    )`,
+});
+const HERO_RIGHT_FADE_STYLE = Object.freeze({
+  backgroundImage: `linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--white) 80%, transparent) 0%,
+      color-mix(in srgb, var(--white) 42%, transparent) 36%,
+      color-mix(in srgb, var(--white) 16%, transparent) 72%,
+      color-mix(in srgb, var(--white) 0%, transparent) 100%
+    )`,
+});
 
 function HeroCountItem({ mobile = false }) {
   return (
@@ -357,23 +399,23 @@ function AccountHeroSkeleton() {
           <SkeletonBlock className="h-full w-full" soft={true} />
         </div>
       </div>
-      <div className={HERO_TINT_CLASS} />
+      <div className={HERO_TINT_CLASS} style={HERO_TINT_STYLE} />
       <div className={HERO_SOFTEN_OVERLAY_CLASS} />
-      <div className={HERO_AMBIENT_OVERLAY_CLASS} />
-      <div className={HERO_LEFT_FADE_CLASS} />
-      <div className={HERO_RIGHT_FADE_CLASS} />
-      <div className={HERO_TOP_FADE_CLASS} />
+      <div className={HERO_AMBIENT_OVERLAY_CLASS} style={HERO_AMBIENT_OVERLAY_STYLE} />
+      <div className={cn(HERO_SIDE_FADE_CLASS, 'left-0')} style={HERO_LEFT_FADE_STYLE} />
+      <div className={cn(HERO_SIDE_FADE_CLASS, 'right-0')} style={HERO_RIGHT_FADE_STYLE} />
+      <div className={HERO_TOP_FADE_CLASS} style={HERO_TOP_FADE_STYLE} />
       <div
         className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
-          <div className={cn('account-skeleton-hero-layout grid w-full gap-y-4 lg:items-end lg:gap-x-8 lg:gap-y-0')}>
+          <div className="grid w-full grid-cols-1 gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <SkeletonBlock className="h-full w-full" radius="hero" />
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <SkeletonBlock className={cn('account-skeleton-hero-title')} />
+                <SkeletonBlock className="h-[2.9rem] w-[68%] max-w-[34rem] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <HeroCountItem key={index} mobile={true} />
@@ -396,10 +438,10 @@ function AccountHeroSkeleton() {
             </div>
           </div>
 
-          <div className={cn('account-skeleton-hero-bio')}>
+          <div className="w-full lg:pl-40">
             <div className="mt-2 flex max-w-3xl flex-col gap-2">
               <Line className="h-3.5 w-full" soft={true} />
-              <Line className={cn('account-skeleton-hero-bio-trail h-3.5')} soft={true} />
+              <Line className="h-3.5 w-[92%]" soft={true} />
             </div>
           </div>
         </div>

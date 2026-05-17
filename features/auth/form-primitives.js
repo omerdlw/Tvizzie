@@ -1,8 +1,9 @@
 import Icon from '@/ui/icon';
 
 export const AUTH_INPUT_CLASSNAMES = Object.freeze({
-  wrapper: 'auth-input-control flex min-h-11 w-full items-center justify-center px-3 sm:min-h-12 sm:px-4',
-  input: 'auth-input-native w-full text-base',
+  wrapper:
+    'flex min-h-11 w-full items-center justify-center border border-white/10 bg-white/10 px-3 focus-within:border-white/15 sm:min-h-12 sm:px-4',
+  input: 'w-full text-base text-white placeholder:text-white/50',
 });
 
 export const AUTH_PASSWORD_INPUT_CLASSNAMES = Object.freeze({
@@ -11,17 +12,19 @@ export const AUTH_PASSWORD_INPUT_CLASSNAMES = Object.freeze({
 });
 
 export const AUTH_PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
-  default: 'auth-primary-button flex min-h-11 w-full items-center justify-center px-3 font-semibold sm:min-h-12 sm:px-4',
+  default:
+    'flex min-h-11 w-full items-center justify-center bg-white px-3 font-semibold text-black hover:bg-white/70 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-12 sm:px-4',
 });
 
 export const AUTH_SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
-  default: 'auth-secondary-button flex min-h-11 w-full items-center justify-center px-3 font-semibold sm:min-h-12 sm:px-4',
+  default:
+    'flex min-h-11 w-full items-center justify-center border border-white/10 bg-white/10 px-3 font-semibold hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-12 sm:px-4',
 });
 
 export function AuthField({ children, className = '', htmlFor, label }) {
   return (
     <div className={`flex w-full flex-col gap-2 ${className}`}>
-      <label htmlFor={htmlFor} className="auth-field-label text-sm font-medium">
+      <label htmlFor={htmlFor} className="text-sm font-medium text-white/50">
         {label}
       </label>
       {children}

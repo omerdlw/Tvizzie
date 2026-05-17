@@ -392,7 +392,7 @@ export default function CreateListModal({ close, data }) {
 
               {isSearching && searchResults.length === 0 && (
                 <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
-                  <div className="text-white-soft flex h-20 items-center justify-center text-sm">Searching</div>
+                  <div className="flex h-20 items-center justify-center text-sm text-white/70">Searching</div>
                 </motion.div>
               )}
             </>

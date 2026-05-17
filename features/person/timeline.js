@@ -81,8 +81,7 @@ function PersonTimelineSurface({ timeline }) {
                   >
                     <Link
                       href={`/movie/${credit.id}`}
-                      data-soft-hover="row"
-                      className="group flex items-end gap-3 border border-transparent p-1 hover:bg-white/10"
+                      className="group flex items-end gap-3 border border-transparent p-1 transition-[filter,color,background-color,border-color,opacity] [transition-duration:240ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:bg-white/10 hover:brightness-105 focus-within:brightness-105"
                     >
                       <MediaThumb poster={credit.poster_path} alt={title} className="" />
                       <div className="flex min-w-0 flex-1 flex-col">

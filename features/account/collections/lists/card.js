@@ -126,7 +126,7 @@ function PreviewPoster({ index, item, total }) {
             }}
           />
         ) : (
-          <div className="center bg-primary text-white-muted h-full w-full">
+          <div className="center h-full w-full bg-primary text-white/50">
             <Icon icon="solar:videocamera-record-bold" size={20} />
           </div>
         )}
@@ -147,7 +147,7 @@ function PlaceholderPoster({ index, total }) {
       }}
     >
       <div
-        className="border-grid-line border bg-black"
+        className="border border-white/10 bg-black"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -206,7 +206,10 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
 
   return (
     <article className="relative w-full">
-      <Link href={getListHref(list, ownerUsername)} className="tvz-soft-hover-card block">
+      <Link
+        href={getListHref(list, ownerUsername)}
+        className="group block transition-[filter,color,background-color,border-color,opacity] [transition-duration:280ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105 focus-within:brightness-105"
+      >
         <div
           className="relative w-full"
           style={{
@@ -214,8 +217,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <div
-            data-soft-hover="media"
-            className="border-grid-line relative z-0 border bg-black"
+            className="relative z-0 border border-white/10 bg-black transition-[filter,color,background-color,border-color,opacity] [transition-duration:420ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] group-hover:brightness-105 group-focus-visible:brightness-105 group-focus-within:brightness-105"
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
@@ -226,7 +228,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </div>
 
           <div
-            className="border-grid-line absolute right-0 bottom-0 left-0 z-10 overflow-hidden border bg-black"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-white/10 bg-black"
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
@@ -240,8 +242,8 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               </h3>
             </div>
 
-            <div className="border-grid-line relative h-11 border-t">
-              <div className="text-white-muted absolute inset-0 flex items-center justify-between px-3 text-[13px]">
+            <div className="relative h-11 border-t border-white/10">
+              <div className="absolute inset-0 flex items-center justify-between px-3 text-[13px] text-white/50">
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <Icon icon="solar:calendar-mark-bold" size={14} />
                   <span>{updatedLabel}</span>

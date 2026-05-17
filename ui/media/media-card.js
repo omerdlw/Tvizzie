@@ -109,11 +109,19 @@ export default function MediaCard({
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('tvz-soft-hover-card group flex shrink-0 flex-col overflow-hidden', className)}
+      className={cn(
+        'group flex shrink-0 flex-col overflow-hidden transition-[filter,color,background-color,border-color,opacity] [transition-duration:280ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105 focus-within:brightness-105',
+        className
+      )}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>
-        <div className={cn('tvz-soft-hover-media relative h-full w-full overflow-hidden', innerClassName)}>
+        <div
+          className={cn(
+            'relative h-full w-full overflow-hidden transition-[filter,color,background-color,border-color,opacity] [transition-duration:420ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] group-hover:brightness-105 group-focus-visible:brightness-105 group-focus-within:brightness-105',
+            innerClassName
+          )}
+        >
           {hasImage ? (
             <AdaptiveImage
               src={imageSrc}
@@ -137,7 +145,7 @@ export default function MediaCard({
             />
           ) : (
             fallbackContent || (
-              <div className="center h-full w-full border border-white/5 bg-white/10">
+              <div className="flex h-full w-full items-center justify-center border border-white/5 bg-white/10">
                 <Icon icon={fallbackIcon} size={fallbackIconSize} className={fallbackIconClassName} />
               </div>
             )

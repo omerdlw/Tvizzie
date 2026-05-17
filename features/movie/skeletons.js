@@ -54,7 +54,7 @@ function FeatureGalleryStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="movie-carousel-feature-card shrink-0">
+        <div key={index} className="w-[min(18rem,calc(100vw-4.5rem))] shrink-0 sm:min-w-[18rem] sm:w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-2.25rem)/4)]">
           <SkeletonBlock className="aspect-video w-full" soft={index > 2} />
         </div>
       ))}
@@ -66,7 +66,7 @@ function PosterCarouselStrip() {
   return (
     <div className="flex w-full items-start gap-3 overflow-hidden">
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="movie-carousel-recommendation-item shrink-0">
+        <div key={index} className="w-36 shrink-0 sm:min-w-[13rem] sm:w-[calc((100%-1.5rem)/3)] md:min-w-36 md:w-[calc((100%-2.25rem)/4)] lg:min-w-0 lg:w-[calc((100%-3.75rem)/6)]">
           <SkeletonPoster soft={index > 3} />
         </div>
       ))}
@@ -409,7 +409,7 @@ export function MovieReviewsPageSkeleton() {
     >
       <PageGradientShell className="overflow-hidden" contentClassName="movie-detail-grid-content">
         <MovieGridFrame
-          className={`overflow-anchor-none mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
+          className={`[overflow-anchor:none] mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-0 px-0`}
         >
           <section className="movie-detail-grid-section movie-detail-grid-primary movie-detail-grid-primary-layout movie-reviews-primary-layout min-h-dvh items-stretch border-t-0">
             <div className="movie-detail-grid-sidebar relative w-full shrink-0">

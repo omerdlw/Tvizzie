@@ -70,7 +70,7 @@ function SocialAvatarStack({ users = [] }) {
         return (
           <span
             key={user.id}
-            className="media-social-avatar center -ml-1.5 h-5 w-5 overflow-hidden first:ml-0"
+            className="center -ml-1.5 h-5 w-5 overflow-hidden border border-primary/90 bg-white/10 ring-1 ring-white/10 first:ml-0"
             aria-hidden="true"
           >
             <AdaptiveImage
@@ -150,7 +150,7 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
       aria-label="Open social activity"
       onClick={handleOpenModal}
       className={cn(
-        'media-social-proof-button flex min-h-10 w-full max-w-none items-center justify-start gap-2 whitespace-nowrap p-3 text-left text-xs font-bold leading-none tracking-wide uppercase',
+        'group flex min-h-10 w-full max-w-none items-center justify-start gap-2 whitespace-nowrap border border-white/10 bg-white/10 p-3 text-left text-xs font-bold leading-none tracking-wide text-white/70 uppercase hover:bg-white/10 hover:text-white',
         className
       )}
       {...MOVIE_FEATURE_SECTION_MOTION}
@@ -159,9 +159,9 @@ export default function MediaSocialProof({ media, viewerId, knownMovieIds = [], 
       <SocialAvatarStack users={previewUsers} />
       <span className="min-w-0 flex-1 truncate">{compactLabel}</span>
       {highlights.length > 1 ? (
-        <span className="media-social-proof-count shrink-0 text-xs tabular-nums">+{highlights.length - 1}</span>
+        <span className="shrink-0 text-xs text-white/70 tabular-nums">+{highlights.length - 1}</span>
       ) : null}
-      <span className="media-social-proof-icon center size-5 shrink-0">
+      <span className="center size-5 shrink-0 text-white/50 group-hover:text-white/70">
         <Icon icon="solar:alt-arrow-right-linear" size={14} />
       </span>
     </motion.button>

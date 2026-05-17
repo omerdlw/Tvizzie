@@ -432,7 +432,7 @@ export default function NotificationsModal({ close, header, data }) {
           Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} index={index} />)
         ) : notifications.length === 0 ? (
           <motion.div {...FEATURE_MODAL_EMPTY_MOTION}>
-            <div className="text-white-muted center h-screen text-sm font-medium">You have no notifications yet</div>
+            <div className="center h-screen text-sm font-medium text-white/50">You have no notifications yet</div>
           </motion.div>
         ) : (
           notifications.map((notification, index) => (

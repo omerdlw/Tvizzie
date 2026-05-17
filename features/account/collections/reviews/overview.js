@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import ReviewList from '@/features/reviews/components/review-list';
 import { Button } from '@/ui/elements';
-import AccountSectionLayout from '../../components/section-wrapper';
+import AccountSectionLayout, { AccountInlineSectionState } from '../../components/section-wrapper';
 import { AccountMotionItem } from '@/app/(account)/account/motion';
 
 function buildLikedMediaKeySet(items = []) {
@@ -108,12 +108,11 @@ export default function AccountReviewsOverview({
       revealIndex={revealIndex}
       title={title}
       titleHref={titleHref}
-      contentClassName="py-0"
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <div className="border border-white/15 bg-black/40 p-4 text-sm text-white/70">{emptyMessage}</div>
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <div className="border border-white/15 bg-black/40 p-4 text-sm text-white/70">{loadError}</div>
+        <AccountInlineSectionState>{loadError}</AccountInlineSectionState>
       ) : (
         <AccountMotionItem index={0}>
           <ReviewList

@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const TOP250_DATA_PATH = path.join(process.cwd(), 'public/data/top250.json');
+const TOP100_LIMIT = 100;
 
 function normalizeTop250Item(item, index) {
   const rank = Number(item?.rank) || index + 1;
@@ -34,15 +35,20 @@ function normalizeTop250Item(item, index) {
   };
 }
 
-export async function getTop250Data() {
+export async function getTop100Data() {
   const rawData = JSON.parse(await readFile(TOP250_DATA_PATH, 'utf8'));
   const items = (Array.isArray(rawData) ? rawData : rawData?.items || [])
     .map(normalizeTop250Item)
     .filter(Boolean)
-    .sort((a, b) => a.rank - b.rank);
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, TOP100_LIMIT);
 
   return {
-    source: rawData?.source || { type: 'static' },
+    source: {
+      ...(rawData?.source || { type: 'static' }),
+      name: 'IMDb Top 100 static snapshot',
+      note: 'Static Top 100 subset derived from the local Top 250 snapshot.',
+    },
     items,
   };
 }

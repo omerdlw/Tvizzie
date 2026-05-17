@@ -44,7 +44,7 @@ function PersonGallerySurface({ profiles, openModal }) {
           return (
             <motion.div key={image.file_path || index} {...getPersonFeatureItemMotion(index + 1)}>
               <MediaCard
-                className="person-gallery-card sm:w-60"
+                className="w-[min(14rem,calc(100vw-4.5rem))] shrink-0 sm:w-60"
                 aspectClass="aspect-2/3"
                 imageSrc={image.file_path ? `${TMDB_IMG}/w342${image.file_path}` : null}
                 imageAlt={`${index + 1}. portrait`}

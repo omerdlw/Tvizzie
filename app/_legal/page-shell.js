@@ -12,7 +12,7 @@ function Section({ children, title }) {
       <AppRouteItem index={0}>
         <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">{title}</h2>
       </AppRouteItem>
-      <AppRouteItem className="legal-route-muted space-y-3 text-sm leading-7 sm:text-[15px]" index={1}>
+      <AppRouteItem className="space-y-3 text-sm leading-7 text-white/70 sm:text-[15px]" index={1}>
         {children}
       </AppRouteItem>
     </section>
@@ -27,34 +27,43 @@ export function LegalPageShell({ children, description, lastUpdated, title }) {
       >
         <AppRouteSection as="header" className="max-w-3xl space-y-4" index={0}>
           <AppRouteItem index={0}>
-            <p className="legal-route-soft text-[11px] font-semibold tracking-widest uppercase">Legal</p>
+            <p className="text-[11px] font-semibold tracking-widest text-white/50 uppercase">Legal</p>
           </AppRouteItem>
           <AppRouteItem className="space-y-3" index={1}>
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{title}</h1>
-            <p className="legal-route-muted max-w-2xl text-sm leading-7 sm:text-[15px]">{description}</p>
+            <p className="max-w-2xl text-sm leading-7 text-white/70 sm:text-[15px]">{description}</p>
           </AppRouteItem>
           <AppRouteItem index={2}>
-            <p className="legal-route-soft text-xs tracking-wide uppercase">Last updated {lastUpdated}</p>
+            <p className="text-xs tracking-wide text-white/50 uppercase">Last updated {lastUpdated}</p>
           </AppRouteItem>
         </AppRouteSection>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-          <AppRouteSection as="article" className="legal-route-panel space-y-8 p-6 sm:p-8" index={1}>
+          <AppRouteSection as="article" className="space-y-8 border border-white/10 bg-primary p-6 sm:p-8" index={1}>
             {children}
           </AppRouteSection>
 
-          <AppRouteSection as="aside" className="legal-route-muted p-5 text-sm leading-7" index={2}>
+          <AppRouteSection as="aside" className="p-5 text-sm leading-7 text-white/70" index={2}>
             <AppRouteItem index={0}>
               <p className="font-semibold text-white">Quick links</p>
             </AppRouteItem>
             <AppRouteItem className="mt-3 flex flex-col gap-2" index={1}>
-              <Link className="hover:text-white" data-soft-hover="control" href="/privacy">
+              <Link
+                className="transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:text-white hover:brightness-105 focus-visible:brightness-105"
+                href="/privacy"
+              >
                 Privacy Policy
               </Link>
-              <Link className="hover:text-white" data-soft-hover="control" href="/terms">
+              <Link
+                className="transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:text-white hover:brightness-105 focus-visible:brightness-105"
+                href="/terms"
+              >
                 Terms of Service
               </Link>
-              <a className="hover:text-white" data-soft-hover="control" href="mailto:tvizzie.app@gmail.com">
+              <a
+                className="transition-[filter,color,background-color,border-color,opacity] [transition-duration:220ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:text-white hover:brightness-105 focus-visible:brightness-105"
+                href="mailto:tvizzie.app@gmail.com"
+              >
                 tvizzie.app@gmail.com
               </a>
             </AppRouteItem>

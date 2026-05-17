@@ -1,30 +1,34 @@
 import { LIST_SORT_OPTIONS } from './query';
 import { cn } from '@/core/utils';
-import { DefaultMenuItem, FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from '../content-filter-primitives';
 
 export default function AccountListSortBar({ className = '', sort = 'updated_desc', onChange, onReset }) {
-  const sortLabel = resolveOptionLabel(LIST_SORT_OPTIONS, sort, 'Recently Updated');
-  const isDefaultSort = sort === 'updated_desc';
   const canReset = typeof onReset === 'function' && sort !== 'updated_desc';
 
   return (
-    <div className={cn(UI.bar, className)}>
-      <div className={UI.main}>
-        <div className={UI.inner}>
-          <FilterPopover label={`${sortLabel}`} active={sort !== 'updated_desc'}>
-            <DefaultMenuItem
-              active={isDefaultSort}
-              label="Default sort: Recently updated"
-              onClick={() => onChange?.('updated_desc')}
-            />
+    <div className={cn('w-full', className)}>
+      <div className="flex w-full flex-col gap-2 lg:flex-row">
+        <select
+          value={sort}
+          onChange={(event) => onChange?.(event.target.value)}
+          className="h-10 min-w-0 flex-1 border border-white/10 bg-black px-3 text-sm text-white/70 outline-none focus:border-white/20"
+        >
+          {LIST_SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value} className="bg-black text-white">
+              {option.label}
+            </option>
+          ))}
+        </select>
 
-            <OptionSection options={LIST_SORT_OPTIONS} value={sort} onChange={(value) => onChange?.(value)} />
-          </FilterPopover>
-        </div>
-
-        {canReset ? <ResetButton onClick={onReset} /> : null}
+        {canReset ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="h-10 shrink-0 border border-white/10 bg-black px-4 text-xs font-semibold tracking-widest text-white/50 uppercase hover:text-white/70"
+          >
+            Reset
+          </button>
+        ) : null}
       </div>
-      <div className={UI.rule} />
     </div>
   );
 }

@@ -2,8 +2,8 @@ import { cn } from '@/core/utils';
 
 export const SKELETON_TOKENS = Object.freeze({
   tone: Object.freeze({
-    solid: 'skeleton-block',
-    soft: 'skeleton-block-soft',
+    solid: 'relative overflow-hidden bg-white/10',
+    soft: 'relative overflow-hidden bg-primary',
   }),
   radius: Object.freeze({
     hero: '',

@@ -1,5 +1,5 @@
 import { cn } from '@/core/utils';
-import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import {
   AccountHeroReveal,
   AccountNavReveal,
@@ -14,12 +14,12 @@ import NavHeightSpacer from '@/ui/elements/nav-height-spacer';
 import Icon from '@/ui/icon';
 
 export const INPUT_BASE_CLASSES =
-  'h-11 w-full border border-white/5 px-3 text-sm text-white outline-none placeholder:text-white/50 focus:bg-white/5 focus:border-white/10';
-export const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
+  'h-11 w-full border border-white/10 px-0 text-sm text-white outline-none placeholder:text-white/50 focus:bg-white/10 focus:border-white/20';
+export const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-0`;
 
-const BUTTON_BASE_CLASSES = 'border border-white/5 bg-black px-3 py-2 text-white hover:bg-white/5 disabled:opacity-50';
+const BUTTON_BASE_CLASSES = 'border border-white/10 bg-black px-0 py-0 text-white hover:bg-white/10 disabled:opacity-50';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed';
+  'inline-flex h-10 items-center justify-center gap-0 px-0 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed';
 
 export function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
@@ -39,13 +39,13 @@ export function ActionButton({ children, className, tone = 'default', icon = nul
 
 export function StatusState({ title, description }) {
   return (
-    <section className="account-detail-grid-subsection bg-transparent">
+    <section>
       <AccountSectionReveal>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex min-h-[42vh] items-center justify-center`)}>
-          <div className="w-full max-w-xl border border-white/15 bg-black p-6 text-center">
+        <div className="flex min-h-[42vh] items-center justify-center p-4">
+          <div className="w-full max-w-xl border border-white/15 bg-black p-0 text-center">
             <p className="text-[11px] font-semibold tracking-widest uppercase">Account Editor</p>
-            <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">{title}</h1>
-            <p className="mt-3 text-sm leading-6 text-white/70">{description}</p>
+            <h1 className="mt-0 text-2xl font-semibold tracking-tight text-white">{title}</h1>
+            <p className="mt-0 text-sm leading-6 text-white/70">{description}</p>
           </div>
         </div>
       </AccountSectionReveal>
@@ -106,11 +106,11 @@ export function SectionCard({
   summaryLabel,
 }) {
   return (
-    <section className="account-detail-grid-subsection bg-transparent">
+    <section>
       <AccountSectionReveal index={revealIndex}>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`, className)}>
+        <div className={cn('flex flex-col p-4', className)}>
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
-          <div className={cn('account-detail-section-body', contentClassName)}>
+          <div className={cn(contentClassName)}>
             {description ? <p className="text-sm leading-6 text-white/70">{description}</p> : null}
             {children}
           </div>
@@ -122,11 +122,11 @@ export function SectionCard({
 
 export function SecuritySectionStack({ children }) {
   return (
-    <section className="account-detail-grid-subsection bg-transparent">
+    <section>
       <AccountSectionReveal>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col`)}>
+        <div className="flex flex-col p-4">
           <AccountSectionHeading title="Security" />
-          <div className="account-detail-section-body grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.62fr)]">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.62fr)]">
             {children}
           </div>
         </div>
@@ -137,8 +137,8 @@ export function SecuritySectionStack({ children }) {
 
 export function SecurityCard({ title, children, className, summaryLabel }) {
   return (
-    <div className={cn('flex min-w-0 flex-col gap-4 border border-white/5 bg-black/40 p-4', className)}>
-      <div className="flex min-w-0 items-center justify-between gap-3">
+    <div className={cn('flex min-w-0 flex-col gap-0 border border-white/10 bg-black/40 p-0', className)}>
+      <div className="flex min-w-0 items-center justify-between gap-0">
         <h3 className="min-w-0 text-sm font-semibold tracking-widest text-white/70 uppercase">{title}</h3>
         {summaryLabel ? <div className="min-w-0 text-right">{summaryLabel}</div> : null}
       </div>
@@ -149,7 +149,7 @@ export function SecurityCard({ title, children, className, summaryLabel }) {
 
 export function EnablePasswordNotice() {
   return (
-    <div className="border border-white/5 bg-white/10 p-4 text-sm leading-6 text-white/70 lg:col-span-2">
+    <div className="border border-white/10 bg-white/10 p-0 text-sm leading-6 text-white/70 lg:col-span-2">
       Email/password sign-in is not linked yet. Complete the set password flow below to continue.
     </div>
   );
@@ -157,7 +157,7 @@ export function EnablePasswordNotice() {
 
 export function Field({ label, hint, children, className }) {
   return (
-    <label className={cn('flex flex-col gap-2', className)}>
+    <label className={cn('flex flex-col gap-0', className)}>
       <span className="text-[10px] font-semibold tracking-wide text-white/70 uppercase">{label}</span>
       {children}
       {hint ? <span className="text-xs leading-5 text-white/70">{hint}</span> : null}
@@ -181,8 +181,8 @@ export function MediaField({
   const shouldDisableActions = isDisabled || isUploading;
 
   return (
-    <div className="grid items-start gap-6 sm:grid-cols-[minmax(0,1fr)_20rem]">
-      <div className="space-y-3">
+    <div className="grid items-start gap-0 sm:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="space-y-0">
         <Field label={fieldLabel}>
           <input
             value={value}
@@ -193,7 +193,7 @@ export function MediaField({
           />
         </Field>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-0">
           <ActionButton
             type="button"
             onClick={onOpenUpload}

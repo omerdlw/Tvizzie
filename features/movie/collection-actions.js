@@ -118,9 +118,8 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      data-soft-hover="card"
       className={cn(
-        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-[filter,color,background-color,border-color,opacity] [transition-duration:280ms] [transition-timing-function:cubic-bezier(0.2,0,0,1)] hover:brightness-105 focus-visible:brightness-105 focus-within:brightness-105 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
       {...MOVIE_FEATURE_ACTION_MOTION}

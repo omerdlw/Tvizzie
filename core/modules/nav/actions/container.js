@@ -227,7 +227,7 @@ export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer p-1 text-white-soft transition-colors hover:bg-primary hover:text-white"
+        className="center relative cursor-pointer p-1 text-white/70 transition-colors hover:bg-primary hover:text-white"
         onClick={action.onClick}
         type="button"
         {...NAV_BUTTON_INTERACTION_MOTION}

@@ -1,69 +1,8 @@
 @layer utilities {
-  .overflow-anchor-none {
-    overflow-anchor: none;
-  }
-
-  .app-noise-surface {
-    background-image: url('/images/noise.webp');
-    background-repeat: repeat;
-    background-size: auto;
-    image-rendering: auto;
-    mix-blend-mode: multiply;
-  }
-
-  .background-noise-surface {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .page-gradient-backdrop {
-    background-image: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--white) 38%, transparent) 0%,
-      color-mix(in srgb, var(--white) 52%, transparent) 18vh,
-      color-mix(in srgb, var(--white) 68%, transparent) 34vh,
-      color-mix(in srgb, var(--white) 83%, transparent) 50vh,
-      color-mix(in srgb, var(--white) 94%, transparent) 66vh,
-      var(--white) 80vh,
-      var(--white) 100%
-    );
-  }
-
   .grid-page-line {
     display: block;
     pointer-events: none;
     background-color: var(--grid-line-draw-color, var(--grid-line-color));
-  }
-
-  .text-white-soft {
-    color: color-mix(in srgb, var(--color-white) 70%, transparent);
-  }
-
-  .text-white-strong {
-    color: color-mix(in srgb, var(--color-white) 80%, transparent);
-  }
-
-  .text-white-muted {
-    color: color-mix(in srgb, var(--color-white) 50%, transparent);
-  }
-
-  .border-grid-line {
-    border-color: var(--grid-line-color);
-  }
-
-  .skeleton-block,
-  .skeleton-block-soft {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .skeleton-block {
-    background-color: color-mix(in srgb, var(--color-white) 6%, transparent);
-  }
-
-  .skeleton-block-soft {
-    background-color: color-mix(in srgb, var(--color-white) 3%, transparent);
   }
 
   .center {

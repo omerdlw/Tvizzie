@@ -1,61 +1,4 @@
 @layer utilities {
-  .tvz-soft-hover-card,
-  [data-soft-hover='card'] {
-    transition-property: filter, color, background-color, border-color, opacity;
-    transition-duration: 280ms;
-    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  }
-
-  .tvz-soft-hover-card:hover,
-  .tvz-soft-hover-card:focus-visible,
-  .tvz-soft-hover-card:focus-within,
-  [data-soft-hover='card']:hover,
-  [data-soft-hover='card']:focus-visible,
-  [data-soft-hover='card']:focus-within {
-    filter: brightness(1.04);
-  }
-
-  .tvz-soft-hover-media,
-  [data-soft-hover='media'] {
-    transition-property: filter, color, background-color, border-color, opacity;
-    transition-duration: 420ms;
-    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  }
-
-  .tvz-soft-hover-card:hover .tvz-soft-hover-media,
-  .tvz-soft-hover-card:focus-visible .tvz-soft-hover-media,
-  .tvz-soft-hover-card:focus-within .tvz-soft-hover-media,
-  [data-soft-hover='card']:hover [data-soft-hover='media'],
-  [data-soft-hover='card']:focus-visible [data-soft-hover='media'],
-  [data-soft-hover='card']:focus-within [data-soft-hover='media'] {
-    filter: brightness(1.06);
-  }
-
-  .tvz-soft-hover-row,
-  [data-soft-hover='row'] {
-    transition-property: filter, color, background-color, border-color, opacity;
-    transition-duration: 240ms;
-    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  }
-
-  .tvz-soft-hover-row:hover,
-  .tvz-soft-hover-row:focus-within,
-  [data-soft-hover='row']:hover,
-  [data-soft-hover='row']:focus-within {
-    filter: brightness(1.04);
-  }
-
-  [data-soft-hover='control'] {
-    transition-property: filter, color, background-color, border-color, opacity;
-    transition-duration: 220ms;
-    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  }
-
-  [data-soft-hover='control']:hover,
-  [data-soft-hover='control']:focus-visible {
-    filter: brightness(1.05);
-  }
-
   .movie-detail-grid-frame {
     --movie-detail-grid-frame-width: 72rem;
     --movie-detail-grid-inline-pad: 1rem;
@@ -257,51 +200,6 @@
     display: none;
   }
 
-  .movie-carousel-feature-card {
-    width: min(18rem, calc(100vw - 4.5rem));
-  }
-
-  .movie-carousel-logo-card {
-    width: min(13rem, calc(100vw - 5rem));
-  }
-
-  .movie-carousel-poster-card,
-  .movie-carousel-recommendation-item {
-    width: 9rem;
-  }
-
-  @media (min-width: 640px) {
-    .movie-carousel-feature-card {
-      width: calc((100% - 1.5rem) / 3);
-      min-width: 18rem;
-    }
-
-    .movie-carousel-logo-card,
-    .movie-carousel-recommendation-item {
-      width: calc((100% - 1.5rem) / 3);
-      min-width: 13rem;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .movie-carousel-feature-card {
-      width: calc((100% - 2.25rem) / 4);
-      min-width: 18rem;
-    }
-
-    .movie-carousel-recommendation-item {
-      width: calc((100% - 2.25rem) / 4);
-      min-width: 9rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .movie-carousel-recommendation-item {
-      width: calc((100% - 3.75rem) / 6);
-      min-width: 0;
-    }
-  }
-
   .movie-detail-grid-subsection-content {
     padding-block-start: var(--movie-detail-divider-height);
   }
@@ -347,10 +245,6 @@
 
   .person-detail-grid-divider-plain {
     background-color: transparent;
-  }
-
-  .person-gallery-card {
-    width: min(14rem, calc(100vw - 4.5rem));
   }
 
   @media (min-width: 1024px) {

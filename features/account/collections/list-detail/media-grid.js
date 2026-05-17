@@ -6,7 +6,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { ProfileMediaActions } from '@/features/account/components/media-grid';
 import AccountPagination from '@/features/account/components/pagination';
-import AccountInlineSectionState from '@/features/account/components/section-wrapper';
+import { AccountInlineSectionState } from '@/features/account/components/section-wrapper';
 import MediaCard from '@/ui/media/media-card';
 
 const MOBILE_MEDIA_QUERY = '(max-width: 1023px)';
