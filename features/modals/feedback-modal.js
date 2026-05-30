@@ -4,16 +4,25 @@ import { useState } from 'react';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
-import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { requestApiJson } from '@/core/services/shared/client';
 import { getStorageItem, setStorageItem } from '@/core/utils/client-utils';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
+const FORM_ID = 'feedback-modal-form';
 
 const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border px-4 text-xs font-semibold tracking-wide uppercase transition';
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function createFeedbackId() {
   return `feedback_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -60,10 +69,13 @@ async function copyFeedbackRecord(record) {
   }
 }
 
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
+
 export default function FeedbackModal({ close, header }) {
   const toast = useToast();
 
-  const formId = 'feedback-modal-form';
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,9 +90,7 @@ export default function FeedbackModal({ close, header }) {
 
     setIsSaving(true);
 
-    const nextRecord = buildFeedbackRecord({
-      message: trimmedMessage,
-    });
+    const nextRecord = buildFeedbackRecord({ message: trimmedMessage });
 
     try {
       const result = await submitFeedback({
@@ -119,6 +129,23 @@ export default function FeedbackModal({ close, header }) {
   }
 
   return (
+    <ModalView
+      close={close}
+      header={header}
+      message={message}
+      setMessage={setMessage}
+      isSaving={isSaving}
+      handleSubmit={handleSubmit}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({ close, header, message, setMessage, isSaving, handleSubmit }) {
+  return (
     <Container
       className="w-full sm:w-[580px]"
       header={header}
@@ -136,7 +163,7 @@ export default function FeedbackModal({ close, header }) {
             </Button>
             <Button
               type="submit"
-              form={formId}
+              form={FORM_ID}
               disabled={isSaving}
               className={cn(
                 ACTION_BUTTON_CLASS,
@@ -149,7 +176,7 @@ export default function FeedbackModal({ close, header }) {
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form id={FORM_ID} onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div>
           <h2 className="text-[16px] font-semibold text-black">What should improve on Tvizzie?</h2>
           <p className="text-sm font-medium text-black/50">Share general product, UX, or quality feedback.</p>

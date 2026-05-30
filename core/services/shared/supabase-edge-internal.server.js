@@ -1,16 +1,9 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import {
-  buildInternalRequestMeta,
-  resolveIdempotencyKey,
-  resolveRequestId,
-} from '@/core/services/shared/request-meta.server';
-import { normalizeApiResultEnvelope } from '@/core/services/shared/api-result';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeApiResultEnvelope } from './api-result.js';
+import { buildInternalRequestMeta, resolveIdempotencyKey, resolveRequestId } from './request-meta.server.js';
 
 function assertEdgeInvocationEnv() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {

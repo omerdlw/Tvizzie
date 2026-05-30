@@ -1,3 +1,4 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import {
   resolveProviderDescriptors as resolveAuthProviderDescriptors,
   resolveProviderIds,
@@ -22,14 +23,6 @@ export const GOOGLE_AUTH_RESULTS = Object.freeze({
   REDIRECT_SIGNUP: 'redirect-signup',
   REQUIRE_PASSWORD_LOGIN: 'require-password-login',
 });
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 function normalizeIntent(value) {
   const normalizedIntent = normalizeValue(value).toLowerCase();
@@ -94,7 +87,7 @@ async function getProfileRecord(userId) {
   return {
     exists: true,
     id: normalizeValue(raw?.id || userId) || userId,
-    email: normalizeEmail(raw?.email),
+    email: normalizeEmailValue(raw?.email),
     raw,
   };
 }
@@ -114,7 +107,7 @@ export async function resolveGoogleAuthIntent({
     tokenClaims: decodedToken || {},
   });
   const googleProvider = providerDescriptors.find((provider) => provider.id === GOOGLE_PROVIDER_ID);
-  const googleEmail = normalizeEmail(googleProvider?.email || userRecord?.email || decodedToken?.email);
+  const googleEmail = normalizeEmailValue(googleProvider?.email || userRecord?.email || decodedToken?.email);
   const emailVerified = Boolean(userRecord?.emailVerified || decodedToken?.email_verified);
   const hasGoogleProvider = providerIds.includes(GOOGLE_PROVIDER_ID);
   const hasPasswordProvider = providerIds.includes(PASSWORD_PROVIDER_ID);

@@ -1,6 +1,7 @@
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media-key.service';
-import { normalizeTimestamp } from '@/core/utils';
+import { assertMovieMedia, buildMediaItemKey } from './media-key.service.js';
+import { normalizeTimestamp } from '@/core/utils/format';
 import { isMovieMediaType } from '@/core/utils/media';
+import { normalizeLowerValue } from '@/core/utils/string';
 
 function normalizeNumber(value, fallback = null) {
   const parsed = Number(value);
@@ -13,9 +14,7 @@ function normalizeNumber(value, fallback = null) {
 }
 
 function normalizeEntityType(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
+  return normalizeLowerValue(value);
 }
 
 function normalizeArray(value) {

@@ -1,37 +1,14 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
   getAccountProfileByUserId,
 } from '@/core/services/account/account-profile.server';
-import { normalizeTimestamp } from '@/core/utils';
-
-const FOLLOW_SELECT = [
-  'created_at',
-  'follower_avatar_url',
-  'follower_display_name',
-  'follower_id',
-  'follower_username',
-  'following_avatar_url',
-  'following_display_name',
-  'following_id',
-  'following_username',
-  'responded_at',
-  'status',
-  'updated_at',
-].join(',');
-
-const FOLLOW_STATUSES = Object.freeze({
-  ACCEPTED: 'accepted',
-  PENDING: 'pending',
-  REJECTED: 'rejected',
-});
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeTimestamp } from '@/core/utils/format';
+import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from './follow.constants';
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {
@@ -108,21 +85,6 @@ function sortFollowSnapshots(items = []) {
   });
 }
 
-function createEmptyRelationshipState() {
-  return {
-    canViewPrivateContent: false,
-    inboundRelationship: null,
-    isInboundRelationshipLoaded: false,
-    isOutboundRelationshipLoaded: false,
-    inboundStatus: null,
-    isPrivateProfile: false,
-    isTargetProfileLoaded: false,
-    outboundRelationship: null,
-    outboundStatus: null,
-    showFollowBack: false,
-  };
-}
-
 async function getFollowResourceInternal({
   admin,
   assertResult,
@@ -180,7 +142,9 @@ async function getFollowResourceInternal({
 
     assertResult(result, 'Follow collection could not be loaded');
 
-    return sortFollowSnapshots((result.data || []).map((row) => normalizeFollowRecord(normalizeTimestamp, row, direction)));
+    return sortFollowSnapshots(
+      (result.data || []).map((row) => normalizeFollowRecord(normalizeTimestamp, row, direction))
+    );
   }
 
   if (resource === 'relationship') {

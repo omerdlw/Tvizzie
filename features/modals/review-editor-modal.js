@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
@@ -9,18 +9,27 @@ import {
   getReviewValidationError,
   upsertListReview,
   upsertMediaReview,
-} from '@/core/services/media/reviews.service';
+} from '@/core/services/media/reviews';
 import RatingSelector from '@/features/reviews/parts/rating-selector';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const REVIEW_MIN_LENGTH = getReviewMinLength();
+const FORM_ID = 'review-editor-form';
 
 const SECONDARY_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase text-black/70 transition hover:bg-black/5 hover:text-black';
 
 const PRIMARY_BUTTON_CLASS =
   'h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide uppercase text-white transition hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject?.subjectType === 'list') {
@@ -165,93 +174,41 @@ function buildUpdatedReview({
   };
 }
 
-function FooterMeta({ hasText, isList = false, trimmedTextLength, validationError }) {
-  return (
-    <div>
-      <div className="text-xs text-black/70">
-        {hasText
-          ? `${trimmedTextLength} characters`
-          : isList
-            ? `Comment required (${REVIEW_MIN_LENGTH}+ characters)`
-            : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
-      </div>
-      {validationError && <div className="text-error text-xs">Please resolve validation before saving</div>}
-    </div>
-  );
-}
-
-function SpoilerToggle({ disabled, checked, invalid, onClick }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={!disabled && checked}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center justify-between border-t p-4 text-left transition',
-        disabled && 'cursor-not-allowed border-black/10 text-black/50',
-        !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-black/10',
-        !disabled && !checked && 'bg-primary border-black/10 hover:bg-black/5',
-        invalid && 'border-t'
-      )}
-    >
-      <div>
-        <div className="text-sm font-semibold">Contains spoilers</div>
-        <div className="text-xs text-black/70">
-          {disabled ? 'Spoiler option unlocks after writing review text' : 'Hide this review behind a spoiler warning'}
-        </div>
-      </div>
-
-      <span
-        className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border p-px transition-all',
-          checked && !disabled ? 'border-error bg-error' : 'border-black/5 bg-black/5'
-        )}
-      >
-        <span
-          className={cn(
-            'bg-primary size-5 rounded-full transition-all',
-            checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0'
-          )}
-        />
-      </span>
-    </button>
-  );
-}
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
 
 export default function ReviewEditorModal({ close, data }) {
   const toast = useToast();
   const { onSuccess, review = null, user = null } = data || {};
 
+  // Derived Initial Values
   const hasExistingReview = Boolean(review);
-  const subjectContext = useMemo(() => resolveSubjectContext(data, review), [data, review]);
+  const subjectContext = resolveSubjectContext(data, review);
   const isListSubject = subjectContext?.subjectType === 'list';
   const initialRating = isListSubject ? null : (review?.rating ?? null);
 
+  // States
   const [reviewText, setReviewText] = useState(review?.content || '');
   const [rating, setRating] = useState(initialRating);
   const [isSpoiler, setIsSpoiler] = useState(Boolean(review?.isSpoiler));
   const [isSaving, setIsSaving] = useState(false);
 
+  // Derived View Values
   const trimmedText = reviewText.trim();
   const hasText = Boolean(trimmedText);
   const trimmedTextLength = trimmedText.length;
-  const formId = 'review-editor-form';
   const modalSubjectTitle = subjectContext?.subjectTitle || review?.subjectTitle || 'this title';
 
-  const validationError = useMemo(
-    () =>
-      getReviewValidationError({
-        content: reviewText,
-        rating,
-        allowRating: !isListSubject,
-        requireText: isListSubject,
-        textLabel: isListSubject ? 'comment' : 'review',
-      }),
-    [isListSubject, reviewText, rating]
-  );
+  const validationError = getReviewValidationError({
+    content: reviewText,
+    rating,
+    allowRating: !isListSubject,
+    requireText: isListSubject,
+    textLabel: isListSubject ? 'comment' : 'review',
+  });
 
+  // Handlers
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -328,6 +285,48 @@ export default function ReviewEditorModal({ close, data }) {
   }
 
   return (
+    <ModalView
+      close={close}
+      isListSubject={isListSubject}
+      rating={rating}
+      setRating={setRating}
+      hasText={hasText}
+      trimmedTextLength={trimmedTextLength}
+      validationError={validationError}
+      isSaving={isSaving}
+      hasExistingReview={hasExistingReview}
+      reviewText={reviewText}
+      modalSubjectTitle={modalSubjectTitle}
+      isSpoiler={isSpoiler}
+      handleSubmit={handleSubmit}
+      handleTextChange={handleTextChange}
+      handleSpoilerToggle={handleSpoilerToggle}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({
+  close,
+  isListSubject,
+  rating,
+  setRating,
+  hasText,
+  trimmedTextLength,
+  validationError,
+  isSaving,
+  hasExistingReview,
+  reviewText,
+  modalSubjectTitle,
+  isSpoiler,
+  handleSubmit,
+  handleTextChange,
+  handleSpoilerToggle,
+}) {
+  return (
     <Container
       className="w-full sm:w-[640px]"
       header={isListSubject ? null : <RatingSelector value={rating} onChange={setRating} />}
@@ -348,17 +347,19 @@ export default function ReviewEditorModal({ close, data }) {
             </Button>
             <Button
               type="submit"
-              form={formId}
+              form={FORM_ID}
               disabled={isSaving || Boolean(validationError)}
               className={PRIMARY_BUTTON_CLASS}
             >
-              {isSaving ? 'Saving' : getPrimaryActionLabel({ hasExistingReview, isList: isListSubject, rating, reviewText })}
+              {isSaving
+                ? 'Saving'
+                : getPrimaryActionLabel({ hasExistingReview, isList: isListSubject, rating, reviewText })}
             </Button>
           </>
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit}>
+      <form id={FORM_ID} onSubmit={handleSubmit}>
         <Textarea
           maxLength={800}
           value={reviewText}
@@ -382,5 +383,60 @@ export default function ReviewEditorModal({ close, data }) {
         />
       </form>
     </Container>
+  );
+}
+
+function FooterMeta({ hasText, isList = false, trimmedTextLength, validationError }) {
+  return (
+    <div>
+      <div className="text-xs text-black/70">
+        {hasText
+          ? `${trimmedTextLength} characters`
+          : isList
+            ? `Comment required (${REVIEW_MIN_LENGTH}+ characters)`
+            : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
+      </div>
+      {validationError && <div className="text-error text-xs">Please resolve validation before saving</div>}
+    </div>
+  );
+}
+
+function SpoilerToggle({ disabled, checked, invalid, onClick }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!disabled && checked}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        'flex w-full items-center justify-between border-t p-4 text-left transition',
+        disabled && 'cursor-not-allowed border-black/10 text-black/50',
+        !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-black/10',
+        !disabled && !checked && 'bg-primary border-black/10 hover:bg-black/5',
+        invalid && 'border-t'
+      )}
+    >
+      <div>
+        <div className="text-sm font-semibold">Contains spoilers</div>
+        <div className="text-xs text-black/70">
+          {disabled ? 'Spoiler option unlocks after writing review text' : 'Hide this review behind a spoiler warning'}
+        </div>
+      </div>
+
+      <span
+        className={cn(
+          'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border p-px transition-all',
+          checked && !disabled ? 'border-error bg-error' : 'border-black/5 bg-black/5'
+        )}
+      >
+        <span
+          className={cn(
+            'bg-primary size-5 rounded-full transition-all',
+            checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0'
+          )}
+        />
+      </span>
+    </button>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { requestApiJson } from '@/core/services/shared/client';
 import { NOTIFICATION_EVENT_TYPES } from './notification-events.constants';
 
 async function postNotificationEvent({ eventType, payload = {} }) {

@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  createPollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
-import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { buildPollingSubscriptionKey, createPollingSubscription, requestApiJson } from '@/core/services/shared/client';
 
 async function fetchUserActivity(userId, pageSize = null) {
   const result = await requestApiJson('/api/account/activity', {

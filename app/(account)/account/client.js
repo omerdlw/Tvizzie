@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { hasMatchingSeededFeed, useDeferredPreviewFeed } from '@/features/account/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useAuth } from '@/core/modules/auth';
@@ -14,8 +14,8 @@ import {
   deleteStoredReview,
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service';
-import { AccountSectionStateProvider, useAccountSectionEngine } from './shared/section-state';
+} from '@/core/services/media/reviews';
+import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;

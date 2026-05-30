@@ -25,10 +25,10 @@ import {
 } from '@/features/account/filtering';
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/features/account/utils';
-import { AccountListSortBar, AccountMediaFilterBar } from '@/features/account/shared/content-filters';
-import AccountInlineSectionState from '@/features/account/shared/section-state';
-import AccountSectionLayout, { AccountSectionState } from '@/features/account/shared/section-wrapper';
-import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
+import { AccountListSortBar, AccountMediaFilterBar } from '@/features/account/filters/content-filter-primitives';
+import AccountInlineSectionState from '@/features/account/components/section-state';
+import AccountSectionLayout, { AccountSectionState } from '@/features/account/components/section-wrapper';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/components/media-grid';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountReviewsFeed from './reviews';

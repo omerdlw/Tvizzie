@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 
-import { isObject } from '@/core/utils';
+import { isObject } from '@/core/utils/type';
 
 import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS_CONFIG } from './config';
 import { createLocalStorageDriver, createSettingsStorage, createCookieDriver } from './storage';

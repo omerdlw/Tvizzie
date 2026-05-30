@@ -1,11 +1,9 @@
+import { normalizeValue } from '@/core/utils/string';
 import { NextResponse } from 'next/server';
 
-import { buildApiErrorResult, buildApiSuccessResult } from '@/core/services/shared/api-result';
-import { setResponseRequestMeta } from '@/core/services/shared/request-meta.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeErrorCode, normalizeErrorMessage } from './app-error.js';
+import { buildApiErrorResult, buildApiSuccessResult } from './api-result.js';
+import { setResponseRequestMeta } from './request-meta.server.js';
 
 export function createApiSuccessResponse(
   data = null,
@@ -29,11 +27,12 @@ export function createApiErrorResponse(
   { message = 'Request failed', code = 'INTERNAL_ERROR', retryable = false, data = null } = {},
   { status = 500, requestMeta } = {}
 ) {
-  const normalizedMessage = normalizeValue(message) || 'Request failed';
+  const normalizedMessage = normalizeErrorMessage({ message }, 'Request failed');
+  const normalizedCode = normalizeErrorCode({ code }, 'INTERNAL_ERROR');
   const response = NextResponse.json(
     {
       ...buildApiErrorResult({
-        code,
+        code: normalizedCode,
         data,
         message: normalizedMessage,
         requestId: requestMeta?.requestId,

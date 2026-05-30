@@ -6,13 +6,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
-import { cn } from '@/core/utils';
+import { cn } from '@/core/utils/classnames';
 import { ModuleError } from '@/core/modules/error-boundary';
 import { MODAL_BREAKPOINTS, MODAL_CHROME, MODAL_LABELS, MODAL_POSITIONS } from '@/core/modules/modal/config';
 import { useModal } from '@/core/modules/modal/context';
+import {
+  getModalPanelMotion,
+  MODAL_ACTION_MOTION,
+  MODAL_BACKDROP_MOTION,
+  MODAL_LAYER_MOTION,
+  MODAL_LAYER_SWITCHER_MOTION,
+} from '@/core/modules/motion';
 
 import { useModalRegistry } from '../registry/context';
-import { getBackdropVariants, getModalVariants, POSITION_CLASSES } from './utils';
+import { POSITION_CLASSES } from './utils';
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
@@ -85,11 +92,12 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center gap-1.5 border-t border-black/10 px-3 py-1.5">
-      <button
+    <motion.div className="center gap-1.5 border-t border-black/10 px-3 py-1.5" {...MODAL_LAYER_SWITCHER_MOTION}>
+      <motion.button
         type="button"
         onClick={onSwitchToPrevious}
         className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+        {...MODAL_ACTION_MOTION}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -101,14 +109,14 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
           />
         </svg>
         {getModalLabel(previousEntry.modalType)}
-      </button>
+      </motion.button>
 
       <span className="text-[10px] text-black/20">/</span>
 
       <span className="bg-primary rounded-[10px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -121,9 +129,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   }, [entry.position, entry.responsivePosition, isMobileViewport]);
 
   const SpecificModalComponent = registry.get(entry.modalType);
-  const modalVariants = useMemo(() => getModalVariants(activePosition), [activePosition]);
-  const backdropVariants = useMemo(() => getBackdropVariants(), []);
-
   const isPanelChrome = entry.chrome !== MODAL_CHROME.BARE;
   const isLeftModal = activePosition === MODAL_POSITIONS.LEFT;
   const isRightModal = activePosition === MODAL_POSITIONS.RIGHT;
@@ -131,7 +136,6 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
   const isTopModalPosition = activePosition === MODAL_POSITIONS.TOP;
   const isBottomModalPosition = activePosition === MODAL_POSITIONS.BOTTOM;
   const isVerticalEdgeModal = isVerticalEdgePosition(activePosition);
-  const isMobileSideModal = isMobileViewport && isSideModal;
   const previousEntry = modalStack[stackIndex - 1] || null;
 
   const titleId = `modal-title-${entry.id}`;
@@ -195,56 +199,71 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       aria-modal={isTopModal}
       aria-labelledby={entry.title ? titleId : undefined}
       style={{ zIndex: baseZIndex }}
+      onClick={(event) => {
+        if (!isTopModal) return;
+        if (event.target === event.currentTarget) {
+          closeModal(null, entry.id);
+        }
+      }}
       className={cn(
         'fixed inset-0 flex flex-col',
         POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
         isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
-        !isSideModal && 'px-3 sm:px-0'
+        activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport && 'px-3'
       )}
+      {...MODAL_LAYER_MOTION}
     >
       {isTopModal ? (
         <motion.div
           className="fixed inset-0 bg-white/50 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
-          variants={backdropVariants}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
           onClick={() => closeModal(null, entry.id)}
+          {...MODAL_BACKDROP_MOTION}
         />
       ) : null}
 
       <motion.div
         ref={modalRef}
         className={cn(
-          'relative flex max-w-full transform-gpu flex-col',
-          'w-full sm:w-auto',
-          (isSideModal || isVerticalEdgeModal) && 'self-stretch sm:self-auto'
+          'relative flex max-w-full flex-col',
+          activePosition === MODAL_POSITIONS.CENTER && 'w-full sm:w-auto',
+          isVerticalEdgeModal && 'w-full',
+          isSideModal && (isMobileViewport ? 'w-full' : 'w-auto'),
+          isVerticalEdgeModal && 'self-stretch',
+          isSideModal && isMobileViewport && 'self-stretch'
         )}
         style={{
           zIndex: modalZIndex,
-          willChange: 'transform, opacity',
         }}
-        variants={modalVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
+        onClick={(event) => event.stopPropagation()}
+        {...getModalPanelMotion(activePosition, isTopModal)}
       >
-        <div
+        <motion.div
           className={cn(
             'relative flex flex-col',
-            isMobileSideModal ? 'rounded-none' : 'rounded-[20px]',
+            'rounded-[20px]',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && 'rounded-t-none',
-            isPanelChrome && isBottomModalPosition && 'rounded-b-none',
+            isPanelChrome && isTopModalPosition && 'rounded-t-none border-t-0',
+            isPanelChrome && isBottomModalPosition && 'rounded-b-none border-b-0',
+            isPanelChrome &&
+              isVerticalEdgeModal &&
+              isMobileViewport &&
+              (isTopModalPosition
+                ? 'w-full rounded-b-[20px] rounded-t-none border-t-0 border-l-0 border-r-0'
+                : 'w-full rounded-t-[20px] rounded-b-none border-b-0 border-l-0 border-r-0'),
             isPanelChrome &&
               isSideModal && [
-                'h-screen max-h-screen w-full self-stretch sm:w-auto sm:self-auto',
-                isLeftModal ? 'sm:rounded-l-none sm:border-l-0' : 'sm:rounded-r-none sm:border-r-0',
+                isMobileViewport
+                  ? (isLeftModal
+                      ? 'h-screen max-h-screen w-full self-stretch border-0 rounded-r-[20px] rounded-l-none'
+                      : 'h-screen max-h-screen w-full self-stretch border-0 rounded-l-[20px] rounded-r-none')
+                  : 'h-screen max-h-screen w-full',
+                !isMobileViewport && (isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0'),
               ]
           )}
+          layout="position"
         >
           <ModuleError name={entry.modalType}>
             <SpecificModalComponent
@@ -267,7 +286,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
               onSwitchToPrevious={() => closeModal(null, entry.id)}
             />
           )}
-        </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   );
@@ -328,7 +347,7 @@ export default function Modal() {
   }
 
   return createPortal(
-    <AnimatePresence mode="sync">
+    <AnimatePresence initial={false}>
       {modalStack.map((entry, index) => (
         <ModalLayer
           key={entry.id}

@@ -1,10 +1,7 @@
 'use client';
 
+import { normalizeValue } from '@/core/utils/string';
 import { createClient } from '@/core/clients/supabase/client';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 export function getSupabaseClient() {
   return createClient();

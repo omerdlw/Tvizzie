@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { TMDB_IMG } from '@/core/constants';
-import { POSTER_PREFERENCE_CHANGE_EVENT } from '@/core/services/media/poster-preference-events';
+import { POSTER_PREFERENCE_CHANGE_EVENT } from '@/core/services/media/user-media';
 import { getMoviePosterPreferenceFilePath } from '@/features/movie/background-preferences';
 import { getPersonPosterPreferenceFilePath } from '@/features/person/poster-preferences';
 

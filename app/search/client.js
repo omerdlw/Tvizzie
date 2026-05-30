@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { getAllMediaGenreOptions, getDecadeOptions } from '@/features/account/filtering';
-import { SearchMovieFilterBar } from '@/features/account/shared/content-filters';
+import { SearchMovieFilterBar } from '@/features/account/filters/content-filter-primitives';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { SEARCH_GRID, SEARCH_LIMITS, SEARCH_TAB_ITEMS, SEARCH_TYPES } from '@/features/search/constants';

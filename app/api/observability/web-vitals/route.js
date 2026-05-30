@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/cache-policy.server';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/core/services/shared/server';
 
 function normalizeMetric(payload = {}) {
   const delta = Number(payload?.delta);
@@ -8,11 +8,24 @@ function normalizeMetric(payload = {}) {
 
   return {
     delta: Number.isFinite(delta) ? delta : 0,
-    id: String(payload?.id || '').trim().slice(0, 120),
-    name: String(payload?.name || '').trim().slice(0, 40),
-    navigationType: String(payload?.navigationType || '').trim().slice(0, 40) || 'navigate',
-    pathname: String(payload?.pathname || '').trim().slice(0, 200) || '/',
-    rating: String(payload?.rating || '').trim().slice(0, 40) || 'unknown',
+    id: String(payload?.id || '')
+      .trim()
+      .slice(0, 120),
+    name: String(payload?.name || '')
+      .trim()
+      .slice(0, 40),
+    navigationType:
+      String(payload?.navigationType || '')
+        .trim()
+        .slice(0, 40) || 'navigate',
+    pathname:
+      String(payload?.pathname || '')
+        .trim()
+        .slice(0, 200) || '/',
+    rating:
+      String(payload?.rating || '')
+        .trim()
+        .slice(0, 40) || 'unknown',
     value: Number.isFinite(value) ? value : 0,
   };
 }
@@ -35,8 +48,6 @@ export async function POST(request) {
   if (!isValidMetric(metric)) {
     return NextResponse.json({ error: 'Metric name and id are required' }, { status: 400 });
   }
-
-  console.info('[web-vitals]', JSON.stringify(metric));
 
   return new NextResponse(null, {
     status: 204,

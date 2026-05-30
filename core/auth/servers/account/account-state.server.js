@@ -1,4 +1,5 @@
-import { lookupAccountByEmail } from '@/core/auth/servers/verification/password-account.server';
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
+import { lookupAccountByEmail } from '../verification/password-account.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 export const EMAIL_ACCOUNT_STATES = Object.freeze({
@@ -7,14 +8,6 @@ export const EMAIL_ACCOUNT_STATES = Object.freeze({
   EXISTING_PASSWORD_ACCOUNT: 'existing_password_account',
   RECOVERABLE_PASSWORD_ORPHAN: 'recoverable_password_orphan',
 });
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 async function getProfileState(userId) {
   const normalizedUserId = normalizeValue(userId);
@@ -43,7 +36,7 @@ async function getProfileState(userId) {
   const profile = profileResult.data || null;
 
   return {
-    email: normalizeEmail(profile?.email),
+    email: normalizeEmailValue(profile?.email),
     exists: Boolean(profile?.id),
     hasUsername: Boolean(normalizeValue(profile?.username)),
     id: normalizeValue(profile?.id) || null,
@@ -54,7 +47,7 @@ async function getProfileState(userId) {
 
 export async function resolveEmailAccountState(email) {
   const lookup = await lookupAccountByEmail(email);
-  const normalizedEmail = normalizeEmail(lookup.email || email);
+  const normalizedEmail = normalizeEmailValue(lookup.email || email);
 
   if (!lookup.exists || !lookup.userId) {
     return {

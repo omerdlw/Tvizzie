@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
-import AccountSectionLayout from '../shared/section-wrapper';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 
 function buildLikedMediaKeySet(items = []) {
   return new Set(

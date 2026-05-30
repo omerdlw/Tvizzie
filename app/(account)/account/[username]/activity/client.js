@@ -13,7 +13,7 @@ import {
 } from '@/features/account/filtering';
 import { logDataError } from '@/core/utils';
 import { fetchAccountActivityFeed } from '@/core/services/activity/activity.service';
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ActivityView from './view';
 
 const ACTIVITY_FETCH_PAGE_SIZE = 36;

@@ -1,16 +1,9 @@
 import 'server-only';
 
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { resolveProviderDescriptors } from '@/core/auth/capabilities';
-import { invokeSessionControl } from '@/core/auth/servers/session/revocation.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
+import { invokeSessionControl } from './revocation.server';
 
 function normalizeIdentities(value) {
   if (Array.isArray(value)) {
@@ -51,7 +44,7 @@ function toFirebaseLikeUserRecord(user = null) {
   return {
     app_metadata: user?.app_metadata || {},
     disabled: user?.banned_until != null,
-    email: normalizeEmail(user?.email) || null,
+    email: normalizeEmailValue(user?.email) || null,
     emailVerified: user?.email_confirmed_at != null || user?.confirmed_at != null || false,
     metadata: {
       creationTime: user?.created_at || null,
@@ -66,7 +59,7 @@ function toFirebaseLikeUserRecord(user = null) {
 }
 
 async function findUserByEmailRpc(email) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
 
   if (!normalizedEmail) {
     throw new Error('Email is required');
@@ -119,7 +112,7 @@ export async function createUser(payload = {}) {
   const admin = createAdminClient();
   const result = await admin.auth.admin.createUser({
     app_metadata: payload.appMetadata || {},
-    email: normalizeEmail(payload.email),
+    email: normalizeEmailValue(payload.email),
     email_confirm: Boolean(payload.emailVerified),
     password: payload.password !== undefined ? String(payload.password || '') : undefined,
     user_metadata: payload.userMetadata || {},
@@ -143,7 +136,7 @@ export async function updateUser(userId, payload = {}) {
   const updatePayload = {};
 
   if (payload.email !== undefined) {
-    updatePayload.email = normalizeEmail(payload.email);
+    updatePayload.email = normalizeEmailValue(payload.email);
   }
 
   if (payload.emailVerified !== undefined) {

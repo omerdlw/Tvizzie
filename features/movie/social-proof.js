@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
-import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof.service';
+import { subscribeToMediaSocialProof } from '@/core/services/media/social-proof';
 import Icon from '@/ui/icon';
 
 const EMPTY_SOCIAL_PROOF = Object.freeze({

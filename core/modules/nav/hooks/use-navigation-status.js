@@ -4,272 +4,28 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { Wifi, WifiOff } from 'lucide-react';
-
-import { SEMANTIC_SURFACE_CLASSES } from '@/core/constants';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
-import { Button } from '@/ui/elements';
-import { Spinner } from '@/ui/loadings/spinner';
 
 import NotFoundAction from '../actions/not-found-action';
-
-const STATUS_PRIORITY = Object.freeze({
-  ACCOUNT_DELETE: 115,
-  SIGNUP: 110,
-  LOGIN: 110,
-  LOGOUT: 110,
-  APP_ERROR: 100,
-  NOT_FOUND: 97,
-  API_ERROR: 95,
-  OFFLINE: 90,
-  ONLINE: 10,
-});
-
-const ERROR_STATUS_TYPES = new Set(['ACCOUNT_DELETE', 'APP_ERROR', 'API_ERROR', 'NOT_FOUND']);
-
-const STATUS_TONES = Object.freeze({
-  ACCOUNT_DELETE: 'error',
-  API_ERROR: 'error',
-  APP_ERROR: 'error',
-  LOGIN: 'success',
-  LOGOUT: 'warning',
-  NOT_FOUND: 'error',
-  OFFLINE: 'warning',
-  ONLINE: 'success',
-  SIGNUP: 'success',
-});
-
-const STATUS_CLEAR_DURATION = 4500;
-const AUTH_STATUS_CLEAR_DURATION = 3000;
-const API_ERROR_BATCH_DELAY = 300;
-const AUTH_STATUS_STORAGE_KEY = 'nav_auth_status';
-const PERSISTED_AUTH_STATUS_TYPES = new Set(['LOGIN', 'LOGOUT', 'SIGNUP']);
-
-function isErrorStatus(type) {
-  return ERROR_STATUS_TYPES.has(type);
-}
-
-function getStatusPriority(type) {
-  return STATUS_PRIORITY[type] ?? 0;
-}
-
-function resolveStatusPriority(status) {
-  if (!status) {
-    return 0;
-  }
-
-  const explicitPriority = Number(status.priority);
-
-  if (Number.isFinite(explicitPriority)) {
-    return explicitPriority;
-  }
-
-  return getStatusPriority(status.type);
-}
-
-function getStatusTone(type) {
-  return STATUS_TONES[type] || 'info';
-}
-
-function getStatusTheme(type) {
-  const semanticTone = SEMANTIC_SURFACE_CLASSES[getStatusTone(type)] || SEMANTIC_SURFACE_CLASSES.info;
-
-  return {
-    card: {
-      className: semanticTone.surface,
-    },
-    icon: {
-      className: semanticTone.icon,
-    },
-    title: {
-      className: semanticTone.title,
-    },
-    description: {
-      className: semanticTone.description,
-      opacity: 1,
-    },
-  };
-}
-
-function isPersistableAuthStatus(status) {
-  return (
-    Boolean(status) &&
-    PERSISTED_AUTH_STATUS_TYPES.has(status.type) &&
-    (typeof status.icon === 'string' || status.icon == null)
-  );
-}
-
-function clearPersistedAuthStatus() {
-  if (typeof window === 'undefined' || typeof window.sessionStorage === 'undefined') {
-    return;
-  }
-
-  window.sessionStorage.removeItem(AUTH_STATUS_STORAGE_KEY);
-}
-
-function persistAuthStatus(status, duration) {
-  if (
-    !isPersistableAuthStatus(status) ||
-    typeof window === 'undefined' ||
-    typeof window.sessionStorage === 'undefined'
-  ) {
-    return;
-  }
-
-  window.sessionStorage.setItem(
-    AUTH_STATUS_STORAGE_KEY,
-    JSON.stringify({
-      description: status.description || '',
-      expiresAt: Date.now() + Math.max(0, Number(duration) || 0),
-      flow: status.flow || null,
-      icon: status.icon || null,
-      priority: resolveStatusPriority(status),
-      title: status.title || '',
-      type: status.type,
-    })
-  );
-}
-
-function restorePersistedAuthStatus() {
-  if (typeof window === 'undefined' || typeof window.sessionStorage === 'undefined') {
-    return null;
-  }
-
-  try {
-    const rawValue = window.sessionStorage.getItem(AUTH_STATUS_STORAGE_KEY);
-
-    if (!rawValue) {
-      return null;
-    }
-
-    const payload = JSON.parse(rawValue);
-    const type = String(payload?.type || '')
-      .trim()
-      .toUpperCase();
-    const expiresAt = Number(payload?.expiresAt || 0);
-
-    if (!PERSISTED_AUTH_STATUS_TYPES.has(type) || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
-      clearPersistedAuthStatus();
-      return null;
-    }
-
-    return {
-      remainingMs: expiresAt - Date.now(),
-      status: createOverlayStatus({
-        type,
-        flow: payload?.flow || null,
-        priority: Number.isFinite(Number(payload?.priority)) ? Number(payload.priority) : null,
-        title: payload?.title || 'Account',
-        description: payload?.description || '',
-        icon: payload?.icon || null,
-        style: getStatusTheme(type),
-      }),
-    };
-  } catch {
-    clearPersistedAuthStatus();
-    return null;
-  }
-}
-
-function getNotFoundTheme() {
-  return getStatusTheme('NOT_FOUND');
-}
-
-function ErrorActions({ onRetry, onRefresh }) {
-  return (
-    <div className="mt-2.5 flex items-center gap-2">
-      <Button
-        className="center w-full cursor-pointer transition-colors duration-200 rounded-[14px] bg-primary/60 hover:bg-primary px-4 py-2 text-sm font-semibold text-black hover:text-error"
-        onClick={(event) => {
-          event.stopPropagation();
-          onRetry();
-        }}
-      >
-        Retry
-      </Button>
-
-      <Button
-        className="center w-full cursor-pointer transition-colors duration-200 rounded-[14px] bg-primary/60 hover:bg-primary px-4 py-2 text-sm font-semibold text-black hover:text-error"
-        onClick={(event) => {
-          event.stopPropagation();
-          onRefresh();
-        }}
-      >
-        Refresh
-      </Button>
-    </div>
-  );
-}
-
-function createOverlayStatus({
-  type,
-  title,
-  description,
-  icon,
-  style,
-  isOverlay = true,
-  action = null,
-  actions = null,
-  flow = null,
-  priority = null,
-}) {
-  return {
-    type,
-    flow,
-    isOverlay,
-    priority,
-    title,
-    description,
-    icon,
-    style,
-    action,
-    actions,
-    hideSettings: true,
-    hideScroll: true,
-  };
-}
-
-function createErrorStatus({ type, title, description, icon, style, onRetry, clearStatus }) {
-  const retryHandler =
-    typeof onRetry === 'function'
-      ? () => {
-        clearStatus();
-        onRetry();
-      }
-      : () => {
-        window.location.reload();
-      };
-
-  return createOverlayStatus({
-    type,
-    title,
-    description,
-    icon,
-    style,
-    isOverlay: true,
-    action: () => <ErrorActions onRetry={retryHandler} onRefresh={() => window.location.reload()} />,
-  });
-}
-
-function createProgressIcon() {
-  return <Spinner size={24} />;
-}
-
-function createSuccessIcon() {
-  return 'material-symbols:check-rounded';
-}
-
-function resolveFeedbackIcon({ phase, icon = null }) {
-  if (phase === 'start') {
-    return createProgressIcon();
-  }
-
-  if (phase === 'success') {
-    return createSuccessIcon();
-  }
-
-  return icon;
-}
+import {
+  API_ERROR_BATCH_DELAY,
+  AUTH_STATUS_CLEAR_DURATION,
+  STATUS_CLEAR_DURATION,
+  clearPersistedAuthStatus,
+  createAuthFeedbackStatus,
+  createAuthStatus,
+  createConnectionStatus,
+  createErrorStatus,
+  createOverlayStatus,
+  createProgressIcon,
+  getStatusTheme,
+  isErrorStatus,
+  isPersistableAuthStatus,
+  normalizeAuthFeedback,
+  persistAuthStatus,
+  resolveStatusPriority,
+  restorePersistedAuthStatus,
+} from './navigation-status-model';
 
 export function useNavigationStatus() {
   const pathname = usePathname();
@@ -354,15 +110,7 @@ export function useNavigationStatus() {
   }, [clearTimer]);
 
   const handleOffline = useCallback(() => {
-    updateStatus(
-      createOverlayStatus({
-        type: 'OFFLINE',
-        title: 'Connection Lost',
-        description: 'You are currently offline',
-        icon: <WifiOff size={24} />,
-        style: getStatusTheme('OFFLINE'),
-      })
-    );
+    updateStatus(createConnectionStatus('OFFLINE'));
   }, [updateStatus]);
 
   const handleOnline = useCallback(() => {
@@ -378,14 +126,7 @@ export function useNavigationStatus() {
         setStatus((nextStatus) => (nextStatus?.type === 'ONLINE' ? null : nextStatus));
       }, STATUS_CLEAR_DURATION);
 
-      return createOverlayStatus({
-        type: 'ONLINE',
-        title: 'Connection Restored',
-        description: 'You are back online',
-        icon: <Wifi size={24} />,
-        style: getStatusTheme('ONLINE'),
-        isOverlay: false,
-      });
+      return createConnectionStatus('ONLINE');
     });
   }, [clearTimer]);
 
@@ -494,12 +235,12 @@ export function useNavigationStatus() {
           icon: 'solar:danger-triangle-bold',
           onRetry: resetError
             ? () => {
-              resetError();
+                resetError();
 
-              if (typeof navigator !== 'undefined' && !navigator.onLine) {
-                dispatchOfflineEvent();
+                if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                  dispatchOfflineEvent();
+                }
               }
-            }
             : undefined,
           style: getStatusTheme('APP_ERROR'),
           clearStatus,
@@ -516,16 +257,13 @@ export function useNavigationStatus() {
       }
 
       const type = isAccountDelete ? 'ACCOUNT_DELETE' : 'LOGOUT';
+      const nextStatus = createAuthStatus({
+        type,
+        user,
+        description: isAccountDelete ? 'Account deleted' : 'Signed out',
+      });
 
-      updateStatus(
-        createOverlayStatus({
-          type,
-          title: user?.name || user?.email || 'Account',
-          description: isAccountDelete ? 'Account deleted' : 'Signed out',
-          icon: createSuccessIcon(),
-          style: getStatusTheme(type),
-        })
-      );
+      updateStatus(nextStatus);
 
       scheduleStatusClear({
         duration: AUTH_STATUS_CLEAR_DURATION,
@@ -533,16 +271,7 @@ export function useNavigationStatus() {
       });
 
       if (!isAccountDelete) {
-        persistAuthStatus(
-          createOverlayStatus({
-            type,
-            title: user?.name || user?.email || 'Account',
-            description: 'Signed out',
-            icon: createSuccessIcon(),
-            style: getStatusTheme(type),
-          }),
-          AUTH_STATUS_CLEAR_DURATION
-        );
+        persistAuthStatus(nextStatus, AUTH_STATUS_CLEAR_DURATION);
       }
     });
 
@@ -579,12 +308,11 @@ export function useNavigationStatus() {
         return;
       }
 
-      const nextStatus = createOverlayStatus({
+      const nextStatus = createAuthStatus({
         type: 'LOGIN',
-        title: user.name || user.email || 'User',
+        user,
+        titleFallback: 'User',
         description: 'Signed in',
-        icon: createSuccessIcon(),
-        style: getStatusTheme('LOGIN'),
       });
 
       updateStatus(nextStatus);
@@ -604,12 +332,10 @@ export function useNavigationStatus() {
         return;
       }
 
-      const nextStatus = createOverlayStatus({
+      const nextStatus = createAuthStatus({
         type: 'SIGNUP',
-        title: user.name || user.email || 'Account',
+        user,
         description: 'Setting up account',
-        icon: createSuccessIcon(),
-        style: getStatusTheme('SIGNUP'),
       });
 
       updateStatus(nextStatus);
@@ -623,15 +349,7 @@ export function useNavigationStatus() {
     });
 
     const unsubscribeAuthFeedback = globalEvents.subscribe(EVENT_TYPES.AUTH_FEEDBACK, (eventData) => {
-      const phase = String(eventData?.phase || '')
-        .trim()
-        .toLowerCase();
-      const flow = String(eventData?.flow || '')
-        .trim()
-        .toLowerCase();
-      const statusType = String(eventData?.statusType || flow || 'AUTH_FEEDBACK')
-        .trim()
-        .toUpperCase();
+      const { flow, phase, statusType } = normalizeAuthFeedback(eventData);
 
       if (!phase) {
         return;
@@ -653,21 +371,7 @@ export function useNavigationStatus() {
         return;
       }
 
-      updateStatus(
-        createOverlayStatus({
-          type: statusType,
-          flow,
-          priority: eventData?.priority ?? STATUS_PRIORITY.LOGIN,
-          title: eventData?.title || 'Account',
-          description: eventData?.description || '',
-          icon: resolveFeedbackIcon({
-            phase,
-            icon: eventData?.icon || null,
-          }),
-          style: eventData?.style || getStatusTheme(eventData?.themeType || 'LOGIN'),
-          isOverlay: eventData?.isOverlay !== false,
-        })
-      );
+      updateStatus(createAuthFeedbackStatus(eventData));
 
       if (phase === 'success') {
         scheduleStatusClear({
@@ -693,7 +397,7 @@ export function useNavigationStatus() {
         title: eventData?.title || '404',
         description: eventData?.description || 'The page you are looking for does not exist or is no longer available',
         icon: eventData?.icon || 'solar:forbidden-circle-bold',
-        style: getNotFoundTheme(),
+        style: getStatusTheme('NOT_FOUND'),
         action: () => <NotFoundAction />,
         hideSettings: true,
         hideScroll: true,

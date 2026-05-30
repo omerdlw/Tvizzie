@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useClickOutside } from '@/core/hooks/use-click-outside';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
@@ -14,23 +13,39 @@ import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 import Item, { NAV_CARD_LAYOUT } from './item';
 import { NAV_HEIGHT_BUFFER } from './layout';
 import {
+  getNavBackdropMotion,
+  getNavContainerMotion,
+  NAV_BACKDROP_INITIAL,
   NAV_BACKDROP_TRANSITION,
   NAV_CONTAINER_SPRING,
-  NAV_DEFAULT_TRANSITION,
-} from './motion';
+} from '@/core/modules/motion';
 
 // ─── Viewport-safe height calculation ───────────────────────────────────────
 
 const VIEWPORT_MARGIN = 24; // px from top of viewport
+const NAV_SPACER_BOTTOM_LOCK_DISTANCE = 40;
+
 function getViewportMaxHeight() {
   if (typeof window === 'undefined') return Infinity;
   return window.innerHeight - VIEWPORT_MARGIN;
 }
 
+function getDistanceToBottom() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return Infinity;
+  }
+
+  const root = document.documentElement;
+  const maxScrollY = Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
+  const scrollY = window.scrollY || 0;
+  return Math.max(maxScrollY - scrollY, 0);
+}
+
 function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact }) {
   const minCardHeight = compact ? NAV_CARD_LAYOUT.compactHeight : NAV_CARD_LAYOUT.baseHeight;
   const nextCardHeight = Math.max(minCardHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
-  const rawHeight = nextCardHeight + (activeItemHasAction && actionHeight > 0 ? actionHeight : 0);
+  const nextActionHeight = !compact && activeItemHasAction && actionHeight > 0 ? actionHeight : 0;
+  const rawHeight = nextCardHeight + nextActionHeight;
 
   // Clamp to viewport so nav never goes off-screen
   return Math.min(rawHeight, getViewportMaxHeight());
@@ -56,7 +71,7 @@ function getItemKey(link, index) {
   const namePart = String(link?.name || '').trim() || 'no-name';
   const typePart = String(link?.type || '').trim() || 'no-type';
 
-  return `${pathPart}::${namePart}::${typePart}::${index}`;
+  return `${pathPart}::${namePart}::${typePart}`;
 }
 
 function getIsItemActive(link, activeItem) {
@@ -102,24 +117,6 @@ function getActiveItemLayoutKey(activeItem) {
   ].join('::');
 }
 
-// ─── Backdrop animation ──────────────────────────────────────────────────────
-
-function getBackdropAnimation(isVisible) {
-  if (isVisible) {
-    return {
-      opacity: 1,
-      backdropFilter: 'blur(10px)',
-      display: 'block',
-    };
-  }
-
-  return {
-    opacity: 0,
-    backdropFilter: 'blur(0px)',
-    transitionEnd: { display: 'none' },
-  };
-}
-
 // ─── Layout effect isomorphic shim ──────────────────────────────────────────
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -127,7 +124,6 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
 // ─── Main Nav component ──────────────────────────────────────────────────────
 
 export default function Nav() {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const {
     activeItemHasAction,
     activeItem,
@@ -198,9 +194,11 @@ export default function Nav() {
         cardContentHeight: content,
         compact: compactRef.current,
       });
+      const isBottomLockedForSpacer = getDistanceToBottom() <= NAV_SPACER_BOTTOM_LOCK_DISTANCE;
+      const spacerBaseHeight = isBottomLockedForSpacer ? NAV_CARD_LAYOUT.compactHeight : height;
 
       setContainerHeight(height);
-      setNavHeight(height + NAV_HEIGHT_BUFFER);
+      setNavHeight(spacerBaseHeight + NAV_HEIGHT_BUFFER);
     });
   }, [setNavHeight]);
 
@@ -277,6 +275,14 @@ export default function Nav() {
 
   const handleKeyDown = useCallback(
     (event) => {
+      const target = event.target;
+      const isEditable =
+        target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      if (isEditable) {
+        return;
+      }
+
       if (isOverlayActive || !expanded) return;
 
       const { key } = event;
@@ -365,15 +371,12 @@ export default function Nav() {
 
   // ─── Stack className ──────────────────────────────────────────────────────
 
-  const stackClassName = useMemo(
-    () => getNavStackClassName({ isFullscreenStateActive }),
-    [isFullscreenStateActive]
-  );
+  const stackClassName = useMemo(() => getNavStackClassName({ isFullscreenStateActive }), [isFullscreenStateActive]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   const navContent = (
-    <MotionConfig transition={NAV_DEFAULT_TRANSITION}>
+    <>
       {/* Backdrop */}
       <motion.div
         className="fixed inset-0 cursor-pointer"
@@ -381,8 +384,8 @@ export default function Nav() {
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
         }}
-        initial={initialPageAnimationsEnabled ? { opacity: 0, backdropFilter: 'blur(0px)' } : false}
-        animate={getBackdropAnimation(isBackdropVisible)}
+        initial={NAV_BACKDROP_INITIAL}
+        animate={getNavBackdropMotion(isBackdropVisible)}
         transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
       >
@@ -393,9 +396,10 @@ export default function Nav() {
       <div id="nav-card-stack" ref={navRef} className={stackClassName} style={{ zIndex: Z_INDEX.NAV }}>
         <motion.div
           style={{ position: 'relative' }}
-          animate={{ height: containerHeight }}
+          animate={getNavContainerMotion(containerHeight)}
           transition={NAV_CONTAINER_SPRING}
         >
+
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {
               const position = getItemPosition(index);
@@ -450,7 +454,6 @@ export default function Nav() {
                 <Item
                   key={getItemKey(link, index)}
                   link={link}
-                  initialPageAnimationsEnabled={initialPageAnimationsEnabled}
                   expanded={expanded}
                   compact={compact && isTop && !isCompactPreviewActive}
                   position={position}
@@ -471,7 +474,7 @@ export default function Nav() {
           </AnimatePresence>
         </motion.div>
       </div>
-    </MotionConfig>
+    </>
   );
 
   if (!portalTarget) return null;

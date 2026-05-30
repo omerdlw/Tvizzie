@@ -1,3 +1,5 @@
+import { normalizeLowerValue, normalizeValue } from '@/core/utils/string';
+
 export const GITHUB_PROVIDER_ID = 'github';
 export const GOOGLE_PROVIDER_ID = 'google.com';
 export const PASSWORD_PROVIDER_ID = 'password';
@@ -27,14 +29,8 @@ const OAUTH_PROVIDER_ALIASES = Object.freeze({
 
 export const OAUTH_PROVIDER_KEYS = Object.freeze(Object.keys(OAUTH_PROVIDER_CONFIG));
 
-function normalizeValue(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
-}
-
 export function normalizeOAuthProvider(value) {
-  const normalizedValue = normalizeValue(value);
+  const normalizedValue = normalizeLowerValue(value);
 
   if (!normalizedValue) {
     return null;

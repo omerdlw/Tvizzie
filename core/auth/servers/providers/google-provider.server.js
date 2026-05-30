@@ -1,20 +1,17 @@
+import { normalizeValue } from '@/core/utils/string';
 import { normalizeProvider } from '@/core/auth/capabilities';
 import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/core/auth/oauth-providers';
 import {
   GOOGLE_AUTH_INTENTS,
   GOOGLE_AUTH_RESULTS,
   resolveGoogleAuthIntent,
-} from '@/core/auth/servers/providers/google-auth-intent.server';
+} from './google-auth-intent.server';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 
 export const GOOGLE_SESSION_ERROR_CODES = Object.freeze({
   PASSWORD_LOGIN_REQUIRED: 'GOOGLE_PASSWORD_LOGIN_REQUIRED',
   PROVIDER_COLLISION: 'GOOGLE_PROVIDER_COLLISION',
 });
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function getSupabaseAuthApiKey() {
   const apiKey = SUPABASE_PUBLISHABLE_KEY || SUPABASE_SERVICE_ROLE_KEY;

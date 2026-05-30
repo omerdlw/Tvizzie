@@ -1,15 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
 import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { MOVIE_ROUTE_TIMING, getSurfaceItemMotion } from '@/app/(media)/movie/[id]/motion';
-import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
-import { resolveExplicitMediaType } from '@/core/utils/media';
-import { cn } from '@/core/utils';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
@@ -17,13 +12,19 @@ import {
   ensureLegacyFavoritesBackfilled,
   subscribeToLikeStatus,
   toggleUserLike,
-} from '@/core/services/media/likes.service';
+} from '@/core/services/media/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
   subscribeToWatchedStatus,
-} from '@/core/services/media/watched.service';
-import { subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/services/media/watchlist.service';
+  subscribeToWatchlistStatus,
+  toggleUserWatchlistItem,
+} from '@/core/services/media/watched-watchlist';
+import { cn } from '@/core/utils';
+import { resolveExplicitMediaType } from '@/core/utils/media';
+import { AUTH_ROUTES } from '@/features/auth/constants';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
+
 import Icon from '@/ui/icon';
 
 function getMediaSnapshot(media) {

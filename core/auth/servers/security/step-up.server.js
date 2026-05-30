@@ -1,3 +1,4 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 
 import {
@@ -7,19 +8,11 @@ import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 const PURPOSE_SEPARATOR = ':';
 
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
 function normalizePurpose(value) {
-  return normalizeValue(value).toLowerCase();
-}
-
-function normalizeEmail(value) {
   return normalizeValue(value).toLowerCase();
 }
 
@@ -74,7 +67,7 @@ export function createStepUpToken({
 }) {
   const normalizedPurpose = normalizePurpose(purpose);
   const normalizedUserId = normalizeValue(userId);
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
 
   if (!normalizedPurpose || !normalizedUserId) {
     throw new Error('Step-up purpose and userId are required');
@@ -126,7 +119,7 @@ export function verifyStepUpToken(token) {
 
   return {
     challengeJti: normalizeValue(payload?.jti) || null,
-    email: normalizeEmail(payload?.email) || null,
+    email: normalizeEmailValue(payload?.email) || null,
     expiresAt: new Date(expiresAtMs).toISOString(),
     purpose: normalizePurpose(payload?.purpose),
     userId: normalizeValue(payload?.userId) || null,
@@ -152,7 +145,7 @@ export function assertStepUp(request, { purpose, userId, email = null }) {
   const stepUp = readStepUpFromRequest(request);
   const expectedPurpose = normalizePurpose(purpose);
   const expectedUserId = normalizeValue(userId);
-  const expectedEmail = normalizeEmail(email);
+  const expectedEmail = normalizeEmailValue(email);
 
   if (!stepUp) {
     throw new Error('Step-up verification is required');

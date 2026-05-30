@@ -1,6 +1,6 @@
 'use client';
 
-import { isBrowser } from '@/core/utils';
+import { isBrowser } from '@/core/utils/type';
 
 export function getStorageItem(key, defaultValue = null) {
   if (!isBrowser()) {

@@ -6,8 +6,8 @@ import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
-import AccountInlineSectionState from '../shared/section-state';
-import AccountSectionLayout from '../shared/section-wrapper';
+import AccountInlineSectionState from '@/features/account/components/section-state';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
 
@@ -94,13 +94,15 @@ export default function AccountWatchedOverview({
       titleHref={titleHref || (username ? `/account/${username}/watched` : null)}
     >
       {cards.length > 0 ? (
-        <div className="flex gap-3 overflow-hidden">
+        <div className="flex gap-2 sm:gap-3 overflow-hidden">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
             <div
               key={`${card.id}-${index}`}
               className={cn(
-                'flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-60px)/6)]',
-                index >= 3 && 'hidden lg:block'
+                'flex h-full shrink-0 flex-col basis-[calc((100%-16px)/3)] sm:basis-[calc((100%-36px)/4)] md:basis-[calc((100%-48px)/5)] lg:basis-[calc((100%-60px)/6)]',
+                index === 3 && 'hidden sm:block',
+                index === 4 && 'hidden md:block',
+                index >= 5 && 'hidden lg:block'
               )}
             >
               <MediaCard

@@ -1,17 +1,12 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import { ACCOUNT_READ_FUNCTION } from '@/core/services/account/account.constants';
+import { ACCOUNT_READ_FUNCTION, FOLLOW_STATUS_ACCEPTED } from '@/core/services/account/account.constants';
 import { getAccountSnapshotByUserId } from '@/core/services/account/account.server';
-import { cleanString } from '@/core/utils';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { invokeInternalEdgeFunction } from '@/core/services/shared/server';
+import { cleanString } from '@/core/utils/string';
 import { cache } from 'react';
-
-const FOLLOW_STATUS_ACCEPTED = 'accepted';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue } from './account.normalizers';
 
 function isUuidLike(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalizeValue(value));

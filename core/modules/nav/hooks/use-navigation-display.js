@@ -1,76 +1,19 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
 import { useNavigationContext } from '../context';
 import MediaAction from '../actions/media-action';
 import { getNavConfirmationKey } from '../utils';
+import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from './navigation-path-model';
 import { useNavigationCountdown } from './use-navigation-countdown';
 import { useNavigationItems } from './use-navigation-items';
 import { useNavigationStatus } from './use-navigation-status';
 
-function normalizePath(value) {
-  const normalized = String(value || '').trim();
-
-  if (!normalized) {
-    return '';
-  }
-
-  if (normalized === '/') {
-    return '/';
-  }
-
-  return normalized.replace(/\/+$/, '');
-}
-
-function isSamePath(left, right) {
-  return normalizePath(left) === normalizePath(right);
-}
-
-function isPathPrefix(candidatePath, pathname) {
-  const normalizedCandidate = normalizePath(candidatePath);
-  const normalizedPathname = normalizePath(pathname);
-
-  if (!normalizedCandidate || !normalizedPathname) {
-    return false;
-  }
-
-  if (normalizedCandidate === normalizedPathname) {
-    return true;
-  }
-
-  if (normalizedCandidate === '/') {
-    return normalizedPathname.startsWith('/');
-  }
-
-  return normalizedPathname.startsWith(`${normalizedCandidate}/`);
-}
-
 function isNotFoundItem(item) {
   return item?.isNotFound || item?.path === 'not-found';
-}
-
-function toSearchableText(value) {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(toSearchableText).join(' ');
-  }
-
-  if (React.isValidElement(value)) {
-    return toSearchableText(value.props?.children);
-  }
-
-  if (value && typeof value === 'object') {
-    return Object.values(value).map(toSearchableText).join(' ');
-  }
-
-  return '';
 }
 
 function flattenNavigationItems(items) {
@@ -100,13 +43,7 @@ function filterNavigationItems(items, searchQuery) {
   });
 }
 
-function buildNavigationItems({
-  rawItems,
-  expanded,
-  searchQuery,
-  isNotFoundPage,
-  countdownItem,
-}) {
+function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage, countdownItem }) {
   if (countdownItem) {
     return [countdownItem];
   }

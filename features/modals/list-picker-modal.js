@@ -1,78 +1,48 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TMDB_IMG } from '@/core/constants';
 import { useAuthSessionReady } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists.service';
+import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists';
 import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
+
 function getPreviewImage(item) {
-  return getPreferredMoviePosterSrc(item, 'w342') || item?.poster_path_full || (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
+  return (
+    getPreferredMoviePosterSrc(item, 'w342') ||
+    item?.poster_path_full ||
+    (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null)
+  );
 }
 
 function getChangedListIds(lists, initialMemberships, draftMemberships) {
-  return lists.map((list) => list.id).filter((id) => Boolean(initialMemberships[id]) !== Boolean(draftMemberships[id]));
+  return lists
+    .map((list) => list.id)
+    .filter((id) => Boolean(initialMemberships[id]) !== Boolean(draftMemberships[id]));
 }
 
-function ListPreviewStack({ list }) {
-  usePosterPreferenceVersion();
-  const previewItems = Array.isArray(list?.previewItems) ? list.previewItems.slice(0, 4) : [];
-
-  return (
-    <div className="relative h-[68px] w-[82px] shrink-0">
-      {previewItems.length === 0 ? (
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-black/10 bg-white text-black/50">
-          <Icon icon="solar:list-bold" size={20} />
-        </div>
-      ) : (
-        previewItems.map((item, index) => {
-          const imageSrc = getPreviewImage(item);
-
-          return (
-            <div
-              key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="border-primary absolute bottom-0 overflow-hidden rounded-[10px] border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
-              style={{
-                width: '46px',
-                height: `${68 - index * 6}px`,
-                left: `${index * 12}px`,
-                zIndex: previewItems.length - index,
-              }}
-            >
-              {imageSrc ? (
-                <AdaptiveImage
-                  mode="img"
-                  src={imageSrc}
-                  alt={item.title || item.name || 'Poster'}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover"
-                  wrapperClassName="h-full w-full"
-                />
-              ) : (
-                <div className="center bg-primary h-full w-full text-black/50">
-                  <Icon icon="solar:videocamera-record-bold" size={14} />
-                </div>
-              )}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-}
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
 
 export default function ListPickerModal({ close, data }) {
   const { openModal } = useModalActions();
@@ -88,19 +58,13 @@ export default function ListPickerModal({ close, data }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
 
-  const selectedCount = useMemo(
-    () => lists.filter((list) => Boolean(draftMemberships[list.id])).length,
-    [lists, draftMemberships]
-  );
-
-  const pendingListIds = useMemo(
-    () => getChangedListIds(lists, initialMemberships, draftMemberships),
-    [lists, initialMemberships, draftMemberships]
-  );
-
+  // Derived Values
+  const selectedCount = lists.filter((list) => Boolean(draftMemberships[list.id])).length;
+  const pendingListIds = getChangedListIds(lists, initialMemberships, draftMemberships);
   const pendingChangesCount = pendingListIds.length;
   const hasPendingChanges = pendingChangesCount > 0;
 
+  // Effects
   useEffect(() => {
     if (!userId) {
       setLists([]);
@@ -169,18 +133,19 @@ export default function ListPickerModal({ close, data }) {
     };
   }, [userId, isAuthSessionReady, media, lists, toast]);
 
-  const handleOpenCreator = useCallback(() => {
+  // Handlers
+  const handleOpenCreator = () => {
     openModal('CREATE_LIST_MODAL', undefined, { data: { media } });
-  }, [openModal, media]);
+  };
 
-  const handleToggleDraft = useCallback((listId) => {
+  const handleToggleDraft = (listId) => {
     setDraftMemberships((prev) => ({
       ...prev,
       [listId]: !prev[listId],
     }));
-  }, []);
+  };
 
-  const handleApplyChanges = useCallback(async () => {
+  const handleApplyChanges = async () => {
     if (isApplying || !userId || !media || !hasPendingChanges) return;
 
     setIsApplying(true);
@@ -240,19 +205,42 @@ export default function ListPickerModal({ close, data }) {
       memberships: nextMemberships,
       selectedListIds: Object.keys(nextMemberships).filter((id) => Boolean(nextMemberships[id])),
     });
-  }, [
-    close,
-    draftMemberships,
-    hasPendingChanges,
-    initialMemberships,
-    isApplying,
-    lists,
-    media,
-    pendingListIds,
-    toast,
-    userId,
-  ]);
+  };
 
+  return (
+    <ModalView
+      close={close}
+      lists={lists}
+      draftMemberships={draftMemberships}
+      isLoading={isLoading}
+      isApplying={isApplying}
+      selectedCount={selectedCount}
+      pendingChangesCount={pendingChangesCount}
+      hasPendingChanges={hasPendingChanges}
+      handleOpenCreator={handleOpenCreator}
+      handleToggleDraft={handleToggleDraft}
+      handleApplyChanges={handleApplyChanges}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({
+  close,
+  lists,
+  draftMemberships,
+  isLoading,
+  isApplying,
+  selectedCount,
+  pendingChangesCount,
+  hasPendingChanges,
+  handleOpenCreator,
+  handleToggleDraft,
+  handleApplyChanges,
+}) {
   return (
     <Container
       className="max-h-[72dvh] w-full sm:w-[660px]"
@@ -301,41 +289,7 @@ export default function ListPickerModal({ close, data }) {
         </header>
 
         <div className="max-h-[56dvh] min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
-          {isLoading && (
-            <div className="space-y-2.5">
-              {Array.from({ length: 10 }).map((_, index) => (
-                <div
-                  key={`list-picker-skeleton-${index}`}
-                  className="flex h-24 animate-pulse items-center gap-4 rounded-[14px] border border-black/10 bg-white/80 p-3"
-                >
-                  <div className="relative h-[68px] w-[82px] shrink-0">
-                    {[0, 1, 2, 3].map((stackIndex) => (
-                      <div
-                        key={`list-picker-skeleton-stack-${index}-${stackIndex}`}
-                        className="absolute bottom-0 overflow-hidden rounded-[10px] border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-                        style={{
-                          backgroundColor:
-                            LIST_PICKER_STACK_SKELETON_BACKGROUNDS[stackIndex] ||
-                            LIST_PICKER_STACK_SKELETON_BACKGROUNDS[LIST_PICKER_STACK_SKELETON_BACKGROUNDS.length - 1],
-                          width: '46px',
-                          height: `${68 - stackIndex * 6}px`,
-                          left: `${stackIndex * 12}px`,
-                          zIndex: 4 - stackIndex,
-                        }}
-                      >
-                        <div className="absolute inset-x-0 bottom-0 h-7 bg-black/[0.04]" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div className="h-4 w-2/5 rounded bg-black/[0.09]" />
-                    <div className="h-3 w-4/5 rounded bg-black/[0.07]" />
-                  </div>
-                  <div className="size-[22px] shrink-0 rounded-full border border-black/10 bg-black/[0.06]" />
-                </div>
-              ))}
-            </div>
-          )}
+          {isLoading && <LoadingSkeleton />}
 
           {!isLoading && lists.length === 0 && (
             <div className="flex min-h-40 flex-col items-center justify-center rounded-[14px] border border-dashed border-black/15 bg-black/2 text-center">
@@ -348,41 +302,136 @@ export default function ListPickerModal({ close, data }) {
             lists.length > 0 &&
             lists.map((list) => {
               const isSelected = Boolean(draftMemberships[list.id]);
-
               return (
-                <button
+                <ListRow
                   key={list.id}
-                  type="button"
-                  onClick={() => handleToggleDraft(list.id)}
-                  className={cn(
-                    'group flex w-full items-center gap-4 rounded-[14px] border p-3 text-left transition-all',
-                    isSelected ? 'bg-info/20 border-black/20' : 'hover:bg-primary border-black/10 hover:border-black/15'
-                  )}
-                >
-                  <ListPreviewStack list={list} />
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold text-black">{list.title}</p>
-                    {list.description && (
-                      <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>
-                    )}
-                  </div>
-
-                  <span
-                    className={cn(
-                      'flex size-[22px] shrink-0 items-center justify-center rounded-full border transition-all',
-                      isSelected
-                        ? 'border-info bg-info text-primary'
-                        : 'border-black/10 text-black/50 group-hover:border-black/40 group-hover:text-black/70'
-                    )}
-                  >
-                    <Icon icon="material-symbols:check-rounded" size={16} />
-                  </span>
-                </button>
+                  list={list}
+                  isSelected={isSelected}
+                  onToggle={() => handleToggleDraft(list.id)}
+                />
               );
             })}
         </div>
       </section>
     </Container>
+  );
+}
+
+function ListRow({ list, isSelected, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        'group flex w-full items-center gap-4 rounded-[14px] border p-3 text-left transition-all',
+        isSelected ? 'bg-info/20 border-black/20' : 'hover:bg-primary border-black/10 hover:border-black/15'
+      )}
+    >
+      <ListPreviewStack list={list} />
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-base font-semibold text-black">{list.title}</p>
+        {list.description && (
+          <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>
+        )}
+      </div>
+
+      <span
+        className={cn(
+          'flex size-[22px] shrink-0 items-center justify-center rounded-full border transition-all',
+          isSelected
+            ? 'border-info bg-info text-primary'
+            : 'border-black/10 text-black/50 group-hover:border-black/40 group-hover:text-black/70'
+        )}
+      >
+        <Icon icon="material-symbols:check-rounded" size={16} />
+      </span>
+    </button>
+  );
+}
+
+function ListPreviewStack({ list }) {
+  usePosterPreferenceVersion();
+  const previewItems = Array.isArray(list?.previewItems) ? list.previewItems.slice(0, 4) : [];
+
+  return (
+    <div className="relative h-[68px] w-[82px] shrink-0">
+      {previewItems.length === 0 ? (
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-black/10 bg-white text-black/50">
+          <Icon icon="solar:list-bold" size={20} />
+        </div>
+      ) : (
+        previewItems.map((item, index) => {
+          const imageSrc = getPreviewImage(item);
+
+          return (
+            <div
+              key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
+              className="border-primary absolute bottom-0 overflow-hidden rounded-[10px] border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
+              style={{
+                width: '46px',
+                height: `${68 - index * 6}px`,
+                left: `${index * 12}px`,
+                zIndex: previewItems.length - index,
+              }}
+            >
+              {imageSrc ? (
+                <AdaptiveImage
+                  mode="img"
+                  src={imageSrc}
+                  alt={item.title || item.name || 'Poster'}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                  wrapperClassName="h-full w-full"
+                />
+              ) : (
+                <div className="center bg-primary h-full w-full text-black/50">
+                  <Icon icon="solar:videocamera-record-bold" size={14} />
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-2.5">
+      {Array.from({ length: 10 }).map((_, index) => (
+        <div
+          key={`list-picker-skeleton-${index}`}
+          className="flex h-24 animate-pulse items-center gap-4 rounded-[14px] border border-black/10 bg-white/80 p-3"
+        >
+          <div className="relative h-[68px] w-[82px] shrink-0">
+            {[0, 1, 2, 3].map((stackIndex) => (
+              <div
+                key={`list-picker-skeleton-stack-${index}-${stackIndex}`}
+                className="absolute bottom-0 overflow-hidden rounded-[10px] border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                style={{
+                  backgroundColor:
+                    LIST_PICKER_STACK_SKELETON_BACKGROUNDS[stackIndex] ||
+                    LIST_PICKER_STACK_SKELETON_BACKGROUNDS[LIST_PICKER_STACK_SKELETON_BACKGROUNDS.length - 1],
+                  width: '46px',
+                  height: `${68 - stackIndex * 6}px`,
+                  left: `${stackIndex * 12}px`,
+                  zIndex: 4 - stackIndex,
+                }}
+              >
+                <div className="absolute inset-x-0 bottom-0 h-7 bg-black/[0.04]" />
+              </div>
+            ))}
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-4 w-2/5 rounded bg-black/[0.09]" />
+            <div className="h-3 w-4/5 rounded bg-black/[0.07]" />
+          </div>
+          <div className="size-[22px] shrink-0 rounded-full border border-black/10 bg-black/[0.06]" />
+        </div>
+      ))}
+    </div>
   );
 }

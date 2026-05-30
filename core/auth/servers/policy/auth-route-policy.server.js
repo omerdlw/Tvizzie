@@ -1,12 +1,9 @@
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { normalizeValue } from '@/core/utils/string';
+import { requireSessionRequest } from '../session/authenticated-request.server';
 import {
   ACCOUNT_LIFECYCLE_STATES,
   assertAccountLifecycleAllowed,
-} from '@/core/auth/servers/account/account-lifecycle.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+} from '../account/account-lifecycle.server';
 
 const AUTH_ROUTE_POLICIES = Object.freeze({
   ACCOUNT_DELETE: Object.freeze({
@@ -20,7 +17,7 @@ const AUTH_ROUTE_POLICIES = Object.freeze({
     requireRecentReauth: false,
     requireSession: true,
     requireStepUp: 'account-delete',
-    route: '/api/auth/account/delete',
+    route: '/api/auth/account',
     session: {
       requireRecentAuthMs: 0,
     },
@@ -32,7 +29,7 @@ const AUTH_ROUTE_POLICIES = Object.freeze({
     requireRecentReauth: true,
     requireSession: true,
     requireStepUp: 'email-change',
-    route: '/api/auth/account/change-email',
+    route: '/api/auth/account',
     session: {
       requireRecentAuthMs: 0,
     },
@@ -44,7 +41,7 @@ const AUTH_ROUTE_POLICIES = Object.freeze({
     requireRecentReauth: true,
     requireSession: true,
     requireStepUp: 'password-change',
-    route: '/api/auth/account/change-password',
+    route: '/api/auth/account',
     session: {
       requireRecentAuthMs: 0,
     },
@@ -56,7 +53,7 @@ const AUTH_ROUTE_POLICIES = Object.freeze({
     requireRecentReauth: false,
     requireSession: true,
     requireStepUp: 'password-set',
-    route: '/api/auth/account/set-password',
+    route: '/api/auth/account',
     session: {
       requireRecentAuthMs: 0,
     },

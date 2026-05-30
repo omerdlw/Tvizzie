@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { readSessionFromRequest } from '@/core/auth/servers/session.js';
+import { invokeInternalEdgeFunction } from '@/core/services/shared/server';
 
 export const runtime = 'nodejs';
 

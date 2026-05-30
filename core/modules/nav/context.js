@@ -304,16 +304,7 @@ export function NavigationProvider({ children, config = {} }) {
       expanded,
       config,
     }),
-    [
-      dismissedConfirmationKey,
-      guardConfirmation,
-      surfaceState,
-      searchQuery,
-      compactLocked,
-      navHeight,
-      expanded,
-      config,
-    ]
+    [dismissedConfirmationKey, guardConfirmation, surfaceState, searchQuery, compactLocked, navHeight, expanded, config]
   );
 
   const actionsValue = useMemo(

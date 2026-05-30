@@ -1,5 +1,5 @@
 import { AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/core/auth/route-notice';
-import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from '@/core/auth/servers/session/session.server';
+import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from '../session/session.server';
 
 const AUTH_ROUTE_NOTICE_MAX_AGE_SECONDS = 60;
 

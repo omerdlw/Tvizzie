@@ -5,10 +5,10 @@
   --color-white: var(--white);
   --color-primary: #fff;
   --color-black: #121212;
-  --color-error: #890002;
-  --color-warning: #c67a01;
-  --color-success: #016c2b;
-  --color-info: #3b82f6;
+  --color-error: #9b1c1c;
+  --color-warning: #92400e;
+  --color-success: #14532d;
+  --color-info: #1e3a5f;
   --font-sans: var(--font-inter);
   --font-zuume: var(--font-zuume);
   --animate-spin: spin 1s linear infinite;
@@ -20,8 +20,10 @@
     --white: #f8f8f6;
   }
 
-  html {
+  html,
+  body {
     color-scheme: light;
+    overscroll-behavior: none;
   }
 
   button:not(:disabled),
@@ -53,11 +55,11 @@
   .page-gradient-backdrop {
     background-image: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--white) 38%, transparent) 0%,
-      color-mix(in srgb, var(--white) 52%, transparent) 18vh,
-      color-mix(in srgb, var(--white) 68%, transparent) 34vh,
-      color-mix(in srgb, var(--white) 83%, transparent) 50vh,
-      color-mix(in srgb, var(--white) 94%, transparent) 66vh,
+      color-mix(in srgb, var(--white) 80%, transparent) 0%,
+      color-mix(in srgb, var(--white) 85%, transparent) 18vh,
+      color-mix(in srgb, var(--white) 90%, transparent) 34vh,
+      color-mix(in srgb, var(--white) 95%, transparent) 50vh,
+      color-mix(in srgb, var(--white) 98%, transparent) 66vh,
       var(--white) 80vh,
       var(--white) 100%
     );

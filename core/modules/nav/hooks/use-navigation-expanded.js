@@ -3,15 +3,7 @@
 import { useNavigationContext } from '../context';
 
 export function useNavigationExpanded() {
-  const {
-    expanded,
-    setExpanded,
-    expand,
-    collapse,
-    toggle,
-    setSearchQuery,
-    setNavHeight,
-  } = useNavigationContext();
+  const { expanded, setExpanded, expand, collapse, toggle, setSearchQuery, setNavHeight } = useNavigationContext();
 
   return {
     expanded,

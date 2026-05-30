@@ -16,12 +16,12 @@ import {
   parseReviewFilters,
   toReviewQueryValues,
 } from '@/features/account/filtering';
-import { AccountReviewFilterBar } from '@/features/account/shared/content-filters';
-import AccountPagination from '@/features/account/shared/pagination';
-import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/shared/section-state';
+import { AccountReviewFilterBar } from '@/features/account/filters/content-filter-primitives';
+import AccountPagination from '@/features/account/components/pagination';
+import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/features/account/components/section-state';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
-import AccountSectionLayout from '../shared/section-wrapper';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 

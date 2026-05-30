@@ -1,4 +1,4 @@
-import { isApiResultEnvelope, normalizeApiResultEnvelope } from '@/core/services/shared/api-result';
+import { isApiResultEnvelope, normalizeApiResultEnvelope } from './api-result.js';
 
 function buildUrl(path, query = {}) {
   const params = new URLSearchParams();

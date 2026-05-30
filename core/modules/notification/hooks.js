@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { normalizeFeedbackText } from '@/core/utils';
+import { normalizeFeedbackText } from '@/core/utils/feedback';
 
 import { useNotificationActions, TOAST_TYPES } from './context';
 
@@ -50,7 +50,7 @@ export function useToast() {
       }
 
       const finalActions = actions || (action ? [action] : undefined);
-      const resolvedId = dedupeKey || rest.id || generateToastId();
+      const resolvedId = dedupeKey || rest.id || String(normalizedMessage).slice(0, 50);
 
       return showNotification(type, {
         id: resolvedId,
@@ -66,14 +66,10 @@ export function useToast() {
 
   return useMemo(
     () => ({
-      success: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.SUCCESS, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
-      warning: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.WARNING, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
-      error: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.ERROR, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
-      info: (msg, opts = {}) =>
-        createToast(TOAST_TYPES.INFO, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
+      success: (msg, opts = {}) => createToast(TOAST_TYPES.SUCCESS, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
+      warning: (msg, opts = {}) => createToast(TOAST_TYPES.WARNING, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
+      error: (msg, opts = {}) => createToast(TOAST_TYPES.ERROR, msg, withDefaultDuration(DURATIONS.DEFAULT, opts)),
+      info: (msg, opts = {}) => createToast(TOAST_TYPES.INFO, msg, withDefaultDuration(DURATIONS.SHORT, opts)),
       show: (type, msg, opts = {}) => createToast(type, msg, opts),
     }),
     [createToast]

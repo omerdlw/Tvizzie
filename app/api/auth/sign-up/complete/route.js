@@ -1,27 +1,30 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
 
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
-import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
-import { ensurePasswordAccountRecord } from '@/core/auth/servers/account/account-bootstrap.server';
-import { EMAIL_ACCOUNT_STATES, resolveEmailAccountState } from '@/core/auth/servers/account/account-state.server';
+import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
 import {
-  createPendingPasswordSignIn,
-  validateStrongPassword,
-} from '@/core/auth/servers/security/password-security.server';
-import { validateUsername } from '@/core/utils/account';
+  EMAIL_ACCOUNT_STATES,
+  ensurePasswordAccountRecord,
+  resolveEmailAccountState,
+} from '@/core/auth/servers/account.js';
+import { writeAuthAuditLog } from '@/core/auth/servers/audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy.js';
+import {
+  applySessionCookies,
+  createAdminAuthFacade,
+  createCsrfToken,
+  getRequestContext,
+  setDeviceIdCookie,
+} from '@/core/auth/servers/session.js';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
+  createPendingPasswordSignIn,
   enforceAuthRateLimit,
-} from '@/core/auth/servers/security/rate-limit-policies.server';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
-import { applySessionCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
-import { verifySignUpProofToken } from '@/core/auth/servers/verification/signup-proof.server';
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
-import { setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
+  validateStrongPassword,
+} from '@/core/auth/servers/security.js';
+import { verifySignUpProofToken } from '@/core/auth/servers/verification.js';
 import { createAdminClient } from '@/core/clients/supabase/admin';
+import { createSupabaseResponseClient } from '@/core/clients/supabase/response-client.server';
+import { validateUsername } from '@/core/utils/account';
 const SIGNUP_CHALLENGE_SELECT = ['jti', 'purpose', 'signup_completed_at', 'status', 'used_at'].join(',');
 
 function normalizeValue(value) {
@@ -56,21 +59,6 @@ function createStatusPayload({ messageCode = 'SIGNUP_COMPLETED', recovered = fal
     recovered,
     userId,
   };
-}
-
-function createResponseClient(request, response) {
-  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
-        });
-      },
-    },
-  });
 }
 
 async function assertSignUpChallenge({ challengeJti, challengeKey }) {
@@ -342,7 +330,7 @@ export async function POST(request) {
       email,
       password,
     });
-    const supabase = createResponseClient(request, response);
+    const supabase = createSupabaseResponseClient(request, response);
     const sessionResult = await supabase.auth.setSession({
       access_token: pendingSignIn.accessToken,
       refresh_token: pendingSignIn.refreshToken,

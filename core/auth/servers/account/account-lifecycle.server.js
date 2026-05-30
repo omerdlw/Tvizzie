@@ -1,3 +1,4 @@
+import { normalizeValue } from '@/core/utils/string';
 import { ACCOUNT_LIFECYCLE_TABLE } from '@/core/auth/auth.constants';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
@@ -7,10 +8,6 @@ export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({
   PENDING_CHANGE: 'PENDING_CHANGE',
   PENDING_DELETE: 'PENDING_DELETE',
 });
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function normalizeState(value) {
   const normalized = normalizeValue(value).toUpperCase();

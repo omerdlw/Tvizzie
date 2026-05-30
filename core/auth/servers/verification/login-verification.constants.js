@@ -1,0 +1,6 @@
+export const PENDING_SIGN_IN_COOKIE_NAME = 'tvz_login_pending';
+export const TRUSTED_DEVICE_COOKIE_PREFIX = 'tvz_login_trust_';
+export const PENDING_SIGN_IN_MAX_AGE_MS = 30 * 60 * 1000;
+export const PENDING_SIGN_IN_MAX_AGE_SECONDS = PENDING_SIGN_IN_MAX_AGE_MS / 1000;
+export const TRUSTED_DEVICE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+export const TRUSTED_DEVICE_MAX_AGE_SECONDS = TRUSTED_DEVICE_MAX_AGE_MS / 1000;

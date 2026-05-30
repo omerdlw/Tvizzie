@@ -1,6 +1,6 @@
-export function normalizeActivityKeyPart(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue as normalizeActivityKeyPart } from '@/core/utils/string';
+
+export { normalizeActivityKeyPart };
 
 export function buildActivitySubjectRef({ subjectId, subjectType }) {
   const normalizedSubjectType = normalizeActivityKeyPart(subjectType).toLowerCase();

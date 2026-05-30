@@ -1,7 +1,8 @@
 import { createHash } from 'crypto';
 
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
-import { RATE_LIMIT_FALLBACK_MODE } from '@/core/services/shared/runtime-policy.constants';
+import { RATE_LIMIT_FALLBACK_MODE } from '@/core/services/shared/server';
+import { normalizeLowerValue as normalizeValue } from '@/core/utils/string';
 
 const MEMORY_STORE_KEY = '__tvizzie_auth_rate_limit_memory_store__';
 const RATE_LIMIT_FUNCTION_NAME = 'rate-limit';
@@ -17,12 +18,6 @@ class SlidingWindowRateLimitError extends Error {
     this.dimension = dimension || null;
     this.key = key || null;
   }
-}
-
-function normalizeValue(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
 }
 
 function hashValue(value) {

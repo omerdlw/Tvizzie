@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizeValue } from '@/core/utils/string';
 import { createClient as createSupabaseBrowserClient } from '@/core/clients/supabase/client';
 import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
 
@@ -9,10 +10,6 @@ const MAX_CONSECUTIVE_ERRORS = 5;
 const BASE_RETRY_DELAY_MS = 2000;
 const MAX_RETRY_DELAY_MS = 30000;
 const LIVE_EVENT_TYPES = ['follows', 'notifications', 'reviews', 'account', 'ready', 'ping'];
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function dispatchEvent(entry, eventType, payload) {
   const listeners = entry.listeners.get(eventType);

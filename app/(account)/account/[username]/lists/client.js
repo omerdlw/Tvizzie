@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 
 import { useModalActions } from '@/core/modules/modal/context';
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ListsView from './view';
 
 function useListsClientState({ sectionState }) {

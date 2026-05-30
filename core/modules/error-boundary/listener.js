@@ -9,7 +9,13 @@ import { getErrorReporter } from './reporter';
 const CONFIG = Object.freeze({
   maxErrors: 10,
   throttle: 2000,
-  ignored: Object.freeze([/ResizeObserver loop/i, /Network request failed/i, /Loading chunk/i]),
+  ignored: Object.freeze([
+    /ResizeObserver loop/i,
+    /Network request failed/i,
+    /Loading chunk/i,
+    /Unexpected end of input/i,
+    /Failed to fetch/i,
+  ]),
 });
 
 function getErrorMessage(error) {

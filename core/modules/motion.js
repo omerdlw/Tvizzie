@@ -1,0 +1,508 @@
+const NAV_CARD_SPRINGS = Object.freeze([
+  Object.freeze({ type: 'spring', stiffness: 300, damping: 31, mass: 0.92 }),
+  Object.freeze({ type: 'spring', stiffness: 264, damping: 29, mass: 0.98 }),
+  Object.freeze({ type: 'spring', stiffness: 232, damping: 27, mass: 1.04 }),
+]);
+
+export const NAV_DEFAULT_TRANSITION = Object.freeze({
+  ease: [0.25, 0.46, 0.45, 0.94],
+  duration: 0.5,
+  type: 'tween',
+});
+
+export const NAV_CONTAINER_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 300,
+  damping: 32,
+  mass: 0.96,
+});
+
+export const NAV_CARD_WIDTH_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 248,
+  damping: 29,
+  mass: 1,
+});
+
+export const NAV_MICRO_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 360,
+  damping: 28,
+  mass: 0.72,
+});
+
+export const NAV_ACTION_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 340,
+  damping: 27,
+  mass: 0.76,
+});
+
+export const NAV_BADGE_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 420,
+  damping: 30,
+  mass: 0.62,
+});
+
+export const NAV_CONTENT_TRANSITION = Object.freeze({
+  duration: 0.2,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+export const NAV_CARD_OPACITY_TRANSITION = Object.freeze({
+  duration: 0.22,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
+  duration: 0.24,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+export const NAV_BACKDROP_TRANSITION = Object.freeze({
+  duration: 0.5,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+export const NAV_SEARCH_REVEAL_TRANSITION = Object.freeze({
+  duration: 0.2,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+export const NAV_SURFACE_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 260,
+  damping: 28,
+  mass: 0.92,
+});
+
+export const NAV_SURFACE_ITEM_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 320,
+  damping: 28,
+  mass: 0.78,
+});
+
+const NAV_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.18,
+  ease: [0.55, 0, 1, 0.45],
+});
+
+const NAV_MAX_STAGGER_DELAY = 0.08;
+const NAV_STAGGER_STEP = 0.02;
+
+export function getNavCardStaggerDelay(position, expanded) {
+  if (!expanded) {
+    return 0;
+  }
+  return Math.min(position * NAV_STAGGER_STEP, NAV_MAX_STAGGER_DELAY);
+}
+
+export function getNavCardSpring(position = 0) {
+  return NAV_CARD_SPRINGS[position] || NAV_CARD_SPRINGS[NAV_CARD_SPRINGS.length - 1];
+}
+
+export function getNavCardTransition({ position = 0, expanded = false } = {}) {
+  const delay = getNavCardStaggerDelay(position, expanded);
+  const spring = getNavCardSpring(position);
+
+  return Object.freeze({
+    width: { ...NAV_CARD_WIDTH_SPRING, delay },
+    y: { ...spring, delay },
+    scale: { ...spring, delay },
+    opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay },
+    filter: { ...NAV_CARD_BLUR_TRANSITION, delay },
+    zIndex: { duration: 0, delay },
+  });
+}
+
+export function getNavCardInteractionMotion(isInteractive = true) {
+  if (!isInteractive) {
+    return Object.freeze({});
+  }
+  return NAV_CARD_INTERACTION_MOTION;
+}
+
+export const NAV_CARD_INITIAL = Object.freeze({
+  opacity: 0,
+  scale: 0.96,
+  y: 0,
+});
+
+export const NAV_CARD_EXIT = Object.freeze({
+  opacity: 0,
+  scale: 0.96,
+  y: 6,
+  transition: NAV_EXIT_TRANSITION,
+});
+
+export const NAV_CARD_INTERACTION_MOTION = Object.freeze({
+  whileTap: { scale: 0.98 },
+});
+
+export const NAV_BADGE_MOTION = Object.freeze({
+  initial: { scale: 0.6, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.6, opacity: 0 },
+  transition: NAV_BADGE_SPRING,
+});
+
+export const NAV_VIDEO_ICON_MOTION = Object.freeze({
+  initial: { opacity: 0, scale: 0.84 },
+  animate: { opacity: 1, scale: 1 },
+  transition: NAV_MICRO_SPRING,
+});
+
+const NAV_CONTENT_OFFSET = 6;
+
+export const NAV_ACTION_PANEL_MOTION = Object.freeze({
+  layout: 'position',
+  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
+  animate: { opacity: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    y: -NAV_CONTENT_OFFSET,
+    transition: NAV_EXIT_TRANSITION,
+  },
+  transition: NAV_CONTENT_TRANSITION,
+});
+
+export const NAV_ACTION_ITEM_MOTION = Object.freeze({
+  layout: 'position',
+  initial: { opacity: 0, scale: 0.88, y: 4 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    scale: 0.88,
+    y: -4,
+    transition: NAV_EXIT_TRANSITION,
+  },
+  transition: NAV_ACTION_SPRING,
+});
+
+export const NAV_ACTION_GROUP_MOTION = Object.freeze({
+  layout: 'position',
+  transition: NAV_CONTENT_TRANSITION,
+});
+
+export const NAV_SURFACE_MOTION = Object.freeze({
+  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
+  animate: { opacity: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    y: -NAV_CONTENT_OFFSET,
+    transition: NAV_EXIT_TRANSITION,
+  },
+  transition: NAV_SURFACE_SPRING,
+});
+
+export const NAV_DESCRIPTION_MOTION = Object.freeze({
+  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
+  animate: { opacity: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    y: -NAV_CONTENT_OFFSET,
+    transition: NAV_EXIT_TRANSITION,
+  },
+  transition: NAV_CONTENT_TRANSITION,
+});
+
+export const NAV_SEARCH_PANEL_MOTION = Object.freeze({
+  initial: { opacity: 0, y: -NAV_CONTENT_OFFSET, height: 0 },
+  animate: { opacity: 1, y: 0, height: 'auto' },
+  exit: {
+    opacity: 0,
+    y: -NAV_CONTENT_OFFSET,
+    height: 0,
+    transition: NAV_EXIT_TRANSITION,
+  },
+  transition: NAV_SEARCH_REVEAL_TRANSITION,
+});
+
+export const NAV_SEARCH_FADE_MOTION = Object.freeze({
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: NAV_EXIT_TRANSITION },
+  transition: NAV_SEARCH_REVEAL_TRANSITION,
+});
+
+export const NAV_BUTTON_TAP_MOTION = Object.freeze({
+  whileTap: { scale: 0.97 },
+  transition: NAV_ACTION_SPRING,
+});
+
+export const NAV_BUTTON_INTERACTION_MOTION = Object.freeze({
+  whileHover: { scale: 1.01 },
+  whileFocus: { scale: 1.01 },
+  whileTap: { scale: 0.97 },
+  transition: NAV_ACTION_SPRING,
+});
+
+export const NAV_ICON_OVERLAY_MOTION = Object.freeze({
+  whileHover: { scale: 1.01 },
+  whileFocus: { scale: 1.01 },
+  whileTap: { scale: 0.97 },
+  transition: NAV_ACTION_SPRING,
+});
+
+export const NAV_MEDIA_ACTION_MOTION = Object.freeze({
+  whileHover: { scale: 1.01 },
+  whileFocus: { scale: 1.01 },
+  whileTap: { scale: 0.97 },
+  transition: NAV_ACTION_SPRING,
+});
+
+export const NAV_BACKDROP_INITIAL = Object.freeze({
+  opacity: 0,
+  backdropFilter: 'blur(0px)',
+});
+
+export function getNavBackdropMotion(isVisible) {
+  if (isVisible) {
+    return Object.freeze({
+      opacity: 1,
+      backdropFilter: 'blur(12px)',
+      display: 'block',
+    });
+  }
+  return Object.freeze({
+    opacity: 0,
+    backdropFilter: 'blur(0px)',
+    transitionEnd: { display: 'none' },
+  });
+}
+
+export function getNavContainerMotion(height) {
+  return Object.freeze({ height });
+}
+
+export function getNavDescriptionAnimate(opacity) {
+  return Object.freeze({ ...NAV_DESCRIPTION_MOTION.animate, opacity });
+}
+
+export function getNavMediaProgressMotion(progressRatio = 0) {
+  return Object.freeze({
+    width: `${Math.max(0, Math.min(Number(progressRatio) || 0, 1)) * 100}%`,
+  });
+}
+
+export function getNavSubmittingMotion(isSubmitting) {
+  return Object.freeze(isSubmitting ? { scale: 0.98 } : { scale: 1 });
+}
+
+export function getNavDragSurfaceMotion(isActive) {
+  return Object.freeze(isActive ? { scale: 1.01 } : { scale: 1 });
+}
+
+export function getNavDragIconMotion(isActive) {
+  return Object.freeze(isActive ? { scale: 1.03, y: -2 } : { scale: 1, y: 0 });
+}
+
+function getNavStaggerDelay(index) {
+  return Math.min(index * NAV_STAGGER_STEP, NAV_MAX_STAGGER_DELAY);
+}
+
+export function getNavActionItemMotion(index = 0) {
+  return {
+    ...NAV_ACTION_ITEM_MOTION,
+    transition: { ...NAV_ACTION_SPRING, delay: getNavStaggerDelay(index) },
+  };
+}
+
+export function getNavSearchItemMotion(index = 0) {
+  return Object.freeze({
+    initial: { opacity: 0, y: -NAV_CONTENT_OFFSET },
+    animate: { opacity: 1, y: 0 },
+    exit: {
+      opacity: 0,
+      y: -NAV_CONTENT_OFFSET,
+      transition: NAV_EXIT_TRANSITION,
+    },
+    transition: { ...NAV_SEARCH_REVEAL_TRANSITION, delay: getNavStaggerDelay(index) },
+  });
+}
+
+export function getNavDelayedSearchTransition(index = 0) {
+  return Object.freeze({ ...NAV_SEARCH_REVEAL_TRANSITION, delay: getNavStaggerDelay(index) });
+}
+
+const MODAL_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 380,
+  damping: 32,
+  mass: 0.8,
+});
+
+const MODAL_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.2,
+  ease: [0.55, 0, 1, 0.45],
+});
+
+const MODAL_FADE_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.22,
+  ease: [0.25, 0.46, 0.45, 0.94],
+});
+
+const MODAL_ACTION_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 400,
+  damping: 28,
+  mass: 0.68,
+});
+
+export const MODAL_LAYER_MOTION = Object.freeze({
+  initial: false,
+});
+
+export const MODAL_BACKDROP_MOTION = Object.freeze({
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: MODAL_EXIT_TRANSITION },
+  transition: MODAL_FADE_TRANSITION,
+});
+
+export const MODAL_HEADER_MOTION = Object.freeze({
+  initial: { opacity: 0, y: -4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4, transition: MODAL_EXIT_TRANSITION },
+  transition: MODAL_FADE_TRANSITION,
+});
+
+export const MODAL_BODY_MOTION = Object.freeze({
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: MODAL_EXIT_TRANSITION },
+  transition: { ...MODAL_FADE_TRANSITION, delay: 0.04 },
+});
+
+export const MODAL_FOOTER_MOTION = Object.freeze({
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 4, transition: MODAL_EXIT_TRANSITION },
+  transition: { ...MODAL_FADE_TRANSITION, delay: 0.06 },
+});
+
+export const MODAL_TITLE_MOTION = Object.freeze({
+  initial: { opacity: 0, y: -4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4, transition: MODAL_EXIT_TRANSITION },
+  transition: MODAL_FADE_TRANSITION,
+});
+
+export const MODAL_ACTION_MOTION = Object.freeze({
+  whileHover: { scale: 1.02 },
+  whileTap: { scale: 0.97 },
+  transition: MODAL_ACTION_SPRING,
+});
+
+export const MODAL_LAYER_SWITCHER_MOTION = Object.freeze({
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 4, transition: MODAL_EXIT_TRANSITION },
+  transition: MODAL_FADE_TRANSITION,
+});
+
+export function getModalPanelMotion(position, isTopModal) {
+  if (!isTopModal) {
+    return Object.freeze({
+      animate: { opacity: 0.9, scale: 0.98 },
+      transition: MODAL_FADE_TRANSITION,
+    });
+  }
+
+  if (position === 'center') {
+    return Object.freeze({
+      initial: { opacity: 0, scale: 0.94 },
+      animate: { opacity: 1, scale: 1 },
+      exit: {
+        opacity: 0,
+        scale: 0.94,
+        transition: MODAL_EXIT_TRANSITION,
+      },
+      transition: MODAL_SPRING,
+    });
+  }
+
+  const xOffset = position === 'left' ? -24 : position === 'right' ? 24 : 0;
+  const yOffset = position === 'top' ? -24 : position === 'bottom' ? 24 : 0;
+
+  return Object.freeze({
+    initial: { opacity: 0, x: xOffset, y: yOffset },
+    animate: { opacity: 1, x: 0, y: 0 },
+    exit: {
+      opacity: 0,
+      x: xOffset,
+      y: yOffset,
+      transition: MODAL_EXIT_TRANSITION,
+    },
+    transition: MODAL_SPRING,
+  });
+}
+
+export function getModalContentMotion(index = 0) {
+  return Object.freeze({
+    initial: { opacity: 0, y: 4 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 4, transition: MODAL_EXIT_TRANSITION },
+    transition: { ...MODAL_FADE_TRANSITION, delay: index * 0.03 },
+  });
+}
+
+const NOTIFICATION_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 340,
+  damping: 28,
+  mass: 0.78,
+});
+
+const NOTIFICATION_EXIT_TRANSITION = Object.freeze({
+  type: 'tween',
+  duration: 0.2,
+  ease: [0.55, 0, 1, 0.45],
+});
+
+export const NOTIFICATION_STACK_MOTION = Object.freeze({
+  layout: true,
+  transition: NOTIFICATION_SPRING,
+});
+
+export const NOTIFICATION_CONTENT_MOTION = Object.freeze({
+  initial: { opacity: 0, y: 12, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: {
+    opacity: 0,
+    y: 12,
+    scale: 0.95,
+    transition: NOTIFICATION_EXIT_TRANSITION,
+  },
+  transition: NOTIFICATION_SPRING,
+});
+
+export function getNotificationItemMotion(index = 0) {
+  return Object.freeze({
+    layout: true,
+    initial: { opacity: 0, y: 12, scale: 0.97 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: {
+      opacity: 0,
+      y: 12,
+      scale: 0.95,
+      transition: NOTIFICATION_EXIT_TRANSITION,
+    },
+    transition: { ...NOTIFICATION_SPRING, delay: index * 0.04 },
+  });
+}
+
+export function getNotificationActionMotion(index = 0) {
+  return Object.freeze({
+    initial: { opacity: 0, scale: 0.94 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.94, transition: NOTIFICATION_EXIT_TRANSITION },
+    transition: { ...NOTIFICATION_SPRING, delay: 0.06 + index * 0.04 },
+    whileTap: { scale: 0.97 },
+  });
+}

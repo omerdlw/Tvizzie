@@ -2,8 +2,8 @@
 
 import AccountListCard from '@/features/account/lists/card';
 import Icon from '@/ui/icon';
-import AccountInlineSectionState from '../shared/section-state';
-import AccountSectionLayout from '../shared/section-wrapper';
+import AccountInlineSectionState from '@/features/account/components/section-state';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 
 const OVERVIEW_LIST_LIMIT = 3;
 

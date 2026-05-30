@@ -9,8 +9,8 @@ import {
   subscribeToFollowers,
   subscribeToFollowing,
 } from '@/core/services/social/follows.service';
-import { getAccountSocialProof } from '@/core/services/media/social-proof.service';
-import { subscribeToUserListItems } from '@/core/services/media/lists.service';
+import { getAccountSocialProof } from '@/core/services/media/social-proof';
+import { subscribeToUserListItems } from '@/core/services/media/lists';
 import { useEffect, useMemo, useState } from 'react';
 
 export function useAccountRelationshipData({

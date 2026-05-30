@@ -14,9 +14,9 @@ import {
   sortProfileLists,
   toListQueryValues,
 } from '@/features/account/filtering';
-import { AccountListSortBar } from '@/features/account/shared/content-filters';
+import { AccountListSortBar } from '@/features/account/filters/content-filter-primitives';
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
-import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 

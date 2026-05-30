@@ -1,6 +1,4 @@
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue } from '@/core/utils/string';
 
 export function buildApiSuccessResult(data = null, { code = 'OK', message = 'OK', requestId = null } = {}) {
   const payload = {

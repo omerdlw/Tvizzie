@@ -1,8 +1,5 @@
+import { normalizeValue } from '@/core/utils/string';
 import { isMovieMediaType, normalizeMediaType } from '@/core/utils/media';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 export function buildMediaItemKey(entityType, entityId) {
   if (!entityType || entityId === undefined || entityId === null) {

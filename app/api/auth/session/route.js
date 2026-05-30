@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
 
-import {
-  clearAuthRouteNoticeCookie,
-  setAuthRouteNoticeCookie,
-} from '@/core/auth/servers/notice/auth-route-notice.server';
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
-import { requireSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
+import { clearAuthRouteNoticeCookie,
+  setAuthRouteNoticeCookie,
+} from '@/core/auth/servers/notice.js';
 import {
   clearAuthCookies,
   isTransientSessionError,
+  requireSessionRequest,
   serializeSessionState,
-} from '@/core/auth/servers/session/session.server';
-import { clearRecentReauthCookie } from '@/core/auth/servers/security/recent-reauth.server';
+} from '@/core/auth/servers/session.js';
 import {
+  clearRecentReauthCookie,
   clearStepUpCookie,
   listStepUpPurposes,
   readStepUpFromRequest,
-} from '@/core/auth/servers/security/step-up.server';
+} from '@/core/auth/servers/security.js';
 
 function normalizeValue(value) {
   return String(value || '').trim();

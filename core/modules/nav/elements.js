@@ -1,10 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
-import { cn } from '@/core/utils';
+import { cn } from '@/core/utils/classnames';
 import Iconify from '@/ui/icon';
 
-import { NAV_CONTENT_TRANSITION, NAV_MICRO_SPRING } from './motion';
+import {
+  getNavDescriptionAnimate,
+  NAV_CONTENT_TRANSITION,
+  NAV_DESCRIPTION_MOTION,
+  NAV_ICON_OVERLAY_MOTION,
+  NAV_MICRO_SPRING,
+} from '@/core/modules/motion';
 
 function isImageIconSource(icon) {
   return (
@@ -17,15 +22,6 @@ function splitStyle(style = {}) {
   return {
     className,
     inlineStyle,
-  };
-}
-
-function getDescriptionAnimation() {
-  return {
-    initial: { opacity: 0, y: 8 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -8 },
-    transition: NAV_CONTENT_TRANSITION,
   };
 }
 
@@ -44,7 +40,6 @@ function getLineClampStyle(maxLines, style) {
 }
 
 export function Description({ text, style, maxLines = 1 }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
@@ -54,11 +49,11 @@ export function Description({ text, style, maxLines = 1 }) {
       <AnimatePresence initial={false} mode="wait">
         <motion.p
           className={cn('text-black', isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate', className)}
-          animate={{ ...getDescriptionAnimation().animate, opacity }}
-          transition={getDescriptionAnimation().transition}
+          animate={getNavDescriptionAnimate(opacity)}
+          transition={NAV_DESCRIPTION_MOTION.transition}
           style={getLineClampStyle(maxLines, restStyle)}
-          initial={initialPageAnimationsEnabled ? getDescriptionAnimation().initial : false}
-          exit={getDescriptionAnimation().exit}
+          initial={NAV_DESCRIPTION_MOTION.initial}
+          exit={NAV_DESCRIPTION_MOTION.exit}
           key={typeof text === 'string' || typeof text === 'number' ? text : undefined}
         >
           {text}
@@ -82,7 +77,7 @@ function IconOverlay({ overlay }) {
   const isImageSource = isImageIconSource(icon);
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={(event) => {
         event.stopPropagation();
@@ -92,16 +87,17 @@ function IconOverlay({ overlay }) {
       title={title || undefined}
       aria-label={title || 'Open current account'}
       className={cn(
-        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden rounded-[10px] transition-transform hover:scale-[1.04]',
+        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden',
         typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default'
       )}
+      {...NAV_ICON_OVERLAY_MOTION}
     >
       {isImageSource ? (
         <span className="size-full bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${icon})` }} />
       ) : (
         <span className="text-black">{renderIconNode(icon, 12)}</span>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -142,7 +138,7 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
       ) : (
         <motion.div
           className={cn(
-            'center size-10 sm:size-12 rounded-[14px] sm:rounded-[12px] bg-black/5 transition-colors duration-[300ms]',
+            'center size-10 rounded-[14px] bg-black/5 transition-colors duration-[300ms] sm:rounded-[12px] sm:size-12',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className

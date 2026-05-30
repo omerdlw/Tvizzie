@@ -1,6 +1,6 @@
 'use client';
 
-import { createAccountSectionClient } from '../../shared/section-factory';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import WatchlistView from './view';
 
 function useWatchlistClientState({ sectionState }) {

@@ -12,6 +12,27 @@ const OVERSCROLL_THRESHOLD = -1;
 const HORIZONTAL_GESTURE_DELTA_THRESHOLD = 8;
 const HORIZONTAL_GESTURE_DOMINANCE_RATIO = 1.15;
 const HORIZONTAL_GESTURE_SUPPRESSION_MS = 260;
+const BOTTOM_LOCK_ACTIVATION_DISTANCE = 2;
+const BOTTOM_LOCK_RELEASE_DISTANCE = 40;
+
+function getDistanceToBottom(scrollY) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return Infinity;
+  }
+
+  const root = document.documentElement;
+  const maxScrollY = Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
+  return Math.max(maxScrollY - scrollY, 0);
+}
+
+function getScrollableHeight() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return 0;
+  }
+
+  const root = document.documentElement;
+  return Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
+}
 
 function getNow() {
   if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
@@ -77,6 +98,7 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
   const lastScrollYRef = useRef(0);
   const downwardTravelRef = useRef(0);
   const lastToggleTimeRef = useRef(0);
+  const bottomLockRef = useRef(false);
   const hasActiveItem = Boolean(activeItem);
   const activeItemPath = activeItem?.path || '';
   const activeItemName = activeItem?.name || '';
@@ -114,6 +136,7 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
 
       restoreCompactRef.current = false;
       compactRef.current = false;
+      bottomLockRef.current = false;
       lastScrollYRef.current = 0;
       downwardTravelRef.current = 0;
       setCompact(false);
@@ -121,10 +144,15 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
     }
 
     const currentScrollY = window.scrollY || 0;
+    const initialDistanceToBottom = getDistanceToBottom(currentScrollY);
+    const initialScrollableHeight = getScrollableHeight();
+    const hasScrollableContent = initialScrollableHeight > 0;
+    const shouldStartBottomLocked = hasScrollableContent && initialDistanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
 
     if (expanded) {
       restoreCompactRef.current = compactRef.current;
       compactRef.current = false;
+      bottomLockRef.current = false;
       suppressCompactUntilRef.current = 0;
       lastScrollYRef.current = currentScrollY;
       downwardTravelRef.current = 0;
@@ -135,10 +163,11 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
     const shouldRestoreCompact = restoreCompactRef.current && currentScrollY > COMPACT_RELEASE_THRESHOLD;
 
     restoreCompactRef.current = false;
-    compactRef.current = shouldRestoreCompact;
+    bottomLockRef.current = shouldStartBottomLocked;
+    compactRef.current = shouldStartBottomLocked ? true : shouldRestoreCompact;
     lastScrollYRef.current = currentScrollY;
     downwardTravelRef.current = 0;
-    setCompact(shouldRestoreCompact);
+    setCompact(shouldStartBottomLocked ? true : shouldRestoreCompact);
 
     let frameId = 0;
 
@@ -146,6 +175,33 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
       frameId = 0;
 
       const scrollY = window.scrollY || 0;
+      const distanceToBottom = getDistanceToBottom(scrollY);
+      const scrollableHeight = getScrollableHeight();
+      const hasScrollableContent = scrollableHeight > 0;
+      const shouldActivateBottomLock = hasScrollableContent && distanceToBottom <= BOTTOM_LOCK_ACTIVATION_DISTANCE;
+      const shouldKeepBottomLock = hasScrollableContent && distanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
+
+      if (shouldActivateBottomLock) {
+        bottomLockRef.current = true;
+      }
+
+      if (bottomLockRef.current && shouldKeepBottomLock) {
+        lastScrollYRef.current = scrollY;
+        downwardTravelRef.current = 0;
+        suppressCompactUntilRef.current = 0;
+
+        if (!compactRef.current) {
+          compactRef.current = true;
+          lastToggleTimeRef.current = getNow();
+          setCompact(true);
+        }
+
+        return;
+      }
+
+      if (bottomLockRef.current && !shouldKeepBottomLock) {
+        bottomLockRef.current = false;
+      }
 
       if (scrollY < OVERSCROLL_THRESHOLD) {
         lastScrollYRef.current = scrollY;

@@ -8,6 +8,10 @@ export function getNavStackOffset(cardHeight) {
   return -(cardHeight + NAV_VIEWPORT_GAP);
 }
 
-export function getNotificationBottomOffset(navHeight) {
+export function getNotificationBottomOffset(navHeight, { alignToNav = true } = {}) {
+  if (!alignToNav) {
+    return NAV_VIEWPORT_GAP;
+  }
+
   return Math.max(NAV_VIEWPORT_GAP, Math.round((navHeight || 0) - NAV_NOTIFICATION_OFFSET_ADJUSTMENT));
 }

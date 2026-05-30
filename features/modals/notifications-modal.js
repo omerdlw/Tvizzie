@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import Container from '@/core/modules/modal/container';
@@ -18,12 +18,20 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border px-4 text-xs font-semibold tracking-wide uppercase transition';
 
 const TOOL_BUTTON_CLASS = 'size-7 rounded-[10px] transition';
 
 const SKELETON_COUNT = 16;
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
@@ -64,23 +72,10 @@ function getNotificationSubject(payload, type) {
   if (type === NOTIFICATION_TYPES.REVIEW_LIKE) {
     return payload?.subject && typeof payload.subject === 'object'
       ? payload.subject
-      : {
-          href: payload?.subjectHref || null,
-          title: payload?.subjectTitle || null,
-        };
+      : { href: payload?.subjectHref || null, title: payload?.subjectTitle || null };
   }
 
-  if (type === NOTIFICATION_TYPES.LIST_LIKE) {
-    if (payload?.list && typeof payload.list === 'object') return payload.list;
-    if (payload?.subject && typeof payload.subject === 'object') return payload.subject;
-
-    return {
-      href: payload?.listHref || payload?.subjectHref || null,
-      title: payload?.listTitle || payload?.subjectTitle || null,
-    };
-  }
-
-  if (type === NOTIFICATION_TYPES.LIST_COMMENT) {
+  if (type === NOTIFICATION_TYPES.LIST_LIKE || type === NOTIFICATION_TYPES.LIST_COMMENT) {
     if (payload?.list && typeof payload.list === 'object') return payload.list;
     if (payload?.subject && typeof payload.subject === 'object') return payload.subject;
 
@@ -93,162 +88,9 @@ function getNotificationSubject(payload, type) {
   return null;
 }
 
-function InlineEntity({ href, children, muted = false }) {
-  const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
-
-  return href ? (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  ) : (
-    <span className={className}>{children}</span>
-  );
-}
-
-function InlineEntityName({ href, children }) {
-  return href ? (
-    <Link href={href} className="truncate text-sm font-semibold">
-      {children}
-    </Link>
-  ) : (
-    <span className="truncate text-sm font-semibold">{children}</span>
-  );
-}
-
-function NotificationContent({ type, actor, payload }) {
-  const actorName = actor?.displayName || actor?.username || 'Someone';
-  const actorHref = actor?.username ? `/account/${actor.username}` : null;
-  const subject = getNotificationSubject(payload, type);
-
-  switch (type) {
-    case NOTIFICATION_TYPES.FOLLOW_REQUEST:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> requested to follow you
-        </p>
-      );
-
-    case NOTIFICATION_TYPES.FOLLOW_ACCEPTED:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> accepted your follow request
-        </p>
-      );
-
-    case NOTIFICATION_TYPES.NEW_FOLLOWER:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> started following you
-        </p>
-      );
-
-    case NOTIFICATION_TYPES.REVIEW_LIKE:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your review of{' '}
-          <InlineEntity href={subject?.href}>{subject?.title || 'a title'}</InlineEntity>
-        </p>
-      );
-
-    case NOTIFICATION_TYPES.LIST_LIKE:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your list{' '}
-          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
-        </p>
-      );
-
-    case NOTIFICATION_TYPES.LIST_COMMENT:
-      return (
-        <p className="text-sm">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> commented on your list{' '}
-          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
-        </p>
-      );
-
-    default:
-      return (
-        <p className="text-sm text-black/70">
-          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> interacted with you
-        </p>
-      );
-  }
-}
-
-function NotificationSkeleton() {
-  return (
-    <div className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-      <div className="size-10 shrink-0 animate-pulse bg-black/5" />
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-3/5 animate-pulse bg-black/5" />
-        <div className="h-2 w-2/5 animate-pulse bg-black/5" />
-      </div>
-    </div>
-  );
-}
-
-function NotificationRow({ notification, onMarkRead, onDelete }) {
-  const avatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
-  const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
-  const isUnread = !notification.read;
-
-  return (
-    <div
-      className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
-        isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
-      )}
-    >
-      <div className="center size-10 shrink-0 overflow-hidden rounded-[10px]">
-        {notification.actor ? (
-          <AdaptiveImage
-            mode="img"
-            src={avatarSrc}
-            alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full object-cover"
-            loading="lazy"
-            decoding="async"
-            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-            wrapperClassName="size-full"
-          />
-        ) : (
-          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
-        )}
-      </div>
-
-      <div className="flex w-full flex-col">
-        <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
-        <span className="text-[10px] tracking-widest text-black/50 uppercase">
-          {formatRelativeTime(notification.createdAt)}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        {isUnread && (
-          <Button
-            onClick={(event) => onMarkRead(notification.id, event)}
-            title="Mark as read"
-            className={cn(
-              TOOL_BUTTON_CLASS,
-              'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
-            )}
-          >
-            <Icon icon="material-symbols:check-rounded" size={16} />
-          </Button>
-        )}
-
-        <Button
-          onClick={(event) => onDelete(notification.id, event)}
-          title="Delete notification"
-          variant="destructive"
-          className={TOOL_BUTTON_CLASS}
-        >
-          <Icon icon="solar:trash-bin-trash-linear" size={16} />
-        </Button>
-      </div>
-    </div>
-  );
-}
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
 
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
@@ -263,27 +105,24 @@ export default function NotificationsModal({ close, header, data }) {
     forceReadIds: new Set(),
   });
 
+  // Derived Values
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
-
-  const unreadCount = useMemo(() => notifications.filter((item) => !item.read).length, [notifications]);
+  const unreadCount = notifications.filter((item) => !item.read).length;
   const hasUnread = unreadCount > 0;
 
-  function resetOptimisticState() {
-    optimisticStateRef.current = {
-      deletedIds: new Set(),
-      forceReadIds: new Set(),
-    };
-  }
-
-  function projectNotifications(nextNotifications = []) {
-    const { deletedIds, forceReadIds } = optimisticStateRef.current;
-
-    return (Array.isArray(nextNotifications) ? nextNotifications : [])
-      .filter((item) => item?.id && !deletedIds.has(item.id))
-      .map((item) => (forceReadIds.has(item.id) ? { ...item, read: true } : item));
-  }
-
+  // Effects
   useEffect(() => {
+    function resetOptimisticState() {
+      optimisticStateRef.current = { deletedIds: new Set(), forceReadIds: new Set() };
+    }
+
+    function projectNotifications(nextNotifications = []) {
+      const { deletedIds, forceReadIds } = optimisticStateRef.current;
+      return (Array.isArray(nextNotifications) ? nextNotifications : [])
+        .filter((item) => item?.id && !deletedIds.has(item.id))
+        .map((item) => (forceReadIds.has(item.id) ? { ...item, read: true } : item));
+    }
+
     if (!auth.isReady || !auth.isAuthenticated || !isAuthSessionReady || !userId) {
       resetOptimisticState();
       setNotifications([]);
@@ -309,6 +148,7 @@ export default function NotificationsModal({ close, header, data }) {
     );
   }, [auth.isReady, auth.isAuthenticated, isAuthSessionReady, userId]);
 
+  // Handlers
   async function handleMarkAllRead() {
     if (!userId || !hasUnread) return;
 
@@ -382,6 +222,40 @@ export default function NotificationsModal({ close, header, data }) {
   }
 
   return (
+    <ModalView
+      close={close}
+      header={header}
+      isSidePosition={isSidePosition}
+      isLoading={isLoading}
+      notifications={notifications}
+      hasUnread={hasUnread}
+      unreadCount={unreadCount}
+      handleMarkAllRead={handleMarkAllRead}
+      handleMarkRead={handleMarkRead}
+      handleDelete={handleDelete}
+      handleDeleteAll={handleDeleteAll}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({
+  close,
+  header,
+  isSidePosition,
+  isLoading,
+  notifications,
+  hasUnread,
+  unreadCount,
+  handleMarkAllRead,
+  handleMarkRead,
+  handleDelete,
+  handleDeleteAll,
+}) {
+  return (
     <Container
       className={
         isSidePosition ? 'h-full max-h-full w-full sm:w-[460px]' : 'max-h-[78dvh] w-full sm:w-[min(1400px,96vw)]'
@@ -439,5 +313,162 @@ export default function NotificationsModal({ close, header, data }) {
         )}
       </div>
     </Container>
+  );
+}
+
+function NotificationRow({ notification, onMarkRead, onDelete }) {
+  const avatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
+  const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
+  const isUnread = !notification.read;
+
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none lg:p-4',
+        isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
+      )}
+    >
+      <div className="center size-10 shrink-0 overflow-hidden rounded-[10px]">
+        {notification.actor ? (
+          <AdaptiveImage
+            mode="img"
+            src={avatarSrc}
+            alt={notification.actor?.displayName || 'Avatar'}
+            className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+            wrapperClassName="size-full"
+          />
+        ) : (
+          <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
+        )}
+      </div>
+
+      <div className="flex w-full flex-col">
+        <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
+        <span className="text-[10px] tracking-widest text-black/50 uppercase">
+          {formatRelativeTime(notification.createdAt)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        {isUnread && (
+          <Button
+            onClick={(event) => onMarkRead(notification.id, event)}
+            title="Mark as read"
+            className={cn(
+              TOOL_BUTTON_CLASS,
+              'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
+            )}
+          >
+            <Icon icon="material-symbols:check-rounded" size={16} />
+          </Button>
+        )}
+
+        <Button
+          onClick={(event) => onDelete(notification.id, event)}
+          title="Delete notification"
+          variant="destructive"
+          className={TOOL_BUTTON_CLASS}
+        >
+          <Icon icon="solar:trash-bin-trash-linear" size={16} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function NotificationContent({ type, actor, payload }) {
+  const actorName = actor?.displayName || actor?.username || 'Someone';
+  const actorHref = actor?.username ? `/account/${actor.username}` : null;
+  const subject = getNotificationSubject(payload, type);
+
+  switch (type) {
+    case NOTIFICATION_TYPES.FOLLOW_REQUEST:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> requested to follow you
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.FOLLOW_ACCEPTED:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> accepted your follow request
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.NEW_FOLLOWER:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> started following you
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.REVIEW_LIKE:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your review of{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a title'}</InlineEntity>
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.LIST_LIKE:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> liked your list{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
+        </p>
+      );
+
+    case NOTIFICATION_TYPES.LIST_COMMENT:
+      return (
+        <p className="text-sm">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> commented on your list{' '}
+          <InlineEntity href={subject?.href}>{subject?.title || 'a list'}</InlineEntity>
+        </p>
+      );
+
+    default:
+      return (
+        <p className="text-sm text-black/70">
+          <InlineEntityName href={actorHref}>{actorName}</InlineEntityName> interacted with you
+        </p>
+      );
+  }
+}
+
+function InlineEntity({ href, children, muted = false }) {
+  const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
+
+  return href ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <span className={className}>{children}</span>
+  );
+}
+
+function InlineEntityName({ href, children }) {
+  return href ? (
+    <Link href={href} className="truncate text-sm font-semibold">
+      {children}
+    </Link>
+  ) : (
+    <span className="truncate text-sm font-semibold">{children}</span>
+  );
+}
+
+function NotificationSkeleton() {
+  return (
+    <div className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
+      <div className="size-10 shrink-0 animate-pulse bg-black/5" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="h-3 w-3/5 animate-pulse bg-black/5" />
+        <div className="h-2 w-2/5 animate-pulse bg-black/5" />
+      </div>
+    </div>
   );
 }

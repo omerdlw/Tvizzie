@@ -11,8 +11,7 @@ const SUPABASE_WS_ORIGIN = SUPABASE_ORIGIN.startsWith('https://')
   ? SUPABASE_ORIGIN.replace(/^https:\/\//i, 'wss://')
   : '';
 
-const CSP_HEADER_KEY =
-  CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+const CSP_HEADER_KEY = CSP_ENFORCE === true ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
 const CSP_VALUE = [
   "default-src 'self'",
   [
@@ -229,6 +228,17 @@ const NEXT_CONFIG = {
         permanent: true,
       },
     ];
+  },
+  webpack(config) {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+
+    // Next can resolve `framer-motion` to its `./client` entry in some environments.
+    // That entry doesn't export some hooks (e.g. `useReducedMotion`), which can crash
+    // client renders in Safari/iOS. Force a single, full entrypoint.
+    config.resolve.alias['framer-motion/client'] = 'framer-motion';
+
+    return config;
   },
 };
 

@@ -1,384 +1,32 @@
 import 'server-only';
 
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { readSessionFromRequest } from '@/core/auth/servers/session/session.server';
-import { getCollectionResource } from '@/core/services/account/account-collections.server';
-import { fetchAccountActivityFeedServer } from '@/core/services/account/account-feed.server';
-import { getEditableAccountSnapshotByUserId } from '@/core/services/account/account.server';
 import {
-  getAccountIdByUsername,
-  getAccountProfileByUserId,
-} from '@/core/services/account/account-profile.server';
-import { fetchListReviewFeedServer, fetchProfileReviewFeedServer } from '@/core/services/media/reviews.server';
+  EMPTY_ARRAY,
+  OVERVIEW_ACTIVITY_LIMIT,
+  OVERVIEW_REVIEW_LIMIT,
+} from './account-route-data.constants';
+import {
+  loadAccountActivityRouteFeed,
+  loadAccountCollection,
+  loadListReviewRouteFeed,
+  loadOverviewCollections,
+  loadProfileReviewRouteFeed,
+} from './account-route-data.loaders';
+import { getCurrentEditableAccountSnapshot, getUsernameAccountSnapshot } from './account-route-data.snapshot';
+import {
+  createCurrentAuthPendingRouteState,
+  createCurrentOverviewFallback,
+  createInitialFeed,
+  createInitialListFeed,
+  createMissingUsernameRouteState,
+  createRouteState,
+  createSnapshotInitialCollections,
+} from './account-route-data.state';
+import { getViewerSessionContext } from './account-route-data.session';
 
-const OVERVIEW_ACTIVITY_LIMIT = 36;
-const OVERVIEW_LISTS_LIMIT = 3;
-const OVERVIEW_REVIEW_LIMIT = 3;
-const OVERVIEW_WATCHED_LIMIT = 12;
-const OVERVIEW_WATCHLIST_LIMIT = 12;
-const ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS = 2400;
-const EMPTY_ARRAY = Object.freeze([]);
-const EMPTY_ROUTE_FEED = Object.freeze({
-  hasMore: false,
-  items: EMPTY_ARRAY,
-  nextCursor: null,
-});
-
-function buildCookieRequest(cookieStore) {
-  return {
-    cookies: {
-      get(name) {
-        return cookieStore.get(name);
-      },
-    },
-    headers: {
-      get(name) {
-        if (String(name || '').toLowerCase() !== 'cookie') {
-          return '';
-        }
-
-        return cookieStore
-          .getAll()
-          .map((cookie) => `${cookie.name}=${cookie.value}`)
-          .join('; ');
-      },
-    },
-  };
-}
-
-async function getViewerSessionContext() {
-  const cookieStore = await cookies();
-  const request = buildCookieRequest(cookieStore);
-
-  return readSessionFromRequest(request).catch(() => null);
-}
-
-export async function getCurrentEditableAccountSnapshot() {
-  const sessionContext = await getViewerSessionContext();
-
-  if (!sessionContext?.userId) {
-    return null;
-  }
-
-  return getEditableAccountSnapshotByUserId(sessionContext.userId);
-}
-
-function createRouteLoadTimeoutError() {
-  const error = new Error('Account route optional load timed out');
-  error.code = 'ACCOUNT_ROUTE_LOAD_TIMEOUT';
-  return error;
-}
-
-async function withTimeout(loadPromise, timeoutMs = ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS) {
-  let timer = null;
-
-  try {
-    return await Promise.race([
-      loadPromise,
-      new Promise((_, reject) => {
-        timer = setTimeout(() => {
-          reject(createRouteLoadTimeoutError());
-        }, timeoutMs);
-      }),
-    ]);
-  } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
-  }
-}
-
-async function safeLoad(load, fallback, { timeoutMs = ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS } = {}) {
-  try {
-    return await withTimeout(Promise.resolve().then(load), timeoutMs);
-  } catch {
-    return fallback;
-  }
-}
-
-async function delay(ms) {
-  await new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-function createRouteState(base = null, extras = null) {
-  return {
-    ...(base && typeof base === 'object' ? base : {}),
-    ...(extras && typeof extras === 'object' ? extras : {}),
-  };
-}
-
-function createInitialCollections({
-  counts = null,
-  likes = [],
-  lists = [],
-  resolvedUserId = null,
-  watched = [],
-  watchlist = [],
-}) {
-  const normalizedLikes = Array.isArray(likes) ? likes : [];
-  const normalizedLists = Array.isArray(lists) ? lists : [];
-  const normalizedWatched = Array.isArray(watched) ? watched : [];
-  const normalizedWatchlist = Array.isArray(watchlist) ? watchlist : [];
-  const resolveCount = (value, items = []) => {
-    const parsed = Number(value);
-    const listLength = Array.isArray(items) ? items.length : 0;
-
-    if (!Number.isFinite(parsed)) {
-      return listLength;
-    }
-
-    return Math.max(0, Math.floor(parsed), listLength);
-  };
-
-  return {
-    counts: {
-      likes: resolveCount(counts?.likes, normalizedLikes),
-      lists: resolveCount(counts?.lists, normalizedLists),
-      watched: resolveCount(counts?.watched, normalizedWatched),
-      watchlist: resolveCount(counts?.watchlist, normalizedWatchlist),
-    },
-    likes: normalizedLikes,
-    lists: normalizedLists,
-    userId: resolvedUserId,
-    watched: normalizedWatched,
-    watchlist: normalizedWatchlist,
-  };
-}
-
-function createInitialFeed(feed = null, resolvedUserId = null, extras = null) {
-  if (!feed || !resolvedUserId) {
-    return null;
-  }
-
-  const normalizedItems = Array.isArray(feed.items) ? feed.items : [];
-  const normalizedTotalCount = Number.isFinite(Number(feed.totalCount))
-    ? Math.max(0, Math.floor(Number(feed.totalCount)))
-    : normalizedItems.length;
-
-  return {
-    error: null,
-    hasMore: Boolean(feed.hasMore),
-    items: normalizedItems,
-    nextCursor: feed.nextCursor ?? null,
-    totalCount: normalizedTotalCount,
-    userId: resolvedUserId,
-    ...(extras && typeof extras === 'object' ? extras : {}),
-  };
-}
-
-function createInitialListFeed(items = [], resolvedUserId = null, extras = null) {
-  if (!resolvedUserId) {
-    return null;
-  }
-
-  return {
-    items: Array.isArray(items) ? items : [],
-    userId: resolvedUserId,
-    ...(extras && typeof extras === 'object' ? extras : {}),
-  };
-}
-
-function normalizeCollectionResourceValue(result, fallback = []) {
-  if (result && typeof result === 'object' && Object.hasOwn(result, 'data')) {
-    return result.data;
-  }
-
-  return result ?? fallback;
-}
-
-async function loadCollectionResource(input = {}, fallback = []) {
-  const maxAttempts = 2;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    try {
-      const result = await withTimeout(
-        getCollectionResource({
-          ...input,
-          strict: false,
-        })
-      );
-      return normalizeCollectionResourceValue(result, fallback);
-    } catch (error) {
-      if (attempt >= maxAttempts) {
-        return fallback;
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(
-          `[account-route-data] Collection retry ${attempt}/${maxAttempts - 1} failed for "${input?.resource || 'unknown'}"`,
-          error
-        );
-      }
-
-      await delay(140 * attempt);
-    }
-  }
-
-  return fallback;
-}
-
-function resolveSnapshotUserId(snapshot = null) {
-  return snapshot?.initialResolvedUserId || snapshot?.resolvedUserId || null;
-}
-
-function resolveSnapshotCounts(snapshot = null) {
-  return snapshot?.initialCounts || snapshot?.counts || null;
-}
-
-function createSnapshotInitialCollections(snapshot = null, collections = {}) {
-  return createInitialCollections({
-    counts: resolveSnapshotCounts(snapshot),
-    resolvedUserId: resolveSnapshotUserId(snapshot),
-    ...(collections && typeof collections === 'object' ? collections : {}),
-  });
-}
-
-async function loadAccountCollection(
-  snapshot = null,
-  { resource, fallback = [], limitCount = null, listId = null, media = null, slug = null } = {}
-) {
-  const userId = resolveSnapshotUserId(snapshot);
-
-  if (!userId) {
-    return fallback;
-  }
-
-  return loadCollectionResource(
-    {
-      ...(limitCount !== null ? { limitCount } : {}),
-      ...(listId ? { listId } : {}),
-      ...(media ? { media } : {}),
-      ...(slug ? { slug } : {}),
-      resource,
-      userId,
-      viewerId: snapshot?.viewerId || null,
-    },
-    fallback
-  );
-}
-
-async function loadOverviewCollections(snapshot = null) {
-  const userId = resolveSnapshotUserId(snapshot);
-
-  if (!userId) {
-    return {
-      lists: [],
-      watched: [],
-      watchlist: [],
-    };
-  }
-
-  const [watched, watchlist, lists] = await Promise.all([
-    loadAccountCollection(snapshot, {
-      fallback: [],
-      limitCount: OVERVIEW_WATCHED_LIMIT,
-      resource: 'watched',
-    }),
-    loadAccountCollection(snapshot, {
-      fallback: [],
-      limitCount: OVERVIEW_WATCHLIST_LIMIT,
-      resource: 'watchlist',
-    }),
-    loadAccountCollection(snapshot, {
-      fallback: [],
-      limitCount: OVERVIEW_LISTS_LIMIT,
-      resource: 'lists',
-    }),
-  ]);
-
-  return {
-    lists,
-    watched,
-    watchlist,
-  };
-}
-
-async function loadAccountActivityRouteFeed({
-  cursor = null,
-  pageSize = 20,
-  scope = 'user',
-  sort = 'newest',
-  subject = 'all',
-  userId,
-  viewerId = null,
-} = {}) {
-  return safeLoad(
-    () =>
-      fetchAccountActivityFeedServer({
-        cursor,
-        pageSize,
-        scope,
-        sort,
-        subject,
-        userId,
-        viewerId,
-      }),
-    EMPTY_ROUTE_FEED
-  );
-}
-
-async function loadProfileReviewRouteFeed({ mode = 'authored', pageSize = null, userId, viewerId = null } = {}) {
-  return safeLoad(
-    () =>
-      fetchProfileReviewFeedServer({
-        mode,
-        ...(pageSize !== null ? { pageSize } : {}),
-        userId,
-        viewerId,
-      }),
-    EMPTY_ROUTE_FEED
-  );
-}
-
-async function loadListReviewRouteFeed({ listId, ownerId, viewerId = null } = {}) {
-  return safeLoad(
-    () =>
-      fetchListReviewFeedServer({
-        listId,
-        ownerId,
-        viewerId,
-      }),
-    EMPTY_ARRAY
-  );
-}
-
-function createCurrentOverviewFallback(snapshot = null) {
-  return {
-    initialActivityFeed: null,
-    initialCollections: null,
-    initialCounts: null,
-    initialProfile: null,
-    initialResolveError: snapshot?.resolveError || 'Account not found',
-    initialResolvedUserId: null,
-    initialReviewFeed: null,
-    username: null,
-  };
-}
-
-function createCurrentAuthPendingRouteState() {
-  return {
-    initialActivityFeed: null,
-    initialCollections: null,
-    initialCounts: null,
-    initialProfile: null,
-    initialResolveError: null,
-    initialResolvedUserId: null,
-    initialReviewFeed: null,
-    username: null,
-  };
-}
-
-function createMissingUsernameRouteState(snapshot, username, extras = {}) {
-  return createRouteState(snapshot, {
-    initialCollections: null,
-    username,
-    ...extras,
-  });
-}
+export { getCurrentEditableAccountSnapshot, getUsernameAccountSnapshot } from './account-route-data.snapshot';
 
 export async function getCurrentAccountOverviewRouteData() {
   const sessionContext = await getViewerSessionContext();
@@ -428,7 +76,6 @@ export async function redirectCurrentAccountSection(sectionKey) {
   const normalizedSectionKey = String(sectionKey || '')
     .trim()
     .toLowerCase();
-  const sectionPath = normalizedSectionKey ? `/account/${normalizedSectionKey}` : '/account';
   const sessionContext = await getViewerSessionContext();
   const viewerId = sessionContext?.userId || null;
 
@@ -444,37 +91,6 @@ export async function redirectCurrentAccountSection(sectionKey) {
   }
 
   redirect('/account');
-}
-
-export async function getUsernameAccountSnapshot(username) {
-  const sessionContext = await getViewerSessionContext();
-  const viewerId = sessionContext?.userId || null;
-  const resolvedUserId = await getAccountIdByUsername(username);
-
-  if (!resolvedUserId) {
-    return {
-      initialCounts: null,
-      initialProfile: null,
-      initialResolveError: 'Account not found',
-      initialResolvedUserId: null,
-      viewerId,
-    };
-  }
-
-  const profile = await getAccountProfileByUserId(resolvedUserId, { viewerId });
-
-  return {
-    initialCounts: {
-      likes: Number(profile?.likesCount || 0),
-      lists: Number(profile?.listsCount || 0),
-      watched: Number(profile?.watchedCount || 0),
-      watchlist: Number(profile?.watchlistCount || 0),
-    },
-    initialProfile: profile,
-    initialResolveError: profile ? null : 'Account not found',
-    initialResolvedUserId: profile ? resolvedUserId : null,
-    viewerId,
-  };
 }
 
 export async function getUsernameAccountOverviewRouteData(username) {

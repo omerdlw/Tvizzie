@@ -6,9 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { cn } from '@/core/utils';
+import { cn } from '@/core/utils/classnames';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
-import { useInitialPageAnimationsEnabled } from '@/features/motion-runtime';
 import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
 import { default as Iconify } from '@/ui/icon';
 import { Skeleton } from '@/ui/skeletons/components/nav';
@@ -19,13 +18,14 @@ import { getNavStackOffset } from './layout';
 import {
   getNavCardSpring,
   getNavCardStaggerDelay,
-  NAV_BADGE_SPRING,
+  NAV_ACTION_PANEL_MOTION,
+  NAV_BADGE_MOTION,
   NAV_CARD_BLUR_TRANSITION,
   NAV_CARD_OPACITY_TRANSITION,
   NAV_CARD_WIDTH_SPRING,
-  NAV_CONTENT_TRANSITION,
-  NAV_MICRO_SPRING,
-} from './motion';
+  NAV_DEFAULT_TRANSITION,
+  NAV_VIDEO_ICON_MOTION,
+} from '@/core/modules/motion';
 import ConfirmationSurface from './surfaces/confirmation-surface';
 import { resolveNavVisualStyle } from './utils';
 
@@ -51,11 +51,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   chromeHeight: NAV_CARD_DIMENSIONS.chromeHeight,
   compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
-  transition: Object.freeze({
-    ease: [0.23, 1, 0.32, 1],
-    duration: 0.25,
-    type: 'tween',
-  }),
+  transition: NAV_DEFAULT_TRANSITION,
 });
 
 const BLUR_AMOUNT = 7;
@@ -76,9 +72,8 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile, isInteractive) {
   const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
-  // Reduce gap between cards on mobile devices
   const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
@@ -86,7 +81,6 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     : {};
 
   const staggerDelay = getNavCardStaggerDelay(position, expanded);
-
   const spring = getNavCardSpring(position);
 
   return {
@@ -135,6 +129,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
   };
 }
 
+
 function isImageIconSource(icon) {
   return (
     typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:image/'))
@@ -179,38 +174,30 @@ function getActionNode(link, ActionComponent) {
 
 function VideoOverlayIcon({ icon }) {
   const isImageIcon = isImageIconSource(icon);
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
 
   return (
     <motion.div
       className={cn(
-        'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'rounded-[8px] border border-black/5 bg-white'
+        'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full',
+        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
-      transition={NAV_MICRO_SPRING}
-      initial={initialPageAnimationsEnabled ? { opacity: 0, scale: 0.7 } : false}
-      animate={{ opacity: 1, scale: 1 }}
+      {...NAV_VIDEO_ICON_MOTION}
     >
-      {!isImageIcon && <Iconify icon={icon} size={14} className={'text-[#831843]'} />}
+      {!isImageIcon && <Iconify icon={icon} size={14} className="text-black" />}
     </motion.div>
   );
 }
 
 function Badge({ badge }) {
-  const initialPageAnimationsEnabled = useInitialPageAnimationsEnabled();
-
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false} mode="sync">
       {badge.visible && (
         <motion.div
           className={cn(
             'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
-          initial={initialPageAnimationsEnabled ? { scale: 0, opacity: 0 } : false}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={NAV_BADGE_SPRING}
+          {...NAV_BADGE_MOTION}
         >
           {badge.value}
         </motion.div>
@@ -379,9 +366,9 @@ const Item = memo(
       link,
       isActive,
       stackWidth,
-      initialPageAnimationsEnabled,
       isMobile,
     },
+
     ref
   ) {
     const [isHovered, setIsHovered] = useState(false);
@@ -410,35 +397,7 @@ const Item = memo(
     }, [link, ActionComponent]);
     const renderedActionNode = compact ? null : actionNode;
 
-    const cardProps = useMemo(() => {
-      const resolvedCardProps = getNavItemCardProps(
-        expanded,
-        position,
-        showBorder,
-        itemStyle.card,
-        itemStyle.scale,
-        cardWidth,
-        isMobile
-      );
 
-      if (!link.isSurface) {
-        return resolvedCardProps;
-      }
-
-      return {
-        ...resolvedCardProps,
-        className: cn(resolvedCardProps.className, 'cursor-default'),
-      };
-    }, [
-      cardWidth,
-      expanded,
-      position,
-      showBorder,
-      itemStyle.card,
-      itemStyle.scale,
-      link.isSurface,
-      isMobile,
-    ]);
 
     useActionHeight(
       onActionHeightChange,
@@ -488,6 +447,33 @@ const Item = memo(
       }
     };
 
+    const handleFocus = () => {
+      if (link.isOverlay) return;
+
+      setIsHovered(true);
+      onMouseEnter?.();
+    };
+
+    const handleBlur = () => {
+      if (link.isOverlay) return;
+
+      setIsHovered(false);
+      onMouseLeave?.();
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.target !== event.currentTarget) {
+        return;
+      }
+
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      event.preventDefault();
+      onClick?.(event);
+    };
+
     const renderContent = () => {
       if (link.isLoading) {
         return <LoadingItemContent contentContainerRef={contentContainerRef} />;
@@ -522,19 +508,39 @@ const Item = memo(
     return (
       <motion.div
         ref={ref}
-        {...cardProps}
-        initial={initialPageAnimationsEnabled ? cardProps.initial : false}
+        {...getNavItemCardProps(
+          expanded,
+          position,
+          showBorder,
+          itemStyle.card,
+          itemStyle.scale,
+          cardWidth,
+          isMobile,
+          link.type !== 'COUNTDOWN' && !link.isOverlay
+        )}
+        role="button"
+        tabIndex={link.isOverlay ? -1 : 0}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
         {renderContent()}
 
-        {renderedActionNode && (
-          <div ref={actionContainerRef} onClick={(event) => event.stopPropagation()}>
-            <Suspense>{renderedActionNode}</Suspense>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {renderedActionNode ? (
+            <motion.div
+              key="nav-action-component"
+              ref={actionContainerRef}
+              onClick={(event) => event.stopPropagation()}
+              {...NAV_ACTION_PANEL_MOTION}
+            >
+              <Suspense>{renderedActionNode}</Suspense>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </motion.div>
     );
   })

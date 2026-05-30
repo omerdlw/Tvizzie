@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import { randomUUID } from 'crypto';
 import { publishUserRealtimeBroadcast } from '@/core/services/realtime/realtime-broadcast.server';
 
@@ -17,10 +18,6 @@ function getUserSubscribersStore() {
 }
 
 const userSubscribers = getUserSubscribersStore();
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function formatSseMessage(eventType, payload = {}, meta = {}) {
   return encoder.encode(

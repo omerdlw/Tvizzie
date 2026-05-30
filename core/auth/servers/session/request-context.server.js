@@ -1,14 +1,11 @@
+import { normalizeValue } from '@/core/utils/string';
 import { createHash } from 'crypto';
 
-import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from '@/core/auth/servers/session/session.server';
+import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from './session.server';
 
 const DEVICE_ID_COOKIE_NAME = 'tvz_device_id';
 const DEVICE_ID_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
 const DEVICE_ID_MAX_AGE_SECONDS = DEVICE_ID_MAX_AGE_MS / 1000;
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function hashValue(value) {
   const normalized = normalizeValue(value);

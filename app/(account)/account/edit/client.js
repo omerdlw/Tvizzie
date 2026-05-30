@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/utils';
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { INITIAL_DELETE_FLOW, INITIAL_EMAIL_FLOW, INITIAL_PASSWORD_FLOW } from '@/features/account/security';
 import { useAccountSecurityActions } from '@/features/account/hooks/security-actions';
 import { useAccountEditData } from '@/features/account/hooks/edit-data';

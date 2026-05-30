@@ -1,9 +1,9 @@
 'use client';
 
+import { normalizeLowerValue } from '@/core/utils/string';
+
 export function normalizeStoredEmail(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
+  return normalizeLowerValue(value);
 }
 
 function canUseSessionStorage() {

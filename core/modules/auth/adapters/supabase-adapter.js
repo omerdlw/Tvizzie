@@ -1,5 +1,6 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { resolveAuthCapabilities } from '@/core/auth/capabilities';
-import { createCsrfHeaders } from '@/core/auth/clients/csrf.client';
+import { createCsrfHeaders } from '@/core/auth/clients';
 import { buildOAuthCallbackUrl, resolveOAuthIntent, sanitizeAuthNextPath } from '@/core/auth/oauth-callback';
 import { getOAuthProviderLabel, isSupportedOAuthProvider, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { createClient as createSupabaseClient, terminateBrowserSession } from '@/core/clients/supabase/client';
@@ -21,14 +22,6 @@ const IGNORABLE_LOGOUT_ERROR_PATTERNS = [
   'timed out',
   'token is malformed',
 ];
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 function resolveProviderKey(payload = {}) {
   const provider = payload?.provider || payload?.strategy || payload?.authProvider || null;
@@ -64,7 +57,9 @@ function isIgnorableLogoutError(error) {
   const message = normalizeValue(error?.message || error?.msg || error?.error_description || '').toLowerCase();
   const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
-  return IGNORABLE_LOGOUT_CODES.has(code) || IGNORABLE_LOGOUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+  return (
+    IGNORABLE_LOGOUT_CODES.has(code) || IGNORABLE_LOGOUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  );
 }
 
 function toAdapterError(error, fallbackMessage) {
@@ -255,7 +250,7 @@ export function createSupabaseAuthAdapter(options = {}) {
         fallbackError: 'Sign in failed',
         body: {
           identifier: String(payload.identifier || '').trim() || undefined,
-          email: normalizeEmail(payload.email),
+          email: normalizeEmailValue(payload.email),
           password: String(payload.password || ''),
         },
       });
@@ -331,12 +326,13 @@ export function createSupabaseAuthAdapter(options = {}) {
     async reauthenticate(payload = {}, adapterContext = {}) {
       void adapterContext;
 
-      await fetchAppAuthJson('/api/auth/account/reauthenticate', {
+      await fetchAppAuthJson('/api/auth/account', {
         fallbackError: 'Reauthentication failed',
         headers: {
           ...createCsrfHeaders(),
         },
         body: {
+          action: 'reauthenticate',
           currentPassword: String(payload.password || ''),
         },
       });

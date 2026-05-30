@@ -1,22 +1,15 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 import {
   AUTH_COOKIE_PATH,
   getCookieValue,
   isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
+} from '../session/session.server';
 
 export const RECENT_REAUTH_COOKIE_NAME = 'tvz_recent_reauth';
 export const RECENT_REAUTH_MAX_AGE_MS = 5 * 60 * 1000;
 const RECENT_REAUTH_MAX_AGE_SECONDS = RECENT_REAUTH_MAX_AGE_MS / 1000;
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 function getSecret() {
   const secret =
@@ -56,7 +49,7 @@ export function createRecentReauthToken({
   }
 
   const payload = {
-    email: normalizeEmail(email) || null,
+    email: normalizeEmailValue(email) || null,
     exp: Math.floor(Number(expiresAt) / 1000),
     sessionJti: normalizeValue(sessionJti) || null,
     userId: normalizedUserId,
@@ -97,7 +90,7 @@ export function verifyRecentReauthToken(token) {
   }
 
   return {
-    email: normalizeEmail(payload?.email) || null,
+    email: normalizeEmailValue(payload?.email) || null,
     expiresAt: new Date(expiresAtMs).toISOString(),
     sessionJti: normalizeValue(payload?.sessionJti) || null,
     userId: normalizeValue(payload?.userId) || null,
@@ -118,7 +111,7 @@ export function assertRecentReauth(request, { email = null, sessionJti = null, u
   const reauth = readRecentReauthFromRequest(request);
   const expectedUserId = normalizeValue(userId);
   const expectedSessionJti = normalizeValue(sessionJti);
-  const expectedEmail = normalizeEmail(email);
+  const expectedEmail = normalizeEmailValue(email);
 
   if (!reauth) {
     throw new Error('Recent authentication is required');

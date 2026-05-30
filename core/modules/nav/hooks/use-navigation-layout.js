@@ -5,36 +5,16 @@ import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { useNavigationContext } from '../context';
+import { isPathPrefix } from './navigation-path-model';
 
 const MAX_VISIBLE_STACKED_CARDS = 3;
 
-function normalizePath(value) {
-  const normalized = String(value || '').trim();
-
-  if (!normalized) {
-    return '';
-  }
-
-  if (normalized === '/') {
-    return '/';
-  }
-
-  return normalized.replace(/\/+$/, '');
-}
-
 function isAncestorPath(candidatePath, activePath) {
-  const normalizedCandidate = normalizePath(candidatePath);
-  const normalizedActivePath = normalizePath(activePath);
-
-  if (!normalizedCandidate || !normalizedActivePath) {
+  if (!candidatePath || candidatePath === '/' || candidatePath === activePath) {
     return false;
   }
 
-  if (normalizedCandidate === '/' || normalizedCandidate === normalizedActivePath) {
-    return false;
-  }
-
-  return normalizedActivePath.startsWith(`${normalizedCandidate}/`);
+  return isPathPrefix(candidatePath, activePath);
 }
 
 function removeAncestorDuplicates(items = []) {
@@ -113,12 +93,19 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
-function getCollapsedVisibleCount({ isHovered, isCompact, pathname, shouldShowOverlayStack, shouldShowSingleStatusCard }) {
+function getCollapsedVisibleCount({
+  pathname,
+  isHovered,
+  isCompact,
+  shouldShowOverlayStack,
+  shouldShowSingleStatusCard,
+}) {
   if (shouldShowSingleStatusCard) {
     return 1;
   }
 
-  const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (pathname === '/' && !isCompact);
+  const isHomeRoute = pathname === '/';
+  const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (isHomeRoute && !isCompact);
   return shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
 }
 
@@ -155,9 +142,9 @@ export function useNavigationLayout({ isHovered, isCompact = false, navigationIt
     }
 
     const visibleCount = getCollapsedVisibleCount({
+      pathname,
       isHovered,
       isCompact,
-      pathname,
       shouldShowOverlayStack,
       shouldShowSingleStatusCard,
     });

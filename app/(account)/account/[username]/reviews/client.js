@@ -14,9 +14,9 @@ import {
   deleteStoredReview,
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service';
-import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { createAccountSectionClient } from '../../shared/section-factory';
+} from '@/core/services/media/reviews';
+import { subscribeToUserWatched } from '@/core/services/media/watched-watchlist';
+import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ReviewsView from './view';
 
 function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionState }) {

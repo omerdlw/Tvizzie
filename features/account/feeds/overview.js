@@ -6,9 +6,9 @@ import AccountListsOverview from '@/features/account/overview/lists';
 import AccountReviewsOverview from '@/features/account/overview/reviews';
 import AccountWatchedOverview from '@/features/account/overview/watched';
 import AccountWatchlistOverview from '@/features/account/overview/watchlist';
-import { AccountPageShell } from '@/features/account/shared/layout';
-import { ProfileMediaActions } from '@/features/account/shared/media-grid';
-import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import { AccountPageShell } from '@/features/account/components/layout';
+import { ProfileMediaActions } from '@/features/account/components/media-grid';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
 
 const OVERVIEW_ACTIVITY_LIMIT = 5;
 const OVERVIEW_MEDIA_LIMIT = 6;

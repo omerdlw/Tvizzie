@@ -1,6 +1,6 @@
 'use client';
 
-import { isBrowser, isObject, isString } from '@/core/utils';
+import { isBrowser, isObject, isString } from '@/core/utils/type';
 
 import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_COOKIE_ATTRIBUTES, SETTINGS_STORAGE_TARGETS } from './config';
 import { createPersistedSettingsSnapshot, createCookieSettingsSnapshot, mergeSettingsObjects } from './utils';

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/core/services/shared/server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

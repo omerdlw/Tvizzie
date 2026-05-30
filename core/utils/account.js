@@ -1,3 +1,4 @@
+import { normalizeValue } from './string';
 export const ACCOUNT_SECTION_KEYS = Object.freeze(['activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists']);
 export const RESERVED_ACCOUNT_SEGMENTS = new Set([...ACCOUNT_SECTION_KEYS, 'edit']);
 
@@ -21,10 +22,6 @@ const TURKISH_USERNAME_MAP = Object.freeze({
   ş: 's',
   ü: 'u',
 });
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 export function sanitizeUsername(value) {
   const normalized = normalizeValue(value)

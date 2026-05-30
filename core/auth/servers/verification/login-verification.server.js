@@ -1,25 +1,18 @@
-import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
+import { createHash } from 'crypto';
+
+import { AUTH_COOKIE_PATH, getCookieValue, isSecureCookieEnvironment } from '../session/session.server';
 
 import {
-  AUTH_COOKIE_PATH,
-  getCookieValue,
-  isSecureCookieEnvironment,
-} from '@/core/auth/servers/session/session.server';
-
-const PENDING_SIGN_IN_COOKIE_NAME = 'tvz_login_pending';
-const TRUSTED_DEVICE_COOKIE_PREFIX = 'tvz_login_trust_';
-const PENDING_SIGN_IN_MAX_AGE_MS = 10 * 60 * 1000;
-const PENDING_SIGN_IN_MAX_AGE_SECONDS = PENDING_SIGN_IN_MAX_AGE_MS / 1000;
-const TRUSTED_DEVICE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-const TRUSTED_DEVICE_MAX_AGE_SECONDS = TRUSTED_DEVICE_MAX_AGE_MS / 1000;
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
+  PENDING_SIGN_IN_COOKIE_NAME,
+  PENDING_SIGN_IN_MAX_AGE_MS,
+  PENDING_SIGN_IN_MAX_AGE_SECONDS,
+  TRUSTED_DEVICE_COOKIE_PREFIX,
+  TRUSTED_DEVICE_MAX_AGE_MS,
+  TRUSTED_DEVICE_MAX_AGE_SECONDS,
+} from './login-verification.constants';
+import { resolveSecretWithFallback } from './secret-fallback.server';
+import { createSignedToken, verifySignedToken } from './signed-token.server';
 
 function createCookieOptions({ maxAge, sameSite = 'lax' }) {
   return {
@@ -31,70 +24,15 @@ function createCookieOptions({ maxAge, sameSite = 'lax' }) {
   };
 }
 
-function warnFallbackSecret() {
-  const key = '__tvizzie_login_verification_secret_fallback_warned__';
-
-  if (globalThis[key]) {
-    return;
-  }
-
-  globalThis[key] = true;
-  console.warn(
-    '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET.'
-  );
-}
-
 function getSecret() {
-  const explicitSecret = normalizeValue(process.env.LOGIN_VERIFICATION_SECRET);
-
-  if (explicitSecret) {
-    return explicitSecret;
-  }
-
-  const fallbackSecret =
-    normalizeValue(process.env.STEP_UP_SECRET) || normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
-
-  if (!fallbackSecret) {
-    throw new Error('LOGIN_VERIFICATION_SECRET is missing and no fallback secret is available');
-  }
-
-  warnFallbackSecret();
-  return fallbackSecret;
-}
-
-function encodePayload(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString('base64url');
-}
-
-function decodePayload(value) {
-  return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
-}
-
-function signPayload(encodedPayload) {
-  return createHmac('sha256', getSecret()).update(encodedPayload).digest('base64url');
-}
-
-function verifyToken(token, fallbackMessage) {
-  const normalizedToken = normalizeValue(token);
-  const [encodedPayload, signature] = normalizedToken.split('.');
-
-  if (!encodedPayload || !signature) {
-    throw new Error(fallbackMessage);
-  }
-
-  const expectedSignature = signPayload(encodedPayload);
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(signature);
-
-  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
-    throw new Error(fallbackMessage);
-  }
-
-  try {
-    return decodePayload(encodedPayload);
-  } catch {
-    throw new Error(fallbackMessage);
-  }
+  return resolveSecretWithFallback({
+    primaryEnvName: 'LOGIN_VERIFICATION_SECRET',
+    fallbackEnvNames: ['STEP_UP_SECRET', 'EMAIL_VERIFICATION_SECRET'],
+    missingMessage: 'LOGIN_VERIFICATION_SECRET is missing and no fallback secret is available',
+    warningGlobalKey: '__tvizzie_login_verification_secret_fallback_warned__',
+    warningMessage:
+      '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET.',
+  });
 }
 
 function hashUserId(userId) {
@@ -104,10 +42,22 @@ function hashUserId(userId) {
 function buildUserSnapshot(user = {}) {
   return {
     avatarUrl: user?.avatarUrl || null,
-    email: normalizeEmail(user?.email) || null,
+    email: normalizeEmailValue(user?.email) || null,
     id: normalizeValue(user?.id) || null,
     name: user?.name || null,
   };
+}
+
+function assertPendingSignInPayload(payload = {}) {
+  if (
+    !normalizeValue(payload?.userId) ||
+    !normalizeEmailValue(payload?.email) ||
+    !normalizeValue(payload?.deviceHash) ||
+    !normalizeValue(payload?.accessToken) ||
+    !normalizeValue(payload?.refreshToken)
+  ) {
+    throw new Error('Pending sign-in session is invalid');
+  }
 }
 
 export function getTrustedLoginDeviceCookieName(userId) {
@@ -132,7 +82,7 @@ export function createPendingSignInToken({
 }) {
   const normalizedUserId = normalizeValue(userId);
   const normalizedAccessToken = normalizeValue(accessToken);
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
   const normalizedDeviceHash = normalizeValue(deviceHash);
   const normalizedRefreshToken = normalizeValue(refreshToken);
 
@@ -146,49 +96,44 @@ export function createPendingSignInToken({
     throw new Error('Pending sign-in payload is invalid');
   }
 
-  const payload = {
-    accessToken: normalizedAccessToken,
-    deviceHash: normalizedDeviceHash,
-    email: normalizedEmail,
-    exp: Math.floor(Number(expiresAt) / 1000),
-    provider: normalizeValue(provider) || 'password',
-    refreshToken: normalizedRefreshToken,
-    user: buildUserSnapshot(user),
-    userId: normalizedUserId,
-  };
-
-  const encodedPayload = encodePayload(payload);
-  return `${encodedPayload}.${signPayload(encodedPayload)}`;
+  return createSignedToken(
+    {
+      accessToken: normalizedAccessToken,
+      deviceHash: normalizedDeviceHash,
+      email: normalizedEmail,
+      exp: Math.floor(Number(expiresAt) / 1000),
+      provider: normalizeValue(provider) || 'password',
+      refreshToken: normalizedRefreshToken,
+      user: buildUserSnapshot(user),
+      userId: normalizedUserId,
+    },
+    {
+      secret: getSecret(),
+    }
+  );
 }
 
 export function verifyPendingSignInToken(token) {
-  const payload = verifyToken(token, 'Pending sign-in session is invalid');
+  const payload = verifySignedToken(token, {
+    invalidMessage: 'Pending sign-in session is invalid',
+    secret: getSecret(),
+  });
   const expiresAtMs = Number(payload?.exp) * 1000;
 
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
     throw new Error('Pending sign-in session has expired');
   }
 
-  const user = buildUserSnapshot(payload?.user);
-
-  if (
-    !normalizeValue(payload?.userId) ||
-    !normalizeEmail(payload?.email) ||
-    !normalizeValue(payload?.deviceHash) ||
-    !normalizeValue(payload?.accessToken) ||
-    !normalizeValue(payload?.refreshToken)
-  ) {
-    throw new Error('Pending sign-in session is invalid');
-  }
+  assertPendingSignInPayload(payload);
 
   return {
     accessToken: normalizeValue(payload.accessToken),
     deviceHash: normalizeValue(payload.deviceHash),
-    email: normalizeEmail(payload.email),
+    email: normalizeEmailValue(payload.email),
     expiresAt: new Date(expiresAtMs).toISOString(),
     provider: normalizeValue(payload.provider) || 'password',
     refreshToken: normalizeValue(payload.refreshToken),
-    user,
+    user: buildUserSnapshot(payload?.user),
     userId: normalizeValue(payload.userId),
   };
 }
@@ -236,7 +181,7 @@ export function assertPendingSignIn(request, { deviceHash, email = null } = {}) 
     throw new Error('Pending sign-in session is invalid');
   }
 
-  if (email && pendingSignIn.email !== normalizeEmail(email)) {
+  if (email && pendingSignIn.email !== normalizeEmailValue(email)) {
     throw new Error('Pending sign-in session is invalid');
   }
 
@@ -255,18 +200,21 @@ export function createTrustedLoginDeviceToken({
     throw new Error('Trusted device payload is invalid');
   }
 
-  const payload = {
-    deviceHash: normalizedDeviceHash,
-    exp: Math.floor(Number(expiresAt) / 1000),
-    userId: normalizedUserId,
-  };
-
-  const encodedPayload = encodePayload(payload);
-  return `${encodedPayload}.${signPayload(encodedPayload)}`;
+  return createSignedToken(
+    {
+      deviceHash: normalizedDeviceHash,
+      exp: Math.floor(Number(expiresAt) / 1000),
+      userId: normalizedUserId,
+    },
+    { secret: getSecret() }
+  );
 }
 
 export function verifyTrustedLoginDeviceToken(token, { deviceHash, userId }) {
-  const payload = verifyToken(token, 'Trusted device token is invalid');
+  const payload = verifySignedToken(token, {
+    invalidMessage: 'Trusted device token is invalid',
+    secret: getSecret(),
+  });
   const expiresAtMs = Number(payload?.exp) * 1000;
 
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {

@@ -1,7 +1,4 @@
-function toFiniteNumber(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
+import { toFiniteNumber } from '@/core/utils/number';
 
 function getTextLength(value) {
   return String(value || '').trim().length;

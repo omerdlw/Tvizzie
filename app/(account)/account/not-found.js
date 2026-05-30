@@ -1,4 +1,4 @@
-import { AccountNotFoundState } from '@/features/account/shared/layout';
+import { AccountNotFoundState } from '@/features/account/components/layout';
 
 export default function NotFound() {
   return (

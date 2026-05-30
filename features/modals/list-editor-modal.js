@@ -4,12 +4,22 @@ import { useState } from 'react';
 
 import Container from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
-import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists.service';
+import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists';
 import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+
+const FORM_ID = 'list-editor-modal-form';
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function getItemKey(item) {
   return String(item?.mediaKey || `${item?.entityType || item?.media_type || 'movie'}-${item?.entityId || item?.id}`)
@@ -21,32 +31,18 @@ function getItemTitle(item) {
   return String(item?.title || item?.name || 'Untitled').trim();
 }
 
-function ListItemRow({ item, onRemove }) {
-  const title = getItemTitle(item);
-
-  return (
-    <div className="group bg-primary flex min-h-10 items-center gap-3 rounded-[12px] border border-black/5 px-3 py-1.5 transition-colors hover:border-black/10">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onRemove(item)}
-        className="center size-7 shrink-0 rounded-full border border-transparent text-black/35 opacity-100 transition-colors hover:border-error/15 hover:bg-error/10 hover:text-error sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-        aria-label={`Remove ${title}`}
-      >
-        <Icon icon="material-symbols:close-rounded" size={16} />
-      </button>
-    </div>
-  );
-}
-
 function getRemovedItems(initialItems = [], draftItems = []) {
   const draftKeys = new Set(draftItems.map((item) => getItemKey(item)));
-
   return initialItems.filter((item) => !draftKeys.has(getItemKey(item)));
 }
+
+function formTitleValue(value) {
+  return String(value || '').trim();
+}
+
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
 
 export default function ListEditorModal({ close, data, header }) {
   const toast = useToast();
@@ -67,8 +63,8 @@ export default function ListEditorModal({ close, data, header }) {
     title: initialData?.title || '',
     description: initialData?.description || '',
   });
+
   const canSubmit = Boolean(formTitleValue(form.title));
-  const formId = 'list-editor-modal-form';
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -144,6 +140,38 @@ export default function ListEditorModal({ close, data, header }) {
   };
 
   return (
+    <ModalView
+      close={close}
+      header={header}
+      isEditing={isEditing}
+      isSaving={isSaving}
+      canSubmit={canSubmit}
+      draftItems={draftItems}
+      form={form}
+      handleChange={handleChange}
+      handleRemoveItem={handleRemoveItem}
+      handleSubmit={handleSubmit}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({
+  close,
+  header,
+  isEditing,
+  isSaving,
+  canSubmit,
+  draftItems,
+  form,
+  handleChange,
+  handleRemoveItem,
+  handleSubmit,
+}) {
+  return (
     <Container
       className="max-h-[72dvh] w-full sm:w-[520px]"
       header={header}
@@ -169,7 +197,7 @@ export default function ListEditorModal({ close, data, header }) {
             </Button>
             <Button
               type="submit"
-              form={formId}
+              form={FORM_ID}
               disabled={isSaving || !canSubmit}
               className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
             >
@@ -179,7 +207,7 @@ export default function ListEditorModal({ close, data, header }) {
         ),
       }}
     >
-      <form id={formId} onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
+      <form id={FORM_ID} onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="flex flex-col gap-2.5">
           <Input
             value={form.title}
@@ -233,6 +261,23 @@ export default function ListEditorModal({ close, data, header }) {
   );
 }
 
-function formTitleValue(value) {
-  return String(value || '').trim();
+function ListItemRow({ item, onRemove }) {
+  const title = getItemTitle(item);
+
+  return (
+    <div className="group bg-primary flex min-h-10 items-center gap-3 rounded-[12px] border border-black/5 px-3 py-1.5 transition-colors hover:border-black/10">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-black">{title}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onRemove(item)}
+        className="center size-7 shrink-0 rounded-full border border-transparent text-black/35 opacity-100 transition-colors hover:border-error/15 hover:bg-error/10 hover:text-error sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        aria-label={`Remove ${title}`}
+      >
+        <Icon icon="material-symbols:close-rounded" size={16} />
+      </button>
+    </div>
+  );
 }

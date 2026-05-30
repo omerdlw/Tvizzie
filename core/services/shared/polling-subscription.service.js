@@ -1,84 +1,23 @@
-const SUBSCRIPTION_CACHE_TTL_MS = 10000;
-const SHARED_ENTRY_RETRY_BASE_MS = 700;
-const SHARED_ENTRY_RETRY_MAX_ATTEMPTS = 2;
+import {
+  SHARED_ENTRY_RETRY_BASE_MS,
+  SHARED_ENTRY_RETRY_MAX_ATTEMPTS,
+  SUBSCRIPTION_CACHE_TTL_MS,
+} from './polling-subscription.constants';
+import {
+  clearEntryCleanup,
+  clearEntryPayload,
+  clearEntryPoll,
+  clearEntryRetry,
+  createSharedEntry,
+  emitSharedError,
+  emitSharedPayload,
+  normalizeIntervalMs,
+  resolveSubscriberPollInterval,
+  stableSerialize,
+  storeEntryPayload,
+} from './polling-subscription.shared';
 
 const sharedSubscriptionRegistry = new Map();
-
-function normalizeIntervalMs(value) {
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return null;
-  }
-
-  return Math.floor(parsed);
-}
-
-function stableSerialize(value) {
-  if (value === null || value === undefined) {
-    return String(value);
-  }
-
-  if (typeof value === 'string') {
-    return JSON.stringify(value);
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
-  }
-
-  if (value instanceof Date) {
-    return `date:${value.toISOString()}`;
-  }
-
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
-  }
-
-  if (typeof value === 'object') {
-    return `{${Object.keys(value)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
-      .join(',')}}`;
-  }
-
-  return JSON.stringify(String(value));
-}
-
-function clearEntryCleanup(entry) {
-  if (entry.cleanupTimer) {
-    clearTimeout(entry.cleanupTimer);
-    entry.cleanupTimer = null;
-  }
-}
-
-function clearEntryRetry(entry) {
-  if (entry.retryTimer) {
-    clearTimeout(entry.retryTimer);
-    entry.retryTimer = null;
-  }
-}
-
-function clearEntryPoll(entry) {
-  if (entry.pollTimer) {
-    clearTimeout(entry.pollTimer);
-    entry.pollTimer = null;
-  }
-}
-
-function emitSharedPayload(entry, payload) {
-  entry.subscribers.forEach((subscriber) => {
-    subscriber.callback(payload);
-  });
-}
-
-function emitSharedError(entry, error) {
-  entry.subscribers.forEach((subscriber) => {
-    if (typeof subscriber.onError === 'function') {
-      subscriber.onError(error);
-    }
-  });
-}
 
 function scheduleEntryCleanup(entry) {
   clearEntryCleanup(entry);
@@ -91,32 +30,6 @@ function scheduleEntryCleanup(entry) {
 
     sharedSubscriptionRegistry.delete(entry.key);
   }, SUBSCRIPTION_CACHE_TTL_MS);
-}
-
-function clearEntryPayload(entry) {
-  entry.hasPayload = false;
-  entry.lastPayload = undefined;
-  entry.lastPayloadSignature = '';
-  entry.lastResolvedAt = 0;
-}
-
-function storeEntryPayload(entry, payload) {
-  entry.hasPayload = true;
-  entry.lastPayload = payload;
-  entry.lastPayloadSignature = stableSerialize(payload);
-  entry.lastResolvedAt = Date.now();
-}
-
-function resolveSubscriberPollInterval(subscriber, isHidden = false) {
-  if (!subscriber) {
-    return null;
-  }
-
-  if (isHidden) {
-    return subscriber.hiddenIntervalMs ?? subscriber.intervalMs ?? null;
-  }
-
-  return subscriber.intervalMs ?? null;
 }
 
 function resolveEntryPollInterval(entry) {
@@ -227,24 +140,6 @@ async function runSharedEntry(entry, options = {}) {
   })();
 
   return entry.inFlightPromise;
-}
-
-function createSharedEntry(key, fetcher) {
-  return {
-    cleanupTimer: null,
-    fetcher,
-    hasPayload: false,
-    inFlight: false,
-    inFlightPromise: null,
-    key,
-    lastPayload: undefined,
-    lastPayloadSignature: '',
-    lastResolvedAt: 0,
-    pollTimer: null,
-    retryAttempt: 0,
-    retryTimer: null,
-    subscribers: new Set(),
-  };
 }
 
 function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}) {

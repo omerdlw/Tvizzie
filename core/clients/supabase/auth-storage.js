@@ -36,8 +36,8 @@ export function isSupabaseProjectStorageKey(key) {
 
   return Boolean(
     normalizedKey &&
-      normalizedKey.startsWith(SUPABASE_STORAGE_PREFIX) &&
-      (!projectRef || normalizedKey.startsWith(`${SUPABASE_STORAGE_PREFIX}${projectRef}-`))
+    normalizedKey.startsWith(SUPABASE_STORAGE_PREFIX) &&
+    (!projectRef || normalizedKey.startsWith(`${SUPABASE_STORAGE_PREFIX}${projectRef}-`))
   );
 }
 

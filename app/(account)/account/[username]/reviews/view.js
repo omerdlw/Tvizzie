@@ -1,6 +1,6 @@
 import AccountReviewFeed from '@/features/account/feeds/reviews';
-import { AccountSectionState } from '@/features/account/shared/section-wrapper';
-import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
+import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountReviewsRegistry',

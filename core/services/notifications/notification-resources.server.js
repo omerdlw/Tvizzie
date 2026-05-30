@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createClient as createServerClient } from '@/core/clients/supabase/server';
-import { normalizeTimestamp } from '@/core/utils';
+import { normalizeTimestamp } from '@/core/utils/format';
 import { isSupportedContentSubjectType, isTvReference, normalizeMediaType } from '@/core/utils/media';
 
 const NOTIFICATION_LIMIT = 50;

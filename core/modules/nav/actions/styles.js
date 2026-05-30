@@ -1,4 +1,4 @@
-import { cn } from '@/core/utils';
+import { cn } from '@/core/utils/classnames';
 
 export const NAV_ACTION_STYLES = {
   base: 'center w-full rounded-[14px] sm:rounded-[12px] gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider border',

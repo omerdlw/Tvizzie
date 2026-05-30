@@ -1,52 +1,27 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
 
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 import {
-  lookupPasswordAccountByEmail,
-  resolvePasswordAccountIdentifier,
-} from '@/core/auth/servers/verification/password-account.server';
-import { createPendingPasswordSignIn } from '@/core/auth/servers/security/password-security.server';
-import { applySessionCookies, clearAuthCookies, createCsrfToken } from '@/core/auth/servers/session/session.server';
-import { getRequestContext, setDeviceIdCookie } from '@/core/auth/servers/session/request-context.server';
+  applySessionCookies,
+  clearAuthCookies,
+  createCsrfToken,
+  getRequestContext,
+  setDeviceIdCookie,
+} from '@/core/auth/servers/session.js';
+import { createPendingPasswordSignIn } from '@/core/auth/servers/security.js';
 import {
   clearPendingSignInCookie,
   createPendingSignInToken,
   hasTrustedLoginDevice,
+  isPasswordAccountUserNotFoundError,
+  lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
   setPendingSignInCookie,
-} from '@/core/auth/servers/verification/login-verification.server';
+  throwSignInLookupError,
+} from '@/core/auth/servers/verification.js';
+import { createSupabaseResponseClient } from '@/core/clients/supabase/response-client.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
-}
-
-function createResponseClient(request, response) {
-  return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
-        });
-      },
-    },
-  });
-}
-
-function resolvePasswordAccountLookupError(code) {
-  if (code === 'auth/user-not-found') {
-    const error = new Error('Invalid login credentials');
-    error.code = 'invalid_login_credentials';
-    throw error;
-  }
-
-  if (code === 'auth/password-sign-in-disabled') {
-    throw new Error('This account does not have email/password sign-in enabled');
-  }
-
-  throw new Error('Sign in failed');
 }
 
 export async function POST(request) {
@@ -64,8 +39,8 @@ export async function POST(request) {
     try {
       email = (await resolvePasswordAccountIdentifier(identifier)).email;
     } catch (error) {
-      if (normalizeValue(error?.code) === 'auth/user-not-found') {
-        resolvePasswordAccountLookupError('auth/user-not-found');
+      if (isPasswordAccountUserNotFoundError(error)) {
+        throwSignInLookupError('auth/user-not-found');
       }
 
       throw error;
@@ -74,7 +49,7 @@ export async function POST(request) {
     const passwordLookup = await lookupPasswordAccountByEmail(email);
 
     if (!passwordLookup.eligible) {
-      resolvePasswordAccountLookupError(passwordLookup.code);
+      throwSignInLookupError(passwordLookup.code);
     }
 
     const requestContext = getRequestContext(request);
@@ -85,7 +60,7 @@ export async function POST(request) {
 
     if (hasTrustedLoginDevice(request, { deviceHash: requestContext.deviceHash, userId: pendingSignIn.userId })) {
       const response = NextResponse.json({ success: true });
-      const supabase = createResponseClient(request, response);
+      const supabase = createSupabaseResponseClient(request, response);
       const sessionResult = await supabase.auth.setSession({
         access_token: pendingSignIn.accessToken,
         refresh_token: pendingSignIn.refreshToken,

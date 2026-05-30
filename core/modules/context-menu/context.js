@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useState, useMemo, useEffect } from 'react';
 
+import { toFiniteNumber } from '@/core/utils/number';
+
 const ContextMenuContext = createContext(null);
 
 const INITIAL_POSITION = Object.freeze({ x: 0, y: 0 });
@@ -23,11 +25,6 @@ function emitContextMenuVisibility(isOpen) {
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function toFiniteNumber(value, fallback = 0) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function createInitialMenuState() {

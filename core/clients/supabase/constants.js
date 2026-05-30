@@ -1,6 +1,4 @@
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue } from '@/core/utils/string';
 
 export const SUPABASE_URL = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
 export const SUPABASE_PUBLISHABLE_KEY = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);

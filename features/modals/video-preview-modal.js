@@ -2,18 +2,28 @@
 
 import Container from '@/core/modules/modal/container';
 
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
+
 export default function VideoPreviewModal({ close, data }) {
   if (!data?.key) return null;
 
+  return <ModalView close={close} data={data} />;
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({ close, data }) {
   return (
     <Container
       className="relative max-h-[85vh] w-[min(92vw,1200px)]"
       close={close}
       header={false}
       bodyClassName="p-0"
-      footer={{
-        center: data?.name || 'Video preview',
-      }}
+      footer={{ center: data?.name || 'Video preview' }}
     >
       <div className="relative aspect-video h-auto w-full">
         <iframe

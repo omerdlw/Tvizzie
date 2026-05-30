@@ -1,10 +1,10 @@
 import { cn } from '@/core/utils';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { useNavHeight } from '@/core/modules/nav/hooks';
-import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/features/account/shared/layout';
-import { AccountSectionHeading } from '@/features/account/shared/section-wrapper';
+import { AccountNavReveal, AccountSectionNav, AccountSectionReveal } from '@/features/account/components/layout';
+import { AccountSectionHeading } from '@/features/account/components/section-wrapper';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '@/features/account/utils';
-import AccountHero from '@/features/account/shared/hero';
+import AccountHero from '@/features/account/profile/hero/index';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
@@ -49,9 +49,9 @@ function StatusState({ title, description }) {
 
 function SectionCard({ title, description, children, className, contentClassName, summaryLabel }) {
   return (
-    <section className="relative bg-transparent">
+    <section className="relative bg-transparent py-4 sm:py-6">
       <AccountSectionReveal>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-6`, className)}>
+        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-5`, className)}>
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
           {description ? <p className="text-sm leading-6 text-black/70">{description}</p> : null}
           <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
@@ -256,7 +256,7 @@ export default function AccountEditView(props) {
             </AccountNavReveal>
           </div>
 
-          <div className="relative">
+          <div className="relative pt-4 pb-4 sm:pt-6 sm:pb-6">
             {activeTab === 'general' ? (
               <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col">
                 <SectionCard title="Identity">

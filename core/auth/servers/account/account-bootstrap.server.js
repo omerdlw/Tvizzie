@@ -1,14 +1,7 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { validateUsername } from '@/core/utils/account';
-import { ensureAccountLifecycle } from '@/core/auth/servers/account/account-lifecycle.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
+import { ensureAccountLifecycle } from './account-lifecycle.server';
 
 async function claimUsernameForProfile({
   avatarUrl = null,
@@ -23,7 +16,7 @@ async function claimUsernameForProfile({
   const { error } = await admin.rpc('claim_username', {
     p_avatar_url: normalizeValue(avatarUrl) || null,
     p_display_name: normalizeValue(displayName) || username,
-    p_email: normalizeEmail(email) || null,
+    p_email: normalizeEmailValue(email) || null,
     p_fail_if_profile_has_username: Boolean(failIfProfileHasUsername),
     p_preserve_existing: Boolean(preserveExisting),
     p_user_id: normalizeValue(userId),
@@ -37,7 +30,7 @@ async function claimUsernameForProfile({
 
 export async function ensurePasswordAccountRecord({ avatarUrl = null, displayName, email, userId, username }) {
   const normalizedUserId = normalizeValue(userId);
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
   const normalizedUsername = validateUsername(username);
   const resolvedDisplayName = normalizeValue(displayName) || normalizedUsername;
 

@@ -8,7 +8,6 @@ export function createPlugin({ name, apply }) {
   return { name, apply };
 }
 
-
 export const backgroundPlugin = createPlugin({
   name: 'background',
   apply: (config, { register, unregister }) => {
@@ -283,7 +282,6 @@ export const titlePlugin = createPlugin({
     };
   },
 });
-
 
 export const PLUGINS = [
   titlePlugin,

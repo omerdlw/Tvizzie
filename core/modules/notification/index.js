@@ -1,12 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 import { Z_INDEX } from '@/core/constants';
-import { useNavHeight } from '@/core/modules/nav/hooks';
-import { getNotificationBottomOffset } from '@/core/modules/nav/layout';
+import { NOTIFICATION_STACK_MOTION, getNotificationItemMotion } from '@/core/modules/motion';
 
 import { useNotificationActions, useNotificationState } from './context';
 import { NotificationOverlay } from './overlay';
@@ -18,25 +17,26 @@ function sortNotificationsByTimestamp(notifications = {}) {
 export function NotificationContainer() {
   const { notifications } = useNotificationState();
   const { dismissNotification } = useNotificationActions();
-  const { navHeight } = useNavHeight();
 
   const sortedNotifications = useMemo(() => sortNotificationsByTimestamp(notifications), [notifications]);
-  const resolvedBottomOffset = getNotificationBottomOffset(navHeight);
 
   if (sortedNotifications.length === 0) return null;
 
   return (
-    <div
+    <motion.div
       aria-atomic="true"
       aria-live="polite"
-      className="pointer-events-none fixed right-2 bottom-0 left-2 flex flex-col gap-1 sm:right-auto sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2"
-      style={{ bottom: `${resolvedBottomOffset}px`, zIndex: Z_INDEX.NOTIFICATION }}
+      className="pointer-events-none fixed top-4 right-4 flex flex-col gap-2 w-full max-w-[380px]"
+      style={{ zIndex: Z_INDEX.NOTIFICATION }}
+      {...NOTIFICATION_STACK_MOTION}
     >
-      <AnimatePresence mode="popLayout">
-        {sortedNotifications.map(([id, notification]) => (
-          <NotificationOverlay key={id} notification={notification} onDismiss={() => dismissNotification(id)} />
+      <AnimatePresence initial={false} mode="popLayout">
+        {sortedNotifications.map(([id, notification], index) => (
+          <motion.div key={id} {...getNotificationItemMotion(index)}>
+            <NotificationOverlay notification={notification} onDismiss={() => dismissNotification(id)} />
+          </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

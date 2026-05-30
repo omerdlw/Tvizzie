@@ -4,10 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  assertPasswordAccountStatus,
-  completePasswordReset,
-} from '@/features/auth/requests';
+import { assertPasswordAccountStatus, completePasswordReset } from '@/features/auth/requests';
 import { AUTH_PURPOSE, AUTH_ROUTES } from '@/features/auth/constants';
 import {
   buildAuthHref,
@@ -16,54 +13,16 @@ import {
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validatePassword,
-} from '@/features/auth/utils';
-import AuthVerificationForm from '@/features/auth/auth-verification-form';
+} from '@/features/auth/auth-flow';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
-import { AUTH_ROUTE_NOTICE, AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/core/auth/route-notice';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import Registry from './registry';
+import { INITIAL_RESET_FLOW, consumeAuthRouteNoticeCookie, resolveSignInNoticeToast } from './sign-in-state';
 import View from './view';
-
-const INITIAL_RESET_FLOW = Object.freeze({
-  active: false,
-  email: '',
-  passwordResetProof: '',
-  newPassword: '',
-  confirmPassword: '',
-  isSubmitting: false,
-});
-
-function expireNoticeCookie() {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  document.cookie = `${AUTH_ROUTE_NOTICE_COOKIE_NAME}=; Max-Age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
-}
-
-function consumeAuthRouteNoticeCookie() {
-  if (typeof document === 'undefined') {
-    return '';
-  }
-
-  const prefix = `${AUTH_ROUTE_NOTICE_COOKIE_NAME}=`;
-  const cookieEntry = String(document.cookie || '')
-    .split(';')
-    .map((entry) => entry.trim())
-    .find((entry) => entry.startsWith(prefix));
-
-  if (!cookieEntry) {
-    return '';
-  }
-
-  expireNoticeCookie();
-
-  return normalizeAuthRouteNotice(decodeURIComponent(cookieEntry.slice(prefix.length)));
-}
 
 export default function Client() {
   const auth = useAuth();
@@ -124,20 +83,14 @@ export default function Client() {
       return;
     }
 
-    if (activeNotice === AUTH_ROUTE_NOTICE.GOOGLE_PASSWORD_LOGIN_REQUIRED) {
-      toast.warning('This email is already used by another account. Sign in with your password once to link Google.');
+    const noticeToast = resolveSignInNoticeToast(activeNotice);
+
+    if (noticeToast?.type === 'warning') {
+      toast.warning(noticeToast.message);
     }
 
-    if (activeNotice === AUTH_ROUTE_NOTICE.GOOGLE_AUTH_FAILED) {
-      toast.error('Google sign-in could not be completed. Please try again.');
-    }
-
-    if (activeNotice === AUTH_ROUTE_NOTICE.OAUTH_AUTH_FAILED) {
-      toast.error('Social sign-in could not be completed. Please try again.');
-    }
-
-    if (activeNotice === AUTH_ROUTE_NOTICE.GOOGLE_PROVIDER_COLLISION) {
-      toast.error('This Google account is already linked to another account');
+    if (noticeToast?.type === 'error') {
+      toast.error(noticeToast.message);
     }
 
     if (!routeNotice) {
@@ -180,11 +133,9 @@ export default function Client() {
       },
       data: {
         allowRememberDevice: true,
-        autoSendOnOpen: true,
         email: signInResult.email || '',
         identifier,
         forceNewCodeOnOpen: true,
-        formComponent: AuthVerificationForm,
         purpose: AUTH_PURPOSE.SIGN_IN,
       },
     });
@@ -378,8 +329,6 @@ export default function Client() {
           purpose: AUTH_PURPOSE.PASSWORD_RESET,
           email,
           identifier,
-          autoSendOnOpen: true,
-          formComponent: AuthVerificationForm,
         },
       });
 

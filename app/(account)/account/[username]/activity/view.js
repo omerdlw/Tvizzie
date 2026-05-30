@@ -1,7 +1,7 @@
 import AccountActivityFeed from '@/features/account/feeds/activity';
-import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
 import AccountAction from '@/features/navigation/actions/account-action';
-import { createAccountSectionRegistry, createAccountSectionView } from '../../shared/section-factory';
+import { createAccountSectionRegistry, createAccountSectionView } from '@/features/account/route/section-factory';
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountActivityRegistry',

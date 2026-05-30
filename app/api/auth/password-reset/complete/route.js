@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
 
-import { hasPasswordProvider } from '@/core/auth/servers/account/account-deletion.server';
-import { writeAuthAuditLog } from '@/core/auth/servers/audit/audit-log.server';
-import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy/auth-route-policy.server';
-import { validateStrongPassword } from '@/core/auth/servers/security/password-security.server';
-import { verifyPasswordResetProofToken } from '@/core/auth/servers/verification/password-reset-proof.server';
+import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
+import { hasPasswordProvider } from '@/core/auth/servers/account.js';
+import { writeAuthAuditLog } from '@/core/auth/servers/audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/core/auth/servers/policy.js';
+import { clearAuthCookies, createAdminAuthFacade, getRequestContext } from '@/core/auth/servers/session.js';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
+  clearStepUpCookie,
   enforceAuthRateLimit,
-} from '@/core/auth/servers/security/rate-limit-policies.server';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
-import { clearAuthCookies } from '@/core/auth/servers/session/session.server';
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
-import { clearStepUpCookie } from '@/core/auth/servers/security/step-up.server';
-import { AUTH_CHALLENGE_TABLE } from '@/core/auth/auth.constants';
+  validateStrongPassword,
+} from '@/core/auth/servers/security.js';
+import { verifyPasswordResetProofToken } from '@/core/auth/servers/verification.js';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 function normalizeEmail(value) {

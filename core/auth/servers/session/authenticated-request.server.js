@@ -1,8 +1,5 @@
-import { readSessionFromRequest, isTransientSessionError } from '@/core/auth/servers/session/session.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue } from '@/core/utils/string';
+import { readSessionFromRequest, isTransientSessionError } from './session.server';
 
 function normalizeAuthError(error) {
   const message = normalizeValue(error?.message).toLowerCase();

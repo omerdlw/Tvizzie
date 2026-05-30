@@ -1,15 +1,8 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { createClient } from '@supabase/supabase-js';
 
 import { normalizePassword, validatePasswordRules } from '@/core/auth/password-validation';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, assertSupabaseBrowserEnv } from '@/core/clients/supabase/constants';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 function getPasswordSecurityClient() {
   assertSupabaseBrowserEnv();
@@ -56,7 +49,7 @@ export function validateStrongPassword(value) {
 
 export async function verifyPasswordWithIdentityToolkit({ email, password }) {
   const client = getPasswordSecurityClient();
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
   const normalizedPassword = normalizePassword(password);
 
   if (!normalizedEmail || !normalizedPassword) {
@@ -91,7 +84,7 @@ export async function verifyPasswordWithIdentityToolkit({ email, password }) {
 
 export async function createPendingPasswordSignIn({ email, password }) {
   const client = getPasswordSecurityClient();
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
 
   if (!normalizedEmail || password === undefined || password === null || password === '') {
     throw createAuthError('Email and password are required');
@@ -111,7 +104,7 @@ export async function createPendingPasswordSignIn({ email, password }) {
   const accessToken = normalizeValue(session?.access_token);
   const refreshToken = normalizeValue(session?.refresh_token);
   const userId = normalizeValue(user?.id);
-  const userEmail = normalizeEmail(user?.email || normalizedEmail);
+  const userEmail = normalizeEmailValue(user?.email || normalizedEmail);
 
   if (!accessToken || !refreshToken || !userId || !userEmail) {
     throw createAuthError('Sign in failed');

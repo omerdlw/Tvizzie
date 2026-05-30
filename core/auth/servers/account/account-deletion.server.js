@@ -1,9 +1,6 @@
+import { normalizeValue } from '@/core/utils/string';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function hasDatabaseError(result) {
   return Boolean(result?.error);

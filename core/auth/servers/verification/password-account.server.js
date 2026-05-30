@@ -1,14 +1,133 @@
-import { createAdminAuthFacade } from '@/core/auth/servers/session/supabase-admin-auth.server';
 import { resolveAuthCapabilities, resolveProviderIds } from '@/core/auth/capabilities';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { validateUsername } from '@/core/utils/account';
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 
-function normalizeValue(value) {
-  return String(value || '').trim();
+import { createAdminAuthFacade } from '../session/supabase-admin-auth.server';
+
+import { PASSWORD_ACCOUNT_LOOKUP_CODES } from './password-account.errors';
+
+const PROFILE_BY_USERNAME_SELECT = 'id, email, username';
+const PROFILE_BY_USER_ID_SELECT = 'id, email';
+
+function createUserNotFoundError(message) {
+  const error = new Error(message);
+  error.code = PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND;
+  return error;
 }
 
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
+function createPasswordLookupResult({
+  capabilities,
+  code = null,
+  email,
+  eligible,
+  exists,
+  profileEligible,
+  providerIds = [],
+  signInMethods,
+  supportsPasswordAuth,
+  userId,
+}) {
+  return {
+    code,
+    capabilities,
+    email: normalizeEmailValue(email),
+    eligible: Boolean(eligible),
+    exists: Boolean(exists),
+    profileEligible: Boolean(profileEligible),
+    providerIds,
+    signInMethods,
+    supportsPasswordAuth: Boolean(supportsPasswordAuth),
+    userId: normalizeValue(userId) || null,
+  };
+}
+
+async function getProfileByUsername(username) {
+  const profileResult = await createAdminClient()
+    .from('profiles')
+    .select(PROFILE_BY_USERNAME_SELECT)
+    .eq('username_lower', username)
+    .maybeSingle();
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message || 'Username lookup failed');
+  }
+
+  return profileResult.data || null;
+}
+
+async function getProfileByUserId(userId) {
+  const profileResult = await createAdminClient().from('profiles').select(PROFILE_BY_USER_ID_SELECT).eq('id', userId).maybeSingle();
+
+  if (profileResult.error) {
+    throw new Error(profileResult.error.message || 'Profile could not be loaded');
+  }
+
+  return profileResult.data || null;
+}
+
+function createMissingAccountLookup(email) {
+  return {
+    code: PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND,
+    email,
+    exists: false,
+    providerIds: [],
+    supportsPasswordAuth: false,
+    userId: null,
+  };
+}
+
+function createEligiblePasswordLookup(lookup) {
+  return createPasswordLookupResult({
+    capabilities: lookup.capabilities,
+    code: null,
+    email: lookup.email,
+    eligible: true,
+    exists: true,
+    profileEligible: true,
+    providerIds: lookup.providerIds,
+    signInMethods: lookup.signInMethods,
+    supportsPasswordAuth: true,
+    userId: lookup.userId,
+  });
+}
+
+function createIneligiblePasswordLookup({ code, lookup, profileEligible = false }) {
+  return createPasswordLookupResult({
+    capabilities: lookup.capabilities,
+    code,
+    email: lookup.email,
+    eligible: false,
+    exists: Boolean(lookup.exists),
+    profileEligible,
+    providerIds: lookup.providerIds || [],
+    signInMethods: lookup.signInMethods,
+    supportsPasswordAuth: code !== PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_SIGN_IN_DISABLED,
+    userId: lookup.userId,
+  });
+}
+
+function resolveLookupFromUserRecord({ normalizedEmail, userRecord }) {
+  const userId = normalizeValue(userRecord?.uid);
+  const providerIds = resolveProviderIds({
+    providerData: userRecord?.providerData || [],
+    appMetadata: userRecord?.app_metadata || {},
+  });
+  const authCapabilities = resolveAuthCapabilities({
+    providerIds,
+    email: normalizedEmail,
+  });
+
+  return {
+    capabilities: authCapabilities,
+    code: null,
+    email: normalizedEmail,
+    exists: Boolean(userId),
+    providerIds,
+    signInMethods: providerIds,
+    supportsPasswordAuth: authCapabilities.passwordEnabled,
+    userId: userId || null,
+  };
 }
 
 export async function resolvePasswordAccountIdentifier(identifier) {
@@ -20,41 +139,28 @@ export async function resolvePasswordAccountIdentifier(identifier) {
 
   if (normalizedIdentifier.includes('@')) {
     return {
-      email: normalizeEmail(normalizedIdentifier),
+      email: normalizeEmailValue(normalizedIdentifier),
       userId: null,
       username: null,
     };
   }
 
   const username = validateUsername(normalizedIdentifier);
-  const admin = createAdminClient();
-  const profileResult = await admin
-    .from('profiles')
-    .select('id, email, username')
-    .eq('username_lower', username)
-    .maybeSingle();
-
-  if (profileResult.error) {
-    throw new Error(profileResult.error.message || 'Username lookup failed');
-  }
-
-  const profile = profileResult.data || null;
+  const profile = await getProfileByUsername(username);
 
   if (!profile?.id || !profile?.email) {
-    const error = new Error('No account was found with this username');
-    error.code = 'auth/user-not-found';
-    throw error;
+    throw createUserNotFoundError('No account was found with this username');
   }
 
   return {
-    email: normalizeEmail(profile.email),
+    email: normalizeEmailValue(profile.email),
     userId: normalizeValue(profile.id) || null,
     username: normalizeValue(profile.username) || username,
   };
 }
 
 export async function lookupAccountByEmail(email) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = normalizeEmailValue(email);
 
   if (!normalizedEmail || !normalizedEmail.includes('@')) {
     throw new Error('Enter a valid email address');
@@ -68,130 +174,80 @@ export async function lookupAccountByEmail(email) {
     const code = normalizeValue(error?.code);
     const message = normalizeValue(error?.message).toLowerCase();
 
-    if (code === 'auth/user-not-found' || message.includes('user not found')) {
-      return {
-        code: 'auth/user-not-found',
-        email: normalizedEmail,
-        exists: false,
-        providerIds: [],
-        supportsPasswordAuth: false,
-        userId: null,
-      };
+    if (code === PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND || message.includes('user not found')) {
+      return createMissingAccountLookup(normalizedEmail);
     }
 
     throw error;
   }
 
-  const userId = normalizeValue(userRecord?.uid);
-  const providerIds = resolveProviderIds({
-    providerData: userRecord?.providerData || [],
-    appMetadata: userRecord?.app_metadata || {},
+  return resolveLookupFromUserRecord({
+    normalizedEmail,
+    userRecord,
   });
-  const authCapabilities = resolveAuthCapabilities({
-    providerIds,
-    email: normalizedEmail,
-  });
-  const supportsPasswordAuth = authCapabilities.passwordEnabled;
-
-  return {
-    code: null,
-    capabilities: authCapabilities,
-    email: normalizedEmail,
-    exists: Boolean(userId),
-    providerIds,
-    signInMethods: providerIds,
-    supportsPasswordAuth,
-    userId: userId || null,
-  };
 }
 
 export async function lookupPasswordAccountByEmail(email, { requireProfile = false } = {}) {
   const lookup = await lookupAccountByEmail(email);
-  const normalizedEmail = lookup.email;
-  const userId = lookup.userId;
-  const supportsPasswordAuth = lookup.supportsPasswordAuth;
 
-  if (!userId) {
-    return {
-      code: lookup.code || 'auth/user-not-found',
-      email: normalizedEmail,
+  if (!lookup.userId) {
+    return createPasswordLookupResult({
+      code: lookup.code || PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND,
+      email: lookup.email,
       eligible: false,
       exists: false,
       profileEligible: false,
-      supportsPasswordAuth: false,
       providerIds: [],
+      signInMethods: [],
+      supportsPasswordAuth: false,
       userId: null,
-    };
+    });
   }
 
-  if (!supportsPasswordAuth) {
-    return {
-      code: 'auth/password-sign-in-disabled',
-      capabilities: lookup.capabilities,
-      email: normalizedEmail,
-      eligible: false,
-      exists: lookup.exists,
+  if (!lookup.supportsPasswordAuth) {
+    return createIneligiblePasswordLookup({
+      code: PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_SIGN_IN_DISABLED,
+      lookup,
       profileEligible: false,
-      supportsPasswordAuth: false,
-      providerIds: lookup.providerIds,
-      signInMethods: lookup.signInMethods,
-      userId: userId || null,
-    };
+    });
   }
 
   if (!requireProfile) {
-    return {
-      code: null,
-      capabilities: lookup.capabilities,
-      email: normalizedEmail,
-      eligible: true,
-      exists: true,
-      profileEligible: true,
-      supportsPasswordAuth: true,
-      providerIds: lookup.providerIds,
-      signInMethods: lookup.signInMethods,
-      userId,
-    };
+    return createEligiblePasswordLookup(lookup);
   }
 
-  const admin = createAdminClient();
-  const profileResult = await admin.from('profiles').select('id, email').eq('id', userId).maybeSingle();
-
-  if (profileResult.error) {
-    throw new Error(profileResult.error.message || 'Profile could not be loaded');
-  }
-
-  const profileData = profileResult.data || null;
+  const profileData = await getProfileByUserId(lookup.userId);
 
   if (!profileData) {
-    return {
-      code: 'auth/password-reset-unavailable',
-      capabilities: lookup.capabilities,
-      email: normalizedEmail,
-      eligible: false,
-      exists: true,
+    return createIneligiblePasswordLookup({
+      code: PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_RESET_UNAVAILABLE,
+      lookup,
       profileEligible: false,
-      supportsPasswordAuth: true,
-      providerIds: lookup.providerIds,
-      signInMethods: lookup.signInMethods,
-      userId,
-    };
+    });
   }
 
-  const profileEmail = normalizeEmail(profileData?.email);
+  const profileEmail = normalizeEmailValue(profileData?.email);
   const profileId = normalizeValue(profileData?.id);
-  const profileEligible = profileEmail === normalizedEmail && (!profileId || profileId === userId);
+  const profileEligible = profileEmail === lookup.email && (!profileId || profileId === lookup.userId);
 
-  return {
-    code: profileEligible ? null : 'auth/password-reset-unavailable',
+  if (!profileEligible) {
+    return createIneligiblePasswordLookup({
+      code: PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_RESET_UNAVAILABLE,
+      lookup,
+      profileEligible: false,
+    });
+  }
+
+  return createPasswordLookupResult({
     capabilities: lookup.capabilities,
-    email: normalizedEmail,
-    eligible: profileEligible,
+    code: null,
+    email: lookup.email,
+    eligible: true,
     exists: true,
-    profileEligible,
-    supportsPasswordAuth: true,
+    profileEligible: true,
     providerIds: lookup.providerIds,
     signInMethods: lookup.signInMethods,
-    userId,
-  };
+    supportsPasswordAuth: true,
+    userId: lookup.userId,
+  });
 }

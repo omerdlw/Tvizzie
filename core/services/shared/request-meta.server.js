@@ -1,8 +1,5 @@
+import { normalizeValue } from '@/core/utils/string';
 import { createHash, randomUUID } from 'crypto';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function readHeader(request, headerName) {
   if (!request?.headers?.get) {

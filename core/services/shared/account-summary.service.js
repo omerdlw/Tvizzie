@@ -1,9 +1,8 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  invalidatePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
+import { normalizeValue as normalizeUserId } from '@/core/utils/string';
+
+import { buildPollingSubscriptionKey, invalidatePollingSubscription } from './polling-subscription.service';
 
 const ACCOUNT_REFRESH_TIMERS = new Map();
 const DEFAULT_REFRESH_DELAY_MS = 250;
@@ -16,10 +15,6 @@ function normalizeDelayMs(value) {
   }
 
   return Math.floor(parsed);
-}
-
-function normalizeUserId(value) {
-  return String(value || '').trim();
 }
 
 export function getAccountSummarySubscriptionKey(userId) {

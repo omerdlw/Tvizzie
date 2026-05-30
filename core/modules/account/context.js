@@ -5,68 +5,21 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 
 import { createAccountClient } from './client';
-
-const EMPTY_OBJECT = Object.freeze({});
-const DEFAULT_ACCOUNT_BOOTSTRAP_CONFIG = Object.freeze({
-  clearPayload: null,
-  resolvePayload: null,
-});
-const DEFAULT_ACCOUNT_CONFIG = Object.freeze({
-  adapter: null,
-  autoBootstrap: true,
-  autoSubscribeCurrentAccount: true,
-  bootstrap: DEFAULT_ACCOUNT_BOOTSTRAP_CONFIG,
-  debug: false,
-});
-const DEFAULT_ACCOUNT_STATE = Object.freeze({
-  currentAccount: null,
-  error: null,
-  isBootstrapping: false,
-  isLoading: true,
-  isReady: false,
-  lastUpdatedAt: null,
-});
-const CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 15000;
-const CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
-const FALLBACK_ACCOUNT_ACTIONS = Object.freeze({
-  clearError: () => {},
-  ensureCurrentAccount: async () => null,
-  refreshCurrentAccount: async () => null,
-  syncCurrentAccountEmail: async () => null,
-  updateCurrentAccount: async () => null,
-});
+import {
+  CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+  CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS,
+  DEFAULT_ACCOUNT_CONFIG,
+  DEFAULT_ACCOUNT_STATE,
+  EMPTY_OBJECT,
+  FALLBACK_ACCOUNT_ACTIONS,
+  createResolvedConfig,
+  toAccountError,
+} from './context-utils';
 
 const AccountConfigContext = createContext(DEFAULT_ACCOUNT_CONFIG);
 const AccountClientContext = createContext(null);
 const AccountStateContext = createContext(DEFAULT_ACCOUNT_STATE);
 const AccountActionsContext = createContext(FALLBACK_ACCOUNT_ACTIONS);
-
-function toAccountError(error, fallbackMessage) {
-  if (error instanceof Error) {
-    return error;
-  }
-
-  const normalizedError = new Error(error?.message || fallbackMessage || 'Account request failed');
-
-  normalizedError.name = error?.name || 'AccountError';
-  normalizedError.status = error?.status || 0;
-  normalizedError.data = error?.data || null;
-
-  return normalizedError;
-}
-
-function createResolvedConfig(config = EMPTY_OBJECT) {
-  const providedBootstrap = config?.bootstrap && typeof config.bootstrap === 'object' ? config.bootstrap : EMPTY_OBJECT;
-
-  return {
-    ...DEFAULT_ACCOUNT_CONFIG,
-    ...config,
-    bootstrap: {
-      ...DEFAULT_ACCOUNT_CONFIG.bootstrap,
-      ...providedBootstrap,
-    },
-  };
-}
 
 export function AccountProvider({ children, config = EMPTY_OBJECT }) {
   const auth = useAuth();

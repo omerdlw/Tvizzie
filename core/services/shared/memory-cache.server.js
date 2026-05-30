@@ -1,12 +1,9 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 const DEFAULT_TTL_MS = 2000;
 const MAX_CACHE_ENTRIES = 400;
 const responseCache = new Map();
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function pruneCache() {
   if (responseCache.size <= MAX_CACHE_ENTRIES) {

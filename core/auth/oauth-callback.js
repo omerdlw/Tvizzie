@@ -1,3 +1,4 @@
+import { normalizeValue } from '@/core/utils/string';
 import { normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 
 const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';
@@ -16,10 +17,6 @@ const BLOCKED_NEXT_PATHS = new Set([
 ]);
 
 const OAUTH_INTENTS = new Set(['link', 'sign-in', 'sign-up']);
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function normalizeOrigin(origin) {
   const normalizedOrigin = normalizeValue(origin);

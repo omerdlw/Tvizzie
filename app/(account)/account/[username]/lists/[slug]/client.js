@@ -10,19 +10,19 @@ import { useToast } from '@/core/modules/notification/hooks';
 import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
-} from '@/core/services/shared/polling-subscription.service';
+} from '@/core/services/shared/client';
 import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
   toggleListLike,
-} from '@/core/services/media/lists.service';
+} from '@/core/services/media/lists';
 import {
   deleteListReview,
   subscribeToListReviews,
   toggleStoredReviewLike,
-} from '@/core/services/media/reviews.service';
-import { useAccountSectionEngine } from '../../../shared/section-state';
+} from '@/core/services/media/reviews';
+import { useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 
 export default function Client({ routeData = null }) {

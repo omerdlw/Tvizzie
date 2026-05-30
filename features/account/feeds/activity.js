@@ -7,11 +7,11 @@ import { motion } from 'framer-motion';
 
 import { normalizeFeedbackText } from '@/core/utils';
 import { collectActivitySubjectOptions, hasActiveActivityFilters } from '@/features/account/filtering';
-import { AccountActivityFilterBar } from '@/features/account/shared/content-filters';
-import AccountPagination from '@/features/account/shared/pagination';
+import { AccountActivityFilterBar } from '@/features/account/filters/content-filter-primitives';
+import AccountPagination from '@/features/account/components/pagination';
 import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
-import AccountSectionLayout from '../shared/section-wrapper';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary rounded-[10px] text-black/50 border border-black/5 p-3';
@@ -103,12 +103,12 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
         <div className="min-w-0 text-[1.02rem] leading-7">
           <ActivityLine item={item} />
         </div>
 
-        {createdLabel ? <div className="shrink-0 text-sm font-medium sm:pt-0.5">{createdLabel}</div> : null}
+        {createdLabel ? <div className="shrink-0 text-sm font-medium pt-0.5">{createdLabel}</div> : null}
       </div>
 
       {item?.renderKind === 'text_with_review' && item?.reviewCard ? (

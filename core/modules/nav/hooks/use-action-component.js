@@ -2,37 +2,14 @@
 
 import React, { useMemo } from 'react';
 
-function normalizePath(value) {
-  const normalized = String(value || '').trim();
-
-  if (!normalized) {
-    return '';
-  }
-
-  if (normalized === '/') {
-    return '/';
-  }
-
-  return normalized.replace(/\/+$/, '');
-}
+import { isPathPrefix, isSamePath } from './navigation-path-model';
 
 function isActionPathMatch(path, pathname) {
-  const normalizedPath = normalizePath(path);
-  const normalizedPathname = normalizePath(pathname);
-
-  if (!normalizedPath || !normalizedPathname) {
-    return false;
-  }
-
-  if (normalizedPath === normalizedPathname) {
+  if (isSamePath(path, pathname)) {
     return true;
   }
 
-  if (normalizedPath === '/') {
-    return normalizedPathname === '/';
-  }
-
-  return normalizedPathname.startsWith(`${normalizedPath}/`);
+  return path !== '/' && isPathPrefix(path, pathname);
 }
 
 function shouldRenderAction({ action, isLoading, isOverlay, path }, pathname) {

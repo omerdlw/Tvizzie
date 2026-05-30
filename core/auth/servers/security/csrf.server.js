@@ -1,3 +1,4 @@
+import { normalizeValue } from '@/core/utils/string';
 import { timingSafeEqual } from 'crypto';
 
 import {
@@ -5,11 +6,7 @@ import {
   createCsrfToken,
   getCookieValue,
   setCsrfCookie,
-} from '@/core/auth/servers/session/session.server';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+} from '../session/session.server';
 
 function toBuffer(value) {
   return Buffer.from(normalizeValue(value));

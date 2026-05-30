@@ -21,12 +21,7 @@ export function useNavigation() {
   const { navigate: navigateWithGuards, pathname, cancelNavigation } = core;
 
   const { navigationItems, activeItem, statusState } = display;
-  const {
-    expanded: isExpanded,
-    setExpanded: setExpandedState,
-    setSearchQuery,
-    setNavHeight,
-  } = expanded;
+  const { expanded: isExpanded, setExpanded: setExpandedState, setSearchQuery, setNavHeight } = expanded;
   const isSurfaceActive = Boolean(activeItem?.isSurface);
 
   const activeItemHasAction = useMemo(() => {

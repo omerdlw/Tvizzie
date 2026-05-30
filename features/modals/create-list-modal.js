@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -8,31 +8,33 @@ import { useAuth } from '@/core/modules/auth';
 import Container from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import { createUserListWithItems } from '@/core/services/media/lists.service';
+import { createUserListWithItems } from '@/core/services/media/lists';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
+// --------------------------------------------------
+// CONSTANTS
+// --------------------------------------------------
+
 const ACTION_BUTTON_CLASS =
   'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 
-function normalizeSearchResult(item = {}) {
-  const entityType = String(item?.media_type || item?.entityType || '')
-    .trim()
-    .toLowerCase();
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
-  if (entityType !== 'movie') {
-    return null;
-  }
+function normalizeSearchResult(item = {}) {
+  const entityType = String(item?.media_type || item?.entityType || '').trim().toLowerCase();
+
+  if (entityType !== 'movie') return null;
 
   const entityId = String(item?.id ?? item?.entityId ?? '').trim();
   const title = String(item?.title || item?.original_title || '').trim();
   const name = String(item?.name || item?.original_name || '').trim();
 
-  if (!entityId || (!title && !name)) {
-    return null;
-  }
+  if (!entityId || (!title && !name)) return null;
 
   return {
     backdrop_path: item?.backdrop_path || item?.backdropPath || null,
@@ -63,65 +65,9 @@ function getItemYear(item) {
   return formatYear(item?.release_date);
 }
 
-function SearchResultRow({ item, isAdded, onAdd }) {
-  const title = getItemDisplayTitle(item);
-  const year = getItemYear(item);
-
-  return (
-    <button
-      type="button"
-      disabled={isAdded}
-      onClick={() => onAdd(item)}
-      className={cn(
-        'group flex w-full items-center gap-3 rounded-[14px] border px-3 py-2.5 text-left transition-all',
-        isAdded
-          ? 'cursor-default border-black/10 bg-black/5 opacity-70'
-          : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
-        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
-      </div>
-
-      <span
-        className={cn(
-          'flex size-6 shrink-0 items-center justify-center rounded-full border transition-all',
-          isAdded
-            ? 'border-info bg-info text-white'
-            : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
-        )}
-      >
-        <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={16} />
-      </span>
-    </button>
-  );
-}
-
-function DraftItemRow({ index, item, onRemove }) {
-  const title = getItemDisplayTitle(item);
-  const year = getItemYear(item);
-
-  return (
-    <div className="group bg-primary flex items-center gap-3 rounded-[14px] border border-black/5 px-3 py-2 transition-all hover:border-black/10">
-      <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-black">{title}</p>
-        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
-      </div>
-
-      <Button
-        variant="destructive-icon"
-        onClick={() => onRemove(item)}
-        className="size-7 shrink-0 rounded-[10px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-        aria-label={`Remove ${title}`}
-      >
-        <Icon icon="material-symbols:close-rounded" size={16} />
-      </Button>
-    </div>
-  );
-}
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
 
 export default function CreateListModal({ close, data }) {
   const auth = useAuth();
@@ -131,21 +77,25 @@ export default function CreateListModal({ close, data }) {
 
   const seedMedia = data?.media ?? null;
 
+  // States
   const [isSaving, setIsSaving] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
   const [draftItems, setDraftItems] = useState([]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
   const [, startSearchTransition] = useTransition();
   const deferredSearchQuery = useDeferredValue(searchQuery.trim());
 
-  const selectedKeys = useMemo(() => new Set(draftItems.map((item) => getDraftMediaKey(item))), [draftItems]);
-
+  // Derived Values
+  const selectedKeys = new Set(draftItems.map((item) => getDraftMediaKey(item)));
   const canSubmit = Boolean(draftTitle.trim()) && draftItems.length > 0;
   const showSearchResults = searchResults.length > 0 || (deferredSearchQuery.length >= 2 && isSearching);
 
+  // Effects
   useEffect(() => {
     if (!seedMedia) return;
 
@@ -176,18 +126,12 @@ export default function CreateListModal({ close, data }) {
         const results = (response?.data?.results || []).map(normalizeSearchResult).filter(Boolean);
 
         if (!ignore) {
-          startSearchTransition(() => {
-            setSearchResults(results);
-          });
+          startSearchTransition(() => setSearchResults(results));
         }
       } catch {
-        if (!ignore) {
-          setSearchResults([]);
-        }
+        if (!ignore) setSearchResults([]);
       } finally {
-        if (!ignore) {
-          setIsSearching(false);
-        }
+        if (!ignore) setIsSearching(false);
       }
     }, 200);
 
@@ -197,27 +141,28 @@ export default function CreateListModal({ close, data }) {
     };
   }, [deferredSearchQuery, startSearchTransition]);
 
-  const handleAdd = useCallback((item) => {
+  // Handlers
+  const handleAdd = (item) => {
     const key = getDraftMediaKey(item);
     setDraftItems((current) => {
       if (current.some((existing) => getDraftMediaKey(existing) === key)) return current;
       return [...current, item];
     });
-  }, []);
+  };
 
-  const handleRemove = useCallback((item) => {
+  const handleRemove = (item) => {
     const key = getDraftMediaKey(item);
     setDraftItems((current) => current.filter((existing) => getDraftMediaKey(existing) !== key));
-  }, []);
+  };
 
-  const handleQuickAdd = useCallback(() => {
+  const handleQuickAdd = () => {
     if (!searchResults.length) return;
     handleAdd(searchResults[0]);
     setSearchQuery('');
     setSearchResults([]);
-  }, [handleAdd, searchResults]);
+  };
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (isSaving || !canSubmit) return;
 
     if (!auth.user?.id) {
@@ -238,7 +183,6 @@ export default function CreateListModal({ close, data }) {
       closeAllModals({ success: true, list: nextList });
 
       const ownerHandle = nextList?.ownerSnapshot?.username;
-
       if (ownerHandle && nextList?.slug) {
         router.push(`/account/${ownerHandle}/lists/${nextList.slug}`);
       }
@@ -247,8 +191,56 @@ export default function CreateListModal({ close, data }) {
     } finally {
       setIsSaving(false);
     }
-  }, [auth.user?.id, canSubmit, close, draftDescription, draftItems, draftTitle, isSaving, router, toast]);
+  };
 
+  return (
+    <ModalView
+      close={close}
+      draftTitle={draftTitle}
+      setDraftTitle={setDraftTitle}
+      draftDescription={draftDescription}
+      setDraftDescription={setDraftDescription}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      searchResults={searchResults}
+      isSearching={isSearching}
+      showSearchResults={showSearchResults}
+      draftItems={draftItems}
+      selectedKeys={selectedKeys}
+      isSaving={isSaving}
+      canSubmit={canSubmit}
+      handleAdd={handleAdd}
+      handleRemove={handleRemove}
+      handleQuickAdd={handleQuickAdd}
+      handleSubmit={handleSubmit}
+    />
+  );
+}
+
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function ModalView({
+  close,
+  draftTitle,
+  setDraftTitle,
+  draftDescription,
+  setDraftDescription,
+  searchQuery,
+  setSearchQuery,
+  searchResults,
+  isSearching,
+  showSearchResults,
+  draftItems,
+  selectedKeys,
+  isSaving,
+  canSubmit,
+  handleAdd,
+  handleRemove,
+  handleQuickAdd,
+  handleSubmit,
+}) {
   return (
     <Container
       className="max-h-[72dvh] w-full sm:w-[520px]"
@@ -370,5 +362,65 @@ export default function CreateListModal({ close, data }) {
         </div>
       </div>
     </Container>
+  );
+}
+
+function SearchResultRow({ item, isAdded, onAdd }) {
+  const title = getItemDisplayTitle(item);
+  const year = getItemYear(item);
+
+  return (
+    <button
+      type="button"
+      disabled={isAdded}
+      onClick={() => onAdd(item)}
+      className={cn(
+        'group flex w-full items-center gap-3 rounded-[14px] border px-3 py-2.5 text-left transition-all',
+        isAdded
+          ? 'cursor-default border-black/10 bg-black/5 opacity-70'
+          : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-black">{title}</p>
+        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
+      </div>
+
+      <span
+        className={cn(
+          'flex size-6 shrink-0 items-center justify-center rounded-full border transition-all',
+          isAdded
+            ? 'border-info bg-info text-white'
+            : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
+        )}
+      >
+        <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={16} />
+      </span>
+    </button>
+  );
+}
+
+function DraftItemRow({ index, item, onRemove }) {
+  const title = getItemDisplayTitle(item);
+  const year = getItemYear(item);
+
+  return (
+    <div className="group bg-primary flex items-center gap-3 rounded-[14px] border border-black/5 px-3 py-2 transition-all hover:border-black/10">
+      <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-black">{title}</p>
+        {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
+      </div>
+
+      <Button
+        variant="destructive-icon"
+        onClick={() => onRemove(item)}
+        className="size-7 shrink-0 rounded-[10px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        aria-label={`Remove ${title}`}
+      >
+        <Icon icon="material-symbols:close-rounded" size={16} />
+      </Button>
+    </div>
   );
 }

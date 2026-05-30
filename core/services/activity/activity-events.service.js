@@ -1,6 +1,6 @@
 'use client';
 
-import { requestApiJson } from '@/core/services/shared/api-request.service';
+import { requestApiJson } from '@/core/services/shared/client';
 import { ACTIVITY_EVENT_TYPES } from './activity-events.constants';
 
 async function postActivityEvent({ eventType, payload = {} }) {

@@ -1,4 +1,4 @@
-import { createAccountRoutePage } from '../../shared/route-page';
+import { createAccountRoutePage } from '@/features/account/route/page-factory';
 import { getUsernameAccountLikesRouteData } from '@/core/services/account/account-route-data.server';
 import Client from './client';
 

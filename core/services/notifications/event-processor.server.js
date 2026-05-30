@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import {
   NOTIFICATION_EVENT_TYPE_SET,
   NOTIFICATION_EVENT_TYPES,
@@ -9,10 +10,6 @@ import { NOTIFICATION_TYPES } from '@/core/services/notifications/notifications.
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'username'].join(',');
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function createActorSnapshot(userId, profile = {}) {
   return {
@@ -164,10 +161,7 @@ function mapEventToNotification(eventType, payload = {}, actor = {}) {
 }
 
 function resolveNotificationSubject(eventType, payload = {}) {
-  if (
-    eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED ||
-    eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED
-  ) {
+  if (eventType === NOTIFICATION_EVENT_TYPES.LIST_LIKED || eventType === NOTIFICATION_EVENT_TYPES.LIST_COMMENTED) {
     return buildSubject({
       ...payload,
       subjectId: payload.listId || payload.subjectId,

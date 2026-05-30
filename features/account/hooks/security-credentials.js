@@ -7,28 +7,31 @@ import {
 } from '../utils';
 import {
   AUTH_PURPOSE,
-  EMAIL_PATTERN,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
   completeEmailChangeRequest,
   completePasswordChangeRequest,
   completePasswordSetRequest,
   resolveSecurityErrorMessage,
-  validatePassword,
 } from '../security';
-import AuthVerificationForm from '@/features/auth/auth-verification-form';
-import { requestVerificationCode } from '@/features/auth/requests';
-import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref } from '@/features/auth/utils';
-import { logAuthAuditEvent } from '@/core/auth/clients/audit.client';
 import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
 import { useCallback } from 'react';
+import {
+  logCredentialAuditFailure,
+  logCredentialAuditSuccess,
+  redirectToSignInWithEmail,
+  resetLinkedProviderOverrides,
+  signOutIfRequested,
+} from './security-credential-helpers';
+import {
+  validateEmailChangeInput,
+  validateNewPasswordPair,
+  validatePasswordChangeInput,
+} from './security-credential-validation';
 
 export async function openAccountVerificationPrompt({
-  autoSendOnOpen = true,
   description,
   email,
-  initialChallenge = null,
   openModal,
   openSurface,
   purpose,
@@ -44,10 +47,7 @@ export async function openAccountVerificationPrompt({
         title,
       },
       data: {
-        autoSendOnOpen,
         email: verificationEmail,
-        formComponent: AuthVerificationForm,
-        initialChallenge,
         purpose,
       },
     };
@@ -90,6 +90,13 @@ export function useAccountCredentialActions({
   setPasswordFlow,
   toast,
 }) {
+  const resetLinkedProviders = useCallback(() => {
+    resetLinkedProviderOverrides({
+      setLinkedProviderDescriptorsOverride,
+      setLinkedProviderIdsOverride,
+    });
+  }, [setLinkedProviderDescriptorsOverride, setLinkedProviderIdsOverride]);
+
   const reauthenticateWithPassword = useCallback(
     async (password) => {
       if (typeof auth?.reauthenticate !== 'function') {
@@ -105,18 +112,14 @@ export function useAccountCredentialActions({
 
   const openVerificationModal = useCallback(
     async ({
-      autoSendOnOpen = true,
       purpose,
       email,
-      initialChallenge = null,
       title = 'Email verification',
       description = 'Code verification',
     }) => {
       return openAccountVerificationPrompt({
-        autoSendOnOpen,
         description,
         email,
-        initialChallenge,
         openModal,
         openSurface,
         purpose,
@@ -136,37 +139,24 @@ export function useAccountCredentialActions({
       return;
     }
 
-    const nextEmail = normalizeEmail(emailFlow.newEmail);
-    const currentPassword = String(emailFlow.currentPassword || '');
+    const validatedInput = validateEmailChangeInput({
+      currentAuthEmail,
+      currentPassword: emailFlow.currentPassword,
+      newEmail: emailFlow.newEmail,
+      toast,
+    });
 
-    if (!nextEmail || !EMAIL_PATTERN.test(nextEmail)) {
-      toast.error('Please provide a valid email address');
-      return;
-    }
-
-    if (nextEmail === currentAuthEmail) {
-      toast.error('New email must be different from current email');
-      return;
-    }
-
-    if (!currentPassword) {
-      toast.error('Current password is required');
+    if (!validatedInput) {
       return;
     }
 
     setEmailFlow((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      await reauthenticateWithPassword(currentPassword);
-      const initialChallenge = await requestVerificationCode({
-        email: nextEmail,
-        purpose: AUTH_PURPOSE.EMAIL_CHANGE,
-      });
+      await reauthenticateWithPassword(validatedInput.currentPassword);
 
       const verification = await openVerificationModal({
-        autoSendOnOpen: false,
         description: 'Verify your new email',
-        email: nextEmail,
-        initialChallenge,
+        email: validatedInput.nextEmail,
         purpose: AUTH_PURPOSE.EMAIL_CHANGE,
         title: 'Email verification',
       });
@@ -179,57 +169,27 @@ export function useAccountCredentialActions({
       emitAccountFeedback('email-change', 'start');
 
       const result = await completeEmailChangeRequest({
-        newEmail: nextEmail,
+        newEmail: validatedInput.nextEmail,
       });
 
-      if (result?.nextAction === 'signed_out') {
-        await auth.signOut({
-          reason: 'email-change',
-        });
-      }
-
-      if (typeof setLinkedProviderIdsOverride === 'function') {
-        setLinkedProviderIdsOverride(null);
-      }
-
-      if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-        setLinkedProviderDescriptorsOverride(null);
-      }
-
-      logAuthAuditEvent({
-        email: nextEmail,
+      await signOutIfRequested(auth, result, 'email-change');
+      resetLinkedProviders();
+      logCredentialAuditSuccess({
+        email: validatedInput.nextEmail,
         eventType: 'email-change',
-        metadata: {
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'success',
         userId: auth.user.id,
       });
 
       emitAccountFeedback('email-change', 'success');
       setEmailFlow(INITIAL_EMAIL_FLOW);
-
-      if (typeof window !== 'undefined') {
-        window.location.replace(
-          buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-            email: nextEmail,
-          })
-        );
-      }
+      redirectToSignInWithEmail(validatedInput.nextEmail);
     } catch (error) {
       setEmailFlow((prev) => ({ ...prev, isSubmitting: false }));
       clearAccountFeedback('email-change');
-      logAuthAuditEvent({
+      logCredentialAuditFailure({
+        action: 'email-change',
         email: currentAuthEmail || null,
-        eventType: 'failed-attempt',
-        metadata: {
-          action: 'email-change',
-          message: error?.message || 'Email update failed',
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'failure',
+        error,
         userId: auth.user?.id || null,
       });
       toast.error(resolveSecurityErrorMessage(error, 'Email could not be updated'));
@@ -241,9 +201,8 @@ export function useAccountCredentialActions({
     emailFlow,
     openVerificationModal,
     reauthenticateWithPassword,
+    resetLinkedProviders,
     setEmailFlow,
-    setLinkedProviderDescriptorsOverride,
-    setLinkedProviderIdsOverride,
     toast,
   ]);
 
@@ -256,30 +215,20 @@ export function useAccountCredentialActions({
       return;
     }
 
-    const currentPassword = String(passwordFlow.currentPassword || '');
-    let newPassword = '';
-    const confirmPassword = String(passwordFlow.confirmPassword || '');
+    const validatedInput = validatePasswordChangeInput({
+      confirmPassword: passwordFlow.confirmPassword,
+      currentPassword: passwordFlow.currentPassword,
+      newPassword: passwordFlow.newPassword,
+      toast,
+    });
 
-    if (!currentPassword) {
-      toast.error('Current password is required');
-      return;
-    }
-
-    try {
-      newPassword = validatePassword(passwordFlow.newPassword);
-    } catch (error) {
-      toast.error(resolveSecurityErrorMessage(error, 'Password does not meet requirements'));
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match');
+    if (!validatedInput) {
       return;
     }
 
     setPasswordFlow((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      await reauthenticateWithPassword(currentPassword);
+      await reauthenticateWithPassword(validatedInput.currentPassword);
 
       const verification = await openVerificationModal({
         description: 'Verify your current email',
@@ -296,50 +245,27 @@ export function useAccountCredentialActions({
       emitAccountFeedback('password-change', 'start');
 
       const result = await completePasswordChangeRequest({
-        currentPassword,
-        newPassword,
+        currentPassword: validatedInput.currentPassword,
+        newPassword: validatedInput.newPassword,
       });
 
-      if (result?.nextAction === 'signed_out') {
-        await auth.signOut({
-          reason: 'password-change',
-        });
-      }
-
-      logAuthAuditEvent({
+      await signOutIfRequested(auth, result, 'password-change');
+      logCredentialAuditSuccess({
         email: currentAuthEmail || null,
         eventType: 'password-change',
-        metadata: {
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'success',
         userId: auth.user?.id || null,
       });
 
       emitAccountFeedback('password-change', 'success');
       setPasswordFlow(INITIAL_PASSWORD_FLOW);
-
-      if (typeof window !== 'undefined') {
-        window.location.replace(
-          buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-            email: currentAuthEmail || '',
-          })
-        );
-      }
+      redirectToSignInWithEmail(currentAuthEmail);
     } catch (error) {
       setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
       clearAccountFeedback('password-change');
-      logAuthAuditEvent({
+      logCredentialAuditFailure({
+        action: 'password-change',
         email: currentAuthEmail || null,
-        eventType: 'failed-attempt',
-        metadata: {
-          action: 'password-change',
-          message: error?.message || 'Password update failed',
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'failure',
+        error,
         userId: auth.user?.id || null,
       });
       toast.error(resolveSecurityErrorMessage(error, 'Password could not be updated'));
@@ -370,18 +296,13 @@ export function useAccountCredentialActions({
       return;
     }
 
-    let newPassword = '';
-    const confirmPassword = String(passwordFlow.confirmPassword || '');
+    const validatedInput = validateNewPasswordPair({
+      confirmPassword: passwordFlow.confirmPassword,
+      newPassword: passwordFlow.newPassword,
+      toast,
+    });
 
-    try {
-      newPassword = validatePassword(passwordFlow.newPassword);
-    } catch (error) {
-      toast.error(resolveSecurityErrorMessage(error, 'Password does not meet requirements'));
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('New password and confirmation do not match');
+    if (!validatedInput) {
       return;
     }
 
@@ -403,57 +324,27 @@ export function useAccountCredentialActions({
       emitAccountFeedback('password-set', 'start');
 
       const result = await completePasswordSetRequest({
-        newPassword,
+        newPassword: validatedInput.newPassword,
       });
 
-      if (result?.nextAction === 'signed_out') {
-        await auth.signOut({
-          reason: 'password-set',
-        });
-      }
-
-      if (typeof setLinkedProviderIdsOverride === 'function') {
-        setLinkedProviderIdsOverride(null);
-      }
-
-      if (typeof setLinkedProviderDescriptorsOverride === 'function') {
-        setLinkedProviderDescriptorsOverride(null);
-      }
-
-      logAuthAuditEvent({
+      await signOutIfRequested(auth, result, 'password-set');
+      resetLinkedProviders();
+      logCredentialAuditSuccess({
         email: currentAuthEmail || null,
         eventType: 'password-set',
-        metadata: {
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'success',
         userId: auth.user?.id || null,
       });
 
       emitAccountFeedback('password-set', 'success');
       setPasswordFlow(INITIAL_PASSWORD_FLOW);
-
-      if (typeof window !== 'undefined') {
-        window.location.replace(
-          buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-            email: currentAuthEmail || '',
-          })
-        );
-      }
+      redirectToSignInWithEmail(currentAuthEmail);
     } catch (error) {
       setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
       clearAccountFeedback('password-set');
-      logAuthAuditEvent({
+      logCredentialAuditFailure({
+        action: 'password-set',
         email: currentAuthEmail || null,
-        eventType: 'failed-attempt',
-        metadata: {
-          action: 'password-set',
-          message: error?.message || 'Password setup failed',
-          source: 'app/account/edit',
-        },
-        provider: 'password',
-        status: 'failure',
+        error,
         userId: auth.user?.id || null,
       });
       toast.error(resolveSecurityErrorMessage(error, 'Password could not be set'));
@@ -464,8 +355,7 @@ export function useAccountCredentialActions({
     currentAuthEmail,
     openVerificationModal,
     passwordFlow,
-    setLinkedProviderDescriptorsOverride,
-    setLinkedProviderIdsOverride,
+    resetLinkedProviders,
     setPasswordFlow,
     toast,
   ]);

@@ -1,13 +1,10 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/core/clients/supabase/constants';
 
 const SESSION_CONTROL_FUNCTION = 'session-control';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function toLowercase(value) {
   return normalizeValue(value).toLowerCase();

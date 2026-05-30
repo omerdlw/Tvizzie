@@ -1,8 +1,4 @@
-import nodemailer from 'nodemailer';
-
-const BREVO_DEFAULT_HOST = 'smtp-relay.brevo.com';
-const BREVO_DEFAULT_PORT = 587;
-const DEFAULT_FROM_ADDRESS = 'no-reply@example.com';
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 function normalizeEnvValue(value) {
   let normalized = String(value || '').trim();
@@ -24,28 +20,55 @@ function normalizeEnvValue(value) {
 }
 
 function resolveBrevoConfig() {
-  const host = BREVO_DEFAULT_HOST;
-  const port = BREVO_DEFAULT_PORT;
-  const user = normalizeEnvValue(process.env.BREVO_SMTP_LOGIN);
-  const pass = normalizeEnvValue(process.env.BREVO_SMTP_KEY);
-  const from =
-    normalizeEnvValue(process.env.BREVO_SMTP_FROM) || normalizeEnvValue(process.env.BREVO_SMTP_LOGIN) || DEFAULT_FROM_ADDRESS;
+  const apiKey = normalizeEnvValue(process.env.BREVO_API_KEY);
+  const from = normalizeEnvValue(process.env.BREVO_SENDER_EMAIL) || normalizeEnvValue(process.env.BREVO_SMTP_FROM);
 
-  if (!user || !pass) {
-    throw new Error('Brevo SMTP configuration is incomplete. Set BREVO_SMTP_LOGIN and BREVO_SMTP_KEY');
+  if (!apiKey || !from) {
+    throw new Error('Brevo email configuration is incomplete. Set BREVO_API_KEY and BREVO_SENDER_EMAIL');
   }
 
   return {
-    auth: { user, pass },
+    apiKey,
     from,
-    host,
-    port,
-    secure: port === 465,
   };
 }
 
 function resolveTransportConfig() {
   return resolveBrevoConfig();
+}
+
+async function sendWithBrevoApi({ html, subject, text, to, transportConfig }) {
+  const response = await fetch(BREVO_API_URL, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': transportConfig.apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: {
+        email: transportConfig.from,
+        name: 'Tvizzie',
+      },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: html,
+    }),
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  const payload = await response.json().catch(() => null);
+  const providerMessage = normalizeEnvValue(payload?.message || payload?.error || response.statusText);
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('Email provider authentication failed. Verify Brevo API credentials');
+  }
+
+  throw new Error(providerMessage || `Email provider rejected the message with status ${response.status}`);
 }
 
 const VERIFICATION_PURPOSES = {
@@ -58,98 +81,76 @@ const VERIFICATION_PURPOSES = {
   SIGN_UP: 'sign-up',
 };
 
+const DEFAULT_VERIFICATION_COPY = Object.freeze({
+  description: 'Use this code to verify your email address.',
+  heading: 'Email verification',
+  subjectSuffix: 'sign-up',
+  title: 'Tvizzie Verification Code',
+});
+
+const VERIFICATION_COPY_BY_PURPOSE = Object.freeze({
+  [VERIFICATION_PURPOSES.ACCOUNT_DELETE]: Object.freeze({
+    description: 'Use this code to confirm account deletion.',
+    heading: 'Account deletion',
+    subjectSuffix: 'account deletion',
+    title: 'Tvizzie Account Deletion Code',
+  }),
+  [VERIFICATION_PURPOSES.EMAIL_CHANGE]: Object.freeze({
+    description: 'Use this code to confirm your new email address.',
+    heading: 'Email change',
+    subjectSuffix: 'email change',
+    title: 'Tvizzie Email Change Code',
+  }),
+  [VERIFICATION_PURPOSES.PASSWORD_CHANGE]: Object.freeze({
+    description: 'Use this code to confirm your password change.',
+    heading: 'Password change',
+    subjectSuffix: 'password change',
+    title: 'Tvizzie Password Change Code',
+  }),
+  [VERIFICATION_PURPOSES.PASSWORD_RESET]: Object.freeze({
+    description: 'Use this code to reset your password.',
+    heading: 'Password reset',
+    subjectSuffix: 'password reset',
+    title: 'Tvizzie Password Reset Code',
+  }),
+  [VERIFICATION_PURPOSES.PROVIDER_LINK]: Object.freeze({
+    description: 'Use this code to confirm provider changes.',
+    heading: 'Provider change',
+    subjectSuffix: 'provider change',
+    title: 'Tvizzie Provider Change Code',
+  }),
+  [VERIFICATION_PURPOSES.SIGN_IN]: Object.freeze({
+    description: 'Use this code to finish signing in.',
+    heading: 'Sign in',
+    subjectSuffix: 'login',
+    title: 'Tvizzie Login Code',
+  }),
+});
+
 function resolveVerificationCopy(purpose) {
-  if (purpose === VERIFICATION_PURPOSES.ACCOUNT_DELETE) {
-    return {
-      description: 'Use this code to confirm account deletion.',
-      heading: 'Account deletion',
-      subjectSuffix: 'account deletion',
-      title: 'Tvizzie Account Deletion Code',
-    };
-  }
-
-  if (purpose === VERIFICATION_PURPOSES.EMAIL_CHANGE) {
-    return {
-      description: 'Use this code to confirm your new email address.',
-      heading: 'Email change',
-      subjectSuffix: 'email change',
-      title: 'Tvizzie Email Change Code',
-    };
-  }
-
-  if (purpose === VERIFICATION_PURPOSES.PASSWORD_CHANGE) {
-    return {
-      description: 'Use this code to confirm your password change.',
-      heading: 'Password change',
-      subjectSuffix: 'password change',
-      title: 'Tvizzie Password Change Code',
-    };
-  }
-
-  if (purpose === VERIFICATION_PURPOSES.PASSWORD_RESET) {
-    return {
-      description: 'Use this code to reset your password.',
-      heading: 'Password reset',
-      subjectSuffix: 'password reset',
-      title: 'Tvizzie Password Reset Code',
-    };
-  }
-
-  if (purpose === VERIFICATION_PURPOSES.PROVIDER_LINK) {
-    return {
-      description: 'Use this code to confirm provider changes.',
-      heading: 'Provider change',
-      subjectSuffix: 'provider change',
-      title: 'Tvizzie Provider Change Code',
-    };
-  }
-
-  if (purpose === VERIFICATION_PURPOSES.SIGN_IN) {
-    return {
-      description: 'Use this code to finish signing in.',
-      heading: 'Sign in',
-      subjectSuffix: 'login',
-      title: 'Tvizzie Login Code',
-    };
-  }
-
-  return {
-    description: 'Use this code to verify your email address.',
-    heading: 'Email verification',
-    subjectSuffix: 'sign-up',
-    title: 'Tvizzie Verification Code',
-  };
+  return VERIFICATION_COPY_BY_PURPOSE[purpose] || DEFAULT_VERIFICATION_COPY;
 }
 
-export async function sendVerificationCodeEmail({ email, code, expiresAt, purpose = VERIFICATION_PURPOSES.SIGN_UP }) {
-  const transportConfig = resolveTransportConfig();
-  const transporter = nodemailer.createTransport({
-    auth: transportConfig.auth,
-    host: transportConfig.host,
-    port: transportConfig.port,
-    secure: transportConfig.secure,
-  });
+function normalizeVerificationPurpose(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
 
-  const expiryDate = new Date(expiresAt);
-  const expiresAtLabel = expiryDate.toLocaleString('en-US', {
-    hour12: false,
-    month: 'short',
+function formatVerificationExpiry(value) {
+  return new Date(value).toLocaleString('en-US', {
     day: '2-digit',
-    year: 'numeric',
     hour: '2-digit',
+    hour12: false,
     minute: '2-digit',
+    month: 'short',
     timeZoneName: 'short',
+    year: 'numeric',
   });
-  const normalizedCode = String(code || '').trim();
-  const codeWithSpacing = normalizedCode.split('').join(' ');
-  const copy = resolveVerificationCopy(
-    String(purpose || '')
-      .trim()
-      .toLowerCase()
-  );
+}
 
-  const subject = `${normalizedCode} is your Tvizzie ${copy.subjectSuffix} code`;
-  const text = [
+function buildVerificationText({ code, copy, expiresAtLabel }) {
+  return [
     'Tvizzie',
     'Account security',
     '',
@@ -157,94 +158,127 @@ export async function sendVerificationCodeEmail({ email, code, expiresAt, purpos
     '',
     copy.description,
     '',
-    `Code: ${normalizedCode}`,
+    `Code: ${code}`,
     `Expires at: ${expiresAtLabel}`,
     '',
     'Never share this code with anyone',
     'If you did not request this email, ignore it.',
   ].join('\n');
+}
 
-  const html = `
+function buildVerificationHtml({ codeWithSpacing, copy, expiresAtLabel, normalizedCode }) {
+  return `
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light only" />
-    <meta name="supported-color-schemes" content="light only" />
-    <title>${copy.title}</title>
-  </head>
-  <body style="margin: 0; padding: 24px 12px; background-color: #f0f0ed; color: #18181b; font-family: Inter, Geist, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
-    <span style="display: none; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0; overflow: hidden;">
-      Tvizzie ${copy.subjectSuffix} code: ${normalizedCode}
-    </span>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-      <tr>
-        <td align="center">
-          <table
-            role="presentation"
-            width="100%"
-            cellspacing="0"
-            cellpadding="0"
-            border="0"
-            style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 1px solid #e8e3d7; border-radius: 12px;"
-          >
-            <tr>
-              <td style="padding: 22px 22px 18px;">
-                <p style="margin: 0; font-size: 28px; line-height: 1; font-weight: 700; color: #18181b;">Tvizzie</p>
-                <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: #4f4b45;">
-                  ${copy.description}
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 0 22px;">
-                <div style="height: 1px; background-color: #ece7dc; font-size: 0; line-height: 0;">&nbsp;</div>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 20px 22px 22px;">
-                <p style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; color: #18181b;">${copy.heading}</p>
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  border="0"
-                  style="margin-top: 18px; background-color: #ffffff; border-radius: 10px;"
-                >
-                  <tr>
-                    <td align="center" style="padding: 18px 16px;">
-                      <p
-                        style="margin: 0; font-size: 36px; line-height: 1; font-weight: 800; color: #18181b; letter-spacing: 0.28em; text-align: center; font-family: Geist Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;"
-                      >
-                        ${codeWithSpacing}
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin: 14px 0 0; font-size: 14px; line-height: 1.6; color: #4f4b45;">Expires at: ${expiresAtLabel}</p>
-                <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: #18181b;">Never share this code with anyone.</p>
-                <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: #5e5a54;">If you did not request this email, ignore it.</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
+ <head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta name="color-scheme" content="light only" />
+ <meta name="supported-color-schemes" content="light only" />
+ <title>${copy.title}</title>
+ </head>
+ <body style="margin: 0; padding: 24px 12px; background-color: #f0f0ed; color: #18181b; font-family: Inter, Geist, Segoe UI, Roboto, Helvetica, Arial, sans-serif;">
+ <span style="display: none; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0; overflow: hidden;">
+ Tvizzie ${copy.subjectSuffix} code: ${normalizedCode}
+ </span>
+ <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+ <tr>
+ <td align="center">
+ <table
+ role="presentation"
+ width="100%"
+ cellspacing="0"
+ cellpadding="0"
+ border="0"
+ style="max-width: 520px; margin: 0 auto; background-color: #f0f0ed; border: 0.5px solid #e8e3d7;"
+ >
+ <tr>
+ <td style="padding: 22px 22px 18px;">
+ <p style="margin: 0; font-size: 28px; line-height: 1; font-weight: 700; color: #18181b;">Tvizzie</p>
+ <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: #4f4b45;">
+ ${copy.description}
+ </p>
+ </td>
+ </tr>
+ <tr>
+ <td style="padding: 0 22px;">
+ <div style="height: 1px; background-color: #ece7dc; font-size: 0; line-height: 0;">&nbsp;</div>
+ </td>
+ </tr>
+ <tr>
+ <td style="padding: 20px 22px 22px;">
+ <p style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; color: #18181b;">${copy.heading}</p>
+ <table
+ role="presentation"
+ width="100%"
+ cellspacing="0"
+ cellpadding="0"
+ border="0"
+ style="margin-top: 18px; background-color: #ffffff;"
+ >
+ <tr>
+ <td align="center" style="padding: 18px 16px;">
+ <p
+ style="margin: 0; font-size: 36px; line-height: 1; font-weight: 800; color: #18181b; letter-spacing: 0.28em; text-align: center; font-family: Geist Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;"
+ >
+ ${codeWithSpacing}
+ </p>
+ </td>
+ </tr>
+ </table>
+ <p style="margin: 14px 0 0; font-size: 14px; line-height: 1.6; color: #4f4b45;">Expires at: ${expiresAtLabel}</p>
+ <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: #18181b;">Never share this code with anyone.</p>
+ <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.6; color: #5e5a54;">If you did not request this email, ignore it.</p>
+ </td>
+ </tr>
+ </table>
+ </td>
+ </tr>
+ </table>
+ </body>
 </html>
 `;
+}
+
+function createVerificationMessage({ code, expiresAt, purpose }) {
+  const normalizedCode = String(code || '').trim();
+  const codeWithSpacing = normalizedCode.split('').join(' ');
+  const expiresAtLabel = formatVerificationExpiry(expiresAt);
+  const copy = resolveVerificationCopy(normalizeVerificationPurpose(purpose));
+
+  return {
+    html: buildVerificationHtml({
+      codeWithSpacing,
+      copy,
+      expiresAtLabel,
+      normalizedCode,
+    }),
+    subject: `${normalizedCode} is your Tvizzie ${copy.subjectSuffix} code`,
+    text: buildVerificationText({
+      code: normalizedCode,
+      copy,
+      expiresAtLabel,
+    }),
+  };
+}
+
+export async function sendVerificationCodeEmail({ email, code, expiresAt, purpose = VERIFICATION_PURPOSES.SIGN_UP }) {
+  const transportConfig = resolveTransportConfig();
+  const { html, subject, text } = createVerificationMessage({
+    code,
+    expiresAt,
+    purpose,
+  });
 
   try {
-    await transporter.sendMail({
-      from: transportConfig.from,
+    await sendWithBrevoApi({
       html,
-      replyTo: transportConfig.from,
       subject,
       text,
       to: email,
+      transportConfig,
     });
+    return;
   } catch (error) {
     const message = String(error?.message || '');
     if (message.includes('Invalid login') || message.includes('BadCredentials') || message.includes('535')) {

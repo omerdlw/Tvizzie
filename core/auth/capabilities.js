@@ -1,3 +1,4 @@
+import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import {
   getEnabledOAuthProviderIds,
   GITHUB_PROVIDER_ID,
@@ -6,14 +7,6 @@ import {
   normalizeProviderId,
   PASSWORD_PROVIDER_ID,
 } from '@/core/auth/oauth-providers';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
-
-function normalizeEmail(value) {
-  return normalizeValue(value).toLowerCase();
-}
 
 function toArray(value) {
   if (Array.isArray(value)) {
@@ -121,7 +114,7 @@ export function resolveProviderDescriptors({ providerData = [], identities = [],
       }
 
       providerMap.set(providerId, {
-        email: normalizeEmail(provider?.email || email) || null,
+        email: normalizeEmailValue(provider?.email || email) || null,
         id: providerId,
         uid: normalizeValue(provider?.uid || provider?.user_id || userId) || null,
       });
@@ -137,7 +130,7 @@ export function resolveProviderDescriptors({ providerData = [], identities = [],
       }
 
       providerMap.set(providerId, {
-        email: normalizeEmail(identity?.identity_data?.email || email) || null,
+        email: normalizeEmailValue(identity?.identity_data?.email || email) || null,
         id: providerId,
         uid: normalizeValue(identity?.id || identity?.identity_id || identity?.user_id || userId) || null,
       });
@@ -186,6 +179,6 @@ export function resolveAuthCapabilities({ providerIds = [], email = null } = {})
     githubEnabled,
     primaryProvider,
     needsPasswordSetup: oauthEnabled && !passwordEnabled,
-    canResetPassword: passwordEnabled && Boolean(normalizeEmail(email)),
+    canResetPassword: passwordEnabled && Boolean(normalizeEmailValue(email)),
   };
 }

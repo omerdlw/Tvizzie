@@ -122,7 +122,7 @@ export const AppProviders = ({ children }) => {
     ? renderInteractiveBoundary(shellChildren, interactiveBoundaryVariant)
     : shellChildren;
 
-  const contentWithEnhancements = needsSmoothScroll ? <SmoothScrollProvider>{content}</SmoothScrollProvider> : content;
+  const contentWithEnhancements = content;
 
   return (
     <MotionRuntimeProvider>

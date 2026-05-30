@@ -6,7 +6,7 @@ import AccountListDetailFeed from '@/features/account/feeds/list-detail';
 import SearchAction from '@/features/navigation/actions/search-action';
 import { noopAccountRegistryHandler } from '@/features/account/registry-config';
 import { useRegistry } from '@/core/modules/registry';
-import { buildAccountRegistryState } from '../../../shared/registry-state';
+import { buildAccountRegistryState } from '@/features/account/route/registry-state';
 
 const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
 

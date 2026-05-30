@@ -1,7 +1,8 @@
+import { normalizeValue } from '@/core/utils/string';
 import { createHash } from 'crypto';
 
 import { AUTH_AUDIT_TABLE } from '@/core/auth/auth.constants';
-import { getRequestContext } from '@/core/auth/servers/session/request-context.server';
+import { getRequestContext } from '../session/request-context.server';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 
 const ALLOWED_EVENT_TYPES = new Set([
@@ -21,10 +22,6 @@ const ALLOWED_EVENT_TYPES = new Set([
 
 const SENSITIVE_FIELD_PATTERNS = [/password/i, /token/i, /secret/i, /code/i];
 const ALLOWED_AUDIT_ACTORS = new Set(['user', 'system', 'edge', 'admin']);
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function normalizeEventType(value) {
   return normalizeValue(value).toLowerCase();

@@ -4,7 +4,7 @@ import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { completeVerifiedSignUp } from './requests';
 
-import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './utils';
+import { createError, isEmailIdentifier, normalizeEmail, validateAllowedEmailDomain, validatePassword } from './auth-flow';
 
 export async function resolveSignInEmail(identifier) {
   const normalizedIdentifier = String(identifier || '').trim();
@@ -47,11 +47,6 @@ export async function createPendingSignUpPayload(form = {}) {
 
   if (password !== String(form.confirmPassword || '')) {
     throw new Error('Password confirmation does not match');
-  }
-
-  const existingUserId = await ACCOUNT_CLIENT.getAccountIdByUsername(username);
-  if (existingUserId) {
-    throw createError('USERNAME_TAKEN');
   }
 
   return {

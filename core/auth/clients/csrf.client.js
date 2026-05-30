@@ -1,8 +1,6 @@
 'use client';
 
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
+import { normalizeValue } from '@/core/utils/string';
 
 const CSRF_COOKIE_NAME = 'tvz_auth_csrf';
 

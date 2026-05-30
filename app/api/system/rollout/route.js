@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { resolveWriteRolloutDecision } from '@/core/services/shared/write-rollout.server';
+import { resolveWriteRolloutDecision } from '@/core/services/shared/server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

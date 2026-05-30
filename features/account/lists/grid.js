@@ -6,10 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import AccountListCard from './card';
-import AccountSectionLayout from '../shared/section-wrapper';
-import AccountPagination from '../shared/pagination';
+import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import AccountPagination from '@/features/account/components/pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
-import AccountInlineSectionState from '../shared/section-state';
+import AccountInlineSectionState from '@/features/account/components/section-state';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
 

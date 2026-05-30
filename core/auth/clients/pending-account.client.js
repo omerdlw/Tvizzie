@@ -5,7 +5,7 @@ import {
   normalizeStoredEmail,
   readSessionStorageJson,
   writeSessionStorageJson,
-} from '@/core/auth/clients/session-storage.client';
+} from './session-storage.client';
 
 const STORAGE_KEY = 'tvizzie:pending-account-bootstrap';
 const PENDING_PROFILE_TTL_MS = 10 * 60 * 1000;
@@ -24,16 +24,13 @@ export function setPendingAccountBootstrap(payload = {}) {
     return;
   }
 
-  writeSessionStorageJson(
-    STORAGE_KEY,
-    {
-      createdAt: Date.now(),
-      displayName,
-      email,
-      expiresAt: Date.now() + PENDING_PROFILE_TTL_MS,
-      username,
-    }
-  );
+  writeSessionStorageJson(STORAGE_KEY, {
+    createdAt: Date.now(),
+    displayName,
+    email,
+    expiresAt: Date.now() + PENDING_PROFILE_TTL_MS,
+    username,
+  });
 }
 
 export function getPendingAccountBootstrap(user = null) {

@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { normalizeValue } from '@/core/utils/string';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 import {
@@ -10,10 +11,6 @@ import {
 import { isRealtimeTransportEnabled } from '@/core/services/realtime/realtime-transport.config';
 
 const REALTIME_ADMIN_CLIENT_KEY = '__tvizzie_realtime_admin_client__';
-
-function normalizeValue(value) {
-  return String(value || '').trim();
-}
 
 function buildChannelName(userId) {
   return `live-updates:${userId}`;

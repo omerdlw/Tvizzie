@@ -1,4 +1,4 @@
-import { createAccountRoutePage } from '../shared/route-page';
+import { createAccountRoutePage } from '@/features/account/route/page-factory';
 import { isReservedAccountSegment } from '@/core/utils/account';
 import {
   getUsernameAccountOverviewRouteData,

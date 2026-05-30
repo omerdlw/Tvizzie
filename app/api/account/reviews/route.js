@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { resolveOptionalSessionRequest } from '@/core/auth/servers/session/authenticated-request.server';
-import { getOrLoadCachedValue } from '@/core/services/shared/memory-cache.server';
-import { invokeInternalEdgeFunction } from '@/core/services/shared/supabase-edge-internal.server';
+import { resolveOptionalSessionRequest } from '@/core/auth/servers/session.js';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/core/services/shared/server';
 
 const REVIEW_MODES = new Set(['authored', 'liked']);
 

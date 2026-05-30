@@ -1,3 +1,5 @@
+import { normalizeLowerValue } from '@/core/utils/string';
+
 export const AUTH_ROUTE_NOTICE = Object.freeze({
   GOOGLE_AUTH_FAILED: 'google-auth-failed',
   GOOGLE_PASSWORD_LOGIN_REQUIRED: 'google-password-login-required',
@@ -9,9 +11,7 @@ export const AUTH_ROUTE_NOTICE = Object.freeze({
 export const AUTH_ROUTE_NOTICE_COOKIE_NAME = 'tvz_auth_notice';
 
 export function normalizeAuthRouteNotice(value) {
-  const normalized = String(value || '')
-    .trim()
-    .toLowerCase();
+  const normalized = normalizeLowerValue(value);
 
   if (Object.values(AUTH_ROUTE_NOTICE).includes(normalized)) {
     return normalized;

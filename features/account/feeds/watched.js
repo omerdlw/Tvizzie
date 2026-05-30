@@ -17,9 +17,9 @@ import {
   parsePageFromSearch,
   toMediaQueryValues,
 } from '@/features/account/filtering';
-import { AccountMediaFilterBar } from '@/features/account/shared/content-filters';
-import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/shared/media-grid';
-import { AccountSectionState } from '@/features/account/shared/section-wrapper';
+import { AccountMediaFilterBar } from '@/features/account/filters/content-filter-primitives';
+import AccountMediaGridPage, { ProfileMediaActions } from '@/features/account/components/media-grid';
+import { AccountSectionState } from '@/features/account/components/section-wrapper';
 
 const WATCHED_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({ key: 'hide_rewatched', label: 'Hide rewatched films' }),

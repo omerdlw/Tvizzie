@@ -1,66 +1,24 @@
 'use client';
 
-import { notifyAccountLoadError } from '@/features/account/utils';
-import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/core/services/media/likes.service';
-import { subscribeToUserLists } from '@/core/services/media/lists.service';
-import { subscribeToUserWatched } from '@/core/services/media/watched.service';
-import { subscribeToUserWatchlist } from '@/core/services/media/watchlist.service';
 import { useToast } from '@/core/modules/notification/hooks';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/core/services/media/likes';
+import { subscribeToUserLists } from '@/core/services/media/lists';
+import { subscribeToUserWatched, subscribeToUserWatchlist } from '@/core/services/media/watched-watchlist';
+import { notifyAccountLoadError } from '@/features/account/utils';
+import { useEffect, useMemo, useState } from 'react';
 
-function normalizeMediaIdentity(item = {}) {
-  const mediaKey = String(item?.mediaKey || '').trim();
+import { mergeCollectionItemsWithExistingMetadata } from './collection-metadata';
+import {
+  EMPTY_COLLECTION_COUNTS,
+  UNRESOLVED_COLLECTION_COUNTS,
+  createCollectionCountsForUnavailableState,
+  createSeededCollectionState,
+  getCollectionPreviewLimits,
+  getSeededCollectionUsage,
+  hasAnyCollectionPreviewLimit,
+} from './collection-seed-state';
 
-  if (mediaKey) {
-    return mediaKey;
-  }
-
-  const entityType = String(item?.entityType || item?.media_type || '')
-    .trim()
-    .toLowerCase();
-  const entityId = String(item?.entityId || item?.id || '').trim();
-
-  if (!entityType || !entityId) {
-    return '';
-  }
-
-  return `${entityType}:${entityId}`;
-}
-
-function hasGenreMetadata(item = {}) {
-  return (
-    (Array.isArray(item?.genre_ids) && item.genre_ids.length > 0) ||
-    (Array.isArray(item?.genreNames) && item.genreNames.length > 0) ||
-    (Array.isArray(item?.genres) && item.genres.length > 0)
-  );
-}
-
-export function mergeCollectionItemsWithExistingMetadata(currentItems = [], nextItems = []) {
-  const previousItemMap = new Map(
-    (Array.isArray(currentItems) ? currentItems : [])
-      .map((item) => [normalizeMediaIdentity(item), item])
-      .filter(([key]) => Boolean(key))
-  );
-
-  return (Array.isArray(nextItems) ? nextItems : []).map((item) => {
-    if (hasGenreMetadata(item)) {
-      return item;
-    }
-
-    const previousItem = previousItemMap.get(normalizeMediaIdentity(item));
-
-    if (!previousItem || !hasGenreMetadata(previousItem)) {
-      return item;
-    }
-
-    return {
-      ...item,
-      genreNames: Array.isArray(previousItem.genreNames) ? previousItem.genreNames : item.genreNames,
-      genre_ids: Array.isArray(previousItem.genre_ids) ? previousItem.genre_ids : item.genre_ids,
-      genres: Array.isArray(previousItem.genres) ? previousItem.genres : item.genres,
-    };
-  });
-}
+export { mergeCollectionItemsWithExistingMetadata } from './collection-metadata';
 
 export function useAccountCollections({
   activeTab = null,
@@ -74,116 +32,34 @@ export function useAccountCollections({
   resolvedUserId,
 }) {
   const toast = useToast();
-  const likesPreviewLimit = Number(previewLimits?.likes) || 0;
-  const listsPreviewLimit = Number(previewLimits?.lists) || 0;
-  const watchedPreviewLimit = Number(previewLimits?.watched) || 0;
-  const watchlistPreviewLimit = Number(previewLimits?.watchlist) || 0;
-
-  const hasSeededCollectionSnapshot =
-    initialCollections?.userId && resolvedUserId && initialCollections.userId === resolvedUserId;
-
-  const resolveSeedCount = useCallback(
-    (key) => {
-      if (!hasSeededCollectionSnapshot) {
-        return null;
-      }
-
-      const rawValue = initialCollections?.counts?.[key];
-
-      if (rawValue === null || rawValue === undefined) {
-        return null;
-      }
-
-      return Number(rawValue) || 0;
-    },
-    [hasSeededCollectionSnapshot, initialCollections]
-  );
-
-  const hasUsableSeededItems = useCallback(
-    (items, key) => {
-      if (!hasSeededCollectionSnapshot || !Array.isArray(items)) {
-        return false;
-      }
-
-      if (items.length > 0) {
-        return true;
-      }
-
-      const seededCount = resolveSeedCount(key);
-
-      return seededCount === 0;
-    },
-    [hasSeededCollectionSnapshot, resolveSeedCount]
-  );
-
-  const initialLikes = useMemo(
-    () => (hasSeededCollectionSnapshot && Array.isArray(initialCollections?.likes) ? initialCollections.likes : []),
-    [hasSeededCollectionSnapshot, initialCollections]
-  );
-  const initialLists = useMemo(
-    () => (hasSeededCollectionSnapshot && Array.isArray(initialCollections?.lists) ? initialCollections.lists : []),
-    [hasSeededCollectionSnapshot, initialCollections]
-  );
-  const initialWatchlist = useMemo(
+  const normalizedPreviewLimits = useMemo(() => getCollectionPreviewLimits(previewLimits), [previewLimits]);
+  const seededState = useMemo(
     () =>
-      hasSeededCollectionSnapshot && Array.isArray(initialCollections?.watchlist) ? initialCollections.watchlist : [],
-    [hasSeededCollectionSnapshot, initialCollections]
+      createSeededCollectionState({
+        initialCollections,
+        resolvedUserId,
+      }),
+    [initialCollections, resolvedUserId]
   );
-  const initialWatched = useMemo(
-    () => (hasSeededCollectionSnapshot && Array.isArray(initialCollections?.watched) ? initialCollections.watched : []),
-    [hasSeededCollectionSnapshot, initialCollections]
-  );
-  const initialCollectionCounts = useMemo(
-    () =>
-      hasSeededCollectionSnapshot
-        ? {
-            likes:
-              initialCollections?.counts?.likes === null || initialCollections?.counts?.likes === undefined
-                ? null
-                : Number(initialCollections.counts.likes) || 0,
-            lists:
-              initialCollections?.counts?.lists === null || initialCollections?.counts?.lists === undefined
-                ? null
-                : Number(initialCollections.counts.lists) || 0,
-            watched:
-              initialCollections?.counts?.watched === null || initialCollections?.counts?.watched === undefined
-                ? null
-                : Number(initialCollections.counts.watched) || 0,
-            watchlist:
-              initialCollections?.counts?.watchlist === null || initialCollections?.counts?.watchlist === undefined
-                ? null
-                : Number(initialCollections.counts.watchlist) || 0,
-          }
-        : {
-            likes: null,
-            lists: null,
-            watched: null,
-            watchlist: null,
-          },
-    [hasSeededCollectionSnapshot, initialCollections]
-  );
-
-  const hasSeededLikes = hasUsableSeededItems(initialLikes, 'likes');
-  const hasSeededLists = hasUsableSeededItems(initialLists, 'lists');
-  const hasSeededWatched = hasUsableSeededItems(initialWatched, 'watched');
-  const hasSeededWatchlist = hasUsableSeededItems(initialWatchlist, 'watchlist');
-
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
-  const shouldUseSeededLikes = hasSeededLikes && !shouldForcePrivateRefresh;
-  const shouldUseSeededLists = hasSeededLists && !shouldForcePrivateRefresh;
-  const shouldUseSeededWatched = hasSeededWatched && !shouldForcePrivateRefresh;
-  const shouldUseSeededWatchlist = hasSeededWatchlist && !shouldForcePrivateRefresh;
+  const shouldUseSeeded = useMemo(
+    () =>
+      getSeededCollectionUsage({
+        hasSeededItems: seededState.hasSeededItems,
+        shouldForcePrivateRefresh,
+      }),
+    [seededState.hasSeededItems, shouldForcePrivateRefresh]
+  );
 
-  const [likes, setLikes] = useState(initialLikes);
-  const [watched, setWatched] = useState(initialWatched);
-  const [watchlist, setWatchlist] = useState(initialWatchlist);
-  const [lists, setLists] = useState(initialLists);
-  const [collectionCounts, setCollectionCounts] = useState(initialCollectionCounts);
-  const [isLoadingCollections, setIsLoadingCollections] = useState(!hasSeededCollectionSnapshot);
+  const [likes, setLikes] = useState(seededState.items.likes);
+  const [watched, setWatched] = useState(seededState.items.watched);
+  const [watchlist, setWatchlist] = useState(seededState.items.watchlist);
+  const [lists, setLists] = useState(seededState.items.lists);
+  const [collectionCounts, setCollectionCounts] = useState(seededState.counts);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(!seededState.hasSeededCollectionSnapshot);
 
   useEffect(() => {
-    const isPreviewOnlyMode =
-      likesPreviewLimit > 0 || listsPreviewLimit > 0 || watchedPreviewLimit > 0 || watchlistPreviewLimit > 0;
+    const isPreviewOnlyMode = hasAnyCollectionPreviewLimit(normalizedPreviewLimits);
     const normalizedActiveTab = String(activeTab || '')
       .trim()
       .toLowerCase();
@@ -199,23 +75,18 @@ export function useAccountCollections({
       setWatched([]);
       setWatchlist([]);
       setLists([]);
-      setCollectionCounts({
-        likes: 0,
-        lists: 0,
-        watched: 0,
-        watchlist: 0,
-      });
+      setCollectionCounts(EMPTY_COLLECTION_COUNTS);
       setIsLoadingCollections(false);
       return undefined;
     }
 
     if (isOwner && (!authIsReady || !authIsAuthenticated)) {
-      if (hasSeededCollectionSnapshot) {
-        setLikes(initialLikes);
-        setWatched(initialWatched);
-        setWatchlist(initialWatchlist);
-        setLists(initialLists);
-        setCollectionCounts(initialCollectionCounts);
+      if (seededState.hasSeededCollectionSnapshot) {
+        setLikes(seededState.items.likes);
+        setWatched(seededState.items.watched);
+        setWatchlist(seededState.items.watchlist);
+        setLists(seededState.items.lists);
+        setCollectionCounts(seededState.counts);
         setIsLoadingCollections(false);
         return undefined;
       }
@@ -224,23 +95,18 @@ export function useAccountCollections({
       setWatched([]);
       setWatchlist([]);
       setLists([]);
-      setCollectionCounts({
-        likes: isPreviewOnlyMode ? null : 0,
-        lists: isPreviewOnlyMode ? null : 0,
-        watched: isPreviewOnlyMode ? null : 0,
-        watchlist: isPreviewOnlyMode ? null : 0,
-      });
+      setCollectionCounts(createCollectionCountsForUnavailableState(isPreviewOnlyMode));
       setIsLoadingCollections(true);
       return undefined;
     }
 
     if (!isOwner && isPrivateProfile && !canViewPrivateContent) {
-      if (hasSeededCollectionSnapshot) {
-        setLikes(initialLikes);
-        setWatched(initialWatched);
-        setWatchlist(initialWatchlist);
-        setLists(initialLists);
-        setCollectionCounts(initialCollectionCounts);
+      if (seededState.hasSeededCollectionSnapshot) {
+        setLikes(seededState.items.likes);
+        setWatched(seededState.items.watched);
+        setWatchlist(seededState.items.watchlist);
+        setLists(seededState.items.lists);
+        setCollectionCounts(seededState.counts);
         setIsLoadingCollections(false);
         return undefined;
       }
@@ -249,31 +115,26 @@ export function useAccountCollections({
       setWatched([]);
       setWatchlist([]);
       setLists([]);
-      setCollectionCounts({
-        likes: 0,
-        lists: 0,
-        watched: 0,
-        watchlist: 0,
-      });
+      setCollectionCounts(EMPTY_COLLECTION_COUNTS);
       setIsLoadingCollections(false);
       return undefined;
     }
 
     let isMounted = true;
-    setLikes(initialLikes);
-    setWatched(initialWatched);
-    setWatchlist(initialWatchlist);
-    setLists(initialLists);
-    setCollectionCounts(initialCollectionCounts);
+    setLikes(seededState.items.likes);
+    setWatched(seededState.items.watched);
+    setWatchlist(seededState.items.watchlist);
+    setLists(seededState.items.lists);
+    setCollectionCounts(seededState.counts);
 
     const resolvedStreamState = {
-      likes: shouldSubscribeLikes ? shouldUseSeededLikes : true,
-      lists: shouldSubscribeLists ? shouldUseSeededLists : true,
-      watched: shouldSubscribeWatched ? shouldUseSeededWatched : true,
-      watchlist: shouldSubscribeWatchlist ? shouldUseSeededWatchlist : true,
+      likes: shouldSubscribeLikes ? shouldUseSeeded.likes : true,
+      lists: shouldSubscribeLists ? shouldUseSeeded.lists : true,
+      watched: shouldSubscribeWatched ? shouldUseSeeded.watched : true,
+      watchlist: shouldSubscribeWatchlist ? shouldUseSeeded.watchlist : true,
     };
 
-    let hasResolvedCollectionCounts = hasSeededCollectionSnapshot || !isPreviewOnlyMode;
+    let hasResolvedCollectionCounts = seededState.hasSeededCollectionSnapshot || !isPreviewOnlyMode;
 
     const haveAllCollectionStreamsResolved = () =>
       resolvedStreamState.likes &&
@@ -281,10 +142,10 @@ export function useAccountCollections({
       resolvedStreamState.watchlist &&
       resolvedStreamState.lists;
 
-    setIsLoadingCollections(!hasSeededCollectionSnapshot || !haveAllCollectionStreamsResolved());
+    setIsLoadingCollections(!seededState.hasSeededCollectionSnapshot || !haveAllCollectionStreamsResolved());
 
     const resolveLoadingState = () => {
-      if (hasSeededCollectionSnapshot) {
+      if (seededState.hasSeededCollectionSnapshot) {
         setIsLoadingCollections(!haveAllCollectionStreamsResolved());
         return;
       }
@@ -315,13 +176,8 @@ export function useAccountCollections({
         return;
       }
 
-      if (!hasSeededCollectionSnapshot) {
-        setCollectionCounts({
-          likes: null,
-          lists: null,
-          watched: null,
-          watchlist: null,
-        });
+      if (!seededState.hasSeededCollectionSnapshot) {
+        setCollectionCounts(UNRESOLVED_COLLECTION_COUNTS);
       }
 
       hasResolvedCollectionCounts = true;
@@ -343,9 +199,9 @@ export function useAccountCollections({
           {
             activeTab: normalizedActiveTab || null,
             emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
-            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededLikes,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeeded.likes,
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'likes',
-            limitCount: likesPreviewLimit,
+            limitCount: normalizedPreviewLimits.likes,
             onError: (error) => {
               notifyAccountLoadError(toast, error, 'Likes could not be loaded');
               markStreamAsResolved('likes');
@@ -370,9 +226,9 @@ export function useAccountCollections({
           {
             activeTab: normalizedActiveTab || null,
             emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
-            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededWatched,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeeded.watched,
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'watched',
-            limitCount: watchedPreviewLimit,
+            limitCount: normalizedPreviewLimits.watched,
             onError: (error) => {
               notifyAccountLoadError(toast, error, 'Watched could not be loaded');
               markStreamAsResolved('watched');
@@ -399,9 +255,9 @@ export function useAccountCollections({
           {
             activeTab: normalizedActiveTab || null,
             emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
-            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededWatchlist,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeeded.watchlist,
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'watchlist',
-            limitCount: watchlistPreviewLimit,
+            limitCount: normalizedPreviewLimits.watchlist,
             onError: (error) => {
               notifyAccountLoadError(toast, error, 'Watchlist could not be loaded');
               markStreamAsResolved('watchlist');
@@ -426,9 +282,9 @@ export function useAccountCollections({
           {
             activeTab: normalizedActiveTab || null,
             emitCachedPayloadOnSubscribe: !shouldForcePrivateRefresh,
-            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeededLists,
+            fetchOnSubscribe: shouldForcePrivateRefresh || !shouldUseSeeded.lists,
             refreshOnSubscribe: shouldForcePrivateRefresh || normalizedActiveTab === 'lists',
-            limitCount: listsPreviewLimit,
+            limitCount: normalizedPreviewLimits.lists,
             onError: (error) => {
               notifyAccountLoadError(toast, error, 'Lists could not be loaded');
               markStreamAsResolved('lists');
@@ -460,30 +316,14 @@ export function useAccountCollections({
     authIsAuthenticated,
     authIsReady,
     canViewPrivateContent,
-    hasSeededCollectionSnapshot,
-    hasSeededLikes,
-    hasSeededLists,
-    hasSeededWatched,
-    hasSeededWatchlist,
-    initialCollectionCounts,
-    initialCollections,
-    initialLikes,
-    initialLists,
-    initialWatched,
-    initialWatchlist,
     isOwner,
     isPrivateProfile,
-    likesPreviewLimit,
-    listsPreviewLimit,
+    normalizedPreviewLimits,
     resolvedUserId,
+    seededState,
     shouldForcePrivateRefresh,
-    shouldUseSeededLikes,
-    shouldUseSeededLists,
-    shouldUseSeededWatched,
-    shouldUseSeededWatchlist,
+    shouldUseSeeded,
     toast,
-    watchedPreviewLimit,
-    watchlistPreviewLimit,
   ]);
 
   return {
