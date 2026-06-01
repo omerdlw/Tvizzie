@@ -34,20 +34,38 @@ export function useAccountPageData({
     initialResolveError,
     username,
   });
-  const { profile } = useAccountProfile({
+  const { hasLoadedProfile, profile } = useAccountProfile({
     resolvedUserId,
     initialProfile,
     onError: handleProfileError,
   });
+  const isCurrentAccountMissing =
+    !username &&
+    auth.isAuthenticated &&
+    Boolean(resolvedUserId) &&
+    !profile &&
+    (initialResolveError === 'Account not found' || hasLoadedProfile);
 
   const isOwner = useMemo(() => {
+    if (isCurrentAccountMissing) {
+      return false;
+    }
+
     if (!username) {
       return Boolean(auth.user?.id || initialResolvedUserId);
     }
 
     if (!auth.isAuthenticated || !auth.user?.id) return false;
     return profile?.id === auth.user.id || resolvedUserId === auth.user.id;
-  }, [auth.isAuthenticated, auth.user?.id, initialResolvedUserId, profile?.id, resolvedUserId, username]);
+  }, [
+    auth.isAuthenticated,
+    auth.user?.id,
+    initialResolvedUserId,
+    isCurrentAccountMissing,
+    profile?.id,
+    resolvedUserId,
+    username,
+  ]);
 
   const isPrivateProfile = profile?.isPrivate === true;
 
@@ -129,6 +147,7 @@ export function useAccountPageData({
     isLoadingCollections,
     isLoadingListItems,
     isAuthSessionReady,
+    isCurrentAccountMissing,
     isOwner,
     isPrivateProfile: normalizedIsPrivateProfile,
     isResolvingProfile,

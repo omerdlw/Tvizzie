@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { normalizeTimestamp } from '@/core/utils/format';
-import { isListSubjectType, isMovieMediaType, isTvReference } from '@/core/utils/media';
+import { isListSubjectType, isTitleMediaType } from '@/core/utils/media';
 
 export function createListReviewLikeKey(ownerId, listId) {
   return `list:${ownerId}:${listId}`;
@@ -117,11 +117,11 @@ export function isSupportedReviewItem(item = {}) {
     return true;
   }
 
-  if (!isMovieMediaType(item?.subjectType)) {
+  if (!isTitleMediaType(item?.subjectType)) {
     return false;
   }
 
-  return !isTvReference(item?.subjectHref);
+  return true;
 }
 
 export function paginateReviewItems(items = [], cursor = null, pageSize = 20) {

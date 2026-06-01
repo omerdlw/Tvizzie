@@ -23,6 +23,7 @@ import {
   NAV_CARD_BLUR_TRANSITION,
   NAV_CARD_OPACITY_TRANSITION,
   NAV_CARD_WIDTH_SPRING,
+  NAV_CONTAINER_SPRING,
   NAV_DEFAULT_TRANSITION,
   NAV_VIDEO_ICON_MOTION,
 } from '@/core/modules/motion';
@@ -72,7 +73,7 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile, isInteractive) {
+function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile, isInteractive, containerHeight) {
   const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
@@ -82,10 +83,11 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   const staggerDelay = getNavCardStaggerDelay(position, expanded);
   const spring = getNavCardSpring(position);
+  const isTop = position === 0;
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
+      'absolute inset-x-0 bottom-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -101,6 +103,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       zIndex: 10 - position,
       opacity: 1,
       filter: 'blur(0px)',
+      ...(isTop && containerHeight ? { height: containerHeight } : {}),
     },
     initial: {
       opacity: 0,
@@ -125,6 +128,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
       opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay: staggerDelay },
       filter: { ...NAV_CARD_BLUR_TRANSITION, delay: staggerDelay },
       zIndex: { duration: 0, delay: staggerDelay },
+      ...(isTop && containerHeight ? { height: { ...NAV_CONTAINER_SPRING, delay: staggerDelay } } : {}),
     },
   };
 }
@@ -367,6 +371,7 @@ const Item = memo(
       isActive,
       stackWidth,
       isMobile,
+      containerHeight,
     },
 
     ref
@@ -516,7 +521,8 @@ const Item = memo(
           itemStyle.scale,
           cardWidth,
           isMobile,
-          link.type !== 'COUNTDOWN' && !link.isOverlay
+          link.type !== 'COUNTDOWN' && !link.isOverlay,
+          containerHeight
         )}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -69,11 +69,14 @@ export default function Client() {
     [emailPrefill, form.email, nextParam]
   );
 
+  const hasPrefilledRef = useRef(false);
+
   useEffect(() => {
-    if (!form.email && emailPrefill) {
+    if (emailPrefill && !hasPrefilledRef.current) {
       setForm((prev) => ({ ...prev, email: emailPrefill }));
+      hasPrefilledRef.current = true;
     }
-  }, [emailPrefill, form.email]);
+  }, [emailPrefill]);
 
   useEffect(() => {
     if (pendingAction === 'creating-account') {

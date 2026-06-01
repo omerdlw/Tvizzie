@@ -16,6 +16,7 @@ const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   handleOpenFollowList: noopAccountRegistryHandler,
   handleSignInRequest: noopAccountRegistryHandler,
   isBioSurfaceOpen: false,
+  isCurrentAccountMissing: false,
   isFollowLoading: false,
   isOwner: false,
   isPageLoading: false,

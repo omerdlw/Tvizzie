@@ -31,6 +31,22 @@ export function AccountReviewFilterBar({
   const yearLabel = resolveOptionLabel(yearOptions, filters?.year, 'Any year');
   const sortLabel = resolveOptionLabel(sortOptions, filters?.sort, 'When Reviewed (Newest)');
   const isDefaultSort = filters?.sort === REVIEW_SORT_MODE.NEWEST;
+  const isRangeMode = filters?.ratingMode === 'range';
+
+  const handleRatingModeChange = (value) => {
+    if (value === 'range') {
+      onChange({
+        ratingMode: 'range',
+      });
+      return;
+    }
+
+    onChange({
+      maxRating: 5,
+      minRating: 0.5,
+      ratingMode: value,
+    });
+  };
 
   return (
     <div className={cn(UI.bar, className)}>
@@ -39,9 +55,9 @@ export function AccountReviewFilterBar({
           <OptionSection
             options={RATING_MODE_OPTIONS}
             value={filters?.ratingMode}
-            onChange={(value) => onChange({ ratingMode: value })}
+            onChange={handleRatingModeChange}
           />
-          <RatingRangeEditor filters={filters} onChange={onChange} />
+          {isRangeMode ? <RatingRangeEditor filters={filters} onChange={onChange} /> : null}
         </FilterPopover>
       ) : null}
 

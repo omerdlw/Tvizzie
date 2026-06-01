@@ -1,7 +1,7 @@
 'use client';
 
 import { TMDB_IMG } from '@/core/constants';
-import { resolveExplicitMediaType } from '@/core/utils/media';
+import { getMediaDetailPath, getMediaReleaseDate, getMediaTitle, isTitleMediaType, resolveExplicitMediaType } from '@/core/utils/media';
 import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import MediaCard from '@/ui/media/media-card';
@@ -18,15 +18,15 @@ export default function MediaPosterCard({
   usePosterPreferenceVersion();
   const mediaType = resolveExplicitMediaType(item, fallbackMediaType);
 
-  if (mediaType !== 'movie') {
+  if (!isTitleMediaType(mediaType)) {
     return null;
   }
 
   const detailId = item.entityId || item.id;
-  const title = item.title || item.original_title || item.name || item.original_name;
+  const title = getMediaTitle(item);
   const resolvedTitle = title || 'Untitled';
-  const year = item.release_date?.slice(0, 4);
-  const href = `/movie/${detailId}`;
+  const year = getMediaReleaseDate(item)?.slice(0, 4);
+  const href = getMediaDetailPath({ entityId: detailId, entityType: mediaType });
   const imageSrc =
     getPreferredMoviePosterSrc(item, 'w342') ||
     (item.poster_path_full ? item.poster_path_full : item.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);

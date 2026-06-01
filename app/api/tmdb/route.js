@@ -92,7 +92,8 @@ async function handleGenres() {
 async function handleSearch(request) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get('q') || '';
-  const type = searchParams.get('type') === 'person' ? 'person' : 'movie';
+  const rawType = searchParams.get('type');
+  const type = rawType === 'person' ? 'person' : rawType === 'tv' ? 'tv' : 'movie';
   const page = Number(searchParams.get('page') || 1);
   const scope = searchParams.get('scope') === 'full' ? 'full' : 'preview';
 

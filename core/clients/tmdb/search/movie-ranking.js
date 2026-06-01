@@ -1,4 +1,4 @@
-import { isDisplayableMovie } from '../sanitize';
+import { isDisplayableMovie, isDisplayableTv } from '../sanitize';
 import {
   SEARCH_MIN_MOVIE_RUNTIME,
   SEARCH_MIN_MOVIE_VOTE_AVERAGE,
@@ -45,8 +45,8 @@ function getMovieRuntimeValue(movie = {}) {
   return Number.isFinite(runtime) && runtime > 0 ? runtime : null;
 }
 
-function isDisplayableMovieForDetail(movie = {}) {
-  return isDisplayableMovie(movie, 'detail');
+function isDisplayableTitleForDetail(movie = {}, mediaType = 'movie') {
+  return mediaType === 'tv' ? isDisplayableTv(movie, 'detail') : isDisplayableMovie(movie, 'detail');
 }
 
 function getMovieQualitySignalValue(movie = {}) {
@@ -269,9 +269,9 @@ function buildMovieSearchEntry(movie = {}, queryProfile = createSearchQueryProfi
   };
 }
 
-function buildRankedMovieSearchEntries(items = [], query = '') {
+function buildRankedMovieSearchEntries(items = [], query = '', mediaType = 'movie') {
   const queryProfile = createSearchQueryProfile(query);
-  const candidates = dedupeSearchItems(withMediaType(items, 'movie'))
+  const candidates = dedupeSearchItems(withMediaType(items, mediaType))
     .map((movie) => buildMovieSearchEntry(movie, queryProfile))
     .filter(Boolean);
 
@@ -333,13 +333,15 @@ async function hydrateMovieSearchRuntimeCandidates(
 
 export async function rankResolvedMovieSearchItems(items = [], query = '', options = {}) {
   const queryProfile = createSearchQueryProfile(query);
-  const rankedEntries = buildRankedMovieSearchEntries(items, query);
+  const mediaType = options.mediaType === 'tv' ? 'tv' : 'movie';
+  const rankedEntries = buildRankedMovieSearchEntries(items, query, mediaType);
   const hydratedEntries = await hydrateMovieSearchRuntimeCandidates(rankedEntries, options);
 
   return hydratedEntries
     .filter(
       ({ item, match }) =>
-        passesMovieSearchQualityGate(item, { match, queryYear: queryProfile.queryYear }) && isDisplayableMovieForDetail(item)
+        passesMovieSearchQualityGate(item, { match, queryYear: queryProfile.queryYear }) &&
+        isDisplayableTitleForDetail(item, mediaType)
     )
     .sort((left, right) => {
       if (right.totalScore !== left.totalScore) {
@@ -359,11 +361,12 @@ export async function rankResolvedMovieSearchItems(items = [], query = '', optio
     .map(({ item }) => item);
 }
 
-export function buildMovieAuthorityFallbackItems(items = []) {
-  const normalizedItems = dedupeSearchItems(withMediaType(items, 'movie'));
+export function buildMovieAuthorityFallbackItems(items = [], options = {}) {
+  const mediaType = options.mediaType === 'tv' ? 'tv' : 'movie';
+  const normalizedItems = dedupeSearchItems(withMediaType(items, mediaType));
 
   return sortSearchItemsByAuthority(
-    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie, {}) && isDisplayableMovieForDetail(movie)),
+    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie, {}) && isDisplayableTitleForDetail(movie, mediaType)),
     getMovieAuthorityValue
   );
 }

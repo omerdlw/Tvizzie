@@ -15,6 +15,10 @@ export function normalizeToken(value) {
 }
 
 export function normalizeFiniteNumber(value, fallback = null) {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
+  }
+
   const parsed = Number(value);
 
   if (!Number.isFinite(parsed)) {

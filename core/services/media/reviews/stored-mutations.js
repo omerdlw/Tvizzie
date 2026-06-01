@@ -1,6 +1,6 @@
 'use client';
 
-import { isListSubjectType, isMovieMediaType } from '@/core/utils/media';
+import { isListSubjectType, isTitleMediaType } from '@/core/utils/media';
 import { deleteListReview, toggleListReviewLike } from './list-mutations.js';
 import { deleteMediaReview, toggleReviewLike } from './media-mutations.js';
 
@@ -19,8 +19,8 @@ export async function toggleStoredReviewLike({ review, userId }) {
     });
   }
 
-  if (!isMovieMediaType(review.subjectType)) {
-    throw new Error('Only movie reviews are supported');
+  if (!isTitleMediaType(review.subjectType)) {
+    throw new Error('Only movie and TV reviews are supported');
   }
 
   return toggleReviewLike({
@@ -48,8 +48,8 @@ export async function deleteStoredReview({ review, userId }) {
     });
   }
 
-  if (!isMovieMediaType(review.subjectType)) {
-    throw new Error('Only movie reviews are supported');
+  if (!isTitleMediaType(review.subjectType)) {
+    throw new Error('Only movie and TV reviews are supported');
   }
 
   return deleteMediaReview({

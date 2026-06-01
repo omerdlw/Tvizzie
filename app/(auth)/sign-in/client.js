@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -21,6 +21,7 @@ import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import Registry from './registry';
+import ForgotPasswordAction from '@/features/auth/forgot-password-action';
 import { INITIAL_RESET_FLOW, consumeAuthRouteNoticeCookie, resolveSignInNoticeToast } from './sign-in-state';
 import View from './view';
 
@@ -61,11 +62,14 @@ export default function Client() {
     [identifier, nextParam]
   );
 
+  const hasPrefilledRef = useRef(false);
+
   useEffect(() => {
-    if (!identifier && identifierPrefill) {
+    if (identifierPrefill && !hasPrefilledRef.current) {
       setIdentifier(identifierPrefill);
+      hasPrefilledRef.current = true;
     }
-  }, [identifier, identifierPrefill]);
+  }, [identifierPrefill]);
 
   useEffect(() => {
     if (!auth.isReady || !auth.isAuthenticated) {
@@ -391,7 +395,26 @@ export default function Client() {
     }
   };
 
-  const registry = <Registry authIsReady={auth.isReady} isResetMode={isResetMode} />;
+  const forgotPasswordAction = useMemo(() => {
+    if (isResetMode) {
+      return null;
+    }
+    return (
+      <ForgotPasswordAction
+        onClick={handleRequestPasswordReset}
+        disabled={isSignInBusy}
+        isPreparingReset={isPreparingReset}
+      />
+    );
+  }, [isResetMode, handleRequestPasswordReset, isSignInBusy, isPreparingReset]);
+
+  const registry = (
+    <Registry
+      authIsReady={auth.isReady}
+      isResetMode={isResetMode}
+      action={forgotPasswordAction}
+    />
+  );
 
   if (!auth.isReady || (auth.isAuthenticated && !isSubmitting && !isPreparingReset && !resetFlow.isSubmitting)) {
     return <>{registry}</>;

@@ -6,7 +6,7 @@ import {
   requestApiJson,
 } from '@/core/services/shared/client';
 import { createMediaSnapshot } from '@/core/services/shared/media';
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 
 function createEmptyProofGroup() {
   return {
@@ -59,7 +59,7 @@ async function fetchMediaSocialProof({ media, viewerId, knownMovieIds = [] }) {
     return createEmptyMediaSocialProof();
   }
 
-  if (!isMovieMediaType(mediaSnapshot.entityType)) {
+  if (!isTitleMediaType(mediaSnapshot.entityType)) {
     return createEmptyMediaSocialProof();
   }
 

@@ -1,5 +1,6 @@
 const MOVIE_MEDIA_TYPE = 'movie';
 const PERSON_MEDIA_TYPE = 'person';
+const TV_MEDIA_TYPE = 'tv';
 const LIST_SUBJECT_TYPE = 'list';
 const USER_SUBJECT_TYPE = 'user';
 
@@ -15,6 +16,15 @@ export function isMovieMediaType(value) {
 
 export function isPersonMediaType(value) {
   return normalizeMediaType(value) === PERSON_MEDIA_TYPE;
+}
+
+export function isTvMediaType(value) {
+  return normalizeMediaType(value) === TV_MEDIA_TYPE;
+}
+
+export function isTitleMediaType(value) {
+  const normalizedType = normalizeMediaType(value);
+  return normalizedType === MOVIE_MEDIA_TYPE || normalizedType === TV_MEDIA_TYPE;
 }
 
 export function isListSubjectType(value) {
@@ -40,5 +50,24 @@ export function isTvReference(value) {
 }
 
 export function isSupportedContentSubjectType(value) {
-  return isMovieMediaType(value) || isListSubjectType(value) || isUserSubjectType(value);
+  return isTitleMediaType(value) || isListSubjectType(value) || isUserSubjectType(value);
+}
+
+export function getMediaDetailPath({ entityId, entityType, id, media_type: mediaType } = {}) {
+  const resolvedType = normalizeMediaType(entityType || mediaType);
+  const resolvedId = String(entityId ?? id ?? '').trim();
+
+  if (!resolvedId || !isTitleMediaType(resolvedType)) {
+    return null;
+  }
+
+  return `/${resolvedType}/${resolvedId}`;
+}
+
+export function getMediaTitle(item = {}) {
+  return item?.title || item?.original_title || item?.name || item?.original_name || 'Untitled';
+}
+
+export function getMediaReleaseDate(item = {}) {
+  return item?.release_date || item?.first_air_date || '';
 }

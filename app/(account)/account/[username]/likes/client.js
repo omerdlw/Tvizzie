@@ -17,7 +17,7 @@ import { subscribeToUserWatched } from '@/core/services/media/watched-watchlist'
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import LikesView from './view';
 
-const LIKE_SEGMENTS = new Set(['films', 'reviews', 'lists']);
+const LIKE_SEGMENTS = new Set(['titles', 'reviews', 'lists']);
 const LIKED_REVIEWS_FETCH_PAGE_SIZE = 100;
 const LIKED_REVIEWS_FETCH_MAX_PAGES = 80;
 
@@ -55,7 +55,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
   const toast = useToast();
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
-  const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'films';
+  const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment')) ? searchParams.get('segment') : 'titles';
   const {
     canViewPrivateContent,
     favoriteShowcase,
@@ -208,7 +208,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
 
       updateLikesQuery({
         page: null,
-        segment: nextSegment === 'films' ? null : nextSegment,
+        segment: nextSegment === 'titles' ? null : nextSegment,
       });
     },
     [activeSegment, updateLikesQuery]

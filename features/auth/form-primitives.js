@@ -21,12 +21,9 @@ export const AUTH_SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
     'inline-flex h-12 rounded-[14px] w-full items-center justify-center border border-black/10 bg-primary px-4 text-black transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60',
 });
 
-export function AuthField({ children, className = '', htmlFor, label }) {
+export function AuthField({ children, className = '' }) {
   return (
     <div className={className}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-black/50">
-        {label}
-      </label>
       {children}
     </div>
   );

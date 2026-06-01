@@ -244,6 +244,7 @@ export function useAccountSectionPage({
     followRelationship,
     hasResolvedAccessState,
     isAuthSessionReady,
+    isCurrentAccountMissing,
     isLoadingCollections,
     isOwner,
     isResolvingProfile,
@@ -292,7 +293,8 @@ export function useAccountSectionPage({
     isBioSurfaceOpen,
     isPageLoading:
       isResolvingProfile ||
-      (Boolean(resolvedUserId) &&
+      (!isCurrentAccountMissing &&
+        Boolean(resolvedUserId) &&
         (!profile || !hasResolvedAccessState || (canViewPrivateContent && isLoadingCollections))),
     isViewerReady: auth.isReady && isAuthSessionReady,
     setIsBioSurfaceOpen,

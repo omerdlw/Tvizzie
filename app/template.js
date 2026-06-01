@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 import { useOptionalBackgroundActions } from '@/core/modules/background/context';
 import { ModuleError } from '@/core/modules/error-boundary';
 
-function isMoviePath(pathname = '') {
-  return pathname.startsWith('/movie/');
+function isMediaPath(pathname = '') {
+  return pathname.startsWith('/movie/') || pathname.startsWith('/tv/');
 }
 
 export default function Template({ children }) {
@@ -24,7 +24,7 @@ export default function Template({ children }) {
       return;
     }
 
-    if (isMoviePath(previousPathname) && isMoviePath(pathname)) {
+    if (isMediaPath(previousPathname) && isMediaPath(pathname)) {
       backgroundActions?.resetBackground?.();
     }
   }, [backgroundActions, pathname]);

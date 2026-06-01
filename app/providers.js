@@ -36,6 +36,7 @@ function resolveInteractiveBoundaryVariant(pathname = '/') {
     pathname === '/' ||
     pathname.startsWith('/search') ||
     pathname.startsWith('/movie/') ||
+    pathname.startsWith('/tv/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account')
   )

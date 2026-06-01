@@ -170,14 +170,13 @@ export default function Nav() {
   const rafRef = useRef(null);
   const compactRef = useRef(compact);
   const activeItemHasActionRef = useRef(activeItemHasAction);
+  const isOverlayActive = !!activeItem?.isOverlay;
+  const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
+  const isCompactPreviewActive = compact && !expanded && isStackHovered;
+  const isTopItemCompact = compact && !expanded && !isStackHovered;
 
-  useEffect(() => {
-    compactRef.current = compact;
-  });
-
-  useEffect(() => {
-    activeItemHasActionRef.current = activeItemHasAction;
-  });
+  compactRef.current = isTopItemCompact;
+  activeItemHasActionRef.current = activeItemHasAction;
 
   const applyHeight = useCallback(() => {
     if (rafRef.current !== null) {
@@ -239,7 +238,7 @@ export default function Nav() {
 
   useIsomorphicLayoutEffect(() => {
     applyHeight();
-  }, [activeItemHasAction, compact, applyHeight]);
+  }, [activeItemHasAction, isTopItemCompact, applyHeight]);
 
   useIsomorphicLayoutEffect(() => {
     if (previousPathRef.current === pathname) return;
@@ -255,10 +254,6 @@ export default function Nav() {
   }, [activeItem?.isOverlay, activeItemLayoutKey, applyHeight]);
 
   // ─── Overlay / backdrop state ─────────────────────────────────────────────
-
-  const isOverlayActive = !!activeItem?.isOverlay;
-  const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
-  const isCompactPreviewActive = compact && !expanded && isStackHovered;
 
   const handleOutsideDismiss = useCallback(() => {
     if (isOverlayActive) return;
@@ -441,7 +436,6 @@ export default function Nav() {
                       return;
                     }
 
-                    clearHoverState();
                     setExpanded(true);
                   }
                   return;
@@ -455,7 +449,7 @@ export default function Nav() {
                   key={getItemKey(link, index)}
                   link={link}
                   expanded={expanded}
-                  compact={compact && isTop && !isCompactPreviewActive}
+                  compact={isTopItemCompact && isTop}
                   position={position}
                   isTop={isTop}
                   isActive={isActive}
@@ -468,6 +462,7 @@ export default function Nav() {
                   onClick={handleClick}
                   onActionHeightChange={isTop ? handleActionHeightChange : null}
                   onContentHeightChange={isTop ? handleContentHeightChange : null}
+                  containerHeight={isTop ? containerHeight : undefined}
                 />
               );
             })}

@@ -47,7 +47,7 @@ export default function SearchActionControls({
             size={16}
           />
         }
-        placeholder="Search movies, people or users"
+        placeholder="Search movies, TV series, people or users"
         type="text"
         value={query}
         spellCheck={false}

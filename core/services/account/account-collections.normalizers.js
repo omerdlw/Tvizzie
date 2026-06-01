@@ -1,7 +1,7 @@
 import { normalizeValue } from '@/core/utils/string';
 import { buildMediaItemKey } from '@/core/services/shared/media';
 import { normalizeTimestamp } from '@/core/utils/format';
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 
 function normalizeNumber(value, fallback = null) {
   const parsed = Number(value);
@@ -92,7 +92,7 @@ function normalizeListOwnerSnapshot(value = {}, fallbackOwnerId = null) {
 function normalizeListPreviewItem(value = {}) {
   const normalized = normalizeMediaPayload(value, value);
 
-  if (!normalized.entityId || !isMovieMediaType(normalized.entityType)) {
+  if (!normalized.entityId || !isTitleMediaType(normalized.entityType)) {
     return null;
   }
 

@@ -136,23 +136,12 @@ export default function View({
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="•••••••"
+            placeholder="Password"
             autoComplete="current-password"
             classNames={AUTH_PASSWORD_INPUT_CLASSNAMES}
             rightIcon={<PasswordToggleButton visible={showPassword} onClick={() => setShowPassword((prev) => !prev)} />}
           />
         </AuthField>
-
-        <div className="flex items-center justify-end pt-1 text-sm font-medium">
-          <button
-            type="button"
-            onClick={handleRequestPasswordReset}
-            disabled={isSignInBusy}
-            className="text-black/50 transition hover:text-black"
-          >
-            {isPreparingReset ? 'Checking' : 'Forgot password?'}
-          </button>
-        </div>
 
         <Button type="submit" disabled={isSignInBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
           {isPasswordSubmitting ? 'Logging in' : 'Log In'}

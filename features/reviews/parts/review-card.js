@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import { canUseNextImageOptimization, cn, formatDate, getUserAvatarUrl, resolveImageQuality } from '@/core/utils';
+import { isTitleMediaType, normalizeMediaType } from '@/core/utils/media';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
@@ -96,24 +97,25 @@ function appendQueryParam(href, key, value) {
   return hashPart ? `${withQuery}#${hashPart}` : withQuery;
 }
 
-function resolveMovieReviewsHref(review) {
+function resolveMediaReviewsHref(review) {
   const subjectId = String(review?.subjectId || '').trim();
   const rawSubjectHref = String(review?.subjectHref || '').trim();
+  const explicitSubjectType = normalizeMediaType(review?.subjectType);
+  const rawSubjectMatch = rawSubjectHref.match(/^\/(movie|tv)\/([^/?#]+)([?#].*)?$/);
+  const rawReviewsMatch = rawSubjectHref.match(/^\/(movie|tv)\/[^/?#]+\/reviews(?:[?#].*)?$/);
+  const subjectType = isTitleMediaType(explicitSubjectType) ? explicitSubjectType : rawSubjectMatch?.[1] || null;
   let baseHref = '';
 
-  if (subjectId) {
-    baseHref = `/movie/${subjectId}/reviews`;
+  if (subjectId && subjectType) {
+    baseHref = `/${subjectType}/${subjectId}/reviews`;
   } else if (rawSubjectHref) {
-    if (/^\/movie\/[^/?#]+\/reviews(?:[?#].*)?$/.test(rawSubjectHref)) {
+    if (rawReviewsMatch) {
       baseHref = rawSubjectHref;
-    } else {
-      const movieMatch = rawSubjectHref.match(/^\/movie\/([^/?#]+)([?#].*)?$/);
-
-      if (movieMatch) {
-        const movieId = movieMatch[1];
-        const suffix = movieMatch[2] || '';
-        baseHref = `/movie/${movieId}/reviews${suffix}`;
-      }
+    } else if (rawSubjectMatch) {
+      const mediaType = rawSubjectMatch[1];
+      const mediaId = rawSubjectMatch[2];
+      const suffix = rawSubjectMatch[3] || '';
+      baseHref = `/${mediaType}/${mediaId}/reviews${suffix}`;
     }
   }
 
@@ -133,8 +135,8 @@ function resolveSubjectHref(review, isAccountVariant) {
     return rawSubjectHref || null;
   }
 
-  if (review?.subjectType === 'movie') {
-    return resolveMovieReviewsHref(review);
+  if (isTitleMediaType(review?.subjectType)) {
+    return resolveMediaReviewsHref(review);
   }
 
   return rawSubjectHref || null;
@@ -362,7 +364,9 @@ export default function ReviewCard({
                         )}
                       </div>
 
-                      {isOwnReview && <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />}
+                      {isOwnReview && (
+                        <ReviewActions disabled={false} onEdit={onEdit} onDeleteRequest={onDeleteRequest} />
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
@@ -398,7 +402,9 @@ export default function ReviewCard({
                     </p>
                   ))}
 
-                {!hasText && hasRating && !isActivityVariant && <p className="min-w-0 text-sm leading-6">- Rated without review</p>}
+                {!hasText && hasRating && !isActivityVariant && (
+                  <p className="min-w-0 text-sm leading-6">- Rated without review</p>
+                )}
 
                 {!isSpoilerHidden && !isActivityVariant && (
                   <ReviewLikeButton

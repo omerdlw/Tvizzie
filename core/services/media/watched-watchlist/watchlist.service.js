@@ -9,7 +9,7 @@ import {
   refreshMediaCollectionAccountSummary,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   createMediaRow,
   ensureUserId,
   normalizeMediaPayload,
@@ -42,7 +42,7 @@ export async function toggleUserWatchlistItem({ media, userId }) {
   const isInWatchlist = rpcRow?.is_in_watchlist === true;
 
   if (isInWatchlist) {
-    const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watchlist');
+    const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in watchlist');
 
     fireActivityEvent(ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED, {
       dedupeKey: buildCanonicalActivityDedupeKey({

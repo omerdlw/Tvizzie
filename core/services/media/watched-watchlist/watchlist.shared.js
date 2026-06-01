@@ -5,7 +5,7 @@ import {
   buildUserMediaCollectionSubscriptionKey,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   buildMediaItemKey,
   ensureUserId,
 } from '@/core/services/shared/media';
@@ -13,7 +13,7 @@ import {
 export function createWatchlistRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watchlist items');
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watchlist');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in watchlist');
 
   return {
     id: buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),

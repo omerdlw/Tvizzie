@@ -15,9 +15,9 @@ export const LIST_COMMENT_SORT_OPTIONS = Object.freeze([
 export const LIST_COMMENT_SORT_SET = new Set(LIST_COMMENT_SORT_OPTIONS.map((option) => option.value));
 
 export const LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS = Object.freeze([
-  Object.freeze({ key: 'hide_watched', label: 'Hide watched films' }),
-  Object.freeze({ key: 'hide_liked', label: 'Hide liked films' }),
-  Object.freeze({ key: 'hide_watchlist', label: 'Hide films in watchlist' }),
+  Object.freeze({ key: 'hide_watched', label: 'Hide watched titles' }),
+  Object.freeze({ key: 'hide_liked', label: 'Hide liked titles' }),
+  Object.freeze({ key: 'hide_watchlist', label: 'Hide titles in watchlist' }),
   Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
   Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
 ]);

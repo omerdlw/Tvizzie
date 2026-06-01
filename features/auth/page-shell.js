@@ -1,20 +1,19 @@
 'use client';
 
-import { useRegistry } from '@/core/modules/registry';
+import { createRouteRegistry } from '@/features/app-shell/route-registry-factory';
 
-export function AuthRouteRegistry({ authIsReady, description, icon, title }) {
-  useRegistry({
+export const AuthRouteRegistry = createRouteRegistry({
+  displayName: 'AuthRouteRegistry',
+  resolveConfig: ({ authIsReady, description, icon, title, action = null }) => ({
     nav: {
       title,
       description,
       icon,
-      action: null,
+      action,
     },
     loading: { isLoading: !authIsReady },
-  });
-
-  return null;
-}
+  }),
+});
 
 export default function AuthPageShell({ children }) {
   return (

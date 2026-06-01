@@ -1,20 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import {
-  REVIEW_FILTER_QUERY_KEYS,
-  applyReviewFilters,
-  buildCollectionBasePath,
-  buildManagedQueryString,
-  collectReviewYears,
-  hasActiveReviewFilters,
-  parsePageFromSearch,
-  parseReviewFilters,
-  toReviewQueryValues,
+  REVIEW_FILTER_QUERY_KEYS, applyReviewFilters, buildCollectionBasePath, buildManagedQueryString,
+  collectReviewYears, hasActiveReviewFilters, parsePageFromSearch, parseReviewFilters, toReviewQueryValues,
 } from '@/features/account/filtering';
 import { AccountReviewFilterBar } from '@/features/account/filters/content-filter-primitives';
 import AccountPagination from '@/features/account/components/pagination';
@@ -25,243 +17,119 @@ import AccountSectionLayout from '@/features/account/components/section-wrapper'
 
 const REVIEW_ITEMS_PER_PAGE = 36;
 
-function resolveMediaKey(item) {
-  if (item?.mediaKey) {
-    return item.mediaKey;
-  }
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
+function resolveMediaKey(item) {
+  if (item?.mediaKey) return item.mediaKey;
   const entityType = item?.entityType || item?.media_type || null;
   const entityId = String(item?.entityId || item?.id || '').trim();
-
-  if (!entityType || !entityId) {
-    return null;
-  }
-
-  return `${entityType}_${entityId}`;
+  return entityType && entityId ? `${entityType}_${entityId}` : null;
 }
 
 function buildMediaKeySet(items = [], shouldInclude = () => true) {
-  return new Set(
-    items
-      .filter((item) => shouldInclude(item))
-      .map((item) => resolveMediaKey(item))
-      .filter(Boolean)
-  );
+  return new Set(items.filter(shouldInclude).map(resolveMediaKey).filter(Boolean));
 }
 
+// --------------------------------------------------
+// COMPONENT LOGIC & VIEW
+// --------------------------------------------------
+
 export default function AccountReviewsFeed({
-  currentUserId = null,
-  emptyMessage = 'No reviews yet',
-  enablePagination = false,
-  hasMore = false,
-  icon = 'solar:chat-round-bold',
-  isLoading = false,
-  isLoadingMore = false,
-  items = [],
-  loadError = null,
-  likes = [],
-  onDeleteRequest = null,
-  onEdit = null,
-  onLike,
-  onLoadMore = null,
-  paginationPageSize = REVIEW_ITEMS_PER_PAGE,
-  showHeader = true,
-  showOwnActions = false,
-  showSeeMore = false,
-  summaryLabel = null,
-  title,
-  titleHref = null,
-  userProfile = null,
-  watchedItems = [],
+  currentUserId = null, emptyMessage = 'No reviews yet', enablePagination = false, hasMore = false,
+  icon = 'solar:chat-round-bold', isLoading = false, isLoadingMore = false, items = [],
+  loadError = null, likes = [], onDeleteRequest = null, onEdit = null, onLike, onLoadMore = null,
+  paginationPageSize = REVIEW_ITEMS_PER_PAGE, showHeader = true, showOwnActions = false,
+  showSeeMore = false, summaryLabel = null, title, titleHref = null, userProfile = null, watchedItems = [],
 }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsKey = searchParams?.toString?.() || '';
+  const searchString = useSearchParams()?.toString?.() || '';
+  const collectionRootPath = buildCollectionBasePath(pathname);
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
-  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
-  const initialReviewFilters = useMemo(
-    () => parseReviewFilters(new URLSearchParams(searchParamsKey)),
-    [searchParamsKey]
-  );
-  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
-  const [reviewFilters, setReviewFilters] = useState(initialReviewFilters);
-  const [activePage, setActivePage] = useState(initialPage);
-  const yearOptions = useMemo(() => collectReviewYears(items), [items]);
-  const filteredReviews = useMemo(() => applyReviewFilters(items, reviewFilters), [items, reviewFilters]);
-  const filteredReviewCount = filteredReviews.length;
-  const safePageSize = Math.max(1, Number.parseInt(String(paginationPageSize), 10) || REVIEW_ITEMS_PER_PAGE);
-  const hasFilters = hasActiveReviewFilters(reviewFilters);
-  const totalPages = filteredReviewCount > 0 ? Math.ceil(filteredReviewCount / safePageSize) : 1;
-  const resolvedPage = enablePagination ? Math.min(activePage, totalPages) : 1;
-  const pageStart = enablePagination ? (resolvedPage - 1) * safePageSize : 0;
-  const visibleReviews = useMemo(
-    () => (enablePagination ? filteredReviews.slice(pageStart, pageStart + safePageSize) : filteredReviews),
-    [enablePagination, filteredReviews, pageStart, safePageSize]
-  );
-  const resolvedSummaryLabel = useMemo(() => {
-    if (!hasFilters) {
-      return summaryLabel === null ? `${listedReviewCount} Reviews` : summaryLabel;
-    }
 
-    return `${filteredReviewCount} of ${listedReviewCount} shown`;
-  }, [filteredReviewCount, hasFilters, listedReviewCount, summaryLabel]);
+  // URL ve State Senkronizasyonu Birleştirildi
+  const [viewState, setViewState] = useState({
+    filters: parseReviewFilters(new URLSearchParams(searchString)),
+    page: parsePageFromSearch(new URLSearchParams(searchString))
+  });
+
+  useEffect(() => {
+    setViewState({
+      filters: parseReviewFilters(new URLSearchParams(searchString)),
+      page: parsePageFromSearch(new URLSearchParams(searchString))
+    });
+  }, [searchString]);
+
+  const updateView = (updates) => {
+    setViewState((prev) => {
+      const next = { ...prev, ...updates };
+      if (typeof window !== 'undefined') {
+        const qs = buildManagedQueryString(new URLSearchParams(window.location.search), { managedKeys: REVIEW_FILTER_QUERY_KEYS, resetPage: false, values: toReviewQueryValues(next.filters) });
+        const params = new URLSearchParams(qs);
+        if (enablePagination && next.page > 1) params.set('page', String(next.page)); else params.delete('page');
+        window.history.replaceState({}, '', params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath);
+      }
+      return next;
+    });
+  };
+
+  // Derived Values
+  const filteredReviews = useMemo(() => applyReviewFilters(items, viewState.filters), [items, viewState.filters]);
+  const safePageSize = Math.max(1, Number.parseInt(String(paginationPageSize), 10) || REVIEW_ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / safePageSize));
+  const resolvedPage = enablePagination ? Math.min(viewState.page, totalPages) : 1;
+  const pageStart = enablePagination ? (resolvedPage - 1) * safePageSize : 0;
+
+  const visibleReviews = enablePagination ? filteredReviews.slice(pageStart, pageStart + safePageSize) : filteredReviews;
+  const hasFilters = hasActiveReviewFilters(viewState.filters);
+  const resolvedSummaryLabel = hasFilters ? `${filteredReviews.length} of ${listedReviewCount} shown` : (summaryLabel ?? `${listedReviewCount} Reviews`);
+
   const likedMediaKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
   const watchedMediaKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
-  const rewatchMediaKeys = useMemo(
-    () => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1),
-    [watchedItems]
-  );
-
-  useEffect(() => {
-    setReviewFilters(initialReviewFilters);
-    setActivePage(initialPage);
-  }, [initialPage, initialReviewFilters]);
-
-  const updateUrl = useCallback(
-    (nextFilters, nextPage) => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      const queryString = buildManagedQueryString(new URLSearchParams(window.location.search), {
-        managedKeys: REVIEW_FILTER_QUERY_KEYS,
-        resetPage: false,
-        values: toReviewQueryValues(nextFilters),
-      });
-      const params = new URLSearchParams(queryString);
-
-      if (enablePagination && nextPage > 1) {
-        params.set('page', String(nextPage));
-      } else {
-        params.delete('page');
-      }
-
-      const nextQuery = params.toString();
-      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
-    },
-    [collectionRootPath, enablePagination]
-  );
-
-  useEffect(() => {
-    if (!enablePagination || activePage <= totalPages) {
-      return;
-    }
-
-    setActivePage(totalPages);
-    updateUrl(reviewFilters, totalPages);
-  }, [activePage, enablePagination, reviewFilters, totalPages, updateUrl]);
-
-  const updateFilters = useCallback(
-    (updates = {}) => {
-      const nextFilters = {
-        ...reviewFilters,
-        ...updates,
-      };
-      setReviewFilters(nextFilters);
-      setActivePage(1);
-      updateUrl(nextFilters, 1);
-    },
-    [reviewFilters, updateUrl]
-  );
-
-  const resetFilters = useCallback(() => {
-    const defaultFilters = parseReviewFilters(new URLSearchParams());
-    setReviewFilters(defaultFilters);
-    setActivePage(1);
-    updateUrl(defaultFilters, 1);
-  }, [updateUrl]);
-
-  const handlePageChange = useCallback(
-    (nextPage) => {
-      setActivePage(nextPage);
-      updateUrl(reviewFilters, nextPage);
-    },
-    [reviewFilters, updateUrl]
-  );
+  const rewatchMediaKeys = useMemo(() => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1), [watchedItems]);
 
   return (
-    <AccountSectionLayout
-      icon={icon}
-      showHeader={showHeader}
-      showSeeMore={showSeeMore}
-      summaryLabel={resolvedSummaryLabel}
-      title={title}
-      titleHref={titleHref}
-    >
-      {listedReviewCount > 0 || hasFilters ? (
-        <AccountReviewFilterBar
-          filters={reviewFilters}
-          yearOptions={yearOptions}
-          onChange={updateFilters}
-          onReset={hasFilters ? resetFilters : null}
-        />
-      ) : null}
+    <AccountSectionLayout icon={icon} showHeader={showHeader} showSeeMore={showSeeMore} summaryLabel={resolvedSummaryLabel} title={title} titleHref={titleHref}>
 
-      {filteredReviewCount === 0 && !isLoading && !loadError ? (
-        <motion.div
-          className={ACCOUNT_EMPTY_SECTION_CLASS}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
+      {(listedReviewCount > 0 || hasFilters) && (
+        <AccountReviewFilterBar
+          filters={viewState.filters}
+          yearOptions={useMemo(() => collectReviewYears(items), [items])}
+          onChange={(filters) => updateView({ filters: { ...viewState.filters, ...filters }, page: 1 })}
+          onReset={hasFilters ? () => updateView({ filters: parseReviewFilters(new URLSearchParams()), page: 1 }) : null}
+        />
+      )}
+
+      {filteredReviews.length === 0 && !isLoading && !loadError ? (
+        <motion.div className={ACCOUNT_EMPTY_SECTION_CLASS} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
         </motion.div>
-      ) : filteredReviewCount === 0 && !isLoading && loadError ? (
-        <motion.div
-          className={ACCOUNT_EMPTY_SECTION_CLASS}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
+      ) : filteredReviews.length === 0 && !isLoading && loadError ? (
+        <motion.div className={ACCOUNT_EMPTY_SECTION_CLASS} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
           {loadError}
         </motion.div>
       ) : (
         <ReviewList
-          currentUserId={currentUserId}
-          displayVariant="account"
-          isLoading={isLoading && listedReviewCount === 0}
-          loadError={listedReviewCount === 0 ? loadError : null}
-          onDeleteRequest={onDeleteRequest || (() => {})}
-          onEdit={onEdit || (() => {})}
-          onLike={onLike}
-          likedMediaKeys={likedMediaKeys}
-          rewatchMediaKeys={rewatchMediaKeys}
-          showOwnActions={showOwnActions}
-          showSubject={true}
-          sortedReviews={visibleReviews}
-          userProfile={userProfile}
-          watchedMediaKeys={watchedMediaKeys}
+          currentUserId={currentUserId} displayVariant="account"
+          isLoading={isLoading && listedReviewCount === 0} loadError={listedReviewCount === 0 ? loadError : null}
+          onDeleteRequest={onDeleteRequest || (() => {})} onEdit={onEdit || (() => {})} onLike={onLike}
+          likedMediaKeys={likedMediaKeys} rewatchMediaKeys={rewatchMediaKeys} showOwnActions={showOwnActions}
+          showSubject={true} sortedReviews={visibleReviews} userProfile={userProfile} watchedMediaKeys={watchedMediaKeys}
         />
       )}
 
-      {!enablePagination && hasMore && typeof onLoadMore === 'function' ? (
-        <motion.div
-          className="flex justify-center"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Button
-            type="button"
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase transition"
-          >
+      {!enablePagination && hasMore && onLoadMore && (
+        <motion.div className="flex justify-center" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
+          <Button type="button" onClick={onLoadMore} disabled={isLoadingMore} className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase transition">
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
         </motion.div>
-      ) : null}
+      )}
 
-      {enablePagination && filteredReviewCount > 0 ? (
-        <div>
-          <AccountPagination
-            className="w-full"
-            currentPage={resolvedPage}
-            onPageChange={handlePageChange}
-            totalPages={totalPages}
-          />
-        </div>
-      ) : null}
+      {enablePagination && filteredReviews.length > 0 && (
+        <AccountPagination className="w-full" currentPage={resolvedPage} onPageChange={(page) => updateView({ page })} totalPages={totalPages} />
+      )}
     </AccountSectionLayout>
   );
 }

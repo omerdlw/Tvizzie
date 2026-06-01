@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { isPersonMediaType } from '@/core/utils/media';
+import { isPersonMediaType, isTvMediaType } from '@/core/utils/media';
 
 import { SEARCH_PAGE_SIZE, SEARCH_SCAN_CONCURRENCY, TMDB_REVALIDATE } from './config';
 import { tmdbRequest } from './request';
@@ -72,7 +72,8 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
   const mergedItems = dedupeSearchItems([...firstPageItems, ...remainingItems]);
   const resolvedItems = await normalizeSearchResults(mergedItems, rankingQuery, type, {
     hydrateMovieRuntime,
-    runtimeCheckLimit: resolveSearchRuntimeCheckLimit(options.scope),
+    runtimeCheckLimit:
+      options.runtimeCheckLimit === 0 ? 0 : (options.runtimeCheckLimit ?? resolveSearchRuntimeCheckLimit(options.scope)),
     scope: options.scope,
   });
   const fallbackItems = buildAuthorityFallbackItems(mergedItems, type, options);
@@ -98,9 +99,12 @@ async function requestExpandedSearchContent(query, type = 'movie', page = 1, ran
 }
 
 export async function searchContent(query, searchType = 'movie', page = 1, options = {}) {
-  const type = isPersonMediaType(searchType) ? 'person' : 'movie';
+  const type = isPersonMediaType(searchType) ? 'person' : isTvMediaType(searchType) ? 'tv' : 'movie';
   const scope = normalizeSearchScope(options.scope);
-  const response = await requestExpandedSearchContent(query, type, page, query, { scope });
+  const response = await requestExpandedSearchContent(query, type, page, query, {
+    scope,
+    ...(type === 'tv' ? { runtimeCheckLimit: 0 } : {}),
+  });
 
   if (Array.isArray(response.data?.results) && response.data.results.length > 0) {
     return response;
@@ -113,7 +117,10 @@ export async function searchContent(query, searchType = 'movie', page = 1, optio
   const fallbackQueries = createSearchFallbackQueries(query);
 
   for (const fallbackQuery of fallbackQueries) {
-    const fallbackResponse = await requestExpandedSearchContent(fallbackQuery, type, page, query, { scope });
+    const fallbackResponse = await requestExpandedSearchContent(fallbackQuery, type, page, query, {
+      scope,
+      ...(type === 'tv' ? { runtimeCheckLimit: 0 } : {}),
+    });
 
     if (Array.isArray(fallbackResponse.data?.results) && fallbackResponse.data.results.length > 0) {
       return {

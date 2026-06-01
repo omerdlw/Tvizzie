@@ -16,6 +16,7 @@ import {
   fetchMediaPage,
   fetchUsers,
   hasActiveSearchMovieFilters,
+  inferSearchType,
   mergeAllResults,
   normalizeSearchMovieFilters,
 } from '@/features/search/utils';
@@ -31,7 +32,7 @@ const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
 });
 
 function resolveSearchType(value) {
-  if (value === SEARCH_TYPES.MOVIE || value === SEARCH_TYPES.PERSON || value === SEARCH_TYPES.USER) {
+  if (value === SEARCH_TYPES.MOVIE || value === SEARCH_TYPES.TV || value === SEARCH_TYPES.PERSON || value === SEARCH_TYPES.USER) {
     return value;
   }
 
@@ -186,12 +187,14 @@ export default function SearchClient() {
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const yearOptions = useMemo(() => getReleaseYearOptions(), []);
   const activeTypeLabel = SEARCH_TAB_ITEMS.find((item) => item.key === searchType)?.label || 'Results';
-  const isMediaType = searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.PERSON;
+  const isMediaType = searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV || searchType === SEARCH_TYPES.PERSON;
   const hasMore = isMediaType && pageState.page < pageState.totalPages;
   const hasActiveMovieFilters = useMemo(() => hasActiveSearchMovieFilters(movieFilters), [movieFilters]);
   const getRenderableResults = useCallback(
     (items = []) => {
-      return searchType === SEARCH_TYPES.MOVIE ? applySearchMovieFilters(items, movieFilters) : items;
+      return searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV
+        ? applySearchMovieFilters(items, movieFilters)
+        : items;
     },
     [movieFilters, searchType]
   );
@@ -199,7 +202,8 @@ export default function SearchClient() {
   const canLoadMore = Boolean(trimmedQuery) && (visibleCount < filteredResults.length || hasMore);
   const visibleResults = useMemo(() => filteredResults.slice(0, visibleCount), [filteredResults, visibleCount]);
   const shouldShowMovieFilters =
-    (searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE) && visibleResults.length > 0;
+    (searchType === SEARCH_TYPES.ALL || searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV) &&
+    visibleResults.length > 0;
 
   useEffect(() => {
     function updateGridBatchSize() {
@@ -355,7 +359,7 @@ export default function SearchClient() {
       title: 'Search',
       description: trimmedQuery
         ? `${activeTypeLabel} results for "${trimmedQuery}"`
-        : 'Search movies, people, and users',
+        : 'Search movies, TV series, people, and users',
       icon: 'solar:magnifer-linear',
       action: navAction,
     },
@@ -407,11 +411,20 @@ export default function SearchClient() {
           ]);
 
           const mergedResults = mergeAllResults(userResults, mediaResults, null);
+          const inferredSearchType = inferSearchType({
+            mediaResults,
+            normalizedQuery: trimmedDebouncedQuery,
+            userResults,
+          });
 
           if (!isCancelled) {
             const renderableResults = getRenderableResults(mergedResults);
 
             startTransition(() => {
+              if (inferredSearchType !== SEARCH_TYPES.ALL) {
+                setSearchType(inferredSearchType);
+              }
+
               setResults(mergedResults);
               setVisibleCount(Math.min(gridBatchSizeRef.current, renderableResults.length));
               setPageState({
@@ -542,8 +555,8 @@ export default function SearchClient() {
                 </>
               ) : loading ? null : (
                 <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
-                  {hasActiveMovieFilters && searchType === SEARCH_TYPES.MOVIE
-                    ? 'No results found for the selected movie filters'
+                  {hasActiveMovieFilters && (searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV)
+                    ? 'No results found for the selected title filters'
                     : 'No results found'}
                 </div>
               )}

@@ -258,9 +258,9 @@ export async function getUsernameAccountReviewsRouteData(username) {
   });
 }
 
-export async function getUsernameAccountLikesRouteData(username, { segment = 'films' } = {}) {
+export async function getUsernameAccountLikesRouteData(username, { segment = 'titles' } = {}) {
   const snapshot = await getUsernameAccountSnapshot(username);
-  const normalizedSegment = segment === 'reviews' || segment === 'lists' ? segment : 'films';
+  const normalizedSegment = segment === 'reviews' || segment === 'lists' ? segment : 'titles';
 
   if (!snapshot.initialResolvedUserId) {
     return createMissingUsernameRouteState(snapshot, username, {
@@ -270,7 +270,7 @@ export async function getUsernameAccountLikesRouteData(username, { segment = 'fi
   }
 
   const [likes, likedLists, reviewFeed] = await Promise.all([
-    normalizedSegment === 'films'
+    normalizedSegment === 'titles'
       ? loadAccountCollection(snapshot, {
           fallback: [],
           resource: 'likes',
@@ -293,7 +293,7 @@ export async function getUsernameAccountLikesRouteData(username, { segment = 'fi
 
   return createRouteState(snapshot, {
     initialCollections: createSnapshotInitialCollections(snapshot, {
-      ...(normalizedSegment === 'films' ? { likes } : {}),
+      ...(normalizedSegment === 'titles' ? { likes } : {}),
     }),
     initialLikedLists: createInitialListFeed(likedLists, snapshot.initialResolvedUserId, {
       mode: 'liked-lists',

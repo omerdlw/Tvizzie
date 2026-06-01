@@ -3,5 +3,5 @@ import { getUsernameAccountLikesRouteData } from '@/core/services/account/accoun
 import Client from './client';
 
 export default createAccountRoutePage(Client, getUsernameAccountLikesRouteData, (query) => ({
-  segment: query?.segment === 'reviews' ? 'reviews' : query?.segment === 'lists' ? 'lists' : 'films',
+  segment: query?.segment === 'reviews' ? 'reviews' : query?.segment === 'lists' ? 'lists' : 'titles',
 }));

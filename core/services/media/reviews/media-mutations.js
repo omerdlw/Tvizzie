@@ -1,7 +1,7 @@
 'use client';
 
 import { invalidatePollingSubscription, requestApiJson } from '@/core/services/shared/client';
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media';
+import { assertTitleMedia, buildMediaItemKey } from '@/core/services/shared/media';
 
 import {
   ACTIVITY_EVENT_TYPES,
@@ -28,7 +28,7 @@ import { fireReviewLiveEvent, getMediaReviewsSubscriptionKey } from './subscript
 import { ensureWatchedBeforeMediaReview, toggleReviewLikeByKey } from './mutation-shared.js';
 
 export async function upsertMediaReview({ media, user, rating = null, content, isSpoiler = false }) {
-  const mediaSnapshot = assertMovieMedia(media, 'Only movie reviews are supported');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const normalizedContent = normalizeReviewContent(content);
   const normalizedRating = normalizeRating(rating);
   const validationError = getReviewValidationError({
@@ -129,7 +129,7 @@ export async function deleteMediaReview({ media, userId }) {
     throw new Error('Media object and userId are required to delete a review');
   }
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movie reviews are supported');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
   const writePayload = await requestApiJson('/api/reviews/write', {
     method: 'POST',
@@ -173,7 +173,7 @@ export async function toggleReviewLike({ media, review = null, reviewUserId, use
     throw new Error('You cannot like your own review');
   }
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movie reviews are supported');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
   const isNowLiked = await toggleReviewLikeByKey({
     reviewKey: mediaKey,

@@ -8,7 +8,7 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother';
 
 const CONTEXT_MENU_VISIBILITY_EVENT = 'tvizzie:context-menu-visibility';
 const SMOOTH_SCROLL_LOCK_EVENT = 'tvizzie:smooth-scroll-lock';
-const DETAIL_ROUTE_PREFIXES = ['/movie/', '/person/'];
+const DETAIL_ROUTE_PREFIXES = ['/movie/', '/tv/', '/person/'];
 const SMOOTH_WRAPPER_ID = 'smooth-wrapper';
 const SMOOTH_CONTENT_ID = 'smooth-content';
 

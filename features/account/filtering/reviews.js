@@ -70,11 +70,17 @@ export function toReviewQueryValues(filters = DEFAULT_REVIEW_FILTERS) {
     nextValues.rr = normalizedFilters.ratingMode;
   }
 
-  if (normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating) {
+  if (
+    normalizedFilters.ratingMode === 'range' &&
+    normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating
+  ) {
     nextValues.rmin = String(normalizedFilters.minRating);
   }
 
-  if (normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating) {
+  if (
+    normalizedFilters.ratingMode === 'range' &&
+    normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating
+  ) {
     nextValues.rmax = String(normalizedFilters.maxRating);
   }
 
@@ -105,12 +111,14 @@ export function hasActiveReviewFilters(filters = DEFAULT_REVIEW_FILTERS) {
     return true;
   }
 
-  if (normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating) {
-    return true;
-  }
+  if (normalizedFilters.ratingMode === 'range') {
+    if (normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating) {
+      return true;
+    }
 
-  if (normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating) {
-    return true;
+    if (normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating) {
+      return true;
+    }
   }
 
   return normalizedFilters.eyeFlags instanceof Set && normalizedFilters.eyeFlags.size > 0;

@@ -196,7 +196,7 @@ export function useAccountCollectionRemoveActions({
         item,
         onConfirm: handleRemoveWatchedItem,
         scope: {
-          descriptionTarget: 'watched films',
+          descriptionTarget: 'watched titles',
           title: 'Watched Item',
         },
       }),

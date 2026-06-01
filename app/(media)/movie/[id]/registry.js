@@ -28,6 +28,10 @@ import { MOVIE_BACKGROUND_ANIMATION } from './motion';
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
 const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';
 
+function getMediaTitle(item = {}) {
+  return item?.title || item?.original_title || item?.name || item?.original_name;
+}
+
 function renderMovieMetaDescription(parts = [], { compact = false, hasLeadingRating = false } = {}) {
   if (!Array.isArray(parts) || parts.length === 0) {
     return null;
@@ -78,6 +82,7 @@ export default function Registry({
   rating,
   backgroundImage,
   isLoading = false,
+  mediaType = 'movie',
   reviewState,
 }) {
   const [isSearching, setIsSearching] = useState(false);
@@ -85,7 +90,7 @@ export default function Registry({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
+  const isMediaReviewsRoute = new RegExp(`^/${mediaType}/[^/]+/reviews$`).test(pathname || '');
   const reviewUserFilter = String(searchParams?.get('user') || '').trim();
   const hasReviewUserFilter = Boolean(reviewUserFilter);
   const activeSortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
@@ -108,14 +113,14 @@ export default function Registry({
     compact: true,
     hasLeadingRating,
   });
-  const shouldClearBackgroundForReviews = isMovieReviewsRoute;
+  const shouldClearBackgroundForReviews = isMediaReviewsRoute;
   const resolvedBackgroundImage = shouldClearBackgroundForReviews
     ? undefined
     : backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading = !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
 
   const navSurface =
-    !isMovieReviewsRoute && !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
+    !isMediaReviewsRoute && !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
       <WatchProvidersSurface providers={movie?.['watch/providers']} videos={movie?.videos} />
     ) : undefined;
 
@@ -145,7 +150,7 @@ export default function Registry({
     <ReviewAction reviewState={reviewState} />
   ) : isSearching ? (
     <SearchAction />
-  ) : isMovieReviewsRoute && hasReviewUserFilter ? (
+  ) : isMediaReviewsRoute && hasReviewUserFilter ? (
     <div className="mt-2.5 flex w-full gap-2">
       <button
         type="button"
@@ -162,7 +167,7 @@ export default function Registry({
   ) : (
     <div className="mt-2.5 flex w-full gap-2">
       <MovieAction
-        mode={isMovieReviewsRoute ? 'sort' : 'watch'}
+        mode={isMediaReviewsRoute ? 'sort' : 'watch'}
         isActive={isWatchProvidersVisible}
         onToggle={() => setIsWatchProvidersVisible((value) => !value)}
         sortMode={activeSortMode}
@@ -191,7 +196,7 @@ export default function Registry({
       description: navDescription || undefined,
       icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,
       surface: navSurface,
-      title: movie?.title || movie?.original_title || (isLoading ? '' : undefined),
+      title: getMediaTitle(movie) || (isLoading ? '' : undefined),
     },
     ...(shouldClearBackgroundForReviews || resolvedBackgroundImage || shouldResetBackgroundForLoading
       ? {

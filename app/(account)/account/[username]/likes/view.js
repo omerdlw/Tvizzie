@@ -8,14 +8,14 @@ export const Registry = createAccountSectionRegistry({
   navRegistrySource: 'account-likes',
   resolveOverrides: (
     sectionState,
-    { activeSegment = 'films', canShowLikesGrid = false, handleSegmentChange = () => {} }
+    { activeSegment = 'titles', canShowLikesGrid = false, handleSegmentChange = () => {} }
   ) => ({
     navActionOverride: canShowLikesGrid ? (
       <AccountAction
         mode="tab-switch"
         activeTab={activeSegment}
         tabs={[
-          { key: 'films', label: 'Films' },
+          { key: 'titles', label: 'Titles' },
           { key: 'reviews', label: 'Reviews' },
           { key: 'lists', label: 'Lists' },
         ]}

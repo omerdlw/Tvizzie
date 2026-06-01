@@ -46,13 +46,13 @@ export function buildActorSnapshot(userId, profile = {}) {
   };
 }
 
-function buildMovieSubject(payload = {}) {
+function buildMediaSubject(payload = {}) {
   const subjectType = normalizeValue(payload.subjectType).toLowerCase();
   const subjectId = normalizeValue(payload.subjectId);
   const subjectTitle = normalizeValue(payload.subjectTitle) || 'Untitled';
 
   if (!subjectType || !subjectId) {
-    throw new Error('invalid-event-payload: movie subject is required');
+    throw new Error('invalid-event-payload: media subject is required');
   }
 
   return {
@@ -97,7 +97,7 @@ function buildSubject(payload = {}) {
     return buildListSubject(payload);
   }
 
-  return buildMovieSubject(payload);
+  return buildMediaSubject(payload);
 }
 
 function buildReviewCardSnapshot({ actor, occurredAt, payload = {}, subject }) {

@@ -10,210 +10,80 @@ import { AccountPageShell } from '@/features/account/components/layout';
 import { ProfileMediaActions } from '@/features/account/components/media-grid';
 import { AccountSectionState } from '@/features/account/components/section-wrapper';
 
-const OVERVIEW_ACTIVITY_LIMIT = 5;
-const OVERVIEW_MEDIA_LIMIT = 6;
-const OVERVIEW_FAVORITES_LIMIT = 5;
-const OVERVIEW_LIST_LIMIT = 3;
-
-function buildSectionHref(username, suffix = '') {
-  return username ? `/account/${username}${suffix}` : null;
-}
+const LIMITS = { activity: 5, media: 6, favorites: 5, lists: 3 };
 
 export default function AccountOverviewFeed({ model = {}, RegistryComponent = null }) {
   const {
     auth = { isAuthenticated: false, isReady: false, user: null },
-    authoredReviews = [],
-    authoredReviewsError,
-    authoredReviewsLoading,
-    canViewPrivateContent = false,
-    canViewProfileCollections = false,
-    favoriteShowcase = [],
-    followerCount = 0,
-    followingCount = 0,
-    followState,
-    handleDeleteReview,
-    handleEditReview,
-    handleFollow,
-    handleLikeReview,
-    handleOpenFollowList,
-    handleDeleteList,
-    handleEditList,
-    handleRequestRemoveLike,
-    handleRequestRemoveWatchedItem,
-    handleRequestRemoveWatchlistItem,
-    hasMoreAuthoredReviews,
-    initialActivityFeed = null,
-    isFollowLoading = false,
-    isOwner = false,
-    isPageLoading = false,
-    isPrivateProfile = false,
-    isViewerReady = false,
-    likeCount = 0,
-    likes = [],
-    listCount = 0,
-    lists = [],
-    profile,
-    profileHandle,
-    resolvedUserId,
-    setIsBioSurfaceOpen,
-    username,
-    watched = [],
-    watchedCount = 0,
-    watchlist = [],
-    watchlistCount = 0,
+    authoredReviews = [], authoredReviewsError, authoredReviewsLoading,
+    canViewPrivateContent = false, canViewProfileCollections = false,
+    favoriteShowcase = [], followerCount = 0, followingCount = 0, followState,
+    handleDeleteReview, handleEditReview, handleFollow, handleLikeReview,
+    handleOpenFollowList, handleDeleteList, handleEditList, handleRequestRemoveLike,
+    handleRequestRemoveWatchedItem, handleRequestRemoveWatchlistItem, hasMoreAuthoredReviews,
+    initialActivityFeed = null, isFollowLoading = false, isOwner = false, isPageLoading = false,
+    isPrivateProfile = false, isViewerReady = false, likeCount = 0, likes = [],
+    listCount = 0, lists = [], profile, profileHandle, resolvedUserId, setIsBioSurfaceOpen,
+    username, watched = [], watchedCount = 0, watchlist = [], watchlistCount = 0,
   } = model;
 
-  const shouldShowFavorites = favoriteShowcase.length > 0;
-  const shouldShowWatched = watched.length > 0;
-  const shouldShowWatchlist = watchlist.length > 0;
-  const shouldShowLists = lists.length > 0;
-  const shouldShowReviews = authoredReviews.length > 0;
   const currentUserId = auth.user?.id || null;
-  const isShellLoading = isPageLoading || (!username && auth.isReady && !auth.isAuthenticated);
-  const activityHref = buildSectionHref(profileHandle, '/activity');
-  const likesHref = buildSectionHref(profileHandle, '/likes');
-  const listsHref = buildSectionHref(profileHandle, '/lists');
-  const reviewsHref = buildSectionHref(profileHandle, '/reviews');
-  const watchedHref = buildSectionHref(profileHandle, '/watched');
-  const watchlistHref = buildSectionHref(profileHandle, '/watchlist');
-  const pageRegistry = RegistryComponent ? <RegistryComponent /> : null;
+  const buildHref = (suffix) => profileHandle ? `/account/${profileHandle}${suffix}` : null;
 
   return (
     <AccountPageShell
-      activeSection="overview"
-      followerCount={followerCount}
-      followState={followState}
-      followingCount={followingCount}
-      isLoading={isShellLoading}
-      isFollowLoading={isFollowLoading}
-      isOwner={isOwner}
-      likesCount={likeCount}
-      listsCount={listCount}
-      onFollow={handleFollow}
-      onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioSurfaceOpen(true)}
-      profile={profile}
-      registry={pageRegistry}
-      resolvedUserId={resolvedUserId}
-      skeletonVariant="overview"
-      username={profileHandle}
-      watchedCount={watchedCount}
-      watchlistCount={watchlistCount}
+      activeSection="overview" followerCount={followerCount} followState={followState}
+      followingCount={followingCount} isLoading={isPageLoading || (!username && auth.isReady && !auth.isAuthenticated)}
+      isFollowLoading={isFollowLoading} isOwner={isOwner} likesCount={likeCount} listsCount={listCount}
+      onFollow={handleFollow} onOpenFollowList={handleOpenFollowList} onReadMore={() => setIsBioSurfaceOpen(true)}
+      profile={profile} registry={RegistryComponent ? <RegistryComponent /> : null} resolvedUserId={resolvedUserId}
+      skeletonVariant="overview" username={profileHandle} watchedCount={watchedCount} watchlistCount={watchlistCount}
     >
-      {canViewProfileCollections ? (
+      {!canViewProfileCollections ? <AccountSectionState message="This profile is private." /> : (
         <>
-          {shouldShowFavorites ? (
+          {favoriteShowcase.length > 0 && (
             <AccountFavoritesOverview
-              icon="solar:star-bold"
-              isOwner={isOwner}
-              items={favoriteShowcase.slice(0, OVERVIEW_FAVORITES_LIMIT)}
-              renderOverlay={(item) =>
-                isOwner ? (
-                  <ProfileMediaActions
-                    media={item}
-                    onRemoveItem={handleRequestRemoveLike}
-                    removeLabel={`Remove ${item.title || item.name} from favorites`}
-                    userId={currentUserId}
-                  />
-                ) : null
-              }
-              title="Favorites"
-              titleHref={likesHref}
+              icon="solar:star-bold" isOwner={isOwner} items={favoriteShowcase.slice(0, LIMITS.favorites)} title="Favorites" titleHref={buildHref('/likes')}
+              renderOverlay={(item) => isOwner ? <ProfileMediaActions media={item} onRemoveItem={handleRequestRemoveLike} removeLabel={`Remove ${item.title || item.name} from favorites`} userId={currentUserId} /> : null}
             />
-          ) : null}
+          )}
 
-          {shouldShowWatched ? (
+          {watched.length > 0 && (
             <AccountWatchedOverview
-              emptyMessage="No watched films yet"
-              icon="solar:eye-bold"
-              items={watched.slice(0, OVERVIEW_MEDIA_LIMIT)}
-              renderOverlay={(item) =>
-                isOwner ? (
-                  <ProfileMediaActions
-                    media={item}
-                    onRemoveItem={handleRequestRemoveWatchedItem}
-                    removeLabel={`Remove ${item.title || item.name} from watched`}
-                    userId={currentUserId}
-                  />
-                ) : null
-              }
-              showSeeMore={watchedCount > OVERVIEW_MEDIA_LIMIT}
-              title="Watched"
-              titleHref={watchedHref}
+              emptyMessage="No watched titles yet" icon="solar:eye-bold" items={watched.slice(0, LIMITS.media)} showSeeMore={watchedCount > LIMITS.media} title="Watched" titleHref={buildHref('/watched')}
+              renderOverlay={(item) => isOwner ? <ProfileMediaActions media={item} onRemoveItem={handleRequestRemoveWatchedItem} removeLabel={`Remove ${item.title || item.name} from watched`} userId={currentUserId} /> : null}
             />
-          ) : null}
+          )}
 
-          {shouldShowWatchlist ? (
+          {watchlist.length > 0 && (
             <AccountWatchlistOverview
-              icon="solar:bookmark-bold"
-              isOwner={isOwner}
-              items={watchlist.slice(0, OVERVIEW_MEDIA_LIMIT)}
-              onRemoveItem={handleRequestRemoveWatchlistItem}
-              renderOverlay={(item) =>
-                isOwner ? (
-                  <ProfileMediaActions
-                    media={item}
-                    onRemoveItem={handleRequestRemoveWatchlistItem}
-                    removeLabel={`Remove ${item.title || item.name} from watchlist`}
-                    userId={currentUserId}
-                  />
-                ) : null
-              }
-              showSeeMore={watchlistCount > OVERVIEW_MEDIA_LIMIT}
-              title="Watchlist"
-              titleHref={watchlistHref}
+              icon="solar:bookmark-bold" isOwner={isOwner} items={watchlist.slice(0, LIMITS.media)} onRemoveItem={handleRequestRemoveWatchlistItem} showSeeMore={watchlistCount > LIMITS.media} title="Watchlist" titleHref={buildHref('/watchlist')}
+              renderOverlay={(item) => isOwner ? <ProfileMediaActions media={item} onRemoveItem={handleRequestRemoveWatchlistItem} removeLabel={`Remove ${item.title || item.name} from watchlist`} userId={currentUserId} /> : null}
             />
-          ) : null}
+          )}
 
           <AccountActivityOverview
-            canViewPrivateContent={canViewPrivateContent}
-            icon="solar:bolt-bold"
-            initialFeed={initialActivityFeed}
-            isOwner={isOwner}
-            isPrivateProfile={isPrivateProfile}
-            isViewerReady={isViewerReady}
-            limit={OVERVIEW_ACTIVITY_LIMIT}
-            resolvedUserId={resolvedUserId}
-            summaryLabel=""
-            title="Recent Activity"
-            titleHref={activityHref}
+            canViewPrivateContent={canViewPrivateContent} icon="solar:bolt-bold" initialFeed={initialActivityFeed} isOwner={isOwner}
+            isPrivateProfile={isPrivateProfile} isViewerReady={isViewerReady} limit={LIMITS.activity} resolvedUserId={resolvedUserId}
+            summaryLabel="" title="Recent Activity" titleHref={buildHref('/activity')}
           />
 
-          {shouldShowLists ? (
+          {lists.length > 0 && (
             <AccountListsOverview
-              icon="solar:list-broken"
-              items={lists.slice(0, OVERVIEW_LIST_LIMIT)}
-              isOwner={isOwner}
-              onDeleteList={handleDeleteList}
-              onEditList={handleEditList}
-              ownerUsername={profileHandle}
-              showSeeMore={listCount > OVERVIEW_LIST_LIMIT}
-              title="Lists"
-              titleHref={listsHref}
+              icon="solar:list-broken" items={lists.slice(0, LIMITS.lists)} isOwner={isOwner}
+              onDeleteList={handleDeleteList} onEditList={handleEditList} ownerUsername={profileHandle}
+              showSeeMore={listCount > LIMITS.lists} title="Lists" titleHref={buildHref('/lists')}
             />
-          ) : null}
+          )}
 
-          {shouldShowReviews ? (
+          {authoredReviews.length > 0 && (
             <AccountReviewsOverview
-              currentUserId={currentUserId}
-              icon="solar:chat-round-bold"
-              isLoading={authoredReviewsLoading}
-              items={authoredReviews}
-              likes={likes}
-              loadError={authoredReviewsError}
-              onDeleteRequest={handleDeleteReview}
-              onEdit={handleEditReview}
-              onLike={handleLikeReview}
-              showOwnActions={isOwner}
-              showSeeMore={hasMoreAuthoredReviews}
-              summaryLabel=""
-              title="Recent Reviews"
-              titleHref={reviewsHref}
+              currentUserId={currentUserId} icon="solar:chat-round-bold" isLoading={authoredReviewsLoading} items={authoredReviews}
+              likes={likes} loadError={authoredReviewsError} onDeleteRequest={handleDeleteReview} onEdit={handleEditReview}
+              onLike={handleLikeReview} showOwnActions={isOwner} showSeeMore={hasMoreAuthoredReviews} summaryLabel="" title="Recent Reviews" titleHref={buildHref('/reviews')}
             />
-          ) : null}
+          )}
         </>
-      ) : (
-        <AccountSectionState message="This profile is private." />
       )}
     </AccountPageShell>
   );

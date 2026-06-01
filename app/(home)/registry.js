@@ -1,7 +1,7 @@
 'use client';
 
 import SearchAction from '@/features/navigation/actions/search-action';
-import { useRegistry } from '@/core/modules/registry';
+import { createRouteRegistry } from '@/features/app-shell/route-registry-factory';
 
 const HOME_BACKGROUND_ANIMATION = Object.freeze({
   exitDurationFactor: 0.42,
@@ -28,8 +28,9 @@ const HOME_BACKGROUND_ANIMATION = Object.freeze({
   },
 });
 
-export default function Registry({ backgroundImage = null, isLoading = false }) {
-  useRegistry({
+export default createRouteRegistry({
+  displayName: 'HomeRegistry',
+  resolveConfig: ({ backgroundImage = null, isLoading = false }) => ({
     nav: {
       action: <SearchAction />,
     },
@@ -61,7 +62,5 @@ export default function Registry({ backgroundImage = null, isLoading = false }) 
           },
         }),
     loading: { isLoading },
-  });
-
-  return null;
-}
+  }),
+});

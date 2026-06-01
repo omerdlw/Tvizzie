@@ -1,5 +1,5 @@
 import { normalizeValue } from '@/core/utils/string';
-import { isMovieMediaType, normalizeMediaType } from '@/core/utils/media';
+import { isMovieMediaType, isTitleMediaType, normalizeMediaType } from '@/core/utils/media';
 
 export function buildMediaItemKey(entityType, entityId) {
   if (!entityType || entityId === undefined || entityId === null) {
@@ -23,6 +23,16 @@ export function assertMovieMedia(media, message = 'Only movies are supported') {
   const mediaSnapshot = createMediaSnapshot(media);
 
   if (!isMovieMediaType(mediaSnapshot.entityType)) {
+    throw new Error(message);
+  }
+
+  return mediaSnapshot;
+}
+
+export function assertTitleMedia(media, message = 'Only movies and TV series are supported') {
+  const mediaSnapshot = createMediaSnapshot(media);
+
+  if (!isTitleMediaType(mediaSnapshot.entityType)) {
     throw new Error(message);
   }
 

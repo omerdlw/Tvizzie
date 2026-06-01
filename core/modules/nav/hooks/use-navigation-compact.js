@@ -14,6 +14,7 @@ const HORIZONTAL_GESTURE_DOMINANCE_RATIO = 1.15;
 const HORIZONTAL_GESTURE_SUPPRESSION_MS = 260;
 const BOTTOM_LOCK_ACTIVATION_DISTANCE = 2;
 const BOTTOM_LOCK_RELEASE_DISTANCE = 40;
+const BOTTOM_LOCK_MIN_SCROLLABLE_HEIGHT = COMPACT_SCROLL_THRESHOLD + BOTTOM_LOCK_RELEASE_DISTANCE;
 
 function getDistanceToBottom(scrollY) {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
@@ -32,6 +33,10 @@ function getScrollableHeight() {
 
   const root = document.documentElement;
   return Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
+}
+
+function canUseBottomLock(scrollableHeight) {
+  return scrollableHeight >= BOTTOM_LOCK_MIN_SCROLLABLE_HEIGHT;
 }
 
 function getNow() {
@@ -146,8 +151,8 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
     const currentScrollY = window.scrollY || 0;
     const initialDistanceToBottom = getDistanceToBottom(currentScrollY);
     const initialScrollableHeight = getScrollableHeight();
-    const hasScrollableContent = initialScrollableHeight > 0;
-    const shouldStartBottomLocked = hasScrollableContent && initialDistanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
+    const shouldStartBottomLocked =
+      canUseBottomLock(initialScrollableHeight) && initialDistanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
 
     if (expanded) {
       restoreCompactRef.current = compactRef.current;
@@ -177,9 +182,21 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
       const scrollY = window.scrollY || 0;
       const distanceToBottom = getDistanceToBottom(scrollY);
       const scrollableHeight = getScrollableHeight();
-      const hasScrollableContent = scrollableHeight > 0;
-      const shouldActivateBottomLock = hasScrollableContent && distanceToBottom <= BOTTOM_LOCK_ACTIVATION_DISTANCE;
-      const shouldKeepBottomLock = hasScrollableContent && distanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
+      const canBottomLock = canUseBottomLock(scrollableHeight);
+      const shouldActivateBottomLock = canBottomLock && distanceToBottom <= BOTTOM_LOCK_ACTIVATION_DISTANCE;
+      const shouldKeepBottomLock = canBottomLock && distanceToBottom <= BOTTOM_LOCK_RELEASE_DISTANCE;
+
+      if (bottomLockRef.current && !canBottomLock) {
+        bottomLockRef.current = false;
+        downwardTravelRef.current = 0;
+
+        if (compactRef.current && scrollY < COMPACT_SCROLL_THRESHOLD) {
+          compactRef.current = false;
+          lastScrollYRef.current = scrollY;
+          setCompact(false);
+          return;
+        }
+      }
 
       if (shouldActivateBottomLock) {
         bottomLockRef.current = true;

@@ -11,6 +11,7 @@ export const REVIEW_SORT_OPTIONS = Object.freeze([
 
 export const RATING_MODE_OPTIONS = Object.freeze([
   { label: 'Any rating', value: 'any' },
+  { label: 'Rating range', value: 'range' },
   { label: 'No rating', value: 'none' },
 ]);
 

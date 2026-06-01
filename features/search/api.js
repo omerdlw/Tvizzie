@@ -16,7 +16,7 @@ function emptyMediaPage(page = 1) {
 }
 
 function isSearchableMediaType(type) {
-  return type === SEARCH_TYPES.MOVIE || type === SEARCH_TYPES.PERSON;
+  return type === SEARCH_TYPES.MOVIE || type === SEARCH_TYPES.TV || type === SEARCH_TYPES.PERSON;
 }
 
 function isExactUserMatch(item, normalizedQuery) {
@@ -28,6 +28,55 @@ function isExactUserMatch(item, normalizedQuery) {
     .toLowerCase();
 
   return displayName === normalizedQuery || username === normalizedQuery;
+}
+
+function normalizeComparableTitle(value) {
+  return normalizeString(value)
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function hasExactTitleMatch(item = {}, normalizedQuery = '') {
+  return [item?.title, item?.original_title, item?.name, item?.original_name]
+    .map(normalizeComparableTitle)
+    .some((title) => title && title === normalizedQuery);
+}
+
+function getTitleAuthority(item = {}) {
+  const popularity = Number(item?.popularity) || 0;
+  const voteCount = Number(item?.vote_count) || 0;
+  const voteAverage = Number(item?.vote_average) || 0;
+
+  return popularity * 8 + Math.log10(voteCount + 1) * 140 + voteAverage * 12;
+}
+
+function resolvePreferredTitleType({ movieResults = [], normalizedQuery = '', tvResults = [] }) {
+  const exactMovies = movieResults.filter((item) => hasExactTitleMatch(item, normalizedQuery));
+  const exactTv = tvResults.filter((item) => hasExactTitleMatch(item, normalizedQuery));
+
+  if (exactTv.length && !exactMovies.length) {
+    return SEARCH_TYPES.TV;
+  }
+
+  if (exactMovies.length && !exactTv.length) {
+    return SEARCH_TYPES.MOVIE;
+  }
+
+  if (exactMovies.length && exactTv.length) {
+    const topMovie = [...exactMovies].sort((left, right) => getTitleAuthority(right) - getTitleAuthority(left))[0];
+    const topTv = [...exactTv].sort((left, right) => getTitleAuthority(right) - getTitleAuthority(left))[0];
+
+    return getTitleAuthority(topTv) > getTitleAuthority(topMovie) ? SEARCH_TYPES.TV : SEARCH_TYPES.MOVIE;
+  }
+
+  if (!movieResults.length && tvResults.length) {
+    return SEARCH_TYPES.TV;
+  }
+
+  return null;
 }
 
 export function inferSearchType({ normalizedQuery, userResults = [], mediaResults = [] }) {
@@ -43,14 +92,29 @@ export function inferSearchType({ normalizedQuery, userResults = [], mediaResult
   }
 
   const movieResults = mediaResults.filter((item) => item?.media_type === SEARCH_TYPES.MOVIE);
+  const tvResults = mediaResults.filter((item) => item?.media_type === SEARCH_TYPES.TV);
   const personResults = mediaResults.filter((item) => item?.media_type === SEARCH_TYPES.PERSON);
-  const preferredMediaType = resolvePreferredMediaType({
+  const preferredTitleType = resolvePreferredTitleType({
     movieResults,
+    normalizedQuery: normalizeComparableTitle(resolvedQuery),
+    tvResults,
+  });
+
+  if (preferredTitleType) {
+    return preferredTitleType;
+  }
+
+  const preferredMediaType = resolvePreferredMediaType({
+    movieResults: [...movieResults, ...tvResults],
     personResults,
     query: resolvedQuery,
   });
 
   if (preferredMediaType !== SEARCH_TYPES.ALL) {
+    if (preferredMediaType === SEARCH_TYPES.MOVIE && !movieResults.length && tvResults.length) {
+      return SEARCH_TYPES.TV;
+    }
+
     return preferredMediaType;
   }
 
@@ -112,12 +176,13 @@ export async function fetchMedia(query, type, options = {}) {
 }
 
 export async function fetchAllMedia(query, page = 1, options = {}) {
-  const [moviePayload, personPayload] = await Promise.all([
+  const [moviePayload, tvPayload, personPayload] = await Promise.all([
     fetchMediaPage(query, SEARCH_TYPES.MOVIE, page, options),
+    fetchMediaPage(query, SEARCH_TYPES.TV, page, options),
     fetchMediaPage(query, SEARCH_TYPES.PERSON, page, options),
   ]);
 
-  return rankAllMediaResults(moviePayload.results, personPayload.results, query);
+  return rankAllMediaResults([...moviePayload.results, ...tvPayload.results], personPayload.results, query);
 }
 
 export function mergeAllResults(userResults, mediaResults, maxResults = SEARCH_LIMITS.MAX_RESULTS) {

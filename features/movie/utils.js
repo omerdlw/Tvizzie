@@ -200,39 +200,52 @@ export function getMovieComputedData(movie) {
 
   const genres = getHeroGenres(movie);
 
-  const director = movie.credits?.crew?.find((member) => member.job === 'Director');
+  const credits = movie.credits || movie.aggregate_credits || {};
+  const director = credits?.crew?.find((member) => member.job === 'Director');
 
-  const writers = uniqueBy(movie.credits?.crew?.filter((member) => member.department === 'Writing') || [], 'id').slice(
+  const writers = uniqueBy(credits?.crew?.filter((member) => member.department === 'Writing') || [], 'id').slice(
     0,
     MAX_WRITERS
   );
 
-  const cast = uniqueBy(movie.credits?.cast || []);
-  const crew = (movie.credits?.crew || []).filter((member) => member?.id && member?.name && member?.job);
+  const creators = uniqueBy(movie.created_by || [], 'id').slice(0, MAX_WRITERS);
+  const cast = uniqueBy(credits?.cast || []);
+  const crew = (credits?.crew || []).filter((member) => member?.id && member?.name && member?.job);
   const recommendations = uniqueBy(movie.recommendations?.results || [], 'id').slice(0, MAX_RECOMMENDATIONS);
   const similar = rankRelatedMovies(movie, movie.similar?.results || [], 'similar', MAX_SIMILAR);
 
   let certification = null;
   const releases = movie.release_dates?.results || [];
+  const contentRatings = movie.content_ratings?.results || [];
   const usRelease = releases.find((release) => release.iso_3166_1 === 'US');
+  const usContentRating = contentRatings.find((rating) => rating.iso_3166_1 === 'US');
 
   if (usRelease) {
     certification = usRelease.release_dates.find((entry) => entry.certification)?.certification;
   }
 
+  if (!certification && usContentRating?.rating) {
+    certification = usContentRating.rating;
+  }
+
+  const episodeRuntime = Array.isArray(movie.episode_run_time)
+    ? movie.episode_run_time.find((runtime) => Number(runtime) > 0)
+    : null;
+
   return {
     cast,
     crew,
     certification,
+    creators,
     director,
     genres,
     rating: movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null,
     recommendations,
-    runtimeText: movie.runtime ? formatRuntime(movie.runtime) : null,
+    runtimeText: movie.runtime ? formatRuntime(movie.runtime) : episodeRuntime ? `${episodeRuntime}m episodes` : null,
     similar,
     tags: getHeroTags(movie, genres),
     writers,
-    year: movie.release_date?.slice(0, 4),
+    year: (movie.release_date || movie.first_air_date)?.slice(0, 4),
   };
 }
 

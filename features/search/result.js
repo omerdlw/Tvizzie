@@ -13,6 +13,8 @@ export function getDetailPath(item) {
   switch (item.media_type) {
     case SEARCH_TYPES.MOVIE:
       return `/movie/${item.id}`;
+    case SEARCH_TYPES.TV:
+      return `/tv/${item.id}`;
     case SEARCH_TYPES.PERSON:
       return `/person/${item.id}`;
     case SEARCH_TYPES.USER:
@@ -36,6 +38,8 @@ export function getItemSubtitle(item) {
       return 'USER';
     case SEARCH_TYPES.MOVIE:
       return 'MOVIE';
+    case SEARCH_TYPES.TV:
+      return 'TV SERIES';
     case SEARCH_TYPES.PERSON:
     default:
       return 'PERSON';

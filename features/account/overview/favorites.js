@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
-import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
@@ -16,7 +15,7 @@ const OVERVIEW_ROW_CARD_LIMIT = 5;
 function getFavoriteType(item) {
   const explicitType = item?.media_type || item?.entityType;
 
-  if (explicitType === 'movie') {
+  if (explicitType === 'movie' || explicitType === 'tv') {
     return explicitType;
   }
 
@@ -24,15 +23,16 @@ function getFavoriteType(item) {
 }
 
 function getFavoriteTitle(item) {
-  return item?.title || item?.original_title || 'Untitled';
+  return item?.title || item?.original_title || item?.name || item?.original_name || 'Untitled';
 }
 
 function getFavoriteYear(item) {
-  return item?.release_date?.slice?.(0, 4) || null;
+  return item?.release_date?.slice?.(0, 4) || item?.first_air_date?.slice?.(0, 4) || null;
 }
 
 function getFavoritePoster(item) {
-  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  const mediaType = item?.media_type || item?.entityType;
+  const preferredPoster = mediaType === 'movie' ? getPreferredMoviePosterSrc(item, 'w342') : null;
   if (preferredPoster) {
     return preferredPoster;
   }
@@ -70,7 +70,7 @@ export default function AccountFavoritesOverview({
           const mediaType = getFavoriteType(item);
           const detailId = item?.entityId || item?.id;
 
-          if (!detailId || mediaType !== 'movie') {
+          if (!detailId || !mediaType) {
             return null;
           }
 
@@ -99,15 +99,11 @@ export default function AccountFavoritesOverview({
       titleHref={titleHref}
     >
       {cards.length > 0 ? (
-        <div className="flex gap-2 sm:gap-3 overflow-hidden">
+        <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
             <div
               key={`${card.id}-${index}`}
-              className={cn(
-                'flex h-full shrink-0 flex-col basis-[calc((100%-16px)/3)] sm:basis-[calc((100%-36px)/4)] md:basis-[calc((100%-48px)/5)]',
-                index === 3 && 'hidden sm:block',
-                index === 4 && 'hidden md:block'
-              )}
+              className="flex h-full min-w-0 flex-col"
             >
               <MediaCard
                 className="w-full md:w-full lg:w-full"

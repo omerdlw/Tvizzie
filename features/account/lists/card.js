@@ -18,7 +18,8 @@ const POSTER_SPREAD = 148 * CARD_SCALE;
 const STACK_SIZE = 5;
 
 function getPreviewImage(item) {
-  const preferredPoster = getPreferredMoviePosterSrc(item, 'w342');
+  const mediaType = item?.media_type || item?.entityType;
+  const preferredPoster = mediaType === 'movie' ? getPreferredMoviePosterSrc(item, 'w342') : null;
   if (preferredPoster) {
     return preferredPoster;
   }

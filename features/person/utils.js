@@ -88,6 +88,20 @@ function normalizeMovieCredits(person) {
   }));
 }
 
+function normalizeTvCredits(person) {
+  return getPreferredCredits(person, {
+    cast: person?.tv_credits?.cast || [],
+    crew: person?.tv_credits?.crew || [],
+  }).map((credit) => ({
+    ...credit,
+    media_type: 'tv',
+  }));
+}
+
+function normalizeTitleCredits(person) {
+  return [...normalizeMovieCredits(person), ...normalizeTvCredits(person)];
+}
+
 function comparePopularity(first, second) {
   return (
     (second.popularity || 0) - (first.popularity || 0) ||
@@ -97,7 +111,9 @@ function comparePopularity(first, second) {
 }
 
 function compareReleaseDate(first, second) {
-  return (second.release_date || '').localeCompare(first.release_date || '');
+  return (second.release_date || second.first_air_date || '').localeCompare(
+    first.release_date || first.first_air_date || ''
+  );
 }
 
 function compareBackgroundCandidate(first, second) {
@@ -111,7 +127,7 @@ function compareBackgroundCandidate(first, second) {
 
 export function getKnownForCredits(person) {
   return uniqueByMediaId(
-    normalizeMovieCredits(person)
+    normalizeTitleCredits(person)
       .filter((credit) => credit.poster_path && credit.vote_count > 50)
       .sort(comparePopularity)
       .slice(0, MAX_KNOWN_FOR)
@@ -121,7 +137,7 @@ export function getKnownForCredits(person) {
 export function getFilmographyCredits(person, mediaType = 'movie') {
   const isDirector = person?.known_for_department === 'Directing';
 
-  return uniqueByMediaId(normalizeMovieCredits(person))
+  return uniqueByMediaId(normalizeTitleCredits(person))
     .filter((credit) => credit.poster_path)
     .sort((first, second) => {
       if (isDirector) {
@@ -136,19 +152,19 @@ export function getFilmographyCredits(person, mediaType = 'movie') {
     })
     .map((credit) => ({
       ...credit,
-      media_type: mediaType,
+      media_type: credit.media_type || mediaType,
     }))
     .slice(0, MAX_FILMOGRAPHY);
 }
 
 export function getTimelineCredits(person) {
-  return uniqueByMediaId(normalizeMovieCredits(person))
+  return uniqueByMediaId(normalizeTitleCredits(person))
     .filter((credit) => Boolean(credit?.id))
     .sort((first, second) => compareReleaseDate(first, second) || comparePopularity(first, second));
 }
 
 export function getBackgroundMovieCandidates(person) {
-  return uniqueByMediaId(normalizeMovieCredits(person))
+  return uniqueByMediaId(normalizeTitleCredits(person))
     .filter((credit) => Boolean(credit?.id))
     .sort(compareBackgroundCandidate)
     .slice(0, MAX_BACKGROUND_CANDIDATES);

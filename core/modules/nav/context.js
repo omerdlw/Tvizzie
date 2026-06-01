@@ -80,6 +80,12 @@ export function NavigationProvider({ children, config = {} }) {
   const surfaceResolveMapRef = useRef(new Map());
   const surfaceOnCloseMapRef = useRef(new Map());
   const surfaceIdRef = useRef(0);
+  const isCompactRef = useRef(false);
+  const wasCompactRef = useRef(false);
+
+  const setIsCompact = useCallback((isCompact) => {
+    isCompactRef.current = isCompact;
+  }, []);
 
   useRegistry({
     modal: {
@@ -226,8 +232,15 @@ export function NavigationProvider({ children, config = {} }) {
       const nextStack = currentStack.filter((entry) => entry.id !== surfaceId);
       syncSurfaceStack(nextStack);
       finalizeSurfaceClose(surfaceId, result);
+
+      if (nextStack.length === 0 && wasCompactRef.current) {
+        wasCompactRef.current = false;
+        setTimeout(() => {
+          setCompactLock('surface-opening', false);
+        }, 150);
+      }
     },
-    [finalizeSurfaceClose, syncSurfaceStack]
+    [finalizeSurfaceClose, syncSurfaceStack, setCompactLock]
   );
 
   const closeAllSurfaces = useCallback(
@@ -242,8 +255,15 @@ export function NavigationProvider({ children, config = {} }) {
       currentStack.forEach((entry) => {
         finalizeSurfaceClose(entry.id, result);
       });
+
+      if (wasCompactRef.current) {
+        wasCompactRef.current = false;
+        setTimeout(() => {
+          setCompactLock('surface-opening', false);
+        }, 150);
+      }
     },
-    [finalizeSurfaceClose, syncSurfaceStack]
+    [finalizeSurfaceClose, syncSurfaceStack, setCompactLock]
   );
 
   const openSurface = useCallback(
@@ -267,14 +287,26 @@ export function NavigationProvider({ children, config = {} }) {
 
       setExpanded(false);
       setSearchQuery('');
-      syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
+
+      const runOpen = () => {
+        syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
+      };
+
+      if (isCompactRef.current) {
+        wasCompactRef.current = true;
+        setCompactLock('surface-opening', true);
+        setTimeout(runOpen, 250);
+      } else {
+        wasCompactRef.current = false;
+        runOpen();
+      }
 
       return new Promise((resolve) => {
         surfaceResolveMapRef.current.set(surfaceId, resolve);
         surfaceOnCloseMapRef.current.set(surfaceId, config?.onClose || null);
       });
     },
-    [setExpanded, setSearchQuery, syncSurfaceStack]
+    [setExpanded, setSearchQuery, syncSurfaceStack, setCompactLock]
   );
 
   useEffect(() => {
@@ -322,6 +354,7 @@ export function NavigationProvider({ children, config = {} }) {
       collapse,
       expand,
       toggle,
+      setIsCompact,
     }),
     [
       clearDismissedConfirmation,
@@ -337,6 +370,7 @@ export function NavigationProvider({ children, config = {} }) {
       collapse,
       expand,
       toggle,
+      setIsCompact,
     ]
   );
 

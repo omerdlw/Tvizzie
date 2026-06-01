@@ -123,7 +123,7 @@ export function applySearchMovieFilters(items = [], filters = SEARCH_MOVIE_FILTE
   }
 
   return (Array.isArray(items) ? items : []).filter((item) => {
-    if (item?.media_type !== SEARCH_TYPES.MOVIE) {
+    if (item?.media_type !== SEARCH_TYPES.MOVIE && item?.media_type !== SEARCH_TYPES.TV) {
       return false;
     }
 

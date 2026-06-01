@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
@@ -16,6 +16,7 @@ import {
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
 import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
+import { FullscreenState } from '@/ui/states/fullscreen-state';
 import AccountView from './view';
 
 const PREVIEW_MEDIA_LIMIT = 12;
@@ -27,6 +28,22 @@ const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   watched: PREVIEW_MEDIA_LIMIT,
   watchlist: PREVIEW_MEDIA_LIMIT,
 });
+
+function AccountSessionMissingState({ RegistryComponent = null }) {
+  return (
+    <>
+      {RegistryComponent ? <RegistryComponent /> : null}
+      <FullscreenState className="bg-[#f8f5ef]" contentClassName="px-6">
+        <div className="max-w-md text-center">
+          <h1 className="text-xl font-black tracking-widest text-black uppercase">Session Ended</h1>
+          <p className="mt-3 text-sm leading-6 font-semibold text-black/65">
+            This account no longer exists. You have been signed out and can continue with another account.
+          </p>
+        </div>
+      </FullscreenState>
+    </>
+  );
+}
 
 function useAccountOverviewPreviewFeed({
   canLoad,
@@ -63,6 +80,7 @@ export default function Client({ routeData = null, RegistryComponent = undefined
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const handledMissingAccountRef = useRef(false);
   const {
     routeData: resolvedRouteData,
     sectionProviderValue,
@@ -83,6 +101,7 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     handleSignInRequest,
     isOwner,
     isPageLoading,
+    isCurrentAccountMissing,
     isPrivateProfile,
     isViewerReady,
     profile,
@@ -126,6 +145,26 @@ export default function Client({ routeData = null, RegistryComponent = undefined
       })
     );
   }, [auth.isAuthenticated, currentPath, isViewerReady, router, username]);
+
+  useEffect(() => {
+    if (!isCurrentAccountMissing || handledMissingAccountRef.current) {
+      return;
+    }
+
+    handledMissingAccountRef.current = true;
+    toast.warning('This account no longer exists. You have been signed out.', {
+      dedupeKey: 'current-account-missing',
+      duration: 6000,
+    });
+
+    void auth
+      .signOut({
+        reason: 'delete-account',
+      })
+      .finally(() => {
+        router.replace(AUTH_ROUTES.SIGN_IN);
+      });
+  }, [auth, isCurrentAccountMissing, router, toast]);
 
   const reviewPreview = useAccountOverviewPreviewFeed({
     canLoad: canLoadPreviews,
@@ -253,6 +292,10 @@ export default function Client({ routeData = null, RegistryComponent = undefined
     handleLikeReview,
     hasMoreAuthoredReviews: reviewPreview.hasMore,
   };
+
+  if (isCurrentAccountMissing) {
+    return <AccountSessionMissingState RegistryComponent={RegistryComponent} />;
+  }
 
   return (
     <AccountSectionStateProvider

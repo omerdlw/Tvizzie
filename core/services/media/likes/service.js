@@ -79,7 +79,7 @@ export async function toggleUserLike({ media, userId }) {
   if (!isLiked) {
     await removeLikeFromShowcase(userId, likeRef.id);
   } else {
-    const normalizedType = assertMoviePayload(media, 'Only movies are supported in likes');
+    const normalizedType = assertMoviePayload(media, 'Only movies and TV series are supported in likes');
     const entityId = String(media?.entityId ?? media?.id ?? '').trim();
     const mediaKey = buildMediaItemKey(normalizedType, entityId);
     const alreadyWatched = await isUserMediaWatched({

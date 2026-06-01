@@ -16,7 +16,7 @@ const ACCOUNT_NAV_CHILDREN = Object.freeze([
   {
     key: 'watched',
     title: 'Watched',
-    description: 'Open your watched films',
+    description: 'Open your watched titles',
     icon: 'solar:eye-bold',
   },
   {

@@ -5,7 +5,7 @@ export const NAV_CONFIG = {
     home: {
       path: '/',
       title: 'Tvizzie',
-      description: 'Discover Movies',
+      description: 'Discover titles',
       icon: '/tvizzie.png',
       style: {
         icon: {

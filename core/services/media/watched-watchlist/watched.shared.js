@@ -5,7 +5,7 @@ import {
   buildUserMediaCollectionSubscriptionKey,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   buildMediaItemKey,
   ensureUserId,
 } from '@/core/services/shared/media';
@@ -13,7 +13,7 @@ import {
 export function createWatchedRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watched items');
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watched items');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in watched items');
 
   return {
     id: buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),

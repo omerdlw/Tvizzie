@@ -13,6 +13,7 @@ import MediaSocialProof from '@/features/movie/social-proof';
 import { getGalleryImages, getMovieComputedData } from '@/features/movie/utils';
 import VideosSection from '@/features/movie/videos-section';
 import MediaReviews from '@/features/reviews/media-reviews';
+import TvSeasonsSection from '@/features/tv/seasons-section';
 import Carousel from '@/ui/media/carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { MovieSectionSkeleton } from '@/ui/skeletons/views/movie';
@@ -157,8 +158,15 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   );
 }
 
+function TvSeasonsDeferred({ secondaryDataPromise, seasons = [] }) {
+  const secondaryMovie = use(secondaryDataPromise);
+
+  return <TvSeasonsSection seasons={seasons} seasonDetails={secondaryMovie?.seasonDetails || []} />;
+}
+
 function MovieSecondaryContent({
   computed,
+  mediaType = 'movie',
   movie,
   onSetMovieBackground,
   onSetMoviePoster,
@@ -174,6 +182,14 @@ function MovieSecondaryContent({
         <MovieSectionReveal className="mt-10" delay={MOVIE_ROUTE_TIMING.sections.cast}>
           <CastSection cast={computed.cast} crew={computed.crew} />
         </MovieSectionReveal>
+      ) : null}
+
+      {mediaType === 'tv' ? (
+        <Suspense fallback={null}>
+          <MovieSectionReveal className="mt-10" delay={MOVIE_ROUTE_TIMING.sections.cast + 0.04}>
+            <TvSeasonsDeferred secondaryDataPromise={secondaryDataPromise} seasons={movie.seasons || []} />
+          </MovieSectionReveal>
+        </Suspense>
       ) : null}
 
       <Suspense fallback={<MovieSectionSkeleton variant="gallery" />}>
@@ -204,12 +220,14 @@ export default function MovieView({
   canResetMovieBackground,
   backgroundImage,
   computed,
+  mediaType = 'movie',
   movie,
   reviewState,
   secondaryDataPromise,
   setReviewState,
 }) {
-  const { certification, director, genres, rating, runtimeText, tags, writers, year } = computed;
+  const { certification, creators, director, genres, rating, runtimeText, tags, writers, year } = computed;
+  const mediaTitle = movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
 
   return (
     <>
@@ -221,6 +239,7 @@ export default function MovieView({
         canResetMoviePoster={canResetMoviePoster}
         canResetMovieBackground={canResetMovieBackground}
         backgroundImage={backgroundImage}
+        mediaType={mediaType}
         rating={rating}
         movie={movie}
         reviewState={reviewState}
@@ -238,9 +257,10 @@ export default function MovieView({
                 <Sidebar
                   item={movie}
                   certification={certification}
+                  creators={creators}
                   director={director}
                   genres={genres}
-                  topContent={<CollectionActions media={{ ...movie, entityType: 'movie' }} />}
+                  topContent={<CollectionActions media={{ ...movie, entityType: mediaType }} />}
                   tags={tags}
                   writers={writers}
                 />
@@ -264,7 +284,7 @@ export default function MovieView({
                         startOnView={false}
                         className="font-zuume max-w-full text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
                       >
-                        {movie.title}
+                        {mediaTitle}
                       </TextAnimate>
                     </MovieClipReveal>
 
@@ -274,7 +294,7 @@ export default function MovieView({
                       direction="left"
                     >
                       <div>
-                        <MediaSocialProof media={{ ...movie, entityType: 'movie' }} />
+                        <MediaSocialProof media={{ ...movie, entityType: mediaType }} />
                       </div>
                     </MovieClipReveal>
                   </div>
@@ -304,6 +324,7 @@ export default function MovieView({
 
                 <MovieSecondaryContent
                   computed={computed}
+                  mediaType={mediaType}
                   movie={movie}
                   onSetMovieBackground={onSetMovieBackground}
                   onSetMoviePoster={onSetMoviePoster}
@@ -320,13 +341,13 @@ export default function MovieView({
           <MovieSectionReveal className="w-full" delay={MOVIE_ROUTE_TIMING.sections.reviews}>
             <MediaReviews
               entityId={movie.id}
-              entityType="movie"
-              title={movie.title}
+              entityType={mediaType}
+              title={mediaTitle}
               headerTitle="Recent Reviews"
               listMode="recent"
               showBackdropGradient={false}
               hideWhenEmpty
-              allReviewsHref={`/movie/${movie.id}/reviews`}
+              allReviewsHref={`/${mediaType}/${movie.id}/reviews`}
               posterPath={movie.poster_path}
               backdropPath={movie.backdrop_path}
               onReviewStateChange={setReviewState}

@@ -104,6 +104,45 @@ async function loadFollowCounts(userId) {
   };
 }
 
+async function loadCollectionCounts(userId) {
+  const normalizedUserId = normalizeValue(userId);
+
+  if (!normalizedUserId) {
+    return null;
+  }
+
+  const admin = createAdminClient();
+  const timeoutResult = await Promise.race([
+    Promise.all([
+      admin.from('likes').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
+      admin.from('lists').select('id', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
+      admin.from('watched').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
+      admin.from('watchlist').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
+    ]),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ data: null, error: null, timedOut: true }), PROFILE_COUNTERS_TIMEOUT_MS)
+    ),
+  ]);
+
+  if (timeoutResult?.timedOut) {
+    return null;
+  }
+
+  const [likesResult, listsResult, watchedResult, watchlistResult] = timeoutResult;
+  const firstError = [likesResult, listsResult, watchedResult, watchlistResult].find((result) => result?.error)?.error;
+
+  if (firstError) {
+    throw new Error(firstError.message || 'Collection counts could not be loaded');
+  }
+
+  return {
+    likesCount: normalizeCount(likesResult?.count, 0),
+    listsCount: normalizeCount(listsResult?.count, 0),
+    watchedCount: normalizeCount(watchedResult?.count, 0),
+    watchlistCount: normalizeCount(watchlistResult?.count, 0),
+  };
+}
+
 const getAccountProfile = cache(async (userId, { includeEmail = false, includePrivateDetails = false } = {}) => {
   const normalizedUserId = normalizeValue(userId);
 
@@ -126,9 +165,10 @@ const getAccountProfile = cache(async (userId, { includeEmail = false, includePr
     return null;
   }
 
-  const [counters, followCounts] = await Promise.all([
+  const [counters, followCounts, collectionCounts] = await Promise.all([
     loadProfileCounters(normalizedUserId).catch(() => null),
     loadFollowCounts(normalizedUserId).catch(() => null),
+    loadCollectionCounts(normalizedUserId).catch(() => null),
   ]);
 
   return normalizeAccountData(
@@ -146,12 +186,20 @@ const getAccountProfile = cache(async (userId, { includeEmail = false, includePr
           : Number.isFinite(Number(counters?.following_count))
             ? Number(counters.following_count)
             : 0,
-      likes_count: counters?.likes_count ?? 0,
-      lists_count: counters?.lists_count ?? 0,
-      watched_count: Number.isFinite(Number(counters?.watched_count))
-        ? Number(counters.watched_count)
-        : Number(profileResult.data?.watched_count ?? 0),
-      watchlist_count: counters?.watchlist_count ?? 0,
+      likes_count: Number.isFinite(Number(collectionCounts?.likesCount))
+        ? Number(collectionCounts.likesCount)
+        : (counters?.likes_count ?? 0),
+      lists_count: Number.isFinite(Number(collectionCounts?.listsCount))
+        ? Number(collectionCounts.listsCount)
+        : (counters?.lists_count ?? 0),
+      watched_count: Number.isFinite(Number(collectionCounts?.watchedCount))
+        ? Number(collectionCounts.watchedCount)
+        : Number.isFinite(Number(counters?.watched_count))
+          ? Number(counters.watched_count)
+          : Number(profileResult.data?.watched_count ?? 0),
+      watchlist_count: Number.isFinite(Number(collectionCounts?.watchlistCount))
+        ? Number(collectionCounts.watchlistCount)
+        : (counters?.watchlist_count ?? 0),
     },
     profileResult.data.id,
     {

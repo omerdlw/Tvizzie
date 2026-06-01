@@ -109,7 +109,7 @@ function useWatchedClientState({ auth, routeData: resolvedRouteData, sectionProv
 
       setItemRemoveConfirmation({
         title: 'Remove Watched Item?',
-        description: `${getMediaTitle(item)} will be removed from your watched films.`,
+        description: `${getMediaTitle(item)} will be removed from your watched titles.`,
         confirmText: 'Remove',
         confirmLoadingText: 'Removing',
         isDestructive: true,

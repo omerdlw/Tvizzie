@@ -9,7 +9,7 @@ import {
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
 import { createMediaSnapshot } from '@/core/services/shared/media';
 
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 import { normalizeValue as normalizeSubjectValue } from '@/core/utils/string';
 
 import { REVIEW_LIMIT, REVIEW_LIVE_EVENT_TYPE } from './constants.js';
@@ -69,7 +69,7 @@ export function fireReviewLiveEvent(targetUserIds = [], payload = {}) {
 async function fetchMediaReviews(media, limitCount) {
   const mediaSnapshot = createMediaSnapshot(media);
 
-  if (!isMovieMediaType(mediaSnapshot.entityType)) {
+  if (!isTitleMediaType(mediaSnapshot.entityType)) {
     return [];
   }
 

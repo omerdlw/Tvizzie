@@ -88,6 +88,10 @@ export function getPreferredSearchImageSrc(item, size = 'w342') {
     return getPreferredMoviePosterSrc(item, size);
   }
 
+  if (item?.media_type === 'tv') {
+    return createTmdbImageSrc(item?.poster_path || item?.posterPath, size);
+  }
+
   if (item?.media_type === 'person') {
     return getPreferredPersonPosterSrc(item, size);
   }

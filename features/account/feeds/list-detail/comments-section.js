@@ -13,6 +13,10 @@ import { Button } from '@/ui/elements';
 
 import { LIST_COMMENT_SORT_OPTIONS, REVIEW_ITEMS_PER_PAGE } from './config';
 
+// --------------------------------------------------
+// COMPONENT LOGIC
+// --------------------------------------------------
+
 export default function ListDetailCommentsSection({
   auth,
   filteredReviews = [],
@@ -33,30 +37,67 @@ export default function ListDetailCommentsSection({
   userProfile,
 }) {
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
-  const totalReviewPages = filteredReviews.length ? Math.ceil(filteredReviews.length / REVIEW_ITEMS_PER_PAGE) : 1;
+
+  // Derived Values (Türetilmiş state'ler - useEffect zincirini kırar)
+  const totalReviewPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEW_ITEMS_PER_PAGE));
   const safeCurrentReviewPage = Math.min(currentReviewPage, totalReviewPages);
   const reviewPageStart = (safeCurrentReviewPage - 1) * REVIEW_ITEMS_PER_PAGE;
+
   const visibleReviews = useMemo(
     () => filteredReviews.slice(reviewPageStart, reviewPageStart + REVIEW_ITEMS_PER_PAGE),
     [filteredReviews, reviewPageStart]
   );
+
   const hasListReviews = reviews.length > 0;
 
+  // Sadece filtre veya liste değiştiğinde sayfayı başa sar
   useEffect(() => {
     setCurrentReviewPage(1);
   }, [list?.id, reviewFilters]);
 
-  useEffect(() => {
-    if (currentReviewPage > totalReviewPages) {
-      setCurrentReviewPage(totalReviewPages);
-    }
-  }, [currentReviewPage, totalReviewPages]);
+  return (
+    <CommentsView
+      auth={auth}
+      filteredReviews={filteredReviews}
+      hasReviewFilters={hasReviewFilters}
+      isOwner={isOwner}
+      list={list}
+      onDeleteRequest={onDeleteRequest}
+      onEditReview={onEditReview}
+      onLikeReview={onLikeReview}
+      onOpenReviewComposer={onOpenReviewComposer}
+      onResetReviewFilters={onResetReviewFilters}
+      onSignIn={onSignIn}
+      onUpdateReviewFilters={onUpdateReviewFilters}
+      ownReview={ownReview}
+      reviewFilters={reviewFilters}
+      reviewYearOptions={reviewYearOptions}
+      reviews={reviews}
+      userProfile={userProfile}
+      safeCurrentReviewPage={safeCurrentReviewPage}
+      totalReviewPages={totalReviewPages}
+      visibleReviews={visibleReviews}
+      hasListReviews={hasListReviews}
+      setCurrentReviewPage={setCurrentReviewPage}
+    />
+  );
+}
 
+// --------------------------------------------------
+// VIEW
+// --------------------------------------------------
+
+function CommentsView({
+  auth, filteredReviews, hasReviewFilters, isOwner, list, onDeleteRequest, onEditReview,
+  onLikeReview, onOpenReviewComposer, onResetReviewFilters, onSignIn, onUpdateReviewFilters,
+  ownReview, reviewFilters, reviewYearOptions, reviews, userProfile,
+  safeCurrentReviewPage, totalReviewPages, visibleReviews, hasListReviews, setCurrentReviewPage
+}) {
   return (
     <>
       <ReviewHeader itemLabel="comment" showRatingSummary={false} title="Comments" totalReviews={reviews.length} />
 
-      {hasListReviews ? (
+      {hasListReviews && (
         <AccountReviewFilterBar
           className="mb-2"
           filters={reviewFilters}
@@ -67,13 +108,13 @@ export default function ListDetailCommentsSection({
           onChange={onUpdateReviewFilters}
           onReset={hasReviewFilters ? onResetReviewFilters : null}
         />
-      ) : null}
+      )}
 
-      {hasListReviews && hasReviewFilters ? (
+      {hasListReviews && hasReviewFilters && (
         <p className="text-xs font-semibold tracking-widest text-black/50 uppercase">
           {filteredReviews.length} of {reviews.length} comments shown
         </p>
-      ) : null}
+      )}
 
       {!isOwner && (
         <AuthGate fallback={<ReviewAuthFallback mode="comment" onSignIn={onSignIn} title={list.title} />}>
@@ -81,9 +122,7 @@ export default function ListDetailCommentsSection({
             <div className="min-w-0">
               <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
               <p className="text-xs text-black/70">
-                {ownReview
-                  ? 'Open the comment composer to edit your text.'
-                  : 'Share your thoughts from the comment composer.'}
+                {ownReview ? 'Open the comment composer to edit your text.' : 'Share your thoughts from the comment composer.'}
               </p>
             </div>
             <Button
@@ -114,7 +153,7 @@ export default function ListDetailCommentsSection({
         />
       )}
 
-      {totalReviewPages > 1 ? (
+      {totalReviewPages > 1 && (
         <div className="mt-4">
           <AccountPagination
             className="w-full"
@@ -125,7 +164,7 @@ export default function ListDetailCommentsSection({
             nextAriaLabel="Go to next review page"
           />
         </div>
-      ) : null}
+      )}
     </>
   );
 }

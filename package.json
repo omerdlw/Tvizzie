@@ -15,7 +15,8 @@
     "start": "next start",
     "lint": "eslint .",
     "verify": "npm run lint && npm run build",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "seed:dev:large": "ALLOW_DEV_DATABASE_RESET=1 node --env-file=.env scripts/dev-seed-dataset.mjs --yes --reset-all-dev-data"
   },
   "dependencies": {
     "@iconify-icon/react": "^3.0.3",

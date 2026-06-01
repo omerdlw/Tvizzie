@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 
 import * as cheerio from 'cheerio';
 
-import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/core/auth/servers/security.js';
+import { enforceSlidingWindowRateLimit, isSlidingWindowRateLimitError } from '@/core/auth/servers/security.js';
 import { getRequestContext } from '@/core/auth/servers/session.js';
 
 const PERSON_ID_PATTERN = /^\d+$/;
@@ -102,10 +99,6 @@ export async function GET(request, { params }) {
             mediaType = match[1];
             projectId = match[2];
           }
-        }
-
-        if (projectId && mediaType !== 'movie') {
-          return;
         }
 
         if (type.toLowerCase().includes('win') || type.toLowerCase().includes('kazan')) {

@@ -81,7 +81,8 @@ async function resolveFirstLoadablePosterFilePath(candidates = []) {
   return null;
 }
 
-export default function Client({ computed, movie, secondaryDataPromise }) {
+export default function Client({ computed, mediaType = 'movie', movie, secondaryDataPromise }) {
+  const isMovieMedia = mediaType === 'movie';
   const movieId = movie?.id;
   const fallbackPosterFilePath = movie?.poster_path || null;
   const fallbackBackgroundImage = createMovieBackdropImageUrl(movie?.backdrop_path);
@@ -111,7 +112,9 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
         return;
       }
 
-      setMovieBackgroundPreference(movieId, filePath);
+      if (isMovieMedia) {
+        setMovieBackgroundPreference(movieId, filePath);
+      }
       setCanResetMovieBackground(true);
       setBackgroundImage(nextBackgroundImage);
     },
@@ -124,7 +127,9 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
         return;
       }
 
-      setMoviePosterPreference(movieId, filePath);
+      if (isMovieMedia) {
+        setMoviePosterPreference(movieId, filePath);
+      }
       setCanResetMoviePoster(true);
       setPosterFilePath(filePath);
     },
@@ -136,7 +141,9 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
       return;
     }
 
-    clearMovieBackgroundPreference(movieId);
+    if (isMovieMedia) {
+      clearMovieBackgroundPreference(movieId);
+    }
     setCanResetMovieBackground(false);
     setBackgroundImage(fallbackBackgroundImage || null);
 
@@ -150,22 +157,24 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
         const nextBackgroundImage = await resolveFirstLoadableImage([fallbackBackgroundImage]);
         setBackgroundImage(nextBackgroundImage || null);
       });
-  }, [fallbackBackgroundImage, movieId, secondaryDataPromise]);
+  }, [fallbackBackgroundImage, isMovieMedia, movieId, secondaryDataPromise]);
 
   const handleResetMoviePoster = useCallback(() => {
     if (!movieId) {
       return;
     }
 
-    clearMoviePosterPreference(movieId);
+    if (isMovieMedia) {
+      clearMoviePosterPreference(movieId);
+    }
     setCanResetMoviePoster(false);
     setPosterFilePath(fallbackPosterFilePath || null);
-  }, [fallbackPosterFilePath, movieId]);
+  }, [fallbackPosterFilePath, isMovieMedia, movieId]);
 
   useEffect(() => {
     let isActive = true;
 
-    const preferredPosterFilePath = getMoviePosterPreferenceFilePath(movieId);
+    const preferredPosterFilePath = isMovieMedia ? getMoviePosterPreferenceFilePath(movieId) : null;
     setCanResetMoviePoster(Boolean(preferredPosterFilePath));
     setPosterFilePath(preferredPosterFilePath || fallbackPosterFilePath || null);
 
@@ -178,11 +187,11 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
     return () => {
       isActive = false;
     };
-  }, [fallbackPosterFilePath, movieId]);
+  }, [fallbackPosterFilePath, isMovieMedia, movieId]);
 
   useEffect(() => {
     let isActive = true;
-    const preferredFilePath = getMovieBackgroundPreferenceFilePath(movieId);
+    const preferredFilePath = isMovieMedia ? getMovieBackgroundPreferenceFilePath(movieId) : null;
     setCanResetMovieBackground(Boolean(preferredFilePath));
     const preferredBackgroundImage = createMovieBackdropImageUrl(preferredFilePath);
 
@@ -219,7 +228,7 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
     return () => {
       isActive = false;
     };
-  }, [fallbackBackgroundImage, movieId, secondaryDataPromise]);
+  }, [fallbackBackgroundImage, isMovieMedia, movieId, secondaryDataPromise]);
 
   return (
     <MovieView
@@ -231,6 +240,7 @@ export default function Client({ computed, movie, secondaryDataPromise }) {
       canResetMovieBackground={canResetMovieBackground}
       backgroundImage={backgroundImage}
       computed={computed}
+      mediaType={mediaType}
       movie={resolvedMovie}
       reviewState={reviewState}
       secondaryDataPromise={secondaryDataPromise}

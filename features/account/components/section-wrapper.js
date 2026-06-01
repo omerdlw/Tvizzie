@@ -10,6 +10,9 @@ import { AccountSectionReveal } from './layout';
 import { ACCOUNT_SECTION_SHELL_CLASS } from '../utils';
 import { ACCOUNT_EMPTY_SECTION_CLASS } from './section-state';
 
+const ACCOUNT_SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';
+const ACCOUNT_SECTION_CONTENT_CLASS = 'col-span-12 flex min-w-0 flex-col gap-5';
+
 // --------------------------------------------------
 // COMPONENTS (VIEW)
 // --------------------------------------------------
@@ -59,8 +62,12 @@ export function AccountSectionState({ message }) {
   return (
     <section className="relative bg-transparent py-4 sm:py-6">
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
-          {normalizeFeedbackContent(message)}
+        <div className={ACCOUNT_SECTION_GRID_CLASS}>
+          <div className="col-span-12">
+            <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
+              {normalizeFeedbackContent(message)}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -84,22 +91,26 @@ export default function AccountSectionLayout({
   return (
     <section className="relative bg-transparent py-4 sm:py-6">
       <AccountSectionReveal delay={revealDelay}>
-        <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'flex flex-col gap-5', className)}>
-          {showHeader ? (
-            <AccountSectionHeading
-              action={action}
-              icon={icon}
-              showDivider={showDivider}
-              showSeeMore={showSeeMore}
-              summaryLabel={summaryLabel}
-              title={title}
-              titleHref={titleHref}
-            />
-          ) : title && (
-            <h2 className="sr-only">{title}</h2>
-          )}
+        <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, className)}>
+          <div className={ACCOUNT_SECTION_GRID_CLASS}>
+            <div className={ACCOUNT_SECTION_CONTENT_CLASS}>
+              {showHeader ? (
+                <AccountSectionHeading
+                  action={action}
+                  icon={icon}
+                  showDivider={showDivider}
+                  showSeeMore={showSeeMore}
+                  summaryLabel={summaryLabel}
+                  title={title}
+                  titleHref={titleHref}
+                />
+              ) : title && (
+                <h2 className="sr-only">{title}</h2>
+              )}
 
-          {contentClassName ? <div className={contentClassName}>{children}</div> : children}
+              {contentClassName ? <div className={contentClassName}>{children}</div> : children}
+            </div>
+          </div>
         </div>
       </AccountSectionReveal>
     </section>

@@ -22,19 +22,36 @@ import AccountSectionLayout from './section-wrapper';
 
 const ITEMS_PER_PAGE = 36;
 
+function createPosterSource(item, mediaType) {
+  const normalizedMediaType = String(mediaType || '')
+    .trim()
+    .toLowerCase();
+
+  const preferredPoster = normalizedMediaType === 'movie' ? getPreferredMoviePosterSrc(item, 'w342') : null;
+  if (preferredPoster) {
+    return preferredPoster;
+  }
+
+  if (item?.poster_path_full) {
+    return item.poster_path_full;
+  }
+
+  const posterFilePath = item?.poster_path || item?.profile_path || null;
+  return posterFilePath ? `${TMDB_IMG}/w342${posterFilePath}` : null;
+}
+
 function extractMediaDetails(item) {
-  const explicitType = item?.media_type || item?.entityType;
-  if (explicitType !== 'movie') return null;
+  const explicitType = String(item?.media_type || item?.entityType || '')
+    .trim()
+    .toLowerCase();
+  if (!explicitType) return null;
 
   const detailId = item?.entityId || item?.id;
   if (!detailId) return null;
 
-  const title = item?.title || item?.original_title || 'Untitled';
-  const year = item?.release_date?.slice?.(0, 4) || null;
-  const poster =
-    getPreferredMoviePosterSrc(item, 'w342') ||
-    item?.poster_path_full ||
-    (item?.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : null);
+  const title = item?.title || item?.name || item?.original_title || 'Untitled';
+  const year = item?.release_date?.slice?.(0, 4) || item?.first_air_date?.slice?.(0, 4) || null;
+  const poster = createPosterSource(item, explicitType);
 
   return {
     href: `/${explicitType}/${detailId}`,

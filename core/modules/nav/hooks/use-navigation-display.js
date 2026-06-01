@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
-
 import { useNavigationContext } from '../context';
 import MediaAction from '../actions/media-action';
 import { getNavConfirmationKey } from '../utils';

@@ -80,9 +80,14 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
       initialFeed: initialReviewFeed,
       resolvedUserId,
     });
+  const hasUsableSeededReviewFeed =
+    hasSeededReviewFeed &&
+    (Array.isArray(initialReviewFeed?.items) && initialReviewFeed.items.length > 0
+      ? true
+      : Boolean(initialReviewFeed?.hasMore) || Number(initialReviewFeed?.totalCount || 0) > 0);
   const shouldBlockFeedLoad = shouldBlockAccountFeedLoad({
     canViewPrivateContent,
-    hasSeededFeed: hasSeededReviewFeed,
+    hasSeededFeed: hasUsableSeededReviewFeed,
     isOwner,
     isPrivateProfile,
     isViewerReady,
@@ -116,7 +121,7 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
         return;
       }
 
-      if (!append && hasSeededReviewFeed) {
+      if (!append && hasUsableSeededReviewFeed) {
         setIsFeedLoading(false);
         setIsLoadingMore(false);
         return;
@@ -157,7 +162,7 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
     [
       applyFeedResult,
       cursor,
-      hasSeededReviewFeed,
+      hasUsableSeededReviewFeed,
       resolvedUserId,
       resetFeed,
       setFeedError,

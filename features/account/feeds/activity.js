@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
-
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -16,76 +14,75 @@ import AccountSectionLayout from '@/features/account/components/section-wrapper'
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary rounded-[10px] text-black/50 border border-black/5 p-3';
 
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
+
 function formatActivityTime(value) {
   if (!value) return null;
+  const diffMs = Date.now() - new Date(value).getTime();
+  if (Number.isNaN(diffMs)) return null;
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  const diffMs = Date.now() - date.getTime();
-  const diffMinutes = Math.max(0, Math.floor(diffMs / (60 * 1000)));
-
-  if (diffMinutes < 1) {
-    return 'now';
-  }
-
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (diffMinutes < 1) return 'now';
+  if (diffMinutes < 60) return `${diffMinutes}m`;
 
   const diffHours = Math.floor(diffMinutes / 60);
-
-  if (diffHours < 24) {
-    return `${diffHours}h`;
-  }
-
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d`;
+  return diffHours < 24 ? `${diffHours}h` : `${Math.floor(diffHours / 24)}d`;
 }
 
-function getActivityItemKey(item, index) {
-  return `${item?.dedupeKey || item?.id || 'activity'}-${index}`;
-}
+// --------------------------------------------------
+// COMPONENTS
+// --------------------------------------------------
 
-function renderLinePart(part, index) {
-  if (part?.kind === 'rating' && Number.isFinite(Number(part?.rating))) {
-    return <RatingStars key={`${part.kind}-${index}`} className="translate-y-[-1px]" rating={Number(part.rating)} />;
-  }
+export default function AccountActivityFeed({
+  currentPage = 1, emptyMessage = 'No activity yet', filters = { sort: 'newest', subject: 'all' },
+  icon = 'solar:bolt-bold', isLoading = false, items = [], loadError = null,
+  onFiltersChange, onPageChange, showHeader = true, showSeeMore = false,
+  summaryLabel = null, title = 'Recent Activity', titleHref = null, totalCount = null,
+}) {
+  const visibleItems = Array.isArray(items) ? items : [];
+  const listedActivityCount = Number.isFinite(Number(totalCount)) ? Math.max(0, Math.floor(Number(totalCount))) : visibleItems.length;
 
-  if (!part?.text) {
-    return null;
-  }
+  const hasFilters = hasActiveActivityFilters(filters);
+  const totalPages = Math.max(1, Math.ceil(listedActivityCount / ACTIVITY_ITEMS_PER_PAGE));
+  const activePage = Math.min(Math.max(1, currentPage), totalPages);
 
-  if (part.href) {
-    return (
-      <Link
-        key={`${part.kind || 'link'}-${index}`}
-        href={part.href}
-        className={part.kind === 'actor' || part.kind === 'account' ? 'font-semibold transition' : 'transition'}
-      >
-        {part.text}
-      </Link>
-    );
-  }
+  const resolvedSummaryLabel = hasFilters
+    ? `${Math.min(listedActivityCount, (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE + visibleItems.length)} of ${listedActivityCount} shown`
+    : summaryLabel ?? `${listedActivityCount} Events`;
 
-  if (part.kind === 'actor') {
-    return (
-      <span key={`${part.kind}-${index}`} className="font-semibold">
-        {part.text}
-      </span>
-    );
-  }
+  return (
+    <AccountSectionLayout icon={icon} showHeader={showHeader} showSeeMore={showSeeMore} summaryLabel={resolvedSummaryLabel} title={title} titleHref={titleHref}>
 
-  return <span key={`${part.kind || 'text'}-${index}`}>{part.text}</span>;
-}
+      {onFiltersChange && (listedActivityCount > 0 || hasFilters) && (
+        <AccountActivityFilterBar
+          filters={filters}
+          subjectOptions={collectActivitySubjectOptions()}
+          onChange={(updates) => onFiltersChange({ ...filters, ...updates })}
+          onReset={hasFilters ? () => onFiltersChange({ sort: 'newest', subject: 'all' }) : null}
+        />
+      )}
 
-function ActivityLine({ item }) {
-  const parts = Array.isArray(item?.line?.parts) ? item.line.parts : [];
+      {isLoading && visibleItems.length === 0 ? (
+        <div className={STATE_MESSAGE_CLASS}>Loading activity</div>
+      ) : loadError ? (
+        <div className={STATE_MESSAGE_CLASS}>{normalizeFeedbackText(loadError)}</div>
+      ) : listedActivityCount === 0 ? (
+        <div className={STATE_MESSAGE_CLASS}>{hasFilters ? 'No activity matches the current filters' : emptyMessage}</div>
+      ) : (
+        <div>
+          {visibleItems.map((item, index) => (
+            <ActivityItem key={item?.dedupeKey || item?.id || `activity-${index}`} index={index} isFirst={index === 0} item={item} />
+          ))}
+        </div>
+      )}
 
-  return <>{parts.map((part, index) => renderLinePart(part, index))}</>;
+      {listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && onPageChange && (
+        <AccountPagination className="w-full" currentPage={activePage} onPageChange={onPageChange} totalPages={totalPages} />
+      )}
+    </AccountSectionLayout>
+  );
 }
 
 function ActivityItem({ index = 0, isFirst = false, item }) {
@@ -94,137 +91,28 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
   return (
     <motion.article
       className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
-      transition={{
-        delay: index < 6 ? index * 0.016 : 0,
-        duration: 0.32,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0, margin: '0px 0px 14% 0px' }}
+      transition={{ delay: index < 6 ? index * 0.016 : 0, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
         <div className="min-w-0 text-[1.02rem] leading-7">
-          <ActivityLine item={item} />
+          {(item?.line?.parts || []).map((part, i) => <LinePart key={i} part={part} />)}
         </div>
-
-        {createdLabel ? <div className="shrink-0 text-sm font-medium pt-0.5">{createdLabel}</div> : null}
+        {createdLabel && <div className="shrink-0 text-sm font-medium pt-0.5">{createdLabel}</div>}
       </div>
-
-      {item?.renderKind === 'text_with_review' && item?.reviewCard ? (
-        <div className="mt-3">
-          <ReviewCard className="border-b-0 py-0" displayVariant="activity" review={item.reviewCard} />
-        </div>
-      ) : null}
+      {item?.renderKind === 'text_with_review' && item?.reviewCard && (
+        <div className="mt-3"><ReviewCard className="border-b-0 py-0" displayVariant="activity" review={item.reviewCard} /></div>
+      )}
     </motion.article>
   );
 }
 
-export default function AccountActivityFeed({
-  currentPage = 1,
-  emptyMessage = 'No activity yet',
-  filters = { sort: 'newest', subject: 'all' },
-  icon = 'solar:bolt-bold',
-  isLoading = false,
-  items = [],
-  loadError = null,
-  onFiltersChange = null,
-  onPageChange = null,
-  showHeader = true,
-  showSeeMore = false,
-  summaryLabel = null,
-  title = 'Recent Activity',
-  titleHref = null,
-  totalCount = null,
-}) {
-  const visibleItems = Array.isArray(items) ? items : [];
-  const listedActivityCount = Number.isFinite(Number(totalCount))
-    ? Math.max(0, Math.floor(Number(totalCount)))
-    : visibleItems.length;
-  const subjectOptions = useMemo(() => collectActivitySubjectOptions(), []);
-  const hasFilters = hasActiveActivityFilters(filters);
-  const totalPages = listedActivityCount > 0 ? Math.ceil(listedActivityCount / ACTIVITY_ITEMS_PER_PAGE) : 1;
-  const activePage = Math.min(Math.max(1, currentPage), totalPages);
-  const pageStart = (activePage - 1) * ACTIVITY_ITEMS_PER_PAGE;
-  const hasVisibleItems = visibleItems.length > 0;
-  const shouldShowFilterBar = typeof onFiltersChange === 'function' && (listedActivityCount > 0 || hasFilters);
-  const shouldShowPagination = listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && typeof onPageChange === 'function';
-  const resolvedSummaryLabel = useMemo(() => {
-    if (!hasFilters) {
-      return summaryLabel === null ? `${listedActivityCount} Events` : summaryLabel;
-    }
+function LinePart({ part }) {
+  if (part?.kind === 'rating' && Number.isFinite(Number(part?.rating))) return <RatingStars className="translate-y-[-1px]" rating={Number(part.rating)} />;
+  if (!part?.text) return null;
 
-    const shownCount = Math.min(listedActivityCount, pageStart + visibleItems.length);
-    return `${shownCount} of ${listedActivityCount} shown`;
-  }, [hasFilters, listedActivityCount, pageStart, summaryLabel, visibleItems.length]);
-
-  const updateFilters = useCallback(
-    (updates = {}) => {
-      onFiltersChange?.({
-        ...filters,
-        ...updates,
-      });
-    },
-    [filters, onFiltersChange]
-  );
-
-  const resetFilters = useCallback(() => {
-    onFiltersChange?.({
-      sort: 'newest',
-      subject: 'all',
-    });
-  }, [onFiltersChange]);
-
-  let content = null;
-
-  if (!hasVisibleItems && isLoading) {
-    content = <div className={STATE_MESSAGE_CLASS}>Loading activity</div>;
-  } else if (listedActivityCount === 0 && !isLoading && !loadError) {
-    content = (
-      <div className={STATE_MESSAGE_CLASS}>{hasFilters ? 'No activity matches the current filters' : emptyMessage}</div>
-    );
-  } else if (listedActivityCount === 0 && !isLoading && loadError) {
-    content = <div className={STATE_MESSAGE_CLASS}>{normalizeFeedbackText(loadError)}</div>;
-  } else {
-    content = (
-      <div>
-        {visibleItems.map((item, index) => (
-          <ActivityItem key={getActivityItemKey(item, index)} index={index} isFirst={index === 0} item={item} />
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <AccountSectionLayout
-      icon={icon}
-      showHeader={showHeader}
-      showSeeMore={showSeeMore}
-      summaryLabel={resolvedSummaryLabel}
-      title={title}
-      titleHref={titleHref}
-    >
-      {shouldShowFilterBar ? (
-        <AccountActivityFilterBar
-          filters={filters}
-          subjectOptions={subjectOptions}
-          onChange={updateFilters}
-          onReset={hasFilters ? resetFilters : null}
-        />
-      ) : null}
-
-      {content}
-
-      {shouldShowPagination ? (
-        <div>
-          <AccountPagination
-            className="w-full"
-            currentPage={activePage}
-            onPageChange={onPageChange}
-            totalPages={totalPages}
-          />
-        </div>
-      ) : null}
-    </AccountSectionLayout>
-  );
+  const className = part.kind === 'actor' || part.kind === 'account' ? 'font-semibold transition' : 'transition';
+  if (part.href) return <Link href={part.href} className={className}>{part.text}</Link>;
+  if (part.kind === 'actor') return <span className="font-semibold">{part.text}</span>;
+  return <span>{part.text}</span>;
 }

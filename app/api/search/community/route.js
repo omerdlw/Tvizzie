@@ -197,8 +197,8 @@ function buildMediaReviewHref(subject = {}) {
     return subject.subjectHref;
   }
 
-  if (subject.subjectType === 'movie' && subject.subjectId) {
-    return `/movie/${subject.subjectId}`;
+  if ((subject.subjectType === 'movie' || subject.subjectType === 'tv') && subject.subjectId) {
+    return `/${subject.subjectType}/${subject.subjectId}`;
   }
 
   return null;

@@ -21,7 +21,7 @@ import {
   toggleUserWatchlistItem,
 } from '@/core/services/media/watched-watchlist';
 import { cn } from '@/core/utils';
-import { resolveExplicitMediaType } from '@/core/utils/media';
+import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/core/utils/media';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 
@@ -63,15 +63,15 @@ function getMediaSnapshot(media) {
   return {
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
-    title: media?.title || media?.original_title || 'Untitled',
+    title: getMediaTitle(media),
     posterPath: media?.poster_path || media?.posterPath || null,
     backdropPath: media?.backdrop_path || media?.backdropPath || null,
     release_date: media?.release_date || null,
-    first_air_date: null,
+    first_air_date: media?.first_air_date || null,
     genreNames: normalizedGenres.map((genre) => genre.name).filter(Boolean),
     genre_ids: genreIds,
     genres: normalizedGenres,
-    name: '',
+    name: media?.name || media?.original_name || '',
     popularity: Number.isFinite(Number(media?.popularity)) ? Number(media.popularity) : null,
     providerIds: [],
     providerNames: [],
@@ -180,9 +180,8 @@ export default function CollectionActions({ media }) {
   const isSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
 
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
-  const isMovieReviewsRoute = /^\/movie\/[^/]+\/reviews$/.test(pathname || '');
-
   const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media]);
+  const isMediaReviewsRoute = new RegExp(`^/${mediaSnapshot.entityType}/[^/]+/reviews$`).test(pathname || '');
 
   const [state, setState] = useState({
     liked: false,
@@ -436,24 +435,24 @@ export default function CollectionActions({ media }) {
 
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
-  const canGoToMovie = Boolean(mediaSnapshot?.entityId) && isMovieReviewsRoute;
+  const canGoToMedia = Boolean(mediaSnapshot?.entityId) && isMediaReviewsRoute;
 
-  function handleGoToMovie() {
+  function handleGoToMedia() {
     if (!mediaSnapshot?.entityId) {
       return;
     }
 
-    router.push(`/movie/${mediaSnapshot.entityId}`);
+    router.push(getMediaDetailPath(mediaSnapshot));
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {canGoToMovie ? (
+      {canGoToMedia ? (
         <ActionMotionItem index={0}>
           <ActionButton
             icon="solar:clapperboard-play-bold"
-            label="Go to Movie"
-            onClick={handleGoToMovie}
+            label={mediaSnapshot.entityType === 'tv' ? 'Go to Series' : 'Go to Movie'}
+            onClick={handleGoToMedia}
             palette="neutral"
           />
         </ActionMotionItem>

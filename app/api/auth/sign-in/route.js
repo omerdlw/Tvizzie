@@ -24,6 +24,37 @@ function normalizeValue(value) {
   return String(value || '').trim();
 }
 
+const DEV_SEED_LOGIN_VERIFICATION_BYPASS_EMAILS = new Set([
+  'dev-seed-arda@tvizzie.local',
+  'dev-seed-leo@tvizzie.local',
+  'dev-seed-mina@tvizzie.local',
+  'dev-seed-nora@tvizzie.local',
+]);
+
+function shouldBypassLoginVerificationForSeedUser(email) {
+  return DEV_SEED_LOGIN_VERIFICATION_BYPASS_EMAILS.has(normalizeValue(email).toLowerCase());
+}
+
+async function createPasswordSignInResponse(request, requestContext, pendingSignIn) {
+  const response = NextResponse.json({ success: true });
+  const supabase = createSupabaseResponseClient(request, response);
+  const sessionResult = await supabase.auth.setSession({
+    access_token: pendingSignIn.accessToken,
+    refresh_token: pendingSignIn.refreshToken,
+  });
+
+  if (sessionResult.error) {
+    throw new Error(sessionResult.error.message || 'Sign in failed');
+  }
+
+  applySessionCookies(response, {
+    csrfToken: createCsrfToken(),
+  });
+  clearPendingSignInCookie(response);
+  setDeviceIdCookie(response, requestContext.deviceId);
+  return response;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -58,24 +89,11 @@ export async function POST(request) {
       password,
     });
 
-    if (hasTrustedLoginDevice(request, { deviceHash: requestContext.deviceHash, userId: pendingSignIn.userId })) {
-      const response = NextResponse.json({ success: true });
-      const supabase = createSupabaseResponseClient(request, response);
-      const sessionResult = await supabase.auth.setSession({
-        access_token: pendingSignIn.accessToken,
-        refresh_token: pendingSignIn.refreshToken,
-      });
-
-      if (sessionResult.error) {
-        throw new Error(sessionResult.error.message || 'Sign in failed');
-      }
-
-      applySessionCookies(response, {
-        csrfToken: createCsrfToken(),
-      });
-      clearPendingSignInCookie(response);
-      setDeviceIdCookie(response, requestContext.deviceId);
-      return response;
+    if (
+      hasTrustedLoginDevice(request, { deviceHash: requestContext.deviceHash, userId: pendingSignIn.userId }) ||
+      shouldBypassLoginVerificationForSeedUser(pendingSignIn.email)
+    ) {
+      return createPasswordSignInResponse(request, requestContext, pendingSignIn);
     }
 
     const response = NextResponse.json({

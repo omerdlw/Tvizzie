@@ -7,7 +7,7 @@ import {
   getSupabaseClient,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   buildMediaItemKey,
   createMediaRow,
   ensureUserId,
@@ -20,7 +20,7 @@ export async function getUserListMemberships({ userId, listIds = [], media }) {
     return {};
   }
 
-  const mediaSnapshot = assertMovieMedia(media, 'Lists support movies only');
+  const mediaSnapshot = assertTitleMedia(media, 'Lists support movies and TV series only');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
   const client = getSupabaseClient();
   const memberships = {};
@@ -52,7 +52,7 @@ export async function toggleUserListItem({ userId, listId, media }) {
     throw new Error('Authenticated user and listId are required to update list items');
   }
 
-  const mediaSnapshot = assertMovieMedia(media, 'Lists support movies only');
+  const mediaSnapshot = assertTitleMedia(media, 'Lists support movies and TV series only');
   const nowIso = new Date().toISOString();
   const row = createMediaRow(media, userId, {
     addedAt: nowIso,

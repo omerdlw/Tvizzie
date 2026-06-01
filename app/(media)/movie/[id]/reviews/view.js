@@ -9,12 +9,20 @@ import { MovieClipReveal, MovieHeroReveal, MOVIE_ROUTE_TIMING, MovieSectionRevea
 
 import Registry from '../registry';
 
-export default function View({ computed, movie, reviewState, setReviewState }) {
-  const { certification, director, runtimeText, writers, year } = computed;
+export default function View({ computed, mediaType = 'movie', movie, reviewState, setReviewState }) {
+  const { certification, creators, director, runtimeText, writers, year } = computed;
+  const mediaTitle = movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';
 
   return (
     <>
-      <Registry movie={movie} rating={null} runtimeText={runtimeText} reviewState={reviewState} year={year} />
+      <Registry
+        mediaType={mediaType}
+        movie={movie}
+        rating={null}
+        runtimeText={runtimeText}
+        reviewState={reviewState}
+        year={year}
+      />
 
       <PageGradientShell>
         <div
@@ -26,8 +34,9 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
                 <Sidebar
                   item={movie}
                   certification={certification}
+                  creators={creators}
                   director={director}
-                  topContent={<CollectionActions media={{ ...movie, entityType: 'movie' }} />}
+                  topContent={<CollectionActions media={{ ...movie, entityType: mediaType }} />}
                   writers={writers}
                 />
               </MovieSidebarReveal>
@@ -44,7 +53,7 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
                     startOnView={false}
                     className="font-zuume text-5xl leading-none font-bold uppercase sm:text-6xl lg:text-7xl"
                   >
-                    {movie.title}
+                    {mediaTitle}
                   </TextAnimate>
                 </MovieClipReveal>
               </MovieHeroReveal>
@@ -52,8 +61,8 @@ export default function View({ computed, movie, reviewState, setReviewState }) {
               <MovieSectionReveal delay={MOVIE_ROUTE_TIMING.reviewsPage.reviews}>
                 <MediaReviews
                   entityId={movie.id}
-                  entityType="movie"
-                  title={movie.title}
+                  entityType={mediaType}
+                  title={mediaTitle}
                   headerTitle="All Reviews"
                   sectionClassName="mt-1 md:mt-2"
                   showBackdropGradient={false}

@@ -20,6 +20,12 @@ function getMovieRuntime(movie = {}) {
   return toFiniteNumber(movie?.runtime);
 }
 
+function getTvRuntime(tv = {}) {
+  const runtimes = Array.isArray(tv?.episode_run_time) ? tv.episode_run_time : [];
+  const firstRuntime = runtimes.find((runtime) => toFiniteNumber(runtime) > 0);
+  return toFiniteNumber(firstRuntime || tv?.last_episode_to_air?.runtime || tv?.next_episode_to_air?.runtime);
+}
+
 function getMovieVoteCount(movie = {}) {
   return toFiniteNumber(movie?.vote_count);
 }
@@ -69,6 +75,20 @@ function getMovieListThreshold(context = 'browse') {
   }
 }
 
+function getTvListThreshold(context = 'browse') {
+  switch (context) {
+    case 'credits':
+      return 4;
+    case 'search':
+      return 6;
+    case 'detail':
+      return 8;
+    case 'browse':
+    default:
+      return 6;
+  }
+}
+
 function getPersonListThreshold(context = 'credits') {
   switch (context) {
     case 'search':
@@ -106,6 +126,28 @@ function failsMovieHardReject(movie = {}, context = 'browse') {
   }
 
   if (context === 'detail' && !hasPoster && voteCount < 75 && popularity < 12) {
+    return true;
+  }
+
+  return false;
+}
+
+function failsTvHardReject(tv = {}, context = 'browse') {
+  const voteCount = getMovieVoteCount(tv);
+  const voteAverage = getMovieVoteAverage(tv);
+  const popularity = getMoviePopularity(tv);
+  const hasPoster = hasMoviePoster(tv);
+  const hasBackdrop = hasMovieBackdrop(tv);
+
+  if (voteCount < 1 || voteAverage < 3.5) {
+    return true;
+  }
+
+  if (context !== 'credits' && !hasPoster && !hasBackdrop && voteCount < 80 && popularity < 12) {
+    return true;
+  }
+
+  if (context === 'detail' && !hasPoster && voteCount < 40 && popularity < 8) {
     return true;
   }
 
@@ -215,6 +257,79 @@ function getMovieQualityScore(movie = {}) {
   return score;
 }
 
+function getTvQualityScore(tv = {}) {
+  let score = 0;
+
+  if (hasText(tv?.name || tv?.original_name || tv?.title || tv?.original_title)) {
+    score += 1;
+  } else {
+    score -= 5;
+  }
+
+  if (hasMoviePoster(tv)) score += 3;
+  if (hasMovieBackdrop(tv)) score += 2;
+
+  if (!hasMoviePoster(tv) && !hasMovieBackdrop(tv)) {
+    score -= 5;
+  }
+
+  const overviewLength = getTextLength(tv?.overview);
+
+  if (overviewLength >= 120) {
+    score += 2;
+  } else if (overviewLength >= 40) {
+    score += 1;
+  }
+
+  if (hasText(tv?.first_air_date)) {
+    score += 1;
+  }
+
+  const voteCount = getMovieVoteCount(tv);
+
+  if (voteCount >= 200) {
+    score += 4;
+  } else if (voteCount >= 50) {
+    score += 3;
+  } else if (voteCount >= 10) {
+    score += 2;
+  } else if (voteCount >= 3) {
+    score += 1;
+  }
+
+  const popularity = getMoviePopularity(tv);
+
+  if (popularity >= 30) {
+    score += 4;
+  } else if (popularity >= 12) {
+    score += 3;
+  } else if (popularity >= 4) {
+    score += 2;
+  } else if (popularity >= 1.5) {
+    score += 1;
+  }
+
+  if (getMovieVoteAverage(tv) >= 6 && voteCount >= 5) {
+    score += 1;
+  }
+
+  const runtime = getTvRuntime(tv);
+
+  if (runtime >= 20) {
+    score += 2;
+  } else if (runtime > 0) {
+    score += 1;
+  }
+
+  if (Number(tv?.number_of_seasons) > 0 || Number(tv?.number_of_episodes) > 0) {
+    score += 1;
+  }
+
+  if (tv?.adult) score -= 4;
+
+  return score;
+}
+
 function getPersonQualityScore(person = {}, role = 'cast') {
   let score = 0;
 
@@ -283,6 +398,18 @@ export function isDisplayableMovie(movie, context = 'browse') {
   return getMovieQualityScore(movie) >= getMovieListThreshold(context);
 }
 
+export function isDisplayableTv(tv, context = 'browse') {
+  if (!tv || typeof tv !== 'object' || !tv?.id) {
+    return false;
+  }
+
+  if (failsTvHardReject(tv, context)) {
+    return false;
+  }
+
+  return getTvQualityScore(tv) >= getTvListThreshold(context);
+}
+
 function isDisplayablePerson(person, { context = 'credits', role = 'cast' } = {}) {
   if (!person || typeof person !== 'object' || !person?.id) {
     return false;
@@ -299,6 +426,10 @@ export function sanitizeMovieResults(items = [], context = 'browse') {
   return (Array.isArray(items) ? items : []).filter((item) => isDisplayableMovie(item, context));
 }
 
+export function sanitizeTvResults(items = [], context = 'browse') {
+  return (Array.isArray(items) ? items : []).filter((item) => isDisplayableTv(item, context));
+}
+
 export function sanitizePersonResults(items = [], { context = 'credits', role = 'cast' } = {}) {
   return (Array.isArray(items) ? items : []).filter((item) => isDisplayablePerson(item, { context, role }));
 }
@@ -313,8 +444,14 @@ export function sanitizeMovieDetail(movie) {
     credits: movie?.credits
       ? {
           ...movie.credits,
-          cast: sanitizePersonResults(movie.credits.cast, { context: 'credits', role: 'cast' }),
-          crew: sanitizePersonResults(movie.credits.crew, { context: 'credits', role: 'crew' }),
+          cast: sanitizePersonResults(movie.credits.cast, {
+            context: 'credits',
+            role: 'cast',
+          }),
+          crew: sanitizePersonResults(movie.credits.crew, {
+            context: 'credits',
+            role: 'crew',
+          }),
         }
       : movie?.credits,
     recommendations: movie?.recommendations
@@ -332,6 +469,56 @@ export function sanitizeMovieDetail(movie) {
   };
 }
 
+export function sanitizeTvDetail(tv) {
+  if (!tv || typeof tv !== 'object') {
+    return tv;
+  }
+
+  const credits = tv.aggregate_credits || tv.credits;
+
+  return {
+    ...tv,
+    aggregate_credits: credits
+      ? {
+          ...credits,
+          cast: sanitizePersonResults(credits.cast, {
+            context: 'credits',
+            role: 'cast',
+          }),
+          crew: sanitizePersonResults(credits.crew, {
+            context: 'credits',
+            role: 'crew',
+          }),
+        }
+      : tv?.aggregate_credits,
+    credits: tv?.credits
+      ? {
+          ...tv.credits,
+          cast: sanitizePersonResults(tv.credits.cast, {
+            context: 'credits',
+            role: 'cast',
+          }),
+          crew: sanitizePersonResults(tv.credits.crew, {
+            context: 'credits',
+            role: 'crew',
+          }),
+        }
+      : tv?.credits,
+    recommendations: tv?.recommendations
+      ? {
+          ...tv.recommendations,
+          results: sanitizeTvResults(tv.recommendations.results, 'browse'),
+        }
+      : tv?.recommendations,
+    similar: tv?.similar
+      ? {
+          ...tv.similar,
+          results: sanitizeTvResults(tv.similar.results, 'browse'),
+        }
+      : tv?.similar,
+  };
+}
+
 export function sanitizePersonDetail(person) {
   if (!person || typeof person !== 'object') {
     return person;
@@ -346,5 +533,12 @@ export function sanitizePersonDetail(person) {
           crew: sanitizeMovieResults(person.movie_credits.crew, 'credits'),
         }
       : person?.movie_credits,
+    tv_credits: person?.tv_credits
+      ? {
+          ...person.tv_credits,
+          cast: sanitizeTvResults(person.tv_credits.cast, 'credits'),
+          crew: sanitizeTvResults(person.tv_credits.crew, 'credits'),
+        }
+      : person?.tv_credits,
   };
 }

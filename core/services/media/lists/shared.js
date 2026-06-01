@@ -1,9 +1,9 @@
 import { normalizeTimestamp } from '@/core/utils/format';
 import { cleanString } from '@/core/utils/string';
 import { getUserAccount } from '@/core/services/account/account.service';
-import { assertMovieMedia, buildMediaItemKey, normalizeMediaPayload } from '@/core/services/shared/media';
+import { assertTitleMedia, buildMediaItemKey, normalizeMediaPayload } from '@/core/services/shared/media';
 
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 
 export function resolveRpcRow(data) {
   if (Array.isArray(data)) {
@@ -57,7 +57,7 @@ export function normalizeListOwnerSnapshot(value = {}, fallbackOwnerId = null) {
 export function normalizeListPreviewItem(value = {}) {
   const normalized = normalizeMediaPayload(value, value);
 
-  if (!normalized.entityId || !isMovieMediaType(normalized.entityType)) {
+  if (!normalized.entityId || !isTitleMediaType(normalized.entityType)) {
     return null;
   }
 
@@ -85,7 +85,7 @@ export function dedupeListItems(items = []) {
   const uniqueItems = new Map();
 
   items.forEach((item, index) => {
-    const mediaSnapshot = assertMovieMedia(item, 'Lists support movies only');
+    const mediaSnapshot = assertTitleMedia(item, 'Lists support movies and TV series only');
 
     if (!mediaSnapshot.entityId || !mediaSnapshot.entityType || !mediaSnapshot.title) {
       return;

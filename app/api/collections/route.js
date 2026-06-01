@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { resolveOptionalSessionRequest } from '@/core/auth/servers/session.js';
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/core/services/shared/server';
+import { getCollectionResource } from '@/core/services/account/account-collections.server';
+import { getOrLoadCachedValue } from '@/core/services/shared/server';
 
 const DEFAULT_COLLECTION_LIMIT = 24;
 const MAX_COLLECTION_LIMIT = 50;
@@ -84,6 +85,14 @@ function isTabScopedOut({ activeTab, resource }) {
   return !allowedResources.has(resource);
 }
 
+function unwrapCollectionPayload(payload) {
+  if (payload && typeof payload === 'object' && Object.hasOwn(payload, 'data')) {
+    return payload.data;
+  }
+
+  return payload ?? null;
+}
+
 export async function GET(request) {
   try {
     const authContext = await resolveOptionalSessionRequest(request);
@@ -124,20 +133,18 @@ export async function GET(request) {
       enabled: !viewerId,
       ttlMs: 2000,
       loader: () =>
-        invokeInternalEdgeFunction('collections-read', {
-          body: {
-            resource,
-            userId,
-            viewerId,
-            limitCount: fetchLimitCount,
-            media,
-            listId,
-            slug,
-            strict: true,
-          },
+        getCollectionResource({
+          listId,
+          limitCount: fetchLimitCount,
+          media,
+          resource,
+          slug,
+          strict: true,
+          userId,
+          viewerId,
         }),
     });
-    const rawData = payload?.data ?? null;
+    const rawData = unwrapCollectionPayload(payload);
 
     if (!Array.isArray(rawData) || !shouldPaginate) {
       return NextResponse.json({

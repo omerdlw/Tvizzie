@@ -1,16 +1,15 @@
 'use client';
 
-import { useRegistry } from '@/core/modules/registry';
+import { createRouteRegistry } from '@/features/app-shell/route-registry-factory';
 
-export default function LegalNavRegistry({ description, icon, title }) {
-  useRegistry({
+export default createRouteRegistry({
+  displayName: 'LegalNavRegistry',
+  resolveConfig: ({ description, icon, title }) => ({
     nav: {
       title,
       description,
       icon,
       action: null,
     },
-  });
-
-  return null;
-}
+  }),
+});

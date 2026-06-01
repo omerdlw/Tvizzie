@@ -25,8 +25,9 @@ const DEFAULT_ACTIVITY_FILTERS = Object.freeze({
 const ACTIVITY_SUBJECT_LABELS = Object.freeze({
   all: 'Any content',
   list: 'Lists',
-  movie: 'Films',
+  movie: 'Movies',
   other: 'Other',
+  tv: 'TV Series',
   user: 'People',
 });
 
@@ -44,6 +45,10 @@ function resolveActivitySubjectToken(item = {}) {
 
   if (subjectType === 'movie' || subjectType === 'film') {
     return 'movie';
+  }
+
+  if (subjectType === 'tv' || subjectType === 'series') {
+    return 'tv';
   }
 
   if (subjectType === 'list') {
@@ -149,6 +154,7 @@ export function collectActivitySubjectOptions() {
   return [
     { label: ACTIVITY_SUBJECT_LABELS.all, value: 'all' },
     { label: ACTIVITY_SUBJECT_LABELS.movie, value: 'movie' },
+    { label: ACTIVITY_SUBJECT_LABELS.tv, value: 'tv' },
     { label: ACTIVITY_SUBJECT_LABELS.list, value: 'list' },
   ];
 }

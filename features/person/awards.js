@@ -41,6 +41,7 @@ function buildAwardsTimeline(organizations = []) {
         category: category.category || 'Award',
         project: category.project || null,
         projectId: category.projectId || null,
+        mediaType: category.mediaType === 'tv' ? 'tv' : 'movie',
         poster: category.poster || null,
       }))
     )
@@ -217,7 +218,7 @@ export default function PersonAwards({ personId }) {
                           animate={entryMotion.animate}
                           transition={entryMotion.transition}
                         >
-                          <Link href={`/movie/${entry.projectId}`} className={rowClassName}>
+                          <Link href={`/${entry.mediaType}/${entry.projectId}`} className={rowClassName}>
                             {content}
                           </Link>
                         </motion.div>

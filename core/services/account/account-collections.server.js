@@ -3,7 +3,7 @@ import 'server-only';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { canViewerAccessUserContent, createPrivateProfileError } from '@/core/services/account/account-profile.server';
 import { normalizeTimestamp } from '@/core/utils/format';
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 import {
   LIST_COLLECTION_SELECT,
   LIST_ITEM_SELECT,
@@ -94,7 +94,7 @@ export async function getAccountCollectionResource({
 
     return (result.data || [])
       .map((row) => normalizeMediaPayload(row.payload || {}, row))
-      .filter((item) => isMovieMediaType(item?.entityType));
+      .filter((item) => isTitleMediaType(item?.entityType));
   }
 
   if (resource === 'watchlist') {
@@ -185,7 +185,7 @@ export async function getAccountCollectionResource({
 
     return (result.data || [])
       .map((row) => normalizeMediaPayload(row.payload || {}, row))
-      .filter((item) => isMovieMediaType(item?.entityType));
+      .filter((item) => isTitleMediaType(item?.entityType));
   }
 
   if (resource === 'list-by-id') {
@@ -316,7 +316,7 @@ export async function getAccountCollectionResource({
 
     assertResult(result, 'Watched list could not be loaded');
 
-    return (result.data || []).map(normalizeWatchedRow).filter((item) => isMovieMediaType(item?.entityType));
+    return (result.data || []).map(normalizeWatchedRow).filter((item) => isTitleMediaType(item?.entityType));
   }
 
   throw new Error('Unsupported account collection resource');

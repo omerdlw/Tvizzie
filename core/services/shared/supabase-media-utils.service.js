@@ -1,6 +1,6 @@
-import { assertMovieMedia, buildMediaItemKey } from './media-key.service.js';
+import { assertTitleMedia, buildMediaItemKey } from './media-key.service.js';
 import { normalizeTimestamp } from '@/core/utils/format';
-import { isMovieMediaType } from '@/core/utils/media';
+import { isTitleMediaType } from '@/core/utils/media';
 import { normalizeLowerValue } from '@/core/utils/string';
 
 function normalizeNumber(value, fallback = null) {
@@ -80,7 +80,7 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
 export function normalizeFavoriteShowcaseItem(value = {}) {
   const normalized = normalizeMediaPayload(value, value);
 
-  if (!normalized.entityId || !isMovieMediaType(normalized.entityType)) {
+  if (!normalized.entityId || !isTitleMediaType(normalized.entityType)) {
     return null;
   }
 
@@ -112,7 +112,7 @@ export function normalizeFavoriteShowcaseItems(value = []) {
 export function assertMoviePayload(payload = {}, message = 'Only movies are supported') {
   const normalizedType = normalizeEntityType(payload.entityType || payload.media_type || payload.type);
 
-  if (!isMovieMediaType(normalizedType)) {
+  if (!isTitleMediaType(normalizedType)) {
     throw new Error(message);
   }
 
@@ -120,7 +120,10 @@ export function assertMoviePayload(payload = {}, message = 'Only movies are supp
 }
 
 export function createMediaPayload(media = {}, userId = null, options = {}) {
-  const mediaSnapshot = assertMovieMedia(media, options.message || 'Only movies are supported in user collections');
+  const mediaSnapshot = assertTitleMedia(
+    media,
+    options.message || 'Only movies and TV series are supported in user collections'
+  );
 
   if (!mediaSnapshot.entityType || !mediaSnapshot.entityId || !mediaSnapshot.title) {
     throw new Error('User media entries require entityType, entityId and title');
@@ -134,14 +137,14 @@ export function createMediaPayload(media = {}, userId = null, options = {}) {
     backdrop_path: mediaSnapshot.backdropPath,
     entityId: mediaSnapshot.entityId,
     entityType: mediaSnapshot.entityType,
-    first_air_date: null,
+    first_air_date: media.first_air_date || null,
     genreNames: normalizeArray(media.genreNames || media.genre_names),
     genre_ids: normalizeArray(media.genre_ids || media.genreIds),
     genres: normalizeArray(media.genres),
     mediaKey,
     media_type: mediaSnapshot.entityType,
-    name: '',
-    original_name: null,
+    name: media.name || media.original_name || '',
+    original_name: media.original_name || null,
     original_title: media.original_title || null,
     poster_path: mediaSnapshot.posterPath,
     popularity: normalizeNumber(media.popularity, null),

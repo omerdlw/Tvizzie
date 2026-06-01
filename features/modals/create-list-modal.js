@@ -28,7 +28,7 @@ const ACTION_BUTTON_CLASS =
 function normalizeSearchResult(item = {}) {
   const entityType = String(item?.media_type || item?.entityType || '').trim().toLowerCase();
 
-  if (entityType !== 'movie') return null;
+  if (entityType !== 'movie' && entityType !== 'tv') return null;
 
   const entityId = String(item?.id ?? item?.entityId ?? '').trim();
   const title = String(item?.title || item?.original_title || '').trim();
@@ -46,8 +46,9 @@ function normalizeSearchResult(item = {}) {
     name,
     popularity: Number.isFinite(Number(item?.popularity)) ? Number(item.popularity) : null,
     poster_path: item?.poster_path || item?.posterPath || null,
+    first_air_date: item?.first_air_date || null,
     release_date: item?.release_date || null,
-    title,
+    title: title || name,
     vote_average: Number.isFinite(Number(item?.vote_average)) ? Number(item.vote_average) : null,
     vote_count: Number.isFinite(Number(item?.vote_count)) ? Number(item.vote_count) : null,
   };
@@ -62,7 +63,7 @@ function getItemDisplayTitle(item) {
 }
 
 function getItemYear(item) {
-  return formatYear(item?.release_date);
+  return formatYear(item?.release_date || item?.first_air_date);
 }
 
 // --------------------------------------------------
@@ -122,8 +123,13 @@ export default function CreateListModal({ close, data }) {
       setIsSearching(true);
 
       try {
-        const response = await TmdbService.searchContent(deferredSearchQuery, 'movie', 1);
-        const results = (response?.data?.results || []).map(normalizeSearchResult).filter(Boolean);
+        const [movieResponse, tvResponse] = await Promise.all([
+          TmdbService.searchContent(deferredSearchQuery, 'movie', 1),
+          TmdbService.searchContent(deferredSearchQuery, 'tv', 1),
+        ]);
+        const results = [...(movieResponse?.data?.results || []), ...(tvResponse?.data?.results || [])]
+          .map(normalizeSearchResult)
+          .filter(Boolean);
 
         if (!ignore) {
           startSearchTransition(() => setSearchResults(results));

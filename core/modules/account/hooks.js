@@ -89,33 +89,45 @@ export function useResolvedAccountUser({
 export function useAccountProfile({ resolvedUserId, initialProfile = null, onError }) {
   const accountClient = useAccountClient();
   const [profile, setProfile] = useState(initialProfile);
+  const [hasLoadedProfile, setHasLoadedProfile] = useState(Boolean(initialProfile?.id));
 
   useEffect(() => {
     if (!resolvedUserId) {
       setProfile(null);
+      setHasLoadedProfile(false);
       return undefined;
     }
 
     const hasInitialProfile = initialProfile?.id === resolvedUserId;
+    setHasLoadedProfile(hasInitialProfile);
 
     if (hasInitialProfile) {
       accountClient.primeAccount(resolvedUserId, initialProfile);
       setProfile((currentProfile) => (currentProfile?.id === resolvedUserId ? currentProfile : initialProfile));
+    } else {
+      setProfile((currentProfile) => (currentProfile?.id === resolvedUserId ? currentProfile : null));
     }
 
     return accountClient.subscribeToAccount(
       resolvedUserId,
       (nextProfile) => {
         setProfile(nextProfile);
+        setHasLoadedProfile(true);
       },
       {
         fetchOnSubscribe: !hasInitialProfile,
         hiddenIntervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
         intervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS,
-        onError,
+        onError: (error) => {
+          setHasLoadedProfile(true);
+
+          if (typeof onError === 'function') {
+            onError(error);
+          }
+        },
       }
     );
   }, [accountClient, initialProfile, onError, resolvedUserId]);
 
-  return { profile, setProfile };
+  return { hasLoadedProfile, profile, setProfile };
 }

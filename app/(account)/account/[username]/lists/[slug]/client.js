@@ -22,7 +22,7 @@ import {
   subscribeToListReviews,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
-import { useAccountSectionEngine } from '@/features/account/route/section-state';
+import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 
 export default function Client({ routeData = null }) {
@@ -40,7 +40,7 @@ export default function Client({ routeData = null }) {
     resolvedUserId: auth.user?.id || null,
   });
 
-  const { routeData: resolvedRouteData, sectionState } = useAccountSectionEngine({
+  const { routeData: resolvedRouteData, sectionProviderValue, sectionState } = useAccountSectionEngine({
     activeListId: list?.id || '',
     activeTab: 'lists',
     auth,
@@ -564,5 +564,9 @@ export default function Client({ routeData = null }) {
     watchlistItems: watchlist,
   };
 
-  return <ListView model={listDetailModel} />;
+  return (
+    <AccountSectionStateProvider value={sectionProviderValue}>
+      <ListView model={listDetailModel} />
+    </AccountSectionStateProvider>
+  );
 }

@@ -13,7 +13,8 @@ function groupByYear(credits) {
   const grouped = {};
 
   credits.forEach((credit) => {
-    const year = credit.release_date ? credit.release_date.slice(0, 4) : '—';
+    const year =
+      credit.release_date || credit.first_air_date ? (credit.release_date || credit.first_air_date).slice(0, 4) : '—';
 
     if (!grouped[year]) {
       grouped[year] = [];
@@ -81,7 +82,9 @@ export default function PersonTimeline({ person }) {
 
               <div className="ml-0 flex flex-col sm:ml-16">
                 {credits.map((credit, creditIndex) => {
-                  const title = credit.title || credit.original_title || 'Untitled';
+                  const mediaType = credit.media_type === 'tv' ? 'tv' : 'movie';
+                  const title =
+                    credit.title || credit.original_title || credit.name || credit.original_name || 'Untitled';
                   const creditLabel = getCreditLabel(credit);
                   const creditMotion = getPersonSurfaceItemMotion({
                     axis: 'x',
@@ -102,7 +105,7 @@ export default function PersonTimeline({ person }) {
                       transition={creditMotion.transition}
                     >
                       <Link
-                        href={`/movie/${credit.id}`}
+                        href={`/${mediaType}/${credit.id}`}
                         className="group hover:bg-primary flex items-end gap-3 rounded-[14px] border border-transparent p-1 transition"
                       >
                         <MediaThumb poster={credit.poster_path} alt={title} className="rounded-[10px]" />

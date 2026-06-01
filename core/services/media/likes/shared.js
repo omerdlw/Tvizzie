@@ -6,7 +6,7 @@ import {
   buildUserMediaCollectionSubscriptionKey,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   assertMoviePayload,
   buildMediaItemKey,
   ensureUserId,
@@ -15,7 +15,7 @@ import {
 export function buildLikeRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage likes');
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in likes');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in likes');
 
   return {
     id: buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId),
@@ -41,7 +41,7 @@ export function getFavoriteShowcaseSubscriptionKey(userId) {
 }
 
 export function buildFavoriteShowcaseItem(media = {}) {
-  const normalizedType = assertMoviePayload(media, 'Favorite showcase supports movies only');
+  const normalizedType = assertMoviePayload(media, 'Favorite showcase supports movies and TV series only');
   const entityId = String(media?.entityId ?? media?.id ?? '').trim();
 
   if (!entityId) {
@@ -56,7 +56,7 @@ export function buildFavoriteShowcaseItem(media = {}) {
     backdrop_path: media?.backdrop_path || media?.backdropPath || null,
     entityId,
     entityType: normalizedType,
-    first_air_date: null,
+    first_air_date: media?.first_air_date || null,
     mediaKey,
     media_type: normalizedType,
     name: media?.name || media?.original_name || '',

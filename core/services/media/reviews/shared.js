@@ -1,4 +1,4 @@
-import { assertMovieMedia, buildMediaItemKey } from '@/core/services/shared/media';
+import { assertTitleMedia, buildMediaItemKey } from '@/core/services/shared/media';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
 import { normalizeValue } from '@/core/utils/string';
@@ -46,7 +46,7 @@ export function createListReviewLikeKey(ownerId, listId) {
 }
 
 export function buildMediaSubjectMetadata(media = {}) {
-  const mediaSnapshot = assertMovieMedia(media, 'Only movie reviews are supported');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
 
   return {

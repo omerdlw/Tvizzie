@@ -1,18 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
+import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import {
-  LIST_FILTER_QUERY_KEYS,
-  buildCollectionBasePath,
-  buildManagedQueryString,
-  hasActiveListFilters,
-  parseListFilters,
-  parsePageFromSearch,
-  sortProfileLists,
-  toListQueryValues,
+  LIST_FILTER_QUERY_KEYS, buildCollectionBasePath, buildManagedQueryString,
+  hasActiveListFilters, parseListFilters, parsePageFromSearch, sortProfileLists, toListQueryValues,
 } from '@/features/account/filtering';
 import { AccountListSortBar } from '@/features/account/filters/content-filter-primitives';
 import AccountPaginatedListGrid from '@/features/account/lists/grid';
@@ -22,137 +15,81 @@ import Icon from '@/ui/icon';
 
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;
 
+export default function AccountListsFeed({ canShowLists, isOwner, lists, username, onDeleteList, onEditList }) {
+  const pathname = usePathname();
+  const searchString = useSearchParams()?.toString?.() || '';
+  const collectionRootPath = buildCollectionBasePath(pathname);
+
+  const [viewState, setViewState] = useState({
+    sort: parseListFilters(new URLSearchParams(searchString)).sort,
+    page: parsePageFromSearch(new URLSearchParams(searchString))
+  });
+
+  useEffect(() => {
+    setViewState({
+      sort: parseListFilters(new URLSearchParams(searchString)).sort,
+      page: parsePageFromSearch(new URLSearchParams(searchString))
+    });
+  }, [searchString]);
+
+  const updateView = (updates) => {
+    setViewState((prev) => {
+      const next = { ...prev, ...updates };
+      if (typeof window !== 'undefined') {
+        const qs = buildManagedQueryString(new URLSearchParams(window.location.search), { managedKeys: LIST_FILTER_QUERY_KEYS, resetPage: false, values: toListQueryValues({ sort: next.sort }) });
+        const params = new URLSearchParams(qs);
+        if (next.page > 1) params.set('page', String(next.page)); else params.delete('page');
+        window.history.replaceState({}, '', params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath);
+      }
+      return next;
+    });
+  };
+
+  if (!canShowLists) return <AccountSectionState message="This profile is private." />;
+
+  const hasFilters = hasActiveListFilters({ sort: viewState.sort });
+
+  return (
+    <AccountPaginatedListGrid
+      currentPage={viewState.page}
+      emptyMessage="No lists yet"
+      icon="solar:list-broken"
+      itemsPerPage={LISTS_PAGE_ITEMS_PER_PAGE}
+      lists={sortProfileLists(lists, viewState.sort)}
+      onPageChange={(page) => updateView({ page })}
+      ownerUsername={username}
+      pageBasePath={collectionRootPath}
+      showHeader={false}
+      renderActions={(list) => isOwner ? <ListCardOwnerActions list={list} onDelete={onDeleteList} onEdit={onEditList} /> : null}
+      title="Lists"
+      toolbar={
+        <AccountListSortBar
+          sort={viewState.sort}
+          onChange={(sort) => updateView({ sort, page: 1 })}
+          onReset={(lists.length > 0 && hasFilters) || hasFilters ? () => updateView({ sort: parseListFilters(new URLSearchParams()).sort, page: 1 }) : null}
+        />
+      }
+    />
+  );
+}
+
 function ListCardOwnerActions({ list, onDelete, onEdit }) {
-  const handleEditClick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onEdit(list);
-  };
-
-  const handleDeleteClick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onDelete(list);
-  };
-
   return (
     <div className="flex items-center gap-1.5">
       <button
-        type="button"
-        aria-label={`Edit ${list.title}`}
-        onClick={handleEditClick}
+        type="button" aria-label={`Edit ${list.title}`}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(list); }}
         className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/20"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
       <Button
-        variant="destructive-icon"
-        aria-label={`Delete ${list.title}`}
-        onClick={handleDeleteClick}
+        variant="destructive-icon" aria-label={`Delete ${list.title}`}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(list); }}
         className="size-8 rounded-[10px]"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
       </Button>
     </div>
-  );
-}
-
-export default function AccountListsFeed({ canShowLists, isOwner, lists, username, onDeleteList, onEditList }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsKey = searchParams?.toString?.() || '';
-  const initialListFilters = useMemo(() => parseListFilters(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
-  const initialPage = useMemo(() => parsePageFromSearch(new URLSearchParams(searchParamsKey)), [searchParamsKey]);
-  const [listFilters, setListFilters] = useState(initialListFilters);
-  const [activePage, setActivePage] = useState(initialPage);
-  const collectionRootPath = useMemo(() => buildCollectionBasePath(pathname), [pathname]);
-  const sortedLists = useMemo(() => sortProfileLists(lists, listFilters.sort), [listFilters.sort, lists]);
-  const hasFilters = hasActiveListFilters(listFilters);
-
-  useEffect(() => {
-    setListFilters(initialListFilters);
-    setActivePage(initialPage);
-  }, [initialListFilters, initialPage]);
-
-  const updateUrl = useCallback(
-    (nextSort, nextPage) => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      const queryString = buildManagedQueryString(new URLSearchParams(window.location.search), {
-        managedKeys: LIST_FILTER_QUERY_KEYS,
-        resetPage: false,
-        values: toListQueryValues({ sort: nextSort }),
-      });
-      const params = new URLSearchParams(queryString);
-
-      if (nextPage > 1) {
-        params.set('page', String(nextPage));
-      } else {
-        params.delete('page');
-      }
-
-      const nextQuery = params.toString();
-      window.history.replaceState({}, '', nextQuery ? `${collectionRootPath}?${nextQuery}` : collectionRootPath);
-    },
-    [collectionRootPath]
-  );
-
-  const handleSortChange = useCallback(
-    (nextSort) => {
-      setListFilters({ sort: nextSort });
-      setActivePage(1);
-      updateUrl(nextSort, 1);
-    },
-    [updateUrl]
-  );
-
-  const handleResetFilters = useCallback(() => {
-    const defaultSort = parseListFilters(new URLSearchParams()).sort;
-    setListFilters({ sort: defaultSort });
-    setActivePage(1);
-    updateUrl(defaultSort, 1);
-  }, [updateUrl]);
-
-  const handlePageChange = useCallback(
-    (nextPage) => {
-      setActivePage(nextPage);
-      updateUrl(listFilters.sort, nextPage);
-    },
-    [listFilters.sort, updateUrl]
-  );
-
-  if (!canShowLists) {
-    return <AccountSectionState message="This profile is private." />;
-  }
-
-  return (
-    <AccountPaginatedListGrid
-      currentPage={activePage}
-      emptyMessage="No lists yet"
-      icon="solar:list-broken"
-      itemsPerPage={LISTS_PAGE_ITEMS_PER_PAGE}
-      lists={sortedLists}
-      onPageChange={handlePageChange}
-      ownerUsername={username}
-      pageBasePath={collectionRootPath}
-      showHeader={false}
-      renderActions={(list) =>
-        isOwner ? <ListCardOwnerActions list={list} onDelete={onDeleteList} onEdit={onEditList} /> : null
-      }
-      title="Lists"
-      toolbar={
-        lists.length > 0 ? (
-          <AccountListSortBar
-            sort={listFilters.sort}
-            onChange={handleSortChange}
-            onReset={hasFilters ? handleResetFilters : null}
-          />
-        ) : hasFilters ? (
-          <AccountListSortBar sort={listFilters.sort} onChange={handleSortChange} onReset={handleResetFilters} />
-        ) : null
-      }
-    />
   );
 }

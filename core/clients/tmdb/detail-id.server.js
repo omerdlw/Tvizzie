@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 
-import { normalizeMediaType } from '@/core/utils/media';
+import { isTitleMediaType, normalizeMediaType } from '@/core/utils/media';
 
 import { TMDB_REVALIDATE } from './config';
 import { tmdbRequest } from './request';
@@ -24,7 +24,9 @@ async function findByExternalId(externalId, source = 'imdb_id') {
 }
 
 export const resolveTmdbDetailId = cache(async (id, type) => {
-  if (typeof id !== 'string' || !id.startsWith('tt') || normalizeMediaType(type) !== 'movie') {
+  const normalizedType = normalizeMediaType(type);
+
+  if (typeof id !== 'string' || !id.startsWith('tt') || !isTitleMediaType(normalizedType)) {
     return id;
   }
 
@@ -35,7 +37,7 @@ export const resolveTmdbDetailId = cache(async (id, type) => {
     return id;
   }
 
-  const results = data.movie_results;
+  const results = normalizedType === 'tv' ? data.tv_results : data.movie_results;
 
   if (!Array.isArray(results) || results.length === 0) {
     return id;

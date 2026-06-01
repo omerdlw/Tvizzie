@@ -8,5 +8,5 @@ export default createAccountRoutePage(Client, getUsernameAccountActivityRouteDat
     : 1,
   scope: query?.scope === 'following' ? 'following' : 'user',
   sort: query?.asort === 'oldest' ? 'oldest' : 'newest',
-  subject: query?.asub === 'list' || query?.asub === 'movie' ? query.asub : 'all',
+  subject: query?.asub === 'list' || query?.asub === 'movie' || query?.asub === 'tv' ? query.asub : 'all',
 }));

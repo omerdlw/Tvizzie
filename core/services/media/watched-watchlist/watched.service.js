@@ -8,7 +8,7 @@ import {
   refreshMediaCollectionAccountSummary,
 } from '@/core/services/shared/client';
 import {
-  assertMovieMedia,
+  assertTitleMedia,
   createMediaPayload,
   ensureUserId,
   normalizeMediaPayload,
@@ -34,7 +34,7 @@ export function getWatchedDocRef(userId, media) {
 export async function markUserWatched({ media, sourceLastAction = 'watched', userId, watchedAt = new Date() }) {
   ensureUserId(userId, 'Authenticated user is required to manage watched items');
 
-  const mediaSnapshot = assertMovieMedia(media, 'Only movies are supported in watched items');
+  const mediaSnapshot = assertTitleMedia(media, 'Only movies and TV series are supported in watched items');
   const watchedAtValue = watchedAt instanceof Date ? watchedAt : new Date(watchedAt);
 
   if (Number.isNaN(watchedAtValue.getTime())) {

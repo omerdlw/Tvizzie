@@ -2,6 +2,7 @@ export const SEARCH_TYPES = Object.freeze({
   ALL: 'all',
   MOVIE: 'movie',
   PERSON: 'person',
+  TV: 'tv',
   USER: 'user',
 });
 
@@ -23,6 +24,7 @@ export const SEARCH_GRID = Object.freeze({
 export const SEARCH_TAB_ITEMS = Object.freeze([
   { key: SEARCH_TYPES.ALL, label: 'All' },
   { key: SEARCH_TYPES.MOVIE, label: 'Movies' },
+  { key: SEARCH_TYPES.TV, label: 'TV' },
   { key: SEARCH_TYPES.PERSON, label: 'People' },
   { key: SEARCH_TYPES.USER, label: 'Users' },
 ]);
