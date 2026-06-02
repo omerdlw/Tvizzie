@@ -28,7 +28,7 @@ export function useNavigation() {
     return Boolean(activeItem?.action || activeItem?.isConfirmation);
   }, [activeItem]);
 
-  const { compact, compactRef } = useNavigationCompact({
+  const compact = useNavigationCompact({
     activeItem,
     expanded: isExpanded,
     pathname,
@@ -36,7 +36,9 @@ export function useNavigation() {
     compactLocked,
   });
 
-  setIsCompact(compactRef.current);
+  useEffect(() => {
+    setIsCompact(compact);
+  }, [compact, setIsCompact]);
 
   const clearHoverState = useCallback(() => {
     setIsHovered(false);
