@@ -33,9 +33,10 @@ export function useActionHeight(onHeightChange, containerRef, actionNode, isTopI
         return;
       }
 
-      onHeightChange(contentHeight + getActionMargins(containerRef));
+      const margins = Boolean(actionNode) ? getActionMargins(containerRef) : 0;
+      onHeightChange(contentHeight > 0 ? contentHeight + margins : 0);
     },
-    [containerRef, onHeightChange]
+    [containerRef, onHeightChange, actionNode]
   );
 
   const shouldMeasure = isTopItem && Boolean(actionNode);

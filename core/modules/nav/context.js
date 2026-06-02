@@ -61,6 +61,11 @@ function createSurfaceEntryDefinition(input, config = {}) {
     showAction: descriptor?.showAction ?? config?.showAction ?? false,
     dismissible: descriptor?.dismissible ?? config?.dismissible ?? true,
     onClose: descriptor?.onClose ?? config?.onClose ?? null,
+    icon: descriptor?.icon ?? config?.icon ?? null,
+    title: descriptor?.title ?? config?.title ?? null,
+    description: descriptor?.description ?? config?.description ?? null,
+    trailing: descriptor?.trailing ?? config?.trailing ?? null,
+    closeLabel: descriptor?.closeLabel ?? config?.closeLabel ?? null,
   };
 }
 
@@ -73,6 +78,7 @@ export function NavigationProvider({ children, config = {} }) {
   const [expanded, setExpanded] = useState(false);
   const [navHeight, setNavHeight] = useState(0);
   const [surfaceState, setSurfaceState] = useState(INITIAL_SURFACE_STATE);
+  const [isCompact, setIsCompactState] = useState(false);
 
   const { batch, register, unregister } = useNavRegistry();
   const previousPathRef = useRef(pathname);
@@ -83,8 +89,9 @@ export function NavigationProvider({ children, config = {} }) {
   const isCompactRef = useRef(false);
   const wasCompactRef = useRef(false);
 
-  const setIsCompact = useCallback((isCompact) => {
-    isCompactRef.current = isCompact;
+  const setIsCompact = useCallback((compactVal) => {
+    isCompactRef.current = compactVal;
+    setIsCompactState(compactVal);
   }, []);
 
   useRegistry({
@@ -287,7 +294,6 @@ export function NavigationProvider({ children, config = {} }) {
 
       setExpanded(false);
       setSearchQuery('');
-
       const runOpen = () => {
         syncSurfaceStack([...surfaceStackRef.current, surfaceEntry]);
       };
@@ -335,8 +341,9 @@ export function NavigationProvider({ children, config = {} }) {
       navHeight,
       expanded,
       config,
+      isCompact,
     }),
-    [dismissedConfirmationKey, guardConfirmation, surfaceState, searchQuery, compactLocked, navHeight, expanded, config]
+    [dismissedConfirmationKey, guardConfirmation, surfaceState, searchQuery, compactLocked, navHeight, expanded, config, isCompact]
   );
 
   const actionsValue = useMemo(

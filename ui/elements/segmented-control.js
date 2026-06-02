@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { motion } from 'framer-motion';
+
+import { useDraggableScroll } from '@/core/hooks/use-draggable-scroll';
 import { cn } from '@/core/utils';
 
 function defaultGetKey(item) {
@@ -14,6 +15,7 @@ function defaultGetLabel(item) {
 }
 
 export default function SegmentedControl({
+  className = '',
   classNames = {},
   getLabel = defaultGetLabel,
   getKey = defaultGetKey,
@@ -24,6 +26,7 @@ export default function SegmentedControl({
 }) {
   const wrapperRef = useRef(null);
   const buttonRefs = useRef(new Map());
+  const trackRef = useDraggableScroll();
   const [indicatorFrame, setIndicatorFrame] = useState({ x: 0, y: 0, width: 0, height: 0, ready: false });
   const resolvedItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
   const activeItemKey = useMemo(() => {
@@ -84,17 +87,46 @@ export default function SegmentedControl({
     };
   }, [activeItemKey, resolvedItems]);
 
+  useEffect(() => {
+    const activeButton = buttonRefs.current.get(activeItemKey);
+    const track = trackRef.current;
+    if (!activeButton || !track) {
+      return;
+    }
+
+    const trackWidth = track.clientWidth;
+    const scrollLeft = track.scrollLeft;
+    const buttonLeft = activeButton.offsetLeft;
+    const buttonWidth = activeButton.offsetWidth;
+
+    if (buttonLeft < scrollLeft) {
+      track.scrollTo({
+        left: buttonLeft - 16,
+        behavior: 'smooth',
+      });
+    } else if (buttonLeft + buttonWidth > scrollLeft + trackWidth) {
+      track.scrollTo({
+        left: buttonLeft + buttonWidth - trackWidth + 16,
+        behavior: 'smooth',
+      });
+    }
+  }, [activeItemKey, trackRef]);
+
   if (!resolvedItems.length) {
     return null;
   }
 
   return (
-    <div className="flex items-center">
-      <div className={cn('hide-scrollbar w-full overflow-x-auto', classNames.track)}>
+    <div className={cn('flex items-center min-w-0', className)}>
+      <div
+        ref={trackRef}
+        onDragStart={(event) => event.preventDefault()}
+        className={cn('hide-scrollbar w-full overflow-x-auto cursor-grab select-none touch-pan-x', classNames.track)}
+      >
         <div
           ref={wrapperRef}
           className={cn(
-            'relative flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
+            'relative inline-flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
             'p-1',
             classNames.wrapper
           )}

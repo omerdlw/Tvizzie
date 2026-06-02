@@ -48,7 +48,6 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
     profile,
     profileHandle,
     resolvedUserId,
-    setIsBioSurfaceOpen,
     username,
     watched = [],
     watchedCount = 0,
@@ -72,7 +71,6 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={RegistryComponent ? <RegistryComponent /> : null}
       resolvedUserId={resolvedUserId}

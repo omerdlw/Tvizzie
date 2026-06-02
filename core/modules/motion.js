@@ -1,27 +1,27 @@
 const NAV_CARD_SPRINGS = Object.freeze([
-  Object.freeze({ type: 'spring', stiffness: 180, damping: 28, mass: 1 }),
-  Object.freeze({ type: 'spring', stiffness: 160, damping: 26, mass: 1 }),
-  Object.freeze({ type: 'spring', stiffness: 140, damping: 24, mass: 1 }),
+  Object.freeze({ type: 'spring', stiffness: 210, damping: 32, mass: 0.98 }),
+  Object.freeze({ type: 'spring', stiffness: 190, damping: 31, mass: 1 }),
+  Object.freeze({ type: 'spring', stiffness: 170, damping: 30, mass: 1.02 }),
 ]);
 
 export const NAV_DEFAULT_TRANSITION = Object.freeze({
   ease: [0.16, 1, 0.3, 1],
-  duration: 0.4,
+  duration: 0.34,
   type: 'tween',
 });
 
 export const NAV_CONTAINER_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
-  damping: 28,
-  mass: 0.8,
+  stiffness: 210,
+  damping: 34,
+  mass: 1,
 });
 
 export const NAV_CARD_WIDTH_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
-  damping: 28,
-  mass: 0.8,
+  stiffness: 220,
+  damping: 34,
+  mass: 0.95,
 });
 
 export const NAV_MICRO_SPRING = Object.freeze({
@@ -33,9 +33,9 @@ export const NAV_MICRO_SPRING = Object.freeze({
 
 export const NAV_ACTION_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
-  damping: 30,
-  mass: 0.8,
+  stiffness: 260,
+  damping: 32,
+  mass: 0.86,
 });
 
 export const NAV_BADGE_SPRING = Object.freeze({
@@ -46,47 +46,47 @@ export const NAV_BADGE_SPRING = Object.freeze({
 });
 
 export const NAV_CONTENT_TRANSITION = Object.freeze({
-  duration: 0.25,
+  duration: 0.22,
   ease: [0.16, 1, 0.3, 1],
 });
 
 export const NAV_CARD_OPACITY_TRANSITION = Object.freeze({
-  duration: 0.28,
+  duration: 0.24,
   ease: [0.16, 1, 0.3, 1],
 });
 
 export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
-  duration: 0.3,
+  duration: 0.28,
   ease: [0.16, 1, 0.3, 1],
 });
 
 export const NAV_BACKDROP_TRANSITION = Object.freeze({
-  duration: 0.45,
+  duration: 0.34,
   ease: [0.16, 1, 0.3, 1],
 });
 
 export const NAV_SEARCH_REVEAL_TRANSITION = Object.freeze({
-  duration: 0.3,
+  duration: 0.24,
   ease: [0.16, 1, 0.3, 1],
 });
 
 export const NAV_SURFACE_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
+  stiffness: 280,
   damping: 30,
-  mass: 0.8,
+  mass: 0.84,
 });
 
 export const NAV_SURFACE_ITEM_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 300,
+  stiffness: 290,
   damping: 30,
-  mass: 0.8,
+  mass: 0.82,
 });
 
 const NAV_EXIT_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: 0.18,
+  duration: 0.26,
   ease: [0.55, 0, 1, 0.45],
 });
 
@@ -188,15 +188,68 @@ export const NAV_ACTION_GROUP_MOTION = Object.freeze({
 });
 
 export const NAV_SURFACE_MOTION = Object.freeze({
-  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 10, scale: 0.985, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
   exit: {
     opacity: 0,
-    y: -NAV_CONTENT_OFFSET,
+    y: -4,
+    scale: 0.99,
+    filter: 'blur(3px)',
     transition: NAV_EXIT_TRANSITION,
   },
   transition: NAV_SURFACE_SPRING,
 });
+
+export const NAV_INLINE_SURFACE_PANEL_MOTION = Object.freeze({
+  initial: {
+    height: 0,
+    opacity: 0,
+    clipPath: 'inset(100% 0% 0% 0%)',
+    filter: 'blur(8px)',
+  },
+  animate: {
+    height: 'auto',
+    opacity: 1,
+    clipPath: 'inset(0% 0% 0% 0%)',
+    filter: 'blur(0px)',
+  },
+  exit: {
+    height: 0,
+    opacity: 0,
+    clipPath: 'inset(0% 0% 100% 0%)',
+    filter: 'blur(5px)',
+    transition: Object.freeze({
+      height: { duration: 0.26, ease: [0.55, 0, 1, 0.45] },
+      opacity: { duration: 0.16, ease: [0.55, 0, 1, 0.45] },
+      clipPath: { duration: 0.26, ease: [0.55, 0, 1, 0.45] },
+      filter: { duration: 0.22, ease: [0.55, 0, 1, 0.45] },
+    }),
+  },
+  transition: Object.freeze({
+    height: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
+    opacity: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+    clipPath: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
+    filter: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+  }),
+});
+
+export function getNavSurfaceMotion({ openedFromCompact = false } = {}) {
+  if (!openedFromCompact) {
+    return NAV_SURFACE_MOTION;
+  }
+
+  return Object.freeze({
+    initial: { opacity: 0, y: 18, scale: 0.972, filter: 'blur(10px)' },
+    animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
+    exit: NAV_SURFACE_MOTION.exit,
+    transition: Object.freeze({
+      opacity: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+      y: { type: 'spring', stiffness: 220, damping: 28, mass: 0.9 },
+      scale: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
+      filter: { duration: 0.34, ease: [0.16, 1, 0.3, 1] },
+    }),
+  });
+}
 
 export const NAV_DESCRIPTION_MOTION = Object.freeze({
   initial: { opacity: 0, y: NAV_CONTENT_OFFSET },

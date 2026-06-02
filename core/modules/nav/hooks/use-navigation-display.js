@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useNavigationContext } from '../context';
 import MediaAction from '../actions/media-action';
+import ConfirmationSurface from '../surfaces/confirmation-surface';
 import { getNavConfirmationKey } from '../utils';
 import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from './navigation-path-model';
 import { useNavigationCountdown } from './use-navigation-countdown';
@@ -147,24 +148,6 @@ function applyStatusOverlay(item, statusState) {
   };
 }
 
-function applyConfirmationOverlay(item) {
-  if (!item?.confirmation) {
-    return item;
-  }
-
-  return {
-    ...item,
-    ...item.confirmation,
-    title: item.confirmation.title ?? item.title ?? item.name,
-    description: item.confirmation.description ?? item.description,
-    icon: item.confirmation.icon ?? item.icon,
-    isConfirmation: true,
-    isOverlay: true,
-    actions: null,
-    action: null,
-  };
-}
-
 function isSurfaceDescriptor(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value) && !React.isValidElement(value);
 }
@@ -198,6 +181,11 @@ function resolveInlineSurface(item) {
     showAction: surface.showAction,
     dismissible: surface.dismissible ?? true,
     onClose: typeof surface.onClose === 'function' ? surface.onClose : null,
+    icon: surface.icon ?? null,
+    title: surface.title ?? null,
+    description: surface.description ?? null,
+    trailing: surface.trailing ?? null,
+    closeLabel: surface.closeLabel ?? null,
   };
 }
 
@@ -241,7 +229,34 @@ function applySurface(item, surfaceEntry, closeSurface) {
           },
     actions: null,
     action: resolveSurfaceAction(item, surfaceEntry),
+    surfaceIcon: surfaceEntry.icon ?? null,
+    surfaceTitle: surfaceEntry.title ?? null,
+    surfaceDescription: surfaceEntry.description ?? null,
+    surfaceTrailing: surfaceEntry.trailing ?? null,
+    surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
   };
+}
+
+function applyConfirmationSurface(item) {
+  if (!item?.confirmation) {
+    return item;
+  }
+
+  return applySurface(
+    item,
+    {
+      component: ConfirmationSurface,
+      props: {
+        item,
+      },
+      showAction: false,
+      dismissible: false,
+      icon: item.confirmation.icon ?? item.icon,
+      title: item.confirmation.title ?? item.title ?? item.name,
+      description: item.confirmation.description ?? item.description,
+    },
+    null
+  );
 }
 
 function resolveActionNode(action, showMediaAction) {
@@ -342,7 +357,7 @@ function resolveActiveItem({
   const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
 
   if (itemWithConfirmation?.confirmation && !isConfirmationDismissed) {
-    return applyConfirmationOverlay(itemWithConfirmation);
+    return itemWithConfirmation;
   }
 
   const inlineSurface = resolveInlineSurface(itemWithMediaAction);
@@ -393,6 +408,8 @@ export function useNavigationDisplay() {
     activeSurfaceId,
     activeSurfaceEntry,
     isSurfaceOpen,
+    isCompact,
+    setCompactLock,
   } = useNavigationContext();
   const surfaceState = useMemo(
     () => ({
@@ -419,7 +436,7 @@ export function useNavigationDisplay() {
     });
   }, [rawItems, expanded, searchQuery, isNotFoundPage, countdownItem]);
 
-  const activeItem = useMemo(() => {
+  const rawActiveItem = useMemo(() => {
     return resolveActiveItem({
       rawItems,
       navigationItems,
@@ -448,6 +465,56 @@ export function useNavigationDisplay() {
     guardConfirmation,
     closeSurface,
   ]);
+
+  const rawConfirmationKey = getNavConfirmationKey(rawActiveItem);
+  const [confirmedActiveKey, setConfirmedActiveKey] = React.useState(null);
+
+  const isCompactRef = React.useRef(isCompact);
+  useEffect(() => {
+    isCompactRef.current = isCompact;
+  }, [isCompact]);
+
+  useEffect(() => {
+    if (!rawConfirmationKey) {
+      setConfirmedActiveKey(null);
+      setCompactLock('confirmation-opening', false);
+      return;
+    }
+
+    if (rawConfirmationKey === confirmedActiveKey) {
+      return;
+    }
+
+    if (isCompactRef.current) {
+      setCompactLock('confirmation-opening', true);
+      const timer = setTimeout(() => {
+        setConfirmedActiveKey(rawConfirmationKey);
+        setCompactLock('confirmation-opening', false);
+      }, 250);
+      return () => clearTimeout(timer);
+    } else {
+      setConfirmedActiveKey(rawConfirmationKey);
+    }
+  }, [rawConfirmationKey, confirmedActiveKey, setCompactLock]);
+
+  const activeItem = useMemo(() => {
+    const confirmationKey = getNavConfirmationKey(rawActiveItem);
+    const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
+
+    if (rawActiveItem?.confirmation && !isConfirmationDismissed) {
+      if (confirmationKey !== confirmedActiveKey) {
+        return {
+          ...rawActiveItem,
+          isConfirmation: false,
+          isOverlay: false,
+          confirmation: null,
+        };
+      }
+      return applyConfirmationSurface(rawActiveItem);
+    }
+
+    return rawActiveItem;
+  }, [rawActiveItem, confirmedActiveKey, dismissedConfirmationKey]);
 
   const activeIndex = useMemo(() => {
     return resolveActiveIndex({

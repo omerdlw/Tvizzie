@@ -226,7 +226,6 @@ export function useAccountSectionPage({
   selectedList = null,
   username,
 }) {
-  const [isBioSurfaceOpen, setIsBioSurfaceOpen] = useState(false);
   const pageData = useAccountPageData({
     activeListId,
     activeTab,
@@ -259,10 +258,6 @@ export function useAccountSectionPage({
     setWatchlist,
   } = pageData;
 
-  useEffect(() => {
-    setIsBioSurfaceOpen(false);
-  }, [profile?.description, resolvedUserId]);
-
   const pageActions = useAccountPageActions({
     activeListId,
     auth,
@@ -290,13 +285,11 @@ export function useAccountSectionPage({
     ...pageData,
     canViewProfileCollections,
     followState: getFollowState(followRelationship),
-    isBioSurfaceOpen,
     isPageLoading:
       isResolvingProfile ||
       (!isCurrentAccountMissing &&
         Boolean(resolvedUserId) &&
         (!profile || !hasResolvedAccessState || (canViewPrivateContent && isLoadingCollections))),
     isViewerReady: auth.isReady && isAuthSessionReady,
-    setIsBioSurfaceOpen,
   };
 }

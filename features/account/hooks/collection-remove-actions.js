@@ -2,18 +2,21 @@
 
 import { useCallback } from 'react';
 
+import { TMDB_IMG } from '@/core/constants';
 import { removeUserLike } from '@/core/services/media/likes';
 import { toggleUserListItem } from '@/core/services/media/lists';
 import { removeUserWatchedItem, removeUserWatchlistItem } from '@/core/services/media/watched-watchlist';
 import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
 
 function createRemoveConfirmation({ item, onCancel, onConfirm, scope }) {
+  const poster = item?.poster_path || item?.posterPath;
   return {
     title: `Remove ${scope.title}?`,
     description: `${getMediaTitle(item)} will be removed from your ${scope.descriptionTarget}.`,
     confirmText: 'Remove',
     confirmLoadingText: 'Removing',
     isDestructive: true,
+    icon: poster ? `${TMDB_IMG}/w342${poster}` : undefined,
     onCancel,
     onConfirm,
   };

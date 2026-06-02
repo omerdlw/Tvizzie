@@ -129,6 +129,7 @@ export default function AccountReviewsFeed({
     () => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1),
     [watchedItems]
   );
+  const yearOptions = useMemo(() => collectReviewYears(items), [items]);
 
   return (
     <AccountSectionLayout
@@ -142,7 +143,7 @@ export default function AccountReviewsFeed({
       {(listedReviewCount > 0 || hasFilters) && (
         <AccountReviewFilterBar
           filters={viewState.filters}
-          yearOptions={useMemo(() => collectReviewYears(items), [items])}
+          yearOptions={yearOptions}
           onChange={(filters) => updateView({ filters: { ...viewState.filters, ...filters }, page: 1 })}
           onReset={
             hasFilters ? () => updateView({ filters: parseReviewFilters(new URLSearchParams()), page: 1 }) : null

@@ -29,7 +29,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
     handleRemoveListItem,
     handleSignInRequest,
     handleToggleLike,
-    isBioSurfaceOpen,
     isFollowLoading,
     isLiked,
     isLikeLoading,
@@ -49,7 +48,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
     resolveError,
     resolvedUserId,
     reviews = [],
-    setIsBioSurfaceOpen,
     unfollowConfirmation,
     username,
     userProfile,
@@ -88,7 +86,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
       handleToggleLike={handleToggleLike}
-      isBioSurfaceOpen={isBioSurfaceOpen}
       isFollowLoading={isFollowLoading}
       isLiked={isLiked}
       isLikeLoading={isLikeLoading}
@@ -102,7 +99,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       pendingFollowRequestCount={pendingFollowRequestCount}
       profile={profile}
       resolveError={resolveError}
-      setIsBioSurfaceOpen={setIsBioSurfaceOpen}
       unfollowConfirmation={unfollowConfirmation}
       username={username}
     />
@@ -121,7 +117,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       listsCount={listCount}
       onFollow={handleFollow}
       onOpenFollowList={handleOpenFollowList}
-      onReadMore={() => setIsBioSurfaceOpen(true)}
       profile={profile}
       registry={pageRegistry}
       resolvedUserId={resolvedUserId}

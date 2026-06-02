@@ -25,9 +25,11 @@ import {
   NAV_CARD_WIDTH_SPRING,
   NAV_CONTAINER_SPRING,
   NAV_DEFAULT_TRANSITION,
+  NAV_INLINE_SURFACE_PANEL_MOTION,
   NAV_VIDEO_ICON_MOTION,
 } from '@/core/modules/motion';
 import ConfirmationSurface from './surfaces/confirmation-surface';
+import NavSurfaceShell from './surfaces/surface-shell';
 import { resolveNavVisualStyle } from './utils';
 
 const NAV_CARD_DIMENSIONS = Object.freeze({
@@ -132,18 +134,19 @@ function getNavItemCardProps(
     },
     initial: {
       opacity: 0,
-      scale: 0.94,
-      y: 10,
+      scale: 0.96,
+      y: 12,
       filter: `blur(${BLUR_AMOUNT}px)`,
     },
     exit: {
       opacity: 0,
-      scale: 0.92,
+      scale: 0.96,
+      y: 4,
       filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
       transition: {
-        duration: 0.15,
-        ease: [0.23, 1, 0.32, 1],
-        filter: { duration: 0.14 },
+        duration: 0.24,
+        ease: [0.55, 0, 1, 0.45],
+        filter: { duration: 0.2 },
       },
     },
     transition: {
@@ -194,7 +197,7 @@ function getItemDescription({ expanded, isHovered, link }) {
 
 function getActionNode(link, ActionComponent) {
   if (link.isConfirmation) {
-    return <ConfirmationSurface item={link} />;
+    return null;
   }
 
   return ActionComponent;
@@ -325,32 +328,23 @@ function StandardItemContent({
             </div>
             <Description text={description} style={itemStyle.description} />
           </div>
-          {isTop && link.type !== 'COUNTDOWN' && <NavActionsContainer activeItem={link} />}
+          {isTop && link.type !== 'COUNTDOWN' && !link.isConfirmation && <NavActionsContainer activeItem={link} />}
         </div>
       </div>
 
-      {footerNode ? (
-        <div ref={footerRef} className="w-full pt-2.5">
-          {footerNode}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function ConfirmationItemContent({ link, itemStyle, contentContainerRef }) {
-  return (
-    <div ref={contentContainerRef} className="flex w-full flex-col gap-3 px-1 py-1">
-      {link.icon ? (
-        <div className="self-start">
-          <BadgeIcon isStackHovered={false} icon={link.icon} iconOverlay={link.iconOverlay} style={itemStyle.icon} />
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-1.5">
-        <Title text={link.title || link.name} style={itemStyle.title} />
-        {link.description ? <Description text={link.description} style={itemStyle.description} maxLines={6} /> : null}
-      </div>
+      <AnimatePresence initial={false}>
+        {footerNode ? (
+          <motion.div
+            key="nav-surface-footer"
+            ref={footerRef}
+            className="w-full overflow-hidden pt-2.5"
+            style={{ transformOrigin: 'bottom center', willChange: 'height, opacity, clip-path, transform, filter' }}
+            {...NAV_INLINE_SURFACE_PANEL_MOTION}
+          >
+            {footerNode}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
@@ -359,14 +353,39 @@ function SurfaceItemContent({ link, contentContainerRef }) {
   const SurfaceComponent = link.surfaceComponent;
   const surfaceContent = link.surfaceContent;
 
+  const icon = link.surfaceIcon ?? link.icon ?? null;
+  const title = link.surfaceTitle ?? link.title ?? link.name ?? '';
+  const description = link.surfaceDescription ?? link.description ?? '';
+  const trailing = link.surfaceTrailing ?? link.trailing ?? null;
+  const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
+  const onClose = link.isConfirmation ? null : (link.closeSurface || link.onClose);
+
   return (
-    <div ref={contentContainerRef} className="relative w-full" onClick={(event) => event.stopPropagation()}>
-      {typeof SurfaceComponent === 'function' ? (
-        <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
-      ) : (
-        surfaceContent
-      )}
-    </div>
+    <motion.div
+      className="relative w-full overflow-hidden"
+      style={{ transformOrigin: 'bottom center', willChange: 'height, opacity, clip-path, transform, filter' }}
+      onClick={(event) => event.stopPropagation()}
+      {...NAV_INLINE_SURFACE_PANEL_MOTION}
+    >
+      <div ref={contentContainerRef} className="w-full">
+        <NavSurfaceShell
+          icon={icon}
+          title={title}
+          description={description}
+          trailing={trailing}
+          onClose={onClose}
+          closeLabel={closeLabel}
+          descriptionMaxLines={link.isConfirmation ? 6 : 2}
+          contentClassName="w-full"
+        >
+          {typeof SurfaceComponent === 'function' ? (
+            <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
+          ) : (
+            surfaceContent
+          )}
+        </NavSurfaceShell>
+      </div>
+    </motion.div>
   );
 }
 
@@ -512,7 +531,15 @@ const Item = memo(
       }
 
       if (link.isConfirmation) {
-        return <ConfirmationItemContent link={link} itemStyle={itemStyle} contentContainerRef={contentContainerRef} />;
+        return (
+          <SurfaceItemContent
+            link={{
+              ...link,
+              surfaceComponent: () => <ConfirmationSurface item={link} />,
+            }}
+            contentContainerRef={contentContainerRef}
+          />
+        );
       }
 
       return (

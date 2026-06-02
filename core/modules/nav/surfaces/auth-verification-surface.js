@@ -11,8 +11,7 @@ import {
   resolveVerificationTimestamp,
 } from '@/features/auth/auth-flow';
 import { resolveAuthVerificationHeader } from '@/core/modules/modal/header';
-import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
-import { NAV_BUTTON_TAP_MOTION, NAV_SURFACE_MOTION } from '@/core/modules/motion';
+import { useSurfaceHeader } from './surface-shell';
 import { useToast } from '@/core/modules/notification/hooks';
 import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
@@ -413,95 +412,75 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
   const headerIcon = meta?.isSending && !meta?.hasChallenge ? <Spinner size={24} /> : 'solar:shield-keyhole-bold';
 
+  const setHeader = useSurfaceHeader();
+
+  useEffect(() => {
+    if (setHeader) {
+      setHeader({
+        icon: headerIcon,
+        title: resolvedHeader.title,
+        description: resolvedHeader.description,
+        trailing: null,
+      });
+    }
+  }, [setHeader, headerIcon, resolvedHeader.title, resolvedHeader.description]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     await submitVerification();
   };
 
   return (
-    <motion.section
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="auth-verification-surface-title"
-      className="relative flex flex-col gap-3"
-      {...NAV_SURFACE_MOTION}
-    >
-      <motion.button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          dismissSurface(close);
-        }}
-        className={`center center absolute top-0 right-0 z-10 size-8 cursor-pointer border border-transparent p-1 transition-all hover:border-white/10 hover:bg-white/5`}
-        aria-label="Close verification"
-        {...NAV_BUTTON_TAP_MOTION}
-      >
-        <Icon icon="material-symbols:close-rounded" size={20} />
-      </motion.button>
-      <div className="relative flex h-auto w-full items-center space-x-2 pr-8">
-        <div className="center relative">
-          <BadgeIcon icon={headerIcon} />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-3 pt-0.5" aria-busy={isSending || isSubmitting}>
+      <OtpBoxes
+        code={code}
+        disabled={isSubmitting || isSending || isCodeExpired || !challengeToken}
+        hasError={hasCodeError}
+        inputRef={codeInputRef}
+        isFocused={isCodeFocused}
+        setIsFocused={setIsCodeFocused}
+        setCode={setCode}
+      />
 
-        <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
-          <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
-            <Title text={resolvedHeader.title} style={{ className: '!normal-case !truncate' }} />
-            {resolvedHeader.description ? <Description text={resolvedHeader.description} /> : null}
-          </div>
-        </div>
-      </div>
+      <div className="grid gap-2">
+        <Button
+          className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+          disabled={isSubmitting || isSending || !canResendCode}
+          onClick={() => void sendCode({ isInitial: false })}
+          type="button"
+        >
+          {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
+        </Button>
 
-      <form onSubmit={handleSubmit} className="space-y-3 pt-0.5" aria-busy={isSending || isSubmitting}>
-        <OtpBoxes
-          code={code}
-          disabled={isSubmitting || isSending || isCodeExpired || !challengeToken}
-          hasError={hasCodeError}
-          inputRef={codeInputRef}
-          isFocused={isCodeFocused}
-          setIsFocused={setIsCodeFocused}
-          setCode={setCode}
-        />
-
-        <div className="grid gap-2">
-          <Button
-            className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
-            disabled={isSubmitting || isSending || !canResendCode}
-            onClick={() => void sendCode({ isInitial: false })}
+        {shouldShowRememberDevice ? (
+          <button
             type="button"
+            disabled={isSubmitting || isSending}
+            aria-pressed={rememberDevice}
+            onClick={() => setRememberDevice((prev) => !prev)}
+            className={cn(
+              'flex h-11 w-full items-center gap-2 border px-3 text-left text-[11px] font-bold tracking-widest uppercase transition',
+              rememberDevice
+                ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
+                : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
+              (isSubmitting || isSending) && 'cursor-not-allowed opacity-60'
+            )}
           >
-            {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
-          </Button>
-
-          {shouldShowRememberDevice ? (
-            <button
-              type="button"
-              disabled={isSubmitting || isSending}
-              aria-pressed={rememberDevice}
-              onClick={() => setRememberDevice((prev) => !prev)}
+            <span
               className={cn(
-                'flex h-11 w-full items-center gap-2 border px-3 text-left text-[11px] font-bold tracking-widest uppercase transition',
+                'center size-4 border transition-colors',
                 rememberDevice
-                  ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
-                  : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
-                (isSubmitting || isSending) && 'cursor-not-allowed opacity-60'
+                  ? 'border-success/40 bg-success text-white'
+                  : 'border-black/20 bg-transparent text-transparent'
               )}
+              aria-hidden="true"
             >
-              <span
-                className={cn(
-                  'center size-4 border transition-colors',
-                  rememberDevice
-                    ? 'border-success/40 bg-success text-white'
-                    : 'border-black/20 bg-transparent text-transparent'
-                )}
-                aria-hidden="true"
-              >
-                <Icon icon="material-symbols:check-small-rounded" size={14} />
-              </span>
-              <span>Remember this device for 30 days</span>
-            </button>
-          ) : null}
-        </div>
-      </form>
-    </motion.section>
+              <Icon icon="material-symbols:check-small-rounded" size={14} />
+            </span>
+            <span>Remember this device for 30 days</span>
+          </button>
+        ) : null}
+      </div>
+    </form>
   );
 }

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 
+import { ensurePasswordAccountRecord } from '@/core/auth/servers/account.js';
+import { createAdminClient } from '@/core/clients/supabase/admin';
 import { requireSessionRequest, resolveOptionalSessionRequest } from '@/core/auth/servers/session.js';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
+import { getEditableAccountSnapshotByUserId } from '@/core/services/account/account.server';
 import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.constants';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/core/services/shared/server';
+import { executeWriteRollout, getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/core/services/shared/server';
+import { normalizeAccountDisplayNameSearchValue, sanitizeUsername, validateUsername } from '@/core/utils/account';
 
 const DEFAULT_MEDIA_BUCKET = 'profile-media';
 
@@ -207,15 +211,8 @@ async function getCurrentProfileMediaSnapshot(userId) {
     };
   }
 
-  const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-    body: {
-      resource: 'profile',
-      userId: normalizedUserId,
-      viewerId: normalizedUserId,
-    },
-  }).catch(() => null);
-
-  const profile = payload?.profile || null;
+  const snapshot = await getEditableAccountSnapshotByUserId(normalizedUserId).catch(() => null);
+  const profile = snapshot?.profile || null;
 
   return {
     avatarUrl: normalizeValue(profile?.avatarUrl || profile?.avatar_url || '') || null,
@@ -230,15 +227,191 @@ async function getCurrentProfileSnapshot(userId) {
     return null;
   }
 
-  const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-    body: {
-      resource: 'profile',
-      userId: normalizedUserId,
-      viewerId: normalizedUserId,
-    },
-  }).catch(() => null);
+  const snapshot = await getEditableAccountSnapshotByUserId(normalizedUserId).catch(() => null);
+  return snapshot?.profile || null;
+}
 
-  return payload?.profile || null;
+function buildUsernameCandidate(baseValue, suffix = '') {
+  const rawBase = sanitizeUsername(baseValue) || 'user';
+  const maxBaseLength = Math.max(1, 24 - suffix.length);
+  const trimmedBase = rawBase.slice(0, maxBaseLength).replace(/[_-]+$/g, '') || 'user';
+  const candidate = `${trimmedBase}${suffix}`;
+  const normalizedCandidate = candidate.length >= 3 ? candidate : `${candidate}${'user'.slice(0, 3 - candidate.length)}`;
+
+  return validateUsername(normalizedCandidate);
+}
+
+async function isUsernameAvailable(admin, username) {
+  const result = await admin.from('usernames').select('user_id').eq('username_lower', username).maybeSingle();
+
+  if (result.error) {
+    throw new Error(result.error.message || 'Username availability could not be checked');
+  }
+
+  return !result.data?.user_id;
+}
+
+async function resolveAvailableUsername({ admin, displayName, email, preferredUsername, userId }) {
+  if (preferredUsername !== undefined && preferredUsername !== null && normalizeValue(preferredUsername)) {
+    return validateUsername(preferredUsername);
+  }
+
+  const seeds = [
+    normalizeValue(email).split('@')[0],
+    normalizeValue(displayName),
+    normalizeValue(userId).slice(0, 12),
+    'user',
+  ].filter(Boolean);
+
+  for (const seed of seeds) {
+    const baseCandidate = buildUsernameCandidate(seed);
+
+    if (await isUsernameAvailable(admin, baseCandidate)) {
+      return baseCandidate;
+    }
+
+    for (let index = 1; index <= 50; index += 1) {
+      const candidate = buildUsernameCandidate(seed, String(index));
+
+      if (await isUsernameAvailable(admin, candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  throw new Error('Could not generate an available username for this account');
+}
+
+async function claimUsernameForProfile({
+  avatarUrl = null,
+  displayName,
+  email = null,
+  failIfProfileHasUsername = false,
+  preserveExisting = false,
+  userId,
+  username,
+}) {
+  const admin = createAdminClient();
+  const { error } = await admin.rpc('claim_username', {
+    p_avatar_url: normalizeValue(avatarUrl) || null,
+    p_display_name: normalizeValue(displayName) || username,
+    p_email: normalizeLower(email) || null,
+    p_fail_if_profile_has_username: Boolean(failIfProfileHasUsername),
+    p_preserve_existing: Boolean(preserveExisting),
+    p_user_id: normalizeValue(userId),
+    p_username: validateUsername(username),
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Username could not be claimed');
+  }
+}
+
+async function writeLegacyProfile({
+  action,
+  avatarUrl,
+  bannerUrl,
+  description,
+  displayName,
+  email,
+  isPrivate,
+  userId,
+  username,
+}) {
+  const normalizedUserId = normalizeValue(userId);
+
+  if (!normalizedUserId) {
+    throw new Error('Authenticated user is required');
+  }
+
+  const admin = createAdminClient();
+  const currentSnapshot = await getEditableAccountSnapshotByUserId(normalizedUserId).catch(() => null);
+  const currentProfile = currentSnapshot?.profile || null;
+
+  if (action === 'ensure') {
+    if (!currentProfile?.id) {
+      const resolvedUsername = await resolveAvailableUsername({
+        admin,
+        displayName,
+        email,
+        preferredUsername: username,
+        userId: normalizedUserId,
+      });
+
+      await ensurePasswordAccountRecord({
+        avatarUrl,
+        displayName: normalizeValue(displayName) || resolvedUsername,
+        email: normalizeLower(email),
+        userId: normalizedUserId,
+        username: resolvedUsername,
+      });
+    }
+
+    const ensuredProfile = await getCurrentProfileSnapshot(normalizedUserId);
+
+    return {
+      action,
+      ok: true,
+      profile: ensuredProfile,
+    };
+  }
+
+  const updates = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (email !== undefined) {
+    updates.email = normalizeLower(email) || null;
+  }
+
+  if (displayName !== undefined) {
+    const normalizedDisplayName = normalizeValue(displayName) || 'Anonymous User';
+    updates.display_name = normalizedDisplayName;
+    updates.display_name_lower = normalizeAccountDisplayNameSearchValue(normalizedDisplayName);
+  }
+
+  if (description !== undefined) {
+    updates.description = normalizeValue(description);
+  }
+
+  if (avatarUrl !== undefined) {
+    updates.avatar_url = avatarUrl;
+  }
+
+  if (bannerUrl !== undefined) {
+    updates.banner_url = bannerUrl;
+  }
+
+  if (isPrivate !== undefined) {
+    updates.is_private = Boolean(isPrivate);
+  }
+
+  const updateResult = await admin.from('profiles').update(updates).eq('id', normalizedUserId);
+
+  if (updateResult.error) {
+    throw new Error(updateResult.error.message || 'Profile could not be updated');
+  }
+
+  const normalizedRequestedUsername = normalizeValue(username);
+  const currentUsername = normalizeValue(currentProfile?.username);
+
+  if (normalizedRequestedUsername && normalizedRequestedUsername !== currentUsername) {
+    await claimUsernameForProfile({
+      avatarUrl: avatarUrl === undefined ? currentProfile?.avatarUrl : avatarUrl,
+      displayName: displayName === undefined ? currentProfile?.displayName : displayName,
+      email: email === undefined ? currentProfile?.email : email,
+      userId: normalizedUserId,
+      username: normalizedRequestedUsername,
+    });
+  }
+
+  const profile = await getCurrentProfileSnapshot(normalizedUserId);
+
+  return {
+    action,
+    ok: true,
+    profile,
+  };
 }
 
 function getProfileCacheKey({ userId = '', username = '', viewerId = '' } = {}) {
@@ -338,33 +511,57 @@ export async function POST(request) {
       isPrivate: body?.isPrivate,
     };
     const requestedIsPrivate = normalizeOptionalBoolean(body?.isPrivate);
-    let payload;
+    const writeResult = await executeWriteRollout({
+      domain: 'account',
+      endpoint: 'account-profile-write',
+      userId: authContext.userId,
+      legacyWrite: async () =>
+        writeLegacyProfile({
+          ...writeBody,
+          isPrivate: requestedIsPrivate,
+        }),
+      edgeWrite: async () => {
+        try {
+          return await invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
+            body: writeBody,
+          });
+        } catch (error) {
+          if (Number(error?.status) === 404) {
+            return writeLegacyProfile({
+              ...writeBody,
+              isPrivate: requestedIsPrivate,
+            });
+          }
 
-    try {
-      payload = await invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
-        body: writeBody,
-      });
-    } catch (error) {
-      const canRecoverFromRpcCatchError =
-        action === 'update' && requestedIsPrivate !== undefined && isRpcCatchTypeError(error);
+          const canRecoverFromRpcCatchError =
+            action === 'update' && requestedIsPrivate !== undefined && isRpcCatchTypeError(error);
 
-      if (!canRecoverFromRpcCatchError) {
-        throw error;
-      }
+          if (!canRecoverFromRpcCatchError) {
+            throw error;
+          }
 
-      const profileAfterError = await getCurrentProfileSnapshot(authContext.userId);
+          const profileAfterError = await getCurrentProfileSnapshot(authContext.userId);
 
-      if (profileAfterError && resolveProfileIsPrivate(profileAfterError) === requestedIsPrivate) {
-        payload = {
-          action,
-          profile: profileAfterError,
-        };
-      } else {
-        payload = await invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
-          body: writeBody,
-        });
-      }
-    }
+          if (profileAfterError && resolveProfileIsPrivate(profileAfterError) === requestedIsPrivate) {
+            return {
+              action,
+              ok: true,
+              profile: profileAfterError,
+            };
+          }
+
+          return invokeInternalEdgeFunction(ACCOUNT_WRITE_FUNCTION, {
+            body: writeBody,
+          });
+        }
+      },
+      logger(entry) {
+        console.warn('[Rollout][account-profile-write]', entry);
+      },
+      fallbackOnRecoverableEdgeError: true,
+      requestId: request.headers.get('x-request-id') || null,
+    });
+    const payload = writeResult?.result || null;
 
     publishUserEvent(authContext.userId, 'account', {
       action: payload?.action || action,

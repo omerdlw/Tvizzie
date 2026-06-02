@@ -1,21 +1,6 @@
 'use client';
 
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import { EMPTY_ACCOUNT_REGISTRY_AUTH, buildAccountPageState } from '@/features/account/registry-config';
-
-function buildAccountBioSurface({ isBioSurfaceOpen = false, profile = null, setIsBioSurfaceOpen }) {
-  if (!isBioSurfaceOpen || !profile?.description) {
-    return undefined;
-  }
-
-  return (
-    <AccountBioSurface
-      title={profile?.displayName || 'About'}
-      description={profile.description}
-      onClose={() => setIsBioSurfaceOpen(false)}
-    />
-  );
-}
 
 export function buildAccountRegistryState(sectionState = null, overrides = null) {
   const {
@@ -25,7 +10,6 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     handleFollow,
     handleOpenFollowList,
     handleSignInRequest,
-    isBioSurfaceOpen = false,
     isFollowLoading = false,
     isOwner = false,
     isPageLoading = false,
@@ -34,7 +18,6 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     pendingFollowRequestCount = 0,
     profile = null,
     resolveError = null,
-    setIsBioSurfaceOpen,
     unfollowConfirmation = null,
     username,
   } = sectionState || {};
@@ -59,14 +42,7 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     listDeleteConfirmation: overrides?.listDeleteConfirmation ?? null,
     navActionOverride: overrides?.navActionOverride ?? null,
     navDescription: overrides?.navDescription ?? null,
-    navSurface:
-      overrides && Object.hasOwn(overrides, 'navSurface')
-        ? overrides.navSurface
-        : buildAccountBioSurface({
-            isBioSurfaceOpen,
-            profile,
-            setIsBioSurfaceOpen,
-          }),
+    navSurface: overrides?.navSurface ?? null,
     navRegistrySource: overrides?.navRegistrySource,
     onDeleteList: overrides?.onDeleteList,
     onEditList: overrides?.onEditList,

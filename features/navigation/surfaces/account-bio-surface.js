@@ -1,40 +1,48 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { getUserAvatarUrl } from '@/core/utils';
+import { useSurfaceHeader } from '@/core/modules/nav/surfaces/surface-shell';
 
-import { NAV_ACTION_SPRING, NAV_SURFACE_SPRING } from '@/core/modules/nav/motion';
-import Icon from '@/ui/icon';
+function formatFollowCount(value) {
+  return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
+}
 
-export default function AccountBioSurface({ description = '', onClose = null, title = 'About' }) {
+export default function AccountBioSurface({
+  close = null,
+  description = '',
+  followerCount = 0,
+  followingCount = 0,
+  onClose = null,
+  profile = null,
+  username = 'About',
+}) {
   const normalizedDescription = String(description || '').trim();
+  const avatarUrl = getUserAvatarUrl(profile);
+  const followSummary = `${formatFollowCount(followingCount)} Following · ${formatFollowCount(followerCount)} Followers`;
+
+  const setHeader = useSurfaceHeader();
+
+  useEffect(() => {
+    if (setHeader) {
+      setHeader({
+        icon: avatarUrl,
+        title: username,
+        description: followSummary,
+        trailing: null,
+      });
+    }
+  }, [setHeader, avatarUrl, username, followSummary]);
 
   return (
-    <motion.section
-      className="overflow-hidden"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={NAV_SURFACE_SPRING}
-    >
-      <div className="flex items-center justify-between gap-3 border-b border-black/5 p-3">
-        <p className={`text-sm font-bold tracking-wide uppercase`}>{title}</p>
-        <motion.button
-          type="button"
-          onClick={() => onClose?.()}
-          className="bg-primary absolute top-0 right-0 inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
-          aria-label="Close bio"
-          whileTap={{ scale: 0.94 }}
-          whileHover={{ scale: 1.03 }}
-          transition={NAV_ACTION_SPRING}
-        >
-          <Icon icon="material-symbols:close-rounded" size={16} />
-        </motion.button>
-      </div>
-      <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto p-3">
-        <p className={`text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/70`}>
-          {normalizedDescription}
-        </p>
-      </div>
-    </motion.section>
+    <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto">
+      {normalizedDescription ? (
+        <div className="p-3 pt-0">
+          <p className="text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/70">
+            {normalizedDescription}
+          </p>
+        </div>
+      ) : null}
+    </div>
   );
 }

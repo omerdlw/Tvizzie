@@ -11,13 +11,12 @@ import {
   NAV_BUTTON_INTERACTION_MOTION,
   NAV_BUTTON_TAP_MOTION,
   NAV_CONTENT_TRANSITION,
-  NAV_SURFACE_MOTION,
 } from '@/core/modules/motion';
 import { getNavConfirmationKey } from '@/core/modules/nav/utils';
 
 const BUTTON_TONES = Object.freeze({
   danger: 'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error',
-  muted: 'border border-white/5 bg-white/5 hover:bg-transparent',
+  muted: 'border border-black/5 bg-black/5 hover:bg-transparent',
   primary: 'border border-info/20 bg-info/10 text-info hover:bg-info hover:text-white hover:border-info',
 });
 
@@ -42,13 +41,9 @@ function stopEvent(event) {
   event.stopPropagation();
 }
 
-export default function ConfirmationSurface({ item }) {
+export function ConfirmationActions({ confirmation = {}, onCancel = null, onConfirm = null }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const confirmLockRef = useRef(false);
-  const { dismissConfirmation } = useNavigationContext();
-
-  const confirmation = item?.confirmation || {};
-  const confirmationKey = getNavConfirmationKey(item);
 
   const cancelText = confirmation.cancelText || 'Cancel';
   const confirmText = confirmation.confirmText || 'Confirm';
@@ -65,10 +60,6 @@ export default function ConfirmationSurface({ item }) {
     return confirmation.isDestructive ? 'danger' : 'primary';
   }, [confirmation.tone, confirmation.isDestructive]);
 
-  function dismissCurrentConfirmation() {
-    dismissConfirmation(confirmationKey);
-  }
-
   function handleCancel(event) {
     stopEvent(event);
 
@@ -76,8 +67,7 @@ export default function ConfirmationSurface({ item }) {
       return;
     }
 
-    confirmation.onCancel?.();
-    dismissCurrentConfirmation();
+    onCancel?.(event);
   }
 
   async function handleConfirm(event) {
@@ -91,7 +81,7 @@ export default function ConfirmationSurface({ item }) {
     let result = null;
 
     try {
-      result = confirmation.onConfirm?.(event);
+      result = onConfirm?.(event);
     } catch (error) {
       console.error('Confirmation onConfirm failed:', error);
       confirmLockRef.current = false;
@@ -108,7 +98,6 @@ export default function ConfirmationSurface({ item }) {
 
     try {
       await result;
-      dismissCurrentConfirmation();
     } catch (error) {
       void error;
     } finally {
@@ -118,11 +107,7 @@ export default function ConfirmationSurface({ item }) {
   }
 
   return (
-    <motion.div
-      className="mt-2.5 flex w-full flex-col items-center gap-2 sm:flex-row"
-      {...NAV_SURFACE_MOTION}
-      layout="position"
-    >
+    <div className="mt-1 flex w-full flex-col items-center gap-2 sm:flex-row">
       <motion.button
         type="button"
         disabled={isSubmitting}
@@ -152,6 +137,40 @@ export default function ConfirmationSurface({ item }) {
       >
         {isSubmitting ? confirmLoadingText : confirmText}
       </motion.button>
-    </motion.div>
+    </div>
+  );
+}
+
+export default function ConfirmationSurface({ item }) {
+  const { dismissConfirmation } = useNavigationContext();
+
+  const confirmation = item?.confirmation || {};
+  const confirmationKey = getNavConfirmationKey(item);
+
+  function dismissCurrentConfirmation() {
+    dismissConfirmation(confirmationKey);
+  }
+
+  return (
+    <ConfirmationActions
+      confirmation={confirmation}
+      onCancel={() => {
+        confirmation.onCancel?.();
+        dismissCurrentConfirmation();
+      }}
+      onConfirm={(event) => {
+        const result = confirmation.onConfirm?.(event);
+
+        if (!isPromiseLike(result)) {
+          dismissCurrentConfirmation();
+          return result;
+        }
+
+        return Promise.resolve(result).then((value) => {
+          dismissCurrentConfirmation();
+          return value;
+        });
+      }}
+    />
   );
 }

@@ -11,6 +11,7 @@ import { buildPollingSubscriptionKey, primePollingSubscription } from '@/core/se
 import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
 import { subscribeToUserListBySlug, subscribeToUserListItems, toggleListLike } from '@/core/services/media/lists';
 import { deleteListReview, subscribeToListReviews, toggleStoredReviewLike } from '@/core/services/media/reviews';
+import { TMDB_IMG } from '@/core/constants';
 import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 
@@ -503,12 +504,14 @@ export default function Client({ routeData = null }) {
         return;
       }
 
+      const poster = targetReview?.subjectPoster;
       setReviewDeleteConfirmation({
         title: 'Delete Review?',
         description: 'This review will be permanently removed from this list.',
         confirmText: 'Delete',
         confirmLoadingText: 'Deleting',
         isDestructive: true,
+        icon: poster ? (poster.startsWith('/') ? `${TMDB_IMG}/w342${poster}` : poster) : undefined,
         onCancel: () => setReviewDeleteConfirmation(null),
         onConfirm: async () => {
           await handleDeleteReview(targetReview);

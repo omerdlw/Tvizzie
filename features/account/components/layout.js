@@ -17,6 +17,8 @@ import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import NotFoundTemplate from '@/features/app-shell/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
+import { useNavigationActions } from '@/core/modules/nav/context';
+import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 
 export { AccountHeroReveal, AccountNavReveal, AccountSectionReveal };
 
@@ -108,7 +110,7 @@ export function AccountPageShell(props) {
     return (
       <>
         {registry}
-        <AccountNotFoundState />
+         <AccountNotFoundState />
       </>
     );
   }
@@ -129,13 +131,23 @@ export default function ProfileLayout({
   likesCount = 0,
   listsCount = 0,
   onOpenFollowList = null,
-  onReadMore,
   profile = null,
   username = null,
   watchedCount = null,
   watchlistCount = 0,
 }) {
+  const { openSurface } = useNavigationActions();
   const profileHandle = username || profile?.username || null;
+
+  const handleReadMore = () => {
+    openSurface(AccountBioSurface, {
+      description: profile?.description || '',
+      followerCount,
+      followingCount,
+      profile,
+      username: profileHandle || 'About',
+    });
+  };
 
   return (
     <PageGradientShell className="overflow-hidden">
@@ -150,7 +162,7 @@ export default function ProfileLayout({
             onOpenFollowList={onOpenFollowList}
             watchedCount={watchedCount}
             watchlistCount={watchlistCount}
-            onReadMore={onReadMore}
+            onReadMore={handleReadMore}
           />
         </AccountHeroReveal>
         <AccountNavReveal className="absolute inset-x-0 top-0 z-20">

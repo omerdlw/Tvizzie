@@ -119,20 +119,18 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [] }) {
   return (
     <MovieSurfaceReveal>
       <section className="flex w-full flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <SegmentedControl
-            classNames={{
-              track: ' w-auto',
-              wrapper: 'p-0.5 ',
-              button: '',
-              indicator: '',
-            }}
-            items={seasonTabs}
-            value={activeSeasonKey}
-            onChange={setActiveSeasonKey}
-          />
-          <h2 className="shrink-0 text-[11px] font-semibold tracking-widest text-black/70 uppercase">Seasons</h2>
-        </div>
+        <SegmentedControl
+          className="w-full -mx-1"
+          classNames={{
+            track: 'px-1',
+            wrapper: 'p-0.5',
+            button: '',
+            indicator: '',
+          }}
+          items={seasonTabs}
+          value={activeSeasonKey}
+          onChange={setActiveSeasonKey}
+        />
 
         <div className="relative">
           <AnimatePresence mode="wait" initial={false}>

@@ -14,6 +14,7 @@ import ReviewHeader from './parts/review-header';
 import ReviewList from './parts/review-list';
 import { useMediaReviews } from './use-media-reviews';
 import { REVIEW_SORT_MODE, REVIEW_SORT_OPTIONS, getRatingStats, parseReviewSortMode, sortReviewsByMode } from './utils';
+import { TMDB_IMG } from '@/core/constants';
 
 export default function MediaReviews({
   entityId,
@@ -134,7 +135,9 @@ export default function MediaReviews({
       title: 'Delete Review?',
       description: 'Are you sure you want to delete this review?',
       confirmText: 'Delete',
+      confirmLoadingText: 'Deleting',
       isDestructive: true,
+      icon: posterPath ? (posterPath.startsWith('/') ? `${TMDB_IMG}/w342${posterPath}` : posterPath) : undefined,
       onCancel: () => setNavConfirmation(null),
       onConfirm: async () => {
         const isDeleted = await handleDelete();
@@ -142,9 +145,10 @@ export default function MediaReviews({
         if (!isDeleted) {
           throw new Error('review-delete-failed');
         }
+        setNavConfirmation(null);
       },
     });
-  }, [handleDelete, setNavConfirmation]);
+  }, [handleDelete, posterPath, setNavConfirmation]);
 
   const filteredReviews = useMemo(() => {
     if (!useQueryUserFilter || !queryReviewUser) {

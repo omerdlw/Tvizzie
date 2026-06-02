@@ -17,6 +17,7 @@ import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils'
 import { getNavActionClass } from '@/core/modules/nav/actions/styles';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
+import { useNavigationContext } from '@/core/modules/nav/context';
 import Icon from '@/ui/icon';
 import MediaSocialProofModal from '@/features/modals/media-social-proof-modal';
 import {
@@ -85,8 +86,8 @@ export default function Registry({
   mediaType = 'movie',
   reviewState,
 }) {
+  const { openSurface, closeSurface, activeSurfaceEntry } = useNavigationContext();
   const [isSearching, setIsSearching] = useState(false);
-  const [isWatchProvidersVisible, setIsWatchProvidersVisible] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,14 +95,17 @@ export default function Registry({
   const reviewUserFilter = String(searchParams?.get('user') || '').trim();
   const hasReviewUserFilter = Boolean(reviewUserFilter);
   const activeSortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
+  const isWatchProvidersVisible = activeSurfaceEntry?.component === WatchProvidersSurface;
 
   useEffect(() => {
     if (!reviewState?.isActive && !isSearching) {
       return;
     }
 
-    setIsWatchProvidersVisible(false);
-  }, [reviewState?.isActive, isSearching]);
+    if (activeSurfaceEntry?.component === WatchProvidersSurface) {
+      closeSurface();
+    }
+  }, [reviewState?.isActive, isSearching, activeSurfaceEntry, closeSurface]);
 
   const detailMetaParts = [year, runtimeText].filter(Boolean);
   const metaDescriptionParts = rating ? [rating, ...detailMetaParts] : detailMetaParts;
@@ -119,10 +123,15 @@ export default function Registry({
     : backgroundImage || (movie?.backdrop_path ? `${TMDB_IMG}/original${movie.backdrop_path}` : undefined);
   const shouldResetBackgroundForLoading = !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
 
-  const navSurface =
-    !isMediaReviewsRoute && !reviewState?.isActive && !isSearching && isWatchProvidersVisible ? (
-      <WatchProvidersSurface providers={movie?.['watch/providers']} videos={movie?.videos} />
-    ) : undefined;
+  const handleToggleWatchProviders = () => {
+    if (isWatchProvidersVisible) {
+      closeSurface();
+    } else {
+      openSurface(WatchProvidersSurface, {
+        providers: movie?.['watch/providers'],
+      });
+    }
+  };
 
   const handleSortChange = (nextSortMode) => {
     const params = new URLSearchParams(searchParams?.toString() || '');
@@ -169,7 +178,7 @@ export default function Registry({
       <MovieAction
         mode={isMediaReviewsRoute ? 'sort' : 'watch'}
         isActive={isWatchProvidersVisible}
-        onToggle={() => setIsWatchProvidersVisible((value) => !value)}
+        onToggle={handleToggleWatchProviders}
         sortMode={activeSortMode}
         onSortChange={handleSortChange}
       />
@@ -195,7 +204,6 @@ export default function Registry({
       contextMenuDescription: contextMenuDescription || undefined,
       description: navDescription || undefined,
       icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,
-      surface: navSurface,
       title: getMediaTitle(movie) || (isLoading ? '' : undefined),
     },
     ...(shouldClearBackgroundForReviews || resolvedBackgroundImage || shouldResetBackgroundForLoading

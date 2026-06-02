@@ -10,6 +10,7 @@ import {
 import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
+import { TMDB_IMG } from '@/core/constants';
 import { deleteStoredReview, fetchProfileReviewFeed, toggleStoredReviewLike } from '@/core/services/media/reviews';
 import { subscribeToUserWatched } from '@/core/services/media/watched-watchlist';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
@@ -287,12 +288,14 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
         return;
       }
 
+      const poster = review?.subjectPoster;
       setReviewDeleteConfirmation({
         title: 'Delete Review?',
         description: 'This review will be permanently removed from your profile.',
         confirmText: 'Delete',
         confirmLoadingText: 'Deleting',
         isDestructive: true,
+        icon: poster ? (poster.startsWith('/') ? `${TMDB_IMG}/w342${poster}` : poster) : undefined,
         onCancel: () => setReviewDeleteConfirmation(null),
         onConfirm: async () => {
           try {
