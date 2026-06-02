@@ -1,6 +1,4 @@
-import {
-  getRealtimeTransportMode,
-} from '@/core/services/realtime/realtime-transport.config';
+import { getRealtimeTransportMode } from '@/core/services/realtime/realtime-transport.config';
 import { NextResponse } from 'next/server';
 
 import { CACHE_CONTROL, ROLLOUT_CONFIG, cacheControlHeaders } from '@/core/services/shared/server';

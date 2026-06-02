@@ -1,9 +1,6 @@
 import { normalizeValue } from '@/core/utils/string';
 import { requireSessionRequest } from '../session/authenticated-request.server';
-import {
-  ACCOUNT_LIFECYCLE_STATES,
-  assertAccountLifecycleAllowed,
-} from '../account/account-lifecycle.server';
+import { ACCOUNT_LIFECYCLE_STATES, assertAccountLifecycleAllowed } from '../account/account-lifecycle.server';
 
 const AUTH_ROUTE_POLICIES = Object.freeze({
   ACCOUNT_DELETE: Object.freeze({

@@ -223,11 +223,10 @@ export function useNavActions({ activeItem } = {}) {
 }
 
 export function NavAction({ action }) {
-
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
-        className="center relative cursor-pointer rounded-full p-1 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
+        className="center relative cursor-pointer p-1 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
         onClick={action.onClick}
         type="button"
         {...NAV_BUTTON_INTERACTION_MOTION}
@@ -236,7 +235,7 @@ export function NavAction({ action }) {
         <AnimatePresence initial={false}>
           {action.badge ? (
             <motion.span
-              className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-black"
+              className="center bg-info absolute -top-1.5 -right-1.5 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-black"
               {...NAV_BADGE_MOTION}
             >
               {action.badge}
@@ -255,10 +254,7 @@ export function NavActionsContainer({ activeItem }) {
     <motion.div className="mr-2 flex shrink-0 items-center gap-1" {...NAV_ACTION_GROUP_MOTION}>
       <AnimatePresence initial={false}>
         {actions.map((action, index) => (
-          <motion.div
-            key={`${action.key || action.icon || 'nav-action'}-${index}`}
-            {...getNavActionItemMotion(index)}
-          >
+          <motion.div key={`${action.key || action.icon || 'nav-action'}-${index}`} {...getNavActionItemMotion(index)}>
             <NavAction action={action} />
           </motion.div>
         ))}

@@ -42,13 +42,20 @@ export function AccountSectionHeading({
           </TitleWrapper>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 shrink-0 text-right">
-          {summaryLabel && (
-            titleHref ? <Link href={titleHref} className={summaryClassName}>{summaryLabel}</Link> : <p className={summaryClassName}>{summaryLabel}</p>
-          )}
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 text-right">
+          {summaryLabel &&
+            (titleHref ? (
+              <Link href={titleHref} className={summaryClassName}>
+                {summaryLabel}
+              </Link>
+            ) : (
+              <p className={summaryClassName}>{summaryLabel}</p>
+            ))}
           {action}
           {showSeeMore && titleHref && (
-            <Link href={titleHref} className={summaryClassName}>See more</Link>
+            <Link href={titleHref} className={summaryClassName}>
+              See more
+            </Link>
           )}
         </div>
       </div>
@@ -64,9 +71,7 @@ export function AccountSectionState({ message }) {
       <div className={ACCOUNT_SECTION_SHELL_CLASS}>
         <div className={ACCOUNT_SECTION_GRID_CLASS}>
           <div className="col-span-12">
-            <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
-              {normalizeFeedbackContent(message)}
-            </div>
+            <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{normalizeFeedbackContent(message)}</div>
           </div>
         </div>
       </div>
@@ -104,8 +109,8 @@ export default function AccountSectionLayout({
                   title={title}
                   titleHref={titleHref}
                 />
-              ) : title && (
-                <h2 className="sr-only">{title}</h2>
+              ) : (
+                title && <h2 className="sr-only">{title}</h2>
               )}
 
               {contentClassName ? <div className={contentClassName}>{children}</div> : children}

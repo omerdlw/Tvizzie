@@ -132,8 +132,13 @@ export default function AccountActivityOverview({
     shouldBlockFeedLoad,
   ]);
 
-  const visibleItems = useMemo(() => (Array.isArray(items) ? items.slice(0, normalizedLimit) : []), [items, normalizedLimit]);
-  const resolvedTotalCount = Number.isFinite(Number(totalCount)) ? Math.max(visibleItems.length, Number(totalCount)) : visibleItems.length;
+  const visibleItems = useMemo(
+    () => (Array.isArray(items) ? items.slice(0, normalizedLimit) : []),
+    [items, normalizedLimit]
+  );
+  const resolvedTotalCount = Number.isFinite(Number(totalCount))
+    ? Math.max(visibleItems.length, Number(totalCount))
+    : visibleItems.length;
 
   return (
     <AccountActivityFeed

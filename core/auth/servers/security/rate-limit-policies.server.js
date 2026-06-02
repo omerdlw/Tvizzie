@@ -1,8 +1,5 @@
 import { normalizeValue } from '@/core/utils/string';
-import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from './rate-limit.server';
+import { enforceSlidingWindowRateLimit, isSlidingWindowRateLimitError } from './rate-limit.server';
 
 const AUTH_RATE_LIMIT_POLICIES = Object.freeze({
   ACCOUNT_DELETE: Object.freeze({

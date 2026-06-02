@@ -38,7 +38,7 @@ const TABS = Object.freeze({
 });
 
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 rounded-[10px] border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:bg-black/5';
 
 const ACTION_CLASSES = {
   ERROR: `${ROW_BUTTON_CLASS} ${DESTRUCTIVE_ACTION_TONE_CLASS}`,
@@ -59,7 +59,9 @@ function createCollectionState(isLoading = true) {
 // --------------------------------------------------
 
 function normalizeTab(value) {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
   if (normalized === 'following') return TABS.FOLLOWING;
   if (normalized === 'requests' || normalized === TABS.INBOX) return TABS.INBOX;
   return TABS.FOLLOWERS;
@@ -122,9 +124,7 @@ export default function AccountSocialModal({ close, data }) {
   // Collection States (list, isLoading, error birleştirildi)
   const [followersState, setFollowersState] = useState(() => createCollectionState());
   const [followingState, setFollowingState] = useState(() => createCollectionState());
-  const [requestsState, setRequestsState] = useState(() =>
-    createCollectionState(canManageRequests)
-  );
+  const [requestsState, setRequestsState] = useState(() => createCollectionState(canManageRequests));
 
   // Effects
   useEffect(() => {
@@ -214,7 +214,8 @@ export default function AccountSocialModal({ close, data }) {
   }, [authUserId, isAuthSessionReady]);
 
   // Derived Values
-  const shouldShowInboxTab = canManageRequests && (requestsState.isLoading || requestsState.list.length > 0 || Boolean(requestsState.error));
+  const shouldShowInboxTab =
+    canManageRequests && (requestsState.isLoading || requestsState.list.length > 0 || Boolean(requestsState.error));
 
   useEffect(() => {
     if (activeTab === TABS.INBOX && !shouldShowInboxTab) setActiveTab(TABS.FOLLOWERS);
@@ -245,12 +246,7 @@ export default function AccountSocialModal({ close, data }) {
   const emptyDescription = activeTab === TABS.INBOX ? 'No pending follow requests' : `No ${activeTab} yet`;
 
   // Handlers
-  async function runUserAction(
-    targetUserId,
-    actionKey,
-    actionFn,
-    errorMessage
-  ) {
+  async function runUserAction(targetUserId, actionKey, actionFn, errorMessage) {
     if (!authUserId || pendingActionByUserId[targetUserId]) {
       return;
     }
@@ -279,44 +275,19 @@ export default function AccountSocialModal({ close, data }) {
   }
 
   const handleAccept = (id) =>
-    runUserAction(
-      id,
-      'accept',
-      () => acceptFollowRequest(authUserId, id),
-      'Request could not be accepted'
-    );
+    runUserAction(id, 'accept', () => acceptFollowRequest(authUserId, id), 'Request could not be accepted');
 
   const handleReject = (id) =>
-    runUserAction(
-      id,
-      'reject',
-      () => rejectFollowRequest(authUserId, id),
-      'Request could not be rejected'
-    );
+    runUserAction(id, 'reject', () => rejectFollowRequest(authUserId, id), 'Request could not be rejected');
 
   const handleUnfollow = (id) =>
-    runUserAction(
-      id,
-      'unfollow',
-      () => unfollowUser(authUserId, id),
-      'Could not unfollow this user'
-    );
+    runUserAction(id, 'unfollow', () => unfollowUser(authUserId, id), 'Could not unfollow this user');
 
   const handleRemoveFollower = (id) =>
-    runUserAction(
-      id,
-      'remove-follower',
-      () => removeFollower(authUserId, id),
-      'Could not remove follower'
-    );
+    runUserAction(id, 'remove-follower', () => removeFollower(authUserId, id), 'Could not remove follower');
 
   const handleFollow = (id) =>
-    runUserAction(
-      id,
-      'follow',
-      () => followUser(authUserId, id),
-      'Could not follow this user'
-    );
+    runUserAction(id, 'follow', () => followUser(authUserId, id), 'Could not follow this user');
 
   return (
     <ModalView
@@ -372,8 +343,8 @@ function ModalView({
           items={tabs}
           classNames={{
             wrapper: 'bg-transparent border-none',
-            button: 'flex-1 justify-center rounded-[16px] px-4 py-2 text-[13px]',
-            indicator: 'rounded-[16px] bg-black',
+            button: 'flex-1 justify-center px-4 py-2 text-[13px]',
+            indicator: ' bg-black',
             inactive: 'text-black/50 hover:text-black',
             active: 'text-white font-semibold',
           }}
@@ -431,9 +402,9 @@ function SocialUserRow({ close, user, action }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0 rounded-[10px] object-cover"
+          className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0 rounded-[10px]"
+          wrapperClassName="size-10 shrink-0 "
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
@@ -496,22 +467,12 @@ function UserAction({
   }
 
   if (canShowFollowAction) {
-    const isFollowPending =
-      followStatus === FOLLOW_STATUSES.PENDING;
+    const isFollowPending = followStatus === FOLLOW_STATUSES.PENDING;
 
-    const followLabel =
-      pendingKind === 'follow'
-        ? 'Updating'
-        : isFollowPending
-          ? 'Requested'
-          : 'Follow';
+    const followLabel = pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow';
 
     return (
-      <Button
-        onClick={() => onFollow(user.id)}
-        disabled={isFollowPending || isPending}
-        className={ACTION_CLASSES.INFO}
-      >
+      <Button onClick={() => onFollow(user.id)} disabled={isFollowPending || isPending} className={ACTION_CLASSES.INFO}>
         {followLabel}
       </Button>
     );
@@ -525,10 +486,10 @@ function LoadingList() {
     <div>
       {Array.from({ length: 10 }, (_, index) => (
         <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-          <div className="size-10 shrink-0 animate-pulse rounded-[10px] bg-black/5" />
+          <div className="size-10 shrink-0 animate-pulse bg-black/5" />
           <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-3 w-3/5 animate-pulse rounded-[10px] bg-black/5" />
-            <div className="h-2 w-2/5 animate-pulse rounded-[10px] bg-black/5" />
+            <div className="h-3 w-3/5 animate-pulse bg-black/5" />
+            <div className="h-2 w-2/5 animate-pulse bg-black/5" />
           </div>
         </div>
       ))}

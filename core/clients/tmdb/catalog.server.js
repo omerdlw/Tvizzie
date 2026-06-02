@@ -67,7 +67,10 @@ export const discoverContent = cache(async ({ genreId, page = 1, sortBy = 'popul
     return response;
   }
 
-  const sanitizedResults = await sanitizeMovieResultsWithRuntime(withMediaType(response.data.results, 'movie'), 'browse');
+  const sanitizedResults = await sanitizeMovieResultsWithRuntime(
+    withMediaType(response.data.results, 'movie'),
+    'browse'
+  );
 
   return {
     ...response,

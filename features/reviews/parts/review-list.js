@@ -28,7 +28,9 @@ export default function ReviewList({
   }
 
   if (loadError) {
-    return <div className="text-error py-10 text-center text-sm leading-relaxed">{normalizeFeedbackText(loadError)}</div>;
+    return (
+      <div className="text-error py-10 text-center text-sm leading-relaxed">{normalizeFeedbackText(loadError)}</div>
+    );
   }
 
   if (sortedReviews.length === 0) {

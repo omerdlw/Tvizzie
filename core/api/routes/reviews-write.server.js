@@ -1,6 +1,4 @@
-import {
-  requireAuthenticatedRequest,
-} from '@/core/auth/servers/session.js';
+import { requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import {
   createRouteRequestMeta,
@@ -54,12 +52,7 @@ export async function handleReviewsWritePost(request) {
       error,
       fallbackMessage: 'Review write failed',
       requestMeta,
-      clientErrorPatterns: [
-        'invalid',
-        'required',
-        'unsupported',
-        'not found',
-      ],
+      clientErrorPatterns: ['invalid', 'required', 'unsupported', 'not found'],
     });
   }
 }

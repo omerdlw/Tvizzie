@@ -101,10 +101,7 @@ export default function AccountFavoritesOverview({
       {cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div
-              key={`${card.id}-${index}`}
-              className="flex h-full min-w-0 flex-col"
-            >
+            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
               <MediaCard
                 className="w-full md:w-full lg:w-full"
                 href={card.href}

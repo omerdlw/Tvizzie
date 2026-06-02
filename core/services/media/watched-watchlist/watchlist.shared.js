@@ -4,11 +4,7 @@ import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
 } from '@/core/services/shared/client';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-  ensureUserId,
-} from '@/core/services/shared/media';
+import { assertTitleMedia, buildMediaItemKey, ensureUserId } from '@/core/services/shared/media';
 
 export function createWatchlistRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage watchlist items');

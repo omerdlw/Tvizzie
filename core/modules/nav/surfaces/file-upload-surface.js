@@ -105,7 +105,7 @@ export default function FileUploadSurface({ close, data }) {
           event.stopPropagation();
           dismissSurface(close);
         }}
-        className="center bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-primary p-1 transition-colors"
+        className="center bg-primary border-primary absolute top-0 right-0 z-10 cursor-pointer border p-1 transition-colors"
         aria-label="Close media upload"
         {...NAV_BUTTON_INTERACTION_MOTION}
       >

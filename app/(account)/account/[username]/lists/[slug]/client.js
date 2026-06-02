@@ -7,21 +7,10 @@ import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  buildPollingSubscriptionKey,
-  primePollingSubscription,
-} from '@/core/services/shared/client';
+import { buildPollingSubscriptionKey, primePollingSubscription } from '@/core/services/shared/client';
 import { getMediaTitle, removeAccountCollectionItem } from '@/features/account/utils';
-import {
-  subscribeToUserListBySlug,
-  subscribeToUserListItems,
-  toggleListLike,
-} from '@/core/services/media/lists';
-import {
-  deleteListReview,
-  subscribeToListReviews,
-  toggleStoredReviewLike,
-} from '@/core/services/media/reviews';
+import { subscribeToUserListBySlug, subscribeToUserListItems, toggleListLike } from '@/core/services/media/lists';
+import { deleteListReview, subscribeToListReviews, toggleStoredReviewLike } from '@/core/services/media/reviews';
 import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import ListView from './view';
 
@@ -40,7 +29,11 @@ export default function Client({ routeData = null }) {
     resolvedUserId: auth.user?.id || null,
   });
 
-  const { routeData: resolvedRouteData, sectionProviderValue, sectionState } = useAccountSectionEngine({
+  const {
+    routeData: resolvedRouteData,
+    sectionProviderValue,
+    sectionState,
+  } = useAccountSectionEngine({
     activeListId: list?.id || '',
     activeTab: 'lists',
     auth,

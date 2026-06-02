@@ -394,7 +394,6 @@ export default function Nav() {
           animate={getNavContainerMotion(containerHeight)}
           transition={NAV_CONTAINER_SPRING}
         >
-
           <AnimatePresence initial={false} mode="sync">
             {navigationItems.map((link, index) => {
               const position = getItemPosition(index);
@@ -463,6 +462,7 @@ export default function Nav() {
                   onActionHeightChange={isTop ? handleActionHeightChange : null}
                   onContentHeightChange={isTop ? handleContentHeightChange : null}
                   containerHeight={isTop ? containerHeight : undefined}
+                  expandedTopCardHeight={containerHeight}
                 />
               );
             })}

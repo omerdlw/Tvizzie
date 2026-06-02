@@ -88,10 +88,28 @@ export default function ListDetailCommentsSection({
 // --------------------------------------------------
 
 function CommentsView({
-  auth, filteredReviews, hasReviewFilters, isOwner, list, onDeleteRequest, onEditReview,
-  onLikeReview, onOpenReviewComposer, onResetReviewFilters, onSignIn, onUpdateReviewFilters,
-  ownReview, reviewFilters, reviewYearOptions, reviews, userProfile,
-  safeCurrentReviewPage, totalReviewPages, visibleReviews, hasListReviews, setCurrentReviewPage
+  auth,
+  filteredReviews,
+  hasReviewFilters,
+  isOwner,
+  list,
+  onDeleteRequest,
+  onEditReview,
+  onLikeReview,
+  onOpenReviewComposer,
+  onResetReviewFilters,
+  onSignIn,
+  onUpdateReviewFilters,
+  ownReview,
+  reviewFilters,
+  reviewYearOptions,
+  reviews,
+  userProfile,
+  safeCurrentReviewPage,
+  totalReviewPages,
+  visibleReviews,
+  hasListReviews,
+  setCurrentReviewPage,
 }) {
   return (
     <>
@@ -122,11 +140,13 @@ function CommentsView({
             <div className="min-w-0">
               <p className="text-sm font-semibold">{ownReview ? 'Update your comment' : 'Write a comment'}</p>
               <p className="text-xs text-black/70">
-                {ownReview ? 'Open the comment composer to edit your text.' : 'Share your thoughts from the comment composer.'}
+                {ownReview
+                  ? 'Open the comment composer to edit your text.'
+                  : 'Share your thoughts from the comment composer.'}
               </p>
             </div>
             <Button
-              className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 rounded-[12px] border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
+              className="bg-primary/30 inline-flex w-full items-center justify-center gap-2 border border-black/10 px-4 py-2 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition ease-in-out hover:bg-black hover:text-white sm:w-auto sm:justify-between"
               type="button"
               onClick={onOpenReviewComposer}
             >

@@ -6,12 +6,7 @@ import {
   executeMediaCollectionRpc,
   getSupabaseClient,
 } from '@/core/services/shared/client';
-import {
-  assertTitleMedia,
-  buildMediaItemKey,
-  createMediaRow,
-  ensureUserId,
-} from '@/core/services/shared/media';
+import { assertTitleMedia, buildMediaItemKey, createMediaRow, ensureUserId } from '@/core/services/shared/media';
 
 import { chunkArray, resolveRpcRow } from './shared.js';
 

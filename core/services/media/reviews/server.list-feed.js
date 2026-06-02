@@ -1,10 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
-import {
-  canViewerAccessUserContent,
-  createPrivateProfileError,
-} from '@/core/services/account/account-profile.server';
+import { canViewerAccessUserContent, createPrivateProfileError } from '@/core/services/account/account-profile.server';
 import { LIST_REVIEW_SELECT } from './server.constants.js';
 import { fetchReviewLikes, loadListSubjectMap } from './server.context.js';
 import { createListReviewLikeKey, normalizeReviewRow, sortReviewsByUpdatedAtDesc } from './server.shared.js';

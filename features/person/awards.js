@@ -184,7 +184,7 @@ export default function PersonAwards({ personId }) {
                       ? `${entry.organization} / ${entry.type} · ${entry.category}`
                       : `${entry.organization} / ${entry.type}`;
                     const rowClassName = cn(
-                      'group flex items-end gap-3 rounded-[14px] border-transparent p-1 transition-colors',
+                      'group flex items-end gap-3 border-transparent p-1 transition-colors',
                       isInteractive ? 'hover:bg-primary' : 'cursor-default'
                     );
                     const entryMotion = getPersonSurfaceItemMotion({
@@ -199,7 +199,7 @@ export default function PersonAwards({ personId }) {
                     });
                     const content = (
                       <>
-                        <MediaThumb poster={entry.poster} alt={title} className="rounded-[10px]" />
+                        <MediaThumb poster={entry.poster} alt={title} className="" />
                         <div className="flex min-w-0 flex-1 flex-col">
                           <div className="flex items-center gap-2">
                             <span className="truncate text-sm font-semibold tracking-tight sm:text-lg">{title}</span>

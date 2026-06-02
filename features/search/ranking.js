@@ -2,12 +2,7 @@ import { toFiniteNumber } from '@/core/utils/number';
 
 import { SEARCH_TYPES } from './constants';
 import { normalizeResult } from './result';
-import {
-  countTokenOverlap,
-  hasExactComparableMatch,
-  normalizeComparableText,
-  tokenizeComparableText,
-} from './text';
+import { countTokenOverlap, hasExactComparableMatch, normalizeComparableText, tokenizeComparableText } from './text';
 
 function isExactMovieTitleMatch(movie = {}, normalizedQuery = '') {
   return hasExactComparableMatch(

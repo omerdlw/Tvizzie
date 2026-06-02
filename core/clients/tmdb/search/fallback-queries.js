@@ -45,7 +45,10 @@ function createSearchRewriteQueries(query) {
 
   addFallbackQueryVariant(variants, articleStrippedQuery, normalizedQuery);
 
-  const withoutYear = punctuationNormalizedQuery.replace(/\b(18|19|20)\d{2}\b/g, '').replace(/\s+/g, ' ').trim();
+  const withoutYear = punctuationNormalizedQuery
+    .replace(/\b(18|19|20)\d{2}\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   addFallbackQueryVariant(variants, withoutYear, normalizedQuery);
 

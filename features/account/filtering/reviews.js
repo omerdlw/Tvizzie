@@ -70,17 +70,11 @@ export function toReviewQueryValues(filters = DEFAULT_REVIEW_FILTERS) {
     nextValues.rr = normalizedFilters.ratingMode;
   }
 
-  if (
-    normalizedFilters.ratingMode === 'range' &&
-    normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating
-  ) {
+  if (normalizedFilters.ratingMode === 'range' && normalizedFilters.minRating !== DEFAULT_REVIEW_FILTERS.minRating) {
     nextValues.rmin = String(normalizedFilters.minRating);
   }
 
-  if (
-    normalizedFilters.ratingMode === 'range' &&
-    normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating
-  ) {
+  if (normalizedFilters.ratingMode === 'range' && normalizedFilters.maxRating !== DEFAULT_REVIEW_FILTERS.maxRating) {
     nextValues.rmax = String(normalizedFilters.maxRating);
   }
 

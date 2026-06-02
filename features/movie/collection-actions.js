@@ -8,11 +8,7 @@ import { MOVIE_ROUTE_TIMING, getSurfaceItemMotion } from '@/app/(media)/movie/[i
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  ensureLegacyFavoritesBackfilled,
-  subscribeToLikeStatus,
-  toggleUserLike,
-} from '@/core/services/media/likes';
+import { ensureLegacyFavoritesBackfilled, subscribeToLikeStatus, toggleUserLike } from '@/core/services/media/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
@@ -115,7 +111,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[14px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs transition-all duration-300 disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active)
       )}
     >

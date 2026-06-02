@@ -32,7 +32,12 @@ const DEFAULT_SEARCH_MOVIE_FILTERS = Object.freeze({
 });
 
 function resolveSearchType(value) {
-  if (value === SEARCH_TYPES.MOVIE || value === SEARCH_TYPES.TV || value === SEARCH_TYPES.PERSON || value === SEARCH_TYPES.USER) {
+  if (
+    value === SEARCH_TYPES.MOVIE ||
+    value === SEARCH_TYPES.TV ||
+    value === SEARCH_TYPES.PERSON ||
+    value === SEARCH_TYPES.USER
+  ) {
     return value;
   }
 
@@ -187,7 +192,8 @@ export default function SearchClient() {
   const decadeOptions = useMemo(() => getDecadeOptions(), []);
   const yearOptions = useMemo(() => getReleaseYearOptions(), []);
   const activeTypeLabel = SEARCH_TAB_ITEMS.find((item) => item.key === searchType)?.label || 'Results';
-  const isMediaType = searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV || searchType === SEARCH_TYPES.PERSON;
+  const isMediaType =
+    searchType === SEARCH_TYPES.MOVIE || searchType === SEARCH_TYPES.TV || searchType === SEARCH_TYPES.PERSON;
   const hasMore = isMediaType && pageState.page < pageState.totalPages;
   const hasActiveMovieFilters = useMemo(() => hasActiveSearchMovieFilters(movieFilters), [movieFilters]);
   const getRenderableResults = useCallback(

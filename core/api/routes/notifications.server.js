@@ -43,12 +43,7 @@ function createNotificationErrorResponse({ code, error, fallbackMessage, request
     error,
     fallbackMessage,
     requestMeta,
-    clientErrorPatterns: [
-      'invalid',
-      'required',
-      'unsupported',
-      'not found',
-    ],
+    clientErrorPatterns: ['invalid', 'required', 'unsupported', 'not found'],
   });
 }
 
@@ -159,15 +154,15 @@ async function fetchNotificationsResource({ authContext, limitCount, request, re
     ttlMs: 3000,
     loader: () =>
       invokeInternalEdgeFunction('notifications-control', {
-          body: {
-            action: 'list',
-            limitCount,
-            userId: authContext.userId,
-            validTypes,
-          },
-          request,
-          requestMeta: createRouteAuthMeta(requestMeta, authContext),
-        }),
+        body: {
+          action: 'list',
+          limitCount,
+          userId: authContext.userId,
+          validTypes,
+        },
+        request,
+        requestMeta: createRouteAuthMeta(requestMeta, authContext),
+      }),
   });
 
   return Array.isArray(payload?.data) ? payload.data : [];

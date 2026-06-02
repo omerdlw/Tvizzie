@@ -1,6 +1,12 @@
 'use client';
 
-import { ANIMATION_DURATIONS, ANIMATION_EASINGS, ANIMATION_STAGGER, ANIMATION_VIEWPORTS, createSurfaceItemMotion } from '@/core/animation';
+import {
+  ANIMATION_DURATIONS,
+  ANIMATION_EASINGS,
+  ANIMATION_STAGGER,
+  ANIMATION_VIEWPORTS,
+  createSurfaceItemMotion,
+} from '@/core/animation';
 import { motion } from 'framer-motion';
 
 export const SEARCH_ROUTE_MOTION = Object.freeze({

@@ -408,13 +408,7 @@ export default function Client() {
     );
   }, [isResetMode, handleRequestPasswordReset, isSignInBusy, isPreparingReset]);
 
-  const registry = (
-    <Registry
-      authIsReady={auth.isReady}
-      isResetMode={isResetMode}
-      action={forgotPasswordAction}
-    />
-  );
+  const registry = <Registry authIsReady={auth.isReady} isResetMode={isResetMode} action={forgotPasswordAction} />;
 
   if (!auth.isReady || (auth.isAuthenticated && !isSubmitting && !isPreparingReset && !resetFlow.isSubmitting)) {
     return <>{registry}</>;

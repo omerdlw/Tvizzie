@@ -5,7 +5,10 @@ import { MEDIA_COLLECTION_SELECT, WATCHED_SELECT } from './account-collections.c
 import { normalizeMediaPayload, normalizeWatchedRow } from './account-collections.normalizers';
 
 function resolveMediaKey(media = null) {
-  return media?.mediaKey || (media?.entityType && media?.entityId ? buildMediaItemKey(media.entityType, media.entityId) : null);
+  return (
+    media?.mediaKey ||
+    (media?.entityType && media?.entityId ? buildMediaItemKey(media.entityType, media.entityId) : null)
+  );
 }
 
 async function loadLikeStatus({ admin, assertResult, media, userId }) {

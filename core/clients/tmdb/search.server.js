@@ -73,7 +73,9 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
   const resolvedItems = await normalizeSearchResults(mergedItems, rankingQuery, type, {
     hydrateMovieRuntime,
     runtimeCheckLimit:
-      options.runtimeCheckLimit === 0 ? 0 : (options.runtimeCheckLimit ?? resolveSearchRuntimeCheckLimit(options.scope)),
+      options.runtimeCheckLimit === 0
+        ? 0
+        : (options.runtimeCheckLimit ?? resolveSearchRuntimeCheckLimit(options.scope)),
     scope: options.scope,
   });
   const fallbackItems = buildAuthorityFallbackItems(mergedItems, type, options);

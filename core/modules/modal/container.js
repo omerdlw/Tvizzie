@@ -43,11 +43,11 @@ function getBodyClassName(position, bodyClassName) {
 
   return cn(
     'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain',
-    isTopModal && 'rounded-b-[14px] rounded-t-none',
-    isBottomModal && 'rounded-t-[14px] rounded-b-none',
-    isLeftModal && 'rounded-r-[14px] rounded-l-none',
-    isRightModal && 'rounded-l-[14px] rounded-r-none',
-    !(isLeftModal || isRightModal || isTopModal || isBottomModal) && 'rounded-[14px]',
+    isTopModal && ' ',
+    isBottomModal && ' ',
+    isLeftModal && ' ',
+    isRightModal && ' ',
+    !(isLeftModal || isRightModal || isTopModal || isBottomModal) && '',
     bodyClassName
   );
 }
@@ -78,7 +78,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
       {...MODAL_ACTION_MOTION}
     >
       <Icon icon="material-symbols:close-rounded" size={18} />

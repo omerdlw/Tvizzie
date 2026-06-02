@@ -130,13 +130,7 @@ function assertChallengeNotExpired({ challenge, challengeKey, now }) {
   });
 }
 
-function assertChallengeMatches({
-  challenge,
-  normalizedEmail,
-  normalizedPurpose,
-  normalizedUserId,
-  payload,
-}) {
+function assertChallengeMatches({ challenge, normalizedEmail, normalizedPurpose, normalizedUserId, payload }) {
   const isPurposeMismatch = challenge?.purpose !== normalizedPurpose;
   const isEmailMismatch = normalizeValue(challenge?.email_hash) !== hashValue(normalizedEmail);
   const isUserMismatch =
@@ -279,18 +273,17 @@ export async function createEmailVerificationChallenge({
   );
 
   const persistedData = (await getChallengeByKey(key)) || {};
-  const persistedChallenge =
-    buildChallengeResponse({
-      buildChallengeToken,
-      expiresAt: persistedData?.expires_at || new Date(currentExpiresAt),
-      jti: persistedData?.jti || jti,
-      key,
-      resendAvailableAt: persistedData?.resend_available_at || new Date(resendAvailableAt),
-    }) || {
-      challengeToken,
-      expiresAt: new Date(currentExpiresAt).toISOString(),
-      resendAvailableAt: new Date(resendAvailableAt).toISOString(),
-    };
+  const persistedChallenge = buildChallengeResponse({
+    buildChallengeToken,
+    expiresAt: persistedData?.expires_at || new Date(currentExpiresAt),
+    jti: persistedData?.jti || jti,
+    key,
+    resendAvailableAt: persistedData?.resend_available_at || new Date(resendAvailableAt),
+  }) || {
+    challengeToken,
+    expiresAt: new Date(currentExpiresAt).toISOString(),
+    resendAvailableAt: new Date(resendAvailableAt).toISOString(),
+  };
 
   return {
     ...persistedChallenge,

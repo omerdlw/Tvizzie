@@ -27,12 +27,12 @@ export default function ReviewHeader({
         <h2 className="text-base font-semibold tracking-wider uppercase">{title}</h2>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
+        <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
           <span className="font-bold">{totalReviews}</span> {itemLabel}
           {totalReviews === 1 ? '' : 's'}
         </div>
         {hasRatingSummary && (
-          <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
+          <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
             <Icon icon="solar:star-bold" className="text-warning" size={16} />
             <span>
               {ratingStats?.average}/5 avg
@@ -43,7 +43,7 @@ export default function ReviewHeader({
         {hasAllReviewsLink ? (
           <Link
             href={allReviewsHref}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-[12px] border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
           >
             All reviews
           </Link>
@@ -52,7 +52,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             aria-label="Edit your review"
             title="Edit your review"
           >
@@ -62,7 +62,7 @@ export default function ReviewHeader({
         {hasDeleteOwnReview ? (
           <Button
             variant="destructive-icon"
-            className="rounded-[12px]"
+            className=""
             onClick={onDeleteOwnReview}
             aria-label="Delete your review"
             title="Delete your review"

@@ -57,7 +57,11 @@ async function getProfileByUsername(username) {
 }
 
 async function getProfileByUserId(userId) {
-  const profileResult = await createAdminClient().from('profiles').select(PROFILE_BY_USER_ID_SELECT).eq('id', userId).maybeSingle();
+  const profileResult = await createAdminClient()
+    .from('profiles')
+    .select(PROFILE_BY_USER_ID_SELECT)
+    .eq('id', userId)
+    .maybeSingle();
 
   if (profileResult.error) {
     throw new Error(profileResult.error.message || 'Profile could not be loaded');

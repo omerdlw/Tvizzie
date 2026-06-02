@@ -10,11 +10,7 @@ import {
   MEDIA_COLLECTION_SELECT,
   WATCHED_SELECT,
 } from './account-collections.constants';
-import {
-  normalizeListRow,
-  normalizeMediaPayload,
-  normalizeWatchedRow,
-} from './account-collections.normalizers';
+import { normalizeListRow, normalizeMediaPayload, normalizeWatchedRow } from './account-collections.normalizers';
 import {
   ACCOUNT_COLLECTION_RESOURCES,
   PROTECTED_ACCOUNT_COLLECTION_RESOURCES,

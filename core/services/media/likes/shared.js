@@ -5,12 +5,7 @@ import {
   buildPollingSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
 } from '@/core/services/shared/client';
-import {
-  assertTitleMedia,
-  assertMoviePayload,
-  buildMediaItemKey,
-  ensureUserId,
-} from '@/core/services/shared/media';
+import { assertTitleMedia, assertMoviePayload, buildMediaItemKey, ensureUserId } from '@/core/services/shared/media';
 
 export function buildLikeRef(userId, media) {
   ensureUserId(userId, 'Authenticated user is required to manage likes');

@@ -6,11 +6,7 @@ import {
   STEP_UP_MAX_AGE_MS,
   STEP_UP_MAX_AGE_SECONDS,
 } from './session.constants';
-import {
-  getBearerToken,
-  hasSessionHint,
-  readSessionFromSupabaseCookies,
-} from './session.cookies.server';
+import { getBearerToken, hasSessionHint, readSessionFromSupabaseCookies } from './session.cookies.server';
 import {
   applySessionCookies,
   clearAuthCookies,
@@ -28,15 +24,19 @@ import {
 } from './session-errors.server';
 import { createRequestSupabaseClient } from './session-request-client.server';
 import { buildAuthContextFromAccessToken, createSessionFromIdToken } from './session-auth-context.server';
-import {
-  buildNormalizedSession,
-  buildSessionUser,
-  serializeSessionState,
-} from './session.builder';
+import { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session.builder';
 import { normalizeValue } from './session.shared';
 
 export { AUTH_COOKIE_PATH, CSRF_COOKIE_NAME, STEP_UP_COOKIE_NAME, STEP_UP_MAX_AGE_MS, STEP_UP_MAX_AGE_SECONDS };
-export { applySessionCookies, clearAuthCookies, clearCsrfCookie, createCsrfToken, getCookieValue, isSecureCookieEnvironment, setCsrfCookie };
+export {
+  applySessionCookies,
+  clearAuthCookies,
+  clearCsrfCookie,
+  createCsrfToken,
+  getCookieValue,
+  isSecureCookieEnvironment,
+  setCsrfCookie,
+};
 export { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session.builder';
 export { createSessionFromIdToken };
 export { isTransientSessionError };

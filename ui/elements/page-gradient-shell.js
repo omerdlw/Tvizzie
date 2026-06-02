@@ -2,8 +2,7 @@
 
 import { cn } from '@/core/utils';
 
-export const PAGE_GRADIENT_BACKDROP_CLASS =
-  'page-gradient-backdrop pointer-events-none absolute inset-0';
+export const PAGE_GRADIENT_BACKDROP_CLASS = 'page-gradient-backdrop pointer-events-none absolute inset-0';
 
 export function PageGradientShell({ children, className, contentClassName, navHeight = 0 }) {
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));

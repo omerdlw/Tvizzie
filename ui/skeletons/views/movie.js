@@ -18,7 +18,7 @@ function TextLine({ width = 'w-full', soft = false, className = 'h-4' }) {
 
 function SegmentTabs() {
   return (
-    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1 rounded-[12px] p-0.5">
+    <div className="skeleton-block-soft inline-flex w-fit items-center gap-1 p-0.5">
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" />
       <SkeletonPill className="h-8 w-20" radius="segmentedItem" soft={true} />
       <SkeletonPill className="h-8 w-16" radius="segmentedItem" soft={true} />
@@ -37,8 +37,8 @@ function SocialProofPills() {
 
 function CastCard() {
   return (
-    <div className="flex items-center gap-3 rounded-[14px] bg-black/5 p-1 pr-4 backdrop-blur-xs">
-      <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0 rounded-[9px]" radius="segmentedItem" />
+    <div className="flex items-center gap-3 bg-black/5 p-1 pr-4 backdrop-blur-xs">
+      <SkeletonPoster className="aspect-auto h-20 w-16 shrink-0" radius="segmentedItem" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/3" className="h-3" />
         <TextLine width="w-1/2" className="h-2.5" soft={true} />
@@ -49,8 +49,8 @@ function CastCard() {
 
 function CompactCastCard() {
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[12px] bg-black/5 p-1 pr-2 backdrop-blur-xs">
-      <SkeletonBlock className="size-8 shrink-0 rounded-[9px]" />
+    <div className="flex h-10 min-w-0 flex-1 items-center gap-2 bg-black/5 p-1 pr-2 backdrop-blur-xs">
+      <SkeletonBlock className="size-8 shrink-0" />
       <TextLine width="w-3/5" className="h-3" />
     </div>
   );
@@ -59,7 +59,7 @@ function CompactCastCard() {
 function CarouselCard({ className = '', aspectClass = 'aspect-video', soft = false }) {
   return (
     <div className={`w-72 shrink-0 ${className}`}>
-      <SkeletonBlock className={`${aspectClass} w-full rounded-[14px]`} soft={soft} />
+      <SkeletonBlock className={`${aspectClass} w-full`} soft={soft} />
     </div>
   );
 }
@@ -118,16 +118,16 @@ function SidebarTaxonomySkeleton() {
       <div className="flex flex-col gap-2">
         <TextLine width="w-14" className="h-2.5" soft={true} />
         <div className="flex flex-wrap gap-1.5">
-          <SkeletonPill className="h-7 w-20 rounded-[10px]" soft={true} />
-          <SkeletonPill className="h-7 w-24 rounded-[10px]" soft={true} />
-          <SkeletonPill className="h-7 w-16 rounded-[10px]" soft={true} />
+          <SkeletonPill className="h-7 w-20" soft={true} />
+          <SkeletonPill className="h-7 w-24" soft={true} />
+          <SkeletonPill className="h-7 w-16" soft={true} />
         </div>
       </div>
       <div className="flex flex-col gap-2">
         <TextLine width="w-10" className="h-2.5" soft={true} />
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(9.5rem,100%),1fr))] gap-1.5">
-          <SkeletonPill className="h-7 rounded-[10px]" soft={true} />
-          <SkeletonPill className="h-7 rounded-[10px]" soft={true} />
+          <SkeletonPill className="h-7" soft={true} />
+          <SkeletonPill className="h-7" soft={true} />
         </div>
       </div>
     </div>
@@ -191,9 +191,9 @@ function MovieReviewsSkeleton({ className = '' }) {
           <TextLine width="w-36" className="h-4" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SkeletonPill className="h-9 w-28 rounded-[12px]" soft={true} />
-          <SkeletonPill className="h-9 w-32 rounded-[12px]" soft={true} />
-          <SkeletonPill className="h-9 w-24 rounded-[12px]" soft={true} />
+          <SkeletonPill className="h-9 w-28" soft={true} />
+          <SkeletonPill className="h-9 w-32" soft={true} />
+          <SkeletonPill className="h-9 w-24" soft={true} />
         </div>
       </div>
 

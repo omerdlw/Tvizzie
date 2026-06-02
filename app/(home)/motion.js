@@ -14,14 +14,7 @@ export const HOME_ROUTE_MOTION = Object.freeze({
   }),
 });
 
-export function HomeSectionReveal({
-  children,
-  className = '',
-  delay = 0,
-  distance = 18,
-  scale = 0.985,
-  once = true,
-}) {
+export function HomeSectionReveal({ children, className = '', delay = 0, distance = 18, scale = 0.985, once = true }) {
   const motionProps = buildRevealMotion({
     delay,
     distance,

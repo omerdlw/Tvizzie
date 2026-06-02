@@ -60,8 +60,8 @@ function createHeader({ header, hasBoth, activeTab, setActiveTab }) {
           { key: 'crew', label: 'Crew' },
         ]}
         classNames={{
-          wrapper: 'h-8 rounded-[12px] p-0.5',
-          indicator: 'rounded-[9px]',
+          wrapper: 'h-8 p-0.5',
+          indicator: '',
         }}
       />
     ),
@@ -141,7 +141,12 @@ function ModalView({
 }) {
   if (!hasCast && !hasCrew) {
     return (
-      <Container className={containerClassName} close={close} header={resolvedHeader} bodyClassName="bg-transparent p-0">
+      <Container
+        className={containerClassName}
+        close={close}
+        header={resolvedHeader}
+        bodyClassName="bg-transparent p-0"
+      >
         <div className="center min-h-32 text-sm text-black/70">No credits found.</div>
       </Container>
     );
@@ -219,7 +224,7 @@ function PersonCard({ close, person }) {
       onClick={close}
       className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2 transition-colors"
     >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[10px] bg-black/5">
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
         {imageSrc ? (
           <AdaptiveImage
             fill

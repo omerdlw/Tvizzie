@@ -1,4 +1,9 @@
-import { createApiErrorResponse, buildRequestMeta, normalizeAction, ACCOUNT_ACTIONS } from './account-route.shared.server';
+import {
+  createApiErrorResponse,
+  buildRequestMeta,
+  normalizeAction,
+  ACCOUNT_ACTIONS,
+} from './account-route.shared.server';
 import { handlePasswordStatus } from './account-route.password-status.server';
 import { handleReauthenticate } from './account-route.reauthenticate.server';
 import { handleDeleteAccount } from './account-route.delete.server';

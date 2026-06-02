@@ -27,11 +27,7 @@ import {
   getUserLikesSubscriptionKey,
 } from './shared.js';
 
-export {
-  subscribeToFavoriteShowcase,
-  subscribeToLikeStatus,
-  subscribeToUserLikes,
-} from './subscriptions.js';
+export { subscribeToFavoriteShowcase, subscribeToLikeStatus, subscribeToUserLikes } from './subscriptions.js';
 
 export function getLikeDocRef(userId, media) {
   return buildLikeRef(userId, media);

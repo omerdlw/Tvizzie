@@ -26,7 +26,7 @@ export function NotificationContainer() {
     <motion.div
       aria-atomic="true"
       aria-live="polite"
-      className="pointer-events-none fixed top-4 right-4 flex flex-col gap-2 w-full max-w-[380px]"
+      className="pointer-events-none fixed top-4 right-4 flex w-full max-w-[380px] flex-col gap-2"
       style={{ zIndex: Z_INDEX.NOTIFICATION }}
       {...NOTIFICATION_STACK_MOTION}
     >

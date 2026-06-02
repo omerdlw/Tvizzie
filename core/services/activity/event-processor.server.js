@@ -7,7 +7,12 @@ import {
   buildCanonicalActivityDedupeKey,
 } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';
-import { deleteByDedupePattern, deleteByExactDedupeKey, getExistingActivity, getUserProfile } from './event-processor.queries';
+import {
+  deleteByDedupePattern,
+  deleteByExactDedupeKey,
+  getExistingActivity,
+  getUserProfile,
+} from './event-processor.queries';
 import { buildActorSnapshot, buildEventRecord, normalizeValue } from './event-processor.shared';
 
 export async function processActivityEvent({ actorUserId, eventType, payload = {} }) {

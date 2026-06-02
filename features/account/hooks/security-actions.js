@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  clearAccountFeedback,
-  emitAccountFeedback,
-  normalizeProviderDescriptors,
-} from '../utils';
+import { clearAccountFeedback, emitAccountFeedback, normalizeProviderDescriptors } from '../utils';
 import { AUTH_PURPOSE, deleteAccountRequest, resolveSecurityErrorMessage } from '../security';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';

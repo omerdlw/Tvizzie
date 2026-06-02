@@ -10,11 +10,7 @@ import { isPermissionDeniedError, logDataError } from '@/core/utils';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
-import {
-  deleteStoredReview,
-  fetchProfileReviewFeed,
-  toggleStoredReviewLike,
-} from '@/core/services/media/reviews';
+import { deleteStoredReview, fetchProfileReviewFeed, toggleStoredReviewLike } from '@/core/services/media/reviews';
 import { AccountSectionStateProvider, useAccountSectionEngine } from '@/features/account/route/section-state';
 import { FullscreenState } from '@/ui/states/fullscreen-state';
 import AccountView from './view';

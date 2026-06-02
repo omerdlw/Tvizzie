@@ -4,7 +4,10 @@ const DEFAULT_ERROR_CODE = 'INTERNAL_ERROR';
 const DEFAULT_ERROR_MESSAGE = 'Request failed';
 
 export class AppError extends Error {
-  constructor(message = DEFAULT_ERROR_MESSAGE, { code = DEFAULT_ERROR_CODE, data = null, retryable = false, status = 500 } = {}) {
+  constructor(
+    message = DEFAULT_ERROR_MESSAGE,
+    { code = DEFAULT_ERROR_CODE, data = null, retryable = false, status = 500 } = {}
+  ) {
     super(normalizeValue(message) || DEFAULT_ERROR_MESSAGE);
     this.name = 'AppError';
     this.code = normalizeValue(code) || DEFAULT_ERROR_CODE;

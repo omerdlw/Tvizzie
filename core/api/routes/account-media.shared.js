@@ -129,7 +129,10 @@ export function resolveUploadErrorStatus(error) {
 
   if (message === 'Invalid CSRF token') {
     status = 403;
-  } else if (message === 'Authentication session is required' || message === 'Invalid or expired authentication token') {
+  } else if (
+    message === 'Authentication session is required' ||
+    message === 'Invalid or expired authentication token'
+  ) {
     status = 401;
   } else if (status < 400 || status > 599) {
     status = 500;

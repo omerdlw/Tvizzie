@@ -28,11 +28,15 @@ export function useNavigation() {
     return Boolean(activeItem?.action || activeItem?.isConfirmation);
   }, [activeItem]);
 
-  const compact = useNavigationCompact({ activeItem, expanded: isExpanded, pathname, searchQuery, compactLocked });
+  const { compact, compactRef } = useNavigationCompact({
+    activeItem,
+    expanded: isExpanded,
+    pathname,
+    searchQuery,
+    compactLocked,
+  });
 
-  useEffect(() => {
-    setIsCompact(compact);
-  }, [compact, setIsCompact]);
+  setIsCompact(compactRef.current);
 
   const clearHoverState = useCallback(() => {
     setIsHovered(false);

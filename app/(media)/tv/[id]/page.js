@@ -65,7 +65,15 @@ export default async function Page({ params }) {
   const secondaryDataPromise = getTvSecondary(id).then((secondaryResponse) => secondaryResponse?.data || {});
   const computed = getMovieComputedData(tv);
 
-  return <Client key={`tv-${tv.id}`} computed={computed} mediaType="tv" movie={tv} secondaryDataPromise={secondaryDataPromise} />;
+  return (
+    <Client
+      key={`tv-${tv.id}`}
+      computed={computed}
+      mediaType="tv"
+      movie={tv}
+      secondaryDataPromise={secondaryDataPromise}
+    />
+  );
 }
 
 export const revalidate = 3600;

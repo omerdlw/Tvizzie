@@ -1,7 +1,13 @@
 'use client';
 
 import { TMDB_IMG } from '@/core/constants';
-import { getMediaDetailPath, getMediaReleaseDate, getMediaTitle, isTitleMediaType, resolveExplicitMediaType } from '@/core/utils/media';
+import {
+  getMediaDetailPath,
+  getMediaReleaseDate,
+  getMediaTitle,
+  isTitleMediaType,
+  resolveExplicitMediaType,
+} from '@/core/utils/media';
 import { cn } from '@/core/utils';
 import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/features/media/poster-overrides';
 import MediaCard from '@/ui/media/media-card';

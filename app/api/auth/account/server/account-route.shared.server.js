@@ -28,10 +28,7 @@ import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
 } from '@/core/auth/servers/security.js';
-import {
-  lookupPasswordAccountByEmail,
-  resolvePasswordAccountIdentifier,
-} from '@/core/auth/servers/verification.js';
+import { lookupPasswordAccountByEmail, resolvePasswordAccountIdentifier } from '@/core/auth/servers/verification.js';
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.constants';
 import {

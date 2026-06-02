@@ -1,13 +1,7 @@
 'use client';
 
 import { buildPollingSubscriptionKey, createPollingSubscription } from '@/core/services/shared/client';
-import {
-  fetchLikedLists,
-  fetchListById,
-  fetchListBySlug,
-  fetchListItems,
-  fetchUserLists,
-} from './queries.js';
+import { fetchLikedLists, fetchListById, fetchListBySlug, fetchListItems, fetchUserLists } from './queries.js';
 
 export function subscribeToUserLists(userId, callback, options = {}) {
   if (!userId) {

@@ -107,9 +107,9 @@ export default function ImagesSection({ images }) {
         <SegmentedControl
           classNames={{
             track: ' w-auto',
-            wrapper: 'p-0.5 rounded-[12px]',
-            button: 'rounded-[9px]',
-            indicator: 'rounded-[9px]',
+            wrapper: 'p-0.5 ',
+            button: '',
+            indicator: '',
           }}
           items={availableTabs}
           value={activeKey}

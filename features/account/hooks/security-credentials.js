@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  clearAccountFeedback,
-  emitAccountFeedback,
-  normalizeEmail,
-} from '../utils';
+import { clearAccountFeedback, emitAccountFeedback, normalizeEmail } from '../utils';
 import {
   AUTH_PURPOSE,
   INITIAL_EMAIL_FLOW,
@@ -111,12 +107,7 @@ export function useAccountCredentialActions({
   );
 
   const openVerificationModal = useCallback(
-    async ({
-      purpose,
-      email,
-      title = 'Email verification',
-      description = 'Code verification',
-    }) => {
+    async ({ purpose, email, title = 'Email verification', description = 'Code verification' }) => {
       return openAccountVerificationPrompt({
         description,
         email,

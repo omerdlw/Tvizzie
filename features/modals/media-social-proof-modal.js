@@ -115,7 +115,7 @@ function SocialUserRow({ close, user, actions }) {
       onClick={close}
       className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
     >
-      <div className="center size-10 shrink-0 overflow-hidden rounded-[10px] border border-black/5">
+      <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
         <AdaptiveImage
           mode="img"
           src={avatarSrc}
@@ -138,10 +138,7 @@ function SocialUserRow({ close, user, actions }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5 self-center">
-        <span
-          aria-hidden="true"
-          className="center size-7 rounded-[10px] border border-black/10 text-black/70 transition"
-        >
+        <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70 transition">
           <Icon icon="solar:alt-arrow-right-linear" size={16} />
         </span>
       </div>

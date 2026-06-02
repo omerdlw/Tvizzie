@@ -1,7 +1,4 @@
-import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '../security/rate-limit.server';
+import { enforceSlidingWindowRateLimit, isSlidingWindowRateLimitError } from '../security/rate-limit.server';
 
 export async function enforceSendCodeRateLimit({ email, ipAddress, deviceId, purpose }) {
   try {

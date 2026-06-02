@@ -1,7 +1,11 @@
 import 'server-only';
 
 import { normalizeErrorCode, normalizeErrorMessage, normalizeErrorStatus } from '@/core/services/shared/app-error';
-import { buildInternalRequestMeta, createApiErrorResponse, createApiSuccessResponse } from '@/core/services/shared/server';
+import {
+  buildInternalRequestMeta,
+  createApiErrorResponse,
+  createApiSuccessResponse,
+} from '@/core/services/shared/server';
 import { normalizeValue } from '@/core/utils/string';
 
 const UNAUTHORIZED_MESSAGE_PATTERNS = Object.freeze([
@@ -56,13 +60,7 @@ export function resolveRouteStatusCode(message, { clientErrorPatterns = DEFAULT_
   return 500;
 }
 
-export function createRouteValidationErrorResponse({
-  authContext,
-  message,
-  requestMeta,
-  status = 400,
-  userId = null,
-}) {
+export function createRouteValidationErrorResponse({ authContext, message, requestMeta, status = 400, userId = null }) {
   return createApiErrorResponse(
     {
       code: 'VALIDATION_ERROR',
@@ -75,13 +73,7 @@ export function createRouteValidationErrorResponse({
   );
 }
 
-export function createRouteSuccessResponse({
-  authContext,
-  payload,
-  requestMeta,
-  userId = null,
-  legacyPayload = null,
-}) {
+export function createRouteSuccessResponse({ authContext, payload, requestMeta, userId = null, legacyPayload = null }) {
   const resolvedLegacyPayload = legacyPayload && typeof legacyPayload === 'object' ? legacyPayload : payload;
 
   return createApiSuccessResponse(payload, {

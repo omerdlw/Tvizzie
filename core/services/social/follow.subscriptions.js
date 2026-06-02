@@ -1,8 +1,6 @@
 'use client';
 
-import {
-  createPollingSubscription,
-} from '@/core/services/shared/client';
+import { createPollingSubscription } from '@/core/services/shared/client';
 import { subscribeToUserLiveEvent } from '@/core/services/realtime/live-updates.service';
 import { requestApiJson } from '@/core/services/shared/client';
 

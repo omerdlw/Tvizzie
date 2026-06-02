@@ -63,4 +63,3 @@ export const HOME_PAGE_MAX_WIDTH_CLASS = 'max-w-screen-2xl';
 export const ACCOUNT_ROUTE_MAX_WIDTH_CLASS = PAGE_SHELL_MAX_WIDTH_CLASS;
 export const ACCOUNT_ROUTE_SHELL_CLASS = `mx-auto box-border w-full ${ACCOUNT_ROUTE_MAX_WIDTH_CLASS}`;
 export const ACCOUNT_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} px-4 sm:px-8 account-detail-section-shell`;
-

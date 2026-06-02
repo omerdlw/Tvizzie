@@ -52,11 +52,7 @@ export function AccountReviewFilterBar({
     <div className={cn(UI.bar, className)}>
       {showRatingFilter ? (
         <FilterPopover label={`Rating: ${ratingLabel}`} active={filters?.ratingMode !== 'any'}>
-          <OptionSection
-            options={RATING_MODE_OPTIONS}
-            value={filters?.ratingMode}
-            onChange={handleRatingModeChange}
-          />
+          <OptionSection options={RATING_MODE_OPTIONS} value={filters?.ratingMode} onChange={handleRatingModeChange} />
           {isRangeMode ? <RatingRangeEditor filters={filters} onChange={onChange} /> : null}
         </FilterPopover>
       ) : null}

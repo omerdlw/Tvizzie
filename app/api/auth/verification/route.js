@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import {
-  EMAIL_ACCOUNT_STATES,
-  hasPasswordProvider,
-  resolveEmailAccountState,
-} from '@/core/auth/servers/account.js';
+import { EMAIL_ACCOUNT_STATES, hasPasswordProvider, resolveEmailAccountState } from '@/core/auth/servers/account.js';
 import { writeAuthAuditLog } from '@/core/auth/servers/audit.js';
 import {
   assertCsrfRequest,

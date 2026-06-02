@@ -133,7 +133,10 @@ export default function SettingsModal({ close, header }) {
       close={close}
     >
       <motion.div className="flex w-full flex-col gap-3 p-4 text-sm" {...getModalContentMotion(0)}>
-        <motion.div className="border-info flex items-center justify-between gap-2 border px-4 py-3" {...getModalContentMotion(1)}>
+        <motion.div
+          className="border-info flex items-center justify-between gap-2 border px-4 py-3"
+          {...getModalContentMotion(1)}
+        >
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold tracking-widest uppercase">Storage</span>
             <span className="font-medium">{storageKey}</span>
@@ -141,7 +144,7 @@ export default function SettingsModal({ close, header }) {
           {hasDefinitions ? (
             <motion.button
               type="button"
-              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide uppercase text-black/70 transition-colors hover:border-black/15 hover:bg-black/5 hover:text-black"
+              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase transition-colors hover:border-black/15 hover:bg-black/5 hover:text-black"
               onClick={() => resetSettings()}
               {...MODAL_ACTION_MOTION}
             >

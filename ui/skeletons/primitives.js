@@ -6,13 +6,13 @@ export const SKELETON_TOKENS = Object.freeze({
     soft: 'skeleton-block-soft',
   }),
   radius: Object.freeze({
-    hero: 'rounded-[20px]',
-    card: 'rounded-[14px]',
-    control: 'rounded-[14px]',
-    field: 'rounded-[10px]',
-    segmentedTrack: 'rounded-[12px]',
-    segmentedItem: 'rounded-[9px]',
-    full: 'rounded-full',
+    hero: '',
+    card: '',
+    control: '',
+    field: '',
+    segmentedTrack: '',
+    segmentedItem: '',
+    full: '',
   }),
   gap: Object.freeze({
     page: 'gap-8',
@@ -39,18 +39,14 @@ function resolveLineHeight(size) {
 
 export function SkeletonBlock({ className = '', radius = null, soft = false }) {
   return (
-    <div className={cn(soft ? SKELETON_TOKENS.tone.soft : SKELETON_TOKENS.tone.solid, resolveRadius(radius), className)} />
+    <div
+      className={cn(soft ? SKELETON_TOKENS.tone.soft : SKELETON_TOKENS.tone.solid, resolveRadius(radius), className)}
+    />
   );
 }
 
 export function SkeletonLine({ className = '', size = 'md', soft = false }) {
-  return (
-    <SkeletonBlock
-      soft={soft}
-      radius="full"
-      className={cn(resolveLineHeight(size), className)}
-    />
-  );
+  return <SkeletonBlock soft={soft} radius="full" className={cn(resolveLineHeight(size), className)} />;
 }
 
 export function SkeletonPill({ className = '', radius = 'control', soft = false }) {

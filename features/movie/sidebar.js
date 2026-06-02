@@ -185,7 +185,7 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
           <SidebarMotionChip key={item} delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger} index={index}>
             <span
               className={cn(
-                'bg-primary inline-flex min-h-7 max-w-full items-center rounded-[10px] border border-black/5 text-[11px] leading-none font-semibold uppercase',
+                'bg-primary inline-flex min-h-7 max-w-full items-center border border-black/5 text-[11px] leading-none font-semibold uppercase',
                 isTagGroup
                   ? 'justify-center px-2 py-1 text-center leading-[1.15] tracking-wide text-black/60'
                   : 'px-2.5 py-1 tracking-wider'
@@ -328,7 +328,7 @@ export default function Sidebar({
   return (
     <div className="flex flex-col gap-3">
       <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           {posterSrc ? (
             <AdaptiveImage
               fill

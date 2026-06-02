@@ -132,7 +132,7 @@ export default function PersonSidebar({ person, age }) {
   return (
     <div className="flex flex-col gap-3">
       <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           {hasImage ? (
             <AdaptiveImage
               src={imageSrc}

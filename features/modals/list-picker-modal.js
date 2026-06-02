@@ -19,7 +19,7 @@ import Icon from '@/ui/icon';
 // --------------------------------------------------
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
 // --------------------------------------------------
@@ -35,9 +35,7 @@ function getPreviewImage(item) {
 }
 
 function getChangedListIds(lists, initialMemberships, draftMemberships) {
-  return lists
-    .map((list) => list.id)
-    .filter((id) => Boolean(initialMemberships[id]) !== Boolean(draftMemberships[id]));
+  return lists.map((list) => list.id).filter((id) => Boolean(initialMemberships[id]) !== Boolean(draftMemberships[id]));
 }
 
 // --------------------------------------------------
@@ -267,7 +265,7 @@ function ModalView({
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
             >
               {isApplying ? 'Applying' : 'Apply changes'}
             </Button>
@@ -292,7 +290,7 @@ function ModalView({
           {isLoading && <LoadingSkeleton />}
 
           {!isLoading && lists.length === 0 && (
-            <div className="flex min-h-40 flex-col items-center justify-center rounded-[14px] border border-dashed border-black/15 bg-black/2 text-center">
+            <div className="flex min-h-40 flex-col items-center justify-center border border-dashed border-black/15 bg-black/2 text-center">
               <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">No lists yet</p>
               <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
             </div>
@@ -323,7 +321,7 @@ function ListRow({ list, isSelected, onToggle }) {
       type="button"
       onClick={onToggle}
       className={cn(
-        'group flex w-full items-center gap-4 rounded-[14px] border p-3 text-left transition-all',
+        'group flex w-full items-center gap-4 border p-3 text-left transition-all',
         isSelected ? 'bg-info/20 border-black/20' : 'hover:bg-primary border-black/10 hover:border-black/15'
       )}
     >
@@ -331,14 +329,12 @@ function ListRow({ list, isSelected, onToggle }) {
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-base font-semibold text-black">{list.title}</p>
-        {list.description && (
-          <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>
-        )}
+        {list.description && <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>}
       </div>
 
       <span
         className={cn(
-          'flex size-[22px] shrink-0 items-center justify-center rounded-full border transition-all',
+          'flex size-[22px] shrink-0 items-center justify-center border transition-all',
           isSelected
             ? 'border-info bg-info text-primary'
             : 'border-black/10 text-black/50 group-hover:border-black/40 group-hover:text-black/70'
@@ -367,7 +363,7 @@ function ListPreviewStack({ list }) {
           return (
             <div
               key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="border-primary absolute bottom-0 overflow-hidden rounded-[10px] border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
+              className="border-primary absolute bottom-0 overflow-hidden border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
               style={{
                 width: '46px',
                 height: `${68 - index * 6}px`,
@@ -404,13 +400,13 @@ function LoadingSkeleton() {
       {Array.from({ length: 10 }).map((_, index) => (
         <div
           key={`list-picker-skeleton-${index}`}
-          className="flex h-24 animate-pulse items-center gap-4 rounded-[14px] border border-black/10 bg-white/80 p-3"
+          className="flex h-24 animate-pulse items-center gap-4 border border-black/10 bg-white/80 p-3"
         >
           <div className="relative h-[68px] w-[82px] shrink-0">
             {[0, 1, 2, 3].map((stackIndex) => (
               <div
                 key={`list-picker-skeleton-stack-${index}-${stackIndex}`}
-                className="absolute bottom-0 overflow-hidden rounded-[10px] border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                className="absolute bottom-0 overflow-hidden border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
                 style={{
                   backgroundColor:
                     LIST_PICKER_STACK_SKELETON_BACKGROUNDS[stackIndex] ||
@@ -429,7 +425,7 @@ function LoadingSkeleton() {
             <div className="h-4 w-2/5 rounded bg-black/[0.09]" />
             <div className="h-3 w-4/5 rounded bg-black/[0.07]" />
           </div>
-          <div className="size-[22px] shrink-0 rounded-full border border-black/10 bg-black/[0.06]" />
+          <div className="size-[22px] shrink-0 border border-black/10 bg-black/[0.06]" />
         </div>
       ))}
     </div>

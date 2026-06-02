@@ -275,22 +275,21 @@ function buildRankedMovieSearchEntries(items = [], query = '', mediaType = 'movi
     .map((movie) => buildMovieSearchEntry(movie, queryProfile))
     .filter(Boolean);
 
-  return candidates
-    .sort((left, right) => {
-      if (right.totalScore !== left.totalScore) {
-        return right.totalScore - left.totalScore;
-      }
+  return candidates.sort((left, right) => {
+    if (right.totalScore !== left.totalScore) {
+      return right.totalScore - left.totalScore;
+    }
 
-      if (right.match.score !== left.match.score) {
-        return right.match.score - left.match.score;
-      }
+    if (right.match.score !== left.match.score) {
+      return right.match.score - left.match.score;
+    }
 
-      if (right.yearScore !== left.yearScore) {
-        return right.yearScore - left.yearScore;
-      }
+    if (right.yearScore !== left.yearScore) {
+      return right.yearScore - left.yearScore;
+    }
 
-      return right.authorityScore - left.authorityScore;
-    });
+    return right.authorityScore - left.authorityScore;
+  });
 }
 
 async function hydrateMovieSearchRuntimeCandidates(
@@ -366,7 +365,9 @@ export function buildMovieAuthorityFallbackItems(items = [], options = {}) {
   const normalizedItems = dedupeSearchItems(withMediaType(items, mediaType));
 
   return sortSearchItemsByAuthority(
-    normalizedItems.filter((movie) => passesMovieSearchQualityGate(movie, {}) && isDisplayableTitleForDetail(movie, mediaType)),
+    normalizedItems.filter(
+      (movie) => passesMovieSearchQualityGate(movie, {}) && isDisplayableTitleForDetail(movie, mediaType)
+    ),
     getMovieAuthorityValue
   );
 }

@@ -3,11 +3,7 @@
 import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
 import { EMPTY_ACCOUNT_REGISTRY_AUTH, buildAccountPageState } from '@/features/account/registry-config';
 
-function buildAccountBioSurface({
-  isBioSurfaceOpen = false,
-  profile = null,
-  setIsBioSurfaceOpen,
-}) {
+function buildAccountBioSurface({ isBioSurfaceOpen = false, profile = null, setIsBioSurfaceOpen }) {
   if (!isBioSurfaceOpen || !profile?.description) {
     return undefined;
   }

@@ -131,14 +131,14 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
     <div className="relative">
       {isImageSource ? (
         <motion.div
-          className={cn('size-10 sm:size-12 shrink-0 rounded-[14px] sm:rounded-[12px] bg-cover bg-center bg-no-repeat', className)}
+          className={cn('size-10 shrink-0 bg-cover bg-center bg-no-repeat sm:size-12', className)}
           transition={NAV_CONTENT_TRANSITION}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
           className={cn(
-            'center size-10 rounded-[14px] bg-black/5 transition-colors duration-[300ms] sm:rounded-[12px] sm:size-12',
+            'center size-10 bg-black/5 transition-colors duration-[300ms] sm:size-12',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className

@@ -181,9 +181,7 @@ function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
     'flex size-10 shrink-0 items-center justify-center overflow-hidden border border-black/10 bg-black/[0.04] bg-cover bg-center text-black/65',
     classNames.headerIcon
   );
-  const iconStyle = {
-    borderRadius: `${metrics.headerIconRadius}px`,
-  };
+  const iconStyle = {};
 
   if (isImageIconSource(icon)) {
     return <div className={iconClassName} style={{ ...iconStyle, backgroundImage: `url(${icon})` }} />;
@@ -209,7 +207,10 @@ function ContextMenuHeader({ classNames, header, metrics }) {
     'text-[10px] font-semibold tracking-wide text-black/45 uppercase',
     classNames.headerEyebrow
   );
-  const titleClassName = joinClassNames('truncate text-[15px] leading-tight font-semibold text-black', classNames.headerTitle);
+  const titleClassName = joinClassNames(
+    'truncate text-[15px] leading-tight font-semibold text-black',
+    classNames.headerTitle
+  );
   const descriptionClassName = joinClassNames('text-[12px] leading-snug text-black/60', classNames.headerDescription);
 
   return (
@@ -252,9 +253,6 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
     <button
       ref={setButtonRef}
       className={itemClassName}
-      style={{
-        borderRadius: `${metrics.itemRadius}px`,
-      }}
       data-active={isActive ? 'true' : undefined}
       aria-disabled={item.disabled}
       disabled={item.disabled}
@@ -434,7 +432,6 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         role="menu"
         tabIndex={-1}
         style={{
-          borderRadius: `${metrics.wrapperRadius}px`,
           left: position?.x || 0,
           padding: `${metrics.wrapperPadding}px`,
           position: 'fixed',

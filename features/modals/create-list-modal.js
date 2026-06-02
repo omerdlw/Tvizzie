@@ -19,14 +19,16 @@ import Icon from '@/ui/icon';
 // --------------------------------------------------
 
 const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 rounded-[12px] border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
+  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition';
 
 // --------------------------------------------------
 // HELPERS
 // --------------------------------------------------
 
 function normalizeSearchResult(item = {}) {
-  const entityType = String(item?.media_type || item?.entityType || '').trim().toLowerCase();
+  const entityType = String(item?.media_type || item?.entityType || '')
+    .trim()
+    .toLowerCase();
 
   if (entityType !== 'movie' && entityType !== 'tv') return null;
 
@@ -273,7 +275,7 @@ function ModalView({
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 rounded-[12px] border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase transition disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
             >
               {isSaving ? 'Creating' : 'Create List'}
             </Button>
@@ -290,7 +292,7 @@ function ModalView({
             autoFocus
             className={{
               wrapper:
-                'flex h-10 items-center rounded-[12px] border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
+                'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
               input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
             }}
           />
@@ -300,7 +302,7 @@ function ModalView({
             placeholder="Description (optional)"
             className={{
               wrapper:
-                'flex h-10 items-center rounded-[12px] border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
+                'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
               input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
             }}
           />
@@ -322,7 +324,7 @@ function ModalView({
           }
           className={{
             wrapper:
-              'flex h-10 items-center rounded-[12px] border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
+              'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 transition focus-within:border-black/20',
             input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
             leftIcon: 'flex shrink-0 items-center pr-2.5',
             rightIcon: 'flex shrink-0 items-center pl-2.5',
@@ -358,7 +360,7 @@ function ModalView({
                   <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
                 ))
               ) : (
-                <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-[14px] border border-dashed border-black/10 bg-black/5 text-center">
+                <div className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center">
                   <Icon icon="solar:list-bold" size={24} className="text-black/50" />
                   <p className="text-xs text-black/50">Search movies above to start building your list</p>
                 </div>
@@ -381,7 +383,7 @@ function SearchResultRow({ item, isAdded, onAdd }) {
       disabled={isAdded}
       onClick={() => onAdd(item)}
       className={cn(
-        'group flex w-full items-center gap-3 rounded-[14px] border px-3 py-2.5 text-left transition-all',
+        'group flex w-full items-center gap-3 border px-3 py-2.5 text-left transition-all',
         isAdded
           ? 'cursor-default border-black/10 bg-black/5 opacity-70'
           : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
@@ -394,7 +396,7 @@ function SearchResultRow({ item, isAdded, onAdd }) {
 
       <span
         className={cn(
-          'flex size-6 shrink-0 items-center justify-center rounded-full border transition-all',
+          'flex size-6 shrink-0 items-center justify-center border transition-all',
           isAdded
             ? 'border-info bg-info text-white'
             : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
@@ -411,7 +413,7 @@ function DraftItemRow({ index, item, onRemove }) {
   const year = getItemYear(item);
 
   return (
-    <div className="group bg-primary flex items-center gap-3 rounded-[14px] border border-black/5 px-3 py-2 transition-all hover:border-black/10">
+    <div className="group bg-primary flex items-center gap-3 border border-black/5 px-3 py-2 transition-all hover:border-black/10">
       <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
 
       <div className="min-w-0 flex-1">
@@ -422,7 +424,7 @@ function DraftItemRow({ index, item, onRemove }) {
       <Button
         variant="destructive-icon"
         onClick={() => onRemove(item)}
-        className="size-7 shrink-0 rounded-[10px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        className="size-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />

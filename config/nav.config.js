@@ -8,9 +8,7 @@ export const NAV_CONFIG = {
       description: 'Discover titles',
       icon: '/tvizzie.png',
       style: {
-        icon: {
-          borderRadius: 0,
-        },
+        icon: {},
       },
     },
     profile: {

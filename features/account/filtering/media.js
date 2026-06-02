@@ -466,7 +466,11 @@ export function applyMediaFilters(items = [], filters = DEFAULT_MEDIA_FILTERS, c
       }
     }
 
-    if (normalizedFilters.genre !== 'all' && hasGenreMetadata && !collectGenreValues(item).has(normalizedFilters.genre)) {
+    if (
+      normalizedFilters.genre !== 'all' &&
+      hasGenreMetadata &&
+      !collectGenreValues(item).has(normalizedFilters.genre)
+    ) {
       return false;
     }
 

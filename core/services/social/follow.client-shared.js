@@ -1,6 +1,10 @@
 'use client';
 
-import { buildPollingSubscriptionKey, invalidatePollingSubscriptions, scheduleAccountSummaryRefresh } from '@/core/services/shared/client';
+import {
+  buildPollingSubscriptionKey,
+  invalidatePollingSubscriptions,
+  scheduleAccountSummaryRefresh,
+} from '@/core/services/shared/client';
 
 import { FOLLOW_STATUSES } from './follow.constants';
 

@@ -10,7 +10,7 @@ import Icon from '@/ui/icon';
 // --------------------------------------------------
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[96px] items-center justify-center rounded-[14px] border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+  'inline-flex h-10 min-w-[96px] items-center justify-center border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase transition hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
 
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {
@@ -133,7 +133,13 @@ export default function AccountPagination({
 
   if (layout === 'split') {
     return (
-      <div className={cn('grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3', splitClassName, className)}>
+      <div
+        className={cn(
+          'grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3',
+          splitClassName,
+          className
+        )}
+      >
         <div className={cn('flex justify-start', splitNavSlotClassName, splitPrevSlotClassName)}>
           {showPrevNext && <PaginationNavButton {...prevNavProps} />}
         </div>
@@ -156,22 +162,44 @@ export default function AccountPagination({
   );
 }
 
-function PaginationPageItem({ pageNumber, safeCurrentPage, pageClassName, activePageClassName, inactivePageClassName, getPageHref, onPageChange, config }) {
+function PaginationPageItem({
+  pageNumber,
+  safeCurrentPage,
+  pageClassName,
+  activePageClassName,
+  inactivePageClassName,
+  getPageHref,
+  onPageChange,
+  config,
+}) {
   const isActive = pageNumber === safeCurrentPage;
   const toneClass = isActive ? (activePageClassName ?? 'text-black') : (inactivePageClassName ?? 'text-black/55');
   const resolvedClass = cn(pageClassName ?? 'px-1 text-sm font-semibold leading-none select-none', toneClass);
 
   if (isActive) {
-    return <span aria-current="page" className={resolvedClass}>{pageNumber}</span>;
+    return (
+      <span aria-current="page" className={resolvedClass}>
+        {pageNumber}
+      </span>
+    );
   }
 
   if (config.canUseLinks) {
-    return <Link href={getPageHref(pageNumber)} className={resolvedClass}>{pageNumber}</Link>;
+    return (
+      <Link href={getPageHref(pageNumber)} className={resolvedClass}>
+        {pageNumber}
+      </Link>
+    );
   }
 
   if (config.canUseButtons) {
     return (
-      <button type="button" onClick={() => onPageChange(pageNumber)} aria-label={`Go to page ${pageNumber}`} className={resolvedClass}>
+      <button
+        type="button"
+        onClick={() => onPageChange(pageNumber)}
+        aria-label={`Go to page ${pageNumber}`}
+        className={resolvedClass}
+      >
         {pageNumber}
       </button>
     );
@@ -180,7 +208,20 @@ function PaginationPageItem({ pageNumber, safeCurrentPage, pageClassName, active
   return <span className={resolvedClass}>{pageNumber}</span>;
 }
 
-function PaginationNavButton({ direction, safeCurrentPage, totalPages, hideDisabledNav, getPageHref, onPageChange, iconSize, navClassName, ariaLabel, label, iconName, config }) {
+function PaginationNavButton({
+  direction,
+  safeCurrentPage,
+  totalPages,
+  hideDisabledNav,
+  getPageHref,
+  onPageChange,
+  iconSize,
+  navClassName,
+  ariaLabel,
+  label,
+  iconName,
+  config,
+}) {
   const isPrevious = direction === 'previous';
   const targetPage = isPrevious ? safeCurrentPage - 1 : safeCurrentPage + 1;
   const disabled = isPrevious ? safeCurrentPage <= 1 : safeCurrentPage >= totalPages;
@@ -190,12 +231,22 @@ function PaginationNavButton({ direction, safeCurrentPage, totalPages, hideDisab
   if (disabled && hideDisabledNav) return null;
 
   if (config.canUseLinks && !disabled) {
-    return <Link href={getPageHref(targetPage)} aria-label={ariaLabel} className={resolvedClass}>{navContent}</Link>;
+    return (
+      <Link href={getPageHref(targetPage)} aria-label={ariaLabel} className={resolvedClass}>
+        {navContent}
+      </Link>
+    );
   }
 
   if (config.canUseButtons) {
     return (
-      <button type="button" onClick={() => onPageChange(targetPage)} disabled={disabled} aria-label={ariaLabel} className={resolvedClass}>
+      <button
+        type="button"
+        onClick={() => onPageChange(targetPage)}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        className={resolvedClass}
+      >
         {navContent}
       </button>
     );

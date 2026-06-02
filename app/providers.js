@@ -32,14 +32,12 @@ function shouldEnableInteractiveBoundary(pathname = '/') {
 }
 
 function resolveInteractiveBoundaryVariant(pathname = '/') {
-  return (
-    pathname === '/' ||
+  return pathname === '/' ||
     pathname.startsWith('/search') ||
     pathname.startsWith('/movie/') ||
     pathname.startsWith('/tv/') ||
     pathname.startsWith('/person/') ||
     pathname.startsWith('/account')
-  )
     ? 'full'
     : pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')
       ? 'auth'

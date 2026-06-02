@@ -36,7 +36,9 @@ export function resolveAuthProvider(payload = {}, session = null) {
     .trim()
     .toLowerCase();
 
-  return normalizeOAuthProvider(sessionProvider) || sessionProvider || resolvePrimaryProvider(providerIds) || 'password';
+  return (
+    normalizeOAuthProvider(sessionProvider) || sessionProvider || resolvePrimaryProvider(providerIds) || 'password'
+  );
 }
 
 export function resolveSignInIdentifier(payload = {}) {

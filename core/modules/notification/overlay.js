@@ -28,7 +28,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
   return (
     <motion.section
       className={cn(
-        'pointer-events-auto w-full rounded-[20px] border-[1.5px] border-black/10 backdrop-blur-lg bg-white/90 shadow-sm',
+        'pointer-events-auto w-full border-[1.5px] border-black/10 bg-white/90 shadow-sm backdrop-blur-lg',
         dismissible && 'touch-pan-y',
         config.colorClass
       )}
@@ -51,7 +51,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 rounded-[14px] border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-colors hover:border-black/10 hover:bg-black/10"
+                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-colors hover:border-black/10 hover:bg-black/10"
                 {...getNotificationActionMotion(index)}
               >
                 {action.label}

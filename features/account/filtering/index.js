@@ -1,9 +1,4 @@
-export {
-  buildCollectionBasePath,
-  buildManagedQueryString,
-  normalizePage,
-  parsePageFromSearch,
-} from './query-utils';
+export { buildCollectionBasePath, buildManagedQueryString, normalizePage, parsePageFromSearch } from './query-utils';
 export { getStarStepValues } from './shared';
 export {
   ACTIVITY_FILTER_QUERY_KEYS,

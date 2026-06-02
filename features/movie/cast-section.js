@@ -43,7 +43,7 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className="rounded-[9px] object-cover"
+      className="object-cover"
       onError={() => setError(true)}
       wrapperClassName="h-full w-full"
     />
@@ -56,8 +56,8 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[14px] border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1 rounded-[12px]! p-1 pr-2' : 'p-1 pr-4',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 border border-black/10 backdrop-blur-xs transition-all hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
       <motion.div
@@ -240,7 +240,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               initial={{ opacity: 0, y: 14, scale: 0.94 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.72, delay: 0.36, ease: [0.22, 1, 0.36, 1] }}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-[12px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </motion.button>
@@ -256,8 +256,8 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
         <div className="flex items-center justify-between gap-3">
           <SegmentedControl
             classNames={{
-              wrapper: 'p-0.5 rounded-[12px] backdrop-blur-xs bg-primary/30',
-              indicator: 'rounded-[9px]',
+              wrapper: 'p-0.5 backdrop-blur-xs bg-primary/30',
+              indicator: '',
             }}
             value={activeTab}
             onChange={setActiveTab}

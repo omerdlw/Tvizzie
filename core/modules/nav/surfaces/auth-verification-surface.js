@@ -88,7 +88,7 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center border-info bg-primary/30 hover:bg-primary/50 h-13 rounded-[12px] border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
+                'center border-info bg-primary/30 hover:bg-primary/50 h-13 border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
@@ -464,7 +464,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
         <div className="grid gap-2">
           <Button
-            className="hover:bg-info h-11 w-full flex-auto rounded-[14px] border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+            className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
             disabled={isSubmitting || isSending || !canResendCode}
             onClick={() => void sendCode({ isInitial: false })}
             type="button"
@@ -479,7 +479,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
               aria-pressed={rememberDevice}
               onClick={() => setRememberDevice((prev) => !prev)}
               className={cn(
-                'flex h-11 w-full items-center gap-2 rounded-[14px] border px-3 text-left text-[11px] font-bold tracking-widest uppercase transition',
+                'flex h-11 w-full items-center gap-2 border px-3 text-left text-[11px] font-bold tracking-widest uppercase transition',
                 rememberDevice
                   ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                   : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
@@ -488,8 +488,10 @@ export default function AuthVerificationSurface({ close, data, header }) {
             >
               <span
                 className={cn(
-                  'center size-4 rounded-[4px] border transition-colors',
-                  rememberDevice ? 'border-success/40 bg-success text-white' : 'border-black/20 bg-transparent text-transparent'
+                  'center size-4 border transition-colors',
+                  rememberDevice
+                    ? 'border-success/40 bg-success text-white'
+                    : 'border-black/20 bg-transparent text-transparent'
                 )}
                 aria-hidden="true"
               >

@@ -7,7 +7,8 @@ function getSecret() {
   return resolveSecretWithFallback({
     primaryEnvName: 'SIGN_UP_PROOF_SECRET',
     fallbackEnvNames: ['EMAIL_VERIFICATION_SECRET'],
-    missingMessage: 'SIGN_UP_PROOF_SECRET is missing on the server and EMAIL_VERIFICATION_SECRET fallback is unavailable',
+    missingMessage:
+      'SIGN_UP_PROOF_SECRET is missing on the server and EMAIL_VERIFICATION_SECRET fallback is unavailable',
     warningGlobalKey: '__tvizzie_signup_proof_secret_fallback_warned__',
     warningMessage:
       '[Auth] SIGN_UP_PROOF_SECRET is missing. Falling back to EMAIL_VERIFICATION_SECRET. Configure SIGN_UP_PROOF_SECRET explicitly.',

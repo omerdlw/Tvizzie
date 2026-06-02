@@ -96,7 +96,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
       <motion.button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
         {...MODAL_ACTION_MOTION}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
@@ -113,7 +113,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
 
       <span className="text-[10px] text-black/20">/</span>
 
-      <span className="bg-primary rounded-[10px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </motion.div>
@@ -241,26 +241,26 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
         <motion.div
           className={cn(
             'relative flex flex-col',
-            'rounded-[20px]',
+            '',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
-            isPanelChrome && isTopModalPosition && 'rounded-t-none border-t-0',
-            isPanelChrome && isBottomModalPosition && 'rounded-b-none border-b-0',
+            isPanelChrome && isTopModalPosition && 'border-t-0',
+            isPanelChrome && isBottomModalPosition && 'border-b-0',
             isPanelChrome &&
               isVerticalEdgeModal &&
               isMobileViewport &&
               (isTopModalPosition
-                ? 'w-full rounded-b-[20px] rounded-t-none border-t-0 border-l-0 border-r-0'
-                : 'w-full rounded-t-[20px] rounded-b-none border-b-0 border-l-0 border-r-0'),
+                ? 'w-full border-t-0 border-r-0 border-l-0'
+                : 'w-full border-r-0 border-b-0 border-l-0'),
             isPanelChrome &&
               isSideModal && [
                 isMobileViewport
-                  ? (isLeftModal
-                      ? 'h-screen max-h-screen w-full self-stretch border-0 rounded-r-[20px] rounded-l-none'
-                      : 'h-screen max-h-screen w-full self-stretch border-0 rounded-l-[20px] rounded-r-none')
+                  ? isLeftModal
+                    ? 'h-screen max-h-screen w-full self-stretch border-0'
+                    : 'h-screen max-h-screen w-full self-stretch border-0'
                   : 'h-screen max-h-screen w-full',
-                !isMobileViewport && (isLeftModal ? 'rounded-l-none border-l-0' : 'rounded-r-none border-r-0'),
+                !isMobileViewport && (isLeftModal ? 'border-l-0' : 'border-r-0'),
               ]
           )}
           layout="position"

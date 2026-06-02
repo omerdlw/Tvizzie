@@ -169,7 +169,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-[10px] border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -179,7 +179,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
       <Button
         variant="destructive"
         disabled={disabled}
-        className="size-8 rounded-[10px]"
+        className="size-8"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -192,8 +192,8 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
 
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-[14px]'
-    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 rounded-[14px]';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] '
+    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 ';
 
   return (
     <div className={wrapperClass}>
@@ -235,7 +235,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[14px] border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 p-3 text-left transition-all hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5'
       )}
       aria-label="Show spoiler review"
@@ -249,7 +249,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info group-hover:bg-primary shrink-0 rounded-[8px] p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
+      <span className="text-info group-hover:bg-primary shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase transition-all group-hover:text-black">
         Show
       </span>
     </button>

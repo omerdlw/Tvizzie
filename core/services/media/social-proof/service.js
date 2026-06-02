@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  buildPollingSubscriptionKey,
-  createPollingSubscription,
-  requestApiJson,
-} from '@/core/services/shared/client';
+import { buildPollingSubscriptionKey, createPollingSubscription, requestApiJson } from '@/core/services/shared/client';
 import { createMediaSnapshot } from '@/core/services/shared/media';
 import { isTitleMediaType } from '@/core/utils/media';
 

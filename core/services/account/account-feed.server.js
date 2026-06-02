@@ -2,10 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/core/clients/supabase/admin';
 import { ACTIVITY_EVENT_TYPE_SET } from '@/core/services/activity/activity-events.constants';
-import {
-  canViewerAccessUserContent,
-  createPrivateProfileError,
-} from '@/core/services/account/account-profile.server';
+import { canViewerAccessUserContent, createPrivateProfileError } from '@/core/services/account/account-profile.server';
 import { ACTIVITY_SELECT, FOLLOW_STATUS_ACCEPTED } from './account-feed.constants';
 import { fetchDerivedUserActivityItems } from './account-feed.derived';
 import {

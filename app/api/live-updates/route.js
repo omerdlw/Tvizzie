@@ -1,7 +1,4 @@
-import {
-  isTransientSessionError,
-  requireAuthenticatedRequest,
-} from '@/core/auth/servers/session.js';
+import { isTransientSessionError, requireAuthenticatedRequest } from '@/core/auth/servers/session.js';
 import { createUserEventStream } from '@/core/services/realtime/user-events.server';
 
 import { buildInternalRequestMeta, setResponseRequestMeta } from '@/core/services/shared/server';

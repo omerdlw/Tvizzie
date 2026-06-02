@@ -124,20 +124,21 @@ export function buildAccountEditState({
   return {
     loading: loadingState,
     nav: {
-      actions: authIsAuthenticated && !isMediaUploading
-        ? [
-            {
-              key: 'back-to-account',
-              icon: 'solar:alt-arrow-left-bold',
-              tooltip: 'Back to Account',
-              order: -10,
-              onClick: (event) => {
-                event.stopPropagation();
-                window.location.assign('/account');
+      actions:
+        authIsAuthenticated && !isMediaUploading
+          ? [
+              {
+                key: 'back-to-account',
+                icon: 'solar:alt-arrow-left-bold',
+                tooltip: 'Back to Account',
+                order: -10,
+                onClick: (event) => {
+                  event.stopPropagation();
+                  window.location.assign('/account');
+                },
               },
-            },
-          ]
-        : [],
+            ]
+          : [],
       confirmation: deleteConfirmation,
       title: authIsAuthenticated ? (isMediaUploading ? 'Media uploading' : 'Edit Account') : 'Account',
       icon: isMediaUploading ? <Spinner size={22} /> : avatarPreview,
@@ -147,8 +148,8 @@ export function buildAccountEditState({
           ? isMediaUploading
             ? mediaUploadFileName || 'Uploading from device'
             : activeTab === 'general'
-            ? 'Update your public account details'
-            : 'Manage account security and providers'
+              ? 'Update your public account details'
+              : 'Manage account security and providers'
           : 'Sign in to see your account',
       registry: navRegistrySource
         ? {
@@ -211,7 +212,11 @@ export function buildAccountPageState({
     !hasNavActionOverride && (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction)
   );
   const shouldShowToolbarFollowAction = Boolean(
-    showToolbarFollowActionWithOverride && hasNavActionOverride && !isOwner && profile && typeof handleFollow === 'function'
+    showToolbarFollowActionWithOverride &&
+    hasNavActionOverride &&
+    !isOwner &&
+    profile &&
+    typeof handleFollow === 'function'
   );
   const shouldShowCurrentAccountAvatar = Boolean(authIsAuthenticated && authUser && profile && !isOwner);
   const shouldUseNavActionOverride = hasNavActionOverride;

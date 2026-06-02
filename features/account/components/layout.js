@@ -51,7 +51,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
   return (
     <div className={cn('bg-transparent', className)}>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center sm:px-8 sm:py-4">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] sm:justify-center sm:px-8 sm:py-4 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
             <NavViewItem
               key={item.key}
@@ -81,7 +81,7 @@ function NavViewItem({ item, index, isActive, href }) {
       <Link
         href={href}
         className={cn(
-          'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-[14px] border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
+          'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md transition sm:text-xs',
           isActive
             ? 'border-black bg-black text-white'
             : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black'

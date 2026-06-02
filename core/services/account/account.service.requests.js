@@ -97,13 +97,7 @@ export async function searchUserAccounts(searchTerm, options = {}) {
   return Array.isArray(payload?.items) ? payload.items : [];
 }
 
-export async function requestEnsureUserAccount({
-  avatarUrl,
-  displayName,
-  email,
-  userId,
-  username,
-}) {
+export async function requestEnsureUserAccount({ avatarUrl, displayName, email, userId, username }) {
   return requestApiJson('/api/account/profile', {
     method: 'POST',
     body: {

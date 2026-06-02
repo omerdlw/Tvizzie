@@ -181,7 +181,9 @@ export function rankResolvedPersonSearchItems(items = [], query = '', options = 
   const queryProfile = createSearchQueryProfile(query);
   const normalizedItems = dedupeSearchItems(withMediaType(items, 'person'));
   const qualityItems = normalizedItems.filter((person) => passesPersonSearchQualityGate(person, options.scope));
-  const candidates = normalizedItems.map((person) => buildPersonSearchEntry(person, queryProfile, options)).filter(Boolean);
+  const candidates = normalizedItems
+    .map((person) => buildPersonSearchEntry(person, queryProfile, options))
+    .filter(Boolean);
 
   if (!candidates.length) {
     if (normalizeSearchScope(options.scope) === 'preview') {

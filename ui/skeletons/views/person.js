@@ -40,7 +40,7 @@ function SocialDockSkeleton() {
 function SidebarSkeleton() {
   return (
     <div className={`flex flex-col ${SKELETON_TOKENS.gap.stack}`}>
-      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[20px]">
+      <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
         <SkeletonBlock className="h-full w-full" radius="hero" />
         <SocialDockSkeleton />
       </div>
@@ -151,8 +151,8 @@ function YearHeaderSkeleton() {
 
 function TimelineRowSkeleton() {
   return (
-    <div className="flex items-end gap-3 rounded-[14px] p-1">
-      <SkeletonPoster className="aspect-2/3 w-16 shrink-0 rounded-[10px] sm:w-20" radius="field" />
+    <div className="flex items-end gap-3 p-1">
+      <SkeletonPoster className="aspect-2/3 w-16 shrink-0 sm:w-20" radius="field" />
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TextLine width="w-2/5" />
         <TextLine width="w-4/5" soft={true} />

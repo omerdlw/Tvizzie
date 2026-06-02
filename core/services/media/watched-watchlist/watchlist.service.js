@@ -8,12 +8,7 @@ import {
   primePollingSubscription,
   refreshMediaCollectionAccountSummary,
 } from '@/core/services/shared/client';
-import {
-  assertTitleMedia,
-  createMediaRow,
-  ensureUserId,
-  normalizeMediaPayload,
-} from '@/core/services/shared/media';
+import { assertTitleMedia, createMediaRow, ensureUserId, normalizeMediaPayload } from '@/core/services/shared/media';
 import { ACTIVITY_EVENT_TYPES, fireActivityEvent } from '@/core/services/activity/activity-events.service';
 import { buildActivitySubjectRef, buildCanonicalActivityDedupeKey } from '@/core/services/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/core/services/activity/activity-events.constants';

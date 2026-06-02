@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import {
-  requireSessionRequest,
-  resolveOptionalSessionRequest,
-} from '@/core/auth/servers/session.js';
+import { requireSessionRequest, resolveOptionalSessionRequest } from '@/core/auth/servers/session.js';
 import { SUPABASE_URL } from '@/core/clients/supabase/constants';
 import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION } from '@/core/services/account/account.constants';
 import { publishUserEvent } from '@/core/services/realtime/user-events.server';

@@ -2,11 +2,7 @@ import 'server-only';
 
 import { redirect } from 'next/navigation';
 
-import {
-  EMPTY_ARRAY,
-  OVERVIEW_ACTIVITY_LIMIT,
-  OVERVIEW_REVIEW_LIMIT,
-} from './account-route-data.constants';
+import { EMPTY_ARRAY, OVERVIEW_ACTIVITY_LIMIT, OVERVIEW_REVIEW_LIMIT } from './account-route-data.constants';
 import {
   loadAccountActivityRouteFeed,
   loadAccountCollection,

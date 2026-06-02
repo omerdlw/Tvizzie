@@ -103,7 +103,7 @@ export function ProfileMediaActions({
           key={`${action.label || action.icon || 'media-action'}-${index}`}
           type="button"
           aria-label={action.label}
-          className="center size-8 rounded-[10px] border border-black/15 bg-white text-black transition disabled:cursor-default"
+          className="center size-8 border border-black/15 bg-white text-black transition disabled:cursor-default"
           disabled={Boolean(action.disabled)}
           onClick={(event) => {
             event.preventDefault();
@@ -119,7 +119,7 @@ export function ProfileMediaActions({
         <button
           type="button"
           aria-label="Add to list"
-          className="center size-8 rounded-[10px] border border-black/15 bg-white text-black transition disabled:cursor-default"
+          className="center size-8 border border-black/15 bg-white text-black transition disabled:cursor-default"
           onClick={handleOpenListPicker}
         >
           <Icon icon="solar:list-check-minimalistic-bold" size={12} />
@@ -129,7 +129,7 @@ export function ProfileMediaActions({
       {typeof onRemoveItem === 'function' && (
         <Button
           variant="destructive-icon"
-          className="center text-error hover:border-error hover:bg-error size-8 rounded-[10px] border border-black/15 bg-white hover:text-white disabled:cursor-default"
+          className="center text-error hover:border-error hover:bg-error size-8 border border-black/15 bg-white hover:text-white disabled:cursor-default"
           aria-label={removeLabel}
           disabled={isRemoving}
           onClick={handleRemove}
@@ -169,10 +169,7 @@ export default function AccountMediaGridPage({
       ? requestedQueryPage
       : currentPage;
 
-  const cards = useMemo(
-    () => items.map(extractMediaDetails).filter(Boolean),
-    [items, posterPreferenceVersion]
-  );
+  const cards = useMemo(() => items.map(extractMediaDetails).filter(Boolean), [items, posterPreferenceVersion]);
 
   const totalPages = cards.length ? Math.ceil(cards.length / ITEMS_PER_PAGE) : 0;
   const activePage = totalPages ? Math.min(resolvedCurrentPage, totalPages) : 1;

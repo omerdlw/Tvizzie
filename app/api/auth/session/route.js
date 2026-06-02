@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { AUTH_ROUTE_NOTICE } from '@/core/auth/route-notice';
-import { clearAuthRouteNoticeCookie,
-  setAuthRouteNoticeCookie,
-} from '@/core/auth/servers/notice.js';
+import { clearAuthRouteNoticeCookie, setAuthRouteNoticeCookie } from '@/core/auth/servers/notice.js';
 import {
   clearAuthCookies,
   isTransientSessionError,

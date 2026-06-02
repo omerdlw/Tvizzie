@@ -11,7 +11,7 @@ function CloseButton({ onClick }) {
     <motion.button
       type="button"
       onClick={onClick}
-      className="bg-primary inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-black/10 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-7 shrink-0 cursor-pointer items-center justify-center border border-black/10 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
       {...MODAL_ACTION_MOTION}
     >
       <Icon icon="material-symbols:close-rounded" size={18} />

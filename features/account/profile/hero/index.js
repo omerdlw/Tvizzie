@@ -17,15 +17,12 @@ const ACCOUNT_HERO_IMAGE_CLASS =
   'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
 const ACCOUNT_HERO_BANNER_WRAPPER_CLASS =
   'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
-const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS =
-  'account-hero-ambient-overlay absolute inset-0';
+const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS = 'account-hero-ambient-overlay absolute inset-0';
 const ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const ACCOUNT_HERO_LEFT_FADE_CLASS =
-  'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
+const ACCOUNT_HERO_LEFT_FADE_CLASS = 'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
 const ACCOUNT_HERO_RIGHT_FADE_CLASS =
   'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const ACCOUNT_HERO_TOP_FADE_CLASS =
-  'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
+const ACCOUNT_HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
 const ACCOUNT_HERO_TINT_CLASS = 'account-hero-tint-overlay absolute inset-0';
 const ACCOUNT_HERO_CENTER_GLOW_CLASS =
   'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
@@ -285,7 +282,7 @@ export default function AccountHero({
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <AdaptiveImage
                 mode="img"
-                className="h-full w-full rounded-[20px] object-cover"
+                className="h-full w-full object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
                 decoding="async"

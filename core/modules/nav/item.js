@@ -73,9 +73,34 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScale, cardWidth, isMobile, isInteractive, containerHeight) {
-  const { offsetY: baseExpandedOffsetY } = NAV_CARD_LAYOUT.expanded;
-  const expandedOffsetY = isMobile ? -68 : baseExpandedOffsetY;
+function getExpandedItemY(position, isMobile, expandedTopCardHeight) {
+  const baseExpandedOffsetY = isMobile ? -68 : NAV_CARD_LAYOUT.expanded.offsetY;
+
+  if (position === 0) {
+    return 0;
+  }
+
+  const topCardExtraHeight = Math.max(
+    (expandedTopCardHeight || NAV_CARD_LAYOUT.baseHeight) - NAV_CARD_LAYOUT.baseHeight,
+    0
+  );
+  const firstExpandedOffsetY = baseExpandedOffsetY - topCardExtraHeight;
+
+  return firstExpandedOffsetY + (position - 1) * baseExpandedOffsetY;
+}
+
+function getNavItemCardProps(
+  expanded,
+  position,
+  showBorder,
+  cardStyle,
+  cardScale,
+  cardWidth,
+  isMobile,
+  isInteractive,
+  containerHeight,
+  expandedTopCardHeight
+) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
@@ -87,7 +112,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
 
   return {
     className: cn(
-      'absolute inset-x-0 bottom-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] rounded-[20px] p-1.5 sm:p-2 backdrop-blur-lg',
+      'absolute inset-x-0 bottom-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] p-1.5 sm:p-2 backdrop-blur-lg',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -98,7 +123,7 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     },
     animate: {
       width: cardWidth,
-      y: expanded ? position * expandedOffsetY : position * collapsedOffsetY,
+      y: expanded ? getExpandedItemY(position, isMobile, expandedTopCardHeight) : position * collapsedOffsetY,
       scale: expanded ? cardScale || 1 : collapsedScale ** position,
       zIndex: 10 - position,
       opacity: 1,
@@ -132,7 +157,6 @@ function getNavItemCardProps(expanded, position, showBorder, cardStyle, cardScal
     },
   };
 }
-
 
 function isImageIconSource(icon) {
   return (
@@ -182,7 +206,7 @@ function VideoOverlayIcon({ icon }) {
   return (
     <motion.div
       className={cn(
-        'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full',
+        'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
         isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
       )}
       style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
@@ -199,7 +223,7 @@ function Badge({ badge }) {
       {badge.visible && (
         <motion.div
           className={cn(
-            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring'
+            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}
           {...NAV_BADGE_MOTION}
         >
@@ -372,6 +396,7 @@ const Item = memo(
       stackWidth,
       isMobile,
       containerHeight,
+      expandedTopCardHeight,
     },
 
     ref
@@ -401,8 +426,6 @@ const Item = memo(
       return getActionNode(link, ActionComponent);
     }, [link, ActionComponent]);
     const renderedActionNode = compact ? null : actionNode;
-
-
 
     useActionHeight(
       onActionHeightChange,
@@ -522,7 +545,8 @@ const Item = memo(
           cardWidth,
           isMobile,
           link.type !== 'COUNTDOWN' && !link.isOverlay,
-          containerHeight
+          containerHeight,
+          expandedTopCardHeight
         )}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}

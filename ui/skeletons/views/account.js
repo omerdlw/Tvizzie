@@ -5,17 +5,14 @@ import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPost
 const HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
 const HERO_BANNER_WRAPPER_CLASS =
   'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
-const HERO_AMBIENT_OVERLAY_CLASS =
-  'account-skeleton-hero-ambient-overlay absolute inset-0';
+const HERO_AMBIENT_OVERLAY_CLASS = 'account-skeleton-hero-ambient-overlay absolute inset-0';
 const HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const HERO_LEFT_FADE_CLASS =
-  'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const HERO_RIGHT_FADE_CLASS =
-  'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const HERO_TOP_FADE_CLASS =
-  'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
+const HERO_LEFT_FADE_CLASS = 'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
+const HERO_RIGHT_FADE_CLASS = 'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
+const HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
 const HERO_TINT_CLASS = 'account-skeleton-hero-tint-overlay absolute inset-0';
-const HERO_CENTER_GLOW_CLASS = 'absolute top-[16%] left-1/2 h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
+const HERO_CENTER_GLOW_CLASS =
+  'absolute top-[16%] left-1/2 h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
 const ACCOUNT_SKELETON_ROUTE_VARIANTS = Object.freeze([
   { pattern: /\/lists\/[^/]+(?:\/)?$/, variant: 'list-detail' },
   { pattern: /\/activity(?:\/)?$/, variant: 'activity' },
@@ -93,7 +90,7 @@ function AccountHeroSkeleton() {
     <section className={`relative w-full overflow-hidden bg-white ${HERO_HEIGHT_CLASS}`}>
       <div className="absolute inset-0">
         <div className={`${HERO_BANNER_WRAPPER_CLASS} opacity-70`}>
-          <SkeletonBlock className="h-full w-full rounded-none bg-black/[0.045]" soft={true} />
+          <SkeletonBlock className="h-full w-full bg-black/[0.045]" soft={true} />
         </div>
       </div>
       <div className={HERO_TINT_CLASS} />
@@ -113,7 +110,7 @@ function AccountHeroSkeleton() {
             </div>
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <div className="flex flex-col gap-4">
-                <SkeletonBlock className="h-[2.9rem] w-[68%] max-w-[34rem] rounded-[10px] sm:h-[3.6rem] lg:h-[4.8rem]" />
+                <SkeletonBlock className="h-[2.9rem] w-[68%] max-w-[34rem] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <HeroCountItem key={index} mobile={true} />
@@ -230,7 +227,7 @@ function FilterBarSkeleton({ count = 2 }) {
   return (
     <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
       {Array.from({ length: count }).map((_, index) => (
-        <Pill key={index} className="h-9 min-w-[10rem] flex-1 rounded-[14px]" soft={true} />
+        <Pill key={index} className="h-9 min-w-[10rem] flex-1" soft={true} />
       ))}
     </div>
   );
@@ -240,7 +237,7 @@ function PaginationSkeleton() {
   return (
     <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
       <div className="flex justify-start">
-        <Pill className="h-10 min-w-24 rounded-[14px] sm:min-w-28" soft={true} />
+        <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
       <div className="flex items-center justify-center gap-3 sm:gap-4">
         <Line className="h-3.5 w-3" />
@@ -248,7 +245,7 @@ function PaginationSkeleton() {
         <Line className="h-3.5 w-3" soft={true} />
       </div>
       <div className="flex justify-end">
-        <Pill className="h-10 min-w-24 rounded-[14px] sm:min-w-28" soft={true} />
+        <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
     </div>
   );
@@ -264,8 +261,8 @@ function ListPreviewStackSkeleton() {
   ];
 
   return (
-    <div className="relative h-[186px] rounded-[14px] bg-white">
-      <Bar className="absolute inset-0 rounded-[14px]" soft={true} />
+    <div className="relative h-[186px] bg-white">
+      <Bar className="absolute inset-0" soft={true} />
 
       {posterTransforms.map((transformClass, index) => (
         <div key={transformClass} className={`absolute top-0 left-1/2 h-[164px] w-[104px] ${transformClass}`}>
@@ -281,7 +278,7 @@ function ListCardSkeleton() {
     <div className="relative w-full">
       <ListPreviewStackSkeleton />
 
-      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-[14px] bg-white/80 backdrop-blur-md">
+      <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden bg-white/80 backdrop-blur-md">
         <div className="flex items-start justify-between gap-4 px-4 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-4 w-[74%]" />
@@ -330,7 +327,7 @@ function ReviewCardSkeleton() {
     <article className="py-4 sm:py-5">
       <div className="relative transition-all duration-[300ms]">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-[14px] sm:h-28 sm:w-[72px]">
+          <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]">
             <Poster radius="card" />
           </div>
 
@@ -532,14 +529,14 @@ function ListDetailSkeleton() {
             <SkeletonCircle className="size-8" soft={true} />
             <Line className="h-4 w-28" />
           </div>
-          <Pill className="h-9 w-28 rounded-[12px]" soft={true} />
+          <Pill className="h-9 w-28" soft={true} />
         </div>
         <div className="flex w-full flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Line className="h-3.5 w-36" />
             <Line className="h-3 w-64 max-w-full" soft={true} />
           </div>
-          <Pill className="h-10 w-full rounded-[12px] sm:w-36" soft={true} />
+          <Pill className="h-10 w-full sm:w-36" soft={true} />
         </div>
         <ReviewCardSkeleton />
       </SectionShell>
@@ -589,7 +586,7 @@ function ListBuilderSkeleton() {
   return (
     <div className="py-8">
       <SectionShell>
-        <div className="skeleton-block-soft overflow-hidden rounded-[14px]">
+        <div className="skeleton-block-soft overflow-hidden">
           <div className="grid min-h-[72vh] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
             <section className="flex min-h-0 flex-col">
               <div className="p-4 sm:p-5">
@@ -620,9 +617,9 @@ function ListBuilderSkeleton() {
 
               <div className="mt-4 flex flex-col gap-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="skeleton-block-soft flex items-center gap-3 rounded-[14px] p-2.5">
+                  <div key={index} className="skeleton-block-soft flex items-center gap-3 p-2.5">
                     <Line className="h-3 w-4" soft={true} />
-                    <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0 rounded-[10px]" radius="field" />
+                    <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0" radius="field" />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <Line className="h-3 w-4/5" />
                       <Line className="h-2.5 w-1/2" soft={true} />

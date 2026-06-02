@@ -19,9 +19,7 @@ export default function ForgotPasswordAction({ onClick, disabled, isPreparingRes
         {...NAV_BUTTON_INTERACTION_MOTION}
       >
         <Icon icon="solar:key-bold" size={NAV_ACTION_STYLES.icon} />
-        <span className="truncate">
-          {isPreparingReset ? 'Checking' : 'Forgot password?'}
-        </span>
+        <span className="truncate">{isPreparingReset ? 'Checking' : 'Forgot password?'}</span>
       </motion.button>
     </div>
   );
