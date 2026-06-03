@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 
-import NotFoundAction from '../actions/not-found-action';
+import NotFoundAction from '@/features/navigation/actions/not-found-action';
 import {
   API_ERROR_BATCH_DELAY,
   AUTH_STATUS_CLEAR_DURATION,

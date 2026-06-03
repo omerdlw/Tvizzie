@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { useNavigationContext } from '../context';
+import { useNavigationState } from '../context';
 import { isPathPrefix } from './navigation-path-model';
 
 const MAX_VISIBLE_STACKED_CARDS = 3;
@@ -115,10 +115,10 @@ function getCollapsedVisibleCount({
 
 export function useNavigationLayout({ isHovered, isCompact = false, navigationItems, activeItem } = {}) {
   const pathname = usePathname();
-  const { expanded } = useNavigationContext();
+  const { expanded } = useNavigationState();
 
   const { displayItems, displayActiveIndex } = useMemo(() => {
-    const shouldShowOverlayStack = activeItem?.isConfirmation || activeItem?.isSurface;
+    const shouldShowOverlayStack = activeItem?.isSurface;
     const shouldShowSingleStatusCard = Boolean(activeItem?.isStatus);
 
     const activeIndex = findActiveIndex(navigationItems, activeItem, pathname);

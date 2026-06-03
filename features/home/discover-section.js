@@ -12,14 +12,16 @@ const DESKTOP_DISCOVER_BATCH = 24;
 const MOBILE_DISCOVER_MEDIA_QUERY = '(max-width: 639px)';
 function getUniqueItems(items = [], limit = items.length) {
   const seen = new Set();
-  return items.filter(item => {
-    const id = item?.id;
-    if (!id || seen.has(id)) {
-      return false;
-    }
-    seen.add(id);
-    return true;
-  }).slice(0, limit);
+  return items
+    .filter((item) => {
+      const id = item?.id;
+      if (!id || seen.has(id)) {
+        return false;
+      }
+      seen.add(id);
+      return true;
+    })
+    .slice(0, limit);
 }
 function getDiscoverBatchSize(isMobileGrid) {
   return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
@@ -28,7 +30,7 @@ export function DiscoverSection({
   initialDiscoverItems = [],
   initialGenres = [],
   initialDiscoverPage = 1,
-  initialHasMore = false
+  initialHasMore = false,
 }) {
   const requestIdRef = useRef(0);
   const scrollContainerRef = useRef(null);
@@ -36,10 +38,13 @@ export function DiscoverSection({
   const startXRef = useRef(0);
   const scrollLeftRef = useRef(0);
   const draggedDistanceRef = useRef(0);
-  const genreItems = [{
-    id: ALL_GENRE_ID,
-    name: 'All'
-  }, ...initialGenres];
+  const genreItems = [
+    {
+      id: ALL_GENRE_ID,
+      name: 'All',
+    },
+    ...initialGenres,
+  ];
   const [isMobileGrid, setIsMobileGrid] = useState(false);
   const [activeGenreId, setActiveGenreId] = useState(ALL_GENRE_ID);
   const [discoverItems, setDiscoverItems] = useState(initialDiscoverItems);
@@ -56,7 +61,7 @@ export function DiscoverSection({
       return undefined;
     }
     const mediaQuery = window.matchMedia(MOBILE_DISCOVER_MEDIA_QUERY);
-    const handleChange = event => setIsMobileGrid(event.matches);
+    const handleChange = (event) => setIsMobileGrid(event.matches);
     setIsMobileGrid(mediaQuery.matches);
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', handleChange);
@@ -65,12 +70,7 @@ export function DiscoverSection({
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
   }, []);
-  async function loadDiscover({
-    genreId,
-    page,
-    append = false,
-    minimumCount = 0
-  }) {
+  async function loadDiscover({ genreId, page, append = false, minimumCount = 0 }) {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     const minimumTarget = Math.max(0, Number(minimumCount) || 0);
@@ -81,7 +81,7 @@ export function DiscoverSection({
     while (nextPageToFetch > 0) {
       const response = await TmdbService.discoverContent({
         genreId,
-        page: nextPageToFetch
+        page: nextPageToFetch,
       });
       if (requestIdRef.current !== requestId) {
         return;
@@ -114,7 +114,7 @@ export function DiscoverSection({
       await loadDiscover({
         genreId: nextGenreId,
         page: 1,
-        minimumCount: batchSize
+        minimumCount: batchSize,
       });
     } catch {
       setGridError('Could not refresh this genre right now.');
@@ -122,7 +122,7 @@ export function DiscoverSection({
       setIsFiltering(false);
     }
   }
-  const handleMouseDown = e => {
+  const handleMouseDown = (e) => {
     isDraggingRef.current = true;
     draggedDistanceRef.current = 0;
     startXRef.current = e.pageX - scrollContainerRef.current.offsetLeft;
@@ -134,7 +134,7 @@ export function DiscoverSection({
   const handleMouseUp = () => {
     isDraggingRef.current = false;
   };
-  const handleMouseMove = e => {
+  const handleMouseMove = (e) => {
     if (!isDraggingRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
@@ -142,7 +142,7 @@ export function DiscoverSection({
     draggedDistanceRef.current = Math.abs(walk);
     scrollContainerRef.current.scrollLeft = scrollLeftRef.current - walk;
   };
-  const handleChipClick = genreId => {
+  const handleChipClick = (genreId) => {
     if (draggedDistanceRef.current > 10) return;
     handleGenreChange(genreId);
   };
@@ -163,11 +163,11 @@ export function DiscoverSection({
         genreId: activeGenreId,
         page: discoverPage + 1,
         append: true,
-        minimumCount: nextVisibleCount
+        minimumCount: nextVisibleCount,
       });
     } catch {
       setGridError('Could not load more movies right now.');
-      setSectionsLoaded(currentValue => Math.max(1, currentValue - 1));
+      setSectionsLoaded((currentValue) => Math.max(1, currentValue - 1));
     } finally {
       setIsLoadingMore(false);
     }
@@ -184,7 +184,7 @@ export function DiscoverSection({
           genreId: activeGenreId,
           page: discoverPage + 1,
           append: discoverItems.length > 0,
-          minimumCount: nextVisibleCount
+          minimumCount: nextVisibleCount,
         });
       } catch {
         if (!isCancelled) {
@@ -196,37 +196,81 @@ export function DiscoverSection({
     return () => {
       isCancelled = true;
     };
-  }, [activeGenreId, batchSize, discoverItems.length, discoverPage, hasMore, isFiltering, isLoadingMore, sectionsLoaded]);
-  return <HomeSectionReveal delay={0.08} distance={18}>
+  }, [
+    activeGenreId,
+    batchSize,
+    discoverItems.length,
+    discoverPage,
+    hasMore,
+    isFiltering,
+    isLoadingMore,
+    sectionsLoaded,
+  ]);
+  return (
+    <HomeSectionReveal delay={0.08} distance={18}>
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <div ref={scrollContainerRef} className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing" onMouseDown={handleMouseDown} onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>
+        <div
+          ref={scrollContainerRef}
+          className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing"
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+        >
           <div className="flex w-max min-w-full items-center gap-2">
-            {genreItems.map(genre => <GenreChip key={genre.id} genre={genre} isActive={String(genre.id) === String(activeGenreId)} onClick={() => handleChipClick(String(genre.id))} />)}
+            {genreItems.map((genre) => (
+              <GenreChip
+                key={genre.id}
+                genre={genre}
+                isActive={String(genre.id) === String(activeGenreId)}
+                onClick={() => handleChipClick(String(genre.id))}
+              />
+            ))}
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
-          {gridItems.map((item, index) => <HomeSectionReveal key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
+          {gridItems.map((item, index) => (
+            <HomeSectionReveal key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
               <MediaPosterCard item={item} className="w-full" />
-            </HomeSectionReveal>)}
+            </HomeSectionReveal>
+          ))}
 
-          {isFiltering ? Array.from({
-          length: batchSize
-        }).map((_, index) => <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />) : null}
+          {isFiltering
+            ? Array.from({
+                length: batchSize,
+              }).map((_, index) => <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />)
+            : null}
         </div>
 
-        {gridError ? <div className="border border-black/10 bg-white/70 p-3 text-sm text-black/50">{gridError}</div> : null}
+        {gridError ? (
+          <div className="border border-black/10 bg-white/70 p-3 text-sm text-black/50">{gridError}</div>
+        ) : null}
 
-        {gridItems.length === 0 && !isFiltering ? <div className="border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+        {gridItems.length === 0 && !isFiltering ? (
+          <div className="border border-black/10 bg-white/70 p-4 text-sm text-black/50">
             No movies found for this genre.
-          </div> : null}
+          </div>
+        ) : null}
 
         <div className="flex justify-center pt-1">
-          {hasMore ? <button type="button" onClick={handleLoadMore} disabled={isLoadingMore || isFiltering} className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60">
-              <Icon icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'} size={14} className={isLoadingMore ? "" : ''} />
+          {hasMore ? (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore || isFiltering}
+              className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Icon
+                icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
+                size={14}
+                className={isLoadingMore ? '' : ''}
+              />
               {isLoadingMore ? 'Loading' : 'Load more'}
-            </button> : null}
+            </button>
+          ) : null}
         </div>
       </section>
-    </HomeSectionReveal>;
+    </HomeSectionReveal>
+  );
 }

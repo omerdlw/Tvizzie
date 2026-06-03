@@ -49,7 +49,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center bg-black/5 hover:bg-primary border-black/5 absolute top-0 right-0 z-10 cursor-pointer border p-1 transition-colors"
+          className="center hover:bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-black/5 bg-black/5 p-1 transition-colors"
           aria-label={closeLabel}
           {...NAV_BUTTON_INTERACTION_MOTION}
         >
@@ -60,18 +60,21 @@ export function NavSurfaceHeader({
   );
 }
 
-export const NavSurfaceShell = forwardRef(function NavSurfaceShell({
-  icon = null,
-  title = '',
-  description = '',
-  trailing = null,
-  onClose = null,
-  closeLabel = 'Close surface',
-  descriptionMaxLines = 2,
-  className = '',
-  contentClassName = '',
-  children,
-}, ref) {
+export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
+  {
+    icon = null,
+    title = '',
+    description = '',
+    trailing = null,
+    onClose = null,
+    closeLabel = 'Close surface',
+    descriptionMaxLines = 2,
+    className = '',
+    contentClassName = '',
+    children,
+  },
+  ref
+) {
   const [headerState, setHeaderState] = useState({
     icon,
     title,
@@ -90,11 +93,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell({
 
   return (
     <SurfaceHeaderContext.Provider value={setHeaderState}>
-      <motion.section
-        ref={ref}
-        className={cn('relative flex flex-col gap-3', className)}
-        {...NAV_SURFACE_MOTION}
-      >
+      <motion.section ref={ref} className={cn('relative flex flex-col gap-3', className)} {...NAV_SURFACE_MOTION}>
         <NavSurfaceHeader
           icon={headerState.icon}
           title={headerState.title}

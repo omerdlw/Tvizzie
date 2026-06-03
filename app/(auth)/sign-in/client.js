@@ -15,7 +15,7 @@ import {
   validatePassword,
 } from '@/features/auth/auth-flow';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
-import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
+import AuthVerificationSurface from '@/features/navigation/surfaces/auth-verification-surface';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 import { useAuth } from '@/core/modules/auth';
 import { useNavigationActions } from '@/core/modules/nav/context';

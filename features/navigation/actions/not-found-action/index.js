@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 import Icon from '@/ui/icon';
 
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 import { getNavActionItemMotion, NAV_BUTTON_INTERACTION_MOTION } from '@/core/modules/motion';
 
 export default function NotFoundAction({ homeLabel = 'Return Home', backLabel = 'Back', className = '' }) {

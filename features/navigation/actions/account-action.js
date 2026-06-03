@@ -7,9 +7,11 @@ import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-fl
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/core/constants';
 import Icon from '@/ui/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 import { useNavigationActions } from '@/core/modules/nav/context';
 import { INFO_ACTION_TONE_CLASS, SUCCESS_ACTION_TONE_CLASS, WARNING_ACTION_TONE_CLASS } from '@/core/constants/index';
+import { motion } from 'framer-motion';
+import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 
 const PROFILE_FOLLOW_ACTIONS = Object.freeze({
   follow: {
@@ -136,28 +138,32 @@ export default function AccountAction(props) {
             const isActive = activeTab === tab.key;
 
             return (
-              <button
+              <motion.button
                 key={tab.key}
                 type="button"
                 onClick={() => onTabChange?.(tab.key)}
                 aria-pressed={isActive}
+                whileTap={{ scale: 0.98 }}
+                transition={NAV_ACTION_SPRING}
                 className={actionClass({
                   tone: isActive ? 'active' : 'muted',
                   className: 'justify-center',
                 })}
               >
                 {tab.label}
-              </button>
+              </motion.button>
             );
           })}
         </div>
 
         {canShowFollowAction ? (
           <div className="flex w-full gap-2">
-            <button
+            <motion.button
               type="button"
               onClick={onFollow}
               disabled={isFollowLoading}
+              whileTap={{ scale: 0.98 }}
+              transition={NAV_ACTION_SPRING}
               className={actionClass({
                 tone: followAction.tone,
                 className: '',
@@ -171,7 +177,7 @@ export default function AccountAction(props) {
                   {followAction.label}
                 </>
               )}
-            </button>
+            </motion.button>
           </div>
         ) : null}
       </div>
@@ -192,11 +198,13 @@ export default function AccountAction(props) {
               const isActive = activeEditTab === tab.key;
 
               return (
-                <button
+                <motion.button
                   key={tab.key}
                   type="button"
                   onClick={() => onEditTabChange?.(tab.key)}
                   aria-pressed={isActive}
+                  whileTap={{ scale: 0.98 }}
+                  transition={NAV_ACTION_SPRING}
                   className={actionClass({
                     tone: isActive ? 'active' : 'muted',
                     className: 'justify-center',
@@ -204,7 +212,7 @@ export default function AccountAction(props) {
                 >
                   <Icon icon={tab.icon} size={NAV_ACTION_STYLES.icon} />
                   {tab.label}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -213,10 +221,12 @@ export default function AccountAction(props) {
         {shouldShowBottomRow ? (
           <div className="flex w-full gap-2">
             {canShowUploadAction ? (
-              <button
+              <motion.button
                 type="button"
                 onClick={onOpenMediaUpload}
                 disabled={isUploadDisabled}
+                whileTap={{ scale: 0.98 }}
+                transition={NAV_ACTION_SPRING}
                 className={actionClass({
                   tone: 'info',
                   className: showSaveAction ? 'flex-1' : '',
@@ -224,14 +234,16 @@ export default function AccountAction(props) {
               >
                 <Icon icon="solar:upload-bold" size={NAV_ACTION_STYLES.icon} />
                 {uploadLabel}
-              </button>
+              </motion.button>
             ) : null}
 
             {canShowCancelAction ? (
-              <button
+              <motion.button
                 type="button"
                 onClick={onCancel}
                 disabled={isCancelDisabled}
+                whileTap={{ scale: 0.98 }}
+                transition={NAV_ACTION_SPRING}
                 className={actionClass({
                   tone: 'muted',
                   className: 'flex-1',
@@ -239,14 +251,16 @@ export default function AccountAction(props) {
               >
                 <Icon icon="material-symbols:close-rounded" size={NAV_ACTION_STYLES.icon} />
                 {cancelLabel}
-              </button>
+              </motion.button>
             ) : null}
 
             {showSaveAction ? (
-              <button
+              <motion.button
                 type="button"
                 onClick={onSave}
                 disabled={isSaveLoading || isSaveDisabled}
+                whileTap={{ scale: 0.98 }}
+                transition={NAV_ACTION_SPRING}
                 className={actionClass({
                   tone: isSaveDisabled ? 'muted' : 'success',
                   className: canShowUploadAction || canShowCancelAction ? 'flex-1' : '',
@@ -260,7 +274,7 @@ export default function AccountAction(props) {
                     {saveLabel}
                   </>
                 )}
-              </button>
+              </motion.button>
             ) : null}
           </div>
         ) : null}
@@ -271,10 +285,12 @@ export default function AccountAction(props) {
   if (mode === 'save') {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button
+        <motion.button
           type="button"
           onClick={onSave}
           disabled={isSaveLoading || isSaveDisabled}
+          whileTap={{ scale: 0.98 }}
+          transition={NAV_ACTION_SPRING}
           className={actionClass({ tone: !isSaveDisabled && 'success', className: '' })}
         >
           {isSaveLoading ? (
@@ -285,7 +301,7 @@ export default function AccountAction(props) {
               {saveLabel}
             </>
           )}
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -293,10 +309,16 @@ export default function AccountAction(props) {
   if (mode === 'single-action') {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button type="button" onClick={onAction} className={actionClass({ tone: actionTone })}>
+        <motion.button
+          type="button"
+          onClick={onAction}
+          whileTap={{ scale: 0.98 }}
+          transition={NAV_ACTION_SPRING}
+          className={actionClass({ tone: actionTone })}
+        >
           {actionIcon ? <Icon icon={actionIcon} size={NAV_ACTION_STYLES.icon} /> : null}
           {actionLabel}
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -304,9 +326,15 @@ export default function AccountAction(props) {
   if (isNotFound) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button type="button" onClick={() => (window.location.href = '/')} className={actionClass()}>
+        <motion.button
+          type="button"
+          onClick={() => (window.location.href = '/')}
+          whileTap={{ scale: 0.98 }}
+          transition={NAV_ACTION_SPRING}
+          className={actionClass()}
+        >
           Back Home
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -320,10 +348,12 @@ export default function AccountAction(props) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
         {canShowFollowAction ? (
-          <button
+          <motion.button
             type="button"
             onClick={onFollow}
             disabled={isFollowLoading}
+            whileTap={{ scale: 0.98 }}
+            transition={NAV_ACTION_SPRING}
             className={actionClass({
               tone: followAction.tone,
               className: '',
@@ -337,14 +367,16 @@ export default function AccountAction(props) {
                 {followAction.label}
               </>
             )}
-          </button>
+          </motion.button>
         ) : null}
 
         {canShowLikeListAction ? (
-          <button
+          <motion.button
             type="button"
             onClick={onToggleLike}
             disabled={isLikeLoading}
+            whileTap={{ scale: 0.98 }}
+            transition={NAV_ACTION_SPRING}
             className={actionClass({
               tone: isLiked ? 'success' : 'muted',
               className: '',
@@ -358,7 +390,7 @@ export default function AccountAction(props) {
                 {isLiked ? 'Liked' : 'Like List'}
               </>
             )}
-          </button>
+          </motion.button>
         ) : null}
       </div>
     );
@@ -367,7 +399,7 @@ export default function AccountAction(props) {
   if (!isAuthenticated) {
     return (
       <div className={NAV_ACTION_STYLES.row}>
-        <button
+        <motion.button
           type="button"
           onClick={() => {
             if (guestMode === 'sign-in' && typeof onSignIn === 'function') {
@@ -377,11 +409,13 @@ export default function AccountAction(props) {
 
             window.location.assign(guestHref);
           }}
+          whileTap={{ scale: 0.98 }}
+          transition={NAV_ACTION_SPRING}
           className={actionClass()}
         >
           <Icon icon={guestIcon} size={NAV_ACTION_STYLES.icon} />
           {guestLabel}
-        </button>
+        </motion.button>
       </div>
     );
   }
@@ -398,22 +432,40 @@ export default function AccountAction(props) {
       <div className={NAV_ACTION_STYLES.row}>
         {showListActions ? (
           <>
-            <button type="button" onClick={() => onEditList?.()} className={actionClass()}>
+            <motion.button
+              type="button"
+              onClick={() => onEditList?.()}
+              whileTap={{ scale: 0.98 }}
+              transition={NAV_ACTION_SPRING}
+              className={actionClass()}
+            >
               <Icon icon="solar:pen-bold" size={NAV_ACTION_STYLES.icon} />
               Edit List
-            </button>
-            <button type="button" onClick={() => onDeleteList?.()} className={actionClass({ tone: 'danger' })}>
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => onDeleteList?.()}
+              whileTap={{ scale: 0.98 }}
+              transition={NAV_ACTION_SPRING}
+              className={actionClass({ tone: 'danger' })}
+            >
               <Icon icon="solar:trash-bin-trash-bold" size={NAV_ACTION_STYLES.icon} />
               Delete List
-            </button>
+            </motion.button>
           </>
         ) : (
           <>
             {shouldShowInboxAction && (
-              <button type="button" onClick={onOpenInbox} className={actionClass({ tone: 'info' })}>
+              <motion.button
+                type="button"
+                onClick={onOpenInbox}
+                whileTap={{ scale: 0.98 }}
+                transition={NAV_ACTION_SPRING}
+                className={actionClass({ tone: 'info' })}
+              >
                 <Icon icon="solar:inbox-bold" size={NAV_ACTION_STYLES.icon} />
                 Inbox {inboxCount}
-              </button>
+              </motion.button>
             )}
           </>
         )}

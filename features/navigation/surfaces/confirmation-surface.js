@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
-import { useNavigationContext } from '@/core/modules/nav/context';
 import {
   getNavSubmittingMotion,
   NAV_ACTION_SPRING,
@@ -12,7 +11,7 @@ import {
   NAV_BUTTON_TAP_MOTION,
   NAV_CONTENT_TRANSITION,
 } from '@/core/modules/motion';
-import { getNavConfirmationKey } from '@/core/modules/nav/utils';
+import { NAV_SURFACE_RENDER_MODE } from '@/core/modules/nav/surface-model';
 
 const BUTTON_TONES = Object.freeze({
   danger: 'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error',
@@ -89,7 +88,6 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
     }
 
     if (!isPromiseLike(result)) {
-      dismissCurrentConfirmation();
       confirmLockRef.current = false;
       return;
     }
@@ -141,14 +139,33 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
   );
 }
 
-export default function ConfirmationSurface({ item }) {
-  const { dismissConfirmation } = useNavigationContext();
+export function createConfirmationSurfaceEntry(confirmation, fallbackItem = null) {
+  if (!confirmation) {
+    return null;
+  }
 
-  const confirmation = item?.confirmation || {};
-  const confirmationKey = getNavConfirmationKey(item);
+  return {
+    renderMode: NAV_SURFACE_RENDER_MODE.COMPONENT,
+    component: ConfirmationSurface,
+    content: null,
+    props: {
+      confirmation,
+    },
+    action: null,
+    showAction: false,
+    dismissible: false,
+    onClose: null,
+    icon: confirmation.icon ?? fallbackItem?.icon ?? null,
+    title: confirmation.title ?? fallbackItem?.title ?? fallbackItem?.name ?? null,
+    description: confirmation.description ?? fallbackItem?.description ?? null,
+    trailing: null,
+    closeLabel: confirmation.closeLabel ?? null,
+  };
+}
 
-  function dismissCurrentConfirmation() {
-    dismissConfirmation(confirmationKey);
+export default function ConfirmationSurface({ close = null, confirmation = {} }) {
+  function dismissCurrentConfirmation(result = null) {
+    close?.(result);
   }
 
   return (
@@ -156,18 +173,27 @@ export default function ConfirmationSurface({ item }) {
       confirmation={confirmation}
       onCancel={() => {
         confirmation.onCancel?.();
-        dismissCurrentConfirmation();
+        dismissCurrentConfirmation({
+          cancelled: true,
+          success: false,
+        });
       }}
       onConfirm={(event) => {
         const result = confirmation.onConfirm?.(event);
 
         if (!isPromiseLike(result)) {
-          dismissCurrentConfirmation();
+          dismissCurrentConfirmation({
+            success: true,
+            value: result,
+          });
           return result;
         }
 
         return Promise.resolve(result).then((value) => {
-          dismissCurrentConfirmation();
+          dismissCurrentConfirmation({
+            success: true,
+            value,
+          });
           return value;
         });
       }}

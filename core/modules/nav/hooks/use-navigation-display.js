@@ -3,10 +3,9 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
-import { useNavigationContext } from '../context';
-import MediaAction from '../actions/media-action';
-import ConfirmationSurface from '../surfaces/confirmation-surface';
-import { getNavConfirmationKey } from '../utils';
+import { useNavigationActions, useNavigationState } from '../context';
+import MediaAction from '@/features/navigation/actions/media-action';
+import { createInlineSurfaceEntry, resolveSurfaceAction } from '../surface-model';
 import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from './navigation-path-model';
 import { useNavigationCountdown } from './use-navigation-countdown';
 import { useNavigationItems } from './use-navigation-items';
@@ -148,63 +147,6 @@ function applyStatusOverlay(item, statusState) {
   };
 }
 
-function isSurfaceDescriptor(value) {
-  return value != null && typeof value === 'object' && !Array.isArray(value) && !React.isValidElement(value);
-}
-
-function resolveInlineSurface(item) {
-  const surface = item?.surface;
-
-  if (surface === undefined) {
-    return null;
-  }
-
-  if (!isSurfaceDescriptor(surface)) {
-    return {
-      content: surface,
-      showAction: undefined,
-    };
-  }
-
-  const component = typeof surface.component === 'function' ? surface.component : null;
-  const content = surface.content ?? surface.node ?? surface.element ?? null;
-
-  if (!component && content == null) {
-    return null;
-  }
-
-  return {
-    component,
-    content: component ? null : content,
-    props: surface.props && typeof surface.props === 'object' ? surface.props : {},
-    action: surface.action ?? null,
-    showAction: surface.showAction,
-    dismissible: surface.dismissible ?? true,
-    onClose: typeof surface.onClose === 'function' ? surface.onClose : null,
-    icon: surface.icon ?? null,
-    title: surface.title ?? null,
-    description: surface.description ?? null,
-    trailing: surface.trailing ?? null,
-    closeLabel: surface.closeLabel ?? null,
-  };
-}
-
-function resolveSurfaceAction(item, surfaceEntry) {
-  if (surfaceEntry?.action != null) {
-    return surfaceEntry.action;
-  }
-
-  if (surfaceEntry?.showAction === true) {
-    return item.action ?? null;
-  }
-
-  if (surfaceEntry?.showAction === false) {
-    return null;
-  }
-
-  return item.action ?? null;
-}
-
 function applySurface(item, surfaceEntry, closeSurface) {
   const surfaceComponent = surfaceEntry?.component ?? null;
   const surfaceContent = surfaceEntry?.content ?? null;
@@ -235,28 +177,6 @@ function applySurface(item, surfaceEntry, closeSurface) {
     surfaceTrailing: surfaceEntry.trailing ?? null,
     surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
   };
-}
-
-function applyConfirmationSurface(item) {
-  if (!item?.confirmation) {
-    return item;
-  }
-
-  return applySurface(
-    item,
-    {
-      component: ConfirmationSurface,
-      props: {
-        item,
-      },
-      showAction: false,
-      dismissible: false,
-      icon: item.confirmation.icon ?? item.icon,
-      title: item.confirmation.title ?? item.title ?? item.name,
-      description: item.confirmation.description ?? item.description,
-    },
-    null
-  );
 }
 
 function resolveActionNode(action, showMediaAction) {
@@ -311,8 +231,6 @@ function resolveActiveItem({
   countdownItem,
   isVideo,
   toggleBackgroundVideo,
-  dismissedConfirmationKey,
-  guardConfirmation,
   closeSurface,
 }) {
   const baseActiveItem = resolveBaseActiveItem({
@@ -346,21 +264,7 @@ function resolveActiveItem({
 
   const itemWithMediaAction = applyMediaAction(baseActiveItem, isVideo, toggleBackgroundVideo);
 
-  const itemWithConfirmation = guardConfirmation
-    ? {
-        ...itemWithMediaAction,
-        confirmation: guardConfirmation,
-      }
-    : itemWithMediaAction;
-
-  const confirmationKey = getNavConfirmationKey(itemWithConfirmation);
-  const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
-
-  if (itemWithConfirmation?.confirmation && !isConfirmationDismissed) {
-    return itemWithConfirmation;
-  }
-
-  const inlineSurface = resolveInlineSurface(itemWithMediaAction);
+  const inlineSurface = createInlineSurfaceEntry(itemWithMediaAction?.surface);
 
   if (inlineSurface) {
     return applySurface(itemWithMediaAction, inlineSurface);
@@ -375,7 +279,6 @@ function hasActiveItemChanged(currentItem, previousItem) {
     currentItem?.name !== previousItem?.name ||
     currentItem?.type !== previousItem?.type ||
     currentItem?.isOverlay !== previousItem?.isOverlay ||
-    currentItem?.isConfirmation !== previousItem?.isConfirmation ||
     currentItem?.isSurface !== previousItem?.isSurface ||
     currentItem?.title !== previousItem?.title ||
     currentItem?.surfaceComponent !== previousItem?.surfaceComponent ||
@@ -398,19 +301,8 @@ export function useNavigationDisplay() {
   const pathname = usePathname();
 
   const { rawItems } = useNavigationItems();
-  const {
-    expanded,
-    searchQuery,
-    dismissedConfirmationKey,
-    guardConfirmation,
-    clearDismissedConfirmation,
-    closeSurface,
-    activeSurfaceId,
-    activeSurfaceEntry,
-    isSurfaceOpen,
-    isCompact,
-    setCompactLock,
-  } = useNavigationContext();
+  const { closeSurface } = useNavigationActions();
+  const { expanded, searchQuery, activeSurfaceId, activeSurfaceEntry, isSurfaceOpen } = useNavigationState();
   const surfaceState = useMemo(
     () => ({
       activeSurfaceId,
@@ -447,8 +339,6 @@ export function useNavigationDisplay() {
       countdownItem,
       isVideo,
       toggleBackgroundVideo,
-      dismissedConfirmationKey,
-      guardConfirmation,
       closeSurface,
     });
   }, [
@@ -461,60 +351,10 @@ export function useNavigationDisplay() {
     countdownItem,
     isVideo,
     toggleBackgroundVideo,
-    dismissedConfirmationKey,
-    guardConfirmation,
     closeSurface,
   ]);
 
-  const rawConfirmationKey = getNavConfirmationKey(rawActiveItem);
-  const [confirmedActiveKey, setConfirmedActiveKey] = React.useState(null);
-
-  const isCompactRef = React.useRef(isCompact);
-  useEffect(() => {
-    isCompactRef.current = isCompact;
-  }, [isCompact]);
-
-  useEffect(() => {
-    if (!rawConfirmationKey) {
-      setConfirmedActiveKey(null);
-      setCompactLock('confirmation-opening', false);
-      return;
-    }
-
-    if (rawConfirmationKey === confirmedActiveKey) {
-      return;
-    }
-
-    if (isCompactRef.current) {
-      setCompactLock('confirmation-opening', true);
-      const timer = setTimeout(() => {
-        setConfirmedActiveKey(rawConfirmationKey);
-        setCompactLock('confirmation-opening', false);
-      }, 250);
-      return () => clearTimeout(timer);
-    } else {
-      setConfirmedActiveKey(rawConfirmationKey);
-    }
-  }, [rawConfirmationKey, confirmedActiveKey, setCompactLock]);
-
-  const activeItem = useMemo(() => {
-    const confirmationKey = getNavConfirmationKey(rawActiveItem);
-    const isConfirmationDismissed = confirmationKey && confirmationKey === dismissedConfirmationKey;
-
-    if (rawActiveItem?.confirmation && !isConfirmationDismissed) {
-      if (confirmationKey !== confirmedActiveKey) {
-        return {
-          ...rawActiveItem,
-          isConfirmation: false,
-          isOverlay: false,
-          confirmation: null,
-        };
-      }
-      return applyConfirmationSurface(rawActiveItem);
-    }
-
-    return rawActiveItem;
-  }, [rawActiveItem, confirmedActiveKey, dismissedConfirmationKey]);
+  const activeItem = rawActiveItem;
 
   const activeIndex = useMemo(() => {
     return resolveActiveIndex({
@@ -524,16 +364,6 @@ export function useNavigationDisplay() {
       countdownItem,
     });
   }, [navigationItems, activeItem, pathname, countdownItem]);
-
-  useEffect(() => {
-    if (statusState?.isOverlay) {
-      return;
-    }
-
-    if (!getNavConfirmationKey(activeItem)) {
-      clearDismissedConfirmation();
-    }
-  }, [activeItem, clearDismissedConfirmation, statusState]);
 
   const result = useMemo(() => {
     return {

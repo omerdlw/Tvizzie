@@ -10,7 +10,7 @@ export default function SearchAction({
   searchType: controlledSearchType,
   variant = SEARCH_ACTION_VARIANTS.DEFAULT,
   onQueryChange,
-  onSearchTypeChange
+  onSearchTypeChange,
 }) {
   const {
     handleClear,
@@ -24,17 +24,36 @@ export default function SearchAction({
     loading,
     query,
     results,
-    searchType
+    searchType,
   } = useSearchActionController({
     loading: controlledLoading,
     onQueryChange,
     onSearchTypeChange,
     query: controlledQuery,
     searchType: controlledSearchType,
-    variant
+    variant,
   });
-  return <div className="mt-2.5 w-full">
-      <SearchActionControls loading={loading} query={query} searchType={searchType} showTabsWhenEmpty={isPageVariant} onClear={handleClear} onQueryChange={handleQueryChange} onSearchTypeChange={handleSearchTypeChange} />
-      {!isPageVariant ? <SearchActionResultsPreview imageErrors={imageErrors} query={query} results={results} onImageError={handleImageError} onSeeAllResults={handleSeeAllResults} onSelect={handleSelect} /> : null}
-    </div>;
+  return (
+    <div className="mt-2.5 w-full">
+      <SearchActionControls
+        loading={loading}
+        query={query}
+        searchType={searchType}
+        showTabsWhenEmpty={isPageVariant}
+        onClear={handleClear}
+        onQueryChange={handleQueryChange}
+        onSearchTypeChange={handleSearchTypeChange}
+      />
+      {!isPageVariant ? (
+        <SearchActionResultsPreview
+          imageErrors={imageErrors}
+          query={query}
+          results={results}
+          onImageError={handleImageError}
+          onSeeAllResults={handleSeeAllResults}
+          onSelect={handleSelect}
+        />
+      ) : null}
+    </div>
+  );
 }

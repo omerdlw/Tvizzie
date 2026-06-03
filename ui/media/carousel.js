@@ -12,7 +12,7 @@ function getScrollState(element) {
   return {
     hasOverflow: element.scrollWidth - element.clientWidth > SCROLL_THRESHOLD,
     canScrollLeft: element.scrollLeft > SCROLL_THRESHOLD,
-    canScrollRight: element.scrollLeft + element.clientWidth < element.scrollWidth - SCROLL_THRESHOLD
+    canScrollRight: element.scrollLeft + element.clientWidth < element.scrollWidth - SCROLL_THRESHOLD,
   };
 }
 function getItemStride(element) {
@@ -31,17 +31,12 @@ function getItemStride(element) {
   const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
   return firstItem.getBoundingClientRect().width + gap;
 }
-export default function Carousel({
-  children,
-  className = '',
-  gap = 'gap-2',
-  itemClassName = ''
-}) {
+export default function Carousel({ children, className = '', gap = 'gap-2', itemClassName = '' }) {
   const scrollRef = useDraggableScroll();
   const [scrollState, setScrollState] = useState({
     hasOverflow: false,
     canScrollLeft: false,
-    canScrollRight: false
+    canScrollRight: false,
   });
   const items = useMemo(() => Children.toArray(children), [children]);
   const updateScrollState = useCallback(() => {
@@ -50,8 +45,12 @@ export default function Carousel({
       return;
     }
     const nextState = getScrollState(element);
-    setScrollState(previousState => {
-      if (previousState.hasOverflow === nextState.hasOverflow && previousState.canScrollLeft === nextState.canScrollLeft && previousState.canScrollRight === nextState.canScrollRight) {
+    setScrollState((previousState) => {
+      if (
+        previousState.hasOverflow === nextState.hasOverflow &&
+        previousState.canScrollLeft === nextState.canScrollLeft &&
+        previousState.canScrollRight === nextState.canScrollRight
+      ) {
         return previousState;
       }
       return nextState;
@@ -69,33 +68,67 @@ export default function Carousel({
       observer.disconnect();
     };
   }, [scrollRef, updateScrollState]);
-  const scrollByDirection = useCallback(direction => {
-    const element = scrollRef.current;
-    if (!element) {
-      return;
-    }
-    const itemStride = getItemStride(element);
-    element.scrollBy({
-      left: itemStride * SCROLL_STEP * direction,
-      behavior: 'smooth'
-    });
-  }, [scrollRef]);
+  const scrollByDirection = useCallback(
+    (direction) => {
+      const element = scrollRef.current;
+      if (!element) {
+        return;
+      }
+      const itemStride = getItemStride(element);
+      element.scrollBy({
+        left: itemStride * SCROLL_STEP * direction,
+        behavior: 'smooth',
+      });
+    },
+    [scrollRef]
+  );
   const controlTransition = {
     duration: 0.42,
-    ease: ACCENT_EASING
+    ease: ACCENT_EASING,
   };
-  return <div className="group/carousel relative -m-1">
-      <div ref={scrollRef} onDragStart={event => event.preventDefault()} onScroll={updateScrollState} className={cn('scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth p-1 select-none', gap, className)}>
-        {items.map((child, index) => <div key={child?.key ?? `carousel-item-${index}`} className={cn('shrink-0', itemClassName)}>
+  return (
+    <div className="group/carousel relative -m-1">
+      <div
+        ref={scrollRef}
+        onDragStart={(event) => event.preventDefault()}
+        onScroll={updateScrollState}
+        className={cn(
+          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth p-1 select-none',
+          gap,
+          className
+        )}
+      >
+        {items.map((child, index) => (
+          <div key={child?.key ?? `carousel-item-${index}`} className={cn('shrink-0', itemClassName)}>
             {child}
-          </div>)}
+          </div>
+        ))}
       </div>
-      {scrollState.canScrollLeft && <button type="button" aria-label="Scroll left" onClick={() => scrollByDirection(-1)} className={cn("center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:left-[-16px] md:size-8")}>
+      {scrollState.canScrollLeft && (
+        <button
+          type="button"
+          aria-label="Scroll left"
+          onClick={() => scrollByDirection(-1)}
+          className={cn(
+            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:left-[-16px] md:size-8'
+          )}
+        >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
-        </button>}
+        </button>
+      )}
 
-      {scrollState.canScrollRight && <button type="button" aria-label="Scroll right" onClick={() => scrollByDirection(1)} className={cn("center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:right-[-16px] md:size-8")}>
+      {scrollState.canScrollRight && (
+        <button
+          type="button"
+          aria-label="Scroll right"
+          onClick={() => scrollByDirection(1)}
+          className={cn(
+            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:right-[-16px] md:size-8'
+          )}
+        >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />
-        </button>}
-    </div>;
+        </button>
+      )}
+    </div>
+  );
 }

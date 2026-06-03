@@ -2,31 +2,34 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
-import { useNavigationContext } from '../context';
+import { useNavigationActions, useNavigationState } from '../context';
 import { useNavigationCore } from './use-navigation-core';
 import { useNavigationCompact } from './use-navigation-compact';
 import { useNavigationDisplay } from './use-navigation-display';
-import { useRouteChangeEffects } from './use-navigation-effects';
-import { useNavigationExpanded } from './use-navigation-expanded';
 import { useNavigationLayout } from './use-navigation-layout';
 
 export function useNavigation() {
-  const { searchQuery, closeSurface, compactLockIds, compactLocked, setCompactLock, setIsCompact } =
-    useNavigationContext();
+  const {
+    closeSurface,
+    setCompactLock,
+    setExpanded: setExpandedState,
+    setIsCompact,
+    setNavHeight,
+    setSearchQuery,
+  } = useNavigationActions();
+  const { compactLocked, expanded: isExpanded, searchQuery } = useNavigationState();
 
   const [isHovered, setIsHovered] = useState(false);
 
   const core = useNavigationCore();
   const display = useNavigationDisplay();
-  const expanded = useNavigationExpanded();
   const { navigate: navigateWithGuards, pathname, cancelNavigation } = core;
 
   const { navigationItems, activeItem, statusState } = display;
-  const { expanded: isExpanded, setExpanded: setExpandedState, setSearchQuery, setNavHeight } = expanded;
   const isSurfaceActive = Boolean(activeItem?.isSurface);
 
   const activeItemHasAction = useMemo(() => {
-    return Boolean(activeItem?.action || activeItem?.isConfirmation);
+    return Boolean(activeItem?.action);
   }, [activeItem]);
 
   const compact = useNavigationCompact({
@@ -110,7 +113,18 @@ export function useNavigation() {
     activeItem,
   });
 
-  useRouteChangeEffects(pathname, setExpanded, setSearchQuery, setIsHovered);
+  const previousPathRef = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPathRef.current === pathname) {
+      return;
+    }
+
+    previousPathRef.current = pathname;
+    setExpanded(false);
+    setSearchQuery('');
+    setIsHovered(false);
+  }, [pathname, setExpanded, setSearchQuery]);
 
   return {
     navigationItems: displayItems,
@@ -133,7 +147,6 @@ export function useNavigation() {
     setIsHovered,
     searchQuery,
     activeItemHasAction,
-    compactLockIds,
     compactLocked,
     compact,
   };

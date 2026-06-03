@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { useNavRegistry } from '@/core/modules/registry/context';
 
-import { useNavigationContext } from '../context';
+import { useNavigationState } from '../context';
 
 function getConfigItemKeys(items) {
   return Object.values(items || {}).map((item) => item.path || item.name);
@@ -55,7 +55,7 @@ function stripChildrenSystemFields(item) {
 }
 
 export function useNavigationItems() {
-  const { config } = useNavigationContext();
+  const { config } = useNavigationState();
   const { getAll } = useNavRegistry();
 
   const rawItems = useMemo(() => {

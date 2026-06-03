@@ -30,7 +30,7 @@ function AccountSessionMissingState({ RegistryComponent = null }) {
   return (
     <>
       {RegistryComponent ? <RegistryComponent /> : null}
-      <FullscreenState className="bg-[#f8f5ef]" contentClassName="px-6">
+      <FullscreenState contentClassName="px-6">
         <div className="max-w-md text-center">
           <h1 className="text-xl font-black tracking-widest text-black uppercase">Session Ended</h1>
           <p className="mt-3 text-sm leading-6 font-semibold text-black/65">

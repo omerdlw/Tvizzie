@@ -47,22 +47,12 @@ function getNow() {
   return Date.now();
 }
 
-function canUseCompactNav({
-  hasActiveItem,
-  isActionEngaged,
-  isConfirmation,
-  isLoading,
-  isOverlay,
-  isStatus,
-  isSurface,
-  title,
-  type,
-}) {
+function canUseCompactNav({ hasActiveItem, isActionEngaged, isLoading, isOverlay, isStatus, isSurface, title, type }) {
   if (!hasActiveItem) {
     return false;
   }
 
-  if (isOverlay || isSurface || isConfirmation || isLoading || isStatus || isActionEngaged || type === 'COUNTDOWN') {
+  if (isOverlay || isSurface || isLoading || isStatus || isActionEngaged || type === 'COUNTDOWN') {
     return false;
   }
 
@@ -111,7 +101,6 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
   const activeItemType = activeItem?.type || '';
   const isOverlay = Boolean(activeItem?.isOverlay);
   const isSurface = Boolean(activeItem?.isSurface);
-  const isConfirmation = Boolean(activeItem?.isConfirmation);
   const isLoading = Boolean(activeItem?.isLoading);
   const isStatus = Boolean(activeItem?.isStatus);
   const isActionEngaged = Boolean(searchQuery?.trim());
@@ -120,7 +109,6 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
     const compactAllowed = canUseCompactNav({
       hasActiveItem,
       isActionEngaged,
-      isConfirmation,
       isLoading,
       isOverlay,
       isStatus,
@@ -309,7 +297,6 @@ export function useNavigationCompact({ activeItem, expanded, pathname, searchQue
     activeItemPath,
     activeItemTitle,
     activeItemType,
-    isConfirmation,
     isLoading,
     isOverlay,
     isStatus,

@@ -14,10 +14,10 @@ import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
-import { getNavActionClass } from '@/core/modules/nav/actions/styles';
+import { getNavActionClass } from '@/features/navigation/actions/model';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
-import { useNavigationContext } from '@/core/modules/nav/context';
+import { useNavigationActions, useNavigationState } from '@/core/modules/nav/context';
 import Icon from '@/ui/icon';
 import MediaSocialProofModal from '@/features/modals/media-social-proof-modal';
 import {
@@ -85,7 +85,8 @@ export default function Registry({
   mediaType = 'movie',
   reviewState,
 }) {
-  const { openSurface, closeSurface, activeSurfaceEntry } = useNavigationContext();
+  const { openSurface, closeSurface } = useNavigationActions();
+  const { activeSurfaceEntry } = useNavigationState();
   const [isSearching, setIsSearching] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -199,7 +200,6 @@ export default function Registry({
           },
         },
       ],
-      confirmation: reviewState?.confirmation || null,
       contextMenuDescription: contextMenuDescription || undefined,
       description: navDescription || undefined,
       icon: movie?.poster_path ? `${TMDB_IMG}/w342${movie.poster_path}` : undefined,

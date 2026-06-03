@@ -2,9 +2,9 @@
 
 import React, { useMemo } from 'react';
 
-import { isPathPrefix, isSamePath } from './navigation-path-model';
+import { isPathPrefix, isSamePath } from './hooks/navigation-path-model';
 
-function isActionPathMatch(path, pathname) {
+export function isInlineActionPathMatch(path, pathname) {
   if (isSamePath(path, pathname)) {
     return true;
   }
@@ -12,18 +12,18 @@ function isActionPathMatch(path, pathname) {
   return path !== '/' && isPathPrefix(path, pathname);
 }
 
-function shouldRenderAction({ action, isLoading, isOverlay, path }, pathname) {
+export function shouldRenderInlineAction({ action, isLoading, isOverlay, path }, pathname) {
   if (!action) return false;
   if (isLoading) return false;
 
-  if (!isOverlay && path && !isActionPathMatch(path, pathname)) {
+  if (!isOverlay && path && !isInlineActionPathMatch(path, pathname)) {
     return false;
   }
 
   return true;
 }
 
-function resolveActionNode(action) {
+export function resolveInlineActionNode(action) {
   if (React.isValidElement(action)) {
     return action;
   }
@@ -40,10 +40,10 @@ export function useActionComponent(link, pathname) {
   const { action, isLoading, isOverlay, path } = link;
 
   return useMemo(() => {
-    if (!shouldRenderAction({ action, isLoading, isOverlay, path }, pathname)) {
+    if (!shouldRenderInlineAction({ action, isLoading, isOverlay, path }, pathname)) {
       return null;
     }
 
-    return resolveActionNode(action);
+    return resolveInlineActionNode(action);
   }, [action, isLoading, isOverlay, path, pathname]);
 }

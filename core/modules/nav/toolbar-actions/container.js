@@ -13,81 +13,24 @@ import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 
 import {
+  filterContextToolbarActions,
+  getVisibleToolbarActions,
+  isActionlessNavItem,
+  isStatusToolbarActionAllowed,
+  NAV_ACTION_KEYS,
+  NAV_ACTION_ORDER,
+  normalizeToolbarActions,
+  sortToolbarActionsByOrder,
+} from './model';
+import {
   getNavActionItemMotion,
   NAV_ACTION_GROUP_MOTION,
   NAV_BADGE_MOTION,
   NAV_BUTTON_INTERACTION_MOTION,
 } from '@/core/modules/motion';
 
-const ACTION_KEYS = Object.freeze({
-  NOTIFICATIONS: 'notifications',
-  LOGOUT: 'logout',
-  SCROLL_TOP: 'scroll-top',
-  TOGGLE_MUTE: 'toggle-mute',
-  SETTINGS: 'settings',
-});
-
-const ACTION_ORDER = Object.freeze({
-  NOTIFICATIONS: -10,
-  SETTINGS: 0,
-  TOGGLE_MUTE: 10,
-  SCROLL_TOP: 20,
-  LOGOUT: 30,
-});
-
 function stopPropagation(event) {
   event.stopPropagation();
-}
-
-function byOrderDesc(a, b) {
-  return (b.order || 0) - (a.order || 0);
-}
-
-function normalizeActions(actions) {
-  if (!actions) return [];
-
-  const actionList = Array.isArray(actions) ? actions : [actions];
-
-  return actionList.map((action, index) => ({
-    key: action.key || `action-${index}`,
-    ...action,
-  }));
-}
-
-function getVisibleActions(actions) {
-  return actions.filter((action) => action.visible !== false);
-}
-
-function filterContextActions(actions, activeItem) {
-  return actions.filter((action) => {
-    if (action.key === ACTION_KEYS.LOGOUT && activeItem?.hideLogout) {
-      return false;
-    }
-
-    if (action.key === ACTION_KEYS.SETTINGS && activeItem?.hideSettings) {
-      return false;
-    }
-
-    if (action.key === ACTION_KEYS.SCROLL_TOP && activeItem?.hideScroll) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
-function isActionlessRoute(activeItem) {
-  return (
-    activeItem?.isNotFound ||
-    activeItem?.path === 'not-found' ||
-    activeItem?.isMasked ||
-    activeItem?.isSurface ||
-    activeItem?.isConfirmation
-  );
-}
-
-function isStatusActionAllowed(activeItem) {
-  return activeItem?.type === 'APP_ERROR' || activeItem?.type === 'API_ERROR';
 }
 
 function useDefaultNavActions() {
@@ -127,11 +70,11 @@ function useDefaultNavActions() {
   return useMemo(
     () => [
       {
-        key: ACTION_KEYS.NOTIFICATIONS,
+        key: NAV_ACTION_KEYS.NOTIFICATIONS,
         icon: 'solar:bell-bold',
         tooltip: 'Notifications',
         visible: canOpenNotifications,
-        order: ACTION_ORDER.NOTIFICATIONS,
+        order: NAV_ACTION_ORDER.NOTIFICATIONS,
         badge: unreadBadge,
         onClick: (event) => {
           stopPropagation(event);
@@ -143,11 +86,11 @@ function useDefaultNavActions() {
         },
       },
       {
-        key: ACTION_KEYS.LOGOUT,
+        key: NAV_ACTION_KEYS.LOGOUT,
         icon: 'solar:logout-2-bold',
         tooltip: 'Logout',
         visible: isSignedIn,
-        order: ACTION_ORDER.LOGOUT,
+        order: NAV_ACTION_ORDER.LOGOUT,
         onClick: async (event) => {
           stopPropagation(event);
 
@@ -160,22 +103,22 @@ function useDefaultNavActions() {
         },
       },
       {
-        key: ACTION_KEYS.TOGGLE_MUTE,
+        key: NAV_ACTION_KEYS.TOGGLE_MUTE,
         icon: isMuted ? 'solar:volume-loud-bold' : 'solar:muted-bold',
         tooltip: isMuted ? 'Unmute' : 'Mute',
         visible: Boolean(isVideo),
-        order: ACTION_ORDER.TOGGLE_MUTE,
+        order: NAV_ACTION_ORDER.TOGGLE_MUTE,
         onClick: (event) => {
           stopPropagation(event);
           toggleMute();
         },
       },
       {
-        key: ACTION_KEYS.SETTINGS,
+        key: NAV_ACTION_KEYS.SETTINGS,
         icon: 'solar:settings-bold',
         tooltip: 'Settings',
         visible: false,
-        order: ACTION_ORDER.SETTINGS,
+        order: NAV_ACTION_ORDER.SETTINGS,
         onClick: (event) => {
           stopPropagation(event);
           openModal('SETTINGS_MODAL', 'center');
@@ -202,22 +145,22 @@ export function useNavActions({ activeItem } = {}) {
   const defaultActions = useDefaultNavActions();
 
   return useMemo(() => {
-    if (isActionlessRoute(activeItem)) {
+    if (isActionlessNavItem(activeItem)) {
       return [];
     }
 
-    const extendedActions = normalizeActions(activeItem?.actions);
+    const extendedActions = normalizeToolbarActions(activeItem?.actions);
 
     if (activeItem?.isStatus) {
-      if (!isStatusActionAllowed(activeItem)) {
+      if (!isStatusToolbarActionAllowed(activeItem)) {
         return [];
       }
 
-      return getVisibleActions(extendedActions).sort(byOrderDesc);
+      return sortToolbarActionsByOrder(getVisibleToolbarActions(extendedActions));
     }
 
-    return filterContextActions(getVisibleActions([...defaultActions, ...extendedActions]), activeItem).sort(
-      byOrderDesc
+    return sortToolbarActionsByOrder(
+      filterContextToolbarActions(getVisibleToolbarActions([...defaultActions, ...extendedActions]), activeItem)
     );
   }, [activeItem, defaultActions]);
 }

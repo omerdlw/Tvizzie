@@ -1,7 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PERSON_ROUTE_TIMING, PersonSurfaceReveal, getPersonSurfaceItemMotion } from '@/features/media/static-route-elements';
+import {
+  PERSON_ROUTE_TIMING,
+  PersonSurfaceReveal,
+  getPersonSurfaceItemMotion,
+} from '@/features/media/static-route-elements';
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
 import { TMDB_IMG } from '@/core/constants';
@@ -18,97 +22,126 @@ function getProfileImage(path) {
 function getYear(value) {
   return typeof value === 'string' && value.length >= 4 ? value.slice(0, 4) : null;
 }
-function createSidebarRow({
-  icon,
-  label,
-  value
-}) {
+function createSidebarRow({ icon, label, value }) {
   if (!value) {
     return null;
   }
   return {
     icon,
     label,
-    value
+    value,
   };
 }
-function SidebarRow({
-  icon,
-  label,
-  value
-}) {
+function SidebarRow({ icon, label, value }) {
   if (!value) {
     return null;
   }
-  return <div className="flex items-start gap-2 py-1.5 text-sm text-black">
+  return (
+    <div className="flex items-start gap-2 py-1.5 text-sm text-black">
       <Icon icon={icon} size={18} className="mt-0.5 shrink-0 text-black/70" />
       <div className="flex-1 leading-relaxed font-medium">
         {label}: <span className="text-black/70">{value}</span>
       </div>
-    </div>;
+    </div>
+  );
 }
-function SidebarMotionItem({
-  children,
-  delay = 0,
-  index = 0
-}) {
-  return <div>
-      {children}
-    </div>;
+function SidebarMotionItem({ children, delay = 0, index = 0 }) {
+  return <div>{children}</div>;
 }
-export default function PersonSidebar({
-  person,
-  age
-}) {
+export default function PersonSidebar({ person, age }) {
   const [hasImageError, setHasImageError] = useState(false);
   const imageSrc = getProfileImage(person?.profile_path);
   const hasImage = Boolean(imageSrc) && !hasImageError;
   const birthYear = getYear(person?.birthday);
   const deathYear = getYear(person?.deathday);
-  const ageLabel = age !== null && age !== undefined ? `${age}${person?.deathday ? ' years lived' : ' years old'}` : null;
-  const detailRows = useMemo(() => [createSidebarRow({
-    icon: 'solar:case-round-bold',
-    label: 'Type',
-    value: person?.known_for_department || 'Person'
-  }), createSidebarRow({
-    icon: 'solar:calendar-bold',
-    label: 'Born',
-    value: birthYear
-  }), createSidebarRow({
-    icon: 'solar:calendar-mark-bold',
-    label: 'Died',
-    value: deathYear
-  }), createSidebarRow({
-    icon: 'solar:clock-circle-bold',
-    label: 'Age',
-    value: ageLabel
-  }), createSidebarRow({
-    icon: 'solar:map-point-bold',
-    label: 'Birthplace',
-    value: person?.place_of_birth || null
-  })].filter(Boolean), [ageLabel, birthYear, deathYear, person?.known_for_department, person?.place_of_birth]);
-  return <div className="flex flex-col gap-3">
+  const ageLabel =
+    age !== null && age !== undefined ? `${age}${person?.deathday ? ' years lived' : ' years old'}` : null;
+  const detailRows = useMemo(
+    () =>
+      [
+        createSidebarRow({
+          icon: 'solar:case-round-bold',
+          label: 'Type',
+          value: person?.known_for_department || 'Person',
+        }),
+        createSidebarRow({
+          icon: 'solar:calendar-bold',
+          label: 'Born',
+          value: birthYear,
+        }),
+        createSidebarRow({
+          icon: 'solar:calendar-mark-bold',
+          label: 'Died',
+          value: deathYear,
+        }),
+        createSidebarRow({
+          icon: 'solar:clock-circle-bold',
+          label: 'Age',
+          value: ageLabel,
+        }),
+        createSidebarRow({
+          icon: 'solar:map-point-bold',
+          label: 'Birthplace',
+          value: person?.place_of_birth || null,
+        }),
+      ].filter(Boolean),
+    [ageLabel, birthYear, deathYear, person?.known_for_department, person?.place_of_birth]
+  );
+  return (
+    <div className="flex flex-col gap-3">
       <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.portraitDelay}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
-          {hasImage ? <AdaptiveImage src={imageSrc} alt={person?.name || 'Person portrait'} fill priority fetchPriority="high" sizes="(max-width: 1024px) 100vw, 400px" quality={resolveImageQuality('hero')} decoding="async" placeholder="blur" blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)} onError={() => setHasImageError(true)} className="object-cover" wrapperClassName="h-full w-full" /> : <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
+          {hasImage ? (
+            <AdaptiveImage
+              src={imageSrc}
+              alt={person?.name || 'Person portrait'}
+              fill
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 400px"
+              quality={resolveImageQuality('hero')}
+              decoding="async"
+              placeholder="blur"
+              blurDataURL={getImagePlaceholderDataUrl(`${person?.id || person?.name}-${imageSrc}`)}
+              onError={() => setHasImageError(true)}
+              className="object-cover"
+              wrapperClassName="h-full w-full"
+            />
+          ) : (
+            <div className="bg-primary center h-full w-full border border-black/5 text-black/50">
               <Icon icon="solar:user-bold" size={64} className="text-black/70" />
-            </div>}
+            </div>
+          )}
 
-          {person?.external_ids ? <SocialLinks externalIds={person.external_ids} className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2" /> : null}
+          {person?.external_ids ? (
+            <SocialLinks
+              externalIds={person.external_ids}
+              className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
+            />
+          ) : null}
         </div>
       </PersonSurfaceReveal>
 
       <div className="flex flex-col gap-1">
-        {detailRows.map((row, index) => <SidebarMotionItem key={`${row.label}-${row.value}`} delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
+        {detailRows.map((row, index) => (
+          <SidebarMotionItem
+            key={`${row.label}-${row.value}`}
+            delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay}
+            index={index}
+          >
             <SidebarRow icon={row.icon} label={row.label} />
-          </SidebarMotionItem>)}
+          </SidebarMotionItem>
+        ))}
       </div>
 
-      {person?.biography ? <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
+      {person?.biography ? (
+        <PersonSurfaceReveal delay={PERSON_ROUTE_TIMING.sidebar.bioDelay}>
           <div className="flex flex-col gap-2">
             <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Bio</h2>
             <PersonBio biography={person.biography} />
           </div>
-        </PersonSurfaceReveal> : null}
-    </div>;
+        </PersonSurfaceReveal>
+      ) : null}
+    </div>
+  );
 }

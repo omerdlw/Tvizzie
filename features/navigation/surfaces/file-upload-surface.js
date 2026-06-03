@@ -138,14 +138,7 @@ export default function FileUploadSurface({ close, data }) {
         {buttonLabel}
       </motion.button>
 
-      <input
-        ref={inputRef}
-        id={inputId}
-        type="file"
-        accept={accept}
-        className="sr-only"
-        onChange={handleInputChange}
-      />
+      <input ref={inputRef} id={inputId} type="file" accept={accept} className="sr-only" onChange={handleInputChange} />
     </motion.div>
   );
 }

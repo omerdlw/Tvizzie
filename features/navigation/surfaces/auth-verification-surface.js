@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { requestVerificationCode, verifyCodeRequest } from '@/features/auth/requests';
 import {
@@ -17,6 +17,7 @@ import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
+import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 
 const PURPOSES = Object.freeze({
   ACCOUNT_DELETE: 'account-delete',
@@ -99,7 +100,21 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
                   'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border'
               )}
             >
-              {digit || <span className="invisible">0</span>}
+              <AnimatePresence mode="popLayout" initial={false}>
+                {digit ? (
+                  <motion.span
+                    key={`digit-${digit}-${index}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  >
+                    {digit}
+                  </motion.span>
+                ) : (
+                  <span key="empty" className="invisible">0</span>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
@@ -443,17 +458,21 @@ export default function AuthVerificationSurface({ close, data, header }) {
       />
 
       <div className="grid gap-2">
-        <Button
-          className="hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white"
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          transition={NAV_ACTION_SPRING}
+          className="center hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"
         >
           {isSending ? 'Sending' : canResendCode ? 'Resend' : `Resend in ${resendRemainingSeconds}s`}
-        </Button>
+        </motion.button>
 
         {shouldShowRememberDevice ? (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            transition={NAV_ACTION_SPRING}
             type="button"
             disabled={isSubmitting || isSending}
             aria-pressed={rememberDevice}
@@ -478,7 +497,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
               <Icon icon="material-symbols:check-small-rounded" size={14} />
             </span>
             <span>Remember this device for 30 days</span>
-          </button>
+          </motion.button>
         ) : null}
       </div>
     </form>

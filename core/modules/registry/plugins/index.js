@@ -197,20 +197,24 @@ export const navPlugin = createPlugin({
     const nav = config?.nav;
     if (!nav) return;
 
-    const { cleanupDelayMs, payload, registerOptions, source } = splitRegistryConfig(nav, { defaultCleanupDelayMs: 0 });
+    const { cleanupDelayMs, payload, registerOptions, source } = splitRegistryConfig(nav, {
+      defaultCleanupDelayMs: 600,
+    });
     const navConfig = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
 
-    const itemPath = navConfig.path || pathname;
+    const normalizedNavConfig = { ...navConfig };
+    delete normalizedNavConfig.confirmation;
+    const itemPath = normalizedNavConfig.path || pathname;
     const navItem = {
-      ...navConfig,
+      ...normalizedNavConfig,
       path: itemPath,
-      action: navConfig.action,
-      actions: navConfig.actions,
-      confirmation: navConfig.confirmation,
-      surface: navConfig.surface,
+      action: normalizedNavConfig.action,
+      actions: normalizedNavConfig.actions,
+      surface: normalizedNavConfig.surface,
     };
 
-    const resolvedIsLoading = navConfig.isLoading !== undefined ? navConfig.isLoading : getLoadingFallback(config);
+    const resolvedIsLoading =
+      normalizedNavConfig.isLoading !== undefined ? normalizedNavConfig.isLoading : getLoadingFallback(config);
 
     if (resolvedIsLoading !== undefined) {
       navItem.isLoading = resolvedIsLoading;

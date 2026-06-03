@@ -23,7 +23,7 @@ import { useAccount } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useNavigationActions } from '@/core/modules/nav/context';
-import FileUploadSurface from '@/core/modules/nav/surfaces/file-upload-surface';
+import FileUploadSurface from '@/features/navigation/surfaces/file-upload-surface';
 import { useToast } from '@/core/modules/notification/hooks';
 
 import AccountEditView from './view';

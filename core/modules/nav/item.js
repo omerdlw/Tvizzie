@@ -6,387 +6,18 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { cn } from '@/core/utils/classnames';
-import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
-import { useActionComponent, useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
-import { default as Iconify } from '@/ui/icon';
-import { Skeleton } from '@/ui/skeletons/components/nav';
+import { useElementHeight, useActionHeight, useNavBadge } from '@/core/modules/nav/hooks';
+import { useActionComponent } from '@/core/modules/nav/inline-action-model';
 
-import { NavActionsContainer } from './actions/container';
-import { Icon as BadgeIcon, Description, Title } from './elements';
-import { getNavStackOffset } from './layout';
+import { LoadingItemContent, StandardItemContent, SurfaceItemContent } from './item-content';
 import {
-  getNavCardSpring,
-  getNavCardStaggerDelay,
-  NAV_ACTION_PANEL_MOTION,
-  NAV_BADGE_MOTION,
-  NAV_CARD_BLUR_TRANSITION,
-  NAV_CARD_OPACITY_TRANSITION,
-  NAV_CARD_WIDTH_SPRING,
-  NAV_CONTAINER_SPRING,
-  NAV_DEFAULT_TRANSITION,
-  NAV_INLINE_SURFACE_PANEL_MOTION,
-  NAV_VIDEO_ICON_MOTION,
-} from '@/core/modules/motion';
-import ConfirmationSurface from './surfaces/confirmation-surface';
-import NavSurfaceShell from './surfaces/surface-shell';
+  estimateCompactCardWidth,
+  getItemMeasurementKey,
+  getNavItemCardProps,
+  getRouteMeasurementKey,
+} from './item-model';
+import { NAV_ACTION_PANEL_MOTION } from '@/core/modules/motion';
 import { resolveNavVisualStyle } from './utils';
-
-const NAV_CARD_DIMENSIONS = Object.freeze({
-  chromeHeight: 20,
-  collapsedY: -8,
-  compactHeight: 38,
-  expandedY: getNavStackOffset(68),
-  actionGap: 10,
-  height: 64,
-});
-
-export const NAV_CARD_LAYOUT = Object.freeze({
-  collapsed: Object.freeze({
-    offsetY: NAV_CARD_DIMENSIONS.collapsedY,
-    scale: 0.9,
-  }),
-  expanded: Object.freeze({
-    offsetY: NAV_CARD_DIMENSIONS.expandedY,
-    scale: 1,
-  }),
-  baseHeight: NAV_CARD_DIMENSIONS.height,
-  chromeHeight: NAV_CARD_DIMENSIONS.chromeHeight,
-  compactHeight: NAV_CARD_DIMENSIONS.compactHeight,
-  actionGap: NAV_CARD_DIMENSIONS.actionGap,
-  transition: NAV_DEFAULT_TRANSITION,
-});
-
-const BLUR_AMOUNT = 7;
-
-const COMPACT_CARD_MIN_WIDTH = 148;
-const COMPACT_CARD_HORIZONTAL_PADDING = 56;
-const COMPACT_CARD_MAX_OFFSET = 72;
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function estimateCompactCardWidth(title, stackWidth) {
-  const titleLength = String(title || '').trim().length;
-  const estimatedWidth = titleLength * 10 + COMPACT_CARD_HORIZONTAL_PADDING;
-  const maxWidth = Math.max(COMPACT_CARD_MIN_WIDTH, stackWidth - COMPACT_CARD_MAX_OFFSET);
-
-  return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
-}
-
-function getExpandedItemY(position, isMobile) {
-  const baseExpandedOffsetY = isMobile ? -68 : NAV_CARD_LAYOUT.expanded.offsetY;
-  return position * baseExpandedOffsetY;
-}
-
-function getNavItemCardProps(
-  expanded,
-  position,
-  showBorder,
-  cardStyle,
-  cardScale,
-  cardWidth,
-  isMobile,
-  isInteractive,
-  containerHeight,
-  isAnchoredToBottom
-) {
-  const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
-  const safeCardStyle = cardStyle
-    ? Object.fromEntries(Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'))
-    : {};
-
-  const staggerDelay = getNavCardStaggerDelay(position, expanded);
-  const spring = getNavCardSpring(position);
-  const isTop = position === 0;
-  const collapsedScaleValue = collapsedScale ** position;
-
-  return {
-    className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] p-1.5 sm:p-2 backdrop-blur-lg',
-      isAnchoredToBottom && 'bottom-0',
-      'border-black/15 bg-white/80',
-      showBorder && 'border-black/20',
-      cardStyle?.className
-    ),
-    style: {
-      ...safeCardStyle,
-      willChange: position <= 1 ? 'transform, opacity, filter' : 'auto',
-    },
-    animate: {
-      width: cardWidth,
-      y: expanded ? getExpandedItemY(position, isMobile) : position * collapsedOffsetY,
-      scale: expanded ? cardScale || 1 : collapsedScaleValue,
-      zIndex: 10 - position,
-      opacity: 1,
-      filter: 'blur(0px)',
-      ...(isTop && containerHeight ? { height: containerHeight } : {}),
-    },
-    initial: {
-      opacity: 0,
-      scale: 0.96,
-      y: 12,
-      filter: `blur(${BLUR_AMOUNT}px)`,
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.96,
-      y: 4,
-      filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
-      transition: {
-        duration: isTop ? 0.24 : 0,
-        ease: [0.55, 0, 1, 0.45],
-        filter: { duration: isTop ? 0.2 : 0 },
-      },
-    },
-    transition: {
-      width: { ...NAV_CARD_WIDTH_SPRING, delay: staggerDelay },
-      y: { ...spring, delay: staggerDelay },
-      scale: { ...spring, delay: staggerDelay },
-      opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay: staggerDelay },
-      filter: { ...NAV_CARD_BLUR_TRANSITION, delay: staggerDelay },
-      zIndex: { duration: 0, delay: staggerDelay },
-      ...(isTop && containerHeight ? { height: { ...NAV_CONTAINER_SPRING, delay: staggerDelay } } : {}),
-    },
-  };
-}
-
-function isImageIconSource(icon) {
-  return (
-    typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:image/'))
-  );
-}
-
-function shouldShowVideoIcon({ isActive, isVideo, link }) {
-  return isActive && isVideo && link.type !== 'COUNTDOWN';
-}
-
-function getItemMeasurementKey({ link, expanded, isHovered, isStackHovered, compact }) {
-  const state = link.isLoading
-    ? 'loading'
-    : link.isSurface
-      ? 'surface'
-      : link.isConfirmation
-        ? 'confirmation'
-        : 'standard';
-
-  return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${isHovered ? 'hovered' : 'idle'}:${isStackHovered ? 'stack' : 'base'}:${compact ? 'compact' : 'full'}`;
-}
-
-function getRouteMeasurementKey(pathname, key) {
-  return `${pathname || ''}:${key}`;
-}
-
-function getItemDescription({ expanded, isHovered, link }) {
-  if (isHovered && !expanded && !link.isOverlay && link.type !== 'COUNTDOWN') {
-    return 'click to see the pages';
-  }
-
-  return link.description;
-}
-
-function getActionNode(link, ActionComponent) {
-  if (link.isConfirmation) {
-    return null;
-  }
-
-  return ActionComponent;
-}
-
-function VideoOverlayIcon({ icon }) {
-  const isImageIcon = isImageIconSource(icon);
-
-  return (
-    <motion.div
-      className={cn(
-        'pointer-events-none absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center',
-        isImageIcon ? 'bg-cover bg-center bg-no-repeat' : 'border border-black/5 bg-white'
-      )}
-      style={isImageIcon ? { backgroundImage: `url(${icon})` } : undefined}
-      {...NAV_VIDEO_ICON_MOTION}
-    >
-      {!isImageIcon && <Iconify icon={icon} size={14} className="text-black" />}
-    </motion.div>
-  );
-}
-
-function Badge({ badge }) {
-  return (
-    <AnimatePresence initial={false} mode="sync">
-      {badge.visible && (
-        <motion.div
-          className={cn(
-            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
-          )}
-          {...NAV_BADGE_MOTION}
-        >
-          {badge.value}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function StandardItemContent({
-  compact,
-  link,
-  isTop,
-  expanded,
-  isHovered,
-  isStackHovered,
-  itemStyle,
-  badge,
-  isActive,
-  contentContainerRef,
-  footerNode,
-  footerRef,
-}) {
-  const { isVideo, isPlaying } = useBackgroundState();
-  const { toggleVideo } = useBackgroundActions();
-
-  const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo, link });
-  const description = getItemDescription({ expanded, isHovered, link });
-  const iconHoverState = expanded ? isHovered : isStackHovered;
-
-  if (compact) {
-    const compactTitleStyle = {
-      ...itemStyle.title,
-      className: cn('tracking-tight normal-case text-center', itemStyle.title?.className),
-      textTransform: 'none',
-    };
-
-    return (
-      <div ref={contentContainerRef} className="flex h-5 w-full items-center justify-center px-4 sm:h-6 sm:px-5">
-        <div className="min-w-0">
-          <Title
-            text={link.title || link.name}
-            style={{ ...compactTitleStyle, className: cn(compactTitleStyle.className, 'text-[12px] sm:text-[14px]') }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  const handleIconClick = (event) => {
-    if (showVideoIcon) {
-      event.stopPropagation();
-      event.preventDefault();
-      toggleVideo();
-      return;
-    }
-
-    if (link.onClick) {
-      event.stopPropagation();
-      event.preventDefault();
-      link.onClick(event);
-    }
-  };
-
-  return (
-    <div ref={contentContainerRef} className="relative flex h-auto w-full flex-col gap-0">
-      <div className="relative flex w-full items-center space-x-3">
-        <div className="center relative">
-          {link.icon ? (
-            <div
-              className={link.onClick || showVideoIcon ? 'relative cursor-pointer transition-transform' : 'relative'}
-              onClick={handleIconClick}
-            >
-              <BadgeIcon
-                isStackHovered={iconHoverState}
-                icon={showVideoIcon ? (isPlaying ? 'mdi:pause' : 'mdi:play') : link.icon}
-                iconOverlay={showVideoIcon ? null : link.iconOverlay}
-                style={itemStyle.icon}
-              />
-
-              {showVideoIcon && <VideoOverlayIcon icon={link.icon} />}
-            </div>
-          ) : (
-            <div className="h-12" />
-          )}
-          <Badge badge={badge} />
-        </div>
-        <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
-          <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <Title
-                text={link.title || link.name}
-                style={{
-                  ...itemStyle.title,
-                  className: cn(itemStyle.title?.className, 'text-[14px] sm:text-[16px]'),
-                }}
-              />
-            </div>
-            <Description text={description} style={itemStyle.description} />
-          </div>
-          {isTop && link.type !== 'COUNTDOWN' && !link.isConfirmation && <NavActionsContainer activeItem={link} />}
-        </div>
-      </div>
-
-      <AnimatePresence initial={false}>
-        {footerNode ? (
-          <motion.div
-            key="nav-surface-footer"
-            ref={footerRef}
-            className="w-full overflow-hidden pt-2.5"
-            style={{ transformOrigin: 'bottom center', willChange: 'height, opacity, clip-path, transform, filter' }}
-            {...NAV_INLINE_SURFACE_PANEL_MOTION}
-          >
-            {footerNode}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function SurfaceItemContent({ link, contentContainerRef }) {
-  const SurfaceComponent = link.surfaceComponent;
-  const surfaceContent = link.surfaceContent;
-
-  const icon = link.surfaceIcon ?? link.icon ?? null;
-  const title = link.surfaceTitle ?? link.title ?? link.name ?? '';
-  const description = link.surfaceDescription ?? link.description ?? '';
-  const trailing = link.surfaceTrailing ?? link.trailing ?? null;
-  const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
-  const onClose = link.isConfirmation ? null : (link.closeSurface || link.onClose);
-
-  return (
-    <motion.div
-      className="relative w-full overflow-hidden"
-      style={{ transformOrigin: 'bottom center', willChange: 'height, opacity, clip-path, transform, filter' }}
-      onClick={(event) => event.stopPropagation()}
-      {...NAV_INLINE_SURFACE_PANEL_MOTION}
-    >
-      <div ref={contentContainerRef} className="w-full">
-        <NavSurfaceShell
-          icon={icon}
-          title={title}
-          description={description}
-          trailing={trailing}
-          onClose={onClose}
-          closeLabel={closeLabel}
-          descriptionMaxLines={link.isConfirmation ? 6 : 2}
-          contentClassName="w-full"
-        >
-          {typeof SurfaceComponent === 'function' ? (
-            <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
-          ) : (
-            surfaceContent
-          )}
-        </NavSurfaceShell>
-      </div>
-    </motion.div>
-  );
-}
-
-function LoadingItemContent({ contentContainerRef }) {
-  return (
-    <div ref={contentContainerRef}>
-      <Skeleton />
-    </div>
-  );
-}
 
 const Item = memo(
   forwardRef(function Item(
@@ -397,6 +28,7 @@ const Item = memo(
       onMouseEnter,
       onMouseLeave,
       compact,
+      globalCompact,
       expanded,
       position,
       onClick,
@@ -431,9 +63,7 @@ const Item = memo(
       });
     }, [link.style, isActive, showBorder]);
 
-    const actionNode = useMemo(() => {
-      return getActionNode(link, ActionComponent);
-    }, [link, ActionComponent]);
+    const actionNode = ActionComponent;
     const renderedActionNode = compact ? null : actionNode;
 
     useActionHeight(
@@ -520,18 +150,6 @@ const Item = memo(
         return <SurfaceItemContent link={link} contentContainerRef={contentContainerRef} />;
       }
 
-      if (link.isConfirmation) {
-        return (
-          <SurfaceItemContent
-            link={{
-              ...link,
-              surfaceComponent: () => <ConfirmationSurface item={link} />,
-            }}
-            contentContainerRef={contentContainerRef}
-          />
-        );
-      }
-
       return (
         <StandardItemContent
           link={link}
@@ -553,18 +171,18 @@ const Item = memo(
     return (
       <motion.div
         ref={ref}
-        {...getNavItemCardProps(
+        {...getNavItemCardProps({
           expanded,
           position,
           showBorder,
-          itemStyle.card,
-          itemStyle.scale,
+          cardStyle: itemStyle.card,
+          cardScale: itemStyle.scale,
           cardWidth,
           isMobile,
-          link.type !== 'COUNTDOWN' && !link.isOverlay,
           containerHeight,
-          link.isSurface || link.isConfirmation
-        )}
+          isAnchoredToBottom: link.isSurface,
+          globalCompact,
+        })}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
         onFocus={handleFocus}

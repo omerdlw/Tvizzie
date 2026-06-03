@@ -14,10 +14,9 @@ import { deleteMediaReview, subscribeToMediaReviews, toggleReviewLike } from '@/
 
 import { getRatingStats, sortReviews } from './utils';
 
-function createReviewNavState({ confirmation = null, ownReview = null }) {
+function createReviewNavState({ ownReview = null }) {
   return {
     canSubmit: true,
-    confirmation,
     isActive: false,
     isSubmitting: false,
     loadingLabel: null,
@@ -46,7 +45,6 @@ export function useMediaReviews({
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [navConfirmation, setNavConfirmation] = useState(null);
   const pendingLikesRef = useRef(new Map());
 
   const currentUserId = auth.user?.id;
@@ -144,7 +142,6 @@ export function useMediaReviews({
 
     try {
       await deleteMediaReview({ media, userId: currentUserId });
-      setNavConfirmation(null);
       return true;
     } catch (error) {
       toast.error(error?.message || 'Failed to delete review');
@@ -231,11 +228,10 @@ export function useMediaReviews({
 
     onReviewStateChange(
       createReviewNavState({
-        confirmation: navConfirmation,
         ownReview,
       })
     );
-  }, [navConfirmation, onReviewStateChange, ownReview]);
+  }, [onReviewStateChange, ownReview]);
 
   return {
     applyOptimisticReviewUpdate,
@@ -249,7 +245,6 @@ export function useMediaReviews({
     ownReview,
     ratingStats,
     reviews,
-    setNavConfirmation,
     sortedReviews,
     userProfile,
   };

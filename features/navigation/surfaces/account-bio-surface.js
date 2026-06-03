@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { getUserAvatarUrl } from '@/core/utils';
-import { useSurfaceHeader } from '@/core/modules/nav/surfaces/surface-shell';
+import { useSurfaceHeader } from '@/features/navigation/surfaces/surface-shell';
 
 function formatFollowCount(value) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);

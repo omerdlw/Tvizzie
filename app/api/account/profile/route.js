@@ -236,7 +236,8 @@ function buildUsernameCandidate(baseValue, suffix = '') {
   const maxBaseLength = Math.max(1, 24 - suffix.length);
   const trimmedBase = rawBase.slice(0, maxBaseLength).replace(/[_-]+$/g, '') || 'user';
   const candidate = `${trimmedBase}${suffix}`;
-  const normalizedCandidate = candidate.length >= 3 ? candidate : `${candidate}${'user'.slice(0, 3 - candidate.length)}`;
+  const normalizedCandidate =
+    candidate.length >= 3 ? candidate : `${candidate}${'user'.slice(0, 3 - candidate.length)}`;
 
   return validateUsername(normalizedCandidate);
 }

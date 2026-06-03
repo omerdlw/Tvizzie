@@ -46,19 +46,47 @@ export default function AdaptiveImage({
   if (!resolvedSrc) {
     return null;
   }
-  const imageClassName = cn(fill ? 'absolute inset-0 h-full w-full' : 'h-full w-full', "", hasLoaded ? 'opacity-100' : 'opacity-0', className);
-  const handleLoad = event => {
+  const imageClassName = cn(
+    fill ? 'absolute inset-0 h-full w-full' : 'h-full w-full',
+    '',
+    hasLoaded ? 'opacity-100' : 'opacity-0',
+    className
+  );
+  const handleLoad = (event) => {
     setHasLoaded(true);
     setHasFailed(false);
     onLoad?.(event);
   };
-  const handleError = event => {
+  const handleError = (event) => {
     setHasFailed(true);
     onError?.(event);
   };
-  return <div className={cn('center relative h-full w-full overflow-hidden', wrapperClassName)}>
+  return (
+    <div className={cn('center relative h-full w-full overflow-hidden', wrapperClassName)}>
       {!hasLoaded && !hasFailed ? <Spinner className="opacity-50" size={16} /> : null}
 
-      {mode === 'img' ? <img ref={imageRef} src={resolvedSrc} alt={alt} className={imageClassName} onLoad={handleLoad} onError={handleError} {...props} /> : <Image ref={imageRef} src={resolvedSrc} alt={alt} fill={fill} className={imageClassName} onLoad={handleLoad} onError={handleError} {...props} />}
-    </div>;
+      {mode === 'img' ? (
+        <img
+          ref={imageRef}
+          src={resolvedSrc}
+          alt={alt}
+          className={imageClassName}
+          onLoad={handleLoad}
+          onError={handleError}
+          {...props}
+        />
+      ) : (
+        <Image
+          ref={imageRef}
+          src={resolvedSrc}
+          alt={alt}
+          fill={fill}
+          className={imageClassName}
+          onLoad={handleLoad}
+          onError={handleError}
+          {...props}
+        />
+      )}
+    </div>
+  );
 }

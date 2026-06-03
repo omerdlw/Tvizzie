@@ -20,7 +20,6 @@ import MovieView from './view';
 
 function createReviewState() {
   return {
-    confirmation: null,
     isActive: false,
     isSubmitting: false,
     ownReview: false,

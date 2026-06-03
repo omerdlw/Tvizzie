@@ -7,30 +7,46 @@ import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { ensureLegacyFavoritesBackfilled, subscribeToLikeStatus, toggleUserLike } from '@/core/services/media/likes';
-import { markUserWatched, removeUserWatchedItem, subscribeToWatchedStatus, subscribeToWatchlistStatus, toggleUserWatchlistItem } from '@/core/services/media/watched-watchlist';
+import {
+  markUserWatched,
+  removeUserWatchedItem,
+  subscribeToWatchedStatus,
+  subscribeToWatchlistStatus,
+  toggleUserWatchlistItem,
+} from '@/core/services/media/watched-watchlist';
 import { cn } from '@/core/utils';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/core/utils/media';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import Icon from '@/ui/icon';
 function getMediaSnapshot(media) {
-  const normalizedGenres = Array.isArray(media?.genres) ? media.genres.map(genre => {
-    if (!genre) {
-      return null;
-    }
-    if (typeof genre === 'object') {
-      return {
-        id: genre.id ?? null,
-        name: genre.name || null
-      };
-    }
-    return {
-      id: null,
-      name: String(genre)
-    };
-  }).filter(Boolean) : [];
-  const genreIds = Array.isArray(media?.genre_ids) ? media.genre_ids : normalizedGenres.map(genre => genre.id).filter(value => Number.isFinite(Number(value))).map(value => Number(value));
-  const watchProviders = media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+  const normalizedGenres = Array.isArray(media?.genres)
+    ? media.genres
+        .map((genre) => {
+          if (!genre) {
+            return null;
+          }
+          if (typeof genre === 'object') {
+            return {
+              id: genre.id ?? null,
+              name: genre.name || null,
+            };
+          }
+          return {
+            id: null,
+            name: String(genre),
+          };
+        })
+        .filter(Boolean)
+    : [];
+  const genreIds = Array.isArray(media?.genre_ids)
+    ? media.genre_ids
+    : normalizedGenres
+        .map((genre) => genre.id)
+        .filter((value) => Number.isFinite(Number(value)))
+        .map((value) => Number(value));
+  const watchProviders =
+    media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
   return {
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
@@ -39,7 +55,7 @@ function getMediaSnapshot(media) {
     backdropPath: media?.backdrop_path || media?.backdropPath || null,
     release_date: media?.release_date || null,
     first_air_date: media?.first_air_date || null,
-    genreNames: normalizedGenres.map(genre => genre.name).filter(Boolean),
+    genreNames: normalizedGenres.map((genre) => genre.name).filter(Boolean),
     genre_ids: genreIds,
     genres: normalizedGenres,
     name: media?.name || media?.original_name || '',
@@ -50,7 +66,7 @@ function getMediaSnapshot(media) {
     runtime: Number.isFinite(Number(media?.runtime)) ? Number(media.runtime) : null,
     vote_average: media?.vote_average ?? null,
     vote_count: Number.isFinite(Number(media?.vote_count)) ? Number(media.vote_count) : null,
-    watchProviders
+    watchProviders,
   };
 }
 function getActionPalette(palette, active) {
@@ -73,40 +89,41 @@ function ActionButton({
   loading = false,
   loadingLabel = 'Loading',
   onClick,
-  palette
+  palette,
 }) {
-  return <button type="button" onClick={onClick} disabled={disabled} className={cn("group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5", getActionPalette(palette, active))}>
-      {loading ? <span>
-          {loadingLabel}
-        </span> : <>
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
+        getActionPalette(palette, active)
+      )}
+    >
+      {loading ? (
+        <span>{loadingLabel}</span>
+      ) : (
+        <>
           <span className="inline-flex">
             <Icon icon={icon} size={16} className="" />
           </span>
-          <span>
-            {label}
-          </span>
-        </>}
-    </button>;
+          <span>{label}</span>
+        </>
+      )}
+    </button>
+  );
 }
-function ActionMotionItem({
-  children,
-  index = 0
-}) {
-  return <div>
-      {children}
-    </div>;
+function ActionMotionItem({ children, index = 0 }) {
+  return <div>{children}</div>;
 }
-export default function CollectionActions({
-  media
-}) {
+export default function CollectionActions({ media }) {
   const auth = useAuth();
   const toast = useToast();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const {
-    openModal
-  } = useModal();
+  const { openModal } = useModal();
   const userId = auth.user?.id || null;
   const isSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
   const currentPath = useMemo(() => getCurrentPathWithSearch(pathname, searchParams), [pathname, searchParams]);
@@ -124,27 +141,27 @@ export default function CollectionActions({
     submittingWatched: false,
     likeIntent: null,
     watchlistIntent: null,
-    watchedIntent: null
+    watchedIntent: null,
   });
   useEffect(() => {
-    if (!auth.isReady || userId && !isSessionReady) {
-      setState(prev => ({
+    if (!auth.isReady || (userId && !isSessionReady)) {
+      setState((prev) => ({
         ...prev,
         loadingLike: true,
         loadingWatchlist: true,
-        loadingWatched: true
+        loadingWatched: true,
       }));
       return;
     }
     if (!userId) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         liked: false,
         watchlist: false,
         watched: false,
         loadingLike: false,
         loadingWatchlist: false,
-        loadingWatched: false
+        loadingWatched: false,
       }));
       return;
     }
@@ -152,72 +169,87 @@ export default function CollectionActions({
     let unsubLike = () => {};
     let unsubWatchlist = () => {};
     let unsubWatched = () => {};
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       loadingLike: true,
       loadingWatchlist: true,
-      loadingWatched: true
+      loadingWatched: true,
     }));
     async function init() {
       await ensureLegacyFavoritesBackfilled(userId);
       if (!active) {
         return;
       }
-      unsubLike = subscribeToLikeStatus({
-        media: mediaSnapshot,
-        userId
-      }, liked => {
-        setState(prev => ({
-          ...prev,
-          liked,
-          loadingLike: false
-        }));
-      }, {
-        onError: () => setState(prev => ({
-          ...prev,
-          loadingLike: false
-        }))
-      });
-      unsubWatchlist = subscribeToWatchlistStatus({
-        media: mediaSnapshot,
-        userId
-      }, watchlist => {
-        setState(prev => ({
-          ...prev,
-          watchlist,
-          loadingWatchlist: false
-        }));
-      }, {
-        onError: () => setState(prev => ({
-          ...prev,
-          loadingWatchlist: false
-        }))
-      });
-      unsubWatched = subscribeToWatchedStatus({
-        media: mediaSnapshot,
-        userId
-      }, watched => {
-        setState(prev => ({
-          ...prev,
-          watched,
-          loadingWatched: false
-        }));
-      }, {
-        onError: () => setState(prev => ({
-          ...prev,
-          loadingWatched: false
-        }))
-      });
+      unsubLike = subscribeToLikeStatus(
+        {
+          media: mediaSnapshot,
+          userId,
+        },
+        (liked) => {
+          setState((prev) => ({
+            ...prev,
+            liked,
+            loadingLike: false,
+          }));
+        },
+        {
+          onError: () =>
+            setState((prev) => ({
+              ...prev,
+              loadingLike: false,
+            })),
+        }
+      );
+      unsubWatchlist = subscribeToWatchlistStatus(
+        {
+          media: mediaSnapshot,
+          userId,
+        },
+        (watchlist) => {
+          setState((prev) => ({
+            ...prev,
+            watchlist,
+            loadingWatchlist: false,
+          }));
+        },
+        {
+          onError: () =>
+            setState((prev) => ({
+              ...prev,
+              loadingWatchlist: false,
+            })),
+        }
+      );
+      unsubWatched = subscribeToWatchedStatus(
+        {
+          media: mediaSnapshot,
+          userId,
+        },
+        (watched) => {
+          setState((prev) => ({
+            ...prev,
+            watched,
+            loadingWatched: false,
+          }));
+        },
+        {
+          onError: () =>
+            setState((prev) => ({
+              ...prev,
+              loadingWatched: false,
+            })),
+        }
+      );
     }
     init().catch(() => {
       if (!active) {
         return;
       }
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loadingLike: false,
         loadingWatchlist: false,
-        loadingWatched: false
+        loadingWatched: false,
       }));
     });
     return () => {
@@ -231,9 +263,11 @@ export default function CollectionActions({
     if (auth.isAuthenticated && userId) {
       return userId;
     }
-    router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-      next: currentPath
-    }));
+    router.push(
+      buildAuthHref(AUTH_ROUTES.SIGN_IN, {
+        next: currentPath,
+      })
+    );
     return null;
   }
   async function handleLikeClick() {
@@ -245,27 +279,27 @@ export default function CollectionActions({
       return;
     }
     const intent = state.liked ? 'remove' : 'add';
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       submittingLike: true,
-      likeIntent: intent
+      likeIntent: intent,
     }));
     try {
       const result = await toggleUserLike({
         media: mediaSnapshot,
-        userId: resolvedUserId
+        userId: resolvedUserId,
       });
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        liked: result.isLiked
+        liked: result.isLiked,
       }));
     } catch (error) {
       toast.error(error?.message || 'Like could not be updated');
     } finally {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         submittingLike: false,
-        likeIntent: null
+        likeIntent: null,
       }));
     }
   }
@@ -278,27 +312,27 @@ export default function CollectionActions({
       return;
     }
     const intent = state.watchlist ? 'remove' : 'add';
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       submittingWatchlist: true,
-      watchlistIntent: intent
+      watchlistIntent: intent,
     }));
     try {
       const result = await toggleUserWatchlistItem({
         media: mediaSnapshot,
-        userId: resolvedUserId
+        userId: resolvedUserId,
       });
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        watchlist: result.isInWatchlist
+        watchlist: result.isInWatchlist,
       }));
     } catch (error) {
       toast.error(error?.message || 'Watchlist could not be updated');
     } finally {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         submittingWatchlist: false,
-        watchlistIntent: null
+        watchlistIntent: null,
       }));
     }
   }
@@ -311,39 +345,39 @@ export default function CollectionActions({
       return;
     }
     const intent = state.watched ? 'remove' : 'add';
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       submittingWatched: true,
-      watchedIntent: intent
+      watchedIntent: intent,
     }));
     try {
       if (state.watched) {
         await removeUserWatchedItem({
           media: mediaSnapshot,
-          userId: resolvedUserId
+          userId: resolvedUserId,
         });
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          watched: false
+          watched: false,
         }));
       } else {
         const result = await markUserWatched({
           media: mediaSnapshot,
-          userId: resolvedUserId
+          userId: resolvedUserId,
         });
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           watched: true,
-          watchlist: result.wasRemovedFromWatchlist ? false : prev.watchlist
+          watchlist: result.wasRemovedFromWatchlist ? false : prev.watchlist,
         }));
       }
     } catch (error) {
       toast.error(error?.message || 'Watched state could not be updated');
     } finally {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         submittingWatched: false,
-        watchedIntent: null
+        watchedIntent: null,
       }));
     }
   }
@@ -355,8 +389,8 @@ export default function CollectionActions({
     openModal('LIST_PICKER_MODAL', 'center', {
       data: {
         media: mediaSnapshot,
-        userId: resolvedUserId
-      }
+        userId: resolvedUserId,
+      },
     });
   }
   const showLikeAction = state.watched;
@@ -368,27 +402,69 @@ export default function CollectionActions({
     }
     router.push(getMediaDetailPath(mediaSnapshot));
   }
-  return <div className="flex flex-col gap-2">
-      {canGoToMedia ? <ActionMotionItem index={0}>
-          <ActionButton icon="solar:clapperboard-play-bold" label={mediaSnapshot.entityType === 'tv' ? 'Go to Series' : 'Go to Movie'} onClick={handleGoToMedia} palette="neutral" />
-        </ActionMotionItem> : null}
+  return (
+    <div className="flex flex-col gap-2">
+      {canGoToMedia ? (
+        <ActionMotionItem index={0}>
+          <ActionButton
+            icon="solar:clapperboard-play-bold"
+            label={mediaSnapshot.entityType === 'tv' ? 'Go to Series' : 'Go to Movie'}
+            onClick={handleGoToMedia}
+            palette="neutral"
+          />
+        </ActionMotionItem>
+      ) : null}
 
-      {showLikeAction ? <ActionMotionItem index={1}>
-          <ActionButton active={state.liked} disabled={state.loadingLike || state.submittingLike} icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'} label={state.liked ? 'Liked' : 'Like'} loading={state.loadingLike || state.submittingLike} loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'} onClick={handleLikeClick} palette="like" />
-        </ActionMotionItem> : null}
+      {showLikeAction ? (
+        <ActionMotionItem index={1}>
+          <ActionButton
+            active={state.liked}
+            disabled={state.loadingLike || state.submittingLike}
+            icon={state.liked ? 'solar:heart-bold' : 'solar:heart-linear'}
+            label={state.liked ? 'Liked' : 'Like'}
+            loading={state.loadingLike || state.submittingLike}
+            loadingLabel={state.loadingLike ? 'Checking' : state.likeIntent === 'remove' ? 'Removing' : 'Adding'}
+            onClick={handleLikeClick}
+            palette="like"
+          />
+        </ActionMotionItem>
+      ) : null}
 
       <div className={cn('grid grid-cols-1 gap-2', showWatchlistAction ? 'min-[460px]:grid-cols-2' : '')}>
         <ActionMotionItem index={2}>
-          <ActionButton active={state.watched} disabled={state.loadingWatched || state.submittingWatched} icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'} label={state.watched ? 'Unwatch' : 'Mark Watched'} loading={state.loadingWatched || state.submittingWatched} loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'} onClick={handleWatchedClick} palette="watched" />
+          <ActionButton
+            active={state.watched}
+            disabled={state.loadingWatched || state.submittingWatched}
+            icon={state.watched ? 'solar:eye-bold' : 'solar:eye-linear'}
+            label={state.watched ? 'Unwatch' : 'Mark Watched'}
+            loading={state.loadingWatched || state.submittingWatched}
+            loadingLabel={state.loadingWatched ? 'Checking' : state.watchedIntent === 'remove' ? 'Removing' : 'Saving'}
+            onClick={handleWatchedClick}
+            palette="watched"
+          />
         </ActionMotionItem>
 
-        {showWatchlistAction ? <ActionMotionItem index={3}>
-            <ActionButton active={state.watchlist} disabled={state.loadingWatchlist || state.submittingWatchlist} icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'} label={state.watchlist ? 'In Watchlist' : 'Watchlist'} loading={state.loadingWatchlist || state.submittingWatchlist} loadingLabel={state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'} onClick={handleWatchlistClick} palette="watchlist" />
-          </ActionMotionItem> : null}
+        {showWatchlistAction ? (
+          <ActionMotionItem index={3}>
+            <ActionButton
+              active={state.watchlist}
+              disabled={state.loadingWatchlist || state.submittingWatchlist}
+              icon={state.watchlist ? 'solar:bookmark-bold' : 'solar:bookmark-linear'}
+              label={state.watchlist ? 'In Watchlist' : 'Watchlist'}
+              loading={state.loadingWatchlist || state.submittingWatchlist}
+              loadingLabel={
+                state.loadingWatchlist ? 'Checking' : state.watchlistIntent === 'remove' ? 'Removing' : 'Adding'
+              }
+              onClick={handleWatchlistClick}
+              palette="watchlist"
+            />
+          </ActionMotionItem>
+        ) : null}
       </div>
 
       <ActionMotionItem index={4}>
         <ActionButton icon="solar:list-broken" label="Add To List" onClick={handleOpenListPicker} palette="neutral" />
       </ActionMotionItem>
-    </div>;
+    </div>
+  );
 }

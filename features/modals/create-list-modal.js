@@ -16,19 +16,22 @@ import Icon from '@/ui/icon';
 // CONSTANTS
 // --------------------------------------------------
 
-const ACTION_BUTTON_CLASS = "h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase";
+const ACTION_BUTTON_CLASS =
+  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase';
 
 // --------------------------------------------------
 // HELPERS
 // --------------------------------------------------
 
 function normalizeSearchResult(item = {}) {
-  const entityType = String(item?.media_type || item?.entityType || '').trim().toLowerCase();
+  const entityType = String(item?.media_type || item?.entityType || '')
+    .trim()
+    .toLowerCase();
   if (entityType !== 'movie' && entityType !== 'tv') return null;
   const entityId = String(item?.id ?? item?.entityId ?? '').trim();
   const title = String(item?.title || item?.original_title || '').trim();
   const name = String(item?.name || item?.original_name || '').trim();
-  if (!entityId || !title && !name) return null;
+  if (!entityId || (!title && !name)) return null;
   return {
     backdrop_path: item?.backdrop_path || item?.backdropPath || null,
     entityId,
@@ -43,7 +46,7 @@ function normalizeSearchResult(item = {}) {
     release_date: item?.release_date || null,
     title: title || name,
     vote_average: Number.isFinite(Number(item?.vote_average)) ? Number(item.vote_average) : null,
-    vote_count: Number.isFinite(Number(item?.vote_count)) ? Number(item.vote_count) : null
+    vote_count: Number.isFinite(Number(item?.vote_count)) ? Number(item.vote_count) : null,
   };
 }
 function getDraftMediaKey(item) {
@@ -60,14 +63,9 @@ function getItemYear(item) {
 // COMPONENT LOGIC
 // --------------------------------------------------
 
-export default function CreateListModal({
-  close,
-  data
-}) {
+export default function CreateListModal({ close, data }) {
   const auth = useAuth();
-  const {
-    closeAllModals
-  } = useModalActions();
+  const { closeAllModals } = useModalActions();
   const toast = useToast();
   const router = useRouter();
   const seedMedia = data?.media ?? null;
@@ -84,18 +82,18 @@ export default function CreateListModal({
   const deferredSearchQuery = useDeferredValue(searchQuery.trim());
 
   // Derived Values
-  const selectedKeys = new Set(draftItems.map(item => getDraftMediaKey(item)));
+  const selectedKeys = new Set(draftItems.map((item) => getDraftMediaKey(item)));
   const canSubmit = Boolean(draftTitle.trim()) && draftItems.length > 0;
-  const showSearchResults = searchResults.length > 0 || deferredSearchQuery.length >= 2 && isSearching;
+  const showSearchResults = searchResults.length > 0 || (deferredSearchQuery.length >= 2 && isSearching);
 
   // Effects
   useEffect(() => {
     if (!seedMedia) return;
     const normalized = normalizeSearchResult(seedMedia);
     if (!normalized) return;
-    setDraftItems(current => {
+    setDraftItems((current) => {
       const key = getDraftMediaKey(normalized);
-      if (current.some(item => getDraftMediaKey(item) === key)) return current;
+      if (current.some((item) => getDraftMediaKey(item) === key)) return current;
       return [...current, normalized];
     });
   }, [seedMedia]);
@@ -109,8 +107,13 @@ export default function CreateListModal({
     const timeoutId = window.setTimeout(async () => {
       setIsSearching(true);
       try {
-        const [movieResponse, tvResponse] = await Promise.all([TmdbService.searchContent(deferredSearchQuery, 'movie', 1), TmdbService.searchContent(deferredSearchQuery, 'tv', 1)]);
-        const results = [...(movieResponse?.data?.results || []), ...(tvResponse?.data?.results || [])].map(normalizeSearchResult).filter(Boolean);
+        const [movieResponse, tvResponse] = await Promise.all([
+          TmdbService.searchContent(deferredSearchQuery, 'movie', 1),
+          TmdbService.searchContent(deferredSearchQuery, 'tv', 1),
+        ]);
+        const results = [...(movieResponse?.data?.results || []), ...(tvResponse?.data?.results || [])]
+          .map(normalizeSearchResult)
+          .filter(Boolean);
         if (!ignore) {
           startSearchTransition(() => setSearchResults(results));
         }
@@ -127,16 +130,16 @@ export default function CreateListModal({
   }, [deferredSearchQuery, startSearchTransition]);
 
   // Handlers
-  const handleAdd = item => {
+  const handleAdd = (item) => {
     const key = getDraftMediaKey(item);
-    setDraftItems(current => {
-      if (current.some(existing => getDraftMediaKey(existing) === key)) return current;
+    setDraftItems((current) => {
+      if (current.some((existing) => getDraftMediaKey(existing) === key)) return current;
       return [...current, item];
     });
   };
-  const handleRemove = item => {
+  const handleRemove = (item) => {
     const key = getDraftMediaKey(item);
-    setDraftItems(current => current.filter(existing => getDraftMediaKey(existing) !== key));
+    setDraftItems((current) => current.filter((existing) => getDraftMediaKey(existing) !== key));
   };
   const handleQuickAdd = () => {
     if (!searchResults.length) return;
@@ -156,11 +159,11 @@ export default function CreateListModal({
         description: draftDescription,
         items: draftItems,
         title: draftTitle,
-        userId: auth.user.id
+        userId: auth.user.id,
       });
       closeAllModals({
         success: true,
-        list: nextList
+        list: nextList,
       });
       const ownerHandle = nextList?.ownerSnapshot?.username;
       if (ownerHandle && nextList?.slug) {
@@ -172,7 +175,28 @@ export default function CreateListModal({
       setIsSaving(false);
     }
   };
-  return <ModalView close={close} draftTitle={draftTitle} setDraftTitle={setDraftTitle} draftDescription={draftDescription} setDraftDescription={setDraftDescription} searchQuery={searchQuery} setSearchQuery={setSearchQuery} searchResults={searchResults} isSearching={isSearching} showSearchResults={showSearchResults} draftItems={draftItems} selectedKeys={selectedKeys} isSaving={isSaving} canSubmit={canSubmit} handleAdd={handleAdd} handleRemove={handleRemove} handleQuickAdd={handleQuickAdd} handleSubmit={handleSubmit} />;
+  return (
+    <ModalView
+      close={close}
+      draftTitle={draftTitle}
+      setDraftTitle={setDraftTitle}
+      draftDescription={draftDescription}
+      setDraftDescription={setDraftDescription}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      searchResults={searchResults}
+      isSearching={isSearching}
+      showSearchResults={showSearchResults}
+      draftItems={draftItems}
+      selectedKeys={selectedKeys}
+      isSaving={isSaving}
+      canSubmit={canSubmit}
+      handleAdd={handleAdd}
+      handleRemove={handleRemove}
+      handleQuickAdd={handleQuickAdd}
+      handleSubmit={handleSubmit}
+    />
+  );
 }
 
 // --------------------------------------------------
@@ -197,86 +221,164 @@ function ModalView({
   handleAdd,
   handleRemove,
   handleQuickAdd,
-  handleSubmit
+  handleSubmit,
 }) {
-  return <Container className="max-h-[72dvh] w-full sm:w-[520px]" header={false} close={close} bodyClassName="flex overflow-hidden p-3" footer={{
-    left: <span className="text-xs text-black/50">
+  return (
+    <Container
+      className="max-h-[72dvh] w-full sm:w-[520px]"
+      header={false}
+      close={close}
+      bodyClassName="flex overflow-hidden p-3"
+      footer={{
+        left: (
+          <span className="text-xs text-black/50">
             {draftItems.length} {draftItems.length === 1 ? 'title' : 'titles'}
-          </span>,
-    right: <>
-            <Button type="button" onClick={close} disabled={isSaving} className={`${ACTION_BUTTON_CLASS}text-black/70 hover:bg-black/5 hover:text-black`}>
+          </span>
+        ),
+        right: (
+          <>
+            <Button
+              type="button"
+              onClick={close}
+              disabled={isSaving}
+              className={`${ACTION_BUTTON_CLASS}text-black/70 hover:bg-black/5 hover:text-black`}
+            >
               Cancel
             </Button>
-            <Button type="button" onClick={handleSubmit} disabled={isSaving || !canSubmit} className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50">
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSaving || !canSubmit}
+              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+            >
               {isSaving ? 'Creating' : 'Create List'}
             </Button>
           </>
-  }}>
+        ),
+      }}
+    >
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          <Input value={draftTitle} onChange={event => setDraftTitle(event.target.value)} placeholder="List title" autoFocus className={{
-          wrapper: "flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20",
-          input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50'
-        }} />
-          <Input value={draftDescription} onChange={event => setDraftDescription(event.target.value)} placeholder="Description (optional)" className={{
-          wrapper: "flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20",
-          input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50'
-        }} />
+          <Input
+            value={draftTitle}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            placeholder="List title"
+            autoFocus
+            className={{
+              wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
+              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+            }}
+          />
+          <Input
+            value={draftDescription}
+            onChange={(event) => setDraftDescription(event.target.value)}
+            placeholder="Description (optional)"
+            className={{
+              wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
+              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+            }}
+          />
         </div>
 
-        <Input value={searchQuery} onChange={event => setSearchQuery(event.target.value)} onKeyDown={event => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          handleQuickAdd();
-        }
-      }} placeholder="Search movies to add" leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />} rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-black/50" /> : null} className={{
-        wrapper: "flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20",
-        input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
-        leftIcon: 'flex shrink-0 items-center pr-2.5',
-        rightIcon: 'flex shrink-0 items-center pl-2.5'
-      }} />
+        <Input
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              handleQuickAdd();
+            }
+          }}
+          placeholder="Search movies to add"
+          leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
+          rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-black/50" /> : null}
+          className={{
+            wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
+            input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+            leftIcon: 'flex shrink-0 items-center pr-2.5',
+            rightIcon: 'flex shrink-0 items-center pl-2.5',
+          }}
+        />
 
-        <div data-lenis-prevent data-lenis-prevent-wheel className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]">
-          {showSearchResults ? <>
-              {searchResults.map(item => <SearchResultRow key={getDraftMediaKey(item)} item={item} isAdded={selectedKeys.has(getDraftMediaKey(item))} onAdd={handleAdd} />)}
-              {isSearching && searchResults.length === 0 && <div className="flex h-20 items-center justify-center text-sm text-black/70">Searching</div>}
-            </> : <>
-              {draftItems.length > 0 && <p className="px-1 text-[10px] font-bold tracking-widest text-black/50 uppercase">Draft</p>}
-              {draftItems.length > 0 ? draftItems.map((item, index) => <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />) : <div className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center">
+        <div
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
+        >
+          {showSearchResults ? (
+            <>
+              {searchResults.map((item) => (
+                <SearchResultRow
+                  key={getDraftMediaKey(item)}
+                  item={item}
+                  isAdded={selectedKeys.has(getDraftMediaKey(item))}
+                  onAdd={handleAdd}
+                />
+              ))}
+              {isSearching && searchResults.length === 0 && (
+                <div className="flex h-20 items-center justify-center text-sm text-black/70">Searching</div>
+              )}
+            </>
+          ) : (
+            <>
+              {draftItems.length > 0 && (
+                <p className="px-1 text-[10px] font-bold tracking-widest text-black/50 uppercase">Draft</p>
+              )}
+              {draftItems.length > 0 ? (
+                draftItems.map((item, index) => (
+                  <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
+                ))
+              ) : (
+                <div className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center">
                   <Icon icon="solar:list-bold" size={24} className="text-black/50" />
                   <p className="text-xs text-black/50">Search movies above to start building your list</p>
-                </div>}
-            </>}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
-    </Container>;
+    </Container>
+  );
 }
-function SearchResultRow({
-  item,
-  isAdded,
-  onAdd
-}) {
+function SearchResultRow({ item, isAdded, onAdd }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
-  return <button type="button" disabled={isAdded} onClick={() => onAdd(item)} className={cn("group flex w-full items-center gap-3 border px-3 py-2.5 text-left", isAdded ? 'cursor-default border-black/10 bg-black/5 opacity-70' : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5')}>
+  return (
+    <button
+      type="button"
+      disabled={isAdded}
+      onClick={() => onAdd(item)}
+      className={cn(
+        'group flex w-full items-center gap-3 border px-3 py-2.5 text-left',
+        isAdded
+          ? 'cursor-default border-black/10 bg-black/5 opacity-70'
+          : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
+      )}
+    >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
         {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
       </div>
 
-      <span className={cn("flex size-6 shrink-0 items-center justify-center border", isAdded ? 'border-info bg-info text-white' : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black')}>
+      <span
+        className={cn(
+          'flex size-6 shrink-0 items-center justify-center border',
+          isAdded
+            ? 'border-info bg-info text-white'
+            : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
+        )}
+      >
         <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={16} />
       </span>
-    </button>;
+    </button>
+  );
 }
-function DraftItemRow({
-  index,
-  item,
-  onRemove
-}) {
+function DraftItemRow({ index, item, onRemove }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
-  return <div className="group bg-primary flex items-center gap-3 border border-black/5 px-3 py-2 hover:border-black/10">
+  return (
+    <div className="group bg-primary flex items-center gap-3 border border-black/5 px-3 py-2 hover:border-black/10">
       <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
 
       <div className="min-w-0 flex-1">
@@ -284,8 +386,14 @@ function DraftItemRow({
         {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
       </div>
 
-      <Button variant="destructive-icon" onClick={() => onRemove(item)} className="size-7 shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100" aria-label={`Remove${title}`}>
+      <Button
+        variant="destructive-icon"
+        onClick={() => onRemove(item)}
+        className="size-7 shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+        aria-label={`Remove${title}`}
+      >
         <Icon icon="material-symbols:close-rounded" size={16} />
       </Button>
-    </div>;
+    </div>
+  );
 }

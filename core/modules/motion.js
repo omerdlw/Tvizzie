@@ -56,8 +56,8 @@ export const NAV_CARD_OPACITY_TRANSITION = Object.freeze({
 });
 
 export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
-  duration: 0.28,
-  ease: [0.16, 1, 0.3, 1],
+  duration: 0.38,
+  ease: 'easeInOut',
 });
 
 export const NAV_BACKDROP_TRANSITION = Object.freeze({
@@ -159,24 +159,27 @@ const NAV_CONTENT_OFFSET = 6;
 
 export const NAV_ACTION_PANEL_MOTION = Object.freeze({
   layout: 'position',
-  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 10, scale: 0.985, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
   exit: {
     opacity: 0,
-    y: -NAV_CONTENT_OFFSET,
+    y: -4,
+    scale: 0.99,
+    filter: 'blur(3px)',
     transition: NAV_EXIT_TRANSITION,
   },
-  transition: NAV_CONTENT_TRANSITION,
+  transition: NAV_ACTION_SPRING,
 });
 
 export const NAV_ACTION_ITEM_MOTION = Object.freeze({
   layout: 'position',
-  initial: { opacity: 0, scale: 0.88, y: 4 },
-  animate: { opacity: 1, scale: 1, y: 0 },
+  initial: { opacity: 0, scale: 0.88, y: 4, filter: 'blur(3px)' },
+  animate: { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' },
   exit: {
     opacity: 0,
     scale: 0.88,
     y: -4,
+    filter: 'blur(2px)',
     transition: NAV_EXIT_TRANSITION,
   },
   transition: NAV_ACTION_SPRING,
@@ -252,23 +255,25 @@ export function getNavSurfaceMotion({ openedFromCompact = false } = {}) {
 }
 
 export const NAV_DESCRIPTION_MOTION = Object.freeze({
-  initial: { opacity: 0, y: NAV_CONTENT_OFFSET },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: NAV_CONTENT_OFFSET, filter: 'blur(3px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
   exit: {
     opacity: 0,
     y: -NAV_CONTENT_OFFSET,
+    filter: 'blur(2px)',
     transition: NAV_EXIT_TRANSITION,
   },
   transition: NAV_CONTENT_TRANSITION,
 });
 
 export const NAV_SEARCH_PANEL_MOTION = Object.freeze({
-  initial: { opacity: 0, y: -NAV_CONTENT_OFFSET, height: 0 },
-  animate: { opacity: 1, y: 0, height: 'auto' },
+  initial: { opacity: 0, y: -NAV_CONTENT_OFFSET, height: 0, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, height: 'auto', filter: 'blur(0px)' },
   exit: {
     opacity: 0,
     y: -NAV_CONTENT_OFFSET,
     height: 0,
+    filter: 'blur(4px)',
     transition: NAV_EXIT_TRANSITION,
   },
   transition: NAV_SEARCH_REVEAL_TRANSITION,

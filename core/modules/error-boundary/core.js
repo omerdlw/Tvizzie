@@ -113,7 +113,7 @@ export class ErrorBoundaryCore extends React.Component {
       }
 
       return (
-        <div className="center h-screen w-screen bg-[#fecaca] text-[#7f1d1d]">
+        <div className="center bg-error/10 text-error h-screen w-screen">
           <h1 className="text-9xl font-extrabold">ERROR</h1>
         </div>
       );

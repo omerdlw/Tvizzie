@@ -10,7 +10,7 @@ import {
   completePasswordSetRequest,
   resolveSecurityErrorMessage,
 } from '../security';
-import AuthVerificationSurface from '@/core/modules/nav/surfaces/auth-verification-surface';
+import AuthVerificationSurface from '@/features/navigation/surfaces/auth-verification-surface';
 import { useCallback } from 'react';
 import {
   logCredentialAuditFailure,

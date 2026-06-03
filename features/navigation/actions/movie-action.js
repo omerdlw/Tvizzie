@@ -1,9 +1,11 @@
 'use client';
 
 import { REVIEW_SORT_OPTIONS } from '@/features/reviews/utils';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/core/modules/nav/actions/styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 import { Select } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import { motion } from 'framer-motion';
+import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 
 export default function MovieAction({
   mode = 'watch',
@@ -45,7 +47,9 @@ export default function MovieAction({
   const label = isActive ? 'Back' : 'Where to watch?';
 
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      transition={NAV_ACTION_SPRING}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -59,6 +63,6 @@ export default function MovieAction({
     >
       <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
       <span className="truncate">{label}</span>
-    </button>
+    </motion.button>
   );
 }

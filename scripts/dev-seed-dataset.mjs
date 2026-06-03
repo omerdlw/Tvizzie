@@ -237,9 +237,7 @@ function weightedTimelineDate({ after = null, maxDaysAgo = 420 } = {}) {
   const upper = now - randomInt(0, 6 * 60 * 60 * 1000);
   const recentLower = Math.max(lowerBound, now - randomInt(1, 45) * ONE_DAY_MS);
   const timestamp =
-    recentBias < 0.38
-      ? randomInt(recentLower, upper)
-      : randomInt(lowerBound, Math.max(lowerBound + 1, upper));
+    recentBias < 0.38 ? randomInt(recentLower, upper) : randomInt(lowerBound, Math.max(lowerBound + 1, upper));
 
   return new Date(timestamp).toISOString();
 }
@@ -310,7 +308,17 @@ function ownerSnapshot(user) {
   };
 }
 
-function createActivity({ details = {}, eventType, occurredAt, renderKind = 'text', reviewCard = null, secondaryRef = '-', slotType, subject, user }) {
+function createActivity({
+  details = {},
+  eventType,
+  occurredAt,
+  renderKind = 'text',
+  reviewCard = null,
+  secondaryRef = '-',
+  slotType,
+  subject,
+  user,
+}) {
   const primaryRef = subjectRef(subject);
   const key = dedupeKey({
     actorUserId: user.id,
@@ -626,7 +634,11 @@ function createReviewText(item, user, rating) {
   const details = shuffle(REVIEW_DETAILS).slice(0, detailCount);
   const titleReference = Math.random() < 0.45 ? ` ${item.title}` : '';
   const closer = sample(REVIEW_CLOSERS);
-  const sentences = [sample(REVIEW_OPENERS[sentiment]).replace('This', titleReference.trim() || 'This'), ...details, closer];
+  const sentences = [
+    sample(REVIEW_OPENERS[sentiment]).replace('This', titleReference.trim() || 'This'),
+    ...details,
+    closer,
+  ];
 
   if (Math.random() < 0.18) {
     sentences.push(
@@ -777,7 +789,10 @@ function buildDataset(users, pool) {
   users.forEach((user, userIndex) => {
     const watchlistItems = pickMedia(pool, { count: 400, movieBias: user.movieBias + userIndex * 0.015 });
     const watchedItems = pickMedia(pool, { count: 400, movieBias: user.movieBias - 0.08 + userIndex * 0.02 });
-    const reviewItems = pickMedia(pool, { count: 400, movieBias: user.movieBias + (user.username === 'dev_nora' ? 0.1 : -0.04) });
+    const reviewItems = pickMedia(pool, {
+      count: 400,
+      movieBias: user.movieBias + (user.username === 'dev_nora' ? 0.1 : -0.04),
+    });
     const mediaLikeItems = pickMedia(pool, { count: user.mediaLikeCount, movieBias: user.movieBias });
 
     mediaLikesByUser.set(user.id, mediaLikeItems);
@@ -1367,9 +1382,17 @@ async function verifyCounts(admin, users) {
         admin.from('activity').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
 
-    const firstError = [watchlist, watched, mediaLikes, mediaReviews, lists, listReviews, reviewLikes, listLikes, activity].find(
-      (result) => result.error
-    );
+    const firstError = [
+      watchlist,
+      watched,
+      mediaLikes,
+      mediaReviews,
+      lists,
+      listReviews,
+      reviewLikes,
+      listLikes,
+      activity,
+    ].find((result) => result.error);
     if (firstError) {
       throw new Error(`Verification failed for ${user.username}: ${firstError.error.message}`);
     }

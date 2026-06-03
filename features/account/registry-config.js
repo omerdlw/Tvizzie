@@ -12,6 +12,7 @@ import ReviewAction from '@/features/navigation/actions/review-action';
 import Icon from '@/ui/icon';
 import { getUserAvatarUrl } from '@/core/utils';
 import { Spinner } from '@/ui/loadings/spinner';
+import { createConfirmationSurfaceEntry } from '@/features/navigation/surfaces/confirmation-surface';
 
 const ACCOUNT_LOADING_NAV_PRIORITY = 190;
 const ACCOUNT_LOADING_NAV_CLEANUP_DELAY_MS = 8000;
@@ -91,6 +92,10 @@ export function buildAccountEditState({
     isLoading,
     navRegistrySource,
   });
+  const deleteConfirmationSurface = createConfirmationSurfaceEntry(deleteConfirmation, {
+    icon: avatarPreview,
+    title: 'Edit Account',
+  });
   const editNavAction = !authIsAuthenticated ? (
     <AccountAction isAuthenticated={false} onSignIn={handleSignIn} />
   ) : isMediaUploading ? null : (
@@ -139,7 +144,7 @@ export function buildAccountEditState({
               },
             ]
           : [],
-      confirmation: deleteConfirmation,
+      surface: deleteConfirmationSurface,
       title: authIsAuthenticated ? (isMediaUploading ? 'Media uploading' : 'Edit Account') : 'Account',
       icon: isMediaUploading ? <Spinner size={22} /> : avatarPreview,
       description: isLoading
@@ -267,6 +272,15 @@ export function buildAccountPageState({
     isLoading: isPageLoading,
     navRegistrySource,
   });
+  const confirmationSurface = createConfirmationSurfaceEntry(
+    itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
+    {
+      description: navDescription,
+      icon: getUserAvatarUrl(profile),
+      title: accountTitle,
+    }
+  );
+  const effectiveNavSurface = confirmationSurface || navSurface;
 
   return {
     modal: {
@@ -280,7 +294,6 @@ export function buildAccountPageState({
     nav: {
       path: '/account',
       actions: accountNavActions,
-      confirmation: itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
       description: navDescription,
       icon: getUserAvatarUrl(profile),
       iconOverlay: shouldShowCurrentAccountAvatar
@@ -299,7 +312,7 @@ export function buildAccountPageState({
             source: navRegistrySource,
           }
         : undefined,
-      surface: navSurface,
+      surface: effectiveNavSurface,
       title: profile?.isPrivate ? (
         <span key="title-icon" className="flex min-w-0 items-center gap-0.5">
           <span key="title" className="truncate">
@@ -310,7 +323,7 @@ export function buildAccountPageState({
       ) : (
         accountTitle
       ),
-      action: navSurface ? null : shouldUseNavActionOverride ? (
+      action: effectiveNavSurface ? null : shouldUseNavActionOverride ? (
         resolvedNavActionOverride
       ) : showSectionSaveAction ? (
         <AccountAction mode="save" onSave={onSaveSectionOrder} isSaveLoading={isSectionSaveLoading} />

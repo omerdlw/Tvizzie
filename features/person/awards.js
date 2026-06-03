@@ -21,17 +21,21 @@ function sortAwardsByYear(left, right) {
   return Number(right[0]) - Number(left[0]);
 }
 function buildAwardsTimeline(organizations = []) {
-  const awards = organizations.flatMap(organization => (organization.years || []).flatMap(yearGroup => (yearGroup.categories || []).map((category, index) => ({
-    key: `${organization.id}-${yearGroup.year}-${index}-${category.projectId || category.project || category.category}`,
-    year: yearGroup.year || '—',
-    organization: organization.title,
-    type: category.type || 'Nominee',
-    category: category.category || 'Award',
-    project: category.project || null,
-    projectId: category.projectId || null,
-    mediaType: category.mediaType === 'tv' ? 'tv' : 'movie',
-    poster: category.poster || null
-  }))));
+  const awards = organizations.flatMap((organization) =>
+    (organization.years || []).flatMap((yearGroup) =>
+      (yearGroup.categories || []).map((category, index) => ({
+        key: `${organization.id}-${yearGroup.year}-${index}-${category.projectId || category.project || category.category}`,
+        year: yearGroup.year || '—',
+        organization: organization.title,
+        type: category.type || 'Nominee',
+        category: category.category || 'Award',
+        project: category.project || null,
+        projectId: category.projectId || null,
+        mediaType: category.mediaType === 'tv' ? 'tv' : 'movie',
+        poster: category.poster || null,
+      }))
+    )
+  );
   const grouped = awards.reduce((accumulator, award) => {
     if (!accumulator[award.year]) {
       accumulator[award.year] = [];
@@ -39,25 +43,27 @@ function buildAwardsTimeline(organizations = []) {
     accumulator[award.year].push(award);
     return accumulator;
   }, {});
-  return Object.entries(grouped).sort(sortAwardsByYear).map(([year, entries]) => [year, entries.sort((left, right) => {
-    const rankDifference = Number(!isWinType(left.type)) - Number(!isWinType(right.type));
-    if (rankDifference !== 0) {
-      return rankDifference;
-    }
-    return left.organization.localeCompare(right.organization) || left.category.localeCompare(right.category);
-  })]);
+  return Object.entries(grouped)
+    .sort(sortAwardsByYear)
+    .map(([year, entries]) => [
+      year,
+      entries.sort((left, right) => {
+        const rankDifference = Number(!isWinType(left.type)) - Number(!isWinType(right.type));
+        if (rankDifference !== 0) {
+          return rankDifference;
+        }
+        return left.organization.localeCompare(right.organization) || left.category.localeCompare(right.category);
+      }),
+    ]);
 }
-function AwardsState({
-  message,
-  variant = 'empty'
-}) {
-  return <div className="flex w-full justify-center py-20">
+function AwardsState({ message, variant = 'empty' }) {
+  return (
+    <div className="flex w-full justify-center py-20">
       <p className={cn('text-sm font-medium text-black/70', variant === 'error' && 'text-error')}>{message}</p>
-    </div>;
+    </div>
+  );
 }
-export default function PersonAwards({
-  personId
-}) {
+export default function PersonAwards({ personId }) {
   const [awardsData, setAwardsData] = useState(null);
   const [status, setStatus] = useState('loading');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -102,19 +108,23 @@ export default function PersonAwards({
     return <AwardsState message="No awards information found" />;
   }
   const stats = awardsData?.stats;
-  return <PersonSurfaceReveal>
+  return (
+    <PersonSurfaceReveal>
       <section className="flex w-full flex-col gap-3">
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">Awards</h2>
-          {(stats?.totalWins > 0 || stats?.totalNominations > 0) && <div className="text-xs font-semibold text-black/50 sm:text-sm">
+          {(stats?.totalWins > 0 || stats?.totalNominations > 0) && (
+            <div className="text-xs font-semibold text-black/50 sm:text-sm">
               {stats.totalNominations} Nominations
               {stats.totalWins > 0 && `, ${stats.totalWins} Wins`}
-            </div>}
+            </div>
+          )}
         </div>
 
         <div className="flex w-full flex-col">
           {awardsTimeline.map(([year, entries], yearIndex) => {
-          return <div key={year} className="mt-4 first:mt-0">
+            return (
+              <div key={year} className="mt-4 first:mt-0">
                 <div className="mb-2 flex items-center gap-2 sm:gap-3">
                   <span className="w-9 shrink-0 text-right text-xs font-semibold text-black/70 sm:w-12 sm:text-[13px]">
                     {year}
@@ -124,11 +134,17 @@ export default function PersonAwards({
 
                 <div className="flex flex-col sm:ml-16">
                   {entries.map((entry, entryIndex) => {
-                const isInteractive = Boolean(entry.projectId);
-                const title = entry.project || entry.category;
-                const detail = entry.project ? `${entry.organization} / ${entry.type} · ${entry.category}` : `${entry.organization} / ${entry.type}`;
-                const rowClassName = cn("group flex items-end gap-3 border-transparent p-1", isInteractive ? 'hover:bg-primary' : 'cursor-default');
-                const content = <>
+                    const isInteractive = Boolean(entry.projectId);
+                    const title = entry.project || entry.category;
+                    const detail = entry.project
+                      ? `${entry.organization} / ${entry.type} · ${entry.category}`
+                      : `${entry.organization} / ${entry.type}`;
+                    const rowClassName = cn(
+                      'group flex items-end gap-3 border-transparent p-1',
+                      isInteractive ? 'hover:bg-primary' : 'cursor-default'
+                    );
+                    const content = (
+                      <>
                         <MediaThumb poster={entry.poster} alt={title} className="" />
                         <div className="flex min-w-0 flex-1 flex-col">
                           <div className="flex items-center gap-2">
@@ -137,22 +153,29 @@ export default function PersonAwards({
 
                           <span className="truncate text-xs text-black/50 sm:text-sm">{detail}</span>
                         </div>
-                      </>;
-                if (isInteractive) {
-                  return <div key={entry.key}>
+                      </>
+                    );
+                    if (isInteractive) {
+                      return (
+                        <div key={entry.key}>
                           <Link href={`/${entry.mediaType}/${entry.projectId}`} className={rowClassName}>
                             {content}
                           </Link>
-                        </div>;
-                }
-                return <div key={entry.key} className={rowClassName}>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={entry.key} className={rowClassName}>
                         {content}
-                      </div>;
-              })}
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>;
-        })}
+              </div>
+            );
+          })}
         </div>
       </section>
-    </PersonSurfaceReveal>;
+    </PersonSurfaceReveal>
+  );
 }

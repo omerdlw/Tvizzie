@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { useNavigationActions } from '../context';
+import { createConfirmationSurfaceEntry } from '../../../../features/navigation/surfaces/confirmation-surface';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
@@ -17,34 +18,38 @@ function blurActiveElement() {
 export function useNavigationCore() {
   const pathname = usePathname();
   const router = useRouter();
-  const { clearGuardConfirmation, setGuardConfirmation } = useNavigationActions();
+  const { closeSurface, openSurface } = useNavigationActions();
   const previousPathRef = useRef(pathname);
 
   const cancelNavigation = useCallback(() => {
-    clearGuardConfirmation();
-  }, [clearGuardConfirmation]);
+    closeSurface({
+      cancelled: true,
+      reason: 'guard',
+      success: false,
+    });
+  }, [closeSurface]);
 
   const openGuardConfirmation = useCallback(
     ({ href, from, message }) => {
       NAV_EVENT_HANDLERS.navigateStart(href, from);
 
-      setGuardConfirmation({
-        title: 'Warning',
-        description: message || 'You have unsaved changes. Are you sure you want to leave this page?',
-        cancelText: 'Stay Here',
-        confirmText: 'Leave Page',
-        tone: 'danger',
-        isDestructive: true,
-        onCancel: cancelNavigation,
-        onConfirm: () => {
-          blurActiveElement();
-          clearGuardConfirmation();
-          router.push(href);
-          NAV_EVENT_HANDLERS.navigate(href, from);
-        },
-      });
+      openSurface(
+        createConfirmationSurfaceEntry({
+          title: 'Warning',
+          description: message || 'You have unsaved changes. Are you sure you want to leave this page?',
+          cancelText: 'Stay Here',
+          confirmText: 'Leave Page',
+          tone: 'danger',
+          isDestructive: true,
+          onConfirm: () => {
+            blurActiveElement();
+            router.push(href);
+            NAV_EVENT_HANDLERS.navigate(href, from);
+          },
+        })
+      );
     },
-    [cancelNavigation, clearGuardConfirmation, router, setGuardConfirmation]
+    [openSurface, router]
   );
 
   const navigate = useCallback(
@@ -61,7 +66,6 @@ export function useNavigationCore() {
         }
       }
 
-      clearGuardConfirmation();
       blurActiveElement();
       NAV_EVENT_HANDLERS.navigateStart(href, from);
       router.push(href);
@@ -69,7 +73,7 @@ export function useNavigationCore() {
 
       return true;
     },
-    [clearGuardConfirmation, openGuardConfirmation, pathname, router]
+    [openGuardConfirmation, pathname, router]
   );
 
   useEffect(() => {
@@ -77,10 +81,9 @@ export function useNavigationCore() {
       return;
     }
 
-    clearGuardConfirmation();
     NAV_EVENT_HANDLERS.navigateEnd(pathname, previousPathRef.current);
     previousPathRef.current = pathname;
-  }, [clearGuardConfirmation, pathname]);
+  }, [pathname]);
 
   return {
     navigate,
