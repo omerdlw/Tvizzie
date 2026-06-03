@@ -75,20 +75,9 @@ function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getExpandedItemY(position, isMobile, expandedTopCardHeight) {
+function getExpandedItemY(position, isMobile) {
   const baseExpandedOffsetY = isMobile ? -68 : NAV_CARD_LAYOUT.expanded.offsetY;
-
-  if (position === 0) {
-    return 0;
-  }
-
-  const topCardExtraHeight = Math.max(
-    (expandedTopCardHeight || NAV_CARD_LAYOUT.baseHeight) - NAV_CARD_LAYOUT.baseHeight,
-    0
-  );
-  const firstExpandedOffsetY = baseExpandedOffsetY - topCardExtraHeight;
-
-  return firstExpandedOffsetY + (position - 1) * baseExpandedOffsetY;
+  return position * baseExpandedOffsetY;
 }
 
 function getNavItemCardProps(
@@ -101,7 +90,7 @@ function getNavItemCardProps(
   isMobile,
   isInteractive,
   containerHeight,
-  expandedTopCardHeight
+  isAnchoredToBottom
 ) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const safeCardStyle = cardStyle
@@ -111,10 +100,12 @@ function getNavItemCardProps(
   const staggerDelay = getNavCardStaggerDelay(position, expanded);
   const spring = getNavCardSpring(position);
   const isTop = position === 0;
+  const collapsedScaleValue = collapsedScale ** position;
 
   return {
     className: cn(
-      'absolute inset-x-0 bottom-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] p-1.5 sm:p-2 backdrop-blur-lg',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] p-1.5 sm:p-2 backdrop-blur-lg',
+      isAnchoredToBottom && 'bottom-0',
       'border-black/15 bg-white/80',
       showBorder && 'border-black/20',
       cardStyle?.className
@@ -125,8 +116,8 @@ function getNavItemCardProps(
     },
     animate: {
       width: cardWidth,
-      y: expanded ? getExpandedItemY(position, isMobile, expandedTopCardHeight) : position * collapsedOffsetY,
-      scale: expanded ? cardScale || 1 : collapsedScale ** position,
+      y: expanded ? getExpandedItemY(position, isMobile) : position * collapsedOffsetY,
+      scale: expanded ? cardScale || 1 : collapsedScaleValue,
       zIndex: 10 - position,
       opacity: 1,
       filter: 'blur(0px)',
@@ -144,9 +135,9 @@ function getNavItemCardProps(
       y: 4,
       filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
       transition: {
-        duration: 0.24,
+        duration: isTop ? 0.24 : 0,
         ease: [0.55, 0, 1, 0.45],
-        filter: { duration: 0.2 },
+        filter: { duration: isTop ? 0.2 : 0 },
       },
     },
     transition: {
@@ -415,7 +406,6 @@ const Item = memo(
       stackWidth,
       isMobile,
       containerHeight,
-      expandedTopCardHeight,
     },
 
     ref
@@ -573,7 +563,7 @@ const Item = memo(
           isMobile,
           link.type !== 'COUNTDOWN' && !link.isOverlay,
           containerHeight,
-          expandedTopCardHeight
+          link.isSurface || link.isConfirmation
         )}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}

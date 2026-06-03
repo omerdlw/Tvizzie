@@ -24,6 +24,7 @@ import {
 
 const VIEWPORT_MARGIN = 24; // px from top of viewport
 const NAV_SPACER_BOTTOM_LOCK_DISTANCE = 40;
+const SURFACE_COMPACT_STAGE_MS = 90;
 
 function getViewportMaxHeight() {
   if (typeof window === 'undefined') return Infinity;
@@ -132,6 +133,8 @@ export default function Nav() {
     setIsHovered,
     setExpanded,
     activeIndex,
+    compactLockIds,
+    compactLocked,
     compact,
     expanded,
     pathname,
@@ -146,8 +149,10 @@ export default function Nav() {
   const [stackWidth, setStackWidth] = useState(() => getNavCardWidth());
   const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 640 : false));
   const [portalTarget, setPortalTarget] = useState(null);
+  const [isOpeningSurfaceFromCompact, setIsOpeningSurfaceFromCompact] = useState(false);
 
   const navRef = useRef(null);
+  const wasCompactRef = useRef(compact);
   const previousPathRef = useRef(pathname);
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
   const previousActiveItemLayoutKeyRef = useRef(activeItemLayoutKey);
@@ -171,11 +176,23 @@ export default function Nav() {
   const compactRef = useRef(compact);
   const activeItemHasActionRef = useRef(activeItemHasAction);
   const isOverlayActive = !!activeItem?.isOverlay;
+  const isSurfaceLikeActive = Boolean(activeItem?.isSurface || activeItem?.isConfirmation);
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
   const isCompactPreviewActive = compact && !expanded && isStackHovered;
   const isTopItemCompact = compact && !expanded && !isStackHovered;
+  const isOpeningLockActive = compactLockIds?.includes('surface-opening') || compactLockIds?.includes('confirmation-opening');
+  const shouldStageSurfaceFromCompact = isSurfaceLikeActive && wasCompactRef.current;
+  const effectiveOpeningSurfaceFromCompact = isOpeningSurfaceFromCompact || shouldStageSurfaceFromCompact;
 
-  compactRef.current = isTopItemCompact;
+  if (!isSurfaceLikeActive) {
+    if (compact) {
+      wasCompactRef.current = true;
+    } else if (!compactLocked || !isOpeningLockActive) {
+      wasCompactRef.current = false;
+    }
+  }
+
+  compactRef.current = isTopItemCompact || effectiveOpeningSurfaceFromCompact;
   activeItemHasActionRef.current = activeItemHasAction;
 
   const applyHeight = useCallback(() => {
@@ -237,8 +254,30 @@ export default function Nav() {
   }, []);
 
   useIsomorphicLayoutEffect(() => {
+    if (!isSurfaceLikeActive) {
+      setIsOpeningSurfaceFromCompact(false);
+      return undefined;
+    }
+
+    if (!shouldStageSurfaceFromCompact) {
+      return undefined;
+    }
+
+    setIsOpeningSurfaceFromCompact(true);
+
+    const timerId = window.setTimeout(() => {
+      wasCompactRef.current = false;
+      setIsOpeningSurfaceFromCompact(false);
+    }, SURFACE_COMPACT_STAGE_MS);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [isSurfaceLikeActive, shouldStageSurfaceFromCompact]);
+
+  useIsomorphicLayoutEffect(() => {
     applyHeight();
-  }, [activeItemHasAction, isTopItemCompact, applyHeight]);
+  }, [activeItemHasAction, effectiveOpeningSurfaceFromCompact, isTopItemCompact, applyHeight]);
 
   useIsomorphicLayoutEffect(() => {
     if (previousPathRef.current === pathname) return;
@@ -367,6 +406,80 @@ export default function Nav() {
   // ─── Stack className ──────────────────────────────────────────────────────
 
   const stackClassName = useMemo(() => getNavStackClassName({ isFullscreenStateActive }), [isFullscreenStateActive]);
+  const renderedNavItems = navigationItems.map((link, index) => {
+    const position = getItemPosition(index);
+    const isTop = position === 0;
+    const isActive = getIsItemActive(link, activeItem);
+    const isSurfaceLike = Boolean(link.isSurface || link.isConfirmation);
+    const isCompactCard =
+      isTop && !isCompactPreviewActive && (compact || (isSurfaceLike && effectiveOpeningSurfaceFromCompact));
+    const shouldSyncHover = shouldSyncStackHover(pathname, compact);
+    const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded);
+
+    const handleMouseEnter = () => {
+      if (expanded) setFocusedIndex(index);
+      if (!isTop) return;
+
+      if (!canTopCardPreview) {
+        return;
+      }
+
+      setIsStackHovered(true);
+      if (shouldSyncHover) setIsHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+      if (expanded) setFocusedIndex(-1);
+      if (!isTop) return;
+
+      if (!canTopCardPreview) return;
+
+      setIsStackHovered(false);
+      if (shouldSyncHover) setIsHovered(false);
+    };
+
+    const handleClick = () => {
+      if (link.type === 'COUNTDOWN' || link.isOverlay) return;
+
+      if (!expanded) {
+        if (isTop) {
+          if (compact && !isCompactPreviewActive) {
+            setIsStackHovered(true);
+            setIsHovered(true);
+            return;
+          }
+
+          clearHoverState();
+          setExpanded(true);
+        }
+        return;
+      }
+
+      if (link.path) navigate(link.path);
+    };
+
+    return (
+      <Item
+        key={getItemKey(link, index)}
+        link={link}
+        expanded={expanded}
+        compact={isCompactCard}
+        position={position}
+        isTop={isTop}
+        isActive={isActive}
+        isStackHovered={isStackHovered}
+        stackWidth={stackWidth}
+        isMobile={isMobile}
+        totalItems={navigationItems.length}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        onActionHeightChange={isTop ? handleActionHeightChange : null}
+        onContentHeightChange={isTop ? handleContentHeightChange : null}
+        containerHeight={isTop ? containerHeight : undefined}
+      />
+    );
+  });
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -394,79 +507,7 @@ export default function Nav() {
           animate={getNavContainerMotion(containerHeight)}
           transition={NAV_CONTAINER_SPRING}
         >
-          <AnimatePresence initial={false} mode="sync">
-            {navigationItems.map((link, index) => {
-              const position = getItemPosition(index);
-              const isTop = position === 0;
-              const isActive = getIsItemActive(link, activeItem);
-              const shouldSyncHover = shouldSyncStackHover(pathname, compact);
-              const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded);
-
-              const handleMouseEnter = () => {
-                if (expanded) setFocusedIndex(index);
-                if (!isTop) return;
-
-                if (!canTopCardPreview) {
-                  return;
-                }
-
-                setIsStackHovered(true);
-                if (shouldSyncHover) setIsHovered(true);
-              };
-
-              const handleMouseLeave = () => {
-                if (expanded) setFocusedIndex(-1);
-                if (!isTop) return;
-
-                if (!canTopCardPreview) return;
-
-                setIsStackHovered(false);
-                if (shouldSyncHover) setIsHovered(false);
-              };
-
-              const handleClick = () => {
-                if (link.type === 'COUNTDOWN' || link.isOverlay) return;
-
-                if (!expanded) {
-                  if (isTop) {
-                    if (compact && !isCompactPreviewActive) {
-                      setIsStackHovered(true);
-                      setIsHovered(true);
-                      return;
-                    }
-
-                    setExpanded(true);
-                  }
-                  return;
-                }
-
-                if (link.path) navigate(link.path);
-              };
-
-              return (
-                <Item
-                  key={getItemKey(link, index)}
-                  link={link}
-                  expanded={expanded}
-                  compact={isTopItemCompact && isTop}
-                  position={position}
-                  isTop={isTop}
-                  isActive={isActive}
-                  isStackHovered={isStackHovered}
-                  stackWidth={stackWidth}
-                  isMobile={isMobile}
-                  totalItems={navigationItems.length}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={handleClick}
-                  onActionHeightChange={isTop ? handleActionHeightChange : null}
-                  onContentHeightChange={isTop ? handleContentHeightChange : null}
-                  containerHeight={isTop ? containerHeight : undefined}
-                  expandedTopCardHeight={containerHeight}
-                />
-              );
-            })}
-          </AnimatePresence>
+          <AnimatePresence initial={false} mode="sync">{renderedNavItems}</AnimatePresence>
         </motion.div>
       </div>
     </>

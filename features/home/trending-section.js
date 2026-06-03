@@ -1,6 +1,6 @@
 'use client';
 
-import { HomeSectionReveal } from '@/app/(home)/motion';
+import { HomeSectionReveal } from '@/features/media/static-route-elements';
 import { PosterRail } from './poster-rail';
 
 function getUniqueItems(items = [], limit = items.length) {

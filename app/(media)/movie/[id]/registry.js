@@ -24,7 +24,6 @@ import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,
 } from '@/features/movie/context-menu-actions';
-import { MOVIE_BACKGROUND_ANIMATION } from './motion';
 
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
 const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';
@@ -210,7 +209,6 @@ export default function Registry({
       ? {
           background: resolvedBackgroundImage
             ? {
-                animation: MOVIE_BACKGROUND_ANIMATION,
                 image: resolvedBackgroundImage,
                 overlay: true,
                 overlayOpacity: 0.4,

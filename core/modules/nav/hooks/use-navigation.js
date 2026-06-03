@@ -11,7 +11,8 @@ import { useNavigationExpanded } from './use-navigation-expanded';
 import { useNavigationLayout } from './use-navigation-layout';
 
 export function useNavigation() {
-  const { searchQuery, closeSurface, compactLocked, setCompactLock, setIsCompact } = useNavigationContext();
+  const { searchQuery, closeSurface, compactLockIds, compactLocked, setCompactLock, setIsCompact } =
+    useNavigationContext();
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -132,6 +133,8 @@ export function useNavigation() {
     setIsHovered,
     searchQuery,
     activeItemHasAction,
+    compactLockIds,
+    compactLocked,
     compact,
   };
 }

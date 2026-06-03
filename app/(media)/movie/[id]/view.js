@@ -25,7 +25,7 @@ import {
   MovieSectionGroup,
   MovieSectionReveal,
   MovieSurfaceReveal,
-} from './motion';
+} from '@/features/media/static-route-elements';
 import Registry from './registry';
 
 function RelatedMoviesSection({ items, title, groupIndex = 0 }) {

@@ -329,7 +329,8 @@ export function NavigationProvider({ children, config = {} }) {
     previousPathRef.current = pathname;
   }, [closeAllSurfaces, pathname]);
 
-  const compactLocked = Object.keys(compactLocks).length > 0;
+  const compactLockIds = useMemo(() => Object.keys(compactLocks), [compactLocks]);
+  const compactLocked = compactLockIds.length > 0;
 
   const stateValue = useMemo(
     () => ({
@@ -337,13 +338,25 @@ export function NavigationProvider({ children, config = {} }) {
       guardConfirmation,
       ...surfaceState,
       searchQuery,
+      compactLockIds,
       compactLocked,
       navHeight,
       expanded,
       config,
       isCompact,
     }),
-    [dismissedConfirmationKey, guardConfirmation, surfaceState, searchQuery, compactLocked, navHeight, expanded, config, isCompact]
+    [
+      dismissedConfirmationKey,
+      guardConfirmation,
+      surfaceState,
+      searchQuery,
+      compactLockIds,
+      compactLocked,
+      navHeight,
+      expanded,
+      config,
+      isCompact,
+    ]
   );
 
   const actionsValue = useMemo(

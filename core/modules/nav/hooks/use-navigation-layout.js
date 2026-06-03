@@ -104,6 +104,10 @@ function getCollapsedVisibleCount({
     return 1;
   }
 
+  if (isCompact) {
+    return 1;
+  }
+
   const isHomeRoute = pathname === '/';
   const shouldRevealCollapsedStack = isHovered || shouldShowOverlayStack || (isHomeRoute && !isCompact);
   return shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;

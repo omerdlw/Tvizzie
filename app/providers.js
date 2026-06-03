@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useReportWebVitals } from 'next/web-vitals';
 
 import { AuthInteractiveBoundary, InteractiveFeatureBoundary } from '@/features/app-shell/interactive-boundary';
-import { MotionRuntimeProvider } from '@/features/motion-runtime';
 import { NAV_CONFIG } from '@/config/nav.config';
 import { pipe } from '@/core/utils';
 import { SmoothScrollProvider } from '@/features/app-shell/smooth-scroll';
@@ -124,13 +123,13 @@ export const AppProviders = ({ children }) => {
   const contentWithEnhancements = content;
 
   return (
-    <MotionRuntimeProvider>
+    <>
       <WebVitals />
       <CoreShellProviders>
         <BackgroundOverlay />
         <LoadingOverlay />
         <GlobalError>{contentWithEnhancements}</GlobalError>
       </CoreShellProviders>
-    </MotionRuntimeProvider>
+    </>
   );
 };

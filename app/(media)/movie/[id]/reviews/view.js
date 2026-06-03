@@ -11,7 +11,7 @@ import {
   MOVIE_ROUTE_TIMING,
   MovieSectionReveal,
   MovieSidebarReveal,
-} from '../motion';
+} from '@/features/media/static-route-elements';
 
 import Registry from '../registry';
 

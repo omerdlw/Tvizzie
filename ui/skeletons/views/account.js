@@ -1,93 +1,89 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/core/constants';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { SkeletonBlock, SkeletonCircle, SkeletonLine, SkeletonPill, SkeletonPoster } from '@/ui/skeletons/primitives';
-
 const HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
-const HERO_BANNER_WRAPPER_CLASS =
-  'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
+const HERO_BANNER_WRAPPER_CLASS = 'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
 const HERO_AMBIENT_OVERLAY_CLASS = 'account-skeleton-hero-ambient-overlay absolute inset-0';
 const HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
 const HERO_LEFT_FADE_CLASS = 'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
 const HERO_RIGHT_FADE_CLASS = 'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
 const HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
 const HERO_TINT_CLASS = 'account-skeleton-hero-tint-overlay absolute inset-0';
-const HERO_CENTER_GLOW_CLASS =
-  'absolute top-[16%] left-1/2 h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
-const ACCOUNT_SKELETON_ROUTE_VARIANTS = Object.freeze([
-  { pattern: /\/lists\/[^/]+(?:\/)?$/, variant: 'list-detail' },
-  { pattern: /\/activity(?:\/)?$/, variant: 'activity' },
-  { pattern: /\/likes(?:\/)?$/, variant: 'collection' },
-  { pattern: /\/lists(?:\/)?$/, variant: 'lists' },
-  { pattern: /\/reviews(?:\/)?$/, variant: 'reviews' },
-  { pattern: /\/watched(?:\/)?$/, variant: 'collection' },
-  { pattern: /\/watchlist(?:\/)?$/, variant: 'collection' },
-]);
-
+const HERO_CENTER_GLOW_CLASS = 'absolute top-[16%] left-1/2 h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
+const ACCOUNT_SKELETON_ROUTE_VARIANTS = Object.freeze([{
+  pattern: /\/lists\/[^/]+(?:\/)?$/,
+  variant: 'list-detail'
+}, {
+  pattern: /\/activity(?:\/)?$/,
+  variant: 'activity'
+}, {
+  pattern: /\/likes(?:\/)?$/,
+  variant: 'collection'
+}, {
+  pattern: /\/lists(?:\/)?$/,
+  variant: 'lists'
+}, {
+  pattern: /\/reviews(?:\/)?$/,
+  variant: 'reviews'
+}, {
+  pattern: /\/watched(?:\/)?$/,
+  variant: 'collection'
+}, {
+  pattern: /\/watchlist(?:\/)?$/,
+  variant: 'collection'
+}]);
 export function resolveAccountSkeletonVariant(pathname = '') {
   const normalizedPathname = String(pathname || '').split('?')[0];
-  return ACCOUNT_SKELETON_ROUTE_VARIANTS.find((item) => item.pattern.test(normalizedPathname))?.variant || 'overview';
+  return ACCOUNT_SKELETON_ROUTE_VARIANTS.find(item => item.pattern.test(normalizedPathname))?.variant || 'overview';
 }
-
-function Bar({ className = '', soft = false }) {
+function Bar({
+  className = '',
+  soft = false
+}) {
   return <SkeletonBlock className={className} soft={soft} />;
 }
-
-function Line({ className = '', soft = false }) {
-  const size = className.includes('h-2.5')
-    ? 'xs'
-    : className.includes('h-3.5')
-      ? 'md'
-      : className.includes('h-4')
-        ? 'lg'
-        : 'sm';
-  return (
-    <SkeletonLine
-      className={className.replace(/h-\[[^\]]+\]|h-2\.5|h-3\.5|h-4|h-3/g, '').trim()}
-      size={size}
-      soft={soft}
-    />
-  );
+function Line({
+  className = '',
+  soft = false
+}) {
+  const size = className.includes('h-2.5') ? 'xs' : className.includes('h-3.5') ? 'md' : className.includes('h-4') ? 'lg' : 'sm';
+  return <SkeletonLine className={className.replace(/h-\[[^\]]+\]|h-2\.5|h-3\.5|h-4|h-3/g, '').trim()} size={size} soft={soft} />;
 }
-
-function Pill({ className = '', soft = false }) {
+function Pill({
+  className = '',
+  soft = false
+}) {
   return <SkeletonPill className={className} soft={soft} />;
 }
-
-function Poster({ className = '', radius = 'card', soft = false }) {
+function Poster({
+  className = '',
+  radius = 'card',
+  soft = false
+}) {
   return <SkeletonPoster className={className} radius={radius} soft={soft} />;
 }
-
-function SectionShell({ children, className = '' }) {
+function SectionShell({
+  children,
+  className = ''
+}) {
   return <section className={`${ACCOUNT_SECTION_SHELL_CLASS} ${className}`}>{children}</section>;
 }
-
-function HeroCountItem({ mobile = false }) {
-  return (
-    <div
-      className={
-        mobile
-          ? 'inline-flex min-w-0 items-baseline gap-1.5 text-left'
-          : 'inline-flex items-baseline gap-1.5 whitespace-nowrap'
-      }
-    >
+function HeroCountItem({
+  mobile = false
+}) {
+  return <div className={mobile ? 'inline-flex min-w-0 items-baseline gap-1.5 text-left' : 'inline-flex items-baseline gap-1.5 whitespace-nowrap'}>
       <Line className={mobile ? 'h-4 w-10' : 'h-4 w-10'} />
       <Line className={mobile ? 'h-3 w-16' : 'h-3 w-14'} soft={true} />
-    </div>
-  );
+    </div>;
 }
-
 function HeroEdgeMetric() {
-  return (
-    <div className="flex flex-col items-center gap-1 text-center">
+  return <div className="flex flex-col items-center gap-1 text-center">
       <SkeletonLine size="xl" className="w-12" />
       <Line className="h-2.5 w-16" soft={true} />
-    </div>
-  );
+    </div>;
 }
-
 function AccountHeroSkeleton() {
-  return (
-    <section className={`relative w-full overflow-hidden bg-white ${HERO_HEIGHT_CLASS}`}>
+  return <section className={`relative w-full overflow-hidden bg-white ${HERO_HEIGHT_CLASS}`}>
       <div className="absolute inset-0">
         <div className={`${HERO_BANNER_WRAPPER_CLASS} opacity-70`}>
           <SkeletonBlock className="h-full w-full bg-black/[0.045]" soft={true} />
@@ -100,9 +96,7 @@ function AccountHeroSkeleton() {
       <div className={HERO_RIGHT_FADE_CLASS} />
       <div className={HERO_TOP_FADE_CLASS} />
       <div className={HERO_CENTER_GLOW_CLASS} />
-      <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
-      >
+      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}>
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
             <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
@@ -112,15 +106,15 @@ function AccountHeroSkeleton() {
               <div className="flex flex-col gap-4">
                 <SkeletonBlock className="h-[2.9rem] w-[68%] max-w-[34rem] sm:h-[3.6rem] lg:h-[4.8rem]" />
                 <div className="grid grid-cols-3 gap-x-5 gap-y-4 pt-1 lg:hidden">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <HeroCountItem key={index} mobile={true} />
-                  ))}
+                  {Array.from({
+                  length: 6
+                }).map((_, index) => <HeroCountItem key={index} mobile={true} />)}
                 </div>
 
                 <div className="hidden items-center gap-x-7 gap-y-2 lg:flex">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <HeroCountItem key={index} />
-                  ))}
+                  {Array.from({
+                  length: 4
+                }).map((_, index) => <HeroCountItem key={index} />)}
                 </div>
               </div>
             </div>
@@ -141,27 +135,24 @@ function AccountHeroSkeleton() {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }
-
 function AccountNavSkeleton() {
-  return (
-    <div>
+  return <div>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
         <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 sm:justify-center sm:px-8 sm:py-4">
-          {Array.from({ length: 7 }).map((_, index) => (
-            <Pill key={index} className="h-8 w-[6.75rem] shrink-0" soft={index !== 0} />
-          ))}
+          {Array.from({
+          length: 7
+        }).map((_, index) => <Pill key={index} className="h-8 w-[6.75rem] shrink-0" soft={index !== 0} />)}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
-
-function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
-  return (
-    <div className="flex w-full flex-col gap-6">
+function SectionHeadingSkeleton({
+  summary = true,
+  seeMore = true
+}) {
+  return <div className="flex w-full flex-col gap-6">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <SkeletonCircle className="size-6" soft={true} />
@@ -175,67 +166,56 @@ function SectionHeadingSkeleton({ summary = true, seeMore = true }) {
       </div>
 
       <SkeletonBlock className="h-px w-full" soft={true} />
-    </div>
-  );
+    </div>;
 }
-
-function PosterStripSkeleton({ count = 6 }) {
-  return (
-    <div className="flex gap-3 overflow-hidden">
-      {Array.from({ length: count }).map((_, index) => (
-        <div
-          key={index}
-          className={`flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-60px)/6)] ${
-            index >= 3 ? 'hidden lg:block' : ''
-          }`}
-        >
+function PosterStripSkeleton({
+  count = 6
+}) {
+  return <div className="flex gap-3 overflow-hidden">
+      {Array.from({
+      length: count
+    }).map((_, index) => <div key={index} className={`flex h-full shrink-0 basis-[calc((100%-24px)/3)] flex-col lg:basis-[calc((100%-60px)/6)] ${index >= 3 ? 'hidden lg:block' : ''}`}>
           <Poster />
-        </div>
-      ))}
-    </div>
-  );
+        </div>)}
+    </div>;
 }
-
-function PosterGridSkeleton({ count = 12, compact = false }) {
-  const gridClassName = compact
-    ? 'grid grid-cols-3 gap-3 lg:grid-cols-6'
-    : 'grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6';
-
-  return (
-    <div className={gridClassName}>
-      {Array.from({ length: count }).map((_, index) => (
-        <Poster key={index} />
-      ))}
-    </div>
-  );
+function PosterGridSkeleton({
+  count = 12,
+  compact = false
+}) {
+  const gridClassName = compact ? 'grid grid-cols-3 gap-3 lg:grid-cols-6' : 'grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6';
+  return <div className={gridClassName}>
+      {Array.from({
+      length: count
+    }).map((_, index) => <Poster key={index} />)}
+    </div>;
 }
-
-function ToolbarSkeleton({ firstWidth = 'sm:w-44', secondWidth = 'sm:w-40', extraChipCount = 0, withSearch = false }) {
-  return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+function ToolbarSkeleton({
+  firstWidth = 'sm:w-44',
+  secondWidth = 'sm:w-40',
+  extraChipCount = 0,
+  withSearch = false
+}) {
+  return <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <Pill className={`h-11 w-full ${firstWidth}`} soft={true} />
       <Pill className={`h-11 w-full ${secondWidth}`} soft={true} />
-      {Array.from({ length: extraChipCount }).map((_, index) => (
-        <Pill key={index} className="h-11 w-full sm:w-[8.5rem]" soft={true} />
-      ))}
+      {Array.from({
+      length: extraChipCount
+    }).map((_, index) => <Pill key={index} className="h-11 w-full sm:w-[8.5rem]" soft={true} />)}
       {withSearch ? <Pill className="h-11 w-full sm:min-w-[280px] sm:flex-1" soft={true} /> : null}
-    </div>
-  );
+    </div>;
 }
-
-function FilterBarSkeleton({ count = 2 }) {
-  return (
-    <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
-      {Array.from({ length: count }).map((_, index) => (
-        <Pill key={index} className="h-9 min-w-[10rem] flex-1" soft={true} />
-      ))}
-    </div>
-  );
+function FilterBarSkeleton({
+  count = 2
+}) {
+  return <div className="flex w-full flex-nowrap items-center gap-2 overflow-hidden pb-5">
+      {Array.from({
+      length: count
+    }).map((_, index) => <Pill key={index} className="h-9 min-w-[10rem] flex-1" soft={true} />)}
+    </div>;
 }
-
 function PaginationSkeleton() {
-  return (
-    <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
+  return <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3">
       <div className="flex justify-start">
         <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
@@ -247,35 +227,20 @@ function PaginationSkeleton() {
       <div className="flex justify-end">
         <Pill className="h-10 min-w-24 sm:min-w-28" soft={true} />
       </div>
-    </div>
-  );
+    </div>;
 }
-
 function ListPreviewStackSkeleton() {
-  const posterTransforms = [
-    '-translate-x-[132px] translate-y-[-8px] rotate-[-11deg] scale-[0.85]',
-    '-translate-x-[92px] translate-y-[-14px] rotate-[-5deg] scale-[0.94]',
-    'translate-x-[-50%] translate-y-[-20px] scale-[1.04]',
-    '-translate-x-[12px] translate-y-[-14px] rotate-[5deg] scale-[0.94]',
-    'translate-x-[28px] translate-y-[-8px] rotate-[11deg] scale-[0.85]',
-  ];
-
-  return (
-    <div className="relative h-[186px] bg-white">
+  const posterTransforms = ['-translate-x-[132px] translate-y-[-8px] rotate-[-11deg] scale-[0.85]', '-translate-x-[92px] translate-y-[-14px] rotate-[-5deg] scale-[0.94]', 'translate-x-[-50%] translate-y-[-20px] scale-[1.04]', '-translate-x-[12px] translate-y-[-14px] rotate-[5deg] scale-[0.94]', 'translate-x-[28px] translate-y-[-8px] rotate-[11deg] scale-[0.85]'];
+  return <div className="relative h-[186px] bg-white">
       <Bar className="absolute inset-0" soft={true} />
 
-      {posterTransforms.map((transformClass, index) => (
-        <div key={transformClass} className={`absolute top-0 left-1/2 h-[164px] w-[104px] ${transformClass}`}>
+      {posterTransforms.map((transformClass, index) => <div key={transformClass} className={`absolute top-0 left-1/2 h-[164px] w-[104px] ${transformClass}`}>
           <Poster soft={index !== 2} />
-        </div>
-      ))}
-    </div>
-  );
+        </div>)}
+    </div>;
 }
-
 function ListCardSkeleton() {
-  return (
-    <div className="relative w-full">
+  return <div className="relative w-full">
       <ListPreviewStackSkeleton />
 
       <div className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden bg-white/80 backdrop-blur-md">
@@ -302,13 +267,12 @@ function ListCardSkeleton() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
-
-function ActivityItemSkeleton({ isFirst = false }) {
-  return (
-    <article className={isFirst ? 'pt-0 pb-5' : 'py-5'}>
+function ActivityItemSkeleton({
+  isFirst = false
+}) {
+  return <article className={isFirst ? 'pt-0 pb-5' : 'py-5'}>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
           <Line className="h-4 w-16" />
@@ -318,14 +282,11 @@ function ActivityItemSkeleton({ isFirst = false }) {
         </div>
         <Line className="h-3.5 w-8 justify-self-start sm:justify-self-end" />
       </div>
-    </article>
-  );
+    </article>;
 }
-
 function ReviewCardSkeleton() {
-  return (
-    <article className="py-4 sm:py-5">
-      <div className="relative transition-all duration-[300ms]">
+  return <article className="py-4 sm:py-5">
+      <div className="relative">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <div className="relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px]">
             <Poster radius="card" />
@@ -359,34 +320,29 @@ function ReviewCardSkeleton() {
           </div>
         </div>
       </div>
-    </article>
-  );
+    </article>;
 }
-
 function ListDetailHeaderSkeleton() {
-  return (
-    <div className="flex w-full flex-col gap-3">
+  return <div className="flex w-full flex-col gap-3">
       <Line className="h-8 w-56 sm:h-9 sm:w-72" />
       <div className="flex max-w-[78ch] flex-col gap-2">
         <Line className="h-3.5 w-full" soft={true} />
         <Line className="h-3.5 w-[84%]" soft={true} />
       </div>
-    </div>
-  );
+    </div>;
 }
-
-function FormFieldSkeleton({ tall = false }) {
-  return (
-    <div className="flex flex-col gap-2">
+function FormFieldSkeleton({
+  tall = false
+}) {
+  return <div className="flex flex-col gap-2">
       <Line className="h-2.5 w-20" soft={true} />
       <SkeletonPill className={`w-full ${tall ? 'h-36' : 'h-11'}`} radius="field" soft={true} />
-    </div>
-  );
+    </div>;
 }
-
-function MediaFieldSkeleton({ large = false }) {
-  return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_172px] lg:items-start">
+function MediaFieldSkeleton({
+  large = false
+}) {
+  return <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_172px] lg:items-start">
       <div className="space-y-3">
         <FormFieldSkeleton />
         <div className="flex flex-wrap gap-2">
@@ -396,13 +352,10 @@ function MediaFieldSkeleton({ large = false }) {
       </div>
 
       <SkeletonBlock className={`overflow-hidden ${large ? 'h-28' : 'aspect-square'}`} radius="card" />
-    </div>
-  );
+    </div>;
 }
-
 function OverviewSkeleton() {
-  return (
-    <div className="flex flex-col gap-10 py-8">
+  return <div className="flex flex-col gap-10 py-8">
       <SectionShell className="flex flex-col gap-6">
         <SectionHeadingSkeleton />
         <PosterStripSkeleton count={5} />
@@ -421,9 +374,9 @@ function OverviewSkeleton() {
       <SectionShell className="flex flex-col gap-6">
         <SectionHeadingSkeleton />
         <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <ListCardSkeleton key={index} />
-          ))}
+          {Array.from({
+          length: 3
+        }).map((_, index) => <ListCardSkeleton key={index} />)}
         </div>
       </SectionShell>
 
@@ -435,84 +388,71 @@ function OverviewSkeleton() {
       <SectionShell className="flex flex-col gap-6">
         <SectionHeadingSkeleton />
         <div className="flex flex-col gap-4">
-          {Array.from({ length: 2 }).map((_, index) => (
-            <ReviewCardSkeleton key={index} />
-          ))}
+          {Array.from({
+          length: 2
+        }).map((_, index) => <ReviewCardSkeleton key={index} />)}
         </div>
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
-function CollectionPageSkeleton({ filterCount = 5, itemCount = 12 }) {
-  return (
-    <div className="flex flex-col gap-8 py-8">
+function CollectionPageSkeleton({
+  filterCount = 5,
+  itemCount = 12
+}) {
+  return <div className="flex flex-col gap-8 py-8">
       <SectionShell className="flex flex-col gap-6">
         <FilterBarSkeleton count={filterCount} />
         <PosterGridSkeleton count={itemCount} />
         <PaginationSkeleton />
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function CollectionSkeleton() {
   return <CollectionPageSkeleton filterCount={5} itemCount={12} />;
 }
-
 function ReviewsSkeleton() {
-  return (
-    <div className="flex flex-col gap-8 py-8">
+  return <div className="flex flex-col gap-8 py-8">
       <SectionShell className="flex flex-col gap-6">
         <FilterBarSkeleton count={5} />
         <div>
-          {Array.from({ length: 4 }).map((_, index) => (
-            <ReviewCardSkeleton key={index} />
-          ))}
+          {Array.from({
+          length: 4
+        }).map((_, index) => <ReviewCardSkeleton key={index} />)}
         </div>
 
         <div className="flex justify-center">
           <Pill className="h-11 w-36" soft={true} />
         </div>
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function ActivitySkeleton() {
-  return (
-    <div className="flex flex-col gap-8 py-8">
+  return <div className="flex flex-col gap-8 py-8">
       <SectionShell className="flex flex-col gap-6">
         <FilterBarSkeleton count={2} />
         <div>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <ActivityItemSkeleton key={index} isFirst={index === 0} />
-          ))}
+          {Array.from({
+          length: 5
+        }).map((_, index) => <ActivityItemSkeleton key={index} isFirst={index === 0} />)}
         </div>
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function ListsSkeleton() {
-  return (
-    <div className="flex flex-col gap-8 py-8">
+  return <div className="flex flex-col gap-8 py-8">
       <SectionShell className="flex flex-col gap-6">
         <FilterBarSkeleton count={1} />
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <ListCardSkeleton key={index} />
-          ))}
+          {Array.from({
+          length: 6
+        }).map((_, index) => <ListCardSkeleton key={index} />)}
         </div>
         <PaginationSkeleton />
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function ListDetailSkeleton() {
-  return (
-    <div className="flex flex-col">
+  return <div className="flex flex-col">
       <SectionShell className="flex flex-col gap-6 pt-10 pb-8">
         <ListDetailHeaderSkeleton />
       </SectionShell>
@@ -540,13 +480,10 @@ function ListDetailSkeleton() {
         </div>
         <ReviewCardSkeleton />
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function EditSkeleton() {
-  return (
-    <div className="flex flex-col gap-10 py-8">
+  return <div className="flex flex-col gap-10 py-8">
       <SectionShell className="flex flex-col gap-6">
         <SectionHeadingSkeleton summary={false} seeMore={false} />
         <div className="flex gap-2">
@@ -578,13 +515,10 @@ function EditSkeleton() {
           <Pill className="h-10 w-40" soft={true} />
         </div>
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function ListBuilderSkeleton() {
-  return (
-    <div className="py-8">
+  return <div className="py-8">
       <SectionShell>
         <div className="skeleton-block-soft overflow-hidden">
           <div className="grid min-h-[72vh] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px]">
@@ -602,9 +536,9 @@ function ListBuilderSkeleton() {
 
               <div className="flex-1 p-4 sm:p-5">
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                  {Array.from({ length: 8 }).map((_, index) => (
-                    <Poster key={index} />
-                  ))}
+                  {Array.from({
+                  length: 8
+                }).map((_, index) => <Poster key={index} />)}
                 </div>
               </div>
             </section>
@@ -616,8 +550,9 @@ function ListBuilderSkeleton() {
               </div>
 
               <div className="mt-4 flex flex-col gap-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="skeleton-block-soft flex items-center gap-3 p-2.5">
+                {Array.from({
+                length: 6
+              }).map((_, index) => <div key={index} className="skeleton-block-soft flex items-center gap-3 p-2.5">
                     <Line className="h-3 w-4" soft={true} />
                     <SkeletonPoster className="aspect-auto h-16 w-11 shrink-0" radius="field" />
                     <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -625,17 +560,14 @@ function ListBuilderSkeleton() {
                       <Line className="h-2.5 w-1/2" soft={true} />
                     </div>
                     <Pill className="size-8" soft={true} />
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </aside>
           </div>
         </div>
       </SectionShell>
-    </div>
-  );
+    </div>;
 }
-
 function renderVariant(variant) {
   switch (variant) {
     case 'activity':
@@ -657,10 +589,10 @@ function renderVariant(variant) {
       return <OverviewSkeleton />;
   }
 }
-
-export function Skeleton({ variant = 'overview' }) {
-  return (
-    <PageGradientShell className="overflow-hidden">
+export function Skeleton({
+  variant = 'overview'
+}) {
+  return <PageGradientShell className="overflow-hidden">
       <main className="relative min-h-screen overflow-hidden bg-white">
         <div className="relative z-10">
           <div className="relative">
@@ -672,8 +604,6 @@ export function Skeleton({ variant = 'overview' }) {
           {renderVariant(variant)}
         </div>
       </main>
-    </PageGradientShell>
-  );
+    </PageGradientShell>;
 }
-
 export default Skeleton;

@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import Container from '@/core/modules/modal/container';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -13,35 +12,33 @@ import Icon from '@/ui/icon';
 
 function buildUserActionMap(socialProof) {
   const userMap = new Map();
-
   const attachAction = (users = [], action) => {
-    users.forEach((user) => {
+    users.forEach(user => {
       if (!user?.id) return;
-
-      const existing = userMap.get(user.id) || { actions: [], user };
-
+      const existing = userMap.get(user.id) || {
+        actions: [],
+        user
+      };
       if (!existing.actions.includes(action)) {
         existing.actions.push(action);
       }
-
       userMap.set(user.id, existing);
     });
   };
-
   attachAction(socialProof?.likes?.users, 'Like');
   attachAction(socialProof?.watchlist?.users, 'Watchlist');
   attachAction(socialProof?.reviews?.users, 'Review');
-
   return Array.from(userMap.values());
 }
-
 function formatActionSummary(actions = []) {
-  const actionMap = { Review: 'Reviewed', Like: 'Liked', Watchlist: 'Watchlisted' };
+  const actionMap = {
+    Review: 'Reviewed',
+    Like: 'Liked',
+    Watchlist: 'Watchlisted'
+  };
   const ordered = ['Review', 'Like', 'Watchlist'];
-  const phrases = ordered.filter((action) => actions.includes(action)).map((action) => actionMap[action] || action);
-
+  const phrases = ordered.filter(action => actions.includes(action)).map(action => actionMap[action] || action);
   if (phrases.length === 0) return '';
-
   return phrases.join(' · ');
 }
 
@@ -49,83 +46,58 @@ function formatActionSummary(actions = []) {
 // COMPONENT LOGIC
 // --------------------------------------------------
 
-export default function MediaSocialProofModal({ close, data, header }) {
+export default function MediaSocialProofModal({
+  close,
+  data,
+  header
+}) {
   const userActions = buildUserActionMap(data?.socialProof);
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
   const summaryText = (data?.summaryParts || []).join(' · ');
-
-  return (
-    <ModalView
-      close={close}
-      header={header}
-      userActions={userActions}
-      isSidePosition={isSidePosition}
-      summaryText={summaryText}
-    />
-  );
+  return <ModalView close={close} header={header} userActions={userActions} isSidePosition={isSidePosition} summaryText={summaryText} />;
 }
 
 // --------------------------------------------------
 // VIEW
 // --------------------------------------------------
 
-function ModalView({ close, header, userActions, isSidePosition, summaryText }) {
-  const containerClass = isSidePosition
-    ? 'h-full max-h-full w-full sm:w-[460px]'
-    : 'max-h-[78dvh] w-full sm:w-[min(1400px,96vw)]';
-
-  return (
-    <Container
-      className={containerClass}
-      close={close}
-      header={header}
-      bodyClassName="p-0"
-      footer={{
-        left: <span className="text-xs opacity-70">{userActions.length} people</span>,
-        right: summaryText ? <span className="text-xs opacity-70">{summaryText}</span> : null,
-      }}
-    >
+function ModalView({
+  close,
+  header,
+  userActions,
+  isSidePosition,
+  summaryText
+}) {
+  const containerClass = isSidePosition ? 'h-full max-h-full w-full sm:w-[460px]' : 'max-h-[78dvh] w-full sm:w-[min(1400px,96vw)]';
+  return <Container className={containerClass} close={close} header={header} bodyClassName="p-0" footer={{
+    left: <span className="text-xs opacity-70">{userActions.length} people</span>,
+    right: summaryText ? <span className="text-xs opacity-70">{summaryText}</span> : null
+  }}>
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {userActions.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
+          {userActions.length === 0 ? <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
               No social activity from people you follow yet
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-col">
-              {userActions.map(({ actions, user }) => (
-                <SocialUserRow key={user.id} close={close} user={user} actions={actions} />
-              ))}
-            </div>
-          )}
+            </div> : <div className="flex min-h-0 flex-col">
+              {userActions.map(({
+            actions,
+            user
+          }) => <SocialUserRow key={user.id} close={close} user={user} actions={actions} />)}
+            </div>}
         </div>
       </div>
-    </Container>
-  );
+    </Container>;
 }
-
-function SocialUserRow({ close, user, actions }) {
+function SocialUserRow({
+  close,
+  user,
+  actions
+}) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   const username = user?.username || 'user';
-
-  return (
-    <Link
-      href={`/account/${username}`}
-      onClick={close}
-      className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors last:border-none hover:bg-black/5 lg:p-4"
-    >
+  return <Link href={`/account/${username}`} onClick={close} className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none hover:bg-black/5 lg:p-4">
       <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
-        <AdaptiveImage
-          mode="img"
-          src={avatarSrc}
-          alt={user?.displayName || username}
-          className="size-full object-cover"
-          loading="lazy"
-          decoding="async"
-          onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-full"
-        />
+        <AdaptiveImage mode="img" src={avatarSrc} alt={user?.displayName || username} className="size-full object-cover" loading="lazy" decoding="async" onError={event => applyAvatarFallback(event, avatarFallbackSrc)} wrapperClassName="size-full" />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -138,10 +110,9 @@ function SocialUserRow({ close, user, actions }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5 self-center">
-        <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70 transition">
+        <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70">
           <Icon icon="solar:alt-arrow-right-linear" size={16} />
         </span>
       </div>
-    </Link>
-  );
+    </Link>;
 }

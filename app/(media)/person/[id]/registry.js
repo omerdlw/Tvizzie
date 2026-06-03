@@ -9,32 +9,6 @@ import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 
-const PERSON_BACKGROUND_ANIMATION = Object.freeze({
-  exitDurationFactor: 0.4,
-  transition: {
-    duration: 1.2,
-    delay: 0.4,
-    ease: [0.23, 1, 0.32, 1],
-  },
-  initial: {
-    opacity: 0,
-    scale: 1.12,
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transitionEnd: {
-      transform: 'none',
-      willChange: 'auto',
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 1.05,
-  },
-});
-
 const PERSON_POSTER_CONTEXT_TARGET = '[data-context-menu-target="person-poster-card"]';
 
 function getNavDescription(person, age) {
@@ -88,7 +62,6 @@ export default function Registry({
       ? {
           background: backgroundImage
             ? {
-                animation: PERSON_BACKGROUND_ANIMATION,
                 image: backgroundImage,
                 overlay: true,
                 overlayOpacity: 0.4,
