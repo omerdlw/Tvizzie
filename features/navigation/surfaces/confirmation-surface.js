@@ -25,7 +25,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-[200ms]',
+    'center w-full cursor-pointer gap-2 rounded-[14px] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200',
     resolveButtonTone(tone),
     className
   );
@@ -105,7 +105,7 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
   }
 
   return (
-    <div className="mt-1 flex w-full flex-col items-center gap-2 sm:flex-row">
+    <div className="mt-1 flex w-full flex-col items-center gap-2 px-1 sm:flex-row">
       <motion.button
         type="button"
         disabled={isSubmitting}

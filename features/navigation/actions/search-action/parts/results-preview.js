@@ -66,7 +66,7 @@ export default function SearchActionResultsPreview({
               whileTap={{ scale: 0.98 }}
               transition={NAV_ACTION_SPRING}
               className={navActionClass({
-                button: 'relative w-full shrink-0 px-3 py-1.5 text-left text-xs whitespace-nowrap',
+                button: 'relative w-full shrink-0 rounded-[14px] px-3 py-1.5 text-left text-xs whitespace-nowrap',
                 cn,
               })}
               onClick={onSeeAllResults}

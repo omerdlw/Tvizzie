@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { TMDB_IMG } from '@/core/constants';
 import Container from '@/core/modules/modal/container';
 import { Spinner } from '@/ui/loadings/spinner';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // --------------------------------------------------
 // HELPERS
@@ -52,32 +53,47 @@ export default function ImagePreviewModal({ close, data }) {
 function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoaded, setIsLoaded }) {
   return (
     <Container
-      className={`relative max-h-[85vh]${frameWidthClass}`}
+      className={`relative max-h-[85vh] ${frameWidthClass}`}
       close={close}
       header={false}
       bodyClassName="p-0"
       footer={false}
     >
       <div
-        className="relative h-auto w-full"
+        className="relative h-auto w-full overflow-hidden"
         style={{
           aspectRatio: String(aspectRatio),
         }}
       >
-        <Image
-          src={`${TMDB_IMG}/original${filePath}`}
-          className={`object-contain${isLoaded ? 'visible' : 'invisible'}`}
-          onLoad={() => setIsLoaded(true)}
-          sizes="92vw"
-          quality={90}
-          alt={data?.name || 'Preview image'}
-          fill
-        />
-        {!isLoaded && (
-          <div className="center absolute inset-0 bg-black/5">
-            <Spinner size={40} />
-          </div>
-        )}
+        <motion.div
+          className="absolute inset-0 h-full w-full"
+          initial={{ opacity: 0, scale: 0.99, filter: 'blur(6px)' }}
+          animate={isLoaded ? { opacity: 1, scale: 1, filter: 'blur(0px)' } : {}}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+        >
+          <Image
+            src={`${TMDB_IMG}/original${filePath}`}
+            className="object-contain"
+            onLoad={() => setIsLoaded(true)}
+            sizes="92vw"
+            quality={90}
+            alt={data?.name || 'Preview image'}
+            fill
+          />
+        </motion.div>
+        <AnimatePresence>
+          {!isLoaded && (
+            <motion.div
+              key="spinner"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, filter: 'blur(4px)' }}
+              transition={{ duration: 0.26 }}
+              className="center absolute inset-0 bg-black/5"
+            >
+              <Spinner size={40} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Container>
   );

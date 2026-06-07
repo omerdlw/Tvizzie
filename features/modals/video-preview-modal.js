@@ -1,6 +1,13 @@
 'use client';
 
 import Container from '@/core/modules/modal/container';
+import { motion } from 'framer-motion';
+const videoFadeIn = Object.freeze({
+  initial: Object.freeze({ opacity: 0, filter: 'blur(4px)' }),
+  animate: Object.freeze({ opacity: 1, filter: 'blur(0px)' }),
+  exit: Object.freeze({ opacity: 0, filter: 'blur(3px)' }),
+  transition: Object.freeze({ duration: 0.24, ease: 'easeOut' }),
+});
 
 // --------------------------------------------------
 // COMPONENT LOGIC
@@ -25,7 +32,7 @@ function ModalView({ close, data }) {
       bodyClassName="p-0"
       footer={{ center: data?.name || 'Video preview' }}
     >
-      <div className="relative aspect-video h-auto w-full">
+      <motion.div {...videoFadeIn} className="relative aspect-video h-auto w-full">
         <iframe
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           src={`https://www.youtube.com/embed/${data.key}?autoplay=1`}
@@ -33,7 +40,7 @@ function ModalView({ close, data }) {
           title={data.name}
           allowFullScreen
         />
-      </div>
+      </motion.div>
     </Container>
   );
 }

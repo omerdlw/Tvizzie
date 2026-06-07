@@ -48,9 +48,9 @@ function renderControl({ definition, value, onChange }) {
         onCheckedChange={onChange}
         className={{
           wrapper: 'w-full items-center justify-between gap-3',
-          track: 'h-6 w-11 p-px',
+          track: 'h-6 w-11 rounded-full p-px',
           trackActive: '',
-          circle: 'h-5 w-5 translate-x-0',
+          circle: 'h-5 w-5 rounded-full translate-x-0',
           circleActive: 'translate-x-5',
           label: 'text-sm font-medium',
         }}
@@ -89,7 +89,7 @@ function renderControl({ definition, value, onChange }) {
           onChange(nextValue === '' ? '' : Number(nextValue));
         }}
         placeholder={definition.placeholder || ''}
-        className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium outline-none"
+        className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium rounded-[10px] outline-none"
       />
     );
   }
@@ -100,7 +100,7 @@ function renderControl({ definition, value, onChange }) {
       value={value ?? ''}
       onChange={(event) => onChange(event.target.value)}
       placeholder={definition.placeholder || ''}
-      className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium outline-none"
+      className="placeholder: border-info w-full border px-4 py-3 text-sm font-medium rounded-[10px] outline-none"
     />
   );
 }
@@ -144,7 +144,7 @@ export default function SettingsModal({ close, header }) {
           {hasDefinitions ? (
             <motion.button
               type="button"
-              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase transition-colors hover:border-black/15 hover:bg-black/5 hover:text-black"
+              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase rounded-[10px] transition-colors hover:border-black/15 hover:bg-black/5 hover:text-black"
               onClick={() => resetSettings()}
               {...MODAL_ACTION_MOTION}
             >
@@ -197,7 +197,7 @@ export default function SettingsModal({ close, header }) {
                               </span>
                               <motion.button
                                 type="button"
-                                className="text-[10px] font-bold tracking-widest uppercase"
+                                className="text-[10px] font-bold tracking-widest uppercase rounded-[10px]"
                                 onClick={() => resetSettings(definition.path)}
                                 {...MODAL_ACTION_MOTION}
                               >
@@ -219,7 +219,7 @@ export default function SettingsModal({ close, header }) {
                           <span className="text-xs">{definition.description || definition.path}</span>
                           <motion.button
                             type="button"
-                            className="text-[10px] font-bold tracking-widest uppercase"
+                            className="text-[10px] font-bold tracking-widest uppercase rounded-[10px]"
                             onClick={() => resetSettings(definition.path)}
                             {...MODAL_ACTION_MOTION}
                           >
@@ -232,7 +232,7 @@ export default function SettingsModal({ close, header }) {
                         {definition.storage.map((target) => (
                           <span
                             key={target}
-                            className="border-info border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase"
+                            className="border-info border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase rounded-[8px]"
                           >
                             {target}
                           </span>

@@ -52,10 +52,10 @@
   .page-gradient-backdrop {
     background-image: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--white) 80%, transparent) 0%,
-      color-mix(in srgb, var(--white) 85%, transparent) 18vh,
-      color-mix(in srgb, var(--white) 90%, transparent) 34vh,
-      color-mix(in srgb, var(--white) 95%, transparent) 50vh,
+      color-mix(in srgb, var(--white) 55%, transparent) 0%,
+      color-mix(in srgb, var(--white) 68%, transparent) 18vh,
+      color-mix(in srgb, var(--white) 80%, transparent) 34vh,
+      color-mix(in srgb, var(--white) 92%, transparent) 50vh,
       color-mix(in srgb, var(--white) 98%, transparent) 66vh,
       var(--white) 80vh,
       var(--white) 100%

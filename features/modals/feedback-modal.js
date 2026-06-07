@@ -1,12 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
 import { requestApiJson } from '@/core/services/shared/client';
 import { getStorageItem, setStorageItem } from '@/core/utils/client-utils';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
+import { motion } from 'framer-motion';
+
+const feedbackSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 290,
+  damping: 25,
+  mass: 0.8,
+});
+
+const feedbackButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 400,
+  damping: 22,
+  mass: 0.55,
+});
+
+const feedbackButtonTap = Object.freeze({});
+
+const feedbackInputMotion = Object.freeze({});
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -15,7 +36,7 @@ import { cn } from '@/core/utils';
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
 const FORM_ID = 'feedback-modal-form';
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase';
+
 
 // --------------------------------------------------
 // HELPERS
@@ -136,24 +157,23 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
       footer={{
         right: (
           <>
-            <Button
+            <MotionButton
               type="button"
               onClick={close}
-              className={cn(ACTION_BUTTON_CLASS, 'border-black/10 text-black/70 hover:bg-black/5 hover:text-black')}
+              {...feedbackButtonTap}
+              className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </MotionButton>
+            <MotionButton
               type="submit"
               form={FORM_ID}
               disabled={isSaving}
-              className={cn(
-                ACTION_BUTTON_CLASS,
-                'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50'
-              )}
+              {...feedbackButtonTap}
+              className={ACTION_BUTTON_CLASS}
             >
               {isSaving ? 'Sending' : 'Send feedback'}
-            </Button>
+            </MotionButton>
           </>
         ),
       }}
@@ -164,7 +184,7 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
           <p className="text-sm font-medium text-black/50">Share general product, UX, or quality feedback.</p>
         </div>
 
-        <div className="space-y-2">
+        <motion.div {...feedbackInputMotion} className="space-y-2">
           <Textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -172,12 +192,12 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
             placeholder="Your message"
             className={{
               wrapper:
-                'focus-within:bg-primary border border-black/10 bg-white focus-within:border-black/15 hover:border-black/15',
+                'focus-within:bg-primary rounded-[10px] border border-black/10 bg-white transition-all duration-300 ease-out focus-within:border-black/15 hover:border-black/15',
               textarea:
-                'min-h-[160px] w-full bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/50',
+                'min-h-[160px] w-full rounded-[10px] bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/50',
             }}
           />
-        </div>
+        </motion.div>
       </form>
     </Container>
   );

@@ -78,7 +78,8 @@ async function resolveExpandedSearchIndex(query, type = 'movie', rankingQuery = 
         : (options.runtimeCheckLimit ?? resolveSearchRuntimeCheckLimit(options.scope)),
     scope: options.scope,
   });
-  const fallbackItems = buildAuthorityFallbackItems(mergedItems, type, options);
+  const fallbackItems =
+    query === rankingQuery ? buildAuthorityFallbackItems(mergedItems, type, { ...options, query: rankingQuery }) : [];
 
   return {
     pageSize,

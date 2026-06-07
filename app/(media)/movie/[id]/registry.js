@@ -211,10 +211,9 @@ export default function Registry({
             ? {
                 image: resolvedBackgroundImage,
                 overlay: true,
-                overlayOpacity: 0.4,
-                overlayColor: 'var(--white)',
+                overlayOpacity: 0.38,
                 noiseStyle: {
-                  opacity: 0.13,
+                  opacity: 0.2,
                 },
               }
             : {

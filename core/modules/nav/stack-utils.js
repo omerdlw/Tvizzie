@@ -1,6 +1,6 @@
 export function getNavStackClassName({ isFullscreenStateActive }) {
   const baseClassName =
-    'fixed right-2 bottom-0 left-2 h-auto touch-manipulation select-none transition-opacity duration-[200ms] sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
+    'fixed right-2 bottom-0 left-2 h-auto touch-manipulation select-none transition-opacity duration-200 sm:right-auto sm:bottom-1 sm:left-1/2 sm:w-[460px] sm:-translate-x-1/2';
 
   if (isFullscreenStateActive) {
     return `${baseClassName} pointer-events-none opacity-0`;

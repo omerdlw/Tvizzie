@@ -107,23 +107,26 @@ export default function FileUploadSurface({ close, data }) {
       }}
       onDrop={handleDrop}
       className={cn(
-        'flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-3 border px-6 py-8 text-center transition-colors',
-        isDragActive ? 'border-info bg-info/20' : 'bg-primary border-white/5 hover:bg-transparent'
+        'flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-[14px] border px-6 py-8 text-center transition-all duration-200',
+        isDragActive
+          ? 'border-info/30 bg-info/10'
+          : 'bg-primary/50 hover:bg-primary/70 border-dashed border-black/5 hover:border-black/10'
       )}
-      animate={getNavDragSurfaceMotion(isDragActive)}
-      transition={NAV_SURFACE_ITEM_SPRING}
     >
       <motion.div
-        className="center size-14 border border-white/5 bg-black text-white/70"
+        className={cn(
+          'center size-14 rounded-full border transition-colors',
+          isDragActive ? 'border-info/20 bg-info/10 text-info' : 'border-black/5 bg-black/5 text-black/70'
+        )}
         animate={getNavDragIconMotion(isDragActive)}
         transition={NAV_SURFACE_ITEM_SPRING}
       >
         <Icon icon="solar:cloud-upload-bold" size={24} />
       </motion.div>
 
-      <motion.div className="space-y-1" layout="position" transition={NAV_CONTENT_TRANSITION}>
-        <p className="text-base font-semibold text-white">Click to upload or drag and drop</p>
-        <p className="text-xs leading-5 text-white/50">{hint}</p>
+      <motion.div className="space-y-1 px-4" layout="position" transition={NAV_CONTENT_TRANSITION}>
+        <p className="text-sm font-semibold tracking-tight text-black sm:text-base">Click to upload or drag and drop</p>
+        <p className="text-xs leading-relaxed text-black/50">{hint}</p>
       </motion.div>
 
       <motion.button
@@ -132,7 +135,12 @@ export default function FileUploadSurface({ close, data }) {
           event.stopPropagation();
           inputRef.current?.click();
         }}
-        className="hover:text-primary inline-flex h-10 items-center justify-center border border-white/5 bg-black px-4 text-[11px] font-semibold text-white uppercase transition-colors hover:bg-white"
+        className={cn(
+          'inline-flex h-9 items-center justify-center rounded-[14px] border px-4 text-xs font-bold tracking-wider uppercase transition-all duration-200',
+          isDragActive
+            ? 'border-info/20 bg-info/10 text-info hover:bg-info/20'
+            : 'hover:bg-primary border-black/5 bg-black/5 text-black shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:border-black/10'
+        )}
         {...NAV_BUTTON_INTERACTION_MOTION}
       >
         {buttonLabel}

@@ -14,13 +14,8 @@ export default createRouteRegistry({
           background: {
             image: backgroundImage,
             overlay: true,
-            overlayOpacity: 0.42,
-            overlayColor: 'var(--white)',
             noiseStyle: {
-              opacity: 0.11,
-            },
-            imageStyle: {
-              opacity: 0.98,
+              opacity: 0.2,
             },
           },
         }

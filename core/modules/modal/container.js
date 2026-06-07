@@ -14,6 +14,12 @@ import {
   MODAL_HEADER_MOTION,
 } from '@/core/modules/motion';
 
+export const CANCEL_BUTTON_CLASS =
+  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase rounded-[10px] text-black/70 hover:bg-black/5 hover:text-black transition-all duration-300 ease-out';
+
+export const ACTION_BUTTON_CLASS =
+  'hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white rounded-[10px] transition-all duration-300 ease-out disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
+
 const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
 
 function hasHeightConstraint(className) {
@@ -42,7 +48,7 @@ function getBodyClassName(position, bodyClassName) {
   const isBottomModal = position === MODAL_POSITIONS.BOTTOM;
 
   return cn(
-    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain',
+    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-[14px] modal-body',
     isTopModal && ' ',
     isBottomModal && ' ',
     isLeftModal && ' ',
@@ -78,7 +84,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       type="button"
       aria-label={label}
       onClick={close}
-      className="bg-primary inline-flex size-8 items-center justify-center border border-black/10 text-black/70 transition hover:bg-black/5 hover:text-black"
+      className="bg-primary inline-flex size-8 items-center justify-center rounded-full border border-black/5 text-black/70 transition-all duration-300 ease-out hover:bg-white hover:text-black"
       {...MODAL_ACTION_MOTION}
     >
       <Icon icon="material-symbols:close-rounded" size={18} />

@@ -61,8 +61,10 @@ export const NAV_CARD_BLUR_TRANSITION = Object.freeze({
 });
 
 export const NAV_BACKDROP_TRANSITION = Object.freeze({
-  duration: 0.34,
-  ease: [0.16, 1, 0.3, 1],
+  type: 'spring',
+  stiffness: 220,
+  damping: 28,
+  mass: 0.9,
 });
 
 export const NAV_SEARCH_REVEAL_TRANSITION = Object.freeze({
@@ -388,14 +390,14 @@ export function getNavDelayedSearchTransition(index = 0) {
 
 const MODAL_SPRING = Object.freeze({
   type: 'spring',
-  stiffness: 380,
-  damping: 32,
-  mass: 0.8,
+  stiffness: 280,
+  damping: 30,
+  mass: 0.84,
 });
 
 const MODAL_EXIT_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: 0.2,
+  duration: 0.26,
   ease: [0.55, 0, 1, 0.45],
 });
 
@@ -417,10 +419,10 @@ export const MODAL_LAYER_MOTION = Object.freeze({
 });
 
 export const MODAL_BACKDROP_MOTION = Object.freeze({
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0, transition: MODAL_EXIT_TRANSITION },
-  transition: MODAL_FADE_TRANSITION,
+  initial: { opacity: 0, backdropFilter: 'blur(0px)' },
+  animate: { opacity: 1, backdropFilter: 'blur(8px)' },
+  exit: { opacity: 0, backdropFilter: 'blur(0px)', transition: NAV_EXIT_TRANSITION },
+  transition: NAV_BACKDROP_TRANSITION,
 });
 
 export const MODAL_HEADER_MOTION = Object.freeze({
@@ -467,18 +469,20 @@ export const MODAL_LAYER_SWITCHER_MOTION = Object.freeze({
 export function getModalPanelMotion(position, isTopModal) {
   if (!isTopModal) {
     return Object.freeze({
-      animate: { opacity: 0.9, scale: 0.98 },
+      animate: { opacity: 0.9, scale: 0.98, filter: 'blur(3px)' },
       transition: MODAL_FADE_TRANSITION,
     });
   }
 
   if (position === 'center') {
     return Object.freeze({
-      initial: { opacity: 0, scale: 0.94 },
-      animate: { opacity: 1, scale: 1 },
+      initial: { opacity: 0, scale: 0.94, y: 12, filter: 'blur(6px)' },
+      animate: { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' },
       exit: {
         opacity: 0,
         scale: 0.94,
+        y: 12,
+        filter: 'blur(3px)',
         transition: MODAL_EXIT_TRANSITION,
       },
       transition: MODAL_SPRING,
@@ -489,12 +493,13 @@ export function getModalPanelMotion(position, isTopModal) {
   const yOffset = position === 'top' ? -24 : position === 'bottom' ? 24 : 0;
 
   return Object.freeze({
-    initial: { opacity: 0, x: xOffset, y: yOffset },
-    animate: { opacity: 1, x: 0, y: 0 },
+    initial: { opacity: 0, x: xOffset, y: yOffset, filter: 'blur(6px)' },
+    animate: { opacity: 1, x: 0, y: 0, filter: 'blur(0px)' },
     exit: {
       opacity: 0,
       x: xOffset,
       y: yOffset,
+      filter: 'blur(3px)',
       transition: MODAL_EXIT_TRANSITION,
     },
     transition: MODAL_SPRING,
@@ -519,7 +524,7 @@ const NOTIFICATION_SPRING = Object.freeze({
 
 const NOTIFICATION_EXIT_TRANSITION = Object.freeze({
   type: 'tween',
-  duration: 0.2,
+  duration: 0.26,
   ease: [0.55, 0, 1, 0.45],
 });
 
@@ -529,12 +534,13 @@ export const NOTIFICATION_STACK_MOTION = Object.freeze({
 });
 
 export const NOTIFICATION_CONTENT_MOTION = Object.freeze({
-  initial: { opacity: 0, y: 12, scale: 0.97 },
-  animate: { opacity: 1, y: 0, scale: 1 },
+  initial: { opacity: 0, x: '120%', scale: 0.97, filter: 'blur(6px)' },
+  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
   exit: {
     opacity: 0,
-    y: 12,
+    x: '120%',
     scale: 0.95,
+    filter: 'blur(3px)',
     transition: NOTIFICATION_EXIT_TRANSITION,
   },
   transition: NOTIFICATION_SPRING,
@@ -543,12 +549,13 @@ export const NOTIFICATION_CONTENT_MOTION = Object.freeze({
 export function getNotificationItemMotion(index = 0) {
   return Object.freeze({
     layout: true,
-    initial: { opacity: 0, y: 12, scale: 0.97 },
-    animate: { opacity: 1, y: 0, scale: 1 },
+    initial: { opacity: 0, x: '120%', scale: 0.97, filter: 'blur(6px)' },
+    animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
     exit: {
       opacity: 0,
-      y: 12,
+      x: '120%',
       scale: 0.95,
+      filter: 'blur(3px)',
       transition: NOTIFICATION_EXIT_TRANSITION,
     },
     transition: { ...NOTIFICATION_SPRING, delay: index * 0.04 },
@@ -561,6 +568,26 @@ export function getNotificationActionMotion(index = 0) {
     animate: { opacity: 1, scale: 1 },
     exit: { opacity: 0, scale: 0.94, transition: NOTIFICATION_EXIT_TRANSITION },
     transition: { ...NOTIFICATION_SPRING, delay: 0.06 + index * 0.04 },
+    whileHover: { scale: 1.01 },
     whileTap: { scale: 0.97 },
   });
 }
+
+export const CONTEXT_MENU_SPRING = Object.freeze({
+  type: 'spring',
+  stiffness: 350,
+  damping: 26,
+  mass: 0.7,
+});
+
+export const CONTEXT_MENU_MOTION = Object.freeze({
+  initial: { opacity: 0, scale: 0.95, filter: 'blur(4px)' },
+  animate: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    filter: 'blur(3px)',
+    transition: Object.freeze({ duration: 0.16, ease: 'easeIn' }),
+  },
+  transition: CONTEXT_MENU_SPRING,
+});

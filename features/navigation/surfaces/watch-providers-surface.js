@@ -97,13 +97,13 @@ export default function WatchProvidersSurface({ close, providers }) {
     <div className="flex w-full flex-col overflow-hidden">
       <AnimatePresence mode="popLayout" initial={false}>
         {providerList.length > 0 ? (
-          <div key={`list-${resolvedRegion}`} className="flex flex-col px-1">
+          <div key={`list-${resolvedRegion}`} className="flex flex-col border-t border-black/10 pt-1">
             {providerList.map((provider, index) => (
               <motion.div
                 key={`${provider.provider_id}-${provider.type}`}
                 whileTap={{ scale: 0.98 }}
                 {...getNavActionItemMotion(index)}
-                className="-mx-2 flex cursor-pointer items-center justify-between rounded-lg border-b border-black/10 px-2 py-2.5 transition-colors duration-[200ms] ease-in-out last:border-b-0 hover:bg-black/[0.03]"
+                className="-mx-1.5 sm:-mx-2 flex cursor-pointer items-center justify-between border-b border-black/10 px-1.5 sm:px-2 py-2.5 transition-colors duration-200 ease-in-out last:border-b-0"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <AdaptiveImage
@@ -112,12 +112,12 @@ export default function WatchProvidersSurface({ close, providers }) {
                     alt={provider.provider_name}
                     loading="lazy"
                     decoding="async"
-                    className="h-7 w-7 shrink-0 object-cover"
+                    className="h-7 w-7 shrink-0 rounded-[8px] object-cover"
                     wrapperClassName="h-7 w-7 shrink-0 "
                   />
                   <span className="truncate text-sm font-medium text-black/70">{provider.provider_name}</span>
                 </div>
-                <span className="bg-primary border border-black/10 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase">
+                <span className="bg-primary rounded-[8px] border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase">
                   {provider.type}
                 </span>
               </motion.div>

@@ -105,16 +105,13 @@ export function inferSearchType({ normalizedQuery, userResults = [], mediaResult
   }
 
   const preferredMediaType = resolvePreferredMediaType({
-    movieResults: [...movieResults, ...tvResults],
+    movieResults,
     personResults,
     query: resolvedQuery,
+    tvResults,
   });
 
   if (preferredMediaType !== SEARCH_TYPES.ALL) {
-    if (preferredMediaType === SEARCH_TYPES.MOVIE && !movieResults.length && tvResults.length) {
-      return SEARCH_TYPES.TV;
-    }
-
     return preferredMediaType;
   }
 

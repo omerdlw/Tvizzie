@@ -41,6 +41,8 @@ function EpisodeCard({ episode, index = 0, shouldAnimateItemReveal = false }) {
         imagePreset="feature"
         fallbackIcon="solar:panorama-bold"
         fallbackIconSize={24}
+        data-context-menu-target="movie-backdrop-card"
+        data-backdrop-file-path={episode?.still_path || ''}
         topOverlay={
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 text-white">
             <p className="text-[10px] font-semibold tracking-widest text-white/72 uppercase tabular-nums">
@@ -89,10 +91,10 @@ export default function TvSeasonsSection({ seasonDetails = [], seasons = [] }) {
     <MovieSurfaceReveal>
       <section className="flex w-full flex-col gap-3">
         <SegmentedControl
-          className="-mx-1 w-full"
+          value={activeSeasonKey}
+          className={seasonTabs.length >= 16 ? 'w-full' : 'w-auto self-start'}
           classNames={{
-            track: 'px-1',
-            wrapper: 'p-0.5',
+            wrapper: seasonTabs.length >= 16 ? 'p-0.5 min-w-full' : 'p-0.5',
             button: '',
             indicator: '',
           }}

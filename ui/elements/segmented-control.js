@@ -106,23 +106,34 @@ export default function SegmentedControl({
     return null;
   }
   return (
-    <div className={cn('flex min-w-0 items-center', className)}>
+    <div
+      className={cn(
+        'flex min-w-0 items-stretch rounded-[10px] border border-black/5 bg-black/5 p-0.5',
+        className,
+        classNames.wrapper
+      )}
+    >
       <div
         ref={trackRef}
         onDragStart={(event) => event.preventDefault()}
-        className={cn('hide-scrollbar w-full cursor-grab touch-pan-x overflow-x-auto select-none', classNames.track)}
+        className={cn(
+          'hide-scrollbar h-full w-full cursor-grab touch-pan-x overflow-x-auto select-none rounded-[8px]',
+          classNames.track
+        )}
       >
-        <div
-          ref={wrapperRef}
-          className={cn(
-            'relative inline-flex min-w-full items-stretch gap-1 border border-black/5 bg-black/5',
-            'p-1',
-            classNames.wrapper
-          )}
-        >
+        <div ref={wrapperRef} className="relative flex h-full w-max min-w-full items-stretch gap-1">
           <span
             aria-hidden="true"
-            className={cn('bg-primary pointer-events-none absolute top-0 left-0', classNames.indicator)}
+            className={cn(
+              'bg-primary pointer-events-none absolute top-0 left-0 rounded-[8px]',
+              indicatorFrame.ready ? 'transition-all duration-200 ease-out' : 'opacity-0',
+              classNames.indicator
+            )}
+            style={{
+              transform: `translate3d(${indicatorFrame.x}px, ${indicatorFrame.y}px, 0)`,
+              width: `${indicatorFrame.width}px`,
+              height: `${indicatorFrame.height}px`,
+            }}
           />
           {resolvedItems.map((item) => {
             const itemKey = getKey(item);

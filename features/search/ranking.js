@@ -11,6 +11,10 @@ function isExactMovieTitleMatch(movie = {}, normalizedQuery = '') {
   );
 }
 
+function stripLeadingArticles(value = '') {
+  return normalizeComparableText(value).replace(/^(the|a|an)\s+/, '');
+}
+
 function isExactPersonNameMatch(person = {}, normalizedQuery = '') {
   return hasExactComparableMatch([person?.name, person?.original_name], normalizedQuery);
 }
@@ -25,13 +29,14 @@ function getBestMovieTitleMatchScore(movie = {}, normalizedQuery = '', queryToke
 
   titles.forEach((title) => {
     const normalizedTitle = normalizeComparableText(title);
+    const articleStrippedTitle = stripLeadingArticles(title);
     const titleTokens = tokenizeComparableText(title);
     const tokenOverlap = countTokenOverlap(queryTokens, titleTokens);
     let score = 0;
 
-    if (normalizedTitle === normalizedQuery) {
+    if (normalizedTitle === normalizedQuery || articleStrippedTitle === normalizedQuery) {
       score += 14;
-    } else if (normalizedTitle.startsWith(normalizedQuery)) {
+    } else if (normalizedTitle.startsWith(normalizedQuery) || articleStrippedTitle.startsWith(normalizedQuery)) {
       score += 10;
     } else if (normalizedTitle.includes(normalizedQuery)) {
       score += 6;
@@ -185,44 +190,113 @@ function countStrongMoviePrefixMatches(movieResults = [], normalizedQuery = '', 
   }).length;
 }
 
-export function resolvePreferredMediaType({ movieResults = [], personResults = [], query = '' }) {
-  if (!movieResults.length && !personResults.length) {
+function getTopMediaResult(items = [], normalizedQuery = '', queryTokens = []) {
+  let topResult = null;
+
+  items.forEach((item, index) => {
+    const score = getMovieAssociationScore(item, normalizedQuery, queryTokens);
+
+    if (
+      !topResult ||
+      score.totalScore > topResult.score.totalScore ||
+      (score.totalScore === topResult.score.totalScore && index < topResult.index)
+    ) {
+      topResult = {
+        index,
+        item,
+        score,
+      };
+    }
+  });
+
+  return topResult;
+}
+
+export function resolvePreferredMediaType({ movieResults = [], personResults = [], query = '', tvResults = [] }) {
+  const titleResults = [...movieResults, ...tvResults];
+
+  if (!titleResults.length && !personResults.length) {
     return SEARCH_TYPES.ALL;
   }
 
-  if (!movieResults.length) {
+  if (!titleResults.length) {
     return SEARCH_TYPES.PERSON;
   }
 
   if (!personResults.length) {
-    return SEARCH_TYPES.MOVIE;
+    if (!movieResults.length && tvResults.length) {
+      return SEARCH_TYPES.TV;
+    }
+
+    if (!tvResults.length && movieResults.length) {
+      return SEARCH_TYPES.MOVIE;
+    }
   }
 
   const normalizedQuery = normalizeComparableText(query);
   const queryTokens = tokenizeComparableText(query);
 
   if (!normalizedQuery) {
-    return SEARCH_TYPES.MOVIE;
+    return movieResults.length ? SEARCH_TYPES.MOVIE : SEARCH_TYPES.TV;
   }
 
-  const topMovieScore = getTopAssociationScore(movieResults, (movie) =>
-    getMovieAssociationScore(movie, normalizedQuery, queryTokens)
-  );
+  const topMovieResult = getTopMediaResult(movieResults, normalizedQuery, queryTokens);
+  const topTvResult = getTopMediaResult(tvResults, normalizedQuery, queryTokens);
+  const topTitleResult =
+    !topTvResult || (topMovieResult && topMovieResult.score.totalScore >= topTvResult.score.totalScore)
+      ? topMovieResult
+      : topTvResult;
   const topPersonScore = getTopAssociationScore(personResults, (person) =>
     getPersonAssociationScore(person, normalizedQuery, queryTokens)
   );
   const strongMoviePrefixMatchCount = countStrongMoviePrefixMatches(movieResults, normalizedQuery, queryTokens);
+  const strongTvPrefixMatchCount = countStrongMoviePrefixMatches(tvResults, normalizedQuery, queryTokens);
   const hasExactMovieMatch = movieResults.some((movie) => isExactMovieTitleMatch(movie, normalizedQuery));
+  const hasExactTvMatch = tvResults.some((movie) => isExactMovieTitleMatch(movie, normalizedQuery));
 
-  if (hasExactMovieMatch) {
+  if (hasExactMovieMatch || hasExactTvMatch) {
+    if (hasExactTvMatch && !hasExactMovieMatch) {
+      return SEARCH_TYPES.TV;
+    }
+
+    if (hasExactMovieMatch && !hasExactTvMatch) {
+      return SEARCH_TYPES.MOVIE;
+    }
+
+    return (topTvResult?.score.totalScore || 0) > (topMovieResult?.score.totalScore || 0)
+      ? SEARCH_TYPES.TV
+      : SEARCH_TYPES.MOVIE;
+  }
+
+  if (topTvResult && topMovieResult) {
+    if (
+      topTvResult.score.textScore >= 14 &&
+      topTvResult.score.totalScore >= topMovieResult.score.totalScore + 2
+    ) {
+      return SEARCH_TYPES.TV;
+    }
+
+    if (
+      topMovieResult.score.textScore >= 14 &&
+      topMovieResult.score.totalScore >= topTvResult.score.totalScore + 2
+    ) {
+      return SEARCH_TYPES.MOVIE;
+    }
+  } else if (topTvResult && topTvResult.score.textScore >= 14) {
+    return SEARCH_TYPES.TV;
+  } else if (topMovieResult && topMovieResult.score.textScore >= 14) {
     return SEARCH_TYPES.MOVIE;
   }
 
+  const topCombinedTitleScore = getTopAssociationScore(titleResults, (movie) =>
+    getMovieAssociationScore(movie, normalizedQuery, queryTokens)
+  );
+
   if (
-    strongMoviePrefixMatchCount >= 2 ||
-    (topMovieScore.textScore >= 14 && topMovieScore.totalScore >= topPersonScore.totalScore + 2)
+    strongMoviePrefixMatchCount + strongTvPrefixMatchCount >= 2 ||
+    (topCombinedTitleScore.textScore >= 14 && topCombinedTitleScore.totalScore >= topPersonScore.totalScore + 2)
   ) {
-    return SEARCH_TYPES.MOVIE;
+    return topTitleResult?.item?.media_type === SEARCH_TYPES.TV ? SEARCH_TYPES.TV : SEARCH_TYPES.MOVIE;
   }
 
   const hasExactPersonMatch = personResults.some((person) => isExactPersonNameMatch(person, normalizedQuery));
@@ -231,19 +305,22 @@ export function resolvePreferredMediaType({ movieResults = [], personResults = [
     return SEARCH_TYPES.PERSON;
   }
 
-  if (topMovieScore.textScore === 0 && topPersonScore.textScore > 0) {
+  if (topCombinedTitleScore.textScore === 0 && topPersonScore.textScore > 0) {
     return SEARCH_TYPES.PERSON;
   }
 
-  if (topPersonScore.textScore === 0 && topMovieScore.textScore > 0) {
-    return SEARCH_TYPES.MOVIE;
+  if (topPersonScore.textScore === 0 && topCombinedTitleScore.textScore > 0) {
+    return topTitleResult?.item?.media_type === SEARCH_TYPES.TV ? SEARCH_TYPES.TV : SEARCH_TYPES.MOVIE;
   }
 
-  if (topPersonScore.totalScore > topMovieScore.totalScore + 4 && topPersonScore.textScore >= topMovieScore.textScore) {
+  if (
+    topPersonScore.totalScore > topCombinedTitleScore.totalScore + 4 &&
+    topPersonScore.textScore >= topCombinedTitleScore.textScore
+  ) {
     return SEARCH_TYPES.PERSON;
   }
 
-  return SEARCH_TYPES.MOVIE;
+  return topTitleResult?.item?.media_type === SEARCH_TYPES.TV ? SEARCH_TYPES.TV : SEARCH_TYPES.MOVIE;
 }
 
 function pickAssociatedPersonSeeds(personResults = [], query = '') {
@@ -322,29 +399,33 @@ function extractAssociatedMoviesFromPeople(personResults = [], query = '') {
   };
 }
 
+function getMediaResultKey(item = {}) {
+  return `${item?.media_type || SEARCH_TYPES.MOVIE}:${item?.id || 'unknown'}`;
+}
+
 function mergeAssociatedAndDirectMovies(directMovies = [], associatedMovies = []) {
   const rankedMovies = new Map();
 
   associatedMovies.forEach((movie, index) => {
-    rankedMovies.set(movie.id, {
+    rankedMovies.set(getMediaResultKey(movie), {
       item: movie,
       score: toFiniteNumber(movie.__associationPriority) || 900 - index * 10,
     });
   });
 
   directMovies.forEach((movie, index) => {
-    const existing = rankedMovies.get(movie.id);
-    const directScore = 600 - index * 8;
+    const existing = rankedMovies.get(getMediaResultKey(movie));
+    const directScore = toFiniteNumber(movie.__searchRankScore) || 600 - index * 8;
 
     if (!existing || directScore > existing.score) {
-      rankedMovies.set(movie.id, {
+      rankedMovies.set(getMediaResultKey(movie), {
         item: existing ? { ...existing.item, ...movie } : movie,
         score: Math.max(directScore, existing?.score || 0),
       });
       return;
     }
 
-    rankedMovies.set(movie.id, {
+    rankedMovies.set(getMediaResultKey(movie), {
       item: { ...movie, ...existing.item },
       score: existing.score,
     });
@@ -361,8 +442,36 @@ function mergeAssociatedAndDirectMovies(directMovies = [], associatedMovies = []
 export function rankAllMediaResults(movieResults = [], personResults = [], query = '') {
   const { associatedMovies, seeds } = extractAssociatedMoviesFromPeople(personResults, query);
   const seedIds = new Set(seeds.map((person) => person.id));
-  const rankedMovies = mergeAssociatedAndDirectMovies(movieResults, associatedMovies);
-  const preferredMediaType = resolvePreferredMediaType({ movieResults, personResults, query });
+  const normalizedQuery = normalizeComparableText(query);
+  const queryTokens = tokenizeComparableText(query);
+  const directTitleResults = movieResults.map((movie, index) => {
+    const score = getMovieAssociationScore(movie, normalizedQuery, queryTokens);
+
+    return {
+      ...movie,
+      __searchRankScore:
+        score.totalScore * 40 + score.textScore * 18 + score.authorityScore * 6 + Math.max(0, 200 - index),
+    };
+  });
+  const splitMovieResults = movieResults.filter((item) => item?.media_type !== SEARCH_TYPES.TV);
+  const splitTvResults = movieResults.filter((item) => item?.media_type === SEARCH_TYPES.TV);
+  const preferredMediaType = resolvePreferredMediaType({
+    movieResults: splitMovieResults,
+    personResults,
+    query,
+    tvResults: splitTvResults,
+  });
+  const rankedMovies = mergeAssociatedAndDirectMovies(
+    directTitleResults.map((item) =>
+      item.media_type === preferredMediaType
+        ? {
+            ...item,
+            __searchRankScore: toFiniteNumber(item.__searchRankScore) + 260,
+          }
+        : item
+    ),
+    associatedMovies
+  );
   const primaryPeople = [];
   const secondaryPeople = [];
 

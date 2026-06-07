@@ -49,11 +49,11 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center hover:bg-primary absolute top-0 right-0 z-10 cursor-pointer border border-black/5 bg-black/5 p-1 transition-colors"
+          className="center hover:bg-primary absolute top-0 right-0 z-10 cursor-pointer rounded-[14px] border border-black/5 bg-black/5 p-1 transition-colors hover:border-transparent"
           aria-label={closeLabel}
           {...NAV_BUTTON_INTERACTION_MOTION}
         >
-          <Icon icon="material-symbols:close-rounded" size={20} />
+          <Icon icon="material-symbols:close-rounded" size={16} />
         </motion.button>
       ) : null}
     </div>

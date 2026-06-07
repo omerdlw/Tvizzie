@@ -96,7 +96,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
       <motion.button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
         {...MODAL_ACTION_MOTION}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
@@ -113,7 +113,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
 
       <span className="text-[10px] text-black/20">/</span>
 
-      <span className="bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="rounded-[8px] bg-primary px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </motion.div>
@@ -215,7 +215,7 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
     >
       {isTopModal ? (
         <motion.div
-          className="fixed inset-0 bg-white/50 backdrop-blur-md"
+          className="fixed inset-0 bg-white/40 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
           onClick={() => closeModal(null, entry.id)}
           {...MODAL_BACKDROP_MOTION}
@@ -240,11 +240,23 @@ function ModalLayer({ entry, stackIndex, isTopModal, isMobileViewport, closeModa
       >
         <motion.div
           className={cn(
-            'relative flex flex-col',
-            '',
+            'modal-panel relative flex flex-col',
             isPanelChrome
               ? 'overflow-hidden border border-black/10 bg-white/80'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
+            isPanelChrome && (
+              activePosition === MODAL_POSITIONS.CENTER
+                ? 'rounded-[22px]'
+                : activePosition === MODAL_POSITIONS.BOTTOM
+                  ? 'rounded-t-[22px] rounded-b-none'
+                  : activePosition === MODAL_POSITIONS.TOP
+                    ? 'rounded-b-[22px] rounded-t-none'
+                    : activePosition === MODAL_POSITIONS.LEFT
+                      ? (isMobileViewport ? 'rounded-none' : 'rounded-r-[22px] rounded-l-none')
+                      : activePosition === MODAL_POSITIONS.RIGHT
+                        ? (isMobileViewport ? 'rounded-none' : 'rounded-l-[22px] rounded-r-none')
+                        : 'rounded-[22px]'
+            ),
             isPanelChrome && isTopModalPosition && 'border-t-0',
             isPanelChrome && isBottomModalPosition && 'border-b-0',
             isPanelChrome &&

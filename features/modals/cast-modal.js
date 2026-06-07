@@ -9,6 +9,28 @@ import { getPreferredPersonPosterSrc, usePosterPreferenceVersion } from '@/featu
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const creditCardSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 250,
+  damping: 26,
+  mass: 0.9,
+});
+
+const creditCardHoverTap = Object.freeze({});
+
+function getCreditCardAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 6 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -6 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.016, 0.16) },
+    }),
+  });
+}
 
 // --------------------------------------------------
 // CONSTANTS
@@ -47,6 +69,7 @@ function createHeader({ header, hasBoth, activeTab, setActiveTab }) {
     showClose: false,
     center: (
       <SegmentedControl
+        value={activeTab}
         onChange={setActiveTab}
         items={[
           {
@@ -156,24 +179,18 @@ function ModalView({
   }
   return (
     <Container className={containerClassName} close={close} header={resolvedHeader} bodyClassName="bg-transparent p-0">
-      <div ref={contentRef} className="relative overflow-hidden">
-        {!hasBoth ? (
-          <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
-        ) : (
-          <>
-            <div aria-hidden="true" className="invisible">
-              <CreditsGrid close={close} list={activeEntries} keyPrefix={`${activeTab}-measure`} />
-            </div>
-
-            <div className="absolute inset-0">
-              <CreditsGrid close={close} list={castEntries} keyPrefix="cast" />
-            </div>
-
-            <div className="absolute inset-0">
-              <CreditsGrid close={close} list={crewEntries} keyPrefix="crew" />
-            </div>
-          </>
-        )}
+      <div ref={contentRef} className="relative min-h-32 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
+          </motion.div>
+        </AnimatePresence>
       </div>
     </Container>
   );
@@ -186,18 +203,18 @@ function CreditsGrid({ close, list, keyPrefix }) {
         <div
           key={`${keyPrefix}-${person.id || person.name || 'credit'}-${index}`}
           className={cn(
-            'lg:border-black/10',
+            'lg:border-black/5',
             (index + 1) % DESKTOP_COLUMNS !== 0 && 'lg:border-r',
             index < lastRowStart && 'lg:border-b'
           )}
         >
-          <PersonCard close={close} person={person} />
+          <PersonCard close={close} person={person} index={index} />
         </div>
       ))}
     </div>
   );
 }
-function PersonCard({ close, person }) {
+function PersonCard({ close, person, index }) {
   const [imageError, setImageError] = useState(false);
   if (!person?.id) return null;
   const imageSrc = !imageError
@@ -205,34 +222,36 @@ function PersonCard({ close, person }) {
       (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
     : null;
   return (
-    <Link
-      href={`/person/${person.id}`}
-      onClick={close}
-      className="bg-primary/40 hover:bg-primary/60 flex items-center gap-3 p-2"
-    >
-      <div className="relative h-14 w-11 shrink-0 overflow-hidden bg-black/5">
-        {imageSrc ? (
-          <AdaptiveImage
-            fill
-            src={imageSrc}
-            alt={person.name || 'Cast member'}
-            sizes="44px"
-            quality={72}
-            className="object-cover"
-            onError={() => setImageError(true)}
-            wrapperClassName="h-full w-full"
-          />
-        ) : (
-          <div className="center h-full w-full">
-            <Icon icon="solar:user-bold" size={18} className="text-black/50" />
-          </div>
-        )}
-      </div>
+    <motion.div {...getCreditCardAnimation(index)} {...creditCardHoverTap} layout>
+      <Link
+        href={`/person/${person.id}`}
+        onClick={close}
+        className="bg-primary/50 hover:bg-primary flex h-full w-full items-center gap-3 p-2 transition-colors duration-300 ease-out"
+      >
+        <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-[8px] bg-black/5">
+          {imageSrc ? (
+            <AdaptiveImage
+              fill
+              src={imageSrc}
+              alt={person.name || 'Cast member'}
+              sizes="44px"
+              quality={72}
+              className="rounded-[8px] object-cover"
+              onError={() => setImageError(true)}
+              wrapperClassName="h-full w-full rounded-[8px]"
+            />
+          ) : (
+            <div className="center h-full w-full rounded-[8px]">
+              <Icon icon="solar:user-bold" size={16} className="text-black/50" />
+            </div>
+          )}
+        </div>
 
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
-        <p className="truncate text-xs text-black/70">{person.subtitle}</p>
-      </div>
-    </Link>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
+          <p className="truncate text-xs text-black/70">{person.subtitle}</p>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

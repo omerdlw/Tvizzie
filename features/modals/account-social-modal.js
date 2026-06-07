@@ -25,6 +25,25 @@ import {
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,
 } from '@/core/constants/index';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const socialButtonTap = Object.freeze({});
+
+const socialRowHoverTap = Object.freeze({});
+
+function getSocialRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -4 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.02, 0.12) },
+    }),
+  });
+}
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -36,7 +55,7 @@ const TABS = Object.freeze({
   INBOX: 'inbox',
 });
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5 rounded-[8px] transition-all duration-300 ease-out';
 const ACTION_CLASSES = {
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
   SUCCESS: `${ROW_BUTTON_CLASS}${SUCCESS_ACTION_TONE_CLASS}`,
@@ -280,7 +299,7 @@ export default function AccountSocialModal({ close, data }) {
   const activeDataState = tabStateMap[activeTab];
   const { list, isLoading, error: activeError } = activeDataState;
   const activeErrorMessage = activeError ? resolveCollectionErrorMessage(activeError, activeTab) : null;
-  const emptyDescription = activeTab === TABS.INBOX ? 'No pending follow requests' : `No${activeTab}yet`;
+  const emptyDescription = activeTab === TABS.INBOX ? 'No pending follow requests' : `No ${activeTab} yet`;
 
   // Handlers
   async function runUserAction(targetUserId, actionKey, actionFn, errorMessage) {
@@ -354,7 +373,11 @@ function ModalView({
   isLoading,
   activeErrorMessage,
   emptyDescription,
-  actions,
+  onAccept,
+  onReject,
+  onUnfollow,
+  onRemoveFollower,
+  onFollow,
   authUserId,
   isOwnProfile,
   pendingActionByUserId,
@@ -373,7 +396,7 @@ function ModalView({
           classNames={{
             wrapper: 'bg-transparent border-none',
             button: 'flex-1 justify-center px-4 py-2 text-[13px]',
-            indicator: 'bg-black',
+            indicator: 'bg-black rounded-[14px]!',
             inactive: 'text-black/50 hover:text-black',
             active: 'text-white font-semibold',
           }}
@@ -389,35 +412,47 @@ function ModalView({
           <EmptyState description={emptyDescription} className="h-full min-h-96" />
         ) : (
           <div className="min-h-96 flex-1 overflow-y-auto">
-            {list.map((user) => (
-              <SocialUserRow
-                key={user.id}
-                close={close}
-                user={user}
-                action={
-                  <UserAction
-                    tab={activeTab}
-                    user={user}
-                    authUserId={authUserId}
-                    isOwnProfile={isOwnProfile}
-                    pendingKind={pendingActionByUserId[user.id] || null}
-                    followStatus={followingStatusMap[user.id] || null}
-                    actions={actions}
-                  />
-                }
-              />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {list.map((user, index) => (
+                <SocialUserRow
+                  key={user.id}
+                  close={close}
+                  user={user}
+                  index={index}
+                  action={
+                    <UserAction
+                      tab={activeTab}
+                      user={user}
+                      authUserId={authUserId}
+                      isOwnProfile={isOwnProfile}
+                      pendingKind={pendingActionByUserId[user.id] || null}
+                      followStatus={followingStatusMap[user.id] || null}
+                      onAccept={onAccept}
+                      onReject={onReject}
+                      onUnfollow={onUnfollow}
+                      onRemoveFollower={onRemoveFollower}
+                      onFollow={onFollow}
+                    />
+                  }
+                />
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
     </Container>
   );
 }
-function SocialUserRow({ close, user, action }) {
+function SocialUserRow({ close, user, action, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-black/5 lg:p-4">
+    <motion.div
+      {...getSocialRowAnimation(index)}
+      {...socialRowHoverTap}
+      layout
+      className="flex items-center justify-between gap-3 border-b border-black/10 p-3 transition-colors duration-300 ease-out last:border-none hover:bg-white lg:p-4"
+    >
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -429,9 +464,9 @@ function SocialUserRow({ close, user, action }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0 object-cover"
+          className="size-10 shrink-0 rounded-[8px] object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-10 shrink-0"
+          wrapperClassName="size-10 shrink-0 rounded-[8px]"
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>
@@ -439,7 +474,7 @@ function SocialUserRow({ close, user, action }) {
         </div>
       </Link>
       {action}
-    </div>
+    </motion.div>
   );
 }
 function UserAction({
@@ -465,40 +500,66 @@ function UserAction({
   if (tab === TABS.INBOX) {
     return (
       <div className="flex items-center gap-2">
-        <Button onClick={() => onAccept(user.id)} disabled={isPending} className={ACTION_CLASSES.SUCCESS}>
+        <MotionButton
+          onClick={() => onAccept(user.id)}
+          disabled={isPending}
+          {...socialButtonTap}
+          className={ACTION_CLASSES.SUCCESS}
+        >
           {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
-        </Button>
-        <Button onClick={() => onReject(user.id)} disabled={isPending} className={ACTION_CLASSES.ERROR}>
+        </MotionButton>
+        <MotionButton
+          onClick={() => onReject(user.id)}
+          disabled={isPending}
+          {...socialButtonTap}
+          className={ACTION_CLASSES.ERROR}
+        >
           {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
-        </Button>
+        </MotionButton>
       </div>
     );
   }
   if (tab === TABS.FOLLOWING && isOwnProfile) {
     return (
-      <Button onClick={() => onUnfollow(user.id)} disabled={isPending} className={ACTION_CLASSES.ERROR}>
+      <MotionButton
+        onClick={() => onUnfollow(user.id)}
+        disabled={isPending}
+        {...socialButtonTap}
+        className={ACTION_CLASSES.ERROR}
+      >
         {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
-      </Button>
+      </MotionButton>
     );
   }
   if (tab === TABS.FOLLOWERS && isOwnProfile) {
     return (
-      <Button onClick={() => onRemoveFollower(user.id)} disabled={isPending} className={ACTION_CLASSES.ERROR}>
+      <MotionButton
+        onClick={() => onRemoveFollower(user.id)}
+        disabled={isPending}
+        {...socialButtonTap}
+        className={ACTION_CLASSES.ERROR}
+      >
         {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
-      </Button>
+      </MotionButton>
     );
   }
   if (canShowFollowAction) {
     const isFollowPending = followStatus === FOLLOW_STATUSES.PENDING;
     const followLabel = pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow';
     return (
-      <Button onClick={() => onFollow(user.id)} disabled={isFollowPending || isPending} className={ACTION_CLASSES.INFO}>
+      <MotionButton
+        onClick={() => onFollow(user.id)}
+        disabled={isFollowPending || isPending}
+        {...socialButtonTap}
+        className={ACTION_CLASSES.INFO}
+      >
         {followLabel}
-      </Button>
+      </MotionButton>
     );
   }
   return null;
 }
+
 function LoadingList() {
   return (
     <div>
@@ -508,10 +569,10 @@ function LoadingList() {
         },
         (_, index) => (
           <div key={index} className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4">
-            <div className="size-10 shrink-0 bg-black/5" />
+            <div className="size-10 shrink-0 rounded-[8px] bg-black/5" />
             <div className="min-w-0 flex-1 space-y-1.5">
-              <div className="h-3 w-3/5 bg-black/5" />
-              <div className="h-2 w-2/5 bg-black/5" />
+              <div className="h-3 w-3/5 rounded-full bg-black/5" />
+              <div className="h-2 w-2/5 rounded-full bg-black/5" />
             </div>
           </div>
         )

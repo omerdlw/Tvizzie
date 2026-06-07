@@ -87,7 +87,7 @@ function IconOverlay({ overlay }) {
       title={title || undefined}
       aria-label={title || 'Open current account'}
       className={cn(
-        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden',
+        'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden rounded-[8px]',
         typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default'
       )}
       {...NAV_ICON_OVERLAY_MOTION}
@@ -131,14 +131,14 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
     <div className="relative">
       {isImageSource ? (
         <motion.div
-          className={cn('size-10 shrink-0 bg-cover bg-center bg-no-repeat sm:size-12', className)}
+          className={cn('size-10 shrink-0 rounded-[14px] bg-cover bg-center bg-no-repeat sm:size-12', className)}
           transition={NAV_CONTENT_TRANSITION}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
           className={cn(
-            'center size-10 bg-black/5 transition-colors duration-[300ms] sm:size-12',
+            'center size-10 rounded-[14px] bg-black/5 transition-colors duration-300 sm:size-12',
             isStackHovered && !hasCustomBackground && 'bg-black/10',
             isStackHovered && !hasCustomColor && 'text-black',
             className
@@ -158,8 +158,20 @@ export function Title({ text, style }) {
   const { className, inlineStyle } = splitStyle(style);
 
   return (
-    <h3 className={cn('truncate font-bold uppercase', className)} style={inlineStyle}>
-      {text}
-    </h3>
+    <div className="relative overflow-hidden">
+      <AnimatePresence initial={false} mode="wait">
+        <motion.h3
+          key={typeof text === 'string' || typeof text === 'number' ? text : undefined}
+          initial={{ opacity: 0, y: 3, filter: 'blur(2px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0.001px)' }}
+          exit={{ opacity: 0, y: -3, filter: 'blur(1.5px)' }}
+          transition={NAV_CONTENT_TRANSITION}
+          className={cn('truncate font-bold uppercase', className)}
+          style={inlineStyle}
+        >
+          {text}
+        </motion.h3>
+      </AnimatePresence>
+    </div>
   );
 }

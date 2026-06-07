@@ -87,10 +87,10 @@ export function getNavItemCardProps({
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border-[1.5px] p-1.5 sm:p-2 backdrop-blur-lg',
+      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border rounded-[22px] p-1.5 sm:p-2 backdrop-blur-lg',
       isAnchoredToBottom && 'bottom-0',
-      'border-black/15 bg-white/80',
-      showBorder && 'border-black/20',
+      'border-black/10 bg-white/80',
+      showBorder && 'border-black/15',
       cardStyle?.className
     ),
     style: {

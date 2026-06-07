@@ -83,6 +83,10 @@ export function normalizeSearchComparableText(value) {
     .trim();
 }
 
+export function stripSearchLeadingArticles(value = '') {
+  return normalizeSearchComparableText(value).replace(/^(the|a|an)\s+/, '');
+}
+
 export function tokenizeSearchComparableText(value) {
   return normalizeSearchComparableText(value).split(' ').filter(Boolean);
 }
@@ -145,11 +149,15 @@ function getSearchTokenSimilarity(queryToken = '', candidateToken = '') {
     return 1;
   }
 
-  if (
-    normalizedCandidateToken.startsWith(normalizedQueryToken) ||
-    normalizedQueryToken.startsWith(normalizedCandidateToken)
-  ) {
+  if (normalizedCandidateToken.startsWith(normalizedQueryToken)) {
     return 0.9;
+  }
+
+  if (
+    normalizedQueryToken.startsWith(normalizedCandidateToken) &&
+    normalizedQueryToken.length - normalizedCandidateToken.length <= 2
+  ) {
+    return 0.82;
   }
 
   if (
@@ -321,6 +329,7 @@ export function getSearchTextMatch(text = '', queryOrProfile = '') {
   }
 
   const normalizedText = normalizeSearchComparableText(text);
+  const articleStrippedText = stripSearchLeadingArticles(text);
   const candidateTokens = tokenizeSearchComparableText(text);
 
   if (!normalizedText || !candidateTokens.length) {
@@ -337,8 +346,9 @@ export function getSearchTextMatch(text = '', queryOrProfile = '') {
     };
   }
 
-  const isExactMatch = normalizedText === normalizedQuery;
-  const isPrefixMatch = !isExactMatch && normalizedText.startsWith(normalizedQuery);
+  const isExactMatch = normalizedText === normalizedQuery || articleStrippedText === normalizedQuery;
+  const isPrefixMatch =
+    !isExactMatch && (normalizedText.startsWith(normalizedQuery) || articleStrippedText.startsWith(normalizedQuery));
   const isIncludesMatch = !isExactMatch && !isPrefixMatch && normalizedText.includes(normalizedQuery);
   const tokenPrefixScore = getSearchTokenPrefixScore(relevantQueryTokens, candidateTokens);
   const tokenMatchMetrics = getSearchTokenMatchMetrics(relevantQueryTokens, candidateTokens);

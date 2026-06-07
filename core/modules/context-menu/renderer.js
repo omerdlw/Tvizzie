@@ -2,9 +2,11 @@
 
 import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
 import Icon from '@/ui/icon';
+import { CONTEXT_MENU_MOTION, NAV_ACTION_SPRING } from '../motion';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
@@ -250,7 +252,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   );
 
   return (
-    <button
+    <motion.button
       ref={setButtonRef}
       className={itemClassName}
       data-active={isActive ? 'true' : undefined}
@@ -260,11 +262,13 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
       type="button"
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
+      whileTap={{ scale: 0.98 }}
+      transition={NAV_ACTION_SPRING}
     >
       {item.icon ? <Icon icon={item.icon} className={itemIconClassName} size={17} /> : null}
       <span className={itemLabelClassName}>{item.label}</span>
       {item.shortcut ? <span className={itemShortcutClassName}>{item.shortcut}</span> : null}
-    </button>
+    </motion.button>
   );
 }
 
@@ -417,14 +421,26 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
   );
 
   return (
-    <>
-      <div
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      <motion.div
         className={joinClassNames('fixed inset-0', classNames.overlay)}
         onMouseDown={onClose}
         style={{ zIndex: Z_INDEX.DEBUG_OVERLAY - 1 }}
+        variants={{
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          exit: { opacity: 0 }
+        }}
+        transition={{ duration: 0.15 }}
       />
-      <div
+      <motion.div
         ref={menuRef}
+        variants={CONTEXT_MENU_MOTION}
+        transition={CONTEXT_MENU_MOTION.transition}
         className={joinClassNames(
           'max-w-sm min-w-64 overflow-hidden border border-black/10 bg-white/88 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-xl',
           classNames.content
@@ -460,32 +476,32 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
             onSelect={handleItemSelect}
           />
         ))}
-      </div>
-    </>
+      </motion.div>
+    </motion.div>
   );
 }
 
 export function ContextMenuRenderer() {
   const { menuConfig, menuContext, menuItems, position, isOpen, closeMenu } = useContextMenu();
 
-  if (!isOpen || !menuConfig) return null;
   if (typeof document === 'undefined') return null;
 
   const resolvedItems =
     Array.isArray(menuItems) && menuItems.length > 0 ? menuItems : resolveMenuItems(menuConfig, menuContext);
 
-  if (!resolvedItems.length) {
-    return null;
-  }
-
   return createPortal(
-    <ContextMenuContent
-      config={menuConfig}
-      items={resolvedItems}
-      menuContext={menuContext}
-      position={position}
-      onClose={closeMenu}
-    />,
+    <AnimatePresence>
+      {isOpen && menuConfig && resolvedItems.length > 0 && (
+        <ContextMenuContent
+          key="context-menu-content"
+          config={menuConfig}
+          items={resolvedItems}
+          menuContext={menuContext}
+          position={position}
+          onClose={closeMenu}
+        />
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

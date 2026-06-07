@@ -35,6 +35,7 @@ function Badge({ badge }) {
     <AnimatePresence initial={false} mode="sync">
       {badge.visible ? (
         <motion.div
+          key={badge.value}
           className={cn(
             'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring'
           )}

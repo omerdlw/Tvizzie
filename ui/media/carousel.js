@@ -87,13 +87,13 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
     ease: ACCENT_EASING,
   };
   return (
-    <div className="group/carousel relative -m-1">
+    <div className="group/carousel relative">
       <div
         ref={scrollRef}
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth p-1 select-none',
+          'scrollbar-hide flex cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain scroll-smooth select-none',
           gap,
           className
         )}

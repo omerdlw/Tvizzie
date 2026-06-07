@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { TMDB_IMG } from '@/core/constants';
 import { useAuthSessionReady } from '@/core/modules/auth';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { getUserListMemberships, subscribeToUserLists, toggleUserListItem } from '@/core/services/media/lists';
@@ -12,13 +12,42 @@ import { getPreferredMoviePosterSrc, usePosterPreferenceVersion } from '@/featur
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const pickerSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 220,
+  damping: 25,
+  mass: 0.95,
+});
+
+const pickerButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 380,
+  damping: 24,
+  mass: 0.65,
+});
+
+const pickerButtonTap = Object.freeze({});
+
+function getPickerRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: 2 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.15, ease: 'easeOut' },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
+    }),
+  });
+}
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase';
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
 // --------------------------------------------------
@@ -239,22 +268,24 @@ function ModalView({
         ),
         right: (
           <>
-            <Button
+            <MotionButton
               type="button"
               onClick={close}
               disabled={isApplying}
-              className={`${ACTION_BUTTON_CLASS}text-black/70 hover:bg-black/5 hover:text-black`}
+              {...pickerButtonTap}
+              className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </MotionButton>
+            <MotionButton
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              {...pickerButtonTap}
+              className={ACTION_BUTTON_CLASS}
             >
               {isApplying ? 'Applying' : 'Apply changes'}
-            </Button>
+            </MotionButton>
           </>
         ),
       }}
@@ -262,52 +293,58 @@ function ModalView({
       <section className="flex min-h-0 flex-col gap-3">
         <header className="mb-1 flex items-center justify-between gap-3 px-1">
           <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">Your Lists</h2>
-          <Button
+          <MotionButton
             type="button"
             onClick={handleOpenCreator}
             disabled={isApplying}
-            className={`${ACTION_BUTTON_CLASS}text-black/70 hover:bg-black/5 hover:text-black`}
+            {...pickerButtonTap}
+            className={CANCEL_BUTTON_CLASS}
           >
             Create new list
-          </Button>
+          </MotionButton>
         </header>
 
-        <div className="max-h-[56dvh] min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
+        <div className="max-h-[56dvh] min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain rounded-[14px]">
           {isLoading && <LoadingSkeleton />}
 
           {!isLoading && lists.length === 0 && (
-            <div className="flex min-h-40 flex-col items-center justify-center border border-dashed border-black/15 bg-black/2 text-center">
+            <div className="flex min-h-52 flex-col items-center justify-center rounded-[14px] border border-dashed border-black/10 text-center">
               <p className="text-[11px] font-bold tracking-widest text-black/50 uppercase">No lists yet</p>
               <p className="mt-1 text-sm text-black/70">Create your first list with the button above.</p>
             </div>
           )}
 
-          {!isLoading &&
-            lists.length > 0 &&
-            lists.map((list) => {
-              const isSelected = Boolean(draftMemberships[list.id]);
-              return (
-                <ListRow
-                  key={list.id}
-                  list={list}
-                  isSelected={isSelected}
-                  onToggle={() => handleToggleDraft(list.id)}
-                />
-              );
-            })}
+          {!isLoading && lists.length > 0 && (
+            <AnimatePresence mode="popLayout">
+              {lists.map((list, index) => {
+                const isSelected = Boolean(draftMemberships[list.id]);
+                return (
+                  <ListRow
+                    key={list.id}
+                    index={index}
+                    list={list}
+                    isSelected={isSelected}
+                    onToggle={() => handleToggleDraft(list.id)}
+                  />
+                );
+              })}
+            </AnimatePresence>
+          )}
         </div>
       </section>
     </Container>
   );
 }
-function ListRow({ list, isSelected, onToggle }) {
+function ListRow({ list, isSelected, onToggle, index }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onToggle}
+      {...getPickerRowAnimation(index)}
+      layout
       className={cn(
-        'group flex w-full items-center gap-4 border p-3 text-left',
-        isSelected ? 'bg-info/20 border-black/20' : 'hover:bg-primary border-black/10 hover:border-black/15'
+        'group flex w-full items-center gap-4 rounded-[14px] border p-3 text-left transition-all duration-300 ease-out',
+        isSelected ? 'bg-info/10 border-info/20' : 'hover:bg-primary border-black/5 hover:border-black/10'
       )}
     >
       <ListPreviewStack list={list} />
@@ -317,17 +354,17 @@ function ListRow({ list, isSelected, onToggle }) {
         {list.description && <p className="line-clamp-2 text-sm leading-snug text-black/70">{list.description}</p>}
       </div>
 
-      <span
+      <motion.span
         className={cn(
-          'flex size-[22px] shrink-0 items-center justify-center border',
+          'mr-1.5 flex size-[22px] shrink-0 items-center justify-center rounded-[8px] border transition-all duration-300 ease-in-out',
           isSelected
             ? 'border-info bg-info text-primary'
-            : 'border-black/10 text-black/50 group-hover:border-black/40 group-hover:text-black/70'
+            : 'border-black/5 text-black/50 group-hover:border-black/50 group-hover:text-black/70'
         )}
       >
         <Icon icon="material-symbols:check-rounded" size={16} />
-      </span>
-    </button>
+      </motion.span>
+    </motion.button>
   );
 }
 function ListPreviewStack({ list }) {
@@ -336,7 +373,7 @@ function ListPreviewStack({ list }) {
   return (
     <div className="relative h-[68px] w-[82px] shrink-0">
       {previewItems.length === 0 ? (
-        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] border border-dashed border-black/10 bg-white text-black/50">
+        <div className="center absolute bottom-0 left-0 h-[68px] w-[46px] rounded-[8px] border border-dashed border-black/10 bg-white text-black/50">
           <Icon icon="solar:list-bold" size={20} />
         </div>
       ) : (
@@ -345,7 +382,7 @@ function ListPreviewStack({ list }) {
           return (
             <div
               key={item.mediaKey || `${item.entityType}-${item.entityId}-${index}`}
-              className="border-primary absolute bottom-0 overflow-hidden border-[1.5px] bg-white shadow-xs ring-1 ring-black/5"
+              className="border-primary absolute bottom-0 overflow-hidden rounded-[8px] border bg-white shadow-xs"
               style={{
                 width: '46px',
                 height: `${68 - index * 6}px`,
@@ -360,12 +397,12 @@ function ListPreviewStack({ list }) {
                   alt={item.title || item.name || 'Poster'}
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-cover"
-                  wrapperClassName="h-full w-full"
+                  className="h-full w-full rounded-[6px] object-cover"
+                  wrapperClassName="h-full w-full rounded-[6px]"
                 />
               ) : (
                 <div className="center bg-primary h-full w-full text-black/50">
-                  <Icon icon="solar:videocamera-record-bold" size={14} />
+                  <Icon icon="solar:videocamera-record-bold" size={16} />
                 </div>
               )}
             </div>
@@ -383,13 +420,13 @@ function LoadingSkeleton() {
       }).map((_, index) => (
         <div
           key={`list-picker-skeleton-${index}`}
-          className="flex h-24 items-center gap-4 border border-black/10 bg-white/80 p-3"
+          className="flex h-24 items-center gap-4 rounded-[14px] border border-black/5 p-3"
         >
           <div className="relative h-[68px] w-[82px] shrink-0">
             {[0, 1, 2, 3].map((stackIndex) => (
               <div
                 key={`list-picker-skeleton-stack-${index}-${stackIndex}`}
-                className="absolute bottom-0 overflow-hidden border border-black/[0.08] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                className="absolute bottom-0 overflow-hidden rounded-[8px] border border-black/5"
                 style={{
                   backgroundColor:
                     LIST_PICKER_STACK_SKELETON_BACKGROUNDS[stackIndex] ||
@@ -399,16 +436,13 @@ function LoadingSkeleton() {
                   left: `${stackIndex * 12}px`,
                   zIndex: 4 - stackIndex,
                 }}
-              >
-                <div className="absolute inset-x-0 bottom-0 h-7 bg-black/[0.04]" />
-              </div>
+              ></div>
             ))}
           </div>
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-4 w-2/5 rounded bg-black/[0.09]" />
-            <div className="h-3 w-4/5 rounded bg-black/[0.07]" />
+            <div className="h-4 w-2/5 rounded-full bg-black/10" />
+            <div className="h-3 w-4/5 rounded-full bg-black/10" />
           </div>
-          <div className="size-[22px] shrink-0 border border-black/10 bg-black/[0.06]" />
         </div>
       ))}
     </div>

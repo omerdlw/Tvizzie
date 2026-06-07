@@ -19,9 +19,12 @@ export function getDistanceToBottom() {
   return Math.max(maxScrollY - scrollY, 0);
 }
 
-export function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact }) {
-  const minCardHeight = compact ? NAV_CARD_LAYOUT.compactHeight : NAV_CARD_LAYOUT.baseHeight;
-  const nextCardHeight = Math.max(minCardHeight, cardContentHeight + NAV_CARD_LAYOUT.chromeHeight);
+export function getContainerHeight({ actionHeight, activeItemHasAction, cardContentHeight, compact, isMobile }) {
+  const chromeHeight = isMobile ? 14 : 20;
+  const minCardHeight = compact
+    ? NAV_CARD_LAYOUT.compactHeight
+    : (activeItemHasAction && isMobile ? 54 : NAV_CARD_LAYOUT.baseHeight);
+  const nextCardHeight = Math.max(minCardHeight, cardContentHeight + chromeHeight);
   const nextActionHeight = !compact && activeItemHasAction && actionHeight > 0 ? actionHeight : 0;
   const rawHeight = nextCardHeight + nextActionHeight;
 

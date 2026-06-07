@@ -1,18 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
 import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists';
 import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const editorSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 310,
+  damping: 29,
+  mass: 0.8,
+});
+
+const editorButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 440,
+  damping: 23,
+  mass: 0.58,
+});
+
+const editorButtonTap = Object.freeze({});
+
+const editorInputMotion = Object.freeze({});
+
+function getEditorRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -4 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
+    }),
+  });
+}
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase';
 const FORM_ID = 'list-editor-modal-form';
 
 // --------------------------------------------------
@@ -169,50 +200,56 @@ function ModalView({
         ),
         right: (
           <>
-            <Button
+            <MotionButton
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={`${ACTION_BUTTON_CLASS} text-black/70 hover:bg-black/5 hover:text-black`}
+              {...editorButtonTap}
+              className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </MotionButton>
+            <MotionButton
               type="submit"
               form={FORM_ID}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              {...editorButtonTap}
+              className={ACTION_BUTTON_CLASS}
             >
               {isSaving ? (isEditing ? 'Updating' : 'Creating') : isEditing ? 'Update list' : 'Create list'}
-            </Button>
+            </MotionButton>
           </>
         ),
       }}
     >
       <form id={FORM_ID} onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="flex flex-col gap-2.5">
-          <Input
-            value={form.title}
-            onChange={(event) => handleChange('title', event.target.value)}
-            placeholder="List title"
-            autoFocus
-            className={{
-              wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
-            }}
-          />
-          <Textarea
-            value={form.description}
-            onChange={(event) => handleChange('description', event.target.value)}
-            placeholder="Description (optional)"
-            maxHeight={120}
-            className={{
-              wrapper:
-                'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
-              textarea:
-                'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
-            }}
-          />
+          <motion.div {...editorInputMotion}>
+            <Input
+              value={form.title}
+              onChange={(event) => handleChange('title', event.target.value)}
+              placeholder="List title"
+              autoFocus
+              className={{
+                wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20 rounded-[10px] transition-all duration-300 ease-out',
+                input: 'h-full w-full bg-transparent text-sm text-black rounded-[10px] outline-none placeholder:text-black/50',
+              }}
+            />
+          </motion.div>
+          <motion.div {...editorInputMotion}>
+            <Textarea
+              value={form.description}
+              onChange={(event) => handleChange('description', event.target.value)}
+              placeholder="Description (optional)"
+              maxHeight={120}
+              className={{
+                wrapper:
+                  'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10 rounded-[10px] transition-all duration-300 ease-out',
+                textarea:
+                  'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black rounded-[10px] outline-none placeholder:text-black/50',
+              }}
+            />
+          </motion.div>
         </div>
 
         {isEditing ? (
@@ -221,36 +258,49 @@ function ModalView({
             data-lenis-prevent-wheel
             className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
           >
-            {draftItems.length > 0 ? (
-              draftItems.map((item) => <ListItemRow key={getItemKey(item)} item={item} onRemove={handleRemoveItem} />)
-            ) : (
-              <div className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center">
-                <Icon icon="solar:list-broken" size={24} className="text-black/50" />
-                <p className="text-xs text-black/50">No titles in this list</p>
-              </div>
-            )}
+            <AnimatePresence mode="popLayout">
+              {draftItems.length > 0 ? (
+                draftItems.map((item, index) => <ListItemRow key={getItemKey(item)} index={index} item={item} onRemove={handleRemoveItem} />)
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center rounded-[14px]"
+                >
+                  <Icon icon="solar:list-broken" size={24} className="text-black/50" />
+                  <p className="text-xs text-black/50">No titles in this list</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : null}
       </form>
     </Container>
   );
 }
-function ListItemRow({ item, onRemove }) {
+function ListItemRow({ item, onRemove, index }) {
   const title = getItemTitle(item);
   return (
-    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10">
+    <motion.div
+      {...getEditorRowAnimation(index)}
+      layout
+      className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10 rounded-[10px] transition-all duration-300 ease-out"
+    >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
       </div>
 
-      <button
+      <motion.button
         type="button"
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        {...editorButtonTap}
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 rounded-[8px] transition-all duration-300 ease-out"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

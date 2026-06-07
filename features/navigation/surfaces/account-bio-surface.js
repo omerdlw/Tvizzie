@@ -35,12 +35,10 @@ export default function AccountBioSurface({
   }, [setHeader, avatarUrl, username, followSummary]);
 
   return (
-    <div className="max-h-[min(40dvh,18rem)] w-full overflow-y-auto">
+    <div className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-[14px] px-4 py-2">
       {normalizedDescription ? (
-        <div className="p-3 pt-0">
-          <p className="text-sm leading-relaxed [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/70">
-            {normalizedDescription}
-          </p>
+        <div className="py-1">
+          <p className="text-justify text-sm leading-relaxed text-black/70">{normalizedDescription}</p>
         </div>
       ) : null}
     </div>

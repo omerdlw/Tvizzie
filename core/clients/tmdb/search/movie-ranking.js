@@ -135,7 +135,7 @@ function getMovieYearRelevanceValue(movie = {}, queryYear = 0) {
   return Math.max(-160, -40 - distance * 14);
 }
 
-function resolveMovieSearchGateThresholds(movie = {}, match = {}, queryYear = 0) {
+function resolveMovieSearchGateThresholds(movie = {}, match = {}, queryYear = 0, mediaType = 'movie') {
   const queryLength = Number(match.queryLength) || 0;
   const hasVisual = Boolean(movie?.poster_path || movie?.backdrop_path);
   let minVoteCount = SEARCH_MIN_MOVIE_VOTE_COUNT;
@@ -143,24 +143,39 @@ function resolveMovieSearchGateThresholds(movie = {}, match = {}, queryYear = 0)
   let minRuntime = SEARCH_MIN_MOVIE_RUNTIME;
   let minPopularity = 0.45;
 
-  if (match.isVeryStrongMatch) {
-    minVoteCount = 8;
+  if (mediaType === 'tv') {
+    minVoteCount = 5;
     minVoteAverage = 0;
-    minRuntime = 25;
-    minPopularity = 0.2;
-  } else if (match.isStrongMatch) {
-    minVoteCount = 24;
-    minVoteAverage = 2.4;
-    minRuntime = 30;
-    minPopularity = 0.3;
-  } else if ((match.coverage || 0) >= 0.62) {
-    minVoteCount = 48;
-    minVoteAverage = 3.2;
-    minRuntime = 34;
-    minPopularity = 0.45;
+    minRuntime = 0;
+    minPopularity = 0.1;
   }
 
-  if (queryLength <= 3) {
+  if (match.isVeryStrongMatch) {
+    minVoteCount = mediaType === 'tv' ? 1 : 8;
+    minVoteAverage = 0;
+    minRuntime = mediaType === 'tv' ? 0 : 25;
+    minPopularity = mediaType === 'tv' ? 0 : 0.2;
+  } else if (match.isStrongMatch) {
+    minVoteCount = mediaType === 'tv' ? 3 : 24;
+    minVoteAverage = mediaType === 'tv' ? 0 : 2.4;
+    minRuntime = mediaType === 'tv' ? 0 : 30;
+    minPopularity = mediaType === 'tv' ? 0.05 : 0.3;
+  } else if ((match.coverage || 0) >= 0.62) {
+    minVoteCount = mediaType === 'tv' ? 5 : 48;
+    minVoteAverage = mediaType === 'tv' ? 0 : 3.2;
+    minRuntime = mediaType === 'tv' ? 0 : 34;
+    minPopularity = mediaType === 'tv' ? 0.1 : 0.45;
+  }
+
+  if (mediaType === 'tv') {
+    if (queryLength <= 3) {
+      minVoteCount = Math.max(minVoteCount, match.isVeryStrongMatch ? 12 : 30);
+      minPopularity = Math.max(minPopularity, match.isVeryStrongMatch ? 1.2 : 2.5);
+    } else if (queryLength <= 5) {
+      minVoteCount = Math.max(minVoteCount, match.isVeryStrongMatch ? 6 : 12);
+      minPopularity = Math.max(minPopularity, match.isVeryStrongMatch ? 0.6 : 1.1);
+    }
+  } else if (queryLength <= 3) {
     minVoteCount = Math.max(minVoteCount, match.isVeryStrongMatch ? 70 : 120);
     minVoteAverage = Math.max(minVoteAverage, 5.2);
     minPopularity = Math.max(minPopularity, match.isVeryStrongMatch ? 6 : 8);
@@ -198,21 +213,23 @@ function passesMovieSearchQualityGate(movie = {}, options = {}) {
   const popularity = Number(movie?.popularity) || 0;
   const match = options.match || {};
   const queryYear = Number(options.queryYear) || 0;
+  const mediaType = options.mediaType === 'tv' ? 'tv' : 'movie';
   const { minPopularity, minRuntime, minVoteAverage, minVoteCount } = resolveMovieSearchGateThresholds(
     movie,
     match,
-    queryYear
+    queryYear,
+    mediaType
   );
 
   if (voteCount < minVoteCount) {
     return false;
   }
 
-  if (voteAverage < minVoteAverage || voteAverage <= 0) {
+  if (voteAverage < minVoteAverage || (mediaType !== 'tv' && voteAverage <= 0)) {
     return false;
   }
 
-  if (runtime !== null && runtime < minRuntime) {
+  if (mediaType !== 'tv' && runtime !== null && runtime < minRuntime) {
     return false;
   }
 
@@ -239,7 +256,7 @@ function resolveMovieSearchTotalScore(movie = {}, match = {}, queryYear = 0) {
   };
 }
 
-function buildMovieSearchEntry(movie = {}, queryProfile = createSearchQueryProfile('')) {
+function buildMovieSearchEntry(movie = {}, queryProfile = createSearchQueryProfile(''), mediaType = 'movie') {
   if (!movie?.id || movie?.adult) {
     return null;
   }
@@ -255,7 +272,11 @@ function buildMovieSearchEntry(movie = {}, queryProfile = createSearchQueryProfi
     return null;
   }
 
-  if (!passesMovieSearchQualityGate(movie, { match: enrichedMatch, queryYear: queryProfile.queryYear })) {
+  if (!passesMovieLexicalGate(enrichedMatch, queryProfile)) {
+    return null;
+  }
+
+  if (!passesMovieSearchQualityGate(movie, { match: enrichedMatch, mediaType, queryYear: queryProfile.queryYear })) {
     return null;
   }
 
@@ -272,7 +293,7 @@ function buildMovieSearchEntry(movie = {}, queryProfile = createSearchQueryProfi
 function buildRankedMovieSearchEntries(items = [], query = '', mediaType = 'movie') {
   const queryProfile = createSearchQueryProfile(query);
   const candidates = dedupeSearchItems(withMediaType(items, mediaType))
-    .map((movie) => buildMovieSearchEntry(movie, queryProfile))
+    .map((movie) => buildMovieSearchEntry(movie, queryProfile, mediaType))
     .filter(Boolean);
 
   return candidates.sort((left, right) => {
@@ -290,6 +311,30 @@ function buildRankedMovieSearchEntries(items = [], query = '', mediaType = 'movi
 
     return right.authorityScore - left.authorityScore;
   });
+}
+
+function passesMovieLexicalGate(match = {}, queryProfile = createSearchQueryProfile('')) {
+  if (!queryProfile.normalizedQuery) {
+    return true;
+  }
+
+  if (match.isExactMatch || match.isPrefixMatch || match.normalizedText.includes(queryProfile.normalizedQuery)) {
+    return true;
+  }
+
+  if (queryProfile.relevantQueryTokens.length <= 1) {
+    return match.weightedCoverage >= 0.74;
+  }
+
+  return match.coverage >= 0.62 && match.weightedCoverage >= 0.58;
+}
+
+function passesMovieAuthorityFallbackLexicalGate(movie = {}, query = '') {
+  const queryProfile = createSearchQueryProfile(query);
+
+  const match = getBestSearchTextMatch(getMovieSearchTexts(movie), queryProfile);
+
+  return passesMovieLexicalGate(match, queryProfile);
 }
 
 async function hydrateMovieSearchRuntimeCandidates(
@@ -339,7 +384,7 @@ export async function rankResolvedMovieSearchItems(items = [], query = '', optio
   return hydratedEntries
     .filter(
       ({ item, match }) =>
-        passesMovieSearchQualityGate(item, { match, queryYear: queryProfile.queryYear }) &&
+        passesMovieSearchQualityGate(item, { match, mediaType, queryYear: queryProfile.queryYear }) &&
         isDisplayableTitleForDetail(item, mediaType)
     )
     .sort((left, right) => {
@@ -366,7 +411,10 @@ export function buildMovieAuthorityFallbackItems(items = [], options = {}) {
 
   return sortSearchItemsByAuthority(
     normalizedItems.filter(
-      (movie) => passesMovieSearchQualityGate(movie, {}) && isDisplayableTitleForDetail(movie, mediaType)
+      (movie) =>
+        passesMovieAuthorityFallbackLexicalGate(movie, options.query) &&
+        passesMovieSearchQualityGate(movie, { mediaType }) &&
+        isDisplayableTitleForDetail(movie, mediaType)
     ),
     getMovieAuthorityValue
   );

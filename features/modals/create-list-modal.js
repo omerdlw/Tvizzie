@@ -3,7 +3,7 @@
 import { useDeferredValue, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/core/modules/auth';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useModalActions } from '@/core/modules/modal/context';
 import { useToast } from '@/core/modules/notification/hooks';
 import { createUserListWithItems } from '@/core/services/media/lists';
@@ -11,13 +11,45 @@ import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
 import { Button, Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const listSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 300,
+  damping: 28,
+  mass: 0.8,
+});
+
+const listButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 450,
+  damping: 24,
+  mass: 0.6,
+});
+
+const listButtonTap = Object.freeze({});
+
+const listInputMotion = Object.freeze({});
+
+function getMovieRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -4 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
+    }),
+  });
+}
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------
 
-const ACTION_BUTTON_CLASS =
-  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase';
+
 
 // --------------------------------------------------
 // HELPERS
@@ -237,68 +269,82 @@ function ModalView({
         ),
         right: (
           <>
-            <Button
+            <MotionButton
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={`${ACTION_BUTTON_CLASS}text-black/70 hover:bg-black/5 hover:text-black`}
+              {...listButtonTap}
+              className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </MotionButton>
+            <MotionButton
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !canSubmit}
-              className="hover:bg-info hover:border-info hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide text-white uppercase disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50"
+              {...listButtonTap}
+              className={ACTION_BUTTON_CLASS}
             >
               {isSaving ? 'Creating' : 'Create List'}
-            </Button>
+            </MotionButton>
           </>
         ),
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          <Input
-            value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
-            placeholder="List title"
-            autoFocus
-            className={{
-              wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
-            }}
-          />
-          <Input
-            value={draftDescription}
-            onChange={(event) => setDraftDescription(event.target.value)}
-            placeholder="Description (optional)"
-            className={{
-              wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
-              input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
-            }}
-          />
+          <motion.div {...listInputMotion}>
+            <Input
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              placeholder="List title"
+              autoFocus
+              className={{
+                wrapper:
+                  'flex h-10 items-center rounded-[10px] border border-black/5 bg-black/5 px-3.5 transition-all duration-300 ease-out focus-within:border-black/15',
+                input:
+                  'h-full w-full rounded-[10px] bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+              }}
+            />
+          </motion.div>
+          <motion.div {...listInputMotion}>
+            <Input
+              value={draftDescription}
+              onChange={(event) => setDraftDescription(event.target.value)}
+              placeholder="Description (optional)"
+              className={{
+                wrapper:
+                  'flex h-10 items-center rounded-[10px] border border-black/5 bg-black/5 px-3.5 transition-all duration-300 ease-out focus-within:border-black/15',
+                input:
+                  'h-full w-full rounded-[10px] bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+              }}
+            />
+          </motion.div>
         </div>
 
-        <Input
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              handleQuickAdd();
-            }
-          }}
-          placeholder="Search movies to add"
-          leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
-          rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-black/50" /> : null}
-          className={{
-            wrapper: 'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
-            input: 'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
-            leftIcon: 'flex shrink-0 items-center pr-2.5',
-            rightIcon: 'flex shrink-0 items-center pl-2.5',
-          }}
-        />
+        <motion.div {...listInputMotion}>
+          <Input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleQuickAdd();
+              }
+            }}
+            placeholder="Search movies to add"
+            leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
+            rightIcon={isSearching ? <Icon icon="solar:spinner-bold" size={16} className="text-black/50 animate-spin" /> : null}
+            className={{
+              wrapper:
+                'flex h-10 items-center rounded-[10px] border border-black/5 bg-black/5 px-3.5 transition-all duration-300 ease-out focus-within:border-black/15',
+              input:
+                'h-full w-full rounded-[10px] bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+              leftIcon: 'flex shrink-0 items-center pr-2.5',
+              rightIcon: 'flex shrink-0 items-center pl-2.5',
+            }}
+          />
+        </motion.div>
 
         <div
           data-lenis-prevent
@@ -306,10 +352,11 @@ function ModalView({
           className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
         >
           {showSearchResults ? (
-            <>
-              {searchResults.map((item) => (
+            <AnimatePresence mode="popLayout">
+              {searchResults.map((item, index) => (
                 <SearchResultRow
                   key={getDraftMediaKey(item)}
+                  index={index}
                   item={item}
                   isAdded={selectedKeys.has(getDraftMediaKey(item))}
                   onAdd={handleAdd}
@@ -318,39 +365,55 @@ function ModalView({
               {isSearching && searchResults.length === 0 && (
                 <div className="flex h-20 items-center justify-center text-sm text-black/70">Searching</div>
               )}
-            </>
+            </AnimatePresence>
           ) : (
-            <>
+            <AnimatePresence mode="popLayout">
               {draftItems.length > 0 && (
-                <p className="px-1 text-[10px] font-bold tracking-widest text-black/50 uppercase">Draft</p>
+                <motion.p
+                  key="draft-header"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="px-1 text-[10px] font-bold tracking-widest text-black/50 uppercase"
+                >
+                  Draft
+                </motion.p>
               )}
               {draftItems.length > 0 ? (
                 draftItems.map((item, index) => (
                   <DraftItemRow key={getDraftMediaKey(item)} index={index} item={item} onRemove={handleRemove} />
                 ))
               ) : (
-                <div className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center">
+                <motion.div
+                  key="empty-draft"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex h-28 flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-black/10 bg-black/5 text-center"
+                >
                   <Icon icon="solar:list-bold" size={24} className="text-black/50" />
                   <p className="text-xs text-black/50">Search movies above to start building your list</p>
-                </div>
+                </motion.div>
               )}
-            </>
+            </AnimatePresence>
           )}
         </div>
       </div>
     </Container>
   );
 }
-function SearchResultRow({ item, isAdded, onAdd }) {
+function SearchResultRow({ item, isAdded, onAdd, index }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   return (
-    <button
+    <motion.button
       type="button"
       disabled={isAdded}
       onClick={() => onAdd(item)}
+      {...getMovieRowAnimation(index)}
+      layout
       className={cn(
-        'group flex w-full items-center gap-3 border px-3 py-2.5 text-left',
+        'group flex w-full items-center gap-3 rounded-[10px] border px-3 py-2.5 text-left transition-all duration-300 ease-out',
         isAdded
           ? 'cursor-default border-black/10 bg-black/5 opacity-70'
           : 'cursor-pointer border-black/10 hover:border-black/15 hover:bg-black/5'
@@ -361,24 +424,28 @@ function SearchResultRow({ item, isAdded, onAdd }) {
         {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
       </div>
 
-      <span
+      <motion.span
         className={cn(
-          'flex size-6 shrink-0 items-center justify-center border',
+          'flex size-6 shrink-0 items-center justify-center rounded-[8px] border',
           isAdded
             ? 'border-info bg-info text-white'
             : 'border-black/10 text-black/50 group-hover:border-black/15 group-hover:text-black'
         )}
       >
         <Icon icon={isAdded ? 'material-symbols:check-rounded' : 'material-symbols:add-rounded'} size={16} />
-      </span>
-    </button>
+      </motion.span>
+    </motion.button>
   );
 }
 function DraftItemRow({ index, item, onRemove }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   return (
-    <div className="group bg-primary flex items-center gap-3 border border-black/5 px-3 py-2 hover:border-black/10">
+    <motion.div
+      {...getMovieRowAnimation(index)}
+      layout
+      className="group bg-primary flex items-center gap-3 rounded-[10px] border border-black/5 px-3 py-2 transition-all duration-300 ease-out hover:border-black/10"
+    >
       <span className="w-5 text-center text-[11px] font-bold tracking-widest text-black/50">{index + 1}</span>
 
       <div className="min-w-0 flex-1">
@@ -386,14 +453,15 @@ function DraftItemRow({ index, item, onRemove }) {
         {year !== 'N/A' && <p className="text-[11px] font-medium text-black/50">{year}</p>}
       </div>
 
-      <Button
+      <MotionButton
         variant="destructive-icon"
         onClick={() => onRemove(item)}
-        className="size-7 shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-        aria-label={`Remove${title}`}
+        {...listButtonTap}
+        className="size-7 shrink-0 rounded-[8px] opacity-0 transition-all duration-200 ease-in-out group-hover:opacity-100 focus-visible:opacity-100"
+        aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
-      </Button>
-    </div>
+      </MotionButton>
+    </motion.div>
   );
 }

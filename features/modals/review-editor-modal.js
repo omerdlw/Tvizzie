@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useToast } from '@/core/modules/notification/hooks';
 import {
   getReviewMinLength,
@@ -12,6 +12,27 @@ import {
 import RatingSelector from '@/features/reviews/parts/rating-selector';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const reviewSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 300,
+  damping: 27,
+  mass: 0.8,
+});
+
+const reviewButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 430,
+  damping: 23,
+  mass: 0.55,
+});
+
+const reviewButtonTap = Object.freeze({});
+
+const reviewInputMotion = Object.freeze({});
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -19,10 +40,7 @@ import { cn } from '@/core/utils';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
 const FORM_ID = 'review-editor-form';
-const SECONDARY_BUTTON_CLASS =
-  'h-8 shrink-0 border border-black/10 px-4 text-xs font-semibold tracking-wide uppercase text-black/70 hover:bg-black/5 hover:text-black';
-const PRIMARY_BUTTON_CLASS =
-  'h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide uppercase text-white hover:border-info hover:bg-info hover:text-primary disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
+
 
 // --------------------------------------------------
 // HELPERS
@@ -312,14 +330,15 @@ function ModalView({
         ),
         right: (
           <>
-            <Button type="button" onClick={close} className={SECONDARY_BUTTON_CLASS}>
+            <MotionButton type="button" onClick={close} {...reviewButtonTap} className={CANCEL_BUTTON_CLASS}>
               Cancel
-            </Button>
-            <Button
+            </MotionButton>
+            <MotionButton
               type="submit"
               form={FORM_ID}
               disabled={isSaving || Boolean(validationError)}
-              className={PRIMARY_BUTTON_CLASS}
+              {...reviewButtonTap}
+              className={ACTION_BUTTON_CLASS}
             >
               {isSaving
                 ? 'Saving'
@@ -329,27 +348,29 @@ function ModalView({
                     rating,
                     reviewText,
                   })}
-            </Button>
+            </MotionButton>
           </>
         ),
       }}
     >
       <form id={FORM_ID} onSubmit={handleSubmit}>
-        <Textarea
-          maxLength={800}
-          value={reviewText}
-          placeholder={
-            isListSubject
-              ? `Share your thoughts on ${modalSubjectTitle}`
-              : `Add your thoughts about ${modalSubjectTitle} (optional)`
-          }
-          onChange={handleTextChange}
-          className={{
-            wrapper: 'flex',
-            textarea:
-              'min-h-[180px] w-full resize-none p-3 text-sm leading-normal outline-none placeholder:text-black/50',
-          }}
-        />
+        <motion.div {...reviewInputMotion}>
+          <Textarea
+            maxLength={800}
+            value={reviewText}
+            placeholder={
+              isListSubject
+                ? `Share your thoughts on ${modalSubjectTitle}`
+                : `Add your thoughts about ${modalSubjectTitle} (optional)`
+            }
+            onChange={handleTextChange}
+            className={{
+              wrapper: 'flex rounded-[10px] transition-all duration-300 ease-out',
+              textarea:
+                'min-h-[180px] w-full resize-none p-3 text-sm leading-normal rounded-[10px] outline-none placeholder:text-black/50 transition-all duration-300 ease-out',
+            }}
+          />
+        </motion.div>
         <SpoilerToggle
           disabled={!hasText}
           checked={isSpoiler}
@@ -383,7 +404,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center justify-between border-t p-4 text-left',
+        'flex w-full items-center justify-between border-t p-4 text-left rounded-[10px] transition-all duration-300 ease-out',
         disabled && 'cursor-not-allowed border-black/10 text-black/50',
         !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-black/10',
         !disabled && !checked && 'bg-primary border-black/10 hover:bg-black/5',
@@ -399,12 +420,14 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
 
       <span
         className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 items-center border p-px',
+          'relative inline-flex h-6 w-11 shrink-0 items-center border p-px rounded-[8px] transition-colors duration-200',
           checked && !disabled ? 'border-error bg-error' : 'border-black/5 bg-black/5'
         )}
       >
-        <span
-          className={cn('bg-primary size-5', checked && !disabled ? 'bg-primary translate-x-5' : 'translate-x-0')}
+        <motion.span
+          animate={{ x: checked && !disabled ? 20 : 0 }}
+          transition={reviewSpringTransition}
+          className="bg-primary size-5"
         />
       </span>
     </button>

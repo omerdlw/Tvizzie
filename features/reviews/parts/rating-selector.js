@@ -1,6 +1,13 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { motion } from 'framer-motion';
+const ratingStarSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 280,
+  damping: 26,
+  mass: 0.8,
+});
 const STAR_COUNT = 5;
 const STAR_PATH = [
   'M12.74 3.98',
@@ -24,16 +31,16 @@ function getFillPercent(starIndex, activeValue) {
 function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, onSelectLeft, onSelectRight }) {
   const fillPercent = getFillPercent(starIndex, activeValue);
   const isActive = fillPercent > 0;
-  const springConfig = {
-    type: 'spring',
-    stiffness: 500,
-    damping: 25,
-    mass: 0.6,
-  };
   const clipId = `star-clip-${starIndex}`;
   const fillWidth = (fillPercent / 100) * 24;
   return (
-    <div className="relative h-10 w-10 sm:h-12 sm:w-12">
+    <motion.div
+      animate={{
+        y: isHovering && fillPercent > 0 ? -3 : 0,
+      }}
+      transition={ratingStarSpring}
+      className="relative h-10 w-10 sm:h-12 sm:w-12"
+    >
       <svg viewBox="0 0 24 24" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
           <clipPath id={clipId}>
@@ -64,7 +71,7 @@ function Star({ starIndex, activeValue, isHovering, onHoverLeft, onHoverRight, o
         onFocus={onHoverRight}
         onClick={onSelectRight}
       />
-    </div>
+    </motion.div>
   );
 }
 export default function RatingSelector({ value, onChange }) {

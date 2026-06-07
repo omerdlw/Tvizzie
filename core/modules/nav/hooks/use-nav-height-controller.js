@@ -14,6 +14,7 @@ export function useNavHeightController({
   compact,
   pathname,
   setNavHeight,
+  isMobile,
 }) {
   const [containerHeight, setContainerHeight] = useState(NAV_CARD_LAYOUT.baseHeight);
 
@@ -41,6 +42,7 @@ export function useNavHeightController({
         activeItemHasAction: activeItemHasActionRef.current,
         cardContentHeight: content,
         compact: compactRef.current,
+        isMobile,
       });
       const isBottomLockedForSpacer = getDistanceToBottom() <= NAV_SPACER_BOTTOM_LOCK_DISTANCE;
       const spacerBaseHeight = isBottomLockedForSpacer ? NAV_CARD_LAYOUT.compactHeight : height;
@@ -48,7 +50,7 @@ export function useNavHeightController({
       setContainerHeight(height);
       setNavHeight(spacerBaseHeight + NAV_HEIGHT_BUFFER);
     });
-  }, [setNavHeight]);
+  }, [setNavHeight, isMobile]);
 
   const handleActionHeightChange = useCallback(
     (height) => {

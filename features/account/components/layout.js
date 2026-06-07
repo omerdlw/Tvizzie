@@ -141,12 +141,15 @@ export default function ProfileLayout({
   const { openSurface } = useNavigationActions();
   const profileHandle = username || profile?.username || null;
   const handleReadMore = () => {
-    openSurface(AccountBioSurface, {
-      description: profile?.description || '',
-      followerCount,
-      followingCount,
-      profile,
-      username: profileHandle || 'About',
+    openSurface({
+      component: AccountBioSurface,
+      props: {
+        description: profile?.description || '',
+        followerCount,
+        followingCount,
+        profile,
+        username: profileHandle || 'About',
+      },
     });
   };
   return (

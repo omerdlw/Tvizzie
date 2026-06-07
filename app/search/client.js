@@ -505,7 +505,7 @@ export default function SearchClient() {
             </div>
           </SearchSectionReveal>
         ) : (
-          <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs font-medium text-black/65">
+          <div className="mx-auto w-full max-w-4xl border border-black/10 bg-black/5 px-4 py-3 text-xs font-medium text-black/65">
             Start typing to see all results
           </div>
         )}

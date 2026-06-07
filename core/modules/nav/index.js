@@ -54,6 +54,7 @@ export default function Nav() {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [initialAnimate, setInitialAnimate] = useState(false);
   const [compactToggleCount, setCompactToggleCount] = useState(0);
+  const [hoverToggleCount, setHoverToggleCount] = useState(0);
 
   useEffect(() => {
     setInitialAnimate(true);
@@ -62,6 +63,12 @@ export default function Nav() {
   useEffect(() => {
     setCompactToggleCount((prev) => prev + 1);
   }, [compact]);
+
+  useEffect(() => {
+    if (isStackHovered && pathname !== '/') {
+      setHoverToggleCount((prev) => prev + 1);
+    }
+  }, [isStackHovered, pathname]);
 
   const navRef = useRef(null);
   const { isMobile, portalTarget, stackWidth } = useNavViewport();
@@ -82,6 +89,7 @@ export default function Nav() {
     compact: isTopItemCompact,
     pathname,
     setNavHeight,
+    isMobile,
   });
 
   // ─── Overlay / backdrop state ─────────────────────────────────────────────
@@ -187,7 +195,7 @@ export default function Nav() {
 
     return (
       <Item
-        key={isTop ? getItemKey(link, index) : `${getItemKey(link, index)}:${compactToggleCount}`}
+        key={isTop ? getItemKey(link, index) : `${getItemKey(link, index)}:${compactToggleCount}:${hoverToggleCount}`}
         link={link}
         expanded={expanded}
         compact={isCompactCard}
@@ -215,7 +223,7 @@ export default function Nav() {
     <>
       {/* Backdrop */}
       <motion.div
-        className="fixed inset-0 cursor-pointer"
+        className="fixed inset-0 cursor-pointer bg-white/40"
         style={{
           zIndex: Z_INDEX.NAV_BACKDROP,
           pointerEvents: isBackdropVisible ? 'auto' : 'none',
@@ -224,9 +232,7 @@ export default function Nav() {
         animate={getNavBackdropMotion(isBackdropVisible)}
         transition={NAV_BACKDROP_TRANSITION}
         onClick={handleOutsideDismiss}
-      >
-        <div className="fixed inset-0 -z-10 h-screen w-screen bg-linear-to-t from-white via-white/70 to-transparent" />
-      </motion.div>
+      />
 
       {/* Card stack */}
       <div id="nav-card-stack" ref={navRef} className={stackClassName} style={{ zIndex: Z_INDEX.NAV }}>

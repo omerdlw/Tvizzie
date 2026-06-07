@@ -5,6 +5,28 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import Container from '@/core/modules/modal/container';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const socialProofSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 220,
+  damping: 26,
+  mass: 0.9,
+});
+
+const socialProofHoverTap = Object.freeze({});
+
+function getSocialProofRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -4 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.02, 0.12) },
+    }),
+  });
+}
 
 // --------------------------------------------------
 // HELPERS
@@ -88,9 +110,11 @@ function ModalView({ close, header, userActions, isSidePosition, summaryText }) 
             </div>
           ) : (
             <div className="flex min-h-0 flex-col">
-              {userActions.map(({ actions, user }) => (
-                <SocialUserRow key={user.id} close={close} user={user} actions={actions} />
-              ))}
+              <AnimatePresence mode="popLayout">
+                {userActions.map(({ actions, user }, index) => (
+                  <SocialUserRow key={user.id} close={close} user={user} actions={actions} index={index} />
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -98,43 +122,45 @@ function ModalView({ close, header, userActions, isSidePosition, summaryText }) 
     </Container>
   );
 }
-function SocialUserRow({ close, user, actions }) {
+function SocialUserRow({ close, user, actions, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   const username = user?.username || 'user';
   return (
-    <Link
-      href={`/account/${username}`}
-      onClick={close}
-      className="relative grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none hover:bg-black/5 lg:p-4"
-    >
-      <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
-        <AdaptiveImage
-          mode="img"
-          src={avatarSrc}
-          alt={user?.displayName || username}
-          className="size-full object-cover"
-          loading="lazy"
-          decoding="async"
-          onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-          wrapperClassName="size-full"
-        />
-      </div>
+    <motion.div {...getSocialProofRowAnimation(index)} {...socialProofHoverTap} layout>
+      <Link
+        href={`/account/${username}`}
+        onClick={close}
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 transition-colors duration-300 ease-out last:border-none hover:bg-white lg:p-4"
+      >
+        <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
+          <AdaptiveImage
+            mode="img"
+            src={avatarSrc}
+            alt={user?.displayName || username}
+            className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
+            wrapperClassName="size-full"
+          />
+        </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm">
-          <span className="font-semibold">@{username}</span> engaged with this title.
-        </span>
-        <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
-          {formatActionSummary(actions)}
-        </span>
-      </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm">
+            <span className="font-semibold">@{username}</span> engaged with this title.
+          </span>
+          <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
+            {formatActionSummary(actions)}
+          </span>
+        </div>
 
-      <div className="flex shrink-0 items-center gap-1.5 self-center">
-        <span aria-hidden="true" className="center size-7 border border-black/10 text-black/70">
-          <Icon icon="solar:alt-arrow-right-linear" size={16} />
-        </span>
-      </div>
-    </Link>
+        <div className="flex shrink-0 items-center gap-1.5 self-center">
+          <span aria-hidden="true" className="center size-7 rounded-[8px] border border-black/10 text-black/70">
+            <Icon icon="solar:alt-arrow-right-linear" size={16} />
+          </span>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

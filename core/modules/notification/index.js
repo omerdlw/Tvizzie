@@ -30,7 +30,7 @@ export function NotificationContainer() {
       style={{ zIndex: Z_INDEX.NOTIFICATION }}
       {...NOTIFICATION_STACK_MOTION}
     >
-      <AnimatePresence initial={false} mode="popLayout">
+      <AnimatePresence mode="popLayout">
         {sortedNotifications.map(([id, notification], index) => (
           <motion.div key={id} {...getNotificationItemMotion(index)}>
             <NotificationOverlay notification={notification} onDismiss={() => dismissNotification(id)} />

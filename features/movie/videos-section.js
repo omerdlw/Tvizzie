@@ -48,9 +48,10 @@ export default function VideosSection({ videos }) {
     <MovieSurfaceReveal>
       <section className="flex w-full flex-col gap-3">
         <SegmentedControl
+          value={activeType}
+          className="w-auto self-start"
           classNames={{
-            track: ' w-auto',
-            wrapper: 'p-0.5 ',
+            wrapper: 'p-0.5',
             button: '',
             indicator: '',
           }}

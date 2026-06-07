@@ -188,7 +188,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 hover:border-black/15 hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/5 text-black/70 hover:border-black/10 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -202,8 +202,9 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       <section className="relative flex flex-col gap-2">
         <div className="flex items-center justify-between gap-3">
           <SegmentedControl
+            value={activeTab}
             classNames={{
-              wrapper: 'p-0.5 backdrop-blur-xs bg-primary/30',
+              wrapper: 'p-0.5 backdrop-blur-xs bg-black/5',
               indicator: '',
             }}
             onChange={setActiveTab}

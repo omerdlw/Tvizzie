@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Container from '@/core/modules/modal/container';
+import Container, { CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal/container';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import {
   NOTIFICATION_TYPES,
@@ -16,13 +16,46 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
+import { AnimatePresence, motion } from 'framer-motion';
+import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/core/constants/index';
+
+const notificationSpringTransition = Object.freeze({
+  type: 'spring',
+  stiffness: 260,
+  damping: 28,
+  mass: 0.8,
+});
+
+const notificationButtonSpring = Object.freeze({
+  type: 'spring',
+  stiffness: 450,
+  damping: 24,
+  mass: 0.5,
+});
+
+const notificationButtonTap = Object.freeze({});
+
+const notificationRowHoverTap = Object.freeze({});
+
+function getNotificationRowAnimation(index = 0) {
+  return Object.freeze({
+    initial: Object.freeze({ opacity: 0, y: 4 }),
+    animate: Object.freeze({ opacity: 1, y: 0 }),
+    exit: Object.freeze({ opacity: 0, y: -4 }),
+    transition: Object.freeze({
+      opacity: { duration: 0.16 },
+      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
+    }),
+  });
+}
+
+const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------
 
-const ACTION_BUTTON_CLASS = 'h-8 shrink-0 border px-4 text-xs font-semibold tracking-wide uppercase';
-const TOOL_BUTTON_CLASS = 'size-7';
+const TOOL_BUTTON_CLASS = 'size-7 rounded-[8px] transition-all duration-300 ease-out';
 const SKELETON_COUNT = 16;
 
 // --------------------------------------------------
@@ -266,25 +299,24 @@ function ModalView({
         right:
           notifications.length > 0 ? (
             <>
-              <Button
+              <MotionButton
                 type="button"
                 onClick={handleDeleteAll}
-                className={cn(ACTION_BUTTON_CLASS, 'border-black/10 text-black/70 hover:bg-black/5 hover:text-black')}
+                {...notificationButtonTap}
+                className={CANCEL_BUTTON_CLASS}
               >
                 Clear all
-              </Button>
+              </MotionButton>
 
               {hasUnread && (
-                <Button
+                <MotionButton
                   type="button"
                   onClick={handleMarkAllRead}
-                  className={cn(
-                    ACTION_BUTTON_CLASS,
-                    'hover:bg-info hover:border-info hover:text-primary border-black bg-black text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50'
-                  )}
+                  {...notificationButtonTap}
+                  className={ACTION_BUTTON_CLASS}
                 >
                   Mark all as read
-                </Button>
+                </MotionButton>
               )}
             </>
           ) : null,
@@ -301,27 +333,33 @@ function ModalView({
         ) : notifications.length === 0 ? (
           <div className="center h-screen text-sm font-medium text-black/50">You have no notifications yet</div>
         ) : (
-          notifications.map((notification) => (
-            <NotificationRow
-              key={notification.id}
-              notification={notification}
-              onMarkRead={handleMarkRead}
-              onDelete={handleDelete}
-            />
-          ))
+          <AnimatePresence mode="popLayout">
+            {notifications.map((notification, index) => (
+              <NotificationRow
+                key={notification.id}
+                notification={notification}
+                onMarkRead={handleMarkRead}
+                onDelete={handleDelete}
+                index={index}
+              />
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </Container>
   );
 }
-function NotificationRow({ notification, onMarkRead, onDelete }) {
+function NotificationRow({ notification, onMarkRead, onDelete, index }) {
   const avatarSrc = notification.actor ? getUserAvatarUrl(notification.actor) : '';
   const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
   const isUnread = !notification.read;
   return (
-    <div
+    <motion.div
+      {...getNotificationRowAnimation(index)}
+      {...notificationRowHoverTap}
+      layout
       className={cn(
-        'grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4',
+        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors duration-300 ease-out last:border-none lg:p-4',
         isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5'
       )}
     >
@@ -331,7 +369,7 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
             mode="img"
             src={avatarSrc}
             alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full object-cover"
+            className="size-full rounded-[8px] object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
@@ -341,7 +379,6 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
           <Icon icon={getNotificationIcon(notification.type)} size={20} className="text-black/70" />
         )}
       </div>
-
       <div className="flex w-full flex-col">
         <NotificationContent type={notification.type} actor={notification.actor} payload={notification.payload} />
         <span className="text-[10px] tracking-widest text-black/50 uppercase">
@@ -351,28 +388,26 @@ function NotificationRow({ notification, onMarkRead, onDelete }) {
 
       <div className="flex items-center gap-1.5">
         {isUnread && (
-          <Button
+          <MotionButton
             onClick={(event) => onMarkRead(notification.id, event)}
             title="Mark as read"
-            className={cn(
-              TOOL_BUTTON_CLASS,
-              'border-info/10 bg-info/20 text-info hover:border-info/10 hover:bg-info/10 border'
-            )}
+            {...notificationButtonTap}
+            className={cn(TOOL_BUTTON_CLASS, INFO_ACTION_TONE_CLASS)}
           >
             <Icon icon="material-symbols:check-rounded" size={16} />
-          </Button>
+          </MotionButton>
         )}
 
-        <Button
+        <MotionButton
           onClick={(event) => onDelete(notification.id, event)}
           title="Delete notification"
-          variant="destructive"
-          className={TOOL_BUTTON_CLASS}
+          {...notificationButtonTap}
+          className={cn(TOOL_BUTTON_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS)}
         >
           <Icon icon="solar:trash-bin-trash-linear" size={16} />
-        </Button>
+        </MotionButton>
       </div>
-    </div>
+    </motion.div>
   );
 }
 function NotificationContent({ type, actor, payload }) {

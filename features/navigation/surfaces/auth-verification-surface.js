@@ -88,13 +88,13 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center border-info bg-primary/30 hover:bg-primary/50 h-13 border border-black/10 text-lg font-semibold text-black/70 transition-colors hover:border-black/20 hover:text-black',
+                'center h-14 rounded-[14px] border border-black/5 text-lg font-semibold text-black/70 transition-colors hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
                 isActive &&
                   !digit &&
-                  'border border-black/10 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
+                  'border border-black/5 bg-black/5 text-black hover:border-black/10 hover:bg-black/10',
                 digit &&
                   !hasError &&
                   'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border'
@@ -112,7 +112,9 @@ function OtpBoxes({ code, disabled, hasError, inputRef, isFocused, onPasteComple
                     {digit}
                   </motion.span>
                 ) : (
-                  <span key="empty" className="invisible">0</span>
+                  <span key="empty" className="invisible">
+                    0
+                  </span>
                 )}
               </AnimatePresence>
             </div>
@@ -461,7 +463,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
         <motion.button
           whileTap={{ scale: 0.98 }}
           transition={NAV_ACTION_SPRING}
-          className="center hover:bg-info h-11 w-full flex-auto border border-black/10 bg-black/5 px-6 text-[11px] font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
+          className="center hover:bg-info h-11 w-full flex-auto rounded-[14px] border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"
@@ -478,7 +480,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'flex h-11 w-full items-center gap-2 border px-3 text-left text-[11px] font-bold tracking-widest uppercase transition',
+              'flex h-11 w-full items-center gap-2 rounded-[14px] border px-3 text-left text-xs font-bold tracking-widest uppercase transition',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
@@ -487,7 +489,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center size-4 border transition-colors',
+                'center size-4 rounded-full border transition-colors',
                 rememberDevice
                   ? 'border-success/40 bg-success text-white'
                   : 'border-black/20 bg-transparent text-transparent'
