@@ -1,0 +1,64 @@
+export const SEARCH_TYPES = Object.freeze({
+  ALL: 'all',
+  MOVIE: 'movie',
+  PERSON: 'person',
+  TV: 'tv',
+  USER: 'user',
+});
+
+export const SEARCH_LIMITS = Object.freeze({
+  MAX_RESULTS: 8,
+  MEDIA_RESULTS: 8,
+  RESULTS_PER_PAGE: 4,
+  USER_RESULTS: 8,
+  USER_FULL_RESULTS: 10,
+});
+
+export const SEARCH_GRID = Object.freeze({
+  MOBILE_COLUMNS: 6,
+  MOBILE_ROWS: 12,
+  DESKTOP_COLUMNS: 12,
+  DESKTOP_ROWS: 8,
+  DESKTOP_BREAKPOINT: 1024,
+});
+
+export const SEARCH_TAB_ITEMS = Object.freeze([
+  {
+    key: SEARCH_TYPES.ALL,
+    label: 'All',
+  },
+  {
+    key: SEARCH_TYPES.MOVIE,
+    label: 'Movies',
+  },
+  {
+    key: SEARCH_TYPES.TV,
+    label: 'TV',
+  },
+  {
+    key: SEARCH_TYPES.PERSON,
+    label: 'People',
+  },
+  {
+    key: SEARCH_TYPES.USER,
+    label: 'Users',
+  },
+]);
+
+export const SEARCH_STYLES = Object.freeze({
+  action: Object.freeze({
+    muted:
+      'border border-black/5 bg-black/5 text-black/70 hover:bg-black/10 transition-all duration-300 ease-in-out',
+    active:
+      'border border-black/10 bg-primary/50 hover:bg-primary/70 text-black transition-all duration-300 ease-in-out',
+  }),
+  input: 'flex w-full text-sm items-center rounded-[16px] p-2 pl-4',
+  tabButton:
+    'relative rounded-[12px] shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto transition-all duration-300 ease-in-out',
+  tabList: 'hide-scrollbar flex items-center gap-2 overflow-x-auto',
+  resultItem:
+    'group flex cursor-pointer rounded-[16px] items-center justify-between p-0.5 hover:bg-primary/70 transition-all duration-200 ease-in-out',
+  thumbnail: 'relative rounded-[14px] h-20 w-16 shrink-0 overflow-hidden ',
+  metaBadge:
+    'flex  w-fit items-center rounded-[8px] gap-1 border border-black/5 transition-all duration-200 ease-in-out',
+});
