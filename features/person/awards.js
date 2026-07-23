@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
 } from '@/features/media/static-route-elements';
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';

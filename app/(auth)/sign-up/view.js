@@ -58,7 +58,7 @@ export default function SignUpView({
     <AuthPageShell>
       <form key={currentStep} onSubmit={handleStepSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10 animate-fade-in-up">
         <div className="flex flex-col items-center text-center">
-          <Link href="/" className="mb-6 block hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-2xl p-1">
+          <Link href="/" className="mb-6 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-2xl p-1">
             <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
           </Link>
           <h1 className="text-2xl font-semibold sm:text-3xl">{stepTitle}</h1>
@@ -159,7 +159,7 @@ export default function SignUpView({
               {passwordRequirements.map((requirement) => (
                 <div
                   key={requirement.id}
-                  className={`flex items-center gap-2 text-sm transition-colors duration-200 ${requirement.satisfied ? 'text-success' : 'text-error'}`}
+                  className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
                 >
                   <Icon
                     icon={
@@ -224,7 +224,7 @@ export default function SignUpView({
 
         <p className="mt-2 text-center text-sm font-medium text-black/50">
           Already have an account?{' '}
-          <Link href={signInHref} className="text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black rounded px-1 transition-all duration-150">
+          <Link href={signInHref} className="text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black rounded px-1">
             Sign In
           </Link>
         </p>

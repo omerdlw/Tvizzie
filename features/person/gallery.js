@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import {
   PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
 } from '@/features/media/static-route-elements';
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';

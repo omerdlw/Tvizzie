@@ -58,14 +58,6 @@ export const PERSON_ROUTE_TIMING = Object.freeze({
   }),
 });
 
-export const SEARCH_ROUTE_MOTION = Object.freeze({
-  orchestration: Object.freeze({
-    filterDelay: ZERO_TIMING,
-    resultDelay: ZERO_TIMING,
-    itemStagger: ZERO_TIMING,
-  }),
-});
-
 function StaticWrapper({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 }
@@ -87,26 +79,6 @@ export const PersonSidebarReveal = StaticWrapper;
 export const PersonSurfaceReveal = StaticWrapper;
 export const HomeSectionReveal = StaticWrapper;
 export const SearchSectionReveal = StaticWrapper;
-
-export function getSurfaceItemMotion() {
-  return Object.freeze({});
-}
-
-export function getSurfacePanelMotion() {
-  return Object.freeze({});
-}
-
-export function getPersonSurfaceItemMotion() {
-  return Object.freeze({});
-}
-
-export function getPersonSurfacePanelMotion() {
-  return Object.freeze({});
-}
-
-export function getSearchGridItemMotion() {
-  return Object.freeze({});
-}
 
 export function useInitialItemRevealEnabled() {
   return false;

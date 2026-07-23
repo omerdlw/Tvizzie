@@ -6,24 +6,11 @@ import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/features/search/constants';
 import { navActionClass } from '../utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import { NAV_ACTION_SPRING, NAV_SEARCH_PANEL_MOTION } from '@/core/modules/motion';
 
 function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
   return (
-    <motion.div
-      initial={{ width: 0, opacity: 0, marginRight: 0, marginLeft: 0 }}
-      animate={{
-        width: 38,
-        opacity: 1,
-        marginRight: isLeft ? 6 : 0,
-        marginLeft: isLeft ? 0 : 6,
-      }}
-      exit={{ width: 0, opacity: 0, marginRight: 0, marginLeft: 0 }}
-      transition={{ type: 'spring', stiffness: 280, damping: 30, mass: 0.8 }}
-      className="overflow-hidden shrink-0"
-    >
+    <div className={`overflow-hidden shrink-0 ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}>
       <button
         type="button"
         className={cn(
@@ -42,7 +29,7 @@ function PaginationArrow({ direction, onClick }) {
           className="text-black/70"
         />
       </button>
-    </motion.div>
+    </div>
   );
 }
 
@@ -65,11 +52,7 @@ export default function SearchActionControls({
   return (
     <>
       <div className="flex items-center w-full">
-        <AnimatePresence>
-          {hasPrevPage ? (
-            <PaginationArrow direction="left" onClick={onPrevPage} />
-          ) : null}
-        </AnimatePresence>
+        {hasPrevPage ? <PaginationArrow direction="left" onClick={onPrevPage} /> : null}
         <div className="flex-1 min-w-0">
           <Input
             onFocus={() => setIsActive(true)}
@@ -102,58 +85,48 @@ export default function SearchActionControls({
                     <Icon icon="line-md:loading-loop" size={16} />
                   </div>
                 ) : query ? (
-                  <motion.button
+                  <button
                     key="clear"
                     type="button"
-                    whileTap={{ scale: 0.98 }}
-                    transition={NAV_ACTION_SPRING}
                     className="center text-error shrink-0 cursor-pointer"
                     onClick={onClear}
                   >
                     <Icon icon="material-symbols:close-rounded" size={16} />
-                  </motion.button>
+                  </button>
                 ) : null}
               </>
             }
           />
         </div>
-        <AnimatePresence>
-          {hasNextPage ? (
-            <PaginationArrow direction="right" onClick={onNextPage} />
-          ) : null}
-        </AnimatePresence>
+        {hasNextPage ? <PaginationArrow direction="right" onClick={onNextPage} /> : null}
       </div>
 
-      <AnimatePresence>
-        {shouldShowTabs ? (
-          <motion.div {...NAV_SEARCH_PANEL_MOTION} className="mt-2 overflow-hidden">
-            <div className={SEARCH_STYLES.tabList}>
-              {SEARCH_TAB_ITEMS.map((item) => {
-                const isActive = searchType === item.key;
-                return (
-                  <motion.button
-                    key={item.key}
-                    type="button"
-                    whileTap={{ scale: 0.98 }}
-                    transition={NAV_ACTION_SPRING}
-                    className={cn(
-                      navActionClass({
-                        cn,
-                        button: SEARCH_STYLES.tabButton,
-                        isActive,
-                      }),
-                      'group',
-                    )}
-                    onClick={() => onSearchTypeChange?.(item.key)}
-                  >
-                    <span className="relative">{item.label}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {shouldShowTabs ? (
+        <div className="mt-2 overflow-hidden">
+          <div className={SEARCH_STYLES.tabList}>
+            {SEARCH_TAB_ITEMS.map((item) => {
+              const isActive = searchType === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  className={cn(
+                    navActionClass({
+                      cn,
+                      button: SEARCH_STYLES.tabButton,
+                      isActive,
+                    }),
+                    'group',
+                  )}
+                  onClick={() => onSearchTypeChange?.(item.key)}
+                >
+                  <span className="relative">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

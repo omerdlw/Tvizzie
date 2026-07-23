@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   MovieSurfaceReveal,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
   useInitialItemRevealEnabled,
 } from '@/features/media/static-route-elements';
 import Carousel from '@/ui/media/carousel';

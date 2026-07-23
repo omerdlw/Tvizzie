@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
@@ -11,13 +10,6 @@ import { useToast } from '@/core/modules/notification/hooks';
 import { useNavRuntimeRegistry } from '@/core/modules/registry';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
-
-import {
-  getNavActionItemMotion,
-  NAV_ACTION_GROUP_MOTION,
-  NAV_BADGE_MOTION,
-  NAV_BUTTON_INTERACTION_MOTION,
-} from '@/core/modules/motion';
 
 export const NAV_ACTION_KEYS = Object.freeze({
   NOTIFICATIONS: 'notifications',
@@ -214,25 +206,21 @@ export function useNavActions({ activeItem } = {}) {
 export function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
-      <motion.button
-        className="center relative cursor-pointer rounded-[10px] p-1 text-black/70 transition-colors hover:bg-black/5 hover:text-black"
+      <button
+        className="center relative cursor-pointer rounded-[10px] p-1 text-black/70 hover:bg-black/5 hover:text-black"
         onClick={action.onClick}
         type="button"
-        {...NAV_BUTTON_INTERACTION_MOTION}
       >
         <Icon icon={action.icon} size={16} />
-        <AnimatePresence initial={false}>
-          {action.badge ? (
-            <motion.span
-              key={action.badge}
-              className="center bg-info absolute -top-1 -right-1 h-4 min-w-4  p-1 text-[11px] leading-none font-semibold text-white"
-              {...NAV_BADGE_MOTION}
-            >
-              {action.badge}
-            </motion.span>
-          ) : null}
-        </AnimatePresence>
-      </motion.button>
+        {action.badge ? (
+          <span
+            key={action.badge}
+            className="center bg-info absolute -top-1 -right-1 h-4 min-w-4  p-1 text-[11px] leading-none font-semibold text-white"
+          >
+            {action.badge}
+          </span>
+        ) : null}
+      </button>
     </Tooltip>
   );
 }
@@ -241,17 +229,12 @@ export function NavActionsContainer({ activeItem }) {
   const actions = useNavActions({ activeItem });
 
   return (
-    <motion.div className="mr-2 flex shrink-0 items-center gap-1" {...NAV_ACTION_GROUP_MOTION}>
-      <AnimatePresence initial={false}>
-        {actions.map((action, index) => (
-          <motion.div
-            key={`${action.key || action.icon || 'nav-action'}-${index}`}
-            {...getNavActionItemMotion(index)}
-          >
-            <NavAction action={action} />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </motion.div>
+    <div className="mr-2 flex shrink-0 items-center gap-1">
+      {actions.map((action, index) => (
+        <div key={`${action.key || action.icon || 'nav-action'}-${index}`}>
+          <NavAction action={action} />
+        </div>
+      ))}
+    </div>
   );
 }

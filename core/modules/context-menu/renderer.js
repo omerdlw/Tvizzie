@@ -2,11 +2,8 @@
 
 import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
-import Icon from '@/ui/icon';
-import { CONTEXT_MENU_MOTION, NAV_ACTION_SPRING } from '../motion';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
@@ -248,14 +245,14 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 transition-colors hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
     item.danger && classNames.itemDanger,
   );
   const itemIconClassName = joinClassNames(
-    'shrink-0 text-black/55 transition-colors group-hover:text-black/80',
+    'shrink-0 text-black/55 group-hover:text-black/80',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,
@@ -267,7 +264,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   );
 
   return (
-    <motion.button
+    <button
       ref={setButtonRef}
       className={itemClassName}
       data-active={isActive ? 'true' : undefined}
@@ -277,13 +274,11 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
       type="button"
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
-      whileTap={{ scale: 0.98 }}
-      transition={NAV_ACTION_SPRING}
     >
       {item.icon ? <Icon icon={item.icon} className={itemIconClassName} size={17} /> : null}
       <span className={itemLabelClassName}>{item.label}</span>
       {item.shortcut ? <span className={itemShortcutClassName}>{item.shortcut}</span> : null}
-    </motion.button>
+    </button>
   );
 }
 
@@ -375,83 +370,69 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         return;
       }
 
-      const actionHandler = typeof item.onSelect === 'function' ? item.onSelect : item.onClick;
-      invokeSafely(actionHandler, event, menuContext);
+      if (item.disabled) return;
 
-      if (item.closeOnSelect !== false) {
-        onClose();
-      }
+      onClose?.();
+      item.onClick?.(event, menuContext);
     },
     [menuContext, onClose],
   );
 
   const handleMenuKeyDown = useCallback(
     (event) => {
-      if (!actionableIndexes.length) {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          onClose();
-        }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose?.();
         return;
       }
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setActiveIndex((current) => getNextActionableIndex(current, 1, actionableIndexes));
+        setActiveIndex((prev) => {
+          const nextIndex = items.findIndex(
+            (item, index) => index > prev && item.type === 'action' && !item.disabled,
+          );
+
+          return nextIndex !== -1
+            ? nextIndex
+            : items.findIndex((item) => item.type === 'action' && !item.disabled);
+        });
         return;
       }
 
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setActiveIndex((current) => getNextActionableIndex(current, -1, actionableIndexes));
-        return;
-      }
+        setActiveIndex((prev) => {
+          const prevIndices = items
+            .map((item, index) => ({ disabled: item.disabled, index, type: item.type }))
+            .filter((item) => (prev === -1 || item.index < prev) && item.type === 'action' && !item.disabled);
 
-      if (event.key === 'Home') {
-        event.preventDefault();
-        setActiveIndex(actionableIndexes[0]);
-        return;
-      }
-
-      if (event.key === 'End') {
-        event.preventDefault();
-        setActiveIndex(actionableIndexes[actionableIndexes.length - 1]);
+          return prevIndices.length > 0
+            ? prevIndices[prevIndices.length - 1].index
+            : items.findLastIndex((item) => item.type === 'action' && !item.disabled);
+        });
         return;
       }
 
       if (event.key === 'Enter' || event.key === ' ') {
-        if (activeIndex >= 0) {
+        if (activeIndex >= 0 && items[activeIndex]) {
           event.preventDefault();
-          itemRefs.current[activeIndex]?.click();
+          handleItemSelect(items[activeIndex], event);
         }
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
       }
     },
-    [actionableIndexes, activeIndex, onClose],
+    [activeIndex, items, handleItemSelect, onClose],
   );
 
   return (
-    <motion.div initial="initial" animate="animate" exit="exit">
-      <motion.div
+    <div>
+      <div
         className={joinClassNames('fixed inset-0', classNames.overlay)}
         onMouseDown={onClose}
         style={{ zIndex: Z_INDEX.DEBUG_OVERLAY - 1 }}
-        variants={{
-          initial: { opacity: 0 },
-          animate: { opacity: 1 },
-          exit: { opacity: 0 },
-        }}
-        transition={{ duration: 0.15 }}
       />
-      <motion.div
+      <div
         ref={menuRef}
-        variants={CONTEXT_MENU_MOTION}
-        transition={CONTEXT_MENU_MOTION.transition}
         className={joinClassNames(
           'max-w-sm min-w-64 overflow-hidden border border-black/10 bg-white/88 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-xl',
           classNames.content,
@@ -487,8 +468,8 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
             onSelect={handleItemSelect}
           />
         ))}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -502,19 +483,17 @@ export function ContextMenuRenderer() {
       ? menuItems
       : resolveMenuItems(menuConfig, menuContext);
 
+  if (!isOpen || !menuConfig || resolvedItems.length === 0) return null;
+
   return createPortal(
-    <AnimatePresence>
-      {isOpen && menuConfig && resolvedItems.length > 0 && (
-        <ContextMenuContent
-          key="context-menu-content"
-          config={menuConfig}
-          items={resolvedItems}
-          menuContext={menuContext}
-          position={position}
-          onClose={closeMenu}
-        />
-      )}
-    </AnimatePresence>,
+    <ContextMenuContent
+      key="context-menu-content"
+      config={menuConfig}
+      items={resolvedItems}
+      menuContext={menuContext}
+      position={position}
+      onClose={closeMenu}
+    />,
     document.body,
   );
 }

@@ -1,10 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, forwardRef } from 'react';
-import { motion } from 'framer-motion';
 
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
-import { NAV_BUTTON_INTERACTION_MOTION, NAV_SURFACE_MOTION } from '@/core/modules/motion';
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
 
@@ -43,18 +41,17 @@ export function NavSurfaceHeader({
       </div>
 
       {hasClose ? (
-        <motion.button
+        <button
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-all duration-300 ease-out hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
           aria-label={closeLabel}
-          {...NAV_BUTTON_INTERACTION_MOTION}
         >
           <Icon icon="material-symbols:close-rounded" size={16} />
-        </motion.button>
+        </button>
       ) : null}
     </div>
   );
@@ -93,10 +90,9 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
 
   return (
     <SurfaceHeaderContext.Provider value={setHeaderState}>
-      <motion.section
+      <section
         ref={ref}
         className={cn('relative flex flex-col gap-3', className)}
-        {...NAV_SURFACE_MOTION}
       >
         <NavSurfaceHeader
           descriptionMaxLines={descriptionMaxLines}
@@ -108,7 +104,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
           onClose={onClose}
         />
         <div className={contentClassName}>{children}</div>
-      </motion.section>
+      </section>
     </SurfaceHeaderContext.Provider>
   );
 });

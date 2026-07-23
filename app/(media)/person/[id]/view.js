@@ -14,8 +14,6 @@ import {
   PersonSectionReveal,
   PersonSidebarReveal,
   PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
-  getPersonSurfacePanelMotion,
   useInitialPersonItemRevealEnabled,
 } from '@/features/media/static-route-elements';
 import { getFilmographyCredits } from '@/features/person/utils';

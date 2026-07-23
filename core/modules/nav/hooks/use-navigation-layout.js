@@ -101,21 +101,18 @@ function getCollapsedVisibleCount({
   pathname,
   isHovered,
   isCompact,
-  shouldShowOverlayStack,
   shouldShowSingleStatusCard,
 }) {
-  if (shouldShowSingleStatusCard) {
+  if (shouldShowSingleStatusCard || isCompact) {
     return 1;
   }
 
-  if (isCompact) {
-    return 1;
+  const isHome = pathname === '/';
+  if (isHome) {
+    return MAX_VISIBLE_STACKED_CARDS;
   }
 
-  const isHomeRoute = pathname === '/';
-  const shouldRevealCollapsedStack =
-    isHovered || shouldShowOverlayStack || (isHomeRoute && !isCompact);
-  return shouldRevealCollapsedStack ? MAX_VISIBLE_STACKED_CARDS : 1;
+  return isHovered ? MAX_VISIBLE_STACKED_CARDS : 1;
 }
 
 export function useNavigationLayout({

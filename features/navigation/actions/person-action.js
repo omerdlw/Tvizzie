@@ -2,18 +2,14 @@
 
 import Icon from '@/ui/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
-import { motion } from 'framer-motion';
-import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 
 export default function PersonAction({ activeView, setActiveView }) {
   const toggle = (view) => setActiveView(activeView === view ? 'main' : view);
 
   return (
     <div className={NAV_ACTION_STYLES.row}>
-      <motion.button
+      <button
         type="button"
-        whileTap={{ scale: 0.98 }}
-        transition={NAV_ACTION_SPRING}
         onClick={() => toggle('timeline')}
         className={getNavActionClass({
           className: 'flex-1',
@@ -31,12 +27,10 @@ export default function PersonAction({ activeView, setActiveView }) {
             Timeline
           </>
         )}
-      </motion.button>
+      </button>
 
-      <motion.button
+      <button
         type="button"
-        whileTap={{ scale: 0.98 }}
-        transition={NAV_ACTION_SPRING}
         onClick={() => toggle('awards')}
         className={getNavActionClass({
           className: 'flex-1',
@@ -54,7 +48,7 @@ export default function PersonAction({ activeView, setActiveView }) {
             Awards
           </>
         )}
-      </motion.button>
+      </button>
     </div>
   );
 }

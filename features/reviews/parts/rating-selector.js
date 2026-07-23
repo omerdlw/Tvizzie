@@ -1,13 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
-const ratingStarSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 280,
-  damping: 26,
-  mass: 0.8,
-});
+
 const STAR_COUNT = 5;
 const STAR_PATH = [
   'M12.74 3.98',
@@ -42,13 +36,7 @@ function Star({
   const clipId = `star-clip-${starIndex}`;
   const fillWidth = (fillPercent / 100) * 24;
   return (
-    <motion.div
-      animate={{
-        y: isHovering && fillPercent > 0 ? -3 : 0,
-      }}
-      transition={ratingStarSpring}
-      className="relative h-10 w-10 sm:h-12 sm:w-12"
-    >
+    <div className="relative h-10 w-10 sm:h-12 sm:w-12">
       <svg
         viewBox="0 0 24 24"
         className="pointer-events-none absolute inset-0 h-full w-full"
@@ -87,7 +75,7 @@ function Star({
         onFocus={onHoverRight}
         onClick={onSelectRight}
       />
-    </motion.div>
+    </div>
   );
 }
 export default function RatingSelector({ value, onChange }) {

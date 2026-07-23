@@ -16,7 +16,6 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/core/constants/index';
 
 const notificationSpringTransition = Object.freeze({
@@ -49,13 +48,11 @@ function getNotificationRowAnimation(index = 0) {
   });
 }
 
-const MotionButton = motion(Button);
-
 // --------------------------------------------------
 // CONSTANTS
 // --------------------------------------------------
 
-const TOOL_BUTTON_CLASS = 'size-7  transition-all duration-300 ease-out';
+const TOOL_BUTTON_CLASS = 'size-7';
 const SKELETON_COUNT = 16;
 
 // --------------------------------------------------
@@ -301,24 +298,22 @@ function ModalView({
         right:
           notifications.length > 0 ? (
             <>
-              <MotionButton
+              <Button
                 type="button"
                 onClick={handleDeleteAll}
-                {...notificationButtonTap}
                 className={CANCEL_BUTTON_CLASS}
               >
                 Clear all
-              </MotionButton>
+              </Button>
 
               {hasUnread && (
-                <MotionButton
+                <Button
                   type="button"
                   onClick={handleMarkAllRead}
-                  {...notificationButtonTap}
                   className={ACTION_BUTTON_CLASS}
                 >
                   Mark all as read
-                </MotionButton>
+                </Button>
               )}
             </>
           ) : null,
@@ -358,12 +353,9 @@ function NotificationRow({ notification, onMarkRead, onDelete, index }) {
   const avatarFallbackSrc = notification.actor ? getUserAvatarFallbackUrl(notification.actor) : '';
   const isUnread = !notification.read;
   return (
-    <motion.div
-      {...getNotificationRowAnimation(index)}
-      {...notificationRowHoverTap}
-      layout
+    <div
       className={cn(
-        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors duration-300 ease-out last:border-none lg:p-4',
+        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4',
         isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5',
       )}
     >
@@ -396,26 +388,24 @@ function NotificationRow({ notification, onMarkRead, onDelete, index }) {
 
       <div className="flex items-center gap-1.5">
         {isUnread && (
-          <MotionButton
+          <Button
             onClick={(event) => onMarkRead(notification.id, event)}
             title="Mark as read"
-            {...notificationButtonTap}
             className={cn(TOOL_BUTTON_CLASS, INFO_ACTION_TONE_CLASS)}
           >
             <Icon icon="material-symbols:check-rounded" size={16} />
-          </MotionButton>
+          </Button>
         )}
 
-        <MotionButton
+        <Button
           onClick={(event) => onDelete(notification.id, event)}
           title="Delete notification"
-          {...notificationButtonTap}
           className={cn(TOOL_BUTTON_CLASS, DESTRUCTIVE_ACTION_TONE_CLASS)}
         >
           <Icon icon="solar:trash-bin-trash-linear" size={16} />
-        </MotionButton>
+        </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 function NotificationContent({ type, actor, payload }) {

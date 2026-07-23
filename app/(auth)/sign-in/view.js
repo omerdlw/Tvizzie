@@ -112,7 +112,7 @@ export default function View({
     <AuthPageShell>
       <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10 animate-fade-in-up">
         <div className="flex flex-col items-center text-center">
-          <Link href="/" className="mb-6 block hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-2xl p-1">
+          <Link href="/" className="mb-6 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 rounded-2xl p-1">
             <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
           </Link>
           <h1 className="text-2xl font-semibold sm:text-3xl">Welcome back</h1>
@@ -178,7 +178,7 @@ export default function View({
 
         <p className="mt-2 text-center text-sm font-medium text-black/50">
           Don&apos;t have an account?{' '}
-          <Link href={signUpHref} className="text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black rounded px-1 transition-all duration-150">
+          <Link href={signUpHref} className="text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black rounded px-1">
             Sign Up
           </Link>
         </p>

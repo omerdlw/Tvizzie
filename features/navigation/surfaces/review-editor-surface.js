@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useSurfaceHeader } from '@/core/modules/nav';
 import { useToast } from '@/core/modules/notification';
 import {
@@ -12,7 +11,6 @@ import {
 } from '@/core/services/media/reviews';
 import RatingSelector from '@/features/reviews/parts/rating-selector';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
-import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 import { Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { cn } from '@/core/utils';
@@ -302,9 +300,9 @@ export default function ReviewEditorSurface({ close, data }) {
           onChange={handleTextChange}
           className={{
             wrapper:
-              'flex transition-all duration-300 ease-out border border-black/10 rounded-2xl bg-black/5 pb-7',
+              'flex border border-black/10 rounded-2xl bg-black/5 pb-7',
             textarea:
-              'min-h-[130px] w-full resize-none p-3.5 text-sm leading-normal transition-all duration-300 ease-out outline-none placeholder:text-black/40 bg-transparent',
+              'min-h-[130px] w-full resize-none p-3.5 text-sm leading-normal outline-none placeholder:text-black/40 bg-transparent',
           }}
         />
         <div className="pointer-events-none absolute bottom-2.5 right-3.5 flex items-center gap-2 text-[11px] font-medium text-black/40 select-none">
@@ -324,9 +322,7 @@ export default function ReviewEditorSurface({ close, data }) {
       />
 
       <div className={NAV_ACTION_STYLES.row}>
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            transition={NAV_ACTION_SPRING}
+          <button
             type="button"
             onClick={() => close?.(null)}
             className={getNavActionClass({
@@ -336,11 +332,9 @@ export default function ReviewEditorSurface({ close, data }) {
           >
             <Icon icon="solar:close-circle-bold" size={NAV_ACTION_STYLES.icon} />
             <span>Cancel</span>
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            transition={NAV_ACTION_SPRING}
+          <button
             type="submit"
             form={FORM_ID}
             disabled={isSaving || Boolean(validationError)}
@@ -364,7 +358,7 @@ export default function ReviewEditorSurface({ close, data }) {
                     reviewText,
                   })}
             </span>
-          </motion.button>
+          </button>
         </div>
     </form>
   );
@@ -379,7 +373,7 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all duration-300 ease-out',
+        'flex w-full items-center justify-between rounded-xl border p-3 text-left',
         disabled && 'cursor-not-allowed border-black/10 text-black/40 bg-black/5',
         !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-error/30',
         !disabled && !checked && 'bg-black/5 border-black/10 hover:bg-black/10',
@@ -397,14 +391,15 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
 
       <span
         className={cn(
-          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border p-px transition-colors duration-200',
+          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border p-px',
           checked && !disabled ? 'border-error bg-error' : 'border-black/10 bg-black/10',
         )}
       >
-        <motion.span
-          animate={{ x: checked && !disabled ? 16 : 0 }}
-          transition={NAV_ACTION_SPRING}
-          className="size-4 rounded-full bg-white shadow-xs"
+        <span
+          className={cn(
+            'size-4 rounded-full bg-white shadow-xs',
+            checked && !disabled ? 'translate-x-4' : 'translate-x-0',
+          )}
         />
       </span>
     </button>

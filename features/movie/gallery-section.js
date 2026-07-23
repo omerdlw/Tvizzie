@@ -2,7 +2,6 @@
 
 import {
   MovieSurfaceReveal,
-  getSurfaceItemMotion,
   useInitialItemRevealEnabled,
 } from '@/features/media/static-route-elements';
 import Carousel from '@/ui/media/carousel';

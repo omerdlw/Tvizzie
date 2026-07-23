@@ -1,8 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 import { TMDB_IMG } from '@/core/constants';
 import {
   applyAvatarFallback,
@@ -21,8 +19,6 @@ import {
   getItemTitle,
   getItemYear,
 } from '@/features/search/utils';
-
-const MotionLink = motion(Link);
 
 export default function SearchResultItem({ item, imageErrors, onImageError, onSelect }) {
   const title = getItemTitle(item);
@@ -96,20 +92,10 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
     </div>
   );
   if (!hasDetailPath) {
-    return (
-      <motion.div
-        whileTap={{ scale: 0.98 }}
-        transition={NAV_ACTION_SPRING}
-        className={SEARCH_STYLES.resultItem}
-      >
-        {rowContent}
-      </motion.div>
-    );
+    return <div className={SEARCH_STYLES.resultItem}>{rowContent}</div>;
   }
   return (
-    <MotionLink
-      whileTap={{ scale: 0.98 }}
-      transition={NAV_ACTION_SPRING}
+    <Link
       href={detailPath}
       className={SEARCH_STYLES.resultItem}
       onClick={(event) => {
@@ -119,6 +105,6 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
       }}
     >
       {rowContent}
-    </MotionLink>
+    </Link>
   );
 }

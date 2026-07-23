@@ -1,14 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 
 import { useBackgroundState } from '@/core/modules/background/context';
-import {
-  getNavMediaProgressMotion,
-  NAV_CONTENT_TRANSITION,
-  NAV_MEDIA_ACTION_MOTION,
-} from '@/core/modules/motion';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -96,10 +90,7 @@ export default function MediaAction() {
   }
 
   return (
-    <motion.div
-      className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden transition-colors duration-200"
-      {...NAV_MEDIA_ACTION_MOTION}
-    >
+    <div className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden">
       <input
         value={clamp(currentTime, 0, virtualDuration || 1)}
         onPointerDown={stopPropagation}
@@ -112,11 +103,10 @@ export default function MediaAction() {
         min="0"
       />
 
-      <motion.div
+      <div
         className="absolute top-0 bottom-0 left-0"
-        animate={getNavMediaProgressMotion(progressRatio)}
-        transition={NAV_CONTENT_TRANSITION}
+        style={{ width: `${Math.max(0, Math.min(progressRatio, 1)) * 100}%` }}
       />
-    </motion.div>
+    </div>
   );
 }

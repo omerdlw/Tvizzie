@@ -12,28 +12,6 @@ import {
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const creditCardSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 250,
-  damping: 26,
-  mass: 0.9,
-});
-
-const creditCardHoverTap = Object.freeze({});
-
-function getCreditCardAnimation(index = 0) {
-  return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 6 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -6 }),
-    transition: Object.freeze({
-      opacity: { duration: 0.16 },
-      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.016, 0.16) },
-    }),
-  });
-}
 
 // --------------------------------------------------
 // CONSTANTS
@@ -195,17 +173,9 @@ function ModalView({
       bodyClassName="bg-transparent p-0"
     >
       <div ref={contentRef} className="relative min-h-32 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-          >
-            <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
-          </motion.div>
-        </AnimatePresence>
+        <div key={activeTab}>
+          <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
+        </div>
       </div>
     </Container>
   );
@@ -237,11 +207,11 @@ function PersonCard({ close, person, index }) {
       (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
     : null;
   return (
-    <motion.div {...getCreditCardAnimation(index)} {...creditCardHoverTap} layout>
+    <div>
       <Link
         href={`/person/${person.id}`}
         onClick={close}
-        className="bg-primary/50 hover:bg-primary flex h-full w-full items-center gap-3 p-2 transition-colors duration-300 ease-out"
+        className="bg-primary/50 hover:bg-primary flex h-full w-full items-center gap-3 p-2"
       >
         <div className="relative h-14 w-11 shrink-0 overflow-hidden  bg-black/5">
           {imageSrc ? (
@@ -267,6 +237,6 @@ function PersonCard({ close, person, index }) {
           <p className="truncate text-xs text-black/70">{person.subtitle}</p>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

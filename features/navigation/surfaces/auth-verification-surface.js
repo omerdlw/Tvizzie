@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import { requestVerificationCode, verifyCodeRequest } from '@/features/auth/requests';
 import {
@@ -17,7 +16,6 @@ import { cn } from '@/core/utils';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
-import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 
 const PURPOSES = Object.freeze({
   ACCOUNT_DELETE: 'account-delete',
@@ -97,7 +95,7 @@ function OtpBoxes({
             <div
               key={`otp-box-${index}`}
               className={cn(
-                'center h-14 rounded-[16px] border border-black/5 text-lg font-semibold text-black/70 transition-colors hover:text-black',
+                'center h-14 rounded-[16px] border border-black/5 text-lg font-semibold text-black/70 hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
@@ -109,23 +107,13 @@ function OtpBoxes({
                   'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border',
               )}
             >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {digit ? (
-                  <motion.span
-                    key={`digit-${digit}-${index}`}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  >
-                    {digit}
-                  </motion.span>
-                ) : (
-                  <span key="empty" className="invisible">
-                    0
-                  </span>
-                )}
-              </AnimatePresence>
+              {digit ? (
+                <span>{digit}</span>
+              ) : (
+                <span key="empty" className="invisible">
+                  0
+                </span>
+              )}
             </div>
           );
         })}
@@ -505,9 +493,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       />
 
       <div className="grid gap-2">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          transition={NAV_ACTION_SPRING}
+        <button
           className="center hover:bg-info h-11 w-full flex-auto rounded-[16px] border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
@@ -518,12 +504,10 @@ export default function AuthVerificationSurface({ close, data, header }) {
             : canResendCode
               ? 'Resend'
               : `Resend in ${resendRemainingSeconds}s`}
-        </motion.button>
+        </button>
 
         {shouldShowRememberDevice ? (
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            transition={NAV_ACTION_SPRING}
+          <button
             type="button"
             disabled={isSubmitting || isSending}
             aria-pressed={rememberDevice}
@@ -538,7 +522,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center size-4  border transition-colors',
+                'center size-4 border',
                 rememberDevice
                   ? 'border-success/40 bg-success text-white'
                   : 'border-black/20 bg-transparent text-transparent',
@@ -548,7 +532,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
               <Icon icon="material-symbols:check-small-rounded" size={14} />
             </span>
             <span>Remember this device for 30 days</span>
-          </motion.button>
+          </button>
         ) : null}
       </div>
     </form>

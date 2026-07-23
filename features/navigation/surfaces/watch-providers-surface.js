@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { TMDB_IMG } from '@/core/constants';
 import { useSurfaceHeader } from '@/core/modules/nav';
 import {
@@ -10,7 +9,6 @@ import {
   resolveWatchRegionFromBrowser,
 } from '@/core/services/tmdb/watch-region';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
-import { getNavActionItemMotion } from '@/core/modules/motion';
 
 const MAX_WATCH_PROVIDERS = 6;
 
@@ -101,48 +99,38 @@ export default function WatchProvidersSurface({ close, providers }) {
 
   return (
     <div className="flex w-full flex-col overflow-hidden">
-      <AnimatePresence initial={false}>
-        {providerList.length > 0 ? (
-          <div key={`list-${resolvedRegion}`} className="flex flex-col">
-            {providerList.map((provider, index) => (
-              <motion.div
-                key={`${provider.provider_id}-${provider.type}`}
-                whileTap={{ scale: 0.98 }}
-                {...getNavActionItemMotion(index)}
-                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2 py-2.5 first:pt-0 last:pb-0 transition-all duration-300 ease-in-out last:border-b-0"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <AdaptiveImage
-                    mode="img"
-                    src={`${TMDB_IMG}/w154${provider.logo_path}`}
-                    alt={provider.provider_name}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-7 w-7 shrink-0 object-cover rounded-[10px]"
-                    wrapperClassName="h-7 w-7 shrink-0 rounded-[10px] bg-black/5"
-                  />
-                  <span className="truncate text-sm font-medium text-black/70">
-                    {provider.provider_name}
-                  </span>
-                </div>
-                <span className="bg-primary border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase rounded-[10px]">
-                  {provider.type}
+      {providerList.length > 0 ? (
+        <div key={`list-${resolvedRegion}`} className="flex flex-col">
+          {providerList.map((provider) => (
+            <div
+              key={`${provider.provider_id}-${provider.type}`}
+              className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2 py-2.5 first:pt-0 last:pb-0 last:border-b-0"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <AdaptiveImage
+                  mode="img"
+                  src={`${TMDB_IMG}/w154${provider.logo_path}`}
+                  alt={provider.provider_name}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-7 w-7 shrink-0 object-cover rounded-[10px]"
+                  wrapperClassName="h-7 w-7 shrink-0 rounded-[10px] bg-black/5"
+                />
+                <span className="truncate text-sm font-medium text-black/70">
+                  {provider.provider_name}
                 </span>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            key={`empty-${resolvedRegion}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="center p-4 text-sm"
-          >
-            Watch providers are not available for this region
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </div>
+              <span className="bg-primary border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase rounded-[10px]">
+                {provider.type}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div key={`empty-${resolvedRegion}`} className="center p-4 text-sm">
+          Watch providers are not available for this region
+        </div>
+      )}
     </div>
   );
 }

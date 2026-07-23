@@ -157,22 +157,19 @@ export default function SegmentedControl({
           className="relative flex h-full w-max min-w-full items-stretch overflow-hidden"
           style={{ borderRadius: `${INNER_RADIUS}px` }}
         >
-          {/* Indicator — uses inset-y-0 (top:0 + bottom:0) instead of a
-              JS-calculated height so it always fills the wrapper perfectly. */}
           <span
             aria-hidden="true"
-            className={cn('bg-primary pointer-events-none absolute inset-y-0 left-0', classNames.indicator)}
+            className={cn(
+              'bg-primary pointer-events-none absolute inset-y-0 left-0',
+              classNames.indicator,
+            )}
             style={{
               borderRadius: `${INNER_RADIUS}px`,
               ...(indicator
                 ? {
                     transform: `translateX(${indicator._x}px)`,
                     width: `${indicator._w}px`,
-                    // Only transition transform + width — never transition-all.
-                    // transition-all caused opacity/height to animate on mount.
-                    transition: indicator.ready
-                      ? 'transform 200ms ease-out, width 200ms ease-out'
-                      : 'none',
+                    transition: 'none',
                   }
                 : { width: 0, opacity: 0 }),
             }}

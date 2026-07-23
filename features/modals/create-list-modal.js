@@ -11,11 +11,9 @@ import { createUserListWithItems } from '@/core/services/media/lists';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
-import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
 
 function normalizeSearchResult(item = {}) {
   const entityType = String(item?.media_type || item?.entityType || '')
@@ -199,7 +197,7 @@ export default function CreateListModal({ close, data }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
             }}
@@ -210,7 +208,7 @@ export default function CreateListModal({ close, data }) {
             placeholder="Description (optional)"
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
             }}
@@ -233,7 +231,7 @@ export default function CreateListModal({ close, data }) {
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="text-black/40 hover:text-black transition-colors"
+                  className="text-black/40 hover:text-black"
                 >
                   <Icon icon="material-symbols:close-rounded" size={16} />
                 </button>
@@ -241,7 +239,7 @@ export default function CreateListModal({ close, data }) {
             }
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
               leftIcon: 'flex shrink-0 items-center pr-2.5',
@@ -289,33 +287,28 @@ export default function CreateListModal({ close, data }) {
                   </span>
                 </div>
               )}
-              <AnimatePresence>
-                {draftItems.length > 0 ? (
-                  draftItems.map((item) => (
-                    <DraftItemRow
-                      key={getDraftMediaKey(item)}
-                      item={item}
-                      onRemove={handleRemove}
-                    />
-                  ))
-                ) : (
-                  <motion.div
-                    key="empty-draft"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 text-center p-6"
-                  >
-                    <Icon icon="solar:clapperboard-play-bold-duotone" size={24} className="text-black/40" />
-                    <div>
-                      <p className="text-xs font-semibold text-black/70">No titles added yet</p>
-                      <p className="text-[11px] text-black/40 mt-0.5">
-                        Search movies or TV shows above to start building your list
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {draftItems.length > 0 ? (
+                draftItems.map((item) => (
+                  <DraftItemRow
+                    key={getDraftMediaKey(item)}
+                    item={item}
+                    onRemove={handleRemove}
+                  />
+                ))
+              ) : (
+                <div
+                  key="empty-draft"
+                  className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 text-center p-6"
+                >
+                  <Icon icon="solar:clapperboard-play-bold-duotone" size={24} className="text-black/40" />
+                  <div>
+                    <p className="text-xs font-semibold text-black/70">No titles added yet</p>
+                    <p className="text-[11px] text-black/40 mt-0.5">
+                      Search movies or TV shows above to start building your list
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -332,9 +325,7 @@ export default function CreateListModal({ close, data }) {
           </div>
 
           <div className={NAV_ACTION_STYLES.row}>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              transition={NAV_ACTION_SPRING}
+            <button
               type="button"
               onClick={close}
               disabled={isSaving}
@@ -345,11 +336,9 @@ export default function CreateListModal({ close, data }) {
             >
               <Icon icon="solar:close-circle-bold" size={NAV_ACTION_STYLES.icon} />
               <span>Cancel</span>
-            </motion.button>
+            </button>
 
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              transition={NAV_ACTION_SPRING}
+            <button
               type="submit"
               disabled={isSaving || !canSubmit}
               className={getNavActionClass({
@@ -363,7 +352,7 @@ export default function CreateListModal({ close, data }) {
                 className={isSaving ? 'animate-spin' : ''}
               />
               <span>{isSaving ? 'Creating...' : 'Create List'}</span>
-            </motion.button>
+            </button>
           </div>
         </div>
       </form>
@@ -371,27 +360,17 @@ export default function CreateListModal({ close, data }) {
   );
 }
 
-function SearchResultRow({ item, isAdded, onAdd, index = 0 }) {
+function SearchResultRow({ item, isAdded, onAdd, index }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   const posterPath = item?.poster_path;
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -8, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, x: 0, filter: 'blur(0.001px)' }}
-      exit={{ opacity: 0, x: 8, filter: 'blur(3px)' }}
-      transition={{
-        type: 'spring',
-        stiffness: 140,
-        damping: 20,
-        mass: 1.1,
-        delay: index * 0.045,
-      }}
+    <div
       onClick={() => !isAdded && onAdd(item)}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-between p-1 rounded-[16px] border border-transparent transition-colors duration-200 ease-in-out select-none',
+        'group flex w-full cursor-pointer items-center justify-between p-1 rounded-[16px] border border-transparent select-none',
         isAdded
           ? 'cursor-default bg-black/5 opacity-60'
           : 'bg-white hover:bg-black/5 hover:border-black/5',
@@ -431,7 +410,7 @@ function SearchResultRow({ item, isAdded, onAdd, index = 0 }) {
 
       <div
         className={cn(
-          'flex h-8 min-w-8 items-center justify-center gap-1 rounded-xl border px-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 mr-1 shrink-0',
+          'flex h-8 min-w-8 items-center justify-center gap-1 rounded-xl border px-2.5 text-xs font-bold uppercase tracking-wider mr-1 shrink-0',
           isAdded
             ? 'border-transparent bg-info/10 text-info'
             : 'border-black/10 bg-black/5 text-black/70 group-hover:bg-black group-hover:text-white group-hover:border-transparent',
@@ -443,7 +422,7 @@ function SearchResultRow({ item, isAdded, onAdd, index = 0 }) {
         />
         <span>{isAdded ? 'Added' : 'Add'}</span>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -454,18 +433,8 @@ function DraftItemRow({ item, onRemove }) {
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
-    <motion.div
-      layout="position"
-      initial={{ opacity: 0, y: -4, filter: 'blur(3px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, scale: 0.96, filter: 'blur(3px)' }}
-      transition={{
-        layout: { type: 'spring', stiffness: 300, damping: 28 },
-        opacity: { duration: 0.18 },
-        y: { duration: 0.18 },
-        filter: { duration: 0.18 },
-      }}
-      className="group flex w-full items-center justify-between p-1 rounded-[16px] border border-black/5 bg-white transition-colors duration-200 ease-in-out select-none hover:bg-black/5"
+    <div
+      className="group flex w-full items-center justify-between p-1 rounded-[16px] border border-black/5 bg-white select-none hover:bg-black/5"
     >
       <div className="flex min-w-0 items-center gap-3">
         <div className="relative rounded-[14px] h-16 w-12 shrink-0 overflow-hidden">
@@ -505,11 +474,11 @@ function DraftItemRow({ item, onRemove }) {
           e.stopPropagation();
           onRemove(item);
         }}
-        className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/40 transition-colors duration-200 hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 cursor-pointer"
+        className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/40 hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 cursor-pointer"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
       </button>
-    </motion.div>
+    </div>
   );
 }

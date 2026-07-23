@@ -1,16 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
-import {
-  getNavSubmittingMotion,
-  NAV_ACTION_SPRING,
-  NAV_BUTTON_INTERACTION_MOTION,
-  NAV_BUTTON_TAP_MOTION,
-  NAV_CONTENT_TRANSITION,
-} from '@/core/modules/motion';
 import { NAV_SURFACE_RENDER_MODE } from '@/core/modules/nav';
 
 const BUTTON_TONES = Object.freeze({
@@ -27,7 +19,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2 rounded-[16px] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200',
+    'center w-full cursor-pointer gap-2 rounded-[16px] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider',
     resolveButtonTone(tone),
     className,
   );
@@ -108,7 +100,7 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
 
   return (
     <div className="mt-1 flex w-full flex-row items-center gap-2 px-1">
-      <motion.button
+      <button
         type="button"
         disabled={isSubmitting}
         onClick={handleCancel}
@@ -116,12 +108,11 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: 'muted',
           className: 'disabled:cursor-not-allowed',
         })}
-        {...NAV_BUTTON_INTERACTION_MOTION}
       >
         {cancelText}
-      </motion.button>
+      </button>
 
-      <motion.button
+      <button
         type="button"
         disabled={isSubmitting}
         onClick={handleConfirm}
@@ -129,14 +120,9 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
-        animate={getNavSubmittingMotion(isSubmitting)}
-        whileHover={NAV_BUTTON_INTERACTION_MOTION.whileHover}
-        whileFocus={NAV_BUTTON_INTERACTION_MOTION.whileFocus}
-        whileTap={NAV_BUTTON_TAP_MOTION.whileTap}
-        transition={isSubmitting ? NAV_CONTENT_TRANSITION : NAV_ACTION_SPRING}
       >
         {isSubmitting ? confirmLoadingText : confirmText}
-      </motion.button>
+      </button>
     </div>
   );
 }

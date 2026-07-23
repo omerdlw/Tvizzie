@@ -25,25 +25,6 @@ import {
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,
 } from '@/core/constants/index';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const socialButtonTap = Object.freeze({});
-
-const socialRowHoverTap = Object.freeze({});
-
-function getSocialRowAnimation(index = 0) {
-  return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 4 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -4 }),
-    transition: Object.freeze({
-      opacity: { duration: 0.16 },
-      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.02, 0.12) },
-    }),
-  });
-}
-
-const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -55,7 +36,7 @@ const TABS = Object.freeze({
   INBOX: 'inbox',
 });
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5  transition-all duration-300 ease-out';
+  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5';
 const ACTION_CLASSES = {
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
   SUCCESS: `${ROW_BUTTON_CLASS}${SUCCESS_ACTION_TONE_CLASS}`,
@@ -477,11 +458,8 @@ function SocialUserRow({ close, user, action, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   return (
-    <motion.div
-      {...getSocialRowAnimation(index)}
-      {...socialRowHoverTap}
-      layout
-      className="flex items-center justify-between gap-3 border-b border-black/10 p-3 transition-colors duration-300 ease-out last:border-none hover:bg-white lg:p-4"
+    <div
+      className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4"
     >
       <Link
         href={`/account/${user.username || user.id}`}
@@ -504,7 +482,7 @@ function SocialUserRow({ close, user, action, index }) {
         </div>
       </Link>
       {action}
-    </motion.div>
+    </div>
   );
 }
 function UserAction({
@@ -530,47 +508,43 @@ function UserAction({
   if (tab === TABS.INBOX) {
     return (
       <div className="flex items-center gap-2">
-        <MotionButton
+        <Button
           onClick={() => onAccept(user.id)}
           disabled={isPending}
-          {...socialButtonTap}
           className={ACTION_CLASSES.SUCCESS}
         >
           {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
-        </MotionButton>
-        <MotionButton
+        </Button>
+        <Button
           onClick={() => onReject(user.id)}
           disabled={isPending}
-          {...socialButtonTap}
           className={ACTION_CLASSES.ERROR}
         >
           {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
-        </MotionButton>
+        </Button>
       </div>
     );
   }
   if (tab === TABS.FOLLOWING && isOwnProfile) {
     return (
-      <MotionButton
+      <Button
         onClick={() => onUnfollow(user.id)}
         disabled={isPending}
-        {...socialButtonTap}
         className={ACTION_CLASSES.ERROR}
       >
         {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
-      </MotionButton>
+      </Button>
     );
   }
   if (tab === TABS.FOLLOWERS && isOwnProfile) {
     return (
-      <MotionButton
+      <Button
         onClick={() => onRemoveFollower(user.id)}
         disabled={isPending}
-        {...socialButtonTap}
         className={ACTION_CLASSES.ERROR}
       >
         {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
-      </MotionButton>
+      </Button>
     );
   }
   if (canShowFollowAction) {
@@ -578,14 +552,13 @@ function UserAction({
     const followLabel =
       pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow';
     return (
-      <MotionButton
+      <Button
         onClick={() => onFollow(user.id)}
         disabled={isFollowPending || isPending}
-        {...socialButtonTap}
         className={ACTION_CLASSES.INFO}
       >
         {followLabel}
-      </MotionButton>
+      </Button>
     );
   }
   return null;

@@ -5,28 +5,6 @@ import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } f
 import { Container } from '@/core/modules/modal';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const socialProofSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 220,
-  damping: 26,
-  mass: 0.9,
-});
-
-const socialProofHoverTap = Object.freeze({});
-
-function getSocialProofRowAnimation(index = 0) {
-  return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 4 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -4 }),
-    transition: Object.freeze({
-      opacity: { duration: 0.16 },
-      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.02, 0.12) },
-    }),
-  });
-}
 
 // --------------------------------------------------
 // HELPERS
@@ -38,108 +16,89 @@ function buildUserActionMap(socialProof) {
     users.forEach((user) => {
       if (!user?.id) return;
       const existing = userMap.get(user.id) || {
-        actions: [],
         user,
+        actions: new Set(),
       };
-      if (!existing.actions.includes(action)) {
-        existing.actions.push(action);
-      }
+      existing.actions.add(action);
       userMap.set(user.id, existing);
     });
   };
-  attachAction(socialProof?.likes?.users, 'Like');
-  attachAction(socialProof?.watchlist?.users, 'Watchlist');
-  attachAction(socialProof?.reviews?.users, 'Review');
-  return Array.from(userMap.values());
+
+  attachAction(socialProof?.likedBy, 'liked');
+  attachAction(socialProof?.watchedBy, 'watched');
+  attachAction(socialProof?.watchlistedBy, 'watchlisted');
+
+  return Array.from(userMap.values()).map(({ user, actions }) => ({
+    user,
+    actions: Array.from(actions),
+  }));
 }
+
 function formatActionSummary(actions = []) {
-  const actionMap = {
-    Review: 'Reviewed',
-    Like: 'Liked',
-    Watchlist: 'Watchlisted',
-  };
-  const ordered = ['Review', 'Like', 'Watchlist'];
-  const phrases = ordered
-    .filter((action) => actions.includes(action))
-    .map((action) => actionMap[action] || action);
-  if (phrases.length === 0) return '';
-  return phrases.join(' · ');
+  if (!actions.length) return 'Engaged';
+  if (actions.length === 1) {
+    if (actions[0] === 'liked') return 'Liked this';
+    if (actions[0] === 'watched') return 'Watched this';
+    if (actions[0] === 'watchlisted') return 'Watchlisted this';
+  }
+  return actions.map((item) => item.toUpperCase()).join(' • ');
 }
 
 // --------------------------------------------------
 // COMPONENT LOGIC
 // --------------------------------------------------
 
-export default function MediaSocialProofModal({ close, data, header }) {
-  const userActions = buildUserActionMap(data?.socialProof);
-  const isSidePosition = header?.position === 'left' || header?.position === 'right';
-  const summaryText = (data?.summaryParts || []).join(' · ');
-  return (
-    <ModalView
-      close={close}
-      header={header}
-      userActions={userActions}
-      isSidePosition={isSidePosition}
-      summaryText={summaryText}
-    />
-  );
+export default function MediaSocialProofModal({ close, data }) {
+  const userEntries = buildUserActionMap(data?.socialProof);
+  if (!userEntries.length) return null;
+
+  return <ModalView close={close} userEntries={userEntries} title={data?.title} />;
 }
 
 // --------------------------------------------------
 // VIEW
 // --------------------------------------------------
 
-function ModalView({ close, header, userActions, isSidePosition, summaryText }) {
-  const containerClass = isSidePosition
-    ? 'h-full max-h-full w-full sm:w-[460px]'
-    : 'max-h-[78dvh] w-full sm:w-[min(1400px,96vw)]';
+function ModalView({ close, userEntries, title }) {
   return (
     <Container
-      className={containerClass}
+      className="relative max-h-[85vh] w-[min(92vw,560px)] rounded-[24px]"
       close={close}
-      header={header}
-      bodyClassName="p-0"
-      footer={{
-        left: <span className="text-xs opacity-70">{userActions.length} people</span>,
-        right: summaryText ? <span className="text-xs opacity-70">{summaryText}</span> : null,
+      header={{
+        left: (
+          <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">
+            Friends activity
+          </h2>
+        ),
+        right: title ? <span className="truncate text-xs text-black/50">{title}</span> : null,
       }}
+      bodyClassName="p-0"
     >
-      <div className="flex h-full min-h-0 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {userActions.length === 0 ? (
-            <div className={cn('center h-full w-full py-20 text-sm font-medium text-black/50')}>
-              No social activity from people you follow yet
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-col">
-              <AnimatePresence mode="popLayout">
-                {userActions.map(({ actions, user }, index) => (
-                  <SocialUserRow
-                    key={user.id}
-                    close={close}
-                    user={user}
-                    actions={actions}
-                    index={index}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col">
+        {userEntries.map(({ user, actions }, index) => (
+          <SocialUserRow
+            key={user.id || user.username || index}
+            close={close}
+            user={user}
+            actions={actions}
+            index={index}
+          />
+        ))}
       </div>
     </Container>
   );
 }
+
 function SocialUserRow({ close, user, actions, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   const username = user?.username || 'user';
   return (
-    <motion.div {...getSocialProofRowAnimation(index)} {...socialProofHoverTap} layout>
+    <div>
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 transition-colors duration-300 ease-out last:border-none hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 last:border-none hover:bg-white lg:p-4"
       >
         <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
           <AdaptiveImage
@@ -156,7 +115,7 @@ function SocialUserRow({ close, user, actions, index }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm">
-            <span className="font-semibold">@{username}</span> engaged with this title.
+            <span className="font-semibold">@{username}</span>
           </span>
           <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
             {formatActionSummary(actions)}
@@ -166,12 +125,12 @@ function SocialUserRow({ close, user, actions, index }) {
         <div className="flex shrink-0 items-center gap-1.5 self-center">
           <span
             aria-hidden="true"
-            className="center size-7  border border-black/10 text-black/70"
+            className="center size-7 border border-black/10 text-black/70"
           >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

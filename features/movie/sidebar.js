@@ -4,7 +4,6 @@ import Link from 'next/link';
 import {
   MOVIE_ROUTE_TIMING,
   MovieSurfaceReveal,
-  getSurfaceItemMotion,
 } from '@/features/media/static-route-elements';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
@@ -37,11 +36,11 @@ function SidebarRow({ icon, children }) {
   );
 }
 
-function SidebarMotionItem({ children, delay = 0, index = 0 }) {
+function SidebarItem({ children, delay = 0, index = 0 }) {
   return <div>{children}</div>;
 }
 
-function SidebarMotionChip({ children, delay = 0, index = 0 }) {
+function SidebarChip({ children, delay = 0, index = 0 }) {
   return <span className="inline-flex">{children}</span>;
 }
 
@@ -99,11 +98,11 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <SidebarMotionItem delay={delay} index={0}>
+      <SidebarItem delay={delay} index={0}>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">
           {label}
         </p>
-      </SidebarMotionItem>
+      </SidebarItem>
       <div
         className={cn(
           isTagGroup
@@ -112,7 +111,7 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
         )}
       >
         {items.map((item, index) => (
-          <SidebarMotionChip
+          <SidebarChip
             key={item}
             delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger}
             index={index}
@@ -127,7 +126,7 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
             >
               {item}
             </span>
-          </SidebarMotionChip>
+          </SidebarChip>
         ))}
       </div>
     </div>
@@ -294,13 +293,13 @@ export default function Sidebar({
 
       <div className="flex flex-col gap-1">
         {rows.map((row, index) => (
-          <SidebarMotionItem
+          <SidebarItem
             key={row.id}
             delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay}
             index={index}
           >
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </SidebarMotionItem>
+          </SidebarItem>
         ))}
       </div>
     </div>

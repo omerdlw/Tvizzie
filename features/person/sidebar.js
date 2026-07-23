@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import {
   PERSON_ROUTE_TIMING,
   PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
 } from '@/features/media/static-route-elements';
 import PersonBio from '@/features/person/bio';
 import SocialLinks from '@/features/person/social-links';
@@ -45,7 +44,7 @@ function SidebarRow({ icon, label, value }) {
     </div>
   );
 }
-function SidebarMotionItem({ children, delay = 0, index = 0 }) {
+function SidebarItem({ children, delay = 0, index = 0 }) {
   return <div>{children}</div>;
 }
 export default function PersonSidebar({ person, age }) {
@@ -126,13 +125,13 @@ export default function PersonSidebar({ person, age }) {
 
       <div className="flex flex-col gap-1">
         {detailRows.map((row, index) => (
-          <SidebarMotionItem
+          <SidebarItem
             key={`${row.label}-${row.value}`}
             delay={PERSON_ROUTE_TIMING.sidebar.rowsDelay}
             index={index}
           >
             <SidebarRow icon={row.icon} label={row.label} />
-          </SidebarMotionItem>
+          </SidebarItem>
         ))}
       </div>
 

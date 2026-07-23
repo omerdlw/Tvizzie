@@ -19,48 +19,6 @@ import {
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const pickerSpringTransition = Object.freeze({
-  type: 'spring',
-  stiffness: 220,
-  damping: 25,
-  mass: 0.95,
-});
-
-const pickerButtonSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 380,
-  damping: 24,
-  mass: 0.65,
-});
-
-const pickerButtonTap = Object.freeze({});
-
-function getPickerRowAnimation(index = 0) {
-  const delay = Math.min(index * 0.04, 0.3);
-  return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 8, filter: 'blur(4px)' }),
-    animate: Object.freeze({ opacity: 1, y: 0, filter: 'blur(0px)' }),
-    exit: Object.freeze({
-      opacity: 0,
-      y: 6,
-      filter: 'blur(3px)',
-      transition: Object.freeze({
-        opacity: { duration: 0.15, ease: 'easeInOut' },
-        y: { duration: 0.18, ease: 'easeInOut' },
-        filter: { duration: 0.15, ease: 'easeInOut' },
-      }),
-    }),
-    transition: Object.freeze({
-      opacity: { duration: 0.28, ease: [0.16, 1, 0.3, 1], delay },
-      filter: { duration: 0.3, ease: [0.16, 1, 0.3, 1], delay },
-      y: { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.35, delay },
-    }),
-  });
-}
-
-const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -286,15 +244,14 @@ function ModalView({
           </h2>
         ),
         right: (
-          <MotionButton
+          <Button
             type="button"
             onClick={handleOpenCreator}
             disabled={isApplying}
-            {...pickerButtonTap}
             className={CANCEL_BUTTON_CLASS}
           >
             Create new list
-          </MotionButton>
+          </Button>
         ),
       }}
       close={close}
@@ -307,24 +264,22 @@ function ModalView({
         ),
         right: (
           <>
-            <MotionButton
+            <Button
               type="button"
               onClick={close}
               disabled={isApplying}
-              {...pickerButtonTap}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </MotionButton>
-            <MotionButton
+            </Button>
+            <Button
               type="button"
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
-              {...pickerButtonTap}
               className={ACTION_BUTTON_CLASS}
             >
               {isApplying ? 'Applying' : 'Apply changes'}
-            </MotionButton>
+            </Button>
           </>
         ),
       }}
@@ -342,22 +297,19 @@ function ModalView({
               </p>
             </div>
           )}
-          {!isLoading && lists.length > 0 && (
-            <AnimatePresence mode="popLayout">
-              {lists.map((list, index) => {
-                const isSelected = Boolean(draftMemberships[list.id]);
-                return (
-                  <ListRow
-                    key={list.id}
-                    index={index}
-                    list={list}
-                    isSelected={isSelected}
-                    onToggle={() => handleToggleDraft(list.id)}
-                  />
-                );
-              })}
-            </AnimatePresence>
-          )}
+          {!isLoading && lists.length > 0 &&
+            lists.map((list, index) => {
+              const isSelected = Boolean(draftMemberships[list.id]);
+              return (
+                <ListRow
+                  key={list.id}
+                  index={index}
+                  list={list}
+                  isSelected={isSelected}
+                  onToggle={() => handleToggleDraft(list.id)}
+                />
+              );
+            })}
         </div>
       </section>
     </Container>
@@ -366,13 +318,11 @@ function ModalView({
 
 function ListRow({ list, isSelected, onToggle, index }) {
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onToggle}
-      {...getPickerRowAnimation(index)}
-      layout
       className={cn(
-        'group flex w-full items-center gap-4 rounded-[12px] border p-3 text-left transition-all duration-300 ease-out',
+        'group flex w-full items-center gap-4 rounded-[12px] border p-3 text-left',
         isSelected
           ? 'bg-info/10 border-info/20'
           : 'hover:bg-primary border-black/5 hover:border-black/10',
@@ -387,17 +337,17 @@ function ListRow({ list, isSelected, onToggle, index }) {
         )}
       </div>
 
-      <motion.span
+      <span
         className={cn(
-          'mr-1.5 flex size-[22px] shrink-0 items-center justify-center rounded-[10px] border transition-all duration-300 ease-in-out',
+          'mr-1.5 flex size-[22px] shrink-0 items-center justify-center rounded-[10px] border',
           isSelected
             ? 'border-info bg-info text-primary'
             : 'border-black/5 text-black/50 group-hover:border-black/50 group-hover:text-black/70',
         )}
       >
         <Icon icon="material-symbols:check-rounded" size={16} />
-      </motion.span>
-    </motion.button>
+      </span>
+    </button>
   );
 }
 

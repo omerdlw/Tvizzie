@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
+import { cn } from '@/core/utils/classnames';
 import { useClickOutside } from '@/core/hooks/use-click-outside';
 import { useNavigation } from '@/core/modules/nav/hooks';
 import { useNavKeyboard } from '@/core/modules/nav/hooks/use-nav-keyboard';
@@ -23,13 +23,6 @@ import {
   getNavStackClassName,
   shouldSyncStackHover,
 } from './utils';
-import {
-  getNavBackdropMotion,
-  getNavContainerMotion,
-  NAV_BACKDROP_INITIAL,
-  NAV_BACKDROP_TRANSITION,
-  NAV_CONTAINER_SPRING,
-} from '@/core/modules/motion';
 
 export { NavigationProvider, useNavigationActions, useNavigationContext, useNavigationState } from './context';
 export {
@@ -61,11 +54,6 @@ export default function Nav() {
 
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [initialAnimate, setInitialAnimate] = useState(false);
-
-  useEffect(() => {
-    setInitialAnimate(true);
-  }, []);
 
   const navRef = useRef(null);
   const { portalTarget, stackWidth } = useNavViewport(activeItem);
@@ -215,32 +203,24 @@ export default function Nav() {
 
   const navContent = (
     <>
-      <motion.div
-        className="fixed inset-0 cursor-pointer bg-white/40"
-        style={{
-          zIndex: Z_INDEX.NAV_BACKDROP,
-          pointerEvents: isBackdropVisible ? 'auto' : 'none',
-        }}
-        initial={NAV_BACKDROP_INITIAL}
-        animate={getNavBackdropMotion(isBackdropVisible)}
-        transition={NAV_BACKDROP_TRANSITION}
-        onClick={handleOutsideDismiss}
-      />
+      {isBackdropVisible ? (
+        <div
+          className={cn('fixed inset-0 bg-white/40 cursor-pointer')}
+          style={{
+            zIndex: Z_INDEX.NAV_BACKDROP,
+          }}
+          onClick={handleOutsideDismiss}
+        />
+      ) : null}
       <div
         id="nav-card-stack"
         ref={navRef}
         className={stackClassName}
         style={{ zIndex: Z_INDEX.NAV, width: stackWidth, maxWidth: '100vw' }}
       >
-        <motion.div
-          style={{ position: 'relative' }}
-          animate={getNavContainerMotion(containerHeight)}
-          transition={NAV_CONTAINER_SPRING}
-        >
-          <AnimatePresence initial={initialAnimate} mode="sync">
-            {renderedNavItems}
-          </AnimatePresence>
-        </motion.div>
+        <div style={{ position: 'relative', height: `${containerHeight}px` }}>
+          {renderedNavItems}
+        </div>
       </div>
     </>
   );

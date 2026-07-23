@@ -1,21 +1,17 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
-import { MODAL_ACTION_MOTION, MODAL_TITLE_MOTION } from '@/core/modules/motion';
 
 function CloseButton({ onClick }) {
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
-      className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 transition-all duration-300 ease-out hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
-      {...MODAL_ACTION_MOTION}
+      className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </motion.button>
+    </button>
   );
 }
 
@@ -28,7 +24,7 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
   const isAttachedBottom = placement === 'attached-bottom';
 
   return (
-    <motion.div
+    <div
       className={cn(
         'bg-primary flex items-center justify-between gap-2 border border-black/10 px-3 py-2',
         placement === 'embedded' && 'w-full border-x-0 border-t-0',
@@ -37,7 +33,6 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
         className,
       )}
       style={style}
-      {...MODAL_TITLE_MOTION}
     >
       <div className="min-w-0 flex-1 px-1 sm:px-2">
         <h2 id={titleId} className="text-base font-semibold tracking-wide text-black">
@@ -46,6 +41,6 @@ export function ModalTitle({ title, close, titleId, placement = 'embedded', clas
       </div>
 
       <CloseButton onClick={close} />
-    </motion.div>
+    </div>
   );
 }

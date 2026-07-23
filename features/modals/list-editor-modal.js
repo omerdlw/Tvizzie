@@ -10,39 +10,6 @@ import { useToast } from '@/core/modules/notification';
 import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists';
 import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const editorSpringTransition = Object.freeze({
-  type: 'spring',
-  stiffness: 310,
-  damping: 29,
-  mass: 0.8,
-});
-
-const editorButtonSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 440,
-  damping: 23,
-  mass: 0.58,
-});
-
-const editorButtonTap = Object.freeze({});
-
-const editorInputMotion = Object.freeze({});
-
-function getEditorRowAnimation(index = 0) {
-  return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 4 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -4 }),
-    transition: Object.freeze({
-      opacity: { duration: 0.16 },
-      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
-    }),
-  });
-}
-
-const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -218,20 +185,18 @@ function ModalView({
         ),
         right: (
           <>
-            <MotionButton
+            <Button
               type="button"
               onClick={close}
               disabled={isSaving}
-              {...editorButtonTap}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </MotionButton>
-            <MotionButton
+            </Button>
+            <Button
               type="submit"
               form={FORM_ID}
               disabled={isSaving || !canSubmit}
-              {...editorButtonTap}
               className={ACTION_BUTTON_CLASS}
             >
               {isSaving
@@ -241,14 +206,14 @@ function ModalView({
                 : isEditing
                   ? 'Update list'
                   : 'Create list'}
-            </MotionButton>
+            </Button>
           </>
         ),
       }}
     >
       <form id={FORM_ID} onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="flex flex-col gap-2.5">
-          <motion.div {...editorInputMotion}>
+          <div>
             <Input
               value={form.title}
               onChange={(event) => handleChange('title', event.target.value)}
@@ -256,13 +221,13 @@ function ModalView({
               autoFocus
               className={{
                 wrapper:
-                  'flex h-10 items-center  border border-black/10 bg-black/5 px-3.5 transition-all duration-300 ease-out focus-within:border-black/20',
+                  'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
                 input:
-                  'h-full w-full  bg-transparent text-sm text-black outline-none placeholder:text-black/50',
+                  'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
               }}
             />
-          </motion.div>
-          <motion.div {...editorInputMotion}>
+          </div>
+          <div>
             <Textarea
               value={form.description}
               onChange={(event) => handleChange('description', event.target.value)}
@@ -270,12 +235,12 @@ function ModalView({
               maxHeight={120}
               className={{
                 wrapper:
-                  'flex min-h-10  border border-black/10 bg-black/5 px-3.5 py-2.5 transition-all duration-300 ease-out focus-within:border-black/20 sm:min-h-10',
+                  'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
                 textarea:
-                  'max-h-[120px] min-h-5 w-full resize-none  bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
+                  'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
               }}
             />
-          </motion.div>
+          </div>
         </div>
 
         {isEditing ? (
@@ -284,29 +249,24 @@ function ModalView({
             data-lenis-prevent-wheel
             className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]"
           >
-            <AnimatePresence mode="popLayout">
-              {draftItems.length > 0 ? (
-                draftItems.map((item, index) => (
-                  <ListItemRow
-                    key={getItemKey(item)}
-                    index={index}
-                    item={item}
-                    onRemove={handleRemoveItem}
-                  />
-                ))
-              ) : (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex h-28 flex-col items-center justify-center gap-2  border border-dashed border-black/10 bg-black/5 text-center"
-                >
-                  <Icon icon="solar:list-broken" size={24} className="text-black/50" />
-                  <p className="text-xs text-black/50">No titles in this list</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {draftItems.length > 0 ? (
+              draftItems.map((item, index) => (
+                <ListItemRow
+                  key={getItemKey(item)}
+                  index={index}
+                  item={item}
+                  onRemove={handleRemoveItem}
+                />
+              ))
+            ) : (
+              <div
+                key="empty"
+                className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center"
+              >
+                <Icon icon="solar:list-broken" size={24} className="text-black/50" />
+                <p className="text-xs text-black/50">No titles in this list</p>
+              </div>
+            )}
           </div>
         ) : null}
       </form>
@@ -316,24 +276,21 @@ function ModalView({
 function ListItemRow({ item, onRemove, index }) {
   const title = getItemTitle(item);
   return (
-    <motion.div
-      {...getEditorRowAnimation(index)}
-      layout
-      className="group bg-primary flex min-h-10 items-center gap-3  border border-black/5 px-3 py-1.5 transition-all duration-300 ease-out hover:border-black/10"
+    <div
+      className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10"
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
       </div>
 
-      <motion.button
+      <button
         type="button"
         onClick={() => onRemove(item)}
-        {...editorButtonTap}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0  border border-transparent text-black/35 opacity-100 transition-all duration-300 ease-out sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 cursor-pointer"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
-      </motion.button>
-    </motion.div>
+      </button>
+    </div>
   );
 }

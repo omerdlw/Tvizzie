@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  getSurfaceItemMotion,
   useInitialItemRevealEnabled,
 } from '@/features/media/static-route-elements';
 import MediaCard from '@/ui/media/media-card';

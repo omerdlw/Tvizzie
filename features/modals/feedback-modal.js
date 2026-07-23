@@ -11,27 +11,6 @@ import { requestApiJson } from '@/core/services/shared/client';
 import { getStorageItem, setStorageItem } from '@/core/utils/client-utils';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
-import { motion } from 'framer-motion';
-
-const feedbackSpringTransition = Object.freeze({
-  type: 'spring',
-  stiffness: 290,
-  damping: 25,
-  mass: 0.8,
-});
-
-const feedbackButtonSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 400,
-  damping: 22,
-  mass: 0.55,
-});
-
-const feedbackButtonTap = Object.freeze({});
-
-const feedbackInputMotion = Object.freeze({});
-
-const MotionButton = motion(Button);
 
 // --------------------------------------------------
 // CONSTANTS
@@ -162,23 +141,21 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
       footer={{
         right: (
           <>
-            <MotionButton
+            <Button
               type="button"
-              onClick={close}
-              {...feedbackButtonTap}
+              onClick={() => close()}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </MotionButton>
-            <MotionButton
+            </Button>
+            <Button
               type="submit"
               form={FORM_ID}
               disabled={isSaving}
-              {...feedbackButtonTap}
               className={ACTION_BUTTON_CLASS}
             >
               {isSaving ? 'Sending' : 'Send feedback'}
-            </MotionButton>
+            </Button>
           </>
         ),
       }}
@@ -190,7 +167,7 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
             Share general product, UX, or quality feedback.
           </p>
         </div>
-        <motion.div {...feedbackInputMotion} className="space-y-2">
+        <div className="space-y-2">
           <Textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -198,12 +175,12 @@ function ModalView({ close, header, message, setMessage, isSaving, handleSubmit 
             placeholder="Your message"
             className={{
               wrapper:
-                'focus-within:bg-primary rounded-[12px] border border-black/10 bg-white transition-all duration-300 ease-out focus-within:border-black/15 hover:border-black/15',
+                'focus-within:bg-primary rounded-[12px] border border-black/10 bg-white focus-within:border-black/15 hover:border-black/15',
               textarea:
                 'min-h-[160px] w-full  bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/50',
             }}
           />
-        </motion.div>
+        </div>
       </form>
     </Container>
   );

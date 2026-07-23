@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
 import { Spinner } from '@/ui/loadings/spinner';
-import { AnimatePresence, motion } from 'framer-motion';
 
 // --------------------------------------------------
 // HELPERS
@@ -65,12 +64,7 @@ function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoad
           aspectRatio: String(aspectRatio),
         }}
       >
-        <motion.div
-          className="absolute inset-0 h-full w-full"
-          initial={{ opacity: 0, scale: 0.99, filter: 'blur(6px)' }}
-          animate={isLoaded ? { opacity: 1, scale: 1, filter: 'blur(0px)' } : {}}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
-        >
+        <div className="absolute inset-0 h-full w-full">
           <Image
             src={`${TMDB_IMG}/original${filePath}`}
             className="object-contain"
@@ -80,20 +74,12 @@ function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoad
             alt={data?.name || 'Preview image'}
             fill
           />
-        </motion.div>
-        <AnimatePresence>
-          {!isLoaded && (
-            <motion.div
-              key="spinner"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, filter: 'blur(4px)' }}
-              transition={{ duration: 0.26 }}
-              className="center absolute inset-0 bg-black/5"
-            >
-              <Spinner size={40} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
+        {!isLoaded && (
+          <div className="center absolute inset-0 bg-black/5">
+            <Spinner size={40} />
+          </div>
+        )}
       </div>
     </Container>
   );

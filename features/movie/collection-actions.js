@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { MOVIE_ROUTE_TIMING, getSurfaceItemMotion } from '@/features/media/static-route-elements';
+import { MOVIE_ROUTE_TIMING } from '@/features/media/static-route-elements';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
@@ -121,7 +121,7 @@ function ActionButton({
     </button>
   );
 }
-function ActionMotionItem({ children, index = 0 }) {
+function ActionItem({ children, index = 0 }) {
   return <div>{children}</div>;
 }
 export default function CollectionActions({ media }) {
@@ -425,18 +425,18 @@ export default function CollectionActions({ media }) {
   return (
     <div className="flex flex-col gap-2">
       {canGoToMedia ? (
-        <ActionMotionItem index={0}>
+        <ActionItem index={0}>
           <ActionButton
             icon="solar:clapperboard-play-bold"
             label={mediaSnapshot.entityType === 'tv' ? 'Go to Series' : 'Go to Movie'}
             onClick={handleGoToMedia}
             palette="neutral"
           />
-        </ActionMotionItem>
+        </ActionItem>
       ) : null}
 
       {showLikeAction ? (
-        <ActionMotionItem index={1}>
+        <ActionItem index={1}>
           <ActionButton
             active={state.liked}
             disabled={state.loadingLike || state.submittingLike}
@@ -449,7 +449,7 @@ export default function CollectionActions({ media }) {
             onClick={handleLikeClick}
             palette="like"
           />
-        </ActionMotionItem>
+        </ActionItem>
       ) : null}
 
       <div
@@ -458,7 +458,7 @@ export default function CollectionActions({ media }) {
           showWatchlistAction ? 'min-[460px]:grid-cols-2' : '',
         )}
       >
-        <ActionMotionItem index={2}>
+        <ActionItem index={2}>
           <ActionButton
             active={state.watched}
             disabled={state.loadingWatched || state.submittingWatched}
@@ -475,10 +475,10 @@ export default function CollectionActions({ media }) {
             onClick={handleWatchedClick}
             palette="watched"
           />
-        </ActionMotionItem>
+        </ActionItem>
 
         {showWatchlistAction ? (
-          <ActionMotionItem index={3}>
+          <ActionItem index={3}>
             <ActionButton
               active={state.watchlist}
               disabled={state.loadingWatchlist || state.submittingWatchlist}
@@ -495,7 +495,7 @@ export default function CollectionActions({ media }) {
               onClick={handleWatchlistClick}
               palette="watchlist"
             />
-          </ActionMotionItem>
+          </ActionItem>
         ) : null}
       </div>
 
@@ -505,24 +505,24 @@ export default function CollectionActions({ media }) {
           auth.isAuthenticated ? 'min-[460px]:grid-cols-2' : '',
         )}
       >
-        <ActionMotionItem index={4}>
+        <ActionItem index={4}>
           <ActionButton
             icon="solar:list-broken"
             label="Add To List"
             onClick={handleOpenListPicker}
             palette="neutral"
           />
-        </ActionMotionItem>
+        </ActionItem>
 
         {auth.isAuthenticated ? (
-          <ActionMotionItem index={5}>
+          <ActionItem index={5}>
             <ActionButton
               icon="solar:tv-bold"
               label="Where to Watch"
               onClick={handleOpenWatchProviders}
               palette="neutral"
             />
-          </ActionMotionItem>
+          </ActionItem>
         ) : null}
       </div>
     </div>

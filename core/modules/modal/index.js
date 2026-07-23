@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 import { Z_INDEX } from '@/core/constants';
@@ -15,13 +13,6 @@ import {
   MODAL_POSITIONS,
 } from '@/core/modules/modal/config';
 import { useModal } from '@/core/modules/modal/context';
-import {
-  getModalPanelMotion,
-  MODAL_ACTION_MOTION,
-  MODAL_BACKDROP_MOTION,
-  MODAL_LAYER_MOTION,
-  MODAL_LAYER_SWITCHER_MOTION,
-} from '@/core/modules/motion';
 
 import { useModalRegistry } from '../registry/context';
 import { POSITION_CLASSES } from './utils';
@@ -107,15 +98,11 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <motion.div
-      className="center gap-1.5 border-t border-black/10 bg-white px-3 py-2 shrink-0"
-      {...MODAL_LAYER_SWITCHER_MOTION}
-    >
-      <motion.button
+    <div className="center gap-1.5 border-t border-black/10 bg-white px-3 py-2 shrink-0">
+      <button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase transition-colors hover:bg-black/5 hover:text-black"
-        {...MODAL_ACTION_MOTION}
+        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -127,14 +114,14 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
           />
         </svg>
         {getModalLabel(previousEntry.modalType)}
-      </motion.button>
+      </button>
 
       <span className="text-[10px] text-black/20">/</span>
 
       <span className="bg-primary rounded-[12px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
-    </motion.div>
+    </div>
   );
 }
 
@@ -219,7 +206,7 @@ function ModalLayer({
   }
 
   return (
-    <motion.div
+    <div
       key={entry.id}
       role="dialog"
       aria-modal={isTopModal}
@@ -237,18 +224,16 @@ function ModalLayer({
         isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
         activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport && 'px-3',
       )}
-      {...MODAL_LAYER_MOTION}
     >
       {isTopModal ? (
-        <motion.div
+        <div
           className="fixed inset-0 bg-white/40 backdrop-blur-md"
           style={{ zIndex: backdropZIndex }}
           onClick={() => closeModal(null, entry.id)}
-          {...MODAL_BACKDROP_MOTION}
         />
       ) : null}
 
-      <motion.div
+      <div
         ref={modalRef}
         className={cn(
           'relative flex max-w-full flex-col',
@@ -262,9 +247,8 @@ function ModalLayer({
           zIndex: modalZIndex,
         }}
         onClick={(event) => event.stopPropagation()}
-        {...getModalPanelMotion(activePosition, isTopModal)}
       >
-        <motion.div
+        <div
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
@@ -304,7 +288,6 @@ function ModalLayer({
                 !isMobileViewport && (isLeftModal ? 'border-l-0' : 'border-r-0'),
               ],
           )}
-          layout="position"
         >
           <ModuleError name={entry.modalType}>
             <SpecificModalComponent
@@ -327,9 +310,9 @@ function ModalLayer({
               onSwitchToPrevious={() => closeModal(null, entry.id)}
             />
           )}
-        </motion.div>
-      </motion.div>
-    </motion.div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -388,7 +371,7 @@ export default function Modal() {
   }
 
   return createPortal(
-    <AnimatePresence initial={false}>
+    <>
       {modalStack.map((entry, index) => (
         <ModalLayer
           key={entry.id}
@@ -401,7 +384,7 @@ export default function Modal() {
           modalStack={modalStack}
         />
       ))}
-    </AnimatePresence>,
+    </>,
     document.body,
   );
 }

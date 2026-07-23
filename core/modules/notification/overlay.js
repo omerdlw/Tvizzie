@@ -1,8 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
-import { getNotificationActionMotion } from '@/core/modules/motion';
 import { normalizeFeedbackText } from '@/core/utils/feedback';
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
@@ -38,19 +35,17 @@ export function NotificationOverlay({ notification, onDismiss }) {
     >
       <div className="flex flex-col gap-3 p-4">
         {dismissible ? (
-          <motion.button
+          <button
             type="button"
             aria-label="Dismiss notification"
             onClick={(e) => {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 -translate-y-2/4 right-2.5 size-8 cursor-pointer rounded-[10px] border border-black/5 transition-colors hover:bg-black/5 hover:text-black"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="center absolute top-2/4 -translate-y-2/4 right-2.5 size-8 cursor-pointer rounded-[10px] border border-black/5 hover:bg-black/5 hover:text-black"
           >
             <Icon icon="material-symbols:close-rounded" size={14} />
-          </motion.button>
+          </button>
         ) : null}
 
         <div className={cn('space-y-1', dismissible && 'pr-7')}>
@@ -62,7 +57,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
         {actions.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {actions.map((action, index) => (
-              <motion.button
+              <button
                 key={action.label || index}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
@@ -71,11 +66,10 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-colors hover:border-black/10 hover:bg-black/10"
-                {...getNotificationActionMotion(index)}
+                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black hover:border-black/10 hover:bg-black/10"
               >
                 {action.label}
-              </motion.button>
+              </button>
             ))}
           </div>
         ) : null}

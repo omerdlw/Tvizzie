@@ -1,24 +1,17 @@
 'use client';
 
 import { isValidElement } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
 
 import { MODAL_POSITIONS } from '@/core/modules/modal/config';
-import {
-  MODAL_ACTION_MOTION,
-  MODAL_BODY_MOTION,
-  MODAL_FOOTER_MOTION,
-  MODAL_HEADER_MOTION,
-} from '@/core/modules/motion';
 
 export const CANCEL_BUTTON_CLASS =
-  'h-8 shrink-0 border rounded-[12px] border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase  text-black/70 hover:bg-black/5 hover:text-black transition-all duration-300 ease-out';
+  'h-8 shrink-0 border rounded-[12px] border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 hover:bg-black/5 hover:text-black';
 
 export const ACTION_BUTTON_CLASS =
-  'hover:bg-info hover:border-info rounded-[12px] hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white  transition-all duration-300 ease-out disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
+  'hover:bg-info hover:border-info rounded-[12px] hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
 
 const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
 
@@ -80,15 +73,14 @@ function CloseButton({ close, label = 'Close modal' }) {
   }
 
   return (
-    <motion.button
+    <button
       type="button"
       aria-label={label}
       onClick={close}
-      className="inline-flex size-8 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 transition-all duration-300 ease-out hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
-      {...MODAL_ACTION_MOTION}
+      className="inline-flex size-8 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </motion.button>
+    </button>
   );
 }
 
@@ -142,63 +134,56 @@ export default function Container({
 
   return (
     <div className={getContainerClassName({ className, position: resolvedPosition })}>
-      <AnimatePresence initial={false}>
-        {shouldRenderHeader ? (
-          <motion.div
-            className={cn(
-              hasSlotContent(headerCenter)
-                ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
-                : 'flex justify-between',
-              'items-center gap-3 px-4 py-3',
-              headerIsSticky && 'sticky top-0 z-10',
-            )}
-            {...MODAL_HEADER_MOTION}
-          >
-            <div className="min-w-0">{headerLeft}</div>
-            {hasSlotContent(headerCenter) && (
-              <div className="flex items-center justify-center">{headerCenter}</div>
-            )}
-            <div className="min-w-0">{headerRight}</div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {shouldRenderHeader ? (
+        <div
+          className={cn(
+            hasSlotContent(headerCenter)
+              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+              : 'flex justify-between',
+            'items-center gap-3 px-4 py-3',
+            headerIsSticky && 'sticky top-0 z-10',
+          )}
+        >
+          <div className="min-w-0">{headerLeft}</div>
+          {hasSlotContent(headerCenter) && (
+            <div className="flex items-center justify-center">{headerCenter}</div>
+          )}
+          <div className="min-w-0">{headerRight}</div>
+        </div>
+      ) : null}
 
-      <motion.div
+      <div
         data-lenis-prevent
         data-lenis-prevent-wheel
         className={getBodyClassName(resolvedPosition, bodyClassName)}
-        {...MODAL_BODY_MOTION}
       >
         {children}
-      </motion.div>
+      </div>
 
-      <AnimatePresence initial={false}>
-        {shouldRenderFooter ? (
-          <motion.div
+      {shouldRenderFooter ? (
+        <div
+          className={cn(
+            hasSlotContent(footerCenter)
+              ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+              : 'flex justify-between',
+            'items-center gap-3 px-4 py-3',
+            footerIsSticky && 'sticky bottom-0',
+          )}
+        >
+          <div className="min-w-0">{footerLeft}</div>
+          {hasSlotContent(footerCenter) && (
+            <div className="flex items-center justify-center">{footerCenter}</div>
+          )}
+          <div
             className={cn(
-              hasSlotContent(footerCenter)
-                ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
-                : 'flex justify-between',
-              'items-center gap-3 px-4 py-3',
-              footerIsSticky && 'sticky bottom-0',
+              'flex items-center gap-2',
+              hasSlotContent(footerCenter) ? 'w-full justify-end' : null,
             )}
-            {...MODAL_FOOTER_MOTION}
           >
-            <div className="min-w-0">{footerLeft}</div>
-            {hasSlotContent(footerCenter) && (
-              <div className="flex items-center justify-center">{footerCenter}</div>
-            )}
-            <div
-              className={cn(
-                'flex items-center gap-2',
-                hasSlotContent(footerCenter) ? 'w-full justify-end' : null,
-              )}
-            >
-              {footerRight}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+            {footerRight}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

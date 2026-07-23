@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   MovieSurfaceReveal,
-  getSurfaceItemMotion,
-  getSurfacePanelMotion,
   useInitialItemRevealEnabled,
 } from '@/features/media/static-route-elements';
 import { TMDB_IMG } from '@/core/constants';

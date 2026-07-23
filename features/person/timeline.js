@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   PersonSurfaceReveal,
-  getPersonSurfaceItemMotion,
 } from '@/features/media/static-route-elements';
 import MediaThumb from './media-thumb';
 import { getTimelineCredits } from './utils';
