@@ -6,7 +6,6 @@ import AccountSocialModal from '@/features/modals/account-social-modal';
 import CreateListModal from '@/features/modals/create-list-modal';
 import ListEditorModal from '@/features/modals/list-editor-modal';
 import ListPickerModal from '@/features/modals/list-picker-modal';
-import ReviewEditorModal from '@/features/modals/review-editor-modal';
 import AccountAction from '@/features/navigation/actions/account-action';
 import ReviewAction from '@/features/navigation/actions/review-action';
 import Icon from '@/ui/icon';
@@ -301,7 +300,6 @@ export function buildAccountPageState({
       LIST_EDITOR_MODAL: ListEditorModal,
       LIST_PICKER_MODAL: ListPickerModal,
       ACCOUNT_SOCIAL_MODAL: AccountSocialModal,
-      REVIEW_EDITOR_MODAL: ReviewEditorModal,
     },
     loading: loadingState,
     nav: {

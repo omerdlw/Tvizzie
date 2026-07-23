@@ -16,7 +16,8 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
-import { subscribeToUserWatched } from '@/core/services/media/watched-watchlist';
+import { useNavigationActions } from '@/core/modules/nav';
+import { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';
 import ReviewsView from './view';
 
@@ -265,14 +266,16 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
     [auth.isAuthenticated, auth.user?.id, handleSignInRequest, reviews, setReviews, toast],
   );
 
+  const { openSurface } = useNavigationActions();
+
   const handleEditReview = useCallback(
     (review) => {
       if (!editableReviewUser) {
         return;
       }
 
-      openModal('REVIEW_EDITOR_MODAL', 'center', {
-        data: {
+      openSurface(
+        createReviewEditorSurfaceEntry({
           onSuccess: (updatedReview) => {
             setReviews((current) =>
               current.map((item) =>
@@ -284,10 +287,10 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
           },
           review,
           user: editableReviewUser,
-        },
-      });
+        }),
+      );
     },
-    [editableReviewUser, openModal, setReviews],
+    [editableReviewUser, openSurface, setReviews],
   );
 
   const handleDeleteReview = useCallback(

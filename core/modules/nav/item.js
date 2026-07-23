@@ -99,7 +99,7 @@ const Item = memo(
     }, [link.style, isActive, showBorder]);
 
     const actionNode = ActionComponent;
-    const renderedActionNode = compact ? null : actionNode;
+    const renderedActionNode = actionNode;
 
     useElementHeight(
       onContentHeightChange,
@@ -207,6 +207,7 @@ const Item = memo(
           containerHeight,
           isAnchoredToBottom: link.isSurface,
           globalCompact,
+          compact,
         })}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
@@ -217,7 +218,51 @@ const Item = memo(
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        <div ref={cardContentRef} className="flow-root w-full">
+        {/* ─── Compact title overlay (positioned relative to card) ─── */}
+        <AnimatePresence initial={false}>
+          {compact && (
+            <motion.div
+              key="compact-title-overlay"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[38px] z-10 flex items-center justify-center px-5"
+              initial={{ opacity: 0, scale: 0.94, filter: 'blur(3px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 0.94, filter: 'blur(2px)', transition: { duration: 0.1 } }}
+              transition={{ duration: 0.2, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="min-w-0">
+                <Title
+                  text={link.title || link.name}
+                  style={{
+                    ...itemStyle.title,
+                    className: cn(
+                      'tracking-tight normal-case text-center',
+                      itemStyle.title?.className,
+                      'text-[14px]',
+                    ),
+                    textTransform: 'none',
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          ref={cardContentRef}
+          className="flow-root w-full"
+          animate={{
+            opacity: compact ? 0 : 1,
+            filter: compact ? 'blur(3px)' : 'blur(0px)',
+          }}
+          transition={{
+            duration: compact ? 0.12 : 0.24,
+            delay: compact ? 0 : 0.1,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          style={{
+            pointerEvents: compact ? 'none' : 'auto',
+          }}
+        >
           {renderContent()}
 
           <AnimatePresence initial={false}>
@@ -225,6 +270,7 @@ const Item = memo(
               <motion.div
                 key="nav-action-component"
                 className="flow-root"
+                style={{ overflow: 'hidden' }}
                 onClick={(event) => event.stopPropagation()}
                 {...NAV_ACTION_PANEL_MOTION}
               >
@@ -232,7 +278,7 @@ const Item = memo(
               </motion.div>
             ) : null}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </motion.div>
     );
   }),
@@ -291,30 +337,6 @@ function StandardItemContent({
   const showVideoIcon = shouldShowVideoIcon({ isActive, isVideo, link });
   const description = getItemDescription({ expanded, isHovered, link });
   const iconHoverState = expanded ? isHovered : isStackHovered;
-
-  if (compact) {
-    const compactTitleStyle = {
-      ...itemStyle.title,
-      className: cn('tracking-tight normal-case text-center', itemStyle.title?.className),
-      textTransform: 'none',
-    };
-
-    return (
-      <div
-        className="flex h-6 w-full items-center justify-center px-5"
-      >
-        <div className="min-w-0">
-          <Title
-            text={link.title || link.name}
-            style={{
-              ...compactTitleStyle,
-              className: cn(compactTitleStyle.className, 'text-[14px]'),
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
 
   const handleIconClick = (event) => {
     if (showVideoIcon) {

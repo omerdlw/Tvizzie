@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-const HEIGHT_EPSILON = 0.5;
+const HEIGHT_EPSILON = 1.0;
 
 function getObservedHeight(entry, element) {
   const borderBoxSize = Array.isArray(entry?.borderBoxSize)
@@ -10,18 +10,18 @@ function getObservedHeight(entry, element) {
     : entry?.borderBoxSize;
 
   if (borderBoxSize?.blockSize != null) {
-    return borderBoxSize.blockSize;
+    return Math.round(borderBoxSize.blockSize);
   }
 
   if (entry?.contentRect?.height != null) {
-    return entry.contentRect.height;
+    return Math.round(entry.contentRect.height);
   }
 
-  return element?.offsetHeight || 0;
+  return Math.round(element?.offsetHeight || 0);
 }
 
 function hasMeaningfulHeightChange(previousHeight, nextHeight) {
-  return Math.abs(nextHeight - previousHeight) > HEIGHT_EPSILON;
+  return Math.abs(Math.round(nextHeight) - Math.round(previousHeight)) > HEIGHT_EPSILON;
 }
 
 export function useElementHeight(onHeightChange, elementRef, shouldMeasure, dependencyKey = null) {

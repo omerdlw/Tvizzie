@@ -7,17 +7,18 @@ import CastModal from '@/features/modals/cast-modal';
 import CreateListModal from '@/features/modals/create-list-modal';
 import ImagePreviewModal from '@/features/modals/image-preview-modal';
 import ListPickerModal from '@/features/modals/list-picker-modal';
-import ReviewEditorModal from '@/features/modals/review-editor-modal';
 import VideoPreviewModal from '@/features/modals/video-preview-modal';
 import ReviewAction from '@/features/navigation/actions/review-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
+import ReviewEditorSurface, { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
 import { getNavActionClass } from '@/features/navigation/actions/model';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 import { useNavigationActions, useNavigationState } from '@/core/modules/nav';
+import { useAuth } from '@/core/modules/auth';
 import Icon from '@/ui/icon';
 import MediaSocialProofModal from '@/features/modals/media-social-proof-modal';
 import {
@@ -88,6 +89,10 @@ export default function Registry({
   mediaType = 'movie',
   reviewState,
 }) {
+  const auth = useAuth();
+  const isAuthenticated = auth?.isAuthenticated;
+  const user = auth?.user;
+
   const { openSurface, closeSurface } = useNavigationActions();
   const { activeSurfaceEntry } = useNavigationState();
   const [isSearching, setIsSearching] = useState(false);
@@ -99,13 +104,14 @@ export default function Registry({
   const hasReviewUserFilter = Boolean(reviewUserFilter);
   const activeSortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
   const isWatchProvidersVisible = activeSurfaceEntry?.component === WatchProvidersSurface;
+  const isReviewEditorVisible = activeSurfaceEntry?.component === ReviewEditorSurface;
 
   useEffect(() => {
     if (!reviewState?.isActive && !isSearching) {
       return;
     }
 
-    if (activeSurfaceEntry?.component === WatchProvidersSurface) {
+    if (activeSurfaceEntry?.component === WatchProvidersSurface || activeSurfaceEntry?.component === ReviewEditorSurface) {
       closeSurface();
     }
   }, [reviewState?.isActive, isSearching, activeSurfaceEntry, closeSurface]);
@@ -128,13 +134,32 @@ export default function Registry({
   const shouldResetBackgroundForLoading =
     !shouldClearBackgroundForReviews && isLoading && !resolvedBackgroundImage;
 
-  const handleToggleWatchProviders = () => {
-    if (isWatchProvidersVisible) {
-      closeSurface();
+  const handleToggleAction = () => {
+    if (isAuthenticated) {
+      if (isReviewEditorVisible) {
+        closeSurface();
+      } else {
+        openSurface(
+          createReviewEditorSurfaceEntry({
+            media: {
+              entityId: movie?.id,
+              entityType: mediaType,
+              posterPath: movie?.poster_path,
+              title: getMediaTitle(movie),
+            },
+            review: reviewState?.ownReview || null,
+            user: user ? { ...user, id: user.id } : null,
+          }),
+        );
+      }
     } else {
-      openSurface(WatchProvidersSurface, {
-        providers: movie?.['watch/providers'],
-      });
+      if (isWatchProvidersVisible) {
+        closeSurface();
+      } else {
+        openSurface(WatchProvidersSurface, {
+          providers: movie?.['watch/providers'],
+        });
+      }
     }
   };
 
@@ -182,8 +207,10 @@ export default function Registry({
     <div className="mt-2.5 flex w-full gap-2">
       <MovieAction
         mode={isMediaReviewsRoute ? 'sort' : 'watch'}
-        isActive={isWatchProvidersVisible}
-        onToggle={handleToggleWatchProviders}
+        isActive={isAuthenticated ? isReviewEditorVisible : isWatchProvidersVisible}
+        isAuthenticated={isAuthenticated}
+        hasExistingReview={Boolean(reviewState?.ownReview)}
+        onToggle={handleToggleAction}
         sortMode={activeSortMode}
         onSortChange={handleSortChange}
       />
@@ -322,7 +349,6 @@ export default function Registry({
       LIST_PICKER_MODAL: ListPickerModal,
       MEDIA_SOCIAL_PROOF_MODAL: MediaSocialProofModal,
       PREVIEW_MODAL: ImagePreviewModal,
-      REVIEW_EDITOR_MODAL: ReviewEditorModal,
       VIDEO_PREVIEW_MODAL: VideoPreviewModal,
     },
   });

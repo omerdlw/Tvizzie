@@ -186,6 +186,8 @@ function applySurface(item, surfaceEntry, closeSurface) {
     surfaceDescription: surfaceEntry.description ?? null,
     surfaceTrailing: surfaceEntry.trailing ?? null,
     surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
+    expandHorizontal: surfaceEntry.expandHorizontal ?? false,
+    width: surfaceEntry.width ?? null,
   };
 }
 

@@ -22,6 +22,8 @@ import { cn } from '@/core/utils';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/core/utils/media';
 import { AUTH_ROUTES } from '@/features/auth/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
+import { useNavigationActions } from '@/core/modules/nav';
+import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
 import Icon from '@/ui/icon';
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
@@ -83,8 +85,9 @@ function getActionPalette(palette, active) {
   if (palette === 'watched' || palette === 'watchlist') {
     return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
   }
-  return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
+  return 'border rounded-[20px] border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
 }
+
 function ActionButton({
   active = false,
   disabled = false,
@@ -101,7 +104,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 rounded-[16px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active),
       )}
     >
@@ -390,6 +393,14 @@ export default function CollectionActions({ media }) {
       }));
     }
   }
+  const { openSurface } = useNavigationActions();
+
+  function handleOpenWatchProviders() {
+    openSurface(WatchProvidersSurface, {
+      providers: media?.['watch/providers'] || mediaSnapshot.watchProviders,
+    });
+  }
+
   async function handleOpenListPicker() {
     const resolvedUserId = await ensureSignedIn();
     if (!resolvedUserId) {
@@ -488,14 +499,32 @@ export default function CollectionActions({ media }) {
         ) : null}
       </div>
 
-      <ActionMotionItem index={4}>
-        <ActionButton
-          icon="solar:list-broken"
-          label="Add To List"
-          onClick={handleOpenListPicker}
-          palette="neutral"
-        />
-      </ActionMotionItem>
+      <div
+        className={cn(
+          'grid grid-cols-1 gap-2',
+          auth.isAuthenticated ? 'min-[460px]:grid-cols-2' : '',
+        )}
+      >
+        <ActionMotionItem index={4}>
+          <ActionButton
+            icon="solar:list-broken"
+            label="Add To List"
+            onClick={handleOpenListPicker}
+            palette="neutral"
+          />
+        </ActionMotionItem>
+
+        {auth.isAuthenticated ? (
+          <ActionMotionItem index={5}>
+            <ActionButton
+              icon="solar:tv-bold"
+              label="Where to Watch"
+              onClick={handleOpenWatchProviders}
+              palette="neutral"
+            />
+          </ActionMotionItem>
+        ) : null}
+      </div>
     </div>
   );
 }

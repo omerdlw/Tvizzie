@@ -101,7 +101,7 @@ export default function WatchProvidersSurface({ close, providers }) {
 
   return (
     <div className="flex w-full flex-col overflow-hidden">
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence initial={false}>
         {providerList.length > 0 ? (
           <div key={`list-${resolvedRegion}`} className="flex flex-col">
             {providerList.map((provider, index) => (

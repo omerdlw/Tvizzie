@@ -6,8 +6,8 @@ import { getNavCardWidth } from '../layout';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-export function useNavViewport() {
-  const [stackWidth, setStackWidth] = useState(() => getNavCardWidth());
+export function useNavViewport(activeItem = null) {
+  const [stackWidth, setStackWidth] = useState(() => getNavCardWidth(activeItem));
   const [portalTarget, setPortalTarget] = useState(null);
 
   useIsomorphicLayoutEffect(() => {
@@ -16,12 +16,16 @@ export function useNavViewport() {
   }, []);
 
   useEffect(() => {
+    setStackWidth(getNavCardWidth(activeItem));
+  }, [activeItem]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') {
       return undefined;
     }
 
     const handleResize = () => {
-      setStackWidth(getNavCardWidth());
+      setStackWidth(getNavCardWidth(activeItem));
     };
 
     handleResize();
@@ -30,7 +34,7 @@ export function useNavViewport() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [activeItem]);
 
   return {
     portalTarget,

@@ -108,7 +108,7 @@ function isVerticalEdgePosition(position) {
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
     <motion.div
-      className="center gap-1.5 border-t border-black/10 px-3 py-1.5"
+      className="center gap-1.5 border-t border-black/10 bg-white px-3 py-2 shrink-0"
       {...MODAL_LAYER_SWITCHER_MOTION}
     >
       <motion.button
@@ -268,7 +268,7 @@ function ModalLayer({
           className={cn(
             'modal-panel relative flex flex-col',
             isPanelChrome
-              ? 'overflow-hidden border border-black/10 bg-white/80'
+              ? 'overflow-hidden border border-black/10 bg-white'
               : 'overflow-visible border border-transparent bg-transparent backdrop-blur-none',
             isPanelChrome &&
               (activePosition === MODAL_POSITIONS.CENTER

@@ -12,7 +12,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
 import { cn } from '@/core/utils';
+
 const MAX_VISIBLE_PERSONS = 2;
+
 function normalizeTaxonomyItems(items = [], prefix = '') {
   return Array.from(
     new Set(
@@ -23,6 +25,7 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
     ),
   );
 }
+
 function SidebarRow({ icon, children }) {
   return (
     <div className="flex items-start gap-2 py-1.5 text-sm text-black">
@@ -33,12 +36,15 @@ function SidebarRow({ icon, children }) {
     </div>
   );
 }
+
 function SidebarMotionItem({ children, delay = 0, index = 0 }) {
   return <div>{children}</div>;
 }
+
 function SidebarMotionChip({ children, delay = 0, index = 0 }) {
   return <span className="inline-flex">{children}</span>;
 }
+
 function PersonLink({ person }) {
   return (
     <Link href={`/person/${person.id}`} className="text-black/70">
@@ -46,6 +52,7 @@ function PersonLink({ person }) {
     </Link>
   );
 }
+
 function PersonsDisplay({ persons, label }) {
   if (!persons?.length) {
     return null;
@@ -75,6 +82,7 @@ function PersonsDisplay({ persons, label }) {
     </div>
   );
 }
+
 function createRow(id, icon, content) {
   return {
     id,
@@ -82,11 +90,13 @@ function createRow(id, icon, content) {
     content,
   };
 }
+
 function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
   if (!items.length) {
     return null;
   }
   const isTagGroup = variant === 'tags';
+
   return (
     <div className="flex flex-col gap-2">
       <SidebarMotionItem delay={delay} index={0}>
@@ -257,7 +267,7 @@ export default function Sidebar({
               blurDataURL={getImagePlaceholderDataUrl(
                 `${item.id || item.title || item.name}-${item.poster_path}`,
               )}
-              className="object-cover"
+              className="rounded-[20px] object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (

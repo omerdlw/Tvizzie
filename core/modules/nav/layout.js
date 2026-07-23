@@ -66,6 +66,7 @@ export function getNavItemCardProps({
   cardScale,
   cardStyle,
   cardWidth,
+  compact,
   containerHeight,
   expanded,
   isAnchoredToBottom,
@@ -87,8 +88,8 @@ export function getNavItemCardProps({
 
   return {
     className: cn(
-      'absolute inset-x-0 mx-auto h-auto w-full cursor-pointer border rounded-[24px] p-2 backdrop-blur-lg',
-      isAnchoredToBottom && 'bottom-0',
+      'absolute h-auto w-full cursor-pointer border rounded-[24px] p-2 backdrop-blur-lg',
+      (isAnchoredToBottom || isTop) && 'bottom-0',
       'border-black/10 bg-white/80',
       showBorder && 'border-black/15',
       cardStyle?.className,
@@ -96,6 +97,10 @@ export function getNavItemCardProps({
     style: {
       ...safeCardStyle,
       willChange: position <= 1 ? 'transform, opacity, filter' : 'auto',
+      overflow: compact ? 'hidden' : undefined,
+      left: '50%',
+      x: '-50%',
+      ...(isTop ? { height: '100%' } : {}),
     },
     animate: {
       width: cardWidth,
@@ -104,28 +109,45 @@ export function getNavItemCardProps({
       zIndex: 10 - position,
       opacity: 1,
       filter: 'blur(0px)',
-      ...(isTop && containerHeight ? { height: containerHeight } : {}),
     },
-    initial: {
-      opacity: 0,
-      scale: 0.96,
-      y: 12,
-      filter: `blur(${BLUR_AMOUNT}px)`,
-      width: isTop ? cardWidth : 160,
-    },
+    initial: isTop
+      ? {
+          opacity: 0,
+          scale: 0.96,
+          y: 12,
+          filter: `blur(${BLUR_AMOUNT}px)`,
+          width: cardWidth,
+        }
+      : {
+          opacity: 0,
+          scale: collapsedScaleValue * 0.96,
+          y: position * collapsedOffsetY - 4,
+          filter: `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)`,
+          // Start from a small width so it grows in sync with the top card
+          // as it expands from compact mode
+          width: 160,
+        },
     exit: {
       opacity: 0,
-      scale: isTop ? 0.96 : globalCompact ? collapsedScaleValue * 0.9 : collapsedScaleValue,
-      y: isTop ? 4 : globalCompact ? position * collapsedOffsetY - 4 : position * collapsedOffsetY,
-      width: globalCompact ? 160 : cardWidth,
-      filter: isTop ? `blur(${Math.round(BLUR_AMOUNT * 0.6)}px)` : 'blur(4px)',
-      transition: {
-        opacity: { type: 'tween', duration: 0.16, ease: [0.32, 0, 0.67, 0] },
-        filter: { type: 'tween', duration: 0.14, ease: [0.32, 0, 0.67, 0] },
-        scale: { type: 'tween', duration: 0.22, ease: [0.32, 0, 0.67, 0] },
-        y: { type: 'tween', duration: 0.22, ease: [0.32, 0, 0.67, 0] },
-        width: { type: 'tween', duration: 0.22, ease: [0.32, 0, 0.67, 0] },
-      },
+      scale: isTop ? 0.96 : collapsedScaleValue * 0.96,
+      y: isTop ? 12 : position * collapsedOffsetY,
+      width: cardWidth,
+      filter: isTop ? `blur(${BLUR_AMOUNT}px)` : 'blur(3px)',
+      transition: isTop
+        ? {
+            opacity: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+            filter: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+            scale: { ...NAV_CONTAINER_SPRING },
+            y: { ...NAV_CONTAINER_SPRING },
+            width: { ...NAV_CARD_WIDTH_SPRING },
+          }
+        : {
+            opacity: { type: 'tween', duration: 0.06, ease: [0.16, 1, 0.3, 1] },
+            filter: { type: 'tween', duration: 0.04, ease: [0.16, 1, 0.3, 1] },
+            scale: { type: 'tween', duration: 0.08, ease: [0.16, 1, 0.3, 1] },
+            y: { type: 'tween', duration: 0.08, ease: [0.16, 1, 0.3, 1] },
+            width: { type: 'tween', duration: 0.08, ease: [0.16, 1, 0.3, 1] },
+          },
     },
     transition: {
       width: { ...NAV_CARD_WIDTH_SPRING, delay: staggerDelay },
@@ -133,10 +155,7 @@ export function getNavItemCardProps({
       scale: { ...spring, delay: staggerDelay },
       opacity: { ...NAV_CARD_OPACITY_TRANSITION, delay: staggerDelay },
       filter: { ...NAV_CARD_BLUR_TRANSITION, delay: staggerDelay },
-      zIndex: { duration: 0, delay: staggerDelay },
-      ...(isTop && containerHeight
-        ? { height: { ...NAV_CONTAINER_SPRING, delay: staggerDelay } }
-        : {}),
+      zIndex: { duration: 0 },
     },
   };
 }
@@ -200,9 +219,15 @@ export function getContainerHeight({
   return Math.min(nextCardHeight, getViewportMaxHeight());
 }
 
-export function getNavCardWidth() {
+export function getNavCardWidth(activeItem = null) {
   if (typeof window === 'undefined') {
     return 460;
+  }
+
+  const isDesktop = window.innerWidth >= 640;
+  if (isDesktop && activeItem?.isSurface && activeItem?.expandHorizontal) {
+    const targetWidth = activeItem.width ? Number(activeItem.width) : 640;
+    return Math.min(targetWidth, Math.max(window.innerWidth - 32, 0));
   }
 
   return Math.min(460, Math.max(window.innerWidth - 16, 0));

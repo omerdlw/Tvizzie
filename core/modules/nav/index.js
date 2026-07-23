@@ -62,25 +62,13 @@ export default function Nav() {
   const [isStackHovered, setIsStackHovered] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [initialAnimate, setInitialAnimate] = useState(false);
-  const [compactToggleCount, setCompactToggleCount] = useState(0);
-  const [hoverToggleCount, setHoverToggleCount] = useState(0);
 
   useEffect(() => {
     setInitialAnimate(true);
   }, []);
 
-  useEffect(() => {
-    setCompactToggleCount((prev) => prev + 1);
-  }, [compact]);
-
-  useEffect(() => {
-    if (isStackHovered && pathname !== '/') {
-      setHoverToggleCount((prev) => prev + 1);
-    }
-  }, [isStackHovered, pathname]);
-
   const navRef = useRef(null);
-  const { portalTarget, stackWidth } = useNavViewport();
+  const { portalTarget, stackWidth } = useNavViewport(activeItem);
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
   const clearHoverState = useCallback(() => {
     setIsStackHovered(false);
@@ -205,11 +193,7 @@ export default function Nav() {
 
     return (
       <Item
-        key={
-          isTop
-            ? getItemKey(link, index)
-            : `${getItemKey(link, index)}:${compactToggleCount}:${hoverToggleCount}`
-        }
+        key={getItemKey(link, index)}
         link={link}
         expanded={expanded}
         compact={isCompactCard}
@@ -246,7 +230,7 @@ export default function Nav() {
         id="nav-card-stack"
         ref={navRef}
         className={stackClassName}
-        style={{ zIndex: Z_INDEX.NAV }}
+        style={{ zIndex: Z_INDEX.NAV, width: stackWidth, maxWidth: '100vw' }}
       >
         <motion.div
           style={{ position: 'relative' }}

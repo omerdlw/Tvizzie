@@ -55,6 +55,8 @@ export function createSurfaceEntryDefinition(input, config = {}) {
     description: descriptor?.description ?? config?.description ?? null,
     trailing: descriptor?.trailing ?? config?.trailing ?? null,
     closeLabel: descriptor?.closeLabel ?? config?.closeLabel ?? null,
+    expandHorizontal: descriptor?.expandHorizontal ?? config?.expandHorizontal ?? false,
+    width: descriptor?.width ?? config?.width ?? null,
   };
 }
 
@@ -102,6 +104,8 @@ export function createInlineSurfaceEntry(surface) {
     description: surface.description ?? null,
     trailing: surface.trailing ?? null,
     closeLabel: surface.closeLabel ?? null,
+    expandHorizontal: surface.expandHorizontal ?? false,
+    width: surface.width ?? null,
   };
 }
 

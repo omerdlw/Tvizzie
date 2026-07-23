@@ -16,6 +16,13 @@ export const MODAL_BREAKPOINTS = Object.freeze({
 });
 
 export const MODAL_PRESETS = Object.freeze({
+  CREATE_LIST_MODAL: {
+    position: MODAL_POSITIONS.RIGHT,
+    responsivePosition: {
+      mobile: MODAL_POSITIONS.BOTTOM,
+      desktop: MODAL_POSITIONS.RIGHT,
+    },
+  },
   PREVIEW_MODAL: {
     chrome: MODAL_CHROME.BARE,
   },
@@ -32,6 +39,5 @@ export const MODAL_LABELS = Object.freeze({
   LIST_PICKER_MODAL: 'Your Lists',
   MEDIA_SOCIAL_PROOF_MODAL: 'Social Proof',
   PREVIEW_MODAL: 'Preview',
-  REVIEW_EDITOR_MODAL: 'Review',
   VIDEO_PREVIEW_MODAL: 'Video',
 });

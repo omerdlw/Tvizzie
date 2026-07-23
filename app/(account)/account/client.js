@@ -18,7 +18,8 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
-import { TMDB_IMG } from '@/core/constants';
+import { useNavigationActions } from '@/core/modules/nav';
+import { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,
@@ -202,14 +203,16 @@ export default function Client({ routeData = null, RegistryComponent = undefined
       ? 'Sign in to see your account'
       : 'Profile Overview';
 
+  const { openSurface } = useNavigationActions();
+
   const handleEditReview = useCallback(
     (review) => {
       if (!editableReviewUser) {
         return;
       }
 
-      openModal('REVIEW_EDITOR_MODAL', 'center', {
-        data: {
+      openSurface(
+        createReviewEditorSurfaceEntry({
           onSuccess: (updatedReview) => {
             reviewPreview.setItems((current) =>
               current.map((item) =>
@@ -221,10 +224,10 @@ export default function Client({ routeData = null, RegistryComponent = undefined
           },
           review,
           user: editableReviewUser,
-        },
-      });
+        }),
+      );
     },
-    [editableReviewUser, openModal, reviewPreview],
+    [editableReviewUser, openSurface, reviewPreview],
   );
 
   const handleDeleteReview = useCallback(

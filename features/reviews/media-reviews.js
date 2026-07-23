@@ -7,6 +7,7 @@ import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal';
 import { useNavigationActions } from '@/core/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/features/navigation/surfaces/confirmation-surface';
+import { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import { Button, Select } from '@/ui/elements';
 import ReviewAuthFallback from './parts/review-auth-fallback';
 import ReviewHeader from './parts/review-header';
@@ -89,8 +90,8 @@ export default function MediaReviews({
         return;
       }
       const targetReview = review || ownReview || null;
-      openModal('REVIEW_EDITOR_MODAL', 'center', {
-        data: {
+      openSurface(
+        createReviewEditorSurfaceEntry({
           media: {
             entityId,
             entityType,
@@ -101,11 +102,13 @@ export default function MediaReviews({
             ? (updatedReview) => {
                 applyOptimisticReviewUpdate(targetReview, updatedReview);
               }
-            : null,
+            : (newReview) => {
+                applyOptimisticReviewUpdate(null, newReview);
+              },
           review: targetReview,
           user: buildReviewUser(targetReview),
-        },
-      });
+        }),
+      );
     },
     [
       applyOptimisticReviewUpdate,
@@ -114,7 +117,7 @@ export default function MediaReviews({
       entityId,
       entityType,
       handleSignInRequest,
-      openModal,
+      openSurface,
       ownReview,
       posterPath,
       title,

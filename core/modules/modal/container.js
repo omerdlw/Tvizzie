@@ -48,7 +48,7 @@ function getBodyClassName(position, bodyClassName) {
   const isBottomModal = position === MODAL_POSITIONS.BOTTOM;
 
   return cn(
-    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain rounded-[16px] modal-body',
+    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
     isTopModal && ' ',
     isBottomModal && ' ',
     isLeftModal && ' ',

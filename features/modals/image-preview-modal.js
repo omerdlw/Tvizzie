@@ -53,7 +53,7 @@ export default function ImagePreviewModal({ close, data }) {
 function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoaded, setIsLoaded }) {
   return (
     <Container
-      className={`relative max-h-[85vh] ${frameWidthClass}`}
+      className={`relative max-h-[85vh] rounded-[24px] ${frameWidthClass}`}
       close={close}
       header={false}
       bodyClassName="p-0"

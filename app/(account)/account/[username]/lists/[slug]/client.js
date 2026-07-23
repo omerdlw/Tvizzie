@@ -23,6 +23,8 @@ import {
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
 import { TMDB_IMG } from '@/core/constants';
+import { useNavigationActions } from '@/core/modules/nav';
+import { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,
@@ -381,7 +383,9 @@ export default function Client({ routeData = null }) {
     [auth.user?.id, userProfile],
   );
 
-  const openReviewEditorModal = useCallback(
+  const { openSurface } = useNavigationActions();
+
+  const openReviewModal = useCallback(
     (review = null) => {
       if (!auth.isAuthenticated || !auth.user?.id) {
         handleSignInRequest();
@@ -400,8 +404,8 @@ export default function Client({ routeData = null }) {
         resolvedRouteData.username ||
         resolvedUserId;
 
-      openModal('REVIEW_EDITOR_MODAL', 'center', {
-        data: {
+      openSurface(
+        createReviewEditorSurfaceEntry({
           list: {
             coverUrl:
               list?.poster_path ||
@@ -434,8 +438,8 @@ export default function Client({ routeData = null }) {
           ownerId: resolvedUserId,
           review: targetReview,
           user: buildReviewModalUser(targetReview),
-        },
-      });
+        }),
+      );
     },
     [
       auth.isAuthenticated,
@@ -444,17 +448,17 @@ export default function Client({ routeData = null }) {
       handleSignInRequest,
       list,
       listItems,
-      openModal,
+      openSurface,
       ownReview,
       profile?.username,
-      resolvedUserId,
       resolvedRouteData.username,
+      resolvedUserId,
     ],
   );
 
   const handleOpenReviewComposer = useCallback(() => {
-    openReviewEditorModal();
-  }, [openReviewEditorModal]);
+    openReviewModal();
+  }, [openReviewModal]);
 
   const handleDeleteReview = useCallback(
     async (review = null) => {

@@ -58,7 +58,7 @@ export function resolveNavVisualStyle(style, { isActive = false, isHovered = fal
 
 export function getNavStackClassName({ isFullscreenStateActive }) {
   const baseClassName =
-    'fixed bottom-1 left-1/2 h-auto w-full max-w-[460px] -translate-x-1/2 touch-manipulation select-none transition-opacity duration-200';
+    'fixed bottom-1 left-1/2 h-auto w-full -translate-x-1/2 touch-manipulation select-none transition-opacity duration-200';
 
   return isFullscreenStateActive
     ? `${baseClassName} pointer-events-none opacity-0`

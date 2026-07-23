@@ -26,7 +26,7 @@ export default function VideoPreviewModal({ close, data }) {
 function ModalView({ close, data }) {
   return (
     <Container
-      className="relative max-h-[85vh] w-[min(92vw,1200px)]"
+      className="relative max-h-[85vh] w-[min(92vw,1200px)] rounded-[24px]"
       close={close}
       header={false}
       bodyClassName="p-0"

@@ -10,6 +10,8 @@ import { NAV_ACTION_SPRING } from '@/core/modules/motion';
 export default function MovieAction({
   mode = 'watch',
   isActive = false,
+  isAuthenticated = false,
+  hasExistingReview = false,
   onToggle,
   sortMode,
   onSortChange,
@@ -43,8 +45,15 @@ export default function MovieAction({
     );
   }
 
-  const icon = isActive ? 'solar:arrow-left-bold' : 'solar:tv-bold';
-  const label = isActive ? 'Back' : 'Where to watch?';
+  const defaultIcon = isAuthenticated ? 'solar:pen-new-square-bold' : 'solar:tv-bold';
+  const defaultLabel = isAuthenticated
+    ? hasExistingReview
+      ? 'Edit Review'
+      : 'Add Review'
+    : 'Where to watch?';
+
+  const icon = isActive ? 'solar:arrow-left-bold' : defaultIcon;
+  const label = isActive ? 'Back' : defaultLabel;
 
   return (
     <motion.button

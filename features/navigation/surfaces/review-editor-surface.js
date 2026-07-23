@@ -1,11 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  Container,
-  CANCEL_BUTTON_CLASS,
-  ACTION_BUTTON_CLASS,
-} from '@/core/modules/modal';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useSurfaceHeader } from '@/core/modules/nav';
 import { useToast } from '@/core/modules/notification';
 import {
   getReviewMinLength,
@@ -14,40 +11,14 @@ import {
   upsertMediaReview,
 } from '@/core/services/media/reviews';
 import RatingSelector from '@/features/reviews/parts/rating-selector';
-import { Button, Textarea } from '@/ui/elements';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
+import { NAV_ACTION_SPRING } from '@/core/modules/motion';
+import { Textarea } from '@/ui/elements';
+import Icon from '@/ui/icon';
 import { cn } from '@/core/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const reviewSpringTransition = Object.freeze({
-  type: 'spring',
-  stiffness: 300,
-  damping: 27,
-  mass: 0.8,
-});
-
-const reviewButtonSpring = Object.freeze({
-  type: 'spring',
-  stiffness: 430,
-  damping: 23,
-  mass: 0.55,
-});
-
-const reviewButtonTap = Object.freeze({});
-
-const reviewInputMotion = Object.freeze({});
-
-const MotionButton = motion(Button);
-
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
-const FORM_ID = 'review-editor-form';
-
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+const FORM_ID = 'review-editor-surface-form';
 
 function buildReviewDocPath(subject = {}, userId) {
   if (subject?.subjectType === 'list') {
@@ -55,9 +26,11 @@ function buildReviewDocPath(subject = {}, userId) {
   }
   return `media_items/${subject.subjectKey}/reviews/${userId}`;
 }
+
 function isRatingOnlyReview({ rating, reviewText }) {
   return rating !== null && !reviewText.trim();
 }
+
 function getPrimaryActionLabel({ hasExistingReview, isList = false, rating, reviewText }) {
   if (isList) {
     return hasExistingReview ? 'Update Comment' : 'Publish Comment';
@@ -69,6 +42,7 @@ function getPrimaryActionLabel({ hasExistingReview, isList = false, rating, revi
   if (hasExistingReview) return isRatingOnly ? 'Update Rating' : 'Update Review';
   return isRatingOnly ? 'Save Rating' : 'Publish Review';
 }
+
 function resolveListContext(data = {}, review = null) {
   const listId = data?.listId || data?.list?.id || review?.subjectId || null;
   const ownerId =
@@ -103,6 +77,7 @@ function resolveListContext(data = {}, review = null) {
     },
   };
 }
+
 function resolveMediaContext(data = {}, review = null) {
   const media = data?.media
     ? {
@@ -126,11 +101,13 @@ function resolveMediaContext(data = {}, review = null) {
     subjectType: 'media',
   };
 }
+
 function resolveSubjectContext(data = {}, review = null) {
   const isList =
     review?.subjectType === 'list' || Boolean(data?.listId || data?.ownerId || data?.list);
   return isList ? resolveListContext(data, review) : resolveMediaContext(data, review);
 }
+
 function buildUpdatedReview({
   review = null,
   savedSubject = {},
@@ -185,31 +162,36 @@ function buildUpdatedReview({
   };
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+export function createReviewEditorSurfaceEntry(data = {}, config = {}) {
+  return {
+    component: ReviewEditorSurface,
+    props: { data },
+    expandHorizontal: true,
+    width: 640,
+    ...config,
+  };
+}
 
-export default function ReviewEditorModal({ close, data }) {
+export default function ReviewEditorSurface({ close, data }) {
   const toast = useToast();
-  const { onSuccess, review = null, user = null } = data || {};
+  const setHeader = useSurfaceHeader();
 
-  // Derived Initial Values
+  const { onSuccess, review = null, user = null } = data || {};
   const hasExistingReview = Boolean(review);
   const subjectContext = resolveSubjectContext(data, review);
   const isListSubject = subjectContext?.subjectType === 'list';
   const initialRating = isListSubject ? null : (review?.rating ?? null);
 
-  // States
   const [reviewText, setReviewText] = useState(review?.content || '');
   const [rating, setRating] = useState(initialRating);
   const [isSpoiler, setIsSpoiler] = useState(Boolean(review?.isSpoiler));
   const [isSaving, setIsSaving] = useState(false);
 
-  // Derived View Values
   const trimmedText = reviewText.trim();
   const hasText = Boolean(trimmedText);
   const trimmedTextLength = trimmedText.length;
   const modalSubjectTitle = subjectContext?.subjectTitle || review?.subjectTitle || 'this title';
+
   const validationError = getReviewValidationError({
     content: reviewText,
     rating,
@@ -218,7 +200,22 @@ export default function ReviewEditorModal({ close, data }) {
     textLabel: isListSubject ? 'comment' : 'review',
   });
 
-  // Handlers
+  useEffect(() => {
+    if (setHeader) {
+      setHeader({
+        icon: 'solar:pen-new-square-bold',
+        title: hasExistingReview
+          ? isListSubject
+            ? 'Edit Comment'
+            : 'Edit Review'
+          : isListSubject
+            ? 'Add Comment'
+            : 'Add Review',
+        description: modalSubjectTitle,
+      });
+    }
+  }, [setHeader, hasExistingReview, isListSubject, modalSubjectTitle]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (isSaving) return;
@@ -266,152 +263,113 @@ export default function ReviewEditorModal({ close, data }) {
         rating: savedRating,
       });
       onSuccess?.(nextReview);
-      close(nextReview);
+      close?.(nextReview);
     } catch (error) {
       toast.error(error?.message || 'Review could not be saved');
     } finally {
       setIsSaving(false);
     }
   }
+
   function handleTextChange(event) {
     const value = event.target.value;
     setReviewText(value);
     if (!value.trim()) setIsSpoiler(false);
   }
+
   function handleSpoilerToggle() {
     if (!hasText) return;
     setIsSpoiler((current) => !current);
   }
-  return (
-    <ModalView
-      close={close}
-      isListSubject={isListSubject}
-      rating={rating}
-      setRating={setRating}
-      hasText={hasText}
-      trimmedTextLength={trimmedTextLength}
-      validationError={validationError}
-      isSaving={isSaving}
-      hasExistingReview={hasExistingReview}
-      reviewText={reviewText}
-      modalSubjectTitle={modalSubjectTitle}
-      isSpoiler={isSpoiler}
-      handleSubmit={handleSubmit}
-      handleTextChange={handleTextChange}
-      handleSpoilerToggle={handleSpoilerToggle}
-    />
-  );
-}
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
-
-function ModalView({
-  close,
-  isListSubject,
-  rating,
-  setRating,
-  hasText,
-  trimmedTextLength,
-  validationError,
-  isSaving,
-  hasExistingReview,
-  reviewText,
-  modalSubjectTitle,
-  isSpoiler,
-  handleSubmit,
-  handleTextChange,
-  handleSpoilerToggle,
-}) {
   return (
-    <Container
-      className="w-full sm:w-[640px]"
-      header={isListSubject ? null : <RatingSelector value={rating} onChange={setRating} />}
-      close={close}
-      footer={{
-        left: (
-          <FooterMeta
-            hasText={hasText}
-            isList={isListSubject}
-            trimmedTextLength={trimmedTextLength}
-            validationError={validationError}
-          />
-        ),
-        right: (
-          <>
-            <MotionButton
-              type="button"
-              onClick={close}
-              {...reviewButtonTap}
-              className={CANCEL_BUTTON_CLASS}
-            >
-              Cancel
-            </MotionButton>
-            <MotionButton
-              type="submit"
-              form={FORM_ID}
-              disabled={isSaving || Boolean(validationError)}
-              {...reviewButtonTap}
-              className={ACTION_BUTTON_CLASS}
-            >
+    <form id={FORM_ID} onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
+      {!isListSubject && (
+        <div className="flex w-full items-center justify-center border-b border-black/5 pb-3">
+          <RatingSelector value={rating} onChange={setRating} />
+        </div>
+      )}
+
+      <div className="relative w-full">
+        <Textarea
+          maxLength={800}
+          value={reviewText}
+          placeholder={
+            isListSubject
+              ? `Share your thoughts on ${modalSubjectTitle}`
+              : `Add your thoughts about ${modalSubjectTitle} (optional)`
+          }
+          onChange={handleTextChange}
+          className={{
+            wrapper:
+              'flex transition-all duration-300 ease-out border border-black/10 rounded-2xl bg-black/5 pb-7',
+            textarea:
+              'min-h-[130px] w-full resize-none p-3.5 text-sm leading-normal transition-all duration-300 ease-out outline-none placeholder:text-black/40 bg-transparent',
+          }}
+        />
+        <div className="pointer-events-none absolute bottom-2.5 right-3.5 flex items-center gap-2 text-[11px] font-medium text-black/40 select-none">
+          {validationError ? (
+            <span className="text-error/80 font-normal">{validationError}</span>
+          ) : hasText ? (
+            <span>{trimmedTextLength} chars</span>
+          ) : null}
+        </div>
+      </div>
+
+      <SpoilerToggle
+        disabled={!hasText}
+        checked={isSpoiler}
+        invalid={Boolean(validationError)}
+        onClick={handleSpoilerToggle}
+      />
+
+      <div className={NAV_ACTION_STYLES.row}>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            transition={NAV_ACTION_SPRING}
+            type="button"
+            onClick={() => close?.(null)}
+            className={getNavActionClass({
+              isActive: false,
+              className: 'flex-1',
+            })}
+          >
+            <Icon icon="solar:close-circle-bold" size={NAV_ACTION_STYLES.icon} />
+            <span>Cancel</span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            transition={NAV_ACTION_SPRING}
+            type="submit"
+            form={FORM_ID}
+            disabled={isSaving || Boolean(validationError)}
+            className={getNavActionClass({
+              isActive: true,
+              className: 'flex-1 disabled:opacity-40 disabled:cursor-not-allowed',
+            })}
+          >
+            <Icon
+              icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
+              size={NAV_ACTION_STYLES.icon}
+              className={isSaving ? 'animate-spin' : ''}
+            />
+            <span>
               {isSaving
-                ? 'Saving'
+                ? 'Saving...'
                 : getPrimaryActionLabel({
                     hasExistingReview,
                     isList: isListSubject,
                     rating,
                     reviewText,
                   })}
-            </MotionButton>
-          </>
-        ),
-      }}
-    >
-      <form id={FORM_ID} onSubmit={handleSubmit}>
-        <motion.div {...reviewInputMotion}>
-          <Textarea
-            maxLength={800}
-            value={reviewText}
-            placeholder={
-              isListSubject
-                ? `Share your thoughts on ${modalSubjectTitle}`
-                : `Add your thoughts about ${modalSubjectTitle} (optional)`
-            }
-            onChange={handleTextChange}
-            className={{
-              wrapper: 'flex  transition-all duration-300 ease-out',
-              textarea:
-                'min-h-[180px] w-full resize-none  p-3 text-sm leading-normal transition-all duration-300 ease-out outline-none placeholder:text-black/50',
-            }}
-          />
-        </motion.div>
-        <SpoilerToggle
-          disabled={!hasText}
-          checked={isSpoiler}
-          invalid={Boolean(validationError)}
-          onClick={handleSpoilerToggle}
-        />
-      </form>
-    </Container>
+            </span>
+          </motion.button>
+        </div>
+    </form>
   );
 }
-function FooterMeta({ hasText, isList = false, trimmedTextLength, validationError }) {
-  return (
-    <div>
-      <div className="text-xs text-black/70">
-        {hasText
-          ? `${trimmedTextLength} characters`
-          : isList
-            ? `Comment required (${REVIEW_MIN_LENGTH}+ characters)`
-            : `Optional text (${REVIEW_MIN_LENGTH}+ if added)`}
-      </div>
-      {validationError && (
-        <div className="text-error text-xs">Please resolve validation before saving</div>
-      )}
-    </div>
-  );
-}
+
 function SpoilerToggle({ disabled, checked, invalid, onClick }) {
   return (
     <button
@@ -421,16 +379,16 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'flex w-full items-center justify-between  border-t p-4 text-left transition-all duration-300 ease-out',
-        disabled && 'cursor-not-allowed border-black/10 text-black/50',
-        !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-black/10',
-        !disabled && !checked && 'bg-primary border-black/10 hover:bg-black/5',
+        'flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all duration-300 ease-out',
+        disabled && 'cursor-not-allowed border-black/10 text-black/40 bg-black/5',
+        !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-error/30',
+        !disabled && !checked && 'bg-black/5 border-black/10 hover:bg-black/10',
         invalid && 'border-t',
       )}
     >
       <div>
-        <div className="text-sm font-semibold">Contains spoilers</div>
-        <div className="text-xs text-black/70">
+        <div className="text-xs font-semibold uppercase tracking-wider">Contains spoilers</div>
+        <div className="text-[11px] text-black/60">
           {disabled
             ? 'Spoiler option unlocks after writing review text'
             : 'Hide this review behind a spoiler warning'}
@@ -439,14 +397,14 @@ function SpoilerToggle({ disabled, checked, invalid, onClick }) {
 
       <span
         className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 items-center  border p-px transition-colors duration-200',
-          checked && !disabled ? 'border-error bg-error' : 'border-black/5 bg-black/5',
+          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border p-px transition-colors duration-200',
+          checked && !disabled ? 'border-error bg-error' : 'border-black/10 bg-black/10',
         )}
       >
         <motion.span
-          animate={{ x: checked && !disabled ? 20 : 0 }}
-          transition={reviewSpringTransition}
-          className="bg-primary size-5"
+          animate={{ x: checked && !disabled ? 16 : 0 }}
+          transition={NAV_ACTION_SPRING}
+          className="size-4 rounded-full bg-white shadow-xs"
         />
       </span>
     </button>

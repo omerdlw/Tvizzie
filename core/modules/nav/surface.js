@@ -99,13 +99,13 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
         {...NAV_SURFACE_MOTION}
       >
         <NavSurfaceHeader
-          icon={headerState.icon}
-          title={headerState.title}
+          descriptionMaxLines={descriptionMaxLines}
           description={headerState.description}
           trailing={headerState.trailing}
-          onClose={onClose}
+          title={headerState.title}
+          icon={headerState.icon}
           closeLabel={closeLabel}
-          descriptionMaxLines={descriptionMaxLines}
+          onClose={onClose}
         />
         <div className={contentClassName}>{children}</div>
       </motion.section>

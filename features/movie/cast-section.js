@@ -15,19 +15,22 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
+
 function PersonImage({ person, size, quality = 72, priority = false, fetchPriority = '' }) {
   const [error, setError] = useState(false);
   const src = !error
     ? getPreferredPersonPosterSrc(person, size) ||
       (person.profile_path ? `${TMDB_IMG}/${size}${person.profile_path}` : null)
     : null;
+
   if (!src) {
     return (
-      <div className="center h-full w-full ">
+      <div className="center h-full w-full">
         <Icon icon="solar:user-bold" size={size === 'w92' ? 14 : 20} className="text-black/50" />
       </div>
     );
   }
+
   return (
     <AdaptiveImage
       fill
@@ -45,20 +48,21 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className="object-cover"
+      className="overflow-hidden rounded-[16px] object-cover"
       onError={() => setError(true)}
-      wrapperClassName="h-full w-full"
+      wrapperClassName="h-full w-full rounded-[16px] overflow-hidden"
     />
   );
 }
+
 function PersonCard({ person, compact = false, priority = false, fetchPriority }) {
   return (
     <Link
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 border border-black/10 backdrop-blur-xs hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1 p-1 pr-2' : 'p-1 pr-4',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15',
+        compact ? 'h-10 min-w-0 flex-1 rounded-[16px] p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
       <div
