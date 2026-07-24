@@ -4,10 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDraggableScroll } from '@/core/hooks/use-draggable-scroll';
 import { cn } from '@/core/utils';
 
-/* ------------------------------------------------------------------ */
-/*  Defaults                                                          */
-/* ------------------------------------------------------------------ */
-
 function defaultGetKey(item) {
   return item?.key;
 }
@@ -15,24 +11,11 @@ function defaultGetLabel(item) {
   return item?.label;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Geometry constants                                                */
-/* ------------------------------------------------------------------ */
-
-// Spacing (px) between the outer container's inner edge and the indicator.
-// A single value controls all four sides — the source of symmetry.
 const PADDING = 2;
 
-// The outer border is 1px (Tailwind's `border` class). We need to
-// account for it so the inner radius nests concentrically within the
-// outer radius: inner = outer − padding − border.
 const BORDER_WIDTH = 1;
 const OUTER_RADIUS = 12;
-const INNER_RADIUS = OUTER_RADIUS - PADDING - BORDER_WIDTH; // 9
-
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
+const INNER_RADIUS = OUTER_RADIUS - PADDING - BORDER_WIDTH;
 
 export default function SegmentedControl({
   className = '',
@@ -60,7 +43,6 @@ export default function SegmentedControl({
     return getKey(resolvedItems.find((item) => getKey(item) === activeKey) || fallbackItem);
   }, [getKey, resolvedItems, value]);
 
-  /* ---- Indicator positioning (getBoundingClientRect for subpixel accuracy) ---- */
   useEffect(() => {
     const wrapper = wrapperRef.current;
     const activeButton = buttonRefs.current.get(activeItemKey);
@@ -71,8 +53,6 @@ export default function SegmentedControl({
     }
 
     const update = () => {
-      // getBoundingClientRect returns fractional pixels — unlike offsetLeft
-      // which rounds to integers and causes the asymmetry the user reported.
       const wrapperRect = wrapper.getBoundingClientRect();
       const buttonRect = activeButton.getBoundingClientRect();
 
@@ -86,8 +66,6 @@ export default function SegmentedControl({
         return {
           _x: x,
           _w: w,
-          // `ready` is false on the very first measurement so we skip the
-          // entrance animation. Subsequent updates animate smoothly.
           ready: Boolean(prev),
         };
       });
@@ -101,7 +79,6 @@ export default function SegmentedControl({
     return () => ro.disconnect();
   }, [activeItemKey, resolvedItems]);
 
-  /* ---- Auto-scroll active button into view ---- */
   useEffect(() => {
     const activeButton = buttonRefs.current.get(activeItemKey);
     const track = trackRef.current;
@@ -142,16 +119,6 @@ export default function SegmentedControl({
           classNames.track,
         )}
       >
-        {/*
-          The wrapper doubles as a clip-mask for the indicator.
-          `overflow: hidden` + `border-radius` ensures:
-          1. The indicator's border-radius antialiasing pixels never bleed
-             beyond the inner rounded rect.
-          2. The inner rounded rect nests concentrically within the outer
-             container's rounded rect (INNER_RADIUS = OUTER_RADIUS − PADDING − BORDER).
-          3. Edge buttons' indicators are clipped cleanly — no "cut radius"
-             artifact from the track's overflow-x: auto.
-        */}
         <div
           ref={wrapperRef}
           className="relative flex h-full w-max min-w-full items-stretch overflow-hidden"
@@ -175,7 +142,6 @@ export default function SegmentedControl({
             }}
           />
 
-          {/* Buttons */}
           {resolvedItems.map((item) => {
             const itemKey = getKey(item);
             const isActive = activeItemKey === itemKey;

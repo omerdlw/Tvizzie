@@ -10,9 +10,9 @@ import { ACCOUNT_EMPTY_SECTION_CLASS } from './section-state';
 const ACCOUNT_SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';
 const ACCOUNT_SECTION_CONTENT_CLASS = 'col-span-12 flex min-w-0 flex-col gap-5';
 
-// --------------------------------------------------
-// COMPONENTS (VIEW)
-// --------------------------------------------------
+
+
+
 
 export function AccountSectionHeading({
   action = null,

@@ -1,5 +1,5 @@
 export const MAX_KNOWN_FOR = 10;
-export const MAX_FILMOGRAPHY = 30;
+export const MAX_FILMOGRAPHY = 120;
 export const MAX_BACKGROUND_CANDIDATES = 8;
 
 export function calculateAge(birthday, deathday) {
@@ -136,8 +136,9 @@ export function getKnownForCredits(person) {
 
 export function getFilmographyCredits(person, mediaType = 'movie') {
   const isDirector = person?.known_for_department === 'Directing';
+  const rawCredits = mediaType === 'tv' ? normalizeTvCredits(person) : normalizeMovieCredits(person);
 
-  return uniqueByMediaId(normalizeTitleCredits(person))
+  return uniqueByMediaId(rawCredits)
     .filter((credit) => credit.poster_path)
     .sort((first, second) => {
       if (isDirector) {
@@ -152,7 +153,7 @@ export function getFilmographyCredits(person, mediaType = 'movie') {
     })
     .map((credit) => ({
       ...credit,
-      media_type: credit.media_type || mediaType,
+      media_type: mediaType,
     }))
     .slice(0, MAX_FILMOGRAPHY);
 }

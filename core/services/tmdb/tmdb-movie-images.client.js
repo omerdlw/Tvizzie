@@ -56,7 +56,7 @@ export function writeMovieImagesCache(id, value) {
   try {
     window.localStorage.setItem(createMovieImagesStorageKey(id), JSON.stringify(entry));
   } catch {
-    // Ignore cache persistence failures (private mode / quota limits).
+    
   }
 }
 

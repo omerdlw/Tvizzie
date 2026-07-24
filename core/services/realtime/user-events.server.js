@@ -145,7 +145,7 @@ export function createUserEventStream(userId) {
         try {
           controller.close();
         } catch {
-          // Stream may already be closed during teardown.
+          
         }
       };
 

@@ -60,7 +60,7 @@ async function resolveFirstLoadableImage(candidates = []) {
       await preloadBackgroundImage(candidate);
       return candidate;
     } catch {
-      // continue to next candidate
+      
     }
   }
 
@@ -75,7 +75,7 @@ async function resolveFirstLoadablePosterFilePath(candidates = []) {
       await preloadBackgroundImage(createMoviePosterImageUrl(filePath));
       return filePath;
     } catch {
-      // continue to next candidate
+      
     }
   }
 

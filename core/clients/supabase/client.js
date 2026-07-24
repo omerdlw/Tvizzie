@@ -37,7 +37,7 @@ function removeStorageKey(storage, key) {
   try {
     storage?.removeItem?.(key);
   } catch {
-    // Best-effort cleanup only.
+    
   }
 }
 
@@ -55,7 +55,7 @@ function purgeMatchingStorageEntries(storage, matcher) {
 
     keys.forEach((key) => storage.removeItem(key));
   } catch {
-    // Best-effort cleanup only.
+    
   }
 }
 
@@ -135,7 +135,7 @@ export async function clearBrowserSupabaseAuthState({ clearServer = true } = {})
         keepalive: true,
       });
     } catch {
-      // Best-effort cleanup only.
+      
     }
   }
 

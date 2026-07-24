@@ -20,15 +20,15 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
+
+
+
 
 const LIST_PICKER_STACK_SKELETON_BACKGROUNDS = ['#f8f8f8', '#f3f3f3', '#efefef', '#ebebeb'];
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function getPreviewImage(item) {
   return (
@@ -43,9 +43,9 @@ function getChangedListIds(lists, initialMemberships, draftMemberships) {
     .filter((id) => Boolean(initialMemberships[id]) !== Boolean(draftMemberships[id]));
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function ListPickerModal({ close, data }) {
   const { openModal } = useModalActions();
@@ -59,13 +59,13 @@ export default function ListPickerModal({ close, data }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
 
-  // Derived Values
+  
   const selectedCount = lists.filter((list) => Boolean(draftMemberships[list.id])).length;
   const pendingListIds = getChangedListIds(lists, initialMemberships, draftMemberships);
   const pendingChangesCount = pendingListIds.length;
   const hasPendingChanges = pendingChangesCount > 0;
 
-  // Effects
+  
   useEffect(() => {
     if (!userId) {
       setLists([]);
@@ -124,7 +124,7 @@ export default function ListPickerModal({ close, data }) {
     };
   }, [userId, isAuthSessionReady, media, lists, toast]);
 
-  // Handlers
+  
   const handleOpenCreator = () => {
     openModal('CREATE_LIST_MODAL', undefined, {
       data: {
@@ -217,9 +217,9 @@ export default function ListPickerModal({ close, data }) {
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({
   close,

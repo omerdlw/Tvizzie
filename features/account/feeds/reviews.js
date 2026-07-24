@@ -21,10 +21,6 @@ import { Button } from '@/ui/elements';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
-
 function resolveMediaKey(item) {
   if (item?.mediaKey) return item.mediaKey;
   const entityType = item?.entityType || item?.media_type || null;
@@ -34,10 +30,6 @@ function resolveMediaKey(item) {
 function buildMediaKeySet(items = [], shouldInclude = () => true) {
   return new Set(items.filter(shouldInclude).map(resolveMediaKey).filter(Boolean));
 }
-
-// --------------------------------------------------
-// COMPONENT LOGIC & VIEW
-// --------------------------------------------------
 
 export default function AccountReviewsFeed({
   currentUserId = null,
@@ -69,7 +61,6 @@ export default function AccountReviewsFeed({
   const collectionRootPath = buildCollectionBasePath(pathname);
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
 
-  // URL ve State Senkronizasyonu Birleştirildi
   const [viewState, setViewState] = useState({
     filters: parseReviewFilters(new URLSearchParams(searchString)),
     page: parsePageFromSearch(new URLSearchParams(searchString)),
@@ -105,7 +96,6 @@ export default function AccountReviewsFeed({
     });
   };
 
-  // Derived Values
   const filteredReviews = useMemo(
     () => applyReviewFilters(items, viewState.filters),
     [items, viewState.filters],

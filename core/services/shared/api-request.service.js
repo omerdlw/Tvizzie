@@ -23,7 +23,7 @@ export async function requestApiJson(
     body,
     headers = {},
     cache = 'no-store',
-    // Fail fast to avoid "page takes forever" UX when the network/API stalls.
+    
     timeoutMs = 15000,
     retryCount = method === 'GET' ? 1 : 0,
     retryDelayMs = 120,

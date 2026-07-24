@@ -2,9 +2,9 @@
 
 import { Container } from '@/core/modules/modal';
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function VideoPreviewModal({ close, data }) {
   if (!data?.key) return null;
@@ -12,9 +12,9 @@ export default function VideoPreviewModal({ close, data }) {
   return <ModalView close={close} data={data} />;
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({ close, data }) {
   return (

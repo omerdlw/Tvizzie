@@ -26,10 +26,6 @@ import {
   SUCCESS_ACTION_TONE_CLASS,
 } from '@/core/constants/index';
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
-
 const TABS = Object.freeze({
   FOLLOWERS: 'followers',
   FOLLOWING: 'following',
@@ -49,10 +45,6 @@ function createCollectionState(isLoading = true) {
     error: null,
   };
 }
-
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
 
 function normalizeTab(value) {
   const normalized = String(value || '')
@@ -96,10 +88,6 @@ function buildFollowingStatusMap(list = [], fallbackStatus = FOLLOW_STATUSES.ACC
   }, {});
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
-
 export default function AccountSocialModal({ close, data }) {
   const auth = useAuth();
   const toast = useToast();
@@ -109,19 +97,16 @@ export default function AccountSocialModal({ close, data }) {
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? authUserId : null);
   const isOwnProfile = Boolean(authUserId) && authUserId === userId;
 
-  // States
   const [activeTab, setActiveTab] = useState(() => normalizeTab(data?.tab || data?.type));
   const [pendingActionByUserId, setPendingActionByUserId] = useState({});
   const [followingStatusMap, setFollowingStatusMap] = useState({});
 
-  // Collection States (list, isLoading, error birleştirildi)
   const [followersState, setFollowersState] = useState(() => createCollectionState());
   const [followingState, setFollowingState] = useState(() => createCollectionState());
   const [requestsState, setRequestsState] = useState(() =>
     createCollectionState(canManageRequests),
   );
 
-  // Effects
   useEffect(() => {
     setActiveTab(normalizeTab(data?.tab || data?.type));
   }, [data?.tab, data?.type]);
@@ -256,7 +241,6 @@ export default function AccountSocialModal({ close, data }) {
     };
   }, [authUserId, isAuthSessionReady]);
 
-  // Derived Values
   const shouldShowInboxTab =
     canManageRequests &&
     (requestsState.isLoading || requestsState.list.length > 0 || Boolean(requestsState.error));
@@ -292,7 +276,6 @@ export default function AccountSocialModal({ close, data }) {
   const emptyDescription =
     activeTab === TABS.INBOX ? 'No pending follow requests' : `No ${activeTab} yet`;
 
-  // Handlers
   async function runUserAction(targetUserId, actionKey, actionFn, errorMessage) {
     if (!authUserId || pendingActionByUserId[targetUserId]) {
       return;
@@ -370,10 +353,6 @@ export default function AccountSocialModal({ close, data }) {
     />
   );
 }
-
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
 
 function ModalView({
   close,
@@ -458,9 +437,7 @@ function SocialUserRow({ close, user, action, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   return (
-    <div
-      className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4"
-    >
+    <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4">
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -472,7 +449,7 @@ function SocialUserRow({ close, user, action, index }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0  object-cover"
+          className="size-10 shrink-0 object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           wrapperClassName="size-10 shrink-0 "
         />
@@ -576,10 +553,10 @@ function LoadingList() {
             key={index}
             className="flex items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4"
           >
-            <div className="size-10 shrink-0  bg-black/5" />
+            <div className="size-10 shrink-0 bg-black/5" />
             <div className="min-w-0 flex-1 space-y-1.5">
-              <div className="h-3 w-3/5  bg-black/5" />
-              <div className="h-2 w-2/5  bg-black/5" />
+              <div className="h-3 w-3/5 bg-black/5" />
+              <div className="h-2 w-2/5 bg-black/5" />
             </div>
           </div>
         ),

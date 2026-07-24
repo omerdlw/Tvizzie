@@ -1,25 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Container,
-  CANCEL_BUTTON_CLASS,
-  ACTION_BUTTON_CLASS,
-} from '@/core/modules/modal';
+import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
 import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists';
 import { Button, Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
-
 const FORM_ID = 'list-editor-modal-form';
-
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
 
 function getItemKey(item) {
   return String(
@@ -39,10 +27,6 @@ function getRemovedItems(initialItems = [], draftItems = []) {
 function formTitleValue(value) {
   return String(value || '').trim();
 }
-
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
 
 export default function ListEditorModal({ close, data, header }) {
   const toast = useToast();
@@ -152,10 +136,6 @@ export default function ListEditorModal({ close, data, header }) {
     />
   );
 }
-
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
 
 function ModalView({
   close,
@@ -276,9 +256,7 @@ function ModalView({
 function ListItemRow({ item, onRemove, index }) {
   const title = getItemTitle(item);
   return (
-    <div
-      className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10"
-    >
+    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
       </div>
@@ -286,7 +264,7 @@ function ListItemRow({ item, onRemove, index }) {
       <button
         type="button"
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 cursor-pointer"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />

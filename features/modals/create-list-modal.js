@@ -188,7 +188,7 @@ export default function CreateListModal({ close, data }) {
       bodyClassName="flex flex-col flex-1 min-h-0 overflow-hidden p-4 sm:p-5"
     >
       <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
-        {/* Minimal Inputs */}
+        
         <div className="flex flex-col gap-2">
           <Input
             value={draftTitle}
@@ -248,7 +248,7 @@ export default function CreateListModal({ close, data }) {
           />
         </div>
 
-        {/* Scrollable Items Container */}
+        
         <div
           data-lenis-prevent
           data-lenis-prevent-wheel
@@ -313,7 +313,7 @@ export default function CreateListModal({ close, data }) {
           )}
         </div>
 
-        {/* Footer Action Buttons */}
+        
         <div className="flex flex-col gap-2 pt-3 border-t border-black/10">
           <div className="flex items-center justify-between px-1 text-xs text-black/50 font-medium">
             <span>

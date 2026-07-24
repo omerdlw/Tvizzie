@@ -7,6 +7,7 @@ import { useReportWebVitals } from 'next/web-vitals';
 import {
   AuthInteractiveBoundary,
   InteractiveFeatureBoundary,
+  PersistentInteractiveShell,
 } from '@/features/app-shell/interactive-boundary';
 import { NAV_RUNTIME } from '@/features/app-shell/nav-runtime';
 import SettingsModal from '@/features/modals/settings-modal';
@@ -136,7 +137,7 @@ function postWebVital(metric) {
       method: 'POST',
     }).catch(() => null);
   } catch {
-    // Web vitals reporting must stay non-blocking.
+    
   }
 }
 
@@ -147,30 +148,16 @@ function WebVitals() {
 }
 
 export const AppProviders = ({ children }) => {
-  const pathname = usePathname();
-  const interactiveBoundaryVariant = resolveInteractiveBoundaryVariant(pathname);
-  const needsInteractiveBoundary = shouldEnableInteractiveBoundary(pathname);
-  const needsSmoothScroll = shouldEnableSmoothScroll(pathname);
-  const shellChildren = (
-    <>
-      <Nav />
-      {children}
-    </>
-  );
-
-  const content = needsInteractiveBoundary
-    ? renderInteractiveBoundary(shellChildren, interactiveBoundaryVariant)
-    : shellChildren;
-
-  const contentWithEnhancements = content;
-
   return (
     <>
       <WebVitals />
       <CoreShellProviders>
-        <BackgroundOverlay />
-        <LoadingOverlay />
-        <GlobalError>{contentWithEnhancements}</GlobalError>
+        <PersistentInteractiveShell>
+          <BackgroundOverlay />
+          <LoadingOverlay />
+          <Nav />
+          <GlobalError>{children}</GlobalError>
+        </PersistentInteractiveShell>
       </CoreShellProviders>
     </>
   );

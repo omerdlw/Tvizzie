@@ -36,7 +36,7 @@ export async function GET(request) {
   } catch (error) {
     console.error('[Account Search API Error]', error);
 
-    // Graceful recovery for Search: don't break the UI on account search failure.
+    
     return NextResponse.json({
       items: [],
     });

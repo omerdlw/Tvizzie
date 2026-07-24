@@ -16,9 +16,9 @@ import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '..
 import AccountInlineSectionState from './section-state';
 import AccountSectionLayout from './section-wrapper';
 
-// --------------------------------------------------
-// CONSTANTS & HELPERS
-// --------------------------------------------------
+
+
+
 
 const ITEMS_PER_PAGE = 36;
 function createPosterSource(item, mediaType) {
@@ -56,9 +56,9 @@ function extractMediaDetails(item) {
   };
 }
 
-// --------------------------------------------------
-// COMPONENTS (LOGIC & VIEW)
-// --------------------------------------------------
+
+
+
 
 export function ProfileMediaActions({
   extraActions = [],
@@ -152,7 +152,7 @@ export default function AccountMediaGridPage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Pagination Logic
+  
   const isQueryPagination = typeof pageBasePath === 'string' && pageBasePath.includes('?');
   const requestedQueryPage = Number.parseInt(searchParams.get('page') || '1', 10);
   const canControlPagination = typeof onPageChange === 'function';

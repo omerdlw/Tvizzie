@@ -13,10 +13,11 @@ import { MovieSurfaceReveal } from '@/features/media/static-route-elements';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
+import { cn } from '@/core/utils/classnames';
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
-function PersonImage({ person, size, quality = 72, priority = false, fetchPriority = '' }) {
+function PersonImage({ person, compact, size, quality = 72, priority = false, fetchPriority = '' }) {
   const [error, setError] = useState(false);
   const src = !error
     ? getPreferredPersonPosterSrc(person, size) ||
@@ -48,9 +49,8 @@ function PersonImage({ person, size, quality = 72, priority = false, fetchPriori
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className="overflow-hidden rounded-[16px] object-cover"
+      className={cn("object-cover w-full h-full", compact ? "rounded-[12px]" : "rounded-[16px]")}
       onError={() => setError(true)}
-      wrapperClassName="h-full w-full rounded-[16px] overflow-hidden"
     />
   );
 }
@@ -62,7 +62,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       onDragStart={(e) => e.preventDefault()}
       className={[
         'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15',
-        compact ? 'h-10 min-w-0 flex-1 rounded-[16px] p-1 pr-2' : 'p-1 pr-4',
+        compact ? 'h-10 min-w-0 flex-1 rounded-[16px]! p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
       <div
@@ -76,6 +76,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
           quality={compact ? 70 : 72}
           priority={priority}
           fetchPriority={fetchPriority}
+          compact={compact}
         />
       </div>
 
@@ -189,7 +190,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
         {!!compact.length && (
           <div className="flex h-10 items-center gap-2">
             {compact.map((person, index) => {
-              // Hide the third pill on small screens to ensure the action button fits.
+              
               const responsiveClass = index > 1 ? 'hidden sm:block' : '';
               return (
                 <div
@@ -205,7 +206,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/5 text-black/70 hover:border-black/10 hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 hover:border-black/15 rounded-[16px] hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>

@@ -226,7 +226,7 @@ function buildMenuContext(config, event, pathname, targetElement) {
         context.payload = resolvedPayload;
       }
     } catch {
-      // no-op: payload resolution is optional
+      
     }
   }
 
@@ -291,6 +291,13 @@ function normalizeMenuItem(item, index, context) {
   const classNameValue = resolveAsValue(item.className, context, '');
   const itemIconClassNameValue = resolveAsValue(item.itemIconClassName, context, '');
 
+  const handler =
+    typeof item.onSelect === 'function'
+      ? item.onSelect
+      : typeof item.onClick === 'function'
+        ? item.onClick
+        : null;
+
   return {
     ...item,
     closeOnSelect: item.closeOnSelect !== false,
@@ -300,8 +307,8 @@ function normalizeMenuItem(item, index, context) {
     itemIconClassName: typeof itemIconClassNameValue === 'string' ? itemIconClassNameValue : '',
     key: item.key || `item-${index}`,
     label,
-    onClick: typeof item.onClick === 'function' ? item.onClick : null,
-    onSelect: typeof item.onSelect === 'function' ? item.onSelect : null,
+    onClick: handler,
+    onSelect: handler,
     shortcut: typeof shortcutValue === 'string' ? shortcutValue : null,
     className: typeof classNameValue === 'string' ? classNameValue : '',
     type: 'action',

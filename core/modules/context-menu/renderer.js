@@ -2,11 +2,11 @@
 
 import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-
 import { Z_INDEX } from '@/core/constants';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
+import Icon from '@/ui/icon';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({
@@ -178,7 +178,7 @@ function isScrollLockKey(event) {
 
 function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
   const iconClassName = joinClassNames(
-    'flex size-10 shrink-0 items-center justify-center overflow-hidden border border-black/10 bg-black/[0.04] bg-cover bg-center text-black/65',
+    'flex size-10 shrink-0 rounded-[10px] items-center justify-center overflow-hidden bg-black/5 bg-cover bg-center bg-no-repeat text-black/70',
     classNames.headerIcon,
   );
   const iconStyle = {};
@@ -205,16 +205,19 @@ function ContextMenuHeader({ classNames, header, metrics }) {
     'mb-1.5 flex items-center gap-2.5 border-b border-black/10 px-1 pb-3',
     classNames.header,
   );
+
   const eyebrowClassName = joinClassNames(
-    'text-[10px] font-semibold tracking-wide text-black/45 uppercase',
+    'text-[10px] font-semibold tracking-wide text-black/50 uppercase',
     classNames.headerEyebrow,
   );
+  
   const titleClassName = joinClassNames(
     'truncate text-[15px] leading-tight font-semibold text-black',
     classNames.headerTitle,
   );
+  
   const descriptionClassName = joinClassNames(
-    'text-[12px] leading-snug text-black/60',
+    'text-[12px] leading-snug text-black/70',
     classNames.headerDescription,
   );
 
@@ -245,7 +248,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full rounded-[16px] items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',
@@ -363,17 +366,26 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
 
   const handleItemSelect = useCallback(
     (item, event) => {
-      event.preventDefault();
-      event.stopPropagation();
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
 
-      if (item.disabled) {
+      if (item?.disabled) {
         return;
       }
 
-      if (item.disabled) return;
+      const handler = item?.onSelect || item?.onClick;
 
-      onClose?.();
-      item.onClick?.(event, menuContext);
+      if (typeof handler === 'function') {
+        try {
+          handler(event, menuContext);
+        } catch (error) {
+          console.error('[ContextMenu] Error executing menu item handler:', error);
+        }
+      }
+
+      if (item?.closeOnSelect !== false) {
+        onClose?.();
+      }
     },
     [menuContext, onClose],
   );
@@ -434,7 +446,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={joinClassNames(
-          'max-w-sm min-w-64 overflow-hidden border border-black/10 bg-white/88 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-xl',
+          'max-w-sm rounded-[20px] min-w-64 overflow-hidden border border-black/10 bg-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-sm',
           classNames.content,
         )}
         role="menu"

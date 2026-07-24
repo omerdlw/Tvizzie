@@ -39,7 +39,11 @@ export function sanitizeAuthNextPath(nextPath, fallback = AUTH_DEFAULT_POST_LOGI
     return fallback;
   }
 
-  if (!rawValue.startsWith('/') || rawValue.startsWith('//')) {
+  if (
+    !rawValue.startsWith('/') ||
+    rawValue.startsWith('http://') ||
+    rawValue.startsWith('https://')
+  ) {
     return fallback;
   }
 

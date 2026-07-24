@@ -14,9 +14,9 @@ import AccountSectionLayout from '@/features/account/components/section-wrapper'
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 border border-black/5 p-3';
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -29,9 +29,9 @@ function formatActivityTime(value) {
   return diffHours < 24 ? `${diffHours}h` : `${Math.floor(diffHours / 24)}d`;
 }
 
-// --------------------------------------------------
-// COMPONENTS
-// --------------------------------------------------
+
+
+
 
 export default function AccountActivityFeed({
   currentPage = 1,

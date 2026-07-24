@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
+import { useLoadingState } from '@/core/modules/loading';
 import { useNavigationActions, useNavigationState } from '../context';
+import { NAV_EVENT_HANDLERS } from '../events';
 import { useNavRuntimeRegistry } from '@/core/modules/registry';
 import { createInlineSurfaceEntry, resolveSurfaceAction } from '../surface-model';
 import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from '../utils';
@@ -247,6 +249,7 @@ function resolveActiveItem({
   toggleBackgroundVideo,
   mediaAction,
   closeSurface,
+  isPageLoading,
 }) {
   const baseActiveItem = resolveBaseActiveItem({
     rawItems,
@@ -271,6 +274,13 @@ function resolveActiveItem({
 
   if (countdownItem) {
     return countdownItem;
+  }
+
+  if (isPageLoading) {
+    return {
+      ...baseActiveItem,
+      isLoading: true,
+    };
   }
 
   if (statusState) {
@@ -298,6 +308,7 @@ function hasActiveItemChanged(currentItem, previousItem) {
     currentItem?.path !== previousItem?.path ||
     currentItem?.name !== previousItem?.name ||
     currentItem?.type !== previousItem?.type ||
+    currentItem?.isLoading !== previousItem?.isLoading ||
     currentItem?.isOverlay !== previousItem?.isOverlay ||
     currentItem?.isSurface !== previousItem?.isSurface ||
     currentItem?.title !== previousItem?.title ||
@@ -319,6 +330,28 @@ function hasDisplayResultChanged(currentResult, previousResult) {
 
 export function useNavigationDisplay() {
   const pathname = usePathname();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const loadingState = useLoadingState();
+  const isGlobalLoading = Boolean(loadingState?.isLoading);
+
+  useEffect(() => {
+    const unsubStart = NAV_EVENT_HANDLERS.onNavigateStart(() => {
+      setIsNavigating(true);
+    });
+    const unsubEnd = NAV_EVENT_HANDLERS.onNavigateEnd(() => {
+      setIsNavigating(false);
+    });
+    return () => {
+      unsubStart?.();
+      unsubEnd?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
+
+  const isPageLoading = isGlobalLoading || isNavigating;
 
   const { rawItems } = useNavigationItems();
   const { closeSurface } = useNavigationActions();
@@ -363,6 +396,7 @@ export function useNavigationDisplay() {
       toggleBackgroundVideo,
       mediaAction,
       closeSurface,
+      isPageLoading,
     });
   }, [
     rawItems,
@@ -376,6 +410,7 @@ export function useNavigationDisplay() {
     toggleBackgroundVideo,
     mediaAction,
     closeSurface,
+    isPageLoading,
   ]);
 
   const activeItem = rawActiveItem;

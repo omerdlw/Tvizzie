@@ -6,9 +6,9 @@ import { Container } from '@/core/modules/modal';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function buildUserActionMap(socialProof) {
   const userMap = new Map();
@@ -44,9 +44,9 @@ function formatActionSummary(actions = []) {
   return actions.map((item) => item.toUpperCase()).join(' • ');
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function MediaSocialProofModal({ close, data }) {
   const userEntries = buildUserActionMap(data?.socialProof);
@@ -55,9 +55,9 @@ export default function MediaSocialProofModal({ close, data }) {
   return <ModalView close={close} userEntries={userEntries} title={data?.title} />;
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({ close, userEntries, title }) {
   return (

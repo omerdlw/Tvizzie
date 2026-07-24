@@ -173,10 +173,10 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
     (!entry.hasPayload || options.refreshOnSubscribe === true);
 
   if (shouldFetch) {
-    // Delay the initial fetch slightly to the next microtask. This ensures
-    // that if multiple components subscribe to the same key during the same
-    // synchronous execution (common in React trees), they are all registered
-    // and share the same first fetch rather than triggering redundant ones.
+    
+    
+    
+    
     Promise.resolve().then(() => {
       void runSharedEntry(entry, {
         forceEmit: !hadPayloadOnSubscribe || !shouldEmitCachedPayloadOnSubscribe,
@@ -306,7 +306,7 @@ export function invalidatePollingSubscription(subscriptionKey, options = {}) {
   }
 
   if (options.refetch === true && entry.subscribers.size > 0) {
-    // Avoid `unhandledRejection` for background refetches.
+    
     void runSharedEntry(entry, {
       forceEmit: options.forceEmit === true,
     }).catch(() => {});

@@ -12,6 +12,7 @@ import {
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
+
 const CardWrapper = forwardRef(function CardWrapper(
   { href, onClick, className, children, onKeyDown, ...props },
   ref,
@@ -57,6 +58,7 @@ const CardWrapper = forwardRef(function CardWrapper(
     </div>
   );
 });
+
 export default function MediaCard({
   href,
   onClick,
@@ -99,12 +101,13 @@ export default function MediaCard({
     priority: imagePriority,
   });
   const resolvedImageQuality = resolveImageQuality(imagePreset, imageQuality);
+  
   const cardNode = (
     <CardWrapper
       href={href}
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={cn('group flex shrink-0 flex-col overflow-hidden', className)}
+      className={cn('group flex shrink-0 flex-col overflow-hidden rounded-[20px]', className)}
       {...props}
     >
       <div className={cn('relative w-full overflow-hidden', aspectClass, frameClassName)}>

@@ -3,7 +3,7 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 function normalizeEnvValue(value) {
   let normalized = String(value || '').trim();
 
-  // Handle accidental nested quoting like "\"value\"" from copy/paste.
+  
   for (let index = 0; index < 3; index += 1) {
     if (
       (normalized.startsWith('"') && normalized.endsWith('"')) ||

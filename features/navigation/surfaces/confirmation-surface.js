@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
 import { NAV_SURFACE_RENDER_MODE } from '@/core/modules/nav';
+import { NAV_TAP_SCALE } from '@/core/modules/nav/motion';
 
 const BUTTON_TONES = Object.freeze({
   danger:
@@ -100,7 +102,7 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
 
   return (
     <div className="mt-1 flex w-full flex-row items-center gap-2 px-1">
-      <button
+      <motion.button
         type="button"
         disabled={isSubmitting}
         onClick={handleCancel}
@@ -108,11 +110,13 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: 'muted',
           className: 'disabled:cursor-not-allowed',
         })}
+        whileTap={isSubmitting ? undefined : { scale: NAV_TAP_SCALE }}
+        transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
       >
         {cancelText}
-      </button>
+      </motion.button>
 
-      <button
+      <motion.button
         type="button"
         disabled={isSubmitting}
         onClick={handleConfirm}
@@ -120,9 +124,11 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
+        whileTap={isSubmitting ? undefined : { scale: NAV_TAP_SCALE }}
+        transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
       >
         {isSubmitting ? confirmLoadingText : confirmText}
-      </button>
+      </motion.button>
     </div>
   );
 }

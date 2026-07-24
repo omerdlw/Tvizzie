@@ -114,7 +114,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           aria-label="Scroll left"
           onClick={() => scrollByDirection(-1)}
           className={cn(
-            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:left-[-16px] md:size-8',
+            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-black text-primary rounded-full md:left-[-16px] md:size-8',
           )}
         >
           <Icon icon="solar:alt-arrow-left-bold" size={16} />
@@ -127,7 +127,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           aria-label="Scroll right"
           onClick={() => scrollByDirection(1)}
           className={cn(
-            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-white text-black/70 hover:bg-white hover:text-black md:right-[-16px] md:size-8',
+            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-black text-primary rounded-full md:right-[-16px] md:size-8',
           )}
         >
           <Icon icon="solar:alt-arrow-right-bold" size={16} />

@@ -155,7 +155,7 @@ function attachSupabaseRealtimeSource(entry) {
         try {
           channel.unsubscribe();
         } catch {
-          // no-op
+          
         }
 
         entry.realtimeChannel = null;
@@ -203,7 +203,7 @@ function detachEntrySource(entry) {
     try {
       entry.realtimeChannel.unsubscribe();
     } catch {
-      // no-op
+      
     }
 
     entry.realtimeChannel = null;

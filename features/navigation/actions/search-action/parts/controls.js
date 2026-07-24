@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/features/search/constants';
 import { navActionClass } from '../utils';
+import { NAV_TAP_SCALE } from '@/core/modules/nav/motion';
 
 function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
@@ -102,12 +104,17 @@ export default function SearchActionControls({
       </div>
 
       {shouldShowTabs ? (
-        <div className="mt-2 overflow-hidden">
+        <motion.div
+          className="mt-2 overflow-hidden"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
+        >
           <div className={SEARCH_STYLES.tabList}>
             {SEARCH_TAB_ITEMS.map((item) => {
               const isActive = searchType === item.key;
               return (
-                <button
+                <motion.button
                   key={item.key}
                   type="button"
                   className={cn(
@@ -119,13 +126,15 @@ export default function SearchActionControls({
                     'group',
                   )}
                   onClick={() => onSearchTypeChange?.(item.key)}
+                  whileTap={{ scale: NAV_TAP_SCALE }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
                 >
                   <span className="relative">{item.label}</span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       ) : null}
     </>
   );

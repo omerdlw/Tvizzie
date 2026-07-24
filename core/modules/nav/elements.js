@@ -1,5 +1,7 @@
-import { cn } from '@/core/utils/classnames';
+import { motion, AnimatePresence } from 'framer-motion';
 import Iconify from '@/ui/icon';
+import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_BADGE_TRANSITION } from '@/core/modules/nav/motion';
+import { cn } from '@/core/utils';
 
 function isImageIconSource(icon) {
   return (
@@ -36,17 +38,24 @@ export function Description({ text, style, maxLines = 1 }) {
   const isMultiline = Number(maxLines) > 1;
 
   return (
-    <div className="relative w-full text-sm">
-      <p
-        className={cn(
-          'text-black',
-          isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
-          className,
-        )}
-        style={{ opacity, ...getLineClampStyle(maxLines, restStyle) }}
-      >
-        {text}
-      </p>
+    <div className="relative w-full text-sm overflow-hidden min-h-[1.25rem]">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.p
+          key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
+          initial={{ opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -3 }}
+          transition={NAV_MICRO_TRANSITION}
+          className={cn(
+            'text-black',
+            isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
+            className,
+          )}
+          style={{ opacity, ...getLineClampStyle(maxLines, restStyle) }}
+        >
+          {text}
+        </motion.p>
+      </AnimatePresence>
     </div>
   );
 }
@@ -61,33 +70,40 @@ function IconOverlay({ overlay }) {
   }
 
   const { icon, onClick, title = '' } = overlay;
-
   const isImageSource = isImageIconSource(icon);
 
   return (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        onClick?.(event);
-      }}
-      title={title || undefined}
-      aria-label={title || 'Open current account'}
-      className={cn(
-        'absolute -right-1 -bottom-1 rounded-[8px] flex size-6 items-center justify-center overflow-hidden ',
-        typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default',
-      )}
-    >
-      {isImageSource ? (
-        <span
-          className="size-full rounded-[8px] bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${icon})` }}
-        />
-      ) : (
-        <span className="text-black">{renderIconNode(icon, 12)}</span>
-      )}
-    </button>
+    <AnimatePresence mode="wait">
+      <motion.button
+        key={icon}
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          onClick?.(event);
+        }}
+        title={title || undefined}
+        aria-label={title || 'Open current account'}
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.7 }}
+        whileTap={onClick ? { scale: 0.9 } : undefined}
+        transition={NAV_BADGE_TRANSITION}
+        className={cn(
+          'absolute -right-1 -bottom-1 rounded-[8px] flex size-6 items-center justify-center overflow-hidden',
+          typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default',
+        )}
+      >
+        {isImageSource ? (
+          <span
+            className="size-full rounded-[8px] bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${icon})` }}
+          />
+        ) : (
+          <span className="text-black">{renderIconNode(icon, 12)}</span>
+        )}
+      </motion.button>
+    </AnimatePresence>
   );
 }
 
@@ -128,19 +144,28 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
-        <div
+        <motion.div
           className={cn(
-            'center size-12 rounded-[16px] bg-black/5',
-            isStackHovered && !hasCustomBackground && 'bg-black/10',
-            isStackHovered && !hasCustomColor && 'text-black',
+            'center size-12 rounded-[16px]',
             className,
           )}
+          animate={{
+            backgroundColor:
+              isStackHovered && !hasCustomBackground
+                ? 'rgba(0,0,0,0.10)'
+                : 'rgba(0,0,0,0.05)',
+            color:
+              isStackHovered && !hasCustomColor
+                ? 'rgba(0,0,0,1)'
+                : undefined,
+          }}
+          transition={NAV_FADE_TRANSITION}
           style={iconStyle}
         >
           <span>
             {renderIconNode(icon, size)}
           </span>
-        </div>
+        </motion.div>
       )}
       <IconOverlay overlay={iconOverlay} />
     </div>
@@ -152,12 +177,19 @@ export function Title({ text, style }) {
 
   return (
     <div className="relative overflow-hidden">
-      <h3
-        className={cn('truncate font-bold uppercase', className)}
-        style={inlineStyle}
-      >
-        {text}
-      </h3>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.h3
+          key={typeof text === 'string' || typeof text === 'number' ? text : 'title'}
+          initial={{ opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -3 }}
+          transition={NAV_MICRO_TRANSITION}
+          className={cn('truncate font-bold uppercase', className)}
+          style={inlineStyle}
+        >
+          {text}
+        </motion.h3>
+      </AnimatePresence>
     </div>
   );
 }

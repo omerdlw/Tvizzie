@@ -1,13 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
-import {
-  PersonSurfaceReveal,
-} from '@/features/media/static-route-elements';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { PersonSurfaceReveal } from '@/features/media/static-route-elements';
 import Carousel from '@/ui/media/carousel';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal';
+
+const GAP_PX = 12;
+const CARDS_VISIBLE = 5;
+
 function sortProfiles(profiles = []) {
   return [...profiles]
     .filter((image) => image?.file_path)
@@ -18,10 +20,29 @@ function sortProfiles(profiles = []) {
     )
     .slice(0, 20);
 }
+
 export default function PersonGallery({ images, animateItemReveal = true }) {
   const { openModal } = useModal();
   const profiles = useMemo(() => sortProfiles(images?.profiles || []), [images]);
+  const containerRef = useRef(null);
+  const [cardWidth, setCardWidth] = useState(null);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const calc = () => {
+      const containerW = node.offsetWidth ?? 0;
+      const totalGap = GAP_PX * (CARDS_VISIBLE - 1);
+      setCardWidth(Math.floor((containerW - totalGap) / CARDS_VISIBLE));
+    };
+    calc();
+    const observer = new ResizeObserver(calc);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   if (!profiles.length) return null;
+
   return (
     <PersonSurfaceReveal>
       <section className="flex w-full flex-col gap-3">
@@ -29,33 +50,34 @@ export default function PersonGallery({ images, animateItemReveal = true }) {
           Gallery
         </h2>
 
-        <Carousel gap="gap-3">
-          {profiles.map((image, index) => {
-            return (
-              <div key={image.file_path || index}>
+        <div ref={containerRef} className="w-full">
+          <Carousel gap="gap-3">
+            {profiles.map((image, index) => (
+              <div
+                key={image.file_path || index}
+                style={{ width: cardWidth ?? 160, flexShrink: 0 }}
+              >
                 <MediaCard
-                  className="w-[min(14rem,calc(100vw-4.5rem))] sm:w-60"
+                  className="w-full"
                   aspectClass="aspect-2/3"
                   imageSrc={image.file_path ? `${TMDB_IMG}/w342${image.file_path}` : null}
                   imageAlt={`${index + 1}. portrait`}
-                  imageSizes="(min-width: 1024px) 240px, (min-width: 768px) 31vw, 38vw"
-                  imagePriority={index < 4}
-                  imageFetchPriority={index < 4 ? 'high' : undefined}
+                  imageSizes="(min-width: 1024px) 20vw, (min-width: 640px) 25vw, 33vw"
+                  imagePriority={index < 5}
+                  imageFetchPriority={index < 5 ? 'high' : undefined}
                   imagePreset="feature"
                   fallbackIcon="solar:user-bold"
                   fallbackIconSize={24}
                   onClick={() =>
-                    openModal?.('PREVIEW_MODAL', 'center', {
-                      data: image,
-                    })
+                    openModal?.('PREVIEW_MODAL', 'center', { data: image })
                   }
                   data-poster-file-path={image.file_path || ''}
                   data-context-menu-target="person-poster-card"
                 />
               </div>
-            );
-          })}
-        </Carousel>
+            ))}
+          </Carousel>
+        </div>
       </section>
     </PersonSurfaceReveal>
   );

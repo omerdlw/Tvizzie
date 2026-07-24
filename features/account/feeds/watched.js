@@ -1,4 +1,3 @@
-// watched.js (Aynı yapı watchlist.js için de geçerlidir)
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -24,7 +23,7 @@ import AccountMediaGridPage, {
 import { AccountSectionState } from '@/features/account/components/section-wrapper';
 
 const VISIBILITY_OPTIONS = Object.freeze([
-  Object.freeze({ key: 'hide_rewatched', label: 'Hide rewatched titles' }), // Watchlist'te bu satır yok
+  Object.freeze({ key: 'hide_rewatched', label: 'Hide rewatched titles' }),
   Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),
   Object.freeze({ key: 'hide_documentaries', label: 'Hide documentaries' }),
 ]);
@@ -45,7 +44,6 @@ export default function AccountWatchedFeed({
   const searchString = useSearchParams()?.toString?.() || '';
   const collectionRootPath = buildCollectionBasePath(pathname);
 
-  // State Consolidation
   const [viewState, setViewState] = useState({
     media: parseCurrentFilters(new URLSearchParams(searchString)),
     page: parsePageFromSearch(new URLSearchParams(searchString)),

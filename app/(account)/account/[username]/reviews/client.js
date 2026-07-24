@@ -229,10 +229,10 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
         ? currentLikes.filter((id) => id !== userId)
         : [...new Set([...currentLikes, userId])];
 
-      // Track pending optimistic state
+      
       pendingLikesRef.current.set(reviewId, nextLikes);
 
-      // Optimistic update
+      
       setReviews((current) =>
         current.map((item) => {
           if ((item.docPath || item.id) !== reviewId) {
@@ -252,12 +252,12 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
           userId,
         });
 
-        // Keep in pending list for a bit to avoid data re-fetch revert
+        
         setTimeout(() => {
           pendingLikesRef.current.delete(reviewId);
         }, 3000);
       } catch (error) {
-        // Rollback
+        
         pendingLikesRef.current.delete(reviewId);
         setReviews(previousReviews);
         toast.error(error?.message || 'Review could not be updated');

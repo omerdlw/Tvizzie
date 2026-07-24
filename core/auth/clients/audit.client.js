@@ -72,6 +72,6 @@ export function logAuthAuditEvent(payload = {}) {
       body,
     }).catch(() => null);
   } catch {
-    // Audit logging should never break user flows.
+    
   }
 }

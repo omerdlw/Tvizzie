@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
 import { cn } from '@/core/utils/classnames';
@@ -14,15 +15,22 @@ import { useNavViewport } from '@/core/modules/nav/hooks/use-nav-viewport';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item from './item';
+import { estimateCompactCardWidth } from './layout';
 import {
   canPreviewStackOnTopHover,
   getActiveItemLayoutKey,
   getIsItemActive,
   getItemKey,
   getItemPosition,
-  getNavStackClassName,
   shouldSyncStackHover,
 } from './utils';
+import {
+  NAV_BACKDROP_TRANSITION,
+  NAV_CARD_SPRING,
+  NAV_HEIGHT_TRANSITION,
+  NAV_COMPACT_HEIGHT_TRANSITION,
+  NAV_FADE_TRANSITION,
+} from '@/core/modules/nav/motion';
 
 export { NavigationProvider, useNavigationActions, useNavigationContext, useNavigationState } from './context';
 export {
@@ -34,7 +42,7 @@ export {
 export { NavSurfaceHeader, default as NavSurfaceShell, useSurfaceHeader } from './surface';
 export { NAV_SURFACE_RENDER_MODE } from './surface-model';
 
-// ─── Main Nav component ──────────────────────────────────────────────────────
+
 
 export default function Nav() {
   const {
@@ -66,6 +74,14 @@ export default function Nav() {
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
   const isCompactPreviewActive = compact && !expanded && isStackHovered;
   const isTopItemCompact = compact && !expanded && !isStackHovered;
+  const isCompactStack = !expanded && compact && !isCompactPreviewActive;
+  const activeTitle = activeItem?.title || activeItem?.name || '';
+  const compactStackWidth = useMemo(
+    () => estimateCompactCardWidth(activeTitle, stackWidth),
+    [activeTitle, stackWidth],
+  );
+
+  const heightTransition = NAV_CARD_SPRING;
 
   const { containerHeight, handleContentHeightChange } = useNavHeightController({
     activeItemIsOverlay: isOverlayActive,
@@ -75,7 +91,7 @@ export default function Nav() {
     setNavHeight,
   });
 
-  // ─── Overlay / backdrop state ─────────────────────────────────────────────
+  
 
   const handleOutsideDismiss = useCallback(() => {
     if (isOverlayActive) return;
@@ -98,7 +114,7 @@ export default function Nav() {
     setFocusedIndex,
   });
 
-  // ─── Focus index sync ─────────────────────────────────────────────────────
+  
 
   useEffect(() => {
     clearHoverState();
@@ -111,11 +127,11 @@ export default function Nav() {
     setFocusedIndex(-1);
   }, [activeIndex, clearHoverState, expanded]);
 
-  // ─── Click outside ────────────────────────────────────────────────────────
+  
 
   useClickOutside(navRef, handleOutsideDismiss);
 
-  // ─── Fullscreen guard ─────────────────────────────────────────────────────
+  
 
   useEffect(() => {
     if (!isFullscreenStateActive) return;
@@ -123,17 +139,14 @@ export default function Nav() {
     clearHoverState();
   }, [clearHoverState, isFullscreenStateActive, setExpanded]);
 
-  // ─── Stack className ──────────────────────────────────────────────────────
+  
 
-  const stackClassName = useMemo(
-    () => getNavStackClassName({ isFullscreenStateActive }),
-    [isFullscreenStateActive],
-  );
   const renderedNavItems = navigationItems.map((link, index) => {
     const position = getItemPosition(index);
     const isTop = position === 0;
     const isActive = getIsItemActive(link, activeItem);
-    const isCompactCard = isTop && !isCompactPreviewActive && compact;
+    const isCompactCard = isTop && isCompactStack;
+    const cardWidth = isCompactStack ? compactStackWidth : stackWidth;
     const shouldSyncHover = shouldSyncStackHover(pathname, compact);
     const canTopCardPreview = canPreviewStackOnTopHover(compact, expanded);
 
@@ -191,6 +204,7 @@ export default function Nav() {
         isActive={isActive}
         isStackHovered={isStackHovered}
         stackWidth={stackWidth}
+        cardWidth={isTop ? cardWidth : undefined}
         totalItems={navigationItems.length}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -203,25 +217,53 @@ export default function Nav() {
 
   const navContent = (
     <>
-      {isBackdropVisible ? (
-        <div
-          className={cn('fixed inset-0 bg-white/40 cursor-pointer')}
-          style={{
-            zIndex: Z_INDEX.NAV_BACKDROP,
-          }}
-          onClick={handleOutsideDismiss}
-        />
-      ) : null}
-      <div
+      
+      <AnimatePresence>
+        {isBackdropVisible && (
+          <motion.div
+            key="nav-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, backdropFilter: 'blur(6px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={NAV_BACKDROP_TRANSITION}
+            className={cn('fixed inset-0 bg-white/20 cursor-pointer')}
+            style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
+            onClick={handleOutsideDismiss}
+          />
+        )}
+      </AnimatePresence>
+
+      
+      <motion.div
         id="nav-card-stack"
         ref={navRef}
-        className={stackClassName}
-        style={{ zIndex: Z_INDEX.NAV, width: stackWidth, maxWidth: '100vw' }}
+        className="fixed bottom-1 h-auto w-full touch-manipulation select-none"
+        style={{
+          zIndex: Z_INDEX.NAV,
+          maxWidth: '100vw',
+          left: '50%',
+          
+          
+          x: '-50%',
+        }}
+        
+        initial={false}
+        animate={{
+          width: isCompactStack ? compactStackWidth : stackWidth,
+          opacity: isFullscreenStateActive ? 0 : 1,
+          pointerEvents: isFullscreenStateActive ? 'none' : 'auto',
+        }}
+        transition={heightTransition}
       >
-        <div style={{ position: 'relative', height: `${containerHeight}px` }}>
+        
+        <motion.div
+          style={{ position: 'relative' }}
+          animate={{ height: containerHeight }}
+          transition={heightTransition}
+        >
           {renderedNavItems}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </>
   );
 

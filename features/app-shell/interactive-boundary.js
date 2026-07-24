@@ -138,3 +138,19 @@ export function InteractiveFeatureBoundary({ children }) {
     </InteractiveProviders>
   );
 }
+
+export function PersistentInteractiveShell({ children }) {
+  return (
+    <InteractiveProviders>
+      <SharedInteractiveFrame>
+        <AccountNavRegistry />
+        <GlobalContextMenuRegistry />
+        <GlobalNotificationModalRegistry />
+        <NotificationBadgeListener />
+        <ContextMenuGlobal />
+        <CountdownOverlay />
+        {children}
+      </SharedInteractiveFrame>
+    </InteractiveProviders>
+  );
+}

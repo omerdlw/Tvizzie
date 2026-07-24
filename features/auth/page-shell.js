@@ -18,12 +18,12 @@ export const AuthRouteRegistry = createRouteRegistry({
 export default function AuthPageShell({ children }) {
   return (
     <main className="relative flex min-h-screen w-screen items-center justify-center px-4 pt-6 pb-28 overflow-x-hidden">
-      {/* Background vertical grid lines */}
+      
       <div className="absolute inset-0 flex justify-center px-4 pointer-events-none">
         <div className="relative w-full max-w-xl h-full">
-          {/* Left vertical grid line */}
+          
           <div className="absolute top-0 bottom-0 left-0 w-px bg-black/10" />
-          {/* Right vertical grid line */}
+          
           <div className="absolute top-0 bottom-0 right-0 w-px bg-black/10" />
         </div>
       </div>

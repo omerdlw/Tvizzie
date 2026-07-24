@@ -26,6 +26,9 @@ export function useNavHeightController({
   const previousPathRef = useRef(pathname);
   const previousActiveItemLayoutKeyRef = useRef(activeItemLayoutKey);
 
+  const lastAppliedContainerHeightRef = useRef(NAV_CARD_LAYOUT.baseHeight);
+  const lastAppliedSpacerHeightRef = useRef(NAV_CARD_LAYOUT.baseHeight + NAV_HEIGHT_BUFFER);
+
   compactRef.current = compact;
 
   const applyHeight = useCallback(() => {
@@ -41,9 +44,17 @@ export function useNavHeightController({
     });
     const isBottomLockedForSpacer = getDistanceToBottom() <= NAV_SPACER_BOTTOM_LOCK_DISTANCE;
     const spacerBaseHeight = isBottomLockedForSpacer ? NAV_CARD_LAYOUT.compactHeight : height;
+    const totalSpacerHeight = spacerBaseHeight + NAV_HEIGHT_BUFFER;
 
-    setContainerHeight(height);
-    setNavHeight(spacerBaseHeight + NAV_HEIGHT_BUFFER);
+    if (Math.abs(height - lastAppliedContainerHeightRef.current) > 2.0) {
+      lastAppliedContainerHeightRef.current = height;
+      setContainerHeight(height);
+    }
+
+    if (Math.abs(totalSpacerHeight - lastAppliedSpacerHeightRef.current) > 2.0) {
+      lastAppliedSpacerHeightRef.current = totalSpacerHeight;
+      setNavHeight(totalSpacerHeight);
+    }
   }, [setNavHeight]);
 
   const handleContentHeightChange = useCallback(
@@ -63,53 +74,38 @@ export function useNavHeightController({
     }
 
     heightRef.current = { content: 0 };
+    lastAppliedContainerHeightRef.current = NAV_CARD_LAYOUT.baseHeight;
+    lastAppliedSpacerHeightRef.current = NAV_CARD_LAYOUT.baseHeight + NAV_HEIGHT_BUFFER;
     setContainerHeight(NAV_CARD_LAYOUT.baseHeight);
     setNavHeight(NAV_CARD_LAYOUT.baseHeight + NAV_HEIGHT_BUFFER);
   }, [setNavHeight]);
-
-  const transitionTimeoutRef = useRef(null);
-  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
     };
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    isTransitioningRef.current = true;
-    if (transitionTimeoutRef.current) {
-      clearTimeout(transitionTimeoutRef.current);
-    }
-    transitionTimeoutRef.current = setTimeout(() => {
-      isTransitioningRef.current = false;
-      if (!compactRef.current) {
-        applyHeight();
-      }
-    }, 350);
-
     if (compact) {
-      // When entering compact mode, snap immediately to compact height.
-      // Content stays in the DOM (hidden via opacity) so its height
-      // continues to be measured and cached in heightRef.
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
 
       const compactHeight = NAV_CARD_LAYOUT.compactHeight;
+      const compactSpacerHeight = compactHeight + NAV_HEIGHT_BUFFER;
+
+      lastAppliedContainerHeightRef.current = compactHeight;
+      lastAppliedSpacerHeightRef.current = compactSpacerHeight;
+
       setContainerHeight(compactHeight);
-      setNavHeight(compactHeight + NAV_HEIGHT_BUFFER);
+      setNavHeight(compactSpacerHeight);
       return;
     }
 
-    // When leaving compact mode, the cached content height is already
-    // up-to-date because content remained in the DOM. Apply immediately.
     applyHeight();
   }, [compact, applyHeight, setNavHeight]);
 
@@ -123,8 +119,7 @@ export function useNavHeightController({
     if (activeItemIsOverlay) return;
     if (previousActiveItemLayoutKeyRef.current === activeItemLayoutKey) return;
     previousActiveItemLayoutKeyRef.current = activeItemLayoutKey;
-    applyHeight();
-  }, [activeItemIsOverlay, activeItemLayoutKey, applyHeight]);
+  }, [activeItemIsOverlay, activeItemLayoutKey]);
 
   return {
     containerHeight,

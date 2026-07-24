@@ -106,6 +106,6 @@ export async function logSearchQualityEvent(event) {
     const admin = createAdminClient();
     await admin.from('search_quality_events').insert(event);
   } catch {
-    // Search quality logging must never affect the user-facing search path.
+    
   }
 }

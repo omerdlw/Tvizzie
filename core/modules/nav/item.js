@@ -3,6 +3,7 @@
 import React, { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
@@ -23,6 +24,12 @@ import { NavActionsContainer } from './actions';
 import { Icon as BadgeIcon, Description, Title } from './elements';
 import NavSurfaceShell from './surface';
 import { resolveNavVisualStyle, shouldRenderInlineAction } from './utils';
+import {
+  NAV_CARD_SPRING,
+  NAV_FADE_TRANSITION,
+  NAV_BADGE_TRANSITION,
+  NAV_TAP_SCALE,
+} from '@/core/modules/nav/motion';
 
 function resolveInlineActionNode(action) {
   if (React.isValidElement(action)) return action;
@@ -63,6 +70,7 @@ const Item = memo(
       link,
       isActive,
       stackWidth,
+      cardWidth: cardWidthProp,
       containerHeight,
     },
 
@@ -79,9 +87,9 @@ const Item = memo(
     const cardContentRef = useRef(null);
 
     const showBorder = expanded ? isHovered : isHovered || isStackHovered;
-    const cardWidth = compact
+    const cardWidth = cardWidthProp || (compact
       ? estimateCompactCardWidth(link.title || link.name, stackWidth)
-      : stackWidth;
+      : stackWidth);
 
     const itemStyle = useMemo(() => {
       return resolveNavVisualStyle(link.style, {
@@ -91,7 +99,7 @@ const Item = memo(
     }, [link.style, isActive, showBorder]);
 
     const actionNode = ActionComponent;
-    const renderedActionNode = actionNode;
+    const renderedActionNode = link.isSurface ? null : actionNode;
 
     useElementHeight(
       onContentHeightChange,
@@ -186,7 +194,14 @@ const Item = memo(
       );
     };
 
-    const cardProps = getNavItemCardProps({
+    
+    
+    
+    const {
+      className: cardClassName,
+      style: cardStyle,
+      motionValues,
+    } = getNavItemCardProps({
       expanded,
       position,
       showBorder,
@@ -197,16 +212,24 @@ const Item = memo(
       isAnchoredToBottom: link.isSurface,
       globalCompact,
       compact,
+      pathname,
+      isHovered,
+      isStackHovered,
     });
-    delete cardProps.animate;
-    delete cardProps.transition;
-    delete cardProps.initial;
-    delete cardProps.exit;
 
     return (
-      <div
+      <motion.div
         ref={ref}
-        {...cardProps}
+        className={cardClassName}
+        style={cardStyle}
+        initial={false}
+        animate={{
+          ...(motionValues.width !== undefined ? { width: motionValues.width } : {}),
+          y: motionValues.y,
+          scale: motionValues.scale,
+          opacity: motionValues.opacity,
+        }}
+        transition={NAV_CARD_SPRING}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
         onFocus={handleFocus}
@@ -216,51 +239,63 @@ const Item = memo(
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        {/* ─── Compact title overlay (positioned relative to card) ─── */}
-        {compact && (
-          <div
-            key="compact-title-overlay"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[38px] z-10 flex items-center justify-center px-5"
-          >
-            <div className="min-w-0">
-              <Title
-                text={link.title || link.name}
-                style={{
-                  ...itemStyle.title,
-                  className: cn(
-                    'tracking-tight normal-case text-center',
-                    itemStyle.title?.className,
-                    'text-[14px]',
-                  ),
-                  textTransform: 'none',
-                }}
-              />
-            </div>
-          </div>
-        )}
+        
+        <AnimatePresence mode="wait">
+          {compact && (
+            <motion.div
+              key="compact-title-overlay"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={NAV_FADE_TRANSITION}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
+            >
+              <div className="min-w-0">
+                <Title
+                  text={link.title || link.name}
+                  style={{
+                    ...itemStyle.title,
+                    className: cn(
+                      'tracking-tight normal-case text-center',
+                      itemStyle.title?.className,
+                      'text-[14px]',
+                    ),
+                    textTransform: 'none',
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div
+        <motion.div
           ref={cardContentRef}
-          className="flow-root w-full"
-          style={{
-            opacity: compact ? 0 : 1,
-            pointerEvents: compact ? 'none' : 'auto',
-          }}
+          className="flow-root w-full overflow-hidden"
+          animate={{ opacity: compact ? 0 : 1 }}
+          transition={NAV_FADE_TRANSITION}
+          style={{ pointerEvents: compact ? 'none' : 'auto' }}
         >
           {renderContent()}
 
-          {renderedActionNode ? (
-            <div
-              key="nav-action-component"
-              className="flow-root"
-              style={{ overflow: 'hidden' }}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <Suspense>{renderedActionNode}</Suspense>
-            </div>
-          ) : null}
-        </div>
-      </div>
+          
+          <AnimatePresence mode="wait">
+            {renderedActionNode ? (
+              <motion.div
+                key="nav-action-component"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={NAV_FADE_TRANSITION}
+                className="flow-root"
+                style={{ overflow: 'hidden' }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Suspense>{renderedActionNode}</Suspense>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
     );
   }),
 );
@@ -282,17 +317,23 @@ function VideoOverlayIcon({ icon }) {
 }
 
 function Badge({ badge }) {
-  if (!badge.visible) return null;
-
   return (
-    <div
-      key={badge.value}
-      className={cn(
-        'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring',
-      )}
-    >
-      {badge.value}
-    </div>
+    <AnimatePresence mode="wait">
+      {badge?.visible ? (
+        <motion.div
+          key={badge.value}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.6 }}
+          transition={NAV_BADGE_TRANSITION}
+          className={cn(
+            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring',
+          )}
+        >
+          {badge.value}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -336,11 +377,7 @@ function StandardItemContent({
         <div className="center relative">
           {link.icon ? (
             <div
-              className={
-                link.onClick || showVideoIcon
-                  ? 'relative cursor-pointer'
-                  : 'relative'
-              }
+              className={link.onClick || showVideoIcon ? 'relative cursor-pointer' : 'relative'}
               onClick={handleIconClick}
             >
               <BadgeIcon
@@ -374,11 +411,7 @@ function StandardItemContent({
       </div>
 
       {footerNode ? (
-        <div
-          key="nav-surface-footer"
-          ref={footerRef}
-          className="w-full overflow-hidden pt-2.5"
-        >
+        <div key="nav-surface-footer" ref={footerRef} className="w-full overflow-hidden pt-2.5">
           {footerNode}
         </div>
       ) : null}

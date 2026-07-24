@@ -48,16 +48,16 @@ function getNotificationRowAnimation(index = 0) {
   });
 }
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
+
+
+
 
 const TOOL_BUTTON_CLASS = 'size-7';
 const SKELETON_COUNT = 16;
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
@@ -108,9 +108,9 @@ function getNotificationSubject(payload, type) {
   return null;
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
@@ -123,12 +123,12 @@ export default function NotificationsModal({ close, header, data }) {
     forceReadIds: new Set(),
   });
 
-  // Derived Values
+  
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
   const unreadCount = notifications.filter((item) => !item.read).length;
   const hasUnread = unreadCount > 0;
 
-  // Effects
+  
   useEffect(() => {
     function resetOptimisticState() {
       optimisticStateRef.current = {
@@ -172,7 +172,7 @@ export default function NotificationsModal({ close, header, data }) {
     );
   }, [auth.isReady, auth.isAuthenticated, isAuthSessionReady, userId]);
 
-  // Handlers
+  
   async function handleMarkAllRead() {
     if (!userId || !hasUnread) return;
     const previous = notifications;
@@ -262,9 +262,9 @@ export default function NotificationsModal({ close, header, data }) {
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({
   close,

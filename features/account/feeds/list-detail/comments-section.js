@@ -11,9 +11,9 @@ import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import { LIST_COMMENT_SORT_OPTIONS, REVIEW_ITEMS_PER_PAGE } from './config';
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function ListDetailCommentsSection({
   auth,
@@ -36,7 +36,7 @@ export default function ListDetailCommentsSection({
 }) {
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
 
-  // Derived Values (Türetilmiş state'ler - useEffect zincirini kırar)
+  
   const totalReviewPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEW_ITEMS_PER_PAGE));
   const safeCurrentReviewPage = Math.min(currentReviewPage, totalReviewPages);
   const reviewPageStart = (safeCurrentReviewPage - 1) * REVIEW_ITEMS_PER_PAGE;
@@ -46,7 +46,7 @@ export default function ListDetailCommentsSection({
   );
   const hasListReviews = reviews.length > 0;
 
-  // Sadece filtre veya liste değiştiğinde sayfayı başa sar
+  
   useEffect(() => {
     setCurrentReviewPage(1);
   }, [list?.id, reviewFilters]);
@@ -78,9 +78,9 @@ export default function ListDetailCommentsSection({
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function CommentsView({
   auth,

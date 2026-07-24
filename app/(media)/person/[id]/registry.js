@@ -57,7 +57,11 @@ export default function Registry({
       action: isSearching ? (
         <SearchAction />
       ) : person ? (
-        <PersonAction activeView={activeView} setActiveView={setActiveView} />
+        <PersonAction
+          activeView={activeView}
+          setActiveView={setActiveView}
+          externalIds={person.external_ids}
+        />
       ) : undefined,
     },
     ...(backgroundImage || shouldResetBackgroundForLoading

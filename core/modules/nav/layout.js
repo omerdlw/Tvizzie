@@ -52,6 +52,15 @@ function getExpandedItemY(position) {
   return position * NAV_CARD_LAYOUT.expanded.offsetY;
 }
 
+
+
+
+
+
+
+
+
+
 export function getNavItemCardProps({
   cardScale,
   cardStyle,
@@ -65,6 +74,7 @@ export function getNavItemCardProps({
   globalCompact,
 }) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
+  const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
   const safeCardStyle = cardStyle
     ? Object.fromEntries(
         Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'),
@@ -73,12 +83,22 @@ export function getNavItemCardProps({
 
   const isTop = position === 0;
   const collapsedScaleValue = collapsedScale ** position;
-  const y = expanded ? getExpandedItemY(position) : position * collapsedOffsetY;
-  const scale = expanded ? cardScale || 1 : collapsedScaleValue;
+
+  const y = expanded
+    ? position * expandedOffsetY
+    : position * collapsedOffsetY;
+
+  const scale = expanded
+    ? cardScale || 1
+    : collapsedScaleValue;
+
+  const opacity = 1;
 
   return {
+    
     className: cn(
-      'absolute top-0 h-auto w-full border rounded-[24px] p-2 backdrop-blur-lg',
+      'absolute h-auto w-full border rounded-[24px] p-2 backdrop-blur-lg',
+      (isAnchoredToBottom || isTop) ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
       'border-black/10 bg-white/80',
       showBorder && 'border-black/15',
@@ -88,13 +108,14 @@ export function getNavItemCardProps({
       ...safeCardStyle,
       overflow: compact ? 'hidden' : undefined,
       left: '50%',
-      width: `${cardWidth}px`,
-      transform: `translateX(-50%) translateY(${y}px) scale(${scale})`,
-      transformOrigin: 'top center',
+      x: '-50%',
+      transformOrigin: (isAnchoredToBottom || isTop) ? 'bottom center' : 'top center',
       zIndex: 10 - position,
-      opacity: 1,
       ...(isTop ? { height: '100%' } : {}),
     },
+    
+    // Only expose width for top card (compact pill) — inactive cards use w-full from container.
+    motionValues: { width: isTop ? cardWidth : undefined, y, scale, opacity },
   };
 }
 
@@ -163,9 +184,14 @@ export function getNavCardWidth(activeItem = null) {
   }
 
   const isDesktop = window.innerWidth >= 640;
-  if (isDesktop && activeItem?.isSurface && activeItem?.expandHorizontal) {
-    const targetWidth = activeItem.width ? Number(activeItem.width) : 640;
-    return Math.min(targetWidth, Math.max(window.innerWidth - 32, 0));
+  if (isDesktop && activeItem) {
+    if (activeItem.width) {
+      const targetWidth = Number(activeItem.width);
+      return Math.min(targetWidth, Math.max(window.innerWidth - 32, 0));
+    }
+    if (activeItem.expandHorizontal) {
+      return Math.min(640, Math.max(window.innerWidth - 32, 0));
+    }
   }
 
   return Math.min(460, Math.max(window.innerWidth - 16, 0));

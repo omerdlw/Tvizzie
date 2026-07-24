@@ -12,17 +12,17 @@ import { getStorageItem, setStorageItem } from '@/core/utils/client-utils';
 import { Button, Textarea } from '@/ui/elements';
 import { cn } from '@/core/utils';
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
+
+
+
 
 const FEEDBACK_STORAGE_KEY = 'tvizzie-feedback-drafts';
 const FEEDBACK_STORAGE_LIMIT = 25;
 const FORM_ID = 'feedback-modal-form';
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function createFeedbackId() {
   return `feedback_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -64,9 +64,9 @@ async function copyFeedbackRecord(record) {
   }
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function FeedbackModal({ close, header }) {
   const toast = useToast();
@@ -127,9 +127,9 @@ export default function FeedbackModal({ close, header }) {
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({ close, header, message, setMessage, isSaving, handleSubmit }) {
   return (

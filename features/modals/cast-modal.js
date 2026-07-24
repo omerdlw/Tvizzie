@@ -13,9 +13,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import Icon from '@/ui/icon';
 
-// --------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------
+
+
+
 
 const DESKTOP_COLUMNS = 3;
 const GRID_CLASS =
@@ -27,9 +27,9 @@ const SPRING_TRANSITION = {
   mass: 0.75,
 };
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function normalizeEntries(list, fallbackSubtitle) {
   return (Array.isArray(list) ? list : []).map((member) => ({
@@ -76,27 +76,27 @@ function createHeader({ header, hasBoth, activeTab, setActiveTab }) {
   };
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function CastModal({ close, data, header }) {
   usePosterPreferenceVersion();
   const contentRef = useRef(null);
 
-  // Derived Values
+  
   const castEntries = normalizeEntries(data?.cast, 'Cast');
   const crewEntries = normalizeEntries(data?.crew, 'Crew');
   const hasCast = castEntries.length > 0;
   const hasCrew = crewEntries.length > 0;
   const hasBoth = hasCast && hasCrew;
 
-  // State
+  
   const [activeTab, setActiveTab] = useState(() =>
     data?.initialTab === 'crew' && hasCrew ? 'crew' : 'cast',
   );
 
-  // Effects
+  
   useEffect(() => {
     if (activeTab === 'cast' && !hasCast && hasCrew) setActiveTab('crew');
     if (activeTab === 'crew' && !hasCrew && hasCast) setActiveTab('cast');
@@ -109,7 +109,7 @@ export default function CastModal({ close, data, header }) {
     });
   }, [activeTab]);
 
-  // Derived View Values
+  
   const isEdgePosition = header?.position === 'top' || header?.position === 'bottom';
   const containerClassName = cn('max-h-[85vh]', isEdgePosition ? 'w-full' : 'w-[min(94vw,980px)]');
   const resolvedHeader = createHeader({
@@ -136,9 +136,9 @@ export default function CastModal({ close, data, header }) {
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({
   close,

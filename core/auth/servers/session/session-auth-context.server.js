@@ -19,9 +19,9 @@ async function buildAuthContextFromAccessToken(
   const decodedToken = decodeJwtPayload(normalizedAccessToken);
   let rawUser = predefinedUser;
 
-  // Fallback to JWT payload if no user is provided. This safely extracts user ID and email
-  // without hitting the DB, relying on the fact that Next.js middleware or session verification
-  // has already validated the JWT signature (via getSession or auth guards).
+  
+  
+  
   if (!rawUser) {
     if (!decodedToken?.sub) {
       throw new Error('Invalid or expired authentication token');

@@ -56,21 +56,22 @@ export function resolveNavVisualStyle(style, { isActive = false, isHovered = fal
   };
 }
 
-export function getNavStackClassName({ isFullscreenStateActive }) {
-  const baseClassName =
-    'fixed bottom-1 left-1/2 h-auto w-full -translate-x-1/2 touch-manipulation select-none';
 
-  return isFullscreenStateActive
-    ? `${baseClassName} pointer-events-none opacity-0`
-    : `${baseClassName} opacity-100`;
+
+
+
+
+export function getNavStackClassName() {
+  return 'fixed bottom-1 left-1/2 h-auto w-full -translate-x-1/2 touch-manipulation select-none';
 }
 
 export function getItemKey(link, index = 0) {
   const pathPart = String(link?.path || '').trim() || 'no-path';
   const namePart = String(link?.name || '').trim() || 'no-name';
   const typePart = String(link?.type || '').trim() || 'no-type';
+  const surfacePart = link?.isSurface ? `surface::${link?.id || link?.surfaceTitle || 'open'}` : 'base';
 
-  return `${pathPart}::${namePart}::${typePart}:${index}`;
+  return `${pathPart}::${namePart}::${typePart}::${surfacePart}:${index}`;
 }
 
 export function getIsItemActive(link, activeItem) {
@@ -82,7 +83,7 @@ export function getItemPosition(index) {
 }
 
 export function shouldSyncStackHover(pathname, compact) {
-  return pathname !== '/' || compact;
+  return compact;
 }
 
 export function canPreviewStackOnTopHover(compact, expanded) {

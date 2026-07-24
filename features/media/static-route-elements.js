@@ -75,7 +75,6 @@ export const MovieSurfaceReveal = StaticWrapper;
 export const PersonClipReveal = StaticWrapper;
 export const PersonHeroReveal = StaticWrapper;
 export const PersonSectionReveal = StaticWrapper;
-export const PersonSidebarReveal = StaticWrapper;
 export const PersonSurfaceReveal = StaticWrapper;
 export const HomeSectionReveal = StaticWrapper;
 export const SearchSectionReveal = StaticWrapper;

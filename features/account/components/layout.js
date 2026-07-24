@@ -23,9 +23,9 @@ export function AccountSectionReveal({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 }
 
-// --------------------------------------------------
-// CONSTANTS & HELPERS
-// --------------------------------------------------
+
+
+
 
 const SECTION_ITEMS = [
   {
@@ -63,9 +63,9 @@ function getSectionHref(username, key) {
   return key === 'overview' ? `/account/${username}` : `/account/${username}/${key}`;
 }
 
-// --------------------------------------------------
-// COMPONENTS (LOGIC & VIEW)
-// --------------------------------------------------
+
+
+
 
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   if (!username) return null;

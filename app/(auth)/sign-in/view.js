@@ -152,14 +152,14 @@ export default function View({
         </Button>
 
         <div className="relative flex items-center py-1.5 mx-[-1.5rem] sm:mx-[-2.5rem]">
-          {/* Left horizontal line to screen edge */}
+          
           <div className="absolute right-full top-1/2 h-px w-screen -translate-y-1/2 bg-black/10 pointer-events-none" />
 
           <div className="h-px grow bg-black/10" />
           <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
           <div className="h-px grow bg-black/10" />
 
-          {/* Right horizontal line to screen edge */}
+          
           <div className="absolute left-full top-1/2 h-px w-screen -translate-y-1/2 bg-black/10 pointer-events-none" />
         </div>
 

@@ -1,4 +1,3 @@
-// watchlist.js
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -44,7 +43,6 @@ export default function AccountWatchlistFeed({
   const searchString = useSearchParams()?.toString?.() || '';
   const collectionRootPath = buildCollectionBasePath(pathname);
 
-  // State Consolidation
   const [viewState, setViewState] = useState({
     media: parseCurrentFilters(new URLSearchParams(searchString)),
     page: parsePageFromSearch(new URLSearchParams(searchString)),

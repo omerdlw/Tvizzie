@@ -98,8 +98,6 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
 }
 
 function getCollapsedVisibleCount({
-  pathname,
-  isHovered,
   isCompact,
   shouldShowSingleStatusCard,
 }) {
@@ -107,12 +105,7 @@ function getCollapsedVisibleCount({
     return 1;
   }
 
-  const isHome = pathname === '/';
-  if (isHome) {
-    return MAX_VISIBLE_STACKED_CARDS;
-  }
-
-  return isHovered ? MAX_VISIBLE_STACKED_CARDS : 1;
+  return MAX_VISIBLE_STACKED_CARDS;
 }
 
 export function useNavigationLayout({
@@ -153,8 +146,6 @@ export function useNavigationLayout({
     }
 
     const visibleCount = getCollapsedVisibleCount({
-      pathname,
-      isHovered,
       isCompact,
       shouldShowOverlayStack,
       shouldShowSingleStatusCard,

@@ -6,9 +6,9 @@ import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
 import { Spinner } from '@/ui/loadings/spinner';
 
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
+
+
+
 
 function getAspectRatio(data) {
   const aspectRatio = Number(data?.aspect_ratio);
@@ -21,9 +21,9 @@ function getAspectRatio(data) {
   return 16 / 9;
 }
 
-// --------------------------------------------------
-// COMPONENT LOGIC
-// --------------------------------------------------
+
+
+
 
 export default function ImagePreviewModal({ close, data }) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -45,9 +45,9 @@ export default function ImagePreviewModal({ close, data }) {
   );
 }
 
-// --------------------------------------------------
-// VIEW
-// --------------------------------------------------
+
+
+
 
 function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoaded, setIsLoaded }) {
   return (

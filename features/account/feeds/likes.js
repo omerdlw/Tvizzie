@@ -82,7 +82,6 @@ export default function AccountLikesFeed({
   const searchString = searchParams?.toString?.() || '';
   const collectionRootPath = buildCollectionBasePath(pathname);
 
-  // State Consolidation: Birbirine bağlı 3 ayrı state yerine tek bir view objesi.
   const [viewState, setViewState] = useState({
     media: parseLikesMediaFilters(new URLSearchParams(searchString)),
     listSort: parseListFilters(new URLSearchParams(searchString)).sort,
@@ -96,7 +95,6 @@ export default function AccountLikesFeed({
     });
   }, [searchString]);
 
-  // Tek noktadan State ve URL senkronizasyonu
   const updateView = (updates) => {
     setViewState((prev) => {
       const next = {
@@ -129,7 +127,6 @@ export default function AccountLikesFeed({
     });
   };
 
-  // Derived Data (Hesaplanan veriler - useMemo gereksiz yere fonksiyon sarmalamaması için basitleştirildi)
   const decadeOptions = getDecadeOptions();
   const genreOptions = useMemo(() => collectMediaGenreOptions(likes), [likes]);
   const likedKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
@@ -286,10 +283,6 @@ export default function AccountLikesFeed({
     </>
   );
 }
-
-// --------------------------------------------------
-// VIEW COMPONENTS
-// --------------------------------------------------
 
 function ReorderableListItem({
   index,

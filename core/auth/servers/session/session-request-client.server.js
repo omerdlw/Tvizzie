@@ -16,7 +16,7 @@ export function createRequestSupabaseClient(request) {
         return getRequestCookies(request);
       },
       setAll() {
-        // Route handlers manage cookie writes explicitly on response objects.
+        
       },
     },
   });

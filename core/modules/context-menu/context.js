@@ -103,7 +103,7 @@ export function ContextMenuProvider({ children }) {
         try {
           currentState.config.onClose(currentState.context);
         } catch {
-          // no-op: closing should not throw
+          
         }
       }
 

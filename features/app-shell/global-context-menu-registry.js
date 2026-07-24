@@ -43,9 +43,7 @@ async function shareCurrentPage({ page, toast }) {
       await navigator.clipboard.writeText(url);
       toast.success('Page link copied', { allowInProduction: true });
       return;
-    } catch {
-      // fall through to error toast
-    }
+    } catch {}
   }
 
   toast.error('Sharing is not available on this device');
@@ -87,17 +85,6 @@ export default function GlobalContextMenuRegistry() {
             void shareCurrentPage({
               page: menuContext?.page || null,
               toast,
-            });
-          },
-        },
-        'separator',
-        {
-          key: 'feedback',
-          label: 'Send feedback',
-          icon: 'solar:chat-round-dots-bold',
-          onSelect: () => {
-            openModal('FEEDBACK_MODAL', 'center', {
-              title: 'Feedback',
             });
           },
         },

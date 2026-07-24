@@ -85,7 +85,7 @@ export function useMediaReviews({
         (nextReviews) => {
           if (!isMounted) return;
 
-          // Merge pending optimistic likes
+          
           const mergedReviews = nextReviews.map((review) => {
             const reviewId = review.docPath || review.id;
             const pendingLikes = pendingLikesRef.current.get(reviewId);
@@ -180,10 +180,10 @@ export function useMediaReviews({
         ? currentLikes.filter((id) => id !== currentUserId)
         : [...new Set([...currentLikes, currentUserId])];
 
-      // Track pending optimistic state to prevent polling revert
+      
       pendingLikesRef.current.set(reviewId, nextLikes);
 
-      // Optimistic update
+      
       setReviews((current) =>
         current.map((item) => {
           if ((item.docPath || item.id) !== reviewId) {
@@ -205,12 +205,12 @@ export function useMediaReviews({
           userId: currentUserId,
         });
 
-        // Keep in pending for a few seconds to let polling catch up
+        
         setTimeout(() => {
           pendingLikesRef.current.delete(reviewId);
         }, 3000);
       } catch (error) {
-        // Rollback
+        
         pendingLikesRef.current.delete(reviewId);
         setReviews(previousReviews);
         toast.error(error?.message || 'Failed to update like');

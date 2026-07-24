@@ -27,11 +27,11 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-start gap-2 py-1.5 text-sm text-black">
-      <span className="mt-0.5 inline-flex shrink-0 text-black/70">
+    <div className="flex items-center gap-2.5 py-1 text-xs sm:text-sm text-black">
+      <span className="inline-flex shrink-0 text-black/60">
         <Icon icon={icon} size={18} />
       </span>
-      <div className="flex-1 leading-relaxed font-medium">{children}</div>
+      <div className="flex-1 leading-normal font-medium text-black/80">{children}</div>
     </div>
   );
 }
@@ -46,7 +46,7 @@ function SidebarChip({ children, delay = 0, index = 0 }) {
 
 function PersonLink({ person }) {
   return (
-    <Link href={`/person/${person.id}`} className="text-black/70">
+    <Link href={`/person/${person.id}`} className="text-black/70 hover:text-black transition-colors">
       {person.name}
     </Link>
   );
@@ -97,19 +97,13 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
   const isTagGroup = variant === 'tags';
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <SidebarItem delay={delay} index={0}>
         <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">
           {label}
         </p>
       </SidebarItem>
-      <div
-        className={cn(
-          isTagGroup
-            ? 'grid grid-cols-[repeat(auto-fit,minmax(min(9.5rem,100%),1fr))] gap-1.5'
-            : 'flex flex-wrap gap-1.5',
-        )}
-      >
+      <div className="flex flex-wrap gap-1.5">
         {items.map((item, index) => (
           <SidebarChip
             key={item}
@@ -118,10 +112,10 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
           >
             <span
               className={cn(
-                'bg-primary inline-flex min-h-7 max-w-full items-center border border-black/5 text-[11px] leading-none font-semibold uppercase',
+                'bg-primary inline-flex max-w-full items-center border border-black/5 text-[11px] font-semibold uppercase',
                 isTagGroup
-                  ? 'justify-center px-2 py-1 text-center leading-[1.15] tracking-wide text-black/60'
-                  : 'px-2.5 py-1 tracking-wider',
+                  ? 'rounded-[8px] px-2 py-0.5 font-medium tracking-wide text-black/65 hover:border-black/15 hover:text-black transition-colors'
+                  : 'rounded-[10px] min-h-7 px-2.5 py-1 tracking-wider text-black/75',
               )}
             >
               {item}
@@ -249,7 +243,7 @@ export default function Sidebar({
       ),
   ].filter(Boolean);
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
         <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
           {posterSrc ? (

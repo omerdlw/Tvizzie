@@ -1,10 +1,17 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, forwardRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
+import {
+  NAV_SURFACE_TRANSITION,
+  NAV_FADE_TRANSITION,
+  NAV_TAP_SCALE,
+  slideFadeVariants,
+} from '@/core/modules/nav/motion';
 
 const SurfaceHeaderContext = createContext(null);
 
@@ -41,17 +48,19 @@ export function NavSurfaceHeader({
       </div>
 
       {hasClose ? (
-        <button
+        <motion.button
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
           aria-label={closeLabel}
+          whileTap={{ scale: NAV_TAP_SCALE }}
+          transition={NAV_FADE_TRANSITION}
         >
           <Icon icon="material-symbols:close-rounded" size={16} />
-        </button>
+        </motion.button>
       ) : null}
     </div>
   );
@@ -90,9 +99,14 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
 
   return (
     <SurfaceHeaderContext.Provider value={setHeaderState}>
-      <section
+      <motion.section
         ref={ref}
         className={cn('relative flex flex-col gap-3', className)}
+        variants={slideFadeVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={NAV_SURFACE_TRANSITION}
       >
         <NavSurfaceHeader
           descriptionMaxLines={descriptionMaxLines}
@@ -104,7 +118,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
           onClose={onClose}
         />
         <div className={contentClassName}>{children}</div>
-      </section>
+      </motion.section>
     </SurfaceHeaderContext.Provider>
   );
 });

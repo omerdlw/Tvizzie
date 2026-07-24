@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
-const HEIGHT_EPSILON = 1.0;
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const HEIGHT_EPSILON = 2.0;
 
 function getObservedHeight(entry, element) {
   const borderBoxSize = Array.isArray(entry?.borderBoxSize)
@@ -33,7 +34,7 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
     callbackRef.current = onHeightChange;
   });
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -61,6 +62,7 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
     }
 
     let pendingHeight = null;
+    let settleTimer = null;
 
     function flushPendingHeight() {
       rafRef.current = null;
@@ -69,8 +71,19 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
         return;
       }
 
-      publishHeight(pendingHeight);
+      const heightToPublish = pendingHeight;
       pendingHeight = null;
+
+      
+      
+      if (settleTimer !== null) {
+        clearTimeout(settleTimer);
+      }
+
+      settleTimer = setTimeout(() => {
+        settleTimer = null;
+        publishHeight(heightToPublish);
+      }, 80);
     }
 
     function scheduleMeasurement(nextHeight) {
@@ -83,8 +96,10 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
       rafRef.current = requestAnimationFrame(flushPendingHeight);
     }
 
-    function measureElement() {
-      scheduleMeasurement(element.offsetHeight || 0);
+    
+    const initialMeasuredHeight = element.offsetHeight || 0;
+    if (initialMeasuredHeight > 0) {
+      publishHeight(initialMeasuredHeight);
     }
 
     const observer = new ResizeObserver((entries) => {
@@ -94,11 +109,9 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
     });
 
     observer.observe(element);
-    measureElement();
 
     const handlePageShow = () => {
-      measureElement();
-      requestAnimationFrame(measureElement);
+      scheduleMeasurement(element.offsetHeight || 0);
     };
 
     const handleVisibilityChange = () => {
@@ -120,6 +133,11 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
+      }
+
+      if (settleTimer !== null) {
+        clearTimeout(settleTimer);
+        settleTimer = null;
       }
     };
   }, [dependencyKey, elementRef, shouldMeasure]);
