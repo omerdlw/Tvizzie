@@ -81,7 +81,7 @@ function WinBadge() {
 
 function NomineeBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-black/40 uppercase">
+    <span className="inline-flex shrink-0 items-center rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-black/50 uppercase">
       Nom
     </span>
   );
@@ -160,7 +160,7 @@ export default function PersonAwards({ personId }) {
               return (
                 <div key={year} className="relative flex">
                   <div className="w-20 shrink-0 sm:w-24">
-                    <span className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/40 sm:text-base">
+                    <span className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/50 sm:text-base">
                       {year}
                     </span>
                   </div>

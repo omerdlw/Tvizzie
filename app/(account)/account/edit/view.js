@@ -18,7 +18,7 @@ const INPUT_BASE_CLASSES =
   'h-11 w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none placeholder:text-black/50 focus:border-black';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  'border border-black/15 bg-white px-3 py-2 text-black hover:bg-black/5 disabled:opacity-60';
+  'border border-black/15 bg-white px-3 py-2 text-black hover:bg-black/5 disabled:opacity-50';
 const BUTTON_FRAME_CLASSES =
   'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed';
 function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
@@ -371,7 +371,7 @@ export default function AccountEditView(props) {
                     title="Change Email"
                     summaryLabel={
                       currentAuthEmail && (
-                        <span className="text-[10px] font-medium tracking-normal text-black/40 lowercase">
+                        <span className="text-[10px] font-medium tracking-normal text-black/50 lowercase">
                           {currentAuthEmail}
                         </span>
                       )

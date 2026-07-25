@@ -9,7 +9,7 @@ export const NAV_EASINGS = Object.freeze({
   CINEMATIC: [0.16, 1, 0.3, 1],
   SILK: [0.22, 1, 0.36, 1],
   LUXURY: [0.16, 1, 0.3, 1],
-  SNAPPY_CINEMATIC: [0.22, 1, 0.36, 1],
+  SNAPPY_CINEMATIC: [0.22,  1, 0.36, 1],
   EMPHASIZED_ENTRANCE: [0.16, 1, 0.3, 1],
   SOFT_OUT: [0.32, 0, 0.18, 1],
   DEEP_EXIT: [0.4, 0, 0.2, 1],

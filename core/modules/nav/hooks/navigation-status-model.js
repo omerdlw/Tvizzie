@@ -2,7 +2,7 @@
 
 import { Wifi, WifiOff } from 'lucide-react';
 
-import { SEMANTIC_SURFACE_CLASSES } from '@/core/constants';
+import { DESTRUCTIVE_ACTION_TONE_CLASS, SEMANTIC_SURFACE_CLASSES } from '@/core/constants';
 import { Button } from '@/ui/elements';
 import { Spinner } from '@/ui/loadings/spinner';
 
@@ -211,25 +211,32 @@ export function createOverlayStatus({
 function ErrorActions({ onRetry, onRefresh }) {
   return (
     <div className="mt-2.5 flex items-center gap-2">
-      <Button
-        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-white"
+      <button
+        type="button"
         onClick={(event) => {
           event.stopPropagation();
           onRetry();
         }}
+        className={getNavActionClass({
+          isActive: false,
+          className: DESTRUCTIVE_ACTION_TONE_CLASS,
+        })}
       >
         Retry
-      </Button>
-
-      <Button
-        className="center bg-primary/60 hover:bg-primary hover:text-error w-full cursor-pointer px-4 py-2 text-sm font-semibold text-white"
+      </button>
+      <button
+        type="button"
         onClick={(event) => {
           event.stopPropagation();
           onRefresh();
         }}
+        className={getNavActionClass({
+          isActive: false,
+          className: DESTRUCTIVE_ACTION_TONE_CLASS,
+        })}
       >
         Refresh
-      </Button>
+      </button>
     </div>
   );
 }

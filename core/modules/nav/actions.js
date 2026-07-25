@@ -230,7 +230,7 @@ export function NavAction({ action }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               transition={NAV_FADE_TRANSITION}
-              className="center bg-info absolute -top-1 -right-1 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-white"
+              className="center bg-info rounded-full absolute -top-1 -right-1 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-white"
             >
               {action.badge}
             </motion.span>

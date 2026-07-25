@@ -19,25 +19,25 @@ export const SEMANTIC_SURFACE_CLASSES = Object.freeze({
   error: Object.freeze({
     icon: 'text-error bg-transparent border-none',
     description: 'text-error',
-    surface: 'border border-error bg-error-light',
+    surface: 'border border-error',
     title: 'text-error',
   }),
   info: Object.freeze({
     icon: 'text-info bg-transparent border-none',
     description: 'text-info',
-    surface: 'border border-info bg-info-light',
+    surface: 'border border-info',
     title: 'text-info',
   }),
   success: Object.freeze({
     icon: 'text-success bg-transparent border-none',
     description: 'text-success',
-    surface: 'border border-success bg-success-light',
+    surface: 'border border-success',
     title: 'text-success',
   }),
   warning: Object.freeze({
     icon: 'text-warning bg-transparent border-none',
     description: 'text-warning',
-    surface: 'border border-warning bg-warning-light',
+    surface: 'border border-warning',
     title: 'text-warning',
   }),
 });

@@ -1,10 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  MOVIE_ROUTE_TIMING,
-  MovieSurfaceReveal,
-} from '@/features/media/static-route-elements';
+import { MOVIE_ROUTE_TIMING, MovieSurfaceReveal } from '@/features/media/static-route-elements';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -27,11 +24,11 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-center gap-2.5 py-1 text-xs sm:text-sm text-black">
-      <span className="inline-flex shrink-0 text-black/60">
+    <div className="flex items-center gap-2.5 py-1 text-xs text-black sm:text-sm">
+      <span className="inline-flex shrink-0 text-black/70">
         <Icon icon={icon} size={18} />
       </span>
-      <div className="flex-1 leading-normal font-medium text-black/80">{children}</div>
+      <div className="flex-1 leading-normal font-medium">{children}</div>
     </div>
   );
 }
@@ -46,7 +43,10 @@ function SidebarChip({ children, delay = 0, index = 0 }) {
 
 function PersonLink({ person }) {
   return (
-    <Link href={`/person/${person.id}`} className="text-black/70 hover:text-black transition-colors">
+    <Link
+      href={`/person/${person.id}`}
+      className="text-black/70 transition-colors hover:text-black"
+    >
       {person.name}
     </Link>
   );
@@ -114,8 +114,8 @@ function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
               className={cn(
                 'bg-primary inline-flex max-w-full items-center border border-black/5 text-[11px] font-semibold uppercase',
                 isTagGroup
-                  ? 'rounded-[8px] px-2 py-0.5 font-medium tracking-wide text-black/65 hover:border-black/15 hover:text-black transition-colors'
-                  : 'rounded-[10px] min-h-7 px-2.5 py-1 tracking-wider text-black/75',
+                  ? 'rounded-[8px] px-2 py-0.5 font-medium tracking-wide text-black/65 transition-colors hover:border-black/15 hover:text-black'
+                  : 'min-h-7 rounded-[10px] px-2.5 py-1 tracking-wider text-black/75',
               )}
             >
               {item}
@@ -287,11 +287,7 @@ export default function Sidebar({
 
       <div className="flex flex-col gap-1">
         {rows.map((row, index) => (
-          <SidebarItem
-            key={row.id}
-            delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay}
-            index={index}
-          >
+          <SidebarItem key={row.id} delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
           </SidebarItem>
         ))}

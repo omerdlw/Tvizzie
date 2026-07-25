@@ -6,7 +6,7 @@ import Icon from '@/ui/icon';
 
 export const PROVIDER_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex w-full rounded-[16px] items-center gap-3 justify-center h-13 px-4 text-black hover:bg-black hover:text-white border border-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex w-full rounded-[16px] items-center gap-3 justify-center h-13 px-4 text-black hover:bg-black hover:text-white border border-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export default function OAuthProviderButton({

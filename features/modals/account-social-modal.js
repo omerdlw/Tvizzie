@@ -32,7 +32,8 @@ const TABS = Object.freeze({
   INBOX: 'inbox',
 });
 const ROW_BUTTON_CLASS =
-  'h-8 w-auto shrink-0 border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5';
+  'h-8 w-auto shrink-0 transition-colors duration-150 ease-in-out rounded-xl border px-2.5 py-1 text-[11px] font-semibold disabled:cursor-not-allowed disabled:bg-black/5';
+
 const ACTION_CLASSES = {
   ERROR: `${ROW_BUTTON_CLASS}${DESTRUCTIVE_ACTION_TONE_CLASS}`,
   SUCCESS: `${ROW_BUTTON_CLASS}${SUCCESS_ACTION_TONE_CLASS}`,
@@ -402,31 +403,29 @@ function ModalView({
           <EmptyState description={emptyDescription} className="h-full min-h-96" />
         ) : (
           <div className="min-h-96 flex-1 overflow-y-auto">
-            <AnimatePresence mode="popLayout">
-              {list.map((user, index) => (
-                <SocialUserRow
-                  key={user.id}
-                  close={close}
-                  user={user}
-                  index={index}
-                  action={
-                    <UserAction
-                      tab={activeTab}
-                      user={user}
-                      authUserId={authUserId}
-                      isOwnProfile={isOwnProfile}
-                      pendingKind={pendingActionByUserId[user.id] || null}
-                      followStatus={followingStatusMap[user.id] || null}
-                      onAccept={onAccept}
-                      onReject={onReject}
-                      onUnfollow={onUnfollow}
-                      onRemoveFollower={onRemoveFollower}
-                      onFollow={onFollow}
-                    />
-                  }
-                />
-              ))}
-            </AnimatePresence>
+            {list.map((user, index) => (
+              <SocialUserRow
+                key={user.id}
+                close={close}
+                user={user}
+                index={index}
+                action={
+                  <UserAction
+                    tab={activeTab}
+                    user={user}
+                    authUserId={authUserId}
+                    isOwnProfile={isOwnProfile}
+                    pendingKind={pendingActionByUserId[user.id] || null}
+                    followStatus={followingStatusMap[user.id] || null}
+                    onAccept={onAccept}
+                    onReject={onReject}
+                    onUnfollow={onUnfollow}
+                    onRemoveFollower={onRemoveFollower}
+                    onFollow={onFollow}
+                  />
+                }
+              />
+            ))}
           </div>
         )}
       </div>
@@ -437,7 +436,7 @@ function SocialUserRow({ close, user, action, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4">
+    <div className="flex transition-colors duration-150 ease-in-out items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4">
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -449,7 +448,7 @@ function SocialUserRow({ close, user, action, index }) {
           alt={user.displayName}
           loading="lazy"
           decoding="async"
-          className="size-10 shrink-0 object-cover"
+          className="size-10 shrink-0 rounded-xl object-cover"
           onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
           wrapperClassName="size-10 shrink-0 "
         />

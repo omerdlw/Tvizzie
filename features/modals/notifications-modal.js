@@ -48,16 +48,8 @@ function getNotificationRowAnimation(index = 0) {
   });
 }
 
-
-
-
-
-const TOOL_BUTTON_CLASS = 'size-7';
+const TOOL_BUTTON_CLASS = 'size-7 rounded-xl transition-colors duration-150 ease-in-out';
 const SKELETON_COUNT = 16;
-
-
-
-
 
 function formatRelativeTime(dateValue) {
   if (!dateValue) return '';
@@ -108,10 +100,6 @@ function getNotificationSubject(payload, type) {
   return null;
 }
 
-
-
-
-
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
   const userId = data?.userId || auth.user?.id || null;
@@ -123,12 +111,10 @@ export default function NotificationsModal({ close, header, data }) {
     forceReadIds: new Set(),
   });
 
-  
   const isSidePosition = header?.position === 'left' || header?.position === 'right';
   const unreadCount = notifications.filter((item) => !item.read).length;
   const hasUnread = unreadCount > 0;
 
-  
   useEffect(() => {
     function resetOptimisticState() {
       optimisticStateRef.current = {
@@ -172,7 +158,6 @@ export default function NotificationsModal({ close, header, data }) {
     );
   }, [auth.isReady, auth.isAuthenticated, isAuthSessionReady, userId]);
 
-  
   async function handleMarkAllRead() {
     if (!userId || !hasUnread) return;
     const previous = notifications;
@@ -262,10 +247,6 @@ export default function NotificationsModal({ close, header, data }) {
   );
 }
 
-
-
-
-
 function ModalView({
   close,
   header,
@@ -298,20 +279,12 @@ function ModalView({
         right:
           notifications.length > 0 ? (
             <>
-              <Button
-                type="button"
-                onClick={handleDeleteAll}
-                className={CANCEL_BUTTON_CLASS}
-              >
+              <Button type="button" onClick={handleDeleteAll} className={CANCEL_BUTTON_CLASS}>
                 Clear all
               </Button>
 
               {hasUnread && (
-                <Button
-                  type="button"
-                  onClick={handleMarkAllRead}
-                  className={ACTION_BUTTON_CLASS}
-                >
+                <Button type="button" onClick={handleMarkAllRead} className={ACTION_BUTTON_CLASS}>
                   Mark all as read
                 </Button>
               )}
@@ -332,17 +305,15 @@ function ModalView({
             You have no notifications yet
           </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {notifications.map((notification, index) => (
-              <NotificationRow
-                key={notification.id}
-                notification={notification}
-                onMarkRead={handleMarkRead}
-                onDelete={handleDelete}
-                index={index}
-              />
-            ))}
-          </AnimatePresence>
+          notifications.map((notification, index) => (
+            <NotificationRow
+              key={notification.id}
+              notification={notification}
+              onMarkRead={handleMarkRead}
+              onDelete={handleDelete}
+              index={index}
+            />
+          ))
         )}
       </div>
     </Container>
@@ -355,8 +326,8 @@ function NotificationRow({ notification, onMarkRead, onDelete, index }) {
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 last:border-none lg:p-4',
-        isUnread ? 'bg-black/5 hover:bg-black/10' : 'hover:bg-black/5',
+        'grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/10 p-3 transition-colors duration-150 ease-in-out last:border-none lg:p-4',
+        isUnread ? 'bg-white' : 'hover:bg-white',
       )}
     >
       <div className="center size-10 shrink-0 overflow-hidden">
@@ -365,7 +336,7 @@ function NotificationRow({ notification, onMarkRead, onDelete, index }) {
             mode="img"
             src={avatarSrc}
             alt={notification.actor?.displayName || 'Avatar'}
-            className="size-full object-cover"
+            className="size-full rounded-xl object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}

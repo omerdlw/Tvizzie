@@ -13,12 +13,12 @@ export const AUTH_PASSWORD_INPUT_CLASSNAMES = Object.freeze({
 
 export const AUTH_PRIMARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex h-12 w-full rounded-[16px] items-center justify-center border border-transparent bg-black px-4 font-semibold text-white hover:border-black/10 hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex h-12 w-full rounded-[16px] items-center justify-center border border-transparent bg-black px-4 font-semibold text-white hover:border-black/10 hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export const AUTH_SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
-    'inline-flex h-12 w-full rounded-[16px] items-center justify-center border border-black/10 bg-primary px-4 text-black hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+    'inline-flex h-12 w-full rounded-[16px] items-center justify-center border border-black/10 bg-primary px-4 text-black hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
 export function AuthField({ children, className = '' }) {
@@ -36,7 +36,7 @@ export function PasswordToggleButton({
       type="button"
       onClick={onClick}
       aria-label={visible ? hideLabel : showLabel}
-      className="flex h-full items-center justify-center rounded-md p-1 text-black/40 hover:text-black/70 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+      className="flex h-full items-center justify-center rounded-md p-1 text-black/50 hover:text-black/70 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
     >
       <Icon icon={visible ? 'solar:eye-closed-linear' : 'solar:eye-linear'} size={20} />
     </button>

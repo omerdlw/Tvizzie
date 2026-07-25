@@ -12,7 +12,9 @@ import ReviewAction from '@/features/navigation/actions/review-action';
 import SearchAction from '@/features/navigation/actions/search-action';
 import MovieAction from '@/features/navigation/actions/movie-action';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
-import ReviewEditorSurface, { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
+import ReviewEditorSurface, {
+  createReviewEditorSurfaceEntry,
+} from '@/features/navigation/surfaces/review-editor-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/features/reviews/utils';
 import { getNavActionClass } from '@/features/navigation/actions/model';
 import { TMDB_IMG } from '@/core/constants';
@@ -111,7 +113,10 @@ export default function Registry({
       return;
     }
 
-    if (activeSurfaceEntry?.component === WatchProvidersSurface || activeSurfaceEntry?.component === ReviewEditorSurface) {
+    if (
+      activeSurfaceEntry?.component === WatchProvidersSurface ||
+      activeSurfaceEntry?.component === ReviewEditorSurface
+    ) {
       closeSurface();
     }
   }, [reviewState?.isActive, isSearching, activeSurfaceEntry, closeSurface]);

@@ -115,9 +115,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         </svg>
         {getModalLabel(previousEntry.modalType)}
       </button>
-
       <span className="text-[10px] text-black/20">/</span>
-
       <span className="bg-primary rounded-[12px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>

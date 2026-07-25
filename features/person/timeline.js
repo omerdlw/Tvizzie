@@ -30,10 +30,6 @@ function getCreditLabel(credit) {
   return null;
 }
 
-
-
-
-
 export default function PersonTimeline({ person }) {
   const timeline = useMemo(() => groupByYear(getTimelineCredits(person)), [person]);
   if (!timeline.length) return null;
@@ -41,9 +37,7 @@ export default function PersonTimeline({ person }) {
   return (
     <PersonSurfaceReveal>
       <section className="w-full">
-        
         <div className="relative">
-          
           <div className="absolute top-[18px] bottom-0 left-20 w-px bg-black/10 sm:left-24" />
 
           <div className="flex flex-col">
@@ -51,17 +45,14 @@ export default function PersonTimeline({ person }) {
               const isLast = yearIndex === timeline.length - 1;
               return (
                 <div key={year} className="relative flex">
-                  
                   <div className="w-20 shrink-0 sm:w-24">
-                    <span className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/40 sm:text-base">
+                    <span className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/50 sm:text-base">
                       {year}
                     </span>
                   </div>
 
-                  
                   <div className="absolute top-[18px] left-20 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24" />
 
-                  
                   <div
                     className={`min-w-0 flex-1 pt-[18px] pl-6 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
                   >

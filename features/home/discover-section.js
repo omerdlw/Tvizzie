@@ -266,7 +266,7 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}

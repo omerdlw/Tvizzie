@@ -182,13 +182,12 @@ export default function CreateListModal({ close, data }) {
 
   return (
     <Container
-      className="w-full sm:w-[560px] md:w-[600px] lg:w-[640px] h-[92dvh] sm:h-full max-h-[100dvh] sm:max-h-full flex flex-col justify-between"
+      className="flex h-[92dvh] max-h-[100dvh] w-full flex-col justify-between sm:h-full sm:max-h-full sm:w-[560px] md:w-[600px] lg:w-[640px]"
       header={false}
       close={close}
       bodyClassName="flex flex-col flex-1 min-h-0 overflow-hidden p-4 sm:p-5"
     >
       <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col gap-3">
-        
         <div className="flex flex-col gap-2">
           <Input
             value={draftTitle}
@@ -199,7 +198,7 @@ export default function CreateListModal({ close, data }) {
               wrapper:
                 'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
+                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
           />
           <Input
@@ -210,7 +209,7 @@ export default function CreateListModal({ close, data }) {
               wrapper:
                 'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
+                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
           />
           <Input
@@ -226,12 +225,16 @@ export default function CreateListModal({ close, data }) {
             leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
             rightIcon={
               isSearching ? (
-                <Icon icon="solar:spinner-bold-duotone" size={16} className="animate-spin text-black/50" />
+                <Icon
+                  icon="solar:spinner-bold-duotone"
+                  size={16}
+                  className="animate-spin text-black/50"
+                />
               ) : searchQuery ? (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="text-black/40 hover:text-black"
+                  className="text-black/50 hover:text-black"
                 >
                   <Icon icon="material-symbols:close-rounded" size={16} />
                 </button>
@@ -241,14 +244,13 @@ export default function CreateListModal({ close, data }) {
               wrapper:
                 'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
               input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/40',
+                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
               leftIcon: 'flex shrink-0 items-center pr-2.5',
               rightIcon: 'flex shrink-0 items-center pl-2',
             }}
           />
         </div>
 
-        
         <div
           data-lenis-prevent
           data-lenis-prevent-wheel
@@ -257,7 +259,7 @@ export default function CreateListModal({ close, data }) {
           {showSearchResults ? (
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between px-1 py-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-black/50">
+                <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
                   Search Results ({searchResults.length})
                 </span>
               </div>
@@ -282,28 +284,28 @@ export default function CreateListModal({ close, data }) {
             <div className="flex flex-col gap-1.5">
               {draftItems.length > 0 && (
                 <div className="flex items-center justify-between px-1 py-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-black/50">
+                  <span className="text-[10px] font-bold tracking-wider text-black/50 uppercase">
                     Selected Titles ({draftItems.length})
                   </span>
                 </div>
               )}
               {draftItems.length > 0 ? (
                 draftItems.map((item) => (
-                  <DraftItemRow
-                    key={getDraftMediaKey(item)}
-                    item={item}
-                    onRemove={handleRemove}
-                  />
+                  <DraftItemRow key={getDraftMediaKey(item)} item={item} onRemove={handleRemove} />
                 ))
               ) : (
                 <div
                   key="empty-draft"
-                  className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 text-center p-6"
+                  className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 p-6 text-center"
                 >
-                  <Icon icon="solar:clapperboard-play-bold-duotone" size={24} className="text-black/40" />
+                  <Icon
+                    icon="solar:clapperboard-play-bold-duotone"
+                    size={24}
+                    className="text-black/50"
+                  />
                   <div>
                     <p className="text-xs font-semibold text-black/70">No titles added yet</p>
-                    <p className="text-[11px] text-black/40 mt-0.5">
+                    <p className="mt-0.5 text-[11px] text-black/50">
                       Search movies or TV shows above to start building your list
                     </p>
                   </div>
@@ -313,9 +315,8 @@ export default function CreateListModal({ close, data }) {
           )}
         </div>
 
-        
-        <div className="flex flex-col gap-2 pt-3 border-t border-black/10">
-          <div className="flex items-center justify-between px-1 text-xs text-black/50 font-medium">
+        <div className="flex flex-col gap-2 border-t border-black/10 pt-3">
+          <div className="flex items-center justify-between px-1 text-xs font-medium text-black/50">
             <span>
               {draftItems.length} {draftItems.length === 1 ? 'title' : 'titles'} selected
             </span>
@@ -343,7 +344,7 @@ export default function CreateListModal({ close, data }) {
               disabled={isSaving || !canSubmit}
               className={getNavActionClass({
                 isActive: true,
-                className: 'flex-1 disabled:opacity-40 disabled:cursor-not-allowed',
+                className: 'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
               })}
             >
               <Icon
@@ -370,14 +371,14 @@ function SearchResultRow({ item, isAdded, onAdd, index }) {
     <div
       onClick={() => !isAdded && onAdd(item)}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-between p-1 rounded-[16px] border border-transparent select-none',
+        'group flex w-full cursor-pointer items-center justify-between rounded-[16px] border border-transparent p-1 select-none',
         isAdded
           ? 'cursor-default bg-black/5 opacity-60'
-          : 'bg-white hover:bg-black/5 hover:border-black/5',
+          : 'bg-white hover:border-black/5 hover:bg-black/5',
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative rounded-[14px] h-16 w-12 shrink-0 overflow-hidden">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-[14px]">
           <AdaptiveImage
             mode="img"
             src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
@@ -388,17 +389,17 @@ function SearchResultRow({ item, isAdded, onAdd, index }) {
         </div>
 
         <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-          <span className="truncate leading-tight font-bold uppercase text-sm text-black">
+          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
             {title}
           </span>
           <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center rounded-[8px] gap-1 border border-black/5">
+            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
               <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
               </span>
             </div>
             {year !== 'N/A' && (
-              <div className="flex w-fit items-center rounded-[8px] gap-1 border border-black/5">
+              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
                 <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
                   {year}
                 </span>
@@ -410,16 +411,13 @@ function SearchResultRow({ item, isAdded, onAdd, index }) {
 
       <div
         className={cn(
-          'flex h-8 min-w-8 items-center justify-center gap-1 rounded-xl border px-2.5 text-xs font-bold uppercase tracking-wider mr-1 shrink-0',
+          'mr-1 flex h-8 min-w-8 shrink-0 items-center justify-center gap-1 rounded-xl border px-2.5 text-xs font-bold tracking-wider uppercase',
           isAdded
-            ? 'border-transparent bg-info/10 text-info'
-            : 'border-black/10 bg-black/5 text-black/70 group-hover:bg-black group-hover:text-white group-hover:border-transparent',
+            ? 'bg-info/10 text-info border-transparent'
+            : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
         )}
       >
-        <Icon
-          icon={isAdded ? 'solar:check-circle-bold' : 'solar:add-circle-bold'}
-          size={16}
-        />
+        <Icon icon={isAdded ? 'solar:check-circle-bold' : 'solar:add-circle-bold'} size={16} />
         <span>{isAdded ? 'Added' : 'Add'}</span>
       </div>
     </div>
@@ -433,11 +431,9 @@ function DraftItemRow({ item, onRemove }) {
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
-    <div
-      className="group flex w-full items-center justify-between p-1 rounded-[16px] border border-black/5 bg-white select-none hover:bg-black/5"
-    >
+    <div className="group flex w-full items-center justify-between rounded-[16px] border border-black/5 bg-white p-1 select-none hover:bg-black/5">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative rounded-[14px] h-16 w-12 shrink-0 overflow-hidden">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-[14px]">
           <AdaptiveImage
             mode="img"
             src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
@@ -448,17 +444,17 @@ function DraftItemRow({ item, onRemove }) {
         </div>
 
         <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-          <span className="truncate leading-tight font-bold uppercase text-sm text-black">
+          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
             {title}
           </span>
           <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center rounded-[8px] gap-1 border border-black/5">
+            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
               <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
                 {isTv ? 'TV' : 'Movie'}
               </span>
             </div>
             {year !== 'N/A' && (
-              <div className="flex w-fit items-center rounded-[8px] gap-1 border border-black/5">
+              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
                 <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
                   {year}
                 </span>
@@ -474,7 +470,7 @@ function DraftItemRow({ item, onRemove }) {
           e.stopPropagation();
           onRemove(item);
         }}
-        className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/40 hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 cursor-pointer"
+        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />

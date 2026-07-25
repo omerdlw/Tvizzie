@@ -14,6 +14,7 @@ import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/acti
 import { Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { cn } from '@/core/utils';
+import { INFO_ACTION_TONE_CLASS } from '@/core/constants';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();
 const FORM_ID = 'review-editor-surface-form';
@@ -283,11 +284,10 @@ export default function ReviewEditorSurface({ close, data }) {
   return (
     <form id={FORM_ID} onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
       {!isListSubject && (
-        <div className="flex w-full items-center justify-center border-b border-black/5 pb-3">
+        <div className="flex w-full items-center justify-center pb-2">
           <RatingSelector value={rating} onChange={setRating} />
         </div>
       )}
-
       <div className="relative w-full">
         <Textarea
           maxLength={800}
@@ -299,109 +299,81 @@ export default function ReviewEditorSurface({ close, data }) {
           }
           onChange={handleTextChange}
           className={{
-            wrapper:
-              'flex border border-black/10 rounded-2xl bg-black/5 pb-7',
+            wrapper: 'flex rounded-2xl border border-black/5',
             textarea:
-              'min-h-[130px] w-full resize-none p-3.5 text-sm leading-normal outline-none placeholder:text-black/40 bg-transparent',
+              'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
         />
-        <div className="pointer-events-none absolute bottom-2.5 right-3.5 flex items-center gap-2 text-[11px] font-medium text-black/40 select-none">
+        <div className="pointer-events-none absolute right-3.5 bottom-2.5 flex items-center gap-2 text-[11px] font-medium text-black/50 select-none">
           {validationError ? (
-            <span className="text-error/80 font-normal">{validationError}</span>
+            <span className="text-error/80 font-semibold">{validationError}</span>
           ) : hasText ? (
             <span>{trimmedTextLength} chars</span>
           ) : null}
         </div>
       </div>
 
-      <SpoilerToggle
-        disabled={!hasText}
-        checked={isSpoiler}
-        invalid={Boolean(validationError)}
-        onClick={handleSpoilerToggle}
-      />
-
       <div className={NAV_ACTION_STYLES.row}>
-          <button
-            type="button"
-            onClick={() => close?.(null)}
-            className={getNavActionClass({
-              isActive: false,
-              className: 'flex-1',
-            })}
-          >
-            <Icon icon="solar:close-circle-bold" size={NAV_ACTION_STYLES.icon} />
-            <span>Cancel</span>
-          </button>
-
-          <button
-            type="submit"
-            form={FORM_ID}
-            disabled={isSaving || Boolean(validationError)}
-            className={getNavActionClass({
-              isActive: true,
-              className: 'flex-1 disabled:opacity-40 disabled:cursor-not-allowed',
-            })}
-          >
-            <Icon
-              icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
-              size={NAV_ACTION_STYLES.icon}
-              className={isSaving ? 'animate-spin' : ''}
-            />
-            <span>
-              {isSaving
-                ? 'Saving...'
-                : getPrimaryActionLabel({
-                    hasExistingReview,
-                    isList: isListSubject,
-                    rating,
-                    reviewText,
-                  })}
-            </span>
-          </button>
-        </div>
-    </form>
-  );
-}
-
-function SpoilerToggle({ disabled, checked, invalid, onClick }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={!disabled && checked}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        'flex w-full items-center justify-between rounded-xl border p-3 text-left',
-        disabled && 'cursor-not-allowed border-black/10 text-black/40 bg-black/5',
-        !disabled && checked && 'bg-error/10 text-error hover:bg-error/20 border-error/30',
-        !disabled && !checked && 'bg-black/5 border-black/10 hover:bg-black/10',
-        invalid && 'border-t',
-      )}
-    >
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider">Contains spoilers</div>
-        <div className="text-[11px] text-black/60">
-          {disabled
-            ? 'Spoiler option unlocks after writing review text'
-            : 'Hide this review behind a spoiler warning'}
-        </div>
+        <button
+          type="button"
+          onClick={() => close?.(null)}
+          className={getNavActionClass({
+            isActive: false,
+            className: 'flex-1',
+          })}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form={FORM_ID}
+          disabled={isSaving || Boolean(validationError)}
+          className={getNavActionClass({
+            isActive: true,
+            className:
+              'flex-1 disabled:cursor-not-allowed disabled:opacity-50' + INFO_ACTION_TONE_CLASS,
+          })}
+        >
+          <Icon
+            icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
+            size={NAV_ACTION_STYLES.icon}
+          />
+          <span>
+            {isSaving
+              ? 'Saving...'
+              : getPrimaryActionLabel({
+                  hasExistingReview,
+                  isList: isListSubject,
+                  rating,
+                  reviewText,
+                })}
+          </span>
+        </button>
       </div>
-
-      <span
-        className={cn(
-          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border p-px',
-          checked && !disabled ? 'border-error bg-error' : 'border-black/10 bg-black/10',
-        )}
-      >
-        <span
-          className={cn(
-            'size-4 rounded-full bg-white shadow-xs',
-            checked && !disabled ? 'translate-x-4' : 'translate-x-0',
-          )}
-        />
-      </span>
-    </button>
+      {!isListSubject && (
+        <button
+          type="button"
+          role="switch"
+          aria-checked={isSpoiler}
+          disabled={!hasText}
+          onClick={handleSpoilerToggle}
+          className={getNavActionClass({
+            isActive: false,
+            className: cn(
+              'w-full disabled:cursor-not-allowed disabled:opacity-50',
+              isSpoiler && hasText
+                ? 'border-error/30 bg-error/10 text-error hover:bg-error/20'
+                : '',
+            ),
+          })}
+        >
+          <Icon
+            icon={isSpoiler && hasText ? 'solar:danger-triangle-bold' : 'solar:eye-closed-bold'}
+            size={NAV_ACTION_STYLES.icon}
+          />
+          <span>{isSpoiler && hasText ? 'Contains Spoilers' : 'Mark as Spoiler'}</span>
+        </button>
+      )}
+    </form>
   );
 }

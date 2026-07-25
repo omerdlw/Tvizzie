@@ -563,9 +563,9 @@ export default function Client({ routeData = null }) {
 
   const handleEditReview = useCallback(
     (review) => {
-      openReviewEditorModal(review);
+      openReviewModal(review);
     },
-    [openReviewEditorModal],
+    [openReviewModal],
   );
 
   const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false;

@@ -156,7 +156,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     >
       <button
         disabled={disabled}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/10 text-black/70 hover:border-black/15 hover:text-black"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/5 text-black/70 hover:border-black/10 hover:text-black"
         title="Edit Review"
         onClick={onEdit}
         type="button"
@@ -166,7 +166,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
       <Button
         variant="destructive"
         disabled={disabled}
-        className="size-8"
+        className="size-8 rounded-xl"
         onClick={onDeleteRequest}
         title="Delete Review"
         type="button"
@@ -186,7 +186,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
         <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
       ) : src ? (
         <AdaptiveImage
-          className={cn('object-cover', !isAccountVariant && '')}
+          className={cn('rounded-[16px] object-cover', !isAccountVariant && '')}
           src={src}
           alt={alt}
           fill
@@ -197,7 +197,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           wrapperClassName="h-full w-full"
         />
       ) : (
-        <div className="bg-primary/40 flex h-full w-full items-center justify-center border border-black/10">
+        <div className="bg-primary/30 flex h-full w-full items-center justify-center border border-black/5">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -213,13 +213,14 @@ function isInteractiveTarget(target) {
     target.closest('a, button, input, textarea, select, summary, [role="button"]'),
   );
 }
+
 function SpoilerNotice({ compact = false, onReveal }) {
   return (
     <button
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 border border-black/10 p-3 text-left hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[16px] border border-black/10 p-3 text-left transition-all duration-150 ease-in-out hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"
@@ -233,7 +234,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info group-hover:bg-primary shrink-0 p-2 text-[11px] font-semibold tracking-wide uppercase group-hover:text-black">
+      <span className="text-info transition-all duration-150 ease-in-out group-hover:bg-primary shrink-0 rounded-xl p-2 text-[11px] font-semibold tracking-wide uppercase group-hover:text-black">
         Show
       </span>
     </button>
@@ -360,7 +361,6 @@ export default function ReviewCard({
                           </Link>
                         )}
                       </div>
-
                       {isOwnReview && (
                         <ReviewActions
                           disabled={false}

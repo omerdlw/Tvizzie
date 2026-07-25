@@ -16,6 +16,7 @@ const STAR_PATH = [
   'L8.94 8.63 Q9.53 8.60 9.74 8.05',
   'L11.26 3.98 Q12 2 12.74 3.98Z',
 ].join(' ');
+
 function getFillPercent(starIndex, activeValue) {
   if (activeValue === null) return 0;
   if (activeValue >= starIndex) return 100;
@@ -78,6 +79,7 @@ function Star({
     </div>
   );
 }
+
 export default function RatingSelector({ value, onChange }) {
   const [hoverValue, setHoverValue] = useState(null);
   const selectedValue = typeof value === 'number' ? value : null;
