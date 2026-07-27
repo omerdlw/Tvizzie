@@ -136,24 +136,13 @@ export function useNavigationLayout({
 
     const filteredItems = removeInactiveLoadingItems(reorderedItems, activeItem);
 
-    if (expanded) {
-      const expandedActiveIndex = filteredItems.findIndex((item) => isSameItem(item, activeItem));
+    const deduplicatedItems = removeAncestorDuplicates(filteredItems);
 
-      return {
-        displayItems: filteredItems,
-        displayActiveIndex: expandedActiveIndex,
-      };
-    }
-
-    const visibleCount = getCollapsedVisibleCount({
-      isCompact,
-      shouldShowOverlayStack,
-      shouldShowSingleStatusCard,
-    });
+    const activeIndexForDisplay = deduplicatedItems.findIndex((item) => isSameItem(item, activeItem));
 
     return {
-      displayItems: removeAncestorDuplicates(filteredItems).slice(0, visibleCount),
-      displayActiveIndex: reorderedItems.length > 0 ? 0 : -1,
+      displayItems: deduplicatedItems,
+      displayActiveIndex: activeIndexForDisplay !== -1 ? activeIndexForDisplay : (reorderedItems.length > 0 ? 0 : -1),
     };
   }, [pathname, expanded, isHovered, isCompact, navigationItems, activeItem]);
 

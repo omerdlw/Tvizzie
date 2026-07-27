@@ -180,7 +180,7 @@ export default function PersonAwards({ personId }) {
                           <MediaThumb
                             poster={entry.poster}
                             alt={title}
-                            className="w-16 rounded-[16px] sm:w-20"
+                            className="w-16 rounded-2xl sm:w-20"
                           />
                           <div className="flex min-w-0 flex-1 flex-col gap-1">
                             <div className="flex min-w-0 flex-1 items-center gap-2">

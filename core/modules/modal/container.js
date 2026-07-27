@@ -1,17 +1,22 @@
 'use client';
 
 import { isValidElement } from 'react';
+import { motion } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
 
+import { INFO_ACTION_TONE_CLASS } from '@/core/constants';
 import { MODAL_POSITIONS } from '@/core/modules/modal/config';
+import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './motion';
 
 export const CANCEL_BUTTON_CLASS =
-  'h-8 shrink-0 border rounded-[12px] border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 hover:bg-black/5 hover:text-black';
+  'h-8 shrink-0 border rounded-xl border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 hover:bg-black/5 hover:text-black transition-colors duration-150 ease-linear';
 
-export const ACTION_BUTTON_CLASS =
-  'hover:bg-info hover:border-info rounded-[12px] hover:text-primary h-8 border border-black bg-black px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50';
+export const ACTION_BUTTON_CLASS = cn(
+  'h-8 shrink-0 rounded-xl px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase transition-colors duration-150 ease-linear disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/10 disabled:text-black/50',
+  INFO_ACTION_TONE_CLASS,
+);
 
 const HEIGHT_CONSTRAINT_PATTERN = /(\s|^)(?:[\w-]+:)*(?:h|max-h)-/;
 
@@ -41,7 +46,7 @@ function getBodyClassName(position, bodyClassName) {
   const isBottomModal = position === MODAL_POSITIONS.BOTTOM;
 
   return cn(
-    'bg-primary min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
+    'bg-primary rounded-2xl min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
     isTopModal && ' ',
     isBottomModal && ' ',
     isLeftModal && ' ',
@@ -73,14 +78,16 @@ function CloseButton({ close, label = 'Close modal' }) {
   }
 
   return (
-    <button
+    <motion.button
       type="button"
       aria-label={label}
+      whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
+      transition={MODAL_MICRO_SPRING}
       onClick={close}
-      className="inline-flex size-8 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+      className="center inline-flex size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </button>
+    </motion.button>
   );
 }
 

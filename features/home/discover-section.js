@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { HomeSectionReveal } from '@/features/media/static-route-elements';
 import MediaPosterCard from '@/ui/media/media-poster-card';
-import { GenreChip } from './genre-chip';
 import Icon from '@/ui/icon';
+import { useRegistry } from '@/core/modules/registry';
 const ALL_GENRE_ID = 'all';
 const MOBILE_DISCOVER_BATCH = 9;
 const DESKTOP_DISCOVER_BATCH = 24;
@@ -26,6 +26,20 @@ function getUniqueItems(items = [], limit = items.length) {
 function getDiscoverBatchSize(isMobileGrid) {
   return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
 }
+
+function GenreChip({ genre, isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={`center border px-3 h-10 text-xs tracking-wide rounded-2xl text-black/70 w-full ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
+    >
+      <span className="truncate">{genre.name}</span>
+    </button>
+  );
+}
+
 export function DiscoverSection({
   initialDiscoverItems = [],
   initialGenres = [],
@@ -54,6 +68,18 @@ export function DiscoverSection({
   const [isFiltering, setIsFiltering] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [gridError, setGridError] = useState('');
+
+  const activeGenreName = useMemo(() => {
+    return genreItems.find((g) => String(g.id) === String(activeGenreId))?.name || '';
+  }, [activeGenreId, genreItems]);
+
+  useRegistry(
+    useMemo(() => ({
+      nav: {
+        description: activeGenreId === ALL_GENRE_ID ? 'Discover titles' : activeGenreName,
+      },
+    }), [activeGenreId, activeGenreName])
+  );
   const batchSize = getDiscoverBatchSize(isMobileGrid);
   const gridItems = getUniqueItems(discoverItems, discoverItems.length).slice(
     0,
@@ -209,27 +235,80 @@ export function DiscoverSection({
     isLoadingMore,
     sectionsLoaded,
   ]);
+
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollButtons = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 1);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  };
+
+  const scroll = (direction) => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const scrollAmount = el.clientWidth + 8;
+    el.scrollTo({
+      left: el.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount),
+      behavior: 'smooth',
+    });
+  };
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(() => {
+      updateScrollButtons();
+    });
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <HomeSectionReveal delay={0.08} distance={18}>
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <div
-          ref={scrollContainerRef}
-          className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-        >
-          <div className="flex w-max min-w-full items-center gap-2">
+        <div className="flex items-center w-full relative">
+          <button
+            type="button"
+            disabled={!canScrollLeft}
+            className="inline-flex shrink-0 size-10 items-center justify-center border  rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 mr-2"
+            onClick={() => scroll('left')}
+          >
+            <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
+          </button>
+          <div
+            ref={scrollContainerRef}
+            className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing rounded-2xl flex-1 flex items-center gap-2 snap-x snap-mandatory scroll-smooth"
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onScroll={updateScrollButtons}
+          >
             {genreItems.map((genre) => (
-              <GenreChip
-                key={genre.id}
-                genre={genre}
-                isActive={String(genre.id) === String(activeGenreId)}
-                onClick={() => handleChipClick(String(genre.id))}
-              />
+              <div key={genre.id} className="snap-start w-[calc((100%-72px)/10)] shrink-0">
+                <GenreChip
+                  genre={genre}
+                  isActive={String(genre.id) === String(activeGenreId)}
+                  onClick={() => handleChipClick(String(genre.id))}
+                />
+              </div>
             ))}
           </div>
+          <button
+            type="button"
+            disabled={!canScrollRight}
+            className="inline-flex shrink-0 size-10 items-center justify-center border w-[38px] h-[38px] rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 ml-2"
+            onClick={() => scroll('right')}
+          >
+            <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
@@ -249,13 +328,13 @@ export function DiscoverSection({
         </div>
 
         {gridError ? (
-          <div className="border border-black/10 bg-white/70 p-3 text-sm text-black/50">
+          <div className="border border-black/10 bg-white/70 rounded-2xl p-3 text-sm text-black/50">
             {gridError}
           </div>
         ) : null}
 
         {gridItems.length === 0 && !isFiltering ? (
-          <div className="border border-black/10 bg-white/70 p-4 text-sm text-black/50">
+          <div className="border border-black/10 bg-white/70 rounded-2xl p-4 text-sm text-black/50">
             No movies found for this genre.
           </div>
         ) : null}
@@ -266,11 +345,11 @@ export function DiscoverSection({
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 border border-black/10 bg-white px-5 text-[11px] font-semibold tracking-[0.15em] text-black/72 uppercase hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 border border-black/5 rounded-2xl bg-primary px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Icon
                 icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
-                size={14}
+                size={16}
                 className={isLoadingMore ? '' : ''}
               />
               {isLoadingMore ? 'Loading' : 'Load more'}

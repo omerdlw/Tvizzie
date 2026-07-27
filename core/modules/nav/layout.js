@@ -52,15 +52,6 @@ function getExpandedItemY(position) {
   return position * NAV_CARD_LAYOUT.expanded.offsetY;
 }
 
-
-
-
-
-
-
-
-
-
 export function getNavItemCardProps({
   cardScale,
   cardStyle,
@@ -72,6 +63,7 @@ export function getNavItemCardProps({
   position,
   showBorder,
   globalCompact,
+  visibleCount = 3,
 }) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
@@ -84,36 +76,34 @@ export function getNavItemCardProps({
   const isTop = position === 0;
   const collapsedScaleValue = collapsedScale ** position;
 
-  const y = expanded
-    ? position * expandedOffsetY
-    : position * collapsedOffsetY;
+  const y = expanded ? position * expandedOffsetY : position * collapsedOffsetY;
 
-  const scale = expanded
-    ? cardScale || 1
-    : collapsedScaleValue;
+  const scale = expanded ? cardScale || 1 : collapsedScaleValue;
 
-  const opacity = 1;
+  const opacity = expanded || position < visibleCount ? 1 : 0;
 
   return {
-    
     className: cn(
-      'absolute h-auto w-full border rounded-[24px] p-2 backdrop-blur-lg',
-      (isAnchoredToBottom || isTop) ? 'bottom-0' : 'top-0',
+      'absolute h-auto w-full border rounded-[24px] p-2',
+      compact ? 'bg-white' : 'bg-white/80 backdrop-blur-md',
+      isAnchoredToBottom || isTop ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
-      'border-black/10 bg-white/80',
+      'border-black/10',
       showBorder && 'border-black/15',
       cardStyle?.className,
     ),
     style: {
       ...safeCardStyle,
       overflow: compact ? 'hidden' : undefined,
+      isolation: compact ? undefined : 'isolate',
       left: '50%',
       x: '-50%',
-      transformOrigin: (isAnchoredToBottom || isTop) ? 'bottom center' : 'top center',
+      transformOrigin: isAnchoredToBottom || isTop ? 'bottom center' : 'top center',
       zIndex: 10 - position,
       ...(isTop ? { height: '100%' } : {}),
+      pointerEvents: expanded || position < visibleCount ? undefined : 'none',
     },
-    
+
     // Only expose width for top card (compact pill) — inactive cards use w-full from container.
     motionValues: { width: isTop ? cardWidth : undefined, y, scale, opacity },
   };
@@ -140,11 +130,7 @@ export function getRouteMeasurementKey(pathname, key) {
   return `${pathname || ''}:${key}`;
 }
 
-export function getItemDescription({ expanded, isHovered, link }) {
-  if (isHovered && !expanded && !link.isOverlay && link.type !== 'COUNTDOWN') {
-    return 'click to see the pages';
-  }
-
+export function getItemDescription({ link }) {
   return link.description;
 }
 
@@ -167,10 +153,7 @@ export function getDistanceToBottom() {
   return Math.max(maxScrollY - scrollY, 0);
 }
 
-export function getContainerHeight({
-  cardContentHeight,
-  compact,
-}) {
+export function getContainerHeight({ cardContentHeight, compact }) {
   const chromeHeight = NAV_CARD_LAYOUT.chromeHeight;
   const minCardHeight = compact ? NAV_CARD_LAYOUT.compactHeight : NAV_CARD_LAYOUT.baseHeight;
   const nextCardHeight = Math.max(minCardHeight, cardContentHeight + chromeHeight);

@@ -9,6 +9,7 @@ import { useNavRuntimeRegistry } from '@/core/modules/registry';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
+import { isSamePath } from '../utils';
 
 function blurActiveElement() {
   if (typeof document === 'undefined') return;
@@ -69,6 +70,10 @@ export function useNavigationCore() {
   const navigate = useCallback(
     async (href, { force = false } = {}) => {
       const from = pathname;
+
+      if (isSamePath(href, from)) {
+        return true;
+      }
 
       if (!force) {
         const guardResult = await checkGuards(href, from);

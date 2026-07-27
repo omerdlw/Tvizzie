@@ -12,7 +12,6 @@ function defaultGetLabel(item) {
 }
 
 const PADDING = 2;
-
 const BORDER_WIDTH = 1;
 const OUTER_RADIUS = 12;
 const INNER_RADIUS = OUTER_RADIUS - PADDING - BORDER_WIDTH;

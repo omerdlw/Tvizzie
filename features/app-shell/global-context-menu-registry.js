@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from 'react';
 
-import FeedbackModal from '@/features/modals/feedback-modal';
 import { useModal } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
 import { REGISTRY_TYPES, useRegistry, useRegistryActions } from '@/core/modules/registry';
@@ -53,13 +52,7 @@ export default function GlobalContextMenuRegistry() {
   const { openModal } = useModal();
   const toast = useToast();
   const { register, unregister } = useRegistryActions();
-
-  useRegistry({
-    modal: {
-      FEEDBACK_MODAL: FeedbackModal,
-    },
-  });
-
+  
   const globalContextMenuConfig = useMemo(
     () => ({
       key: 'global-page-context-menu',

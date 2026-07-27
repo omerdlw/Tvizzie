@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { Container } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
@@ -436,7 +437,13 @@ function SocialUserRow({ close, user, action, index }) {
   const avatarSrc = getUserAvatarUrl(user);
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   return (
-    <div className="flex transition-colors duration-150 ease-in-out items-center justify-between gap-3 border-b border-black/10 p-3 last:border-none hover:bg-white lg:p-4">
+    <motion.div
+      initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
+      whileHover={{ x: 2 }}
+      className="flex transition-colors duration-150 ease-in-out items-center justify-between gap-3 border-b border-black/5 p-3 last:border-none hover:bg-white lg:p-4"
+    >
       <Link
         href={`/account/${user.username || user.id}`}
         onClick={close}
@@ -458,7 +465,7 @@ function SocialUserRow({ close, user, action, index }) {
         </div>
       </Link>
       {action}
-    </div>
+    </motion.div>
   );
 }
 function UserAction({
@@ -484,43 +491,59 @@ function UserAction({
   if (tab === TABS.INBOX) {
     return (
       <div className="flex items-center gap-2">
-        <Button
+        <motion.button
+          type="button"
           onClick={() => onAccept(user.id)}
           disabled={isPending}
+          whileHover={{ scale: 1.012 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           className={ACTION_CLASSES.SUCCESS}
         >
           {pendingKind === 'accept' ? 'Accepting' : 'Accept'}
-        </Button>
-        <Button
+        </motion.button>
+        <motion.button
+          type="button"
           onClick={() => onReject(user.id)}
           disabled={isPending}
+          whileHover={{ scale: 1.012 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           className={ACTION_CLASSES.ERROR}
         >
           {pendingKind === 'reject' ? 'Rejecting' : 'Reject'}
-        </Button>
+        </motion.button>
       </div>
     );
   }
   if (tab === TABS.FOLLOWING && isOwnProfile) {
     return (
-      <Button
+      <motion.button
+        type="button"
         onClick={() => onUnfollow(user.id)}
         disabled={isPending}
+        whileHover={{ scale: 1.012 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         className={ACTION_CLASSES.ERROR}
       >
         {pendingKind === 'unfollow' ? 'Unfollowing' : 'Unfollow'}
-      </Button>
+      </motion.button>
     );
   }
   if (tab === TABS.FOLLOWERS && isOwnProfile) {
     return (
-      <Button
+      <motion.button
+        type="button"
         onClick={() => onRemoveFollower(user.id)}
         disabled={isPending}
+        whileHover={{ scale: 1.012 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         className={ACTION_CLASSES.ERROR}
       >
         {pendingKind === 'remove-follower' ? 'Removing' : 'Remove'}
-      </Button>
+      </motion.button>
     );
   }
   if (canShowFollowAction) {
@@ -528,13 +551,17 @@ function UserAction({
     const followLabel =
       pendingKind === 'follow' ? 'Updating' : isFollowPending ? 'Requested' : 'Follow';
     return (
-      <Button
+      <motion.button
+        type="button"
         onClick={() => onFollow(user.id)}
         disabled={isFollowPending || isPending}
+        whileHover={{ scale: 1.012 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         className={ACTION_CLASSES.INFO}
       >
         {followLabel}
-      </Button>
+      </motion.button>
     );
   }
   return null;

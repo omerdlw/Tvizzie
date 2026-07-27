@@ -3,19 +3,34 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TMDB_IMG } from '@/core/constants';
-import { useSurfaceHeader } from '@/core/modules/nav';
 import {
   DEFAULT_WATCH_REGION,
   normalizeWatchRegion,
   resolveWatchRegionFromBrowser,
 } from '@/core/services/tmdb/watch-region';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
-import {
-  NAV_STAGGER_DELAY,
-  NAV_STAGGER_TRANSITION,
-  staggerItemVariants,
-  staggerContainerVariants,
-} from '@/core/modules/nav/motion';
+const containerVariants = Object.freeze({
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.045 } },
+  exit: { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
+});
+const itemVariants = Object.freeze({
+  hidden: { opacity: 0, y: 18, scale: 0.96, filter: 'blur(10px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 0.45, ease: [0.16, 1, 0.24, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.98,
+    filter: 'blur(6px)',
+    transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
+  },
+});
 
 const MAX_WATCH_PROVIDERS = 6;
 
@@ -87,22 +102,6 @@ export default function WatchProvidersSurface({ close, providers }) {
   }, []);
 
   const providerList = useMemo(() => buildProviderList(regionalProviders), [regionalProviders]);
-  const setHeader = useSurfaceHeader();
-
-  useEffect(() => {
-    if (setHeader) {
-      setHeader({
-        icon: 'solar:tv-bold',
-        title: 'Where to watch?',
-        description: 'Available providers for the selected region',
-        trailing: (
-          <span className="text-[10px] tracking-widest text-black/50 uppercase">
-            {resolvedRegion}
-          </span>
-        ),
-      });
-    }
-  }, [setHeader, resolvedRegion]);
 
   return (
     <div className="flex w-full flex-col overflow-hidden">
@@ -110,21 +109,21 @@ export default function WatchProvidersSurface({ close, providers }) {
         {providerList.length > 0 ? (
           <motion.div
             key={`list-${resolvedRegion}`}
-            className="flex flex-col"
-            variants={staggerContainerVariants}
+            className="flex flex-col gap-1"
+            variants={containerVariants}
             initial="hidden"
             animate="visible"
-            exit="hidden"
+            exit="exit"
           >
-            {providerList.map((provider, index) => (
+            {providerList.map((provider) => (
               <motion.div
                 key={`${provider.provider_id}-${provider.type}`}
-                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2 py-2.5 first:pt-0 last:pb-0 last:border-b-0"
-                variants={staggerItemVariants}
-                transition={{
-                  ...NAV_STAGGER_TRANSITION,
-                  delay: index * NAV_STAGGER_DELAY,
-                }}
+                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2.5 py-2 first:pt-0 last:pb-0 last:border-b-0 transition-colors duration-200 ease-out hover:bg-black/5 rounded-xl"
+                variants={itemVariants}
+                whileHover={{ scale: 1.018, x: 2 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+                style={{ willChange: 'transform, filter, opacity' }}
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <AdaptiveImage
@@ -147,7 +146,7 @@ export default function WatchProvidersSurface({ close, providers }) {
             ))}
           </motion.div>
         ) : (
-          <div key={`empty-${resolvedRegion}`} className="center p-4 text-sm bg-primary rounded-[16px]">
+          <div key={`empty-${resolvedRegion}`} className="center p-4 text-sm bg-primary rounded-2xl">
             Watch providers are not available for this region
           </div>
         )}

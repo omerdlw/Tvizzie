@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
 import { cn } from '@/core/utils';
@@ -13,23 +15,9 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import Icon from '@/ui/icon';
 
-
-
-
-
 const DESKTOP_COLUMNS = 3;
 const GRID_CLASS =
   'grid grid-cols-1 divide-y divide-black/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 lg:divide-x-0 lg:divide-y-0';
-const SPRING_TRANSITION = {
-  type: 'spring',
-  stiffness: 380,
-  damping: 34,
-  mass: 0.75,
-};
-
-
-
-
 
 function normalizeEntries(list, fallbackSubtitle) {
   return (Array.isArray(list) ? list : []).map((member) => ({
@@ -76,31 +64,25 @@ function createHeader({ header, hasBoth, activeTab, setActiveTab }) {
   };
 }
 
-
-
-
-
 export default function CastModal({ close, data, header }) {
   usePosterPreferenceVersion();
   const contentRef = useRef(null);
 
-  
   const castEntries = normalizeEntries(data?.cast, 'Cast');
   const crewEntries = normalizeEntries(data?.crew, 'Crew');
   const hasCast = castEntries.length > 0;
   const hasCrew = crewEntries.length > 0;
   const hasBoth = hasCast && hasCrew;
 
-  
   const [activeTab, setActiveTab] = useState(() =>
     data?.initialTab === 'crew' && hasCrew ? 'crew' : 'cast',
   );
 
-  
   useEffect(() => {
     if (activeTab === 'cast' && !hasCast && hasCrew) setActiveTab('crew');
     if (activeTab === 'crew' && !hasCrew && hasCast) setActiveTab('cast');
   }, [activeTab, hasCast, hasCrew]);
+
   useEffect(() => {
     const scrollContainer = contentRef.current?.closest('[data-lenis-prevent-wheel]');
     scrollContainer?.scrollTo?.({
@@ -109,7 +91,6 @@ export default function CastModal({ close, data, header }) {
     });
   }, [activeTab]);
 
-  
   const isEdgePosition = header?.position === 'top' || header?.position === 'bottom';
   const containerClassName = cn('max-h-[85vh]', isEdgePosition ? 'w-full' : 'w-[min(94vw,980px)]');
   const resolvedHeader = createHeader({
@@ -135,10 +116,6 @@ export default function CastModal({ close, data, header }) {
     />
   );
 }
-
-
-
-
 
 function ModalView({
   close,
@@ -173,13 +150,22 @@ function ModalView({
       bodyClassName="bg-transparent p-0"
     >
       <div ref={contentRef} className="relative min-h-32 overflow-hidden">
-        <div key={activeTab}>
-          <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
+          >
+            <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
+          </motion.div>
+        </AnimatePresence>
       </div>
     </Container>
   );
 }
+
 function CreditsGrid({ close, list, keyPrefix }) {
   const lastRowStart = list.length - (list.length % DESKTOP_COLUMNS || DESKTOP_COLUMNS);
   return (
@@ -199,6 +185,7 @@ function CreditsGrid({ close, list, keyPrefix }) {
     </div>
   );
 }
+
 function PersonCard({ close, person, index }) {
   const [imageError, setImageError] = useState(false);
   if (!person?.id) return null;
@@ -211,9 +198,9 @@ function PersonCard({ close, person, index }) {
       <Link
         href={`/person/${person.id}`}
         onClick={close}
-        className="bg-primary/50 hover:bg-primary flex h-full w-full items-center gap-3 p-2"
+        className="flex h-full w-full items-center gap-3 p-2 transition-colors duration-150"
       >
-        <div className="relative h-14 w-11 shrink-0 overflow-hidden  bg-black/5">
+        <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-black/5">
           {imageSrc ? (
             <AdaptiveImage
               fill
@@ -221,12 +208,12 @@ function PersonCard({ close, person, index }) {
               alt={person.name || 'Cast member'}
               sizes="44px"
               quality={72}
-              className=" object-cover"
+              className="object-cover"
               onError={() => setImageError(true)}
-              wrapperClassName="h-full w-full "
+              wrapperClassName="h-full w-full"
             />
           ) : (
-            <div className="center h-full w-full ">
+            <div className="center h-full w-full">
               <Icon icon="solar:user-bold" size={16} className="text-black/50" />
             </div>
           )}

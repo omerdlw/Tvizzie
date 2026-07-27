@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { Container } from '@/core/modules/modal';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
@@ -94,13 +95,17 @@ function SocialUserRow({ close, user, actions, index }) {
   const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
   const username = user?.username || 'user';
   return (
-    <div>
+    <motion.div
+      whileHover={{ scale: 1.008, x: 2 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+    >
       <Link
         href={`/account/${username}`}
         onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 last:border-none hover:bg-white lg:p-4"
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 last:border-none hover:bg-white lg:p-4 rounded-xl transition-colors duration-200"
       >
-        <div className="center size-10 shrink-0 overflow-hidden border border-black/5">
+        <div className="center size-10 shrink-0 overflow-hidden border border-black/5 rounded-xl">
           <AdaptiveImage
             mode="img"
             src={avatarSrc}
@@ -125,12 +130,12 @@ function SocialUserRow({ close, user, actions, index }) {
         <div className="flex shrink-0 items-center gap-1.5 self-center">
           <span
             aria-hidden="true"
-            className="center size-7 border border-black/10 text-black/70"
+            className="center size-7 border border-black/10 text-black/70 rounded-lg"
           >
             <Icon icon="solar:alt-arrow-right-linear" size={16} />
           </span>
         </div>
       </Link>
-    </div>
+    </motion.div>
   );
 }

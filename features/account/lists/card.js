@@ -80,7 +80,7 @@ function PreviewPoster({ index, isHovered, item, total }) {
       }}
     >
       <div
-        className="overflow-hidden"
+        className="overflow-hidden rounded-xl border border-black/10"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -111,7 +111,7 @@ function PlaceholderPoster({ index, isHovered, total }) {
       }}
     >
       <div
-        className="border border-dashed border-black/10 bg-white"
+        className="rounded-xl border border-dashed border-black/10 bg-white"
         style={{
           height: `${POSTER_HEIGHT}px`,
           width: `${POSTER_WIDTH}px`,
@@ -169,7 +169,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           }}
         >
           <div
-            className="relative z-0 border border-black/10 bg-white"
+            className="relative z-0 rounded-2xl border border-black/10 bg-white"
             style={{
               height: `${BACK_PANEL_HEIGHT}px`,
               transformOrigin: 'center bottom',
@@ -205,7 +205,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
           </div>
 
           <div
-            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden border border-black/10 bg-white/80"
+            className="absolute right-0 bottom-0 left-0 z-10 overflow-hidden rounded-2xl border border-black/10 bg-white/80"
             style={{
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',

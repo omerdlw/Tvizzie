@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
 import { createUserList, toggleUserListItem, updateUserList } from '@/core/services/media/lists';
-import { Button, Input, Textarea } from '@/ui/elements';
+import { Input, Textarea } from '@/ui/elements';
 import Icon from '@/ui/icon';
 
 const FORM_ID = 'list-editor-modal-form';
@@ -121,18 +122,19 @@ export default function ListEditorModal({ close, data, header }) {
       setIsSaving(false);
     }
   };
+
   return (
     <ModalView
       close={close}
       header={header}
       isEditing={isEditing}
-      isSaving={isSaving}
-      canSubmit={canSubmit}
-      draftItems={draftItems}
       form={form}
       handleChange={handleChange}
+      draftItems={draftItems}
       handleRemoveItem={handleRemoveItem}
       handleSubmit={handleSubmit}
+      isSaving={isSaving}
+      canSubmit={canSubmit}
     />
   );
 }
@@ -141,13 +143,13 @@ function ModalView({
   close,
   header,
   isEditing,
-  isSaving,
-  canSubmit,
-  draftItems,
   form,
   handleChange,
+  draftItems,
   handleRemoveItem,
   handleSubmit,
+  isSaving,
+  canSubmit,
 }) {
   return (
     <Container
@@ -164,19 +166,25 @@ function ModalView({
           </span>
         ),
         right: (
-          <>
-            <Button
+          <div className="flex items-center gap-2 p-0.5 overflow-visible">
+            <motion.button
               type="button"
-              onClick={close}
+              whileHover={{ scale: 1.012 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              onClick={() => close()}
               disabled={isSaving}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </motion.button>
+            <motion.button
               type="submit"
               form={FORM_ID}
               disabled={isSaving || !canSubmit}
+              whileHover={isSaving || !canSubmit ? undefined : { scale: 1.012 }}
+              whileTap={isSaving || !canSubmit ? undefined : { scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               className={ACTION_BUTTON_CLASS}
             >
               {isSaving
@@ -186,8 +194,8 @@ function ModalView({
                 : isEditing
                   ? 'Update list'
                   : 'Create list'}
-            </Button>
-          </>
+            </motion.button>
+          </div>
         ),
       }}
     >
@@ -201,7 +209,7 @@ function ModalView({
               autoFocus
               className={{
                 wrapper:
-                  'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20',
+                  'flex h-10 items-center border border-black/10 bg-black/5 px-3.5 focus-within:border-black/20 rounded-xl transition-colors duration-150 ease-linear',
                 input:
                   'h-full w-full bg-transparent text-sm text-black outline-none placeholder:text-black/50',
               }}
@@ -215,7 +223,7 @@ function ModalView({
               maxHeight={120}
               className={{
                 wrapper:
-                  'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10',
+                  'flex min-h-10 border border-black/10 bg-black/5 px-3.5 py-2.5 focus-within:border-black/20 sm:min-h-10 rounded-xl transition-colors duration-150 ease-linear',
                 textarea:
                   'max-h-[120px] min-h-5 w-full resize-none bg-transparent text-sm leading-5 text-black outline-none placeholder:text-black/50',
               }}
@@ -241,7 +249,7 @@ function ModalView({
             ) : (
               <div
                 key="empty"
-                className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center"
+                className="flex h-28 flex-col items-center justify-center gap-2 border border-dashed border-black/10 bg-black/5 text-center rounded-xl"
               >
                 <Icon icon="solar:list-broken" size={24} className="text-black/50" />
                 <p className="text-xs text-black/50">No titles in this list</p>
@@ -256,19 +264,27 @@ function ModalView({
 function ListItemRow({ item, onRemove, index }) {
   const title = getItemTitle(item);
   return (
-    <div className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10">
+    <motion.div
+      initial={{ opacity: 0, y: 6, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
+      className="group bg-primary flex min-h-10 items-center gap-3 border border-black/5 px-3 py-1.5 hover:border-black/10 rounded-xl transition-colors duration-150"
+    >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-black">{title}</p>
       </div>
 
-      <button
+      <motion.button
         type="button"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         onClick={() => onRemove(item)}
-        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        className="center hover:border-error/15 hover:bg-error/10 hover:text-error size-7 shrink-0 cursor-pointer border border-transparent text-black/35 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 rounded-lg transition-colors duration-150"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="material-symbols:close-rounded" size={16} />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

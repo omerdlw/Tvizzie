@@ -224,9 +224,13 @@ export const navPlugin = createPlugin({
       navItem.isLoading = resolvedIsLoading;
     }
 
+    const filteredNavItem = Object.fromEntries(
+      Object.entries(navItem).filter(([, val]) => val !== undefined)
+    );
+
     if (itemPath) {
       clearCleanupTimer(itemPath, source, instanceId);
-      register(REGISTRY_TYPES.NAV, itemPath, navItem, source, registerOptions);
+      register(REGISTRY_TYPES.NAV, itemPath, filteredNavItem, source, registerOptions);
     }
 
     return () => {

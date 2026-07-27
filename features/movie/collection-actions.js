@@ -85,7 +85,7 @@ function getActionPalette(palette, active) {
   if (palette === 'watched' || palette === 'watchlist') {
     return 'border border-info/20 bg-info/20 text-info hover:border-info/10 hover:bg-info/10';
   }
-  return 'border rounded-[20px] border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80';
+  return 'border border-black/10 bg-primary/40 hover:border-black/15 hover:bg-primary/80';
 }
 
 function ActionButton({
@@ -104,7 +104,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[16px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active),
       )}
     >

@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { REVIEW_SORT_OPTIONS } from '@/features/reviews/utils';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 import { Select } from '@/ui/elements';
@@ -54,7 +55,11 @@ export default function MovieAction({
   const label = isActive ? 'Back' : defaultLabel;
 
   return (
-    <button
+    <motion.button
+      type="button"
+      whileHover={{ scale: 1.012 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -64,10 +69,20 @@ export default function MovieAction({
         className,
         isActive,
       })}
-      type="button"
     >
-      <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
-      <span className="truncate">{label}</span>
-    </button>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={`${icon}-${label}`}
+          initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+          className="flex items-center gap-2 truncate"
+        >
+          <Icon icon={icon} size={NAV_ACTION_STYLES.icon} />
+          <span className="truncate">{label}</span>
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
   );
 }

@@ -269,15 +269,15 @@ export default function AccountHero({
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-24 w-24 justify-self-start overflow-hidden sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <div className="h-24 w-24 justify-self-start overflow-hidden rounded-2xl sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
               <AdaptiveImage
                 mode="img"
-                className="h-full w-full object-cover"
+                className="h-full w-full rounded-2xl object-cover"
                 src={heroAvatarSrc}
                 alt={heroDisplayName}
                 decoding="async"
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
-                wrapperClassName="h-full w-full"
+                wrapperClassName="h-full w-full rounded-2xl"
               />
             </div>
 

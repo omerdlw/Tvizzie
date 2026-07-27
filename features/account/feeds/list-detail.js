@@ -97,6 +97,8 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
       handleOpenFollowList={handleOpenFollowList}
       handleSignInRequest={handleSignInRequest}
       handleToggleLike={handleToggleLike}
+      handleOpenReviewComposer={handleOpenReviewComposer}
+      ownReview={ownReview}
       isFollowLoading={isFollowLoading}
       isLiked={isLiked}
       isLikeLoading={isLikeLoading}

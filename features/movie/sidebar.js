@@ -260,7 +260,7 @@ export default function Sidebar({
               blurDataURL={getImagePlaceholderDataUrl(
                 `${item.id || item.title || item.name}-${item.poster_path}`,
               )}
-              className="rounded-[20px] object-cover"
+              className="rounded-[24px] object-cover"
               wrapperClassName="h-full w-full"
             />
           ) : (

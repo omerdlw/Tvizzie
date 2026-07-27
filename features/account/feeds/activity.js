@@ -12,7 +12,7 @@ import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
-const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 border border-black/5 p-3';
+const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 rounded-xl border border-black/5 p-3';
 
 
 

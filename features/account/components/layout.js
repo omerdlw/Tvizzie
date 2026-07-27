@@ -9,7 +9,7 @@ import NotFoundTemplate from '@/features/app-shell/not-found-template';
 import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 import { useNavigationActions } from '@/core/modules/nav';
-import AccountBioSurface from '@/features/navigation/surfaces/account-bio-surface';
+import { createAccountBioSurfaceEntry } from '@/features/navigation/surfaces/account-bio-surface';
 
 export function AccountHeroReveal({ children, className = '' }) {
   return <div className={className}>{children}</div>;
@@ -93,7 +93,7 @@ function NavViewItem({ item, isActive, href }) {
       <Link
         href={href}
         className={cn(
-          'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
+          'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-2xl border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
           isActive
             ? 'border-black bg-black text-white'
             : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black',
@@ -141,16 +141,15 @@ export default function ProfileLayout({
   const { openSurface } = useNavigationActions();
   const profileHandle = username || profile?.username || null;
   const handleReadMore = () => {
-    openSurface({
-      component: AccountBioSurface,
-      props: {
+    openSurface(
+      createAccountBioSurfaceEntry({
         description: profile?.description || '',
         followerCount,
         followingCount,
         profile,
         username: profileHandle || 'About',
-      },
-    });
+      }),
+    );
   };
   return (
     <PageGradientShell className="overflow-hidden">

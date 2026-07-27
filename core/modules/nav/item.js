@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, Suspense, useState, useMemo, useRef, memo } from 'react';
+import React, { forwardRef, Suspense, useState, useMemo, useRef, memo, useEffect } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +29,7 @@ import {
   NAV_FADE_TRANSITION,
   NAV_BADGE_TRANSITION,
   NAV_TAP_SCALE,
+  textCrossfadeVariants,
 } from '@/core/modules/nav/motion';
 
 function resolveInlineActionNode(action) {
@@ -197,6 +198,20 @@ const Item = memo(
     
     
     
+    const prevExpandedRef = useRef(expanded);
+    const [isExpandingOrCollapsing, setIsExpandingOrCollapsing] = useState(false);
+
+    useEffect(() => {
+      if (prevExpandedRef.current !== expanded) {
+        prevExpandedRef.current = expanded;
+        setIsExpandingOrCollapsing(true);
+        const timer = setTimeout(() => {
+          setIsExpandingOrCollapsing(false);
+        }, 550);
+        return () => clearTimeout(timer);
+      }
+    }, [expanded]);
+
     const {
       className: cardClassName,
       style: cardStyle,
@@ -215,21 +230,46 @@ const Item = memo(
       pathname,
       isHovered,
       isStackHovered,
+      visibleCount: (globalCompact && !isStackHovered) || link.isStatus ? 1 : 3,
     });
 
     return (
       <motion.div
         ref={ref}
         className={cardClassName}
-        style={cardStyle}
+        style={{
+          ...cardStyle,
+          willChange: 'transform, filter, opacity',
+        }}
         initial={false}
         animate={{
           ...(motionValues.width !== undefined ? { width: motionValues.width } : {}),
           y: motionValues.y,
-          scale: motionValues.scale,
+          scale: isStackHovered && position > 0
+            ? [motionValues.scale, motionValues.scale * 1.05, motionValues.scale * 0.98, motionValues.scale]
+            : motionValues.scale,
           opacity: motionValues.opacity,
+          filter: isExpandingOrCollapsing && position > 0
+            ? ['blur(14px) brightness(1.12)', 'blur(5px) brightness(1.04)', 'blur(0px) brightness(1)']
+            : isStackHovered && position > 0
+              ? ['brightness(1) blur(0px)', 'brightness(1.4) blur(4px)', 'brightness(1) blur(0px)']
+              : 'blur(0px) brightness(1)',
         }}
-        transition={NAV_CARD_SPRING}
+        transition={{
+          ...NAV_CARD_SPRING,
+          filter: isExpandingOrCollapsing && position > 0
+            ? { duration: 0.55, ease: [0.16, 1, 0.24, 1] }
+            : (isStackHovered && position > 0 ? {
+                duration: 0.5,
+                delay: 0.5 + (position - 1) * 0.1,
+                ease: 'easeInOut',
+              } : undefined),
+          scale: isStackHovered && position > 0 ? {
+            duration: 0.5,
+            delay: 0.5 + (position - 1) * 0.1,
+            ease: 'easeInOut',
+          } : undefined,
+        }}
         role="button"
         tabIndex={link.isOverlay ? -1 : 0}
         onFocus={handleFocus}
@@ -244,9 +284,10 @@ const Item = memo(
           {compact && (
             <motion.div
               key="compact-title-overlay"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
+              variants={textCrossfadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               transition={NAV_FADE_TRANSITION}
               className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
             >
@@ -270,24 +311,25 @@ const Item = memo(
 
         <motion.div
           ref={cardContentRef}
-          className="flow-root w-full overflow-hidden"
+          className="flow-root w-full"
           animate={{ opacity: compact ? 0 : 1 }}
           transition={NAV_FADE_TRANSITION}
-          style={{ pointerEvents: compact ? 'none' : 'auto' }}
+          style={{ pointerEvents: compact ? 'none' : 'auto', overflow: compact ? 'hidden' : 'visible' }}
         >
           {renderContent()}
 
           
-          <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
             {renderedActionNode ? (
               <motion.div
                 key="nav-action-component"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                variants={textCrossfadeVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
                 transition={NAV_FADE_TRANSITION}
-                className="flow-root"
-                style={{ overflow: 'hidden' }}
+                className="flow-root overflow-visible"
+                style={{ overflow: 'visible' }}
                 onClick={(event) => event.stopPropagation()}
               >
                 <Suspense>{renderedActionNode}</Suspense>
@@ -430,7 +472,7 @@ function SurfaceItemContent({ link }) {
   const onClose = link.dismissible === false ? null : link.closeSurface || link.onClose;
 
   return (
-    <div className="relative w-full overflow-hidden" onClick={(event) => event.stopPropagation()}>
+    <div className="relative w-full overflow-visible" onClick={(event) => event.stopPropagation()}>
       <div className="w-full">
         <NavSurfaceShell
           icon={icon}

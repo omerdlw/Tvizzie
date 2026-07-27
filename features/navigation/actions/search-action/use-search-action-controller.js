@@ -247,6 +247,7 @@ export function useSearchActionController({
 
   return {
     currentPage: safePage,
+    debouncedQuery,
     handleClear,
     handleImageError,
     handleNextPage,

@@ -9,7 +9,7 @@ import Icon from '@/ui/icon';
 
 
 const DEFAULT_NAV_CLASS =
-  'inline-flex h-10 min-w-[96px] items-center justify-center border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
+  'inline-flex h-10 min-w-[96px] items-center justify-center rounded-xl border border-black/10 bg-white px-3 text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:border-black/20 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px] sm:px-4 sm:text-xs';
 export function getAccountPaginationItems(currentPage, totalPages) {
   if (totalPages <= 8) {
     return Array.from(

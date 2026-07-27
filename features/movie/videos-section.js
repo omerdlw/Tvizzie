@@ -73,8 +73,8 @@ export default function VideosSection({ videos }) {
                         fallbackIconSize={24}
                         overlay={
                           <>
-                            <div className="center absolute inset-0 group-hover:opacity-0">
-                              <div className="center text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm">
+                            <div className="center absolute transition-all duration-150 ease-linear inset-0 group-hover:opacity-0">
+                              <div className="center rounded-full text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm">
                                 <Icon icon="solar:play-bold" size={16} />
                               </div>
                             </div>

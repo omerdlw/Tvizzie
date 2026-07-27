@@ -178,15 +178,15 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
 }
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
-    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] '
-    : 'relative size-14 shrink-0 overflow-hidden border border-black/10 bg-primary/30 ';
+    ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-xl border border-black/10'
+    : 'relative size-14 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-primary/30 ';
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
-        <ListPreviewComposition className="" emptyIcon="solar:list-broken" items={previewItems} />
+        <ListPreviewComposition className="rounded-xl" emptyIcon="solar:list-broken" items={previewItems} />
       ) : src ? (
         <AdaptiveImage
-          className={cn('rounded-[16px] object-cover', !isAccountVariant && '')}
+          className={cn('rounded-xl object-cover', !isAccountVariant && '')}
           src={src}
           alt={alt}
           fill
@@ -194,10 +194,10 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
           decoding="async"
           unoptimized={!canUseNextImageOptimization(src)}
-          wrapperClassName="h-full w-full"
+          wrapperClassName="h-full w-full rounded-xl"
         />
       ) : (
-        <div className="bg-primary/30 flex h-full w-full items-center justify-center border border-black/5">
+        <div className="bg-primary/30 flex h-full w-full items-center justify-center rounded-xl border border-black/5">
           <Icon
             icon={isAccountVariant ? 'solar:clapperboard-play-bold' : 'solar:user-bold'}
             size={isAccountVariant ? 24 : 20}
@@ -220,7 +220,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
       type="button"
       onClick={onReveal}
       className={cn(
-        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-[16px] border border-black/10 p-3 text-left transition-all duration-150 ease-in-out hover:border-black/15 hover:bg-black/5',
+        'group bg-primary inline-flex w-full items-center justify-between gap-3 rounded-xl border border-black/10 p-3 text-left transition-all duration-150 ease-in-out hover:border-black/15 hover:bg-black/5',
         compact ? 'mt-2' : 'mt-2.5',
       )}
       aria-label="Show spoiler review"
@@ -234,7 +234,7 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info transition-all duration-150 ease-in-out group-hover:bg-primary shrink-0 rounded-xl p-2 text-[11px] font-semibold tracking-wide uppercase group-hover:text-black">
+      <span className="text-info group-hover:text-black transition-all duration-150 ease-in-out shrink-0 p-2 text-xs font-semibold tracking-wide uppercase">
         Show
       </span>
     </button>

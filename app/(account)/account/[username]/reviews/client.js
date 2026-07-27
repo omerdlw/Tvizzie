@@ -16,6 +16,7 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/core/services/media/reviews';
+import { subscribeToUserWatched } from '@/core/services/media/watched-watchlist';
 import { useNavigationActions } from '@/core/modules/nav';
 import { createReviewEditorSurfaceEntry } from '@/features/navigation/surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/features/account/route/section-factory';

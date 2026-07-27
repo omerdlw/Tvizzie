@@ -27,9 +27,6 @@ import {
 import {
   NAV_BACKDROP_TRANSITION,
   NAV_CARD_SPRING,
-  NAV_HEIGHT_TRANSITION,
-  NAV_COMPACT_HEIGHT_TRANSITION,
-  NAV_FADE_TRANSITION,
 } from '@/core/modules/nav/motion';
 
 export { NavigationProvider, useNavigationActions, useNavigationContext, useNavigationState } from './context';
@@ -217,23 +214,21 @@ export default function Nav() {
 
   const navContent = (
     <>
-      
       <AnimatePresence>
         {isBackdropVisible && (
           <motion.div
             key="nav-backdrop"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, backdropFilter: 'blur(6px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={NAV_BACKDROP_TRANSITION}
-            className={cn('fixed inset-0 bg-white/20 cursor-pointer')}
+            className={cn('fixed inset-0 bg-white/20 cursor-pointer will-change-[opacity]')}
             style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
             onClick={handleOutsideDismiss}
           />
         )}
       </AnimatePresence>
 
-      
       <motion.div
         id="nav-card-stack"
         ref={navRef}
@@ -242,11 +237,8 @@ export default function Nav() {
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',
           left: '50%',
-          
-          
           x: '-50%',
         }}
-        
         initial={false}
         animate={{
           width: isCompactStack ? compactStackWidth : stackWidth,
@@ -255,7 +247,6 @@ export default function Nav() {
         }}
         transition={heightTransition}
       >
-        
         <motion.div
           style={{ position: 'relative' }}
           animate={{ height: containerHeight }}

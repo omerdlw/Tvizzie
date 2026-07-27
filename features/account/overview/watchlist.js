@@ -103,7 +103,7 @@ export default function AccountWatchlistOverview({
                       <Button
                         variant="destructive-icon"
                         className={
-                          'text-error hover:border-error hover:bg-error border border-black/15 bg-white hover:text-white'
+                          'text-error hover:border-error hover:bg-error rounded-xl border border-black/15 bg-white hover:text-white'
                         }
                         aria-label={`Remove${card.imageAlt}from${title.toLowerCase()}`}
                         disabled={pendingItemId === card.id}

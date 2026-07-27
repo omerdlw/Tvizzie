@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AUTH_ROUTES } from '@/features/auth/constants';
+import { TMDB_IMG } from '@/core/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import {
   hasMatchingSeededFeed,

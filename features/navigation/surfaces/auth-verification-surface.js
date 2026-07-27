@@ -17,6 +17,8 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { Spinner } from '@/ui/loadings/spinner';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 const PURPOSES = Object.freeze({
   ACCOUNT_DELETE: 'account-delete',
   PASSWORD_CHANGE: 'password-change',
@@ -86,16 +88,19 @@ function OtpBoxes({
         className="absolute inset-0 z-10 bg-transparent text-transparent [caret-color:transparent] outline-none"
       />
 
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-6 gap-2 p-1 overflow-visible">
         {Array.from({ length: 6 }).map((_, index) => {
           const digit = code[index] || '';
           const isActive = isFocused && activeIndex === index;
 
           return (
-            <div
+            <motion.div
               key={`otp-box-${index}`}
+              animate={{ scale: isActive ? 1.04 : 1 }}
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 25 }}
               className={cn(
-                'center h-14 rounded-[16px] border border-black/5 text-lg font-semibold text-black/70 hover:text-black',
+                'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70 hover:text-black transition-colors duration-200',
                 hasError &&
                   digit &&
                   'border-error/20 bg-error/20 text-error hover:border-error/10 hover:bg-error/10 border',
@@ -107,14 +112,24 @@ function OtpBoxes({
                   'border-success/20 bg-success/20 text-success hover:border-success/10 hover:bg-success/10 border',
               )}
             >
-              {digit ? (
-                <span>{digit}</span>
-              ) : (
-                <span key="empty" className="invisible">
-                  0
-                </span>
-              )}
-            </div>
+              <AnimatePresence mode="wait">
+                {digit ? (
+                  <motion.span
+                    key={`digit-${digit}`}
+                    initial={{ scale: 0.6, opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                    exit={{ scale: 0.6, opacity: 0, filter: 'blur(4px)' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                  >
+                    {digit}
+                  </motion.span>
+                ) : (
+                  <span key="empty" className="invisible">
+                    0
+                  </span>
+                )}
+              </AnimatePresence>
+            </motion.div>
           );
         })}
       </div>
@@ -494,7 +509,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
 
       <div className="grid gap-2">
         <button
-          className="center hover:bg-info h-11 w-full flex-auto rounded-[16px] border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
+          className="center hover:bg-info h-11 w-full flex-auto rounded-2xl border border-black/5 bg-black/5 px-3 text-xs font-bold tracking-widest text-black/70 uppercase transition hover:text-white disabled:cursor-not-allowed"
           disabled={isSubmitting || isSending || !canResendCode}
           onClick={() => void sendCode({ isInitial: false })}
           type="button"

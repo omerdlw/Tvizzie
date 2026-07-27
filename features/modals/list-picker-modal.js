@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+
 import { TMDB_IMG } from '@/core/constants';
 import { useAuthSessionReady } from '@/core/modules/auth';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
@@ -240,18 +242,23 @@ function ModalView({
       header={{
         left: (
           <h2 className="text-[11px] font-bold tracking-widest text-black/50 uppercase">
-            Your Lists
+            Your lists
           </h2>
         ),
         right: (
-          <Button
-            type="button"
-            onClick={handleOpenCreator}
-            disabled={isApplying}
-            className={CANCEL_BUTTON_CLASS}
-          >
-            Create new list
-          </Button>
+          <div className="p-0.5 overflow-visible">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.012 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              onClick={handleOpenCreator}
+              disabled={isApplying}
+              className={CANCEL_BUTTON_CLASS}
+            >
+              Create new list
+            </motion.button>
+          </div>
         ),
       }}
       close={close}
@@ -263,24 +270,30 @@ function ModalView({
           </span>
         ),
         right: (
-          <>
-            <Button
+          <div className="flex items-center gap-2 p-0.5 overflow-visible">
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.012 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={close}
               disabled={isApplying}
               className={CANCEL_BUTTON_CLASS}
             >
               Cancel
-            </Button>
-            <Button
+            </motion.button>
+            <motion.button
               type="button"
+              whileHover={isApplying || !hasPendingChanges ? undefined : { scale: 1.012 }}
+              whileTap={isApplying || !hasPendingChanges ? undefined : { scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
               onClick={handleApplyChanges}
               disabled={isApplying || !hasPendingChanges}
               className={ACTION_BUTTON_CLASS}
             >
               {isApplying ? 'Applying' : 'Apply changes'}
-            </Button>
-          </>
+            </motion.button>
+          </div>
         ),
       }}
     >
@@ -297,19 +310,22 @@ function ModalView({
               </p>
             </div>
           )}
-          {!isLoading && lists.length > 0 &&
-            lists.map((list, index) => {
-              const isSelected = Boolean(draftMemberships[list.id]);
-              return (
-                <ListRow
-                  key={list.id}
-                  index={index}
-                  list={list}
-                  isSelected={isSelected}
-                  onToggle={() => handleToggleDraft(list.id)}
-                />
-              );
-            })}
+          {!isLoading && lists.length > 0 && (
+            <div className="space-y-2.5 p-1 overflow-visible">
+              {lists.map((list, index) => {
+                const isSelected = Boolean(draftMemberships[list.id]);
+                return (
+                  <ListRow
+                    key={list.id}
+                    index={index}
+                    list={list}
+                    isSelected={isSelected}
+                    onToggle={() => handleToggleDraft(list.id)}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </Container>
@@ -318,11 +334,16 @@ function ModalView({
 
 function ListRow({ list, isSelected, onToggle, index }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onToggle}
+      initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.02, 0.12) }}
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.985 }}
       className={cn(
-        'group flex w-full items-center gap-4 rounded-[12px] border p-3 text-left',
+        'group flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-colors duration-200',
         isSelected
           ? 'bg-info/10 border-info/20'
           : 'hover:bg-primary border-black/5 hover:border-black/10',
@@ -347,7 +368,7 @@ function ListRow({ list, isSelected, onToggle, index }) {
       >
         <Icon icon="material-symbols:check-rounded" size={16} />
       </span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -405,7 +426,7 @@ function LoadingSkeleton() {
       }).map((_, index) => (
         <div
           key={`list-picker-skeleton-${index}`}
-          className="flex h-24 items-center gap-4 rounded-[12px] border border-black/5 p-3"
+          className="flex h-24 items-center gap-4 rounded-xl border border-black/5 p-3"
         >
           <div className="relative h-[68px] w-[82px] shrink-0">
             {[0, 1, 2, 3].map((stackIndex) => (

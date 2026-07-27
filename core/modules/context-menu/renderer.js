@@ -248,7 +248,7 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
   }
 
   const itemClassName = joinClassNames(
-    'group flex h-10 w-full rounded-[16px] items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
+    'group flex h-10 w-full rounded-2xl items-center gap-2.5 px-3 text-left text-[13px] font-medium text-black/75 hover:bg-black/5 hover:text-black focus-visible:outline-none data-[active=true]:bg-black/5 data-[active=true]:text-black disabled:pointer-events-none disabled:opacity-45',
     classNames.item,
     item.className,
     item.danger && 'text-error',

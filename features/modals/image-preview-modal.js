@@ -2,13 +2,11 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
+
 import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
 import { Spinner } from '@/ui/loadings/spinner';
-
-
-
-
 
 function getAspectRatio(data) {
   const aspectRatio = Number(data?.aspect_ratio);
@@ -20,10 +18,6 @@ function getAspectRatio(data) {
   }
   return 16 / 9;
 }
-
-
-
-
 
 export default function ImagePreviewModal({ close, data }) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -45,10 +39,6 @@ export default function ImagePreviewModal({ close, data }) {
   );
 }
 
-
-
-
-
 function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoaded, setIsLoaded }) {
   return (
     <Container
@@ -64,7 +54,12 @@ function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoad
           aspectRatio: String(aspectRatio),
         }}
       >
-        <div className="absolute inset-0 h-full w-full">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, filter: 'blur(12px)' }}
+          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1] }}
+          className="absolute inset-0 h-full w-full"
+        >
           <Image
             src={`${TMDB_IMG}/original${filePath}`}
             className="object-contain"
@@ -74,7 +69,7 @@ function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoad
             alt={data?.name || 'Preview image'}
             fill
           />
-        </div>
+        </motion.div>
         {!isLoaded && (
           <div className="center absolute inset-0 bg-black/5">
             <Spinner size={40} />

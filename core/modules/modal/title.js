@@ -1,17 +1,23 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
 
+import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './motion';
+
 function CloseButton({ onClick }) {
   return (
-    <button
+    <motion.button
       type="button"
+      whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
+      transition={MODAL_MICRO_SPRING}
       onClick={onClick}
-      className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/70 hover:border-transparent hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+      className="center inline-flex size-8 shrink-0 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
-    </button>
+    </motion.button>
   );
 }
 

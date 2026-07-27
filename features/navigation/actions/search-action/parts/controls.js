@@ -1,27 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/core/utils';
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/features/search/constants';
 import { navActionClass } from '../utils';
-import { NAV_TAP_SCALE } from '@/core/modules/nav/motion';
+
+import { useEffect, useState } from 'react';
 
 function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
   return (
-    <div className={`overflow-hidden shrink-0 ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}>
-      <button
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, width: 0, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, scale: 1, width: 'auto', filter: 'blur(0px)' }}
+      exit={{ opacity: 0, scale: 0.8, width: 0, filter: 'blur(4px)' }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1] }}
+      className={`overflow-hidden shrink-0 ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}
+    >
+      <motion.button
         type="button"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 25 }}
         className={cn(
           navActionClass({
             cn,
             button: SEARCH_STYLES.tabButton,
             isActive: false,
           }),
-          'center h-[38px] w-[38px] p-0 cursor-pointer !rounded-[16px]',
+          'center h-[38px] w-[38px] p-0 cursor-pointer !rounded-2xl',
         )}
         onClick={onClick}
       >
@@ -30,8 +39,8 @@ function PaginationArrow({ direction, onClick }) {
           size={16}
           className="text-black/70"
         />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -54,9 +63,12 @@ export default function SearchActionControls({
   return (
     <>
       <div className="flex items-center w-full">
-        {hasPrevPage ? <PaginationArrow direction="left" onClick={onPrevPage} /> : null}
+        <AnimatePresence>
+          {hasPrevPage && <PaginationArrow direction="left" onClick={onPrevPage} />}
+        </AnimatePresence>
         <div className="flex-1 min-w-0">
           <Input
+            value={query}
             onFocus={() => setIsActive(true)}
             onBlur={() => setIsActive(false)}
             classNames={{
@@ -81,34 +93,49 @@ export default function SearchActionControls({
             spellCheck={false}
             onChange={(event) => onQueryChange?.(event.target.value)}
             rightIcon={
-              <>
+              <AnimatePresence mode="wait">
                 {loading ? (
-                  <div key="loading" className="center shrink-0">
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                    className="center shrink-0"
+                  >
                     <Icon icon="line-md:loading-loop" size={16} />
-                  </div>
+                  </motion.div>
                 ) : query ? (
-                  <button
+                  <motion.button
                     key="clear"
                     type="button"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
                     className="center text-error shrink-0 cursor-pointer"
                     onClick={onClear}
                   >
                     <Icon icon="material-symbols:close-rounded" size={16} />
-                  </button>
+                  </motion.button>
                 ) : null}
-              </>
+              </AnimatePresence>
             }
           />
         </div>
-        {hasNextPage ? <PaginationArrow direction="right" onClick={onNextPage} /> : null}
+        <AnimatePresence>
+          {hasNextPage && <PaginationArrow direction="right" onClick={onNextPage} />}
+        </AnimatePresence>
       </div>
 
       {shouldShowTabs ? (
         <motion.div
           className="mt-2 overflow-hidden"
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'tween', duration: 0.22, ease: 'easeOut' }}
+          initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.24, 1] }}
         >
           <div className={SEARCH_STYLES.tabList}>
             {SEARCH_TAB_ITEMS.map((item) => {
@@ -126,8 +153,9 @@ export default function SearchActionControls({
                     'group',
                   )}
                   onClick={() => onSearchTypeChange?.(item.key)}
-                  whileTap={{ scale: NAV_TAP_SCALE }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
+                  whileHover={{ scale: 1.012 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 26 }}
                 >
                   <span className="relative">{item.label}</span>
                 </motion.button>

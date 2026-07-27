@@ -59,7 +59,9 @@ export function useNavHeightController({
 
   const handleContentHeightChange = useCallback(
     (height) => {
-      heightRef.current.content = height;
+      if (height > 0) {
+        heightRef.current.content = height;
+      }
       if (compactRef.current) return;
 
       applyHeight();

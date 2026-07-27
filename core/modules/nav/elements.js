@@ -1,6 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Iconify from '@/ui/icon';
-import { NAV_FADE_TRANSITION, NAV_MICRO_TRANSITION, NAV_BADGE_TRANSITION } from '@/core/modules/nav/motion';
+import {
+  NAV_FADE_TRANSITION,
+  NAV_BADGE_TRANSITION,
+  textCrossfadeVariants,
+} from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
 
 function isImageIconSource(icon) {
@@ -39,13 +43,13 @@ export function Description({ text, style, maxLines = 1 }) {
 
   return (
     <div className="relative w-full text-sm overflow-hidden min-h-[1.25rem]">
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.p
           key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
-          initial={{ opacity: 0, y: 3 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -3 }}
-          transition={NAV_MICRO_TRANSITION}
+          variants={textCrossfadeVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className={cn(
             'text-black',
             isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
@@ -73,7 +77,7 @@ function IconOverlay({ overlay }) {
   const isImageSource = isImageIconSource(icon);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="popLayout">
       <motion.button
         key={icon}
         type="button"
@@ -138,7 +142,7 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
       {isImageSource ? (
         <div
           className={cn(
-            'size-12 shrink-0 rounded-[16px] bg-cover bg-center bg-no-repeat',
+            'size-12 shrink-0 rounded-2xl bg-cover bg-center bg-no-repeat',
             className,
           )}
           style={getImageIconStyle(iconStyle, icon)}
@@ -146,7 +150,7 @@ export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
       ) : (
         <motion.div
           className={cn(
-            'center size-12 rounded-[16px]',
+            'center size-12 rounded-2xl',
             className,
           )}
           animate={{
@@ -177,14 +181,14 @@ export function Title({ text, style }) {
 
   return (
     <div className="relative overflow-hidden">
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.h3
           key={typeof text === 'string' || typeof text === 'number' ? text : 'title'}
-          initial={{ opacity: 0, y: 3 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -3 }}
-          transition={NAV_MICRO_TRANSITION}
-          className={cn('truncate font-bold uppercase', className)}
+          variants={textCrossfadeVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          className={cn('truncate font-bold', className)}
           style={inlineStyle}
         >
           {text}

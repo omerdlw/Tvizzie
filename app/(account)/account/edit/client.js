@@ -27,7 +27,7 @@ import { useAccount } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal';
 import { useNavigationActions } from '@/core/modules/nav';
-import FileUploadSurface from '@/features/navigation/surfaces/file-upload-surface';
+import { createFileUploadSurfaceEntry } from '@/features/navigation/surfaces/file-upload-surface';
 import { useToast } from '@/core/modules/notification';
 
 import AccountEditView from './view';
@@ -243,12 +243,12 @@ export default function Client({ initialSnapshot = null }) {
 
       const normalizedTarget =
         String(target || '').toLowerCase() === 'avatar' ? 'avatar' : 'banner';
-      const selection = await openSurface(FileUploadSurface, {
-        data: {
+      const selection = await openSurface(
+        createFileUploadSurfaceEntry({
           ...ACCOUNT_MEDIA_UPLOAD_CONFIG[normalizedTarget],
           target: normalizedTarget,
-        },
-      });
+        }),
+      );
 
       if (!selection?.success || !selection?.file) {
         return;

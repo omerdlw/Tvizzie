@@ -49,6 +49,8 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     navRegistrySource: overrides?.navRegistrySource,
     onDeleteList: overrides?.onDeleteList,
     onEditList: overrides?.onEditList,
+    onOpenReviewComposer: overrides?.onOpenReviewComposer,
+    ownReview: overrides?.ownReview,
     onSaveSectionOrder: null,
     onToggleLike: overrides?.onToggleLike,
     pendingFollowRequestCount,

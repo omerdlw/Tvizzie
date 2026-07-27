@@ -93,11 +93,11 @@ export default function AccountReviewsOverview({
       titleHref={titleHref}
     >
       {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70">
+        <div className="rounded-xl border border-black/15 bg-white/40 p-4 text-sm text-black/70">
           {emptyMessage}
         </div>
       ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <div className="border border-black/15 bg-white/40 p-4 text-sm text-black/70">
+        <div className="rounded-xl border border-black/15 bg-white/40 p-4 text-sm text-black/70">
           {loadError}
         </div>
       ) : (
@@ -127,7 +127,7 @@ export default function AccountReviewsOverview({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase"
+            className="rounded-xl border border-black/10 bg-white/50 px-6 py-3 text-xs font-semibold tracking-widest text-black/70 uppercase"
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>

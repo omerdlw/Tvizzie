@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 
 export default function ReviewAction({ reviewState }) {
@@ -14,10 +15,15 @@ export default function ReviewAction({ reviewState }) {
 
   const fallbackSubmitLabel = ownReview ? 'Update Review' : 'Publish Review';
   const fallbackLoadingLabel = ownReview ? 'Updating' : 'Publishing';
+  const currentLabel = isSubmitting ? loadingLabel || fallbackLoadingLabel : submitLabel || fallbackSubmitLabel;
 
   return (
     <div className={NAV_ACTION_STYLES.row}>
-      <button
+      <motion.button
+        type="button"
+        whileHover={isSubmitting || !canSubmit ? undefined : { scale: 1.012 }}
+        whileTap={isSubmitting || !canSubmit ? undefined : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -27,10 +33,19 @@ export default function ReviewAction({ reviewState }) {
           className: '',
         })}
         disabled={isSubmitting || !canSubmit}
-        type="button"
       >
-        {isSubmitting ? loadingLabel || fallbackLoadingLabel : submitLabel || fallbackSubmitLabel}
-      </button>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={currentLabel}
+            initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+          >
+            {currentLabel}
+          </motion.span>
+        </AnimatePresence>
+      </motion.button>
     </div>
   );
 }

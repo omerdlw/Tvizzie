@@ -17,15 +17,16 @@ export const Registry = createAccountSectionRegistry({
     {
       handleDeleteList,
       handleEditList,
+      handleOpenReviewComposer,
       handleToggleLike,
       isLiked = false,
       isLikeLoading = false,
       itemRemoveConfirmation = null,
       list,
       listDeleteConfirmation,
+      ownReview,
       registrySource = ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
       reviewState,
-      showProfileFollowAction = true,
     },
   ) => {
     const canLikeList = Boolean(list);
@@ -38,8 +39,10 @@ export const Registry = createAccountSectionRegistry({
       onDeleteList: list ? () => handleDeleteList(list) : null,
       onEditList: list ? () => handleEditList(list) : null,
       onToggleLike: list ? handleToggleLike : null,
+      onOpenReviewComposer: list ? handleOpenReviewComposer : null,
+      ownReview,
       reviewState,
-      showProfileFollowAction: Boolean(list) && showProfileFollowAction,
+      showProfileFollowAction: false,
       showToolbarFollowActionWithOverride: Boolean(list),
     };
   },

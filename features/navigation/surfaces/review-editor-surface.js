@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSurfaceHeader } from '@/core/modules/nav';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { useToast } from '@/core/modules/notification';
 import {
   getReviewMinLength,
@@ -162,8 +163,25 @@ function buildUpdatedReview({
 }
 
 export function createReviewEditorSurfaceEntry(data = {}, config = {}) {
+  const review = data?.review || null;
+  const subjectContext = resolveSubjectContext(data, review);
+  const isListSubject = subjectContext?.subjectType === 'list';
+  const hasExistingReview = Boolean(review);
+  const subjectTitle = subjectContext?.subjectTitle || review?.subjectTitle || 'this title';
+
+  const title = hasExistingReview
+    ? isListSubject
+      ? 'Edit Comment'
+      : 'Edit Review'
+    : isListSubject
+      ? 'Add Comment'
+      : 'Add Review';
+
   return {
     component: ReviewEditorSurface,
+    icon: 'solar:pen-new-square-bold',
+    title,
+    description: subjectTitle,
     props: { data },
     expandHorizontal: true,
     width: 640,
@@ -173,7 +191,6 @@ export function createReviewEditorSurfaceEntry(data = {}, config = {}) {
 
 export default function ReviewEditorSurface({ close, data }) {
   const toast = useToast();
-  const setHeader = useSurfaceHeader();
 
   const { onSuccess, review = null, user = null } = data || {};
   const hasExistingReview = Boolean(review);
@@ -198,22 +215,6 @@ export default function ReviewEditorSurface({ close, data }) {
     requireText: isListSubject,
     textLabel: isListSubject ? 'comment' : 'review',
   });
-
-  useEffect(() => {
-    if (setHeader) {
-      setHeader({
-        icon: 'solar:pen-new-square-bold',
-        title: hasExistingReview
-          ? isListSubject
-            ? 'Edit Comment'
-            : 'Edit Review'
-          : isListSubject
-            ? 'Add Comment'
-            : 'Add Review',
-        description: modalSubjectTitle,
-      });
-    }
-  }, [setHeader, hasExistingReview, isListSubject, modalSubjectTitle]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -282,13 +283,20 @@ export default function ReviewEditorSurface({ close, data }) {
   }
 
   return (
-    <form id={FORM_ID} onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
+    <motion.form
+      id={FORM_ID}
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 14, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
+      className="flex w-full flex-col gap-2"
+    >
       {!isListSubject && (
         <div className="flex w-full items-center justify-center pb-2">
           <RatingSelector value={rating} onChange={setRating} />
         </div>
       )}
-      <div className="relative w-full">
+      <motion.div whileFocusWithin={{ scale: 1.006 }} className="relative w-full">
         <Textarea
           maxLength={800}
           value={reviewText}
@@ -299,7 +307,7 @@ export default function ReviewEditorSurface({ close, data }) {
           }
           onChange={handleTextChange}
           className={{
-            wrapper: 'flex rounded-2xl border border-black/5',
+            wrapper: 'flex rounded-xl border border-black/5 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
             textarea:
               'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
@@ -311,69 +319,76 @@ export default function ReviewEditorSurface({ close, data }) {
             <span>{trimmedTextLength} chars</span>
           ) : null}
         </div>
-      </div>
+      </motion.div>
 
       <div className={NAV_ACTION_STYLES.row}>
-        <button
-          type="button"
-          onClick={() => close?.(null)}
-          className={getNavActionClass({
-            isActive: false,
-            className: 'flex-1',
-          })}
-        >
-          Cancel
-        </button>
-        <button
+        {!isListSubject && (
+          <motion.button
+            type="button"
+            role="switch"
+            aria-checked={isSpoiler}
+            disabled={!hasText}
+            onClick={handleSpoilerToggle}
+            whileHover={!hasText ? undefined : { scale: 1.012 }}
+            whileTap={!hasText ? undefined : { scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+            className={getNavActionClass({
+              isActive: false,
+              className: cn(
+                'disabled:cursor-not-allowed disabled:opacity-50 flex-1',
+                isSpoiler && hasText && 'border-error/30 bg-error/10 text-error hover:bg-error/20',
+              ),
+            })}
+          >
+            <Icon
+              icon={isSpoiler && hasText ? 'solar:danger-triangle-bold' : 'solar:eye-closed-bold'}
+              size={NAV_ACTION_STYLES.icon}
+            />
+            <span>{isSpoiler && hasText ? 'Contains Spoilers' : 'Mark as Spoiler'}</span>
+          </motion.button>
+        )}
+        <motion.button
           type="submit"
           form={FORM_ID}
           disabled={isSaving || Boolean(validationError)}
+          whileHover={isSaving || Boolean(validationError) ? undefined : { scale: 1.012 }}
+          whileTap={isSaving || Boolean(validationError) ? undefined : { scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 26 }}
           className={getNavActionClass({
             isActive: true,
-            className:
-              'flex-1 disabled:cursor-not-allowed disabled:opacity-50' + INFO_ACTION_TONE_CLASS,
-          })}
-        >
-          <Icon
-            icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
-            size={NAV_ACTION_STYLES.icon}
-          />
-          <span>
-            {isSaving
-              ? 'Saving...'
-              : getPrimaryActionLabel({
-                  hasExistingReview,
-                  isList: isListSubject,
-                  rating,
-                  reviewText,
-                })}
-          </span>
-        </button>
-      </div>
-      {!isListSubject && (
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isSpoiler}
-          disabled={!hasText}
-          onClick={handleSpoilerToggle}
-          className={getNavActionClass({
-            isActive: false,
             className: cn(
-              'w-full disabled:cursor-not-allowed disabled:opacity-50',
-              isSpoiler && hasText
-                ? 'border-error/30 bg-error/10 text-error hover:bg-error/20'
-                : '',
+              'disabled:cursor-not-allowed disabled:opacity-50 flex-1',
+              INFO_ACTION_TONE_CLASS,
             ),
           })}
         >
-          <Icon
-            icon={isSpoiler && hasText ? 'solar:danger-triangle-bold' : 'solar:eye-closed-bold'}
-            size={NAV_ACTION_STYLES.icon}
-          />
-          <span>{isSpoiler && hasText ? 'Contains Spoilers' : 'Mark as Spoiler'}</span>
-        </button>
-      )}
-    </form>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={isSaving ? 'saving' : 'normal'}
+              initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+              className="flex items-center gap-2"
+            >
+              <Icon
+                icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:pen-new-square-bold'}
+                size={NAV_ACTION_STYLES.icon}
+              />
+              <span>
+                {isSaving
+                  ? 'Saving...'
+                  : getPrimaryActionLabel({
+                      hasExistingReview,
+                      isList: isListSubject,
+                      rating,
+                      reviewText,
+                    })}
+              </span>
+            </motion.span>
+          </AnimatePresence>
+        </motion.button>
+      </div>
+    </motion.form>
   );
 }

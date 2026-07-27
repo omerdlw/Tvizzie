@@ -1,10 +1,11 @@
 'use client';
 
-import { useDeferredValue, useEffect, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TMDB_IMG } from '@/core/constants';
 import { useAuth } from '@/core/modules/auth';
-import { Container } from '@/core/modules/modal';
+import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
 import { useModalActions } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
 import { createUserListWithItems } from '@/core/services/media/lists';
@@ -196,7 +197,7 @@ export default function CreateListModal({ close, data }) {
             autoFocus
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
@@ -207,7 +208,7 @@ export default function CreateListModal({ close, data }) {
             placeholder="Description (optional)"
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
             }}
@@ -242,7 +243,7 @@ export default function CreateListModal({ close, data }) {
             }
             className={{
               wrapper:
-                'flex h-11 items-center rounded-2xl border border-black/10 bg-black/5 px-4 focus-within:border-black/20 focus-within:bg-white',
+                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
               input:
                 'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
               leftIcon: 'flex shrink-0 items-center pr-2.5',
@@ -271,6 +272,7 @@ export default function CreateListModal({ close, data }) {
                     item={item}
                     isAdded={selectedKeys.has(getDraftMediaKey(item))}
                     onAdd={handleAdd}
+                    onRemove={handleRemove}
                   />
                 ))}
                 {isSearching && searchResults.length === 0 && (
@@ -325,35 +327,33 @@ export default function CreateListModal({ close, data }) {
             )}
           </div>
 
-          <div className={NAV_ACTION_STYLES.row}>
-            <button
+          <div className="flex items-center gap-2 p-0.5 overflow-visible">
+            <motion.button
               type="button"
               onClick={close}
               disabled={isSaving}
-              className={getNavActionClass({
-                isActive: false,
-                className: 'flex-1',
-              })}
+              whileHover={{ scale: 1.012 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              className={cn(CANCEL_BUTTON_CLASS, 'flex-1 h-9 items-center justify-center gap-2 inline-flex')}
             >
-              <Icon icon="solar:close-circle-bold" size={NAV_ACTION_STYLES.icon} />
               <span>Cancel</span>
-            </button>
-
-            <button
+            </motion.button>
+            <motion.button
               type="submit"
               disabled={isSaving || !canSubmit}
-              className={getNavActionClass({
-                isActive: true,
-                className: 'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
-              })}
+              whileHover={isSaving || !canSubmit ? undefined : { scale: 1.012 }}
+              whileTap={isSaving || !canSubmit ? undefined : { scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              className={cn(ACTION_BUTTON_CLASS, 'flex-1 h-9 items-center justify-center gap-2 inline-flex')}
             >
               <Icon
                 icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:add-folder-bold'}
-                size={NAV_ACTION_STYLES.icon}
+                size={16}
                 className={isSaving ? 'animate-spin' : ''}
               />
               <span>{isSaving ? 'Creating...' : 'Create List'}</span>
-            </button>
+            </motion.button>
           </div>
         </div>
       </form>
@@ -361,24 +361,27 @@ export default function CreateListModal({ close, data }) {
   );
 }
 
-function SearchResultRow({ item, isAdded, onAdd, index }) {
+function SearchResultRow({ item, isAdded, onAdd, onRemove, index }) {
   const title = getItemDisplayTitle(item);
   const year = getItemYear(item);
   const posterPath = item?.poster_path;
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
-    <div
-      onClick={() => !isAdded && onAdd(item)}
+    <motion.div
+      initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.04, 0.28) }}
+      onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
       className={cn(
-        'group flex w-full cursor-pointer items-center justify-between rounded-[16px] border border-transparent p-1 select-none',
+        'group flex w-full cursor-pointer items-center justify-between rounded-2xl border p-1 select-none transition-all duration-150 ease-in-out',
         isAdded
-          ? 'cursor-default bg-black/5 opacity-60'
-          : 'bg-white hover:border-black/5 hover:bg-black/5',
+          ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
+          : 'border-transparent bg-white hover:border-black/5 hover:bg-black/5',
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-[14px]">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
           <AdaptiveImage
             mode="img"
             src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
@@ -411,16 +414,27 @@ function SearchResultRow({ item, isAdded, onAdd, index }) {
 
       <div
         className={cn(
-          'mr-1 flex h-8 min-w-8 shrink-0 items-center justify-center gap-1 rounded-xl border px-2.5 text-xs font-bold tracking-wider uppercase',
+          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold tracking-wider uppercase transition-all duration-150 ease-in-out',
           isAdded
-            ? 'bg-info/10 text-info border-transparent'
+            ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
             : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
         )}
       >
-        <Icon icon={isAdded ? 'solar:check-circle-bold' : 'solar:add-circle-bold'} size={16} />
-        <span>{isAdded ? 'Added' : 'Add'}</span>
+        {isAdded ? (
+          <>
+            <Icon icon="solar:check-circle-bold" size={16} className="group-hover:hidden" />
+            <Icon icon="solar:trash-bin-trash-bold" size={16} className="hidden group-hover:block" />
+            <span className="group-hover:hidden">Added</span>
+            <span className="hidden group-hover:block">Remove</span>
+          </>
+        ) : (
+          <>
+            <Icon icon="solar:add-circle-bold" size={16} />
+            <span>Add</span>
+          </>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -431,9 +445,14 @@ function DraftItemRow({ item, onRemove }) {
   const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
 
   return (
-    <div className="group flex w-full items-center justify-between rounded-[16px] border border-black/5 bg-white p-1 select-none hover:bg-black/5">
+    <motion.div
+      initial={{ opacity: 0, y: 6, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+      className="group flex w-full items-center justify-between rounded-2xl border border-black/5 bg-white p-1 select-none hover:bg-black/5 transition-colors duration-150"
+    >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-[14px]">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
           <AdaptiveImage
             mode="img"
             src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
@@ -464,17 +483,20 @@ function DraftItemRow({ item, onRemove }) {
         </div>
       </div>
 
-      <button
+      <motion.button
         type="button"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         onClick={(e) => {
           e.stopPropagation();
           onRemove(item);
         }}
-        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50"
+        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50 transition-colors duration-150"
         aria-label={`Remove ${title}`}
       >
         <Icon icon="solar:trash-bin-trash-bold" size={16} />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }

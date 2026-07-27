@@ -15,12 +15,12 @@ import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import Icon from '@/ui/icon';
 import Registry from './registry';
 const INPUT_BASE_CLASSES =
-  'h-11 w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none placeholder:text-black/50 focus:border-black';
+  'h-11 w-full border border-black/15 bg-primary px-3 text-sm text-black outline-none placeholder:text-black/50 focus:border-black rounded-xl';
 const TEXTAREA_BASE_CLASSES = `${INPUT_BASE_CLASSES} min-h-[150px] resize-y py-3`;
 const BUTTON_BASE_CLASSES =
-  'border border-black/15 bg-white px-3 py-2 text-black hover:bg-black/5 disabled:opacity-50';
+  'border border-black/15 bg-white px-3 py-2 text-black hover:bg-black/5 disabled:opacity-50 rounded-xl';
 const BUTTON_FRAME_CLASSES =
-  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed';
+  'inline-flex h-10 items-center justify-center gap-2 px-4 text-[11px] font-bold tracking-widest uppercase disabled:cursor-not-allowed rounded-xl';
 function ActionButton({ children, className, tone = 'default', icon = null, ...props }) {
   return (
     <button
@@ -115,7 +115,7 @@ function MediaField({
       </div>
 
       <div>
-        <div className={cn('overflow-hidden border border-black/10 bg-black/5', previewClassName)}>
+        <div className={cn('overflow-hidden border border-black/10 bg-black/5 rounded-2xl', previewClassName)}>
           {preview ? (
             <AdaptiveImage
               mode="img"

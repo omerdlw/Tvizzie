@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { getUserAvatarUrl } from '@/core/utils';
-import { useSurfaceHeader } from '@/core/modules/nav';
 
 function formatFollowCount(value) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(
@@ -10,34 +9,40 @@ function formatFollowCount(value) {
   );
 }
 
+export function createAccountBioSurfaceEntry(data = {}, config = {}) {
+  const profile = data.profile || null;
+  const username = data.username || profile?.username || 'About';
+  const avatarUrl = getUserAvatarUrl(profile);
+  const followSummary = `${formatFollowCount(data.followingCount)} Following · ${formatFollowCount(data.followerCount)} Followers`;
+
+  return {
+    component: AccountBioSurface,
+    icon: avatarUrl,
+    title: username,
+    description: followSummary,
+    props: {
+      description: data.description || '',
+      followerCount: data.followerCount || 0,
+      followingCount: data.followingCount || 0,
+      profile,
+      username,
+    },
+    ...config,
+  };
+}
+
 export default function AccountBioSurface({
-  close = null,
   description = '',
-  followerCount = 0,
-  followingCount = 0,
-  onClose = null,
-  profile = null,
-  username = 'About',
 }) {
   const normalizedDescription = String(description || '').trim();
-  const avatarUrl = getUserAvatarUrl(profile);
-  const followSummary = `${formatFollowCount(followingCount)} Following · ${formatFollowCount(followerCount)} Followers`;
-
-  const setHeader = useSurfaceHeader();
-
-  useEffect(() => {
-    if (setHeader) {
-      setHeader({
-        icon: avatarUrl,
-        title: username,
-        description: followSummary,
-        trailing: null,
-      });
-    }
-  }, [setHeader, avatarUrl, username, followSummary]);
 
   return (
-    <div className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-[16px] px-4 py-2">
+    <motion.div
+      initial={{ opacity: 0, y: 14, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
+      className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-2xl px-4 py-2"
+    >
       {normalizedDescription ? (
         <div className="py-1">
           <p className="text-justify text-sm leading-relaxed wrap-break-word whitespace-normal text-black/70">
@@ -45,6 +50,6 @@ export default function AccountBioSurface({
           </p>
         </div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

@@ -15,6 +15,8 @@ import {
   NAV_STAGGER_DELAY,
   NAV_STAGGER_TRANSITION,
   NAV_FADE_TRANSITION,
+  NAV_BADGE_TRANSITION,
+  NAV_BUTTON_TRANSITION,
   NAV_TAP_SCALE,
   staggerItemVariants,
 } from '@/core/modules/nav/motion';
@@ -219,17 +221,17 @@ export function NavAction({ action }) {
         onClick={action.onClick}
         type="button"
         whileTap={{ scale: NAV_TAP_SCALE }}
-        transition={NAV_FADE_TRANSITION}
+        transition={NAV_BUTTON_TRANSITION}
       >
         <Icon icon={action.icon} size={16} />
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           {action.badge ? (
             <motion.span
               key={action.badge}
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
-              transition={NAV_FADE_TRANSITION}
+              transition={NAV_BADGE_TRANSITION}
               className="center bg-info rounded-full absolute -top-1 -right-1 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-white"
             >
               {action.badge}

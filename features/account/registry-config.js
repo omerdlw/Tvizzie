@@ -202,6 +202,8 @@ export function buildAccountPageState({
   username,
   onDeleteList,
   onEditList,
+  onOpenReviewComposer,
+  ownReview,
   onToggleLike,
   isLiked,
   isLikeLoading,
@@ -214,24 +216,28 @@ export function buildAccountPageState({
   const isPrivateProfile = Boolean(profile?.isPrivate);
   const isFollowingProfile = followState === 'following';
   const hasNavActionOverride = Boolean(navActionOverride);
+  const hasPageSpecificAction = Boolean(
+    onToggleLike || onOpenReviewComposer || onDeleteList || onEditList || navActionOverride,
+  );
   const shouldForceProfileFollowAction =
-    !hasNavActionOverride && !isOwner && isPrivateProfile && !isFollowingProfile;
+    !hasNavActionOverride && !hasPageSpecificAction && !isOwner && isPrivateProfile && !isFollowingProfile;
   const shouldUseGuestFollowAction =
     !authIsAuthenticated &&
     !isOwner &&
     Boolean(profile) &&
     typeof handleFollow === 'function' &&
-    !hasNavActionOverride;
+    !hasNavActionOverride &&
+    !hasPageSpecificAction;
   const shouldShowInlineProfileFollowAction = Boolean(
     !hasNavActionOverride &&
+    !hasPageSpecificAction &&
     (showProfileFollowAction || shouldForceProfileFollowAction || shouldUseGuestFollowAction),
   );
   const shouldShowToolbarFollowAction = Boolean(
-    showToolbarFollowActionWithOverride &&
-    hasNavActionOverride &&
     !isOwner &&
     profile &&
-    typeof handleFollow === 'function',
+    typeof handleFollow === 'function' &&
+    (showToolbarFollowActionWithOverride || hasNavActionOverride || hasPageSpecificAction),
   );
   const shouldShowCurrentAccountAvatar = Boolean(
     authIsAuthenticated && authUser && profile && !isOwner,
@@ -361,6 +367,8 @@ export function buildAccountPageState({
           onDeleteList={onDeleteList}
           onEditList={onEditList}
           onToggleLike={onToggleLike}
+          onOpenReviewComposer={onOpenReviewComposer}
+          ownReview={ownReview}
           isLiked={isLiked}
           isLikeLoading={isLikeLoading}
           isNotFound={

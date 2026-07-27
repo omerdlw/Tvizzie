@@ -20,30 +20,33 @@ import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/core/co
 
 const notificationSpringTransition = Object.freeze({
   type: 'spring',
-  stiffness: 260,
-  damping: 28,
-  mass: 0.8,
+  stiffness: 450,
+  damping: 26,
 });
 
 const notificationButtonSpring = Object.freeze({
   type: 'spring',
   stiffness: 450,
-  damping: 24,
-  mass: 0.5,
+  damping: 26,
 });
 
-const notificationButtonTap = Object.freeze({});
+const notificationButtonTap = Object.freeze({ scale: 0.97 });
 
-const notificationRowHoverTap = Object.freeze({});
+const notificationRowHoverTap = Object.freeze({
+  whileHover: { scale: 1.008, x: 2 },
+  whileTap: { scale: 0.985 },
+  transition: notificationSpringTransition,
+});
 
 function getNotificationRowAnimation(index = 0) {
   return Object.freeze({
-    initial: Object.freeze({ opacity: 0, y: 4 }),
-    animate: Object.freeze({ opacity: 1, y: 0 }),
-    exit: Object.freeze({ opacity: 0, y: -4 }),
+    initial: Object.freeze({ opacity: 0, y: 8, filter: 'blur(6px)' }),
+    animate: Object.freeze({ opacity: 1, y: 0, filter: 'blur(0px)' }),
+    exit: Object.freeze({ opacity: 0, y: -6, filter: 'blur(4px)' }),
     transition: Object.freeze({
-      opacity: { duration: 0.16 },
-      y: { type: 'spring', stiffness: 350, damping: 30, delay: Math.min(index * 0.015, 0.1) },
+      duration: 0.25,
+      ease: [0.16, 1, 0.24, 1],
+      delay: Math.min(index * 0.02, 0.12),
     }),
   });
 }

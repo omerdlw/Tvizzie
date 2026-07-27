@@ -12,6 +12,7 @@ export default function SearchAction({
 }) {
   const {
     currentPage,
+    debouncedQuery,
     handleClear,
     handleImageError,
     handleNextPage,
@@ -51,7 +52,8 @@ export default function SearchAction({
       />
       <SearchActionResultsPreview
         imageErrors={imageErrors}
-        query={query}
+        query={debouncedQuery}
+        searchType={searchType}
         results={pageResults}
         currentPage={currentPage}
         totalPages={totalPages}

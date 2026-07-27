@@ -75,7 +75,7 @@ export default function PersonTimeline({ person }) {
                           <MediaThumb
                             poster={credit.poster_path}
                             alt={title}
-                            className="w-16 rounded-[16px] sm:w-20"
+                            className="w-16 rounded-2xl sm:w-20"
                           />
                           <div className="flex min-w-0 flex-1 flex-col gap-1">
                             <span className="truncate text-base leading-tight font-semibold tracking-tight sm:text-lg">

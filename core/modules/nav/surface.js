@@ -8,7 +8,7 @@ import { cn } from '@/core/utils/classnames';
 import Icon from '@/ui/icon';
 import {
   NAV_SURFACE_TRANSITION,
-  NAV_FADE_TRANSITION,
+  NAV_MICRO_TRANSITION,
   NAV_TAP_SCALE,
   slideFadeVariants,
 } from '@/core/modules/nav/motion';
@@ -32,14 +32,14 @@ export function NavSurfaceHeader({
   const hasClose = typeof onClose === 'function';
 
   return (
-    <div className={cn('relative flex w-full items-start gap-3', hasClose && 'pr-10', className)}>
+    <div className={cn('relative flex w-full items-center gap-3', hasClose && 'pr-10', className)}>
       {icon ? (
         <div className="center relative shrink-0">
           <BadgeIcon icon={icon} />
         </div>
       ) : null}
 
-      <div className="relative flex min-w-0 flex-1 items-start justify-between gap-3 overflow-hidden">
+      <div className="relative flex min-w-0 flex-1 items-center justify-between gap-3 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col justify-center -space-y-0.5">
           <Title text={title} style={{ className: '!normal-case !truncate' }} />
           {description ? <Description text={description} maxLines={descriptionMaxLines} /> : null}
@@ -57,7 +57,7 @@ export function NavSurfaceHeader({
           className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
           aria-label={closeLabel}
           whileTap={{ scale: NAV_TAP_SCALE }}
-          transition={NAV_FADE_TRANSITION}
+          transition={NAV_MICRO_TRANSITION}
         >
           <Icon icon="material-symbols:close-rounded" size={16} />
         </motion.button>
@@ -101,7 +101,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
     <SurfaceHeaderContext.Provider value={setHeaderState}>
       <motion.section
         ref={ref}
-        className={cn('relative flex flex-col gap-3', className)}
+        className={cn('relative flex flex-col gap-3 overflow-visible', className)}
         variants={slideFadeVariants}
         initial="hidden"
         animate="visible"
@@ -117,7 +117,7 @@ export const NavSurfaceShell = forwardRef(function NavSurfaceShell(
           closeLabel={closeLabel}
           onClose={onClose}
         />
-        <div className={contentClassName}>{children}</div>
+        <div className={cn('w-full overflow-visible p-0.5', contentClassName)}>{children}</div>
       </motion.section>
     </SurfaceHeaderContext.Provider>
   );

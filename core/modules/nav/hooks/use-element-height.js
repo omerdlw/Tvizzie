@@ -74,16 +74,7 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
       const heightToPublish = pendingHeight;
       pendingHeight = null;
 
-      
-      
-      if (settleTimer !== null) {
-        clearTimeout(settleTimer);
-      }
-
-      settleTimer = setTimeout(() => {
-        settleTimer = null;
-        publishHeight(heightToPublish);
-      }, 80);
+      publishHeight(heightToPublish);
     }
 
     function scheduleMeasurement(nextHeight) {

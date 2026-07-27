@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 import { Container } from '@/core/modules/modal';
 import { Switch } from '@/ui/elements';
@@ -113,13 +114,16 @@ export default function SettingsModal({ close, header }) {
             <span className="font-medium">{storageKey}</span>
           </div>
           {hasDefinitions ? (
-            <button
+            <motion.button
               type="button"
-              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase hover:border-black/15 hover:bg-black/5 hover:text-black"
+              whileHover={{ scale: 1.012 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase hover:border-black/15 hover:bg-black/5 hover:text-black rounded-xl transition-colors duration-200"
               onClick={() => resetSettings()}
             >
               Reset all
-            </button>
+            </motion.button>
           ) : null}
         </div>
 

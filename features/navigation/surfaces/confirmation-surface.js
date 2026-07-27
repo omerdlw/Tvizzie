@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { cn } from '@/core/utils/classnames';
 import { NAV_SURFACE_RENDER_MODE } from '@/core/modules/nav';
-import { NAV_TAP_SCALE } from '@/core/modules/nav/motion';
+
 
 const BUTTON_TONES = Object.freeze({
   danger:
@@ -21,7 +21,7 @@ function resolveButtonTone(tone) {
 
 function getButtonClassName({ tone = 'muted', className } = {}) {
   return cn(
-    'center w-full cursor-pointer gap-2 rounded-[16px] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider',
+    'center w-full cursor-pointer gap-2 rounded-2xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ease-out hover:scale-[1.012] active:scale-[0.985]',
     resolveButtonTone(tone),
     className,
   );
@@ -101,7 +101,12 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
   }
 
   return (
-    <div className="mt-1 flex w-full flex-row items-center gap-2 px-1">
+    <motion.div
+      initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.24, 1] }}
+      className="mt-1 flex w-full flex-row items-center gap-2 p-1 overflow-visible"
+    >
       <motion.button
         type="button"
         disabled={isSubmitting}
@@ -110,8 +115,9 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: 'muted',
           className: 'disabled:cursor-not-allowed',
         })}
-        whileTap={isSubmitting ? undefined : { scale: NAV_TAP_SCALE }}
-        transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
+        whileHover={isSubmitting ? undefined : { scale: 1.012 }}
+        whileTap={isSubmitting ? undefined : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
       >
         {cancelText}
       </motion.button>
@@ -124,12 +130,23 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
           tone: confirmTone,
           className: 'disabled:cursor-wait',
         })}
-        whileTap={isSubmitting ? undefined : { scale: NAV_TAP_SCALE }}
-        transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
+        whileHover={isSubmitting ? undefined : { scale: 1.012 }}
+        whileTap={isSubmitting ? undefined : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 26 }}
       >
-        {isSubmitting ? confirmLoadingText : confirmText}
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={isSubmitting ? 'submitting' : 'confirm'}
+            initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+          >
+            {isSubmitting ? confirmLoadingText : confirmText}
+          </motion.span>
+        </AnimatePresence>
       </motion.button>
-    </div>
+    </motion.div>
   );
 }
 

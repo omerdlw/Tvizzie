@@ -3,11 +3,14 @@
 import { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { Z_INDEX } from '@/core/constants';
 import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
 
 import { CRITICAL_TYPES, useNotificationActions, useNotificationState } from './context';
 import { NotificationOverlay } from './overlay';
+import { toastVariants } from './motion';
 
 export {
   CRITICAL_TYPES,
@@ -31,23 +34,31 @@ export function NotificationContainer() {
     [notifications],
   );
 
-  if (sortedNotifications.length === 0) return null;
-
   return (
     <div
       aria-atomic="true"
       aria-live="polite"
-      className="pointer-events-none fixed top-4 left-0 right-0 mx-auto flex w-full max-w-[380px] px-4 sm:left-auto sm:right-4 sm:mx-0 sm:px-0 flex-col gap-2"
+      className="pointer-events-none fixed top-4 left-0 right-0 mx-auto flex w-full max-w-[380px] px-4 sm:left-auto sm:right-4 sm:mx-0 sm:px-0 flex-col gap-2 overflow-visible p-1"
       style={{ zIndex: Z_INDEX.NOTIFICATION }}
     >
-      {sortedNotifications.map(([id, notification]) => (
-        <div key={id}>
-          <NotificationOverlay
-            notification={notification}
-            onDismiss={() => dismissNotification(id)}
-          />
-        </div>
-      ))}
+      <AnimatePresence mode="popLayout">
+        {sortedNotifications.map(([id, notification]) => (
+          <motion.div
+            key={id}
+            layout
+            variants={toastVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ willChange: 'transform, filter, opacity' }}
+          >
+            <NotificationOverlay
+              notification={notification}
+              onDismiss={() => dismissNotification(id)}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

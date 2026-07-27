@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
 import { cn } from '@/core/utils/classnames';
@@ -16,6 +17,7 @@ import { useModal } from '@/core/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
 import { POSITION_CLASSES } from './utils';
+import { getModalPositionVariants, modalBackdropVariants } from './motion';
 
 export {
   ACTION_BUTTON_CLASS,
@@ -102,7 +104,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
       <button
         type="button"
         onClick={onSwitchToPrevious}
-        className="flex items-center gap-1.5 rounded-[12px] px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
+        className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <path
@@ -116,7 +118,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
         {getModalLabel(previousEntry.modalType)}
       </button>
       <span className="text-[10px] text-black/20">/</span>
-      <span className="bg-primary rounded-[12px] px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
+      <span className="bg-primary rounded-xl px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}
       </span>
     </div>
@@ -133,8 +135,6 @@ function ModalLayer({
   modalStack,
 }) {
   const modalRef = useRef(null);
-  const focusableRef = useRef([]);
-
   const activePosition = useMemo(() => {
     return resolveActivePosition(entry.position, entry.responsivePosition, isMobileViewport);
   }, [entry.position, entry.responsivePosition, isMobileViewport]);
@@ -154,33 +154,14 @@ function ModalLayer({
   const baseZIndex = Z_INDEX.MODAL + stackIndex * 2;
   const backdropZIndex = baseZIndex;
   const modalZIndex = baseZIndex + 1;
+  const positionVariants = getModalPositionVariants(activePosition);
 
   useEffect(() => {
-    if (!isTopModal || !modalRef.current) {
-      focusableRef.current = [];
-      return;
-    }
+    if (!isTopModal || !modalRef.current) return;
 
-    function updateFocusableElements() {
-      focusableRef.current = getFocusableElements(modalRef.current);
-    }
-
-    updateFocusableElements();
-
-    const observer = new MutationObserver(updateFocusableElements);
-    observer.observe(modalRef.current, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [entry.id, isTopModal]);
-
-  useEffect(() => {
-    if (!isTopModal) {
-      return;
+    const elements = getFocusableElements(modalRef.current);
+    if (elements.length > 0) {
+      elements[0].focus();
     }
 
     function handleKeyDown(event) {
@@ -188,15 +169,11 @@ function ModalLayer({
         closeModal(null, entry.id);
         return;
       }
-
-      trapFocus(event, focusableRef.current);
+      trapFocus(event, elements);
     }
 
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [closeModal, entry.id, isTopModal]);
 
   if (!SpecificModalComponent) {
@@ -210,31 +187,21 @@ function ModalLayer({
       aria-modal={isTopModal}
       aria-labelledby={entry.title ? titleId : undefined}
       style={{ zIndex: baseZIndex }}
-      onClick={(event) => {
-        if (!isTopModal) return;
-        if (event.target === event.currentTarget) {
-          closeModal(null, entry.id);
-        }
-      }}
       className={cn(
-        'fixed inset-0 flex flex-col',
+        'fixed inset-0 flex flex-col pointer-events-none',
         POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
-        isTopModal ? 'pointer-events-auto' : 'pointer-events-none',
         activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport && 'px-3',
       )}
     >
-      {isTopModal ? (
-        <div
-          className="fixed inset-0 bg-white/40 backdrop-blur-md"
-          style={{ zIndex: backdropZIndex }}
-          onClick={() => closeModal(null, entry.id)}
-        />
-      ) : null}
-
-      <div
+      <motion.div
         ref={modalRef}
+        variants={positionVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
         className={cn(
           'relative flex max-w-full flex-col',
+          isTopModal ? 'pointer-events-auto' : 'pointer-events-none select-none',
           activePosition === MODAL_POSITIONS.CENTER && 'w-full sm:w-auto',
           isVerticalEdgeModal && 'w-full',
           isSideModal && (isMobileViewport ? 'w-full' : 'w-auto'),
@@ -243,6 +210,7 @@ function ModalLayer({
         )}
         style={{
           zIndex: modalZIndex,
+          willChange: 'transform, filter, opacity',
         }}
         onClick={(event) => event.stopPropagation()}
       >
@@ -301,6 +269,20 @@ function ModalLayer({
             />
           </ModuleError>
 
+          {!isTopModal && (
+            <div
+              onClick={(event) => {
+                event.stopPropagation();
+                const topModal = modalStack[modalStack.length - 1];
+                if (topModal) {
+                  closeModal(null, topModal.id);
+                }
+              }}
+              className="absolute inset-0 z-50 cursor-pointer pointer-events-auto bg-black/15 backdrop-blur-[1px] transition-all duration-200"
+              aria-label="Close active top modal"
+            />
+          )}
+
           {isTopModal && stackIndex > 0 && previousEntry && (
             <ModalLayerSwitcher
               currentEntry={entry}
@@ -309,7 +291,7 @@ function ModalLayer({
             />
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -368,20 +350,39 @@ export default function Modal() {
     return null;
   }
 
+  const topModalEntry = modalStack[modalStack.length - 1] || null;
+
   return createPortal(
     <>
-      {modalStack.map((entry, index) => (
-        <ModalLayer
-          key={entry.id}
-          entry={entry}
-          stackIndex={index}
-          isTopModal={index === modalStack.length - 1}
-          isMobileViewport={isMobileViewport}
-          closeModal={closeModal}
-          registry={registry}
-          modalStack={modalStack}
-        />
-      ))}
+      <AnimatePresence>
+        {isOpen && topModalEntry && (
+          <motion.div
+            key="global-modal-backdrop"
+            variants={modalBackdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 bg-white/40 backdrop-blur-md"
+            style={{ zIndex: Z_INDEX.MODAL, willChange: 'opacity, filter' }}
+            onClick={() => closeModal(null, topModalEntry.id)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="popLayout">
+        {modalStack.map((entry, index) => (
+          <ModalLayer
+            key={entry.id}
+            entry={entry}
+            stackIndex={index}
+            isTopModal={index === modalStack.length - 1}
+            isMobileViewport={isMobileViewport}
+            closeModal={closeModal}
+            registry={registry}
+            modalStack={modalStack}
+          />
+        ))}
+      </AnimatePresence>
     </>,
     document.body,
   );

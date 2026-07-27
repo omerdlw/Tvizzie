@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 import { useBackgroundState } from '@/core/modules/background/context';
 
@@ -90,7 +91,13 @@ export default function MediaAction() {
   }
 
   return (
-    <div className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.24, 1] }}
+      className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden"
+    >
       <input
         value={clamp(currentTime, 0, virtualDuration || 1)}
         onPointerDown={stopPropagation}
@@ -104,9 +111,9 @@ export default function MediaAction() {
       />
 
       <div
-        className="absolute top-0 bottom-0 left-0"
+        className="absolute top-0 bottom-0 left-0 bg-black/10 rounded-full transition-all duration-150 ease-out"
         style={{ width: `${Math.max(0, Math.min(progressRatio, 1)) * 100}%` }}
       />
-    </div>
+    </motion.div>
   );
 }
