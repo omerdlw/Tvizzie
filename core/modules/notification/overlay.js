@@ -20,9 +20,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
     ...notification,
   };
 
-  const duration = Number(config.duration);
-  const hasAutoDismiss = Number.isFinite(duration) && duration > 0;
-  const dismissible = config.dismissible === true && !hasAutoDismiss;
+  const dismissible = config.dismissible !== false;
   const message = normalizeFeedbackText(config.message);
   const description = normalizeFeedbackText(config.description);
   const primaryText = message || description;
@@ -35,8 +33,10 @@ export function NotificationOverlay({ notification, onDismiss }) {
 
   return (
     <section
+      role="alert"
+      aria-atomic="true"
       className={cn(
-        'pointer-events-auto relative w-full rounded-[24px] border backdrop-blur-lg shadow-lg overflow-hidden',
+        'pointer-events-auto relative w-full overflow-hidden rounded-[24px] border shadow-lg backdrop-blur-lg',
         dismissible && 'touch-pan-y',
         config.colorClass,
       )}
@@ -45,7 +45,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
         {dismissible ? (
           <motion.button
             type="button"
-            aria-label="Dismiss notification"
+            aria-label="Bildirimi kapat"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: NOTIFICATION_MICRO_TAP_SCALE }}
             transition={NOTIFICATION_MICRO_SPRING}
@@ -53,7 +53,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 -translate-y-2/4 right-2.5 size-8 cursor-pointer rounded-[10px] border border-black/5 hover:bg-black/5 hover:text-black transition-colors duration-150"
+            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer rounded-[10px] border border-black/5 transition-colors duration-150 hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={14} />
           </motion.button>
@@ -65,8 +65,9 @@ export function NotificationOverlay({ notification, onDismiss }) {
             <p className="text-sm leading-5 text-black/70">{secondaryText}</p>
           ) : null}
         </div>
+
         {actions.length > 0 ? (
-          <div className="flex flex-wrap gap-2 p-0.5 overflow-visible">
+          <div className="flex flex-wrap gap-2 overflow-visible p-0.5">
             {actions.map((action, index) => (
               <motion.button
                 key={action.label || index}
@@ -80,7 +81,7 @@ export function NotificationOverlay({ notification, onDismiss }) {
                   if (action.dismiss) onDismiss();
                 }}
                 type="button"
-                className="min-h-10 flex-1 border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black hover:border-black/10 hover:bg-black/10 rounded-xl transition-colors duration-200"
+                className="min-h-10 flex-1 rounded-xl border border-black/5 bg-black/5 px-3 text-sm font-semibold text-black transition-colors duration-200 hover:border-black/10 hover:bg-black/10 focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
               >
                 {action.label}
               </motion.button>

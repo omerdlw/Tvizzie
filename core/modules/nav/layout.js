@@ -1,7 +1,15 @@
 import { cn } from '@/core/utils/classnames';
 
+// --- CONSTANTS ---
+
 export const NAV_VIEWPORT_GAP = 4;
 export const NAV_HEIGHT_BUFFER = 16;
+export const NAV_SPACER_BOTTOM_LOCK_DISTANCE = 40;
+
+const VIEWPORT_MARGIN = 24;
+const COMPACT_CARD_MIN_WIDTH = 148;
+const COMPACT_CARD_HORIZONTAL_PADDING = 56;
+const COMPACT_CARD_MAX_OFFSET = 72;
 
 function getNavStackOffset(cardHeight) {
   return -(cardHeight + NAV_VIEWPORT_GAP);
@@ -31,10 +39,7 @@ export const NAV_CARD_LAYOUT = Object.freeze({
   actionGap: NAV_CARD_DIMENSIONS.actionGap,
 });
 
-const BLUR_AMOUNT = 7;
-const COMPACT_CARD_MIN_WIDTH = 148;
-const COMPACT_CARD_HORIZONTAL_PADDING = 56;
-const COMPACT_CARD_MAX_OFFSET = 72;
+// --- HELPER FUNCTIONS ---
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -48,25 +53,20 @@ export function estimateCompactCardWidth(title, stackWidth) {
   return clamp(estimatedWidth, COMPACT_CARD_MIN_WIDTH, maxWidth);
 }
 
-function getExpandedItemY(position) {
-  return position * NAV_CARD_LAYOUT.expanded.offsetY;
-}
-
 export function getNavItemCardProps({
   cardScale,
   cardStyle,
   cardWidth,
   compact,
-  containerHeight,
   expanded,
   isAnchoredToBottom,
   position,
   showBorder,
-  globalCompact,
   visibleCount = 3,
 }) {
   const { offsetY: collapsedOffsetY, scale: collapsedScale } = NAV_CARD_LAYOUT.collapsed;
   const { offsetY: expandedOffsetY } = NAV_CARD_LAYOUT.expanded;
+
   const safeCardStyle = cardStyle
     ? Object.fromEntries(
         Object.entries(cardStyle).filter(([key]) => key !== 'scale' && key !== 'className'),
@@ -77,18 +77,15 @@ export function getNavItemCardProps({
   const collapsedScaleValue = collapsedScale ** position;
 
   const y = expanded ? position * expandedOffsetY : position * collapsedOffsetY;
-
   const scale = expanded ? cardScale || 1 : collapsedScaleValue;
-
   const opacity = expanded || position < visibleCount ? 1 : 0;
 
   return {
     className: cn(
-      'absolute h-auto w-full border rounded-[24px] p-2',
+      'absolute h-auto w-full border rounded-[24px] p-2 border-black/10',
       compact ? 'bg-white' : 'bg-white/80 backdrop-blur-md',
       isAnchoredToBottom || isTop ? 'bottom-0' : 'top-0',
       isAnchoredToBottom ? 'cursor-default' : 'cursor-pointer',
-      'border-black/10',
       showBorder && 'border-black/15',
       cardStyle?.className,
     ),
@@ -103,9 +100,12 @@ export function getNavItemCardProps({
       ...(isTop ? { height: '100%' } : {}),
       pointerEvents: expanded || position < visibleCount ? undefined : 'none',
     },
-
-    // Only expose width for top card (compact pill) — inactive cards use w-full from container.
-    motionValues: { width: isTop ? cardWidth : undefined, y, scale, opacity },
+    motionValues: {
+      width: isTop ? cardWidth : undefined,
+      y,
+      scale,
+      opacity,
+    },
   };
 }
 
@@ -117,12 +117,11 @@ export function isImageIconSource(icon) {
 }
 
 export function shouldShowVideoIcon({ isActive, isVideo, link }) {
-  return isActive && isVideo && link.type !== 'COUNTDOWN';
+  return Boolean(isActive && isVideo && link.type !== 'COUNTDOWN');
 }
 
 export function getItemMeasurementKey({ link, expanded, compact }) {
   const state = link.isLoading ? 'loading' : link.isSurface ? 'surface' : 'standard';
-
   return `${link.path || link.name || 'item'}:${state}:${expanded ? 'expanded' : 'collapsed'}:${compact ? 'compact' : 'full'}`;
 }
 
@@ -133,9 +132,6 @@ export function getRouteMeasurementKey(pathname, key) {
 export function getItemDescription({ link }) {
   return link.description;
 }
-
-const VIEWPORT_MARGIN = 24;
-export const NAV_SPACER_BOTTOM_LOCK_DISTANCE = 40;
 
 export function getViewportMaxHeight() {
   if (typeof window === 'undefined') return Infinity;
@@ -150,6 +146,7 @@ export function getDistanceToBottom() {
   const root = document.documentElement;
   const maxScrollY = Math.max((root?.scrollHeight || 0) - window.innerHeight, 0);
   const scrollY = window.scrollY || 0;
+
   return Math.max(maxScrollY - scrollY, 0);
 }
 

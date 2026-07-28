@@ -39,19 +39,9 @@ function getContainerClassName({ className, position }) {
   );
 }
 
-function getBodyClassName(position, bodyClassName) {
-  const isLeftModal = position === MODAL_POSITIONS.LEFT;
-  const isRightModal = position === MODAL_POSITIONS.RIGHT;
-  const isTopModal = position === MODAL_POSITIONS.TOP;
-  const isBottomModal = position === MODAL_POSITIONS.BOTTOM;
-
+function getBodyClassName(bodyClassName) {
   return cn(
     'bg-primary rounded-2xl min-h-0 w-full flex-1 overflow-y-auto overscroll-contain modal-body',
-    isTopModal && ' ',
-    isBottomModal && ' ',
-    isLeftModal && ' ',
-    isRightModal && ' ',
-    !(isLeftModal || isRightModal || isTopModal || isBottomModal) && '',
     bodyClassName,
   );
 }
@@ -84,7 +74,7 @@ function CloseButton({ close, label = 'Close modal' }) {
       whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       transition={MODAL_MICRO_SPRING}
       onClick={close}
-      className="center inline-flex size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+      className="center inline-flex size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
     </motion.button>
@@ -107,6 +97,7 @@ export default function Container({
   const resolvedPosition = position || headerConfig?.position || null;
   const showClose = headerConfig?.showClose === true;
   const headerActions = resolveHeaderActions(headerConfig?.actions, close);
+
   const headerLeft = hasCustomHeaderNode
     ? null
     : (headerConfig?.left ??
@@ -115,7 +106,9 @@ export default function Container({
           {headerConfig.title}
         </h2>
       ) : null));
+
   const headerCenter = hasCustomHeaderNode ? header : (headerConfig?.center ?? null);
+
   const headerRight = hasCustomHeaderNode
     ? null
     : (headerConfig?.right ??
@@ -125,6 +118,7 @@ export default function Container({
           {showClose ? <CloseButton close={close} /> : null}
         </div>
       ) : null));
+
   const headerIsSticky = Boolean(headerConfig?.sticky);
   const shouldRenderHeader =
     !isHeaderDisabled &&
@@ -148,7 +142,7 @@ export default function Container({
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
               : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
-            headerIsSticky && 'sticky top-0 z-10',
+            headerIsSticky && 'sticky top-0 z-10 bg-white',
           )}
         >
           <div className="min-w-0">{headerLeft}</div>
@@ -159,11 +153,7 @@ export default function Container({
         </div>
       ) : null}
 
-      <div
-        data-lenis-prevent
-        data-lenis-prevent-wheel
-        className={getBodyClassName(resolvedPosition, bodyClassName)}
-      >
+      <div data-lenis-prevent data-lenis-prevent-wheel className={getBodyClassName(bodyClassName)}>
         {children}
       </div>
 
@@ -174,7 +164,7 @@ export default function Container({
               ? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
               : 'flex justify-between',
             'items-center gap-3 px-4 py-3',
-            footerIsSticky && 'sticky bottom-0',
+            footerIsSticky && 'sticky bottom-0 bg-white',
           )}
         >
           <div className="min-w-0">{footerLeft}</div>

@@ -1,3 +1,5 @@
+'use client';
+
 const ADAPTER_METHOD_NAMES = Object.freeze([
   'requestPasswordReset',
   'confirmPasswordReset',
@@ -30,5 +32,5 @@ export function createAuthAdapter(adapter = {}) {
     }
   });
 
-  return adapter;
+  return Object.freeze({ ...adapter });
 }

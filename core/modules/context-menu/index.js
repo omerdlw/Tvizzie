@@ -1,37 +1,13 @@
 'use client';
 
-import { isValidElement, useEffect } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { useContextMenuRegistry, useNavRegistry } from '@/core/modules/registry/context';
 
 import { useContextMenu } from './context';
 import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';
-import { ContextMenuRenderer } from './renderer';
-
-function extractNodeText(value) {
-  if (value === null || value === undefined || typeof value === 'boolean') {
-    return '';
-  }
-
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value).trim();
-  }
-
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => extractNodeText(item))
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-  }
-
-  if (isValidElement(value)) {
-    return extractNodeText(value.props?.children);
-  }
-
-  return '';
-}
+import { ContextMenuRenderer, extractNodeText } from './renderer';
 
 function resolveContextMenuPageMeta(navItem, pathname = '') {
   if (!isObject(navItem)) {

@@ -1,11 +1,15 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import Iconify from '@/ui/icon';
+import { memo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import {
-  NAV_FADE_TRANSITION,
   NAV_BADGE_TRANSITION,
+  NAV_FADE_TRANSITION,
   textCrossfadeVariants,
 } from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
+import Iconify from '@/ui/icon';
+
+// --- HELPER FUNCTIONS ---
 
 function isImageIconSource(icon) {
   return (
@@ -16,16 +20,11 @@ function isImageIconSource(icon) {
 
 function splitStyle(style = {}) {
   const { className, ...inlineStyle } = style;
-  return {
-    className,
-    inlineStyle,
-  };
+  return { className, inlineStyle };
 }
 
 function getLineClampStyle(maxLines, style) {
-  if (Number(maxLines) <= 1) {
-    return style;
-  }
+  if (Number(maxLines) <= 1) return style;
 
   return {
     WebkitBoxOrient: 'vertical',
@@ -36,19 +35,36 @@ function getLineClampStyle(maxLines, style) {
   };
 }
 
-export function Description({ text, style, maxLines = 1 }) {
+function renderIconNode(icon, size) {
+  return typeof icon === 'string' ? <Iconify icon={icon} size={size} /> : icon;
+}
+
+function getImageIconStyle(style, icon) {
+  const nextStyle = { ...style };
+  delete nextStyle.background;
+  delete nextStyle.backgroundImage;
+
+  return {
+    ...nextStyle,
+    backgroundImage: `url(${icon})`,
+  };
+}
+
+// --- COMPONENTS ---
+
+export const Description = memo(function Description({ text, style, maxLines = 1 }) {
   const { className, inlineStyle } = splitStyle(style);
   const { opacity = 0.7, ...restStyle } = inlineStyle;
   const isMultiline = Number(maxLines) > 1;
 
   return (
-    <div className="relative w-full text-sm overflow-hidden min-h-[1.25rem]">
+    <div className="relative min-h-[1.25rem] w-full overflow-hidden text-sm">
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.p
           key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
           variants={textCrossfadeVariants}
-          initial="hidden"
           animate="visible"
+          initial="hidden"
           exit="exit"
           className={cn(
             'text-black',
@@ -62,16 +78,10 @@ export function Description({ text, style, maxLines = 1 }) {
       </AnimatePresence>
     </div>
   );
-}
+});
 
-function renderIconNode(icon, size) {
-  return typeof icon === 'string' ? <Iconify icon={icon} size={size} /> : icon;
-}
-
-function IconOverlay({ overlay }) {
-  if (!overlay?.icon) {
-    return null;
-  }
+export const IconOverlay = memo(function IconOverlay({ overlay }) {
+  if (!overlay?.icon) return null;
 
   const { icon, onClick, title = '' } = overlay;
   const isImageSource = isImageIconSource(icon);
@@ -94,7 +104,7 @@ function IconOverlay({ overlay }) {
         whileTap={onClick ? { scale: 0.9 } : undefined}
         transition={NAV_BADGE_TRANSITION}
         className={cn(
-          'absolute -right-1 -bottom-1 rounded-[8px] flex size-6 items-center justify-center overflow-hidden',
+          'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden rounded-[8px]',
           typeof onClick === 'function' ? 'cursor-pointer' : 'cursor-default',
         )}
       >
@@ -109,74 +119,43 @@ function IconOverlay({ overlay }) {
       </motion.button>
     </AnimatePresence>
   );
-}
+});
 
-function getIconStyleFlags(style = {}) {
-  return {
-    hasCustomBackground:
-      Object.prototype.hasOwnProperty.call(style, 'background') ||
-      Object.prototype.hasOwnProperty.call(style, 'backgroundColor'),
-    hasCustomColor: Object.prototype.hasOwnProperty.call(style, 'color'),
-  };
-}
-
-function getImageIconStyle(style, icon) {
-  const nextStyle = { ...style };
-  delete nextStyle.background;
-  delete nextStyle.backgroundImage;
-
-  return {
-    ...nextStyle,
-    backgroundImage: `url(${icon})`,
-  };
-}
-
-export function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
+export const Icon = memo(function Icon({ icon, iconOverlay = null, isStackHovered, style }) {
   const { className, inlineStyle } = splitStyle(style);
   const { size = 24, ...iconStyle } = inlineStyle;
   const isImageSource = isImageIconSource(icon);
-  const { hasCustomBackground, hasCustomColor } = getIconStyleFlags(iconStyle);
+
+  const hasCustomBackground = 'background' in iconStyle || 'backgroundColor' in iconStyle;
+  const hasCustomColor = 'color' in iconStyle;
 
   return (
     <div className="relative">
       {isImageSource ? (
         <div
-          className={cn(
-            'size-12 shrink-0 rounded-2xl bg-cover bg-center bg-no-repeat',
-            className,
-          )}
+          className={cn('size-12 shrink-0 rounded-2xl bg-cover bg-center bg-no-repeat', className)}
           style={getImageIconStyle(iconStyle, icon)}
         />
       ) : (
         <motion.div
-          className={cn(
-            'center size-12 rounded-2xl',
-            className,
-          )}
+          className={cn('center size-12 rounded-2xl', className)}
           animate={{
             backgroundColor:
-              isStackHovered && !hasCustomBackground
-                ? 'rgba(0,0,0,0.10)'
-                : 'rgba(0,0,0,0.05)',
-            color:
-              isStackHovered && !hasCustomColor
-                ? 'rgba(0,0,0,1)'
-                : undefined,
+              isStackHovered && !hasCustomBackground ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.05)',
+            color: isStackHovered && !hasCustomColor ? 'rgba(0,0,0,1)' : undefined,
           }}
           transition={NAV_FADE_TRANSITION}
           style={iconStyle}
         >
-          <span>
-            {renderIconNode(icon, size)}
-          </span>
+          <span>{renderIconNode(icon, size)}</span>
         </motion.div>
       )}
       <IconOverlay overlay={iconOverlay} />
     </div>
   );
-}
+});
 
-export function Title({ text, style }) {
+export const Title = memo(function Title({ text, style }) {
   const { className, inlineStyle } = splitStyle(style);
 
   return (
@@ -184,16 +163,16 @@ export function Title({ text, style }) {
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.h3
           key={typeof text === 'string' || typeof text === 'number' ? text : 'title'}
-          variants={textCrossfadeVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
           className={cn('truncate font-bold', className)}
+          variants={textCrossfadeVariants}
           style={inlineStyle}
+          animate="visible"
+          initial="hidden"
+          exit="exit"
         >
           {text}
         </motion.h3>
       </AnimatePresence>
     </div>
   );
-}
+});

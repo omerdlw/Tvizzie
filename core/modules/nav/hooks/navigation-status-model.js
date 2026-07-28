@@ -3,9 +3,9 @@
 import { Wifi, WifiOff } from 'lucide-react';
 
 import { DESTRUCTIVE_ACTION_TONE_CLASS, SEMANTIC_SURFACE_CLASSES } from '@/core/constants';
+import { getNavActionClass } from '@/features/navigation/actions/model';
 import { Button } from '@/ui/elements';
 import { Spinner } from '@/ui/loadings/spinner';
-import { getNavActionClass } from '@/features/navigation/actions/model';
 
 const STATUS_PRIORITY = Object.freeze({
   ACCOUNT_DELETE: 115,

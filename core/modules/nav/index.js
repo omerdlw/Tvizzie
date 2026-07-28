@@ -1,17 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { Z_INDEX } from '@/core/constants';
-import { cn } from '@/core/utils/classnames';
 import { useClickOutside } from '@/core/hooks/use-click-outside';
 import { useNavigation } from '@/core/modules/nav/hooks';
-import { useNavKeyboard } from '@/core/modules/nav/hooks/use-nav-keyboard';
 import { useNavHeightController } from '@/core/modules/nav/hooks/use-nav-height-controller';
+import { useNavKeyboard } from '@/core/modules/nav/hooks/use-nav-keyboard';
 import { useNavViewport } from '@/core/modules/nav/hooks/use-nav-viewport';
+import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/core/modules/nav/motion';
+import { cn } from '@/core/utils/classnames';
 import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
 
 import Item from './item';
@@ -24,22 +24,16 @@ import {
   getItemPosition,
   shouldSyncStackHover,
 } from './utils';
-import {
-  NAV_BACKDROP_TRANSITION,
-  NAV_CARD_SPRING,
-} from '@/core/modules/nav/motion';
 
-export { NavigationProvider, useNavigationActions, useNavigationContext, useNavigationState } from './context';
 export {
-  useActionHeight,
-  useElementHeight,
-  useNavHeight,
-  useNavigation,
-} from './hooks';
+  NavigationProvider,
+  useNavigationActions,
+  useNavigationContext,
+  useNavigationState,
+} from './context';
+export { useActionHeight, useElementHeight, useNavHeight, useNavigation } from './hooks';
 export { NavSurfaceHeader, default as NavSurfaceShell, useSurfaceHeader } from './surface';
 export { NAV_SURFACE_RENDER_MODE } from './surface-model';
-
-
 
 export default function Nav() {
   const {
@@ -63,22 +57,23 @@ export default function Nav() {
   const navRef = useRef(null);
   const { portalTarget, stackWidth } = useNavViewport(activeItem);
   const activeItemLayoutKey = useMemo(() => getActiveItemLayoutKey(activeItem), [activeItem]);
+
   const clearHoverState = useCallback(() => {
     setIsStackHovered(false);
     setIsHovered(false);
   }, [setIsHovered]);
-  const isOverlayActive = !!activeItem?.isOverlay;
+
+  const isOverlayActive = Boolean(activeItem?.isOverlay);
   const isBackdropVisible = !isFullscreenStateActive && (expanded || isOverlayActive);
   const isCompactPreviewActive = compact && !expanded && isStackHovered;
   const isTopItemCompact = compact && !expanded && !isStackHovered;
   const isCompactStack = !expanded && compact && !isCompactPreviewActive;
   const activeTitle = activeItem?.title || activeItem?.name || '';
+
   const compactStackWidth = useMemo(
     () => estimateCompactCardWidth(activeTitle, stackWidth),
     [activeTitle, stackWidth],
   );
-
-  const heightTransition = NAV_CARD_SPRING;
 
   const { containerHeight, handleContentHeightChange } = useNavHeightController({
     activeItemIsOverlay: isOverlayActive,
@@ -87,8 +82,6 @@ export default function Nav() {
     pathname,
     setNavHeight,
   });
-
-  
 
   const handleOutsideDismiss = useCallback(() => {
     if (isOverlayActive) return;
@@ -111,7 +104,7 @@ export default function Nav() {
     setFocusedIndex,
   });
 
-  
+  useClickOutside(navRef, handleOutsideDismiss);
 
   useEffect(() => {
     clearHoverState();
@@ -124,19 +117,11 @@ export default function Nav() {
     setFocusedIndex(-1);
   }, [activeIndex, clearHoverState, expanded]);
 
-  
-
-  useClickOutside(navRef, handleOutsideDismiss);
-
-  
-
   useEffect(() => {
     if (!isFullscreenStateActive) return;
     setExpanded(false);
     clearHoverState();
   }, [clearHoverState, isFullscreenStateActive, setExpanded]);
-
-  
 
   const renderedNavItems = navigationItems.map((link, index) => {
     const position = getItemPosition(index);
@@ -149,11 +134,7 @@ export default function Nav() {
 
     const handleMouseEnter = () => {
       if (expanded) setFocusedIndex(index);
-      if (!isTop) return;
-
-      if (!canTopCardPreview) {
-        return;
-      }
+      if (!isTop || !canTopCardPreview) return;
 
       setIsStackHovered(true);
       if (shouldSyncHover) setIsHovered(true);
@@ -161,9 +142,7 @@ export default function Nav() {
 
     const handleMouseLeave = () => {
       if (expanded) setFocusedIndex(-1);
-      if (!isTop) return;
-
-      if (!canTopCardPreview) return;
+      if (!isTop || !canTopCardPreview) return;
 
       setIsStackHovered(false);
       if (shouldSyncHover) setIsHovered(false);
@@ -222,7 +201,7 @@ export default function Nav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={NAV_BACKDROP_TRANSITION}
-            className={cn('fixed inset-0 bg-white/20 cursor-pointer will-change-[opacity]')}
+            className={cn('fixed inset-0 cursor-pointer bg-white/20 will-change-[opacity]')}
             style={{ zIndex: Z_INDEX.NAV_BACKDROP }}
             onClick={handleOutsideDismiss}
           />
@@ -245,12 +224,12 @@ export default function Nav() {
           opacity: isFullscreenStateActive ? 0 : 1,
           pointerEvents: isFullscreenStateActive ? 'none' : 'auto',
         }}
-        transition={heightTransition}
+        transition={NAV_CARD_SPRING}
       >
         <motion.div
           style={{ position: 'relative' }}
           animate={{ height: containerHeight }}
-          transition={heightTransition}
+          transition={NAV_CARD_SPRING}
         >
           {renderedNavItems}
         </motion.div>

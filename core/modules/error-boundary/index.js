@@ -1,9 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-
 import { apiCache } from '@/core/modules/api';
-
 import { ErrorBoundaryCore } from './core';
 
 export { GlobalErrorListener } from './listener';
@@ -16,7 +14,7 @@ const MODULE_ERROR_TITLE = 'Module Error';
 const MODULE_ERROR_MESSAGE = 'This module encountered an unexpected error';
 const COMPONENT_ERROR_MESSAGE = 'Component failed to load';
 
-export function GlobalError({ children, onReset }) {
+export function GlobalError({ children, onReset, fallback }) {
   const pathname = usePathname();
 
   const handleReset = () => {
@@ -30,6 +28,7 @@ export function GlobalError({ children, onReset }) {
       message={GLOBAL_ERROR_MESSAGE}
       resetKey={pathname}
       variant="full"
+      fallback={fallback}
       onReset={handleReset}
     >
       {children}
@@ -37,12 +36,13 @@ export function GlobalError({ children, onReset }) {
   );
 }
 
-export function ModuleError({ children, name, onReset }) {
+export function ModuleError({ children, name, onReset, fallback }) {
   return (
     <ErrorBoundaryCore
       title={name ? `${name} Error` : MODULE_ERROR_TITLE}
       message={MODULE_ERROR_MESSAGE}
       variant="module"
+      fallback={fallback}
       onReset={onReset}
     >
       {children}
@@ -50,11 +50,12 @@ export function ModuleError({ children, name, onReset }) {
   );
 }
 
-export function ComponentError({ children, message, onReset }) {
+export function ComponentError({ children, message, onReset, fallback }) {
   return (
     <ErrorBoundaryCore
       message={message || COMPONENT_ERROR_MESSAGE}
       variant="inline"
+      fallback={fallback}
       onReset={onReset}
     >
       {children}

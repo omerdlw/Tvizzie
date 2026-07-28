@@ -30,11 +30,19 @@ import { createAuthStorage } from './storage';
 import { isSessionExpired, normalizeSession, hasCapability, canAccess, hasRole } from './utils';
 
 const FALLBACK_AUTH_ACTIONS = Object.freeze({
-  clearError: () => {}, initialize: async () => null, linkProvider: async () => null,
-  reauthenticate: async () => null, refreshSession: async () => null,
-  requestPasswordReset: async () => null, signIn: async () => null, signOut: async () => null,
-  signUp: async () => null, unlinkProvider: async () => null, updateProfile: async () => null,
+  clearError: () => {},
+  initialize: async () => null,
+  linkProvider: async () => null,
+  reauthenticate: async () => null,
+  refreshSession: async () => null,
+  requestPasswordReset: async () => null,
+  signIn: async () => null,
+  signOut: async () => null,
+  signUp: async () => null,
+  unlinkProvider: async () => null,
+  updateProfile: async () => null,
 });
+
 const AUTH_FLOW_STATUS = Object.freeze({
   login: Object.freeze({ priority: 110, statusType: 'LOGIN', themeType: 'LOGIN' }),
   logout: Object.freeze({ priority: 110, statusType: 'LOGOUT', themeType: 'LOGOUT' }),
@@ -42,7 +50,9 @@ const AUTH_FLOW_STATUS = Object.freeze({
 
 function toAuthError(error, fallbackMessage) {
   if (error instanceof Error) return error;
-  const normalizedError = new Error(error?.message || fallbackMessage || 'Authentication request failed');
+  const normalizedError = new Error(
+    error?.message || fallbackMessage || 'Authentication request failed',
+  );
   normalizedError.name = error?.name || 'AuthError';
   normalizedError.status = error?.status || 0;
   normalizedError.data = error?.data || null;
@@ -56,24 +66,43 @@ function createAdapterContext(config, storage, session) {
 function createSessionState(prevState, nextSession, nextStatus = null) {
   const session = normalizeSession(nextSession);
   return {
-    ...prevState, lastUpdatedAt: Date.now(),
+    ...prevState,
+    lastUpdatedAt: Date.now(),
     status: nextStatus || (session ? AUTH_STATUS.AUTHENTICATED : AUTH_STATUS.ANONYMOUS),
-    session, user: session?.user || null, isReady: true, error: null,
+    session,
+    user: session?.user || null,
+    isReady: true,
+    error: null,
   };
 }
 
 function createAnonymousState(prevState, { preserveError = false } = {}) {
   return {
-    ...prevState, lastUpdatedAt: Date.now(), status: AUTH_STATUS.ANONYMOUS,
-    session: null, user: null, isReady: true, error: preserveError ? prevState.error : null,
+    ...prevState,
+    lastUpdatedAt: Date.now(),
+    status: AUTH_STATUS.ANONYMOUS,
+    session: null,
+    user: null,
+    isReady: true,
+    error: preserveError ? prevState.error : null,
   };
 }
 
 function createAuthErrorState(prevState, error) {
-  return { ...prevState, lastUpdatedAt: Date.now(), status: AUTH_STATUS.ERROR, isReady: true, error };
+  return {
+    ...prevState,
+    lastUpdatedAt: Date.now(),
+    status: AUTH_STATUS.ERROR,
+    isReady: true,
+    error,
+  };
 }
 
-function createAuthLoadingState(prevState, status = AUTH_STATUS.LOADING, { preserveError = false } = {}) {
+function createAuthLoadingState(
+  prevState,
+  status = AUTH_STATUS.LOADING,
+  { preserveError = false } = {},
+) {
   return { ...prevState, status, error: preserveError ? prevState.error : null };
 }
 
@@ -119,19 +148,17 @@ export function AuthProvider({ children, config = {} }) {
       const normalizedFlow = normalizeAuthFlowValue(flow);
       const normalizedPhase = normalizeAuthFlowValue(phase);
 
-      if (!normalizedFlow || !normalizedPhase) {
-        return;
-      }
+      if (!normalizedFlow || !normalizedPhase) return;
 
-      const config = AUTH_FLOW_STATUS[normalizedFlow] || null;
+      const flowConfig = AUTH_FLOW_STATUS[normalizedFlow] || null;
 
       emitAuthEvent(EVENT_TYPES.AUTH_FEEDBACK, {
         flow: normalizedFlow,
         phase: normalizedPhase,
         statusType:
-          overrides.statusType || config?.statusType || normalizedFlow.trim().toUpperCase(),
-        themeType: overrides.themeType || config?.themeType || 'LOGIN',
-        priority: overrides.priority ?? config?.priority ?? 110,
+          overrides.statusType || flowConfig?.statusType || normalizedFlow.trim().toUpperCase(),
+        themeType: overrides.themeType || flowConfig?.themeType || 'LOGIN',
+        priority: overrides.priority ?? flowConfig?.priority ?? 110,
         ...(overrides.title != null ? { title: overrides.title } : {}),
         ...(overrides.description != null ? { description: overrides.description } : {}),
         ...(overrides.icon != null ? { icon: overrides.icon } : {}),
@@ -145,7 +172,6 @@ export function AuthProvider({ children, config = {} }) {
   const applySession = useCallback((nextSession, nextStatus = null) => {
     const normalizedSession = normalizeSession(nextSession);
     setState((prevState) => createSessionState(prevState, normalizedSession, nextStatus));
-
     return normalizedSession;
   }, []);
 
@@ -156,14 +182,11 @@ export function AuthProvider({ children, config = {} }) {
   const setAuthError = useCallback(
     (error, fallbackMessage) => {
       const normalizedError = toAuthError(error, fallbackMessage);
-
       setState((prevState) => createAuthErrorState(prevState, normalizedError));
-
       emitAuthEvent(EVENT_TYPES.AUTH_ERROR, {
         error: normalizedError,
         message: normalizedError.message,
       });
-
       return normalizedError;
     },
     [emitAuthEvent],
@@ -184,11 +207,9 @@ export function AuthProvider({ children, config = {} }) {
   const getAdapterMethod = useCallback(
     (methodName, unavailableMessage, fallbackMessage) => {
       const adapter = adapterRef.current;
-
       if (typeof adapter?.[methodName] !== 'function') {
         throw setAuthError(new Error(unavailableMessage), fallbackMessage);
       }
-
       return adapter;
     },
     [setAuthError],
@@ -227,10 +248,7 @@ export function AuthProvider({ children, config = {} }) {
   );
 
   const initialize = useCallback(async () => {
-    if (bootstrapRef.current) {
-      return;
-    }
-
+    if (bootstrapRef.current) return;
     bootstrapRef.current = true;
 
     await runAuthInitialize({
@@ -264,10 +282,6 @@ export function AuthProvider({ children, config = {} }) {
   ]);
 
   useEffect(() => {
-    bootstrapRef.current = false;
-  }, [mergedConfig]);
-
-  useEffect(() => {
     initialize();
   }, [initialize]);
 
@@ -285,17 +299,12 @@ export function AuthProvider({ children, config = {} }) {
   }, [mergedConfig.persistSession, state.session, storage]);
 
   useEffect(() => {
-    if (!mergedConfig.clearSessionOnUnauthorized) {
-      return undefined;
-    }
+    if (!mergedConfig.clearSessionOnUnauthorized) return;
 
     return globalEvents.subscribe(EVENT_TYPES.API_UNAUTHORIZED, (eventData) => {
-      if (eventData?.source && eventData.source !== 'app') {
-        return;
-      }
+      if (eventData?.source && eventData.source !== 'app') return;
 
       clearSession();
-
       emitAuthEvent(EVENT_TYPES.AUTH_SIGN_OUT, {
         source: 'api-unauthorized',
         session: null,
@@ -305,13 +314,10 @@ export function AuthProvider({ children, config = {} }) {
   }, [clearSession, emitAuthEvent, mergedConfig.clearSessionOnUnauthorized]);
 
   useEffect(() => {
-    if (!mergedConfig.refreshOnWindowFocus || !mergedConfig.enabled) {
-      return undefined;
-    }
+    if (!mergedConfig.refreshOnWindowFocus || !mergedConfig.enabled) return;
 
     function handleFocus() {
       const activeSession = sessionRef.current;
-
       if (activeSession && isSessionExpired(activeSession, mergedConfig.refreshLeewayMs)) {
         refreshSession({ session: activeSession, silent: true });
       }
@@ -339,10 +345,7 @@ export function AuthProvider({ children, config = {} }) {
 
   useEffect(() => {
     const adapter = adapterRef.current;
-
-    if (!adapter?.onAuthStateChange) {
-      return undefined;
-    }
+    if (!adapter?.onAuthStateChange) return;
 
     return adapter.onAuthStateChange((nextSession) => {
       const normalizedSession = normalizeSession(nextSession);

@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useCallback, useContext, useState, useMemo, useEffect } from 'react';
-
 import { toFiniteNumber } from '@/core/utils/number';
 
 const ContextMenuContext = createContext(null);
@@ -10,15 +9,11 @@ const INITIAL_POSITION = Object.freeze({ x: 0, y: 0 });
 const CONTEXT_MENU_VISIBILITY_EVENT = 'tvizzie:context-menu-visibility';
 
 function emitContextMenuVisibility(isOpen) {
-  if (typeof window === 'undefined') {
-    return;
-  }
+  if (typeof window === 'undefined') return;
 
   window.dispatchEvent(
     new CustomEvent(CONTEXT_MENU_VISIBILITY_EVENT, {
-      detail: {
-        isOpen: Boolean(isOpen),
-      },
+      detail: { isOpen: Boolean(isOpen) },
     }),
   );
 }
@@ -54,10 +49,7 @@ function resolveNextOpenState(configOrState, x, y) {
           x: toFiniteNumber(configOrState.position.x, 0),
           y: toFiniteNumber(configOrState.position.y, 0),
         }
-      : {
-          x: 0,
-          y: 0,
-        };
+      : { x: 0, y: 0 };
 
     return {
       config,
@@ -88,12 +80,10 @@ export function ContextMenuProvider({ children }) {
   const [menuState, setMenuState] = useState(createInitialMenuState);
 
   const openMenu = useCallback((configOrState, x, y) => {
-    emitContextMenuVisibility(true);
     setMenuState(resolveNextOpenState(configOrState, x, y));
   }, []);
 
   const closeMenu = useCallback(() => {
-    emitContextMenuVisibility(false);
     setMenuState((currentState) => {
       if (!currentState.isOpen) {
         return currentState;
@@ -102,8 +92,8 @@ export function ContextMenuProvider({ children }) {
       if (typeof currentState.config?.onClose === 'function') {
         try {
           currentState.config.onClose(currentState.context);
-        } catch {
-          
+        } catch (error) {
+          console.error('[ContextMenu] Error executing onClose callback:', error);
         }
       }
 

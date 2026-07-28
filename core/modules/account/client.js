@@ -40,7 +40,6 @@ export function createAccountAdapter(adapter = {}) {
 
   ACCOUNT_ADAPTER_METHOD_NAMES.forEach((methodName) => {
     const method = adapter[methodName];
-
     if (method !== undefined && typeof method !== 'function') {
       throw new Error(`Account adapter method "${methodName}" must be a function`);
     }
@@ -52,51 +51,20 @@ export function createAccountAdapter(adapter = {}) {
 export function createAccountClient(adapterOrConfig) {
   const adapter = resolveAccountAdapter(adapterOrConfig);
 
-  return {
-    ensureAccount(user, options = {}) {
-      return getRequiredMethod(adapter, 'ensureAccount')(user, options);
-    },
+  const client = {};
 
-    getAccount(userId) {
-      return getRequiredMethod(adapter, 'getAccount')(userId);
-    },
+  // Dynamically map standard required adapter methods
+  ACCOUNT_ADAPTER_METHOD_NAMES.forEach((methodName) => {
+    client[methodName] = (...args) => getRequiredMethod(adapter, methodName)(...args);
+  });
 
-    getAccountByUsername(username) {
-      return getRequiredMethod(adapter, 'getAccountByUsername')(username);
-    },
-
-    getAccountIdByUsername(username) {
-      return getRequiredMethod(adapter, 'getAccountIdByUsername')(username);
-    },
-
-    searchAccounts(searchTerm, options = {}) {
-      return getRequiredMethod(adapter, 'searchAccounts')(searchTerm, options);
-    },
-
-    subscribeToAccount(userId, callback, options = {}) {
-      return getRequiredMethod(adapter, 'subscribeToAccount')(userId, callback, options);
-    },
-
-    syncAccountEmail(payload = {}) {
-      return getRequiredMethod(adapter, 'syncAccountEmail')(payload);
-    },
-
-    updateAccount(payload = {}) {
-      return getRequiredMethod(adapter, 'updateAccount')(payload);
-    },
-
-    primeAccount(userId, profile) {
-      const method = adapter?.primeAccount;
-
-      if (typeof method === 'function') {
-        return method(userId, profile);
-      }
-
-      return profile;
-    },
-
-    validateUsername(value) {
-      return getRequiredMethod(adapter, 'validateUsername')(value);
-    },
+  // Optional method with default fallback
+  client.primeAccount = (userId, profile) => {
+    if (typeof adapter?.primeAccount === 'function') {
+      return adapter.primeAccount(userId, profile);
+    }
+    return profile;
   };
+
+  return client;
 }

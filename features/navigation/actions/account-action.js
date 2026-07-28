@@ -408,7 +408,7 @@ export default function AccountAction(props) {
 
   const canShowFollowAction = !isOwner && showProfileFollowAction && typeof onFollow === 'function';
   const canShowLikeListAction = !isOwner && typeof onToggleLike === 'function';
-  const canShowCommentAction = typeof onOpenReviewComposer === 'function';
+  const canShowCommentAction = !isOwner && typeof onOpenReviewComposer === 'function';
 
   if (canShowFollowAction || canShowLikeListAction || canShowCommentAction) {
     const followAction = canShowFollowAction ? getProfileFollowAction(followState) : null;

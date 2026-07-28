@@ -1,9 +1,7 @@
 'use client';
 
 function getLocalStorage() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
+  if (typeof window === 'undefined') return null;
 
   try {
     return window.localStorage || null;
@@ -18,46 +16,41 @@ export function createAuthStorage(storageKey = 'app_auth_session') {
   return {
     clear() {
       const storage = getLocalStorage();
-
-      if (!storage) {
-        return;
+      if (storage) {
+        try {
+          storage.removeItem(key);
+        } catch {
+          // Ignores local storage restrictions
+        }
       }
-
-      storage.removeItem(key);
     },
 
     read() {
       const storage = getLocalStorage();
-
-      if (!storage) {
-        return null;
-      }
+      if (!storage) return null;
 
       try {
         const rawValue = storage.getItem(key);
         return rawValue ? JSON.parse(rawValue) : null;
       } catch {
-        storage.removeItem(key);
+        this.clear();
         return null;
       }
     },
 
     write(session) {
       const storage = getLocalStorage();
-
-      if (!storage) {
-        return;
-      }
+      if (!storage) return;
 
       if (!session) {
-        storage.removeItem(key);
+        this.clear();
         return;
       }
 
       try {
         storage.setItem(key, JSON.stringify(session));
       } catch {
-        storage.removeItem(key);
+        this.clear();
       }
     },
   };

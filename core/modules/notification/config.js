@@ -26,7 +26,7 @@ export const NOTIFICATION_CONFIG = Object.freeze({
     dismissible: true,
   },
   [TOAST_TYPES.WARNING]: {
-    colorClass: 'bg-primary text-error',
+    colorClass: 'bg-primary text-warning',
     dismissible: true,
   },
   [TOAST_TYPES.INFO]: {

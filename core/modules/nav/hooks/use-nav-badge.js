@@ -6,7 +6,7 @@ import { NAV_EVENT_HANDLERS } from '../events';
 
 export function useNavBadge(navKey, initialBadge) {
   const [badge, setBadge] = useState({
-    visible: !!initialBadge,
+    visible: Boolean(initialBadge),
     value: initialBadge,
     color: 'bg-primary',
   });

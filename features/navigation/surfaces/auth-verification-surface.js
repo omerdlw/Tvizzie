@@ -528,7 +528,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'flex h-11 w-full items-center gap-2  border px-3 text-left text-xs font-bold tracking-widest uppercase transition',
+              'flex h-11 rounded-2xl w-full items-center gap-2  border px-3 text-left text-xs font-semibold uppercase tracking-wider transition',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',
@@ -537,7 +537,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
           >
             <span
               className={cn(
-                'center size-4 border',
+                'center size-4 border rounded-[8px]',
                 rememberDevice
                   ? 'border-success/40 bg-success text-white'
                   : 'border-black/20 bg-transparent text-transparent',

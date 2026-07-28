@@ -5,6 +5,7 @@ import {
   cloneElement,
   isValidElement,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -13,7 +14,9 @@ import {
 import { usePathname } from 'next/navigation';
 
 import { useRegistryActions } from './context';
-import { PLUGINS, createPluginRunner } from './plugins';
+import { PLUGINS, createPluginRunner } from './plugins/index';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 let registryInstanceIdCounter = 0;
 
@@ -298,7 +301,7 @@ export function useRegistry(config, { plugins = PLUGINS } = {}) {
 
   const runner = useMemo(() => createPluginRunner(plugins), [plugins]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     return runner.apply(stableConfig, context);
   }, [stableConfig, runner, context]);
 }

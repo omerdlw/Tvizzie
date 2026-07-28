@@ -110,18 +110,20 @@ export default function AccountWatchedFeed({
         ) : null
       }
       toolbar={
-        <AccountMediaFilterBar
-          filters={viewState.media}
-          decadeOptions={getDecadeOptions()}
-          genreOptions={useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems])}
-          visibilityOptions={VISIBILITY_OPTIONS}
-          onChange={(media) => updateView({ media: { ...viewState.media, ...media }, page: 1 })}
-          onReset={
-            (watchedItems.length > 0 && hasFilters) || hasFilters
-              ? () => updateView({ media: parseCurrentFilters(new URLSearchParams()), page: 1 })
-              : null
-          }
-        />
+        watchedItems.length > 0 || hasFilters ? (
+          <AccountMediaFilterBar
+            filters={viewState.media}
+            decadeOptions={getDecadeOptions()}
+            genreOptions={useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems])}
+            visibilityOptions={VISIBILITY_OPTIONS}
+            onChange={(media) => updateView({ media: { ...viewState.media, ...media }, page: 1 })}
+            onReset={
+              hasFilters
+                ? () => updateView({ media: parseCurrentFilters(new URLSearchParams()), page: 1 })
+                : null
+            }
+          />
+        ) : null
       }
       title="Watched"
     />

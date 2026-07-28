@@ -1,3 +1,5 @@
+'use client';
+
 import { createAuthAdapter } from './create-adapter';
 
 const DEFAULT_ENDPOINTS = Object.freeze({
@@ -152,7 +154,6 @@ export function createApiAuthAdapter(options = {}) {
 
     async signIn(credentials, context = {}) {
       const payload = await callEndpoint('signIn', { method: 'POST', body: credentials }, context);
-
       return mapResponse(payload, 'signIn', context);
     },
 
@@ -187,6 +188,20 @@ export function createApiAuthAdapter(options = {}) {
       );
 
       return mapResponse(responsePayload, 'updateProfile', context);
+    },
+
+    async reauthenticate(payload, context = {}) {
+      if (!resolvedEndpoints.reauthenticate) {
+        throw createAuthAdapterError(
+          'API auth adapter endpoint "reauthenticate" is not configured',
+        );
+      }
+      const responsePayload = await callEndpoint(
+        'reauthenticate',
+        { method: 'POST', body: payload },
+        context,
+      );
+      return mapResponse(responsePayload, 'reauthenticate', context);
     },
 
     async requestPasswordReset(payload, context = {}) {

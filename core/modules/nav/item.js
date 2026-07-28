@@ -1,36 +1,36 @@
 'use client';
 
-import React, { forwardRef, Suspense, useState, useMemo, useRef, memo, useEffect } from 'react';
-
+import React, { forwardRef, memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
-import { cn } from '@/core/utils/classnames';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
 import { useElementHeight, useNavBadge } from '@/core/modules/nav/hooks';
-import { Skeleton } from '@/ui/skeletons/components/nav';
+import {
+  NAV_BADGE_TRANSITION,
+  NAV_CARD_SPRING,
+  NAV_FADE_TRANSITION,
+  textCrossfadeVariants,
+} from '@/core/modules/nav/motion';
+import { cn } from '@/core/utils/classnames';
 import Iconify from '@/ui/icon';
+import { Skeleton } from '@/ui/skeletons/components/nav';
 
+import { NavActionsContainer } from './actions';
+import { Description, Icon as BadgeIcon, Title } from './elements';
 import {
   estimateCompactCardWidth,
+  getItemDescription,
   getItemMeasurementKey,
   getNavItemCardProps,
   getRouteMeasurementKey,
-  getItemDescription,
   isImageIconSource,
   shouldShowVideoIcon,
 } from './layout';
-import { NavActionsContainer } from './actions';
-import { Icon as BadgeIcon, Description, Title } from './elements';
 import NavSurfaceShell from './surface';
 import { resolveNavVisualStyle, shouldRenderInlineAction } from './utils';
-import {
-  NAV_CARD_SPRING,
-  NAV_FADE_TRANSITION,
-  NAV_BADGE_TRANSITION,
-  NAV_TAP_SCALE,
-  textCrossfadeVariants,
-} from '@/core/modules/nav/motion';
+
+// --- HELPER FUNCTIONS ---
 
 function resolveInlineActionNode(action) {
   if (React.isValidElement(action)) return action;
@@ -55,292 +55,7 @@ function useActionComponent(link, pathname) {
   }, [action, isLoading, isOverlay, path, pathname]);
 }
 
-const Item = memo(
-  forwardRef(function Item(
-    {
-      onContentHeightChange,
-      isStackHovered,
-      onMouseEnter,
-      onMouseLeave,
-      compact,
-      globalCompact,
-      expanded,
-      position,
-      onClick,
-      isTop,
-      link,
-      isActive,
-      stackWidth,
-      cardWidth: cardWidthProp,
-      containerHeight,
-    },
-
-    ref,
-  ) {
-    const [isHovered, setIsHovered] = useState(false);
-
-    const pathname = usePathname();
-    const router = useRouter();
-
-    const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
-    const ActionComponent = useActionComponent(link, pathname);
-
-    const cardContentRef = useRef(null);
-
-    const showBorder = expanded ? isHovered : isHovered || isStackHovered;
-    const cardWidth = cardWidthProp || (compact
-      ? estimateCompactCardWidth(link.title || link.name, stackWidth)
-      : stackWidth);
-
-    const itemStyle = useMemo(() => {
-      return resolveNavVisualStyle(link.style, {
-        isActive,
-        isHovered: showBorder,
-      });
-    }, [link.style, isActive, showBorder]);
-
-    const actionNode = ActionComponent;
-    const renderedActionNode = link.isSurface ? null : actionNode;
-
-    useElementHeight(
-      onContentHeightChange,
-      cardContentRef,
-      isTop,
-      getRouteMeasurementKey(
-        pathname,
-        getItemMeasurementKey({
-          link,
-          expanded,
-          isHovered,
-          isStackHovered,
-          compact,
-        }),
-      ),
-    );
-
-    const handleMouseEnter = () => {
-      if (link.isOverlay) return;
-
-      setIsHovered(true);
-
-      if (link.path) {
-        router.prefetch(link.path);
-      }
-
-      if (!expanded) {
-        onMouseEnter?.();
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (link.isOverlay) return;
-
-      setIsHovered(false);
-
-      if (!expanded) {
-        onMouseLeave?.();
-      }
-    };
-
-    const handleFocus = () => {
-      if (link.isOverlay) return;
-
-      setIsHovered(true);
-      onMouseEnter?.();
-    };
-
-    const handleBlur = () => {
-      if (link.isOverlay) return;
-
-      setIsHovered(false);
-      onMouseLeave?.();
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.target !== event.currentTarget) {
-        return;
-      }
-
-      if (event.key !== 'Enter' && event.key !== ' ') {
-        return;
-      }
-
-      event.preventDefault();
-      onClick?.(event);
-    };
-
-    const renderContent = () => {
-      if (link.isLoading) {
-        return <LoadingItemContent />;
-      }
-
-      if (link.isSurface) {
-        return <SurfaceItemContent link={link} />;
-      }
-
-      return (
-        <StandardItemContent
-          link={link}
-          compact={compact}
-          isTop={isTop}
-          expanded={expanded}
-          isHovered={isHovered}
-          isStackHovered={isStackHovered}
-          itemStyle={itemStyle}
-          badge={badge}
-          isActive={isActive}
-          footerNode={null}
-          footerRef={null}
-        />
-      );
-    };
-
-    
-    
-    
-    const prevExpandedRef = useRef(expanded);
-    const [isExpandingOrCollapsing, setIsExpandingOrCollapsing] = useState(false);
-
-    useEffect(() => {
-      if (prevExpandedRef.current !== expanded) {
-        prevExpandedRef.current = expanded;
-        setIsExpandingOrCollapsing(true);
-        const timer = setTimeout(() => {
-          setIsExpandingOrCollapsing(false);
-        }, 550);
-        return () => clearTimeout(timer);
-      }
-    }, [expanded]);
-
-    const {
-      className: cardClassName,
-      style: cardStyle,
-      motionValues,
-    } = getNavItemCardProps({
-      expanded,
-      position,
-      showBorder,
-      cardStyle: itemStyle.card,
-      cardScale: itemStyle.scale,
-      cardWidth,
-      containerHeight,
-      isAnchoredToBottom: link.isSurface,
-      globalCompact,
-      compact,
-      pathname,
-      isHovered,
-      isStackHovered,
-      visibleCount: (globalCompact && !isStackHovered) || link.isStatus ? 1 : 3,
-    });
-
-    return (
-      <motion.div
-        ref={ref}
-        className={cardClassName}
-        style={{
-          ...cardStyle,
-          willChange: 'transform, filter, opacity',
-        }}
-        initial={false}
-        animate={{
-          ...(motionValues.width !== undefined ? { width: motionValues.width } : {}),
-          y: motionValues.y,
-          scale: isStackHovered && position > 0
-            ? [motionValues.scale, motionValues.scale * 1.05, motionValues.scale * 0.98, motionValues.scale]
-            : motionValues.scale,
-          opacity: motionValues.opacity,
-          filter: isExpandingOrCollapsing && position > 0
-            ? ['blur(14px) brightness(1.12)', 'blur(5px) brightness(1.04)', 'blur(0px) brightness(1)']
-            : isStackHovered && position > 0
-              ? ['brightness(1) blur(0px)', 'brightness(1.4) blur(4px)', 'brightness(1) blur(0px)']
-              : 'blur(0px) brightness(1)',
-        }}
-        transition={{
-          ...NAV_CARD_SPRING,
-          filter: isExpandingOrCollapsing && position > 0
-            ? { duration: 0.55, ease: [0.16, 1, 0.24, 1] }
-            : (isStackHovered && position > 0 ? {
-                duration: 0.5,
-                delay: 0.5 + (position - 1) * 0.1,
-                ease: 'easeInOut',
-              } : undefined),
-          scale: isStackHovered && position > 0 ? {
-            duration: 0.5,
-            delay: 0.5 + (position - 1) * 0.1,
-            ease: 'easeInOut',
-          } : undefined,
-        }}
-        role="button"
-        tabIndex={link.isOverlay ? -1 : 0}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={onClick}
-      >
-        
-        <AnimatePresence mode="wait">
-          {compact && (
-            <motion.div
-              key="compact-title-overlay"
-              variants={textCrossfadeVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={NAV_FADE_TRANSITION}
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
-            >
-              <div className="min-w-0">
-                <Title
-                  text={link.title || link.name}
-                  style={{
-                    ...itemStyle.title,
-                    className: cn(
-                      'tracking-tight normal-case text-center',
-                      itemStyle.title?.className,
-                      'text-[14px]',
-                    ),
-                    textTransform: 'none',
-                  }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <motion.div
-          ref={cardContentRef}
-          className="flow-root w-full"
-          animate={{ opacity: compact ? 0 : 1 }}
-          transition={NAV_FADE_TRANSITION}
-          style={{ pointerEvents: compact ? 'none' : 'auto', overflow: compact ? 'hidden' : 'visible' }}
-        >
-          {renderContent()}
-
-          
-        <AnimatePresence mode="popLayout">
-            {renderedActionNode ? (
-              <motion.div
-                key="nav-action-component"
-                variants={textCrossfadeVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={NAV_FADE_TRANSITION}
-                className="flow-root overflow-visible"
-                style={{ overflow: 'visible' }}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Suspense>{renderedActionNode}</Suspense>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </motion.div>
-      </motion.div>
-    );
-  }),
-);
+// --- SUB COMPONENTS ---
 
 function VideoOverlayIcon({ icon }) {
   const isImageIcon = isImageIconSource(icon);
@@ -368,9 +83,7 @@ function Badge({ badge }) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.6 }}
           transition={NAV_BADGE_TRANSITION}
-          className={cn(
-            'center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring',
-          )}
+          className="center ring-info text-info absolute -top-0.5 -right-0.5 h-4.5 min-w-4.5 px-1.5 py-0.5 text-[11px] font-semibold ring"
         >
           {badge.value}
         </motion.div>
@@ -379,8 +92,49 @@ function Badge({ badge }) {
   );
 }
 
+function LoadingItemContent() {
+  return (
+    <div>
+      <Skeleton />
+    </div>
+  );
+}
+
+function SurfaceItemContent({ link }) {
+  const SurfaceComponent = link.surfaceComponent;
+  const surfaceContent = link.surfaceContent;
+  const icon = link.surfaceIcon ?? link.icon ?? null;
+  const title = link.surfaceTitle ?? link.title ?? link.name ?? '';
+  const description = link.surfaceDescription ?? link.description ?? '';
+  const trailing = link.surfaceTrailing ?? link.trailing ?? null;
+  const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
+  const onClose = link.dismissible === false ? null : link.closeSurface || link.onClose;
+
+  return (
+    <div className="relative w-full overflow-visible" onClick={(event) => event.stopPropagation()}>
+      <div className="w-full">
+        <NavSurfaceShell
+          icon={icon}
+          title={title}
+          description={description}
+          trailing={trailing}
+          onClose={onClose}
+          closeLabel={closeLabel}
+          descriptionMaxLines={2}
+          contentClassName="w-full"
+        >
+          {typeof SurfaceComponent === 'function' ? (
+            <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
+          ) : (
+            surfaceContent
+          )}
+        </NavSurfaceShell>
+      </div>
+    </div>
+  );
+}
+
 function StandardItemContent({
-  compact,
   link,
   isTop,
   expanded,
@@ -435,6 +189,7 @@ function StandardItemContent({
           )}
           <Badge badge={badge} />
         </div>
+
         <div className="relative flex w-full flex-1 items-center justify-between gap-2 overflow-hidden">
           <div className="flex h-full min-w-0 flex-1 flex-col justify-center -space-y-0.5">
             <div className="flex items-center gap-1.5">
@@ -461,46 +216,273 @@ function StandardItemContent({
   );
 }
 
-function SurfaceItemContent({ link }) {
-  const SurfaceComponent = link.surfaceComponent;
-  const surfaceContent = link.surfaceContent;
-  const icon = link.surfaceIcon ?? link.icon ?? null;
-  const title = link.surfaceTitle ?? link.title ?? link.name ?? '';
-  const description = link.surfaceDescription ?? link.description ?? '';
-  const trailing = link.surfaceTrailing ?? link.trailing ?? null;
-  const closeLabel = link.surfaceCloseLabel ?? link.closeLabel ?? 'Close surface';
-  const onClose = link.dismissible === false ? null : link.closeSurface || link.onClose;
+// --- MAIN ITEM COMPONENT ---
 
-  return (
-    <div className="relative w-full overflow-visible" onClick={(event) => event.stopPropagation()}>
-      <div className="w-full">
-        <NavSurfaceShell
-          icon={icon}
-          title={title}
-          description={description}
-          trailing={trailing}
-          onClose={onClose}
-          closeLabel={closeLabel}
-          descriptionMaxLines={2}
-          contentClassName="w-full"
-        >
-          {typeof SurfaceComponent === 'function' ? (
-            <SurfaceComponent close={link.closeSurface} {...link.surfaceProps} />
-          ) : (
-            surfaceContent
+const Item = memo(
+  forwardRef(function Item(
+    {
+      onContentHeightChange,
+      isStackHovered,
+      onMouseEnter,
+      onMouseLeave,
+      compact,
+      globalCompact,
+      expanded,
+      position,
+      onClick,
+      isTop,
+      link,
+      isActive,
+      stackWidth,
+      cardWidth: cardWidthProp,
+      containerHeight,
+    },
+    ref,
+  ) {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isExpandingOrCollapsing, setIsExpandingOrCollapsing] = useState(false);
+
+    const pathname = usePathname();
+    const router = useRouter();
+
+    const badge = useNavBadge(link.name?.toLowerCase(), link.badge);
+    const ActionComponent = useActionComponent(link, pathname);
+
+    const cardContentRef = useRef(null);
+    const prevExpandedRef = useRef(expanded);
+
+    const showBorder = expanded ? isHovered : isHovered || isStackHovered;
+    const cardWidth =
+      cardWidthProp ||
+      (compact ? estimateCompactCardWidth(link.title || link.name, stackWidth) : stackWidth);
+
+    const itemStyle = useMemo(
+      () => resolveNavVisualStyle(link.style, { isActive, isHovered: showBorder }),
+      [link.style, isActive, showBorder],
+    );
+
+    const renderedActionNode = link.isSurface ? null : ActionComponent;
+
+    useElementHeight(
+      onContentHeightChange,
+      cardContentRef,
+      isTop,
+      getRouteMeasurementKey(
+        pathname,
+        getItemMeasurementKey({ link, expanded, isHovered, isStackHovered, compact }),
+      ),
+    );
+
+    useEffect(() => {
+      if (prevExpandedRef.current !== expanded) {
+        prevExpandedRef.current = expanded;
+        setIsExpandingOrCollapsing(true);
+        const timer = setTimeout(() => setIsExpandingOrCollapsing(false), 550);
+        return () => clearTimeout(timer);
+      }
+    }, [expanded]);
+
+    const handleMouseEnter = () => {
+      if (link.isOverlay) return;
+      setIsHovered(true);
+
+      if (link.path) router.prefetch(link.path);
+      if (!expanded) onMouseEnter?.();
+    };
+
+    const handleMouseLeave = () => {
+      if (link.isOverlay) return;
+      setIsHovered(false);
+      if (!expanded) onMouseLeave?.();
+    };
+
+    const handleFocus = () => {
+      if (link.isOverlay) return;
+      setIsHovered(true);
+      onMouseEnter?.();
+    };
+
+    const handleBlur = () => {
+      if (link.isOverlay) return;
+      setIsHovered(false);
+      onMouseLeave?.();
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.target !== event.currentTarget) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+
+      event.preventDefault();
+      onClick?.(event);
+    };
+
+    const renderContent = () => {
+      if (link.isLoading) return <LoadingItemContent />;
+      if (link.isSurface) return <SurfaceItemContent link={link} />;
+
+      return (
+        <StandardItemContent
+          link={link}
+          compact={compact}
+          isTop={isTop}
+          expanded={expanded}
+          isHovered={isHovered}
+          isStackHovered={isStackHovered}
+          itemStyle={itemStyle}
+          badge={badge}
+          isActive={isActive}
+          footerNode={null}
+          footerRef={null}
+        />
+      );
+    };
+
+    const {
+      className: cardClassName,
+      style: cardStyle,
+      motionValues,
+    } = getNavItemCardProps({
+      expanded,
+      position,
+      showBorder,
+      cardStyle: itemStyle.card,
+      cardScale: itemStyle.scale,
+      cardWidth,
+      containerHeight,
+      isAnchoredToBottom: link.isSurface,
+      globalCompact,
+      compact,
+      pathname,
+      isHovered,
+      isStackHovered,
+      visibleCount: (globalCompact && !isStackHovered) || link.isStatus ? 1 : 3,
+    });
+
+    return (
+      <motion.div
+        ref={ref}
+        className={cardClassName}
+        style={{ ...cardStyle, willChange: 'transform, filter, opacity' }}
+        initial={false}
+        animate={{
+          ...(motionValues.width !== undefined ? { width: motionValues.width } : {}),
+          y: motionValues.y,
+          scale:
+            isStackHovered && position > 0
+              ? [
+                  motionValues.scale,
+                  motionValues.scale * 1.05,
+                  motionValues.scale * 0.98,
+                  motionValues.scale,
+                ]
+              : motionValues.scale,
+          opacity: motionValues.opacity,
+          filter:
+            isExpandingOrCollapsing && position > 0
+              ? [
+                  'blur(14px) brightness(1.12)',
+                  'blur(5px) brightness(1.04)',
+                  'blur(0px) brightness(1)',
+                ]
+              : isStackHovered && position > 0
+                ? [
+                    'brightness(1) blur(0px)',
+                    'brightness(1.4) blur(4px)',
+                    'brightness(1) blur(0px)',
+                  ]
+                : 'blur(0px) brightness(1)',
+        }}
+        transition={{
+          ...NAV_CARD_SPRING,
+          filter:
+            isExpandingOrCollapsing && position > 0
+              ? { duration: 0.55, ease: [0.16, 1, 0.24, 1] }
+              : isStackHovered && position > 0
+                ? {
+                    duration: 0.5,
+                    delay: 0.5 + (position - 1) * 0.1,
+                    ease: 'easeInOut',
+                  }
+                : undefined,
+          scale:
+            isStackHovered && position > 0
+              ? {
+                  duration: 0.5,
+                  delay: 0.5 + (position - 1) * 0.1,
+                  ease: 'easeInOut',
+                }
+              : undefined,
+        }}
+        role="button"
+        tabIndex={link.isOverlay ? -1 : 0}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={onClick}
+      >
+        <AnimatePresence mode="wait">
+          {compact && (
+            <motion.div
+              key="compact-title-overlay"
+              variants={textCrossfadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={NAV_FADE_TRANSITION}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
+            >
+              <div className="min-w-0">
+                <Title
+                  text={link.title || link.name}
+                  style={{
+                    ...itemStyle.title,
+                    className: cn(
+                      'tracking-tight normal-case text-center text-[14px]',
+                      itemStyle.title?.className,
+                    ),
+                    textTransform: 'none',
+                  }}
+                />
+              </div>
+            </motion.div>
           )}
-        </NavSurfaceShell>
-      </div>
-    </div>
-  );
-}
+        </AnimatePresence>
 
-function LoadingItemContent() {
-  return (
-    <div>
-      <Skeleton />
-    </div>
-  );
-}
+        <motion.div
+          ref={cardContentRef}
+          className="flow-root w-full"
+          animate={{ opacity: compact ? 0 : 1 }}
+          transition={NAV_FADE_TRANSITION}
+          style={{
+            pointerEvents: compact ? 'none' : 'auto',
+            overflow: compact ? 'hidden' : 'visible',
+          }}
+        >
+          {renderContent()}
+
+          <AnimatePresence mode="popLayout">
+            {renderedActionNode && (
+              <motion.div
+                key="nav-action-component"
+                variants={textCrossfadeVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={NAV_FADE_TRANSITION}
+                className="flow-root overflow-visible"
+                style={{ overflow: 'visible' }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Suspense>{renderedActionNode}</Suspense>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
+    );
+  }),
+);
 
 export default Item;

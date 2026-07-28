@@ -6,17 +6,17 @@ import {
   isRegistryType,
 } from './constants';
 
-const SOURCE_PRIORITY = {
+const SOURCE_PRIORITY = Object.freeze({
   static: 100,
   dynamic: 200,
   user: 300,
-};
+});
 
-const SOURCE_RANK = {
+const SOURCE_RANK = Object.freeze({
   static: 10,
   dynamic: 20,
   user: 30,
-};
+});
 
 export function createInitialRegistries() {
   return {
@@ -32,10 +32,7 @@ export function createInitialRegistries() {
 
 function shallowEqual(a, b) {
   if (Object.is(a, b)) return true;
-
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
-    return false;
-  }
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
 
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
@@ -60,14 +57,9 @@ function hasOwnProperty(target, key) {
 }
 
 function resolveInstanceId(value) {
-  if (!isObject(value)) {
-    return null;
-  }
-
-  if (typeof value.instanceId === 'string') {
+  if (isObject(value) && typeof value.instanceId === 'string') {
     return value.instanceId;
   }
-
   return null;
 }
 
@@ -102,17 +94,10 @@ function resolveUnregisterInput(sourceOrOptions) {
     return { instanceId: null, source: sourceOrOptions };
   }
 
-  if (isObject(sourceOrOptions) && typeof sourceOrOptions.source === 'string') {
-    return {
-      instanceId: resolveInstanceId(sourceOrOptions),
-      source: sourceOrOptions.source,
-    };
-  }
-
   if (isObject(sourceOrOptions)) {
     return {
       instanceId: resolveInstanceId(sourceOrOptions),
-      source: DEFAULT_SOURCE,
+      source: typeof sourceOrOptions.source === 'string' ? sourceOrOptions.source : DEFAULT_SOURCE,
     };
   }
 
@@ -163,37 +148,23 @@ function resolveRecordPriority(options, source) {
 
 export function summarizeHistoryValue(value) {
   if (Array.isArray(value)) {
-    return {
-      kind: 'array',
-      size: value.length,
-    };
+    return { kind: 'array', size: value.length };
   }
 
   if (isObject(value)) {
     const keys = Object.keys(value);
-    return {
-      kind: 'object',
-      keys: keys.slice(0, 8),
-      size: keys.length,
-    };
+    return { kind: 'object', keys: keys.slice(0, 8), size: keys.length };
   }
 
   if (typeof value === 'string') {
-    return {
-      kind: 'string',
-      size: value.length,
-      value: value.slice(0, 120),
-    };
+    return { kind: 'string', size: value.length, value: value.slice(0, 120) };
   }
 
   if (typeof value === 'function') {
     return { kind: 'function' };
   }
 
-  return {
-    kind: typeof value,
-    value,
-  };
+  return { kind: typeof value, value };
 }
 
 export function toSourceRecord(rawRecord, source = DEFAULT_SOURCE) {
@@ -296,14 +267,15 @@ export function removeSourceRecord(state, type, key, source, instanceId = null) 
     return state;
   }
 
-  const records = typeof instanceId === 'string' && instanceId.length > 0
-    ? [
-        {
-          recordKey: createRecordKey(source, instanceId),
-          record: getSourceRecord(currentEntry, source, instanceId),
-        },
-      ]
-    : getSourceRecords(currentEntry, source);
+  const records =
+    typeof instanceId === 'string' && instanceId.length > 0
+      ? [
+          {
+            recordKey: createRecordKey(source, instanceId),
+            record: getSourceRecord(currentEntry, source, instanceId),
+          },
+        ]
+      : getSourceRecords(currentEntry, source);
   const activeRecords = records.filter(({ record }) => Boolean(record));
 
   if (activeRecords.length === 0) {
@@ -312,7 +284,7 @@ export function removeSourceRecord(state, type, key, source, instanceId = null) 
 
   const nextEntry = { ...currentEntry };
   activeRecords.forEach(({ recordKey }) => {
-    nextEntry[recordKey] = null;
+    delete nextEntry[recordKey];
   });
 
   if (!hasAnySourceRecord(nextEntry)) {

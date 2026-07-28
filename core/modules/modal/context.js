@@ -28,6 +28,7 @@ const FALLBACK_MODAL_STATE = Object.freeze({
 const FALLBACK_MODAL_ACTIONS = Object.freeze({
   openModal: async () => null,
   closeModal: () => {},
+  closeAllModals: () => {},
 });
 
 const ModalActionsContext = createContext(FALLBACK_MODAL_ACTIONS);
@@ -101,7 +102,7 @@ function finalizeModalClose(
       onClose(result);
     } catch (error) {
       if (logCloseErrors) {
-        console.error('Modal onClose handler failed:', error);
+        console.error('[Modal] onClose handler failed:', error);
       }
     }
   }
@@ -198,6 +199,7 @@ export function ModalProvider({ children }) {
     },
     [syncModalStack],
   );
+
   const closeAllModals = useCallback(
     (result = null) => {
       const currentStack = modalStackRef.current;
@@ -235,13 +237,11 @@ export function ModalProvider({ children }) {
 }
 
 export function useModalActions() {
-  const context = useContext(ModalActionsContext);
-  return context;
+  return useContext(ModalActionsContext);
 }
 
 export function useModalState() {
-  const context = useContext(ModalStateContext);
-  return context;
+  return useContext(ModalStateContext);
 }
 
 export function useModal() {

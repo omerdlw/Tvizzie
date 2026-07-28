@@ -87,7 +87,6 @@ export function useElementHeight(onHeightChange, elementRef, shouldMeasure, depe
       rafRef.current = requestAnimationFrame(flushPendingHeight);
     }
 
-    
     const initialMeasuredHeight = element.offsetHeight || 0;
     if (initialMeasuredHeight > 0) {
       publishHeight(initialMeasuredHeight);

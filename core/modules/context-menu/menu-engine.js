@@ -115,15 +115,9 @@ function isPathAllowed(config, registryKey, pathname) {
     }
   }
 
-  if (
-    registryKey === pathname ||
-    registryKey === CURRENT_PAGE_KEY ||
-    registryKey === GLOBAL_MENU_KEY
-  ) {
-    return true;
-  }
-
-  return false;
+  return (
+    registryKey === pathname || registryKey === CURRENT_PAGE_KEY || registryKey === GLOBAL_MENU_KEY
+  );
 }
 
 function isWhenAllowed(config, event, pathname, targetElement, context) {
@@ -226,7 +220,7 @@ function buildMenuContext(config, event, pathname, targetElement) {
         context.payload = resolvedPayload;
       }
     } catch {
-      
+      // payload çözümleme hatası yutulur
     }
   }
 
@@ -252,23 +246,16 @@ function normalizeMenuItem(item, index, context) {
     return null;
   }
 
-  if (item === 'separator') {
+  if (item === 'separator' || item.type === 'separator') {
     return {
-      key: `separator-${index}`,
+      ...item,
+      key: item.key || `separator-${index}`,
       type: 'separator',
     };
   }
 
   if (!isObject(item)) {
     return null;
-  }
-
-  if (item.type === 'separator') {
-    return {
-      ...item,
-      key: item.key || `separator-${index}`,
-      type: 'separator',
-    };
   }
 
   const hidden = resolveAsBoolean(item.hidden, context, false);

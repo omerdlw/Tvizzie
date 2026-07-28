@@ -33,13 +33,8 @@ export function useAuthorization(rules = {}) {
 export function AuthGate({ loadingFallback = null, fallback = null, children, ...rules }) {
   const { isAllowed, isPending } = useAuthorization(rules);
 
-  if (isPending) {
-    return loadingFallback;
-  }
-
-  if (!isAllowed) {
-    return fallback;
-  }
+  if (isPending) return loadingFallback;
+  if (!isAllowed) return fallback;
 
   return <>{children}</>;
 }

@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-
 import { globalEvents, EVENT_TYPES } from '@/core/constants/events';
-
 import { getErrorReporter } from './reporter';
 
 function isDevelopment() {
@@ -20,12 +18,12 @@ function getUserAgent() {
 
 function createErrorContext({ errorInfo, name, title, variant }) {
   return {
-    componentStack: errorInfo?.componentStack,
+    componentStack: errorInfo?.componentStack || null,
     route: getRuntimePath(),
     userAgent: getUserAgent(),
     timestamp: new Date().toISOString(),
-    name: name || title,
-    variant,
+    name: name || title || 'ErrorBoundary',
+    variant: variant || 'default',
     source: 'ErrorBoundary',
   };
 }
@@ -113,8 +111,25 @@ export class ErrorBoundaryCore extends React.Component {
       }
 
       return (
-        <div className="center bg-error/10 text-error h-screen w-screen">
-          <h1 className="text-9xl font-extrabold">ERROR</h1>
+        <div className="bg-error/5 border-error/10 flex min-h-[300px] w-full flex-col items-center justify-center rounded-2xl border p-6 text-center">
+          <div className="bg-error/10 text-error mb-4 flex size-12 items-center justify-center rounded-full text-xl font-bold">
+            !
+          </div>
+          <h3 className="text-foreground mb-1 text-lg font-semibold">
+            {this.props.title || 'An error occurred'}
+          </h3>
+          <p className="text-muted-foreground mb-4 max-w-md text-sm">
+            {this.props.message ||
+              this.state.error?.message ||
+              'Something went wrong while loading this component.'}
+          </p>
+          <button
+            type="button"
+            onClick={this.resetError}
+            className="bg-error hover:bg-error/90 rounded-lg px-4 py-2 text-xs font-medium text-white transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       );
     }

@@ -5,11 +5,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useMemo,
 } from 'react';
-
 import { usePathname } from 'next/navigation';
 
 import { useSurfaceStack } from './hooks/use-surface-stack';
@@ -26,40 +25,21 @@ export function NavigationProvider({ children }) {
 
   const previousPathRef = useRef(pathname);
 
-  const collapse = useCallback(() => {
-    setExpanded(false);
-  }, []);
-
-  const expand = useCallback(() => {
-    setExpanded(true);
-  }, []);
-
-  const toggle = useCallback(() => {
-    setExpanded((prev) => !prev);
-  }, []);
+  const collapse = useCallback(() => setExpanded(false), []);
+  const expand = useCallback(() => setExpanded(true), []);
+  const toggle = useCallback(() => setExpanded((prev) => !prev), []);
 
   const setCompactLock = useCallback((lockId, isLocked) => {
-    if (!lockId) {
-      return;
-    }
+    if (!lockId) return;
 
     setCompactLocks((previousLocks) => {
       const hasLock = Boolean(previousLocks[lockId]);
 
       if (isLocked) {
-        if (hasLock) {
-          return previousLocks;
-        }
-
-        return {
-          ...previousLocks,
-          [lockId]: true,
-        };
+        return hasLock ? previousLocks : { ...previousLocks, [lockId]: true };
       }
 
-      if (!hasLock) {
-        return previousLocks;
-      }
+      if (!hasLock) return previousLocks;
 
       const nextLocks = { ...previousLocks };
       delete nextLocks[lockId];
@@ -75,9 +55,7 @@ export function NavigationProvider({ children }) {
     });
 
   useEffect(() => {
-    if (previousPathRef.current === pathname) {
-      return;
-    }
+    if (previousPathRef.current === pathname) return;
 
     closeAllSurfaces({
       success: false,

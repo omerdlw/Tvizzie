@@ -1,21 +1,34 @@
 'use client';
 
 import { logAuthAuditEvent } from '@/core/auth/clients';
-import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 import { EVENT_TYPES } from '@/core/constants/events';
 import { resolvePrimaryProvider } from '@/core/auth/capabilities';
-import { normalizeOAuthProvider } from '@/core/auth/oauth-providers';
 
 import { AUTH_STATUS } from './config';
 import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';
 
 const LOCAL_PURGE_SIGN_OUT_REASONS = new Set([
-  'delete-account', 'email-change', 'password-change', 'password-reset', 'password-set',
+  'delete-account',
+  'email-change',
+  'password-change',
+  'password-reset',
+  'password-set',
 ]);
+
 const IGNORABLE_SIGN_OUT_ERROR_PATTERNS = [
-  'authentication token has been revoked', 'failed to fetch', 'fetch failed', 'invalid jwt',
-  'invalid number of segments', 'invalid or expired authentication token', 'jwt expired',
-  'network request failed', 'request timed out', 'timeout', 'timed out', 'token is malformed',
+  'authentication token has been revoked',
+  'failed to fetch',
+  'fetch failed',
+  'invalid jwt',
+  'invalid number of segments',
+  'invalid or expired authentication token',
+  'jwt expired',
+  'network request failed',
+  'request timed out',
+  'timeout',
+  'timed out',
+  'token is malformed',
 ];
 
 function resolveAuthProvider(payload = {}, session = null) {
@@ -24,9 +37,18 @@ function resolveAuthProvider(payload = {}, session = null) {
   );
   if (provider) return provider;
 
-  const providerIds = Array.isArray(session?.metadata?.providerIds) ? session.metadata.providerIds : [];
-  const sessionProvider = String(session?.provider || '').trim().toLowerCase();
-  return normalizeOAuthProvider(sessionProvider) || sessionProvider || resolvePrimaryProvider(providerIds) || 'password';
+  const providerIds = Array.isArray(session?.metadata?.providerIds)
+    ? session.metadata.providerIds
+    : [];
+  const sessionProvider = String(session?.provider || '')
+    .trim()
+    .toLowerCase();
+  return (
+    normalizeOAuthProvider(sessionProvider) ||
+    sessionProvider ||
+    resolvePrimaryProvider(providerIds) ||
+    'password'
+  );
 }
 
 function resolveSignInIdentifier(payload = {}) {
@@ -38,8 +60,39 @@ function isPendingSignInResult(value) {
 }
 
 function isIgnorableSignOutError(error) {
-  const message = String(error?.message || '').trim().toLowerCase();
-  return Boolean(message) && IGNORABLE_SIGN_OUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
+  const message = String(error?.message || '')
+    .trim()
+    .toLowerCase();
+  return (
+    Boolean(message) &&
+    IGNORABLE_SIGN_OUT_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  );
+}
+
+// DRY Helper for auth mutations
+async function executeAuthMutation({
+  adapterMethod,
+  applySession,
+  emitSessionEvent,
+  eventName,
+  errorMessage,
+  setAuthError,
+  setLoadingState,
+  transformResponse,
+}) {
+  setLoadingState();
+  try {
+    const rawResult = await adapterMethod();
+    const resolvedSession = applySession(
+      transformResponse ? transformResponse(rawResult) : rawResult,
+    );
+    if (eventName) {
+      emitSessionEvent(eventName, resolvedSession);
+    }
+    return resolvedSession;
+  } catch (error) {
+    throw setAuthError(error, errorMessage);
+  }
 }
 
 export async function runAuthSignIn({
@@ -218,25 +271,16 @@ export async function runAuthInitialize({
   }
 }
 
-export async function runAuthSignUp({
-  adapter,
-  applySession,
-  emitSessionEvent,
-  getAdapterContext,
-  payload,
-  setAuthError,
-  setLoadingState,
-}) {
-  setLoadingState();
-
-  try {
-    const session = applySession(await adapter.signUp(payload, getAdapterContext()));
-
-    emitSessionEvent(EVENT_TYPES.AUTH_SIGN_UP, session);
-    return session;
-  } catch (error) {
-    throw setAuthError(error, 'Sign up failed');
-  }
+export async function runAuthSignUp(params) {
+  return executeAuthMutation({
+    adapterMethod: () => params.adapter.signUp(params.payload, params.getAdapterContext()),
+    applySession: params.applySession,
+    emitSessionEvent: params.emitSessionEvent,
+    eventName: EVENT_TYPES.AUTH_SIGN_UP,
+    errorMessage: 'Sign up failed',
+    setAuthError: params.setAuthError,
+    setLoadingState: params.setLoadingState,
+  });
 }
 
 export async function runAuthSignOut({
@@ -292,52 +336,33 @@ export async function runAuthSignOut({
   return true;
 }
 
-export async function runAuthUpdateProfile({
-  adapter,
-  applySession,
-  currentSession,
-  emitSessionEvent,
-  getAdapterContext,
-  payload,
-  setAuthError,
-  setLoadingState,
-}) {
-  setLoadingState();
+export async function runAuthUpdateProfile(params) {
+  const session = await executeAuthMutation({
+    adapterMethod: () => params.adapter.updateProfile(params.payload, params.getAdapterContext()),
+    applySession: params.applySession,
+    emitSessionEvent: params.emitSessionEvent,
+    eventName: EVENT_TYPES.AUTH_UPDATE,
+    errorMessage: 'Profile update failed',
+    setAuthError: params.setAuthError,
+    setLoadingState: params.setLoadingState,
+    transformResponse: (response) =>
+      normalizeSession(response) || mergeUserIntoSession(params.currentSession, response),
+  });
 
-  try {
-    const response = await adapter.updateProfile(payload, getAdapterContext());
-    const session = applySession(
-      normalizeSession(response) || mergeUserIntoSession(currentSession, response),
-    );
-
-    emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, session);
-    return session?.user || null;
-  } catch (error) {
-    throw setAuthError(error, 'Profile update failed');
-  }
+  return session?.user || null;
 }
 
-export async function runAuthReauthenticate({
-  adapter,
-  applySession,
-  emitSessionEvent,
-  getAdapterContext,
-  payload,
-  setAuthError,
-  setLoadingState,
-}) {
-  setLoadingState();
-
-  try {
-    const session = applySession(await adapter.reauthenticate(payload, getAdapterContext()));
-
-    emitSessionEvent(EVENT_TYPES.AUTH_UPDATE, session, {
-      action: 'reauthenticate',
-    });
-    return session;
-  } catch (error) {
-    throw setAuthError(error, 'Reauthentication failed');
-  }
+export async function runAuthReauthenticate(params) {
+  return executeAuthMutation({
+    adapterMethod: () => params.adapter.reauthenticate(params.payload, params.getAdapterContext()),
+    applySession: params.applySession,
+    emitSessionEvent: (evt, sess) =>
+      params.emitSessionEvent(evt, sess, { action: 'reauthenticate' }),
+    eventName: EVENT_TYPES.AUTH_UPDATE,
+    errorMessage: 'Reauthentication failed',
+    setAuthError: params.setAuthError,
+    setLoadingState: params.setLoadingState,
+  });
 }
 
 export async function runAuthProviderMutation({

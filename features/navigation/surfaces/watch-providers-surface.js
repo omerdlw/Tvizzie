@@ -118,9 +118,8 @@ export default function WatchProvidersSurface({ close, providers }) {
             {providerList.map((provider) => (
               <motion.div
                 key={`${provider.provider_id}-${provider.type}`}
-                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2.5 py-2 first:pt-0 last:pb-0 last:border-b-0 transition-colors duration-200 ease-out hover:bg-black/5 rounded-xl"
+                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2.5 py-2 first:pt-0 last:pb-0 last:border-b-0 transition-colors duration-200 ease-out"
                 variants={itemVariants}
-                whileHover={{ scale: 1.018, x: 2 }}
                 whileTap={{ scale: 0.985 }}
                 transition={{ type: 'spring', stiffness: 450, damping: 26 }}
                 style={{ willChange: 'transform, filter, opacity' }}

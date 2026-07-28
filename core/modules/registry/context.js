@@ -390,7 +390,9 @@ export function RegistryProvider({ children, enableHistory = true }) {
     <RegistryActionsContext.Provider value={actionsValue}>
       <RegistryHistoryContext.Provider value={historyValue}>
         <RegistrySubscriptionContext.Provider value={subscriptionValue}>
-          <RegistryStateContext.Provider value={stateValue}>{children}</RegistryStateContext.Provider>
+          <RegistryStateContext.Provider value={stateValue}>
+            {children}
+          </RegistryStateContext.Provider>
         </RegistrySubscriptionContext.Provider>
       </RegistryHistoryContext.Provider>
     </RegistryActionsContext.Provider>

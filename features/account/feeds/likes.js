@@ -191,30 +191,32 @@ export default function AccountLikesFeed({
             ) : null
           }
           toolbar={
-            <AccountMediaFilterBar
-              filters={viewState.media}
-              decadeOptions={decadeOptions}
-              genreOptions={genreOptions}
-              visibilityOptions={LIKES_VISIBILITY_OPTIONS}
-              onChange={(media) =>
-                updateView({
-                  media: {
-                    ...viewState.media,
-                    ...media,
-                  },
-                  page: 1,
-                })
-              }
-              onReset={
-                (likes.length > 0 && hasMediaFilters) || hasMediaFilters
-                  ? () =>
-                      updateView({
-                        media: getDefaultFilters().media,
-                        page: 1,
-                      })
-                  : null
-              }
-            />
+            likes.length > 0 || hasMediaFilters ? (
+              <AccountMediaFilterBar
+                filters={viewState.media}
+                decadeOptions={decadeOptions}
+                genreOptions={genreOptions}
+                visibilityOptions={LIKES_VISIBILITY_OPTIONS}
+                onChange={(media) =>
+                  updateView({
+                    media: {
+                      ...viewState.media,
+                      ...media,
+                    },
+                    page: 1,
+                  })
+                }
+                onReset={
+                  hasMediaFilters
+                    ? () =>
+                        updateView({
+                          media: getDefaultFilters().media,
+                          page: 1,
+                        })
+                    : null
+                }
+              />
+            ) : null
           }
           title="Titles"
         />

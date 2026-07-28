@@ -1,3 +1,5 @@
+'use client';
+
 import { normalizeEmailValue, normalizeValue } from '@/core/utils/string';
 import { resolveAuthCapabilities } from '@/core/auth/capabilities';
 import { createCsrfHeaders } from '@/core/auth/clients';
@@ -39,7 +41,6 @@ const IGNORABLE_LOGOUT_ERROR_PATTERNS = [
 
 function resolveProviderKey(payload = {}) {
   const provider = payload?.provider || payload?.strategy || payload?.authProvider || null;
-
   return normalizeValue(provider).toLowerCase();
 }
 
@@ -48,9 +49,7 @@ function resolveNextPath(payload = {}) {
 }
 
 function createRedirectResult() {
-  return {
-    requiresRedirect: true,
-  };
+  return { requiresRedirect: true };
 }
 
 function isManualLinkingDisabledError(error) {
@@ -59,9 +58,7 @@ function isManualLinkingDisabledError(error) {
   ).toLowerCase();
   const code = normalizeValue(error?.code || error?.error_code).toLowerCase();
 
-  if (!message && !code) {
-    return false;
-  }
+  if (!message && !code) return false;
 
   return (
     message.includes('manual linking is disabled') ||
@@ -87,7 +84,6 @@ function toAdapterError(error, fallbackMessage) {
   );
 
   const normalized = new Error(message || fallbackMessage || 'Supabase auth failed');
-
   normalized.name = error?.name || 'SupabaseAuthError';
   normalized.code = normalizeValue(error?.code || error?.error_code) || null;
   normalized.status = Number(error?.status) || 0;
@@ -100,10 +96,7 @@ function normalizeAuthCapabilityState(value = {}, email = null) {
   const providerIds = Array.isArray(value?.providerIds) ? value.providerIds : [];
 
   return {
-    ...resolveAuthCapabilities({
-      providerIds,
-      email,
-    }),
+    ...resolveAuthCapabilities({ providerIds, email }),
     ...(value && typeof value === 'object' ? value : {}),
   };
 }
@@ -119,6 +112,7 @@ function normalizeSessionFromApi(payload = {}) {
     payload?.capabilities,
     payload?.user?.email || null,
   );
+
   const metadata = {
     ...(payload?.user?.metadata || {}),
     authCapabilities: capabilities,
@@ -136,10 +130,6 @@ function normalizeSessionFromApi(payload = {}) {
   };
 }
 
-function clearCanonicalSessionCache() {
-  clearCanonicalSessionPayloadCache();
-}
-
 async function fetchCanonicalSession({ force = false } = {}) {
   try {
     const payload = await fetchCanonicalSessionPayload({ force });
@@ -153,10 +143,6 @@ function getClient(providedClient = null) {
   return providedClient || createSupabaseClient();
 }
 
-async function readAuthJson(response, fallbackError) {
-  return response.json().catch(() => ({ error: fallbackError }));
-}
-
 async function fetchAppAuthJson(path, { body, fallbackError, headers = {} } = {}) {
   const response = await fetch(path, {
     method: 'POST',
@@ -167,7 +153,8 @@ async function fetchAppAuthJson(path, { body, fallbackError, headers = {} } = {}
     },
     body: JSON.stringify(body || {}),
   });
-  const result = await readAuthJson(response, fallbackError);
+
+  const result = await response.json().catch(() => ({ error: fallbackError }));
 
   if (!response.ok) {
     throw toAdapterError(result, fallbackError);
@@ -218,13 +205,10 @@ export function createSupabaseAuthAdapter(options = {}) {
       origin: window.location.origin,
       provider,
     });
+
     const redirectTo =
       typeof getOAuthRedirectUrl === 'function'
-        ? getOAuthRedirectUrl({
-            intent: oauthIntent,
-            nextPath,
-            provider,
-          }) ||
+        ? getOAuthRedirectUrl({ intent: oauthIntent, nextPath, provider }) ||
           callbackRedirect ||
           fallbackRedirect
         : callbackRedirect || fallbackRedirect;
@@ -263,7 +247,7 @@ export function createSupabaseAuthAdapter(options = {}) {
     },
 
     async refreshSession() {
-      clearCanonicalSessionCache();
+      clearCanonicalSessionPayloadCache();
       return fetchCanonicalSession({ force: true });
     },
 
@@ -283,12 +267,12 @@ export function createSupabaseAuthAdapter(options = {}) {
         },
       });
 
+      clearCanonicalSessionPayloadCache();
+
       if (result?.requiresVerification) {
-        clearCanonicalSessionCache();
         return result;
       }
 
-      clearCanonicalSessionCache();
       return fetchCanonicalSession({ force: true });
     },
 
@@ -304,9 +288,7 @@ export function createSupabaseAuthAdapter(options = {}) {
       );
     },
 
-    async signOut(adapterContext = {}, options = {}) {
-      void adapterContext;
-
+    async signOut(_context = {}, options = {}) {
       const mode = normalizeValue(options?.mode).toLowerCase();
 
       if (mode === 'local-purge') {
@@ -315,7 +297,7 @@ export function createSupabaseAuthAdapter(options = {}) {
           performNetworkSignOut: false,
         });
 
-        clearCanonicalSessionCache();
+        clearCanonicalSessionPayloadCache();
         return null;
       }
 
@@ -327,14 +309,14 @@ export function createSupabaseAuthAdapter(options = {}) {
         });
       } catch (error) {
         if (isIgnorableLogoutError(error)) {
-          clearCanonicalSessionCache();
+          clearCanonicalSessionPayloadCache();
           return null;
         }
 
         throw toAdapterError(error, 'Sign out failed');
       }
 
-      clearCanonicalSessionCache();
+      clearCanonicalSessionPayloadCache();
       return null;
     },
 
@@ -349,25 +331,21 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Profile update failed');
       }
 
-      clearCanonicalSessionCache();
+      clearCanonicalSessionPayloadCache();
       return fetchCanonicalSession({ force: true });
     },
 
     async reauthenticate(payload = {}, adapterContext = {}) {
-      void adapterContext;
-
       await fetchAppAuthJson('/api/auth/account', {
         fallbackError: 'Reauthentication failed',
-        headers: {
-          ...createCsrfHeaders(),
-        },
+        headers: createCsrfHeaders(),
         body: {
           action: 'reauthenticate',
           currentPassword: String(payload.password || ''),
         },
       });
 
-      clearCanonicalSessionCache();
+      clearCanonicalSessionPayloadCache();
       const nextSession = await fetchCanonicalSession({ force: true });
 
       return nextSession || adapterContext?.session || null;
@@ -397,9 +375,7 @@ export function createSupabaseAuthAdapter(options = {}) {
       throw error;
     },
 
-    async requestPasswordReset(payload = {}) {
-      void payload;
-
+    async requestPasswordReset() {
       throw new Error(
         'Password reset requests must be completed through the application email verification flow',
       );
@@ -415,7 +391,7 @@ export function createSupabaseAuthAdapter(options = {}) {
         throw toAdapterError(error, 'Password reset confirmation failed');
       }
 
-      clearCanonicalSessionCache();
+      clearCanonicalSessionPayloadCache();
       return fetchCanonicalSession({ force: true });
     },
 
@@ -426,21 +402,16 @@ export function createSupabaseAuthAdapter(options = {}) {
       } = client.auth.onAuthStateChange((event, session) => {
         if (!session) {
           if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-            clearCanonicalSessionCache();
+            clearCanonicalSessionPayloadCache();
             callback(null);
           }
-
           return;
         }
 
-        clearCanonicalSessionCache();
-        Promise.resolve(fetchCanonicalSession({ force: true }))
-          .then((nextSession) => {
-            callback(nextSession);
-          })
-          .catch(() => {
-            callback(null);
-          });
+        clearCanonicalSessionPayloadCache();
+        fetchCanonicalSession({ force: true })
+          .then((nextSession) => callback(nextSession))
+          .catch(() => callback(null));
       });
 
       return () => {

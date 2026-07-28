@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { NAV_CARD_LAYOUT, NAV_HEIGHT_BUFFER } from '../layout';
 import {
   getContainerHeight,
   getDistanceToBottom,
+  NAV_CARD_LAYOUT,
+  NAV_HEIGHT_BUFFER,
   NAV_SPACER_BOTTOM_LOCK_DISTANCE,
 } from '../layout';
 

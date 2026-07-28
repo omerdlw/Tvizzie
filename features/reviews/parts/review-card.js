@@ -179,7 +179,7 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
     ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-xl border border-black/10'
-    : 'relative size-14 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-primary/30 ';
+    : 'relative size-10 sm:size-12 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-primary/30';
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
@@ -190,7 +190,7 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
           src={src}
           alt={alt}
           fill
-          sizes={isAccountVariant ? '(max-width: 640px) 64px, 72px' : '56px'}
+          sizes={isAccountVariant ? '(max-width: 640px) 64px, 72px' : '48px'}
           quality={resolveImageQuality(isAccountVariant ? 'poster' : 'feature')}
           decoding="async"
           unoptimized={!canUseNextImageOptimization(src)}
@@ -313,7 +313,7 @@ export default function ReviewCard({
       onClick={handleCardClick}
       className={cn(
         'relative border-b border-black/10 last:border-b-0',
-        isAccountVariant ? 'py-4 sm:py-5' : 'py-4 sm:py-5',
+        isAccountVariant ? 'py-3.5 sm:py-4' : 'py-3.5 sm:py-4',
         isSpoilerHidden && 'cursor-pointer',
         className,
       )}
@@ -420,33 +420,52 @@ export default function ReviewCard({
               </>
             ) : (
               <>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-black/70 sm:text-sm">
-                      {hasRating && <RatingStars rating={resolvedRating} />}
-                      <span>{activityLabel}</span>
-                      <Link href={accountHref} className="font-semibold text-black">
-                        {displayName}
-                      </Link>
-                      <span>{formattedDate}</span>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:gap-1.5">
+                    {/* Mobile Header: Line 1: stars - date, Line 2: review by username */}
+                    <div className="flex flex-col gap-0.5 sm:hidden">
+                      <div className="flex items-center gap-1.5 text-xs text-black/50">
+                        {hasRating && <RatingStars rating={resolvedRating} />}
+                        {hasRating && <span className="text-black/30">-</span>}
+                        <span>{formattedDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-black/80">
+                        <span className="text-black/60">{activityLabel}</span>
+                        <Link href={accountHref} className="font-semibold text-black hover:underline">
+                          {displayName}
+                        </Link>
+                      </div>
                     </div>
 
+                    {/* Desktop Header: Single row - stars, activity + username, date */}
+                    <div className="hidden sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5 text-sm text-black/70">
+                      {hasRating && <RatingStars rating={resolvedRating} />}
+                      <span className="text-black/60">{activityLabel}</span>
+                      <Link href={accountHref} className="font-semibold text-black hover:underline">
+                        {displayName}
+                      </Link>
+                      <span className="text-black/30">•</span>
+                      <span className="text-xs text-black/50">{formattedDate}</span>
+                    </div>
+
+                    {/* Review Content */}
                     {hasText ? (
                       isSpoilerHidden ? (
                         <SpoilerNotice onReveal={revealSpoiler} />
                       ) : (
-                        <p className="mt-1 text-sm leading-[1.6] [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-base sm:leading-[1.65]">
+                        <p className="text-sm leading-normal text-black/80 [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-sm sm:leading-normal">
                           {review.content}
                         </p>
                       )
                     ) : (
-                      hasRating && <p className="mt-1 text-sm leading-6">- Rated without review</p>
+                      hasRating && <p className="text-xs text-black/50 sm:text-sm">- Rated without review</p>
                     )}
 
+                    {/* Subject link if applicable */}
                     {showSubject && subjectHref && review.subjectTitle && (
                       <Link
                         href={subjectHref}
-                        className="text-info mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase"
+                        className="text-info inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase hover:underline"
                       >
                         <Icon
                           icon={
@@ -468,6 +487,16 @@ export default function ReviewCard({
                         </span>
                       </Link>
                     )}
+
+                    {/* Like button */}
+                    {!isSpoilerHidden && (
+                      <ReviewLikeButton
+                        disabled={isLikeDisabled}
+                        hasLiked={hasLiked}
+                        likesCount={likesCount}
+                        onClick={onLike}
+                      />
+                    )}
                   </div>
 
                   {isOwnReview && (
@@ -478,15 +507,6 @@ export default function ReviewCard({
                     />
                   )}
                 </div>
-
-                {!isSpoilerHidden && (
-                  <ReviewLikeButton
-                    disabled={isLikeDisabled}
-                    hasLiked={hasLiked}
-                    likesCount={likesCount}
-                    onClick={onLike}
-                  />
-                )}
               </>
             )}
           </div>

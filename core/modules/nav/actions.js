@@ -1,25 +1,26 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useBackgroundActions, useBackgroundState } from '@/core/modules/background/context';
 import { useModal } from '@/core/modules/modal/context';
+import {
+  NAV_BADGE_TRANSITION,
+  NAV_BUTTON_TRANSITION,
+  NAV_STAGGER_DELAY,
+  NAV_STAGGER_TRANSITION,
+  NAV_TAP_SCALE,
+  staggerItemVariants,
+} from '@/core/modules/nav/motion';
 import { useToast } from '@/core/modules/notification/hooks';
 import { useNavRuntimeRegistry } from '@/core/modules/registry';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
-import {
-  NAV_STAGGER_DELAY,
-  NAV_STAGGER_TRANSITION,
-  NAV_FADE_TRANSITION,
-  NAV_BADGE_TRANSITION,
-  NAV_BUTTON_TRANSITION,
-  NAV_TAP_SCALE,
-  staggerItemVariants,
-} from '@/core/modules/nav/motion';
+
+// --- CONSTANTS ---
 
 export const NAV_ACTION_KEYS = Object.freeze({
   NOTIFICATIONS: 'notifications',
@@ -37,11 +38,19 @@ export const NAV_ACTION_ORDER = Object.freeze({
   LOGOUT: 30,
 });
 
+// --- HELPER FUNCTIONS ---
+
+function stopPropagation(event) {
+  event.stopPropagation();
+}
+
 function normalizeToolbarActions(actions) {
   if (!actions) return [];
-
   const actionList = Array.isArray(actions) ? actions : [actions];
-  return actionList.map((action, index) => ({ key: action.key || `action-${index}`, ...action }));
+  return actionList.map((action, index) => ({
+    key: action.key ?? `action-${index}`,
+    ...action,
+  }));
 }
 
 function getVisibleToolbarActions(actions) {
@@ -49,15 +58,15 @@ function getVisibleToolbarActions(actions) {
 }
 
 function sortToolbarActionsByOrder(actions) {
-  return [...actions].sort((a, b) => (b.order || 0) - (a.order || 0));
+  return [...actions].sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
 }
 
 function isActionlessNavItem(activeItem) {
-  return (
+  return Boolean(
     activeItem?.isNotFound ||
     activeItem?.path === 'not-found' ||
     activeItem?.isMasked ||
-    activeItem?.isSurface
+    activeItem?.isSurface,
   );
 }
 
@@ -74,9 +83,7 @@ function filterContextToolbarActions(actions, activeItem) {
   });
 }
 
-function stopPropagation(event) {
-  event.stopPropagation();
-}
+// --- CUSTOM HOOKS ---
 
 function useDefaultNavActions() {
   const router = useRouter();
@@ -86,12 +93,15 @@ function useDefaultNavActions() {
   const { isVideo, videoElement } = useBackgroundState();
   const { toggleMute } = useBackgroundActions();
   const { isAuthenticated, isReady, signOut, user } = useAuth();
-  const isAuthSessionReady = useAuthSessionReady(isAuthenticated ? user?.id || null : null);
+
+  const userId = isAuthenticated ? (user?.id ?? null) : null;
+  const isAuthSessionReady = useAuthSessionReady(userId);
   const [unreadCount, setUnreadCount] = useState(0);
+
   const isSignedIn = Boolean(isAuthenticated);
   const canOpenNotifications = Boolean(isAuthenticated && user?.id);
+  const isMuted = Boolean(videoElement?.muted);
 
-  const isMuted = !!videoElement?.muted;
   const unreadBadge = unreadCount > 0 ? (unreadCount > 99 ? '99+' : `${unreadCount}`) : null;
   const subscribeToUnreadCount = runtime?.integrations?.notifications?.subscribeToUnreadCount;
 
@@ -104,12 +114,10 @@ function useDefaultNavActions() {
       typeof subscribeToUnreadCount !== 'function'
     ) {
       setUnreadCount(0);
-      return undefined;
+      return;
     }
 
-    return subscribeToUnreadCount(user.id, (count) => {
-      setUnreadCount(count);
-    });
+    return subscribeToUnreadCount(user.id, setUnreadCount);
   }, [isAuthenticated, isAuthSessionReady, isReady, subscribeToUnreadCount, user?.id]);
 
   return useMemo(
@@ -124,9 +132,7 @@ function useDefaultNavActions() {
         onClick: (event) => {
           stopPropagation(event);
           openModal('NOTIFICATIONS_MODAL', 'left', {
-            data: {
-              userId: user?.id || null,
-            },
+            data: { userId: user?.id ?? null },
           });
         },
       },
@@ -213,7 +219,9 @@ export function useNavActions({ activeItem } = {}) {
   }, [activeItem, defaultActions]);
 }
 
-export function NavAction({ action }) {
+// --- COMPONENTS ---
+
+export const NavAction = memo(function NavAction({ action }) {
   return (
     <Tooltip className="px-2" text={action.tooltip}>
       <motion.button
@@ -225,26 +233,28 @@ export function NavAction({ action }) {
       >
         <Icon icon={action.icon} size={16} />
         <AnimatePresence mode="popLayout">
-          {action.badge ? (
+          {action.badge && (
             <motion.span
               key={action.badge}
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               transition={NAV_BADGE_TRANSITION}
-              className="center bg-info rounded-full absolute -top-1 -right-1 h-4 min-w-4 p-1 text-[11px] leading-none font-semibold text-white"
+              className="center bg-info absolute -top-1 -right-1 h-4 min-w-4 rounded-full p-1 text-[11px] leading-none font-semibold text-white"
             >
               {action.badge}
             </motion.span>
-          ) : null}
+          )}
         </AnimatePresence>
       </motion.button>
     </Tooltip>
   );
-}
+});
 
-export function NavActionsContainer({ activeItem }) {
+export const NavActionsContainer = memo(function NavActionsContainer({ activeItem }) {
   const actions = useNavActions({ activeItem });
+
+  if (!actions.length) return null;
 
   return (
     <div className="mr-2 flex shrink-0 items-center gap-1">
@@ -267,4 +277,4 @@ export function NavActionsContainer({ activeItem }) {
       </AnimatePresence>
     </div>
   );
-}
+});

@@ -6,10 +6,11 @@ const createEventEmitter = (eventType) => (data) =>
     type: eventType,
     ...data,
   });
+
 const createEventSubscriber = (eventType) => (callback) =>
   globalEvents.subscribe(eventType, callback);
 
-export const NAV_EVENTS = {
+export const NAV_EVENTS = Object.freeze({
   DATA_SOURCE_SELECT: 'NAV_DATA_SOURCE_SELECT',
   NAVIGATE_START: 'NAV_NAVIGATE_START',
   NAVIGATE_END: 'NAV_NAVIGATE_END',
@@ -23,15 +24,12 @@ export const NAV_EVENTS = {
   REGISTER: 'NAV_REGISTER',
   COLLAPSE: 'NAV_COLLAPSE',
   EXPAND: 'NAV_EXPAND',
-};
+});
 
-export const NAV_EVENT_HANDLERS = {
+export const NAV_EVENT_HANDLERS = Object.freeze({
+  // Emitters
   selectDataSource: (key, value, sourceType) =>
-    createEventEmitter(NAV_EVENTS.DATA_SOURCE_SELECT)({
-      sourceType,
-      value,
-      key,
-    }),
+    createEventEmitter(NAV_EVENTS.DATA_SOURCE_SELECT)({ sourceType, value, key }),
   itemHover: (item, index, isEntering) =>
     createEventEmitter(NAV_EVENTS.ITEM_HOVER)({ item, index, isEntering }),
   navigateEnd: (to, from, duration) =>
@@ -45,6 +43,10 @@ export const NAV_EVENT_HANDLERS = {
   unregister: (key, source) => createEventEmitter(NAV_EVENTS.UNREGISTER)({ key, source }),
   itemFocus: (item, index) => createEventEmitter(NAV_EVENTS.ITEM_FOCUS)({ item, index }),
   itemClick: (item, index) => createEventEmitter(NAV_EVENTS.ITEM_CLICK)({ item, index }),
+  collapse: createEventEmitter(NAV_EVENTS.COLLAPSE),
+  expand: createEventEmitter(NAV_EVENTS.EXPAND),
+
+  // Subscribers
   onDataSourceSelect: createEventSubscriber(NAV_EVENTS.DATA_SOURCE_SELECT),
   onNavigateStart: createEventSubscriber(NAV_EVENTS.NAVIGATE_START),
   onNavigateEnd: createEventSubscriber(NAV_EVENTS.NAVIGATE_END),
@@ -58,6 +60,4 @@ export const NAV_EVENT_HANDLERS = {
   onNavigate: createEventSubscriber(NAV_EVENTS.NAVIGATE),
   onCollapse: createEventSubscriber(NAV_EVENTS.COLLAPSE),
   onExpand: createEventSubscriber(NAV_EVENTS.EXPAND),
-  collapse: createEventEmitter(NAV_EVENTS.COLLAPSE),
-  expand: createEventEmitter(NAV_EVENTS.EXPAND),
-};
+});

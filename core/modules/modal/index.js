@@ -64,8 +64,13 @@ function getFocusableElements(container) {
   return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR));
 }
 
-function trapFocus(event, elements) {
-  if (event.key !== 'Tab' || elements.length === 0) {
+function trapFocus(event, container) {
+  if (event.key !== 'Tab' || !container) {
+    return;
+  }
+
+  const elements = getFocusableElements(container);
+  if (elements.length === 0) {
     return;
   }
 
@@ -100,7 +105,7 @@ function isVerticalEdgePosition(position) {
 
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
-    <div className="center gap-1.5 border-t border-black/10 bg-white px-3 py-2 shrink-0">
+    <div className="center shrink-0 gap-1.5 border-t border-black/10 bg-white px-3 py-2">
       <button
         type="button"
         onClick={onSwitchToPrevious}
@@ -152,16 +157,15 @@ function ModalLayer({
   const titleId = `modal-title-${entry.id}`;
 
   const baseZIndex = Z_INDEX.MODAL + stackIndex * 2;
-  const backdropZIndex = baseZIndex;
   const modalZIndex = baseZIndex + 1;
   const positionVariants = getModalPositionVariants(activePosition);
 
   useEffect(() => {
     if (!isTopModal || !modalRef.current) return;
 
-    const elements = getFocusableElements(modalRef.current);
-    if (elements.length > 0) {
-      elements[0].focus();
+    const initialElements = getFocusableElements(modalRef.current);
+    if (initialElements.length > 0) {
+      initialElements[0].focus();
     }
 
     function handleKeyDown(event) {
@@ -169,7 +173,7 @@ function ModalLayer({
         closeModal(null, entry.id);
         return;
       }
-      trapFocus(event, elements);
+      trapFocus(event, modalRef.current);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -188,7 +192,7 @@ function ModalLayer({
       aria-labelledby={entry.title ? titleId : undefined}
       style={{ zIndex: baseZIndex }}
       className={cn(
-        'fixed inset-0 flex flex-col pointer-events-none',
+        'pointer-events-none fixed inset-0 flex flex-col',
         POSITION_CLASSES[activePosition] || POSITION_CLASSES[MODAL_POSITIONS.CENTER],
         activePosition === MODAL_POSITIONS.CENTER && !isMobileViewport && 'px-3',
       )}
@@ -210,7 +214,7 @@ function ModalLayer({
         )}
         style={{
           zIndex: modalZIndex,
-          willChange: 'transform, filter, opacity',
+          willChange: 'transform, opacity',
         }}
         onClick={(event) => event.stopPropagation()}
       >
@@ -278,7 +282,7 @@ function ModalLayer({
                   closeModal(null, topModal.id);
                 }
               }}
-              className="absolute inset-0 z-50 cursor-pointer pointer-events-auto bg-black/15 backdrop-blur-[1px] transition-all duration-200"
+              className="pointer-events-auto absolute inset-0 z-50 cursor-pointer bg-black/15 backdrop-blur-[1px] transition-all duration-200"
               aria-label="Close active top modal"
             />
           )}
@@ -323,7 +327,12 @@ export default function Modal() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
     window.dispatchEvent(
       new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
         detail: {
@@ -334,7 +343,7 @@ export default function Modal() {
     );
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
       window.dispatchEvent(
         new CustomEvent(SMOOTH_SCROLL_LOCK_EVENT, {
           detail: {
@@ -363,7 +372,7 @@ export default function Modal() {
             animate="visible"
             exit="exit"
             className="fixed inset-0 bg-white/40 backdrop-blur-md"
-            style={{ zIndex: Z_INDEX.MODAL, willChange: 'opacity, filter' }}
+            style={{ zIndex: Z_INDEX.MODAL, willChange: 'opacity' }}
             onClick={() => closeModal(null, topModalEntry.id)}
           />
         )}

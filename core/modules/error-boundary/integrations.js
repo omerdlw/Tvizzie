@@ -24,8 +24,10 @@ export function createConsoleHandler({ level = 'error', expanded = false } = {})
 }
 
 export function createSentryHandler(Sentry) {
-  if (!Sentry) {
-    console.warn('[ErrorReporter] Missing Sentry SDK');
+  if (!Sentry || typeof Sentry.captureException !== 'function') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[ErrorReporter] Missing or invalid Sentry SDK instance');
+    }
     return createConsoleHandler();
   }
 
@@ -34,15 +36,23 @@ export function createSentryHandler(Sentry) {
 
     handle(report) {
       Sentry.withScope((scope) => {
-        scope.setFingerprint([report.fingerprint]);
-
-        if (report.user) scope.setUser(report.user);
-
-        if (report.tags) {
-          Object.entries(report.tags).forEach(([k, v]) => scope.setTag(k, v));
+        if (report.fingerprint) {
+          scope.setFingerprint([report.fingerprint]);
         }
 
-        scope.setContext('environment', report.environment);
+        if (report.user) {
+          scope.setUser(report.user);
+        }
+
+        if (report.tags && typeof report.tags === 'object') {
+          Object.entries(report.tags).forEach(([key, value]) => {
+            scope.setTag(key, String(value));
+          });
+        }
+
+        if (report.environment) {
+          scope.setContext('environment', report.environment);
+        }
 
         if (report.context) {
           scope.setContext('custom', report.context);
@@ -53,8 +63,8 @@ export function createSentryHandler(Sentry) {
         }
 
         const error = new Error(report.error.message);
-        error.name = report.error.name;
-        error.stack = report.error.stack;
+        error.name = report.error.name || 'Error';
+        error.stack = report.error.stack || undefined;
 
         Sentry.captureException(error);
       });

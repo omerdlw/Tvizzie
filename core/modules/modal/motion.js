@@ -60,7 +60,7 @@ export const MODAL_CENTER_VARIANTS = Object.freeze({
     opacity: 0,
     scale: 0.92,
     y: 16,
-    filter: 'blur(12px)',
+    filter: 'blur(8px)',
   },
   visible: {
     opacity: 1,
@@ -73,7 +73,7 @@ export const MODAL_CENTER_VARIANTS = Object.freeze({
     opacity: 0,
     scale: 0.95,
     y: 10,
-    filter: 'blur(8px)',
+    filter: 'blur(4px)',
     transition: {
       duration: 0.25,
       ease: MODAL_EASINGS.EXIT,
@@ -86,7 +86,7 @@ export const MODAL_BOTTOM_VARIANTS = Object.freeze({
     opacity: 0,
     y: '100%',
     scale: 0.98,
-    filter: 'blur(10px)',
+    filter: 'blur(6px)',
   },
   visible: {
     opacity: 1,
@@ -102,7 +102,7 @@ export const MODAL_BOTTOM_VARIANTS = Object.freeze({
     opacity: 0,
     y: '100%',
     scale: 0.98,
-    filter: 'blur(6px)',
+    filter: 'blur(4px)',
     transition: {
       duration: 0.3,
       ease: MODAL_EASINGS.EXIT,
@@ -115,7 +115,7 @@ export const MODAL_RIGHT_VARIANTS = Object.freeze({
     opacity: 0,
     x: '100%',
     scale: 0.98,
-    filter: 'blur(10px)',
+    filter: 'blur(6px)',
   },
   visible: {
     opacity: 1,
@@ -131,7 +131,7 @@ export const MODAL_RIGHT_VARIANTS = Object.freeze({
     opacity: 0,
     x: '100%',
     scale: 0.98,
-    filter: 'blur(6px)',
+    filter: 'blur(4px)',
     transition: {
       duration: 0.3,
       ease: MODAL_EASINGS.EXIT,
@@ -144,7 +144,7 @@ export const MODAL_LEFT_VARIANTS = Object.freeze({
     opacity: 0,
     x: '-100%',
     scale: 0.98,
-    filter: 'blur(10px)',
+    filter: 'blur(6px)',
   },
   visible: {
     opacity: 1,
@@ -160,7 +160,7 @@ export const MODAL_LEFT_VARIANTS = Object.freeze({
     opacity: 0,
     x: '-100%',
     scale: 0.98,
-    filter: 'blur(6px)',
+    filter: 'blur(4px)',
     transition: {
       duration: 0.3,
       ease: MODAL_EASINGS.EXIT,
@@ -173,7 +173,7 @@ export const MODAL_TOP_VARIANTS = Object.freeze({
     opacity: 0,
     y: '-100%',
     scale: 0.98,
-    filter: 'blur(10px)',
+    filter: 'blur(6px)',
   },
   visible: {
     opacity: 1,
@@ -189,7 +189,7 @@ export const MODAL_TOP_VARIANTS = Object.freeze({
     opacity: 0,
     y: '-100%',
     scale: 0.98,
-    filter: 'blur(6px)',
+    filter: 'blur(4px)',
     transition: {
       duration: 0.3,
       ease: MODAL_EASINGS.EXIT,

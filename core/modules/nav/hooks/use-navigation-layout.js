@@ -97,10 +97,7 @@ function reorderItemsWithActiveFirst(items, activeIndex) {
   return [items[activeIndex], ...items.slice(0, activeIndex), ...items.slice(activeIndex + 1)];
 }
 
-function getCollapsedVisibleCount({
-  isCompact,
-  shouldShowSingleStatusCard,
-}) {
+function getCollapsedVisibleCount({ isCompact, shouldShowSingleStatusCard }) {
   if (shouldShowSingleStatusCard || isCompact) {
     return 1;
   }
@@ -138,11 +135,14 @@ export function useNavigationLayout({
 
     const deduplicatedItems = removeAncestorDuplicates(filteredItems);
 
-    const activeIndexForDisplay = deduplicatedItems.findIndex((item) => isSameItem(item, activeItem));
+    const activeIndexForDisplay = deduplicatedItems.findIndex((item) =>
+      isSameItem(item, activeItem),
+    );
 
     return {
       displayItems: deduplicatedItems,
-      displayActiveIndex: activeIndexForDisplay !== -1 ? activeIndexForDisplay : (reorderedItems.length > 0 ? 0 : -1),
+      displayActiveIndex:
+        activeIndexForDisplay !== -1 ? activeIndexForDisplay : reorderedItems.length > 0 ? 0 : -1,
     };
   }, [pathname, expanded, isHovered, isCompact, navigationItems, activeItem]);
 

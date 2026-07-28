@@ -11,10 +11,11 @@ function CloseButton({ onClick }) {
   return (
     <motion.button
       type="button"
+      aria-label="Close modal"
       whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
       transition={MODAL_MICRO_SPRING}
       onClick={onClick}
-      className="center inline-flex size-8 shrink-0 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+      className="center inline-flex size-8 shrink-0 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
     >
       <Icon icon="material-symbols:close-rounded" size={16} />
     </motion.button>

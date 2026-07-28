@@ -26,19 +26,19 @@ const NotificationStateContext = createContext(FALLBACK_NOTIFICATION_STATE);
 
 const STORAGE_KEY = 'critical_notifications';
 
-export const CRITICAL_TYPES = {
+export const CRITICAL_TYPES = Object.freeze({
   PERMISSION_DENIED: 'PERMISSION_DENIED',
   SESSION_EXPIRED: 'SESSION_EXPIRED',
   SERVER_ERROR: 'SERVER_ERROR',
   OFFLINE: 'OFFLINE',
-};
+});
 
-export const TOAST_TYPES = {
+export const TOAST_TYPES = Object.freeze({
   WARNING: 'WARNING',
   SUCCESS: 'SUCCESS',
   ERROR: 'ERROR',
   INFO: 'INFO',
-};
+});
 
 const CRITICAL_SET = new Set(Object.values(CRITICAL_TYPES));
 
@@ -60,12 +60,8 @@ function filterCriticalNotifications(map) {
 function readStoredCriticalNotifications() {
   const stored = getStorageItem(STORAGE_KEY);
 
-  if (!stored) {
-    return {};
-  }
-
-  if (!isObjectRecord(stored)) {
-    removeStorageItem(STORAGE_KEY);
+  if (!stored || !isObjectRecord(stored)) {
+    if (stored) removeStorageItem(STORAGE_KEY);
     return {};
   }
 
@@ -81,12 +77,10 @@ function readStoredCriticalNotifications() {
 function clearNotificationTimer(id, timers) {
   const timer = timers.get(id);
 
-  if (!timer) {
-    return;
+  if (timer) {
+    clearTimeout(timer);
+    timers.delete(id);
   }
-
-  clearTimeout(timer);
-  timers.delete(id);
 }
 
 function normalizeDuration(value) {
@@ -138,6 +132,7 @@ export const NotificationProvider = ({ children }) => {
     clearNotificationTimer(id, timersRef.current);
 
     setNotifications((prev) => {
+      if (!prev[id]) return prev;
       const next = { ...prev };
       delete next[id];
       return next;

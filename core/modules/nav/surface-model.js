@@ -18,9 +18,9 @@ export function createSurfaceEntryDefinition(input, config = {}) {
   const descriptor =
     isSurfaceDescriptor(input) &&
     (typeof input.component === 'function' ||
-      Object.prototype.hasOwnProperty.call(input, 'content') ||
-      Object.prototype.hasOwnProperty.call(input, 'node') ||
-      Object.prototype.hasOwnProperty.call(input, 'element'))
+      'content' in input ||
+      'node' in input ||
+      'element' in input)
       ? input
       : null;
 
@@ -50,9 +50,20 @@ export function createSurfaceEntryDefinition(input, config = {}) {
     showAction: descriptor?.showAction ?? config?.showAction ?? false,
     dismissible: descriptor?.dismissible ?? config?.dismissible ?? true,
     onClose: descriptor?.onClose ?? config?.onClose ?? null,
-    icon: descriptor?.icon ?? descriptor?.header?.icon ?? config?.icon ?? config?.header?.icon ?? null,
-    title: descriptor?.title ?? descriptor?.header?.title ?? config?.title ?? config?.header?.title ?? null,
-    description: descriptor?.description ?? descriptor?.header?.description ?? config?.description ?? config?.header?.description ?? null,
+    icon:
+      descriptor?.icon ?? descriptor?.header?.icon ?? config?.icon ?? config?.header?.icon ?? null,
+    title:
+      descriptor?.title ??
+      descriptor?.header?.title ??
+      config?.title ??
+      config?.header?.title ??
+      null,
+    description:
+      descriptor?.description ??
+      descriptor?.header?.description ??
+      config?.description ??
+      config?.header?.description ??
+      null,
     trailing: descriptor?.trailing ?? config?.trailing ?? null,
     closeLabel: descriptor?.closeLabel ?? config?.closeLabel ?? null,
     expandHorizontal: descriptor?.expandHorizontal ?? config?.expandHorizontal ?? false,
@@ -61,9 +72,7 @@ export function createSurfaceEntryDefinition(input, config = {}) {
 }
 
 export function createInlineSurfaceEntry(surface) {
-  if (surface === undefined) {
-    return null;
-  }
+  if (surface === undefined) return null;
 
   if (!isSurfaceDescriptor(surface)) {
     return {
@@ -86,9 +95,7 @@ export function createInlineSurfaceEntry(surface) {
   const component = typeof surface.component === 'function' ? surface.component : null;
   const content = surface.content ?? surface.node ?? surface.element ?? null;
 
-  if (!component && content == null) {
-    return null;
-  }
+  if (!component && content == null) return null;
 
   return {
     renderMode: component ? NAV_SURFACE_RENDER_MODE.COMPONENT : NAV_SURFACE_RENDER_MODE.NODE,
@@ -110,17 +117,9 @@ export function createInlineSurfaceEntry(surface) {
 }
 
 export function resolveSurfaceAction(item, surfaceEntry) {
-  if (surfaceEntry?.action != null) {
-    return surfaceEntry.action;
-  }
-
-  if (surfaceEntry?.showAction === true) {
-    return item.action ?? null;
-  }
-
-  if (surfaceEntry?.showAction === false) {
-    return null;
-  }
+  if (surfaceEntry?.action != null) return surfaceEntry.action;
+  if (surfaceEntry?.showAction === true) return item.action ?? null;
+  if (surfaceEntry?.showAction === false) return null;
 
   return item.action ?? null;
 }

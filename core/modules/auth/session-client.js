@@ -36,11 +36,9 @@ export async function fetchCanonicalSessionPayload({ force = false } = {}) {
     return CANONICAL_SESSION_STATE.inFlightPromise;
   }
 
-  const requestPromise = Promise.resolve()
-    .then(async () => {
-      const response = await fetch('/api/auth/session', {
-        credentials: 'include',
-      });
+  const requestPromise = (async () => {
+    try {
+      const response = await fetch('/api/auth/session', { credentials: 'include' });
       const payload = await response.json().catch(() => createAnonymousSessionPayload());
 
       if (!response.ok) {
@@ -51,18 +49,13 @@ export async function fetchCanonicalSessionPayload({ force = false } = {}) {
         throw error;
       }
 
-      return payload;
-    })
-    .then((payload) => {
       CANONICAL_SESSION_STATE.value = payload;
       CANONICAL_SESSION_STATE.expiresAt = Date.now() + CANONICAL_SESSION_CACHE_TTL_MS;
-      CANONICAL_SESSION_STATE.inFlightPromise = null;
       return payload;
-    })
-    .catch((error) => {
+    } finally {
       CANONICAL_SESSION_STATE.inFlightPromise = null;
-      throw error;
-    });
+    }
+  })();
 
   CANONICAL_SESSION_STATE.inFlightPromise = requestPromise;
   return requestPromise;

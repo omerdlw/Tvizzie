@@ -37,6 +37,7 @@ export default function MediaReviews({
   useQuerySortMode = false,
   useQueryUserFilter = false,
   hideWhenEmpty = false,
+  showComposer = false,
   onReviewStateChange,
 }) {
   const isRecentListMode = listMode === 'recent';
@@ -199,7 +200,7 @@ export default function MediaReviews({
       : defaultOrderedReviews;
   const shouldHideRecentList =
     hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
-  const shouldShowComposer = !ownReview;
+  const shouldShowComposer = showComposer && !ownReview;
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
   return (
     <section

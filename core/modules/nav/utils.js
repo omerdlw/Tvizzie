@@ -56,11 +56,6 @@ export function resolveNavVisualStyle(style, { isActive = false, isHovered = fal
   };
 }
 
-
-
-
-
-
 export function getNavStackClassName() {
   return 'fixed bottom-1 left-1/2 h-auto w-full -translate-x-1/2 touch-manipulation select-none';
 }
@@ -69,7 +64,9 @@ export function getItemKey(link, index = 0) {
   const pathPart = String(link?.path || '').trim() || 'no-path';
   const namePart = String(link?.name || '').trim() || 'no-name';
   const typePart = String(link?.type || '').trim() || 'no-type';
-  const surfacePart = link?.isSurface ? `surface::${link?.id || link?.surfaceTitle || 'open'}` : 'base';
+  const surfacePart = link?.isSurface
+    ? `surface::${link?.id || link?.surfaceTitle || 'open'}`
+    : 'base';
 
   return `${pathPart}::${namePart}::${typePart}::${surfacePart}:${index}`;
 }
@@ -108,14 +105,6 @@ export function getActiveItemLayoutKey(activeItem) {
   ].join('::');
 }
 
-export function isInlineActionPathMatch(path, pathname) {
-  return isSamePath(path, pathname) || (path !== '/' && isPathPrefix(path, pathname));
-}
-
-export function shouldRenderInlineAction({ action, isLoading, isOverlay, path }, pathname) {
-  return Boolean(action) && !isLoading && (isOverlay || !path || isInlineActionPathMatch(path, pathname));
-}
-
 export function normalizePath(value) {
   const normalized = String(value || '').trim();
   if (!normalized) return '';
@@ -137,11 +126,23 @@ export function isPathPrefix(candidatePath, pathname) {
   return normalizedPathname.startsWith(`${normalizedCandidate}/`);
 }
 
+export function isInlineActionPathMatch(path, pathname) {
+  return isSamePath(path, pathname) || (path !== '/' && isPathPrefix(path, pathname));
+}
+
+export function shouldRenderInlineAction({ action, isLoading, isOverlay, path }, pathname) {
+  return (
+    Boolean(action) && !isLoading && (isOverlay || !path || isInlineActionPathMatch(path, pathname))
+  );
+}
+
 export function toSearchableText(value) {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) return value.map(toSearchableText).join(' ');
   if (React.isValidElement(value)) return toSearchableText(value.props?.children);
-  if (value && typeof value === 'object') return Object.values(value).map(toSearchableText).join(' ');
+  if (value && typeof value === 'object') {
+    return Object.values(value).map(toSearchableText).join(' ');
+  }
   return '';
 }

@@ -19,18 +19,9 @@ const NAV_MODE_MIN_CARD_HEIGHTS = Object.freeze({
 });
 
 export function getNavItemMode(item) {
-  if (item?.navMode) {
-    return item.navMode;
-  }
-
-  if (item?.isLoading) {
-    return NAV_ITEM_MODES.PAGE_LOADING;
-  }
-
-  if (item?.isSurface) {
-    return NAV_ITEM_MODES.SURFACE;
-  }
-
+  if (item?.navMode) return item.navMode;
+  if (item?.isLoading) return NAV_ITEM_MODES.PAGE_LOADING;
+  if (item?.isSurface) return NAV_ITEM_MODES.SURFACE;
   if (item?.isStatus) {
     return item?.isOverlay ? NAV_ITEM_MODES.STATUS_OVERLAY : NAV_ITEM_MODES.STATUS_INLINE;
   }
@@ -49,9 +40,7 @@ export function getNavModeMinimumCardHeight(value) {
 }
 
 export function getNavItemIdentity(item) {
-  if (!item) {
-    return 'nav-item:none';
-  }
+  if (!item) return 'nav-item:none';
 
   const pathPart = String(item?.path || '').trim() || 'no-path';
   const namePart = String(item?.name || '').trim() || 'no-name';
@@ -61,9 +50,7 @@ export function getNavItemIdentity(item) {
 }
 
 export function getNavItemRenderKey(item) {
-  if (!item) {
-    return 'nav-item:none';
-  }
+  if (!item) return 'nav-item:none';
 
   const mode = getNavItemMode(item);
   const surfacePart = item?.surfaceId ? `surface:${item.surfaceId}` : null;
@@ -72,5 +59,6 @@ export function getNavItemRenderKey(item) {
     : item?.isStatus
       ? `status:${item.type || 'unknown'}`
       : null;
+
   return [getNavItemIdentity(item), mode, surfacePart, statusPart].filter(Boolean).join('::');
 }

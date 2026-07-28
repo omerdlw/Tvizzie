@@ -21,38 +21,45 @@ export default function ReviewHeader({
     Number.isFinite(Number(ratingStats?.average)) &&
     Number(ratingStats.average) > 0;
   return (
-    <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-      <div className="flex items-center gap-2">
-        <Icon icon="solar:face-scan-circle-bold" size={30} className="text-info" />
-        <h2 className="text-base font-semibold tracking-wider uppercase">{title}</h2>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-xl border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
-          <span className="font-bold">{totalReviews}</span> {itemLabel}
-          {totalReviews === 1 ? '' : 's'}
+    <div className="flex items-center justify-between gap-3 border-b border-black/10 pb-3 sm:gap-4">
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon icon="solar:chat-round-line-bold" size={20} className="text-black/70 shrink-0 sm:size-6" />
+          <h2 className="text-sm font-bold tracking-wider text-black uppercase sm:text-base truncate">
+            {title}
+          </h2>
         </div>
-        {hasRatingSummary && (
-          <div className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-xl border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase">
-            <Icon icon="solar:star-bold" className="text-warning" size={16} />
+
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-medium text-black/60">
+          {Number.isFinite(Number(totalReviews)) && (
             <span>
-              {ratingStats?.average}/5 avg
-              {ratingStats?.count ? ` • ${ratingStats.count} rated` : ''}
+              <strong className="font-semibold text-black/80">{totalReviews}</strong> {itemLabel}
+              {totalReviews === 1 ? '' : 's'}
             </span>
-          </div>
-        )}
-        {hasAllReviewsLink ? (
-          <Link
-            href={allReviewsHref}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-9 items-center gap-1 rounded-xl border border-black/10 px-4 py-2 text-xs font-semibold tracking-wide text-black/70 uppercase"
-          >
-            All reviews
-          </Link>
-        ) : null}
+          )}
+
+          {hasRatingSummary && (
+            <>
+              <span className="text-black/30">•</span>
+              <span className="inline-flex items-center gap-1">
+                <Icon icon="solar:star-bold" className="text-warning" size={13} />
+                <strong className="font-semibold text-black/80">{ratingStats?.average}/5</strong>
+                <span className="text-black/50">avg</span>
+                {ratingStats?.count ? (
+                  <span className="text-black/50">({ratingStats.count} rated)</span>
+                ) : null}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
         {hasEditOwnReview ? (
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/40 hover:bg-primary/70 flex size-9 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:border-black/15 hover:text-black"
+            className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:text-black sm:size-9"
             aria-label="Edit your review"
             title="Edit your review"
           >
@@ -62,7 +69,7 @@ export default function ReviewHeader({
         {hasDeleteOwnReview ? (
           <Button
             variant="destructive-icon"
-            className="rounded-xl"
+            className="size-8 rounded-xl sm:size-9"
             onClick={onDeleteOwnReview}
             aria-label="Delete your review"
             title="Delete your review"
@@ -70,6 +77,15 @@ export default function ReviewHeader({
           >
             <Icon icon="solar:trash-bin-trash-bold" size={16} />
           </Button>
+        ) : null}
+        {hasAllReviewsLink ? (
+          <Link
+            href={allReviewsHref}
+            className="bg-primary/30 hover:bg-primary/60 inline-flex items-center gap-1 rounded-xl border border-black/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
+          >
+            <span>All reviews</span>
+            <Icon icon="solar:alt-arrow-right-linear" size={14} />
+          </Link>
         ) : null}
       </div>
     </div>

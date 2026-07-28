@@ -25,11 +25,7 @@ export async function checkGuards(to, from) {
     if (shouldBlock) {
       const message = guard.message || 'Are you sure you want to leave this page';
       guard.onBlock?.({ to, from, guardId: id, message });
-      return {
-        message,
-        blocked: true,
-        guardId: id,
-      };
+      return { message, blocked: true, guardId: id };
     }
   }
   return { blocked: false };
@@ -42,7 +38,6 @@ export function useNavigationGuard(options = {}) {
     onBlock,
   } = options;
 
-  const guardRef = useRef(null);
   const whenRef = useRef(when);
 
   useEffect(() => {
@@ -56,20 +51,16 @@ export function useNavigationGuard(options = {}) {
       onBlock,
     });
 
-    guardRef.current = unregister;
-
     return () => {
-      if (guardRef.current) {
-        guardRef.current();
-      }
+      unregister();
     };
   }, [message, onBlock]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (event) => {
       if (whenRef.current) {
-        e.preventDefault();
-        e.returnValue = message;
+        event.preventDefault();
+        event.returnValue = message;
         return message;
       }
     };

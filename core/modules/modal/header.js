@@ -38,13 +38,9 @@ function resolveFollowListHeader(config = {}) {
 function resolveListEditorHeader(config = {}) {
   const isEditing = Boolean(config?.data?.initialData?.id);
 
-  return isEditing
-    ? {
-        title: 'Edit List',
-      }
-    : {
-        title: 'Create List',
-      };
+  return {
+    title: isEditing ? 'Edit List' : 'Create List',
+  };
 }
 
 function resolveNotificationsHeader() {

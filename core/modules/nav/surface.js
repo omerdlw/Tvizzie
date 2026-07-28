@@ -1,17 +1,17 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, forwardRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { createContext, forwardRef, useContext, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { Description, Icon as BadgeIcon, Title } from '@/core/modules/nav/elements';
-import { cn } from '@/core/utils/classnames';
-import Icon from '@/ui/icon';
 import {
-  NAV_SURFACE_TRANSITION,
   NAV_MICRO_TRANSITION,
+  NAV_SURFACE_TRANSITION,
   NAV_TAP_SCALE,
   slideFadeVariants,
 } from '@/core/modules/nav/motion';
+import { cn } from '@/core/utils/classnames';
+import Icon from '@/ui/icon';
 
 const SurfaceHeaderContext = createContext(null);
 
@@ -54,7 +54,7 @@ export function NavSurfaceHeader({
             event.stopPropagation();
             onClose();
           }}
-          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10"
+          className="center absolute top-0 right-0 z-10 size-8 cursor-pointer rounded-full border border-black/5 bg-black/5 text-black/70 transition-colors duration-150 ease-linear hover:border-transparent hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
           aria-label={closeLabel}
           whileTap={{ scale: NAV_TAP_SCALE }}
           transition={NAV_MICRO_TRANSITION}

@@ -3,10 +3,10 @@
 import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Z_INDEX } from '@/core/constants';
+import Icon from '@/ui/icon';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
-import Icon from '@/ui/icon';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({
@@ -19,8 +19,7 @@ function joinClassNames(...values) {
 }
 
 function getContextMenuMetrics() {
-  const wrapperRadius = CONTEXT_MENU_LAYOUT.wrapperRadius;
-  const wrapperPadding = CONTEXT_MENU_LAYOUT.wrapperPadding;
+  const { wrapperRadius, wrapperPadding } = CONTEXT_MENU_LAYOUT;
 
   return {
     headerIconRadius: Math.max(10, wrapperRadius - wrapperPadding - 2),
@@ -37,7 +36,7 @@ function isImageIconSource(icon) {
   );
 }
 
-function extractNodeText(value) {
+export function extractNodeText(value) {
   if (value === null || value === undefined || typeof value === 'boolean') {
     return '';
   }
@@ -109,42 +108,9 @@ function resolveMenuHeader(config, menuContext) {
   };
 }
 
-function getActionableIndexes(items = []) {
-  return items.reduce((indexes, item, index) => {
-    if (item?.type === 'action' && !item?.disabled) {
-      indexes.push(index);
-    }
-
-    return indexes;
-  }, []);
-}
-
-function getNextActionableIndex(currentIndex, direction, indexes = []) {
-  if (!indexes.length) return -1;
-
-  const currentPointer = indexes.indexOf(currentIndex);
-
-  if (currentPointer === -1) {
-    return direction > 0 ? indexes[0] : indexes[indexes.length - 1];
-  }
-
-  const nextPointer = (currentPointer + direction + indexes.length) % indexes.length;
-  return indexes[nextPointer];
-}
-
-function invokeSafely(handler, ...args) {
-  if (typeof handler !== 'function') {
-    return undefined;
-  }
-
-  try {
-    return handler(...args);
-  } catch {
-    return undefined;
-  }
-}
-
 function positionMenu(menuElement, position) {
+  if (!menuElement) return;
+
   const rect = menuElement.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
@@ -176,30 +142,25 @@ function isScrollLockKey(event) {
   );
 }
 
-function ContextMenuHeaderIcon({ classNames, icon, metrics }) {
+function ContextMenuHeaderIcon({ classNames, icon }) {
   const iconClassName = joinClassNames(
     'flex size-10 shrink-0 rounded-[10px] items-center justify-center overflow-hidden bg-black/5 bg-cover bg-center bg-no-repeat text-black/70',
     classNames.headerIcon,
   );
-  const iconStyle = {};
 
   if (isImageIconSource(icon)) {
-    return (
-      <div className={iconClassName} style={{ ...iconStyle, backgroundImage: `url(${icon})` }} />
-    );
+    return <div className={iconClassName} style={{ backgroundImage: `url(${icon})` }} />;
   }
 
   return (
-    <div className={iconClassName} style={iconStyle}>
+    <div className={iconClassName}>
       {typeof icon === 'string' ? <Icon icon={icon} size={20} /> : icon}
     </div>
   );
 }
 
-function ContextMenuHeader({ classNames, header, metrics }) {
-  if (!header) {
-    return null;
-  }
+function ContextMenuHeader({ classNames, header }) {
+  if (!header) return null;
 
   const containerClassName = joinClassNames(
     'mb-1.5 flex items-center gap-2.5 border-b border-black/10 px-1 pb-3',
@@ -210,12 +171,12 @@ function ContextMenuHeader({ classNames, header, metrics }) {
     'text-[10px] font-semibold tracking-wide text-black/50 uppercase',
     classNames.headerEyebrow,
   );
-  
+
   const titleClassName = joinClassNames(
     'truncate text-[15px] leading-tight font-semibold text-black',
     classNames.headerTitle,
   );
-  
+
   const descriptionClassName = joinClassNames(
     'text-[12px] leading-snug text-black/70',
     classNames.headerDescription,
@@ -223,9 +184,7 @@ function ContextMenuHeader({ classNames, header, metrics }) {
 
   return (
     <div className={containerClassName}>
-      {header.icon ? (
-        <ContextMenuHeaderIcon classNames={classNames} icon={header.icon} metrics={metrics} />
-      ) : null}
+      {header.icon ? <ContextMenuHeaderIcon classNames={classNames} icon={header.icon} /> : null}
       <div className="h-full w-full min-w-0 space-y-0.5">
         {header.eyebrow ? <div className={eyebrowClassName}>{header.eyebrow}</div> : null}
         {header.title ? <div className={titleClassName}>{header.title}</div> : null}
@@ -237,7 +196,7 @@ function ContextMenuHeader({ classNames, header, metrics }) {
   );
 }
 
-function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelect, setButtonRef }) {
+function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setButtonRef }) {
   if (item.type === 'separator') {
     return (
       <div
@@ -254,16 +213,12 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
     item.danger && 'text-error',
     item.danger && classNames.itemDanger,
   );
+
   const itemIconClassName = joinClassNames(
     'shrink-0 text-black/55 group-hover:text-black/80',
     item.danger && 'text-error/80 group-hover:text-error',
     classNames.itemIcon,
     item.itemIconClassName,
-  );
-  const itemLabelClassName = joinClassNames('grow truncate', classNames.itemLabel);
-  const itemShortcutClassName = joinClassNames(
-    'ml-2 shrink-0 text-[10px] tracking-wide text-black/45 uppercase',
-    classNames.itemShortcut,
   );
 
   return (
@@ -279,8 +234,17 @@ function ContextMenuItem({ classNames, isActive, item, metrics, onHover, onSelec
       onClick={(event) => onSelect(item, event)}
     >
       {item.icon ? <Icon icon={item.icon} className={itemIconClassName} size={17} /> : null}
-      <span className={itemLabelClassName}>{item.label}</span>
-      {item.shortcut ? <span className={itemShortcutClassName}>{item.shortcut}</span> : null}
+      <span className={joinClassNames('grow truncate', classNames.itemLabel)}>{item.label}</span>
+      {item.shortcut ? (
+        <span
+          className={joinClassNames(
+            'ml-2 shrink-0 text-[10px] tracking-wide text-black/45 uppercase',
+            classNames.itemShortcut,
+          )}
+        >
+          {item.shortcut}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -291,7 +255,6 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
   const classNames = isObject(config.classNames) ? config.classNames : {};
   const metrics = useMemo(() => getContextMenuMetrics(), []);
   const header = useMemo(() => resolveMenuHeader(config, menuContext), [config, menuContext]);
-  const actionableIndexes = useMemo(() => getActionableIndexes(items), [items]);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
@@ -369,9 +332,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       event?.preventDefault?.();
       event?.stopPropagation?.();
 
-      if (item?.disabled) {
-        return;
-      }
+      if (item?.disabled) return;
 
       const handler = item?.onSelect || item?.onClick;
 
@@ -415,13 +376,19 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setActiveIndex((prev) => {
-          const prevIndices = items
-            .map((item, index) => ({ disabled: item.disabled, index, type: item.type }))
-            .filter((item) => (prev === -1 || item.index < prev) && item.type === 'action' && !item.disabled);
-
-          return prevIndices.length > 0
-            ? prevIndices[prevIndices.length - 1].index
-            : items.findLastIndex((item) => item.type === 'action' && !item.disabled);
+          let lastValidIndex = -1;
+          for (let i = items.length - 1; i >= 0; i--) {
+            const item = items[i];
+            if (item.type === 'action' && !item.disabled) {
+              if (prev === -1 || i < prev) {
+                return i;
+              }
+              if (lastValidIndex === -1) {
+                lastValidIndex = i;
+              }
+            }
+          }
+          return lastValidIndex;
         });
         return;
       }
@@ -446,7 +413,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
       <div
         ref={menuRef}
         className={joinClassNames(
-          'max-w-sm rounded-[20px] min-w-64 overflow-hidden border border-black/10 bg-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-sm',
+          'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-sm',
           classNames.content,
         )}
         role="menu"
@@ -461,14 +428,13 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         onMouseLeave={() => setActiveIndex(-1)}
         onKeyDown={handleMenuKeyDown}
       >
-        <ContextMenuHeader classNames={classNames} header={header} metrics={metrics} />
+        <ContextMenuHeader classNames={classNames} header={header} />
         {items.map((item, index) => (
           <ContextMenuItem
             key={item.key || `menu-item-${index}`}
             item={item}
             classNames={classNames}
             isActive={index === activeIndex}
-            metrics={metrics}
             onHover={() => {
               if (item.type === 'action' && !item.disabled) {
                 setActiveIndex(index);

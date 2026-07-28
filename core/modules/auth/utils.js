@@ -25,10 +25,8 @@ function uniqueStrings(items) {
 
 function toIsoDate(value) {
   if (!value) return null;
-
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-
   return date.toISOString();
 }
 
@@ -55,14 +53,8 @@ function normalizeUser(rawUser = {}, fallbackUser = {}) {
 }
 
 function normalizeCapabilityState(value = {}, email = null, providerIds = []) {
-  const fallbackState = resolveAuthCapabilities({
-    providerIds,
-    email,
-  });
-
-  if (!isPlainObject(value)) {
-    return fallbackState;
-  }
+  const fallbackState = resolveAuthCapabilities({ providerIds, email });
+  if (!isPlainObject(value)) return fallbackState;
 
   return {
     ...fallbackState,
@@ -71,9 +63,7 @@ function normalizeCapabilityState(value = {}, email = null, providerIds = []) {
 }
 
 export function normalizeSession(input) {
-  if (!input) {
-    return null;
-  }
+  if (!input) return null;
 
   if (input.requiresRedirect || input.requiresVerification) {
     return input;
@@ -91,13 +81,11 @@ export function normalizeSession(input) {
   );
 
   const permissions = uniqueStrings([...user.permissions, ...toArray(source.permissions)]);
-
   const capabilities = uniqueStrings([
     ...user.capabilities,
     ...toArray(source.capabilities),
     ...permissions,
   ]);
-
   const roles = uniqueStrings([...user.roles, ...toArray(source.roles)]);
 
   return {
@@ -151,66 +139,45 @@ export function mergeUserIntoSession(session, userPatch) {
 
 export function isSessionExpired(session, leewayMs = 0) {
   const normalizedSession = normalizeSession(session);
-
-  if (!normalizedSession?.expiresAt) {
-    return false;
-  }
+  if (!normalizedSession?.expiresAt) return false;
 
   const expiresAt = new Date(normalizedSession.expiresAt).getTime();
-
-  if (Number.isNaN(expiresAt)) {
-    return false;
-  }
+  if (Number.isNaN(expiresAt)) return false;
 
   return expiresAt <= Date.now() + leewayMs;
 }
 
 export function hasRole(session, role) {
   const normalizedSession = normalizeSession(session);
-
-  if (!normalizedSession?.user || !role) {
-    return false;
-  }
+  if (!normalizedSession?.user || !role) return false;
 
   return normalizedSession.user.roles.includes(String(role));
 }
 
 export function hasAnyRole(session, roles = []) {
   const normalizedRoles = toArray(roles);
-
-  if (normalizedRoles.length === 0) {
-    return true;
-  }
+  if (normalizedRoles.length === 0) return true;
 
   return normalizedRoles.some((role) => hasRole(session, role));
 }
 
 export function hasCapability(session, capability) {
   const normalizedSession = normalizeSession(session);
-
-  if (!normalizedSession?.user || !capability) {
-    return false;
-  }
+  if (!normalizedSession?.user || !capability) return false;
 
   return normalizedSession.user.capabilities.includes(String(capability));
 }
 
 export function hasAnyCapability(session, capabilities = []) {
   const normalizedCapabilities = toArray(capabilities);
-
-  if (normalizedCapabilities.length === 0) {
-    return true;
-  }
+  if (normalizedCapabilities.length === 0) return true;
 
   return normalizedCapabilities.some((capability) => hasCapability(session, capability));
 }
 
 export function hasAllCapabilities(session, capabilities = []) {
   const normalizedCapabilities = toArray(capabilities);
-
-  if (normalizedCapabilities.length === 0) {
-    return true;
-  }
+  if (normalizedCapabilities.length === 0) return true;
 
   return normalizedCapabilities.every((capability) => hasCapability(session, capability));
 }
@@ -222,13 +189,8 @@ export function canAccess(
   const normalizedSession = normalizeSession(session);
   const requiredCapabilities = [...toArray(capabilities), ...toArray(permissions)];
 
-  if (requireAuth && !normalizedSession) {
-    return false;
-  }
-
-  if (!normalizedSession) {
-    return true;
-  }
+  if (requireAuth && !normalizedSession) return false;
+  if (!normalizedSession) return true;
 
   const passesRoles = toArray(roles).length === 0 ? true : hasAnyRole(normalizedSession, roles);
 

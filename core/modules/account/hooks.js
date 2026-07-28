@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-
 import { useAccountClient } from './context';
 
 const ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS = 15000;
@@ -24,60 +23,56 @@ export function useResolvedAccountUser({
   const [resolveError, setResolveError] = useState(initialResolveError);
 
   useEffect(() => {
-    if (username) {
-      if (initialStateConsumedRef.current) {
-        initialStateConsumedRef.current = false;
-        return undefined;
-      }
-
-      let ignore = false;
-
-      async function resolveProfile() {
-        setIsResolvingProfile(true);
-        setResolveError(null);
-
-        try {
-          let userId = await accountClient.getAccountIdByUsername(username);
-
-          if (!userId) {
-            const profileSnapshot = await accountClient.getAccountByUsername(username);
-
-            if (profileSnapshot) {
-              userId = profileSnapshot.id || username;
-            }
-          }
-
-          if (ignore) {
-            return;
-          }
-
-          setRemoteUserId(userId);
-          setResolveError(userId ? null : 'Profile not found');
-        } catch (error) {
-          if (ignore) {
-            return;
-          }
-
-          setRemoteUserId(null);
-          setResolveError(error?.message || 'Profile not found');
-        } finally {
-          if (!ignore) {
-            setIsResolvingProfile(false);
-          }
-        }
-      }
-
-      void resolveProfile();
-
-      return () => {
-        ignore = true;
-      };
+    if (!username) {
+      setRemoteUserId(null);
+      setResolveError(null);
+      setIsResolvingProfile(false);
+      return;
     }
 
-    setRemoteUserId(null);
-    setResolveError(null);
-    setIsResolvingProfile(false);
-  }, [accountClient, authUserId, username]);
+    if (initialStateConsumedRef.current) {
+      initialStateConsumedRef.current = false;
+      return;
+    }
+
+    let ignore = false;
+
+    async function resolveProfile() {
+      setIsResolvingProfile(true);
+      setResolveError(null);
+
+      try {
+        let userId = await accountClient.getAccountIdByUsername(username);
+
+        if (!userId) {
+          const profileSnapshot = await accountClient.getAccountByUsername(username);
+          if (profileSnapshot) {
+            userId = profileSnapshot.id || username;
+          }
+        }
+
+        if (ignore) return;
+
+        setRemoteUserId(userId);
+        setResolveError(userId ? null : 'Profile not found');
+      } catch (error) {
+        if (ignore) return;
+
+        setRemoteUserId(null);
+        setResolveError(error?.message || 'Profile not found');
+      } finally {
+        if (!ignore) {
+          setIsResolvingProfile(false);
+        }
+      }
+    }
+
+    void resolveProfile();
+
+    return () => {
+      ignore = true;
+    };
+  }, [accountClient, username]);
 
   const resolvedUserId = username ? remoteUserId : authUserId || initialResolvedUserId || null;
 
@@ -93,14 +88,17 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
   const [profile, setProfile] = useState(initialProfile);
   const [hasLoadedProfile, setHasLoadedProfile] = useState(Boolean(initialProfile?.id));
 
+  // Fix: Stabilize initial profile check using ID to avoid infinite re-subscriptions
+  const initialProfileId = initialProfile?.id;
+
   useEffect(() => {
     if (!resolvedUserId) {
       setProfile(null);
       setHasLoadedProfile(false);
-      return undefined;
+      return;
     }
 
-    const hasInitialProfile = initialProfile?.id === resolvedUserId;
+    const hasInitialProfile = initialProfileId === resolvedUserId;
     setHasLoadedProfile(hasInitialProfile);
 
     if (hasInitialProfile) {
@@ -126,14 +124,13 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
         intervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS,
         onError: (error) => {
           setHasLoadedProfile(true);
-
           if (typeof onError === 'function') {
             onError(error);
           }
         },
       },
     );
-  }, [accountClient, initialProfile, onError, resolvedUserId]);
+  }, [accountClient, initialProfile, initialProfileId, onError, resolvedUserId]);
 
   return { hasLoadedProfile, profile, setProfile };
 }

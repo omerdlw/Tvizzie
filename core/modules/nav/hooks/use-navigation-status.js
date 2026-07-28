@@ -49,12 +49,16 @@ export function useNavigationStatus() {
     timerRef.current = null;
   }, []);
 
-  const clearAllTimers = useCallback(() => {
+  const clearTransientTimers = useCallback(() => {
     clearTimer(batchTimerRef);
-    clearTimer(statusClearTimerRef);
     clearTimer(onlineResetTimerRef);
     clearTimer(offlineDispatchTimerRef);
   }, [clearTimer]);
+
+  const clearAllTimers = useCallback(() => {
+    clearTransientTimers();
+    clearTimer(statusClearTimerRef);
+  }, [clearTimer, clearTransientTimers]);
 
   const clearStatus = useCallback(() => {
     clearPersistedAuthStatus();
@@ -91,11 +95,12 @@ export function useNavigationStatus() {
             return currentStatus;
           }
 
-          if (clearTypes.length === 0) {
+          if (clearTypes.length === 0 || clearTypes.includes(currentStatus.type)) {
+            clearPersistedAuthStatus();
             return null;
           }
 
-          return clearTypes.includes(currentStatus.type) ? null : currentStatus;
+          return currentStatus;
         });
       }, duration);
     },
@@ -422,10 +427,12 @@ export function useNavigationStatus() {
           'The page you are looking for does not exist or is no longer available',
         icon: eventData?.icon || 'solar:forbidden-circle-bold',
         style: getStatusTheme('NOT_FOUND'),
-        action: notFoundAction ? () => {
-          const NotFoundAction = notFoundAction;
-          return <NotFoundAction />;
-        } : null,
+        action: notFoundAction
+          ? () => {
+              const NotFoundAction = notFoundAction;
+              return <NotFoundAction />;
+            }
+          : null,
         hideSettings: true,
         hideScroll: true,
       });
@@ -449,13 +456,13 @@ export function useNavigationStatus() {
       unsubscribeAuthFeedback();
       unsubscribeNotFound();
 
-      clearAllTimers();
+      clearTransientTimers();
 
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
     };
   }, [
-    clearAllTimers,
+    clearTransientTimers,
     clearStatus,
     clearTimer,
     dispatchOfflineEvent,
@@ -465,6 +472,12 @@ export function useNavigationStatus() {
     updateStatus,
     notFoundAction,
   ]);
+
+  useEffect(() => {
+    return () => {
+      clearAllTimers();
+    };
+  }, [clearAllTimers]);
 
   return status;
 }

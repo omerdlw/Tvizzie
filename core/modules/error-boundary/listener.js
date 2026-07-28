@@ -1,9 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-
 import { globalEvents, EVENT_TYPES } from '@/core/constants/events';
-
 import { getErrorReporter } from './reporter';
 
 const CONFIG = Object.freeze({
@@ -15,17 +13,21 @@ const CONFIG = Object.freeze({
     /Loading chunk/i,
     /Unexpected end of input/i,
     /Failed to fetch/i,
+    /Script error/i,
   ]),
 });
 
 function getErrorMessage(error) {
+  if (typeof error === 'string') return error.trim();
   return String(error?.message || error?.toString?.() || '').trim();
 }
 
 function shouldIgnore(error) {
   const msg = getErrorMessage(error);
 
-  if (error?.isNotFound?.()) return true;
+  if (typeof error?.isNotFound === 'function' && error.isNotFound()) {
+    return true;
+  }
 
   if (/HTTP\s*404/.test(msg)) return true;
 
@@ -51,7 +53,6 @@ export function GlobalErrorListener() {
     if (shown.current.has(key)) return;
 
     shown.current.add(key);
-
     lastError.current = now;
     count.current += 1;
 
@@ -62,7 +63,7 @@ export function GlobalErrorListener() {
     }
 
     globalEvents.emit(EVENT_TYPES.APP_ERROR, {
-      message: message || 'Unexpected error',
+      message: message || 'Unexpected error occurred',
       error,
     });
 
@@ -73,12 +74,10 @@ export function GlobalErrorListener() {
 
   useEffect(() => {
     const onError = (event) => {
-      event.preventDefault();
       handleError(event.error || event.message, 'window.onerror');
     };
 
     const onRejection = (event) => {
-      event.preventDefault();
       handleError(event.reason, 'unhandledrejection');
     };
 

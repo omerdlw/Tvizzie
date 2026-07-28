@@ -18,14 +18,12 @@ function getBrowserEnvironment(route) {
 }
 
 function fingerprint(error, ctx = {}) {
-  return [
-    ctx.componentStack?.split('\n')[0] || '',
-    error?.message?.slice(0, 100) || '',
-    error?.name || '',
-    ctx.route || '',
-  ]
-    .filter(Boolean)
-    .join('::');
+  const stackTop = ctx.componentStack?.split('\n').filter(Boolean)[0] || '';
+  const errorMessage = error?.message?.slice(0, 100) || String(error || '').slice(0, 100);
+  const errorName = error?.name || 'UnknownError';
+  const route = ctx.route || '';
+
+  return [stackTop, errorMessage, errorName, route].filter(Boolean).join('::');
 }
 
 function createReport(error, { context = {}, tags = {} } = {}) {
@@ -35,11 +33,9 @@ function createReport(error, { context = {}, tags = {} } = {}) {
       stack: error?.stack || null,
       name: error?.name || 'UnknownError',
     },
-
     fingerprint: fingerprint(error, context),
     timestamp: new Date().toISOString(),
     environment: getBrowserEnvironment(context.route),
-
     componentStack: context.componentStack || null,
     context,
     tags,
@@ -59,7 +55,9 @@ class ErrorReporter {
   }
 
   addHandler(handler) {
-    if (handler?.handle) this.handlers.push(handler);
+    if (handler?.handle && typeof handler.handle === 'function') {
+      this.handlers.push(handler);
+    }
     return this;
   }
 
@@ -95,7 +93,9 @@ class ErrorReporter {
 
     if (this.seen.size >= MAX_FINGERPRINTS) {
       const first = this.seen.values().next().value;
-      this.seen.delete(first);
+      if (first) {
+        this.seen.delete(first);
+      }
     }
 
     this.seen.add(report.fingerprint);
@@ -108,9 +108,9 @@ class ErrorReporter {
       try {
         report = this.beforeSend(report);
         if (!report) return;
-      } catch (error) {
+      } catch (err) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn('[ErrorReporter] beforeSend failed:', error);
+          console.warn('[ErrorReporter] beforeSend callback failed:', err);
         }
       }
     }
@@ -118,9 +118,9 @@ class ErrorReporter {
     this.handlers.forEach((h) => {
       try {
         h.handle(report);
-      } catch (error) {
+      } catch (err) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn(`[ErrorReporter] Handler failed: ${h.name}`, error);
+          console.warn(`[ErrorReporter] Handler "${h.name}" failed:`, err);
         }
       }
     });
@@ -138,6 +138,8 @@ class ErrorReporter {
 let instance = null;
 
 export function getErrorReporter(options = {}) {
-  if (!instance) instance = new ErrorReporter(options);
+  if (!instance) {
+    instance = new ErrorReporter(options);
+  }
   return instance;
 }

@@ -19,10 +19,6 @@ function withDefaultDuration(duration, options = {}) {
   };
 }
 
-function generateToastId() {
-  return `toast_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
 const PRODUCTION_OPTIONAL_TOAST_TYPES = new Set([TOAST_TYPES.SUCCESS, TOAST_TYPES.INFO]);
 
 function shouldSuppressToast(type, options = {}) {

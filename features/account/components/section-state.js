@@ -4,7 +4,7 @@ import { normalizeFeedbackContent } from '@/core/utils';
 import { cn } from '@/core/utils';
 
 export const ACCOUNT_EMPTY_SECTION_CLASS =
-  'bg-primary center border border-black/5 p-6 text-black/50';
+  'bg-primary center border border-black/5 p-6 text-black/50 rounded-2xl';
 
 export default function AccountInlineSectionState({ children, className = '' }) {
   return (
