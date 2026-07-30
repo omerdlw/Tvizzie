@@ -1,8 +1,13 @@
 'use client';
 
+/**
+ * Media Reviews - Main Container Feature Component
+ * Path: features/media-reviews/media-reviews.js
+ */
+
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { TMDB_IMG } from '@/core/constants';
 import { AuthGate } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal';
 import { useNavigationActions } from '@/core/modules/nav';
@@ -14,13 +19,13 @@ import ReviewHeader from './parts/review-header';
 import ReviewList from './parts/review-list';
 import { useMediaReviews } from './use-media-reviews';
 import {
-  REVIEW_SORT_MODE,
-  REVIEW_SORT_OPTIONS,
   getRatingStats,
   parseReviewSortMode,
+  REVIEW_SORT_MODE,
+  REVIEW_SORT_OPTIONS,
   sortReviewsByMode,
 } from './utils';
-import { TMDB_IMG } from '@/core/constants';
+
 export default function MediaReviews({
   entityId,
   entityType,
@@ -40,13 +45,22 @@ export default function MediaReviews({
   showComposer = false,
   onReviewStateChange,
 }) {
-  const isRecentListMode = listMode === 'recent';
-  const isSortControlEnabled = enableSortControl && !isRecentListMode;
+  // ------------------------------------------
+  // 1. STATE & ROUTING PARAMS
+  // ------------------------------------------
   const [sortMode, setSortMode] = useState(defaultSortMode);
   const searchParams = useSearchParams();
+
   const querySortMode = parseReviewSortMode(searchParams?.get('sort'), REVIEW_SORT_MODE.NEWEST);
-  const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
   const queryReviewUser = String(searchParams?.get('user') || '').trim();
+
+  const isRecentListMode = listMode === 'recent';
+  const isSortControlEnabled = enableSortControl && !isRecentListMode;
+  const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
+
+  // ------------------------------------------
+  // 2. FEATURE HOOK & SERVICES
+  // ------------------------------------------
   const {
     currentUserId,
     handleDelete,
@@ -69,13 +83,15 @@ export default function MediaReviews({
     posterPath,
     title,
   });
-  const { openModal } = useModal();
+
   const { openSurface } = useNavigationActions();
+
+  // ------------------------------------------
+  // 3. HANDLERS & MODAL TRIGGERS
+  // ------------------------------------------
   const buildReviewUser = useCallback(
     (review = null) => {
-      if (!currentUserId) {
-        return null;
-      }
+      if (!currentUserId) return null;
       return {
         ...(review?.user || {}),
         ...(userProfile || {}),
@@ -84,6 +100,7 @@ export default function MediaReviews({
     },
     [currentUserId, userProfile],
   );
+
   const openReviewModal = useCallback(
     (review = null) => {
       if (!currentUserId) {
@@ -91,21 +108,13 @@ export default function MediaReviews({
         return;
       }
       const targetReview = review || ownReview || null;
+
       openSurface(
         createReviewEditorSurfaceEntry({
-          media: {
-            entityId,
-            entityType,
-            posterPath,
-            title,
-          },
+          media: { entityId, entityType, posterPath, title },
           onSuccess: targetReview
-            ? (updatedReview) => {
-                applyOptimisticReviewUpdate(targetReview, updatedReview);
-              }
-            : (newReview) => {
-                applyOptimisticReviewUpdate(null, newReview);
-              },
+            ? (updated) => applyOptimisticReviewUpdate(targetReview, updated)
+            : (newRev) => applyOptimisticReviewUpdate(null, newRev),
           review: targetReview,
           user: buildReviewUser(targetReview),
         }),
@@ -124,12 +133,14 @@ export default function MediaReviews({
       title,
     ],
   );
+
   const handleEditReview = useCallback(
     (review) => {
       openReviewModal(review);
     },
     [openReviewModal],
   );
+
   const handleDeleteRequest = useCallback(() => {
     const confirmation = {
       title: 'Delete Review?',
@@ -144,19 +155,20 @@ export default function MediaReviews({
         : undefined,
       onConfirm: async () => {
         const isDeleted = await handleDelete();
-        if (!isDeleted) {
-          throw new Error('review-delete-failed');
-        }
+        if (!isDeleted) throw new Error('review-delete-failed');
       },
     };
 
     openSurface(createConfirmationSurfaceEntry(confirmation));
   }, [handleDelete, openSurface, posterPath]);
+
+  // ------------------------------------------
+  // 4. MEMOIZED DATA FILTERS & SORTS
+  // ------------------------------------------
   const filteredReviews = useMemo(() => {
-    if (!useQueryUserFilter || !queryReviewUser) {
-      return reviews;
-    }
+    if (!useQueryUserFilter || !queryReviewUser) return reviews;
     const normalizedUser = queryReviewUser.toLowerCase();
+
     return reviews.filter((review) => {
       const username = String(review?.user?.username || '')
         .trim()
@@ -167,54 +179,63 @@ export default function MediaReviews({
       return username === normalizedUser || userId === normalizedUser;
     });
   }, [queryReviewUser, reviews, useQueryUserFilter]);
+
   const effectiveRatingStats = useMemo(() => {
-    if (!useQueryUserFilter || !queryReviewUser) {
-      return ratingStats;
-    }
+    if (!useQueryUserFilter || !queryReviewUser) return ratingStats;
     return getRatingStats(filteredReviews);
   }, [filteredReviews, queryReviewUser, ratingStats, useQueryUserFilter]);
+
   const defaultOrderedReviews = useMemo(() => {
-    if (!useQueryUserFilter || !queryReviewUser) {
-      return sortedReviews;
-    }
+    if (!useQueryUserFilter || !queryReviewUser) return sortedReviews;
     return sortReviewsByMode(filteredReviews, REVIEW_SORT_MODE.NEWEST);
   }, [filteredReviews, queryReviewUser, sortedReviews, useQueryUserFilter]);
-  const recentReviews = [...filteredReviews].sort((first, second) => {
-    const firstTime = new Date(first.updatedAt || first.createdAt || 0).getTime();
-    const secondTime = new Date(second.updatedAt || second.createdAt || 0).getTime();
-    return secondTime - firstTime;
-  });
+
+  const recentReviews = useMemo(() => {
+    return [...filteredReviews].sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
+  }, [filteredReviews]);
+
   const sortedByModeReviews = useMemo(
     () => sortReviewsByMode(filteredReviews, activeSortMode),
     [activeSortMode, filteredReviews],
   );
-  const hasMoreThanRecentLimit = isRecentListMode && recentReviews.length > 5;
+
   const shouldUseCustomSort = isSortControlEnabled || useQuerySortMode;
   const listAnimationKey = shouldUseCustomSort
     ? `reviews-sort-${activeSortMode}`
     : 'reviews-default-order';
+
   const displayedReviews = isRecentListMode
     ? recentReviews.slice(0, 5)
     : shouldUseCustomSort
       ? sortedByModeReviews
       : defaultOrderedReviews;
+
   const shouldHideRecentList =
     hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
-  const shouldShowComposer = showComposer && !ownReview;
+
   const backdropExtension = Math.max(0, Math.round(navHeight || 0));
+
+  // ------------------------------------------
+  // 5. RENDER UI
+  // ------------------------------------------
   return (
     <section
       data-community-reviews="true"
       className={`relative isolate z-0 flex w-full flex-col gap-6 overflow-hidden ${sectionClassName}`}
     >
-      {showBackdropGradient ? (
+      {/* Background Gradient */}
+      {showBackdropGradient && (
         <div
           className="media-reviews-backdrop-gradient pointer-events-none absolute inset-0 -z-10"
-          style={{
-            bottom: -backdropExtension,
-          }}
+          style={{ bottom: -backdropExtension }}
         />
-      ) : null}
+      )}
+
+      {/* Header */}
       <ReviewHeader
         ratingStats={effectiveRatingStats}
         title={headerTitle}
@@ -222,8 +243,11 @@ export default function MediaReviews({
         totalReviews={filteredReviews.length}
         onDeleteOwnReview={ownReview ? handleDeleteRequest : null}
         onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
+        onAddReview={!currentUserId ? handleSignInRequest : null}
       />
-      {shouldShowComposer ? (
+
+      {/* Composer Section */}
+      {showComposer && !ownReview && (
         <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
           <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
@@ -241,8 +265,10 @@ export default function MediaReviews({
             </Button>
           </div>
         </AuthGate>
-      ) : null}
-      {isSortControlEnabled ? (
+      )}
+
+      {/* Sort Control */}
+      {isSortControlEnabled && (
         <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
           <span className="text-[11px] font-semibold tracking-wider text-black/50 uppercase">
             Sort
@@ -264,30 +290,24 @@ export default function MediaReviews({
             aria-label="Sort reviews"
           />
         </div>
-      ) : null}
+      )}
 
-      {!shouldHideRecentList ? (
-        <>
-          <div
-            key={listAnimationKey}
-            style={{
-              willChange: 'transform, opacity, filter',
-            }}
-          >
-            <ReviewList
-              currentUserId={currentUserId}
-              isLoading={isLoading}
-              loadError={loadError}
-              onDeleteRequest={handleDeleteRequest}
-              onEdit={handleEditReview}
-              onLike={handleLike}
-              showOwnActions={false}
-              sortedReviews={displayedReviews}
-              userProfile={userProfile}
-            />
-          </div>
-        </>
-      ) : null}
+      {/* Review List */}
+      {!shouldHideRecentList && (
+        <div key={listAnimationKey} style={{ willChange: 'transform, opacity, filter' }}>
+          <ReviewList
+            currentUserId={currentUserId}
+            isLoading={isLoading}
+            loadError={loadError}
+            onDeleteRequest={handleDeleteRequest}
+            onEdit={handleEditReview}
+            onLike={handleLike}
+            showOwnActions={false}
+            sortedReviews={displayedReviews}
+            userProfile={userProfile}
+          />
+        </div>
+      )}
     </section>
   );
 }

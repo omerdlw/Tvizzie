@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * @file index.js
+ * @description Auth işlemlerinin ana Orchestrator (yönlendirici/tamamlayıcı) fonksiyonları.
+ */
+
 import { ACCOUNT_CLIENT } from '@/core/services/account/account-client';
 import { getOAuthProviderLabel } from '@/core/auth/oauth-providers';
 import { completeVerifiedSignUp } from './requests';
@@ -11,6 +16,10 @@ import {
   validateAllowedEmailDomain,
   validatePassword,
 } from './auth-flow';
+
+// ============================================================================
+// 1. E-POSTA VE KULLANICI DOĞRULAMA ÇÖZÜMLEMELERİ
+// ============================================================================
 
 export async function resolveSignInEmail(identifier) {
   const normalizedIdentifier = String(identifier || '').trim();
@@ -45,6 +54,10 @@ export async function resolveSignInEmail(identifier) {
   };
 }
 
+// ============================================================================
+// 2. KAYIT PAYLOAD OLUŞTURMA VE KONTROL
+// ============================================================================
+
 export async function createPendingSignUpPayload(form = {}) {
   const username = ACCOUNT_CLIENT.validateUsername(form.username);
   const displayName = String(form.displayName || '').trim() || username;
@@ -62,6 +75,10 @@ export async function createPendingSignUpPayload(form = {}) {
     username,
   };
 }
+
+// ============================================================================
+// 3. KAYIT TAMAMLAMA (FINALIZE SIGN-UP & OAUTH)
+// ============================================================================
 
 export async function finalizeSignUp({
   auth,

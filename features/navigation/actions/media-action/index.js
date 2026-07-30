@@ -92,8 +92,8 @@ export default function MediaAction() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.24, 1] }}
       className="group relative mt-2.5 flex h-7 w-full cursor-pointer items-center overflow-hidden"

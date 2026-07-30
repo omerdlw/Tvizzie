@@ -13,17 +13,17 @@ function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, width: 0, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, scale: 1, width: 'auto', filter: 'blur(0px)' }}
-      exit={{ opacity: 0, scale: 0.8, width: 0, filter: 'blur(4px)' }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.24, 1] }}
+      initial={{ opacity: 0, scale: 0.8, width: 0 }}
+      animate={{ opacity: 1, scale: 1, width: 'auto' }}
+      exit={{ opacity: 0, scale: 0.8, width: 0 }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
       className={`overflow-hidden shrink-0 ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}
     >
       <motion.button
         type="button"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
         className={cn(
           navActionClass({
             cn,
@@ -100,7 +100,7 @@ export default function SearchActionControls({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
                     className="center shrink-0"
                   >
                     <Icon icon="line-md:loading-loop" size={16} />
@@ -112,9 +112,9 @@ export default function SearchActionControls({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.15 }}
-                    whileHover={{ scale: 1.15 }}
-                    whileTap={{ scale: 0.9 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.97 }}
                     className="center text-error shrink-0 cursor-pointer"
                     onClick={onClear}
                   >
@@ -133,9 +133,9 @@ export default function SearchActionControls({
       {shouldShowTabs ? (
         <motion.div
           className="mt-2 overflow-hidden"
-          initial={{ opacity: 0, y: 6, filter: 'blur(6px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.24, 1] }}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1] }}
         >
           <div className={SEARCH_STYLES.tabList}>
             {SEARCH_TAB_ITEMS.map((item) => {
@@ -155,7 +155,7 @@ export default function SearchActionControls({
                   onClick={() => onSearchTypeChange?.(item.key)}
                   whileHover={{ scale: 1.012 }}
                   whileTap={{ scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
                 >
                   <span className="relative">{item.label}</span>
                 </motion.button>

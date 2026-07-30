@@ -9,12 +9,12 @@ import {
   getMoviePosterPreferenceFilePath,
   setMovieBackgroundPreference,
   setMoviePosterPreference,
-} from '@/features/movie/background-preferences';
+} from '@/features/media/background-preferences';
 import {
   createMovieBackdropImageUrl,
   createMoviePosterImageUrl,
   getPreferredMovieBackground,
-} from '@/features/movie/utils';
+} from '@/features/media/utils';
 
 import MovieView from './view';
 

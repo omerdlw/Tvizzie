@@ -1,25 +1,23 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
+
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/core/utils';
 import { Container } from '@/core/modules/modal';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 
-
-
-
+// --- HELPERS ---
 
 function buildUserActionMap(socialProof) {
   const userMap = new Map();
+
   const attachAction = (users = [], action) => {
     users.forEach((user) => {
       if (!user?.id) return;
-      const existing = userMap.get(user.id) || {
-        user,
-        actions: new Set(),
-      };
+      const existing = userMap.get(user.id) || { user, actions: new Set() };
       existing.actions.add(action);
       userMap.set(user.id, existing);
     });
@@ -45,22 +43,61 @@ function formatActionSummary(actions = []) {
   return actions.map((item) => item.toUpperCase()).join(' • ');
 }
 
+// --- SUB-COMPONENTS ---
 
+const SocialUserRow = memo(function SocialUserRow({ close, user, actions }) {
+  const username = user?.username || 'user';
 
+  return (
+    <motion.div
+      whileHover={{ scale: 1.008, x: 2 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+    >
+      <Link
+        href={`/account/${username}`}
+        onClick={close}
+        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border-b border-black/5 p-3 transition-colors duration-200 last:border-none hover:bg-white lg:p-4"
+      >
+        <div className="center size-10 shrink-0 overflow-hidden rounded-xl border border-black/5">
+          <AdaptiveImage
+            mode="img"
+            src={getUserAvatarUrl(user)}
+            alt={user?.displayName || username}
+            className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(event) => applyAvatarFallback(event, getUserAvatarFallbackUrl(user))}
+            wrapperClassName="size-full"
+          />
+        </div>
 
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-semibold">@{username}</span>
+          <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
+            {formatActionSummary(actions)}
+          </span>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5 self-center">
+          <span
+            aria-hidden="true"
+            className="center size-7 rounded-lg border border-black/10 text-black/70"
+          >
+            <Icon icon="solar:alt-arrow-right-linear" size={16} />
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+});
+
+// --- MAIN COMPONENT ---
 
 export default function MediaSocialProofModal({ close, data }) {
   const userEntries = buildUserActionMap(data?.socialProof);
   if (!userEntries.length) return null;
 
-  return <ModalView close={close} userEntries={userEntries} title={data?.title} />;
-}
-
-
-
-
-
-function ModalView({ close, userEntries, title }) {
   return (
     <Container
       className="relative max-h-[85vh] w-[min(92vw,560px)] rounded-[24px]"
@@ -71,7 +108,9 @@ function ModalView({ close, userEntries, title }) {
             Friends activity
           </h2>
         ),
-        right: title ? <span className="truncate text-xs text-black/50">{title}</span> : null,
+        right: data?.title ? (
+          <span className="truncate text-xs text-black/50">{data.title}</span>
+        ) : null,
       }}
       bodyClassName="p-0"
     >
@@ -82,60 +121,9 @@ function ModalView({ close, userEntries, title }) {
             close={close}
             user={user}
             actions={actions}
-            index={index}
           />
         ))}
       </div>
     </Container>
-  );
-}
-
-function SocialUserRow({ close, user, actions, index }) {
-  const avatarSrc = getUserAvatarUrl(user);
-  const avatarFallbackSrc = getUserAvatarFallbackUrl(user);
-  const username = user?.username || 'user';
-  return (
-    <motion.div
-      whileHover={{ scale: 1.008, x: 2 }}
-      whileTap={{ scale: 0.985 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-    >
-      <Link
-        href={`/account/${username}`}
-        onClick={close}
-        className="relative grid h-full w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-black/5 p-3 last:border-none hover:bg-white lg:p-4 rounded-xl transition-colors duration-200"
-      >
-        <div className="center size-10 shrink-0 overflow-hidden border border-black/5 rounded-xl">
-          <AdaptiveImage
-            mode="img"
-            src={avatarSrc}
-            alt={user?.displayName || username}
-            className="size-full object-cover"
-            loading="lazy"
-            decoding="async"
-            onError={(event) => applyAvatarFallback(event, avatarFallbackSrc)}
-            wrapperClassName="size-full"
-          />
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm">
-            <span className="font-semibold">@{username}</span>
-          </span>
-          <span className="truncate text-[10px] tracking-widest text-black/50 uppercase">
-            {formatActionSummary(actions)}
-          </span>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1.5 self-center">
-          <span
-            aria-hidden="true"
-            className="center size-7 border border-black/10 text-black/70 rounded-lg"
-          >
-            <Icon icon="solar:alt-arrow-right-linear" size={16} />
-          </span>
-        </div>
-      </Link>
-    </motion.div>
   );
 }

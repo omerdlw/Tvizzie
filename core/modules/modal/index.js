@@ -17,7 +17,12 @@ import { useModal } from '@/core/modules/modal/context';
 
 import { useModalRegistry } from '../registry/context';
 import { POSITION_CLASSES } from './utils';
-import { getModalPositionVariants, modalBackdropVariants } from './motion';
+import {
+  getModalPositionVariants,
+  modalBackdropVariants,
+  MODAL_MICRO_SPRING,
+  MODAL_MICRO_TAP_SCALE,
+} from './motion';
 
 export {
   ACTION_BUTTON_CLASS,
@@ -106,8 +111,10 @@ function isVerticalEdgePosition(position) {
 function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious }) {
   return (
     <div className="center shrink-0 gap-1.5 border-t border-black/10 bg-white px-3 py-2">
-      <button
+      <motion.button
         type="button"
+        whileTap={{ scale: MODAL_MICRO_TAP_SCALE }}
+        transition={MODAL_MICRO_SPRING}
         onClick={onSwitchToPrevious}
         className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold tracking-wide text-black/70 uppercase hover:bg-black/5 hover:text-black"
       >
@@ -121,7 +128,7 @@ function ModalLayerSwitcher({ currentEntry, previousEntry, onSwitchToPrevious })
           />
         </svg>
         {getModalLabel(previousEntry.modalType)}
-      </button>
+      </motion.button>
       <span className="text-[10px] text-black/20">/</span>
       <span className="bg-primary rounded-xl px-2.5 py-1.5 text-[11px] font-bold tracking-wide uppercase">
         {getModalLabel(currentEntry.modalType)}

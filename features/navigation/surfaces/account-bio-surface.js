@@ -38,8 +38,8 @@ export default function AccountBioSurface({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
       className="bg-primary max-h-[min(40dvh,18rem)] w-full overflow-y-auto rounded-2xl px-4 py-2"
     >

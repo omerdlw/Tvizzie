@@ -1,6 +1,23 @@
 import createBundleAnalyzer from '@next/bundle-analyzer';
+import os from 'node:os';
 
 import { CSP_ENFORCE } from './core/services/shared/runtime-policy.constants.js';
+
+function getLocalDevOrigins() {
+  const origins = new Set(['localhost', '127.0.0.1', '0.0.0.0', '192.168.1.214']);
+  try {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+      for (const net of interfaces[name] || []) {
+        if (net.family === 'IPv4' && !net.internal) {
+          origins.add(net.address);
+          origins.add(`${net.address}:3000`);
+        }
+      }
+    }
+  } catch {}
+  return Array.from(origins);
+}
 
 const withBundleAnalyzer = createBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -63,10 +80,14 @@ const SECURITY_HEADERS = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-XSS-Protection', value: '0' },
-  {
-    key: 'Strict-Transport-Security',
-    value: 'max-age=31536000; includeSubDomains; preload',
-  },
+  ...(process.env.NODE_ENV === 'production'
+    ? [
+        {
+          key: 'Strict-Transport-Security',
+          value: 'max-age=31536000; includeSubDomains; preload',
+        },
+      ]
+    : []),
   {
     key: 'Cross-Origin-Opener-Policy',
     value: 'same-origin-allow-popups',
@@ -85,6 +106,7 @@ const STATIC_CACHE_HEADERS = [
 ];
 
 const NEXT_CONFIG = {
+  allowedDevOrigins: getLocalDevOrigins(),
   compress: true,
   output: 'standalone',
   poweredByHeader: false,
@@ -233,9 +255,7 @@ const NEXT_CONFIG = {
   webpack(config) {
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};
-
     config.resolve.alias['framer-motion/client'] = 'framer-motion';
-
     return config;
   },
 };

@@ -25,9 +25,7 @@ const Nav = dynamic(() => import('@/core/modules/nav'));
 const WEB_VITALS_ENDPOINT = '/api/observability/web-vitals';
 const TRACKED_METRICS = new Set(['CLS', 'FCP', 'INP', 'LCP', 'TTFB']);
 const STATIC_NAV_ITEMS = Object.freeze(
-  Object.fromEntries(
-    Object.values(NAV_CONFIG.items).map((item) => [item.path || item.name, item]),
-  ),
+  Object.fromEntries(Object.values(NAV_CONFIG.items).map((item) => [item.path || item.name, item])),
 );
 
 const APP_REGISTRY_ENTRIES = Object.freeze([
@@ -136,9 +134,7 @@ function postWebVital(metric) {
       keepalive: true,
       method: 'POST',
     }).catch(() => null);
-  } catch {
-    
-  }
+  } catch {}
 }
 
 function WebVitals() {
@@ -148,6 +144,9 @@ function WebVitals() {
 }
 
 export const AppProviders = ({ children }) => {
+  const pathname = usePathname();
+  const enableSmoothScroll = shouldEnableSmoothScroll(pathname);
+
   return (
     <>
       <WebVitals />
@@ -156,7 +155,13 @@ export const AppProviders = ({ children }) => {
           <BackgroundOverlay />
           <LoadingOverlay />
           <Nav />
-          <GlobalError>{children}</GlobalError>
+          <GlobalError>
+            {enableSmoothScroll ? (
+              <SmoothScrollProvider>{children}</SmoothScrollProvider>
+            ) : (
+              children
+            )}
+          </GlobalError>
         </PersistentInteractiveShell>
       </CoreShellProviders>
     </>

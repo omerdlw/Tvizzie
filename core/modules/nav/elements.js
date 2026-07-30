@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   NAV_BADGE_TRANSITION,
   NAV_FADE_TRANSITION,
+  NAV_TAP_SCALE,
   textCrossfadeVariants,
 } from '@/core/modules/nav/motion';
 import { cn } from '@/core/utils';
@@ -62,10 +63,10 @@ export const Description = memo(function Description({ text, style, maxLines = 1
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.p
           key={typeof text === 'string' || typeof text === 'number' ? text : 'desc'}
-          variants={textCrossfadeVariants}
-          animate="visible"
-          initial="hidden"
-          exit="exit"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={NAV_FADE_TRANSITION}
           className={cn(
             'text-black',
             isMultiline ? 'wrap-break-word whitespace-normal' : 'truncate',
@@ -101,7 +102,7 @@ export const IconOverlay = memo(function IconOverlay({ overlay }) {
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.7 }}
-        whileTap={onClick ? { scale: 0.9 } : undefined}
+        whileTap={onClick ? { scale: NAV_TAP_SCALE } : undefined}
         transition={NAV_BADGE_TRANSITION}
         className={cn(
           'absolute -right-1 -bottom-1 flex size-6 items-center justify-center overflow-hidden rounded-[8px]',
@@ -164,11 +165,11 @@ export const Title = memo(function Title({ text, style }) {
         <motion.h3
           key={typeof text === 'string' || typeof text === 'number' ? text : 'title'}
           className={cn('truncate font-bold', className)}
-          variants={textCrossfadeVariants}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={NAV_FADE_TRANSITION}
           style={inlineStyle}
-          animate="visible"
-          initial="hidden"
-          exit="exit"
         >
           {text}
         </motion.h3>

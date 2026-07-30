@@ -116,9 +116,9 @@ function OtpBoxes({
                 {digit ? (
                   <motion.span
                     key={`digit-${digit}`}
-                    initial={{ scale: 0.6, opacity: 0, filter: 'blur(4px)' }}
-                    animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ scale: 0.6, opacity: 0, filter: 'blur(4px)' }}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.6, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 22 }}
                   >
                     {digit}

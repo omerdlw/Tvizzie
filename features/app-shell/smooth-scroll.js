@@ -12,7 +12,7 @@ const DETAIL_ROUTE_PREFIXES = ['/movie/', '/tv/', '/person/'];
 const SMOOTH_WRAPPER_ID = 'smooth-wrapper';
 const SMOOTH_CONTENT_ID = 'smooth-content';
 
-const DESKTOP_SMOOTH_DURATION = 0.66;
+const DESKTOP_SMOOTH_DURATION = 0.42;
 const DESKTOP_SCROLL_EASE = 'power2.out';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const TOUCH_SCROLL_QUERY = '(hover: none), (pointer: coarse)';

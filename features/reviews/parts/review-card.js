@@ -1,8 +1,12 @@
 'use client';
 
+/**
+ * Media Reviews - Single Review Card Component
+ * Path: features/media-reviews/parts/review-card.js
+ */
+
 import { useState } from 'react';
 import Link from 'next/link';
-import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import { TMDB_IMG } from '@/core/constants';
 import {
   canUseNextImageOptimization,
@@ -16,22 +20,23 @@ import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/features/media/poster-overrides';
-import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Button } from '@/ui/elements';
+import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
+import ListPreviewComposition from '@/ui/media/list-preview-composition';
 import RatingStars from './rating-stars';
+
+// ==========================================
+// 1. HELPER FUNCTIONS
+// ==========================================
+
 function getReviewPosterSrc(review) {
   if (review?.subjectType === 'movie') {
-    const preferredPoster = getPreferredMoviePosterSrc(
-      {
-        id: review?.subjectId,
-        poster_path: review?.subjectPoster,
-      },
+    const preferred = getPreferredMoviePosterSrc(
+      { id: review?.subjectId, poster_path: review?.subjectPoster },
       'w342',
     );
-    if (preferredPoster) {
-      return preferredPoster;
-    }
+    if (preferred) return preferred;
   }
   const poster = String(review?.subjectPoster || '').trim();
   if (!poster) return null;
@@ -39,89 +44,88 @@ function getReviewPosterSrc(review) {
   if (poster.startsWith('/')) return `${TMDB_IMG}/w342${poster}`;
   return poster;
 }
+
 function getReviewLikeText(likesCount) {
-  if (likesCount === 0) return 'Like';
-  if (likesCount === 1) return '1 like';
-  return `${likesCount} likes`;
+  if (!likesCount) return 'Like';
+  return likesCount === 1 ? '1 like' : `${likesCount} likes`;
 }
+
 function getAccountActivityLabel(review, { hasRating, hasText }) {
-  if (review.subjectType === 'list') {
-    return hasText ? 'List comment' : 'List note';
-  }
-  if (hasText) {
-    return 'Watched';
-  }
-  if (hasRating) {
-    return 'Rated';
-  }
+  if (review.subjectType === 'list') return hasText ? 'List comment' : 'List note';
+  if (hasText) return 'Watched';
+  if (hasRating) return 'Rated';
   return 'Logged';
 }
+
 function getFeedActivityLabel(review, { hasRating, hasText }) {
-  if (review.subjectType === 'list') {
-    return hasText ? 'List comment by' : 'List note by';
-  }
-  if (hasText) {
-    return 'Review by';
-  }
-  if (hasRating) {
-    return 'Rated by';
-  }
+  if (review.subjectType === 'list') return hasText ? 'List comment by' : 'List note by';
+  if (hasText) return 'Review by';
+  if (hasRating) return 'Rated by';
   return 'Logged by';
 }
+
 function appendQueryParam(href, key, value) {
   const safeHref = String(href || '').trim();
   const safeValue = String(value || '').trim();
-  if (!safeHref || !safeValue) {
-    return safeHref;
-  }
+  if (!safeHref || !safeValue) return safeHref;
+
   const [pathPart, hashPart = ''] = safeHref.split('#');
   const [pathname, search = ''] = pathPart.split('?');
   const params = new URLSearchParams(search);
   params.set(key, safeValue);
+
   const query = params.toString();
   const withQuery = query ? `${pathname}?${query}` : pathname;
   return hashPart ? `${withQuery}#${hashPart}` : withQuery;
 }
+
 function resolveMediaReviewsHref(review) {
   const subjectId = String(review?.subjectId || '').trim();
-  const rawSubjectHref = String(review?.subjectHref || '').trim();
-  const explicitSubjectType = normalizeMediaType(review?.subjectType);
-  const rawSubjectMatch = rawSubjectHref.match(/^\/(movie|tv)\/([^/?#]+)([?#].*)?$/);
-  const rawReviewsMatch = rawSubjectHref.match(/^\/(movie|tv)\/[^/?#]+\/reviews(?:[?#].*)?$/);
-  const subjectType = isTitleMediaType(explicitSubjectType)
-    ? explicitSubjectType
-    : rawSubjectMatch?.[1] || null;
+  const rawHref = String(review?.subjectHref || '').trim();
+  const explicitType = normalizeMediaType(review?.subjectType);
+
+  const rawMatch = rawHref.match(/^\/(movie|tv)\/([^/?#]+)([?#].*)?$/);
+  const rawReviewsMatch = rawHref.match(/^\/(movie|tv)\/[^/?#]+\/reviews(?:[?#].*)?$/);
+
+  const subjectType = isTitleMediaType(explicitType) ? explicitType : rawMatch?.[1] || null;
+
   let baseHref = '';
   if (subjectId && subjectType) {
     baseHref = `/${subjectType}/${subjectId}/reviews`;
-  } else if (rawSubjectHref) {
+  } else if (rawHref) {
     if (rawReviewsMatch) {
-      baseHref = rawSubjectHref;
-    } else if (rawSubjectMatch) {
-      const mediaType = rawSubjectMatch[1];
-      const mediaId = rawSubjectMatch[2];
-      const suffix = rawSubjectMatch[3] || '';
-      baseHref = `/${mediaType}/${mediaId}/reviews${suffix}`;
+      baseHref = rawHref;
+    } else if (rawMatch) {
+      baseHref = `/${rawMatch[1]}/${rawMatch[2]}/reviews${rawMatch[3] || ''}`;
     }
   }
-  if (!baseHref) {
-    return rawSubjectHref || null;
-  }
+
+  if (!baseHref) return rawHref || null;
+
   const reviewUser = String(
     review?.user?.username || review?.user?.id || review?.reviewUserId || '',
   ).trim();
+
   return appendQueryParam(baseHref, 'user', reviewUser);
 }
+
 function resolveSubjectHref(review, isAccountVariant) {
-  const rawSubjectHref = String(review?.subjectHref || '').trim();
-  if (!isAccountVariant) {
-    return rawSubjectHref || null;
-  }
-  if (isTitleMediaType(review?.subjectType)) {
-    return resolveMediaReviewsHref(review);
-  }
-  return rawSubjectHref || null;
+  const rawHref = String(review?.subjectHref || '').trim();
+  if (!isAccountVariant) return rawHref || null;
+  return isTitleMediaType(review?.subjectType) ? resolveMediaReviewsHref(review) : rawHref || null;
 }
+
+function isInteractiveTarget(target) {
+  return Boolean(
+    target instanceof Element &&
+    target.closest('a, button, input, textarea, select, summary, [role="button"]'),
+  );
+}
+
+// ==========================================
+// 2. SUB-COMPONENTS
+// ==========================================
+
 function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, onClick }) {
   return (
     <button
@@ -142,7 +146,8 @@ function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, 
     </button>
   );
 }
-function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inline = false }) {
+
+function ReviewActions({ disabled, onDeleteRequest, onEdit, mobile = false, inline = false }) {
   return (
     <div
       className={cn(
@@ -176,17 +181,23 @@ function ReviewActions({ disabled, onEdit, onDeleteRequest, mobile = false, inli
     </div>
   );
 }
+
 function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewItems = [], src }) {
   const wrapperClass = isAccountVariant
     ? 'relative h-24 w-16 shrink-0 overflow-hidden sm:h-28 sm:w-[72px] rounded-xl border border-black/10'
     : 'relative size-10 sm:size-12 shrink-0 overflow-hidden rounded-xl border border-black/10 bg-primary/30';
+
   return (
     <div className={wrapperClass}>
       {isAccountVariant && isListSubject ? (
-        <ListPreviewComposition className="rounded-xl" emptyIcon="solar:list-broken" items={previewItems} />
+        <ListPreviewComposition
+          className="rounded-xl"
+          emptyIcon="solar:list-broken"
+          items={previewItems}
+        />
       ) : src ? (
         <AdaptiveImage
-          className={cn('rounded-xl object-cover', !isAccountVariant && '')}
+          className="rounded-xl object-cover"
           src={src}
           alt={alt}
           fill
@@ -205,12 +216,6 @@ function ReviewVisual({ alt, isAccountVariant, isListSubject = false, previewIte
         </div>
       )}
     </div>
-  );
-}
-function isInteractiveTarget(target) {
-  return Boolean(
-    target instanceof Element &&
-    target.closest('a, button, input, textarea, select, summary, [role="button"]'),
   );
 }
 
@@ -234,12 +239,17 @@ function SpoilerNotice({ compact = false, onReveal }) {
         </span>
       </span>
 
-      <span className="text-info group-hover:text-black transition-all duration-150 ease-in-out shrink-0 p-2 text-xs font-semibold tracking-wide uppercase">
+      <span className="text-info shrink-0 p-2 text-xs font-semibold tracking-wide uppercase transition-all duration-150 ease-in-out group-hover:text-black">
         Show
       </span>
     </button>
   );
 }
+
+// ==========================================
+// 3. MAIN COMPONENT
+// ==========================================
+
 export default function ReviewCard({
   className = '',
   review,
@@ -256,37 +266,38 @@ export default function ReviewCard({
 }) {
   usePosterPreferenceVersion();
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+
+  // Variant & State Computations
   const isAccountVariant = displayVariant === 'account';
   const isActivityVariant = displayVariant === 'activity';
   const isSubjectCardVariant = isAccountVariant || isActivityVariant;
   const isSpoiler = Boolean(review.isSpoiler);
   const isSpoilerHidden = isSpoiler && !isSpoilerVisible;
+
   const hasLiked = currentUserId ? review.likes?.includes(currentUserId) : false;
   const likesCount = review.likes?.length || 0;
   const resolvedRating = Number(review.rating);
   const hasRating = review.subjectType !== 'list' && Number.isFinite(resolvedRating);
   const hasText = Boolean(review.content?.trim());
   const isLikeDisabled = currentUserId && review.user?.id === currentUserId;
+
   const activityLabel = isSubjectCardVariant
-    ? getAccountActivityLabel(review, {
-        hasRating,
-        hasText,
-      })
-    : getFeedActivityLabel(review, {
-        hasRating,
-        hasText,
-      });
+    ? getAccountActivityLabel(review, { hasRating, hasText })
+    : getFeedActivityLabel(review, { hasRating, hasText });
+
   const displayName =
     review.user?.displayName || review.user?.name || review.user?.email || 'Anonymous User';
   const username = review.user?.username;
   const timestamp = review.updatedAt || review.createdAt;
   const formattedDate = timestamp ? formatDate(timestamp) : 'Just now';
+
   const accountHref = `/account/${username || review.user?.id || review.id}`;
   const visualSrc = isSubjectCardVariant
     ? getReviewPosterSrc(review)
     : getUserAvatarUrl(review.user);
   const subjectHref = resolveSubjectHref(review, isSubjectCardVariant);
   const previewItems = Array.isArray(review.subjectPreviewItems) ? review.subjectPreviewItems : [];
+
   const reviewSubjectKey = review.subjectKey || review.mediaKey || null;
   const hasLikedSubject = Boolean(
     review.subjectType !== 'list' && reviewSubjectKey && likedMediaKeys?.has?.(reviewSubjectKey),
@@ -297,119 +308,185 @@ export default function ReviewCard({
   const isRewatch = Boolean(
     review.subjectType !== 'list' && reviewSubjectKey && rewatchMediaKeys?.has?.(reviewSubjectKey),
   );
-  const contentClass = cn(
-    'flex min-w-0 flex-1 flex-col',
-    isSubjectCardVariant ? 'gap-1 self-stretch' : 'gap-1',
-  );
+
   const revealSpoiler = () => setIsSpoilerVisible(true);
+
   const handleCardClick = (event) => {
-    if (!isSpoilerHidden || isInteractiveTarget(event.target)) {
-      return;
-    }
+    if (!isSpoilerHidden || isInteractiveTarget(event.target)) return;
     revealSpoiler();
   };
+
   return (
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-black/10 last:border-b-0',
-        isAccountVariant ? 'py-3.5 sm:py-4' : 'py-3.5 sm:py-4',
+        'relative border-b border-black/10 py-3.5 last:border-b-0 sm:py-4',
         isSpoilerHidden && 'cursor-pointer',
         className,
       )}
     >
-      <div className="relative">
-        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <div className="relative shrink-0">
-            <ReviewVisual
-              alt={isSubjectCardVariant ? review.subjectTitle || 'Poster' : displayName}
-              isAccountVariant={isSubjectCardVariant}
-              isListSubject={review.subjectType === 'list'}
-              previewItems={previewItems}
-              src={visualSrc}
-            />
+      <div className="relative flex min-w-0 items-start gap-3 sm:gap-4">
+        {/* Visual Element */}
+        <div className="relative shrink-0">
+          <ReviewVisual
+            alt={isSubjectCardVariant ? review.subjectTitle || 'Poster' : displayName}
+            isAccountVariant={isSubjectCardVariant}
+            isListSubject={review.subjectType === 'list'}
+            previewItems={previewItems}
+            src={visualSrc}
+          />
+          {isAccountVariant && isOwnReview && (
+            <ReviewActions mobile onDeleteRequest={onDeleteRequest} onEdit={onEdit} />
+          )}
+        </div>
 
-            {isAccountVariant && isOwnReview && (
-              <ReviewActions
-                mobile
-                disabled={false}
-                onEdit={onEdit}
-                onDeleteRequest={onDeleteRequest}
-              />
-            )}
-          </div>
-
-          <div className={contentClass}>
-            {isSubjectCardVariant ? (
-              <>
-                {!isActivityVariant ? (
-                  <>
-                    <div className="flex min-w-0 items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        {showSubject && subjectHref && review.subjectTitle && (
-                          <Link
-                            href={subjectHref}
-                            className="block min-w-0 text-lg font-semibold tracking-tight sm:text-xl"
-                            style={{
-                              display: '-webkit-box',
-                              overflow: 'hidden',
-                              WebkitBoxOrient: 'vertical',
-                              WebkitLineClamp: 2,
-                            }}
-                          >
-                            {review.subjectTitle}
-                          </Link>
-                        )}
-                      </div>
-                      {isOwnReview && (
-                        <ReviewActions
-                          disabled={false}
-                          onEdit={onEdit}
-                          onDeleteRequest={onDeleteRequest}
-                        />
+        {/* Content Body */}
+        <div
+          className={cn(
+            'flex min-w-0 flex-1 flex-col gap-1',
+            isSubjectCardVariant && 'self-stretch',
+          )}
+        >
+          {isSubjectCardVariant ? (
+            /* Subject Card Mode (Account/Activity) */
+            <>
+              {!isActivityVariant ? (
+                <>
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      {showSubject && subjectHref && review.subjectTitle && (
+                        <Link
+                          href={subjectHref}
+                          className="line-clamp-2 block min-w-0 text-lg font-semibold tracking-tight sm:text-xl"
+                        >
+                          {review.subjectTitle}
+                        </Link>
                       )}
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
-                      {hasRating && <RatingStars rating={resolvedRating} />}
-                      {hasLikedSubject && (
-                        <Icon icon="solar:heart-bold" size={16} className="text-error" />
-                      )}
-                      {hasWatchedSubject && isRewatch && (
-                        <Icon icon="solar:refresh-bold" size={16} className="text-success" />
-                      )}
-                      <span>{activityLabel}</span>
-                      <span className="text-xs sm:text-sm">{formattedDate}</span>
-                    </div>
-                  </>
-                ) : hasRating ? (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
-                    <RatingStars rating={resolvedRating} />
+                    {isOwnReview && (
+                      <ReviewActions onDeleteRequest={onDeleteRequest} onEdit={onEdit} />
+                    )}
                   </div>
-                ) : null}
 
-                {hasText &&
-                  (isSpoilerHidden ? (
-                    <SpoilerNotice compact onReveal={revealSpoiler} />
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                    {hasRating && <RatingStars rating={resolvedRating} />}
+                    {hasLikedSubject && (
+                      <Icon icon="solar:heart-bold" size={16} className="text-error" />
+                    )}
+                    {hasWatchedSubject && isRewatch && (
+                      <Icon icon="solar:refresh-bold" size={16} className="text-success" />
+                    )}
+                    <span>{activityLabel}</span>
+                    <span className="text-xs sm:text-sm">{formattedDate}</span>
+                  </div>
+                </>
+              ) : hasRating ? (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-black/70">
+                  <RatingStars rating={resolvedRating} />
+                </div>
+              ) : null}
+
+              {hasText &&
+                (isSpoilerHidden ? (
+                  <SpoilerNotice compact onReveal={revealSpoiler} />
+                ) : (
+                  <p
+                    className={cn(
+                      'min-w-0 text-sm leading-6 [overflow-wrap:anywhere] break-words',
+                      isActivityVariant ? 'line-clamp-3' : 'line-clamp-2',
+                    )}
+                  >
+                    {review.content}
+                  </p>
+                ))}
+
+              {!hasText && hasRating && !isActivityVariant && (
+                <p className="min-w-0 text-sm leading-6">- Rated without review</p>
+              )}
+
+              {!isSpoilerHidden && !isActivityVariant && (
+                <ReviewLikeButton
+                  disabled={isLikeDisabled}
+                  hasLiked={hasLiked}
+                  likesCount={likesCount}
+                  onClick={onLike}
+                />
+              )}
+            </>
+          ) : (
+            /* Media Review Mode (Standard) */
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                {/* Mobile Header */}
+                <div className="flex flex-col gap-0.5 sm:hidden">
+                  <div className="flex items-center gap-1.5 text-xs text-black/50">
+                    {hasRating && <RatingStars rating={resolvedRating} />}
+                    {hasRating && <span className="text-black/30">-</span>}
+                    <span>{formattedDate}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-black/80">
+                    <span className="text-black/60">{activityLabel}</span>
+                    <Link href={accountHref} className="font-semibold text-black hover:underline">
+                      {displayName}
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Desktop Header */}
+                <div className="hidden text-sm text-black/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
+                  {hasRating && <RatingStars rating={resolvedRating} />}
+                  <span className="text-black/60">{activityLabel}</span>
+                  <Link href={accountHref} className="font-semibold text-black hover:underline">
+                    {displayName}
+                  </Link>
+                  <span className="text-black/30">•</span>
+                  <span className="text-xs text-black/50">{formattedDate}</span>
+                </div>
+
+                {/* Content Body */}
+                {hasText ? (
+                  isSpoilerHidden ? (
+                    <SpoilerNotice onReveal={revealSpoiler} />
                   ) : (
-                    <p
-                      className="min-w-0 text-sm leading-6 [overflow-wrap:anywhere] break-words"
-                      style={{
-                        display: '-webkit-box',
-                        overflow: 'hidden',
-                        WebkitBoxOrient: 'vertical',
-                        WebkitLineClamp: isActivityVariant ? 3 : 2,
-                      }}
-                    >
+                    <p className="text-sm leading-normal [overflow-wrap:anywhere] break-words whitespace-pre-wrap text-black/80">
                       {review.content}
                     </p>
-                  ))}
-
-                {!hasText && hasRating && !isActivityVariant && (
-                  <p className="min-w-0 text-sm leading-6">- Rated without review</p>
+                  )
+                ) : (
+                  hasRating && (
+                    <p className="text-xs text-black/50 sm:text-sm">- Rated without review</p>
+                  )
                 )}
 
-                {!isSpoilerHidden && !isActivityVariant && (
+                {/* Subject Link */}
+                {showSubject && subjectHref && review.subjectTitle && (
+                  <Link
+                    href={subjectHref}
+                    className="text-info inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase hover:underline"
+                  >
+                    <Icon
+                      icon={
+                        review.subjectType === 'list'
+                          ? 'solar:list-broken'
+                          : 'solar:clapperboard-play-bold'
+                      }
+                      size={14}
+                    />
+                    <span>
+                      {review.subjectType === 'list' && review.subjectOwnerUsername ? (
+                        <>
+                          <span>{review.subjectOwnerUsername}&apos;s list:</span>{' '}
+                          {review.subjectTitle}
+                        </>
+                      ) : (
+                        review.subjectTitle
+                      )}
+                    </span>
+                  </Link>
+                )}
+
+                {/* Like Button */}
+                {!isSpoilerHidden && (
                   <ReviewLikeButton
                     disabled={isLikeDisabled}
                     hasLiked={hasLiked}
@@ -417,99 +494,11 @@ export default function ReviewCard({
                     onClick={onLike}
                   />
                 )}
-              </>
-            ) : (
-              <>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:gap-1.5">
-                    {/* Mobile Header: Line 1: stars - date, Line 2: review by username */}
-                    <div className="flex flex-col gap-0.5 sm:hidden">
-                      <div className="flex items-center gap-1.5 text-xs text-black/50">
-                        {hasRating && <RatingStars rating={resolvedRating} />}
-                        {hasRating && <span className="text-black/30">-</span>}
-                        <span>{formattedDate}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-black/80">
-                        <span className="text-black/60">{activityLabel}</span>
-                        <Link href={accountHref} className="font-semibold text-black hover:underline">
-                          {displayName}
-                        </Link>
-                      </div>
-                    </div>
+              </div>
 
-                    {/* Desktop Header: Single row - stars, activity + username, date */}
-                    <div className="hidden sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5 text-sm text-black/70">
-                      {hasRating && <RatingStars rating={resolvedRating} />}
-                      <span className="text-black/60">{activityLabel}</span>
-                      <Link href={accountHref} className="font-semibold text-black hover:underline">
-                        {displayName}
-                      </Link>
-                      <span className="text-black/30">•</span>
-                      <span className="text-xs text-black/50">{formattedDate}</span>
-                    </div>
-
-                    {/* Review Content */}
-                    {hasText ? (
-                      isSpoilerHidden ? (
-                        <SpoilerNotice onReveal={revealSpoiler} />
-                      ) : (
-                        <p className="text-sm leading-normal text-black/80 [overflow-wrap:anywhere] break-words whitespace-pre-wrap sm:text-sm sm:leading-normal">
-                          {review.content}
-                        </p>
-                      )
-                    ) : (
-                      hasRating && <p className="text-xs text-black/50 sm:text-sm">- Rated without review</p>
-                    )}
-
-                    {/* Subject link if applicable */}
-                    {showSubject && subjectHref && review.subjectTitle && (
-                      <Link
-                        href={subjectHref}
-                        className="text-info inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase hover:underline"
-                      >
-                        <Icon
-                          icon={
-                            review.subjectType === 'list'
-                              ? 'solar:list-broken'
-                              : 'solar:clapperboard-play-bold'
-                          }
-                          size={14}
-                        />
-                        <span>
-                          {review.subjectType === 'list' && review.subjectOwnerUsername ? (
-                            <>
-                              <span>{review.subjectOwnerUsername}&apos;s list:</span>{' '}
-                              {review.subjectTitle}
-                            </>
-                          ) : (
-                            review.subjectTitle
-                          )}
-                        </span>
-                      </Link>
-                    )}
-
-                    {/* Like button */}
-                    {!isSpoilerHidden && (
-                      <ReviewLikeButton
-                        disabled={isLikeDisabled}
-                        hasLiked={hasLiked}
-                        likesCount={likesCount}
-                        onClick={onLike}
-                      />
-                    )}
-                  </div>
-
-                  {isOwnReview && (
-                    <ReviewActions
-                      disabled={false}
-                      onEdit={onEdit}
-                      onDeleteRequest={onDeleteRequest}
-                    />
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+              {isOwnReview && <ReviewActions onDeleteRequest={onDeleteRequest} onEdit={onEdit} />}
+            </div>
+          )}
         </div>
       </div>
     </article>

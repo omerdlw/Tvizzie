@@ -15,19 +15,17 @@ const containerVariants = Object.freeze({
   exit: { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
 });
 const itemVariants = Object.freeze({
-  hidden: { opacity: 0, y: 18, scale: 0.96, filter: 'blur(10px)' },
+  hidden: { opacity: 0, y: 18, scale: 0.96 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
     transition: { duration: 0.45, ease: [0.16, 1, 0.24, 1] },
   },
   exit: {
     opacity: 0,
     y: -10,
     scale: 0.98,
-    filter: 'blur(6px)',
     transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
   },
 });

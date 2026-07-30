@@ -26,7 +26,7 @@ import MediaSocialProofModal from '@/features/modals/media-social-proof-modal';
 import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,
-} from '@/features/movie/context-menu-actions';
+} from '@/features/media/context-menu-actions';
 
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
 const MOVIE_POSTER_CONTEXT_TARGET = '[data-context-menu-target="movie-poster-card"]';

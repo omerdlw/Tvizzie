@@ -2,11 +2,17 @@
 
 import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/core/constants';
 import Icon from '@/ui/icon';
 
 import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
+import {
+  menuPopVariants,
+  CONTEXT_MENU_TAP_SCALE,
+  CONTEXT_MENU_MICRO_SPRING,
+} from './motion';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({
@@ -222,7 +228,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
   );
 
   return (
-    <button
+    <motion.button
       ref={setButtonRef}
       className={itemClassName}
       data-active={isActive ? 'true' : undefined}
@@ -230,6 +236,8 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
       disabled={item.disabled}
       role="menuitem"
       type="button"
+      whileTap={{ scale: CONTEXT_MENU_TAP_SCALE }}
+      transition={CONTEXT_MENU_MICRO_SPRING}
       onMouseEnter={onHover}
       onClick={(event) => onSelect(item, event)}
     >
@@ -245,7 +253,7 @@ function ContextMenuItem({ classNames, isActive, item, onHover, onSelect, setBut
           {item.shortcut}
         </span>
       ) : null}
-    </button>
+    </motion.button>
   );
 }
 
@@ -410,8 +418,12 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
         onMouseDown={onClose}
         style={{ zIndex: Z_INDEX.DEBUG_OVERLAY - 1 }}
       />
-      <div
+      <motion.div
         ref={menuRef}
+        variants={menuPopVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
         className={joinClassNames(
           'max-w-sm min-w-64 overflow-hidden rounded-[20px] border border-black/10 bg-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.28)] backdrop-blur-sm',
           classNames.content,
@@ -424,6 +436,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
           position: 'fixed',
           top: position?.y || 0,
           zIndex: Z_INDEX.DEBUG_OVERLAY,
+          willChange: 'transform, opacity',
         }}
         onMouseLeave={() => setActiveIndex(-1)}
         onKeyDown={handleMenuKeyDown}
@@ -446,7 +459,7 @@ function ContextMenuContent({ config, items, menuContext, position, onClose }) {
             onSelect={handleItemSelect}
           />
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -464,14 +477,16 @@ export function ContextMenuRenderer() {
   if (!isOpen || !menuConfig || resolvedItems.length === 0) return null;
 
   return createPortal(
-    <ContextMenuContent
-      key="context-menu-content"
-      config={menuConfig}
-      items={resolvedItems}
-      menuContext={menuContext}
-      position={position}
-      onClose={closeMenu}
-    />,
+    <AnimatePresence>
+      <ContextMenuContent
+        key="context-menu-content"
+        config={menuConfig}
+        items={resolvedItems}
+        menuContext={menuContext}
+        position={position}
+        onClose={closeMenu}
+      />
+    </AnimatePresence>,
     document.body,
   );
 }

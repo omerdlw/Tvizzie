@@ -1,11 +1,18 @@
 'use client';
 
+/**
+ * Media Reviews - Unauthenticated Fallback View
+ * Path: features/media-reviews/parts/review-auth-fallback.js
+ */
+
 import { Button } from '@/ui/elements';
+
 export default function ReviewAuthFallback({ mode = 'review', onSignIn, title }) {
   const helperText =
     mode === 'comment'
       ? `Sign in to leave a comment on ${title}.`
       : `Sign in to leave a rating or review for ${title}.`;
+
   return (
     <div className="flex w-full items-center justify-between border-y border-black/10 py-4">
       <div className="min-w-0">

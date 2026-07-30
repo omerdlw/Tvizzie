@@ -1,13 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { MOVIE_ROUTE_TIMING, MovieSurfaceReveal } from '@/features/media/static-route-elements';
+import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/core/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/core/utils';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Tooltip from '@/ui/elements/tooltip';
 import Icon from '@/ui/icon';
-import { cn } from '@/core/utils';
+import {
+  getSidebarRowProps,
+  getTaxonomyChipProps,
+  getTaxonomyHeaderProps,
+  sidebarPosterVariants,
+} from '@/features/media/motion';
 
 const MAX_VISIBLE_PERSONS = 2;
 
@@ -33,14 +38,6 @@ function SidebarRow({ icon, children }) {
   );
 }
 
-function SidebarItem({ children, delay = 0, index = 0 }) {
-  return <div>{children}</div>;
-}
-
-function SidebarChip({ children, delay = 0, index = 0 }) {
-  return <span className="inline-flex">{children}</span>;
-}
-
 function PersonLink({ person }) {
   return (
     <Link
@@ -61,7 +58,6 @@ function PersonsDisplay({ persons, label }) {
   return (
     <div className="flex min-w-0 items-center gap-1.5">
       <span className="shrink-0">{label}</span>
-
       <div className="flex flex-wrap items-center gap-1">
         {visible.map((person, index) => (
           <div key={person.id} className="flex items-center gap-1">
@@ -90,60 +86,55 @@ function createRow(id, icon, content) {
   };
 }
 
-function TaxonomyGroup({ delay = 0, items = [], label, variant = 'default' }) {
-  if (!items.length) {
-    return null;
-  }
-  const isTagGroup = variant === 'tags';
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <SidebarItem delay={delay} index={0}>
-        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">
-          {label}
-        </p>
-      </SidebarItem>
-      <div className="flex flex-wrap gap-1.5">
-        {items.map((item, index) => (
-          <SidebarChip
-            key={item}
-            delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger}
-            index={index}
-          >
-            <span
-              className={cn(
-                'bg-primary inline-flex max-w-full items-center border border-black/5 text-[11px] font-semibold uppercase',
-                isTagGroup
-                  ? 'rounded-[8px] px-2 py-0.5 font-medium tracking-wide text-black/65 transition-colors hover:border-black/15 hover:text-black'
-                  : 'min-h-7 rounded-[10px] px-2.5 py-1 tracking-wider text-black/75',
-              )}
-            >
-              {item}
-            </span>
-          </SidebarChip>
-        ))}
-      </div>
-    </div>
-  );
-}
-function SidebarTaxonomy({ delay = 0, genres = [], tags = [] }) {
+function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
   const normalizedGenres = normalizeTaxonomyItems(genres);
   const normalizedTags = normalizeTaxonomyItems(tags, '#');
   if (!normalizedGenres.length && !normalizedTags.length) {
-    return null;
+    return { element: null, count: 0 };
   }
-  return (
-    <div className="flex flex-col gap-4">
-      <TaxonomyGroup delay={delay} label="Genres" items={normalizedGenres} />
-      <TaxonomyGroup
-        delay={delay + MOVIE_ROUTE_TIMING.sidebar.taxonomyStagger * (normalizedGenres.length + 1)}
-        label="Tags"
-        items={normalizedTags}
-        variant="tags"
-      />
+  let chipIndexCounter = 0;
+  const elements = (
+    <div className="mt-2 flex flex-col gap-1.5">
+      <motion.div {...getTaxonomyHeaderProps(baseDelay)}>
+        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">
+          GENRES / TAGS
+        </p>
+      </motion.div>
+      <div className="flex flex-wrap gap-1.5 items-center">
+        {normalizedGenres.map((genre) => {
+          const currentIndex = chipIndexCounter++;
+          return (
+            <motion.div
+              key={genre}
+              {...getTaxonomyChipProps(currentIndex, baseDelay)}
+              className="inline-flex"
+            >
+              <span className="bg-primary inline-flex min-h-7 max-w-full items-center rounded-[10px] border border-black/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/75">
+                {genre}
+              </span>
+            </motion.div>
+          );
+        })}
+        {normalizedTags.map((tag) => {
+          const currentIndex = chipIndexCounter++;
+          return (
+            <motion.div
+              key={tag}
+              {...getTaxonomyChipProps(currentIndex, baseDelay)}
+              className="inline-flex"
+            >
+              <span className="bg-primary inline-flex max-w-full items-center rounded-[8px] border border-black/5 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-black/65 transition-colors hover:border-black/15 hover:text-black">
+                {tag}
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
+  return { element: elements, count: chipIndexCounter + 1 };
 }
+
 export default function Sidebar({
   item,
   director,
@@ -242,10 +233,14 @@ export default function Sidebar({
         </>,
       ),
   ].filter(Boolean);
+
+  const taxonomyData = SidebarTaxonomy({ genres, tags });
+  const rowBaseDelay = 0.50 + (hasTaxonomy ? taxonomyData.count * 0.06 : 0);
+
   return (
     <div className="flex flex-col gap-4">
-      <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.posterDelay}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden">
+      <motion.div {...sidebarPosterVariants}>
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden shadow-2xl rounded-[24px]">
           {posterSrc ? (
             <AdaptiveImage
               fill
@@ -269,27 +264,21 @@ export default function Sidebar({
             </div>
           )}
         </div>
-      </MovieSurfaceReveal>
+      </motion.div>
 
       {topContent ? (
-        <MovieSurfaceReveal animateOnView={false} delay={MOVIE_ROUTE_TIMING.sidebar.actionsDelay}>
+        <div>
           {topContent}
-        </MovieSurfaceReveal>
+        </div>
       ) : null}
 
-      {hasTaxonomy ? (
-        <SidebarTaxonomy
-          delay={MOVIE_ROUTE_TIMING.sidebar.taxonomyDelay}
-          genres={genres}
-          tags={tags}
-        />
-      ) : null}
+      {hasTaxonomy ? taxonomyData.element : null}
 
       <div className="flex flex-col gap-1">
         {rows.map((row, index) => (
-          <SidebarItem key={row.id} delay={MOVIE_ROUTE_TIMING.sidebar.rowsDelay} index={index}>
+          <motion.div key={row.id} {...getSidebarRowProps(index, rowBaseDelay)}>
             <SidebarRow icon={row.icon}>{row.content}</SidebarRow>
-          </SidebarItem>
+          </motion.div>
         ))}
       </div>
     </div>

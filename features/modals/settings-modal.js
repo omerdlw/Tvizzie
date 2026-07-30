@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 
 import { Container } from '@/core/modules/modal';
 import { Switch } from '@/ui/elements';
-
 import { useSettings } from '@/core/modules/settings';
+
+// --- HELPERS ---
 
 function formatLabel(value) {
   return String(value)
@@ -17,26 +18,16 @@ function formatLabel(value) {
 }
 
 function inferControl(definition, value) {
-  if (definition.control) {
-    return definition.control;
-  }
-
-  if (Array.isArray(definition.options) && definition.options.length > 0) {
-    return 'select';
-  }
-
-  if (typeof value === 'boolean' || typeof definition.defaultValue === 'boolean') {
-    return 'switch';
-  }
-
-  if (typeof value === 'number' || typeof definition.defaultValue === 'number') {
-    return 'number';
-  }
-
+  if (definition.control) return definition.control;
+  if (Array.isArray(definition.options) && definition.options.length > 0) return 'select';
+  if (typeof value === 'boolean' || typeof definition.defaultValue === 'boolean') return 'switch';
+  if (typeof value === 'number' || typeof definition.defaultValue === 'number') return 'number';
   return 'text';
 }
 
-function renderControl({ definition, value, onChange }) {
+// --- SUB-COMPONENTS ---
+
+const SettingControl = memo(function SettingControl({ definition, value, onChange }) {
   const control = inferControl(definition, value);
 
   if (control === 'switch') {
@@ -75,18 +66,18 @@ function renderControl({ definition, value, onChange }) {
       type={control === 'number' ? 'number' : 'text'}
       className="h-10 w-full border border-black/10 bg-white px-3 text-sm font-medium text-black outline-none focus:border-black/20"
       value={value ?? ''}
-      onChange={(e) =>
-        onChange(control === 'number' ? Number(e.target.value) : e.target.value)
-      }
+      onChange={(e) => onChange(control === 'number' ? Number(e.target.value) : e.target.value)}
     />
   );
-}
+});
+
+// --- MAIN COMPONENT ---
 
 export default function SettingsModal({ close, header }) {
   const { storageKey, definitions, isHydrated, getSetting, setSetting, resetSettings } =
     useSettings();
 
-  const hasDefinitions = definitions && Object.keys(definitions).length > 0;
+  const hasDefinitions = Boolean(definitions && Object.keys(definitions).length > 0);
 
   const definitionGroups = useMemo(() => {
     if (!hasDefinitions) return {};
@@ -102,9 +93,7 @@ export default function SettingsModal({ close, header }) {
   return (
     <Container
       className="w-full sm:w-[560px]"
-      header={{
-        title: header?.title || 'Settings',
-      }}
+      header={{ title: header?.title || 'Settings' }}
       close={close}
     >
       <div className="flex w-full flex-col gap-3 p-4 text-sm">
@@ -113,105 +102,106 @@ export default function SettingsModal({ close, header }) {
             <span className="text-[10px] font-bold tracking-widest uppercase">Storage</span>
             <span className="font-medium">{storageKey}</span>
           </div>
-          {hasDefinitions ? (
+          {hasDefinitions && (
             <motion.button
               type="button"
               whileHover={{ scale: 1.012 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-              className="h-11 w-full flex-auto border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase hover:border-black/15 hover:bg-black/5 hover:text-black rounded-xl transition-colors duration-200"
+              className="h-11 flex-auto rounded-xl border border-black/10 bg-transparent px-6 text-[11px] font-bold tracking-wide text-black/70 uppercase transition-colors duration-200 hover:border-black/15 hover:bg-black/5 hover:text-black"
               onClick={() => resetSettings()}
             >
               Reset all
             </motion.button>
-          ) : null}
+          )}
         </div>
 
-        {!isHydrated ? (
+        {!isHydrated && (
           <div className="border-info border px-4 py-3 text-sm">Loading settings</div>
-        ) : null}
+        )}
 
-        {isHydrated && !hasDefinitions ? (
+        {isHydrated && !hasDefinitions && (
           <div className="border-info border px-4 py-3 text-sm">
             No setting definitions are registered yet. The module is ready and persists decisions
             centrally under <strong>{storageKey}</strong>. Register definitions through the Settings
-            API to render controls dynamically in this modal
+            API to render controls dynamically.
           </div>
-        ) : null}
+        )}
 
-        {isHydrated && hasDefinitions
-          ? Object.entries(definitionGroups).map(([groupKey, groupDefinitions]) => (
-              <section key={groupKey} className="flex flex-col gap-2">
-                <div className="px-1 text-[10px] font-bold tracking-widest uppercase">
-                  {groupKey}
-                </div>
+        {isHydrated &&
+          hasDefinitions &&
+          Object.entries(definitionGroups).map(([groupKey, groupDefinitions]) => (
+            <section key={groupKey} className="flex flex-col gap-2">
+              <div className="px-1 text-[10px] font-bold tracking-widest uppercase">{groupKey}</div>
 
-                {groupDefinitions.map((definition) => {
-                  const currentValue = getSetting(definition.path, definition.defaultValue);
-                  const control = inferControl(definition, currentValue);
+              {groupDefinitions.map((definition) => {
+                const currentValue = getSetting(definition.path, definition.defaultValue);
+                const control = inferControl(definition, currentValue);
+                const isSwitch = control === 'switch';
 
-                  return (
-                    <div key={definition.path} className="border-info flex flex-col gap-2 border p-4">
-                      {control === 'switch' ? (
-                        renderControl({
-                          definition,
-                          value: currentValue,
-                          onChange: (nextValue) => setSetting(definition.path, nextValue),
-                        })
-                      ) : (
-                        <>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm font-semibold">
-                                {definition.label || formatLabel(definition.path)}
-                              </span>
-                              <button
-                                type="button"
-                                className="text-[10px] font-bold tracking-widest uppercase"
-                                onClick={() => resetSettings(definition.path)}
-                              >
-                                Reset
-                              </button>
-                            </div>
-                            <span className="text-xs">{definition.description || definition.path}</span>
+                return (
+                  <div key={definition.path} className="border-info flex flex-col gap-2 border p-4">
+                    {isSwitch ? (
+                      <SettingControl
+                        definition={definition}
+                        value={currentValue}
+                        onChange={(nextVal) => setSetting(definition.path, nextVal)}
+                      />
+                    ) : (
+                      <>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold">
+                              {definition.label || formatLabel(definition.path)}
+                            </span>
+                            <button
+                              type="button"
+                              className="text-[10px] font-bold tracking-widest uppercase"
+                              onClick={() => resetSettings(definition.path)}
+                            >
+                              Reset
+                            </button>
                           </div>
-                          {renderControl({
-                            definition,
-                            value: currentValue,
-                            onChange: (nextValue) => setSetting(definition.path, nextValue),
-                          })}
-                        </>
-                      )}
-
-                      {control === 'switch' ? (
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs">{definition.description || definition.path}</span>
-                          <button
-                            type="button"
-                            className="text-[10px] font-bold tracking-widest uppercase"
-                            onClick={() => resetSettings(definition.path)}
-                          >
-                            Reset
-                          </button>
-                        </div>
-                      ) : null}
-
-                      <div className="flex flex-wrap gap-2">
-                        {definition.storage.map((target) => (
-                          <span
-                            key={target}
-                            className="border-info border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase"
-                          >
-                            {target}
+                          <span className="text-xs">
+                            {definition.description || definition.path}
                           </span>
-                        ))}
+                        </div>
+                        <SettingControl
+                          definition={definition}
+                          value={currentValue}
+                          onChange={(nextVal) => setSetting(definition.path, nextVal)}
+                        />
+                      </>
+                    )}
+
+                    {isSwitch && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs">{definition.description || definition.path}</span>
+                        <button
+                          type="button"
+                          className="text-[10px] font-bold tracking-widest uppercase"
+                          onClick={() => resetSettings(definition.path)}
+                        >
+                          Reset
+                        </button>
                       </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2">
+                      {definition.storage.map((target) => (
+                        <span
+                          key={target}
+                          className="border-info border px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase"
+                        >
+                          {target}
+                        </span>
+                      ))}
                     </div>
-                  );
-                })}
-              </section>
-            ))
-          : null}
+                  </div>
+                );
+              })}
+            </section>
+          ))}
       </div>
     </Container>
   );

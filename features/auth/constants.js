@@ -11,7 +11,7 @@ export const AUTH_PURPOSE = Object.freeze({
   SIGN_UP: 'sign-up',
 });
 
-export const EMAIL_DOMAIN_PATTERNS = [
+export const EMAIL_DOMAIN_PATTERNS = Object.freeze([
   /^gmail\.com$/i,
   /^outlook\.[a-z.]+$/i,
   /^hotmail\.[a-z.]+$/i,
@@ -19,7 +19,7 @@ export const EMAIL_DOMAIN_PATTERNS = [
   /^yahoo\.[a-z.]+$/i,
   /^protonmail\.[a-z.]+$/i,
   /^icloud\.com$/i,
-];
+]);
 
 export const AUTH_ERROR_MESSAGES = Object.freeze({
   'auth/email-already-in-use': 'This email address is already in use',

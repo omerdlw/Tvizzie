@@ -1,7 +1,8 @@
-const newLocal = 'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/core/utils';
@@ -9,11 +10,16 @@ import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
 } from '@/features/media/poster-overrides';
-import { MovieSurfaceReveal } from '@/features/media/static-route-elements';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import Icon from '@/ui/icon';
 import { cn } from '@/core/utils/classnames';
+import {
+  getCastCardProps,
+  getCastHeaderProps,
+  MOVIE_TIMELINES,
+} from '@/features/media/motion';
+
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
@@ -61,7 +67,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={[
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15 transition-all duration-200',
         compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'p-1 pr-4',
       ].join(' ')}
     >
@@ -91,18 +97,21 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
     </Link>
   );
 }
+
 function buildEntries(list = [], fallbackKey) {
   return list.map((item) => ({
     ...item,
     subtitle: item?.[fallbackKey] || (fallbackKey === 'character' ? 'Cast' : 'Crew'),
   }));
 }
+
 function splitEntries(list = []) {
   return {
     featured: list.slice(0, FEATURED_COUNT),
     compact: list.slice(FEATURED_COUNT, FEATURED_COUNT + COMPACT_COUNT),
   };
 }
+
 function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') {
   const creditKey =
     person?.credit_id ||
@@ -117,10 +126,12 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
     'person';
   return `${tabKey}-${variant}-${creditKey}-${index}`;
 }
-export default function CastSection({ cast = [], crew = [], headerAction = null }) {
+
+export default function CastSection({ cast = [], crew = [], headerAction = null, baseDelay = MOVIE_TIMELINES.CAST_SECTION_BASE_DELAY }) {
   usePosterPreferenceVersion();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
+  const [hasSwitchedTab, setHasSwitchedTab] = useState(false);
   const castEntries = useMemo(() => buildEntries(cast, 'character'), [cast]);
   const crewEntries = useMemo(
     () =>
@@ -146,13 +157,21 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       });
     return items;
   }, [castEntries, crewEntries]);
+
   useEffect(() => {
     if (!tabs.find((tab) => tab.key === activeTab) && tabs[0]) {
       setActiveTab(tabs[0].key);
     }
   }, [activeTab, tabs]);
+
+  const handleTabChange = (key) => {
+    setHasSwitchedTab(true);
+    setActiveTab(key);
+  };
+
   if (!tabs.length) return null;
   const activeTabData = tabs.find((tab) => tab.key === activeTab) || tabs[0];
+
   const handleOpenModal = () => {
     openModal(
       'CAST_MODAL',
@@ -169,6 +188,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       },
     );
   };
+
   const renderPanel = (tabKey, entries) => {
     const { featured, compact } = splitEntries(entries);
     return (
@@ -176,13 +196,16 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {featured.map((person, index) => {
             return (
-              <div key={buildPersonEntryKey(tabKey, person, index, 'featured')}>
+              <motion.div
+                key={buildPersonEntryKey(tabKey, person, index, 'featured')}
+                {...getCastCardProps(index, baseDelay, hasSwitchedTab)}
+              >
                 <PersonCard
                   person={person}
                   priority={index < 4}
                   fetchPriority={index < 4 ? 'high' : undefined}
                 />
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -190,15 +213,15 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
         {!!compact.length && (
           <div className="flex h-10 items-center gap-2">
             {compact.map((person, index) => {
-              
               const responsiveClass = index > 1 ? 'hidden sm:block' : '';
               return (
-                <div
+                <motion.div
                   key={buildPersonEntryKey(tabKey, person, index, 'compact')}
+                  {...getCastCardProps(featured.length + index, baseDelay, hasSwitchedTab)}
                   className={`min-w-0 flex-1 ${responsiveClass}`}
                 >
                   <PersonCard person={person} compact />
-                </div>
+                </motion.div>
               );
             })}
 
@@ -206,7 +229,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 hover:border-black/15 rounded-2xl hover:text-black"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 hover:border-black/15 rounded-2xl hover:text-black transition-colors"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -215,28 +238,30 @@ export default function CastSection({ cast = [], crew = [], headerAction = null 
       </div>
     );
   };
-  return (
-    <MovieSurfaceReveal>
-      <section className="relative flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <SegmentedControl
-            value={activeTab}
-            classNames={{
-              wrapper: 'backdrop-blur-xs',
-            }}
-            onChange={setActiveTab}
-            items={tabs.map(({ key, label }) => ({
-              key,
-              label,
-            }))}
-          />
-          {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
-        </div>
 
-        <div className="relative overflow-hidden">
-          {renderPanel(activeTabData.key, activeTabData.entries)}
-        </div>
-      </section>
-    </MovieSurfaceReveal>
+  return (
+    <section className="relative flex flex-col gap-2">
+      <motion.div
+        {...getCastHeaderProps(baseDelay, hasSwitchedTab)}
+        className="flex items-center justify-between gap-3"
+      >
+        <SegmentedControl
+          value={activeTab}
+          classNames={{
+            wrapper: 'backdrop-blur-xs',
+          }}
+          onChange={handleTabChange}
+          items={tabs.map(({ key, label }) => ({
+            key,
+            label,
+          }))}
+        />
+        {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
+      </motion.div>
+
+      <div className="relative overflow-hidden">
+        {renderPanel(activeTabData.key, activeTabData.entries)}
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,15 @@
 'use client';
 
+/**
+ * Media Reviews - Range Rating Selector Component
+ * Path: features/media-reviews/parts/rating-range-selector.js
+ */
+
 import { useCallback, useMemo, useRef, useState } from 'react';
+
+// ==========================================
+// 1. CONSTANTS & HELPERS
+// ==========================================
 
 const STAR_COUNT = 5;
 const STAR_PATH = [
@@ -23,53 +32,36 @@ function clamp(value, min, max) {
 
 function normalizeScore(value) {
   const numeric = Number(value);
-
-  if (!Number.isFinite(numeric)) {
-    return 0.5;
-  }
-
+  if (!Number.isFinite(numeric)) return 0.5;
   return clamp(Math.ceil(numeric * 2) / 2, 0.5, 5);
 }
 
 function buildCommittedRange(minValue, maxValue) {
-  const normalizedMin = normalizeScore(minValue);
-  const normalizedMax = normalizeScore(maxValue);
+  const normMin = normalizeScore(minValue);
+  const normMax = normalizeScore(maxValue);
 
-  if (normalizedMin === normalizedMax) {
-    return {
-      displayFrom: 0,
-      displayTo: normalizedMax,
-      max: normalizedMax,
-      min: normalizedMin,
-    };
+  if (normMin === normMax) {
+    return { displayFrom: 0, displayTo: normMax, max: normMax, min: normMin };
   }
 
-  return {
-    displayFrom: Math.min(normalizedMin, normalizedMax),
-    displayTo: Math.max(normalizedMin, normalizedMax),
-    max: Math.max(normalizedMin, normalizedMax),
-    min: Math.min(normalizedMin, normalizedMax),
-  };
+  const min = Math.min(normMin, normMax);
+  const max = Math.max(normMin, normMax);
+  return { displayFrom: min, displayTo: max, max, min };
 }
 
 function buildDraggedRange(startValue, currentValue) {
-  const normalizedStart = normalizeScore(startValue);
-  const normalizedCurrent = normalizeScore(currentValue);
+  const start = normalizeScore(startValue);
+  const curr = normalizeScore(currentValue);
+  const min = Math.min(start, curr);
+  const max = Math.max(start, curr);
 
-  return {
-    displayFrom: Math.min(normalizedStart, normalizedCurrent),
-    displayTo: Math.max(normalizedStart, normalizedCurrent),
-    max: Math.max(normalizedStart, normalizedCurrent),
-    min: Math.min(normalizedStart, normalizedCurrent),
-  };
+  return { displayFrom: min, displayTo: max, max, min };
 }
 
 function resolveFillPercent(starIndex, range) {
-  const starStart = starIndex - 1;
-  const starEnd = starIndex;
   const overlap = Math.max(
     0,
-    Math.min(starEnd, range.displayTo) - Math.max(starStart, range.displayFrom),
+    Math.min(starIndex, range.displayTo) - Math.max(starIndex - 1, range.displayFrom),
   );
   return overlap * 100;
 }
@@ -80,6 +72,10 @@ function scoreFromPointerEvent(event, element) {
   const stepIndex = clamp(Math.ceil((relativeX / (rect.width || 1)) * 10), 1, 10);
   return stepIndex / 2;
 }
+
+// ==========================================
+// 2. SUB-COMPONENTS
+// ==========================================
 
 function Star({ fillPercent, starIndex }) {
   const clipId = `rating-range-fill-${starIndex}-${Math.round(fillPercent)}`;
@@ -93,12 +89,14 @@ function Star({ fillPercent, starIndex }) {
         </clipPath>
       </defs>
       <path d={STAR_PATH} className="fill-black/15" />
-      {fillPercent > 0 ? (
-        <path d={STAR_PATH} className="fill-info" clipPath={`url(#${clipId})`} />
-      ) : null}
+      {fillPercent > 0 && <path d={STAR_PATH} className="fill-info" clipPath={`url(#${clipId})`} />}
     </svg>
   );
 }
+
+// ==========================================
+// 3. MAIN COMPONENT
+// ==========================================
 
 export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onChange }) {
   const containerRef = useRef(null);
@@ -123,40 +121,33 @@ export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onCh
   );
 
   const handlePointerDown = useCallback((event) => {
-    if (!containerRef.current) {
-      return;
-    }
+    if (!containerRef.current) return;
 
-    const nextScore = scoreFromPointerEvent(event, containerRef.current);
-    const nextRange = buildDraggedRange(nextScore, nextScore);
+    const score = scoreFromPointerEvent(event, containerRef.current);
+    const range = buildDraggedRange(score, score);
 
-    setDragStart(nextScore);
-    setPreviewRange(nextRange);
+    setDragStart(score);
+    setPreviewRange(range);
     event.currentTarget.setPointerCapture?.(event.pointerId);
   }, []);
 
   const handlePointerMove = useCallback(
     (event) => {
-      if (dragStart === null || !containerRef.current) {
-        return;
-      }
-
-      const nextScore = scoreFromPointerEvent(event, containerRef.current);
-      setPreviewRange(buildDraggedRange(dragStart, nextScore));
+      if (dragStart === null || !containerRef.current) return;
+      const score = scoreFromPointerEvent(event, containerRef.current);
+      setPreviewRange(buildDraggedRange(dragStart, score));
     },
     [dragStart],
   );
 
   const handlePointerUp = useCallback(
     (event) => {
-      if (dragStart === null || !containerRef.current) {
-        return;
-      }
+      if (dragStart === null || !containerRef.current) return;
 
-      const nextScore = scoreFromPointerEvent(event, containerRef.current);
-      const nextRange = buildDraggedRange(dragStart, nextScore);
+      const score = scoreFromPointerEvent(event, containerRef.current);
+      const range = buildDraggedRange(dragStart, score);
 
-      commitRange(nextRange);
+      commitRange(range);
       setDragStart(null);
       setPreviewRange(null);
       event.currentTarget.releasePointerCapture?.(event.pointerId);
@@ -179,7 +170,6 @@ export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onCh
       >
         {Array.from({ length: STAR_COUNT }, (_, index) => {
           const starIndex = index + 1;
-
           return (
             <Star
               key={starIndex}

@@ -1,24 +1,24 @@
-export const NAV_EASINGS = Object.freeze({
+const NAV_EASINGS = Object.freeze({
   EMPHASIZED: [0.16, 1, 0.24, 1],
   SOFT: [0.35, 0.1, 0.15, 1],
   EXIT: [0.4, 0, 0.2, 1],
 });
 
-export const NAV_TIERS = Object.freeze({
-  MICRO:      { duration: 0.20, blur: 4,  distance: 6,  scaleDelta: 0.008, ease: NAV_EASINGS.EMPHASIZED },
-  FAST:       { duration: 0.30, blur: 6,  distance: 10, scaleDelta: 0.012, ease: NAV_EASINGS.EMPHASIZED },
-  STANDARD:   { duration: 0.45, blur: 9,  distance: 16, scaleDelta: 0.018, ease: NAV_EASINGS.EMPHASIZED },
-  SURFACE:    { duration: 0.55, blur: 12, distance: 22, scaleDelta: 0.022, ease: NAV_EASINGS.EMPHASIZED },
+const NAV_TIERS = Object.freeze({
+  MICRO:      { duration: 0.28, distance: 6,  scaleDelta: 0.008, ease: NAV_EASINGS.EMPHASIZED },
+  FAST:       { duration: 0.42, distance: 10, scaleDelta: 0.012, ease: NAV_EASINGS.EMPHASIZED },
+  STANDARD:   { duration: 0.60, distance: 16, scaleDelta: 0.018, ease: NAV_EASINGS.EMPHASIZED },
+  SURFACE:    { duration: 0.75, distance: 22, scaleDelta: 0.022, ease: NAV_EASINGS.EMPHASIZED },
 });
 
-export const NAV_SPRINGS = Object.freeze({
-  CARD:    Object.freeze({ type: 'spring', stiffness: 195, damping: 25, mass: 0.85 }),
-  SURFACE: Object.freeze({ type: 'spring', stiffness: 220, damping: 28, mass: 0.9 }),
-  PRESS:   Object.freeze({ type: 'spring', stiffness: 500, damping: 30, mass: 0.4 }),
-  BADGE:   Object.freeze({ type: 'spring', stiffness: 320, damping: 22, mass: 0.5 }),
+const NAV_SPRINGS = Object.freeze({
+  CARD:    Object.freeze({ type: 'spring', stiffness: 160, damping: 24, mass: 0.95 }),
+  SURFACE: Object.freeze({ type: 'spring', stiffness: 180, damping: 26, mass: 1.0 }),
+  PRESS:   Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
+  BADGE:   Object.freeze({ type: 'spring', stiffness: 280, damping: 22, mass: 0.55 }),
 });
 
-export const NAV_STAGGER_TIMINGS = Object.freeze({
+const NAV_STAGGER_TIMINGS = Object.freeze({
   STANDARD: 0.035,
   FAST: 0.025,
 });
@@ -58,21 +58,18 @@ export const NAV_BADGE_TRANSITION = NAV_SPRINGS.BADGE;
 
 function buildVariants(
   tierName,
-  { includeY = false, includeScale = false, direction = 'y', blurScale = 1, distanceScale = 1 } = {}
+  { includeY = false, includeScale = false, direction = 'y', distanceScale = 1 } = {}
 ) {
   const tier = NAV_TIERS[tierName];
-  const blur = tier.blur * blurScale;
   const distance = tier.distance * distanceScale;
 
-  const hidden = { opacity: 0, filter: `blur(${blur}px)` };
+  const hidden = { opacity: 0 };
   const visible = {
     opacity: 1,
-    filter: 'blur(0px)',
     transition: { duration: tier.duration, ease: tier.ease },
   };
   const exit = {
     opacity: 0,
-    filter: `blur(${blur * 0.6}px)`,
     transition: { duration: tier.duration * 0.65, ease: NAV_EASINGS.EXIT },
   };
 
@@ -94,7 +91,7 @@ export const slideFadeVariants = buildVariants('STANDARD', { includeY: true, inc
 
 export const textCrossfadeVariants = buildVariants('STANDARD', {
   includeY: true,
-  blurScale: 0.65,
+  blurScale: 0,
   distanceScale: 0.5,
 });
 

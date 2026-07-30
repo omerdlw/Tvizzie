@@ -286,8 +286,8 @@ export default function ReviewEditorSurface({ close, data }) {
     <motion.form
       id={FORM_ID}
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 14, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
       className="flex w-full flex-col gap-2"
     >
@@ -365,9 +365,9 @@ export default function ReviewEditorSurface({ close, data }) {
           <AnimatePresence mode="wait">
             <motion.span
               key={isSaving ? 'saving' : 'normal'}
-              initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+              initial={{ opacity: 0, y: 3 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -3 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
               className="flex items-center gap-2"
             >

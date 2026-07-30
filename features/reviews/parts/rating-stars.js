@@ -1,9 +1,14 @@
 'use client';
 
+/**
+ * Media Reviews - Rating Stars View Component
+ * Path: features/media-reviews/parts/rating-stars.js
+ */
+
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
 
-export default function RatingStars({ className = '', rating }) {
+export default function RatingStars({ rating, className = '' }) {
   if (!Number.isFinite(rating)) return null;
 
   const normalized = rating > 5 ? rating / 2 : Math.max(0, Math.min(5, rating));

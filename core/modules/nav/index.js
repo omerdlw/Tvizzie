@@ -211,28 +211,21 @@ export default function Nav() {
       <motion.div
         id="nav-card-stack"
         ref={navRef}
-        className="fixed bottom-1 h-auto w-full touch-manipulation select-none"
+        className="fixed bottom-1 left-1/2 -translate-x-1/2 w-full touch-manipulation select-none"
         style={{
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',
-          left: '50%',
-          x: '-50%',
         }}
         initial={false}
         animate={{
           width: isCompactStack ? compactStackWidth : stackWidth,
+          height: containerHeight,
           opacity: isFullscreenStateActive ? 0 : 1,
           pointerEvents: isFullscreenStateActive ? 'none' : 'auto',
         }}
         transition={NAV_CARD_SPRING}
       >
-        <motion.div
-          style={{ position: 'relative' }}
-          animate={{ height: containerHeight }}
-          transition={NAV_CARD_SPRING}
-        >
-          {renderedNavItems}
-        </motion.div>
+        {renderedNavItems}
       </motion.div>
     </>
   );

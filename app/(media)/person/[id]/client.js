@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { getPreferredMovieBackground } from '@/features/movie/utils';
+import { getPreferredMovieBackground } from '@/features/media/utils';
 import {
   clearPersonPosterPreference,
   getPersonPosterPreferenceFilePath,

@@ -94,8 +94,8 @@ function Badge({ badge }) {
 
 function LoadingItemContent() {
   return (
-    <div>
-      <Skeleton />
+    <div className="flex h-auto w-full items-center">
+      <Skeleton className="w-full" />
     </div>
   );
 }
@@ -240,7 +240,6 @@ const Item = memo(
     ref,
   ) {
     const [isHovered, setIsHovered] = useState(false);
-    const [isExpandingOrCollapsing, setIsExpandingOrCollapsing] = useState(false);
 
     const pathname = usePathname();
     const router = useRouter();
@@ -249,7 +248,6 @@ const Item = memo(
     const ActionComponent = useActionComponent(link, pathname);
 
     const cardContentRef = useRef(null);
-    const prevExpandedRef = useRef(expanded);
 
     const showBorder = expanded ? isHovered : isHovered || isStackHovered;
     const cardWidth =
@@ -272,15 +270,6 @@ const Item = memo(
         getItemMeasurementKey({ link, expanded, isHovered, isStackHovered, compact }),
       ),
     );
-
-    useEffect(() => {
-      if (prevExpandedRef.current !== expanded) {
-        prevExpandedRef.current = expanded;
-        setIsExpandingOrCollapsing(true);
-        const timer = setTimeout(() => setIsExpandingOrCollapsing(false), 550);
-        return () => clearTimeout(timer);
-      }
-    }, [expanded]);
 
     const handleMouseEnter = () => {
       if (link.isOverlay) return;
@@ -362,53 +351,35 @@ const Item = memo(
       <motion.div
         ref={ref}
         className={cardClassName}
-        style={{ ...cardStyle, willChange: 'transform, filter, opacity' }}
+        style={cardStyle}
         initial={false}
         animate={{
-          ...(motionValues.width !== undefined ? { width: motionValues.width } : {}),
           y: motionValues.y,
           scale:
             isStackHovered && position > 0
-              ? [
-                  motionValues.scale,
-                  motionValues.scale * 1.05,
-                  motionValues.scale * 0.98,
-                  motionValues.scale,
-                ]
+              ? [motionValues.scale, motionValues.scale * 1.04, motionValues.scale * 0.98, motionValues.scale]
               : motionValues.scale,
           opacity: motionValues.opacity,
           filter:
-            isExpandingOrCollapsing && position > 0
-              ? [
-                  'blur(14px) brightness(1.12)',
-                  'blur(5px) brightness(1.04)',
-                  'blur(0px) brightness(1)',
-                ]
-              : isStackHovered && position > 0
-                ? [
-                    'brightness(1) blur(0px)',
-                    'brightness(1.4) blur(4px)',
-                    'brightness(1) blur(0px)',
-                  ]
-                : 'blur(0px) brightness(1)',
+            isStackHovered && position > 0
+              ? ['brightness(1)', 'brightness(1.5)', 'brightness(1)']
+              : 'brightness(1)',
         }}
         transition={{
           ...NAV_CARD_SPRING,
           filter:
-            isExpandingOrCollapsing && position > 0
-              ? { duration: 0.55, ease: [0.16, 1, 0.24, 1] }
-              : isStackHovered && position > 0
-                ? {
-                    duration: 0.5,
-                    delay: 0.5 + (position - 1) * 0.1,
-                    ease: 'easeInOut',
-                  }
-                : undefined,
+            isStackHovered && position > 0
+              ? {
+                  duration: 0.55,
+                  delay: (position - 1) * 0.05,
+                  ease: 'easeInOut',
+                }
+              : undefined,
           scale:
             isStackHovered && position > 0
               ? {
-                  duration: 0.5,
-                  delay: 0.5 + (position - 1) * 0.1,
+                  duration: 0.55,
+                  delay: (position - 1) * 0.05,
                   ease: 'easeInOut',
                 }
               : undefined,
@@ -422,14 +393,13 @@ const Item = memo(
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {compact && (
             <motion.div
               key="compact-title-overlay"
-              variants={textCrossfadeVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={NAV_FADE_TRANSITION}
               className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-[38px] items-center justify-center px-5"
             >
@@ -457,7 +427,6 @@ const Item = memo(
           transition={NAV_FADE_TRANSITION}
           style={{
             pointerEvents: compact ? 'none' : 'auto',
-            overflow: compact ? 'hidden' : 'visible',
           }}
         >
           {renderContent()}

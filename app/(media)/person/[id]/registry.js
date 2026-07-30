@@ -5,7 +5,7 @@ import { useState } from 'react';
 import ImagePreviewModal from '@/features/modals/image-preview-modal';
 import PersonAction from '@/features/navigation/actions/person-action';
 import SearchAction from '@/features/navigation/actions/search-action';
-import { createMoviePosterContextMenuItems } from '@/features/movie/context-menu-actions';
+import { createMoviePosterContextMenuItems } from '@/features/media/context-menu-actions';
 import { TMDB_IMG } from '@/core/constants';
 import { useRegistry } from '@/core/modules/registry';
 

@@ -1,30 +1,38 @@
 'use client';
 
-import { useDeferredValue, useEffect, useRef, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useState, useTransition, useCallback, memo } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+
 import { TMDB_IMG } from '@/core/constants';
 import { useAuth } from '@/core/modules/auth';
-import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
-import { useModalActions } from '@/core/modules/modal';
+import {
+  Container,
+  CANCEL_BUTTON_CLASS,
+  ACTION_BUTTON_CLASS,
+  useModalActions,
+} from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
 import { createUserListWithItems } from '@/core/services/media/lists';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { cn, formatYear } from '@/core/utils';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/features/navigation/actions/model';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { Input } from '@/ui/elements';
 import Icon from '@/ui/icon';
+
+// --- HELPERS ---
 
 function normalizeSearchResult(item = {}) {
   const entityType = String(item?.media_type || item?.entityType || '')
     .trim()
     .toLowerCase();
   if (entityType !== 'movie' && entityType !== 'tv') return null;
+
   const entityId = String(item?.id ?? item?.entityId ?? '').trim();
   const title = String(item?.title || item?.original_title || '').trim();
   const name = String(item?.name || item?.original_name || '').trim();
   if (!entityId || (!title && !name)) return null;
+
   return {
     backdrop_path: item?.backdrop_path || item?.backdropPath || null,
     entityId,
@@ -47,33 +55,178 @@ function normalizeSearchResult(item = {}) {
   };
 }
 
-function getDraftMediaKey(item) {
-  return `${item?.entityType || item?.media_type}-${item?.entityId || item?.id}`;
-}
+const getDraftMediaKey = (item) =>
+  `${item?.entityType || item?.media_type}-${item?.entityId || item?.id}`;
+const getItemDisplayTitle = (item) => item?.title || item?.name || 'Untitled';
+const getItemYear = (item) => formatYear(item?.release_date || item?.first_air_date);
 
-function getItemDisplayTitle(item) {
-  return item?.title || item?.name || 'Untitled';
-}
+const INPUT_STYLES = Object.freeze({
+  wrapper:
+    'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
+  input:
+    'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
+});
 
-function getItemYear(item) {
-  return formatYear(item?.release_date || item?.first_air_date);
-}
+// --- SUB-COMPONENTS ---
+
+const SearchResultRow = memo(function SearchResultRow({ item, isAdded, onAdd, onRemove, index }) {
+  const title = getItemDisplayTitle(item);
+  const year = getItemYear(item);
+  const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.04, 0.28) }}
+      onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
+      className={cn(
+        'group flex w-full cursor-pointer items-center justify-between rounded-2xl border p-1 transition-all duration-150 ease-in-out select-none',
+        isAdded
+          ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
+          : 'border-transparent bg-white hover:border-black/5 hover:bg-black/5',
+      )}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
+          <AdaptiveImage
+            mode="img"
+            src={item?.poster_path ? `${TMDB_IMG}/w92${item.poster_path}` : undefined}
+            alt={title}
+            className="h-full w-full object-cover"
+            wrapperClassName="h-full w-full bg-black/10"
+          />
+        </div>
+
+        <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
+            {title}
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
+              <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
+                {isTv ? 'TV' : 'Movie'}
+              </span>
+            </div>
+            {year !== 'N/A' && (
+              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
+                <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
+                  {year}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold tracking-wider uppercase transition-all duration-150 ease-in-out',
+          isAdded
+            ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
+            : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
+        )}
+      >
+        {isAdded ? (
+          <>
+            <Icon icon="solar:check-circle-bold" size={16} className="group-hover:hidden" />
+            <Icon
+              icon="solar:trash-bin-trash-bold"
+              size={16}
+              className="hidden group-hover:block"
+            />
+            <span className="group-hover:hidden">Added</span>
+            <span className="hidden group-hover:block">Remove</span>
+          </>
+        ) : (
+          <>
+            <Icon icon="solar:add-circle-bold" size={16} />
+            <span>Add</span>
+          </>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
+const DraftItemRow = memo(function DraftItemRow({ item, onRemove }) {
+  const title = getItemDisplayTitle(item);
+  const year = getItemYear(item);
+  const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
+      className="group flex w-full items-center justify-between rounded-2xl border border-black/5 bg-white p-1 transition-colors duration-150 select-none hover:bg-black/5"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
+          <AdaptiveImage
+            mode="img"
+            src={item?.poster_path ? `${TMDB_IMG}/w92${item.poster_path}` : undefined}
+            alt={title}
+            className="h-full w-full object-cover"
+            wrapperClassName="h-full w-full bg-black/10"
+          />
+        </div>
+
+        <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
+            {title}
+          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
+              <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
+                {isTv ? 'TV' : 'Movie'}
+              </span>
+            </div>
+            {year !== 'N/A' && (
+              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
+                <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
+                  {year}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <motion.button
+        type="button"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(item);
+        }}
+        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50 transition-colors duration-150"
+        aria-label={`Remove ${title}`}
+      >
+        <Icon icon="solar:trash-bin-trash-bold" size={16} />
+      </motion.button>
+    </motion.div>
+  );
+});
+
+// --- MAIN COMPONENT ---
 
 export default function CreateListModal({ close, data }) {
   const auth = useAuth();
   const { closeAllModals } = useModalActions();
   const toast = useToast();
   const router = useRouter();
-  const seedMedia = data?.media ?? null;
 
   const [isSaving, setIsSaving] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftDescription, setDraftDescription] = useState('');
   const [draftItems, setDraftItems] = useState(() => {
-    if (!seedMedia) return [];
-    const normalized = normalizeSearchResult(seedMedia);
+    const normalized = normalizeSearchResult(data?.media);
     return normalized ? [normalized] : [];
   });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -86,15 +239,16 @@ export default function CreateListModal({ close, data }) {
     searchResults.length > 0 || (deferredSearchQuery.length >= 2 && isSearching);
 
   useEffect(() => {
-    if (!seedMedia) return;
-    const normalized = normalizeSearchResult(seedMedia);
+    if (!data?.media) return;
+    const normalized = normalizeSearchResult(data.media);
     if (!normalized) return;
+
     setDraftItems((current) => {
       const key = getDraftMediaKey(normalized);
       if (current.some((item) => getDraftMediaKey(item) === key)) return current;
       return [...current, normalized];
     });
-  }, [seedMedia]);
+  }, [data?.media]);
 
   useEffect(() => {
     if (deferredSearchQuery.length < 2) {
@@ -102,47 +256,44 @@ export default function CreateListModal({ close, data }) {
       setIsSearching(false);
       return;
     }
+
     let ignore = false;
     const timeoutId = window.setTimeout(async () => {
       setIsSearching(true);
       try {
-        const [movieResponse, tvResponse] = await Promise.all([
+        const [movieRes, tvRes] = await Promise.all([
           TmdbService.searchContent(deferredSearchQuery, 'movie', 1),
           TmdbService.searchContent(deferredSearchQuery, 'tv', 1),
         ]);
-        const results = [
-          ...(movieResponse?.data?.results || []),
-          ...(tvResponse?.data?.results || []),
-        ]
+        const results = [...(movieRes?.data?.results || []), ...(tvRes?.data?.results || [])]
           .map(normalizeSearchResult)
           .filter(Boolean);
-        if (!ignore) {
-          startSearchTransition(() => setSearchResults(results));
-        }
+
+        if (!ignore) startSearchTransition(() => setSearchResults(results));
       } catch {
         if (!ignore) setSearchResults([]);
       } finally {
         if (!ignore) setIsSearching(false);
       }
     }, 200);
+
     return () => {
       ignore = true;
       window.clearTimeout(timeoutId);
     };
   }, [deferredSearchQuery, startSearchTransition]);
 
-  const handleAdd = (item) => {
+  const handleAdd = useCallback((item) => {
     const key = getDraftMediaKey(item);
-    setDraftItems((current) => {
-      if (current.some((existing) => getDraftMediaKey(existing) === key)) return current;
-      return [...current, item];
-    });
-  };
+    setDraftItems((curr) =>
+      curr.some((x) => getDraftMediaKey(x) === key) ? curr : [...curr, item],
+    );
+  }, []);
 
-  const handleRemove = (item) => {
+  const handleRemove = useCallback((item) => {
     const key = getDraftMediaKey(item);
-    setDraftItems((current) => current.filter((existing) => getDraftMediaKey(existing) !== key));
-  };
+    setDraftItems((curr) => curr.filter((x) => getDraftMediaKey(x) !== key));
+  }, []);
 
   const handleQuickAdd = () => {
     if (!searchResults.length) return;
@@ -158,6 +309,7 @@ export default function CreateListModal({ close, data }) {
       toast.error('You must be signed in to create a list');
       return;
     }
+
     setIsSaving(true);
     try {
       const nextList = await createUserListWithItems({
@@ -166,10 +318,9 @@ export default function CreateListModal({ close, data }) {
         title: draftTitle,
         userId: auth.user.id,
       });
-      closeAllModals({
-        success: true,
-        list: nextList,
-      });
+
+      closeAllModals({ success: true, list: nextList });
+
       const ownerHandle = nextList?.ownerSnapshot?.username;
       if (ownerHandle && nextList?.slug) {
         router.push(`/account/${ownerHandle}/lists/${nextList.slug}`);
@@ -192,33 +343,23 @@ export default function CreateListModal({ close, data }) {
         <div className="flex flex-col gap-2">
           <Input
             value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
+            onChange={(e) => setDraftTitle(e.target.value)}
             placeholder="List title (required)"
             autoFocus
-            className={{
-              wrapper:
-                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
-              input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
-            }}
+            className={INPUT_STYLES}
           />
           <Input
             value={draftDescription}
-            onChange={(event) => setDraftDescription(event.target.value)}
+            onChange={(e) => setDraftDescription(e.target.value)}
             placeholder="Description (optional)"
-            className={{
-              wrapper:
-                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
-              input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
-            }}
+            className={INPUT_STYLES}
           />
           <Input
             value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
                 handleQuickAdd();
               }
             }}
@@ -229,7 +370,6 @@ export default function CreateListModal({ close, data }) {
                 <Icon
                   icon="solar:spinner-bold-duotone"
                   size={16}
-                  className="animate-spin text-black/50"
                 />
               ) : searchQuery ? (
                 <button
@@ -242,10 +382,7 @@ export default function CreateListModal({ close, data }) {
               ) : null
             }
             className={{
-              wrapper:
-                'flex h-11 transition-colors duration-150 ease-linear items-center rounded-2xl border border-black/5 bg-black/5 px-4 focus-within:border-black/10 focus-within:bg-white',
-              input:
-                'h-full w-full bg-transparent text-sm font-medium text-black outline-none placeholder:text-black/50',
+              ...INPUT_STYLES,
               leftIcon: 'flex shrink-0 items-center pr-2.5',
               rightIcon: 'flex shrink-0 items-center pl-2',
             }}
@@ -296,10 +433,7 @@ export default function CreateListModal({ close, data }) {
                   <DraftItemRow key={getDraftMediaKey(item)} item={item} onRemove={handleRemove} />
                 ))
               ) : (
-                <div
-                  key="empty-draft"
-                  className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 p-6 text-center"
-                >
+                <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-black/5 p-6 text-center">
                   <Icon
                     icon="solar:clapperboard-play-bold-duotone"
                     size={24}
@@ -327,7 +461,7 @@ export default function CreateListModal({ close, data }) {
             )}
           </div>
 
-          <div className="flex items-center gap-2 p-0.5 overflow-visible">
+          <div className="flex items-center gap-2 overflow-visible p-0.5">
             <motion.button
               type="button"
               onClick={close}
@@ -335,7 +469,10 @@ export default function CreateListModal({ close, data }) {
               whileHover={{ scale: 1.012 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-              className={cn(CANCEL_BUTTON_CLASS, 'flex-1 h-9 items-center justify-center gap-2 inline-flex')}
+              className={cn(
+                CANCEL_BUTTON_CLASS,
+                'inline-flex h-9 flex-1 items-center justify-center gap-2',
+              )}
             >
               <span>Cancel</span>
             </motion.button>
@@ -345,12 +482,14 @@ export default function CreateListModal({ close, data }) {
               whileHover={isSaving || !canSubmit ? undefined : { scale: 1.012 }}
               whileTap={isSaving || !canSubmit ? undefined : { scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 450, damping: 26 }}
-              className={cn(ACTION_BUTTON_CLASS, 'flex-1 h-9 items-center justify-center gap-2 inline-flex')}
+              className={cn(
+                ACTION_BUTTON_CLASS,
+                'inline-flex h-9 flex-1 items-center justify-center gap-2',
+              )}
             >
               <Icon
                 icon={isSaving ? 'solar:spinner-bold-duotone' : 'solar:add-folder-bold'}
                 size={16}
-                className={isSaving ? 'animate-spin' : ''}
               />
               <span>{isSaving ? 'Creating...' : 'Create List'}</span>
             </motion.button>
@@ -358,145 +497,5 @@ export default function CreateListModal({ close, data }) {
         </div>
       </form>
     </Container>
-  );
-}
-
-function SearchResultRow({ item, isAdded, onAdd, onRemove, index }) {
-  const title = getItemDisplayTitle(item);
-  const year = getItemYear(item);
-  const posterPath = item?.poster_path;
-  const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1], delay: Math.min(index * 0.04, 0.28) }}
-      onClick={() => (isAdded ? onRemove?.(item) : onAdd?.(item))}
-      className={cn(
-        'group flex w-full cursor-pointer items-center justify-between rounded-2xl border p-1 select-none transition-all duration-150 ease-in-out',
-        isAdded
-          ? 'border-info/20 bg-info/5 hover:border-error/20 hover:bg-error/5'
-          : 'border-transparent bg-white hover:border-black/5 hover:bg-black/5',
-      )}
-    >
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
-          <AdaptiveImage
-            mode="img"
-            src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
-            alt={title}
-            className="h-full w-full object-cover"
-            wrapperClassName="h-full w-full bg-black/10"
-          />
-        </div>
-
-        <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
-            {title}
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
-                {isTv ? 'TV' : 'Movie'}
-              </span>
-            </div>
-            {year !== 'N/A' && (
-              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
-                <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
-                  {year}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          'mr-1 flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-bold tracking-wider uppercase transition-all duration-150 ease-in-out',
-          isAdded
-            ? 'border-info/20 bg-info/10 text-info group-hover:border-error/20 group-hover:bg-error/10 group-hover:text-error'
-            : 'border-black/10 bg-black/5 text-black/70 group-hover:border-transparent group-hover:bg-black group-hover:text-white',
-        )}
-      >
-        {isAdded ? (
-          <>
-            <Icon icon="solar:check-circle-bold" size={16} className="group-hover:hidden" />
-            <Icon icon="solar:trash-bin-trash-bold" size={16} className="hidden group-hover:block" />
-            <span className="group-hover:hidden">Added</span>
-            <span className="hidden group-hover:block">Remove</span>
-          </>
-        ) : (
-          <>
-            <Icon icon="solar:add-circle-bold" size={16} />
-            <span>Add</span>
-          </>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-function DraftItemRow({ item, onRemove }) {
-  const title = getItemDisplayTitle(item);
-  const year = getItemYear(item);
-  const posterPath = item?.poster_path;
-  const isTv = item?.media_type === 'tv' || item?.entityType === 'tv';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
-      className="group flex w-full items-center justify-between rounded-2xl border border-black/5 bg-white p-1 select-none hover:bg-black/5 transition-colors duration-150"
-    >
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-xl">
-          <AdaptiveImage
-            mode="img"
-            src={posterPath ? `${TMDB_IMG}/w92${posterPath}` : undefined}
-            alt={title}
-            className="h-full w-full object-cover"
-            wrapperClassName="h-full w-full bg-black/10"
-          />
-        </div>
-
-        <div className="mr-2 flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-          <span className="truncate text-sm leading-tight font-bold text-black uppercase">
-            {title}
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70 uppercase">
-                {isTv ? 'TV' : 'Movie'}
-              </span>
-            </div>
-            {year !== 'N/A' && (
-              <div className="flex w-fit items-center gap-1 rounded-[8px] border border-black/5">
-                <span className="px-2 py-0.5 text-[10px] font-bold tracking-tight text-black/70">
-                  {year}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <motion.button
-        type="button"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(item);
-        }}
-        className="hover:border-error/20 hover:bg-error/10 hover:text-error mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-black/10 bg-black/5 text-black/50 transition-colors duration-150"
-        aria-label={`Remove ${title}`}
-      >
-        <Icon icon="solar:trash-bin-trash-bold" size={16} />
-      </motion.button>
-    </motion.div>
   );
 }

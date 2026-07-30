@@ -73,9 +73,9 @@ export default function MovieAction({
       <AnimatePresence mode="wait">
         <motion.span
           key={`${icon}-${label}`}
-          initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+          initial={{ opacity: 0, y: 3 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -3 }}
           transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
           className="flex items-center gap-2 truncate"
         >

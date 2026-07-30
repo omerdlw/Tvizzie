@@ -72,8 +72,8 @@ export default function FileUploadSurface({ close, data }) {
     <motion.div
       role="button"
       tabIndex={0}
-      initial={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.24, 1] }}
       whileHover={{ scale: 1.008 }}
       onClick={() => inputRef.current?.click()}

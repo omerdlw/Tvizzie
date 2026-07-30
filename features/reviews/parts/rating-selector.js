@@ -1,6 +1,15 @@
 'use client';
 
+/**
+ * Media Reviews - Single Rating Selector Component
+ * Path: features/media-reviews/parts/rating-selector.js
+ */
+
 import { useCallback, useState } from 'react';
+
+// ==========================================
+// 1. CONSTANTS & UTILS
+// ==========================================
 
 const STAR_COUNT = 5;
 const STAR_PATH = [
@@ -23,19 +32,16 @@ function getFillPercent(starIndex, activeValue) {
   if (activeValue >= starIndex - 0.5) return 50;
   return 0;
 }
-function Star({
-  starIndex,
-  activeValue,
-  isHovering,
-  onHoverLeft,
-  onHoverRight,
-  onSelectLeft,
-  onSelectRight,
-}) {
+
+// ==========================================
+// 2. SUB-COMPONENTS
+// ==========================================
+
+function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft, onSelectRight }) {
   const fillPercent = getFillPercent(starIndex, activeValue);
-  const isActive = fillPercent > 0;
   const clipId = `star-clip-${starIndex}`;
   const fillWidth = (fillPercent / 100) * 24;
+
   return (
     <div className="relative h-10 w-10 sm:h-12 sm:w-12">
       <svg
@@ -52,11 +58,7 @@ function Star({
         <path d={STAR_PATH} className="fill-black/10" />
 
         {fillPercent > 0 && (
-          <path
-            d={STAR_PATH}
-            className={isHovering ? 'fill-success' : 'fill-success'}
-            clipPath={`url(#${clipId})`}
-          />
+          <path d={STAR_PATH} className="fill-success" clipPath={`url(#${clipId})`} />
         )}
       </svg>
 
@@ -80,10 +82,15 @@ function Star({
   );
 }
 
+// ==========================================
+// 3. MAIN COMPONENT
+// ==========================================
+
 export default function RatingSelector({ value, onChange }) {
   const [hoverValue, setHoverValue] = useState(null);
   const selectedValue = typeof value === 'number' ? value : null;
   const activeValue = hoverValue ?? selectedValue;
+
   const handleSelect = useCallback(
     (score) => {
       if (typeof onChange !== 'function') return;
@@ -91,6 +98,7 @@ export default function RatingSelector({ value, onChange }) {
     },
     [onChange, selectedValue],
   );
+
   return (
     <div className="flex flex-col gap-2">
       <div
@@ -102,26 +110,20 @@ export default function RatingSelector({ value, onChange }) {
           }
         }}
       >
-        {Array.from(
-          {
-            length: STAR_COUNT,
-          },
-          (_, index) => {
-            const starIndex = index + 1;
-            return (
-              <Star
-                key={starIndex}
-                starIndex={starIndex}
-                activeValue={activeValue}
-                isHovering={hoverValue !== null}
-                onHoverLeft={() => setHoverValue(starIndex - 0.5)}
-                onHoverRight={() => setHoverValue(starIndex)}
-                onSelectLeft={() => handleSelect(starIndex - 0.5)}
-                onSelectRight={() => handleSelect(starIndex)}
-              />
-            );
-          },
-        )}
+        {Array.from({ length: STAR_COUNT }, (_, index) => {
+          const starIndex = index + 1;
+          return (
+            <Star
+              key={starIndex}
+              starIndex={starIndex}
+              activeValue={activeValue}
+              onHoverLeft={() => setHoverValue(starIndex - 0.5)}
+              onHoverRight={() => setHoverValue(starIndex)}
+              onSelectLeft={() => handleSelect(starIndex - 0.5)}
+              onSelectRight={() => handleSelect(starIndex)}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
@@ -8,38 +8,35 @@ import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
 import { Spinner } from '@/ui/loadings/spinner';
 
-function getAspectRatio(data) {
-  const aspectRatio = Number(data?.aspect_ratio);
-  if (Number.isFinite(aspectRatio) && aspectRatio > 0) return aspectRatio;
-  const width = Number(data?.width);
-  const height = Number(data?.height);
-  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
-    return width / height;
+// --- HELPERS ---
+
+function calculateAspectRatio(data) {
+  const ratio = Number(data?.aspect_ratio);
+  if (Number.isFinite(ratio) && ratio > 0) return ratio;
+
+  const w = Number(data?.width);
+  const h = Number(data?.height);
+  if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+    return w / h;
   }
   return 16 / 9;
 }
 
+// --- MAIN COMPONENT ---
+
 export default function ImagePreviewModal({ close, data }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const filePath = data?.file_path;
+
+  const aspectRatio = useMemo(() => {
+    return Math.min(Math.max(calculateAspectRatio(data), 0.35), 3);
+  }, [data]);
+
   if (!filePath) return null;
-  const aspectRatio = Math.min(Math.max(getAspectRatio(data), 0.35), 3);
+
   const isPortrait = aspectRatio < 1;
   const frameWidthClass = isPortrait ? 'w-[min(92vw,560px)]' : 'w-[min(92vw,1200px)]';
-  return (
-    <ModalView
-      close={close}
-      data={data}
-      filePath={filePath}
-      aspectRatio={aspectRatio}
-      frameWidthClass={frameWidthClass}
-      isLoaded={isLoaded}
-      setIsLoaded={setIsLoaded}
-    />
-  );
-}
 
-function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoaded, setIsLoaded }) {
   return (
     <Container
       className={`relative max-h-[85vh] rounded-[24px] ${frameWidthClass}`}
@@ -50,13 +47,11 @@ function ModalView({ close, data, filePath, aspectRatio, frameWidthClass, isLoad
     >
       <div
         className="relative h-auto w-full overflow-hidden"
-        style={{
-          aspectRatio: String(aspectRatio),
-        }}
+        style={{ aspectRatio: String(aspectRatio) }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, filter: 'blur(12px)' }}
-          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.24, 1] }}
           className="absolute inset-0 h-full w-full"
         >

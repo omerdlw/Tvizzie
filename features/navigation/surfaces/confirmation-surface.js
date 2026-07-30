@@ -102,8 +102,8 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.24, 1] }}
       className="mt-1 flex w-full flex-row items-center gap-2 p-1 overflow-visible"
     >
@@ -137,9 +137,9 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
         <AnimatePresence mode="wait">
           <motion.span
             key={isSubmitting ? 'submitting' : 'confirm'}
-            initial={{ opacity: 0, y: 3, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -3, filter: 'blur(4px)' }}
+            initial={{ opacity: 0, y: 3 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -3 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
           >
             {isSubmitting ? confirmLoadingText : confirmText}

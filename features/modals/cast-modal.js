@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo, memo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { TMDB_IMG } from '@/core/constants';
 import { Container } from '@/core/modules/modal';
-import { cn } from '@/core/utils';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
@@ -15,12 +14,11 @@ import AdaptiveImage from '@/ui/elements/adaptive-image';
 import SegmentedControl from '@/ui/elements/segmented-control';
 import Icon from '@/ui/icon';
 
-const DESKTOP_COLUMNS = 3;
-const GRID_CLASS =
-  'grid grid-cols-1 divide-y divide-black/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 lg:divide-x-0 lg:divide-y-0';
+// --- HELPERS ---
 
 function normalizeEntries(list, fallbackSubtitle) {
-  return (Array.isArray(list) ? list : []).map((member) => ({
+  if (!Array.isArray(list)) return [];
+  return list.map((member) => ({
     ...member,
     subtitle:
       member?.subtitle ||
@@ -30,46 +28,61 @@ function normalizeEntries(list, fallbackSubtitle) {
       fallbackSubtitle,
   }));
 }
-function createHeader({ header, hasBoth, activeTab, setActiveTab }) {
-  const resolvedHeader =
-    header && typeof header === 'object' && !Array.isArray(header) ? header : {};
-  if (!hasBoth) {
-    return {
-      ...resolvedHeader,
-      showClose: false,
-    };
-  }
-  return {
-    ...resolvedHeader,
-    showClose: false,
-    center: (
-      <SegmentedControl
-        value={activeTab}
-        onChange={setActiveTab}
-        items={[
-          {
-            key: 'cast',
-            label: 'Cast',
-          },
-          {
-            key: 'crew',
-            label: 'Crew',
-          },
-        ]}
-        classNames={{
-          wrapper: 'h-8',
-        }}
-      />
-    ),
-  };
-}
+
+// --- SUB-COMPONENTS ---
+
+const PersonCard = memo(function PersonCard({ close, person }) {
+  const [imageError, setImageError] = useState(false);
+  if (!person?.id) return null;
+
+  const imageSrc = !imageError
+    ? getPreferredPersonPosterSrc(person, 'w185') ||
+      (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
+    : null;
+
+  return (
+    <Link
+      href={`/person/${person.id}`}
+      onClick={close}
+      className="flex h-full w-full items-center gap-3 rounded-lg p-2 transition-colors duration-150 hover:bg-black/5 focus:ring-2 focus:ring-black/20 focus:outline-none"
+      aria-label={`View details for ${person.name || 'Cast member'}`}
+    >
+      <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-black/5">
+        {imageSrc ? (
+          <AdaptiveImage
+            fill
+            src={imageSrc}
+            alt={person.name || 'Cast member'}
+            sizes="44px"
+            quality={72}
+            className="object-cover"
+            onError={() => setImageError(true)}
+            wrapperClassName="h-full w-full"
+          />
+        ) : (
+          <div className="center h-full w-full">
+            <Icon icon="solar:user-bold" size={16} className="text-black/50" />
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
+        <p className="truncate text-xs text-black/70">{person.subtitle}</p>
+      </div>
+    </Link>
+  );
+});
+
+// --- MAIN COMPONENT ---
 
 export default function CastModal({ close, data, header }) {
   usePosterPreferenceVersion();
   const contentRef = useRef(null);
 
-  const castEntries = normalizeEntries(data?.cast, 'Cast');
-  const crewEntries = normalizeEntries(data?.crew, 'Crew');
+  const castEntries = useMemo(() => normalizeEntries(data?.cast, 'Cast'), [data?.cast]);
+  const crewEntries = useMemo(() => normalizeEntries(data?.crew, 'Crew'), [data?.crew]);
+
   const hasCast = castEntries.length > 0;
   const hasCrew = crewEntries.length > 0;
   const hasBoth = hasCast && hasCrew;
@@ -83,147 +96,54 @@ export default function CastModal({ close, data, header }) {
     if (activeTab === 'crew' && !hasCrew && hasCast) setActiveTab('cast');
   }, [activeTab, hasCast, hasCrew]);
 
-  useEffect(() => {
-    const scrollContainer = contentRef.current?.closest('[data-lenis-prevent-wheel]');
-    scrollContainer?.scrollTo?.({
-      top: 0,
-      behavior: 'auto',
-    });
-  }, [activeTab]);
+  const resolvedHeader = useMemo(() => {
+    const base = header && typeof header === 'object' && !Array.isArray(header) ? header : {};
+    if (!hasBoth) return { ...base, showClose: false };
 
-  const isEdgePosition = header?.position === 'top' || header?.position === 'bottom';
-  const containerClassName = cn('max-h-[85vh]', isEdgePosition ? 'w-full' : 'w-[min(94vw,980px)]');
-  const resolvedHeader = createHeader({
-    header,
-    hasBoth,
-    activeTab,
-    setActiveTab,
-  });
+    return {
+      ...base,
+      showClose: false,
+      center: (
+        <SegmentedControl
+          value={activeTab}
+          onChange={setActiveTab}
+          items={[
+            { key: 'cast', label: 'Cast' },
+            { key: 'crew', label: 'Crew' },
+          ]}
+          classNames={{ wrapper: 'h-8' }}
+        />
+      ),
+    };
+  }, [header, hasBoth, activeTab]);
+
   const activeEntries = activeTab === 'cast' ? castEntries : crewEntries;
-  return (
-    <ModalView
-      close={close}
-      contentRef={contentRef}
-      containerClassName={containerClassName}
-      resolvedHeader={resolvedHeader}
-      hasCast={hasCast}
-      hasCrew={hasCrew}
-      hasBoth={hasBoth}
-      castEntries={castEntries}
-      crewEntries={crewEntries}
-      activeEntries={activeEntries}
-      activeTab={activeTab}
-    />
-  );
-}
 
-function ModalView({
-  close,
-  contentRef,
-  containerClassName,
-  resolvedHeader,
-  hasCast,
-  hasCrew,
-  hasBoth,
-  castEntries,
-  crewEntries,
-  activeEntries,
-  activeTab,
-}) {
-  if (!hasCast && !hasCrew) {
-    return (
-      <Container
-        className={containerClassName}
-        close={close}
-        header={resolvedHeader}
-        bodyClassName="bg-transparent p-0"
-      >
-        <div className="center min-h-32 text-sm text-black/70">No credits found.</div>
-      </Container>
-    );
-  }
   return (
     <Container
-      className={containerClassName}
+      className="max-h-[85vh] w-[min(94vw,980px)]"
       close={close}
       header={resolvedHeader}
       bodyClassName="bg-transparent p-0"
     >
-      <div ref={contentRef} className="relative min-h-32 overflow-hidden">
+      <div ref={contentRef} className="relative min-h-32 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 8, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-1 divide-y divide-black/10 sm:grid-cols-2 lg:grid-cols-3"
           >
-            <CreditsGrid close={close} list={activeEntries} keyPrefix={activeTab} />
+            {activeEntries.map((person, index) => (
+              <div key={`${activeTab}-${person.id || ''}-${index}`} className="p-1">
+                <PersonCard close={close} person={person} />
+              </div>
+            ))}
           </motion.div>
         </AnimatePresence>
       </div>
     </Container>
-  );
-}
-
-function CreditsGrid({ close, list, keyPrefix }) {
-  const lastRowStart = list.length - (list.length % DESKTOP_COLUMNS || DESKTOP_COLUMNS);
-  return (
-    <div className={GRID_CLASS}>
-      {list.map((person, index) => (
-        <div
-          key={`${keyPrefix}-${person.id || person.name || 'credit'}-${index}`}
-          className={cn(
-            'lg:border-black/5',
-            (index + 1) % DESKTOP_COLUMNS !== 0 && 'lg:border-r',
-            index < lastRowStart && 'lg:border-b',
-          )}
-        >
-          <PersonCard close={close} person={person} index={index} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function PersonCard({ close, person, index }) {
-  const [imageError, setImageError] = useState(false);
-  if (!person?.id) return null;
-  const imageSrc = !imageError
-    ? getPreferredPersonPosterSrc(person, 'w185') ||
-      (person.profile_path ? `${TMDB_IMG}/w185${person.profile_path}` : null)
-    : null;
-  return (
-    <div>
-      <Link
-        href={`/person/${person.id}`}
-        onClick={close}
-        className="flex h-full w-full items-center gap-3 p-2 transition-colors duration-150"
-      >
-        <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-black/5">
-          {imageSrc ? (
-            <AdaptiveImage
-              fill
-              src={imageSrc}
-              alt={person.name || 'Cast member'}
-              sizes="44px"
-              quality={72}
-              className="object-cover"
-              onError={() => setImageError(true)}
-              wrapperClassName="h-full w-full"
-            />
-          ) : (
-            <div className="center h-full w-full">
-              <Icon icon="solar:user-bold" size={16} className="text-black/50" />
-            </div>
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-black">{person.name || 'Unknown'}</p>
-          <p className="truncate text-xs text-black/70">{person.subtitle}</p>
-        </div>
-      </Link>
-    </div>
   );
 }

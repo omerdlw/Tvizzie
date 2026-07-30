@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { MOVIE_ROUTE_TIMING } from '@/features/media/static-route-elements';
+import { motion } from 'framer-motion';
+
 import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
 import { useModal } from '@/core/modules/modal';
 import { useToast } from '@/core/modules/notification';
@@ -25,6 +26,8 @@ import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-fl
 import { useNavigationActions } from '@/core/modules/nav';
 import WatchProvidersSurface from '@/features/navigation/surfaces/watch-providers-surface';
 import Icon from '@/ui/icon';
+import { getActionButtonProps } from '@/features/media/motion';
+
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)
     ? media.genres
@@ -75,6 +78,7 @@ function getMediaSnapshot(media) {
     watchProviders,
   };
 }
+
 function getActionPalette(palette, active) {
   if (!active) {
     return 'border border-black/10 bg-primary/40 hover:border-black/20 hover:bg-primary/80 text-black/70 hover:text-black';
@@ -104,7 +108,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide uppercase backdrop-blur-xs disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide transition-colors duration-200 ease-in-out uppercase disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active),
       )}
     >
@@ -121,9 +125,11 @@ function ActionButton({
     </button>
   );
 }
+
 function ActionItem({ children, index = 0 }) {
-  return <div>{children}</div>;
+  return <motion.div {...getActionButtonProps(index)}>{children}</motion.div>;
 }
+
 export default function CollectionActions({ media }) {
   const auth = useAuth();
   const toast = useToast();
@@ -131,6 +137,7 @@ export default function CollectionActions({ media }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { openModal } = useModal();
+  const { openSurface } = useNavigationActions();
   const userId = auth.user?.id || null;
   const isSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
   const currentPath = useMemo(
@@ -138,290 +145,250 @@ export default function CollectionActions({ media }) {
     [pathname, searchParams],
   );
   const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media]);
-  const isMediaReviewsRoute = new RegExp(`^/${mediaSnapshot.entityType}/[^/]+/reviews$`).test(
-    pathname || '',
+  const isMediaReviewsRoute = Boolean(
+    pathname?.endsWith('/reviews') && mediaSnapshot?.entityId && mediaSnapshot?.entityType,
   );
   const [state, setState] = useState({
     liked: false,
-    watchlist: false,
     watched: false,
+    watchlist: false,
     loadingLike: true,
-    loadingWatchlist: true,
     loadingWatched: true,
+    loadingWatchlist: true,
     submittingLike: false,
-    submittingWatchlist: false,
     submittingWatched: false,
+    submittingWatchlist: false,
     likeIntent: null,
-    watchlistIntent: null,
     watchedIntent: null,
+    watchlistIntent: null,
   });
+
   useEffect(() => {
-    if (!auth.isReady || (userId && !isSessionReady)) {
+    if (!mediaSnapshot.entityId) {
       setState((prev) => ({
         ...prev,
-        loadingLike: true,
-        loadingWatchlist: true,
-        loadingWatched: true,
+        loadingLike: false,
+        loadingWatched: false,
+        loadingWatchlist: false,
       }));
-      return;
+      return undefined;
     }
-    if (!userId) {
+    if (!auth.isAuthenticated) {
       setState((prev) => ({
         ...prev,
         liked: false,
-        watchlist: false,
         watched: false,
+        watchlist: false,
         loadingLike: false,
-        loadingWatchlist: false,
         loadingWatched: false,
-      }));
-      return;
-    }
-    let active = true;
-    let unsubLike = () => {};
-    let unsubWatchlist = () => {};
-    let unsubWatched = () => {};
-    setState((prev) => ({
-      ...prev,
-      loadingLike: true,
-      loadingWatchlist: true,
-      loadingWatched: true,
-    }));
-    async function init() {
-      await ensureLegacyFavoritesBackfilled(userId);
-      if (!active) {
-        return;
-      }
-      unsubLike = subscribeToLikeStatus(
-        {
-          media: mediaSnapshot,
-          userId,
-        },
-        (liked) => {
-          setState((prev) => ({
-            ...prev,
-            liked,
-            loadingLike: false,
-          }));
-        },
-        {
-          onError: () =>
-            setState((prev) => ({
-              ...prev,
-              loadingLike: false,
-            })),
-        },
-      );
-      unsubWatchlist = subscribeToWatchlistStatus(
-        {
-          media: mediaSnapshot,
-          userId,
-        },
-        (watchlist) => {
-          setState((prev) => ({
-            ...prev,
-            watchlist,
-            loadingWatchlist: false,
-          }));
-        },
-        {
-          onError: () =>
-            setState((prev) => ({
-              ...prev,
-              loadingWatchlist: false,
-            })),
-        },
-      );
-      unsubWatched = subscribeToWatchedStatus(
-        {
-          media: mediaSnapshot,
-          userId,
-        },
-        (watched) => {
-          setState((prev) => ({
-            ...prev,
-            watched,
-            loadingWatched: false,
-          }));
-        },
-        {
-          onError: () =>
-            setState((prev) => ({
-              ...prev,
-              loadingWatched: false,
-            })),
-        },
-      );
-    }
-    init().catch(() => {
-      if (!active) {
-        return;
-      }
-      setState((prev) => ({
-        ...prev,
-        loadingLike: false,
         loadingWatchlist: false,
-        loadingWatched: false,
       }));
-    });
-    return () => {
-      active = false;
-      unsubLike();
-      unsubWatchlist();
-      unsubWatched();
-    };
-  }, [auth.isReady, isSessionReady, mediaSnapshot, userId]);
-  async function ensureSignedIn() {
-    if (auth.isAuthenticated && userId) {
-      return userId;
+      return undefined;
     }
-    router.push(
-      buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-        next: currentPath,
-      }),
-    );
-    return null;
-  }
-  async function handleLikeClick() {
-    if (state.submittingLike) {
-      return;
+    if (!isSessionReady || !userId) {
+      return undefined;
     }
-    const resolvedUserId = await ensureSignedIn();
-    if (!resolvedUserId) {
-      return;
-    }
-    const intent = state.liked ? 'remove' : 'add';
-    setState((prev) => ({
-      ...prev,
-      submittingLike: true,
-      likeIntent: intent,
-    }));
-    try {
-      const result = await toggleUserLike({
-        media: mediaSnapshot,
-        userId: resolvedUserId,
-      });
-      setState((prev) => ({
-        ...prev,
-        liked: result.isLiked,
-      }));
-    } catch (error) {
-      toast.error(error?.message || 'Like could not be updated');
-    } finally {
-      setState((prev) => ({
-        ...prev,
-        submittingLike: false,
-        likeIntent: null,
-      }));
-    }
-  }
-  async function handleWatchlistClick() {
-    if (state.submittingWatchlist) {
-      return;
-    }
-    const resolvedUserId = await ensureSignedIn();
-    if (!resolvedUserId) {
-      return;
-    }
-    const intent = state.watchlist ? 'remove' : 'add';
-    setState((prev) => ({
-      ...prev,
-      submittingWatchlist: true,
-      watchlistIntent: intent,
-    }));
-    try {
-      const result = await toggleUserWatchlistItem({
-        media: mediaSnapshot,
-        userId: resolvedUserId,
-      });
-      setState((prev) => ({
-        ...prev,
-        watchlist: result.isInWatchlist,
-      }));
-    } catch (error) {
-      toast.error(error?.message || 'Watchlist could not be updated');
-    } finally {
-      setState((prev) => ({
-        ...prev,
-        submittingWatchlist: false,
-        watchlistIntent: null,
-      }));
-    }
-  }
-  async function handleWatchedClick() {
-    if (state.submittingWatched) {
-      return;
-    }
-    const resolvedUserId = await ensureSignedIn();
-    if (!resolvedUserId) {
-      return;
-    }
-    const intent = state.watched ? 'remove' : 'add';
-    setState((prev) => ({
-      ...prev,
-      submittingWatched: true,
-      watchedIntent: intent,
-    }));
-    try {
-      if (state.watched) {
-        await removeUserWatchedItem({
-          media: mediaSnapshot,
-          userId: resolvedUserId,
-        });
+    let isMounted = true;
+    ensureLegacyFavoritesBackfilled(userId).catch(() => {});
+
+    const unsubscribeLike = subscribeToLikeStatus(
+      { media: mediaSnapshot, userId },
+      (isLikedStatus) => {
+        if (!isMounted) return;
         setState((prev) => ({
           ...prev,
-          watched: false,
+          liked: isLikedStatus,
+          loadingLike: false,
         }));
-      } else {
-        const result = await markUserWatched({
-          media: mediaSnapshot,
-          userId: resolvedUserId,
-        });
-        setState((prev) => ({
-          ...prev,
-          watched: true,
-          watchlist: result.wasRemovedFromWatchlist ? false : prev.watchlist,
-        }));
-      }
-    } catch (error) {
-      toast.error(error?.message || 'Watched state could not be updated');
-    } finally {
-      setState((prev) => ({
-        ...prev,
-        submittingWatched: false,
-        watchedIntent: null,
-      }));
-    }
-  }
-  const { openSurface } = useNavigationActions();
-
-  function handleOpenWatchProviders() {
-    openSurface(WatchProvidersSurface, {
-      providers: media?.['watch/providers'] || mediaSnapshot.watchProviders,
-    });
-  }
-
-  async function handleOpenListPicker() {
-    const resolvedUserId = await ensureSignedIn();
-    if (!resolvedUserId) {
-      return;
-    }
-    openModal('LIST_PICKER_MODAL', 'center', {
-      data: {
-        media: mediaSnapshot,
-        userId: resolvedUserId,
       },
+    );
+
+    const unsubscribeWatched = subscribeToWatchedStatus(
+      { media: mediaSnapshot, userId },
+      (isWatchedStatus) => {
+        if (!isMounted) return;
+        setState((prev) => ({
+          ...prev,
+          watched: isWatchedStatus,
+          loadingWatched: false,
+        }));
+      },
+    );
+
+    const unsubscribeWatchlist = subscribeToWatchlistStatus(
+      { media: mediaSnapshot, userId },
+      (isWatchlistStatus) => {
+        if (!isMounted) return;
+        setState((prev) => ({
+          ...prev,
+          watchlist: isWatchlistStatus,
+          loadingWatchlist: false,
+        }));
+      },
+    );
+
+    return () => {
+      isMounted = false;
+      unsubscribeLike();
+      unsubscribeWatched();
+      unsubscribeWatchlist();
+    };
+  }, [
+    auth.isAuthenticated,
+    isSessionReady,
+    mediaSnapshot,
+    userId,
+  ]);
+
+  const handleLikeClick = async () => {
+    if (!auth.isAuthenticated) {
+      const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'like');
+      toast.info('Sign in required', 'Please sign in to save this item to your likes.');
+      router.push(authHref);
+      return;
+    }
+    if (state.submittingLike || state.loadingLike) {
+      return;
+    }
+    const nextLikedState = !state.liked;
+    const intent = nextLikedState ? 'add' : 'remove';
+    setState((prev) => ({ ...prev, submittingLike: true, likeIntent: intent }));
+
+    try {
+      await toggleUserLike({
+        userId: auth.user.id,
+        mediaSnapshot,
+      });
+
+      toast.success(
+        nextLikedState ? 'Added to Likes' : 'Removed from Likes',
+        nextLikedState
+          ? `"${mediaSnapshot.title}" has been saved to your liked items.`
+          : `"${mediaSnapshot.title}" has been removed from your liked items.`,
+      );
+    } catch {
+      toast.error('Action Failed', 'Could not update your like status. Please try again.');
+    } finally {
+      setState((prev) => ({ ...prev, submittingLike: false, likeIntent: null }));
+    }
+  };
+
+  const handleWatchedClick = async () => {
+    if (!auth.isAuthenticated) {
+      const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'watched');
+      toast.info('Sign in required', 'Please sign in to track items you watched.');
+      router.push(authHref);
+      return;
+    }
+    if (state.submittingWatched || state.loadingWatched) {
+      return;
+    }
+    const nextWatchedState = !state.watched;
+    const intent = nextWatchedState ? 'add' : 'remove';
+    setState((prev) => ({ ...prev, submittingWatched: true, watchedIntent: intent }));
+
+    try {
+      if (nextWatchedState) {
+        await markUserWatched({
+          userId: auth.user.id,
+          mediaSnapshot,
+        });
+        toast.success(
+          'Marked as Watched',
+          `"${mediaSnapshot.title}" has been added to your watched list.`,
+        );
+      } else {
+        await removeUserWatchedItem({
+          userId: auth.user.id,
+          mediaType: mediaSnapshot.entityType,
+          mediaId: mediaSnapshot.entityId,
+        });
+        toast.success(
+          'Removed from Watched',
+          `"${mediaSnapshot.title}" has been removed from your watched list.`,
+        );
+      }
+    } catch {
+      toast.error('Action Failed', 'Could not update watched status. Please try again.');
+    } finally {
+      setState((prev) => ({ ...prev, submittingWatched: false, watchedIntent: null }));
+    }
+  };
+
+  const handleWatchlistClick = async () => {
+    if (!auth.isAuthenticated) {
+      const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'watchlist');
+      toast.info('Sign in required', 'Please sign in to save items to your watchlist.');
+      router.push(authHref);
+      return;
+    }
+    if (state.submittingWatchlist || state.loadingWatchlist) {
+      return;
+    }
+    const nextWatchlistState = !state.watchlist;
+    const intent = nextWatchlistState ? 'add' : 'remove';
+    setState((prev) => ({ ...prev, submittingWatchlist: true, watchlistIntent: intent }));
+
+    try {
+      await toggleUserWatchlistItem({
+        userId: auth.user.id,
+        mediaSnapshot,
+      });
+
+      toast.success(
+        nextWatchlistState ? 'Added to Watchlist' : 'Removed from Watchlist',
+        nextWatchlistState
+          ? `"${mediaSnapshot.title}" has been added to your watchlist.`
+          : `"${mediaSnapshot.title}" has been removed from your watchlist.`,
+      );
+    } catch {
+      toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
+    } finally {
+      setState((prev) => ({ ...prev, submittingWatchlist: false, watchlistIntent: null }));
+    }
+  };
+
+  const handleOpenListPicker = () => {
+    if (!auth.isAuthenticated) {
+      const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'add-to-list');
+      toast.info('Sign in required', 'Please sign in to manage custom lists.');
+      router.push(authHref);
+      return;
+    }
+    if (!mediaSnapshot?.entityId) {
+      return;
+    }
+    openModal(
+      'LIST_PICKER_MODAL',
+      'center',
+      {
+        data: {
+          media: mediaSnapshot,
+        },
+      },
+    );
+  };
+
+  const handleOpenWatchProviders = () => {
+    if (!mediaSnapshot?.entityId) {
+      return;
+    }
+    openSurface(WatchProvidersSurface, {
+      providers: mediaSnapshot.watchProviders || media?.['watch/providers'],
     });
-  }
+  };
+
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
   const canGoToMedia = Boolean(mediaSnapshot?.entityId) && isMediaReviewsRoute;
+
   function handleGoToMedia() {
     if (!mediaSnapshot?.entityId) {
       return;
     }
     router.push(getMediaDetailPath(mediaSnapshot));
   }
+
   return (
     <div className="flex flex-col gap-2">
       {canGoToMedia ? (

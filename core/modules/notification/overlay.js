@@ -46,14 +46,14 @@ export function NotificationOverlay({ notification, onDismiss }) {
           <motion.button
             type="button"
             aria-label="Bildirimi kapat"
-            whileHover={{ scale: 1.08 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: NOTIFICATION_MICRO_TAP_SCALE }}
             transition={NOTIFICATION_MICRO_SPRING}
             onClick={(e) => {
               e.stopPropagation();
               onDismiss();
             }}
-            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer rounded-[10px] border border-black/5 transition-colors duration-150 hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
+            className="center absolute top-2/4 right-2.5 size-8 -translate-y-2/4 cursor-pointer rounded-full border border-black/5 transition-colors duration-150 hover:bg-black/5 hover:text-black focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:outline-none"
           >
             <Icon icon="material-symbols:close-rounded" size={14} />
           </motion.button>

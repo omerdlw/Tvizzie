@@ -37,7 +37,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
     <motion.div
       whileHover={{ scale: 1.012, x: 2 }}
       whileTap={{ scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 26 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
       className="flex min-w-0 w-full items-center gap-3"
     >
       <div className={SEARCH_STYLES.thumbnail}>

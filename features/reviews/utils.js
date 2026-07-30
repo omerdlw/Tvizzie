@@ -1,8 +1,11 @@
-export function getLikesLabel(likesCount) {
-  if (likesCount === 0) return 'No likes yet';
-  if (likesCount === 1) return '1 like';
-  return `${likesCount} likes`;
-}
+/**
+ * Media Reviews - Utility Functions & Helpers
+ * Path: features/media-reviews/utils.js
+ */
+
+// ==========================================
+// 1. CONSTANTS & CONFIGURATIONS
+// ==========================================
 
 export const REVIEW_SORT_MODE = Object.freeze({
   NEWEST: 'newest',
@@ -22,44 +25,44 @@ export const REVIEW_SORT_OPTIONS = Object.freeze([
   { value: REVIEW_SORT_MODE.LIKES_ASC, label: 'Least liked to most liked' },
 ]);
 
-const REVIEW_SORT_MODE_SET = new Set(REVIEW_SORT_OPTIONS.map((option) => option.value));
+const REVIEW_SORT_MODE_SET = new Set(REVIEW_SORT_OPTIONS.map((opt) => opt.value));
+
+// ==========================================
+// 2. PARSERS & VALIDATORS
+// ==========================================
 
 export function isReviewSortMode(value) {
   return REVIEW_SORT_MODE_SET.has(String(value || '').trim());
 }
 
 export function parseReviewSortMode(value, fallback = REVIEW_SORT_MODE.NEWEST) {
-  const normalizedValue = String(value || '').trim();
-  return isReviewSortMode(normalizedValue) ? normalizedValue : fallback;
+  const normalized = String(value || '').trim();
+  return isReviewSortMode(normalized) ? normalized : fallback;
 }
 
+export function getLikesLabel(likesCount) {
+  if (!likesCount) return 'No likes yet';
+  return likesCount === 1 ? '1 like' : `${likesCount} likes`;
+}
+
+// ==========================================
+// 3. NORMALIZERS
+// ==========================================
+
 function normalizeTimestamp(review = {}) {
-  const timestampValue = review.updatedAt || review.createdAt || 0;
-  const timestamp = new Date(timestampValue).getTime();
-  return Number.isFinite(timestamp) ? timestamp : 0;
+  const ts = new Date(review.updatedAt || review.createdAt || 0).getTime();
+  return Number.isFinite(ts) ? ts : 0;
 }
 
 function normalizeRatingValue(review = {}) {
-  const value = Number(review.rating);
-  return Number.isFinite(value) ? value : null;
+  const val = Number(review.rating);
+  return Number.isFinite(val) ? val : null;
 }
 
 function normalizeLikeCount(review = {}) {
-  if (Array.isArray(review.likes)) {
-    return review.likes.length;
-  }
-
-  const directLikesCount = Number(review.likesCount);
-  if (Number.isFinite(directLikesCount)) {
-    return Math.max(0, directLikesCount);
-  }
-
-  const payloadLikesCount = Number(review?.payload?.likesCount);
-  if (Number.isFinite(payloadLikesCount)) {
-    return Math.max(0, payloadLikesCount);
-  }
-
-  return 0;
+  if (Array.isArray(review.likes)) return review.likes.length;
+  const direct = Number(review.likesCount ?? review.payload?.likesCount);
+  return Number.isFinite(direct) ? Math.max(0, direct) : 0;
 }
 
 function normalizeIdentity(review = {}) {
@@ -72,37 +75,6 @@ function normalizeIdentity(review = {}) {
   );
 }
 
-function compareNullableNumber(firstValue, secondValue, direction = 'desc') {
-  const firstIsNull = firstValue === null;
-  const secondIsNull = secondValue === null;
-
-  if (firstIsNull && secondIsNull) return 0;
-  if (firstIsNull) return 1;
-  if (secondIsNull) return -1;
-
-  return direction === 'asc' ? firstValue - secondValue : secondValue - firstValue;
-}
-
-function compareByTimestamp(firstMetrics, secondMetrics, direction = 'desc') {
-  return direction === 'asc'
-    ? firstMetrics.timestamp - secondMetrics.timestamp
-    : secondMetrics.timestamp - firstMetrics.timestamp;
-}
-
-function compareByLikes(firstMetrics, secondMetrics, direction = 'desc') {
-  return direction === 'asc'
-    ? firstMetrics.likesCount - secondMetrics.likesCount
-    : secondMetrics.likesCount - firstMetrics.likesCount;
-}
-
-function compareByRating(firstMetrics, secondMetrics, direction = 'desc') {
-  return compareNullableNumber(firstMetrics.rating, secondMetrics.rating, direction);
-}
-
-function compareByIdentity(firstMetrics, secondMetrics) {
-  return firstMetrics.identity.localeCompare(secondMetrics.identity);
-}
-
 function buildReviewMetrics(review = {}) {
   return {
     identity: normalizeIdentity(review),
@@ -112,106 +84,113 @@ function buildReviewMetrics(review = {}) {
   };
 }
 
-function compareWithFallbacks(firstEntry, secondEntry, primaryComparator) {
-  const primaryDiff = primaryComparator(firstEntry.metrics, secondEntry.metrics);
-  if (primaryDiff !== 0) return primaryDiff;
+// ==========================================
+// 4. COMPARATORS & SORTING HELPERS
+// ==========================================
 
-  const fallbackComparators = [
-    (firstMetrics, secondMetrics) => compareByTimestamp(firstMetrics, secondMetrics, 'desc'),
-    (firstMetrics, secondMetrics) => compareByRating(firstMetrics, secondMetrics, 'desc'),
-    (firstMetrics, secondMetrics) => compareByLikes(firstMetrics, secondMetrics, 'desc'),
-    (firstMetrics, secondMetrics) => compareByIdentity(firstMetrics, secondMetrics),
-  ];
+function compareNullableNumber(a, b, direction = 'desc') {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return direction === 'asc' ? a - b : b - a;
+}
 
-  for (const comparator of fallbackComparators) {
-    const diff = comparator(firstEntry.metrics, secondEntry.metrics);
-    if (diff !== 0) return diff;
-  }
+function compareByTimestamp(a, b, dir = 'desc') {
+  return dir === 'asc' ? a.timestamp - b.timestamp : b.timestamp - a.timestamp;
+}
 
-  return firstEntry.index - secondEntry.index;
+function compareByLikes(a, b, dir = 'desc') {
+  return dir === 'asc' ? a.likesCount - b.likesCount : b.likesCount - a.likesCount;
+}
+
+function compareByRating(a, b, dir = 'desc') {
+  return compareNullableNumber(a.rating, b.rating, dir);
+}
+
+function compareWithFallbacks(entryA, entryB, primaryComparator) {
+  const diff = primaryComparator(entryA.metrics, entryB.metrics);
+  if (diff !== 0) return diff;
+
+  const mA = entryA.metrics;
+  const mB = entryB.metrics;
+
+  return (
+    compareByTimestamp(mA, mB, 'desc') ||
+    compareByRating(mA, mB, 'desc') ||
+    compareByLikes(mA, mB, 'desc') ||
+    mA.identity.localeCompare(mB.identity) ||
+    entryA.index - entryB.index
+  );
 }
 
 export function sortReviewsByMode(reviews = [], mode = REVIEW_SORT_MODE.NEWEST) {
   const safeReviews = Array.isArray(reviews) ? reviews : [];
-
   const decorated = safeReviews.map((review, index) => ({
     index,
     review,
     metrics: buildReviewMetrics(review),
   }));
 
-  const resolvePrimaryComparator = () => {
+  const resolveComparator = () => {
     switch (mode) {
       case REVIEW_SORT_MODE.OLDEST:
-        return (firstMetrics, secondMetrics) =>
-          compareByTimestamp(firstMetrics, secondMetrics, 'asc');
+        return (a, b) => compareByTimestamp(a, b, 'asc');
       case REVIEW_SORT_MODE.RATING_DESC:
-        return (firstMetrics, secondMetrics) =>
-          compareByRating(firstMetrics, secondMetrics, 'desc');
+        return (a, b) => compareByRating(a, b, 'desc');
       case REVIEW_SORT_MODE.RATING_ASC:
-        return (firstMetrics, secondMetrics) => compareByRating(firstMetrics, secondMetrics, 'asc');
+        return (a, b) => compareByRating(a, b, 'asc');
       case REVIEW_SORT_MODE.LIKES_DESC:
-        return (firstMetrics, secondMetrics) => compareByLikes(firstMetrics, secondMetrics, 'desc');
+        return (a, b) => compareByLikes(a, b, 'desc');
       case REVIEW_SORT_MODE.LIKES_ASC:
-        return (firstMetrics, secondMetrics) => compareByLikes(firstMetrics, secondMetrics, 'asc');
+        return (a, b) => compareByLikes(a, b, 'asc');
       case REVIEW_SORT_MODE.NEWEST:
       default:
-        return (firstMetrics, secondMetrics) =>
-          compareByTimestamp(firstMetrics, secondMetrics, 'desc');
+        return (a, b) => compareByTimestamp(a, b, 'desc');
     }
   };
 
-  const primaryComparator = resolvePrimaryComparator();
-
+  const primaryComparator = resolveComparator();
   return decorated
-    .sort((firstEntry, secondEntry) =>
-      compareWithFallbacks(firstEntry, secondEntry, primaryComparator),
-    )
+    .sort((a, b) => compareWithFallbacks(a, b, primaryComparator))
     .map((entry) => entry.review);
 }
 
-export function getRatingStats(reviews) {
-  const ratedReviews = reviews.filter((review) => Number.isFinite(review.rating));
+export function sortReviews(reviews = [], currentUserId) {
+  return [...reviews].sort((a, b) => {
+    if (a.user?.id === currentUserId) return -1;
+    if (b.user?.id === currentUserId) return 1;
 
-  if (ratedReviews.length === 0) {
-    return { average: null, count: 0 };
-  }
+    const likesA = a.likes?.length || 0;
+    const likesB = b.likes?.length || 0;
+    if (likesA !== likesB) return likesB - likesA;
 
-  const total = ratedReviews.reduce((sum, review) => {
-    const value = Number(review.rating);
-    return sum + (value > 5 ? value / 2 : value);
-  }, 0);
-
-  return {
-    average: (total / ratedReviews.length).toFixed(1),
-    count: ratedReviews.length,
-  };
-}
-
-export function sortReviews(reviews, currentUserId) {
-  return [...reviews].sort((first, second) => {
-    if (first.user?.id === currentUserId) return -1;
-    if (second.user?.id === currentUserId) return 1;
-
-    const firstLikes = first.likes?.length || 0;
-    const secondLikes = second.likes?.length || 0;
-
-    if (firstLikes !== secondLikes) {
-      return secondLikes - firstLikes;
-    }
-
-    const firstTime = new Date(first.updatedAt || first.createdAt || 0).getTime();
-    const secondTime = new Date(second.updatedAt || second.createdAt || 0).getTime();
-
-    return secondTime - firstTime;
+    const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    return timeB - timeA;
   });
 }
 
-export function mergeReviewUser(review, userProfile) {
-  if (!userProfile) {
-    return review;
-  }
+// ==========================================
+// 5. STATS & TRANSFORMERS
+// ==========================================
 
+export function getRatingStats(reviews = []) {
+  const rated = reviews.filter((r) => Number.isFinite(Number(r?.rating)));
+  if (rated.length === 0) return { average: null, count: 0 };
+
+  const total = rated.reduce((sum, r) => {
+    const val = Number(r.rating);
+    return sum + (val > 5 ? val / 2 : val);
+  }, 0);
+
+  return {
+    average: (total / rated.length).toFixed(1),
+    count: rated.length,
+  };
+}
+
+export function mergeReviewUser(review, userProfile) {
+  if (!userProfile) return review;
   return {
     ...review,
     user: {

@@ -1,5 +1,14 @@
 import Icon from '@/ui/icon';
 
+/**
+ * @file form-elements.jsx
+ * @description Kimlik doğrulama formlarında kullanılan stil sabitleri ve atom bileşenler.
+ */
+
+// ============================================================================
+// 1. STİL SABİTLERİ (CLASSNAMES)
+// ============================================================================
+
 export const AUTH_INPUT_CLASSNAMES = Object.freeze({
   wrapper:
     'flex h-12 w-full items-center rounded-2xl border border-black/10 hover:bg-primary focus-within:bg-primary px-4 hover:border-black/30 focus-within:border-black/30',
@@ -20,6 +29,10 @@ export const AUTH_SECONDARY_BUTTON_CLASSNAMES = Object.freeze({
   default:
     'inline-flex h-12 w-full rounded-2xl items-center justify-center border border-black/10 bg-primary px-4 text-black hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 });
+
+// ============================================================================
+// 2. ATOM BİLEŞENLER
+// ============================================================================
 
 export function AuthField({ children, className = '' }) {
   return <div className={className}>{children}</div>;

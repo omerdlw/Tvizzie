@@ -1,11 +1,12 @@
 'use client';
 
+/**
+ * Media Reviews - Custom Hook
+ * Path: features/media-reviews/use-media-reviews.js
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
-import { AUTH_ROUTES } from '@/features/auth/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
 import { useAccountProfile } from '@/core/modules/account';
 import { useAuth } from '@/core/modules/auth';
 import { useNavHeight } from '@/core/modules/nav';
@@ -15,8 +16,13 @@ import {
   subscribeToMediaReviews,
   toggleReviewLike,
 } from '@/core/services/media/reviews';
-
+import { buildAuthHref, getCurrentPathWithSearch } from '@/features/auth/auth-flow';
+import { AUTH_ROUTES } from '@/features/auth/constants';
 import { getRatingStats, sortReviews } from './utils';
+
+// ==========================================
+// 1. HELPER FUNCTIONS
+// ==========================================
 
 function createReviewNavState({ ownReview = null }) {
   return {
@@ -30,6 +36,10 @@ function createReviewNavState({ ownReview = null }) {
   };
 }
 
+// ==========================================
+// 2. MAIN HOOK
+// ==========================================
+
 export function useMediaReviews({
   entityId,
   entityType,
@@ -39,6 +49,9 @@ export function useMediaReviews({
   limitCount,
   onReviewStateChange,
 }) {
+  // ------------------------------------------
+  // A. HOOKS & SERVICES
+  // ------------------------------------------
   const { navHeight } = useNavHeight();
   const auth = useAuth();
   const router = useRouter();
@@ -46,34 +59,37 @@ export function useMediaReviews({
   const searchParams = useSearchParams();
   const toast = useToast();
 
+  // ------------------------------------------
+  // B. LOCAL STATES & REFS
+  // ------------------------------------------
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const pendingLikesRef = useRef(new Map());
 
+  // ------------------------------------------
+  // C. COMPUTED VALUES
+  // ------------------------------------------
   const currentUserId = auth.user?.id;
   const currentPath = useMemo(
     () => getCurrentPathWithSearch(pathname, searchParams),
     [pathname, searchParams],
   );
+
   const { profile: userProfile } = useAccountProfile({
     resolvedUserId: currentUserId,
   });
 
   const media = useMemo(
-    () => ({
-      backdropPath,
-      entityId,
-      entityType,
-      posterPath,
-      title,
-    }),
+    () => ({ backdropPath, entityId, entityType, posterPath, title }),
     [backdropPath, entityId, entityType, posterPath, title],
   );
 
+  // ------------------------------------------
+  // D. SUBSCRIPTION EFFECT
+  // ------------------------------------------
   useEffect(() => {
     let isMounted = true;
-
     setIsLoading(true);
     setLoadError(null);
 
@@ -85,16 +101,10 @@ export function useMediaReviews({
         (nextReviews) => {
           if (!isMounted) return;
 
-          
           const mergedReviews = nextReviews.map((review) => {
             const reviewId = review.docPath || review.id;
             const pendingLikes = pendingLikesRef.current.get(reviewId);
-
-            if (pendingLikes) {
-              return { ...review, likes: pendingLikes };
-            }
-
-            return review;
+            return pendingLikes ? { ...review, likes: pendingLikes } : review;
           });
 
           setReviews(mergedReviews);
@@ -123,11 +133,11 @@ export function useMediaReviews({
     };
   }, [currentUserId, limitCount, media]);
 
+  // ------------------------------------------
+  // E. MEMOIZED STATS & DERIVED DATA
+  // ------------------------------------------
   const ownReview = useMemo(() => {
-    if (!currentUserId) {
-      return null;
-    }
-
+    if (!currentUserId) return null;
     return reviews.find((review) => review.user?.id === currentUserId) || null;
   }, [reviews, currentUserId]);
 
@@ -137,18 +147,15 @@ export function useMediaReviews({
     [reviews, currentUserId],
   );
 
+  // ------------------------------------------
+  // F. HANDLERS & CALLBACKS
+  // ------------------------------------------
   const handleSignInRequest = useCallback(() => {
-    router.push(
-      buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-        next: currentPath,
-      }),
-    );
+    router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, { next: currentPath }));
   }, [currentPath, router]);
 
   const handleDelete = useCallback(async () => {
-    if (!auth.isAuthenticated || !ownReview) {
-      return false;
-    }
+    if (!auth.isAuthenticated || !ownReview) return false;
 
     try {
       await deleteMediaReview({ media, userId: currentUserId });
@@ -162,11 +169,7 @@ export function useMediaReviews({
   const handleLike = useCallback(
     async (review) => {
       if (!auth.isAuthenticated || !currentUserId) {
-        router.push(
-          buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-            next: currentPath,
-          }),
-        );
+        handleSignInRequest();
         return;
       }
 
@@ -180,21 +183,12 @@ export function useMediaReviews({
         ? currentLikes.filter((id) => id !== currentUserId)
         : [...new Set([...currentLikes, currentUserId])];
 
-      
       pendingLikesRef.current.set(reviewId, nextLikes);
 
-      
       setReviews((current) =>
-        current.map((item) => {
-          if ((item.docPath || item.id) !== reviewId) {
-            return item;
-          }
-
-          return {
-            ...item,
-            likes: nextLikes,
-          };
-        }),
+        current.map((item) =>
+          (item.docPath || item.id) === reviewId ? { ...item, likes: nextLikes } : item,
+        ),
       );
 
       try {
@@ -205,25 +199,18 @@ export function useMediaReviews({
           userId: currentUserId,
         });
 
-        
-        setTimeout(() => {
-          pendingLikesRef.current.delete(reviewId);
-        }, 3000);
+        setTimeout(() => pendingLikesRef.current.delete(reviewId), 3000);
       } catch (error) {
-        
         pendingLikesRef.current.delete(reviewId);
         setReviews(previousReviews);
         toast.error(error?.message || 'Failed to update like');
       }
     },
-    [auth.isAuthenticated, currentPath, currentUserId, media, reviews, router, toast],
+    [auth.isAuthenticated, currentUserId, handleSignInRequest, media, reviews, toast],
   );
 
   const applyOptimisticReviewUpdate = useCallback((review, updatedReview) => {
-    if (!review || !updatedReview) {
-      return;
-    }
-
+    if (!review || !updatedReview) return;
     const reviewIdentity = review.docPath || review.id;
 
     setReviews((current) =>
@@ -233,18 +220,16 @@ export function useMediaReviews({
     );
   }, []);
 
+  // Sync state changes with navigation parent listener
   useEffect(() => {
-    if (!onReviewStateChange) {
-      return;
+    if (onReviewStateChange) {
+      onReviewStateChange(createReviewNavState({ ownReview }));
     }
-
-    onReviewStateChange(
-      createReviewNavState({
-        ownReview,
-      }),
-    );
   }, [onReviewStateChange, ownReview]);
 
+  // ------------------------------------------
+  // G. EXPORTS
+  // ------------------------------------------
   return {
     applyOptimisticReviewUpdate,
     currentUserId,

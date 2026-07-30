@@ -6,32 +6,30 @@ const SEARCH_CONTAINER_VARIANTS = Object.freeze({
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.045,
+      staggerChildren: 0.035,
     },
   },
   exit: {
     transition: {
-      staggerChildren: 0.015,
+      staggerChildren: 0.025,
       staggerDirection: -1,
     },
   },
 });
 
 const SEARCH_ITEM_VARIANTS = Object.freeze({
-  hidden: { opacity: 0, y: 20, scale: 0.96, filter: 'blur(12px)' },
+  hidden: { opacity: 0, y: 16, scale: 0.96 },
   visible: { 
     opacity: 1, 
     y: 0, 
     scale: 1,
-    filter: 'blur(0px)',
-    transition: { duration: 0.45, ease: [0.16, 1, 0.24, 1] }
+    transition: { duration: 0.58, ease: [0.16, 1, 0.24, 1] }
   },
   exit: { 
     opacity: 0, 
     y: -8, 
     scale: 0.98,
-    filter: 'blur(6px)',
-    transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] }
   },
 });
 
