@@ -1,10 +1,10 @@
 'use client';
 
-import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription.service';
-import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
+import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
-import { createEmptyRelationshipState, FOLLOW_STATUSES } from './follow.constants';
+import { createEmptyRelationshipState, FOLLOW_STATUSES } from './follow-constants';
 import {
   FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
   FOLLOW_SUBSCRIPTION_INTERVAL_MS,
@@ -16,7 +16,7 @@ import {
   normalizeLiveFollowPayload,
   refreshFollowUserSubscriptions,
   refreshRelationshipSubscription,
-} from './follow.client-shared';
+} from './follow-client-shared';
 
 async function fetchFollowCollection(userId, direction, status) {
   const payload = await requestApiJson('/api/follows', {

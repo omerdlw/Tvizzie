@@ -1,20 +1,20 @@
 'use client';
 
-import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { invalidatePollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
   removeActivityEvents,
-} from '@/domains/social/server/activity/activity-events.service';
+} from '@/domains/social/server/activity/activity-events-service';
 import { buildCanonicalActivityDedupeKey } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import { updateListReviewsCount } from '@/domains/media/server/lists/list-service.js';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
-} from '@/domains/social/server/notifications/notification-events.service';
+} from '@/domains/social/server/notifications/notification-events-service';
 import { getListReviewContext } from './review-context.js';
 import {
   buildListOpinionDedupeKey,

@@ -7,7 +7,7 @@ import {
   resolveOptionalSessionRequest,
 } from '@/domains/auth/servers/auth-session.js';
 import { SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
-import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/profile/read.server';
+import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/profile/profile-read.server';
 import {
   ACCOUNT_READ_FUNCTION,
   ACCOUNT_WRITE_FUNCTION,

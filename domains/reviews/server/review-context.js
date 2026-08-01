@@ -1,6 +1,6 @@
 'use client';
 
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 
 import { LIST_CONTEXT_SELECT } from './review-constants.js';
 import { buildListSubjectMetadata } from './review-shared.js';

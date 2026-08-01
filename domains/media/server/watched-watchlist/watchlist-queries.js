@@ -3,7 +3,7 @@
 import {
   fetchCollectionResource,
   fetchMediaCollectionStatus,
-} from '@/domains/account/server/media/collection.service';
+} from '@/domains/account/server/media/media-collection-service';
 import { createWatchlistRef } from './watchlist-shared.js';
 
 export async function fetchWatchlistStatus({ media, userId }) {

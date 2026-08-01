@@ -5,12 +5,12 @@ import {
   STEP_UP_COOKIE_NAME,
   STEP_UP_MAX_AGE_MS,
   STEP_UP_MAX_AGE_SECONDS,
-} from './session.constants';
+} from './session-constants.server';
 import {
   getBearerToken,
   hasSessionHint,
   readSessionFromSupabaseCookies,
-} from './session.cookies.server';
+} from './session-cookies.server';
 import {
   applySessionCookies,
   clearAuthCookies,
@@ -31,8 +31,8 @@ import {
   buildAuthContextFromAccessToken,
   createSessionFromIdToken,
 } from './session-auth-context.server';
-import { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session.builder';
-import { normalizeValue } from './session.shared';
+import { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session-builder.server';
+import { normalizeValue } from './session-shared';
 
 export {
   AUTH_COOKIE_PATH,
@@ -50,7 +50,7 @@ export {
   isSecureCookieEnvironment,
   setCsrfCookie,
 };
-export { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session.builder';
+export { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session-builder.server';
 export { createSessionFromIdToken };
 export { isTransientSessionError };
 

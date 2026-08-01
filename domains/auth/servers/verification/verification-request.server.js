@@ -1,4 +1,4 @@
-import { PURPOSES } from './email-verification.constants';
+import { PURPOSES } from './email-verification-constants';
 import { normalizeEmailValue } from '@/shared/lib/string';
 
 const VERIFICATION_ACTIONS = Object.freeze({

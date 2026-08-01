@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 
 import { normalizeLowerValue as normalizeValue } from '@/shared/lib/string';
 
-import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from './runtime-policy.constants.js';
+import { ROLLOUT_CANARY_PERCENT, ROLLOUT_DEFAULT_MODE } from './runtime-policy-constants.js';
 
 const VALID_ROLLOUT_MODES = new Set(['legacy', 'shadow', 'edge_canary', 'edge_full']);
 

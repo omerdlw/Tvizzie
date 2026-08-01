@@ -12,14 +12,14 @@ import {
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
 
-import { invalidateNotificationCachesForUsers, publishFollowChange } from './follows.events.server';
+import { invalidateNotificationCachesForUsers, publishFollowChange } from './follow-events.server';
 import {
   createRequestMeta,
   createValidationErrorResponse,
   createWriteErrorResponse,
   createWriteSuccessResponse,
   normalizeValue,
-} from './follows.shared';
+} from './follow-shared';
 
 function createFollowCacheKey({ resource, userId, targetId, status, viewerId }) {
   return `follows|resource=${resource}|user=${userId}|target=${targetId}|status=${status}|viewer=${viewerId || 'anon'}`;

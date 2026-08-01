@@ -10,9 +10,9 @@ import {
   parseActivityFilters,
   parsePageFromSearch,
   toActivityQueryValues,
-} from '@/domains/account/ui/filtering';
+} from '@/domains/account/ui/filtering/filtering';
 import { logDataError } from '@/shared/lib';
-import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity.service';
+import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
 import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
 import ActivityView from '@/domains/account/ui/activity-view';
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { resolveOptionalSessionRequest } from '@/domains/auth/servers/auth-session.js';
-import { getCollectionResource } from '@/domains/account/server/collections/read.server';
+import { getCollectionResource } from '@/domains/account/server/collections/collection-read.server';
 import { getOrLoadCachedValue } from '@/infrastructure/http/http-server';
 
 const DEFAULT_COLLECTION_LIMIT = 24;

@@ -9,14 +9,14 @@ import {
 import {
   ACTIVITY_EVENT_TYPE_SET,
   ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/server/activity/activity-events.constants';
+} from '@/domains/social/server/activity/activity-events-constants';
 import {
   deleteByDedupePattern,
   deleteByExactDedupeKey,
   getExistingActivity,
   getUserProfile,
-} from './event-processor.queries';
-import { buildActorSnapshot, buildEventRecord, normalizeValue } from './event-processor.shared';
+} from './event-processor-queries';
+import { buildActorSnapshot, buildEventRecord, normalizeValue } from './event-processor-shared';
 
 export async function processActivityEvent({ actorUserId, eventType, payload = {} }) {
   const normalizedActorUserId = normalizeValue(actorUserId);

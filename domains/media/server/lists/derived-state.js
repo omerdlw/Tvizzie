@@ -1,6 +1,6 @@
 'use client';
 
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import { normalizeMediaPayload } from '@/domains/media/server/media';
 import { LIST_ITEM_PREVIEW_SELECT } from './list-constants.js';
 import { normalizeListPreviewItem } from './list-shared.js';

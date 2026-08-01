@@ -25,7 +25,7 @@ import {
   uploadWithEdgeFlow,
   uploadWithLegacyAdminFlow,
   validateEdgeUploadTicket,
-} from './storage.server';
+} from './media-storage.server';
 
 async function enforceAccountMediaUploadRateLimit({ requestContext, userId }) {
   try {

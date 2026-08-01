@@ -15,7 +15,7 @@ import {
   parseMediaFilters,
   parsePageFromSearch,
   toMediaQueryValues,
-} from '@/domains/account/ui/filtering';
+} from '@/domains/account/ui/filtering/filtering';
 import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountMediaGridPage, {
   ProfileMediaActions,

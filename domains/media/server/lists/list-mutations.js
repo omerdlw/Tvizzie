@@ -1,18 +1,18 @@
 'use client';
 
 import { cleanString } from '@/shared/lib/string';
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import { createMediaPayload, ensureUserId } from '@/domains/media/server/media';
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
   removeActivityEvents,
-} from '@/domains/social/server/activity/activity-events.service';
+} from '@/domains/social/server/activity/activity-events-service';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import { LIST_ROW_SELECT } from './list-constants.js';
 import { fetchListById } from './list-queries.js';
 import {

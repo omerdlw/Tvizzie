@@ -9,7 +9,7 @@ import {
   RESEND_COOLDOWN_MS,
   SECURE_PURPOSES,
   TOKEN_VERSION,
-} from './email-verification.constants';
+} from './email-verification-constants';
 import { enforceSendCodeRateLimit } from './email-verification.rate-limit.server';
 import {
   getChallengeByKey,
@@ -27,7 +27,7 @@ import {
   hashVerificationCode,
   normalizeEmail,
   normalizeUserId,
-} from './email-verification.utils';
+} from './email-verification-utils';
 
 export { PURPOSES };
 

@@ -11,7 +11,7 @@ import {
   slideFadeVariants,
 } from '@/modules/nav/nav-motion';
 import { cn } from '@/shared/lib/classnames';
-import Icon from '@/ui/icon';
+import Icon from '@/ui/primitives/icon';
 
 const SurfaceHeaderContext = createContext(null);
 

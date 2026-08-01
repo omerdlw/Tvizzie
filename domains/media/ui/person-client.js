@@ -10,7 +10,7 @@ import {
 } from '@/domains/media/person/poster-preferences';
 import { calculateAge, getBackgroundMovieCandidates } from '@/domains/media/person/person-data';
 import { TMDB_IMG } from '@/shared/constants';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb.service';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import PersonView from '@/domains/media/ui/person-view';
 
 function getMovieBackdropSrc(credit) {

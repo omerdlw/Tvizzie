@@ -8,7 +8,7 @@ import {
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_URL,
 } from '@/infrastructure/supabase/supabase-constants';
-import { isRealtimeTransportEnabled } from '@/infrastructure/realtime/realtime-transport.config';
+import { isRealtimeTransportEnabled } from '@/infrastructure/realtime/realtime-transport-config';
 
 const REALTIME_ADMIN_CLIENT_KEY = '__tvizzie_realtime_admin_client__';
 

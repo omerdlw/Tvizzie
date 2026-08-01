@@ -11,7 +11,7 @@ import {
 } from '@/app/_shell/interactive-boundary';
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import SettingsModal from '@/app/_shell/settings-modal';
-import { NAV_CONFIG } from '@/app/_shell/navigation.config';
+import { NAV_CONFIG } from '@/app/_shell/navigation-config';
 import { pipe } from '@/shared/lib';
 import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 

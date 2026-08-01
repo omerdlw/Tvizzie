@@ -48,7 +48,7 @@ import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
   writeAuthAuditLog,
-} from './account-route.shared.server';
+} from './account-route-shared.server';
 
 export async function handleReauthenticate(request, body) {
   try {

@@ -1,7 +1,7 @@
 'use client';
 
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
-import { refreshFollowSubscriptions } from './follow.client-shared';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
+import { refreshFollowSubscriptions } from './follow-client-shared';
 
 export async function followUser(followerId, followingId) {
   if (!followerId || !followingId) throw new Error('Invalid user IDs');

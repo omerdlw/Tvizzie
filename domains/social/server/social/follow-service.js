@@ -1,6 +1,6 @@
 'use client';
 
-export { FOLLOW_STATUSES } from './follow.constants';
+export { FOLLOW_STATUSES } from './follow-constants';
 export {
   acceptFollowRequest,
   cancelFollowRequest,
@@ -8,10 +8,10 @@ export {
   rejectFollowRequest,
   removeFollower,
   unfollowUser,
-} from './follow.mutations';
+} from './follow-mutations';
 export {
   subscribeToFollowers,
   subscribeToFollowing,
   subscribeToFollowRelationship,
   subscribeToFollowStatus,
-} from './follow.subscriptions';
+} from './follow-subscriptions';

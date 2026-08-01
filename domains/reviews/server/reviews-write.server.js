@@ -7,8 +7,8 @@ import {
   createRouteErrorResponse,
 } from '@/infrastructure/http/route-context.server';
 
-import { executeReviewWriteAction } from './reviews-write.actions.server';
-import { normalizePayloadObject, normalizeValue } from './reviews-write.shared';
+import { executeReviewWriteAction } from './reviews-write-actions.server';
+import { normalizePayloadObject, normalizeValue } from './reviews-write-shared';
 
 export async function handleReviewsWritePost(request) {
   const requestMeta = createRouteRequestMeta(request, 'api/reviews/write');

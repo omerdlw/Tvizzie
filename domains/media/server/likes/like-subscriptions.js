@@ -1,6 +1,6 @@
 'use client';
 
-import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription.service';
+import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
 import { fetchLikes, fetchLikeStatus, readFavoriteShowcase } from './like-queries.js';
 import {
   getFavoriteShowcaseSubscriptionKey,

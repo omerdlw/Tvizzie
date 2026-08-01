@@ -3,7 +3,7 @@ import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import { normalizeValue } from '@/shared/lib/string';
 
 export function normalizeRating(value) {

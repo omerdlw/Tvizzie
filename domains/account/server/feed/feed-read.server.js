@@ -1,11 +1,11 @@
 import 'server-only';
 
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/server/activity/activity-events-constants';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
-} from '@/domains/account/server/profile/read-profile.server';
+} from '@/domains/account/server/profile/profile-public-read.server';
 import { ACTIVITY_SELECT, FOLLOW_STATUS_ACCEPTED } from './feed-constants';
 import { fetchDerivedUserActivityItems } from './feed-derived';
 import {

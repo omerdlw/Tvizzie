@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { ACTIVITY_EVENT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
-import { getCollectionResource } from '@/domains/account/server/collections/read.server';
-import { getAccountProfileByUserId } from '@/domains/account/server/profile/read-profile.server';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
+import { getCollectionResource } from '@/domains/account/server/collections/collection-read.server';
+import { getAccountProfileByUserId } from '@/domains/account/server/profile/profile-public-read.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
 import { normalizeTimestamp } from '@/shared/lib/format';
 import { normalizeMediaType } from '@/shared/lib/media';

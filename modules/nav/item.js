@@ -13,8 +13,8 @@ import {
   textCrossfadeVariants,
 } from '@/modules/nav/nav-motion';
 import { cn } from '@/shared/lib/classnames';
-import Iconify from '@/ui/icon';
-import { Skeleton } from '@/ui/skeletons/components/nav';
+import Iconify from '@/ui/primitives/icon';
+import { SkeletonBlock as Skeleton } from '@/ui/feedback/skeleton';
 
 import { NavActionsContainer } from './nav-actions';
 import { Description, Icon as BadgeIcon, Title } from './elements';

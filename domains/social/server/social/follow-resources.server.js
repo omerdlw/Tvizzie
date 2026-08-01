@@ -6,9 +6,9 @@ import {
   canViewerAccessUserContent,
   createPrivateProfileError,
   getAccountProfileByUserId,
-} from '@/domains/account/server/profile/read-profile.server';
+} from '@/domains/account/server/profile/profile-public-read.server';
 import { normalizeTimestamp } from '@/shared/lib/format';
-import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from './follow.constants';
+import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from './follow-constants';
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {

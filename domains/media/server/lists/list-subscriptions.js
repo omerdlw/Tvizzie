@@ -3,7 +3,7 @@
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
 import {
   fetchLikedLists,
   fetchListById,

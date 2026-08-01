@@ -1,7 +1,7 @@
 'use client';
 
 import { createCsrfHeaders } from '@/domains/auth/clients';
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import { validateUsername } from '@/shared/lib/account';
 import { cleanString } from '@/shared/lib/string';
 
@@ -11,7 +11,7 @@ import {
   normalizeEmailAddress,
   normalizeMediaTarget,
   normalizeOptionalUrl,
-} from './service.normalizers';
+} from './profile-service-normalizers';
 import {
   getUserAccount as getUserAccountRequest,
   getUserAccountByUsername as getUserAccountByUsernameRequest,
@@ -20,12 +20,12 @@ import {
   requestSyncUserAccountEmail,
   requestUpdateUserAccount,
   searchUserAccounts as searchUserAccountsRequest,
-} from './service.requests';
+} from './profile-service-requests';
 import {
   getUserAccountSubscriptionKey as getUserAccountSubscriptionKeyValue,
   primeUserAccount as primeUserAccountValue,
   subscribeToUserAccount as subscribeToUserAccountPolling,
-} from './service.subscriptions';
+} from './profile-service-subscriptions';
 
 export { sanitizeUsername, validateUsername } from '@/shared/lib/account';
 

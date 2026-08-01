@@ -23,7 +23,7 @@ import { NotificationProvider } from '@/modules/notification/notification-contex
 import { NotificationBadgeListener, NotificationListener } from '@/modules/notification';
 import { useRegistry } from '@/modules/registry';
 import { SettingsProvider } from '@/modules/settings';
-import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport.config';
+import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 
 const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({

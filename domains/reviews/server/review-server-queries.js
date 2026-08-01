@@ -1,4 +1,4 @@
 import 'server-only';
 
-export { fetchListReviewFeedServer } from './server.list-feed.js';
-export { fetchProfileReviewFeedLegacyServer } from './server.profile-feed.js';
+export { fetchListReviewFeedServer } from './review-list-feed.js';
+export { fetchProfileReviewFeedLegacyServer } from './review-profile-feed.js';

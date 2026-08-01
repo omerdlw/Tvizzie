@@ -3,8 +3,8 @@
 import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
-} from '@/domains/account/server/media/collection.service';
-import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/domains/account/server/media/media-collection-service';
+import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription-service';
 import {
   assertTitleMedia,
   assertMoviePayload,

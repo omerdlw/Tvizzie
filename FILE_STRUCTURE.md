@@ -1,6 +1,6 @@
 # Current Repository File Structure
 
-This file reflects the current repository after the architecture migration. It is generated from the working tree and includes every project file except generated or metadata-only directories/files: `.git/`, `.next/`, `node_modules/`, and `.DS_Store`.
+This file is generated from the working tree and lists every project file. Generated or metadata-only content is intentionally excluded: `.git/`, `.next/`, `node_modules/`, and `.DS_Store`.
 
 ```text
 .
@@ -16,7 +16,7 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |-- global-context-menu-registry.js
 |   |   |-- interactive-boundary.js
 |   |   |-- nav-runtime.js
-|   |   |-- navigation.config.js
+|   |   |-- navigation-config.js
 |   |   |-- settings-modal.js
 |   |   `-- smooth-scroll.js
 |   |-- (account)
@@ -192,48 +192,48 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |   |-- reviews.server.js
 |   |   |   |   `-- search.server.js
 |   |   |   |-- collections
-|   |   |   |   |-- constants.js
-|   |   |   |   |-- normalizers.js
-|   |   |   |   |-- read.server.js
-|   |   |   |   |-- shared.server.js
-|   |   |   |   `-- status.server.js
+|   |   |   |   |-- collection-constants.js
+|   |   |   |   |-- collection-normalizers.js
+|   |   |   |   |-- collection-read.server.js
+|   |   |   |   |-- collection-shared.server.js
+|   |   |   |   `-- collection-status.server.js
 |   |   |   |-- feed
-|   |   |   |   |-- constants.js
-|   |   |   |   |-- derived.js
-|   |   |   |   |-- normalizers.js
-|   |   |   |   |-- projector.js
-|   |   |   |   `-- read.server.js
+|   |   |   |   |-- feed-constants.js
+|   |   |   |   |-- feed-derived.js
+|   |   |   |   |-- feed-normalizers.js
+|   |   |   |   |-- feed-projector.js
+|   |   |   |   `-- feed-read.server.js
 |   |   |   |-- media
-|   |   |   |   |-- collection.service.js
-|   |   |   |   |-- constants.js
-|   |   |   |   |-- shared.js
-|   |   |   |   |-- storage.server.js
-|   |   |   |   `-- upload.server.js
+|   |   |   |   |-- media-collection-service.js
+|   |   |   |   |-- media-constants.js
+|   |   |   |   |-- media-shared.js
+|   |   |   |   |-- media-storage.server.js
+|   |   |   |   `-- media-upload.server.js
 |   |   |   |-- profile
-|   |   |   |   |-- client.js
-|   |   |   |   |-- constants.js
-|   |   |   |   |-- normalizers.js
-|   |   |   |   |-- read-profile.server.js
-|   |   |   |   |-- read.server.js
-|   |   |   |   |-- service.js
-|   |   |   |   |-- service.normalizers.js
-|   |   |   |   |-- service.requests.js
-|   |   |   |   |-- service.subscriptions.js
-|   |   |   |   `-- summary.service.js
+|   |   |   |   |-- profile-constants.js
+|   |   |   |   |-- profile-http-client.js
+|   |   |   |   |-- profile-normalizers.js
+|   |   |   |   |-- profile-public-read.server.js
+|   |   |   |   |-- profile-read.server.js
+|   |   |   |   |-- profile-service-normalizers.js
+|   |   |   |   |-- profile-service-requests.js
+|   |   |   |   |-- profile-service-subscriptions.js
+|   |   |   |   |-- profile-service.js
+|   |   |   |   `-- profile-summary-service.js
 |   |   |   |-- routes
-|   |   |   |   |-- constants.js
-|   |   |   |   |-- loaders.js
-|   |   |   |   |-- read.server.js
-|   |   |   |   |-- session.js
-|   |   |   |   |-- snapshot.js
-|   |   |   |   `-- state.js
-|   |   |   `-- index.js
+|   |   |   |   |-- route-constants.js
+|   |   |   |   |-- route-loaders.js
+|   |   |   |   |-- route-read.server.js
+|   |   |   |   |-- route-session.js
+|   |   |   |   |-- route-snapshot.js
+|   |   |   |   `-- route-state.js
+|   |   |   `-- account-server.js
 |   |   `-- ui
 |   |       |-- feeds
 |   |       |   |-- list-detail
 |   |       |   |   |-- comments-section.js
-|   |       |   |   |-- config.js
-|   |       |   |   `-- filter-state.js
+|   |       |   |   |-- list-detail-config.js
+|   |       |   |   `-- list-detail-filter-state.js
 |   |       |   |-- activity.js
 |   |       |   |-- likes.js
 |   |       |   |-- list-detail.js
@@ -244,19 +244,19 @@ This file reflects the current repository after the architecture migration. It i
 |   |       |   `-- watchlist.js
 |   |       |-- filtering
 |   |       |   |-- activity.js
-|   |       |   |-- index.js
+|   |       |   |-- filtering-query-utils.js
+|   |       |   |-- filtering-shared.js
+|   |       |   |-- filtering.js
 |   |       |   |-- lists.js
 |   |       |   |-- media.js
-|   |       |   |-- query-utils.js
-|   |       |   |-- reviews.js
-|   |       |   `-- shared.js
+|   |       |   `-- reviews.js
 |   |       |-- filters
 |   |       |   |-- content-filter
 |   |       |   |   |-- activity-filter-bar.js
+|   |       |   |   |-- content-filter-controls.js
+|   |       |   |   |-- content-filter-options.js
 |   |       |   |   |-- list-sort-bar.js
 |   |       |   |   |-- media-filter-bar.js
-|   |       |   |   |-- options.js
-|   |       |   |   |-- primitives.js
 |   |       |   |   |-- review-filter-bar.js
 |   |       |   |   `-- search-movie-filter-bar.js
 |   |       |   `-- content-filter-primitives.js
@@ -276,8 +276,8 @@ This file reflects the current repository after the architecture migration. It i
 |   |       |   |-- security-credential-validation.js
 |   |       |   `-- security-credentials.js
 |   |       |-- lists
-|   |       |   |-- card.js
-|   |       |   `-- grid.js
+|   |       |   |-- list-card.js
+|   |       |   `-- list-grid.js
 |   |       |-- modals
 |   |       |   |-- create-list-modal.js
 |   |       |   |-- list-editor-modal.js
@@ -298,10 +298,12 @@ This file reflects the current repository after the architecture migration. It i
 |   |       |-- account-media-grid.js
 |   |       |-- account-page-factory.js
 |   |       |-- account-pagination.js
+|   |       |-- account-registry-config.js
 |   |       |-- account-registry-state.js
 |   |       |-- account-section-factory.js
 |   |       |-- account-section-state.js
 |   |       |-- account-section.js
+|   |       |-- account-security.js
 |   |       |-- account-skeleton.js
 |   |       |-- activity-client.js
 |   |       |-- activity-view.js
@@ -319,10 +321,8 @@ This file reflects the current repository after the architecture migration. It i
 |   |       |-- overview-view.js
 |   |       |-- profile-client.js
 |   |       |-- profile-registry.js
-|   |       |-- registry-config.js
 |   |       |-- reviews-client.js
 |   |       |-- reviews-view.js
-|   |       |-- security.js
 |   |       |-- watched-client.js
 |   |       |-- watched-view.js
 |   |       |-- watchlist-client.js
@@ -341,14 +341,14 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |   |-- account-lifecycle.server.js
 |   |   |   |   `-- account-state.server.js
 |   |   |   |-- account-route
+|   |   |   |   |-- account-route-shared.server.js
 |   |   |   |   |-- account-route.delete.server.js
 |   |   |   |   |-- account-route.email.server.js
 |   |   |   |   |-- account-route.handlers.server.js
 |   |   |   |   |-- account-route.password-change.server.js
 |   |   |   |   |-- account-route.password-set.server.js
 |   |   |   |   |-- account-route.password-status.server.js
-|   |   |   |   |-- account-route.reauthenticate.server.js
-|   |   |   |   `-- account-route.shared.server.js
+|   |   |   |   `-- account-route.reauthenticate.server.js
 |   |   |   |-- api
 |   |   |   |   |-- audit.server.js
 |   |   |   |   |-- password-reset-complete.server.js
@@ -371,45 +371,45 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |   |-- request-context.server.js
 |   |   |   |   |-- revocation.server.js
 |   |   |   |   |-- session-auth-context.server.js
+|   |   |   |   |-- session-builder.server.js
+|   |   |   |   |-- session-constants.server.js
 |   |   |   |   |-- session-cookie-state.server.js
+|   |   |   |   |-- session-cookies.server.js
 |   |   |   |   |-- session-errors.server.js
 |   |   |   |   |-- session-request-client.server.js
-|   |   |   |   |-- session.builder.js
-|   |   |   |   |-- session.constants.js
-|   |   |   |   |-- session.cookies.server.js
+|   |   |   |   |-- session-shared.js
 |   |   |   |   |-- session.server.js
-|   |   |   |   |-- session.shared.js
 |   |   |   |   `-- supabase-admin-auth.server.js
 |   |   |   |-- verification
 |   |   |   |   |-- challenge-proof.server.js
 |   |   |   |   |-- email-sender.server.js
-|   |   |   |   |-- email-verification.constants.js
+|   |   |   |   |-- email-verification-constants.js
+|   |   |   |   |-- email-verification-utils.js
 |   |   |   |   |-- email-verification.rate-limit.server.js
 |   |   |   |   |-- email-verification.server.js
 |   |   |   |   |-- email-verification.store.server.js
 |   |   |   |   |-- email-verification.token.server.js
-|   |   |   |   |-- email-verification.utils.js
-|   |   |   |   |-- login-verification.constants.js
+|   |   |   |   |-- login-verification-constants.js
 |   |   |   |   |-- login-verification.server.js
-|   |   |   |   |-- password-account.errors.js
+|   |   |   |   |-- password-account-errors.js
 |   |   |   |   |-- password-account.server.js
 |   |   |   |   |-- password-reset-proof.server.js
 |   |   |   |   |-- secret-fallback.server.js
 |   |   |   |   |-- signed-token.server.js
 |   |   |   |   |-- signup-proof.server.js
 |   |   |   |   `-- verification-request.server.js
-|   |   |   |-- account.js
 |   |   |   |-- audit-log.server.js
-|   |   |   |-- audit.js
+|   |   |   |-- auth-account.js
+|   |   |   |-- auth-audit.js
+|   |   |   |-- auth-notice.js
+|   |   |   |-- auth-policy.js
+|   |   |   |-- auth-providers.js
 |   |   |   |-- auth-route-notice.server.js
 |   |   |   |-- auth-route-policy.server.js
-|   |   |   |-- index.js
-|   |   |   |-- notice.js
-|   |   |   |-- policy.js
-|   |   |   |-- providers.js
-|   |   |   |-- security.js
-|   |   |   |-- session.js
-|   |   |   `-- verification.js
+|   |   |   |-- auth-security.js
+|   |   |   |-- auth-session.js
+|   |   |   |-- auth-verification.js
+|   |   |   `-- index.js
 |   |   |-- ui
 |   |   |   |-- auth-animation.js
 |   |   |   |-- auth-route-registry.js
@@ -420,11 +420,11 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |-- sign-in-view.js
 |   |   |   |-- sign-up-client.js
 |   |   |   `-- sign-up-view.js
+|   |   |-- auth-constants.js
 |   |   |-- auth-flow.js
+|   |   |-- auth-tables-constants.js
 |   |   |-- auth-verification-surface.js
-|   |   |-- auth.constants.js
 |   |   |-- capabilities.js
-|   |   |-- constants.js
 |   |   |-- forgot-password-action.js
 |   |   |-- form-primitives.js
 |   |   |-- index.js
@@ -438,10 +438,10 @@ This file reflects the current repository after the architecture migration. It i
 |   |   `-- workflows.js
 |   |-- home
 |   |   |-- ui
-|   |   |   |-- client.js
-|   |   |   |-- loading-state.js
-|   |   |   |-- registry.js
-|   |   |   `-- view.js
+|   |   |   |-- home-client.js
+|   |   |   |-- home-registry.js
+|   |   |   |-- home-view.js
+|   |   |   `-- loading-state.js
 |   |   |-- animation-config.js
 |   |   |-- discover-section.js
 |   |   |-- poster-rail.js
@@ -467,49 +467,49 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |-- server
 |   |   |   |-- likes
 |   |   |   |   |-- index.js
-|   |   |   |   |-- queries.js
-|   |   |   |   |-- service.js
-|   |   |   |   |-- shared.js
-|   |   |   |   `-- subscriptions.js
+|   |   |   |   |-- like-queries.js
+|   |   |   |   |-- like-service.js
+|   |   |   |   |-- like-shared.js
+|   |   |   |   `-- like-subscriptions.js
 |   |   |   |-- lists
-|   |   |   |   |-- constants.js
 |   |   |   |   |-- derived-state.js
 |   |   |   |   |-- index.js
 |   |   |   |   |-- item-mutations.js
 |   |   |   |   |-- like-mutations.js
+|   |   |   |   |-- list-constants.js
 |   |   |   |   |-- list-mutations.js
-|   |   |   |   |-- mutations.js
-|   |   |   |   |-- queries.js
-|   |   |   |   |-- service.js
-|   |   |   |   |-- shared.js
-|   |   |   |   `-- subscriptions.js
+|   |   |   |   |-- list-queries.js
+|   |   |   |   |-- list-service.js
+|   |   |   |   |-- list-shared.js
+|   |   |   |   |-- list-subscriptions.js
+|   |   |   |   `-- mutations.js
 |   |   |   |-- social-proof
 |   |   |   |   |-- index.js
-|   |   |   |   `-- service.js
+|   |   |   |   `-- social-proof-service.js
 |   |   |   |-- user-media
 |   |   |   |   |-- index.js
 |   |   |   |   |-- poster-preference-events.js
-|   |   |   |   `-- service.js
+|   |   |   |   `-- user-media-service.js
 |   |   |   |-- watched-watchlist
 |   |   |   |   |-- index.js
-|   |   |   |   |-- watched.queries.js
-|   |   |   |   |-- watched.service.js
-|   |   |   |   |-- watched.shared.js
-|   |   |   |   |-- watched.subscriptions.js
-|   |   |   |   |-- watchlist.queries.js
-|   |   |   |   |-- watchlist.service.js
-|   |   |   |   |-- watchlist.shared.js
-|   |   |   |   `-- watchlist.subscriptions.js
+|   |   |   |   |-- watched-queries.js
+|   |   |   |   |-- watched-service.js
+|   |   |   |   |-- watched-shared.js
+|   |   |   |   |-- watched-subscriptions.js
+|   |   |   |   |-- watchlist-queries.js
+|   |   |   |   |-- watchlist-service.js
+|   |   |   |   |-- watchlist-shared.js
+|   |   |   |   `-- watchlist-subscriptions.js
 |   |   |   |-- index.js
-|   |   |   |-- media-key.service.js
+|   |   |   |-- media-key-service.js
 |   |   |   |-- media.js
 |   |   |   |-- person-awards.server.js
-|   |   |   `-- supabase-media-utils.service.js
+|   |   |   `-- supabase-media-utils-service.js
 |   |   `-- ui
 |   |       |-- components
-|   |       |   |-- carousel.js
-|   |       |   |-- list-preview-composition.js
 |   |       |   |-- media-card.js
+|   |       |   |-- media-carousel.js
+|   |       |   |-- media-list-preview.js
 |   |       |   `-- media-poster-card.js
 |   |       |-- modals
 |   |       |   |-- cast-modal.js
@@ -559,27 +559,27 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |-- server
 |   |   |   |-- api
 |   |   |   |   `-- reviews.server.js
-|   |   |   |-- constants.js
-|   |   |   |-- context.js
 |   |   |   |-- index.js
 |   |   |   |-- list-mutations.js
 |   |   |   |-- media-mutations.js
 |   |   |   |-- mutation-shared.js
 |   |   |   |-- mutations.js
-|   |   |   |-- reviews-write.actions.server.js
+|   |   |   |-- review-constants.js
+|   |   |   |-- review-context.js
+|   |   |   |-- review-list-feed.js
+|   |   |   |-- review-profile-feed.js
+|   |   |   |-- review-server-constants.js
+|   |   |   |-- review-server-context.js
+|   |   |   |-- review-server-queries.js
+|   |   |   |-- review-server-shared.js
+|   |   |   |-- review-server.js
+|   |   |   |-- review-service.js
+|   |   |   |-- review-shared.js
+|   |   |   |-- review-subscriptions.js
+|   |   |   |-- reviews-write-actions.server.js
+|   |   |   |-- reviews-write-shared.js
 |   |   |   |-- reviews-write.server.js
-|   |   |   |-- reviews-write.shared.js
-|   |   |   |-- server.constants.js
-|   |   |   |-- server.context.js
-|   |   |   |-- server.js
-|   |   |   |-- server.list-feed.js
-|   |   |   |-- server.profile-feed.js
-|   |   |   |-- server.queries.js
-|   |   |   |-- server.shared.js
-|   |   |   |-- service.js
-|   |   |   |-- shared.js
 |   |   |   |-- stored-mutations.js
-|   |   |   |-- subscriptions.js
 |   |   |   `-- validation.js
 |   |   `-- ui
 |   |       |-- media-reviews.js
@@ -598,28 +598,28 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |       |-- index.js
 |   |   |   |       |-- search-action-helpers.js
 |   |   |   |       `-- use-search-action-controller.js
-|   |   |   |-- api.js
-|   |   |   |-- cache.js
-|   |   |   |-- constants.js
-|   |   |   |-- filters.js
 |   |   |   |-- grid-item.js
-|   |   |   |-- ranking.js
-|   |   |   |-- result.js
+|   |   |   |-- search-api.js
+|   |   |   |-- search-cache.js
+|   |   |   |-- search-constants.js
 |   |   |   |-- search-data.js
-|   |   |   `-- text.js
+|   |   |   |-- search-filters.js
+|   |   |   |-- search-ranking.js
+|   |   |   |-- search-result.js
+|   |   |   `-- search-text.js
 |   |   |-- search-community.server.js
 |   |   `-- search-quality.server.js
 |   `-- social
 |       |-- server
 |       |   |-- activity
-|       |   |   |-- activity-events.constants.js
-|       |   |   |-- activity-events.service.js
-|       |   |   |-- activity.service.js
+|       |   |   |-- activity-events-constants.js
+|       |   |   |-- activity-events-service.js
+|       |   |   |-- activity-service.js
 |       |   |   |-- canonical-key.js
-|       |   |   |-- event-processor.constants.js
-|       |   |   |-- event-processor.queries.js
+|       |   |   |-- event-processor-constants.js
+|       |   |   |-- event-processor-queries.js
+|       |   |   |-- event-processor-shared.js
 |       |   |   |-- event-processor.server.js
-|       |   |   |-- event-processor.shared.js
 |       |   |   `-- index.js
 |       |   |-- api
 |       |   |   |-- activity-events.server.js
@@ -627,22 +627,22 @@ This file reflects the current repository after the architecture migration. It i
 |       |   |   `-- social-proof.server.js
 |       |   |-- notifications
 |       |   |   |-- event-processor.server.js
-|       |   |   |-- notification-events.constants.js
-|       |   |   |-- notification-events.service.js
+|       |   |   |-- notification-events-constants.js
+|       |   |   |-- notification-events-service.js
 |       |   |   |-- notification-resources.server.js
-|       |   |   |-- notifications.constants.js
-|       |   |   `-- notifications.service.js
+|       |   |   |-- notifications-constants.js
+|       |   |   `-- notifications-service.js
 |       |   |-- social
+|       |   |   |-- follow-client-shared.js
+|       |   |   |-- follow-constants.js
+|       |   |   |-- follow-mutations.js
 |       |   |   |-- follow-resources.server.js
-|       |   |   |-- follow.client-shared.js
-|       |   |   |-- follow.constants.js
-|       |   |   |-- follow.mutations.js
-|       |   |   |-- follow.subscriptions.js
-|       |   |   |-- follows.service.js
+|       |   |   |-- follow-service.js
+|       |   |   |-- follow-subscriptions.js
 |       |   |   `-- index.js
-|       |   |-- follows.events.server.js
-|       |   |-- follows.server.js
-|       |   |-- follows.shared.js
+|       |   |-- follow-events.server.js
+|       |   |-- follow-server.js
+|       |   |-- follow-shared.js
 |       |   `-- notifications.server.js
 |       `-- ui
 |           |-- account-social-modal.js
@@ -651,22 +651,22 @@ This file reflects the current repository after the architecture migration. It i
 |   |-- http
 |   |   |-- api
 |   |   |   `-- rollout.server.js
-|   |   |-- api-request.service.js
+|   |   |-- api-request-service.js
 |   |   |-- api-response.server.js
 |   |   |-- api-result.js
 |   |   |-- app-error.js
 |   |   |-- cache-policy.server.js
-|   |   |-- client.js
+|   |   |-- http-client.js
+|   |   |-- http-server.js
 |   |   |-- index.js
 |   |   |-- memory-cache.server.js
 |   |   |-- request-meta.server.js
 |   |   |-- route-context.server.js
-|   |   |-- runtime-policy.constants.js
-|   |   |-- server.js
-|   |   |-- supabase-data.service.js
+|   |   |-- runtime-policy-constants.js
+|   |   |-- supabase-data-service.js
 |   |   |-- supabase-edge-internal.server.js
-|   |   |-- write-rollout.config.server.js
-|   |   |-- write-rollout.executor.server.js
+|   |   |-- write-rollout-config.server.js
+|   |   |-- write-rollout-executor.server.js
 |   |   `-- write-rollout.server.js
 |   |-- jobs
 |   |   |-- app-event-queue.server.js
@@ -678,23 +678,23 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |-- api
 |   |   |   |-- live-updates-events.server.js
 |   |   |   `-- live-updates.server.js
-|   |   |-- live-updates.service.js
-|   |   |-- polling-subscription.constants.js
-|   |   |-- polling-subscription.service.js
-|   |   |-- polling-subscription.shared.js
+|   |   |-- live-updates-service.js
+|   |   |-- polling-subscription-constants.js
+|   |   |-- polling-subscription-service.js
+|   |   |-- polling-subscription-shared.js
 |   |   |-- realtime-broadcast.server.js
-|   |   |-- realtime-transport.config.js
+|   |   |-- realtime-transport-config.js
 |   |   `-- user-events.server.js
 |   |-- runtime
 |   |   `-- health.server.js
 |   |-- supabase
 |   |   |-- admin.js
 |   |   |-- auth-storage.js
-|   |   |-- client.js
-|   |   |-- constants.js
 |   |   |-- proxy.js
 |   |   |-- response-client.server.js
-|   |   `-- server.js
+|   |   |-- supabase-client.js
+|   |   |-- supabase-constants.js
+|   |   `-- supabase-server.js
 |   `-- tmdb
 |       |-- api
 |       |   `-- route.server.js
@@ -703,9 +703,8 @@ This file reflects the current repository after the architecture migration. It i
 |       |   |   |-- fallback-queries.js
 |       |   |   |-- movie-ranking.js
 |       |   |   |-- person-ranking.js
-|       |   |   `-- shared.js
+|       |   |   `-- tmdb-search-shared.js
 |       |   |-- catalog.server.js
-|       |   |-- config.js
 |       |   |-- detail-id.server.js
 |       |   |-- details.server.js
 |       |   |-- request.js
@@ -713,20 +712,21 @@ This file reflects the current repository after the architecture migration. It i
 |       |   |-- sanitize.js
 |       |   |-- search-ranking.js
 |       |   |-- search.server.js
-|       |   `-- server.js
+|       |   |-- tmdb-client-config.js
+|       |   `-- tmdb-server-client.js
 |       `-- services
 |           |-- tmdb-http.client.js
 |           |-- tmdb-movie-images.client.js
-|           |-- tmdb.service.js
+|           |-- tmdb-service.js
 |           `-- watch-region.js
 |-- modules
 |   |-- account
-|   |   |-- client.js
-|   |   |-- context.js
-|   |   |-- hooks.js
+|   |   |-- account-client.js
+|   |   |-- account-context.js
+|   |   |-- account-hooks.js
 |   |   `-- index.js
 |   |-- api
-|   |   |-- cache.js
+|   |   |-- api-cache.js
 |   |   `-- index.js
 |   |-- auth
 |   |   |-- adapters
@@ -734,45 +734,45 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |-- create-adapter.js
 |   |   |   `-- supabase-adapter.js
 |   |   |-- action-flows.js
-|   |   |-- config.js
-|   |   |-- context.js
-|   |   |-- guards.js
+|   |   |-- auth-config.js
+|   |   |-- auth-context.js
+|   |   |-- auth-guards.js
+|   |   |-- auth-utils.js
 |   |   |-- index.js
 |   |   |-- session-client.js
 |   |   |-- session-ready.js
-|   |   |-- storage.js
-|   |   `-- utils.js
+|   |   `-- storage.js
 |   |-- background
-|   |   |-- context.js
+|   |   |-- background-context.js
 |   |   `-- index.js
 |   |-- context-menu
-|   |   |-- context.js
+|   |   |-- context-menu-context.js
 |   |   |-- index.js
 |   |   |-- menu-engine.js
 |   |   |-- motion.js
 |   |   `-- renderer.js
 |   |-- countdown
-|   |   |-- config.js
-|   |   |-- context.js
+|   |   |-- countdown-config.js
+|   |   |-- countdown-context.js
 |   |   `-- index.js
 |   |-- error-boundary
-|   |   |-- core.js
+|   |   |-- error-boundary-core.js
 |   |   |-- index.js
 |   |   |-- integrations.js
 |   |   |-- listener.js
 |   |   `-- reporter.js
 |   |-- loading
-|   |   |-- context.js
-|   |   `-- index.js
+|   |   |-- index.js
+|   |   `-- loading-context.js
 |   |-- modal
-|   |   |-- config.js
 |   |   |-- container.js
-|   |   |-- context.js
 |   |   |-- header.js
 |   |   |-- index.js
-|   |   |-- motion.js
-|   |   |-- title.js
-|   |   `-- utils.js
+|   |   |-- modal-config.js
+|   |   |-- modal-context.js
+|   |   |-- modal-motion.js
+|   |   |-- modal-utils.js
+|   |   `-- title.js
 |   |-- nav
 |   |   |-- hooks
 |   |   |   |-- index.js
@@ -793,42 +793,42 @@ This file reflects the current repository after the architecture migration. It i
 |   |   |   |-- use-navigation-status.js
 |   |   |   |-- use-navigation.js
 |   |   |   `-- use-surface-stack.js
-|   |   |-- actions.js
-|   |   |-- context.js
 |   |   |-- elements.js
 |   |   |-- events.js
 |   |   |-- guards.js
 |   |   |-- index.js
 |   |   |-- item.js
-|   |   |-- layout.js
-|   |   |-- motion.js
+|   |   |-- nav-actions.js
+|   |   |-- nav-context.js
+|   |   |-- nav-layout.js
+|   |   |-- nav-motion.js
+|   |   |-- nav-utils.js
 |   |   |-- state-machine.js
 |   |   |-- surface-model.js
-|   |   |-- surface.js
-|   |   `-- utils.js
+|   |   `-- surface.js
 |   |-- notification
-|   |   |-- config.js
-|   |   |-- context.js
-|   |   |-- hooks.js
 |   |   |-- index.js
-|   |   |-- motion.js
-|   |   `-- overlay.js
+|   |   |-- notification-config.js
+|   |   |-- notification-context.js
+|   |   |-- notification-hooks.js
+|   |   |-- notification-motion.js
+|   |   `-- notification-overlay.js
 |   |-- registry
 |   |   |-- plugins
 |   |   |   `-- index.js
 |   |   |-- bootstrap.js
-|   |   |-- constants.js
-|   |   |-- context.js
 |   |   |-- index.js
-|   |   |-- injector.js
-|   |   |-- store.js
+|   |   |-- registry-constants.js
+|   |   |-- registry-context.js
+|   |   |-- registry-injector.js
+|   |   |-- registry-store.js
 |   |   `-- use-registry.js
 |   `-- settings
-|       |-- config.js
-|       |-- context.js
 |       |-- index.js
-|       |-- storage.js
-|       `-- utils.js
+|       |-- settings-config.js
+|       |-- settings-context.js
+|       |-- settings-storage.js
+|       `-- settings-utils.js
 |-- public
 |   |-- images
 |   |   |-- default-avatar.svg

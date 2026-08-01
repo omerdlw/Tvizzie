@@ -14,7 +14,7 @@ import {
 } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import { createUserListWithItems } from '@/domains/media/server/lists';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb.service';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import { cn, formatYear } from '@/shared/lib';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Input } from '@/ui/primitives';

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import { invalidateCachedValuesWhere } from '@/infrastructure/http/http-server';
-import { normalizeValue } from './follows.shared';
+import { normalizeValue } from './follow-shared';
 
 export function publishFollowChange({
   followerId,

@@ -17,8 +17,8 @@ import {
 } from '@/modules/nav/nav-motion';
 import { useToast } from '@/modules/notification/notification-hooks';
 import { useNavRuntimeRegistry } from '@/modules/registry';
-import Tooltip from '@/ui/elements/tooltip';
-import Icon from '@/ui/icon';
+import Tooltip from '@/ui/primitives/tooltip';
+import Icon from '@/ui/primitives/icon';
 
 // --- CONSTANTS ---
 

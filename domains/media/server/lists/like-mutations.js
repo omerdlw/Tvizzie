@@ -1,19 +1,19 @@
 'use client';
 
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
-} from '@/domains/social/server/activity/activity-events.service';
+} from '@/domains/social/server/activity/activity-events-service';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
-} from '@/domains/social/server/notifications/notification-events.service';
+} from '@/domains/social/server/notifications/notification-events-service';
 import { resolveRpcRow } from './list-shared.js';
 
 export async function toggleListLike({ ownerId, listId, userId }) {

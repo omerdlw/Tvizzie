@@ -1,5 +1,5 @@
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
-import { getUsernameAccountActivityRouteData } from '@/domains/account/server/routes/read.server';
+import { getUsernameAccountActivityRouteData } from '@/domains/account/server/routes/route-read.server';
 import Client from '@/domains/account/ui/activity-client';
 
 export default createAccountRoutePage(Client, getUsernameAccountActivityRouteData, (query) => ({

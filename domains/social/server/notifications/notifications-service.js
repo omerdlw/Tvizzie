@@ -4,10 +4,10 @@ import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
   invalidatePollingSubscriptions,
-} from '@/infrastructure/realtime/polling-subscription.service';
-import { NOTIFICATION_TYPES } from '@/domains/social/server/notifications/notifications.constants';
-import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
+import { NOTIFICATION_TYPES } from '@/domains/social/server/notifications/notifications-constants';
+import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 3000;

@@ -1,8 +1,8 @@
 import { createAdminAuthFacade } from './supabase-admin-auth.server';
 import { assertSessionNotRevoked } from './revocation.server';
 import { assertGoogleSessionConsistency } from '../providers/google-provider.server';
-import { buildNormalizedSession, toFirebaseLikeUserRecord } from './session.builder';
-import { decodeJwtPayload, normalizeValue, toLowercase } from './session.shared';
+import { buildNormalizedSession, toFirebaseLikeUserRecord } from './session-builder.server';
+import { decodeJwtPayload, normalizeValue, toLowercase } from './session-shared';
 import { createCsrfToken } from './session-cookie-state.server';
 
 async function buildAuthContextFromAccessToken(

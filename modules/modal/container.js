@@ -4,7 +4,7 @@ import { isValidElement } from 'react';
 import { motion } from 'framer-motion';
 
 import { cn } from '@/shared/lib/classnames';
-import Icon from '@/ui/icon';
+import Icon from '@/ui/primitives/icon';
 
 import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 import { MODAL_POSITIONS } from '@/modules/modal/modal-config';

@@ -7,7 +7,7 @@ import {
   normalizePayloadObject,
   normalizeValue,
   REVIEW_MIN_LENGTH,
-} from './reviews-write.shared';
+} from './reviews-write-shared';
 
 async function upsertMediaReview({ admin, body, userId }) {
   const mediaKey = normalizeValue(body?.mediaKey);

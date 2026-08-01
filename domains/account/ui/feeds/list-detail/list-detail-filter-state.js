@@ -19,7 +19,7 @@ import {
   parseReviewFilters,
   toMediaQueryValues,
   toReviewQueryValues,
-} from '@/domains/account/ui/filtering';
+} from '@/domains/account/ui/filtering/filtering';
 
 import { LIST_COMMENT_SORT_SET, LIST_DETAIL_ALLOWED_EYE_FLAGS } from './list-detail-config';
 

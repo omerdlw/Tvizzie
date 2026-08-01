@@ -5,7 +5,7 @@ import { normalizeValue as normalizeUserId } from '@/shared/lib/string';
 import {
   buildPollingSubscriptionKey,
   invalidatePollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
 
 const ACCOUNT_REFRESH_TIMERS = new Map();
 const DEFAULT_REFRESH_DELAY_MS = 250;

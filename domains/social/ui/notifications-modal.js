@@ -11,7 +11,7 @@ import {
   markAllAsRead,
   markAsRead,
   subscribeToNotifications,
-} from '@/domains/social/server/notifications/notifications.service';
+} from '@/domains/social/server/notifications/notifications-service';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Button } from '@/ui/primitives';

@@ -6,7 +6,7 @@ import { buildActivitySubjectRef } from '@/domains/social/server/activity/canoni
 import {
   ACTIVITY_EVENT_TYPES,
   ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/server/activity/activity-events.constants';
+} from '@/domains/social/server/activity/activity-events-constants';
 
 export function normalizeOptionalNumber(value) {
   if (value === undefined || value === null || value === '') {

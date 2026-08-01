@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb.service';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
 import Icon from '@/ui/primitives/icon';
 import { useRegistry } from '@/modules/registry';

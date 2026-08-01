@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth.constants';
+import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth-tables-constants';
 import {
   EMAIL_ACCOUNT_STATES,
   ensurePasswordAccountRecord,

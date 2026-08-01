@@ -8,7 +8,7 @@ import {
   textCrossfadeVariants,
 } from '@/modules/nav/nav-motion';
 import { cn } from '@/shared/lib';
-import Iconify from '@/ui/icon';
+import Iconify from '@/ui/primitives/icon';
 
 // --- HELPER FUNCTIONS ---
 

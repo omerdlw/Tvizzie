@@ -4,12 +4,12 @@ import {
   createMediaCollectionToggleRpcParams,
   executeMediaCollectionRpc,
   refreshMediaCollectionAccountSummary,
-} from '@/domains/account/server/media/collection.service';
-import { getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
+} from '@/domains/account/server/media/media-collection-service';
+import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
   invalidatePollingSubscription,
   primePollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
 import {
   assertMoviePayload,
   buildMediaItemKey,
@@ -20,12 +20,12 @@ import {
 import {
   ACTIVITY_EVENT_TYPES,
   fireActivityEvent,
-} from '@/domains/social/server/activity/activity-events.service';
+} from '@/domains/social/server/activity/activity-events-service';
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import { isUserMediaWatched, markUserWatched } from '../watched-watchlist/watched-service.js';
 import { removeLikeFromShowcase, writeFavoriteShowcase } from './like-queries.js';
 import {

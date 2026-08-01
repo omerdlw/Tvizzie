@@ -4,7 +4,7 @@ import { isValidElement, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
-import Icon from '@/ui/icon';
+import Icon from '@/ui/primitives/icon';
 
 import { useContextMenu } from './context-menu-context';
 import { isObject, resolveMenuItems } from './menu-engine';

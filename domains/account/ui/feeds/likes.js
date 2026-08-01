@@ -19,7 +19,7 @@ import {
   sortProfileLists,
   toListQueryValues,
   toMediaQueryValues,
-} from '@/domains/account/ui/filtering';
+} from '@/domains/account/ui/filtering/filtering';
 import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/domains/account/ui/account-data';
 import {

@@ -3,10 +3,10 @@
 import {
   buildPollingSubscriptionKey,
   invalidatePollingSubscriptions,
-} from '@/infrastructure/realtime/polling-subscription.service';
-import { scheduleAccountSummaryRefresh } from '@/domains/account/server/profile/summary.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/server/profile/profile-summary-service';
 
-import { FOLLOW_STATUSES } from './follow.constants';
+import { FOLLOW_STATUSES } from './follow-constants';
 
 export const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 2500;
 export const PENDING_RELATIONSHIP_MAX_POLLS = 60;

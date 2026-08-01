@@ -4,7 +4,7 @@ import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
-} from '@/domains/account/server/profile/read-profile.server';
+} from '@/domains/account/server/profile/profile-public-read.server';
 import { normalizeTimestamp } from '@/shared/lib/format';
 import { isTitleMediaType } from '@/shared/lib/media';
 import {
@@ -25,8 +25,8 @@ import {
   countListLikesByListIds,
   executeCollectionQuery,
   resolveLimitCount,
-} from './shared.server';
-import { resolveAccountCollectionStatusResource } from './status.server';
+} from './collection-shared.server';
+import { resolveAccountCollectionStatusResource } from './collection-status.server';
 
 export function isAccountCollectionResource(resource) {
   return ACCOUNT_COLLECTION_RESOURCES.has(resource);

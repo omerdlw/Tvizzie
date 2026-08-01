@@ -5,7 +5,7 @@ import {
   SUPABASE_URL,
   assertSupabaseBrowserEnv,
 } from '@/infrastructure/supabase/supabase-constants';
-import { getRequestCookies } from './session.cookies.server';
+import { getRequestCookies } from './session-cookies.server';
 
 export function createRequestSupabaseClient(request) {
   assertSupabaseBrowserEnv();

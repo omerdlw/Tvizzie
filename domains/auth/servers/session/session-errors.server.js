@@ -1,4 +1,4 @@
-import { toLowercase } from './session.shared';
+import { toLowercase } from './session-shared';
 
 export function normalizeSupabaseError(error) {
   const message = toLowercase(error?.message);

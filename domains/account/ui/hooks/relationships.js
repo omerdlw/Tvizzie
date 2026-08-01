@@ -8,7 +8,7 @@ import {
   subscribeToFollowRelationship,
   subscribeToFollowers,
   subscribeToFollowing,
-} from '@/domains/social/server/social/follows.service';
+} from '@/domains/social/server/social/follow-service';
 import { getAccountSocialProof } from '@/domains/media/server/social-proof';
 import { subscribeToUserListItems } from '@/domains/media/server/lists';
 import { useEffect, useMemo, useState } from 'react';

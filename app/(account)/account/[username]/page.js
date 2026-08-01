@@ -3,7 +3,7 @@ import { isReservedAccountSegment } from '@/shared/lib/account';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,
-} from '@/domains/account/server/routes/read.server';
+} from '@/domains/account/server/routes/route-read.server';
 
 import Client from '@/domains/account/ui/profile-client';
 

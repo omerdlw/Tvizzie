@@ -1,4 +1,4 @@
-import Client from '@/domains/home/ui/client';
+import Client from '@/domains/home/ui/home-client';
 
 import { discoverContent, getGenres, getTrending } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 

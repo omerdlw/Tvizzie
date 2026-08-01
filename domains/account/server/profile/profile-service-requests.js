@@ -1,6 +1,6 @@
 'use client';
 
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { cleanString } from '@/shared/lib/string';
 import { validateUsername } from '@/shared/lib/account';
 

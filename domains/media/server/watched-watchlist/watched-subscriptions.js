@@ -1,6 +1,6 @@
 'use client';
 
-import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription.service';
+import { createPollingSubscription } from '@/infrastructure/realtime/polling-subscription-service';
 import { fetchWatchedList, fetchWatchedStatus } from './watched-queries.js';
 import {
   getUserWatchedSubscriptionKey,

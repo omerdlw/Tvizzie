@@ -1,7 +1,7 @@
 'use client';
 
-import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
-import { Spinner } from '@/ui/loadings/spinner';
+import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
+import { Spinner } from '@/ui/feedback/spinner';
 
 import { useLoadingState } from './loading-context';
 

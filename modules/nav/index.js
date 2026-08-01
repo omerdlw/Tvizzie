@@ -12,7 +12,7 @@ import { useNavKeyboard } from '@/modules/nav/hooks/use-nav-keyboard';
 import { useNavViewport } from '@/modules/nav/hooks/use-nav-viewport';
 import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/modules/nav/nav-motion';
 import { cn } from '@/shared/lib/classnames';
-import { useIsFullscreenStateActive } from '@/ui/states/fullscreen-state';
+import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 
 import Item from './item';
 import { estimateCompactCardWidth } from './nav-layout';

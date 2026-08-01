@@ -1,6 +1,6 @@
 'use client';
 
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 export { getListReviewContext } from './review-context.js';
 export {

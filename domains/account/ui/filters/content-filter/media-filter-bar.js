@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/domains/account/ui/filtering';
+import { MEDIA_SORT_GROUPS, resolveMediaSortOption } from '@/domains/account/ui/filtering/filtering';
 import { cn } from '@/shared/lib';
 
 import {

@@ -1,6 +1,6 @@
 'use client';
 
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { resolveLimitCount } from '@/domains/media/server/media';
 
 export {

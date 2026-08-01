@@ -1,5 +1,5 @@
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { FOLLOW_STATUSES } from '@/domains/social/server/social/follows.service';
+import { FOLLOW_STATUSES } from '@/domains/social/server/social/follow-service';
 import { getUserAvatarUrl } from '@/shared/lib';
 import { isPermissionDeniedError } from '@/shared/lib';
 export {

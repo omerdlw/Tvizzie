@@ -1,8 +1,8 @@
 import { scheduleAccountSummaryRefresh } from '../profile/profile-summary-service.js';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
-import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription.service';
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
-import { resolveLimitCount } from '@/domains/media/server/supabase-media-utils.service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
+import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription-service';
+import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
+import { resolveLimitCount } from '@/domains/media/server/supabase-media-utils-service';
 
 export function resolveMediaCollectionRpcRow(data) {
   if (Array.isArray(data)) {

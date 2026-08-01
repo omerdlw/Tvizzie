@@ -3,11 +3,11 @@
 import {
   assertSupabaseResult,
   getSupabaseClient,
-} from '@/infrastructure/http/supabase-data.service';
+} from '@/infrastructure/http/supabase-data-service';
 import {
   fetchCollectionResource,
   fetchMediaCollectionStatus,
-} from '@/domains/account/server/media/collection.service';
+} from '@/domains/account/server/media/media-collection-service';
 
 import { createWatchedRef } from './watched-shared.js';
 

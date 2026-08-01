@@ -1,12 +1,12 @@
 import { randomBytes } from 'crypto';
 
-import { AUTH_COOKIE_PATH, CSRF_COOKIE_NAME, LEGACY_CSRF_COOKIE_NAME } from './session.constants';
+import { AUTH_COOKIE_PATH, CSRF_COOKIE_NAME, LEGACY_CSRF_COOKIE_NAME } from './session-constants.server';
 import {
   getCookieHeaderValue,
   getRequestCookies,
   listSupabaseAuthCookieNames,
-} from './session.cookies.server';
-import { normalizeValue } from './session.shared';
+} from './session-cookies.server';
+import { normalizeValue } from './session-shared';
 
 export function getCookieValue(request, cookieName) {
   const directValue = request?.cookies?.get?.(cookieName)?.value;

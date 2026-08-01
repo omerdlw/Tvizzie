@@ -3,8 +3,8 @@
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { createMediaSnapshot } from '@/domains/media/server/media';
 import { isTitleMediaType } from '@/shared/lib/media';
 

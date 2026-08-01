@@ -8,7 +8,7 @@ import {
   cancelFollowRequest,
   followUser,
   unfollowUser,
-} from '@/domains/social/server/social/follows.service';
+} from '@/domains/social/server/social/follow-service';
 import { getUserAvatarUrl } from '@/shared/lib';
 import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';

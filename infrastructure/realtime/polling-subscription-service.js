@@ -2,7 +2,7 @@ import {
   SHARED_ENTRY_RETRY_BASE_MS,
   SHARED_ENTRY_RETRY_MAX_ATTEMPTS,
   SUBSCRIPTION_CACHE_TTL_MS,
-} from './polling-subscription.constants';
+} from './polling-subscription-constants';
 import {
   clearEntryCleanup,
   clearEntryPayload,
@@ -15,7 +15,7 @@ import {
   resolveSubscriberPollInterval,
   stableSerialize,
   storeEntryPayload,
-} from './polling-subscription.shared';
+} from './polling-subscription-shared';
 
 const sharedSubscriptionRegistry = new Map();
 

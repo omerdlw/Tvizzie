@@ -4,9 +4,9 @@ import { normalizeValue } from '@/shared/lib/string';
 import {
   NOTIFICATION_EVENT_TYPE_SET,
   NOTIFICATION_EVENT_TYPES,
-} from '@/domains/social/server/notifications/notification-events.constants';
+} from '@/domains/social/server/notifications/notification-events-constants';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
-import { NOTIFICATION_TYPES } from '@/domains/social/server/notifications/notifications.constants';
+import { NOTIFICATION_TYPES } from '@/domains/social/server/notifications/notifications-constants';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 const ACTOR_PROFILE_SELECT = ['avatar_url', 'display_name', 'email', 'username'].join(',');

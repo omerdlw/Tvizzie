@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth.constants';
+import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth-tables-constants';
 import { hasPasswordProvider } from '@/domains/auth/servers/auth-account.js';
 import { writeAuthAuditLog } from '@/domains/auth/servers/auth-audit.js';
 import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/domains/auth/servers/auth-policy.js';

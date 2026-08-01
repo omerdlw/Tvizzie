@@ -152,7 +152,7 @@ export async function fetchMediaPage(query, type, page = 1, options = {}) {
 
   return withClientSearchCache(cacheKey, async () => {
     try {
-      const { TmdbService } = await import('@/infrastructure/tmdb/services/tmdb.service');
+      const { TmdbService } = await import('@/infrastructure/tmdb/services/tmdb-service');
       const response = await TmdbService.searchContent(query, type, page, { scope });
 
       if (response.status !== 200 || !response.data?.results) {

@@ -6,7 +6,7 @@ import {
   markAllUserNotificationsAsRead,
   markNotificationAsRead,
 } from '@/domains/social/server/notifications/notification-resources.server';
-import { NOTIFICATION_TYPE_SET } from '@/domains/social/server/notifications/notifications.constants';
+import { NOTIFICATION_TYPE_SET } from '@/domains/social/server/notifications/notifications-constants';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import {
   executeWriteRollout,

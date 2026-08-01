@@ -1,5 +1,5 @@
-import { fetchCollectionResource } from '@/domains/account/server/media/collection.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { fetchCollectionResource } from '@/domains/account/server/media/media-collection-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 export async function fetchUserLists(userId, options = {}) {
   return fetchCollectionResource('lists', userId, options);

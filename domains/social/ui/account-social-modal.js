@@ -15,7 +15,7 @@ import {
   subscribeToFollowers,
   subscribeToFollowing,
   unfollowUser,
-} from '@/domains/social/server/social/follows.service';
+} from '@/domains/social/server/social/follow-service';
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
 import { EmptyState } from '@/ui/feedback/empty-state';
 import SegmentedControl from '@/ui/primitives/segmented-control';

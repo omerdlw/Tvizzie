@@ -3,8 +3,8 @@
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 async function fetchUserActivity(userId, pageSize = null) {
   const result = await requestApiJson('/api/account/activity', {

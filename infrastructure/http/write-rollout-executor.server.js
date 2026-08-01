@@ -1,7 +1,7 @@
 import {
   isRecoverableRolloutError,
   resolveWriteRolloutDecision,
-} from './write-rollout.config.server.js';
+} from './write-rollout-config.server.js';
 
 async function runShadowValidation({ edgeValidate, legacyResult, logger, requestId, decision }) {
   const executeShadow = edgeValidate;

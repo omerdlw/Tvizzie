@@ -57,6 +57,13 @@ The foundation may depend on application-owned contracts only through explicit, 
 
 ## Naming and consolidation
 
-Application-owned code uses explicit kebab-case names and runtime suffixes such as `.server.js` or `.client.js` only where they describe a real boundary. New generic `utils`, `helpers`, `parts`, and unexplained `index.js` files are prohibited. Files are consolidated when they do not represent an independent responsibility.
+Application-owned code uses explicit kebab-case names. A filename should identify
+both the subject and the behavior: `profile-read.server.js`,
+`collection-shared.server.js`, and `follow-service.js` are valid; bare names such
+as `service.js`, `shared.js`, `context.js`, or `read.server.js` are not. Dots are
+reserved for runtime qualifiers (`.server.js` and `.client.js`); concept words
+and behavior qualifiers use dashes. `index.js` is allowed only as a deliberate
+public barrel entrypoint. Files are consolidated when they do not represent an
+independent responsibility.
 
 Run `npm run check:architecture` to verify the high-level boundaries before linting and building.

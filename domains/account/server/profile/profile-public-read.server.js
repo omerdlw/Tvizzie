@@ -5,7 +5,7 @@ import {
   ACCOUNT_READ_FUNCTION,
   FOLLOW_STATUS_ACCEPTED,
 } from '@/domains/account/server/profile/profile-constants';
-import { getAccountSnapshotByUserId } from '@/domains/account/server/profile/read.server';
+import { getAccountSnapshotByUserId } from '@/domains/account/server/profile/profile-read.server';
 import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 import { cleanString } from '@/shared/lib/string';
 import { cache } from 'react';

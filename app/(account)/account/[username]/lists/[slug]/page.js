@@ -1,5 +1,5 @@
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
-import { getUsernameAccountListDetailRouteData } from '@/domains/account/server/routes/read.server';
+import { getUsernameAccountListDetailRouteData } from '@/domains/account/server/routes/route-read.server';
 
 import Client from '@/domains/account/ui/list-detail-client';
 

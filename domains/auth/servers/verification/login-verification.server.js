@@ -14,7 +14,7 @@ import {
   TRUSTED_DEVICE_COOKIE_PREFIX,
   TRUSTED_DEVICE_MAX_AGE_MS,
   TRUSTED_DEVICE_MAX_AGE_SECONDS,
-} from './login-verification.constants';
+} from './login-verification-constants';
 import { resolveSecretWithFallback } from './secret-fallback.server';
 import { createSignedToken, verifySignedToken } from './signed-token.server';
 

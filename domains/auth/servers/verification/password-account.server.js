@@ -5,7 +5,7 @@ import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
 
 import { createAdminAuthFacade } from '../session/supabase-admin-auth.server';
 
-import { PASSWORD_ACCOUNT_LOOKUP_CODES } from './password-account.errors';
+import { PASSWORD_ACCOUNT_LOOKUP_CODES } from './password-account-errors';
 
 const PROFILE_BY_USERNAME_SELECT = 'id, email, username';
 const PROFILE_BY_USER_ID_SELECT = 'id, email';

@@ -49,7 +49,7 @@ import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
   writeAuthAuditLog,
-} from './account-route.shared.server';
+} from './account-route-shared.server';
 
 export async function handlePasswordStatus(request, body) {
   const requestContext = getRequestContext(request);

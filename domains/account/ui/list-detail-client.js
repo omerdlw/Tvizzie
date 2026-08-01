@@ -10,7 +10,7 @@ import { useToast } from '@/modules/notification';
 import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
 import { getMediaTitle, removeAccountCollectionItem } from '@/domains/account/ui/account-data';
 import {
   subscribeToUserListBySlug,

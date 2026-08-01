@@ -4,7 +4,7 @@ import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
   primePollingSubscription,
-} from '@/infrastructure/realtime/polling-subscription.service';
+} from '@/infrastructure/realtime/polling-subscription-service';
 
 const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
 const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;

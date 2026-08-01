@@ -1,10 +1,10 @@
 'use client';
 
-import { requestApiJson } from '@/infrastructure/http/api-request.service';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import {
   isUserMediaWatched,
   markUserWatched,
-} from '@/domains/media/server/watched-watchlist/watched.service';
+} from '@/domains/media/server/watched-watchlist/watched-service';
 import { unwrapReviewWriteResult } from './review-shared.js';
 
 export async function ensureWatchedBeforeMediaReview({

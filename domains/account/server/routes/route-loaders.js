@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { getCollectionResource } from '@/domains/account/server/collections/read.server';
-import { fetchAccountActivityFeedServer } from '@/domains/account/server/feed/read.server';
+import { getCollectionResource } from '@/domains/account/server/collections/collection-read.server';
+import { fetchAccountActivityFeedServer } from '@/domains/account/server/feed/feed-read.server';
 import {
   fetchListReviewFeedServer,
   fetchProfileReviewFeedServer,

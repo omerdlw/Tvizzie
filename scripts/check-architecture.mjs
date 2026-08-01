@@ -7,6 +7,30 @@ const forbiddenLegacyDirectories = ['core', 'features'];
 const forbiddenImportPatterns = [/@\/features\//, /@\/core\//];
 const forbiddenAppImplementationNames = new Set(['client.js', 'view.js', 'motion.js', 'registry.js']);
 const forbiddenDomainImplementationNames = new Set(['page.js']);
+const forbiddenGenericImplementationNames = new Set([
+  'client.js',
+  'config.js',
+  'constants.js',
+  'context.js',
+  'derived.js',
+  'helpers.js',
+  'loaders.js',
+  'motion.js',
+  'normalizers.js',
+  'projector.js',
+  'queries.js',
+  'read.js',
+  'read.server.js',
+  'registry.js',
+  'server.js',
+  'service.js',
+  'shared.js',
+  'snapshot.js',
+  'state.js',
+  'subscriptions.js',
+  'utils.js',
+  'view.js',
+]);
 const forbiddenDirectoryNames = new Set(['components', 'parts', 'screens', 'utils']);
 const forbiddenAccountUiDirectories = new Set(['components', 'profile', 'route']);
 
@@ -112,8 +136,17 @@ for (const directory of ['modules', 'shared', 'ui', 'infrastructure', 'domains',
       errors.push(`Generic route implementation filename is not allowed: ${relativeFile}`);
     }
 
-    if (relativeFile.startsWith('domains/') && forbiddenDomainImplementationNames.has(file.split('/').pop())) {
+    const fileName = file.split('/').pop();
+
+    if (relativeFile.startsWith('domains/') && forbiddenDomainImplementationNames.has(fileName)) {
       errors.push(`Domain page implementation filename is not allowed; use *-view.js: ${relativeFile}`);
+    }
+
+    if (
+      ['domains/', 'infrastructure/', 'shared/', 'ui/'].some((prefix) => relativeFile.startsWith(prefix)) &&
+      forbiddenGenericImplementationNames.has(fileName)
+    ) {
+      errors.push(`Generic implementation filename must identify its subject and behavior: ${relativeFile}`);
     }
 
     if (relativeFile.startsWith('app/api/') && file.split('/').pop() === 'route.js') {

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { ACTIVITY_EVENT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
 import { normalizeMediaType } from '@/shared/lib/media';
 import { normalizeValue } from './feed-normalizers';
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb.service';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import { PersonAwardsSkeleton } from '@/domains/media/ui/person-skeleton';
 import Icon from '@/ui/primitives/icon';
 import MediaThumb from './media-thumb';

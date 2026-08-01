@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { ACTOR_PROFILE_SELECT } from './event-processor.constants';
-import { normalizeValue } from './event-processor.shared';
+import { ACTOR_PROFILE_SELECT } from './event-processor-constants';
+import { normalizeValue } from './event-processor-shared';
 
 export async function getUserProfile(admin, userId) {
   const normalizedUserId = normalizeValue(userId);

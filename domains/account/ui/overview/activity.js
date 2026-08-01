@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { useSeededFeedState } from '@/domains/account/ui/hooks/section-page';
 import { isPermissionDeniedError, logDataError } from '@/shared/lib';
-import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity.service';
+import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
 import AccountActivityFeed from '@/domains/account/ui/feeds/activity';
 
 function hasMatchingInitialFeed(initialFeed = null, resolvedUserId = null) {
