@@ -3,7 +3,7 @@ import {
   handleFollowsGet,
   handleFollowsPatch,
   handleFollowsPost,
-} from '@/core/api/routes/follows.server';
+} from '@/domains/social/server/follows.server';
 
 export const runtime = 'nodejs';
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { Skeleton } from '@/ui/skeletons/views/person';
-import Registry from './registry';
+import { Skeleton } from '@/domains/media/ui/person-skeleton';
+import Registry from '@/domains/media/ui/media-registry';
 
 export default function Loading() {
   return (

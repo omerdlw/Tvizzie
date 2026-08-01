@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/features/media/utils';
-import { TMDB_IMG } from '@/core/constants';
-import { getMovieBase, getMovieSecondary } from '@/core/clients/tmdb/server';
-import { isDisplayableMovie } from '@/core/clients/tmdb/sanitize';
+import { getMovieComputedData } from '@/domains/media/ui/media-data';
+import { TMDB_IMG } from '@/shared/constants';
+import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/server';
+import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
 
-import Client from './client';
+import Client from '@/domains/media/screens/movie-client';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

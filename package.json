@@ -13,9 +13,10 @@
     "upload": "npm run build:cloudflare && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
+    "check:architecture": "node scripts/check-architecture.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "verify": "npm run lint && npm run build",
+    "verify": "npm run check:architecture && npm run lint && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "seed:dev:large": "ALLOW_DEV_DATABASE_RESET=1 node --env-file=.env scripts/dev-seed-dataset.mjs --yes --reset-all-dev-data"

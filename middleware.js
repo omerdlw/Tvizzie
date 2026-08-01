@@ -1,4 +1,4 @@
-import { updateSession } from '@/core/clients/supabase/proxy';
+import { updateSession } from '@/infrastructure/supabase/proxy';
 
 export async function middleware(request) {
   return updateSession(request);

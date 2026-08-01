@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import Client from './client';
+import Client from '@/domains/auth/screens/sign-in-client';
 
 export default function SignInPage() {
   return (

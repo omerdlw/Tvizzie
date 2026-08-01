@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 
-import { TMDB_IMG } from '@/core/constants';
-import { getPersonBase, getPersonSecondary } from '@/core/clients/tmdb/server';
-import Client from './client';
+import { TMDB_IMG } from '@/shared/constants';
+import { getPersonBase, getPersonSecondary } from '@/infrastructure/tmdb/clients/server';
+import Client from '@/domains/media/screens/person-client';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

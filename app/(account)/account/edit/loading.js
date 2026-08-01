@@ -1,7 +1,7 @@
 'use client';
 
-import AccountRouteSkeleton from '@/ui/skeletons/views/account';
-import Registry from './registry';
+import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
+import Registry from '@/domains/account/screens/account-edit-registry';
 
 export default function AccountEditLoading() {
   return (

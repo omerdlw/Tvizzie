@@ -1,4 +1,4 @@
-import PrivacyView from './view';
+import PrivacyView from '@/domains/legal/screens/privacy-page';
 
 export const metadata = {
   title: 'Privacy Policy',

@@ -1,6 +1,6 @@
-import Client from './client';
+import Client from '@/domains/home/screens/home-client';
 
-import { discoverContent, getGenres, getTrending } from '@/core/clients/tmdb/server';
+import { discoverContent, getGenres, getTrending } from '@/infrastructure/tmdb/clients/server';
 
 function getUniqueItems(items = []) {
   const seen = new Set();

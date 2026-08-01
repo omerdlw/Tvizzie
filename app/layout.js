@@ -1,8 +1,8 @@
 import ReactDOM from 'react-dom';
 
-import { cn } from '@/core/utils';
+import { cn } from '@/shared/lib';
 
-import { geistSans, zuume } from '../fonts';
+import { geistSans, zuume } from '@/assets/fonts';
 import './globals.css';
 import { AppProviders } from './providers';
 

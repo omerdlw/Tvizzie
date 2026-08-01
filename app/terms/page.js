@@ -1,4 +1,4 @@
-import TermsView from './view';
+import TermsView from '@/domains/legal/screens/terms-page';
 
 export const metadata = {
   title: 'Terms of Service',

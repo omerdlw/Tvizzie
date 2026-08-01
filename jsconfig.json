@@ -8,7 +8,32 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./*"],
-      "@/core/*": ["./core/*"]
+      "@/core/*": ["./core/*"],
+      "@/core/constants": ["./shared/constants/index.js"],
+      "@/core/constants/*": ["./shared/constants/*"],
+      "@/core/hooks/*": ["./shared/hooks/*"],
+      "@/core/utils": ["./shared/lib/index.js"],
+      "@/core/utils/*": ["./shared/lib/*"],
+      "@/core/auth/*": ["./domains/auth/*"],
+      "@/core/clients/supabase/*": ["./infrastructure/supabase/*"],
+      "@/core/clients/tmdb/*": ["./infrastructure/tmdb/clients/*"],
+      "@/features/navigation/actions/model": ["./ui/components/navigation-action-styles.js"],
+      "@/ui/elements/noise-texture": ["./ui/components/noise-texture.js"],
+      "@/ui/elements": ["./ui/primitives/index.js"],
+      "@/ui/elements/*": ["./ui/primitives/*"],
+      "@/ui/animations/*": ["./ui/motion/animations/*"],
+      "@/ui/loadings/spinner": ["./ui/feedback/spinner.js"],
+      "@/ui/states/fullscreen-state": ["./ui/components/fullscreen-state.js"],
+      "@/ui/skeletons/primitives": ["./ui/feedback/skeleton.js"],
+      "@/ui/skeletons/components/nav": ["./app/_shell/navigation/nav-skeleton.js"],
+      "@/ui/skeletons/views/account": ["./domains/account/ui/account-skeleton.js"],
+      "@/ui/skeletons/views/movie": ["./domains/media/ui/movie-skeleton.js"],
+      "@/ui/skeletons/views/person": ["./domains/media/ui/person-skeleton.js"],
+      "@/ui/loadings/*": ["./ui/feedback/*"],
+      "@/ui/states/*": ["./ui/components/*"],
+      "@/ui/skeletons/*": ["./ui/feedback/*"],
+      "@/ui/icon": ["./ui/primitives/icon.js"],
+      "@/ui/media/*": ["./domains/media/ui/components/*"]
     }
   }
 }

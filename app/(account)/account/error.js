@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 
-import { FullscreenState } from '@/ui/states/fullscreen-state';
-import { EVENT_TYPES, globalEvents } from '@/core/constants/events';
+import { FullscreenState } from '@/ui/components/fullscreen-state';
+import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { getErrorReporter } from '@/core/modules/error-boundary/reporter';
 
 export default function AccountError({ error, reset }) {

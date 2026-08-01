@@ -1,7 +1,7 @@
 import createBundleAnalyzer from '@next/bundle-analyzer';
 import os from 'node:os';
 
-import { CSP_ENFORCE } from './core/services/shared/runtime-policy.constants.js';
+import { CSP_ENFORCE } from './infrastructure/http/runtime-policy.constants.js';
 
 function getLocalDevOrigins() {
   const origins = new Set(['localhost', '127.0.0.1', '0.0.0.0', '192.168.1.214']);

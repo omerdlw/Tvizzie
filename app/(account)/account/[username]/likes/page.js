@@ -1,6 +1,6 @@
-import { createAccountRoutePage } from '@/features/account/route/page-factory';
-import { getUsernameAccountLikesRouteData } from '@/core/services/account/account-route-data.server';
-import Client from './client';
+import { createAccountRoutePage } from '@/domains/account/ui/route/page-factory';
+import { getUsernameAccountLikesRouteData } from '@/domains/account/server/account-route-data.server';
+import Client from '@/domains/account/screens/account-likes-client';
 
 export default createAccountRoutePage(Client, getUsernameAccountLikesRouteData, (query) => ({
   segment:

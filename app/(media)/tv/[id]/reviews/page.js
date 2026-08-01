@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/features/media/utils';
-import { TMDB_IMG } from '@/core/constants';
-import { getTvBase } from '@/core/clients/tmdb/server';
-import { isDisplayableTv } from '@/core/clients/tmdb/sanitize';
+import { getMovieComputedData } from '@/domains/media/ui/media-data';
+import { TMDB_IMG } from '@/shared/constants';
+import { getTvBase } from '@/infrastructure/tmdb/clients/server';
+import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
-import Client from '../../../movie/[id]/reviews/client';
+import Client from '@/domains/media/screens/movie-reviews-client';
 
 function getTvTitle(tv = {}) {
   return tv?.name || tv?.original_name || 'Untitled';
