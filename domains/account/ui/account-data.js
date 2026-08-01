@@ -14,7 +14,7 @@ export {
   deleteAccountRequest,
   resolveSecurityErrorMessage,
   validatePassword,
-} from './security';
+} from './account-security';
 export {
   ACCOUNT_SECTION_KEYS,
   RESERVED_ACCOUNT_SEGMENTS,

@@ -1,8 +1,8 @@
 'use client';
 
 import { notifyAccountLoadError } from '@/domains/account/ui/account-data';
-import { useAccountClient } from '@/core/modules/account';
-import { useAuthSessionReady } from '@/core/modules/auth';
+import { useAccountClient } from '@/modules/account';
+import { useAuthSessionReady } from '@/modules/auth';
 import { useCallback, useEffect, useState } from 'react';
 
 function normalizeEditableCount(value) {

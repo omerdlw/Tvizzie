@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Icon from '@/ui/primitives/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
 export default function NotFoundAction({
   homeLabel = 'Return Home',

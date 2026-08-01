@@ -1,7 +1,7 @@
-import { createAccountRoutePage } from '@/domains/account/ui/route/page-factory';
-import { getUsernameAccountListDetailRouteData } from '@/domains/account/server/account-route-data.server';
+import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
+import { getUsernameAccountListDetailRouteData } from '@/domains/account/server/routes/read.server';
 
-import Client from '@/domains/account/screens/account-list-detail-client';
+import Client from '@/domains/account/ui/list-detail-client';
 
 function loadRouteData(username, slug) {
   return getUsernameAccountListDetailRouteData(username, slug).then((routeData) => ({

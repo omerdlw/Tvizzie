@@ -14,11 +14,11 @@ import {
   toReviewQueryValues,
 } from '@/domains/account/ui/filtering';
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import AccountPagination from '@/domains/account/ui/components/pagination';
-import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/components/section-state';
+import AccountPagination from '@/domains/account/ui/account-pagination';
+import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/account-section';
 import ReviewList from '@/domains/reviews/components/review-list';
 import { Button } from '@/ui/primitives';
-import AccountSectionLayout from '@/domains/account/ui/components/section-wrapper';
+import AccountSectionLayout from '@/domains/account/ui/account-section';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
 function resolveMediaKey(item) {

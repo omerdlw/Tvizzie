@@ -2,7 +2,7 @@
 
 import { cn } from '@/shared/lib';
 
-import { ACTIVITY_SORT_OPTIONS } from './options';
+import { ACTIVITY_SORT_OPTIONS } from './content-filter-options';
 import {
   DefaultMenuItem,
   FilterPopover,
@@ -10,7 +10,7 @@ import {
   ResetButton,
   UI,
   resolveOptionLabel,
-} from './primitives';
+} from './content-filter-controls';
 
 export function AccountActivityFilterBar({
   className = '',

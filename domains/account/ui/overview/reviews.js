@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ReviewList from '@/domains/reviews/components/review-list';
 import { Button } from '@/ui/primitives';
-import AccountSectionLayout from '@/domains/account/ui/components/section-wrapper';
+import AccountSectionLayout from '@/domains/account/ui/account-section';
 import { actionButtonVariants } from '@/domains/account/ui/account-animation-config';
 function buildLikedMediaKeySet(items = []) {
   return new Set(

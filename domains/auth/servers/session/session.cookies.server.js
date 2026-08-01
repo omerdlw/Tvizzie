@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { uniqueStrings } from '@/domains/auth/capabilities';
-import { SUPABASE_URL } from '@/infrastructure/supabase/constants';
+import { SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
 import { COOKIE_CHUNK_SUFFIX_PATTERN, SUPABASE_BASE64_PREFIX } from './session.constants';
 import { decodeJwtPayload, normalizeValue } from './session.shared';
 

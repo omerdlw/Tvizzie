@@ -4,7 +4,7 @@ import { cache } from 'react';
 
 import { normalizeMediaType } from '@/shared/lib/media';
 
-import { TMDB_REVALIDATE } from './config';
+import { TMDB_REVALIDATE } from './tmdb-client-config';
 import { tmdbRequest } from './request';
 import { withMediaType } from './search-ranking';
 import { sanitizeMovieResultsWithRuntime } from './runtime-sanitize.server';

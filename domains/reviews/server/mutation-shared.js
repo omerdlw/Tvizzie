@@ -5,7 +5,7 @@ import {
   isUserMediaWatched,
   markUserWatched,
 } from '@/domains/media/server/watched-watchlist/watched.service';
-import { unwrapReviewWriteResult } from './shared.js';
+import { unwrapReviewWriteResult } from './review-shared.js';
 
 export async function ensureWatchedBeforeMediaReview({
   media,

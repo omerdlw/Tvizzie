@@ -13,8 +13,8 @@ import {
   toListQueryValues,
 } from '@/domains/account/ui/filtering';
 import { AccountListSortBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import AccountPaginatedListGrid from '@/domains/account/ui/lists/grid';
-import { AccountSectionState } from '@/domains/account/ui/components/section-wrapper';
+import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
+import { AccountSectionState } from '@/domains/account/ui/account-section';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;

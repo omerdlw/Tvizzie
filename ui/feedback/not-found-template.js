@@ -1,9 +1,9 @@
 'use client';
 
 import NotFoundAction from '@/ui/feedback/not-found-action';
-import { useRegistry } from '@/core/modules/registry';
+import { useRegistry } from '@/modules/registry';
 import { normalizeFeedbackText } from '@/shared/lib';
-import { FullscreenState } from '@/ui/components/fullscreen-state';
+import { FullscreenState } from '@/ui/feedback/fullscreen-state';
 
 export default function NotFoundTemplate({ description }) {
   const normalizedDescription = normalizeFeedbackText(description);

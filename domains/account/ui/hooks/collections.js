@@ -1,6 +1,6 @@
 'use client';
 
-import { useToast } from '@/core/modules/notification';
+import { useToast } from '@/modules/notification';
 import { ensureLegacyFavoritesBackfilled, subscribeToUserLikes } from '@/domains/media/server/likes';
 import { subscribeToUserLists } from '@/domains/media/server/lists';
 import {

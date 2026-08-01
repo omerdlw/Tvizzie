@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { ACCOUNT_READ_FUNCTION } from '@/domains/account/server/account.constants';
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/server';
+import { ACCOUNT_READ_FUNCTION } from '@/domains/account/server/profile/profile-constants';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

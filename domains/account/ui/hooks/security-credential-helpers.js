@@ -1,5 +1,5 @@
 import { logAuthAuditEvent } from '@/domains/auth/clients/audit.client';
-import { AUTH_ROUTES } from '@/domains/auth/constants';
+import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { buildAuthHref } from '@/domains/auth/auth-flow';
 
 const ACCOUNT_EDIT_AUDIT_SOURCE = 'app/account/edit';

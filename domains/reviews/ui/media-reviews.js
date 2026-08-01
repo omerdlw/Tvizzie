@@ -8,9 +8,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TMDB_IMG } from '@/shared/constants';
-import { AuthGate } from '@/core/modules/auth';
-import { useModal } from '@/core/modules/modal';
-import { useNavigationActions } from '@/core/modules/nav';
+import { AuthGate } from '@/modules/auth';
+import { useModal } from '@/modules/modal';
+import { useNavigationActions } from '@/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
 import { Button, Select } from '@/ui/primitives';

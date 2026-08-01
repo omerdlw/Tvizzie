@@ -3,7 +3,7 @@
 import {
   createMediaCollectionToggleRpcParams,
   executeMediaCollectionRpc,
-} from '@/domains/account/server/media-collection.service';
+} from '@/domains/account/server/media/collection.service';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
 import {
   assertTitleMedia,
@@ -12,7 +12,7 @@ import {
   ensureUserId,
 } from '@/domains/media/server/media';
 
-import { chunkArray, resolveRpcRow } from './shared.js';
+import { chunkArray, resolveRpcRow } from './list-shared.js';
 
 export async function getUserListMemberships({ userId, listIds = [], media }) {
   if (!userId || !media || listIds.length === 0) {

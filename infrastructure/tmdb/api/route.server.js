@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { discoverContent, getGenres, getTrending, searchContent } from '@/infrastructure/tmdb/clients/server';
-import { CACHE_CONTROL, cacheControlHeaders } from '@/infrastructure/http/server';
+import { discoverContent, getGenres, getTrending, searchContent } from '@/infrastructure/tmdb/clients/tmdb-server-client';
+import { CACHE_CONTROL, cacheControlHeaders } from '@/infrastructure/http/http-server';
 import { resolveWatchRegionFromRequestHeaders } from '@/infrastructure/tmdb/services/watch-region';
 
 const TMDB_ACTIONS = Object.freeze({

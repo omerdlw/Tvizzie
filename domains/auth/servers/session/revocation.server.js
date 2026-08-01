@@ -2,7 +2,7 @@ import 'server-only';
 
 import { normalizeValue } from '@/shared/lib/string';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/constants';
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
 
 const SESSION_CONTROL_FUNCTION = 'session-control';
 

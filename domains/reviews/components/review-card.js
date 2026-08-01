@@ -21,9 +21,9 @@ import {
   usePosterPreferenceVersion,
 } from '@/domains/media/ui/poster-overrides';
 import { Button } from '@/ui/primitives';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import ListPreviewComposition from '@/domains/media/ui/components/list-preview-composition';
+import ListPreviewComposition from '@/domains/media/ui/components/media-list-preview';
 import RatingStars from './rating-stars';
 
 // ==========================================

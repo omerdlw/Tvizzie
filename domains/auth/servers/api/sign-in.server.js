@@ -6,8 +6,8 @@ import {
   createCsrfToken,
   getRequestContext,
   setDeviceIdCookie,
-} from '@/domains/auth/servers/session.js';
-import { createPendingPasswordSignIn } from '@/domains/auth/servers/security.js';
+} from '@/domains/auth/servers/auth-session.js';
+import { createPendingPasswordSignIn } from '@/domains/auth/servers/auth-security.js';
 import {
   clearPendingSignInCookie,
   createPendingSignInToken,
@@ -17,7 +17,7 @@ import {
   resolvePasswordAccountIdentifier,
   setPendingSignInCookie,
   throwSignInLookupError,
-} from '@/domains/auth/servers/verification.js';
+} from '@/domains/auth/servers/auth-verification.js';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
 
 function normalizeValue(value) {

@@ -2,18 +2,18 @@
 
 import { useState } from 'react';
 
-import { AccountPageShell, AccountSectionReveal } from '@/domains/account/ui/components/layout';
+import { AccountPageShell, AccountSectionReveal } from '@/domains/account/ui/account-layout';
 import AccountMediaGridPage, {
   ProfileMediaActions,
-} from '@/domains/account/ui/components/media-grid';
+} from '@/domains/account/ui/account-media-grid';
 import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import { AccountSectionState } from '@/domains/account/ui/components/section-wrapper';
+import { AccountSectionState } from '@/domains/account/ui/account-section';
 import ListDetailCommentsSection from './list-detail/comments-section';
 import {
   LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS,
   LIST_SECTION_SHELL_CLASS,
-} from './list-detail/config';
-import { useListDetailFilterState } from './list-detail/filter-state';
+} from './list-detail/list-detail-config';
+import { useListDetailFilterState } from './list-detail/list-detail-filter-state';
 
 export default function AccountListDetailFeed({ model = {}, RegistryComponent = null }) {
   const {

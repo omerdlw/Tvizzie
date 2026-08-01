@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo } from 'react';
 
-import { useModal } from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
-import { REGISTRY_TYPES, useRegistry, useRegistryActions } from '@/core/modules/registry';
+import { useModal } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
+import { REGISTRY_TYPES, useRegistry, useRegistryActions } from '@/modules/registry';
 
 const GLOBAL_CONTEXT_MENU_KEY = '*';
 const GLOBAL_CONTEXT_MENU_SOURCE = 'global-context-menu';

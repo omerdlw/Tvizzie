@@ -9,7 +9,7 @@ import {
   normalizeString,
   parseFlagSet,
   serializeFlagSet,
-} from './shared';
+} from './filtering-shared';
 
 export const REVIEW_FILTER_QUERY_KEYS = Object.freeze([
   'rr',

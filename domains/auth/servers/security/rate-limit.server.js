@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 
-import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/constants';
-import { RATE_LIMIT_FALLBACK_MODE } from '@/infrastructure/http/server';
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
+import { RATE_LIMIT_FALLBACK_MODE } from '@/infrastructure/http/http-server';
 import { normalizeLowerValue as normalizeValue } from '@/shared/lib/string';
 
 const MEMORY_STORE_KEY = '__tvizzie_auth_rate_limit_memory_store__';

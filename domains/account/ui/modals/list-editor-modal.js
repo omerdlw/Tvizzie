@@ -3,8 +3,8 @@
 import { useState, useCallback, memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import { createUserList, toggleUserListItem, updateUserList } from '@/domains/media/server/lists';
 import { Input, Textarea } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';

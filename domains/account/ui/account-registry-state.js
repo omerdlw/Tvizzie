@@ -1,0 +1,67 @@
+'use client';
+
+import {
+  EMPTY_ACCOUNT_REGISTRY_AUTH,
+  buildAccountPageState,
+} from '@/domains/account/ui/account-registry-config';
+
+export function buildAccountRegistryState(sectionState = null, overrides = null) {
+  const {
+    auth = EMPTY_ACCOUNT_REGISTRY_AUTH,
+    followState = 'follow',
+    handleEditProfile,
+    handleFollow,
+    handleOpenFollowList,
+    handleSignInRequest,
+    isFollowLoading = false,
+    isOwner = false,
+    isPageLoading = false,
+    isResolvingProfile = false,
+    itemRemoveConfirmation = null,
+    pendingFollowRequestCount = 0,
+    profile = null,
+    resolveError = null,
+    unfollowConfirmation = null,
+    username,
+  } = sectionState || {};
+
+  return buildAccountPageState({
+    authIsAuthenticated: auth.isAuthenticated,
+    authUser: auth.user || null,
+    followState,
+    handleEditProfile,
+    handleFollow,
+    handleOpenFollowList,
+    handleSignInRequest,
+    extraNavActions: overrides?.extraNavActions ?? [],
+    isFollowLoading,
+    isOwner,
+    isPageLoading: overrides?.isPageLoading ?? isPageLoading,
+    isResolvingProfile,
+    isSectionEditing: false,
+    isSectionOrderDirty: false,
+    isSectionSaveLoading: false,
+    itemRemoveConfirmation,
+    listDeleteConfirmation: overrides?.listDeleteConfirmation ?? null,
+    navActionOverride: overrides?.navActionOverride ?? null,
+    navDescription: overrides?.navDescription ?? null,
+    navSurface: overrides?.navSurface ?? null,
+    navRegistrySource: overrides?.navRegistrySource,
+    onDeleteList: overrides?.onDeleteList,
+    onEditList: overrides?.onEditList,
+    onOpenReviewComposer: overrides?.onOpenReviewComposer,
+    ownReview: overrides?.ownReview,
+    onSaveSectionOrder: null,
+    onToggleLike: overrides?.onToggleLike,
+    pendingFollowRequestCount,
+    profile,
+    resolveError,
+    reviewState: overrides?.reviewState,
+    showProfileFollowAction: overrides?.showProfileFollowAction ?? true,
+    showToolbarFollowActionWithOverride: overrides?.showToolbarFollowActionWithOverride,
+    unfollowConfirmation,
+    username,
+    isLiked: overrides?.isLiked ?? false,
+    isLikeLoading: overrides?.isLikeLoading ?? false,
+  });
+}

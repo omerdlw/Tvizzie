@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
 
 import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth.constants';
-import { hasPasswordProvider } from '@/domains/auth/servers/account.js';
-import { writeAuthAuditLog } from '@/domains/auth/servers/audit.js';
-import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/domains/auth/servers/policy.js';
+import { hasPasswordProvider } from '@/domains/auth/servers/auth-account.js';
+import { writeAuthAuditLog } from '@/domains/auth/servers/auth-audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/domains/auth/servers/auth-policy.js';
 import {
   clearAuthCookies,
   createAdminAuthFacade,
   getRequestContext,
-} from '@/domains/auth/servers/session.js';
+} from '@/domains/auth/servers/auth-session.js';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   clearStepUpCookie,
   enforceAuthRateLimit,
   validateStrongPassword,
-} from '@/domains/auth/servers/security.js';
-import { verifyPasswordResetProofToken } from '@/domains/auth/servers/verification.js';
+} from '@/domains/auth/servers/auth-security.js';
+import { verifyPasswordResetProofToken } from '@/domains/auth/servers/auth-verification.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 function normalizeEmail(value) {

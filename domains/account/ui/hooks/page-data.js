@@ -1,8 +1,8 @@
 'use client';
 
-import { useAccountProfile, useResolvedAccountUser } from '@/core/modules/account';
-import { useAuthSessionReady } from '@/core/modules/auth';
-import { useToast } from '@/core/modules/notification';
+import { useAccountProfile, useResolvedAccountUser } from '@/modules/account';
+import { useAuthSessionReady } from '@/modules/auth';
+import { useToast } from '@/modules/notification';
 import { notifyAccountLoadError } from '../account-data';
 import { useCallback, useMemo } from 'react';
 import { useAccountCollections } from './collections';

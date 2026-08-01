@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { createClient as createServerClient } from '@/infrastructure/supabase/server';
+import { createClient as createServerClient } from '@/infrastructure/supabase/supabase-server';
 import { normalizeTimestamp } from '@/shared/lib/format';
 import {
   isSupportedContentSubjectType,

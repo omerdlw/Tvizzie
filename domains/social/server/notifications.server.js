@@ -13,9 +13,9 @@ import {
   getOrLoadCachedValue,
   invalidateCachedValuesWhere,
   invokeInternalEdgeFunction,
-} from '@/infrastructure/http/server';
+} from '@/infrastructure/http/http-server';
 import { normalizeValue } from '@/shared/lib/string';
-import { requireAuthenticatedRequest } from '@/domains/auth/servers/session.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/servers/auth-session.js';
 import {
   createRouteAuthMeta,
   createRouteErrorResponse,

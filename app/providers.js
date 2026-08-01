@@ -15,13 +15,13 @@ import { NAV_CONFIG } from '@/app/_shell/navigation.config';
 import { pipe } from '@/shared/lib';
 import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 
-import { BackgroundOverlay, BackgroundProvider } from '@/core/modules/background';
-import { GlobalError } from '@/core/modules/error-boundary';
-import { LoadingOverlay, LoadingProvider } from '@/core/modules/loading';
-import { NavigationProvider } from '@/core/modules/nav';
-import { RegistryBootstrap, REGISTRY_TYPES, RegistryProvider } from '@/core/modules/registry';
+import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
+import { GlobalError } from '@/modules/error-boundary';
+import { LoadingOverlay, LoadingProvider } from '@/modules/loading';
+import { NavigationProvider } from '@/modules/nav';
+import { RegistryBootstrap, REGISTRY_TYPES, RegistryProvider } from '@/modules/registry';
 
-const Nav = dynamic(() => import('@/core/modules/nav'));
+const Nav = dynamic(() => import('@/modules/nav'));
 const WEB_VITALS_ENDPOINT = '/api/observability/web-vitals';
 const TRACKED_METRICS = new Set(['CLS', 'FCP', 'INP', 'LCP', 'TTFB']);
 const STATIC_NAV_ITEMS = Object.freeze(

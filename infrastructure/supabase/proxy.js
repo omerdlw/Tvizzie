@@ -9,7 +9,7 @@ import {
   normalizeStorageValue,
   parseSupabaseSessionAccessToken,
 } from './auth-storage';
-import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './constants';
+import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-constants';
 
 const CSRF_COOKIE_NAME = 'tvz_auth_csrf';
 const CSRF_MAX_AGE_SECONDS = 12 * 60 * 60;

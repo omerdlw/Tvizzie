@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { cn } from '@/shared/lib/classnames';
-import { NAV_SURFACE_RENDER_MODE } from '@/core/modules/nav';
+import { NAV_SURFACE_RENDER_MODE } from '@/modules/nav';
 
 
 const BUTTON_TONES = Object.freeze({

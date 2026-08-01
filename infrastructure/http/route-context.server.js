@@ -9,7 +9,7 @@ import {
   buildInternalRequestMeta,
   createApiErrorResponse,
   createApiSuccessResponse,
-} from '@/infrastructure/http/server';
+} from '@/infrastructure/http/http-server';
 import { normalizeValue } from '@/shared/lib/string';
 
 const UNAUTHORIZED_MESSAGE_PATTERNS = Object.freeze([

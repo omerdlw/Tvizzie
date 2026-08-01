@@ -1,6 +1,6 @@
 'use client';
 
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import Icon from '@/ui/primitives/icon';
 
 export default function ForgotPasswordAction({ onClick, disabled, isPreparingReset }) {

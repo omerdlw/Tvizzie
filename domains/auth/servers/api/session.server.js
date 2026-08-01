@@ -4,19 +4,19 @@ import { AUTH_ROUTE_NOTICE } from '@/domains/auth/route-notice';
 import {
   clearAuthRouteNoticeCookie,
   setAuthRouteNoticeCookie,
-} from '@/domains/auth/servers/notice.js';
+} from '@/domains/auth/servers/auth-notice.js';
 import {
   clearAuthCookies,
   isTransientSessionError,
   requireSessionRequest,
   serializeSessionState,
-} from '@/domains/auth/servers/session.js';
+} from '@/domains/auth/servers/auth-session.js';
 import {
   clearRecentReauthCookie,
   clearStepUpCookie,
   listStepUpPurposes,
   readStepUpFromRequest,
-} from '@/domains/auth/servers/security.js';
+} from '@/domains/auth/servers/auth-security.js';
 
 function normalizeValue(value) {
   return String(value || '').trim();

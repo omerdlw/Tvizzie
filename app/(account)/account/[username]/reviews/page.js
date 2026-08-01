@@ -1,5 +1,5 @@
-import { createAccountRoutePage } from '@/domains/account/ui/route/page-factory';
-import { getUsernameAccountReviewsRouteData } from '@/domains/account/server/account-route-data.server';
-import Client from '@/domains/account/screens/account-reviews-client';
+import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
+import { getUsernameAccountReviewsRouteData } from '@/domains/account/server/routes/read.server';
+import Client from '@/domains/account/ui/reviews-client';
 
 export default createAccountRoutePage(Client, getUsernameAccountReviewsRouteData);

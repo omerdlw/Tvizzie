@@ -4,21 +4,21 @@ import {
   EMAIL_ACCOUNT_STATES,
   hasPasswordProvider,
   resolveEmailAccountState,
-} from '@/domains/auth/servers/account.js';
-import { writeAuthAuditLog } from '@/domains/auth/servers/audit.js';
+} from '@/domains/auth/servers/auth-account.js';
+import { writeAuthAuditLog } from '@/domains/auth/servers/auth-audit.js';
 import {
   assertCsrfRequest,
   assertRecentReauth,
   createStepUpToken,
   setStepUpCookie,
-} from '@/domains/auth/servers/security.js';
+} from '@/domains/auth/servers/auth-security.js';
 import {
   applySessionCookies,
   createCsrfToken,
   getRequestContext,
   requireSessionRequest,
   setDeviceIdCookie,
-} from '@/domains/auth/servers/session.js';
+} from '@/domains/auth/servers/auth-session.js';
 
 import {
   PURPOSES,
@@ -45,7 +45,7 @@ import {
   throwPasswordResetLookupError,
   validateAllowedEmailDomain,
   verifyEmailVerificationChallenge,
-} from '@/domains/auth/servers/verification.js';
+} from '@/domains/auth/servers/auth-verification.js';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
 import { normalizeValue } from '@/shared/lib/string';
 

@@ -4,14 +4,14 @@ import { useEffect, useState, memo } from 'react';
 import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/shared/constants';
-import { useAuthSessionReady } from '@/core/modules/auth';
+import { useAuthSessionReady } from '@/modules/auth';
 import {
   Container,
   CANCEL_BUTTON_CLASS,
   ACTION_BUTTON_CLASS,
   useModalActions,
-} from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+} from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import {
   getUserListMemberships,
   subscribeToUserLists,
@@ -22,7 +22,7 @@ import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/ui/poster-overrides';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 // --- CONSTANTS & HELPERS ---

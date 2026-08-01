@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/server';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

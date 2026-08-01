@@ -4,7 +4,7 @@ import { cache } from 'react';
 
 import { sanitizeMovieResults } from '@/infrastructure/tmdb/clients/sanitize';
 
-import { TMDB_REVALIDATE } from './config';
+import { TMDB_REVALIDATE } from './tmdb-client-config';
 import { tmdbRequest } from './request';
 import { resolveTmdbDetailId } from './detail-id.server';
 

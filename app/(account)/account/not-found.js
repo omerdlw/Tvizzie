@@ -1,4 +1,4 @@
-import { AccountNotFoundState } from '@/domains/account/ui/components/layout';
+import { AccountNotFoundState } from '@/domains/account/ui/account-layout';
 
 export default function NotFound() {
   return (

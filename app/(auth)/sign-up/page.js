@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-import Client from '@/domains/auth/screens/sign-up-client';
+import Client from '@/domains/auth/ui/sign-up-client';
 
 export default function SignUpPage() {
   return (

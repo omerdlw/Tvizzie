@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './constants';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-constants';
 
 export function createSupabaseResponseClient(request, response) {
   return createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

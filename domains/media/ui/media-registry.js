@@ -18,11 +18,11 @@ import ReviewEditorSurface, {
   createReviewEditorSurfaceEntry,
 } from '@/domains/reviews/ui/review-editor-surface';
 import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/ui/review-data';
-import { getNavActionClass } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
 import { TMDB_IMG } from '@/shared/constants';
-import { useRegistry } from '@/core/modules/registry';
-import { useNavigationActions, useNavigationState } from '@/core/modules/nav';
-import { useAuth } from '@/core/modules/auth';
+import { useRegistry } from '@/modules/registry';
+import { useNavigationActions, useNavigationState } from '@/modules/nav';
+import { useAuth } from '@/modules/auth';
 import Icon from '@/ui/primitives/icon';
 import {
   createMovieBackgroundContextMenuItems,

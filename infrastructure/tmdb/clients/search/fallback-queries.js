@@ -1,4 +1,4 @@
-import { normalizeSearchQuery } from './shared';
+import { normalizeSearchQuery } from './tmdb-search-shared';
 
 const FALLBACK_QUERY_MAX_COUNT = 12;
 

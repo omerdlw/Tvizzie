@@ -4,7 +4,7 @@ import {
   buildPollingSubscriptionKey,
   invalidatePollingSubscriptions,
 } from '@/infrastructure/realtime/polling-subscription.service';
-import { scheduleAccountSummaryRefresh } from '@/domains/account/server/account-summary.service';
+import { scheduleAccountSummaryRefresh } from '@/domains/account/server/profile/summary.service';
 
 import { FOLLOW_STATUSES } from './follow.constants';
 

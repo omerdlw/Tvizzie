@@ -9,9 +9,9 @@ import {
   resolveVerificationErrorMessage,
   resolveVerificationTimestamp,
 } from '@/domains/auth/auth-flow';
-import { resolveAuthVerificationHeader } from '@/core/modules/modal/header';
-import { useSurfaceHeader } from '@/core/modules/nav';
-import { useToast } from '@/core/modules/notification';
+import { resolveAuthVerificationHeader } from '@/modules/modal/header';
+import { useSurfaceHeader } from '@/modules/nav';
+import { useToast } from '@/modules/notification';
 import { cn } from '@/shared/lib';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';

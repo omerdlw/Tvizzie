@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { TMDB_IMG } from '@/shared/constants';
 import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 function resolvePosterSrc(poster) {

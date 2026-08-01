@@ -10,7 +10,7 @@ import {
   ResetButton,
   UI,
   resolveOptionLabel,
-} from './primitives';
+} from './content-filter-controls';
 
 export function AccountListSortBar({ className = '', sort = 'updated_desc', onChange, onReset }) {
   const sortLabel = resolveOptionLabel(LIST_SORT_OPTIONS, sort, 'Recently Updated');

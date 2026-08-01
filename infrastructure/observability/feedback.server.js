@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { readSessionFromRequest } from '@/domains/auth/servers/session.js';
-import { invokeInternalEdgeFunction } from '@/infrastructure/http/server';
+import { readSessionFromRequest } from '@/domains/auth/servers/auth-session.js';
+import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 export const runtime = 'nodejs';
 

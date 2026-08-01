@@ -5,23 +5,23 @@ import {
   EMAIL_ACCOUNT_STATES,
   ensurePasswordAccountRecord,
   resolveEmailAccountState,
-} from '@/domains/auth/servers/account.js';
-import { writeAuthAuditLog } from '@/domains/auth/servers/audit.js';
-import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/domains/auth/servers/policy.js';
+} from '@/domains/auth/servers/auth-account.js';
+import { writeAuthAuditLog } from '@/domains/auth/servers/auth-audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, getAuthRoutePolicy } from '@/domains/auth/servers/auth-policy.js';
 import {
   applySessionCookies,
   createAdminAuthFacade,
   createCsrfToken,
   getRequestContext,
   setDeviceIdCookie,
-} from '@/domains/auth/servers/session.js';
+} from '@/domains/auth/servers/auth-session.js';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   createPendingPasswordSignIn,
   enforceAuthRateLimit,
   validateStrongPassword,
-} from '@/domains/auth/servers/security.js';
-import { verifySignUpProofToken } from '@/domains/auth/servers/verification.js';
+} from '@/domains/auth/servers/auth-security.js';
+import { verifySignUpProofToken } from '@/domains/auth/servers/auth-verification.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
 import { validateUsername } from '@/shared/lib/account';

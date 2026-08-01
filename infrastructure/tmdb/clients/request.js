@@ -2,7 +2,7 @@ import 'server-only';
 
 import { TMDB_API_URL } from '@/shared/constants';
 
-import { TMDB_FETCH_TIMEOUT_MS, TMDB_HEADERS } from './config';
+import { TMDB_FETCH_TIMEOUT_MS, TMDB_HEADERS } from './tmdb-client-config';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 

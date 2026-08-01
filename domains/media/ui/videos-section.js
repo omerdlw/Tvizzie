@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import Carousel from '@/domains/media/ui/components/carousel';
+import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
-import SegmentedControl from '@/ui/components/segmented-control';
-import { useModal } from '@/core/modules/modal';
+import SegmentedControl from '@/ui/primitives/segmented-control';
+import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
 import { getMediaCardProps, getSectionHeaderProps } from '@/domains/media/ui/media-animation-config';
 

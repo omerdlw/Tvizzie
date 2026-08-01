@@ -1,0 +1,448 @@
+'use client';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
+import { usePathname } from 'next/navigation';
+import { useLoadingState } from '@/modules/loading';
+import { useNavigationActions, useNavigationState } from '../nav-context';
+import { NAV_EVENT_HANDLERS } from '../events';
+import { useNavRuntimeRegistry } from '@/modules/registry';
+import { createInlineSurfaceEntry, resolveSurfaceAction } from '../surface-model';
+import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from '../nav-utils';
+import { useNavigationCountdown } from './use-navigation-countdown';
+import { useNavigationItems } from './use-navigation-items';
+import { useNavigationStatus } from './use-navigation-status';
+
+function isNotFoundItem(item) {
+  return item?.isNotFound || item?.path === 'not-found';
+}
+
+function flattenNavigationItems(items) {
+  return items.map((item) => ({
+    ...item,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isExpanded: false,
+    isParent: false,
+  }));
+}
+
+function filterNavigationItems(items, searchQuery) {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    return (
+      toSearchableText(item.name).toLowerCase().includes(normalizedQuery) ||
+      toSearchableText(item.title).toLowerCase().includes(normalizedQuery) ||
+      toSearchableText(item.description).toLowerCase().includes(normalizedQuery)
+    );
+  });
+}
+
+function buildNavigationItems({ rawItems, expanded, searchQuery, isNotFoundPage, countdownItem }) {
+  if (countdownItem) {
+    return [countdownItem];
+  }
+
+  const baseItems = isNotFoundPage
+    ? rawItems.filter((item) => item.path === '/' || isNotFoundItem(item))
+    : rawItems;
+
+  const flattenedItems = flattenNavigationItems(baseItems);
+
+  if (expanded && searchQuery) {
+    return filterNavigationItems(flattenedItems, searchQuery);
+  }
+
+  return flattenedItems;
+}
+
+function resolveActiveIndex({ navigationItems, activeItem, pathname, countdownItem }) {
+  const normalizedPathname = normalizePath(pathname);
+
+  if (countdownItem) {
+    return 0;
+  }
+
+  const selectedDataSourceIndex = navigationItems.findIndex(
+    (item) => item.isDataSource && item.isSelected,
+  );
+
+  if (selectedDataSourceIndex !== -1) {
+    return selectedDataSourceIndex;
+  }
+
+  if (activeItem) {
+    const matchedActiveIndex = navigationItems.findIndex(
+      (item) =>
+        (item.path && isSamePath(item.path, activeItem.path)) ||
+        (item.name && item.name === activeItem.name),
+    );
+
+    if (matchedActiveIndex !== -1) {
+      return matchedActiveIndex;
+    }
+  }
+
+  const matchedIndex = navigationItems.findIndex((item) =>
+    isSamePath(item.path, normalizedPathname),
+  );
+  return Math.max(0, matchedIndex);
+}
+
+function resolveBaseActiveItem({ rawItems, navigationItems, pathname, isNotFoundPage }) {
+  const normalizedPathname = normalizePath(pathname);
+  const selectedDataSource = navigationItems.find((item) => item.isDataSource && item.isSelected);
+
+  if (selectedDataSource) {
+    return selectedDataSource;
+  }
+
+  if (isNotFoundPage) {
+    return rawItems.find((item) => isNotFoundItem(item)) || rawItems[0] || null;
+  }
+
+  const matchedNavigationItem = navigationItems.find((item) =>
+    isSamePath(item.path, normalizedPathname),
+  );
+
+  if (matchedNavigationItem) {
+    return matchedNavigationItem;
+  }
+
+  const matchedRawItem = rawItems.find((item) => isSamePath(item.path, normalizedPathname));
+
+  if (matchedRawItem) {
+    return matchedRawItem;
+  }
+
+  const prefixMatchedRawItem = rawItems
+    .filter((item) => isPathPrefix(item.path, normalizedPathname))
+    .sort((left, right) => normalizePath(right.path).length - normalizePath(left.path).length)[0];
+
+  if (prefixMatchedRawItem) {
+    return (
+      navigationItems.find(
+        (entry) =>
+          isSamePath(entry?.path, prefixMatchedRawItem.path) ||
+          (entry?.name && entry.name === prefixMatchedRawItem.name),
+      ) || prefixMatchedRawItem
+    );
+  }
+
+  return rawItems[0] || null;
+}
+
+function applyStatusOverlay(item, statusState) {
+  if (!item || !statusState) {
+    return item;
+  }
+
+  const showStatusActions = statusState.type === 'APP_ERROR' || statusState.type === 'API_ERROR';
+
+  return {
+    ...item,
+    ...statusState,
+    activeChild: null,
+    children: null,
+    hasActiveChild: false,
+    isExpanded: false,
+    isParent: false,
+    isStatus: true,
+    action: showStatusActions ? statusState.action : null,
+    actions: showStatusActions ? statusState.actions : null,
+  };
+}
+
+function applySurface(item, surfaceEntry, closeSurface) {
+  const surfaceComponent = surfaceEntry?.component ?? null;
+  const surfaceContent = surfaceEntry?.content ?? null;
+
+  if (!item || (!surfaceComponent && surfaceContent == null)) {
+    return item;
+  }
+
+  return {
+    ...item,
+    isSurface: true,
+    isOverlay: true,
+    dismissible: surfaceEntry.dismissible !== false,
+    surfaceComponent,
+    surfaceContent,
+    surfaceProps: surfaceEntry.props || {},
+    closeSurface:
+      typeof closeSurface === 'function'
+        ? closeSurface
+        : (result = null) => {
+            surfaceEntry?.onClose?.(result);
+          },
+    actions: null,
+    action: resolveSurfaceAction(item, surfaceEntry),
+    surfaceIcon: surfaceEntry.icon ?? null,
+    surfaceTitle: surfaceEntry.title ?? null,
+    surfaceDescription: surfaceEntry.description ?? null,
+    surfaceTrailing: surfaceEntry.trailing ?? null,
+    surfaceCloseLabel: surfaceEntry.closeLabel ?? null,
+    expandHorizontal: surfaceEntry.expandHorizontal ?? false,
+    width: surfaceEntry.width ?? null,
+  };
+}
+
+function resolveActionNode(action, mediaAction, showMediaAction) {
+  const MediaAction = mediaAction;
+
+  if (React.isValidElement(action)) {
+    return (
+      <div className="flex flex-col gap-2">
+        {action}
+        {showMediaAction && <MediaAction />}
+      </div>
+    );
+  }
+
+  if (typeof action === 'function') {
+    const ActionComponent = action;
+
+    return (
+      <div className="flex flex-col gap-2">
+        <ActionComponent />
+        {showMediaAction && <MediaAction />}
+      </div>
+    );
+  }
+
+  return showMediaAction ? <MediaAction /> : null;
+}
+
+function applyMediaAction(item, isVideo, toggleBackgroundVideo, mediaAction) {
+  if (!item || !isVideo) {
+    return item;
+  }
+
+  const showMediaAction = Boolean(mediaAction) && item.mediaAction !== false;
+
+  return {
+    ...item,
+    action: resolveActionNode(item.action, mediaAction, showMediaAction),
+    onClick: (event) => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      toggleBackgroundVideo();
+    },
+  };
+}
+
+function resolveActiveItem({
+  rawItems,
+  navigationItems,
+  pathname,
+  isNotFoundPage,
+  surfaceState,
+  statusState,
+  countdownItem,
+  isVideo,
+  toggleBackgroundVideo,
+  mediaAction,
+  closeSurface,
+  isPageLoading,
+}) {
+  const baseActiveItem = resolveBaseActiveItem({
+    rawItems,
+    navigationItems,
+    pathname,
+    isNotFoundPage,
+  });
+
+  if (!baseActiveItem) {
+    return countdownItem || null;
+  }
+
+  if (surfaceState?.isSurfaceOpen) {
+    return applySurface(baseActiveItem, surfaceState.activeSurfaceEntry, (result) =>
+      closeSurface(result, surfaceState.activeSurfaceId),
+    );
+  }
+
+  if (statusState?.isOverlay) {
+    return applyStatusOverlay(baseActiveItem, statusState);
+  }
+
+  if (countdownItem) {
+    return countdownItem;
+  }
+
+  if (isPageLoading) {
+    return {
+      ...baseActiveItem,
+      isLoading: true,
+    };
+  }
+
+  if (statusState) {
+    return applyStatusOverlay(baseActiveItem, statusState);
+  }
+
+  const itemWithMediaAction = applyMediaAction(
+    baseActiveItem,
+    isVideo,
+    toggleBackgroundVideo,
+    mediaAction,
+  );
+
+  const inlineSurface = createInlineSurfaceEntry(itemWithMediaAction?.surface);
+
+  if (inlineSurface) {
+    return applySurface(itemWithMediaAction, inlineSurface);
+  }
+
+  return itemWithMediaAction;
+}
+
+function hasActiveItemChanged(currentItem, previousItem) {
+  return (
+    currentItem?.path !== previousItem?.path ||
+    currentItem?.name !== previousItem?.name ||
+    currentItem?.type !== previousItem?.type ||
+    currentItem?.isLoading !== previousItem?.isLoading ||
+    currentItem?.isOverlay !== previousItem?.isOverlay ||
+    currentItem?.isSurface !== previousItem?.isSurface ||
+    currentItem?.title !== previousItem?.title ||
+    currentItem?.surfaceComponent !== previousItem?.surfaceComponent ||
+    currentItem?.surfaceContent !== previousItem?.surfaceContent ||
+    currentItem?.surfaceProps !== previousItem?.surfaceProps ||
+    currentItem?.action !== previousItem?.action
+  );
+}
+
+function hasDisplayResultChanged(currentResult, previousResult) {
+  return (
+    currentResult.navigationItems !== previousResult.navigationItems ||
+    currentResult.activeIndex !== previousResult.activeIndex ||
+    currentResult.statusState !== previousResult.statusState ||
+    hasActiveItemChanged(currentResult.activeItem, previousResult.activeItem)
+  );
+}
+
+export function useNavigationDisplay() {
+  const pathname = usePathname();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const loadingState = useLoadingState();
+  const isGlobalLoading = Boolean(loadingState?.isLoading);
+
+  useEffect(() => {
+    const unsubStart = NAV_EVENT_HANDLERS.onNavigateStart(() => {
+      setIsNavigating(true);
+    });
+    const unsubEnd = NAV_EVENT_HANDLERS.onNavigateEnd(() => {
+      setIsNavigating(false);
+    });
+    return () => {
+      unsubStart?.();
+      unsubEnd?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [pathname]);
+
+  const isPageLoading = isGlobalLoading || isNavigating;
+
+  const { rawItems } = useNavigationItems();
+  const { closeSurface } = useNavigationActions();
+  const { expanded, searchQuery, activeSurfaceId, activeSurfaceEntry, isSurfaceOpen } =
+    useNavigationState();
+  const surfaceState = useMemo(
+    () => ({
+      activeSurfaceId,
+      activeSurfaceEntry,
+      isSurfaceOpen,
+    }),
+    [activeSurfaceId, activeSurfaceEntry, isSurfaceOpen],
+  );
+  const statusState = useNavigationStatus();
+  const { mediaAction } = useNavRuntimeRegistry();
+  const { isVideo, countdownItem, toggleBackgroundVideo } = useNavigationCountdown();
+
+  const isNotFoundPage = useMemo(() => {
+    return rawItems.some((item) => isNotFoundItem(item));
+  }, [rawItems]);
+
+  const navigationItems = useMemo(() => {
+    return buildNavigationItems({
+      rawItems,
+      expanded,
+      searchQuery,
+      isNotFoundPage,
+      countdownItem,
+    });
+  }, [rawItems, expanded, searchQuery, isNotFoundPage, countdownItem]);
+
+  const rawActiveItem = useMemo(() => {
+    return resolveActiveItem({
+      rawItems,
+      navigationItems,
+      pathname,
+      isNotFoundPage,
+      surfaceState,
+      statusState,
+      countdownItem,
+      isVideo,
+      toggleBackgroundVideo,
+      mediaAction,
+      closeSurface,
+      isPageLoading,
+    });
+  }, [
+    rawItems,
+    navigationItems,
+    pathname,
+    isNotFoundPage,
+    surfaceState,
+    statusState,
+    countdownItem,
+    isVideo,
+    toggleBackgroundVideo,
+    mediaAction,
+    closeSurface,
+    isPageLoading,
+  ]);
+
+  const activeItem = rawActiveItem;
+
+  const activeIndex = useMemo(() => {
+    return resolveActiveIndex({
+      navigationItems,
+      activeItem,
+      pathname,
+      countdownItem,
+    });
+  }, [navigationItems, activeItem, pathname, countdownItem]);
+
+  const result = useMemo(() => {
+    return {
+      navigationItems,
+      activeItem,
+      activeIndex,
+      statusState,
+    };
+  }, [navigationItems, activeItem, activeIndex, statusState]);
+
+  const lastResultRef = useRef(null);
+
+  return useMemo(() => {
+    const previousResult = lastResultRef.current;
+
+    if (!previousResult || hasDisplayResultChanged(result, previousResult)) {
+      lastResultRef.current = result;
+      return result;
+    }
+
+    return previousResult;
+  }, [result]);
+}

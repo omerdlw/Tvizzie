@@ -6,7 +6,7 @@ import {
   canViewerAccessUserContent,
   createPrivateProfileError,
   getAccountProfileByUserId,
-} from '@/domains/account/server/account-profile.server';
+} from '@/domains/account/server/profile/read-profile.server';
 import { normalizeTimestamp } from '@/shared/lib/format';
 import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from './follow.constants';
 

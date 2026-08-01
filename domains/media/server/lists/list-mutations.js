@@ -13,8 +13,8 @@ import {
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/server/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
-import { LIST_ROW_SELECT } from './constants.js';
-import { fetchListById } from './queries.js';
+import { LIST_ROW_SELECT } from './list-constants.js';
+import { fetchListById } from './list-queries.js';
 import {
   buildListOwnerSnapshot,
   createListPayload,
@@ -25,7 +25,7 @@ import {
   slugifyListTitle,
   validateListDescription,
   validateListTitle,
-} from './shared.js';
+} from './list-shared.js';
 import { syncUserListDerivedState } from './derived-state.js';
 
 function fireListCreatedActivity({ listId, ownerSnapshot, slug, title, userId }) {

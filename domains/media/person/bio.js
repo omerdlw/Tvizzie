@@ -1,6 +1,6 @@
 'use client';
 
-import { useNavigationActions } from '@/core/modules/nav';
+import { useNavigationActions } from '@/modules/nav';
 import { createPersonBioSurfaceEntry } from '@/domains/media/ui/surfaces/person-bio-surface';
 
 const MAX_LINES = 4;

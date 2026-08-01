@@ -6,7 +6,7 @@ import {
   SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_URL,
   assertSupabaseBrowserEnv,
-} from '@/infrastructure/supabase/constants';
+} from '@/infrastructure/supabase/supabase-constants';
 
 function getPasswordSecurityClient() {
   assertSupabaseBrowserEnv();

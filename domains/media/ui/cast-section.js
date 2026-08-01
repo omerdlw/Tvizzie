@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
-import { useModal } from '@/core/modules/modal';
+import { useModal } from '@/modules/modal';
 import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/lib';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/ui/poster-overrides';
-import SegmentedControl from '@/ui/components/segmented-control';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import SegmentedControl from '@/ui/primitives/segmented-control';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import { cn } from '@/shared/lib/classnames';
 import {

@@ -1,11 +1,11 @@
-import { createAccountRoutePage } from '@/domains/account/ui/route/page-factory';
+import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
 import { isReservedAccountSegment } from '@/shared/lib/account';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,
-} from '@/domains/account/server/account-route-data.server';
+} from '@/domains/account/server/routes/read.server';
 
-import Client from '@/domains/account/screens/account-profile-client';
+import Client from '@/domains/account/ui/profile-client';
 
 export default createAccountRoutePage(Client, getUsernameAccountOverviewRouteData, {
   beforeLoad: async (params) => {

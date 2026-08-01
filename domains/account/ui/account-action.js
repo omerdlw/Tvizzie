@@ -3,13 +3,13 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { AUTH_ROUTES } from '@/domains/auth/constants';
+import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';
 import Icon from '@/ui/primitives/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
-import { useNavigationActions } from '@/core/modules/nav';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
+import { useNavigationActions } from '@/modules/nav';
 import {
   INFO_ACTION_TONE_CLASS,
   SUCCESS_ACTION_TONE_CLASS,

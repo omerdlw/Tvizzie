@@ -2,7 +2,7 @@
 
 import { notifyAccountLoadError } from '@/domains/account/ui/account-data';
 import { logDataError } from '@/shared/lib';
-import { useToast } from '@/core/modules/notification';
+import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
   subscribeToFollowRelationship,

@@ -6,9 +6,9 @@ import AccountListsOverview from '@/domains/account/ui/overview/lists';
 import AccountReviewsOverview from '@/domains/account/ui/overview/reviews';
 import AccountWatchedOverview from '@/domains/account/ui/overview/watched';
 import AccountWatchlistOverview from '@/domains/account/ui/overview/watchlist';
-import { AccountPageShell } from '@/domains/account/ui/components/layout';
-import { ProfileMediaActions } from '@/domains/account/ui/components/media-grid';
-import { AccountSectionState } from '@/domains/account/ui/components/section-wrapper';
+import { AccountPageShell } from '@/domains/account/ui/account-layout';
+import { ProfileMediaActions } from '@/domains/account/ui/account-media-grid';
+import { AccountSectionState } from '@/domains/account/ui/account-section';
 
 const LIMITS = { activity: 5, media: 6, favorites: 5, lists: 3 };
 

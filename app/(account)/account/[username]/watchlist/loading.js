@@ -1,7 +1,7 @@
 'use client';
 
 import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
-import { Registry } from '@/domains/account/screens/account-watchlist-page';
+import { Registry } from '@/domains/account/ui/watchlist-view';
 
 export default function Loading() {
   return (

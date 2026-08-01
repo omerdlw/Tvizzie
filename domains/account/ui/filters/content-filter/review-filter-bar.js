@@ -3,7 +3,7 @@
 import { REVIEW_SORT_MODE } from '@/domains/reviews/ui/review-data';
 import { cn } from '@/shared/lib';
 
-import { RATING_MODE_OPTIONS, REVIEW_SORT_OPTIONS, REVIEW_VISIBILITY_OPTIONS } from './options';
+import { RATING_MODE_OPTIONS, REVIEW_SORT_OPTIONS, REVIEW_VISIBILITY_OPTIONS } from './content-filter-options';
 import {
   DefaultMenuItem,
   FilterPopover,
@@ -14,7 +14,7 @@ import {
   VisibilityGroup,
   buildRatingLabel,
   resolveOptionLabel,
-} from './primitives';
+} from './content-filter-controls';
 
 export function AccountReviewFilterBar({
   className = '',

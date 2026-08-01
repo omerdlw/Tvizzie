@@ -4,7 +4,7 @@ import { cache } from 'react';
 
 import { isTitleMediaType, normalizeMediaType } from '@/shared/lib/media';
 
-import { TMDB_REVALIDATE } from './config';
+import { TMDB_REVALIDATE } from './tmdb-client-config';
 import { tmdbRequest } from './request';
 
 function getDetailAppendParam(parts = []) {

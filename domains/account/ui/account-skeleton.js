@@ -1,5 +1,5 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
-import { PageGradientShell } from '@/ui/components/page-gradient-shell';
+import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import {
   SkeletonBlock,
   SkeletonCircle,

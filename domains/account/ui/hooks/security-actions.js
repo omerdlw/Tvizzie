@@ -1,7 +1,7 @@
 'use client';
 
 import { clearAccountFeedback, emitAccountFeedback, normalizeProviderDescriptors } from '../account-data';
-import { AUTH_PURPOSE, deleteAccountRequest, resolveSecurityErrorMessage } from '../security';
+import { AUTH_PURPOSE, deleteAccountRequest, resolveSecurityErrorMessage } from '../account-security';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { openAccountVerificationPrompt, useAccountCredentialActions } from './security-credentials';

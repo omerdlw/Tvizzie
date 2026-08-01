@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Link from 'next/link';
-import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/core/modules/modal';
-import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
+import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
+import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import {
   NOTIFICATION_TYPES,
   deleteAllNotifications,
@@ -13,7 +13,7 @@ import {
   subscribeToNotifications,
 } from '@/domains/social/server/notifications/notifications.service';
 import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants/index';

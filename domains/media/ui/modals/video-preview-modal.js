@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Container } from '@/core/modules/modal';
+import { Container } from '@/modules/modal';
 
 export default function VideoPreviewModal({ close, data }) {
   if (!data?.key) return null;

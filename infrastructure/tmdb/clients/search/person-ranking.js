@@ -5,7 +5,7 @@ import {
   normalizeSearchScope,
   sortSearchItemsByAuthority,
   withMediaType,
-} from './shared';
+} from './tmdb-search-shared';
 
 function getPersonSearchTexts(person = {}) {
   return [person?.name, person?.original_name].filter(Boolean);

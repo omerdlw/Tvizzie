@@ -8,8 +8,8 @@ import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/ui/poster-overrides';
-import AccountInlineSectionState from '@/domains/account/ui/components/section-state';
-import AccountSectionLayout from '@/domains/account/ui/components/section-wrapper';
+import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
+import AccountSectionLayout from '@/domains/account/ui/account-section';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
 

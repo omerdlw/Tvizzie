@@ -17,7 +17,7 @@ import {
   resolveSearchRuntimeCheckLimit,
   resolveSearchScanPageLimit,
   withMediaType,
-} from './search/shared';
+} from './search/tmdb-search-shared';
 
 export {
   createSearchFallbackQueries,

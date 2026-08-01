@@ -4,14 +4,14 @@ import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
-} from '@/domains/account/server/account-profile.server';
-import { LIST_REVIEW_SELECT } from './server.constants.js';
-import { fetchReviewLikes, loadListSubjectMap } from './server.context.js';
+} from '@/domains/account/server/profile/read-profile.server';
+import { LIST_REVIEW_SELECT } from './review-server-constants.js';
+import { fetchReviewLikes, loadListSubjectMap } from './review-server-context.js';
 import {
   createListReviewLikeKey,
   normalizeReviewRow,
   sortReviewsByUpdatedAtDesc,
-} from './server.shared.js';
+} from './review-server-shared.js';
 
 export async function fetchListReviewFeedServer({ listId, ownerId, viewerId = null }) {
   if (!ownerId || !listId) {

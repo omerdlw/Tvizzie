@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { REVIEW_SORT_OPTIONS } from '@/domains/reviews/ui/review-data';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Select } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 

@@ -9,7 +9,7 @@ import {
   resolveImageLoading,
   resolveImageQuality,
 } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
 

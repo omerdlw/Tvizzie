@@ -10,7 +10,7 @@ import {
   SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_URL,
-} from '@/infrastructure/supabase/constants';
+} from '@/infrastructure/supabase/supabase-constants';
 
 export const GOOGLE_SESSION_ERROR_CODES = Object.freeze({
   PASSWORD_LOGIN_REQUIRED: 'GOOGLE_PASSWORD_LOGIN_REQUIRED',

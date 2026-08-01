@@ -4,14 +4,14 @@ import {
   SEARCH_MIN_MOVIE_VOTE_AVERAGE,
   SEARCH_MIN_MOVIE_VOTE_COUNT,
   SEARCH_RUNTIME_CHECK_LIMITS,
-} from '../config';
+} from '../tmdb-client-config';
 import {
   createSearchQueryProfile,
   dedupeSearchItems,
   getBestSearchTextMatch,
   sortSearchItemsByAuthority,
   withMediaType,
-} from './shared';
+} from './tmdb-search-shared';
 
 function getMovieSearchTexts(movie = {}) {
   return [movie?.title, movie?.original_title, movie?.name, movie?.original_name].filter(Boolean);

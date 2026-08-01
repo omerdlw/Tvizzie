@@ -2,7 +2,7 @@
 
 import { cn } from '@/shared/lib';
 
-import { FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from './primitives';
+import { FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from './content-filter-controls';
 
 export function SearchMovieFilterBar({
   className = '',

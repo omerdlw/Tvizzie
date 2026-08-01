@@ -3,26 +3,26 @@
 import { useEffect } from 'react';
 
 import { pipe } from '@/shared/lib';
-import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/server/account-client';
+import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/server/profile/profile-http-client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import NotificationsModal from '@/domains/social/ui/notifications-modal';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';
-import { AccountProvider } from '@/core/modules/account';
-import { AuthProvider, createSupabaseAuthAdapter } from '@/core/modules/auth';
-import { ContextMenuGlobal, ContextMenuProvider } from '@/core/modules/context-menu';
-import { CountdownOverlay, CountdownProvider } from '@/core/modules/countdown';
+import { AccountProvider } from '@/modules/account';
+import { AuthProvider, createSupabaseAuthAdapter } from '@/modules/auth';
+import { ContextMenuGlobal, ContextMenuProvider } from '@/modules/context-menu';
+import { CountdownOverlay, CountdownProvider } from '@/modules/countdown';
 import {
   createConsoleHandler,
   createSentryHandler,
   getErrorReporter,
-} from '@/core/modules/error-boundary';
-import { GlobalErrorListener } from '@/core/modules/error-boundary/listener';
-import { ModalProvider } from '@/core/modules/modal';
-import { NotificationContainer } from '@/core/modules/notification';
-import { NotificationProvider } from '@/core/modules/notification/context';
-import { NotificationBadgeListener, NotificationListener } from '@/core/modules/notification';
-import { useRegistry } from '@/core/modules/registry';
-import { SettingsProvider } from '@/core/modules/settings';
+} from '@/modules/error-boundary';
+import { GlobalErrorListener } from '@/modules/error-boundary/listener';
+import { ModalProvider } from '@/modules/modal';
+import { NotificationContainer } from '@/modules/notification';
+import { NotificationProvider } from '@/modules/notification/notification-context';
+import { NotificationBadgeListener, NotificationListener } from '@/modules/notification';
+import { useRegistry } from '@/modules/registry';
+import { SettingsProvider } from '@/modules/settings';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport.config';
 
 const APP_AUTH_CONFIG = {

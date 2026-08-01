@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import FilmographyCard from '@/domains/media/person/filmography-card';
 import { getFilmographyCredits } from '@/domains/media/person/person-data';
-import SegmentedControl from '@/ui/components/segmented-control';
+import SegmentedControl from '@/ui/primitives/segmented-control';
 import {
   getMediaCardProps,
   getSectionHeaderProps,

@@ -9,7 +9,7 @@ import {
   sanitizeTvResults,
 } from '@/infrastructure/tmdb/clients/sanitize';
 
-import { TMDB_REVALIDATE } from './config';
+import { TMDB_REVALIDATE } from './tmdb-client-config';
 import { getEntityDetail } from './detail-id.server';
 import { tmdbRequest } from './request';
 import { withMediaType } from './search-ranking';

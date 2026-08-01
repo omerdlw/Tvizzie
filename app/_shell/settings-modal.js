@@ -3,9 +3,9 @@
 import { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 
-import { Container } from '@/core/modules/modal';
+import { Container } from '@/modules/modal';
 import { Switch } from '@/ui/primitives';
-import { useSettings } from '@/core/modules/settings';
+import { useSettings } from '@/modules/settings';
 
 // --- HELPERS ---
 

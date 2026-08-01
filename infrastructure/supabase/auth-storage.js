@@ -1,4 +1,4 @@
-import { SUPABASE_URL } from './constants';
+import { SUPABASE_URL } from './supabase-constants';
 
 const SUPABASE_COOKIE_CHUNK_SUFFIX_PATTERN = /^(.*)\.(\d+)$/;
 const SUPABASE_AUTH_TOKEN_SUFFIX = '-auth-token';

@@ -10,9 +10,9 @@ import {
   resolveImageLoading,
   resolveImageQuality,
 } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { SEARCH_STYLES, SEARCH_TYPES } from '@/domains/search/ui/constants';
+import { SEARCH_STYLES, SEARCH_TYPES } from '@/domains/search/ui/search-constants';
 import {
   getDetailPath,
   getImagePath,

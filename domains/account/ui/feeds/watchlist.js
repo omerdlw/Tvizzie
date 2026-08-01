@@ -19,8 +19,8 @@ import {
 import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountMediaGridPage, {
   ProfileMediaActions,
-} from '@/domains/account/ui/components/media-grid';
-import { AccountSectionState } from '@/domains/account/ui/components/section-wrapper';
+} from '@/domains/account/ui/account-media-grid';
+import { AccountSectionState } from '@/domains/account/ui/account-section';
 
 const VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({ key: 'hide_unreleased', label: 'Hide unreleased titles' }),

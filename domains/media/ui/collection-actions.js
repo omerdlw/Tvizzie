@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
-import { useModal } from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+import { useAuth, useAuthSessionReady } from '@/modules/auth';
+import { useModal } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import {
   ensureLegacyFavoritesBackfilled,
   subscribeToLikeStatus,
@@ -21,9 +21,9 @@ import {
 } from '@/domains/media/server/watched-watchlist';
 import { cn } from '@/shared/lib';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/shared/lib/media';
-import { AUTH_ROUTES } from '@/domains/auth/constants';
+import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
-import { useNavigationActions } from '@/core/modules/nav';
+import { useNavigationActions } from '@/modules/nav';
 import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';
 import { getActionButtonProps } from '@/domains/media/ui/media-animation-config';

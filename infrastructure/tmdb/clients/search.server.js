@@ -2,7 +2,7 @@ import 'server-only';
 
 import { isPersonMediaType, isTvMediaType } from '@/shared/lib/media';
 
-import { SEARCH_PAGE_SIZE, SEARCH_SCAN_CONCURRENCY, TMDB_REVALIDATE } from './config';
+import { SEARCH_PAGE_SIZE, SEARCH_SCAN_CONCURRENCY, TMDB_REVALIDATE } from './tmdb-client-config';
 import { tmdbRequest } from './request';
 import {
   buildAuthorityFallbackItems,

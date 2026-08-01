@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { useOptionalBackgroundActions } from '@/core/modules/background/context';
-import { ModuleError } from '@/core/modules/error-boundary';
+import { useOptionalBackgroundActions } from '@/modules/background/background-context';
+import { ModuleError } from '@/modules/error-boundary';
 
 function isMediaPath(pathname = '') {
   return pathname.startsWith('/movie/') || pathname.startsWith('/tv/');

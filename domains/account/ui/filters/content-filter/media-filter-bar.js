@@ -14,7 +14,7 @@ import {
   UI,
   VisibilityGroup,
   resolveOptionLabel,
-} from './primitives';
+} from './content-filter-controls';
 
 export function AccountMediaFilterBar({
   className = '',

@@ -11,7 +11,7 @@ import {
   AUTH_ERROR_MESSAGES,
   AUTH_ERROR_MESSAGE_PATTERNS,
   EMAIL_DOMAIN_PATTERNS,
-} from './constants';
+} from './auth-constants';
 
 // ============================================================================
 // 1. TEMEL VE E-POSTA/ŞİFRE DOĞRULAMA

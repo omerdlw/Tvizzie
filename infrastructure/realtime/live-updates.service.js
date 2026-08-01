@@ -1,7 +1,7 @@
 'use client';
 
 import { normalizeValue } from '@/shared/lib/string';
-import { createClient as createSupabaseBrowserClient } from '@/infrastructure/supabase/client';
+import { createClient as createSupabaseBrowserClient } from '@/infrastructure/supabase/supabase-client';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport.config';
 
 const eventSourceRegistry = new Map();

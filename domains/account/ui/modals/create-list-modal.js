@@ -5,18 +5,18 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/shared/constants';
-import { useAuth } from '@/core/modules/auth';
+import { useAuth } from '@/modules/auth';
 import {
   Container,
   CANCEL_BUTTON_CLASS,
   ACTION_BUTTON_CLASS,
   useModalActions,
-} from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+} from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import { createUserListWithItems } from '@/domains/media/server/lists';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb.service';
 import { cn, formatYear } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Input } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 

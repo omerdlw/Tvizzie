@@ -1,8 +1,8 @@
 'use client';
 
 import { deleteUserList } from '@/domains/media/server/lists';
-import { useModal } from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+import { useModal } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
   cancelFollowRequest,
@@ -10,7 +10,7 @@ import {
   unfollowUser,
 } from '@/domains/social/server/social/follows.service';
 import { getUserAvatarUrl } from '@/shared/lib';
-import { AUTH_ROUTES } from '@/domains/auth/constants';
+import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';

@@ -7,17 +7,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useAccountProfile } from '@/core/modules/account';
-import { useAuth } from '@/core/modules/auth';
-import { useNavHeight } from '@/core/modules/nav';
-import { useToast } from '@/core/modules/notification';
+import { useAccountProfile } from '@/modules/account';
+import { useAuth } from '@/modules/auth';
+import { useNavHeight } from '@/modules/nav';
+import { useToast } from '@/modules/notification';
 import {
   deleteMediaReview,
   subscribeToMediaReviews,
   toggleReviewLike,
 } from '@/domains/reviews/server';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
-import { AUTH_ROUTES } from '@/domains/auth/constants';
+import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
 import { getRatingStats, sortReviews } from './review-data';
 
 // ==========================================

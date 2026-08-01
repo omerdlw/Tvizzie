@@ -3,8 +3,8 @@
 import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import { useNavigation } from '@/core/modules/nav';
-import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/ui/constants';
+import { useNavigation } from '@/modules/nav';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/ui/search-constants';
 import {
   fetchAllMedia,
   fetchMedia,

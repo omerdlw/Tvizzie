@@ -5,7 +5,7 @@
  * @description Auth işlemlerinin ana Orchestrator (yönlendirici/tamamlayıcı) fonksiyonları.
  */
 
-import { ACCOUNT_CLIENT } from '@/domains/account/server/account-client';
+import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
 import { getOAuthProviderLabel } from '@/domains/auth/oauth-providers';
 import { completeVerifiedSignUp } from './requests';
 

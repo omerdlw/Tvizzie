@@ -1,6 +1,6 @@
-import { createAccountRoutePage } from '@/domains/account/ui/route/page-factory';
-import { getUsernameAccountActivityRouteData } from '@/domains/account/server/account-route-data.server';
-import Client from '@/domains/account/screens/account-activity-client';
+import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
+import { getUsernameAccountActivityRouteData } from '@/domains/account/server/routes/read.server';
+import Client from '@/domains/account/ui/activity-client';
 
 export default createAccountRoutePage(Client, getUsernameAccountActivityRouteData, (query) => ({
   page: Number.isFinite(Number(query?.page)) ? Math.max(1, Math.floor(Number(query.page))) : 1,

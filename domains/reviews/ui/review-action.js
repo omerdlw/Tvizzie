@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
 export default function ReviewAction({ reviewState }) {
   const {

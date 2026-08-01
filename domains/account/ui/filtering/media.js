@@ -8,7 +8,7 @@ import {
   normalizeToken,
   parseFlagSet,
   serializeFlagSet,
-} from './shared';
+} from './filtering-shared';
 
 export const MEDIA_FILTER_QUERY_KEYS = Object.freeze([
   'mq',

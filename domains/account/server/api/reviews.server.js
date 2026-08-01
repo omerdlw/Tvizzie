@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { resolveOptionalSessionRequest } from '@/domains/auth/servers/session.js';
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/server';
+import { resolveOptionalSessionRequest } from '@/domains/auth/servers/auth-session.js';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 const REVIEW_MODES = new Set(['authored', 'liked']);
 

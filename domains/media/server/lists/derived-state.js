@@ -2,8 +2,8 @@
 
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data.service';
 import { normalizeMediaPayload } from '@/domains/media/server/media';
-import { LIST_ITEM_PREVIEW_SELECT } from './constants.js';
-import { normalizeListPreviewItem } from './shared.js';
+import { LIST_ITEM_PREVIEW_SELECT } from './list-constants.js';
+import { normalizeListPreviewItem } from './list-shared.js';
 
 export async function syncUserListDerivedState({ userId, listId }) {
   const client = getSupabaseClient();

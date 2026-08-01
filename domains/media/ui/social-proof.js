@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/core/modules/auth';
-import { useModal } from '@/core/modules/modal';
+import { useAuth } from '@/modules/auth';
+import { useModal } from '@/modules/modal';
 import { subscribeToMediaSocialProof } from '@/domains/media/server/social-proof';
 import Icon from '@/ui/primitives/icon';
 const EMPTY_SOCIAL_PROOF = Object.freeze({

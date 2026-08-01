@@ -1,5 +1,5 @@
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
-import { PageGradientShell } from '@/ui/components/page-gradient-shell';
+import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import {
   SkeletonBlock,
   SkeletonCircle,
@@ -7,7 +7,7 @@ import {
   SkeletonPill,
   SkeletonPoster,
 } from '@/ui/feedback/skeleton';
-import { FullscreenState } from '@/ui/components/fullscreen-state';
+import { FullscreenState } from '@/ui/feedback/fullscreen-state';
 
 function Bar({ className = '', soft = false }) {
   return <SkeletonBlock className={className} soft={soft} />;

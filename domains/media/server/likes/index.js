@@ -1,9 +1,9 @@
-export * as queries from './queries.js';
-export * as service from './service.js';
-export * as shared from './shared.js';
-export * as subscriptions from './subscriptions.js';
+export * as queries from './like-queries.js';
+export * as service from './like-service.js';
+export * as shared from './like-shared.js';
+export * as subscriptions from './like-subscriptions.js';
 
-export * from './queries.js';
-export * from './service.js';
-export * from './shared.js';
-export * from './subscriptions.js';
+export * from './like-queries.js';
+export * from './like-service.js';
+export * from './like-shared.js';
+export * from './like-subscriptions.js';

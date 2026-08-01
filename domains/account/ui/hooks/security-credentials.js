@@ -9,7 +9,7 @@ import {
   completePasswordChangeRequest,
   completePasswordSetRequest,
   resolveSecurityErrorMessage,
-} from '../security';
+} from '../account-security';
 import AuthVerificationSurface from '@/domains/auth/auth-verification-surface';
 import { useCallback } from 'react';
 import {

@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
-import { Container } from '@/core/modules/modal';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import { Container } from '@/modules/modal';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 
 // --- HELPERS ---

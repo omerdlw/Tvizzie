@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import SocialLinks from '@/domains/media/person/social-links';
 import Icon from '@/ui/primitives/icon';
-import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/components/navigation-action-styles';
+import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
 export default function PersonAction({ activeView, setActiveView, externalIds }) {
   const toggle = (view) => setActiveView(activeView === view ? 'main' : view);

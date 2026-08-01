@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { resolveOptionalSessionRequest } from '@/domains/auth/servers/session.js';
-import { fetchAccountActivityFeedServer } from '@/domains/account/server/account-feed.server';
-import { getOrLoadCachedValue } from '@/infrastructure/http/server';
+import { resolveOptionalSessionRequest } from '@/domains/auth/servers/auth-session.js';
+import { fetchAccountActivityFeedServer } from '@/domains/account/server/feed/read.server';
+import { getOrLoadCachedValue } from '@/infrastructure/http/http-server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

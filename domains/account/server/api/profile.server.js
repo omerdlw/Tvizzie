@@ -1,23 +1,23 @@
 import { NextResponse } from 'next/server';
 
-import { ensurePasswordAccountRecord } from '@/domains/auth/servers/account.js';
+import { ensurePasswordAccountRecord } from '@/domains/auth/servers/auth-account.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   requireSessionRequest,
   resolveOptionalSessionRequest,
-} from '@/domains/auth/servers/session.js';
-import { SUPABASE_URL } from '@/infrastructure/supabase/constants';
-import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/account.server';
+} from '@/domains/auth/servers/auth-session.js';
+import { SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
+import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/profile/read.server';
 import {
   ACCOUNT_READ_FUNCTION,
   ACCOUNT_WRITE_FUNCTION,
-} from '@/domains/account/server/account.constants';
+} from '@/domains/account/server/profile/profile-constants';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import {
   executeWriteRollout,
   getOrLoadCachedValue,
   invokeInternalEdgeFunction,
-} from '@/infrastructure/http/server';
+} from '@/infrastructure/http/http-server';
 import {
   normalizeAccountDisplayNameSearchValue,
   sanitizeUsername,

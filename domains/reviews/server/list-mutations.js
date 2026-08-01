@@ -10,12 +10,12 @@ import {
 } from '@/domains/social/server/activity/activity-events.service';
 import { buildCanonicalActivityDedupeKey } from '@/domains/social/server/activity/canonical-key';
 import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events.constants';
-import { updateListReviewsCount } from '@/domains/media/server/lists/service.js';
+import { updateListReviewsCount } from '@/domains/media/server/lists/list-service.js';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
 } from '@/domains/social/server/notifications/notification-events.service';
-import { getListReviewContext } from './context.js';
+import { getListReviewContext } from './review-context.js';
 import {
   buildListOpinionDedupeKey,
   buildListSubjectMetadata,
@@ -25,9 +25,9 @@ import {
   normalizeRating,
   normalizeReviewContent,
   unwrapReviewWriteResult,
-} from './shared.js';
+} from './review-shared.js';
 import { getReviewValidationError } from './validation.js';
-import { fireReviewLiveEvent, getListReviewsSubscriptionKey } from './subscriptions.js';
+import { fireReviewLiveEvent, getListReviewsSubscriptionKey } from './review-subscriptions.js';
 import { toggleReviewLikeByKey } from './mutation-shared.js';
 
 export async function upsertListReview({

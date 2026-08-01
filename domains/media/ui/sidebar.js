@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/shared/lib';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
 import {

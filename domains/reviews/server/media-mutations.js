@@ -23,9 +23,9 @@ import {
   normalizeRating,
   normalizeReviewContent,
   unwrapReviewWriteResult,
-} from './shared.js';
+} from './review-shared.js';
 import { getReviewValidationError } from './validation.js';
-import { fireReviewLiveEvent, getMediaReviewsSubscriptionKey } from './subscriptions.js';
+import { fireReviewLiveEvent, getMediaReviewsSubscriptionKey } from './review-subscriptions.js';
 import { ensureWatchedBeforeMediaReview, toggleReviewLikeByKey } from './mutation-shared.js';
 
 export async function upsertMediaReview({

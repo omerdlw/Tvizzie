@@ -8,7 +8,7 @@ import {
   normalizeWatchRegion,
   resolveWatchRegionFromBrowser,
 } from '@/infrastructure/tmdb/services/watch-region';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 const containerVariants = Object.freeze({
   hidden: {},
   visible: { transition: { staggerChildren: 0.045 } },

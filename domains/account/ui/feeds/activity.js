@@ -8,10 +8,10 @@ import {
   hasActiveActivityFilters,
 } from '@/domains/account/ui/filtering';
 import { AccountActivityFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import AccountPagination from '@/domains/account/ui/components/pagination';
+import AccountPagination from '@/domains/account/ui/account-pagination';
 import ReviewCard from '@/domains/reviews/components/review-card';
 import RatingStars from '@/domains/reviews/components/rating-stars';
-import AccountSectionLayout from '@/domains/account/ui/components/section-wrapper';
+import AccountSectionLayout from '@/domains/account/ui/account-section';
 import { getActivityItemProps } from '@/domains/account/ui/account-animation-config';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 rounded-xl border border-black/5 p-3';

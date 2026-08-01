@@ -1,10 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Carousel from '@/domains/media/ui/components/carousel';
+import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
-import { useModal } from '@/core/modules/modal';
+import { useModal } from '@/modules/modal';
 import {
   getCarouselButtonProps,
   getMediaCardProps,

@@ -14,7 +14,7 @@ import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,
 } from '@/domains/social/server/notifications/notification-events.service';
-import { resolveRpcRow } from './shared.js';
+import { resolveRpcRow } from './list-shared.js';
 
 export async function toggleListLike({ ownerId, listId, userId }) {
   if (!ownerId || !listId || !userId) {

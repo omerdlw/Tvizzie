@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/lib';
 import { Input } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/domains/search/ui/constants';
+import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/domains/search/ui/search-constants';
 import { navActionClass } from '../search-action-helpers';
 
 import { useEffect, useState } from 'react';

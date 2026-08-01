@@ -20,19 +20,19 @@ import {
   toListQueryValues,
   toMediaQueryValues,
 } from '@/domains/account/ui/filtering';
-import AccountPaginatedListGrid from '@/domains/account/ui/lists/grid';
+import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
 import { getMediaTitle as getAccountMediaTitle } from '@/domains/account/ui/account-data';
 import {
   AccountListSortBar,
   AccountMediaFilterBar,
 } from '@/domains/account/ui/filters/content-filter-primitives';
-import AccountInlineSectionState from '@/domains/account/ui/components/section-state';
+import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountSectionLayout, {
   AccountSectionState,
-} from '@/domains/account/ui/components/section-wrapper';
+} from '@/domains/account/ui/account-section';
 import AccountMediaGridPage, {
   ProfileMediaActions,
-} from '@/domains/account/ui/components/media-grid';
+} from '@/domains/account/ui/account-media-grid';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountReviewsFeed from './reviews';

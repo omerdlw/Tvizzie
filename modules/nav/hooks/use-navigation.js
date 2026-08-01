@@ -1,0 +1,154 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+
+import { useNavigationActions, useNavigationState } from '../nav-context';
+import { useNavigationCore } from './use-navigation-core';
+import { useNavigationCompact } from './use-navigation-compact';
+import { useNavigationDisplay } from './use-navigation-display';
+import { useNavigationLayout } from './use-navigation-layout';
+
+export function useNavigation() {
+  const {
+    closeSurface,
+    setCompactLock,
+    setExpanded: setExpandedState,
+    setIsCompact,
+    setNavHeight,
+    setSearchQuery,
+  } = useNavigationActions();
+  const { compactLocked, expanded: isExpanded, searchQuery } = useNavigationState();
+
+  const [isHovered, setIsHovered] = useState(false);
+
+  const core = useNavigationCore();
+  const display = useNavigationDisplay();
+  const { navigate: navigateWithGuards, pathname, cancelNavigation } = core;
+
+  const { navigationItems, activeItem, statusState } = display;
+  const isSurfaceActive = Boolean(activeItem?.isSurface);
+
+  const activeItemHasAction = useMemo(() => {
+    return Boolean(activeItem?.action);
+  }, [activeItem]);
+
+  const compact = useNavigationCompact({
+    activeItem,
+    expanded: isExpanded,
+    pathname,
+    searchQuery,
+    compactLocked,
+  });
+
+  useEffect(() => {
+    setIsCompact(compact);
+  }, [compact, setIsCompact]);
+
+  const clearHoverState = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
+  const setExpanded = useCallback(
+    (nextValue) => {
+      setExpandedState((previousValue) => {
+        const resolvedValue =
+          typeof nextValue === 'function' ? nextValue(previousValue) : nextValue;
+
+        if (isSurfaceActive && resolvedValue) {
+          return previousValue;
+        }
+
+        return resolvedValue;
+      });
+    },
+    [isSurfaceActive, setExpandedState],
+  );
+
+  const wasSurfaceActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (isSurfaceActive) {
+      wasSurfaceActiveRef.current = true;
+      return;
+    }
+
+    if (wasSurfaceActiveRef.current) {
+      wasSurfaceActiveRef.current = false;
+      clearHoverState();
+    }
+  }, [clearHoverState, isSurfaceActive]);
+
+  useEffect(() => {
+    if (!isSurfaceActive || !isExpanded) {
+      return;
+    }
+
+    setExpandedState(false);
+  }, [isExpanded, isSurfaceActive, setExpandedState]);
+
+  const navigate = useCallback(
+    async (href, options) => {
+      if (!href) {
+        return false;
+      }
+
+      const didNavigate = await navigateWithGuards(href, options);
+
+      if (!didNavigate) {
+        return didNavigate;
+      }
+
+      setExpanded(false);
+      setSearchQuery('');
+      clearHoverState();
+
+      return didNavigate;
+    },
+    [clearHoverState, navigateWithGuards, setExpanded, setSearchQuery],
+  );
+
+  const { displayItems, activeIndex: layoutActiveIndex } = useNavigationLayout({
+    isHovered,
+    isCompact: compact,
+    navigationItems,
+    activeItem,
+  });
+
+  const previousPathRef = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPathRef.current === pathname) {
+      return;
+    }
+
+    previousPathRef.current = pathname;
+    setExpanded(false);
+    setSearchQuery('');
+    setIsHovered(false);
+  }, [pathname, setExpanded, setSearchQuery]);
+
+  return {
+    navigationItems: displayItems,
+    activeItem,
+    activeIndex: layoutActiveIndex,
+    statusState,
+
+    navigate,
+    pathname,
+    cancelNavigation,
+    closeSurface,
+
+    expanded: isExpanded,
+    setExpanded,
+    setNavHeight,
+    setSearchQuery,
+    setCompactLock,
+
+    isHovered,
+    setIsHovered,
+    searchQuery,
+    activeItemHasAction,
+    compactLocked,
+    compact,
+  };
+}

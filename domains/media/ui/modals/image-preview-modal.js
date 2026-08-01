@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 import { TMDB_IMG } from '@/shared/constants';
-import { Container } from '@/core/modules/modal';
+import { Container } from '@/modules/modal';
 import { Spinner } from '@/ui/feedback/spinner';
 
 // --- HELPERS ---

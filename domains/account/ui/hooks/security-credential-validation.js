@@ -1,4 +1,4 @@
-import { EMAIL_PATTERN, resolveSecurityErrorMessage, validatePassword } from '../security';
+import { EMAIL_PATTERN, resolveSecurityErrorMessage, validatePassword } from '../account-security';
 import { normalizeEmail } from '../account-data';
 
 export function validateEmailChangeInput({ currentAuthEmail, currentPassword, newEmail, toast }) {

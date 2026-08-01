@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
-import Carousel from '@/domains/media/ui/components/carousel';
-import SegmentedControl from '@/ui/components/segmented-control';
+import Carousel from '@/domains/media/ui/components/media-carousel';
+import SegmentedControl from '@/ui/primitives/segmented-control';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import {
   getMediaCardProps,

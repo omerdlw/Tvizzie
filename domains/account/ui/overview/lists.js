@@ -1,10 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import AccountListCard from '@/domains/account/ui/lists/card';
+import AccountListCard from '@/domains/account/ui/lists/list-card';
 import Icon from '@/ui/primitives/icon';
-import AccountInlineSectionState from '@/domains/account/ui/components/section-state';
-import AccountSectionLayout from '@/domains/account/ui/components/section-wrapper';
+import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
+import AccountSectionLayout from '@/domains/account/ui/account-section';
 import { getListCardProps } from '@/domains/account/ui/account-animation-config';
 const OVERVIEW_LIST_LIMIT = 3;
 export default function AccountListsOverview({

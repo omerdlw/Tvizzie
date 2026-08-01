@@ -9,14 +9,14 @@ import {
   EMAIL_ACCOUNT_STATES,
   hasPasswordProvider,
   resolveEmailAccountState,
-} from '@/domains/auth/servers/account.js';
-import { writeAuthAuditLog } from '@/domains/auth/servers/audit.js';
-import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from '@/domains/auth/servers/policy.js';
+} from '@/domains/auth/servers/auth-account.js';
+import { writeAuthAuditLog } from '@/domains/auth/servers/auth-audit.js';
+import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from '@/domains/auth/servers/auth-policy.js';
 import {
   clearAuthCookies,
   getRequestContext,
   requireSessionRequest,
-} from '@/domains/auth/servers/session.js';
+} from '@/domains/auth/servers/auth-session.js';
 import {
   assertCsrfRequest,
   assertRecentReauth,
@@ -31,20 +31,20 @@ import {
   setRecentReauthCookie,
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
-} from '@/domains/auth/servers/security.js';
+} from '@/domains/auth/servers/auth-security.js';
 import {
   lookupPasswordAccountByEmail,
   resolvePasswordAccountIdentifier,
-} from '@/domains/auth/servers/verification.js';
+} from '@/domains/auth/servers/auth-verification.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { ACCOUNT_WRITE_FUNCTION } from '@/domains/account/server/account.constants';
+import { ACCOUNT_WRITE_FUNCTION } from '@/domains/account/server/profile/profile-constants';
 import {
   buildInternalRequestMeta,
   createApiErrorResponse,
   createApiSuccessResponse,
   executeWriteRollout,
   invokeInternalEdgeFunction,
-} from '@/infrastructure/http/server';
+} from '@/infrastructure/http/http-server';
 
 const ACCOUNT_ACTIONS = Object.freeze({
   CHANGE_EMAIL: 'change-email',

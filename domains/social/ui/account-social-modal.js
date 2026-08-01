@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback, memo, useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useAuth, useAuthSessionReady } from '@/core/modules/auth';
-import { Container } from '@/core/modules/modal';
-import { useToast } from '@/core/modules/notification';
+import { useAuth, useAuthSessionReady } from '@/modules/auth';
+import { Container } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
 import {
   FOLLOW_STATUSES,
   acceptFollowRequest,
@@ -17,9 +17,9 @@ import {
   unfollowUser,
 } from '@/domains/social/server/social/follows.service';
 import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
-import { EmptyState } from '@/ui/components/empty-state';
-import SegmentedControl from '@/ui/components/segmented-control';
-import AdaptiveImage from '@/ui/components/adaptive-image';
+import { EmptyState } from '@/ui/feedback/empty-state';
+import SegmentedControl from '@/ui/primitives/segmented-control';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import {
   DESTRUCTIVE_ACTION_TONE_CLASS,
   INFO_ACTION_TONE_CLASS,
