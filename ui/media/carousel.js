@@ -1,6 +1,7 @@
 'use client';
 
 import { Children, useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useDraggableScroll } from '@/core/hooks/use-draggable-scroll';
 import { cn } from '@/core/utils';
 import Icon from '@/ui/icon';
@@ -32,7 +33,13 @@ function getItemStride(element) {
   const gap = Number.parseFloat(styles.columnGap || styles.gap || '0') || 0;
   return firstItem.getBoundingClientRect().width + gap;
 }
-export default function Carousel({ children, className = '', gap = 'gap-2', itemClassName = '' }) {
+export default function Carousel({
+  children,
+  className = '',
+  gap = 'gap-2',
+  itemClassName = '',
+  buttonProps,
+}) {
   const scrollRef = useDraggableScroll();
   const [scrollState, setScrollState] = useState({
     hasOverflow: false,
@@ -83,10 +90,27 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
     },
     [scrollRef],
   );
-  const controlTransition = {
-    duration: 0.42,
-    ease: ACCENT_EASING,
-  };
+
+  const resolveButtonProps = useCallback(
+    (direction) => {
+      if (typeof buttonProps === 'function') {
+        return buttonProps(direction);
+      }
+      if (buttonProps && typeof buttonProps === 'object') {
+        return buttonProps;
+      }
+      return {
+        initial: { opacity: 0, scale: 0.8, filter: 'blur(8px)' },
+        animate: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+        exit: { opacity: 0, scale: 0.8, filter: 'blur(8px)' },
+        transition: { duration: 0.42, ease: ACCENT_EASING },
+        whileHover: { scale: 1.1 },
+        whileTap: { scale: 0.9 },
+      };
+    },
+    [buttonProps],
+  );
+
   return (
     <div className="group/carousel relative">
       <div
@@ -94,7 +118,7 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide rounded-[20px] flex cursor-grab touch-pan-y overflow-x-auto overscroll-x-contain scroll-smooth select-none',
+          'scrollbar-hide rounded-[20px] flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth select-none',
           gap,
           className,
         )}
@@ -108,31 +132,39 @@ export default function Carousel({ children, className = '', gap = 'gap-2', item
           </div>
         ))}
       </div>
-      {scrollState.canScrollLeft && (
-        <button
-          type="button"
-          aria-label="Scroll left"
-          onClick={() => scrollByDirection(-1)}
-          className={cn(
-            'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-black text-primary rounded-full md:left-[-16px] md:size-8',
-          )}
-        >
-          <Icon icon="solar:alt-arrow-left-bold" size={16} />
-        </button>
-      )}
+      <AnimatePresence>
+        {scrollState.canScrollLeft && (
+          <motion.button
+            key="carousel-btn-left"
+            type="button"
+            aria-label="Scroll left"
+            onClick={() => scrollByDirection(-1)}
+            {...resolveButtonProps(-1)}
+            className={cn(
+              'center absolute top-1/2 left-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-full bg-black text-primary md:left-[-16px] md:size-8',
+            )}
+          >
+            <Icon icon="solar:alt-arrow-left-bold" size={16} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-      {scrollState.canScrollRight && (
-        <button
-          type="button"
-          aria-label="Scroll right"
-          onClick={() => scrollByDirection(1)}
-          className={cn(
-            'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer bg-black text-primary rounded-full md:right-[-16px] md:size-8',
-          )}
-        >
-          <Icon icon="solar:alt-arrow-right-bold" size={16} />
-        </button>
-      )}
+      <AnimatePresence>
+        {scrollState.canScrollRight && (
+          <motion.button
+            key="carousel-btn-right"
+            type="button"
+            aria-label="Scroll right"
+            onClick={() => scrollByDirection(1)}
+            {...resolveButtonProps(1)}
+            className={cn(
+              'center absolute top-1/2 right-2 z-10 size-6 -translate-y-1/2 cursor-pointer rounded-full bg-black text-primary md:right-[-16px] md:size-8',
+            )}
+          >
+            <Icon icon="solar:alt-arrow-right-bold" size={16} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

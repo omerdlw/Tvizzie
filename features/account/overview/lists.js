@@ -1,9 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import AccountListCard from '@/features/account/lists/card';
 import Icon from '@/ui/icon';
 import AccountInlineSectionState from '@/features/account/components/section-state';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import { getListCardProps } from '@/features/account/motion';
 const OVERVIEW_LIST_LIMIT = 3;
 export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
@@ -31,9 +33,18 @@ export default function AccountListsOverview({
     >
       {visibleLists.length > 0 ? (
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-          {visibleLists.map((list, index) => (
-            <AccountListCard
+          {visibleLists.map((list, index) => {
+            const listProps = getListCardProps(index);
+            return (
+            <motion.div
               key={`${list?.ownerId || list?.ownerSnapshot?.id || resolvedOwnerUsername || 'owner'}-${list?.id || list?.slug || index}`}
+              initial={listProps.initial}
+              whileInView={listProps.whileInView}
+              viewport={listProps.viewport}
+              transition={listProps.transition}
+              whileHover={listProps.whileHover}
+            >
+              <AccountListCard
               list={list}
               ownerUsername={resolvedOwnerUsername}
               renderActions={
@@ -65,7 +76,9 @@ export default function AccountListsOverview({
                   : null
               }
             />
-          ))}
+            </motion.div>
+            );
+          })}
         </div>
       ) : (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>

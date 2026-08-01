@@ -20,7 +20,7 @@ function getMaxScrollLeft(element) {
 
 function getWheelDelta(event, element) {
   const hasHorizontalIntent =
-    Math.abs(event.deltaX) > 0 && Math.abs(event.deltaX) >= Math.abs(event.deltaY) * 0.45;
+    Math.abs(event.deltaX) > 0 && Math.abs(event.deltaX) > Math.abs(event.deltaY);
   const axisDelta = hasHorizontalIntent ? event.deltaX : event.shiftKey ? event.deltaY : 0;
 
   if (!axisDelta) {
@@ -94,6 +94,7 @@ export function useDraggableScroll() {
     };
 
     const handleMouseDown = (e) => {
+      if (e.button !== 0) return;
       isDown = true;
       isDragging = false;
       el.classList.add('cursor-grabbing');
@@ -196,7 +197,6 @@ export function useDraggableScroll() {
     el.addEventListener('mouseup', handleMouseUp);
     el.addEventListener('mousemove', handleMouseMove);
     el.addEventListener('wheel', handleWheel, { capture: true, passive: false });
-    window.addEventListener('wheel', handleWheel, { capture: true, passive: false });
     el.addEventListener('click', handleBlur, true);
 
     return () => {
@@ -207,7 +207,6 @@ export function useDraggableScroll() {
       el.removeEventListener('mouseup', handleMouseUp);
       el.removeEventListener('mousemove', handleMouseMove);
       el.removeEventListener('wheel', handleWheel, true);
-      window.removeEventListener('wheel', handleWheel, true);
       el.removeEventListener('click', handleBlur, true);
     };
   }, [lockSource]);

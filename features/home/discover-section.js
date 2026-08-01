@@ -1,11 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
-import { HomeSectionReveal } from '@/features/media/static-route-elements';
 import MediaPosterCard from '@/ui/media/media-poster-card';
 import Icon from '@/ui/icon';
 import { useRegistry } from '@/core/modules/registry';
+import {
+  homeSectionVariants,
+  getGenreChipProps,
+  genreNavButtonProps,
+  getDiscoverCardProps,
+  loadMoreButtonVariants,
+} from '@/app/(home)/motion';
 const ALL_GENRE_ID = 'all';
 const MOBILE_DISCOVER_BATCH = 9;
 const DESKTOP_DISCOVER_BATCH = 24;
@@ -27,16 +34,18 @@ function getDiscoverBatchSize(isMobileGrid) {
   return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
 }
 
-function GenreChip({ genre, isActive, onClick }) {
+function GenreChip({ genre, isActive, onClick, index = 0 }) {
+  const chipProps = getGenreChipProps(index);
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={isActive}
-      className={`center border px-3 h-10 text-xs tracking-wide rounded-2xl text-black/70 w-full ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
+      {...chipProps}
+      className={`center border px-3 h-10 text-xs tracking-wide rounded-2xl text-black/70 w-full transition-colors duration-200 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
     >
       <span className="truncate">{genre.name}</span>
-    </button>
+    </motion.button>
   );
 }
 
@@ -271,92 +280,94 @@ export function DiscoverSection({
   }, []);
 
   return (
-    <HomeSectionReveal delay={0.08} distance={18}>
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <div className="flex items-center w-full relative">
-          <button
-            type="button"
-            disabled={!canScrollLeft}
-            className="inline-flex shrink-0 size-10 items-center justify-center border  rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 mr-2"
-            onClick={() => scroll('left')}
-          >
-            <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
-          </button>
-          <div
-            ref={scrollContainerRef}
-            className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing rounded-2xl flex-1 flex items-center gap-2 snap-x snap-mandatory scroll-smooth"
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onScroll={updateScrollButtons}
-          >
-            {genreItems.map((genre) => (
-              <div key={genre.id} className="snap-start w-[calc((100%-72px)/10)] shrink-0">
-                <GenreChip
-                  genre={genre}
-                  isActive={String(genre.id) === String(activeGenreId)}
-                  onClick={() => handleChipClick(String(genre.id))}
-                />
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            disabled={!canScrollRight}
-            className="inline-flex shrink-0 size-10 items-center justify-center border w-[38px] h-[38px] rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 ml-2"
-            onClick={() => scroll('right')}
-          >
-            <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
-          {gridItems.map((item, index) => (
-            <HomeSectionReveal key={item.id} delay={Math.min(index * 0.015, 0.16)} distance={14}>
-              <MediaPosterCard item={item} className="w-full" />
-            </HomeSectionReveal>
-          ))}
-
-          {isFiltering
-            ? Array.from({
-                length: batchSize,
-              }).map((_, index) => (
-                <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
-              ))
-            : null}
-        </div>
-
-        {gridError ? (
-          <div className="border border-black/10 bg-white/70 rounded-2xl p-3 text-sm text-black/50">
-            {gridError}
-          </div>
-        ) : null}
-
-        {gridItems.length === 0 && !isFiltering ? (
-          <div className="border border-black/10 bg-white/70 rounded-2xl p-4 text-sm text-black/50">
-            No movies found for this genre.
-          </div>
-        ) : null}
-
-        <div className="flex justify-center pt-1">
-          {hasMore ? (
-            <button
-              type="button"
-              onClick={handleLoadMore}
-              disabled={isLoadingMore || isFiltering}
-              className="inline-flex h-10 items-center gap-2 border border-black/5 rounded-2xl bg-primary px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Icon
-                icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
-                size={16}
-                className={isLoadingMore ? '' : ''}
+    <motion.section variants={homeSectionVariants} className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+      <div className="flex items-center w-full relative">
+        <motion.button
+          type="button"
+          disabled={!canScrollLeft}
+          {...genreNavButtonProps}
+          className="inline-flex shrink-0 size-10 items-center justify-center border rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 mr-2"
+          onClick={() => scroll('left')}
+        >
+          <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
+        </motion.button>
+        <div
+          ref={scrollContainerRef}
+          className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing rounded-2xl flex-1 flex items-center gap-2 snap-x snap-mandatory scroll-smooth"
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onScroll={updateScrollButtons}
+        >
+          {genreItems.map((genre, index) => (
+            <div key={genre.id} className="snap-start w-[calc((100%-72px)/10)] shrink-0">
+              <GenreChip
+                genre={genre}
+                index={index}
+                isActive={String(genre.id) === String(activeGenreId)}
+                onClick={() => handleChipClick(String(genre.id))}
               />
-              {isLoadingMore ? 'Loading' : 'Load more'}
-            </button>
-          ) : null}
+            </div>
+          ))}
         </div>
-      </section>
-    </HomeSectionReveal>
+        <motion.button
+          type="button"
+          disabled={!canScrollRight}
+          {...genreNavButtonProps}
+          className="inline-flex shrink-0 size-10 items-center justify-center border w-[38px] h-[38px] rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 ml-2"
+          onClick={() => scroll('right')}
+        >
+          <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
+        </motion.button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
+        {gridItems.map((item, index) => (
+          <motion.div key={item.id} {...getDiscoverCardProps(index)}>
+            <MediaPosterCard item={item} className="w-full" />
+          </motion.div>
+        ))}
+
+        {isFiltering
+          ? Array.from({
+              length: batchSize,
+            }).map((_, index) => (
+              <div key={`loading-${index}`} className="skeleton-block-soft aspect-2/3 w-full" />
+            ))
+          : null}
+      </div>
+
+      {gridError ? (
+        <div className="border border-black/10 bg-white/70 rounded-2xl p-3 text-sm text-black/50">
+          {gridError}
+        </div>
+      ) : null}
+
+      {gridItems.length === 0 && !isFiltering ? (
+        <div className="border border-black/10 bg-white/70 rounded-2xl p-4 text-sm text-black/50">
+          No movies found for this genre.
+        </div>
+      ) : null}
+
+      <div className="flex justify-center pt-1">
+        {hasMore ? (
+          <motion.button
+            type="button"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore || isFiltering}
+            {...loadMoreButtonVariants}
+            className="inline-flex h-10 items-center gap-2 border border-black/5 rounded-2xl bg-primary px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Icon
+              icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
+              size={16}
+              className={isLoadingMore ? 'animate-spin' : ''}
+            />
+            {isLoadingMore ? 'Loading' : 'Load more'}
+          </motion.button>
+        ) : null}
+      </div>
+    </motion.section>
   );
 }

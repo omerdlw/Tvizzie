@@ -2,6 +2,7 @@
 
 import SearchAction from '@/features/navigation/actions/search-action';
 import { createRouteRegistry } from '@/features/app-shell/route-registry-factory';
+import { MEDIA_BACKGROUND_ANIMATION } from '@/features/media/motion';
 
 export default createRouteRegistry({
   displayName: 'HomeRegistry',
@@ -17,6 +18,7 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0.2,
             },
+            animation: MEDIA_BACKGROUND_ANIMATION,
           },
         }
       : {
@@ -28,6 +30,7 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0,
             },
+            animation: MEDIA_BACKGROUND_ANIMATION,
           },
         }),
     loading: { isLoading },

@@ -52,11 +52,10 @@ export default function SegmentedControl({
     }
 
     const update = () => {
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const buttonRect = activeButton.getBoundingClientRect();
+      const x = activeButton.offsetLeft;
+      const w = activeButton.offsetWidth;
 
-      const x = buttonRect.left - wrapperRect.left;
-      const w = buttonRect.width;
+      if (w === 0) return;
 
       setIndicator((prev) => {
         if (prev && prev._x === x && prev._w === w) {
@@ -105,7 +104,7 @@ export default function SegmentedControl({
     <div
       style={{ padding: `${PADDING}px`, borderRadius: `${OUTER_RADIUS}px` }}
       className={cn(
-        'flex min-w-0 items-stretch border border-black/5 bg-black/5',
+        'inline-flex max-w-full w-fit shrink-0 items-stretch border border-black/5 bg-black/5',
         className,
         classNames.wrapper,
       )}
@@ -114,13 +113,16 @@ export default function SegmentedControl({
         ref={trackRef}
         onDragStart={(event) => event.preventDefault()}
         className={cn(
-          'hide-scrollbar h-full w-full cursor-grab touch-pan-x overflow-x-auto select-none',
+          'hide-scrollbar h-full max-w-full cursor-grab touch-pan-x overflow-x-auto select-none',
           classNames.track,
         )}
       >
         <div
           ref={wrapperRef}
-          className="relative flex h-full w-max min-w-full items-stretch overflow-hidden"
+          className={cn(
+            'relative flex h-full w-max items-stretch overflow-hidden',
+            classNames.innerWrapper,
+          )}
           style={{ borderRadius: `${INNER_RADIUS}px` }}
         >
           <span
@@ -135,7 +137,9 @@ export default function SegmentedControl({
                 ? {
                     transform: `translateX(${indicator._x}px)`,
                     width: `${indicator._w}px`,
-                    transition: 'none',
+                    transition: indicator.ready
+                      ? 'transform 200ms cubic-bezier(0.19, 1, 0.22, 1), width 200ms cubic-bezier(0.19, 1, 0.22, 1)'
+                      : 'none',
                   }
                 : { width: 0, opacity: 0 }),
             }}

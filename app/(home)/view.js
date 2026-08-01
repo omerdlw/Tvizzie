@@ -1,9 +1,11 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
 import { DiscoverSection } from '@/features/home/discover-section';
 import { TrendingSection } from '@/features/home/trending-section';
+import { homePageContainerVariants, homeBackgroundVariants } from './motion';
 
 export default function View({ homeData = {} }) {
   const dailyItems = Array.isArray(homeData.dailyTrendingItems) ? homeData.dailyTrendingItems : [];
@@ -19,8 +21,18 @@ export default function View({ homeData = {} }) {
 
   return (
     <PageGradientShell className="overflow-hidden">
-      <div className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem] opacity-50" />
-      <div
+      <motion.div
+        variants={homeBackgroundVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="home-top-radial-gradient absolute inset-x-0 top-0 h-[34rem]"
+      />
+      <motion.div
+        variants={homePageContainerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
         className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-10 px-3 pt-20 pb-20 sm:px-4 md:px-6`}
       >
         <DiscoverSection
@@ -33,17 +45,13 @@ export default function View({ homeData = {} }) {
         <TrendingSection
           title="Today's popular movies"
           items={dailyItems}
-          delay={0.12}
-          distance={18}
         />
 
         <TrendingSection
           title="This week's popular movies"
           items={weeklyItems}
-          delay={0.16}
-          distance={18}
         />
-      </div>
+      </motion.div>
     </PageGradientShell>
   );
 }

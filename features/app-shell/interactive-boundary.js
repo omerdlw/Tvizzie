@@ -29,8 +29,8 @@ const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({
     oauthDefaultNextPath: '/account',
   }),
-  hydrateFromStorage: false,
-  persistSession: false,
+  hydrateFromStorage: true,
+  persistSession: true,
 };
 
 const APP_SETTINGS_CONFIG = {

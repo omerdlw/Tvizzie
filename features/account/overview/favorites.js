@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import {
@@ -11,6 +12,7 @@ import { Button } from '@/ui/elements';
 import Icon from '@/ui/icon';
 import AccountInlineSectionState from '@/features/account/components/section-state';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import { getCardProps } from '@/features/account/motion';
 const OVERVIEW_ROW_CARD_LIMIT = 5;
 function getFavoriteType(item) {
   const explicitType = item?.media_type || item?.entityType;
@@ -86,8 +88,10 @@ export default function AccountFavoritesOverview({
     >
       {cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5">
-          {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
+          {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
+            const cardProps = getCardProps(index);
+            return (
+            <motion.div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col" initial={cardProps.initial} animate={cardProps.animate} transition={cardProps.transition} whileHover={cardProps.whileHover} whileTap={cardProps.whileTap}>
               <MediaCard
                 className="w-full md:w-full lg:w-full"
                 href={card.href}
@@ -133,8 +137,9 @@ export default function AccountFavoritesOverview({
                 }
                 tooltipText={card.tooltipText}
               />
-            </div>
-          ))}
+            </motion.div>
+            );
+          })}
         </div>
       ) : (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>

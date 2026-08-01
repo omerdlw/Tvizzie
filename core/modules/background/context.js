@@ -26,6 +26,7 @@ const DEFAULT_BACKGROUND = Object.freeze({
   image: null,
   video: null,
   isPlaying: false,
+  animation: null,
 });
 
 function mergeBackgroundState(baseState, patch = {}) {
@@ -48,6 +49,9 @@ function mergeBackgroundState(baseState, patch = {}) {
       ...baseState.videoOptions,
       ...(patch.videoOptions || {}),
     },
+    animation: patch.animation !== undefined
+      ? (patch.animation ? { ...(baseState.animation || {}), ...patch.animation } : patch.animation)
+      : baseState.animation,
   };
 }
 
@@ -129,6 +133,7 @@ export function BackgroundProvider({ children }) {
       overlay: background.overlay,
       image: background.image,
       video: background.video,
+      animation: background.animation,
     }),
     [background],
   );

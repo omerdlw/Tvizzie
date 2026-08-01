@@ -56,26 +56,28 @@ export default function AccountWatchlistFeed({
   }, [searchString]);
 
   const updateView = (updates) => {
-    setViewState((prev) => {
-      const next = { ...prev, ...updates };
-      if (typeof window !== 'undefined') {
-        const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
-          managedKeys: MEDIA_FILTER_QUERY_KEYS,
-          resetPage: false,
-          values: toMediaQueryValues(next.media),
-        });
-        const params = new URLSearchParams(qs);
-        if (next.page > 1) params.set('page', String(next.page));
-        else params.delete('page');
-        window.history.replaceState(
-          {},
-          '',
-          params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath,
-        );
-      }
-      return next;
-    });
+    setViewState((prev) => ({ ...prev, ...updates }));
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
+      managedKeys: MEDIA_FILTER_QUERY_KEYS,
+      resetPage: false,
+      values: toMediaQueryValues(viewState.media),
+    });
+    const params = new URLSearchParams(qs);
+    if (viewState.page > 1) params.set('page', String(viewState.page));
+    else params.delete('page');
+    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState(
+        {},
+        '',
+        newUrl,
+      );
+    }
+  }, [viewState, collectionRootPath]);
 
   const hasFilters = hasActiveMediaFilters(viewState.media);
   const filteredWatchlistItems = useMemo(

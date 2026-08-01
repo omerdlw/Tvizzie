@@ -1,53 +1,48 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import { Z_INDEX } from '@/core/constants';
 import { useBackgroundActions, useBackgroundState } from './context';
+import { NoiseTexture } from '@/ui/elements/noise-texture';
 
-export {
-  BackgroundProvider,
-  useBackgroundActions,
-  useBackgroundState,
-  useOptionalBackgroundActions,
-} from './context';
+export { BackgroundProvider, useBackgroundState } from './context';
 
-const NOISE_OPACITY_VALUES = Object.freeze({
-  hidden: '0%',
-  subtle: '10%',
-  visible: '15%',
-  elevated: '20%',
-});
+function getMotionConfig(pageAnimation) {
+  const resolvedAnimation = pageAnimation || {};
 
-function resolveNoiseOpacity(opacity) {
-  if (opacity === 0 || opacity === '0' || opacity === '0%') {
-    return NOISE_OPACITY_VALUES.hidden;
+  return {
+    exitDurationFactor: Number(resolvedAnimation?.exitDurationFactor),
+    transition: resolvedAnimation?.transition ?? {
+      duration: 0.6,
+      ease: [0.4, 0, 0.2, 1]
+    },
+    initial: resolvedAnimation?.initial ?? { opacity: 0 },
+    animate: resolvedAnimation?.animate ?? { opacity: 1 },
+    exit: resolvedAnimation?.exit ?? { opacity: 0 },
+  };
+}
+
+function toCssDuration(seconds) {
+  const value = Number(seconds);
+  return `${Math.max(0, Number.isFinite(value) ? value : 0.6) * 1000}ms`;
+}
+
+function toCssDelay(seconds) {
+  const value = Number(seconds);
+  return `${Math.max(0, Number.isFinite(value) ? value : 0) * 1000}ms`;
+}
+
+function toCssEasing(easing) {
+  if (Array.isArray(easing)) {
+    return `cubic-bezier(${easing.join(', ')})`;
   }
 
-  const numericOpacity =
-    typeof opacity === 'string' && opacity.endsWith('%')
-      ? Number(opacity.slice(0, -1))
-      : Number(opacity);
-
-  if (!Number.isFinite(numericOpacity)) {
-    return undefined;
+  if (typeof easing === 'string' && easing.trim()) {
+    return easing;
   }
 
-  const opacityPercent = Math.round(numericOpacity <= 1 ? numericOpacity * 100 : numericOpacity);
-
-  if (opacityPercent <= 0) {
-    return NOISE_OPACITY_VALUES.hidden;
-  }
-
-  if (opacityPercent <= 10) {
-    return NOISE_OPACITY_VALUES.subtle;
-  }
-
-  if (opacityPercent <= 15) {
-    return NOISE_OPACITY_VALUES.visible;
-  }
-
-  return NOISE_OPACITY_VALUES.elevated;
+  return 'ease';
 }
 
 function getVisualStyle(currentStyle = {}) {
@@ -69,19 +64,10 @@ function shouldRestartFromBeginning(videoElement, corp) {
     return true;
   }
 
-  return Boolean(
-    videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp,
-  );
+  return Boolean(videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp);
 }
 
-function applyVideoPlaybackState({
-  setVideoPlaying,
-  playbackRate,
-  videoElement,
-  isPlaying,
-  isMuted,
-  corp,
-}) {
+function applyVideoPlaybackState({ setVideoPlaying, playbackRate, videoElement, isPlaying, isMuted, corp }) {
   if (!videoElement) {
     return;
   }
@@ -110,8 +96,8 @@ function BackgroundGradients({ count, direction }) {
       key={`${direction}-${index}`}
       className={
         direction === 'left'
-          ? 'pointer-events-none absolute inset-0 bg-linear-to-r from-black via-transparent to-transparent'
-          : 'pointer-events-none absolute inset-0 bg-linear-to-l from-black via-transparent to-transparent'
+          ? 'pointer-events-none absolute inset-0 bg-linear-to-r from-[#e2e8f0] via-transparent to-transparent'
+          : 'pointer-events-none absolute inset-0 bg-linear-to-l from-[#e2e8f0] via-transparent to-transparent'
       }
     />
   ));
@@ -125,6 +111,7 @@ export function BackgroundOverlay() {
     videoStyle,
     imageStyle,
     videoOptions,
+    animation,
     isPlaying,
     noiseStyle,
     position,
@@ -145,14 +132,26 @@ export function BackgroundOverlay() {
   const corp = videoOptions?.corp ?? 0;
 
   const backgroundKey = isVideo ? video : image;
+  const motionConfig = useMemo(() => getMotionConfig(animation), [animation]);
 
   const currentStyle = isVideo ? videoStyle : imageStyle;
-  const { baseStyle, leftGradient, rightGradient } = useMemo(
-    () => getVisualStyle(currentStyle),
-    [currentStyle],
+  const { baseStyle, leftGradient, rightGradient } = useMemo(() => getVisualStyle(currentStyle), [currentStyle]);
+  const { opacity: noiseOpacity, mixBlendMode: noiseBlendMode, ...noiseInlineStyle } = noiseStyle || {};
+  const overlayTransitionStyle = useMemo(
+    () => ({
+      transitionDuration: toCssDuration(motionConfig.transition?.duration),
+      transitionTimingFunction: toCssEasing(motionConfig.transition?.ease),
+      transitionDelay: toCssDelay(motionConfig.transition?.delay),
+      transitionProperty: 'opacity',
+    }),
+    [motionConfig.transition]
   );
-  const { opacity: noiseOpacity } = noiseStyle || {};
-  const resolvedNoiseOpacity = resolveNoiseOpacity(noiseOpacity);
+  const exitDurationFactor = Number.isFinite(motionConfig.exitDurationFactor)
+    ? Math.max(0, motionConfig.exitDurationFactor)
+    : 0.6;
+  const resolvedExitDuration = motionConfig.exit?.transition?.duration ?? (
+    (motionConfig.transition?.duration ?? 0.6) * exitDurationFactor
+  );
 
   useEffect(() => {
     if (!isVideo || !videoRef.current) {
@@ -199,97 +198,106 @@ export function BackgroundOverlay() {
   function handleTimeUpdate() {
     const videoElement = videoRef.current;
 
-    if (
-      videoElement &&
-      videoElement.duration &&
-      corp > 0 &&
-      videoElement.currentTime >= videoElement.duration - corp
-    ) {
+    if (videoElement && videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp) {
       handleEnded();
     }
   }
 
-  if (!hasBackground) {
-    return null;
-  }
-
   return (
-    <div
-      key={backgroundKey}
-      className="pointer-events-none fixed inset-0"
-      style={{ zIndex: Z_INDEX.BACKGROUND }}
-    >
-      {isVideo ? (
-        <video
-          ref={videoRef}
-          className="absolute inset-0 mx-auto h-full w-full"
-          preload="metadata"
-          muted={isMuted}
-          loop={isLoop}
-          playsInline
-          style={{
-            ...baseStyle,
-            filter: baseStyle?.filter || undefined,
+    <AnimatePresence mode="sync">
+      {hasBackground && (
+        <motion.div
+          key={backgroundKey}
+          initial={motionConfig.initial}
+          animate={motionConfig.animate}
+          transition={motionConfig.transition}
+          exit={{
+            ...motionConfig.exit,
+            transition: {
+              ...motionConfig.transition,
+              delay: 0,
+              duration: resolvedExitDuration,
+              ease: motionConfig.exit?.transition?.ease ?? [0, 0, 0.2, 1],
+            },
           }}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleEnded}
-          onLoadedData={() => {
-            const videoElement = videoRef.current;
-
-            if (!videoElement) {
-              return;
-            }
-
-            videoElement.playbackRate = playbackRate;
-
-            if (isMuted && shouldAutoPlay) {
-              videoElement.muted = true;
-              videoElement
-                .play()
-                .then(() => setVideoPlaying(true))
-                .catch((error) => {
-                  console.warn('Autoplay prevented on load', error);
-                });
-            }
+          className="pointer-events-none fixed inset-0 transform-gpu"
+          style={{
+            zIndex: Z_INDEX.BACKGROUND,
+            willChange: 'transform, opacity, filter',
           }}
         >
-          <source src={video} type="video/mp4" />
-          <source src={video} type="video/webm" />
-        </video>
-      ) : (
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: `url(${image})`,
-            backgroundPosition: position,
-            ...baseStyle,
-            filter: baseStyle?.filter || undefined,
-          }}
-        />
-      )}
+          {isVideo ? (
+            <video
+              ref={videoRef}
+              className="absolute inset-0 mx-auto h-full w-full"
+              preload="metadata"
+              muted={isMuted}
+              loop={isLoop}
+              playsInline
+              style={{
+                ...baseStyle,
+                filter: baseStyle?.filter || undefined,
+              }}
+              onTimeUpdate={handleTimeUpdate}
+              onEnded={handleEnded}
+              onLoadedData={() => {
+                const videoElement = videoRef.current;
 
-      <BackgroundGradients count={leftGradient} direction="left" />
-      <BackgroundGradients count={rightGradient} direction="right" />
-      {overlay && (
-        <div
-          className="absolute inset-0"
-          style={{
-            opacity: overlayOpacity,
-            backgroundColor: overlayColor || 'var(--white)',
-          }}
-        />
+                if (!videoElement) {
+                  return;
+                }
+
+                videoElement.playbackRate = playbackRate;
+
+                if (isMuted && shouldAutoPlay) {
+                  videoElement.muted = true;
+                  videoElement
+                    .play()
+                    .then(() => setVideoPlaying(true))
+                    .catch((error) => {
+                      console.warn('Autoplay prevented on load', error);
+                    });
+                }
+              }}
+            >
+              <source src={video} type="video/mp4" />
+              <source src={video} type="video/webm" />
+            </video>
+          ) : (
+            <div
+              className="absolute inset-0 bg-cover bg-no-repeat"
+              style={{
+                backgroundImage: `url(${image})`,
+                backgroundPosition: position,
+                ...baseStyle,
+                filter: baseStyle?.filter || undefined,
+              }}
+            />
+          )}
+
+          <BackgroundGradients count={leftGradient} direction="left" />
+          <BackgroundGradients count={rightGradient} direction="right" />
+
+          <NoiseTexture
+            className="fixed inset-0 h-screen w-screen transform-gpu"
+            opacity={typeof noiseOpacity === 'number' ? noiseOpacity : 0.04}
+            blend={typeof noiseBlendMode === 'string' && noiseBlendMode.trim() ? noiseBlendMode : 'overlay'}
+            grain="medium"
+            style={noiseInlineStyle}
+          />
+
+          {overlay && (
+            <div
+              className="absolute inset-0 transition-opacity"
+              style={{
+                opacity: overlayOpacity,
+                backgroundColor: overlayColor || '#faf9f5',
+                ...overlayTransitionStyle,
+              }}
+            />
+          )}
+        </motion.div>
       )}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: "url('/images/noise.webp')",
-          backgroundRepeat: 'repeat',
-          backgroundSize: 'auto',
-          imageRendering: 'auto',
-          mixBlendMode: 'multiply',
-          opacity: resolvedNoiseOpacity,
-        }}
-      />
-    </div>
+    </AnimatePresence>
   );
 }

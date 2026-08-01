@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PersonSurfaceReveal } from '@/features/media/static-route-elements';
+import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import { TmdbService } from '@/core/services/tmdb/tmdb.service';
 import { PersonAwardsSkeleton } from '@/ui/skeletons/views/person';
 import Icon from '@/ui/icon';
 import MediaThumb from './media-thumb';
+import { heroTitleVariants, EASINGS } from '@/features/media/motion';
 
 function isWinType(type = '') {
   const normalizedType = String(type).trim().toLowerCase();
@@ -72,10 +73,15 @@ function AwardsState({ message, variant = 'empty' }) {
 
 function WinBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase">
+    <motion.span
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+      className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase shadow-xs"
+    >
       <Icon icon="solar:cup-star-bold" size={10} />
       Win
-    </span>
+    </motion.span>
   );
 }
 
@@ -138,89 +144,133 @@ export default function PersonAwards({ personId }) {
   const subtitleText = hasWins ? `${nominationsCount} Nominations` : null;
 
   return (
-    <PersonSurfaceReveal>
-      <section className="w-full">
-        <div className="mx-auto max-w-[72ch] text-center">
-          <div className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-            {titleText}
-          </div>
-          {subtitleText ? (
-            <p className="mt-4 text-sm leading-relaxed text-pretty text-black/70 sm:text-base sm:leading-7">
-              {subtitleText}
-            </p>
-          ) : null}
+    <section className="w-full">
+      <motion.div {...heroTitleVariants} className="mx-auto max-w-[72ch] text-center">
+        <div className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+          {titleText}
         </div>
+        {subtitleText ? (
+          <p className="mt-4 text-sm leading-relaxed text-pretty text-black/70 sm:text-base sm:leading-7">
+            {subtitleText}
+          </p>
+        ) : null}
+      </motion.div>
 
-        <div className="relative mt-8">
-          <div className="absolute top-[18px] bottom-0 left-20 w-px bg-black/10 sm:left-24" />
+      <div className="relative mt-8">
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 1.2, ease: EASINGS.LUXURY, delay: 0.1 }}
+          className="absolute top-[18px] bottom-0 left-20 w-px origin-top bg-black/10 sm:left-24"
+        />
 
-          <div className="flex flex-col">
-            {awardsTimeline.map(([year, entries], yearIndex) => {
-              const isLast = yearIndex === awardsTimeline.length - 1;
-              return (
-                <div key={year} className="relative flex">
-                  <div className="w-20 shrink-0 sm:w-24">
-                    <span className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/50 sm:text-base">
-                      {year}
-                    </span>
-                  </div>
-
-                  <div className="absolute top-[18px] left-20 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24" />
-
-                  <div
-                    className={`min-w-0 flex-1 pt-[18px] pl-6 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
+        <div className="flex flex-col">
+          {awardsTimeline.map(([year, entries], yearIndex) => {
+            const isLast = yearIndex === awardsTimeline.length - 1;
+            return (
+              <div key={year} className="relative flex">
+                <div className="w-20 shrink-0 sm:w-24">
+                  <motion.span
+                    initial={{ opacity: 0, x: -16, filter: 'blur(8px)' }}
+                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    transition={{
+                      duration: 0.6,
+                      delay: Math.min(yearIndex * 0.05, 0.4),
+                      ease: EASINGS.LUXURY,
+                    }}
+                    className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/50 sm:text-base"
                   >
-                    {entries.map((entry) => {
-                      const isWin = isWinType(entry.type);
-                      const isInteractive = Boolean(entry.projectId);
-                      const title = entry.project || entry.category;
+                    {year}
+                  </motion.span>
+                </div>
 
-                      const content = (
-                        <>
-                          <MediaThumb
-                            poster={entry.poster}
-                            alt={title}
-                            className="w-16 rounded-2xl sm:w-20"
-                          />
-                          <div className="flex min-w-0 flex-1 flex-col gap-1">
-                            <div className="flex min-w-0 flex-1 items-center gap-2">
-                              <span className="truncate text-base leading-tight font-semibold tracking-tight sm:text-lg">
-                                {title}
-                              </span>
-                              {isWin ? <WinBadge /> : <NomineeBadge />}
-                            </div>
-                            <span className="truncate text-sm text-black/45">
-                              {entry.organization} · {entry.category}
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 350,
+                    damping: 20,
+                    delay: Math.min(yearIndex * 0.05 + 0.1, 0.45),
+                  }}
+                  className="absolute top-[18px] left-20 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24"
+                />
+
+                <div
+                  className={`min-w-0 flex-1 pt-[18px] pl-6 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
+                >
+                  {entries.map((entry, entryIndex) => {
+                    const isWin = isWinType(entry.type);
+                    const isInteractive = Boolean(entry.projectId);
+                    const title = entry.project || entry.category;
+                    const entryDelay = Math.min(yearIndex * 0.06 + entryIndex * 0.04, 0.5);
+
+                    const content = (
+                      <>
+                        <MediaThumb
+                          poster={entry.poster}
+                          alt={title}
+                          className="w-16 rounded-2xl sm:w-20"
+                        />
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <div className="flex min-w-0 flex-1 items-center gap-2">
+                            <span className="truncate text-base leading-tight font-semibold tracking-tight sm:text-lg">
+                              {title}
                             </span>
+                            {isWin ? <WinBadge /> : <NomineeBadge />}
                           </div>
-                        </>
-                      );
+                          <span className="truncate text-sm text-black/45">
+                            {entry.organization} · {entry.category}
+                          </span>
+                        </div>
+                      </>
+                    );
 
-                      if (isInteractive) {
-                        return (
+                    const animationProps = {
+                      initial: { opacity: 0, x: 28, scale: 0.96, filter: 'blur(14px)' },
+                      animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
+                      transition: {
+                        duration: 0.75,
+                        delay: entryDelay,
+                        ease: EASINGS.LUXURY,
+                      },
+                      whileHover: {
+                        scale: 1.02,
+                        x: 4,
+                        transition: { type: 'spring', stiffness: 400, damping: 25 },
+                      },
+                      whileTap: { scale: 0.98 },
+                    };
+
+                    if (isInteractive) {
+                      return (
+                        <motion.div key={entry.key} {...animationProps}>
                           <Link
-                            key={entry.key}
                             href={`/${entry.mediaType}/${entry.projectId}`}
                             className="flex items-center gap-4 rounded-[20px] p-1 transition-colors hover:bg-black/5"
                           >
                             {content}
                           </Link>
-                        );
-                      }
-
-                      return (
-                        <div key={entry.key} className="flex items-center gap-4 rounded-[20px] p-1">
-                          {content}
-                        </div>
+                        </motion.div>
                       );
-                    })}
-                  </div>
+                    }
+
+                    return (
+                      <motion.div
+                        key={entry.key}
+                        {...animationProps}
+                        className="flex items-center gap-4 rounded-[20px] p-1"
+                      >
+                        {content}
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
-      </section>
-    </PersonSurfaceReveal>
+      </div>
+    </section>
   );
 }

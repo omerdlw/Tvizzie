@@ -173,6 +173,9 @@ export default function CollectionActions({ media }) {
       }));
       return undefined;
     }
+    if (!auth.isReady) {
+      return undefined;
+    }
     if (!auth.isAuthenticated) {
       setState((prev) => ({
         ...prev,
@@ -235,15 +238,18 @@ export default function CollectionActions({ media }) {
     };
   }, [
     auth.isAuthenticated,
+    auth.isReady,
     isSessionReady,
     mediaSnapshot,
     userId,
   ]);
 
   const handleLikeClick = async () => {
+    if (!auth.isReady) {
+      return;
+    }
     if (!auth.isAuthenticated) {
       const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'like');
-      toast.info('Sign in required', 'Please sign in to save this item to your likes.');
       router.push(authHref);
       return;
     }
@@ -256,17 +262,11 @@ export default function CollectionActions({ media }) {
 
     try {
       await toggleUserLike({
+        media: mediaSnapshot,
         userId: auth.user.id,
-        mediaSnapshot,
       });
-
-      toast.success(
-        nextLikedState ? 'Added to Likes' : 'Removed from Likes',
-        nextLikedState
-          ? `"${mediaSnapshot.title}" has been saved to your liked items.`
-          : `"${mediaSnapshot.title}" has been removed from your liked items.`,
-      );
-    } catch {
+    } catch (error) {
+      console.error('[CollectionActions handleLikeClick error]:', error);
       toast.error('Action Failed', 'Could not update your like status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingLike: false, likeIntent: null }));
@@ -274,9 +274,11 @@ export default function CollectionActions({ media }) {
   };
 
   const handleWatchedClick = async () => {
+    if (!auth.isReady) {
+      return;
+    }
     if (!auth.isAuthenticated) {
       const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'watched');
-      toast.info('Sign in required', 'Please sign in to track items you watched.');
       router.push(authHref);
       return;
     }
@@ -290,25 +292,17 @@ export default function CollectionActions({ media }) {
     try {
       if (nextWatchedState) {
         await markUserWatched({
+          media: mediaSnapshot,
           userId: auth.user.id,
-          mediaSnapshot,
         });
-        toast.success(
-          'Marked as Watched',
-          `"${mediaSnapshot.title}" has been added to your watched list.`,
-        );
       } else {
         await removeUserWatchedItem({
+          media: mediaSnapshot,
           userId: auth.user.id,
-          mediaType: mediaSnapshot.entityType,
-          mediaId: mediaSnapshot.entityId,
         });
-        toast.success(
-          'Removed from Watched',
-          `"${mediaSnapshot.title}" has been removed from your watched list.`,
-        );
       }
-    } catch {
+    } catch (error) {
+      console.error('[CollectionActions handleWatchedClick error]:', error);
       toast.error('Action Failed', 'Could not update watched status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatched: false, watchedIntent: null }));
@@ -316,9 +310,11 @@ export default function CollectionActions({ media }) {
   };
 
   const handleWatchlistClick = async () => {
+    if (!auth.isReady) {
+      return;
+    }
     if (!auth.isAuthenticated) {
       const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'watchlist');
-      toast.info('Sign in required', 'Please sign in to save items to your watchlist.');
       router.push(authHref);
       return;
     }
@@ -331,17 +327,11 @@ export default function CollectionActions({ media }) {
 
     try {
       await toggleUserWatchlistItem({
+        media: mediaSnapshot,
         userId: auth.user.id,
-        mediaSnapshot,
       });
-
-      toast.success(
-        nextWatchlistState ? 'Added to Watchlist' : 'Removed from Watchlist',
-        nextWatchlistState
-          ? `"${mediaSnapshot.title}" has been added to your watchlist.`
-          : `"${mediaSnapshot.title}" has been removed from your watchlist.`,
-      );
-    } catch {
+    } catch (error) {
+      console.error('[CollectionActions handleWatchlistClick error]:', error);
       toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatchlist: false, watchlistIntent: null }));
@@ -349,9 +339,11 @@ export default function CollectionActions({ media }) {
   };
 
   const handleOpenListPicker = () => {
+    if (!auth.isReady) {
+      return;
+    }
     if (!auth.isAuthenticated) {
       const authHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, currentPath, 'add-to-list');
-      toast.info('Sign in required', 'Please sign in to manage custom lists.');
       router.push(authHref);
       return;
     }

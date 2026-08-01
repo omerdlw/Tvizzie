@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal';
@@ -15,12 +16,10 @@ import AccountPagination from './pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../utils';
 import AccountInlineSectionState from './section-state';
 import AccountSectionLayout from './section-wrapper';
-
-
-
-
+import { getCardProps, paginationVariants } from '../motion';
 
 const ITEMS_PER_PAGE = 36;
+
 function createPosterSource(item, mediaType) {
   const normalizedMediaType = String(mediaType || '')
     .trim()
@@ -36,6 +35,7 @@ function createPosterSource(item, mediaType) {
   const posterFilePath = item?.poster_path || item?.profile_path || null;
   return posterFilePath ? `${TMDB_IMG}/w342${posterFilePath}` : null;
 }
+
 function extractMediaDetails(item) {
   const explicitType = String(item?.media_type || item?.entityType || '')
     .trim()
@@ -55,10 +55,6 @@ function extractMediaDetails(item) {
     tooltipText: year ? `${title}(${year})` : title,
   };
 }
-
-
-
-
 
 export function ProfileMediaActions({
   extraActions = [],
@@ -135,6 +131,7 @@ export function ProfileMediaActions({
     </div>
   );
 }
+
 export default function AccountMediaGridPage({
   currentPage = 1,
   emptyMessage = 'No items yet',
@@ -152,7 +149,6 @@ export default function AccountMediaGridPage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  
   const isQueryPagination = typeof pageBasePath === 'string' && pageBasePath.includes('?');
   const requestedQueryPage = Number.parseInt(searchParams.get('page') || '1', 10);
   const canControlPagination = typeof onPageChange === 'function';
@@ -182,6 +178,7 @@ export default function AccountMediaGridPage({
       router.replace(buildAccountCollectionPageHref(pageBasePath, totalPages));
     }
   }, [canControlPagination, onPageChange, pageBasePath, resolvedCurrentPage, router, totalPages]);
+
   return (
     <AccountSectionLayout
       icon={icon}
@@ -197,23 +194,39 @@ export default function AccountMediaGridPage({
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
-            {visibleCards.map((card, index) => (
-              <div key={`${card.id}-${pageStart + index}`}>
-                <MediaCard
-                  href={card.href}
-                  className="w-full"
-                  imageSrc={card.imageSrc}
-                  imageAlt={card.imageAlt}
-                  imageSizes="(max-width: 419px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-                  topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
-                  tooltipText={card.tooltipText}
-                />
-              </div>
-            ))}
+            {visibleCards.map((card, index) => {
+              const cardProps = getCardProps(index);
+              return (
+                <motion.div
+                  key={`${card.id}-${pageStart + index}`}
+                  initial={cardProps.initial}
+                  animate={cardProps.animate}
+                  transition={cardProps.transition}
+                  whileHover={cardProps.whileHover}
+                  whileTap={cardProps.whileTap}
+                >
+                  <MediaCard
+                    href={card.href}
+                    className="w-full"
+                    imageSrc={card.imageSrc}
+                    imageAlt={card.imageAlt}
+                    imageSizes="(max-width: 419px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
+                    topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
+                    tooltipText={card.tooltipText}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
 
           {totalPages > 1 && (
-            <div key={`media-grid-pagination-${activePage}-${totalPages}`}>
+            <motion.div
+              key={`media-grid-pagination-${activePage}-${totalPages}`}
+              initial={paginationVariants.initial}
+              whileInView={paginationVariants.whileInView}
+              viewport={paginationVariants.viewport}
+              transition={paginationVariants.transition}
+            >
               <AccountPagination
                 className="w-full"
                 currentPage={activePage}
@@ -225,7 +238,7 @@ export default function AccountMediaGridPage({
                     : (page) => buildAccountCollectionPageHref(pageBasePath, page)
                 }
               />
-            </div>
+            </motion.div>
           )}
         </>
       )}

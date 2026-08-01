@@ -6,12 +6,13 @@ import MediaCard from '@/ui/media/media-card';
 import { TMDB_IMG } from '@/core/constants';
 import { useModal } from '@/core/modules/modal';
 import {
+  getCarouselButtonProps,
   getMediaCardProps,
   getSectionHeaderProps,
-  MOVIE_TIMELINES,
+  TIMELINES,
 } from '@/features/media/motion';
 
-export default function GallerySection({ images, baseDelay = MOVIE_TIMELINES.GALLERY_SECTION_BASE_DELAY }) {
+export default function GallerySection({ images, baseDelay = TIMELINES.GALLERY_SECTION_BASE_DELAY }) {
   const { openModal } = useModal();
   if (!images?.length) {
     return null;
@@ -25,7 +26,7 @@ export default function GallerySection({ images, baseDelay = MOVIE_TIMELINES.GAL
       >
         Gallery
       </motion.h2>
-      <Carousel gap="gap-3">
+      <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
         {images.map((image, index) => {
           return (
             <motion.div

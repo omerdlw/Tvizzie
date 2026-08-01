@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import ReviewList from '@/features/reviews/parts/review-list';
 import { Button } from '@/ui/elements';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import { actionButtonVariants } from '@/features/account/motion';
 function buildLikedMediaKeySet(items = []) {
   return new Set(
     items
@@ -122,7 +124,12 @@ export default function AccountReviewsOverview({
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
-        <div className="flex justify-center">
+        <motion.div
+          className="flex justify-center"
+          initial={actionButtonVariants.initial}
+          animate={actionButtonVariants.animate}
+          transition={actionButtonVariants.transition}
+        >
           <Button
             type="button"
             onClick={onLoadMore}
@@ -131,7 +138,7 @@ export default function AccountReviewsOverview({
           >
             {isLoadingMore ? 'Loading' : 'Load More'}
           </Button>
-        </div>
+        </motion.div>
       ) : null}
     </AccountSectionLayout>
   );

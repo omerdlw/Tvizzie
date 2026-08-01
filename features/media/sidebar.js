@@ -240,7 +240,7 @@ export default function Sidebar({
   return (
     <div className="flex flex-col gap-4">
       <motion.div {...sidebarPosterVariants}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden shadow-2xl rounded-[24px]">
+        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[24px]">
           {posterSrc ? (
             <AdaptiveImage
               fill

@@ -96,36 +96,35 @@ export default function AccountLikesFeed({
   }, [searchString]);
 
   const updateView = (updates) => {
-    setViewState((prev) => {
-      const next = {
-        ...prev,
-        ...updates,
-      };
-      if (typeof window !== 'undefined') {
-        let qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
-          managedKeys: MEDIA_FILTER_QUERY_KEYS,
-          resetPage: false,
-          values: toMediaQueryValues(next.media),
-        });
-        qs = buildManagedQueryString(new URLSearchParams(qs), {
-          managedKeys: LIST_FILTER_QUERY_KEYS,
-          resetPage: false,
-          values: toListQueryValues({
-            sort: next.listSort,
-          }),
-        });
-        const params = new URLSearchParams(qs);
-        if (next.page > 1) params.set('page', String(next.page));
-        else params.delete('page');
-        window.history.replaceState(
-          {},
-          '',
-          params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath,
-        );
-      }
-      return next;
-    });
+    setViewState((prev) => ({ ...prev, ...updates }));
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
+      managedKeys: MEDIA_FILTER_QUERY_KEYS,
+      resetPage: false,
+      values: toMediaQueryValues(viewState.media),
+    });
+    qs = buildManagedQueryString(new URLSearchParams(qs), {
+      managedKeys: LIST_FILTER_QUERY_KEYS,
+      resetPage: false,
+      values: toListQueryValues({
+        sort: viewState.listSort,
+      }),
+    });
+    const params = new URLSearchParams(qs);
+    if (viewState.page > 1) params.set('page', String(viewState.page));
+    else params.delete('page');
+    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState(
+        {},
+        '',
+        newUrl,
+      );
+    }
+  }, [viewState, collectionRootPath]);
 
   const decadeOptions = getDecadeOptions();
   const genreOptions = useMemo(() => collectMediaGenreOptions(likes), [likes]);

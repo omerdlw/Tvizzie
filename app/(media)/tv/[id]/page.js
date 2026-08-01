@@ -5,7 +5,7 @@ import { TMDB_IMG } from '@/core/constants';
 import { getTvBase, getTvSecondary } from '@/core/clients/tmdb/server';
 import { isDisplayableTv } from '@/core/clients/tmdb/sanitize';
 
-import Client from '../../movie/[id]/client';
+import Client from './client';
 
 function getTvTitle(tv = {}) {
   return tv?.name || tv?.original_name || 'Untitled';

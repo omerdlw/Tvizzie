@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { normalizeFeedbackText } from '@/core/utils';
 import {
   collectActivitySubjectOptions,
@@ -11,6 +12,7 @@ import AccountPagination from '@/features/account/components/pagination';
 import ReviewCard from '@/features/reviews/parts/review-card';
 import RatingStars from '@/features/reviews/parts/rating-stars';
 import AccountSectionLayout from '@/features/account/components/section-wrapper';
+import { getActivityItemProps } from '@/features/account/motion';
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 rounded-xl border border-black/5 p-3';
 
@@ -128,9 +130,14 @@ export default function AccountActivityFeed({
 }
 function ActivityItem({ index = 0, isFirst = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
+  const motionProps = getActivityItemProps(index);
   return (
-    <article
+    <motion.article
       className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
+      initial={motionProps.initial}
+      whileInView={motionProps.whileInView}
+      viewport={motionProps.viewport}
+      transition={motionProps.transition}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
         <div className="min-w-0 text-[1.02rem] leading-7">
@@ -149,7 +156,7 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
           />
         </div>
       )}
-    </article>
+    </motion.article>
   );
 }
 function LinePart({ part }) {

@@ -1,74 +1,94 @@
 /**
  * @file app/(auth)/sign-up/motion.js
- * @description Sign-Up (Çok adımlı kayıt) sayfası için elit, sinematik ve belirgin blur odaklı animasyon tanımları.
+ * @description Sign-Up (çok adımlı kayıt) sayfası sinematik animasyon tanımları.
  */
 
-export const AUTH_EASINGS = Object.freeze({
-  CINEMATIC: [0.16, 1, 0.3, 1],
+export const EASINGS = Object.freeze({
   LUXURY: [0.19, 1, 0.22, 1],
+  CINEMATIC: [0.19, 1, 0.22, 1],
+  SMOOTH: [0.25, 0.1, 0.25, 1],
+  ACCENT: [0.32, 0.72, 0, 1],
   EXIT: [0.7, 0, 0.84, 0],
 });
 
-export const AUTH_DURATIONS = Object.freeze({
+export const DURATIONS = Object.freeze({
   PAGE: 1.0,
-  STEP: 0.75,
   ITEM: 0.85,
   STAGGER: 0.14,
 });
 
-export const AUTH_SPRINGS = Object.freeze({
-  BUTTON: Object.freeze({ type: 'spring', stiffness: 320, damping: 20, mass: 0.6 }),
-  CHECKLIST: Object.freeze({ type: 'spring', stiffness: 280, damping: 20 }),
-  LOGO: Object.freeze({ type: 'spring', stiffness: 220, damping: 16, mass: 0.85 }),
+export const SPRINGS = Object.freeze({
+  BUTTON: Object.freeze({ type: 'spring', stiffness: 360, damping: 28, mass: 0.5 }),
+  LOGO: Object.freeze({ type: 'spring', stiffness: 320, damping: 26, mass: 0.6 }),
 });
 
-export const stepContentVariants = Object.freeze({
-  hidden: (direction = 1) => ({
+export const BLURS = Object.freeze({
+  NONE: 'blur(0px)',
+  LIGHT: 'blur(12px)',
+  MEDIUM: 'blur(16px)',
+  DEEP: 'blur(20px)',
+  CINEMATIC: 'blur(24px)',
+});
+
+export const SCALES = Object.freeze({
+  COMPACT: 0.96,
+  CARD: 0.94,
+  HERO: 0.92,
+  DEEP: 0.88,
+});
+
+export const pageContainerVariants = Object.freeze({
+  hidden: {
     opacity: 0,
-    x: direction > 0 ? 44 : -44,
-    scale: 0.94,
-    filter: 'blur(14px)',
-  }),
+  },
   visible: {
     opacity: 1,
-    x: 0,
-    scale: 1,
-    filter: 'blur(0px)',
     transition: {
-      duration: AUTH_DURATIONS.STEP,
-      ease: AUTH_EASINGS.LUXURY,
-      staggerChildren: AUTH_DURATIONS.STAGGER,
+      duration: DURATIONS.PAGE,
+      ease: EASINGS.LUXURY,
+      staggerChildren: DURATIONS.STAGGER,
       delayChildren: 0.08,
     },
   },
-  exit: (direction = 1) => ({
+  exit: {
     opacity: 0,
-    x: direction > 0 ? -38 : 38,
-    scale: 0.94,
-    filter: 'blur(14px)',
+    y: -24,
+    scale: SCALES.COMPACT,
+    filter: BLURS.MEDIUM,
     transition: {
       duration: 0.38,
-      ease: AUTH_EASINGS.EXIT,
+      ease: EASINGS.EXIT,
+      staggerChildren: 0.05,
+      staggerDirection: -1,
     },
-  }),
+  },
 });
 
 export const headerContainerVariants = Object.freeze({
   hidden: {
     opacity: 0,
     y: -28,
-    scale: 0.94,
-    filter: 'blur(12px)',
+    scale: SCALES.CARD,
+    filter: BLURS.MEDIUM,
   },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.85,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
       staggerChildren: 0.12,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -16,
+    filter: BLURS.LIGHT,
+    transition: {
+      duration: 0.3,
+      ease: EASINGS.EXIT,
     },
   },
 });
@@ -76,27 +96,27 @@ export const headerContainerVariants = Object.freeze({
 export const logoVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    scale: 0.7,
-    y: -24,
-    filter: 'blur(16px)',
+    scale: SCALES.DEEP,
+    y: -20,
+    filter: BLURS.DEEP,
   },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.9,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
     },
   },
   hover: {
-    scale: 1.08,
-    transition: AUTH_SPRINGS.LOGO,
+    scale: 1.05,
+    transition: SPRINGS.LOGO,
   },
   tap: {
-    scale: 0.92,
-    transition: AUTH_SPRINGS.LOGO,
+    scale: 0.95,
+    transition: SPRINGS.LOGO,
   },
 });
 
@@ -104,15 +124,15 @@ export const titleVariants = Object.freeze({
   hidden: {
     opacity: 0,
     y: -18,
-    filter: 'blur(10px)',
+    filter: BLURS.LIGHT,
   },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.8,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
     },
   },
 });
@@ -120,70 +140,56 @@ export const titleVariants = Object.freeze({
 export const fieldVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    y: 44,
-    scale: 0.92,
-    filter: 'blur(16px)',
+    y: 36,
+    scale: SCALES.CARD,
+    filter: BLURS.MEDIUM,
   },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.85,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -16,
+    scale: 0.95,
+    filter: BLURS.LIGHT,
+    transition: {
+      duration: 0.32,
+      ease: EASINGS.EXIT,
     },
   },
 });
 
 export const buttonVariants = fieldVariants;
 
-export const requirementContainerVariants = Object.freeze({
-  hidden: {
-    opacity: 0,
-    height: 0,
-  },
-  visible: {
-    opacity: 1,
-    height: 'auto',
-    transition: {
-      duration: 0.65,
-      ease: AUTH_EASINGS.LUXURY,
-      staggerChildren: 0.09,
-    },
-  },
-});
-
-export const requirementItemVariants = Object.freeze({
-  hidden: {
-    opacity: 0,
-    x: -20,
-    filter: 'blur(8px)',
-  },
-  visible: {
-    opacity: 1,
-    x: 0,
-    filter: 'blur(0px)',
-    transition: {
-      duration: 0.6,
-      ease: AUTH_EASINGS.LUXURY,
-    },
-  },
-});
-
 export const dividerVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    scaleX: 0.4,
-    filter: 'blur(10px)',
+    scaleX: 0.85,
+    filter: BLURS.LIGHT,
   },
   visible: {
     opacity: 1,
     scaleX: 1,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.85,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scaleX: 0.9,
+    filter: BLURS.LIGHT,
+    transition: {
+      duration: 0.25,
+      ease: EASINGS.EXIT,
     },
   },
 });
@@ -199,49 +205,139 @@ export const oauthContainerVariants = Object.freeze({
       delayChildren: 0.05,
     },
   },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.25,
+      ease: EASINGS.EXIT,
+    },
+  },
 });
 
 export const oauthItemVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    y: 36,
-    scale: 0.86,
-    filter: 'blur(14px)',
+    y: 28,
+    scale: SCALES.HERO,
+    filter: BLURS.MEDIUM,
   },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.75,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
     },
   },
   hover: {
-    scale: 1.05,
-    y: -3,
-    transition: AUTH_SPRINGS.BUTTON,
+    scale: 1.03,
+    y: -2,
+    transition: SPRINGS.BUTTON,
   },
   tap: {
+    scale: 0.97,
+    transition: SPRINGS.BUTTON,
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
     scale: 0.95,
-    transition: AUTH_SPRINGS.BUTTON,
+    filter: BLURS.LIGHT,
+    transition: {
+      duration: 0.2,
+      ease: EASINGS.EXIT,
+    },
+  },
+});
+
+export const stepContentVariants = Object.freeze({
+  hidden: (direction = 1) => ({
+    opacity: 0,
+    x: direction > 0 ? 44 : -44,
+    scale: SCALES.CARD,
+    filter: BLURS.MEDIUM,
+  }),
+  visible: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    filter: BLURS.NONE,
+    transition: {
+      duration: 0.75,
+      ease: EASINGS.LUXURY,
+      staggerChildren: DURATIONS.STAGGER,
+      delayChildren: 0.08,
+    },
+  },
+  exit: (direction = 1) => ({
+    opacity: 0,
+    x: direction > 0 ? -38 : 38,
+    scale: SCALES.CARD,
+    filter: BLURS.MEDIUM,
+    transition: {
+      duration: 0.38,
+      ease: EASINGS.EXIT,
+    },
+  }),
+});
+
+export const requirementContainerVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    height: 0,
+  },
+  visible: {
+    opacity: 1,
+    height: 'auto',
+    transition: {
+      duration: 0.65,
+      ease: EASINGS.LUXURY,
+      staggerChildren: 0.09,
+    },
+  },
+});
+
+export const requirementItemVariants = Object.freeze({
+  hidden: {
+    opacity: 0,
+    x: -20,
+    filter: BLURS.LIGHT,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: BLURS.NONE,
+    transition: {
+      duration: 0.6,
+      ease: EASINGS.LUXURY,
+    },
   },
 });
 
 export const footerVariants = Object.freeze({
   hidden: {
     opacity: 0,
-    y: 28,
-    filter: 'blur(10px)',
+    y: 24,
+    filter: BLURS.LIGHT,
   },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
+    filter: BLURS.NONE,
     transition: {
       duration: 0.8,
-      ease: AUTH_EASINGS.LUXURY,
+      ease: EASINGS.LUXURY,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 10,
+    filter: BLURS.LIGHT,
+    transition: {
+      duration: 0.2,
+      ease: EASINGS.EXIT,
     },
   },
 });

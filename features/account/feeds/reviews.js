@@ -72,29 +72,28 @@ export default function AccountReviewsFeed({
     });
   }, [searchString]);
   const updateView = (updates) => {
-    setViewState((prev) => {
-      const next = {
-        ...prev,
-        ...updates,
-      };
-      if (typeof window !== 'undefined') {
-        const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
-          managedKeys: REVIEW_FILTER_QUERY_KEYS,
-          resetPage: false,
-          values: toReviewQueryValues(next.filters),
-        });
-        const params = new URLSearchParams(qs);
-        if (enablePagination && next.page > 1) params.set('page', String(next.page));
-        else params.delete('page');
-        window.history.replaceState(
-          {},
-          '',
-          params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath,
-        );
-      }
-      return next;
-    });
+    setViewState((prev) => ({ ...prev, ...updates }));
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
+      managedKeys: REVIEW_FILTER_QUERY_KEYS,
+      resetPage: false,
+      values: toReviewQueryValues(viewState.filters),
+    });
+    const params = new URLSearchParams(qs);
+    if (enablePagination && viewState.page > 1) params.set('page', String(viewState.page));
+    else params.delete('page');
+    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState(
+        {},
+        '',
+        newUrl,
+      );
+    }
+  }, [viewState, collectionRootPath, enablePagination]);
 
   const filteredReviews = useMemo(
     () => applyReviewFilters(items, viewState.filters),

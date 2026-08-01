@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import AccountHero from '../profile/hero/index';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
@@ -10,62 +11,67 @@ import AccountRouteSkeleton from '@/ui/skeletons/views/account';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../utils';
 import { useNavigationActions } from '@/core/modules/nav';
 import { createAccountBioSurfaceEntry } from '@/features/navigation/surfaces/account-bio-surface';
+import {
+  navBarVariants,
+  getNavItemProps,
+  pageContainerVariants,
+  getSectionRevealProps,
+} from '../motion';
+
+// ─── Reveal Wrappers ──────────────────────────────────────────────────────────
 
 export function AccountHeroReveal({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 }
 
 export function AccountNavReveal({ children, className = '' }) {
-  return <div className={className}>{children}</div>;
+  return (
+    <motion.div
+      className={className}
+      initial={navBarVariants.initial}
+      animate={navBarVariants.animate}
+      transition={navBarVariants.transition}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-export function AccountSectionReveal({ children, className = '' }) {
-  return <div className={className}>{children}</div>;
+export function AccountSectionReveal({ children, className = '', delay = 0 }) {
+  const revealProps = getSectionRevealProps(delay);
+  return (
+    <motion.div
+      className={className}
+      initial={revealProps.initial}
+      whileInView={revealProps.whileInView}
+      viewport={revealProps.viewport}
+      transition={{ ...revealProps.transition, delay: delay * 0.12 }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-
-
-
+// ─── Nav Items ────────────────────────────────────────────────────────────────
 
 const SECTION_ITEMS = [
-  {
-    key: 'overview',
-    label: 'Overview',
-  },
-  {
-    key: 'activity',
-    label: 'Activity',
-  },
-  {
-    key: 'likes',
-    label: 'Likes',
-  },
-  {
-    key: 'watched',
-    label: 'Watched',
-  },
-  {
-    key: 'watchlist',
-    label: 'Watchlist',
-  },
-  {
-    key: 'reviews',
-    label: 'Reviews',
-  },
-  {
-    key: 'lists',
-    label: 'Lists',
-  },
+  { key: 'overview',  label: 'Overview'  },
+  { key: 'activity',  label: 'Activity'  },
+  { key: 'likes',     label: 'Likes'     },
+  { key: 'watched',   label: 'Watched'   },
+  { key: 'watchlist', label: 'Watchlist' },
+  { key: 'reviews',   label: 'Reviews'   },
+  { key: 'lists',     label: 'Lists'     },
 ];
+
 const DEFAULT_NOT_FOUND_DESCRIPTION =
   "We couldn't load this account. It may have been removed, or the link may be invalid.";
+
 function getSectionHref(username, key) {
   return key === 'overview' ? `/account/${username}` : `/account/${username}/${key}`;
 }
 
-
-
-
+// ─── Section Nav ──────────────────────────────────────────────────────────────
 
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   if (!username) return null;
@@ -87,9 +93,17 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
     </div>
   );
 }
-function NavViewItem({ item, isActive, href }) {
+
+function NavViewItem({ item, isActive, href, index }) {
+  const navItemProps = getNavItemProps(index);
   return (
-    <div>
+    <motion.div
+      initial={navItemProps.initial}
+      animate={navItemProps.animate}
+      transition={navItemProps.transition}
+      whileHover={navItemProps.whileHover}
+      whileTap={navItemProps.whileTap}
+    >
       <Link
         href={href}
         className={cn(
@@ -101,12 +115,16 @@ function NavViewItem({ item, isActive, href }) {
       >
         <span>{item.label}</span>
       </Link>
-    </div>
+    </motion.div>
   );
 }
+
+// ─── Not Found & Page Shell ───────────────────────────────────────────────────
+
 export function AccountNotFoundState({ description = DEFAULT_NOT_FOUND_DESCRIPTION }) {
   return <NotFoundTemplate description={description} />;
 }
+
 export function AccountPageShell(props) {
   const { isLoading, resolvedUserId, profile, registry, skeletonVariant = 'overview' } = props;
   if (isLoading) return <AccountRouteSkeleton variant={skeletonVariant} />;
@@ -125,6 +143,9 @@ export function AccountPageShell(props) {
     </>
   );
 }
+
+// ─── Profile Layout ───────────────────────────────────────────────────────────
+
 export default function ProfileLayout({
   activeSection = 'overview',
   children,
@@ -153,7 +174,12 @@ export default function ProfileLayout({
   };
   return (
     <PageGradientShell className="overflow-hidden">
-      <div className="relative">
+      <motion.div
+        className="relative"
+        initial={pageContainerVariants.hidden}
+        animate={pageContainerVariants.visible}
+        exit={pageContainerVariants.exit}
+      >
         <AccountHeroReveal>
           <AccountHero
             profile={profile}
@@ -170,7 +196,7 @@ export default function ProfileLayout({
         <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
           <AccountSectionNav activeKey={activeSection} username={profileHandle} />
         </AccountNavReveal>
-      </div>
+      </motion.div>
       <main className="pt-4 pb-4 sm:pt-6 sm:pb-6">{children}</main>
       <NavHeightSpacer />
     </PageGradientShell>

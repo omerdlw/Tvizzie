@@ -1,45 +1,36 @@
+'use client';
+
 import { Suspense, use } from 'react';
+import { motion } from 'framer-motion';
 import PersonAwards from '@/features/person/awards';
 import PersonBio from '@/features/person/bio';
 import PersonFilmographySection from '@/features/person/filmography-section';
 import PersonGallery from '@/features/person/gallery';
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import PersonTimeline from '@/features/person/timeline';
-import { TextAnimate } from '@/ui/animations/text-animate';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
-import {
-  PersonClipReveal,
-  PersonHeroReveal,
-  PERSON_ROUTE_TIMING,
-  PersonSectionReveal,
-  PersonSurfaceReveal,
-} from '@/features/media/static-route-elements';
+import { BlurryText } from '@/ui/animations/blurry-text';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/core/constants';
 import { PersonSectionSkeleton, PersonTimelineSkeleton } from '@/ui/skeletons/views/person';
 import Registry from './registry';
+import {
+  personTitleVariants,
+  personBioVariants,
+  getSectionHeaderProps,
+} from '@/features/media/motion';
 
-function PersonMainContent({ person, animateItemReveal = true }) {
+function PersonMainContent({ person }) {
   return (
     <>
       {person?.images?.profiles?.length > 0 ? (
-        <PersonSectionReveal
-          className="mt-8 sm:mt-12"
-          delay={PERSON_ROUTE_TIMING.sections.gallery}
-          animateOnView={false}
-        >
-          <PersonGallery images={person.images} animateItemReveal={animateItemReveal} />
-        </PersonSectionReveal>
+        <div className="mt-8 sm:mt-12">
+          <PersonGallery images={person.images} />
+        </div>
       ) : null}
 
-      <PersonSectionReveal
-        className="mt-8 sm:mt-12"
-        delay={PERSON_ROUTE_TIMING.sections.filmography}
-        animateOnView={false}
-      >
-        <PersonSurfaceReveal>
-          <PersonFilmographySection person={person} />
-        </PersonSurfaceReveal>
-      </PersonSectionReveal>
+      <div className="mt-8 sm:mt-12">
+        <PersonFilmographySection person={person} />
+      </div>
     </>
   );
 }
@@ -48,7 +39,6 @@ function PersonDeferredContent({
   person,
   secondaryDataPromise,
   activeView,
-  animateItemReveal = true,
 }) {
   const secondaryPerson = use(secondaryDataPromise);
   const mergedPerson = {
@@ -57,16 +47,15 @@ function PersonDeferredContent({
   };
   if (activeView === 'timeline') {
     return (
-      <PersonSectionReveal
+      <motion.div
         className="mt-8 sm:mt-12"
-        delay={PERSON_ROUTE_TIMING.sections.timeline}
-        animateOnView={false}
+        {...getSectionHeaderProps(0.15)}
       >
         <PersonTimeline person={mergedPerson} />
-      </PersonSectionReveal>
+      </motion.div>
     );
   }
-  return <PersonMainContent person={mergedPerson} animateItemReveal={animateItemReveal} />;
+  return <PersonMainContent person={mergedPerson} />;
 }
 
 export default function PersonView({
@@ -106,54 +95,39 @@ export default function PersonView({
           className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
         >
           <div className="mt-16 flex w-full flex-col items-center gap-6 sm:mt-24 sm:gap-8 lg:mt-36">
-            
             {activeView !== 'timeline' && activeView !== 'awards' && (
-              <PersonHeroReveal delay={PERSON_ROUTE_TIMING.hero.containerDelay}>
-                <PersonClipReveal
-                  animateOnView={false}
-                  delay={PERSON_ROUTE_TIMING.hero.titleClipDelay}
-                  className="w-full text-center"
-                >
-                  <TextAnimate
-                    animation="cinematicUp"
-                    by="word"
-                    delay={PERSON_ROUTE_TIMING.hero.titleDelay}
-                    duration={PERSON_ROUTE_TIMING.hero.titleDuration}
-                    startOnView={false}
-                    className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
-                  >
-                    {person.name}
-                  </TextAnimate>
-                </PersonClipReveal>
-              </PersonHeroReveal>
+              <BlurryText
+                as="h1"
+                by="character"
+                delay={0.10}
+                duration={0.75}
+                stagger={0.038}
+                className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl text-center"
+              >
+                {person.name}
+              </BlurryText>
             )}
 
-            
             {activeView !== 'timeline' && activeView !== 'awards' && person?.biography ? (
-              <PersonHeroReveal delay={PERSON_ROUTE_TIMING.hero.overviewDelay}>
-                <PersonClipReveal animateOnView={false} delay={0.06} className="mx-auto max-w-[72ch]">
-                  <PersonBio biography={person.biography} person={person} />
-                </PersonClipReveal>
-              </PersonHeroReveal>
+              <motion.div {...personBioVariants} className="mx-auto max-w-[72ch] w-full">
+                <PersonBio biography={person.biography} person={person} />
+              </motion.div>
             ) : null}
 
-            
             <div className="w-full text-left" key={`person-view-${activeView}`}>
               {activeView === 'awards' ? (
-                <PersonSectionReveal
+                <motion.div
                   className="mt-8 sm:mt-12"
-                  delay={PERSON_ROUTE_TIMING.sections.awards}
-                  animateOnView={false}
+                  {...getSectionHeaderProps(0.15)}
                 >
                   <PersonAwards personId={person.id} />
-                </PersonSectionReveal>
+                </motion.div>
               ) : (
                 <Suspense fallback={deferredFallback}>
                   <PersonDeferredContent
                     person={person}
                     secondaryDataPromise={secondaryDataPromise}
                     activeView={activeView}
-                    animateItemReveal={false}
                   />
                 </Suspense>
               )}

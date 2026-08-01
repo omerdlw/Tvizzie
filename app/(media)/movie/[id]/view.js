@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 
 import NavHeightSpacer from '@/features/app-shell/nav-height-spacer';
 import { PageGradientShell } from '@/ui/elements/page-gradient-shell';
+import { BlurryText } from '@/ui/animations/blurry-text';
 import CastSection from '@/features/media/cast-section';
 import CollectionActions from '@/features/media/collection-actions';
 import GallerySection from '@/features/media/gallery-section';
@@ -24,7 +25,8 @@ import {
   heroTaglineVariants,
   heroTitleVariants,
   mainContentColumnVariants,
-  MOVIE_TIMELINES,
+  EASINGS,
+  TIMELINES,
   SCROLL_VIEWPORT_CONFIG,
   scrollReviewsSectionVariants,
   sidebarColumnVariants,
@@ -40,7 +42,7 @@ function RelatedMoviesSection({ items, title }) {
       initial={{ opacity: 0, y: 44, scale: 0.96, filter: 'blur(20px)' }}
       whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       viewport={SCROLL_VIEWPORT_CONFIG}
-      transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+      transition={{ duration: 1.5, ease: EASINGS.LUXURY }}
     >
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
@@ -92,7 +94,7 @@ function MovieVisualMediaDeferred({
       {hasGallery ? (
         <GallerySection
           images={galleryImages}
-          baseDelay={MOVIE_TIMELINES.GALLERY_SECTION_BASE_DELAY}
+          baseDelay={TIMELINES.GALLERY_SECTION_BASE_DELAY}
           onSetMovieBackground={onSetMovieBackground}
           onResetMovieBackground={onResetMovieBackground}
           canResetMovieBackground={canResetMovieBackground}
@@ -102,7 +104,7 @@ function MovieVisualMediaDeferred({
       {hasImages ? (
         <ImagesSection
           images={secondaryMovie.images}
-          baseDelay={MOVIE_TIMELINES.IMAGES_SECTION_BASE_DELAY}
+          baseDelay={TIMELINES.IMAGES_SECTION_BASE_DELAY}
           onSetMovieBackground={onSetMovieBackground}
           onSetMoviePoster={onSetMoviePoster}
           onResetMovieBackground={onResetMovieBackground}
@@ -156,7 +158,7 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
             initial={{ opacity: 0, y: 44, scale: 0.96, filter: 'blur(20px)' }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             viewport={SCROLL_VIEWPORT_CONFIG}
-            transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+            transition={{ duration: 1.5, ease: EASINGS.LUXURY }}
           >
             {section.content}
           </motion.div>
@@ -179,7 +181,7 @@ function TvSeasonsDeferred({ secondaryDataPromise, seasons = [] }) {
     <TvSeasonsSection
       seasons={seasons}
       seasonDetails={secondaryMovie?.seasonDetails || []}
-      baseDelay={MOVIE_TIMELINES.CAST_SECTION_BASE_DELAY + 0.50}
+      baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY + 0.50}
     />
   );
 }
@@ -200,7 +202,7 @@ function MovieSecondaryContent({
     <>
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
         <div className="mt-10">
-          <CastSection cast={computed.cast} crew={computed.crew} baseDelay={MOVIE_TIMELINES.CAST_SECTION_BASE_DELAY} />
+          <CastSection cast={computed.cast} crew={computed.crew} baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY} />
         </div>
       ) : null}
 
@@ -304,11 +306,16 @@ export default function MovieView({
             >
               <div className="flex w-full flex-col">
                 <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                  <motion.div {...heroTitleVariants} className="min-w-0">
-                    <h1 className="font-zuume max-w-full text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
-                      {mediaTitle}
-                    </h1>
-                  </motion.div>
+                  <BlurryText
+                    as="h1"
+                    by="character"
+                    delay={0.15}
+                    duration={0.75}
+                    stagger={0.038}
+                    className="font-zuume max-w-full text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
+                  >
+                    {mediaTitle}
+                  </BlurryText>
 
                   <motion.div {...heroSocialProofVariants}>
                     <MediaSocialProof media={{ ...movie, entityType: mediaType }} />
@@ -316,11 +323,16 @@ export default function MovieView({
                 </div>
 
                 {movie.tagline ? (
-                  <motion.div {...heroTaglineVariants} className="mt-4 flex w-full flex-col">
-                    <p className="text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm">
-                      {movie.tagline}
-                    </p>
-                  </motion.div>
+                  <BlurryText
+                    as="p"
+                    by="character"
+                    delay={0.50}
+                    duration={0.65}
+                    stagger={0.025}
+                    className="mt-4 text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm"
+                  >
+                    {movie.tagline}
+                  </BlurryText>
                 ) : null}
 
                 {movie.overview ? (

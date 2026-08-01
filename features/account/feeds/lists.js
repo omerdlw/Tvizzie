@@ -40,31 +40,30 @@ export default function AccountListsFeed({
     });
   }, [searchString]);
   const updateView = (updates) => {
-    setViewState((prev) => {
-      const next = {
-        ...prev,
-        ...updates,
-      };
-      if (typeof window !== 'undefined') {
-        const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
-          managedKeys: LIST_FILTER_QUERY_KEYS,
-          resetPage: false,
-          values: toListQueryValues({
-            sort: next.sort,
-          }),
-        });
-        const params = new URLSearchParams(qs);
-        if (next.page > 1) params.set('page', String(next.page));
-        else params.delete('page');
-        window.history.replaceState(
-          {},
-          '',
-          params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath,
-        );
-      }
-      return next;
-    });
+    setViewState((prev) => ({ ...prev, ...updates }));
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
+      managedKeys: LIST_FILTER_QUERY_KEYS,
+      resetPage: false,
+      values: toListQueryValues({
+        sort: viewState.sort,
+      }),
+    });
+    const params = new URLSearchParams(qs);
+    if (viewState.page > 1) params.set('page', String(viewState.page));
+    else params.delete('page');
+    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    if (window.location.pathname + window.location.search !== newUrl) {
+      window.history.replaceState(
+        {},
+        '',
+        newUrl,
+      );
+    }
+  }, [viewState, collectionRootPath]);
   if (!canShowLists) return <AccountSectionState message="This profile is private." />;
   const hasFilters = hasActiveListFilters({
     sort: viewState.sort,

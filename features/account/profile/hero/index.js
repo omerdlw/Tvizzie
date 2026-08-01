@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/core/utils';
 import {
   applyAvatarFallback,
@@ -11,6 +12,15 @@ import {
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/elements/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '../../utils';
+import {
+  heroBannerVariants,
+  heroOverlayVariants,
+  heroAvatarVariants,
+  heroNameVariants,
+  getHeroStatProps,
+  heroBioVariants,
+} from '../../motion';
+
 const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
 const ACCOUNT_HERO_IMAGE_CLASS =
   'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
@@ -26,6 +36,7 @@ const ACCOUNT_HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 to
 const ACCOUNT_HERO_TINT_CLASS = 'account-hero-tint-overlay absolute inset-0';
 const ACCOUNT_HERO_CENTER_GLOW_CLASS =
   'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
+
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
@@ -37,7 +48,8 @@ function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, 
     value: formatHeroCount(safeCount),
   };
 }
-function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '' }) {
+function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '', index = 0 }) {
+  const statProps = getHeroStatProps(index);
   const content = (
     <>
       <span className={valueClassName}>{item.value}</span>
@@ -47,23 +59,31 @@ function HeroInlineMetric({ item, className = '', labelClassName = '', valueClas
   const wrapperClassName = cn(className, (item.href || typeof item.onClick === 'function') && '');
   if (item.href) {
     return (
-      <Link href={item.href} className={wrapperClassName}>
-        {content}
-      </Link>
+      <motion.div {...statProps}>
+        <Link href={item.href} className={wrapperClassName}>
+          {content}
+        </Link>
+      </motion.div>
     );
   }
   if (typeof item.onClick === 'function') {
     return (
-      <button
-        type="button"
-        onClick={item.onClick}
-        className={cn('border-0 bg-transparent p-0 text-left', wrapperClassName)}
-      >
-        {content}
-      </button>
+      <motion.div {...statProps}>
+        <button
+          type="button"
+          onClick={item.onClick}
+          className={cn('border-0 bg-transparent p-0 text-left', wrapperClassName)}
+        >
+          {content}
+        </button>
+      </motion.div>
     );
   }
-  return <span className={wrapperClassName}>{content}</span>;
+  return (
+    <motion.span {...statProps} className={wrapperClassName}>
+      {content}
+    </motion.span>
+  );
 }
 function HeroBioPreview({ description, onReadMore }) {
   const textRef = useRef(null);
@@ -93,7 +113,12 @@ function HeroBioPreview({ description, onReadMore }) {
     return null;
   }
   return (
-    <div className="relative mt-2 w-full">
+    <motion.div
+      className="relative mt-2 w-full"
+      initial={heroBioVariants.initial}
+      animate={heroBioVariants.animate}
+      transition={heroBioVariants.transition}
+    >
       <p ref={textRef} className={cn('line-clamp-2 text-sm leading-6 break-words')}>
         {description}
       </p>
@@ -108,16 +133,21 @@ function HeroBioPreview({ description, onReadMore }) {
           </button>
         </div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }
 function HeroTextContent({ countsLabel, displayName, mobileStats }) {
   return (
     <div className="w-full min-w-0 text-left">
       <div className="flex items-center gap-4">
-        <h1 className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]">
+        <motion.h1
+          className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]"
+          initial={heroNameVariants.initial}
+          animate={heroNameVariants.animate}
+          transition={heroNameVariants.transition}
+        >
           {displayName}
-        </h1>
+        </motion.h1>
       </div>
 
       <div className="mt-2 flex flex-col gap-0.5 text-sm">
@@ -126,6 +156,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
             <HeroInlineMetric
               key={`${item.label}-${item.value}-${index}`}
               item={item}
+              index={index}
               className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
               valueClassName="text-base font-semibold leading-none tracking-tight"
               labelClassName="max-w-full truncate text-[13px] leading-none text-black/75"
@@ -138,6 +169,7 @@ function HeroTextContent({ countsLabel, displayName, mobileStats }) {
             <HeroInlineMetric
               key={`${item.label}-${item.value}-${index}`}
               item={item}
+              index={index}
               className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
               valueClassName="text-base font-semibold leading-none tracking-tight "
               labelClassName="text-base leading-none text-black/75"
@@ -159,29 +191,31 @@ function HeroStatsGrid({
     <div className={className}>
       {stats.map((stat, index) =>
         stat.href ? (
-          <Link
-            key={`${stat.label}-${stat.value}-${index}`}
-            href={stat.href}
-            className={cn(itemClassName, '')}
-          >
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </Link>
+          <motion.div key={`${stat.label}-${stat.value}-${index}`} {...getHeroStatProps(index + 4)}>
+            <Link
+              href={stat.href}
+              className={cn(itemClassName, '')}
+            >
+              <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
+              <div className={labelClassName}>{stat.label}</div>
+            </Link>
+          </motion.div>
         ) : typeof stat.onClick === 'function' ? (
-          <button
-            key={`${stat.label}-${stat.value}-${index}`}
-            type="button"
-            onClick={stat.onClick}
-            className={cn('border-0 bg-transparent p-0', itemClassName, '')}
-          >
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </button>
+          <motion.div key={`${stat.label}-${stat.value}-${index}`} {...getHeroStatProps(index + 4)}>
+            <button
+              type="button"
+              onClick={stat.onClick}
+              className={cn('border-0 bg-transparent p-0', itemClassName, '')}
+            >
+              <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
+              <div className={labelClassName}>{stat.label}</div>
+            </button>
+          </motion.div>
         ) : (
-          <div key={`${stat.label}-${stat.value}-${index}`} className={itemClassName}>
+          <motion.div key={`${stat.label}-${stat.value}-${index}`} className={itemClassName} {...getHeroStatProps(index + 4)}>
             <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
             <div className={labelClassName}>{stat.label}</div>
-          </div>
+          </motion.div>
         ),
       )}
     </div>
@@ -244,7 +278,12 @@ export default function AccountHero({
       className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}
     >
       {heroBannerSrc ? (
-        <div className="absolute inset-0">
+        <motion.div
+          className="absolute inset-0"
+          initial={heroBannerVariants.initial}
+          animate={heroBannerVariants.animate}
+          transition={heroBannerVariants.transition}
+        >
           <AdaptiveImage
             mode="img"
             src={heroBannerSrc}
@@ -255,11 +294,26 @@ export default function AccountHero({
             decoding="async"
             wrapperClassName={ACCOUNT_HERO_BANNER_WRAPPER_CLASS}
           />
-        </div>
+        </motion.div>
       ) : null}
-      <div className={ACCOUNT_HERO_TINT_CLASS} />
-      <div className={ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS} />
-      <div className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS} />
+      <motion.div
+        className={ACCOUNT_HERO_TINT_CLASS}
+        initial={heroOverlayVariants.initial}
+        animate={heroOverlayVariants.animate}
+        transition={heroOverlayVariants.transition}
+      />
+      <motion.div
+        className={ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS}
+        initial={heroOverlayVariants.initial}
+        animate={heroOverlayVariants.animate}
+        transition={{ ...heroOverlayVariants.transition, delay: 0.25 }}
+      />
+      <motion.div
+        className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS}
+        initial={heroOverlayVariants.initial}
+        animate={heroOverlayVariants.animate}
+        transition={{ ...heroOverlayVariants.transition, delay: 0.3 }}
+      />
       <div className={ACCOUNT_HERO_LEFT_FADE_CLASS} />
       <div className={ACCOUNT_HERO_RIGHT_FADE_CLASS} />
       <div className={ACCOUNT_HERO_TOP_FADE_CLASS} />
@@ -269,7 +323,12 @@ export default function AccountHero({
       >
         <div className="flex w-full flex-col gap-2 sm:gap-3">
           <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
-            <div className="h-24 w-24 justify-self-start overflow-hidden rounded-2xl sm:h-32 sm:w-32 lg:row-span-2 lg:self-end">
+            <motion.div
+              className="h-24 w-24 justify-self-start overflow-hidden rounded-2xl sm:h-32 sm:w-32 lg:row-span-2 lg:self-end"
+              initial={heroAvatarVariants.initial}
+              animate={heroAvatarVariants.animate}
+              transition={heroAvatarVariants.transition}
+            >
               <AdaptiveImage
                 mode="img"
                 className="h-full w-full rounded-2xl object-cover"
@@ -279,7 +338,7 @@ export default function AccountHero({
                 onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
                 wrapperClassName="h-full w-full rounded-2xl"
               />
-            </div>
+            </motion.div>
 
             <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
               <HeroTextContent

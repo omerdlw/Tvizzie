@@ -17,7 +17,7 @@ import { cn } from '@/core/utils/classnames';
 import {
   getCastCardProps,
   getCastHeaderProps,
-  MOVIE_TIMELINES,
+  TIMELINES,
 } from '@/features/media/motion';
 
 const FEATURED_COUNT = 6;
@@ -127,7 +127,7 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
   return `${tabKey}-${variant}-${creditKey}-${index}`;
 }
 
-export default function CastSection({ cast = [], crew = [], headerAction = null, baseDelay = MOVIE_TIMELINES.CAST_SECTION_BASE_DELAY }) {
+export default function CastSection({ cast = [], crew = [], headerAction = null, baseDelay = TIMELINES.CAST_SECTION_BASE_DELAY }) {
   usePosterPreferenceVersion();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');

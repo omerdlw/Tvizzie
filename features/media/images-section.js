@@ -10,7 +10,7 @@ import { useModal } from '@/core/modules/modal';
 import {
   getMediaCardProps,
   getSectionHeaderProps,
-  MOVIE_TIMELINES,
+  TIMELINES,
 } from '@/features/media/motion';
 
 const TABS = Object.freeze([
@@ -67,7 +67,7 @@ function getTabItems(images, key) {
   return dedupedItems;
 }
 
-export default function ImagesSection({ images, baseDelay = MOVIE_TIMELINES.IMAGES_SECTION_BASE_DELAY }) {
+export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SECTION_BASE_DELAY }) {
   const { openModal } = useModal();
   const availableTabs = useMemo(
     () => TABS.filter((tab) => getTabItems(images, tab.key).length > 0),
