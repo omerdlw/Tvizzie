@@ -5,7 +5,7 @@ const root = process.cwd();
 const sourceExtensions = new Set(['.js', '.mjs', '.cjs', '.jsx', '.ts', '.tsx']);
 const forbiddenLegacyDirectories = ['core', 'features'];
 const forbiddenImportPatterns = [/@\/features\//, /@\/core\//];
-const forbiddenAppImplementationNames = new Set(['client.js', 'view.js', 'motion.js', 'registry.js']);
+const forbiddenAppImplementationNames = new Set(['view.js']);
 const forbiddenDomainImplementationNames = new Set(['page.js']);
 const forbiddenGenericImplementationNames = new Set([
   'client.js',
@@ -138,8 +138,8 @@ for (const directory of ['modules', 'shared', 'ui', 'infrastructure', 'domains',
 
     const fileName = file.split('/').pop();
 
-    if (relativeFile.startsWith('domains/') && forbiddenDomainImplementationNames.has(fileName)) {
-      errors.push(`Domain page implementation filename is not allowed; use *-view.js: ${relativeFile}`);
+    if (relativeFile.startsWith('domains/') && (forbiddenDomainImplementationNames.has(fileName) || fileName.endsWith('-view.js'))) {
+      errors.push(`Domain UI file must live in app route: ${relativeFile}`);
     }
 
     if (

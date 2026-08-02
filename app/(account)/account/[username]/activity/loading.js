@@ -1,13 +1,13 @@
 'use client';
 
-import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
-import { Registry } from '@/domains/account/ui/activity-view';
+import { AccountSkeleton } from '@/app/(account)/account/loading';
+import { Registry } from '@/app/(account)/account/[username]/activity/client';
 
 export default function AccountLoading() {
   return (
     <>
       <Registry isPageLoading={true} />
-      <AccountRouteSkeleton variant="activity" />
+      <AccountSkeleton />
     </>
   );
 }

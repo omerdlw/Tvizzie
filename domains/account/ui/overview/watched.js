@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
@@ -10,6 +11,7 @@ import {
 } from '@/domains/media/ui/poster-overrides';
 import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
+import { getCardProps } from '@/app/(account)/motion';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
 
@@ -50,10 +52,13 @@ function getWatchedPoster(item) {
 }
 
 export default function AccountWatchedOverview({
+  baseDelay,
   emptyMessage = 'No watched titles yet',
   icon = 'solar:eye-bold',
+  isInitialSection = false,
   items = [],
   renderOverlay = null,
+  revealDelay = 0,
   showSeeMore = false,
   summaryLabel = null,
   title = 'Watched',
@@ -91,6 +96,8 @@ export default function AccountWatchedOverview({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
+      revealDelay={revealDelay}
       showSeeMore={showSeeMore}
       summaryLabel={summaryLabel}
       title={title}
@@ -98,19 +105,30 @@ export default function AccountWatchedOverview({
     >
       {cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
-          {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => (
-            <div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col">
-              <MediaCard
-                href={card.href}
-                className="w-full md:w-full lg:w-full"
-                imageSrc={card.imageSrc}
-                imageAlt={card.imageAlt}
-                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-                topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
-                tooltipText={card.tooltipText}
-              />
-            </div>
-          ))}
+          {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
+            const cardProps = getCardProps(index, baseDelay);
+            return (
+              <motion.div
+                key={`${card.id}-${index}`}
+                className="flex h-full min-w-0 flex-col"
+                initial={cardProps.initial}
+                animate={cardProps.animate}
+                transition={cardProps.transition}
+                whileHover={cardProps.whileHover}
+                whileTap={cardProps.whileTap}
+              >
+                <MediaCard
+                  href={card.href}
+                  className="w-full md:w-full lg:w-full"
+                  imageSrc={card.imageSrc}
+                  imageAlt={card.imageAlt}
+                  imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
+                  topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
+                  tooltipText={card.tooltipText}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       ) : (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>

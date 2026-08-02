@@ -1,9 +1,14 @@
 'use client';
 
 import {
-  EMPTY_ACCOUNT_REGISTRY_AUTH,
   buildAccountPageState,
-} from '@/domains/account/ui/account-registry-config';
+} from '@/app/(account)/registry';
+
+export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
+  isAuthenticated: false,
+});
+
+export function noopAccountRegistryHandler() {}
 
 export function buildAccountRegistryState(sectionState = null, overrides = null) {
   const {
@@ -18,6 +23,7 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     isPageLoading = false,
     isResolvingProfile = false,
     itemRemoveConfirmation = null,
+    listDeleteConfirmation = null,
     pendingFollowRequestCount = 0,
     profile = null,
     resolveError = null,
@@ -41,8 +47,8 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     isSectionEditing: false,
     isSectionOrderDirty: false,
     isSectionSaveLoading: false,
-    itemRemoveConfirmation,
-    listDeleteConfirmation: overrides?.listDeleteConfirmation ?? null,
+    itemRemoveConfirmation: overrides?.itemRemoveConfirmation ?? itemRemoveConfirmation,
+    listDeleteConfirmation: overrides?.listDeleteConfirmation ?? listDeleteConfirmation,
     navActionOverride: overrides?.navActionOverride ?? null,
     navDescription: overrides?.navDescription ?? null,
     navSurface: overrides?.navSurface ?? null,
@@ -59,7 +65,7 @@ export function buildAccountRegistryState(sectionState = null, overrides = null)
     reviewState: overrides?.reviewState,
     showProfileFollowAction: overrides?.showProfileFollowAction ?? true,
     showToolbarFollowActionWithOverride: overrides?.showToolbarFollowActionWithOverride,
-    unfollowConfirmation,
+    unfollowConfirmation: overrides?.unfollowConfirmation ?? unfollowConfirmation,
     username,
     isLiked: overrides?.isLiked ?? false,
     isLikeLoading: overrides?.isLikeLoading ?? false,

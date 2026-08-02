@@ -15,7 +15,6 @@ import {
 import { AccountListSortBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
 import { AccountSectionState } from '@/domains/account/ui/account-section';
-import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;
 export default function AccountListsFeed({
@@ -123,22 +122,22 @@ function ListCardOwnerActions({ list, onDelete, onEdit }) {
           e.stopPropagation();
           onEdit(list);
         }}
-        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center border border-black/10 text-black/70 hover:border-black/20"
+        className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:border-black/20"
       >
         <Icon icon="solar:pen-bold" size={13} />
       </button>
-      <Button
-        variant="destructive-icon"
+      <button
+        type="button"
         aria-label={`Delete ${list.title}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           onDelete(list);
         }}
-        className="size-8"
+        className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:text-white"
       >
         <Icon icon="solar:trash-bin-trash-bold" size={13} />
-      </Button>
+      </button>
     </div>
   );
 }

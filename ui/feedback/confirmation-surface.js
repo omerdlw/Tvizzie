@@ -105,7 +105,7 @@ export function ConfirmationActions({ confirmation = {}, onCancel = null, onConf
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.24, 1] }}
-      className="mt-1 flex w-full flex-row items-center gap-2 p-1 overflow-visible"
+      className="flex w-full flex-row items-center gap-2 overflow-visible"
     >
       <motion.button
         type="button"

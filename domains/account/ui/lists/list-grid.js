@@ -2,16 +2,21 @@
 
 import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import AccountListCard from './list-card';
-import AccountSectionLayout from '@/domains/account/ui/account-section';
+import AccountSectionLayout, { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountPagination from '@/domains/account/ui/account-pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../account-data';
-import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
+import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
+
 const DEFAULT_ITEMS_PER_PAGE = 36;
+
 export default function AccountPaginatedListGrid({
+  baseDelay = TIMELINES.CARD_BASE_DELAY,
   currentPage = 1,
   emptyMessage = 'No lists yet',
   icon = 'solar:list-broken',
+  isInitialSection = true,
   itemsPerPage = DEFAULT_ITEMS_PER_PAGE,
   isLoading = false,
   lists = [],
@@ -59,9 +64,11 @@ export default function AccountPaginatedListGrid({
     }
     router.replace(buildAccountCollectionPageHref(pageBasePath, totalPages));
   }, [canControlPagination, onPageChange, pageBasePath, resolvedCurrentPage, router, totalPages]);
+
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
       showHeader={showHeader}
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
@@ -76,15 +83,26 @@ export default function AccountPaginatedListGrid({
       ) : (
         <>
           <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-            {visibleLists.map((list, index) => (
-              <div key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}>
-                <AccountListCard
-                  list={list}
-                  ownerUsername={ownerUsername}
-                  renderActions={renderActions}
-                />
-              </div>
-            ))}
+            {visibleLists.map((list, index) => {
+              const motionProps = getListCardProps(index, baseDelay, isInitialSection);
+              return (
+                <motion.div
+                  key={`${list.ownerId || list.ownerSnapshot?.id || 'owner'}-${list.id}`}
+                  initial={motionProps.initial}
+                  animate={isInitialSection ? motionProps.animate : undefined}
+                  whileInView={!isInitialSection ? motionProps.whileInView : undefined}
+                  viewport={!isInitialSection ? motionProps.viewport : undefined}
+                  transition={motionProps.transition}
+                  whileHover={motionProps.whileHover}
+                >
+                  <AccountListCard
+                    list={list}
+                    ownerUsername={ownerUsername}
+                    renderActions={renderActions}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
 
           {totalPages > 1 ? (

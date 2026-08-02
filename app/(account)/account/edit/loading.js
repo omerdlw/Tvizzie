@@ -1,13 +1,13 @@
 'use client';
 
-import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
-import Registry from '@/domains/account/ui/edit-registry';
+import { AccountSkeleton } from '@/app/(account)/account/loading';
+import { AccountEditRegistry as Registry } from '@/app/(account)/registry';
 
 export default function AccountEditLoading() {
   return (
     <>
       <Registry isLoading={true} />
-      <AccountRouteSkeleton variant="edit" />
+      <AccountSkeleton />
     </>
   );
 }

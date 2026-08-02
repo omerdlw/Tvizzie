@@ -11,7 +11,7 @@ import {
   getMediaCardProps,
   getSectionHeaderProps,
   TIMELINES,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 const TABS = Object.freeze([
   {

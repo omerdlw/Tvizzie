@@ -16,7 +16,7 @@ import AccountPagination from './account-pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from './account-data';
 import { AccountInlineSectionState } from './account-section';
 import AccountSectionLayout from './account-section';
-import { getCardProps, paginationVariants } from './account-animation-config';
+import { getCardProps, paginationVariants, TIMELINES } from '@/app/(account)/motion';
 
 const ITEMS_PER_PAGE = 36;
 
@@ -58,65 +58,23 @@ function extractMediaDetails(item) {
 
 export function ProfileMediaActions({
   extraActions = [],
-  media,
+  isRemoving = false,
   onRemoveItem = null,
   removeLabel = 'Remove item',
-  userId = null,
 }) {
-  const { openModal } = useModal();
-  const [isRemoving, setIsRemoving] = useState(false);
-  const handleOpenListPicker = (event) => {
-    event.preventDefault();
+  const handleRemove = (event) => {
     event.stopPropagation();
-    if (userId && media)
-      openModal('LIST_PICKER_MODAL', 'center', {
-        data: {
-          media,
-          userId,
-        },
-      });
-  };
-  const handleRemove = async (event) => {
     event.preventDefault();
-    event.stopPropagation();
-    if (isRemoving || typeof onRemoveItem !== 'function') return;
-    setIsRemoving(true);
-    try {
-      await onRemoveItem(media);
-    } finally {
-      setIsRemoving(false);
+    if (typeof onRemoveItem === 'function') {
+      onRemoveItem();
     }
   };
+
   return (
-    <div className="absolute inset-x-0 top-0 flex justify-end gap-2 p-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+    <div className="flex items-center gap-1.5">
       {extraActions.map((action, index) => (
-        <button
-          key={`${action.label || action.icon || 'media-action'}-${index}`}
-          type="button"
-          aria-label={action.label}
-          className="center size-8 rounded-xl border border-black/15 bg-white text-black disabled:cursor-default"
-          disabled={Boolean(action.disabled)}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            action.onClick?.(media);
-          }}
-        >
-          <Icon icon={action.icon} size={12} />
-        </button>
+        <div key={action.key || `extra-action-${index}`}>{action.node}</div>
       ))}
-
-      {userId && (
-        <button
-          type="button"
-          aria-label="Add to list"
-          className="center size-8 rounded-xl border border-black/15 bg-white text-black disabled:cursor-default"
-          onClick={handleOpenListPicker}
-        >
-          <Icon icon="solar:list-check-minimalistic-bold" size={12} />
-        </button>
-      )}
-
       {typeof onRemoveItem === 'function' && (
         <Button
           variant="destructive-icon"
@@ -133,9 +91,11 @@ export function ProfileMediaActions({
 }
 
 export default function AccountMediaGridPage({
+  baseDelay = TIMELINES.CARD_BASE_DELAY,
   currentPage = 1,
   emptyMessage = 'No items yet',
   icon = 'solar:heart-bold',
+  isInitialSection = true,
   items = [],
   onPageChange = null,
   pageBasePath,
@@ -182,6 +142,7 @@ export default function AccountMediaGridPage({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
       showHeader={showHeader}
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
@@ -195,7 +156,7 @@ export default function AccountMediaGridPage({
         <>
           <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
             {visibleCards.map((card, index) => {
-              const cardProps = getCardProps(index);
+              const cardProps = getCardProps(index, baseDelay, isInitialSection);
               return (
                 <motion.div
                   key={`${card.id}-${pageStart + index}`}
@@ -221,22 +182,22 @@ export default function AccountMediaGridPage({
 
           {totalPages > 1 && (
             <motion.div
-              key={`media-grid-pagination-${activePage}-${totalPages}`}
               initial={paginationVariants.initial}
               whileInView={paginationVariants.whileInView}
               viewport={paginationVariants.viewport}
               transition={paginationVariants.transition}
+              className="mt-6 flex justify-center"
             >
               <AccountPagination
-                className="w-full"
                 currentPage={activePage}
-                onPageChange={canControlPagination ? onPageChange : null}
                 totalPages={totalPages}
-                getPageHref={
-                  canControlPagination
-                    ? null
-                    : (page) => buildAccountCollectionPageHref(pageBasePath, page)
-                }
+                onPageChange={(page) => {
+                  if (canControlPagination) {
+                    onPageChange(page);
+                  } else if (pageBasePath) {
+                    router.push(buildAccountCollectionPageHref(pageBasePath, page));
+                  }
+                }}
               />
             </motion.div>
           )}

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { notFound } from 'next/navigation';
 
 import { getMovieComputedData } from '@/domains/media/ui/media-data';
@@ -5,7 +7,7 @@ import { TMDB_IMG } from '@/shared/constants';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
 
-import Client from '@/domains/media/ui/movie-client';
+import Client from '@/app/(media)/movie/[id]/client';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

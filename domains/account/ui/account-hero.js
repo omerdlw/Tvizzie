@@ -19,9 +19,9 @@ import {
   heroNameVariants,
   getHeroStatProps,
   heroBioVariants,
-} from './account-animation-config';
+} from '@/app/(account)/motion';
 
-const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[460px] sm:min-h-[620px] lg:min-h-[600px]';
+const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[220px] sm:min-h-[280px] lg:min-h-[260px]';
 const ACCOUNT_HERO_IMAGE_CLASS =
   'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
 const ACCOUNT_HERO_BANNER_WRAPPER_CLASS =
@@ -274,57 +274,12 @@ export default function AccountHero({
   const heroAvatarSrc = getUserAvatarUrl(profile);
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
   return (
-    <section
-      className={`relative w-full overflow-hidden border-b border-black/15 ${ACCOUNT_HERO_HEIGHT_CLASS}`}
-    >
-      {heroBannerSrc ? (
-        <motion.div
-          className="absolute inset-0"
-          initial={heroBannerVariants.initial}
-          animate={heroBannerVariants.animate}
-          transition={heroBannerVariants.transition}
-        >
-          <AdaptiveImage
-            mode="img"
-            src={heroBannerSrc}
-            className={ACCOUNT_HERO_IMAGE_CLASS}
-            alt={`${heroDisplayName} cover`}
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            wrapperClassName={ACCOUNT_HERO_BANNER_WRAPPER_CLASS}
-          />
-        </motion.div>
-      ) : null}
-      <motion.div
-        className={ACCOUNT_HERO_TINT_CLASS}
-        initial={heroOverlayVariants.initial}
-        animate={heroOverlayVariants.animate}
-        transition={heroOverlayVariants.transition}
-      />
-      <motion.div
-        className={ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS}
-        initial={heroOverlayVariants.initial}
-        animate={heroOverlayVariants.animate}
-        transition={{ ...heroOverlayVariants.transition, delay: 0.25 }}
-      />
-      <motion.div
-        className={ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS}
-        initial={heroOverlayVariants.initial}
-        animate={heroOverlayVariants.animate}
-        transition={{ ...heroOverlayVariants.transition, delay: 0.3 }}
-      />
-      <div className={ACCOUNT_HERO_LEFT_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_RIGHT_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_TOP_FADE_CLASS} />
-      <div className={ACCOUNT_HERO_CENTER_GLOW_CLASS} />
-      <div
-        className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex ${ACCOUNT_HERO_HEIGHT_CLASS} items-end px-4 pt-18 pb-5 sm:px-8 sm:pt-24 sm:pb-7 lg:pb-8`}
-      >
+    <section className="relative w-full">
+      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex items-end px-4 pb-4 sm:px-8 sm:pb-5 lg:pb-6`}>
         <div className="flex w-full flex-col gap-2 sm:gap-3">
-          <div className="grid w-full gap-y-4 lg:grid-cols-[128px_minmax(0,1fr)_280px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-8 lg:gap-y-0">
+          <div className="grid w-full gap-y-4 lg:grid-cols-[96px_minmax(0,1fr)_240px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-6 lg:gap-y-0">
             <motion.div
-              className="h-24 w-24 justify-self-start overflow-hidden rounded-2xl sm:h-32 sm:w-32 lg:row-span-2 lg:self-end"
+              className="h-20 w-20 justify-self-start overflow-hidden rounded-2xl sm:h-24 sm:w-24 lg:row-span-2 lg:self-end"
               initial={heroAvatarVariants.initial}
               animate={heroAvatarVariants.animate}
               transition={heroAvatarVariants.transition}
@@ -353,12 +308,12 @@ export default function AccountHero({
                 stats={heroStats}
                 className="grid grid-cols-2 gap-6 text-center"
                 itemClassName="inline-flex min-w-0 items-baseline gap-1.5 py-1 whitespace-nowrap lg:flex-col lg:items-center lg:gap-0.5 lg:py-0"
-                valueClassName="text-base font-semibold leading-none tracking-tight sm:text-lg lg:text-[2.4rem]"
+                valueClassName="text-base font-semibold leading-none tracking-tight sm:text-lg lg:text-[2rem]"
                 labelClassName="text-base leading-none text-black/75 lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
               />
             </div>
           </div>
-          <div className="w-full lg:pl-[160px]">
+          <div className="w-full lg:pl-[120px]">
             <HeroBioPreview description={profile?.description} onReadMore={onReadMore} />
           </div>
         </div>

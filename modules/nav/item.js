@@ -14,7 +14,6 @@ import {
 } from '@/modules/nav/nav-motion';
 import { cn } from '@/shared/lib/classnames';
 import Iconify from '@/ui/primitives/icon';
-import { SkeletonBlock as Skeleton } from '@/ui/feedback/skeleton';
 
 import { NavActionsContainer } from './nav-actions';
 import { Description, Icon as BadgeIcon, Title } from './elements';
@@ -94,8 +93,12 @@ function Badge({ badge }) {
 
 function LoadingItemContent() {
   return (
-    <div className="flex h-auto w-full items-center">
-      <Skeleton className="w-full" />
+    <div className={cn('flex h-auto w-full items-center gap-3', className)}>
+      <div className="skeleton-block size-12 shrink-0 animate-pulse rounded-2xl" />
+      <div className="h-full w-full space-y-2">
+        <div className="skeleton-block h-4 w-3/4 animate-pulse rounded-full" />
+        <div className="skeleton-block-soft h-3 w-1/2 animate-pulse rounded-full" />
+      </div>
     </div>
   );
 }
@@ -357,7 +360,12 @@ const Item = memo(
           y: motionValues.y,
           scale:
             isStackHovered && position > 0
-              ? [motionValues.scale, motionValues.scale * 1.04, motionValues.scale * 0.98, motionValues.scale]
+              ? [
+                  motionValues.scale,
+                  motionValues.scale * 1.04,
+                  motionValues.scale * 0.98,
+                  motionValues.scale,
+                ]
               : motionValues.scale,
           opacity: motionValues.opacity,
           filter:

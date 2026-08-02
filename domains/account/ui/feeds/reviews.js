@@ -19,6 +19,7 @@ import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/account-sectio
 import ReviewList from '@/domains/reviews/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
+import { TIMELINES } from '@/app/(account)/motion';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
 function resolveMediaKey(item) {
@@ -32,11 +33,13 @@ function buildMediaKeySet(items = [], shouldInclude = () => true) {
 }
 
 export default function AccountReviewsFeed({
+  baseDelay = TIMELINES.CARD_BASE_DELAY,
   currentUserId = null,
   emptyMessage = 'No reviews yet',
   enablePagination = false,
   hasMore = false,
   icon = 'solar:chat-round-bold',
+  isInitialSection = true,
   isLoading = false,
   isLoadingMore = false,
   items = [],
@@ -123,6 +126,7 @@ export default function AccountReviewsFeed({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
       showHeader={showHeader}
       showSeeMore={showSeeMore}
       summaryLabel={resolvedSummaryLabel}
@@ -162,8 +166,10 @@ export default function AccountReviewsFeed({
         <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{loadError}</div>
       ) : (
         <ReviewList
+          baseDelay={baseDelay}
           currentUserId={currentUserId}
           displayVariant="account"
+          isInitialSection={isInitialSection}
           isLoading={isLoading && listedReviewCount === 0}
           loadError={listedReviewCount === 0 ? loadError : null}
           onDeleteRequest={onDeleteRequest || (() => {})}

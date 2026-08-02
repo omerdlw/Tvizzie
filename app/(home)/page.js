@@ -1,4 +1,6 @@
-import Client from '@/domains/home/ui/home-client';
+export const dynamic = 'force-dynamic';
+
+import Client from '@/app/(home)/client';
 
 import { discoverContent, getGenres, getTrending } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 

@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
-import { PersonAwardsSkeleton } from '@/domains/media/ui/person-skeleton';
+import { Spinner } from '@/ui/feedback/spinner';
 import Icon from '@/ui/primitives/icon';
 import MediaThumb from './media-thumb';
-import { heroTitleVariants, EASINGS } from '@/domains/media/ui/media-animation-config';
+import { heroTitleVariants, EASINGS } from '@/app/(media)/motion';
 
 function isWinType(type = '') {
   const normalizedType = String(type).trim().toLowerCase();
@@ -132,7 +132,7 @@ export default function PersonAwards({ personId }) {
     [awardsData],
   );
 
-  if (status === 'loading') return <PersonAwardsSkeleton className="mt-10" />;
+  if (status === 'loading') return <Spinner size={32} className="mx-auto block mt-10" />;
   if (status === 'error') return <AwardsState message={errorMessage} variant="error" />;
   if (!awardsTimeline.length) return <AwardsState message="No awards information found" />;
 

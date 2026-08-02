@@ -7,7 +7,7 @@ import AccountHero from './account-hero';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import NotFoundTemplate from '@/ui/feedback/not-found-template';
-import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
+import { AccountSkeleton } from '@/app/(account)/account/loading';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from './account-data';
 import { useNavigationActions } from '@/modules/nav';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/account-bio-surface';
@@ -16,7 +16,7 @@ import {
   getNavItemProps,
   pageContainerVariants,
   getSectionRevealProps,
-} from './account-animation-config';
+} from '@/app/(account)/motion';
 
 // ─── Reveal Wrappers ──────────────────────────────────────────────────────────
 
@@ -37,15 +37,16 @@ export function AccountNavReveal({ children, className = '' }) {
   );
 }
 
-export function AccountSectionReveal({ children, className = '', delay = 0 }) {
-  const revealProps = getSectionRevealProps(delay);
+export function AccountSectionReveal({ children, className = '', delay = 0, isInitialSection = false }) {
+  const revealProps = getSectionRevealProps(delay, isInitialSection);
   return (
     <motion.div
       className={className}
       initial={revealProps.initial}
+      animate={revealProps.animate}
       whileInView={revealProps.whileInView}
       viewport={revealProps.viewport}
-      transition={{ ...revealProps.transition, delay: delay * 0.12 }}
+      transition={revealProps.transition}
     >
       {children}
     </motion.div>
@@ -127,7 +128,7 @@ export function AccountNotFoundState({ description = DEFAULT_NOT_FOUND_DESCRIPTI
 
 export function AccountPageShell(props) {
   const { isLoading, resolvedUserId, profile, registry, skeletonVariant = 'overview' } = props;
-  if (isLoading) return <AccountRouteSkeleton variant={skeletonVariant} />;
+  if (isLoading) return <AccountSkeleton />;
   if (!resolvedUserId || !profile) {
     return (
       <>
@@ -180,7 +181,10 @@ export default function ProfileLayout({
         animate={pageContainerVariants.visible}
         exit={pageContainerVariants.exit}
       >
-        <AccountHeroReveal>
+        <AccountNavReveal className="w-full z-20 pt-1 pb-1 sm:pt-2 sm:pb-2">
+          <AccountSectionNav activeKey={activeSection} username={profileHandle} />
+        </AccountNavReveal>
+        <AccountHeroReveal className="mt-24 sm:mt-32 lg:mt-36">
           <AccountHero
             profile={profile}
             likesCount={likesCount}
@@ -193,9 +197,6 @@ export default function ProfileLayout({
             onReadMore={handleReadMore}
           />
         </AccountHeroReveal>
-        <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
-          <AccountSectionNav activeKey={activeSection} username={profileHandle} />
-        </AccountNavReveal>
       </motion.div>
       <main className="pt-4 pb-4 sm:pt-6 sm:pb-6">{children}</main>
       <NavHeightSpacer />

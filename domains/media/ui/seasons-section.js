@@ -9,7 +9,7 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import {
   getMediaCardProps,
   getSectionHeaderProps,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 function normalizeSeasonDetails(seasonDetails = []) {
   return new Map(

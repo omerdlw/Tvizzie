@@ -9,7 +9,7 @@ import {
   getMediaCardProps,
   getSectionHeaderProps,
   PERSON_TIMELINES,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 export default function PersonFilmographySection({
   person,

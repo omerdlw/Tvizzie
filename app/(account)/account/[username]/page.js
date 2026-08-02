@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
 import { isReservedAccountSegment } from '@/shared/lib/account';
 import {
@@ -5,7 +7,7 @@ import {
   redirectCurrentAccountSection,
 } from '@/domains/account/server/routes/route-read.server';
 
-import Client from '@/domains/account/ui/profile-client';
+import Client from '@/app/(account)/account/[username]/client';
 
 export default createAccountRoutePage(Client, getUsernameAccountOverviewRouteData, {
   beforeLoad: async (params) => {

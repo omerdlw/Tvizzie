@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import ReviewList from '@/domains/reviews/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
-import { actionButtonVariants } from '@/domains/account/ui/account-animation-config';
+import { actionButtonVariants } from '@/app/(account)/motion';
 function buildLikedMediaKeySet(items = []) {
   return new Set(
     items
@@ -63,6 +63,7 @@ export default function AccountReviewsOverview({
   emptyMessage = 'No reviews yet',
   hasMore = false,
   icon = 'solar:chat-round-bold',
+  isInitialSection = false,
   isLoading = false,
   isLoadingMore = false,
   items = [],
@@ -89,6 +90,7 @@ export default function AccountReviewsOverview({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
       showSeeMore={showSeeMore}
       summaryLabel={resolvedSummaryLabel}
       title={title}
@@ -107,6 +109,7 @@ export default function AccountReviewsOverview({
           <ReviewList
             currentUserId={currentUserId}
             displayVariant="account"
+            isInitialSection={isInitialSection}
             isLoading={isLoading && listedReviewCount === 0}
             loadError={listedReviewCount === 0 ? loadError : null}
             onDeleteRequest={onDeleteRequest || (() => {})}

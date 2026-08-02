@@ -1,13 +1,15 @@
 'use client';
 
-import { Skeleton } from '@/domains/media/ui/movie-skeleton';
-import Registry from '@/domains/media/ui/media-registry';
+import { Spinner } from '@/ui/feedback/spinner';
+import Registry from 'app/(media)/registry';
 
 export default function Loading() {
   return (
     <>
       <Registry isLoading={true} />
-      <Skeleton />
+      <div className="flex min-h-[50vh] items-center justify-center py-12">
+        <Spinner size={32} />
+      </div>
     </>
   );
 }

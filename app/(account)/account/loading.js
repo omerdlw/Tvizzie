@@ -1,13 +1,21 @@
 'use client';
 
-import AccountRouteSkeleton from '@/domains/account/ui/account-skeleton';
-import Registry from '@/domains/account/ui/overview-registry';
+import Registry from '@/app/(account)/registry';
+import { Spinner } from '@/ui/feedback/spinner';
+
+export function AccountSkeleton() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center py-12">
+      <Spinner size={32} />
+    </div>
+  );
+}
 
 export default function AccountLoading() {
   return (
     <>
       <Registry isPageLoading={true} />
-      <AccountRouteSkeleton variant="overview" />
+      <AccountSkeleton />
     </>
   );
 }

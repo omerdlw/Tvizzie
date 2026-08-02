@@ -1,0 +1,659 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { mergeCollectionItemsWithExistingMetadata } from '@/domains/account/ui/hooks/collections';
+import { useAccountProfile } from '@/modules/account';
+import { useAuth } from '@/modules/auth';
+import { useModal } from '@/modules/modal';
+import { useToast } from '@/modules/notification';
+import {
+  buildPollingSubscriptionKey,
+  primePollingSubscription,
+} from '@/infrastructure/realtime/polling-subscription-service';
+import { getMediaTitle, removeAccountCollectionItem } from '@/domains/account/ui/account-data';
+import {
+  subscribeToUserListBySlug,
+  subscribeToUserListItems,
+  toggleListLike,
+} from '@/domains/media/server/lists';
+import {
+  deleteListReview,
+  subscribeToListReviews,
+  toggleStoredReviewLike,
+} from '@/domains/reviews/server';
+import { TMDB_IMG } from '@/shared/constants';
+import { useNavigationActions } from '@/modules/nav';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
+import {
+  AccountSectionStateProvider,
+  useAccountSectionEngine,
+} from '@/domains/account/ui/account-section-state';
+// ListView is defined in this route client.
+import AccountListDetailFeed from '@/domains/account/ui/feeds/list-detail';
+import { createAccountSectionRegistry } from '@/domains/account/ui/account-section-factory';
+
+export default function Client({ routeData = null }) {
+  const {
+    initialList = null,
+    initialListItems = [],
+    initialListReviews = [],
+    slug,
+  } = routeData || {};
+  const auth = useAuth();
+  const { openModal } = useModal();
+  const toast = useToast();
+  const [list, setList] = useState(initialList);
+  const [listItems, setListItems] = useState(
+    Array.isArray(initialListItems) ? initialListItems : [],
+  );
+  const [reviews, setReviews] = useState(
+    Array.isArray(initialListReviews) ? initialListReviews : [],
+  );
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [listItemRemoveConfirmation, setListItemRemoveConfirmation] = useState(null);
+  const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
+  const { profile: userProfile } = useAccountProfile({
+    resolvedUserId: auth.user?.id || null,
+  });
+
+  const {
+    routeData: resolvedRouteData,
+    sectionProviderValue,
+    sectionState,
+  } = useAccountSectionEngine({
+    activeListId: list?.id || '',
+    activeTab: 'lists',
+    auth,
+    routeData,
+    selectedList: list,
+  });
+  const {
+    canViewProfileCollections,
+    canViewPrivateContent,
+    handleDeleteList,
+    handleRemoveListItem,
+    handleSignInRequest,
+    isOwner,
+    isPrivateProfile,
+    itemRemoveConfirmation,
+    likes,
+    listDeleteConfirmation,
+    profile,
+    resolvedUserId,
+    watched,
+    watchlist,
+  } = sectionState;
+  const hasSeededList = Boolean(initialList?.id) && initialList.slug === slug;
+  const hasSeededListItems = hasSeededList && Array.isArray(initialListItems);
+  const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews);
+
+  useEffect(() => {
+    setList(hasSeededList ? initialList : null);
+  }, [hasSeededList, initialList]);
+
+  useEffect(() => {
+    setListItems(hasSeededListItems ? initialListItems : []);
+  }, [hasSeededListItems, initialListItems]);
+
+  useEffect(() => {
+    setReviews(hasSeededListReviews ? initialListReviews : []);
+  }, [hasSeededListReviews, initialListReviews]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !hasSeededList) {
+      return;
+    }
+
+    primePollingSubscription(
+      buildPollingSubscriptionKey('lists:slug', {
+        hiddenIntervalMs: null,
+        intervalMs: null,
+        slug,
+        userId: resolvedUserId,
+      }),
+      initialList,
+      { emit: false },
+    );
+  }, [hasSeededList, initialList, resolvedUserId, slug]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !initialList?.id || !hasSeededListItems) {
+      return;
+    }
+
+    primePollingSubscription(
+      buildPollingSubscriptionKey('lists:items', {
+        hiddenIntervalMs: null,
+        intervalMs: null,
+        listId: initialList.id,
+        userId: resolvedUserId,
+      }),
+      initialListItems,
+      { emit: false },
+    );
+  }, [hasSeededListItems, initialList?.id, initialListItems, resolvedUserId]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !initialList?.id || !hasSeededListReviews) {
+      return;
+    }
+
+    primePollingSubscription(
+      buildPollingSubscriptionKey('reviews:list', {
+        listId: initialList.id,
+        ownerId: resolvedUserId,
+      }),
+      initialListReviews,
+      { emit: false },
+    );
+  }, [hasSeededListReviews, initialList?.id, initialListReviews, resolvedUserId]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !canViewProfileCollections) {
+      setList(null);
+      return undefined;
+    }
+
+    return subscribeToUserListBySlug(
+      resolvedUserId,
+      slug,
+      (nextList) => {
+        setList(nextList);
+      },
+      {
+        fetchOnSubscribe: !hasSeededList,
+        onError: () => {
+          if (!hasSeededList) {
+            setList(null);
+          }
+        },
+      },
+    );
+  }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+      setListItems([]);
+      return undefined;
+    }
+
+    return subscribeToUserListItems(
+      resolvedUserId,
+      list.id,
+      (nextItems) => {
+        setListItems((current) => mergeCollectionItemsWithExistingMetadata(current, nextItems));
+      },
+      {
+        fetchOnSubscribe: !hasSeededListItems,
+        onError: () => {
+          if (!hasSeededListItems) {
+            setListItems([]);
+          }
+        },
+      },
+    );
+  }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId]);
+
+  useEffect(() => {
+    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+      setReviews([]);
+      return undefined;
+    }
+
+    return subscribeToListReviews({ list, ownerId: resolvedUserId, listId: list.id }, setReviews, {
+      fetchOnSubscribe: !hasSeededListReviews,
+      liveUserId: auth.user?.id || null,
+      onError: () => {
+        if (!hasSeededListReviews) {
+          setReviews([]);
+        }
+      },
+    });
+  }, [auth.user?.id, canViewProfileCollections, hasSeededListReviews, list, resolvedUserId]);
+
+  const ownReview = useMemo(() => {
+    if (!auth.user?.id) {
+      return null;
+    }
+
+    return reviews.find((review) => review.user?.id === auth.user.id) || null;
+  }, [auth.user?.id, reviews]);
+
+  const handleToggleLike = useCallback(async () => {
+    if (!auth.isAuthenticated || !auth.user?.id || !list?.id || !resolvedUserId) {
+      handleSignInRequest();
+      return;
+    }
+
+    const currentUserId = auth.user.id;
+    setIsLikeLoading(true);
+
+    try {
+      const isNowLiked = await toggleListLike({
+        listId: list.id,
+        ownerId: resolvedUserId,
+        userId: currentUserId,
+      });
+
+      setList((current) => {
+        if (!current) {
+          return current;
+        }
+
+        const currentLikes = Array.isArray(current.likes) ? current.likes : [];
+        const hasLike = currentLikes.includes(currentUserId);
+        const nextLikes = isNowLiked
+          ? Array.from(new Set([...currentLikes, currentUserId]))
+          : currentLikes.filter((likedUserId) => likedUserId !== currentUserId);
+        const baseLikesCount = Number.isFinite(Number(current.likesCount))
+          ? Number(current.likesCount)
+          : currentLikes.length;
+        const nextLikesCount = isNowLiked
+          ? hasLike
+            ? baseLikesCount
+            : baseLikesCount + 1
+          : hasLike
+            ? Math.max(0, baseLikesCount - 1)
+            : baseLikesCount;
+
+        return {
+          ...current,
+          likes: nextLikes,
+          likesCount: nextLikesCount,
+        };
+      });
+    } catch (error) {
+      toast.error(error?.message || 'List could not be updated');
+    } finally {
+      setIsLikeLoading(false);
+    }
+  }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast]);
+
+  const primeListItemsCache = useCallback(
+    (nextItems) => {
+      if (!resolvedUserId || !list?.id) {
+        return;
+      }
+
+      primePollingSubscription(
+        buildPollingSubscriptionKey('lists:items', {
+          hiddenIntervalMs: null,
+          intervalMs: null,
+          listId: list.id,
+          userId: resolvedUserId,
+        }),
+        nextItems,
+        { emit: false },
+      );
+    },
+    [list?.id, resolvedUserId],
+  );
+
+  const handleConfirmRemoveListItem = useCallback(
+    async (item) => {
+      if (!isOwner || !list?.id || !auth.user?.id) {
+        return;
+      }
+
+      let previousListItems = null;
+      let nextListItems = null;
+
+      setListItems((currentItems) => {
+        previousListItems = currentItems;
+        nextListItems = removeAccountCollectionItem(currentItems, item);
+        return nextListItems;
+      });
+
+      try {
+        await handleRemoveListItem(item);
+        setListItemRemoveConfirmation(null);
+
+        if (nextListItems) {
+          primeListItemsCache(nextListItems);
+        }
+      } catch (error) {
+        if (previousListItems) {
+          setListItems(previousListItems);
+          primeListItemsCache(previousListItems);
+        }
+
+        throw error;
+      }
+    },
+    [auth.user?.id, handleRemoveListItem, isOwner, list?.id, primeListItemsCache],
+  );
+
+  const handleEditListWithItems = useCallback(
+    (targetList = list) => {
+      if (!isOwner || !auth.user?.id || !targetList?.id) return;
+
+      openModal(
+        'LIST_EDITOR_MODAL',
+        { desktop: 'center', mobile: 'bottom' },
+        {
+          data: {
+            isOwner: true,
+            userId: auth.user.id,
+            initialData: targetList,
+            initialItems: listItems,
+            onItemsChange: (nextItems) => {
+              setListItems(nextItems);
+              primeListItemsCache(nextItems);
+            },
+            onSuccess: (updatedList) => {
+              setList((current) =>
+                current?.id === updatedList?.id ? { ...current, ...updatedList } : updatedList,
+              );
+            },
+          },
+        },
+      );
+    },
+    [auth.user?.id, isOwner, list, listItems, openModal, primeListItemsCache],
+  );
+
+  const handleRequestRemoveListItem = useCallback(
+    (item) => {
+      if (!isOwner) return;
+
+      setListItemRemoveConfirmation({
+        title: 'Remove List Item?',
+        description: `${getMediaTitle(item)} will be removed from this list.`,
+        confirmText: 'Remove',
+        confirmLoadingText: 'Removing',
+        isDestructive: true,
+        onCancel: () => setListItemRemoveConfirmation(null),
+        onConfirm: () => handleConfirmRemoveListItem(item),
+      });
+    },
+    [handleConfirmRemoveListItem, isOwner],
+  );
+
+  const buildReviewModalUser = useCallback(
+    (review = null) => {
+      if (!auth.user?.id) {
+        return null;
+      }
+
+      return {
+        ...(review?.user || {}),
+        ...(userProfile || {}),
+        id: auth.user.id,
+      };
+    },
+    [auth.user?.id, userProfile],
+  );
+
+  const { openSurface } = useNavigationActions();
+
+  const openReviewModal = useCallback(
+    (review = null) => {
+      if (!auth.isAuthenticated || !auth.user?.id) {
+        handleSignInRequest();
+        return;
+      }
+
+      if (!list?.id || !resolvedUserId) {
+        return;
+      }
+
+      const targetReview = review || ownReview || null;
+      const reviewIdentity = targetReview?.docPath || targetReview?.id || null;
+      const ownerUsername =
+        list?.ownerSnapshot?.username ||
+        profile?.username ||
+        resolvedRouteData.username ||
+        resolvedUserId;
+
+      openSurface(
+        createReviewEditorSurfaceEntry({
+          list: {
+            coverUrl:
+              list?.poster_path ||
+              list?.posterPath ||
+              list?.coverUrl ||
+              listItems?.[0]?.poster_path ||
+              null,
+            id: list.id,
+            ownerId: resolvedUserId,
+            ownerSnapshot: {
+              id: resolvedUserId,
+              username: ownerUsername,
+            },
+            previewItems: Array.isArray(list?.previewItems) ? list.previewItems : [],
+            slug: list.slug || list.id,
+            title: list.title || 'Untitled List',
+          },
+          listId: list.id,
+          onSuccess: reviewIdentity
+            ? (updatedReview) => {
+                setReviews((current) =>
+                  current.map((item) =>
+                    (item.docPath || item.id) === reviewIdentity
+                      ? { ...item, ...updatedReview }
+                      : item,
+                  ),
+                );
+              }
+            : null,
+          ownerId: resolvedUserId,
+          review: targetReview,
+          user: buildReviewModalUser(targetReview),
+        }),
+      );
+    },
+    [
+      auth.isAuthenticated,
+      auth.user?.id,
+      buildReviewModalUser,
+      handleSignInRequest,
+      list,
+      listItems,
+      openSurface,
+      ownReview,
+      profile?.username,
+      resolvedRouteData.username,
+      resolvedUserId,
+    ],
+  );
+
+  const handleOpenReviewComposer = useCallback(() => {
+    openReviewModal();
+  }, [openReviewModal]);
+
+  const handleDeleteReview = useCallback(
+    async (review = null) => {
+      const targetReview = review || ownReview;
+
+      if (!targetReview || !resolvedUserId || !list?.id || !auth.user?.id) {
+        return;
+      }
+
+      try {
+        await deleteListReview({
+          listId: list.id,
+          ownerId: resolvedUserId,
+          userId: auth.user.id,
+        });
+
+        const targetReviewId = targetReview.docPath || targetReview.id || null;
+
+        setReviews((current) =>
+          current.filter((item) => {
+            if (targetReviewId) {
+              return (item.docPath || item.id) !== targetReviewId;
+            }
+
+            return item?.user?.id !== auth.user.id;
+          }),
+        );
+      } catch (error) {
+        toast.error(error?.message || 'Review could not be deleted');
+        throw error;
+      }
+    },
+    [auth.user?.id, list?.id, ownReview, resolvedUserId, toast],
+  );
+
+  const handleLikeReview = useCallback(
+    async (review) => {
+      if (!auth.isAuthenticated || !auth.user?.id) {
+        handleSignInRequest();
+        return;
+      }
+
+      try {
+        const nextLikedState = await toggleStoredReviewLike({
+          review,
+          userId: auth.user.id,
+        });
+
+        setReviews((current) =>
+          current.map((item) => {
+            if ((item.docPath || item.id) !== (review.docPath || review.id)) {
+              return item;
+            }
+
+            const currentLikes = Array.isArray(item.likes) ? item.likes : [];
+            const nextLikes = nextLikedState
+              ? Array.from(new Set([...currentLikes, auth.user.id]))
+              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id);
+
+            return {
+              ...item,
+              likes: nextLikes,
+            };
+          }),
+        );
+      } catch (error) {
+        toast.error(error?.message || 'Review could not be updated');
+      }
+    },
+    [auth.isAuthenticated, auth.user?.id, handleSignInRequest, toast],
+  );
+
+  const handleDeleteRequest = useCallback(
+    (review) => {
+      const targetReview = review || ownReview;
+
+      if (!targetReview || !auth.user?.id) {
+        return;
+      }
+
+      if (targetReview?.user?.id && targetReview.user.id !== auth.user.id) {
+        return;
+      }
+
+      const poster = targetReview?.subjectPoster;
+      setReviewDeleteConfirmation({
+        title: 'Delete Review?',
+        description: 'This review will be permanently removed from this list.',
+        confirmText: 'Delete',
+        confirmLoadingText: 'Deleting',
+        isDestructive: true,
+        icon: poster ? (poster.startsWith('/') ? `${TMDB_IMG}/w342${poster}` : poster) : undefined,
+        onCancel: () => setReviewDeleteConfirmation(null),
+        onConfirm: async () => {
+          await handleDeleteReview(targetReview);
+          setReviewDeleteConfirmation(null);
+        },
+      });
+    },
+    [auth.user?.id, handleDeleteReview, ownReview],
+  );
+
+  const handleEditReview = useCallback(
+    (review) => {
+      openReviewModal(review);
+    },
+    [openReviewModal],
+  );
+
+  const isLiked = auth.user?.id ? list?.likes?.includes(auth.user.id) : false;
+  const requiresFollowForProfileInteractions =
+    !isOwner && isPrivateProfile && !canViewPrivateContent;
+
+  const listDetailModel = {
+    auth,
+    canShowList: canViewProfileCollections,
+    requiresFollowForProfileInteractions,
+    ...sectionState,
+    handleDeleteList,
+    handleDeleteRequest,
+    handleEditList: handleEditListWithItems,
+    handleLikeReview,
+    handleRemoveListItem: handleRequestRemoveListItem,
+    handleSignInRequest,
+    handleOpenReviewComposer,
+    handleToggleLike,
+    isLiked,
+    isLikeLoading,
+    itemRemoveConfirmation:
+      reviewDeleteConfirmation || listItemRemoveConfirmation || itemRemoveConfirmation,
+    list,
+    listDeleteConfirmation,
+    listItems,
+    likes,
+    ownReview,
+    reviews,
+    handleEditReview,
+    userProfile,
+    watchedItems: watched,
+    watchlistItems: watchlist,
+  };
+
+  return (
+    <AccountSectionStateProvider value={sectionProviderValue}>
+      <ListView model={listDetailModel} />
+    </AccountSectionStateProvider>
+  );
+}
+
+const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
+
+export const Registry = createAccountSectionRegistry({
+  displayName: 'AccountListDetailRegistry',
+  navDescription: (_, { list, listItemsCount = 0 }) =>
+    list
+      ? `${listItemsCount} items · ${list?.likesCount || 0} likes · ${list?.reviewsCount || 0} reviews`
+      : null,
+  navRegistrySource: ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
+  resolveOverrides: (
+    _sectionState,
+    {
+      handleDeleteList,
+      handleEditList,
+      handleOpenReviewComposer,
+      handleToggleLike,
+      isLiked = false,
+      isLikeLoading = false,
+      itemRemoveConfirmation = null,
+      list,
+      listDeleteConfirmation,
+      ownReview,
+      registrySource = ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
+      reviewState,
+    },
+  ) => {
+    const canLikeList = Boolean(list);
+
+    return {
+      listDeleteConfirmation: itemRemoveConfirmation || listDeleteConfirmation,
+      navRegistrySource: registrySource,
+      isLiked: canLikeList ? isLiked : false,
+      isLikeLoading: canLikeList ? isLikeLoading : false,
+      onDeleteList: list ? () => handleDeleteList(list) : null,
+      onEditList: list ? () => handleEditList(list) : null,
+      onToggleLike: list ? handleToggleLike : null,
+      onOpenReviewComposer: list ? handleOpenReviewComposer : null,
+      ownReview,
+      reviewState,
+      showProfileFollowAction: false,
+      showToolbarFollowActionWithOverride: Boolean(list),
+    };
+  },
+});
+
+function ListView({ model = null }) {
+  return <AccountListDetailFeed model={model} RegistryComponent={Registry} />;
+}

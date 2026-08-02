@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib';
 import Icon from '@/ui/primitives/icon';
 import { AccountSectionReveal } from './account-layout';
 import { ACCOUNT_SECTION_SHELL_CLASS } from './account-data';
-import { sectionHeadingVariants } from './account-animation-config';
+import { sectionHeadingVariants } from '@/app/(account)/motion';
 
 const ACCOUNT_SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';
 const ACCOUNT_SECTION_CONTENT_CLASS = 'col-span-12 flex min-w-0 flex-col gap-5';
@@ -40,8 +40,7 @@ export function AccountSectionHeading({
     <motion.div
       className={cn('flex w-full flex-col gap-4', className)}
       initial={sectionHeadingVariants.initial}
-      whileInView={sectionHeadingVariants.whileInView}
-      viewport={sectionHeadingVariants.viewport}
+      animate={sectionHeadingVariants.animate || sectionHeadingVariants.whileInView}
       transition={sectionHeadingVariants.transition}
     >
       <div className="flex w-full items-center justify-between gap-4">
@@ -95,6 +94,7 @@ export default function AccountSectionLayout({
   className = '',
   contentClassName = '',
   icon,
+  isInitialSection = false,
   revealDelay = 0,
   showHeader = true,
   showDivider = true,
@@ -105,7 +105,7 @@ export default function AccountSectionLayout({
 }) {
   return (
     <section className="relative bg-transparent py-4 sm:py-6">
-      <AccountSectionReveal delay={revealDelay}>
+      <AccountSectionReveal delay={revealDelay} isInitialSection={isInitialSection}>
         <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, className)}>
           <div className={ACCOUNT_SECTION_GRID_CLASS}>
             <div className={ACCOUNT_SECTION_CONTENT_CLASS}>

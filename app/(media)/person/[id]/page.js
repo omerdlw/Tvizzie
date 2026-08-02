@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic';
+
 import { notFound } from 'next/navigation';
 
 import { TMDB_IMG } from '@/shared/constants';
 import { getPersonBase, getPersonSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
-import Client from '@/domains/media/ui/person-client';
+import Client from '@/app/(media)/person/[id]/client';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;

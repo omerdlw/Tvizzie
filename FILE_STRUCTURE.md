@@ -12,7 +12,6 @@ This file is generated from the working tree and lists every project file. Gener
 |   |   |   |-- account-nav-links.js
 |   |   |   |-- account-nav-registry.js
 |   |   |   |-- media-action.js
-|   |   |   `-- nav-skeleton.js
 |   |   |-- global-context-menu-registry.js
 |   |   |-- interactive-boundary.js
 |   |   |-- nav-runtime.js
@@ -72,7 +71,8 @@ This file is generated from the working tree and lists every project file. Gener
 |   |   |   `-- page.js
 |   |   |-- terms
 |   |   |   `-- page.js
-|   |   `-- error.js
+|   |   |-- error.js
+|   |   `-- loading.js
 |   |-- (media)
 |   |   |-- movie
 |   |   |   `-- [id]
@@ -304,7 +304,6 @@ This file is generated from the working tree and lists every project file. Gener
 |   |       |-- account-section-state.js
 |   |       |-- account-section.js
 |   |       |-- account-security.js
-|   |       |-- account-skeleton.js
 |   |       |-- activity-client.js
 |   |       |-- activity-view.js
 |   |       |-- edit-client.js
@@ -414,7 +413,6 @@ This file is generated from the working tree and lists every project file. Gener
 |   |   |   |-- auth-animation.js
 |   |   |   |-- auth-route-registry.js
 |   |   |   |-- callback-client.js
-|   |   |   |-- loading-state.js
 |   |   |   |-- sign-in-client.js
 |   |   |   |-- sign-in-state.js
 |   |   |   |-- sign-in-view.js
@@ -440,8 +438,7 @@ This file is generated from the working tree and lists every project file. Gener
 |   |   |-- ui
 |   |   |   |-- home-client.js
 |   |   |   |-- home-registry.js
-|   |   |   |-- home-view.js
-|   |   |   `-- loading-state.js
+|   |   |   `-- home-view.js
 |   |   |-- animation-config.js
 |   |   |-- discover-section.js
 |   |   |-- poster-rail.js
@@ -534,10 +531,8 @@ This file is generated from the working tree and lists every project file. Gener
 |   |       |-- movie-client.js
 |   |       |-- movie-reviews-client.js
 |   |       |-- movie-reviews-view.js
-|   |       |-- movie-skeleton.js
 |   |       |-- movie-view.js
 |   |       |-- person-client.js
-|   |       |-- person-skeleton.js
 |   |       |-- person-view.js
 |   |       |-- poster-overrides.js
 |   |       |-- recommendation-card.js
@@ -873,7 +868,6 @@ This file is generated from the working tree and lists every project file. Gener
 |   |   |-- fullscreen-state.js
 |   |   |-- not-found-action.js
 |   |   |-- not-found-template.js
-|   |   |-- skeleton.js
 |   |   `-- spinner.js
 |   |-- layout
 |   |   |-- nav-height-spacer.js
@@ -923,4 +917,3 @@ This file is generated from the working tree and lists every project file. Gener
 |-- tailwind.config.js
 `-- wrangler.jsonc
 ```
-

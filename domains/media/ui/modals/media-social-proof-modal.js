@@ -15,17 +15,33 @@ function buildUserActionMap(socialProof) {
   const userMap = new Map();
 
   const attachAction = (users = [], action) => {
+    if (!Array.isArray(users)) return;
     users.forEach((user) => {
-      if (!user?.id) return;
-      const existing = userMap.get(user.id) || { user, actions: new Set() };
+      const u = typeof user === 'object' ? user : null;
+      if (!u || (!u.id && !u.username)) return;
+      const key = u.id || u.username;
+      const existing = userMap.get(key) || { user: u, actions: new Set() };
       existing.actions.add(action);
-      userMap.set(user.id, existing);
+      userMap.set(key, existing);
     });
   };
 
-  attachAction(socialProof?.likedBy, 'liked');
-  attachAction(socialProof?.watchedBy, 'watched');
-  attachAction(socialProof?.watchlistedBy, 'watchlisted');
+  attachAction(
+    socialProof?.likedBy || socialProof?.likes?.users || socialProof?.likes?.previewUsers,
+    'liked',
+  );
+  attachAction(
+    socialProof?.watchedBy || socialProof?.watched?.users || socialProof?.watched?.previewUsers,
+    'watched',
+  );
+  attachAction(
+    socialProof?.watchlistedBy ||
+      socialProof?.watchlist?.users ||
+      socialProof?.watchlist?.previewUsers,
+    'watchlisted',
+  );
+  attachAction(socialProof?.reviews?.users || socialProof?.reviews?.previewUsers, 'reviewed');
+  attachAction(socialProof?.lists?.users || socialProof?.lists?.previewUsers, 'added to list');
 
   return Array.from(userMap.values()).map(({ user, actions }) => ({
     user,
@@ -39,6 +55,8 @@ function formatActionSummary(actions = []) {
     if (actions[0] === 'liked') return 'Liked this';
     if (actions[0] === 'watched') return 'Watched this';
     if (actions[0] === 'watchlisted') return 'Watchlisted this';
+    if (actions[0] === 'reviewed') return 'Reviewed this';
+    if (actions[0] === 'added to list') return 'Added to list';
   }
   return actions.map((item) => item.toUpperCase()).join(' • ');
 }
@@ -96,7 +114,6 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions }) {
 
 export default function MediaSocialProofModal({ close, data }) {
   const userEntries = buildUserActionMap(data?.socialProof);
-  if (!userEntries.length) return null;
 
   return (
     <Container
@@ -114,16 +131,26 @@ export default function MediaSocialProofModal({ close, data }) {
       }}
       bodyClassName="p-0"
     >
-      <div className="flex flex-col">
-        {userEntries.map(({ user, actions }, index) => (
-          <SocialUserRow
-            key={user.id || user.username || index}
-            close={close}
-            user={user}
-            actions={actions}
-          />
-        ))}
-      </div>
+      {userEntries.length > 0 ? (
+        <div className="flex flex-col">
+          {userEntries.map(({ user, actions }, index) => (
+            <SocialUserRow
+              key={user.id || user.username || index}
+              close={close}
+              user={user}
+              actions={actions}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="center flex-col gap-2 p-8 text-center">
+          <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-black/30" />
+          <p className="text-sm font-medium text-black/60">No social activity found yet</p>
+          <p className="text-xs text-black/40">
+            When people you follow like, review, or watch this title, their activity will appear here.
+          </p>
+        </div>
+      )}
     </Container>
   );
 }

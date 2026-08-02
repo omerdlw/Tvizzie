@@ -12,13 +12,10 @@ import AccountPagination from '@/domains/account/ui/account-pagination';
 import ReviewCard from '@/domains/reviews/components/review-card';
 import RatingStars from '@/domains/reviews/components/rating-stars';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
-import { getActivityItemProps } from '@/domains/account/ui/account-animation-config';
+import { getActivityItemProps } from '@/app/(account)/motion';
+
 const ACTIVITY_ITEMS_PER_PAGE = 36;
 const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 rounded-xl border border-black/5 p-3';
-
-
-
-
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -31,10 +28,6 @@ function formatActivityTime(value) {
   return diffHours < 24 ? `${diffHours}h` : `${Math.floor(diffHours / 24)}d`;
 }
 
-
-
-
-
 export default function AccountActivityFeed({
   currentPage = 1,
   emptyMessage = 'No activity yet',
@@ -43,11 +36,13 @@ export default function AccountActivityFeed({
     subject: 'all',
   },
   icon = 'solar:bolt-bold',
+  isInitialSection = false,
   isLoading = false,
   items = [],
   loadError = null,
   onFiltersChange,
   onPageChange,
+  revealDelay = 0,
   showHeader = true,
   showSeeMore = false,
   summaryLabel = null,
@@ -68,6 +63,8 @@ export default function AccountActivityFeed({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
+      revealDelay={revealDelay}
       showHeader={showHeader}
       showSeeMore={showSeeMore}
       summaryLabel={resolvedSummaryLabel}
@@ -109,8 +106,10 @@ export default function AccountActivityFeed({
           {visibleItems.map((item, index) => (
             <ActivityItem
               key={item?.dedupeKey || item?.id || `activity-${index}`}
+              baseDelay={revealDelay ? revealDelay : undefined}
               index={index}
               isFirst={index === 0}
+              isInitialSection={isInitialSection}
               item={item}
             />
           ))}
@@ -128,15 +127,17 @@ export default function AccountActivityFeed({
     </AccountSectionLayout>
   );
 }
-function ActivityItem({ index = 0, isFirst = false, item }) {
+
+function ActivityItem({ baseDelay, index = 0, isFirst = false, isInitialSection = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
-  const motionProps = getActivityItemProps(index);
+  const motionProps = getActivityItemProps(index, baseDelay, isInitialSection);
   return (
     <motion.article
       className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
       initial={motionProps.initial}
-      whileInView={motionProps.whileInView}
-      viewport={motionProps.viewport}
+      animate={isInitialSection ? motionProps.animate : undefined}
+      whileInView={!isInitialSection ? motionProps.whileInView : undefined}
+      viewport={!isInitialSection ? motionProps.viewport : undefined}
       transition={motionProps.transition}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
@@ -159,6 +160,7 @@ function ActivityItem({ index = 0, isFirst = false, item }) {
     </motion.article>
   );
 }
+
 function LinePart({ part }) {
   if (part?.kind === 'rating' && Number.isFinite(Number(part?.rating)))
     return <RatingStars className="translate-y-[-1px]" rating={Number(part.rating)} />;

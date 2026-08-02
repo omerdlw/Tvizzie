@@ -6,7 +6,7 @@ import { useAccountSectionPage } from '@/domains/account/ui/hooks/section-page';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   noopAccountRegistryHandler,
-} from '@/domains/account/ui/account-registry-config';
+} from '@/domains/account/ui/account-registry-state';
 
 const DEFAULT_ACCOUNT_SECTION_STATE = Object.freeze({
   auth: EMPTY_ACCOUNT_REGISTRY_AUTH,

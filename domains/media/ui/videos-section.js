@@ -7,7 +7,7 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
-import { getMediaCardProps, getSectionHeaderProps } from '@/domains/media/ui/media-animation-config';
+import { getMediaCardProps, getSectionHeaderProps } from '@/app/(media)/motion';
 
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];

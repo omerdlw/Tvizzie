@@ -16,10 +16,12 @@ export default function AccountActivityOverview({
   emptyMessage = 'No activity yet',
   icon = 'solar:bolt-bold',
   initialFeed = null,
+  isInitialSection = false,
   isOwner = false,
   isPrivateProfile = false,
   isViewerReady = false,
   limit = 5,
+  revealDelay = 0,
   resolvedUserId = null,
   summaryLabel = '',
   title = 'Recent Activity',
@@ -39,31 +41,17 @@ export default function AccountActivityOverview({
     syncFeed,
     totalCount,
   } = feedState;
+
   const normalizedLimit = Number.isFinite(Number(limit))
     ? Math.max(1, Math.floor(Number(limit)))
     : 5;
+
+  const effectiveResolvedUserId = resolvedUserId || initialFeed?.userId || null;
+
   const hasInitialFeed = useMemo(
-    () => hasMatchingInitialFeed(initialFeed, resolvedUserId),
-    [initialFeed, resolvedUserId],
+    () => hasMatchingInitialFeed(initialFeed, effectiveResolvedUserId),
+    [initialFeed, effectiveResolvedUserId],
   );
-  const shouldBlockFeedLoad = useMemo(() => {
-    if (hasInitialFeed) {
-      return false;
-    }
-
-    if (!isViewerReady || !resolvedUserId) {
-      return true;
-    }
-
-    return !isOwner && isPrivateProfile && !canViewPrivateContent;
-  }, [
-    canViewPrivateContent,
-    hasInitialFeed,
-    isOwner,
-    isPrivateProfile,
-    isViewerReady,
-    resolvedUserId,
-  ]);
 
   useEffect(() => {
     if (!hasInitialFeed) {
@@ -77,7 +65,11 @@ export default function AccountActivityOverview({
     const requestId = requestRef.current + 1;
     requestRef.current = requestId;
 
-    if (shouldBlockFeedLoad) {
+    if (!effectiveResolvedUserId) {
+      return;
+    }
+
+    if (!isOwner && isPrivateProfile && !canViewPrivateContent) {
       resetFeed();
       return;
     }
@@ -99,7 +91,7 @@ export default function AccountActivityOverview({
           scope: 'user',
           sort: 'newest',
           subject: 'all',
-          userId: resolvedUserId,
+          userId: effectiveResolvedUserId,
         });
 
         if (ignore || requestRef.current !== requestId) {
@@ -132,13 +124,15 @@ export default function AccountActivityOverview({
     };
   }, [
     applyFeedResult,
+    canViewPrivateContent,
+    effectiveResolvedUserId,
     hasInitialFeed,
+    isOwner,
+    isPrivateProfile,
     normalizedLimit,
     resetFeed,
-    resolvedUserId,
     setFeedError,
     setIsFeedLoading,
-    shouldBlockFeedLoad,
   ]);
 
   const visibleItems = useMemo(
@@ -153,9 +147,11 @@ export default function AccountActivityOverview({
     <AccountActivityFeed
       emptyMessage={emptyMessage}
       icon={icon}
+      isInitialSection={isInitialSection}
       isLoading={isFeedLoading}
       items={visibleItems}
       loadError={feedError}
+      revealDelay={revealDelay}
       showSeeMore={Boolean(titleHref) && (hasMore || resolvedTotalCount > normalizedLimit)}
       summaryLabel={summaryLabel}
       title={title}

@@ -12,7 +12,7 @@ import {
   getTaxonomyChipProps,
   getTaxonomyHeaderProps,
   sidebarPosterVariants,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 const MAX_VISIBLE_PERSONS = 2;
 

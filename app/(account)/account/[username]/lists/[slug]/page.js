@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic';
+
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
 import { getUsernameAccountListDetailRouteData } from '@/domains/account/server/routes/route-read.server';
 
-import Client from '@/domains/account/ui/list-detail-client';
+import Client from '@/app/(account)/account/[username]/lists/[slug]/client';
 
 function loadRouteData(username, slug) {
   return getUsernameAccountListDetailRouteData(username, slug).then((routeData) => ({

@@ -5,7 +5,7 @@ import AccountListCard from '@/domains/account/ui/lists/list-card';
 import Icon from '@/ui/primitives/icon';
 import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
-import { getListCardProps } from '@/domains/account/ui/account-animation-config';
+import { getListCardProps } from '@/app/(account)/motion';
 const OVERVIEW_LIST_LIMIT = 3;
 export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
@@ -55,7 +55,11 @@ export default function AccountListsOverview({
                           <button
                             type="button"
                             aria-label={`Edit ${targetList.title}`}
-                            onClick={() => onEditList(targetList)}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              onEditList(targetList);
+                            }}
                             className="bg-primary/30 hover:bg-primary/60 flex size-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:border-black/20"
                           >
                             <Icon icon="solar:pen-bold" size={13} />
@@ -65,7 +69,11 @@ export default function AccountListsOverview({
                           <button
                             type="button"
                             aria-label={`Delete ${targetList.title}`}
-                            onClick={() => onDeleteList(targetList)}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              onDeleteList(targetList);
+                            }}
                             className="bg-primary/30 hover:bg-error hover:border-error flex size-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:text-white"
                           >
                             <Icon icon="solar:trash-bin-trash-bold" size={13} />

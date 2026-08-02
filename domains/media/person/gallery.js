@@ -11,7 +11,7 @@ import {
   getMediaCardProps,
   getSectionHeaderProps,
   PERSON_TIMELINES,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 const GAP_PX = 12;
 const CARDS_VISIBLE = 5;

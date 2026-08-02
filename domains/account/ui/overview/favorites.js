@@ -12,7 +12,7 @@ import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
-import { getCardProps } from '@/domains/account/ui/account-animation-config';
+import { getCardProps } from '@/app/(account)/motion';
 const OVERVIEW_ROW_CARD_LIMIT = 5;
 function getFavoriteType(item) {
   const explicitType = item?.media_type || item?.entityType;
@@ -42,12 +42,15 @@ function getFavoritePoster(item) {
   return null;
 }
 export default function AccountFavoritesOverview({
+  baseDelay,
   emptyMessage = 'No favorites showcase yet',
   icon = 'solar:star-bold',
+  isInitialSection = true,
   isOwner = false,
   items = [],
   onRemoveItem,
   renderOverlay = null,
+  revealDelay = 0,
   showSeeMore = false,
   summaryLabel = null,
   title = 'Favorites Showcase',
@@ -81,6 +84,8 @@ export default function AccountFavoritesOverview({
   return (
     <AccountSectionLayout
       icon={icon}
+      isInitialSection={isInitialSection}
+      revealDelay={revealDelay}
       showSeeMore={showSeeMore}
       summaryLabel={summaryLabel}
       title={title}
@@ -89,55 +94,63 @@ export default function AccountFavoritesOverview({
       {cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
-            const cardProps = getCardProps(index);
+            const cardProps = getCardProps(index, baseDelay);
             return (
-            <motion.div key={`${card.id}-${index}`} className="flex h-full min-w-0 flex-col" initial={cardProps.initial} animate={cardProps.animate} transition={cardProps.transition} whileHover={cardProps.whileHover} whileTap={cardProps.whileTap}>
-              <MediaCard
-                className="w-full md:w-full lg:w-full"
-                href={card.href}
-                imageAlt={card.imageAlt}
-                imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
-                imageSrc={card.imageSrc}
-                topOverlay={
-                  typeof renderOverlay === 'function' ? (
-                    renderOverlay(card.item)
-                  ) : isOwner && typeof onRemoveItem === 'function' ? (
-                    <div className="absolute inset-x-0 top-0 flex justify-end p-2">
-                      <Button
-                        aria-label={`Remove${card.imageAlt}from favorites showcase`}
-                        variant="destructive-icon"
-                        className={
-                          'text-error hover:border-error hover:bg-error rounded-xl border border-black/15 bg-white hover:text-white'
-                        }
-                        disabled={pendingItemId === card.id}
-                        onClick={async (event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (pendingItemId === card.id) {
-                            return;
+              <motion.div
+                key={`${card.id}-${index}`}
+                className="flex h-full min-w-0 flex-col"
+                initial={cardProps.initial}
+                animate={cardProps.animate}
+                transition={cardProps.transition}
+                whileHover={cardProps.whileHover}
+                whileTap={cardProps.whileTap}
+              >
+                <MediaCard
+                  className="w-full md:w-full lg:w-full"
+                  href={card.href}
+                  imageAlt={card.imageAlt}
+                  imageSizes="(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw"
+                  imageSrc={card.imageSrc}
+                  topOverlay={
+                    typeof renderOverlay === 'function' ? (
+                      renderOverlay(card.item)
+                    ) : isOwner && typeof onRemoveItem === 'function' ? (
+                      <div className="absolute inset-x-0 top-0 flex justify-end p-2">
+                        <Button
+                          aria-label={`Remove ${card.imageAlt} from favorites showcase`}
+                          variant="destructive-icon"
+                          className={
+                            'text-error hover:border-error hover:bg-error rounded-xl border border-black/15 bg-white hover:text-white'
                           }
-                          setPendingItemId(card.id);
-                          try {
-                            await onRemoveItem(card.item);
-                          } finally {
-                            setPendingItemId((currentId) =>
-                              currentId === card.id ? null : currentId,
-                            );
-                          }
-                        }}
-                      >
-                        <Icon
-                          className={pendingItemId === card.id ? '' : ''}
-                          icon="solar:trash-bin-trash-bold"
-                          size={16}
-                        />
-                      </Button>
-                    </div>
-                  ) : null
-                }
-                tooltipText={card.tooltipText}
-              />
-            </motion.div>
+                          disabled={pendingItemId === card.id}
+                          onClick={async (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            if (pendingItemId === card.id) {
+                              return;
+                            }
+                            setPendingItemId(card.id);
+                            try {
+                              await onRemoveItem(card.item);
+                            } finally {
+                              setPendingItemId((currentId) =>
+                                currentId === card.id ? null : currentId,
+                              );
+                            }
+                          }}
+                        >
+                          <Icon
+                            className={pendingItemId === card.id ? '' : ''}
+                            icon="solar:trash-bin-trash-bold"
+                            size={16}
+                          />
+                        </Button>
+                      </div>
+                    ) : null
+                  }
+                  tooltipText={card.tooltipText}
+                />
+              </motion.div>
             );
           })}
         </div>

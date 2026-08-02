@@ -10,7 +10,7 @@ import {
   getMediaCardProps,
   getSectionHeaderProps,
   TIMELINES,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 export default function GallerySection({ images, baseDelay = TIMELINES.GALLERY_SECTION_BASE_DELAY }) {
   const { openModal } = useModal();

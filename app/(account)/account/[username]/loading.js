@@ -1,17 +1,13 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import AccountRouteSkeleton, { resolveAccountSkeletonVariant } from '@/domains/account/ui/account-skeleton';
-import Registry from '@/domains/account/ui/profile-registry';
+import { AccountSkeleton } from '@/app/(account)/account/loading';
+import Registry from '@/app/(account)/registry';
 
 export default function Loading() {
-  const pathname = usePathname();
-  const variant = resolveAccountSkeletonVariant(pathname);
-
   return (
     <>
       <Registry isPageLoading={true} />
-      <AccountRouteSkeleton variant={variant} />
+      <AccountSkeleton />
     </>
   );
 }

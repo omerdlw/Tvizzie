@@ -26,7 +26,7 @@ import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flo
 import { useNavigationActions } from '@/modules/nav';
 import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';
-import { getActionButtonProps } from '@/domains/media/ui/media-animation-config';
+import { getActionButtonProps } from '@/app/(media)/motion';
 
 function getMediaSnapshot(media) {
   const normalizedGenres = Array.isArray(media?.genres)

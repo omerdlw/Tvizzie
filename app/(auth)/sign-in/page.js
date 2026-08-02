@@ -1,6 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import { Suspense } from 'react';
 
-import Client from '@/domains/auth/ui/sign-in-client';
+import Client from '@/app/(auth)/sign-in/client';
 
 export default function SignInPage() {
   return (

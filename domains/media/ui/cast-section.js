@@ -18,7 +18,7 @@ import {
   getCastCardProps,
   getCastHeaderProps,
   TIMELINES,
-} from '@/domains/media/ui/media-animation-config';
+} from '@/app/(media)/motion';
 
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;

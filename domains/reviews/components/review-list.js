@@ -5,13 +5,17 @@
  * Path: features/media-reviews/parts/review-list.js
  */
 
+import { motion } from 'framer-motion';
 import { normalizeFeedbackText } from '@/shared/lib';
 import { mergeReviewUser } from '../ui/review-data';
 import ReviewCard from './review-card';
+import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 
 export default function ReviewList({
+  baseDelay = TIMELINES.CARD_BASE_DELAY,
   currentUserId,
   displayVariant = 'media',
+  isInitialSection = true,
   isLoading,
   likedMediaKeys = null,
   loadError,
@@ -51,9 +55,18 @@ export default function ReviewList({
         const isOwnReview = review.user?.id === currentUserId;
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
         const key = review.docPath || review.id || `review-${index}`;
+        const motionProps = getListCardProps(index, baseDelay, isInitialSection);
 
         return (
-          <div key={key} style={{ willChange: 'transform, opacity, filter' }}>
+          <motion.div
+            key={key}
+            initial={motionProps.initial}
+            animate={isInitialSection ? motionProps.animate : undefined}
+            whileInView={!isInitialSection ? motionProps.whileInView : undefined}
+            viewport={!isInitialSection ? motionProps.viewport : undefined}
+            transition={motionProps.transition}
+            style={{ willChange: 'transform, opacity, filter' }}
+          >
             <ReviewCard
               className={index === 0 ? 'pt-0 pb-6' : ''}
               review={mergedReview}
@@ -68,7 +81,7 @@ export default function ReviewList({
               showSubject={showSubject}
               watchedMediaKeys={watchedMediaKeys}
             />
-          </div>
+          </motion.div>
         );
       })}
     </div>

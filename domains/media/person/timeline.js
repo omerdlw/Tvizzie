@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import MediaThumb from './media-thumb';
 import { getTimelineCredits } from './person-data';
-import { EASINGS } from '@/domains/media/ui/media-animation-config';
+import { EASINGS } from '@/app/(media)/motion';
 
 function groupByYear(credits) {
   const grouped = {};

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { notFound } from 'next/navigation';
 
 import { getMovieComputedData } from '@/domains/media/ui/media-data';
@@ -5,7 +7,7 @@ import { TMDB_IMG } from '@/shared/constants';
 import { getTvBase } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
-import Client from '@/domains/media/ui/movie-reviews-client';
+import Client from '@/app/(media)/tv/[id]/reviews/client';
 
 function getTvTitle(tv = {}) {
   return tv?.name || tv?.original_name || 'Untitled';

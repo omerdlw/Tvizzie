@@ -1,4 +1,6 @@
-import PrivacyView from '@/domains/legal/ui/privacy-view';
+export const dynamic = 'force-dynamic';
+
+import PrivacyClient from '@/app/(legal)/privacy/client';
 
 export const metadata = {
   title: 'Privacy Policy',
@@ -9,5 +11,5 @@ export const metadata = {
 };
 
 export default function PrivacyPage() {
-  return <PrivacyView />;
+  return <PrivacyClient />;
 }

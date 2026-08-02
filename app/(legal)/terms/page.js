@@ -1,4 +1,6 @@
-import TermsView from '@/domains/legal/ui/terms-view';
+export const dynamic = 'force-dynamic';
+
+import TermsClient from '@/app/(legal)/terms/client';
 
 export const metadata = {
   title: 'Terms of Service',
@@ -9,5 +11,5 @@ export const metadata = {
 };
 
 export default function TermsPage() {
-  return <TermsView />;
+  return <TermsClient />;
 }

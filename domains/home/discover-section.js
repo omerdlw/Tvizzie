@@ -12,7 +12,7 @@ import {
   genreNavButtonProps,
   getDiscoverCardProps,
   loadMoreButtonVariants,
-} from '@/domains/home/animation-config';
+} from '@/app/(home)/motion';
 const ALL_GENRE_ID = 'all';
 const MOBILE_DISCOVER_BATCH = 9;
 const DESKTOP_DISCOVER_BATCH = 24;
@@ -42,7 +42,7 @@ function GenreChip({ genre, isActive, onClick, index = 0 }) {
       onClick={onClick}
       aria-pressed={isActive}
       {...chipProps}
-      className={`center border px-3 h-10 text-xs tracking-wide rounded-2xl text-black/70 w-full transition-colors duration-200 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
+      className={`center h-10 w-full rounded-2xl border px-3 text-xs tracking-wide text-black/70 transition-colors duration-200 ${isActive ? 'border-black bg-black font-semibold text-white' : 'hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black'}`}
     >
       <span className="truncate">{genre.name}</span>
     </motion.button>
@@ -83,11 +83,14 @@ export function DiscoverSection({
   }, [activeGenreId, genreItems]);
 
   useRegistry(
-    useMemo(() => ({
-      nav: {
-        description: activeGenreId === ALL_GENRE_ID ? 'Discover titles' : activeGenreName,
-      },
-    }), [activeGenreId, activeGenreName])
+    useMemo(
+      () => ({
+        nav: {
+          description: activeGenreId === ALL_GENRE_ID ? 'Discover titles' : activeGenreName,
+        },
+      }),
+      [activeGenreId, activeGenreName],
+    ),
   );
   const batchSize = getDiscoverBatchSize(isMobileGrid);
   const gridItems = getUniqueItems(discoverItems, discoverItems.length).slice(
@@ -280,20 +283,23 @@ export function DiscoverSection({
   }, []);
 
   return (
-    <motion.section variants={homeSectionVariants} className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-      <div className="flex items-center w-full relative">
+    <motion.section
+      variants={homeSectionVariants}
+      className="mx-auto flex w-full max-w-5xl flex-col gap-5"
+    >
+      <div className="relative flex w-full items-center">
         <motion.button
           type="button"
           disabled={!canScrollLeft}
           {...genreNavButtonProps}
-          className="inline-flex shrink-0 size-10 items-center justify-center border rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 mr-2"
+          className="hover:bg-primary mr-2 inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm transition-all duration-150 hover:text-black disabled:pointer-events-none disabled:opacity-50"
           onClick={() => scroll('left')}
         >
           <Icon icon="solar:alt-arrow-left-linear" size={16} className="text-black/70" />
         </motion.button>
         <div
           ref={scrollContainerRef}
-          className="scrollbar-hide cursor-grab overflow-x-auto select-none active:cursor-grabbing rounded-2xl flex-1 flex items-center gap-2 snap-x snap-mandatory scroll-smooth"
+          className="scrollbar-hide flex flex-1 cursor-grab snap-x snap-mandatory items-center gap-2 overflow-x-auto scroll-smooth rounded-2xl select-none active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
@@ -301,7 +307,7 @@ export function DiscoverSection({
           onScroll={updateScrollButtons}
         >
           {genreItems.map((genre, index) => (
-            <div key={genre.id} className="snap-start w-[calc((100%-72px)/10)] shrink-0">
+            <div key={genre.id} className="w-[calc((100%-72px)/10)] shrink-0 snap-start">
               <GenreChip
                 genre={genre}
                 index={index}
@@ -315,7 +321,7 @@ export function DiscoverSection({
           type="button"
           disabled={!canScrollRight}
           {...genreNavButtonProps}
-          className="inline-flex shrink-0 size-10 items-center justify-center border w-[38px] h-[38px] rounded-2xl text-black/70 hover:bg-primary border-black/10 bg-white/40 backdrop-blur-sm hover:text-black cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-all duration-150 ml-2"
+          className="hover:bg-primary ml-2 inline-flex size-10 h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/40 text-black/70 backdrop-blur-sm transition-all duration-150 hover:text-black disabled:pointer-events-none disabled:opacity-50"
           onClick={() => scroll('right')}
         >
           <Icon icon="solar:alt-arrow-right-linear" size={16} className="text-black/70" />
@@ -339,13 +345,13 @@ export function DiscoverSection({
       </div>
 
       {gridError ? (
-        <div className="border border-black/10 bg-white/70 rounded-2xl p-3 text-sm text-black/50">
+        <div className="rounded-2xl border border-black/10 bg-white/70 p-3 text-sm text-black/50">
           {gridError}
         </div>
       ) : null}
 
       {gridItems.length === 0 && !isFiltering ? (
-        <div className="border border-black/10 bg-white/70 rounded-2xl p-4 text-sm text-black/50">
+        <div className="rounded-2xl border border-black/10 bg-white/70 p-4 text-sm text-black/50">
           No movies found for this genre.
         </div>
       ) : null}
@@ -357,7 +363,7 @@ export function DiscoverSection({
             onClick={handleLoadMore}
             disabled={isLoadingMore || isFiltering}
             {...loadMoreButtonVariants}
-            className="inline-flex h-10 items-center gap-2 border border-black/5 rounded-2xl bg-primary px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-primary inline-flex h-10 items-center gap-2 rounded-2xl border border-black/5 px-5 text-xs font-semibold text-black/70 uppercase hover:border-black/10 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Icon
               icon={isLoadingMore ? 'solar:refresh-bold' : 'solar:restart-bold'}
