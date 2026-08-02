@@ -11,7 +11,7 @@ import {
 } from 'react';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
-import { createAccountClient } from './account-client';
+import { createAccountClient } from './client';
 
 const EMPTY_OBJECT = Object.freeze({});
 const DEFAULT_ACCOUNT_BOOTSTRAP_CONFIG = Object.freeze({

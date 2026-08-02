@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useRegistryContext } from './registry-context';
+import { useRegistryContext } from './context';
 
 let injectorInstanceCounter = 0;
 
@@ -12,7 +12,7 @@ export const RegistryInjector = ({ items, type }) => {
 
   if (!instanceIdRef.current) {
     injectorInstanceCounter += 1;
-    instanceIdRef.current = `registry-injector-${injectorInstanceCounter}`;
+    instanceIdRef.current = `injector-${injectorInstanceCounter}`;
   }
 
   useEffect(() => {

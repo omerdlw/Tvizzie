@@ -8,7 +8,7 @@ export {
   useAccountState,
   useAccountActions,
   useCurrentAccount,
-} from './account-context';
+} from './context';
 
-export { createAccountAdapter, createAccountClient } from './account-client';
-export { useAccountProfile, useResolvedAccountUser } from './account-hooks';
+export { createAccountAdapter, createAccountClient } from './client';
+export { useAccountProfile, useResolvedAccountUser } from './hooks';

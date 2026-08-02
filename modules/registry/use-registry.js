@@ -13,7 +13,7 @@ import {
 
 import { usePathname } from 'next/navigation';
 
-import { useRegistryActions } from './registry-context';
+import { useRegistryActions } from './context';
 import { PLUGINS, createPluginRunner } from './plugins/index';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
-import { useBackgroundState } from '@/modules/background/background-context';
+import { useBackgroundState } from '@/modules/background/context';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);

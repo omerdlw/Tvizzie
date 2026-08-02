@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 
-import { useRegistryValue, REGISTRY_TYPES } from '../registry/registry-context';
+import { useRegistryValue, REGISTRY_TYPES } from '../registry/context';
 
 const LoadingActionsContext = createContext(null);
 const LoadingStateContext = createContext(null);

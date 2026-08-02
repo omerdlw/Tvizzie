@@ -7,8 +7,8 @@ import { cn } from '@/shared/lib/classnames';
 import Icon from '@/ui/primitives/icon';
 
 import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
-import { MODAL_POSITIONS } from '@/modules/modal/modal-config';
-import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './modal-motion';
+import { MODAL_POSITIONS } from '@/modules/modal/config';
+import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './motion';
 
 export const CANCEL_BUTTON_CLASS =
   'h-8 shrink-0 border rounded-xl border-black/10 px-4 text-xs font-semibold tracking-wide whitespace-nowrap uppercase text-black/70 hover:bg-black/5 hover:text-black transition-colors duration-150 ease-linear';

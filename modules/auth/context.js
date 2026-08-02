@@ -25,9 +25,9 @@ import {
   runAuthSignOut,
   runAuthUpdateProfile,
 } from './action-flows';
-import { DEFAULT_AUTH_CONFIG, DEFAULT_AUTH_STATE, AUTH_STATUS } from './auth-config';
+import { DEFAULT_AUTH_CONFIG, DEFAULT_AUTH_STATE, AUTH_STATUS } from './config';
 import { createAuthStorage } from './storage';
-import { isSessionExpired, normalizeSession, hasCapability, canAccess, hasRole } from './auth-utils';
+import { isSessionExpired, normalizeSession, hasCapability, canAccess, hasRole } from './utils';
 
 const FALLBACK_AUTH_ACTIONS = Object.freeze({
   clearError: () => {},

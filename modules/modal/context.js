@@ -8,7 +8,7 @@ import {
   MODAL_POSITIONS,
   MODAL_PRESETS,
   MODAL_CHROME,
-} from '@/modules/modal/modal-config';
+} from '@/modules/modal/config';
 import { resolveModalHeader } from '@/modules/modal/header';
 
 const FALLBACK_MODAL_STATE = Object.freeze({

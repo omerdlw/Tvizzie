@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { useOptionalBackgroundActions } from '@/modules/background/background-context';
+import { useOptionalBackgroundActions } from '@/modules/background/context';
 import { ModuleError } from '@/modules/error-boundary';
 
 function isMediaPath(pathname = '') {

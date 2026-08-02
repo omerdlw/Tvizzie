@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 
-import { AUTH_STATUS } from './auth-config';
-import { canAccess } from './auth-utils';
-import { useAuth } from './auth-context';
+import { AUTH_STATUS } from './config';
+import { canAccess } from './utils';
+import { useAuth } from './context';
 
 export function useAuthorization(rules = {}) {
   const auth = useAuth();

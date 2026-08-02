@@ -1,4 +1,4 @@
-import { MODAL_POSITIONS } from './modal-config';
+import { MODAL_POSITIONS } from './config';
 
 export const POSITION_CLASSES = Object.freeze({
   [MODAL_POSITIONS.CENTER]: 'items-center justify-center',

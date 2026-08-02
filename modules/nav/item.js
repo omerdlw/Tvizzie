@@ -4,7 +4,7 @@ import React, { forwardRef, memo, Suspense, useEffect, useMemo, useRef, useState
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useBackgroundActions, useBackgroundState } from '@/modules/background/background-context';
+import { useBackgroundActions, useBackgroundState } from '@/modules/background/context';
 import { useElementHeight, useNavBadge } from '@/modules/nav/hooks';
 import {
   NAV_BADGE_TRANSITION,

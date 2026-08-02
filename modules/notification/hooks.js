@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 
 import { normalizeFeedbackText } from '@/shared/lib/feedback';
 
-import { useNotificationActions, TOAST_TYPES } from './notification-context';
+import { useNotificationActions, TOAST_TYPES } from './context';
 
 const DURATIONS = Object.freeze({
   SHORT: 3000,

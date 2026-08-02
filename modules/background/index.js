@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
-import { useBackgroundActions, useBackgroundState } from './background-context';
+import { useBackgroundActions, useBackgroundState } from './context';
 import { NoiseTexture } from '@/ui/primitives/noise-texture';
 
-export { BackgroundProvider, useBackgroundState } from './background-context';
+export { BackgroundProvider, useBackgroundState } from './context';
 
 function getMotionConfig(pageAnimation) {
   const resolvedAnimation = pageAnimation || {};

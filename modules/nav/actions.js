@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
-import { useBackgroundActions, useBackgroundState } from '@/modules/background/background-context';
-import { useModal } from '@/modules/modal/modal-context';
+import { useBackgroundActions, useBackgroundState } from '@/modules/background/context';
+import { useModal } from '@/modules/modal/context';
 import {
   NAV_BADGE_TRANSITION,
   NAV_BUTTON_TRANSITION,
@@ -15,7 +15,7 @@ import {
   NAV_TAP_SCALE,
   staggerItemVariants,
 } from '@/modules/nav/motion';
-import { useToast } from '@/modules/notification/notification-hooks';
+import { useToast } from '@/modules/notification/hooks';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';

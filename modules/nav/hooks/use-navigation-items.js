@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useNavRegistry } from '@/modules/registry/registry-context';
+import { useNavRegistry } from '@/modules/registry/context';
 
 function stripChildrenSystemFields(item) {
   if (!item || typeof item !== 'object') {

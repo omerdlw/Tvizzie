@@ -6,13 +6,13 @@ import { normalizeFeedbackText } from '@/shared/lib/feedback';
 import { cn } from '@/shared/lib/classnames';
 import Icon from '@/ui/primitives/icon';
 
-import { NOTIFICATION_CONFIG } from './notification-config';
+import { NOTIFICATION_CONFIG } from './config';
 import {
   NOTIFICATION_SPRING,
   NOTIFICATION_MICRO_SPRING,
   NOTIFICATION_TAP_SCALE,
   NOTIFICATION_MICRO_TAP_SCALE,
-} from './notification-motion';
+} from './motion';
 
 export function NotificationOverlay({ notification, onDismiss }) {
   const config = {

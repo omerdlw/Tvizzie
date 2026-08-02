@@ -1,6 +1,6 @@
 'use client';
 
-import { REGISTRY_TYPES } from '../registry-context';
+import { REGISTRY_TYPES } from '../context';
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

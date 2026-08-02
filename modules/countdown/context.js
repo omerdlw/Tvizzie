@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 
-import { DEFAULT_COUNTDOWN } from './countdown-config';
+import { DEFAULT_COUNTDOWN } from './config';
 
 const FALLBACK_COUNTDOWN_STATE = Object.freeze({
   isEnabled: false,

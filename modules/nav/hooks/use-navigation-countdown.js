@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useBackgroundActions, useBackgroundState } from '@/modules/background/background-context';
+import { useBackgroundActions, useBackgroundState } from '@/modules/background/context';
 import { useCountdownState } from '@/modules/countdown';
 
 function padCountdownValue(value) {

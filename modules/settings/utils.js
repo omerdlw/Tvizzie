@@ -1,6 +1,6 @@
 import { isObject, isString } from '@/shared/lib/type';
 
-import { SETTINGS_STORAGE_TARGETS } from './settings-config';
+import { SETTINGS_STORAGE_TARGETS } from './config';
 
 export const SETTING_UNSET = Symbol('SETTING_UNSET');
 

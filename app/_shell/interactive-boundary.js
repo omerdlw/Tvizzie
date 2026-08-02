@@ -19,7 +19,7 @@ import {
 import { GlobalErrorListener } from '@/modules/error-boundary/listener';
 import { ModalProvider } from '@/modules/modal';
 import { NotificationContainer } from '@/modules/notification';
-import { NotificationProvider } from '@/modules/notification/notification-context';
+import { NotificationProvider } from '@/modules/notification/context';
 import { NotificationBadgeListener, NotificationListener } from '@/modules/notification';
 import { useRegistry } from '@/modules/registry';
 import { SettingsProvider } from '@/modules/settings';

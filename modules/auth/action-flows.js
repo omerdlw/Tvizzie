@@ -5,8 +5,8 @@ import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oa
 import { EVENT_TYPES } from '@/shared/constants/events';
 import { resolvePrimaryProvider } from '@/domains/auth/capabilities';
 
-import { AUTH_STATUS } from './auth-config';
-import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './auth-utils';
+import { AUTH_STATUS } from './config';
+import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';
 
 const LOCAL_PURGE_SIGN_OUT_REASONS = new Set([
   'delete-account',
@@ -151,7 +151,7 @@ export async function runAuthSignIn({
       userId: session?.user?.id || null,
       email: session?.user?.email || identifier || null,
       provider,
-      metadata: { source: 'auth-context' },
+      metadata: { source: 'context' },
     });
 
     return session;
@@ -167,7 +167,7 @@ export async function runAuthSignIn({
         action: 'sign-in',
         code: error?.code || null,
         message: error?.message || 'Sign in failed',
-        source: 'auth-context',
+        source: 'context',
       },
     });
 
@@ -395,7 +395,7 @@ export async function runAuthProviderMutation({
       userId: session?.user?.id || null,
       email: session?.user?.email || null,
       provider,
-      metadata: { source: 'auth-context' },
+      metadata: { source: 'context' },
     });
 
     return session;
@@ -410,7 +410,7 @@ export async function runAuthProviderMutation({
         action: failureAction,
         code: error?.code || null,
         message: error?.message || failureMessage,
-        source: 'auth-context',
+        source: 'context',
       },
     });
 

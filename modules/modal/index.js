@@ -12,17 +12,17 @@ import {
   MODAL_CHROME,
   MODAL_LABELS,
   MODAL_POSITIONS,
-} from '@/modules/modal/modal-config';
-import { useModal } from '@/modules/modal/modal-context';
+} from '@/modules/modal/config';
+import { useModal } from '@/modules/modal/context';
 
-import { useModalRegistry } from '../registry/registry-context';
-import { POSITION_CLASSES } from './modal-utils';
+import { useModalRegistry } from '../registry/context';
+import { POSITION_CLASSES } from './utils';
 import {
   getModalPositionVariants,
   modalBackdropVariants,
   MODAL_MICRO_SPRING,
   MODAL_MICRO_TAP_SCALE,
-} from './modal-motion';
+} from './motion';
 
 export {
   ACTION_BUTTON_CLASS,
@@ -30,7 +30,7 @@ export {
   default as Container,
   default as ModalContainer,
 } from './container';
-export { useModal, useModalActions, useModalState, ModalProvider } from './modal-context';
+export { useModal, useModalActions, useModalState, ModalProvider } from './context';
 export { resolveAuthVerificationHeader, resolveModalHeader } from './header';
 
 const FOCUSABLE_SELECTOR =

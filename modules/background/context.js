@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useLayoutEffect, useState, useMemo } from 'react';
 
-import { REGISTRY_TYPES, useRegistryValue } from '../registry/registry-context';
+import { REGISTRY_TYPES, useRegistryValue } from '../registry/context';
 
 const BackgroundActionsContext = createContext(null);
 const BackgroundStateContext = createContext(null);

@@ -12,8 +12,8 @@ import {
 
 import { isObject } from '@/shared/lib/type';
 
-import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS_CONFIG } from './settings-config';
-import { createLocalStorageDriver, createSettingsStorage, createCookieDriver } from './settings-storage';
+import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS_CONFIG } from './config';
+import { createLocalStorageDriver, createSettingsStorage, createCookieDriver } from './storage';
 import {
   normalizeSettingsDefinitions,
   resolveSettingsSnapshot,
@@ -23,7 +23,7 @@ import {
   removeSettingValue,
   getSettingValue,
   setSettingValue,
-} from './settings-utils';
+} from './utils';
 
 const SettingsStateContext = createContext(null);
 const SettingsActionsContext = createContext(null);

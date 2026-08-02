@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
-import { useContextMenuRegistry, useNavRegistry } from '@/modules/registry/registry-context';
+import { useContextMenuRegistry, useNavRegistry } from '@/modules/registry/context';
 
 import { useContextMenu } from './context';
 import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';

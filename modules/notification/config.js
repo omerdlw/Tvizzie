@@ -1,4 +1,4 @@
-import { CRITICAL_TYPES, TOAST_TYPES } from './notification-context';
+import { CRITICAL_TYPES, TOAST_TYPES } from './context';
 
 export const NOTIFICATION_CONFIG = Object.freeze({
   [CRITICAL_TYPES.OFFLINE]: {

@@ -10,7 +10,7 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react';
-import { DEFAULT_SOURCE, DYNAMIC_SOURCE, HISTORY_LIMIT, REGISTRY_TYPES } from './registry-constants';
+import { DEFAULT_SOURCE, DYNAMIC_SOURCE, HISTORY_LIMIT, REGISTRY_TYPES } from './constants';
 import {
   applyOperation,
   createRecordKey,
@@ -27,7 +27,7 @@ import {
   runScopedBatch,
   summarizeHistoryValue,
   toSourceRecord,
-} from './registry-store';
+} from './store';
 
 const RegistryActionsContext = createContext(null);
 const RegistryHistoryContext = createContext(null);

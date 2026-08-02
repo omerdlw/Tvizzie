@@ -30,7 +30,7 @@ import { createRequestSupabaseClient } from './session-request-client.server';
 import {
   buildAuthContextFromAccessToken,
   createSessionFromIdToken,
-} from './session-auth-context.server';
+} from './session-context.server';
 import { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session-builder.server';
 import { normalizeValue } from './session-shared';
 

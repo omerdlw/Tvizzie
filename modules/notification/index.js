@@ -8,9 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 
-import { CRITICAL_TYPES, useNotificationActions, useNotificationState } from './notification-context';
-import { NotificationOverlay } from './notification-overlay';
-import { toastVariants } from './notification-motion';
+import { CRITICAL_TYPES, useNotificationActions, useNotificationState } from './context';
+import { NotificationOverlay } from './overlay';
+import { toastVariants } from './motion';
 
 export {
   CRITICAL_TYPES,
@@ -18,8 +18,8 @@ export {
   TOAST_TYPES,
   useNotificationActions,
   useNotificationState,
-} from './notification-context';
-export { useToast } from './notification-hooks';
+} from './context';
+export { useToast } from './hooks';
 
 function sortNotificationsByTimestamp(notifications = {}) {
   return Object.entries(notifications).sort((a, b) => a[1].timestamp - b[1].timestamp);

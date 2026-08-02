@@ -4,7 +4,7 @@ import {
   REGISTRY_RESOLVERS,
   REGISTRY_TYPES,
   isRegistryType,
-} from './registry-constants';
+} from './constants';
 
 const SOURCE_PRIORITY = Object.freeze({
   static: 100,

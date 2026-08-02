@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useAccountClient } from './account-context';
+import { useAccountClient } from './context';
 
 const ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS = 15000;
 const ACCOUNT_PROFILE_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;

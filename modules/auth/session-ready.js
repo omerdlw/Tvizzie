@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useAuthState } from './auth-context';
+import { useAuthState } from './context';
 
 export function useAuthSessionReady(expectedUserId = null) {
   const authState = useAuthState();

@@ -6,12 +6,12 @@ import {
   DEFAULT_SETTINGS_STORAGE_KEY,
   DEFAULT_COOKIE_ATTRIBUTES,
   SETTINGS_STORAGE_TARGETS,
-} from './settings-config';
+} from './config';
 import {
   createPersistedSettingsSnapshot,
   createCookieSettingsSnapshot,
   mergeSettingsObjects,
-} from './settings-utils';
+} from './utils';
 
 let storageInstanceCount = 0;
 
@@ -279,7 +279,7 @@ export function createSettingsStorage({
       ? drivers
       : [createLocalStorageDriver({ key }), createCookieDriver({ key })];
 
-  const instanceId = `settings-storage-${storageInstanceCount + 1}`;
+  const instanceId = `storage-${storageInstanceCount + 1}`;
   storageInstanceCount += 1;
   const changeEventName = `settings:changed:${key}`;
 

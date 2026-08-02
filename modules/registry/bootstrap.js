@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useRegistryActions } from './registry-context';
+import { useRegistryActions } from './context';
 
 let bootstrapInstanceCounter = 0;
 
