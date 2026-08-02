@@ -8,7 +8,7 @@ import {
   NAV_CARD_LAYOUT,
   NAV_HEIGHT_BUFFER,
   NAV_SPACER_BOTTOM_LOCK_DISTANCE,
-} from '../nav-layout';
+} from '../layout';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 

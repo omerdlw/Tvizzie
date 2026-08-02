@@ -1,6 +1,6 @@
 'use client';
 
-import { useNavigationState } from '../nav-context';
+import { useNavigationState } from '../context';
 
 export const useNavHeight = () => {
   const { navHeight } = useNavigationState();

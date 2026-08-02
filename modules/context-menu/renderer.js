@@ -6,13 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Z_INDEX } from '@/shared/constants';
 import Icon from '@/ui/primitives/icon';
 
-import { useContextMenu } from './context-menu-context';
+import { useContextMenu } from './context';
 import { isObject, resolveMenuItems } from './menu-engine';
-import {
-  menuPopVariants,
-  CONTEXT_MENU_TAP_SCALE,
-  CONTEXT_MENU_MICRO_SPRING,
-} from './motion';
+import { menuPopVariants, CONTEXT_MENU_TAP_SCALE, CONTEXT_MENU_MICRO_SPRING } from './motion';
 
 const MENU_SCREEN_MARGIN = 10;
 const CONTEXT_MENU_LAYOUT = Object.freeze({

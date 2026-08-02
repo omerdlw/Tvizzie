@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 import { useContextMenuRegistry, useNavRegistry } from '@/modules/registry/registry-context';
 
-import { useContextMenu } from './context-menu-context';
+import { useContextMenu } from './context';
 import { isObject, resolveContextMenu, resolveMenuItems } from './menu-engine';
 import { ContextMenuRenderer, extractNodeText } from './renderer';
 
@@ -129,5 +129,5 @@ export function ContextMenuGlobal() {
   return <ContextMenuRenderer />;
 }
 
-export { ContextMenuProvider, useContextMenu } from './context-menu-context';
+export { ContextMenuProvider, useContextMenu } from './context';
 export { ContextMenuRenderer } from './renderer';

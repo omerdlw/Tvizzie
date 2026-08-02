@@ -2,9 +2,9 @@
 
 import { useRegistry } from '@/modules/registry';
 
-import { useCountdownState } from './countdown-context';
+import { useCountdownState } from './context';
 
-export { useCountdownActions, CountdownProvider, useCountdownState } from './countdown-context';
+export { useCountdownActions, CountdownProvider, useCountdownState } from './context';
 
 export function CountdownOverlay() {
   const { isEnabled, config } = useCountdownState();

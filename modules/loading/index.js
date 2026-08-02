@@ -3,9 +3,9 @@
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 import { Spinner } from '@/ui/feedback/spinner';
 
-import { useLoadingState } from './loading-context';
+import { useLoadingState } from './context';
 
-export { useLoadingActions, LoadingProvider, useLoadingState } from './loading-context';
+export { useLoadingActions, LoadingProvider, useLoadingState } from './context';
 
 function LoadingContent({ skeleton }) {
   if (skeleton) return skeleton;

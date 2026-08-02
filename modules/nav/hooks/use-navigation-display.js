@@ -4,11 +4,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 import { useLoadingState } from '@/modules/loading';
-import { useNavigationActions, useNavigationState } from '../nav-context';
+import { useNavigationActions, useNavigationState } from '../context';
 import { NAV_EVENT_HANDLERS } from '../events';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import { createInlineSurfaceEntry, resolveSurfaceAction } from '../surface-model';
-import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from '../nav-utils';
+import { isPathPrefix, isSamePath, normalizePath, toSearchableText } from '../utils';
 import { useNavigationCountdown } from './use-navigation-countdown';
 import { useNavigationItems } from './use-navigation-items';
 import { useNavigationStatus } from './use-navigation-status';

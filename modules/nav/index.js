@@ -10,12 +10,12 @@ import { useNavigation } from '@/modules/nav/hooks';
 import { useNavHeightController } from '@/modules/nav/hooks/use-nav-height-controller';
 import { useNavKeyboard } from '@/modules/nav/hooks/use-nav-keyboard';
 import { useNavViewport } from '@/modules/nav/hooks/use-nav-viewport';
-import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/modules/nav/nav-motion';
+import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/modules/nav/motion';
 import { cn } from '@/shared/lib/classnames';
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 
 import Item from './item';
-import { estimateCompactCardWidth } from './nav-layout';
+import { estimateCompactCardWidth } from './layout';
 import {
   canPreviewStackOnTopHover,
   getActiveItemLayoutKey,
@@ -23,14 +23,14 @@ import {
   getItemKey,
   getItemPosition,
   shouldSyncStackHover,
-} from './nav-utils';
+} from './utils';
 
 export {
   NavigationProvider,
   useNavigationActions,
   useNavigationContext,
   useNavigationState,
-} from './nav-context';
+} from './context';
 export { useActionHeight, useElementHeight, useNavHeight, useNavigation } from './hooks';
 export { NavSurfaceHeader, default as NavSurfaceShell, useSurfaceHeader } from './surface';
 export { NAV_SURFACE_RENDER_MODE } from './surface-model';
@@ -211,7 +211,7 @@ export default function Nav() {
       <motion.div
         id="nav-card-stack"
         ref={navRef}
-        className="fixed bottom-1 left-1/2 -translate-x-1/2 w-full touch-manipulation select-none"
+        className="fixed bottom-1 left-1/2 w-full -translate-x-1/2 touch-manipulation select-none"
         style={{
           zIndex: Z_INDEX.NAV,
           maxWidth: '100vw',

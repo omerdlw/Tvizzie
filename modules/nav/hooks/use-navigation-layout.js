@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { useNavigationState } from '../nav-context';
-import { isPathPrefix } from '../nav-utils';
+import { useNavigationState } from '../context';
+import { isPathPrefix } from '../utils';
 
 const MAX_VISIBLE_STACKED_CARDS = 3;
 

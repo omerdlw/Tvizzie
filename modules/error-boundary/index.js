@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { apiCache } from '@/modules/api';
-import { ErrorBoundaryCore } from './error-boundary-core';
+import { ErrorBoundaryCore } from './core';
 
 export { GlobalErrorListener } from './listener';
 export { getErrorReporter } from './reporter';

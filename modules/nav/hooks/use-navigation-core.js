@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
-import { useNavigationActions } from '../nav-context';
+import { useNavigationActions } from '../context';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 
 import { NAV_EVENT_HANDLERS } from '../events';
 import { checkGuards } from '../guards';
-import { isSamePath } from '../nav-utils';
+import { isSamePath } from '../utils';
 
 function blurActiveElement() {
   if (typeof document === 'undefined') return;
@@ -39,7 +39,8 @@ export function useNavigationCore() {
         router.push(href);
         NAV_EVENT_HANDLERS.navigate(href, from);
       };
-      const cancelNavigation = () => closeSurface({ cancelled: true, reason: 'guard', success: false });
+      const cancelNavigation = () =>
+        closeSurface({ cancelled: true, reason: 'guard', success: false });
 
       const surface = createGuardSurface?.({
         to: href,
@@ -55,10 +56,15 @@ export function useNavigationCore() {
       }
 
       if (process.env.NODE_ENV !== 'production') {
-        console.warn('[Navigation] Missing NAV_RUNTIME createGuardSurface; using browser confirmation.');
+        console.warn(
+          '[Navigation] Missing NAV_RUNTIME createGuardSurface; using browser confirmation.',
+        );
       }
 
-      if (typeof window !== 'undefined' && window.confirm(message || 'Are you sure you want to leave this page?')) {
+      if (
+        typeof window !== 'undefined' &&
+        window.confirm(message || 'Are you sure you want to leave this page?')
+      ) {
         confirmNavigation();
       } else {
         cancelNavigation();

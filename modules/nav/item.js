@@ -11,11 +11,11 @@ import {
   NAV_CARD_SPRING,
   NAV_FADE_TRANSITION,
   textCrossfadeVariants,
-} from '@/modules/nav/nav-motion';
+} from '@/modules/nav/motion';
 import { cn } from '@/shared/lib/classnames';
 import Iconify from '@/ui/primitives/icon';
 
-import { NavActionsContainer } from './nav-actions';
+import { NavActionsContainer } from './actions';
 import { Description, Icon as BadgeIcon, Title } from './elements';
 import {
   estimateCompactCardWidth,
@@ -25,9 +25,9 @@ import {
   getRouteMeasurementKey,
   isImageIconSource,
   shouldShowVideoIcon,
-} from './nav-layout';
+} from './layout';
 import NavSurfaceShell from './surface';
-import { resolveNavVisualStyle, shouldRenderInlineAction } from './nav-utils';
+import { resolveNavVisualStyle, shouldRenderInlineAction } from './utils';
 
 // --- HELPER FUNCTIONS ---
 
@@ -93,7 +93,7 @@ function Badge({ badge }) {
 
 function LoadingItemContent() {
   return (
-    <div className={cn('flex h-auto w-full items-center gap-3', className)}>
+    <div className="flex h-auto w-full items-center gap-3">
       <div className="skeleton-block size-12 shrink-0 animate-pulse rounded-2xl" />
       <div className="h-full w-full space-y-2">
         <div className="skeleton-block h-4 w-3/4 animate-pulse rounded-full" />

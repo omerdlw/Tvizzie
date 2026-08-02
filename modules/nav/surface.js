@@ -9,7 +9,7 @@ import {
   NAV_SURFACE_TRANSITION,
   NAV_TAP_SCALE,
   slideFadeVariants,
-} from '@/modules/nav/nav-motion';
+} from '@/modules/nav/motion';
 import { cn } from '@/shared/lib/classnames';
 import Icon from '@/ui/primitives/icon';
 

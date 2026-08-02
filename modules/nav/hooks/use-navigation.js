@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
-import { useNavigationActions, useNavigationState } from '../nav-context';
+import { useNavigationActions, useNavigationState } from '../context';
 import { useNavigationCore } from './use-navigation-core';
 import { useNavigationCompact } from './use-navigation-compact';
 import { useNavigationDisplay } from './use-navigation-display';

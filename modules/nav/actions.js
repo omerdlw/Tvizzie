@@ -14,7 +14,7 @@ import {
   NAV_STAGGER_TRANSITION,
   NAV_TAP_SCALE,
   staggerItemVariants,
-} from '@/modules/nav/nav-motion';
+} from '@/modules/nav/motion';
 import { useToast } from '@/modules/notification/notification-hooks';
 import { useNavRuntimeRegistry } from '@/modules/registry';
 import Tooltip from '@/ui/primitives/tooltip';

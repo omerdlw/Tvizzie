@@ -108,7 +108,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide transition-colors duration-200 ease-in-out uppercase disabled:cursor-not-allowed lg:py-3.5',
+        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed lg:py-3.5',
         getActionPalette(palette, active),
       )}
     >
@@ -162,6 +162,11 @@ export default function CollectionActions({ media }) {
     watchedIntent: null,
     watchlistIntent: null,
   });
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!mediaSnapshot.entityId) {
@@ -236,13 +241,7 @@ export default function CollectionActions({ media }) {
       unsubscribeWatched();
       unsubscribeWatchlist();
     };
-  }, [
-    auth.isAuthenticated,
-    auth.isReady,
-    isSessionReady,
-    mediaSnapshot,
-    userId,
-  ]);
+  }, [auth.isAuthenticated, auth.isReady, isSessionReady, mediaSnapshot, userId]);
 
   const handleLikeClick = async () => {
     if (!auth.isReady) {
@@ -350,15 +349,11 @@ export default function CollectionActions({ media }) {
     if (!mediaSnapshot?.entityId) {
       return;
     }
-    openModal(
-      'LIST_PICKER_MODAL',
-      'center',
-      {
-        data: {
-          media: mediaSnapshot,
-        },
+    openModal('LIST_PICKER_MODAL', 'center', {
+      data: {
+        media: mediaSnapshot,
       },
-    );
+    });
   };
 
   const handleOpenWatchProviders = () => {
@@ -372,6 +367,7 @@ export default function CollectionActions({ media }) {
 
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
+  const shouldShowAuthActions = isHydrated && auth.isReady && auth.isAuthenticated;
   const canGoToMedia = Boolean(mediaSnapshot?.entityId) && isMediaReviewsRoute;
 
   function handleGoToMedia() {
@@ -461,7 +457,7 @@ export default function CollectionActions({ media }) {
       <div
         className={cn(
           'grid grid-cols-1 gap-2',
-          auth.isAuthenticated ? 'min-[460px]:grid-cols-2' : '',
+          shouldShowAuthActions ? 'min-[460px]:grid-cols-2' : '',
         )}
       >
         <ActionItem index={4}>
@@ -473,7 +469,7 @@ export default function CollectionActions({ media }) {
           />
         </ActionItem>
 
-        {auth.isAuthenticated ? (
+        {shouldShowAuthActions ? (
           <ActionItem index={5}>
             <ActionButton
               icon="solar:tv-bold"
