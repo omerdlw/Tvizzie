@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import FilmographyCard from '@/domains/media/person/filmography-card';
+import FilmographyCard from './filmography-card';
 import { getFilmographyCredits } from '@/domains/media/utils/person-data';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import {
