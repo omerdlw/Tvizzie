@@ -10,7 +10,7 @@ import {
   upsertListReview,
   upsertMediaReview,
 } from '@/domains/reviews/server';
-import RatingSelector from '@/domains/reviews/components/rating-selector';
+import RatingSelector from '@/domains/reviews/ui/components/rating-selector';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Textarea } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
