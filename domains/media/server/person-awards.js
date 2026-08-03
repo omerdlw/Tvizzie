@@ -1,172 +1,276 @@
-import { NextResponse } from 'next/server';
+'use client';
 
-import * as cheerio from 'cheerio';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { cn } from '@/shared/utils';
+import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
+import { Spinner } from '@/ui/feedback/spinner';
+import Icon from '@/ui/primitives/icon';
+import MediaThumb from './media-thumb';
+import { heroTitleVariants, EASINGS } from '@/app/(media)/motion';
 
-import {
-  enforceSlidingWindowRateLimit,
-  isSlidingWindowRateLimitError,
-} from '@/domains/auth/servers/security.server.js';
-import { getRequestContext } from '@/domains/auth/servers/session.server.js';
-
-const PERSON_ID_PATTERN = /^\d+$/;
-
-async function enforcePersonAwardsRateLimit(requestContext) {
-  await enforceSlidingWindowRateLimit({
-    namespace: 'api:person-awards',
-    windowMs: 10 * 60 * 1000,
-    dimensions: [
-      { id: 'ip', value: requestContext.ipAddress, limit: 80 },
-      { id: 'device', value: requestContext.deviceId, limit: 60 },
-    ],
-    message: 'Too many awards requests',
-  });
+function isWinType(type = '') {
+  const normalizedType = String(type).trim().toLowerCase();
+  return (
+    normalizedType.includes('win') ||
+    normalizedType.includes('winner') ||
+    normalizedType.includes('kazan')
+  );
 }
 
-export async function GET(request, { params }) {
-  const requestContext = getRequestContext(request);
-  const { id } = await params;
+function sortAwardsByYear(left, right) {
+  if (left[0] === '—') return 1;
+  if (right[0] === '—') return -1;
+  return Number(right[0]) - Number(left[0]);
+}
 
-  if (!id || !PERSON_ID_PATTERN.test(String(id).trim())) {
-    return NextResponse.json({ error: 'Missing person ID' }, { status: 400 });
-  }
+function buildAwardsTimeline(organizations = []) {
+  const awards = organizations.flatMap((organization) =>
+    (organization.years || []).flatMap((yearGroup) =>
+      (yearGroup.categories || []).map((category, index) => ({
+        key: `${organization.id}-${yearGroup.year}-${index}-${category.projectId || category.project || category.category}`,
+        year: yearGroup.year || '—',
+        organization: organization.title,
+        type: category.type || 'Nominee',
+        category: category.category || 'Award',
+        project: category.project || null,
+        projectId: category.projectId || null,
+        mediaType: category.mediaType === 'tv' ? 'tv' : 'movie',
+        poster: category.poster || null,
+      })),
+    ),
+  );
+  const grouped = awards.reduce((accumulator, award) => {
+    if (!accumulator[award.year]) accumulator[award.year] = [];
+    accumulator[award.year].push(award);
+    return accumulator;
+  }, {});
+  return Object.entries(grouped)
+    .sort(sortAwardsByYear)
+    .map(([year, entries]) => [
+      year,
+      entries.sort((left, right) => {
+        const rankDifference = Number(!isWinType(left.type)) - Number(!isWinType(right.type));
+        if (rankDifference !== 0) return rankDifference;
+        return (
+          left.organization.localeCompare(right.organization) ||
+          left.category.localeCompare(right.category)
+        );
+      }),
+    ]);
+}
 
-  try {
-    await enforcePersonAwardsRateLimit(requestContext);
+function AwardsState({ message, variant = 'empty' }) {
+  return (
+    <div className="flex w-full justify-center py-20">
+      <p className={cn('text-sm font-medium text-black/70', variant === 'error' && 'text-error')}>
+        {message}
+      </p>
+    </div>
+  );
+}
 
-    const url = `https://www.themoviedb.org/person/${id}/awards`;
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-      next: { revalidate: 86400 },
-    });
+function WinBadge() {
+  return (
+    <motion.span
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+      className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-700 uppercase shadow-xs"
+    >
+      <Icon icon="solar:cup-star-bold" size={10} />
+      Win
+    </motion.span>
+  );
+}
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch awards from TMDB' },
-        { status: res.status },
-      );
-    }
+function NomineeBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-black/50 uppercase">
+      Nom
+    </span>
+  );
+}
 
-    const html = await res.text();
-    const $ = cheerio.load(html);
-    const results = [];
+export default function PersonAwards({ personId }) {
+  const [awardsData, setAwardsData] = useState(null);
+  const [status, setStatus] = useState('loading');
+  const [errorMessage, setErrorMessage] = useState(null);
 
-    let totalWins = 0;
-    let totalNominations = 0;
-
-    $('.space-y-12 > div').each((i, orgEl) => {
-      const orgNameEl = $(orgEl).find('.font-semibold.leading-9.text-xl a');
-      if (!orgNameEl.length) return;
-
-      const orgTitle = orgNameEl.text().trim();
-      const orgLogo = $(orgEl).find('img.logo').attr('src');
-
-      const orgObj = {
-        id: orgTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        title: orgTitle,
-        logo: orgLogo,
-        years: [],
-      };
-
-      const itemsContainer = $(orgEl).find('.divide-y > div');
-
-      itemsContainer.each((j, itemEl) => {
-        const ceremonyEl = $(itemEl).find('a[href*="/ceremony/"]');
-        const ceremony = ceremonyEl.text().trim();
-        const yearMatch = ceremony.match(/\((\d{4})\)/);
-        const year = yearMatch
-          ? yearMatch[1]
-          : $(itemEl).find('p.md\\:text-right.font-bold').text().trim();
-
-        const typeEl = $(itemEl)
-          .find('.font-semibold')
-          .filter((_, element) => {
-            const text = $(element).text().trim().toLowerCase();
-            return /win|winner|nominee|nomination/.test(text);
-          })
-          .first();
-        const type = typeEl.text().trim() || 'Nominee';
-
-        const categoryEl = $(itemEl).find('a[href*="/category/"]');
-        const category = categoryEl.text().trim();
-
-        const projectImgEl = $(itemEl).find('img.poster');
-        const poster = projectImgEl.attr('src');
-        const projectTitle = projectImgEl.attr('alt');
-        const projectLink = projectImgEl.closest('a').attr('href');
-        let projectId = null;
-        let mediaType = 'movie';
-
-        if (projectLink) {
-          const match = projectLink.match(/\/(movie|tv)\/(\d+)/);
-          if (match) {
-            mediaType = match[1];
-            projectId = match[2];
-          }
+  useEffect(() => {
+    let isCurrent = true;
+    setStatus('loading');
+    setErrorMessage(null);
+    void (async () => {
+      try {
+        const response = await TmdbService.getPersonAwards(personId);
+        if (!isCurrent) return;
+        if (response?.error || !response?.data) {
+          setAwardsData(null);
+          setErrorMessage('Awards are temporarily unavailable');
+          setStatus('error');
+          return;
         }
-
-        if (type.toLowerCase().includes('win') || type.toLowerCase().includes('kazan')) {
-          totalWins++;
-        } else {
-          totalNominations++;
+        setAwardsData(response.data);
+        setStatus('ready');
+      } catch {
+        if (isCurrent) {
+          setAwardsData(null);
+          setErrorMessage('Awards are temporarily unavailable');
+          setStatus('error');
         }
-
-        let yearObj = orgObj.years.find((y) => y.year === year);
-        if (!yearObj) {
-          yearObj = { year, eventName: ceremony, categories: [] };
-          orgObj.years.push(yearObj);
-        }
-
-        yearObj.categories.push({
-          type,
-          category,
-          project: projectTitle,
-          projectId,
-          mediaType,
-          poster,
-        });
-      });
-
-      orgObj.years = orgObj.years
-        .map((yearEntry) => ({
-          ...yearEntry,
-          categories: yearEntry.categories.filter(Boolean),
-        }))
-        .filter((yearEntry) => yearEntry.categories.length > 0);
-
-      if (orgObj.years.length === 0) {
-        return;
       }
+    })();
+    return () => {
+      isCurrent = false;
+    };
+  }, [personId]);
 
-      results.push(orgObj);
-    });
+  const awardsTimeline = useMemo(
+    () => buildAwardsTimeline(awardsData?.organizations || []),
+    [awardsData],
+  );
 
-    return NextResponse.json({
-      organizations: results,
-      stats: {
-        totalWins,
-        totalNominations: totalWins + totalNominations,
-      },
-    });
-  } catch (error) {
-    if (isSlidingWindowRateLimitError(error)) {
-      return NextResponse.json(
-        { error: 'Too many awards requests. Please try again later' },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(error.retryAfterSeconds || 60),
-          },
-        },
-      );
-    }
+  if (status === 'loading') return <Spinner size={32} className="mx-auto block mt-10" />;
+  if (status === 'error') return <AwardsState message={errorMessage} variant="error" />;
+  if (!awardsTimeline.length) return <AwardsState message="No awards information found" />;
 
-    console.error('Scraping error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+  const stats = awardsData?.stats;
+  const winsCount = stats?.totalWins ?? 0;
+  const nominationsCount = stats?.totalNominations ?? 0;
+  const hasWins = winsCount > 0;
+  const titleText = hasWins ? `${winsCount} WINS` : `${nominationsCount} Nominations`;
+  const subtitleText = hasWins ? `${nominationsCount} Nominations` : null;
+
+  return (
+    <section className="w-full">
+      <motion.div {...heroTitleVariants} className="mx-auto max-w-[72ch] text-center">
+        <div className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl">
+          {titleText}
+        </div>
+        {subtitleText ? (
+          <p className="mt-4 text-sm leading-relaxed text-pretty text-black/70 sm:text-base sm:leading-7">
+            {subtitleText}
+          </p>
+        ) : null}
+      </motion.div>
+
+      <div className="relative mt-8">
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 1.2, ease: EASINGS.LUXURY, delay: 0.1 }}
+          className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24"
+        />
+
+        <div className="flex flex-col">
+          {awardsTimeline.map(([year, entries], yearIndex) => {
+            const isLast = yearIndex === awardsTimeline.length - 1;
+            return (
+              <div key={year} className="relative flex">
+                <div className="w-16 shrink-0 sm:w-24">
+                  <motion.span
+                    initial={{ opacity: 0, x: -16, filter: 'blur(8px)' }}
+                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    transition={{
+                      duration: 0.6,
+                      delay: Math.min(yearIndex * 0.05, 0.4),
+                      ease: EASINGS.LUXURY,
+                    }}
+                    className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base"
+                  >
+                    {year}
+                  </motion.span>
+                </div>
+
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 350,
+                    damping: 20,
+                    delay: Math.min(yearIndex * 0.05 + 0.1, 0.45),
+                  }}
+                  className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24"
+                />
+
+                <div
+                  className={`min-w-0 flex-1 pt-[18px] pl-4 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
+                >
+                  {entries.map((entry, entryIndex) => {
+                    const isWin = isWinType(entry.type);
+                    const isInteractive = Boolean(entry.projectId);
+                    const title = entry.project || entry.category;
+                    const entryDelay = Math.min(yearIndex * 0.06 + entryIndex * 0.04, 0.5);
+
+                    const content = (
+                      <>
+                        <MediaThumb
+                          poster={entry.poster}
+                          alt={title}
+                          className="w-16 rounded-2xl sm:w-20"
+                        />
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <div className="flex min-w-0 flex-1 items-center gap-2">
+                            <span className="truncate text-base leading-tight font-semibold tracking-tight sm:text-lg">
+                              {title}
+                            </span>
+                            {isWin ? <WinBadge /> : <NomineeBadge />}
+                          </div>
+                          <span className="truncate text-sm text-black/45">
+                            {entry.organization} · {entry.category}
+                          </span>
+                        </div>
+                      </>
+                    );
+
+                    const animationProps = {
+                      initial: { opacity: 0, x: 28, scale: 0.96, filter: 'blur(14px)' },
+                      animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
+                      transition: {
+                        duration: 0.75,
+                        delay: entryDelay,
+                        ease: EASINGS.LUXURY,
+                      },
+                      whileHover: {
+                        scale: 1.02,
+                        x: 4,
+                        transition: { type: 'spring', stiffness: 400, damping: 25 },
+                      },
+                      whileTap: { scale: 0.98 },
+                    };
+
+                    if (isInteractive) {
+                      return (
+                        <motion.div key={entry.key} {...animationProps}>
+                          <Link
+                            href={`/${entry.mediaType}/${entry.projectId}`}
+                            className="flex items-center gap-4 rounded-[20px] p-1 transition-colors hover:bg-black/5"
+                          >
+                            {content}
+                          </Link>
+                        </motion.div>
+                      );
+                    }
+
+                    return (
+                      <motion.div
+                        key={entry.key}
+                        {...animationProps}
+                        className="flex items-center gap-4 rounded-[20px] p-1"
+                      >
+                        {content}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }

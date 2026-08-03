@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import SocialLinks from '@/domains/media/person/social-links';
+import SocialLinks from '@/domains/media/ui/person/';
 import Icon from '@/ui/primitives/icon';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 
