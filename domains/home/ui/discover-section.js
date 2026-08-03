@@ -18,7 +18,7 @@ import {
   MOBILE_DISCOVER_MEDIA_QUERY,
   getUniqueDiscoverItems,
   getDiscoverBatchSize,
-} from './utils';
+} from '@/domains/home/utils';
 
 function GenreChip({ genre, isActive, onClick, index = 0 }) {
   const chipProps = getGenreChipProps(index);

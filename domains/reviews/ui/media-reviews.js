@@ -14,9 +14,9 @@ import { useNavigationActions } from '@/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
 import { Button, Select } from '@/ui/primitives';
-import ReviewAuthFallback from '../components/review-auth-fallback';
-import ReviewHeader from '../components/review-header';
-import ReviewList from '../components/review-list';
+import ReviewAuthFallback from './components/review-auth-fallback';
+import ReviewHeader from './components/review-header';
+import ReviewList from './components/review-list';
 import { useMediaReviews } from '../hooks/use-media-reviews';
 import {
   getRatingStats,

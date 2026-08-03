@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import MediaThumb from './media-thumb';
-import { getTimelineCredits } from './person-data';
+import { getTimelineCredits } from '@/domains/media/utils/person-data';
 import { EASINGS } from '@/app/(media)/motion';
 
 function groupByYear(credits) {
