@@ -17,7 +17,7 @@ import { Button, Select } from '@/ui/primitives';
 import ReviewAuthFallback from '../components/review-auth-fallback';
 import ReviewHeader from '../components/review-header';
 import ReviewList from '../components/review-list';
-import { useMediaReviews } from './use-media-reviews';
+import { useMediaReviews } from '../hooks/use-media-reviews';
 import {
   getRatingStats,
   parseReviewSortMode,
