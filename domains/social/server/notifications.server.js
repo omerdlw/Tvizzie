@@ -15,7 +15,7 @@ import {
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
 import { normalizeValue } from '@/shared/utils';
-import { requireAuthenticatedRequest } from '@/domains/auth/servers/session.server.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
 import {
   createRouteAuthMeta,
   createRouteErrorResponse,

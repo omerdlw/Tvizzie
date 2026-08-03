@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { resolveOptionalSessionRequest } from '@/domains/auth/servers/session.server.js';
+import { resolveOptionalSessionRequest } from '@/domains/auth/server/session.server.js';
 import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 function normalizeValue(value) {

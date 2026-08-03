@@ -3,7 +3,7 @@ import 'server-only';
 import {
   readSessionFromRequest,
   requireAuthenticatedRequest,
-} from '@/domains/auth/servers/session.server.js';
+} from '@/domains/auth/server/session.server.js';
 import { getFollowResource } from '@/domains/social/server/social/follow-resources.server';
 import {
   createApiErrorResponse,
