@@ -1,5 +1,5 @@
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { cleanString } from '@/shared/lib/string';
+import { normalizeTimestamp } from '@/shared/utils';
+import { cleanString } from '@/shared/utils';
 import { getUserAccount } from '@/domains/account/server/profile/profile-service';
 import {
   assertTitleMedia,
@@ -7,7 +7,7 @@ import {
   normalizeMediaPayload,
 } from '@/domains/media/server/media';
 
-import { isTitleMediaType } from '@/shared/lib/media';
+import { isTitleMediaType } from '@/domains/media/utils';
 
 export function resolveRpcRow(data) {
   if (Array.isArray(data)) {

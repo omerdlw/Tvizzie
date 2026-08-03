@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { assertSignUpEmailAvailable } from '@/domains/auth/requests';
-import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/utils';
 import {
   buildAuthHref,
   hasSatisfiedPasswordRequirements,
@@ -32,7 +32,7 @@ import AuthRegistry from '@/app/(auth)/registry';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { OAUTH_PROVIDER_KEYS } from '@/domains/auth/oauth-providers';
-import { arePasswordRulesSatisfied, evaluatePasswordRules } from '@/domains/auth/password-validation';
+import { arePasswordRulesSatisfied, evaluatePasswordRules } from '@/domains/auth/utils';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,

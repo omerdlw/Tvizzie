@@ -1,5 +1,5 @@
 import { createCsrfHeaders } from '@/domains/auth/clients/csrf.client';
-import { validatePasswordRules } from '@/domains/auth/password-validation';
+import { validatePasswordRules } from '@/domains/auth/utils';
 
 export const AUTH_PURPOSE = {
   ACCOUNT_DELETE: 'account-delete',

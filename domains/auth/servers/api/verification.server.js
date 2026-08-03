@@ -47,7 +47,7 @@ import {
   verifyEmailVerificationChallenge,
 } from '@/domains/auth/servers/auth-verification.js';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 function normalizeSuccessPayload(challenge) {
   return {

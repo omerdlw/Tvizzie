@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { Tooltip } from '@/ui/primitives/index';
 import Icon from '@/ui/primitives/icon';
 const SOCIAL_LINKS = [

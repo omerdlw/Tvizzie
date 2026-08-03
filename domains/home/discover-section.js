@@ -13,26 +13,12 @@ import {
   getDiscoverCardProps,
   loadMoreButtonVariants,
 } from '@/app/(home)/motion';
-const ALL_GENRE_ID = 'all';
-const MOBILE_DISCOVER_BATCH = 9;
-const DESKTOP_DISCOVER_BATCH = 24;
-const MOBILE_DISCOVER_MEDIA_QUERY = '(max-width: 639px)';
-function getUniqueItems(items = [], limit = items.length) {
-  const seen = new Set();
-  return items
-    .filter((item) => {
-      const id = item?.id;
-      if (!id || seen.has(id)) {
-        return false;
-      }
-      seen.add(id);
-      return true;
-    })
-    .slice(0, limit);
-}
-function getDiscoverBatchSize(isMobileGrid) {
-  return isMobileGrid ? MOBILE_DISCOVER_BATCH : DESKTOP_DISCOVER_BATCH;
-}
+import {
+  ALL_GENRE_ID,
+  MOBILE_DISCOVER_MEDIA_QUERY,
+  getUniqueDiscoverItems,
+  getDiscoverBatchSize,
+} from './utils';
 
 function GenreChip({ genre, isActive, onClick, index = 0 }) {
   const chipProps = getGenreChipProps(index);
@@ -93,7 +79,7 @@ export function DiscoverSection({
     ),
   );
   const batchSize = getDiscoverBatchSize(isMobileGrid);
-  const gridItems = getUniqueItems(discoverItems, discoverItems.length).slice(
+  const gridItems = getUniqueDiscoverItems(discoverItems, discoverItems.length).slice(
     0,
     sectionsLoaded * batchSize,
   );
@@ -115,7 +101,7 @@ export function DiscoverSection({
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     const minimumTarget = Math.max(0, Number(minimumCount) || 0);
-    let aggregatedItems = append ? getUniqueItems(discoverItems, discoverItems.length) : [];
+    let aggregatedItems = append ? getUniqueDiscoverItems(discoverItems, discoverItems.length) : [];
     let nextPageToFetch = page;
     let resolvedPage = append ? discoverPage : page - 1;
     let nextHasMore = hasMore;
@@ -133,7 +119,7 @@ export function DiscoverSection({
       const nextResults = Array.isArray(response.data?.results) ? response.data.results : [];
       resolvedPage = Number(response.data?.page) || nextPageToFetch;
       nextHasMore = resolvedPage < (Number(response.data?.total_pages) || resolvedPage);
-      aggregatedItems = getUniqueItems([...aggregatedItems, ...nextResults]);
+      aggregatedItems = getUniqueDiscoverItems([...aggregatedItems, ...nextResults]);
       if (!nextHasMore || aggregatedItems.length >= minimumTarget || minimumTarget === 0) {
         break;
       }

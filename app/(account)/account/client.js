@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { TMDB_IMG } from '@/shared/constants';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 import {
   hasMatchingSeededFeed,
   useDeferredPreviewFeed,
 } from '@/domains/account/ui/hooks/section-page';
-import { isPermissionDeniedError, logDataError } from '@/shared/lib';
+import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';

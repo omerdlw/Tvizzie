@@ -1,7 +1,7 @@
 'use client';
 
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
-import { resolveAuthCapabilities } from '@/domains/auth/capabilities';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { resolveAuthCapabilities } from '@/domains/auth/utils';
 import { createCsrfHeaders } from '@/domains/auth/clients';
 import {
   buildOAuthCallbackUrl,

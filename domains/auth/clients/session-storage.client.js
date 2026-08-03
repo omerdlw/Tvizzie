@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeLowerValue } from '@/shared/lib/string';
+import { normalizeLowerValue } from '@/shared/utils';
 
 export function normalizeStoredEmail(value) {
   return normalizeLowerValue(value);

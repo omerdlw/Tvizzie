@@ -9,8 +9,8 @@ import {
   followUser,
   unfollowUser,
 } from '@/domains/social/server/social/follow-service';
-import { getUserAvatarUrl } from '@/shared/lib';
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { getUserAvatarUrl } from '@/domains/account/utils';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';

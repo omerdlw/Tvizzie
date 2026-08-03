@@ -6,7 +6,7 @@ import {
   markAllUserNotificationsAsRead,
   markNotificationAsRead,
 } from '@/domains/social/server/notifications/notification-resources.server';
-import { NOTIFICATION_TYPE_SET } from '@/domains/social/server/notifications/notifications-constants';
+import { NOTIFICATION_TYPE_SET } from '@/domains/social/utils';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import {
   executeWriteRollout,
@@ -14,7 +14,7 @@ import {
   invalidateCachedValuesWhere,
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { requireAuthenticatedRequest } from '@/domains/auth/servers/auth-session.js';
 import {
   createRouteAuthMeta,

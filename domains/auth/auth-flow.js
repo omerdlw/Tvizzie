@@ -5,13 +5,13 @@
  * @description Doğrulama, hata metinleri çözümleme ve yönlendirme yardımcı fonksiyonları.
  */
 
-import { arePasswordRulesSatisfied, validatePasswordRules } from '@/domains/auth/password-validation';
+import { arePasswordRulesSatisfied, validatePasswordRules } from '@/domains/auth/utils';
 import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/domains/auth/oauth-callback';
 import {
   AUTH_ERROR_MESSAGES,
   AUTH_ERROR_MESSAGE_PATTERNS,
   EMAIL_DOMAIN_PATTERNS,
-} from './auth-constants';
+} from './utils';
 
 // ============================================================================
 // 1. TEMEL VE E-POSTA/ŞİFRE DOĞRULAMA

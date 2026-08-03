@@ -1,7 +1,7 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createClient } from '@supabase/supabase-js';
 
-import { normalizePassword, validatePasswordRules } from '@/domains/auth/password-validation';
+import { normalizePassword, validatePasswordRules } from '@/domains/auth/utils';
 import {
   SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_URL,

@@ -9,10 +9,10 @@ import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
 import { createMediaSnapshot } from '@/domains/media/server/media';
 
-import { isTitleMediaType } from '@/shared/lib/media';
-import { normalizeValue as normalizeSubjectValue } from '@/shared/lib/string';
+import { isTitleMediaType } from '@/domains/media/utils';
+import { normalizeValue as normalizeSubjectValue } from '@/shared/utils';
 
-import { REVIEW_LIMIT, REVIEW_LIVE_EVENT_TYPE } from './review-constants.js';
+import { REVIEW_LIMIT, REVIEW_LIVE_EVENT_TYPE } from '@/domains/reviews/utils';
 
 export function getMediaReviewsSubscriptionKey(media) {
   return buildPollingSubscriptionKey('reviews:media', {

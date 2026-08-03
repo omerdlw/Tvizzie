@@ -2,8 +2,8 @@
 
 import { createCsrfHeaders } from '@/domains/auth/clients';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
-import { validateUsername } from '@/shared/lib/account';
-import { cleanString } from '@/shared/lib/string';
+import { validateUsername } from '@/domains/account/utils';
+import { cleanString } from '@/shared/utils';
 
 import {
   createUserIdentity,
@@ -26,8 +26,6 @@ import {
   primeUserAccount as primeUserAccountValue,
   subscribeToUserAccount as subscribeToUserAccountPolling,
 } from './profile-service-subscriptions';
-
-export { sanitizeUsername, validateUsername } from '@/shared/lib/account';
 
 export function normalizeAccountSnapshot(snapshot) {
   return normalizeAccountSnapshotModel(snapshot);

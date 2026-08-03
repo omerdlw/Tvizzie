@@ -3,7 +3,7 @@
 import { logAuthAuditEvent } from '@/domains/auth/clients';
 import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth-providers';
 import { EVENT_TYPES } from '@/shared/constants/events';
-import { resolvePrimaryProvider } from '@/domains/auth/capabilities';
+import { resolvePrimaryProvider } from '@/domains/auth/utils';
 
 import { AUTH_STATUS } from './config';
 import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 import { MODAL_MICRO_SPRING, MODAL_MICRO_TAP_SCALE } from './motion';

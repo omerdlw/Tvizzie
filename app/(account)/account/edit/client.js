@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 import {
   INITIAL_DELETE_FLOW,
@@ -19,7 +19,7 @@ import {
   normalizeOptionalText,
   normalizeProviderIds,
 } from '@/domains/account/ui/account-data';
-import { logDataError } from '@/shared/lib';
+import { logDataError } from '@/domains/account/utils';
 import { uploadAccountMediaFile } from '@/domains/account/server/profile/profile-service';
 import { useAccount } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
@@ -28,7 +28,7 @@ import { useNavigationActions } from '@/modules/nav';
 import { createFileUploadSurfaceEntry } from '@/ui/feedback/file-upload-surface';
 import { useToast } from '@/modules/notification';
 // AccountEditView is defined in this route client.
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { useNavHeight } from '@/modules/nav';
 import {

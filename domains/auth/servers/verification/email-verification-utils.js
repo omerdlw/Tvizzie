@@ -1,7 +1,7 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createHash, randomBytes, randomInt } from 'crypto';
 
-import { OTP_CODE_LENGTH } from './email-verification-constants';
+import { OTP_CODE_LENGTH } from '@/domains/auth/utils';
 
 export function normalizeEmail(value) {
   return normalizeEmailValue(value);

@@ -12,7 +12,8 @@ import {
   markAsRead,
   subscribeToNotifications,
 } from '@/domains/social/server/notifications/notifications-service';
-import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+import { cn } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';

@@ -1,4 +1,4 @@
-import { toFiniteNumber } from '@/shared/lib/number';
+import { toFiniteNumber } from '@/shared/utils';
 
 function getTextLength(value) {
   return String(value || '').trim().length;

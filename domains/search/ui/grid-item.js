@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { TMDB_IMG } from '@/shared/constants';
-import { applyAvatarFallback, cn, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/shared/lib';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+import { cn } from '@/shared/utils';
 import {
   getPreferredSearchImageSrc,
   usePosterPreferenceVersion,
@@ -10,7 +11,7 @@ import {
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 import MediaCard from '@/domains/media/ui/components/media-card';
-import { SEARCH_TYPES } from './search-constants';
+import { SEARCH_TYPES } from '@/domains/search/utils';
 import { getDetailPath, getImagePath, getItemTitle, getItemYear } from '@/domains/search/ui/search-data';
 function getImageSrc(item) {
   if (item.media_type === SEARCH_TYPES.USER) {

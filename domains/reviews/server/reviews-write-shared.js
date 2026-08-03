@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 export const REVIEW_MIN_LENGTH = 10;
 

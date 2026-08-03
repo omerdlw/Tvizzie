@@ -6,7 +6,7 @@ import {
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
 } from '@/domains/account/ui/hooks/section-page';
-import { isPermissionDeniedError, logDataError } from '@/shared/lib';
+import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import { TMDB_IMG } from '@/shared/constants';

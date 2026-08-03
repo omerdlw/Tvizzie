@@ -7,7 +7,7 @@ import {
   createRouteValidationErrorResponse,
 } from '@/infrastructure/http/route-context.server';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 export { normalizeValue };
 

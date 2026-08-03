@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createHash } from 'crypto';
 
 import {
@@ -14,7 +14,7 @@ import {
   TRUSTED_DEVICE_COOKIE_PREFIX,
   TRUSTED_DEVICE_MAX_AGE_MS,
   TRUSTED_DEVICE_MAX_AGE_SECONDS,
-} from './login-verification-constants';
+} from '@/domains/auth/utils';
 import { resolveSecretWithFallback } from './secret-fallback.server';
 import { createSignedToken, verifySignedToken } from './signed-token.server';
 

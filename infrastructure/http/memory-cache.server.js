@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 const DEFAULT_TTL_MS = 2000;
 const MAX_CACHE_ENTRIES = 400;
 const responseCache = new Map();

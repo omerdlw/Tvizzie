@@ -10,7 +10,7 @@ import {
   parsePageFromSearch,
   toActivityQueryValues,
 } from '@/domains/account/ui/filtering/filtering';
-import { logDataError } from '@/shared/lib';
+import { logDataError } from '@/domains/account/utils';
 import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
 import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
 // ActivityView is defined in this route client.

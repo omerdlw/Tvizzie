@@ -1,8 +1,8 @@
 import { normalizeFavoriteShowcaseItems } from '@/domains/media/server/media';
-import { normalizeAccountDisplayNameSearchValue } from '@/shared/lib/account';
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { cleanString } from '@/shared/lib/string';
-import { isValidUrl } from '@/shared/lib/url';
+import { normalizeAccountDisplayNameSearchValue } from '@/domains/account/utils';
+import { normalizeTimestamp } from '@/shared/utils';
+import { cleanString } from '@/shared/utils';
+import { isValidUrl } from '@/shared/utils';
 
 function normalizeAccountData(data = {}, id = null) {
   const displayName = data.display_name || data.displayName || 'Anonymous User';

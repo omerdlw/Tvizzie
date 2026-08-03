@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 import { createChallengeProofToken, verifyChallengeProofToken } from './challenge-proof.server';
 import { resolveSecretWithFallback } from './secret-fallback.server';

@@ -1,4 +1,4 @@
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 export function Spinner({ className, size = 15 }) {
   return (

@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 export const SUPABASE_URL = normalizeValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
 export const SUPABASE_PUBLISHABLE_KEY = normalizeValue(

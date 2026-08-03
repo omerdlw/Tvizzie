@@ -1,5 +1,5 @@
 import * as followClientShared from './follow-client-shared.js';
-import * as followConstants from './follow-constants.js';
+import * as followConstants from '@/domains/social/utils';
 import * as followMutations from './follow-mutations.js';
 import * as followResources from './follow-resources.server.js';
 import * as followSubscriptions from './follow-subscriptions.js';
@@ -13,7 +13,7 @@ export { followSubscriptions };
 export { followsService };
 
 export * from './follow-client-shared.js';
-export * from './follow-constants.js';
+export * from '@/domains/social/utils';
 export * from './follow-mutations.js';
 export * from './follow-resources.server.js';
 export * from './follow-subscriptions.js';

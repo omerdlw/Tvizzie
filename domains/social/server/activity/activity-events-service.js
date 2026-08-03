@@ -1,7 +1,7 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import { ACTIVITY_EVENT_TYPES } from './activity-events-constants';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/utils';
 
 async function postActivityEvent({ eventType, payload = {} }) {
   return requestApiJson('/api/activity/events', {

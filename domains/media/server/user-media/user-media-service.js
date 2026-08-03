@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { getSupabaseClient, assertSupabaseResult } from '@/infrastructure/http/supabase-data-service';
 
 const POSITION_IN_PAYLOAD_TABLES = new Set(['favorites', 'likes', 'watchlist', 'watched']);

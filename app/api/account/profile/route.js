@@ -1,1 +1,1 @@
-export { GET, POST } from '@/domains/account/server/api/profile.server';
+export { GET, POST } from '@/domains/account/server/api/profile';

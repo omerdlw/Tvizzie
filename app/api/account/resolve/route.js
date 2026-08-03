@@ -1,1 +1,1 @@
-export * from '@/domains/account/server/api/resolve.server';
+export * from '@/domains/account/server/api/resolve';

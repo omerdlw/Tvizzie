@@ -12,7 +12,7 @@ import {
   NAV_FADE_TRANSITION,
   textCrossfadeVariants,
 } from '@/modules/nav/motion';
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import Iconify from '@/ui/primitives/icon';
 
 import { NavActionsContainer } from './actions';

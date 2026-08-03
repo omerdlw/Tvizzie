@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 export function BlurryText({
   children,

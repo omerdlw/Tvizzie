@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 const CSRF_COOKIE_NAME = 'tvz_auth_csrf';
 

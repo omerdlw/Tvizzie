@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { ACTIVITY_EVENT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
-import { normalizeMediaType } from '@/shared/lib/media';
+import { ACTIVITY_EVENT_TYPES } from '@/domains/social/utils';
+import { normalizeMediaType } from '@/domains/media/utils';
 import { normalizeValue } from './feed-normalizers';
 
 function buildAccountHref({ id = null, username = null } = {}) {

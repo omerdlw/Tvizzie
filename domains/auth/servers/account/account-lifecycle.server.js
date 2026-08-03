@@ -1,5 +1,5 @@
-import { normalizeValue } from '@/shared/lib/string';
-import { ACCOUNT_LIFECYCLE_TABLE } from '@/domains/auth/auth-tables-constants';
+import { normalizeValue } from '@/shared/utils';
+import { ACCOUNT_LIFECYCLE_TABLE } from '@/domains/auth/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 
 export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({

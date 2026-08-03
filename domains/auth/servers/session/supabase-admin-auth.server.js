@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { resolveProviderDescriptors } from '@/domains/auth/capabilities';
+import { resolveProviderDescriptors } from '@/domains/auth/utils';
 import { invokeSessionControl } from './revocation.server';
 
 function normalizeIdentities(value) {

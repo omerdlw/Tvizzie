@@ -1,9 +1,9 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 export { normalizeValue };
 import { normalizeFavoriteShowcaseItems } from '@/domains/media/server/media';
-import { normalizeTimestamp } from '@/shared/lib/format';
+import { normalizeTimestamp } from '@/shared/utils';
 
 export function normalizeCount(value, fallback = 0) {
   const parsed = Number(value);

@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
-import { ACCOUNT_REVIEWS_FEED_FUNCTION } from './review-server-constants.js';
+import { ACCOUNT_REVIEWS_FEED_FUNCTION } from '@/domains/reviews/utils';
 import { fetchProfileReviewFeedLegacyServer } from './review-server-queries.js';
 import { paginateReviewItems } from './review-server-shared.js';
 

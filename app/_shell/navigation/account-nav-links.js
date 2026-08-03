@@ -1,4 +1,4 @@
-import { ACCOUNT_SECTION_KEYS } from '@/shared/lib/account';
+import { ACCOUNT_SECTION_KEYS } from '@/domains/account/utils';
 
 const ACCOUNT_NAV_CHILDREN = Object.freeze([
   {

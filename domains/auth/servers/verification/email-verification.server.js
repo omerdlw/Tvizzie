@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 import {
   GENERIC_VERIFY_ERROR,
@@ -9,7 +9,7 @@ import {
   RESEND_COOLDOWN_MS,
   SECURE_PURPOSES,
   TOKEN_VERSION,
-} from './email-verification-constants';
+} from '@/domains/auth/utils';
 import { enforceSendCodeRateLimit } from './email-verification.rate-limit.server';
 import {
   getChallengeByKey,

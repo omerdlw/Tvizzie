@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createClient } from '@/infrastructure/supabase/supabase-client';
 
 export function getSupabaseClient() {

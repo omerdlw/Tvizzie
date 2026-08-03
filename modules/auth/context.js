@@ -11,7 +11,7 @@ import {
 } from 'react';
 
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { normalizeLowerValue } from '@/shared/lib/string';
+import { normalizeLowerValue } from '@/shared/utils';
 
 import {
   runAuthInitialize,
@@ -135,17 +135,13 @@ export function AuthProvider({ children, config = {} }) {
   const sessionRef = useRef(null);
 
   const [state, setState] = useState(() => {
-    if (typeof window !== 'undefined' && mergedConfig.hydrateFromStorage) {
-      try {
-        const cachedSession = storage.read();
-        const normalized = normalizeSession(cachedSession);
-        if (normalized) {
-          return createSessionState(DEFAULT_AUTH_STATE, normalized);
-        }
-      } catch {
-        // Fallback to DEFAULT_AUTH_STATE
+    if (mergedConfig.initialSession) {
+      const normalizedSession = normalizeSession(mergedConfig.initialSession);
+      if (normalizedSession) {
+        return createSessionState(DEFAULT_AUTH_STATE, normalizedSession);
       }
     }
+
     return DEFAULT_AUTH_STATE;
   });
 

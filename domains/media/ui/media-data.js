@@ -1,5 +1,6 @@
 import { TMDB_IMG } from '@/shared/constants';
-import { formatRuntime, uniqueBy } from '@/shared/lib';
+import { formatRuntime } from '@/shared/utils';
+import { uniqueBy } from '@/domains/media/utils';
 
 const MAX_WRITERS = 10;
 const MAX_RECOMMENDATIONS = 14;

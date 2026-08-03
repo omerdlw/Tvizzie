@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { randomUUID } from 'crypto';
 import { publishUserRealtimeBroadcast } from '@/infrastructure/realtime/realtime-broadcast.server';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { resolveAuthCapabilities, resolvePrimaryProvider } from '@/domains/auth/capabilities';
+import { resolveAuthCapabilities, resolvePrimaryProvider } from '@/domains/auth/utils';
 
 function toArray(value) {
   if (Array.isArray(value)) return value;

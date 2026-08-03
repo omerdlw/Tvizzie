@@ -17,7 +17,7 @@ import {
   subscribeToUserLists,
   toggleUserListItem,
 } from '@/domains/media/server/lists';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,

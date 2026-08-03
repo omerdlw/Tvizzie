@@ -1,13 +1,13 @@
-import { toFiniteNumber } from '@/shared/lib/number';
+import { toFiniteNumber } from '@/shared/utils';
 
-import { SEARCH_TYPES } from './search-constants';
+import { SEARCH_TYPES } from '@/domains/search/utils';
 import { normalizeResult } from './search-result';
 import {
   countTokenOverlap,
   hasExactComparableMatch,
   normalizeComparableText,
   tokenizeComparableText,
-} from './search-text';
+} from '@/domains/search/utils';
 
 function isExactMovieTitleMatch(movie = {}, normalizedQuery = '') {
   return hasExactComparableMatch(

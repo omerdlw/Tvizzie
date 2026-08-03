@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { Spinner } from '@/ui/feedback/spinner';
 function getSafeSrc(src) {
   const value = String(src || '').trim();

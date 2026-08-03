@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 function warnOnce(globalKey, message) {
   if (globalThis[globalKey]) {

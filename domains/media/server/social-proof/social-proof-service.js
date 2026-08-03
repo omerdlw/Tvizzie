@@ -6,7 +6,7 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import { createMediaSnapshot } from '@/domains/media/server/media';
-import { isTitleMediaType } from '@/shared/lib/media';
+import { isTitleMediaType } from '@/domains/media/utils';
 
 function createEmptyProofGroup() {
   return {

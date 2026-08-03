@@ -1,4 +1,4 @@
-import { isPersonMediaType } from '@/shared/lib/media';
+import { isPersonMediaType } from '@/domains/media/utils';
 
 import { SEARCH_PAGE_SIZE, SEARCH_RUNTIME_CHECK_LIMITS, SEARCH_SCAN_PAGE_LIMITS } from '../tmdb-client-config';
 

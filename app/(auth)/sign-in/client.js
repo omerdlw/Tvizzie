@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/requests';
-import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/utils';
 import {
   buildAuthHref,
   createError,

@@ -1,10 +1,11 @@
 import 'server-only';
 
-import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/profile/profile-read.server';
+import { getEditableAccountSnapshotByUserId } from '@/domains/account/server/profile/profile-read';
 import {
+  canViewerAccessUserContent,
   getAccountIdByUsername,
   getAccountProfileByUserId,
-} from '@/domains/account/server/profile/profile-public-read.server';
+} from '@/domains/account/server/profile/profile-public-read';
 import { getViewerSessionContext } from './route-session';
 
 export async function getCurrentEditableAccountSnapshot() {

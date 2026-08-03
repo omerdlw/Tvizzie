@@ -6,8 +6,8 @@ import {
   MAX_UPLOAD_BYTES,
   MAX_UPLOAD_BYTES_BY_TARGET,
   MIME_EXTENSION_MAP,
-} from './media-constants';
-import { normalizeValue } from '@/shared/lib/string';
+} from '@/domains/account/utils';
+import { normalizeValue } from '@/shared/utils';
 
 export { normalizeValue };
 

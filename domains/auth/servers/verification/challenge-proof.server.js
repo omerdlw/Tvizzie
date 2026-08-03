@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { randomBytes } from 'crypto';
 
 import { createSignedToken, verifySignedToken } from './signed-token.server';

@@ -1,8 +1,8 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import {
   resolveProviderDescriptors as resolveAuthProviderDescriptors,
   resolveProviderIds,
-} from '@/domains/auth/capabilities';
+} from '@/domains/auth/utils';
 import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/domains/auth/oauth-providers';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 

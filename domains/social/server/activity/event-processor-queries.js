@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { ACTOR_PROFILE_SELECT } from './event-processor-constants';
+import { ACTOR_PROFILE_SELECT } from '@/domains/social/utils';
 import { normalizeValue } from './event-processor-shared';
 
 export async function getUserProfile(admin, userId) {

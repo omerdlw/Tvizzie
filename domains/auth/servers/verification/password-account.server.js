@@ -1,7 +1,7 @@
-import { resolveAuthCapabilities, resolveProviderIds } from '@/domains/auth/capabilities';
+import { resolveAuthCapabilities, resolveProviderIds } from '@/domains/auth/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { validateUsername } from '@/shared/lib/account';
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { validateUsername } from '@/domains/account/utils';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 
 import { createAdminAuthFacade } from '../session/supabase-admin-auth.server';
 

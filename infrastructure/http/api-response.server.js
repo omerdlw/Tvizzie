@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { NextResponse } from 'next/server';
 
 import { normalizeErrorCode, normalizeErrorMessage } from './app-error.js';

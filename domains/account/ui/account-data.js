@@ -1,7 +1,6 @@
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { FOLLOW_STATUSES } from '@/domains/social/server/social/follow-service';
-import { getUserAvatarUrl } from '@/shared/lib';
-import { isPermissionDeniedError } from '@/shared/lib';
+import { getUserAvatarUrl, isPermissionDeniedError } from '@/domains/account/utils';
 export {
   AUTH_PURPOSE,
   EMAIL_PATTERN,
@@ -19,7 +18,7 @@ export {
   ACCOUNT_SECTION_KEYS,
   RESERVED_ACCOUNT_SEGMENTS,
   isReservedAccountSegment,
-} from '@/shared/lib/account';
+} from '@/domains/account/utils';
 
 export {
   ACCOUNT_ROUTE_MAX_WIDTH_CLASS,

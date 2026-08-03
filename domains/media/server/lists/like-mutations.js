@@ -8,8 +8,8 @@ import {
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
-} from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
+} from '@/domains/social/utils';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
 import {
   fireNotificationEvent,
   NOTIFICATION_EVENT_TYPES,

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { processActivityEvent } from '@/domains/social/server/activity/event-processor.server';
 import { processNotificationEvent } from '@/domains/social/server/notifications/event-processor.server';

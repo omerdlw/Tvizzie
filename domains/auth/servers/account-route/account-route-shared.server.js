@@ -37,7 +37,7 @@ import {
   resolvePasswordAccountIdentifier,
 } from '@/domains/auth/servers/auth-verification.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { ACCOUNT_WRITE_FUNCTION } from '@/domains/account/server/profile/profile-constants';
+import { ACCOUNT_WRITE_FUNCTION } from '@/domains/account/utils';
 import {
   buildInternalRequestMeta,
   createApiErrorResponse,

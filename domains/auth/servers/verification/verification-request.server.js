@@ -1,5 +1,5 @@
-import { PURPOSES } from './email-verification-constants';
-import { normalizeEmailValue } from '@/shared/lib/string';
+import { PURPOSES } from '@/domains/auth/utils';
+import { normalizeEmailValue } from '@/shared/utils';
 
 const VERIFICATION_ACTIONS = Object.freeze({
   RESEND: 'resend',

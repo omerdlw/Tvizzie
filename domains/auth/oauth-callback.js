@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { normalizeOAuthProvider } from '@/domains/auth/oauth-providers';
 
 const REDIRECT_BASE_ORIGIN = 'https://tvizzie.local';

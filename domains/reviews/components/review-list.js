@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { normalizeFeedbackText } from '@/shared/lib';
+import { normalizeFeedbackText } from '@/shared/utils';
 import { mergeReviewUser } from '../ui/review-data';
 import ReviewCard from './review-card';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';

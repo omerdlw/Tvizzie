@@ -1,4 +1,4 @@
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 
 // --- CONSTANTS ---
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeValue as normalizeUserId } from '@/shared/lib/string';
+import { normalizeValue as normalizeUserId } from '@/shared/utils';
 
 import {
   buildPollingSubscriptionKey,

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import RatingRangeSelector from '@/domains/reviews/components/rating-range-selector';
 import Icon from '@/ui/primitives/icon';
 export const UI = {

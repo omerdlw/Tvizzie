@@ -12,8 +12,8 @@ import {
   subscribeToUserAccount,
   syncUserAccountEmail,
   updateUserAccount,
-  validateUsername,
 } from '@/domains/account/server/profile/profile-service';
+import { validateUsername } from '@/domains/account/utils';
 
 function isFreshEmailPasswordSession(user) {
   const providerIds = Array.isArray(user?.metadata?.providerIds) ? user.metadata.providerIds : [];

@@ -2,13 +2,7 @@
 
 import { forwardRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  cn,
-  getImagePlaceholderDataUrl,
-  resolveImageFetchPriority,
-  resolveImageLoading,
-  resolveImageQuality,
-} from '@/shared/lib';
+import { cn, getImagePlaceholderDataUrl, resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';

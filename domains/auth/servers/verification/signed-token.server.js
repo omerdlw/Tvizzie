@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 function encodePayload(payload) {
   return Buffer.from(JSON.stringify(payload)).toString('base64url');

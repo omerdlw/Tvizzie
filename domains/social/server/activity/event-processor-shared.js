@@ -1,12 +1,12 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 export { normalizeValue };
-import { buildActivitySubjectRef } from '@/domains/social/server/activity/canonical-key';
+import { buildActivitySubjectRef } from '@/domains/social/utils';
 import {
   ACTIVITY_EVENT_TYPES,
   ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/server/activity/activity-events-constants';
+} from '@/domains/social/utils';
 
 export function normalizeOptionalNumber(value) {
   if (value === undefined || value === null || value === '') {

@@ -1,1 +1,1 @@
-export * from '@/domains/account/server/api/search.server';
+export * from '@/domains/account/server/api/search';

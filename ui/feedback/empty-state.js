@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 export function EmptyState({ action, description, title, className }) {
   return (
     <div

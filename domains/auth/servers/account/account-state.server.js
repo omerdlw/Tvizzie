@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { lookupAccountByEmail } from '../verification/password-account.server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 

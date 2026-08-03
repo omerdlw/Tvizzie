@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { requireSessionRequest } from './session/authenticated-request.server';
 import {
   ACCOUNT_LIFECYCLE_STATES,

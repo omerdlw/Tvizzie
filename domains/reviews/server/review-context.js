@@ -2,8 +2,8 @@
 
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 
-import { LIST_CONTEXT_SELECT } from './review-constants.js';
-import { buildListSubjectMetadata } from './review-shared.js';
+import { LIST_CONTEXT_SELECT } from '@/domains/reviews/utils';
+import { buildListSubjectMetadata } from '@/domains/reviews/utils';
 
 export async function getListReviewContext(ownerId, listId) {
   if (!ownerId || !listId) {

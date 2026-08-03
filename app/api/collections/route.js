@@ -1,1 +1,1 @@
-export { GET } from '@/domains/account/server/api/collections.server';
+export { GET } from '@/domains/account/server/api/collections';

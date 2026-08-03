@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { normalizeFeedbackContent } from '@/shared/lib';
-import { cn } from '@/shared/lib';
+import { normalizeFeedbackContent, cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 import { AccountSectionReveal } from './account-layout';
 import { ACCOUNT_SECTION_SHELL_CLASS } from './account-data';

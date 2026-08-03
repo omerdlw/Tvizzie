@@ -3,16 +3,11 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
-import {
-  applyAvatarFallback,
-  getUserAvatarFallbackUrl,
-  getUserAvatarUrl,
-  resolveImageLoading,
-  resolveImageQuality,
-} from '@/shared/lib';
+import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+import { resolveImageLoading, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { SEARCH_STYLES, SEARCH_TYPES } from '@/domains/search/ui/search-constants';
+import { SEARCH_STYLES, SEARCH_TYPES } from '@/domains/search/utils';
 import {
   getDetailPath,
   getImagePath,

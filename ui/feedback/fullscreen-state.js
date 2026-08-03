@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 const listeners = new Set();
 const activeFullscreenStateIds = new Set();

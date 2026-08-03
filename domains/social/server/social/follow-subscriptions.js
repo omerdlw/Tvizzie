@@ -4,7 +4,7 @@ import { createPollingSubscription } from '@/infrastructure/realtime/polling-sub
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
-import { createEmptyRelationshipState, FOLLOW_STATUSES } from './follow-constants';
+import { createEmptyRelationshipState, FOLLOW_STATUSES } from '@/domains/social/utils';
 import {
   FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
   FOLLOW_SUBSCRIPTION_INTERVAL_MS,

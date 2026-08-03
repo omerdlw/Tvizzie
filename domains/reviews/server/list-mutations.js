@@ -8,8 +8,8 @@ import {
   fireActivityEvent,
   removeActivityEvents,
 } from '@/domains/social/server/activity/activity-events-service';
-import { buildCanonicalActivityDedupeKey } from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
+import { buildCanonicalActivityDedupeKey } from '@/domains/social/utils';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
 import { updateListReviewsCount } from '@/domains/media/server/lists/list-service.js';
 import {
   fireNotificationEvent,
@@ -25,7 +25,7 @@ import {
   normalizeRating,
   normalizeReviewContent,
   unwrapReviewWriteResult,
-} from './review-shared.js';
+} from '@/domains/reviews/utils';
 import { getReviewValidationError } from './validation.js';
 import { fireReviewLiveEvent, getListReviewsSubscriptionKey } from './review-subscriptions.js';
 import { toggleReviewLikeByKey } from './mutation-shared.js';

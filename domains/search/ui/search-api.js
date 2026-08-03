@@ -1,10 +1,10 @@
 import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
 
-import { SEARCH_LIMITS, SEARCH_TYPES } from './search-constants';
+import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils';
 import { createSearchCacheKey, withClientSearchCache } from './search-cache';
 import { rankAllMediaResults, resolvePreferredMediaType } from './search-ranking';
 import { normalizeResult } from './search-result';
-import { normalizeString } from './search-text';
+import { normalizeString } from '@/domains/search/utils';
 
 function emptyMediaPage(page = 1) {
   return {

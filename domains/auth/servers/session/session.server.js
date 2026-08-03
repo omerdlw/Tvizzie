@@ -5,7 +5,7 @@ import {
   STEP_UP_COOKIE_NAME,
   STEP_UP_MAX_AGE_MS,
   STEP_UP_MAX_AGE_SECONDS,
-} from './session-constants.server';
+} from '@/domains/auth/utils';
 import {
   getBearerToken,
   hasSessionHint,
@@ -30,7 +30,7 @@ import { createRequestSupabaseClient } from './session-request-client.server';
 import {
   buildAuthContextFromAccessToken,
   createSessionFromIdToken,
-} from './session-context.server';
+} from './session-auth-context.server';
 import { buildNormalizedSession, buildSessionUser, serializeSessionState } from './session-builder.server';
 import { normalizeValue } from './session-shared';
 

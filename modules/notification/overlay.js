@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 
-import { normalizeFeedbackText } from '@/shared/lib/feedback';
-import { cn } from '@/shared/lib/classnames';
+import { normalizeFeedbackText } from '@/shared/utils';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 import { NOTIFICATION_CONFIG } from './config';

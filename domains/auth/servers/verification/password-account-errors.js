@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 export const PASSWORD_ACCOUNT_LOOKUP_CODES = Object.freeze({
   PASSWORD_RESET_UNAVAILABLE: 'auth/password-reset-unavailable',

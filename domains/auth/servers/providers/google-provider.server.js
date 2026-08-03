@@ -1,5 +1,5 @@
-import { normalizeValue } from '@/shared/lib/string';
-import { normalizeProvider } from '@/domains/auth/capabilities';
+import { normalizeValue } from '@/shared/utils';
+import { normalizeProvider } from '@/domains/auth/utils';
 import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/domains/auth/oauth-providers';
 import {
   GOOGLE_AUTH_INTENTS,

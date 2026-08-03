@@ -26,7 +26,6 @@ import GallerySection from '@/domains/media/ui/gallery-section';
 import ImagesSection from '@/domains/media/ui/images-section';
 import RecommendationCard from '@/domains/media/ui/recommendation-card';
 import Sidebar from '@/domains/media/ui/sidebar';
-import MediaSocialProof from '@/domains/media/ui/social-proof';
 import { getGalleryImages, getMovieComputedData } from '@/domains/media/ui/media-data';
 import VideosSection from '@/domains/media/ui/videos-section';
 import MediaReviews from '@/domains/reviews/ui/media-reviews';
@@ -45,6 +44,7 @@ import {
   TIMELINES,
   SCROLL_VIEWPORT_CONFIG,
   scrollReviewsSectionVariants,
+  scrollSectionVariants,
   sidebarColumnVariants,
 } from '@/app/(media)/motion';
 
@@ -293,12 +293,7 @@ function RelatedMoviesSection({ items, title }) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 44, scale: 0.96, filter: 'blur(20px)' }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-      viewport={SCROLL_VIEWPORT_CONFIG}
-      transition={{ duration: 1.5, ease: EASINGS.LUXURY }}
-    >
+    <motion.div {...scrollSectionVariants}>
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
           {title}
@@ -345,7 +340,7 @@ function MovieVisualMediaDeferred({
   }
 
   return (
-    <div className="mt-12 flex flex-col gap-12">
+    <div className="flex flex-col gap-10 lg:gap-12">
       {hasGallery ? (
         <GallerySection
           images={galleryImages}
@@ -405,16 +400,10 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   }
 
   return (
-    <div className="mt-12 flex flex-col gap-12">
+    <div className="flex flex-col gap-10 lg:gap-12">
       {sections.map((section) =>
         section.key === 'videos' ? (
-          <motion.div
-            key={section.key}
-            initial={{ opacity: 0, y: 44, scale: 0.96, filter: 'blur(20px)' }}
-            whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            viewport={SCROLL_VIEWPORT_CONFIG}
-            transition={{ duration: 1.5, ease: EASINGS.LUXURY }}
-          >
+          <motion.div key={section.key} {...scrollSectionVariants}>
             {section.content}
           </motion.div>
         ) : (
@@ -454,21 +443,17 @@ function MovieSecondaryContent({
   secondaryDataPromise,
 }) {
   return (
-    <>
+    <div className="mt-10 flex flex-col gap-10 lg:mt-12 lg:gap-12">
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
-        <div className="mt-10">
-          <CastSection cast={computed.cast} crew={computed.crew} baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY} />
-        </div>
+        <CastSection cast={computed.cast} crew={computed.crew} baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY} />
       ) : null}
 
       {mediaType === 'tv' ? (
         <Suspense fallback={null}>
-          <div className="mt-10">
-            <TvSeasonsDeferred
-              secondaryDataPromise={secondaryDataPromise}
-              seasons={movie.seasons || []}
-            />
-          </div>
+          <TvSeasonsDeferred
+            secondaryDataPromise={secondaryDataPromise}
+            seasons={movie.seasons || []}
+          />
         </Suspense>
       ) : null}
 
@@ -490,7 +475,7 @@ function MovieSecondaryContent({
           videos={movie.videos?.results || []}
         />
       </Suspense>
-    </>
+    </div>
   );
 }
 
@@ -536,7 +521,7 @@ function MovieView({
         <div
           className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
         >
-          <div className="mt-6 flex w-full flex-col items-start gap-5 sm:mt-12 sm:gap-6 lg:mt-20 lg:flex-row lg:items-stretch lg:gap-12">
+          <div className="mt-6 flex w-full flex-col items-start gap-6 sm:mt-10 sm:gap-8 lg:mt-16 lg:flex-row lg:items-stretch lg:gap-10">
             <motion.div
               {...sidebarColumnVariants}
               className="w-full shrink-0 self-start lg:w-[400px] lg:self-stretch"
@@ -586,15 +571,11 @@ function MovieView({
 
                 {movie.overview ? (
                   <motion.div {...heroOverviewVariants} className="mt-3 flex w-full flex-col">
-                    <p className="max-w-[70ch] text-justify text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
+                    <p className="max-w-[70ch] text-left text-[15px] leading-6 text-black/70 sm:text-base sm:leading-7">
                       {movie.overview}
                     </p>
                   </motion.div>
                 ) : null}
-
-                <motion.div {...heroSocialProofVariants} className="mt-4 flex items-center">
-                  <MediaSocialProof media={{ ...movie, entityType: mediaType }} />
-                </motion.div>
 
                 <MovieSecondaryContent
                   computed={computed}

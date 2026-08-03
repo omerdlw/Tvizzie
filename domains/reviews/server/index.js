@@ -1,23 +1,23 @@
-export * as constants from './review-constants.js';
+export * as constants from '@/domains/reviews/utils';
 export * as context from './review-context.js';
 export * as listMutations from './list-mutations.js';
 export * as mediaMutations from './media-mutations.js';
 export * as mutationShared from './mutation-shared.js';
 export * as mutations from './mutations.js';
 export * as service from './review-service.js';
-export * as shared from './review-shared.js';
+export * as shared from '@/domains/reviews/utils';
 export * as storedMutations from './stored-mutations.js';
 export * as subscriptions from './review-subscriptions.js';
 export * as validation from './validation.js';
 
-export * from './review-constants.js';
+export * from '@/domains/reviews/utils';
 export * from './review-context.js';
 export * from './list-mutations.js';
 export * from './media-mutations.js';
 export * from './mutation-shared.js';
 export * from './mutations.js';
 export * from './review-service.js';
-export * from './review-shared.js';
+export * from '@/domains/reviews/utils';
 export * from './stored-mutations.js';
 export * from './review-subscriptions.js';
 export * from './validation.js';

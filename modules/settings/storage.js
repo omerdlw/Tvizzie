@@ -1,6 +1,6 @@
 'use client';
 
-import { isBrowser, isObject, isString } from '@/shared/lib/type';
+import { isBrowser, isObject, isString } from '@/shared/utils';
 
 import {
   DEFAULT_SETTINGS_STORAGE_KEY,

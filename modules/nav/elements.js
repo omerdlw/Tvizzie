@@ -7,7 +7,7 @@ import {
   NAV_TAP_SCALE,
   textCrossfadeVariants,
 } from '@/modules/nav/motion';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import Iconify from '@/ui/primitives/icon';
 
 // --- HELPER FUNCTIONS ---

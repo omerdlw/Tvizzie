@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import { Spinner } from '@/ui/feedback/spinner';
 import Icon from '@/ui/primitives/icon';
@@ -161,7 +161,7 @@ export default function PersonAwards({ personId }) {
           initial={{ scaleY: 0 }}
           animate={{ scaleY: 1 }}
           transition={{ duration: 1.2, ease: EASINGS.LUXURY, delay: 0.1 }}
-          className="absolute top-[18px] bottom-0 left-20 w-px origin-top bg-black/10 sm:left-24"
+          className="absolute top-[18px] bottom-0 left-16 w-px origin-top bg-black/10 sm:left-24"
         />
 
         <div className="flex flex-col">
@@ -169,7 +169,7 @@ export default function PersonAwards({ personId }) {
             const isLast = yearIndex === awardsTimeline.length - 1;
             return (
               <div key={year} className="relative flex">
-                <div className="w-20 shrink-0 sm:w-24">
+                <div className="w-16 shrink-0 sm:w-24">
                   <motion.span
                     initial={{ opacity: 0, x: -16, filter: 'blur(8px)' }}
                     animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
@@ -178,7 +178,7 @@ export default function PersonAwards({ personId }) {
                       delay: Math.min(yearIndex * 0.05, 0.4),
                       ease: EASINGS.LUXURY,
                     }}
-                    className="block pt-3 pr-4 text-right text-sm font-bold tracking-wide text-black/50 sm:text-base"
+                    className="block pt-3 pr-3 text-right text-xs font-bold tracking-wide text-black/50 sm:pr-4 sm:text-base"
                   >
                     {year}
                   </motion.span>
@@ -193,11 +193,11 @@ export default function PersonAwards({ personId }) {
                     damping: 20,
                     delay: Math.min(yearIndex * 0.05 + 0.1, 0.45),
                   }}
-                  className="absolute top-[18px] left-20 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24"
+                  className="absolute top-[18px] left-16 z-10 size-3 -translate-x-1/2 rounded-full border-2 border-white bg-black shadow-sm sm:left-24"
                 />
 
                 <div
-                  className={`min-w-0 flex-1 pt-[18px] pl-6 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
+                  className={`min-w-0 flex-1 pt-[18px] pl-4 sm:pl-8 ${isLast ? 'pb-0' : 'pb-10'}`}
                 >
                   {entries.map((entry, entryIndex) => {
                     const isWin = isWinType(entry.type);

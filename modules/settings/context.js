@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 
-import { isObject } from '@/shared/lib/type';
+import { isObject } from '@/shared/utils';
 
 import { DEFAULT_SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS_CONFIG } from './config';
 import { createLocalStorageDriver, createSettingsStorage, createCookieDriver } from './storage';

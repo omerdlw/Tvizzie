@@ -1,7 +1,7 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { buildMediaItemKey } from '@/domains/media/server/media';
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { isTitleMediaType } from '@/shared/lib/media';
+import { normalizeTimestamp } from '@/shared/utils';
+import { isTitleMediaType } from '@/domains/media/utils';
 
 function normalizeNumber(value, fallback = null) {
   const parsed = Number(value);

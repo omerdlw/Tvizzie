@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { getCollectionResource } from '@/domains/account/server/collections/collection-read.server';
-import { fetchAccountActivityFeedServer } from '@/domains/account/server/feed/feed-read.server';
+import { getCollectionResource } from '@/domains/account/server/collections/collection-read';
+import { fetchAccountActivityFeedServer } from '@/domains/account/server/feed/feed-read';
 import {
   fetchListReviewFeedServer,
   fetchProfileReviewFeedServer,
@@ -13,7 +13,7 @@ import {
   OVERVIEW_LISTS_LIMIT,
   OVERVIEW_WATCHED_LIMIT,
   OVERVIEW_WATCHLIST_LIMIT,
-} from './route-constants';
+} from '@/domains/account/utils';
 import { resolveSnapshotUserId } from './route-state';
 
 function createRouteLoadTimeoutError() {

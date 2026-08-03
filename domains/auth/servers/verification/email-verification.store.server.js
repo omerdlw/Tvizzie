@@ -1,7 +1,7 @@
-import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth-tables-constants';
+import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 
-import { AUTH_CHALLENGE_SELECT } from './email-verification-constants';
+import { AUTH_CHALLENGE_SELECT } from '@/domains/auth/utils';
 
 function getChallengesTable() {
   return createAdminClient().from(AUTH_CHALLENGE_TABLE);

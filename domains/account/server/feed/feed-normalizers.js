@@ -1,11 +1,11 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 export { normalizeValue };
-import { ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/server/activity/activity-events-constants';
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { normalizeMediaType } from '@/shared/lib/media';
-import { ACTIVITY_SORT_MODES, ACTIVITY_SUBJECT_FILTERS } from './feed-constants';
+import { ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/utils';
+import { normalizeTimestamp } from '@/shared/utils';
+import { normalizeMediaType } from '@/domains/media/utils';
+import { ACTIVITY_SORT_MODES, ACTIVITY_SUBJECT_FILTERS } from '@/domains/account/utils';
 
 export function normalizeActor(value = {}) {
   return {

@@ -7,6 +7,7 @@ import Carousel from '@/domains/media/ui/components/media-carousel';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import MediaCard from '@/domains/media/ui/components/media-card';
 import {
+  getCarouselButtonProps,
   getMediaCardProps,
   getSectionHeaderProps,
 } from '@/app/(media)/motion';
@@ -126,7 +127,7 @@ export default function TvSeasonsSection({
 
       <div className="relative">
         <div key={`tv-season-${activeSeason.key}`}>
-          <Carousel gap="gap-3">
+          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
             {episodes.map((episode, index) => (
               <motion.div
                 key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}

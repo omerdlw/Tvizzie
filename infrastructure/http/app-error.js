@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
 const DEFAULT_ERROR_CODE = 'INTERNAL_ERROR';
 const DEFAULT_ERROR_MESSAGE = 'Request failed';

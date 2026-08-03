@@ -1,14 +1,8 @@
 'use client';
 
 import { TMDB_IMG } from '@/shared/constants';
-import {
-  getMediaDetailPath,
-  getMediaReleaseDate,
-  getMediaTitle,
-  isTitleMediaType,
-  resolveExplicitMediaType,
-} from '@/shared/lib/media';
-import { cn } from '@/shared/lib';
+import { getMediaDetailPath, getMediaReleaseDate, getMediaTitle, isTitleMediaType, resolveExplicitMediaType } from '@/domains/media/utils';
+import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,

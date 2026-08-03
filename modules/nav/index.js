@@ -11,7 +11,7 @@ import { useNavHeightController } from '@/modules/nav/hooks/use-nav-height-contr
 import { useNavKeyboard } from '@/modules/nav/hooks/use-nav-keyboard';
 import { useNavViewport } from '@/modules/nav/hooks/use-nav-viewport';
 import { NAV_BACKDROP_TRANSITION, NAV_CARD_SPRING } from '@/modules/nav/motion';
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import { useIsFullscreenStateActive } from '@/ui/feedback/fullscreen-state';
 
 import Item from './item';

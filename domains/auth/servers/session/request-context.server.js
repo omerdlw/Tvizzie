@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createHash } from 'crypto';
 
 import { AUTH_COOKIE_PATH, isSecureCookieEnvironment } from './session.server';

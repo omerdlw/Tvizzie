@@ -7,7 +7,7 @@ import {
   shouldBlockAccountFeedLoad,
   useSeededFeedState,
 } from '@/domains/account/ui/hooks/section-page';
-import { isPermissionDeniedError, logDataError } from '@/shared/lib';
+import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useToast } from '@/modules/notification';
 import { fetchProfileLikedLists } from '@/domains/media/server/lists';
 import { updateFavoriteShowcase } from '@/domains/media/server/likes';

@@ -55,7 +55,7 @@ export default function PersonFilmographySection({
     <section className="flex flex-col gap-4">
       <motion.div
         {...getSectionHeaderProps(baseDelay, hasSwitchedTab)}
-        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        className="flex items-center justify-between gap-3"
       >
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
           Filmography

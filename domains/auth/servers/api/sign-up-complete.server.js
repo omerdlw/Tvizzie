@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/auth-tables-constants';
+import { AUTH_CHALLENGE_TABLE } from '@/domains/auth/utils';
 import {
   EMAIL_ACCOUNT_STATES,
   ensurePasswordAccountRecord,
@@ -24,7 +24,7 @@ import {
 import { verifySignUpProofToken } from '@/domains/auth/servers/auth-verification.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
-import { validateUsername } from '@/shared/lib/account';
+import { validateUsername } from '@/domains/account/utils';
 const SIGNUP_CHALLENGE_SELECT = ['jti', 'purpose', 'signup_completed_at', 'status', 'used_at'].join(
   ',',
 );

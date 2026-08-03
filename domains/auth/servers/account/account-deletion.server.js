@@ -1,6 +1,6 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { resolveAuthCapabilities, resolveProviderIds } from '@/domains/auth/capabilities';
+import { resolveAuthCapabilities, resolveProviderIds } from '@/domains/auth/utils';
 
 function hasDatabaseError(result) {
   return Boolean(result?.error);

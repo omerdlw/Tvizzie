@@ -1,12 +1,8 @@
 import 'server-only';
 
 import { createClient as createServerClient } from '@/infrastructure/supabase/supabase-server';
-import { normalizeTimestamp } from '@/shared/lib/format';
-import {
-  isSupportedContentSubjectType,
-  isTvReference,
-  normalizeMediaType,
-} from '@/shared/lib/media';
+import { normalizeTimestamp } from '@/shared/utils';
+import { isSupportedContentSubjectType, isTvReference, normalizeMediaType } from '@/domains/media/utils';
 
 const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SELECT = [

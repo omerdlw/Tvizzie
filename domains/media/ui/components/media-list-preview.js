@@ -1,7 +1,7 @@
 'use client';
 
 import { TMDB_IMG } from '@/shared/constants';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,

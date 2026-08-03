@@ -1,6 +1,6 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 
-import { TOKEN_VERSION } from './email-verification-constants';
+import { TOKEN_VERSION } from '@/domains/auth/utils';
 import { resolveSecretWithFallback } from './secret-fallback.server';
 import { createSignedToken, verifySignedToken } from './signed-token.server';
 

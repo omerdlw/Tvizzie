@@ -10,7 +10,7 @@ import {
   useRef,
 } from 'react';
 
-import { removeStorageItem, getStorageItem, setStorageItem } from '@/shared/lib/client-utils';
+import { removeStorageItem, getStorageItem, setStorageItem } from '@/modules/notification/client-utils';
 
 const FALLBACK_NOTIFICATION_ACTIONS = Object.freeze({
   dismissNotification: () => {},

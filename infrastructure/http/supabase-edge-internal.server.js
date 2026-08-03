@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
 import { normalizeApiResultEnvelope } from './api-result.js';
 import {

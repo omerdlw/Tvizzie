@@ -19,9 +19,9 @@ import {
   subscribeToWatchlistStatus,
   toggleUserWatchlistItem,
 } from '@/domains/media/server/watched-watchlist';
-import { cn } from '@/shared/lib';
-import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/shared/lib/media';
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { cn } from '@/shared/utils';
+import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 import { useNavigationActions } from '@/modules/nav';
 import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
@@ -108,18 +108,18 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center w-full gap-2 rounded-[20px] px-4 py-3 text-xs font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed lg:py-3.5',
+        'group center h-11 sm:h-12 w-full gap-1.5 sm:gap-2 rounded-[20px] px-2.5 sm:px-4 py-2.5 text-[11px] xs:text-xs font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed',
         getActionPalette(palette, active),
       )}
     >
       {loading ? (
-        <span>{loadingLabel}</span>
+        <span className="truncate">{loadingLabel}</span>
       ) : (
         <>
-          <span className="inline-flex">
+          <span className="inline-flex shrink-0">
             <Icon icon={icon} size={16} className="" />
           </span>
-          <span>{label}</span>
+          <span className="truncate">{label}</span>
         </>
       )}
     </button>
@@ -162,11 +162,6 @@ export default function CollectionActions({ media }) {
     watchedIntent: null,
     watchlistIntent: null,
   });
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!mediaSnapshot.entityId) {
@@ -367,7 +362,7 @@ export default function CollectionActions({ media }) {
 
   const showLikeAction = state.watched;
   const showWatchlistAction = !state.watched;
-  const shouldShowAuthActions = isHydrated && auth.isReady && auth.isAuthenticated;
+  const shouldShowAuthActions = auth.isReady && auth.isAuthenticated;
   const canGoToMedia = Boolean(mediaSnapshot?.entityId) && isMediaReviewsRoute;
 
   function handleGoToMedia() {
@@ -409,8 +404,8 @@ export default function CollectionActions({ media }) {
 
       <div
         className={cn(
-          'grid grid-cols-1 gap-2',
-          showWatchlistAction ? 'min-[460px]:grid-cols-2' : '',
+          'grid gap-2',
+          showWatchlistAction ? 'grid-cols-2' : 'grid-cols-1',
         )}
       >
         <ActionItem index={2}>
@@ -456,8 +451,8 @@ export default function CollectionActions({ media }) {
 
       <div
         className={cn(
-          'grid grid-cols-1 gap-2',
-          shouldShowAuthActions ? 'min-[460px]:grid-cols-2' : '',
+          'grid gap-2',
+          shouldShowAuthActions ? 'grid-cols-2' : 'grid-cols-1',
         )}
       >
         <ActionItem index={4}>

@@ -1,4 +1,4 @@
-import { isPersonMediaType, isTvMediaType } from '@/shared/lib/media';
+import { isPersonMediaType, isTvMediaType } from '@/domains/media/utils';
 
 import { createSearchFallbackQueries } from './search/fallback-queries';
 import {

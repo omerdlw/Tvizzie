@@ -7,7 +7,7 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
-import { getMediaCardProps, getSectionHeaderProps } from '@/app/(media)/motion';
+import { getCarouselButtonProps, getMediaCardProps, getSectionHeaderProps } from '@/app/(media)/motion';
 
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
@@ -68,7 +68,7 @@ export default function VideosSection({ videos }) {
 
       <div className="relative">
         <div key={`movie-videos-${activeType || 'all'}`}>
-          <Carousel gap="gap-3">
+          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(0)}>
             {filteredVideos.map((video, index) => {
               return (
                 <motion.div
@@ -76,7 +76,7 @@ export default function VideosSection({ videos }) {
                   {...getMediaCardProps(index, 0, hasSwitchedTab)}
                 >
                   <MediaCard
-                    className="w-72"
+                    className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
                     aspectClass="aspect-video"
                     imageSrc={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
                     imageAlt={video.name}

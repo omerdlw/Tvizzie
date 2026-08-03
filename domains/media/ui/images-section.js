@@ -8,6 +8,7 @@ import SegmentedControl from '@/ui/primitives/segmented-control';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
 import {
+  getCarouselButtonProps,
   getMediaCardProps,
   getSectionHeaderProps,
   TIMELINES,
@@ -112,7 +113,7 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
 
       <div className="relative">
         <div key={`movie-images-${currentTab.key}`}>
-          <Carousel gap="gap-3">
+          <Carousel gap="gap-3" buttonProps={getCarouselButtonProps(baseDelay)}>
             {items.map((image, index) => {
               return (
                 <motion.div

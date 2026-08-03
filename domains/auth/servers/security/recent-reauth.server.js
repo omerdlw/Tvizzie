@@ -1,4 +1,4 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 import {

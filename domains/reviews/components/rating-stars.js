@@ -5,7 +5,7 @@
  * Path: features/media-reviews/parts/rating-stars.js
  */
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 export default function RatingStars({ rating, className = '' }) {

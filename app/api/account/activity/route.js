@@ -1,1 +1,1 @@
-export * from '@/domains/account/server/api/activity.server';
+export * from '@/domains/account/server/api/activity';

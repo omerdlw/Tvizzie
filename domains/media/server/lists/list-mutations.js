@@ -1,6 +1,6 @@
 'use client';
 
-import { cleanString } from '@/shared/lib/string';
+import { cleanString } from '@/shared/utils';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import { createMediaPayload, ensureUserId } from '@/domains/media/server/media';
 import {
@@ -11,9 +11,9 @@ import {
 import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
-} from '@/domains/social/server/activity/canonical-key';
-import { ACTIVITY_SLOT_TYPES } from '@/domains/social/server/activity/activity-events-constants';
-import { LIST_ROW_SELECT } from './list-constants.js';
+} from '@/domains/social/utils';
+import { ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
+import { LIST_ROW_SELECT } from '@/domains/media/utils';
 import { fetchListById } from './list-queries.js';
 import {
   buildListOwnerSnapshot,

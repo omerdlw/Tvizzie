@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/shared/lib';
+import { cn, resolveVersionedImageUrl } from '@/shared/utils';
 import {
   applyAvatarFallback,
   getUserAvatarFallbackUrl,
   getUserAvatarUrl,
-  resolveVersionedImageUrl,
-} from '@/shared/lib';
+} from '@/domains/account/utils';
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from './account-data';

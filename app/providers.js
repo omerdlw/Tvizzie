@@ -12,7 +12,7 @@ import {
 import { NAV_RUNTIME } from '@/app/_shell/nav-runtime';
 import SettingsModal from '@/app/_shell/settings-modal';
 import { NAV_CONFIG } from '@/app/_shell/navigation-config';
-import { pipe } from '@/shared/lib';
+import { pipe } from '@/shared/utils';
 import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';

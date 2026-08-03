@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { getUserAvatarUrl } from '@/shared/lib';
+import { getUserAvatarUrl } from '@/domains/account/utils';
 
 function formatFollowCount(value) {
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(

@@ -5,7 +5,7 @@
  * @description Auth sayfaları için yerleşim kabuğu (Layout Shell) ve rota tescil kaydı.
  */
 
-import { createRouteRegistry } from '@/shared/lib/route-registry';
+import { createRouteRegistry } from '@/modules/registry/route-registry';
 
 // ============================================================================
 // 1. ROUTE REGISTRY

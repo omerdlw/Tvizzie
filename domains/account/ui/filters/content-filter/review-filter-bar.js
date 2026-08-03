@@ -1,7 +1,7 @@
 'use client';
 
 import { REVIEW_SORT_MODE } from '@/domains/reviews/ui/review-data';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 import { RATING_MODE_OPTIONS, REVIEW_SORT_OPTIONS, REVIEW_VISIBILITY_OPTIONS } from './content-filter-options';
 import {

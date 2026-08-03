@@ -1,7 +1,7 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createHash } from 'crypto';
 
-import { AUTH_AUDIT_TABLE } from '@/domains/auth/auth-tables-constants';
+import { AUTH_AUDIT_TABLE } from '@/domains/auth/utils';
 import { getRequestContext } from './session/request-context.server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 

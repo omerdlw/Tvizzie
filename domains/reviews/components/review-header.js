@@ -29,7 +29,7 @@ export default function ReviewHeader({
     Number(ratingStats.average) > 0;
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-black/10 pb-3 sm:gap-4">
+    <div className="flex flex-col gap-2.5 border-b border-black/10 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       {/* Title & Metadata */}
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex min-w-0 items-center gap-2">
@@ -38,7 +38,7 @@ export default function ReviewHeader({
             size={20}
             className="shrink-0 text-black/70 sm:size-6"
           />
-          <h2 className="truncate text-sm font-bold tracking-wider text-black uppercase sm:text-base">
+          <h2 className="text-sm font-bold tracking-wider text-black uppercase sm:text-base">
             {title}
           </h2>
         </div>
@@ -68,12 +68,12 @@ export default function ReviewHeader({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
         {hasEditOwnReview && (
           <button
             type="button"
             onClick={onEditOwnReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex size-[30px] shrink-0 items-center justify-center rounded-xl border border-black/10 text-black/70 transition-colors hover:text-black"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex size-8 shrink-0 items-center justify-center rounded-xl border border-black/10 text-black/70 transition-colors hover:text-black"
             aria-label="Edit your review"
             title="Edit your review"
           >
@@ -85,7 +85,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onDeleteOwnReview}
-            className="inline-flex size-[30px] shrink-0 items-center justify-center rounded-xl border border-error/10 bg-error/10 text-error transition-colors hover:border-error hover:bg-error hover:text-white"
+            className="border-error/10 bg-error/10 text-error hover:border-error hover:bg-error inline-flex size-8 shrink-0 items-center justify-center rounded-xl border transition-colors hover:text-white"
             aria-label="Delete your review"
             title="Delete your review"
           >
@@ -96,7 +96,7 @@ export default function ReviewHeader({
         {hasAllReviewsLink && (
           <Link
             href={allReviewsHref}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-[30px] items-center gap-1 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
           >
             <span>All reviews</span>
             <Icon icon="solar:alt-arrow-right-linear" size={14} />
@@ -107,7 +107,7 @@ export default function ReviewHeader({
           <button
             type="button"
             onClick={onAddReview}
-            className="bg-primary/30 hover:bg-primary/60 inline-flex h-[30px] items-center gap-1.5 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
+            className="bg-primary/30 hover:bg-primary/60 inline-flex h-8 items-center gap-1.5 rounded-xl border border-black/10 px-3 text-xs font-semibold tracking-wide text-black/80 uppercase transition-colors"
           >
             <Icon icon="solar:pen-bold" size={13} />
             <span>Add {itemLabel}</span>

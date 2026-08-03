@@ -1,7 +1,7 @@
 'use client';
 
 import SearchAction from '@/domains/search/ui/navigation/search-action';
-import { createRouteRegistry } from '@/shared/lib/route-registry';
+import { createRouteRegistry } from '@/modules/registry/route-registry';
 import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
 
 export default createRouteRegistry({

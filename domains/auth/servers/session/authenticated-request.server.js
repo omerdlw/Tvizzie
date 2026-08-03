@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { readSessionFromRequest, isTransientSessionError } from './session.server';
 
 function normalizeAuthError(error) {

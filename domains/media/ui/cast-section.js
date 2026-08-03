@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
-import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/lib';
+import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/utils';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
@@ -13,7 +13,7 @@ import {
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import {
   getCastCardProps,
   getCastHeaderProps,
@@ -66,14 +66,15 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
     <Link
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
-      className={[
+      className={cn(
         'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15 transition-all duration-200',
-        compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'p-1 pr-4',
-      ].join(' ')}
+        compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'h-[84px] p-1 pr-4',
+      )}
     >
       <div
-        className={['relative shrink-0 overflow-hidden', compact ? 'h-8 w-8 rounded-xl' : 'h-20 w-16 rounded-2xl'].join(
-          ' ',
+        className={cn(
+          'relative shrink-0 overflow-hidden',
+          compact ? 'h-8 w-8 rounded-xl' : 'h-[76px] w-14 rounded-2xl',
         )}
       >
         <PersonImage

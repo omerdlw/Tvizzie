@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { pipe } from '@/shared/lib';
+import { pipe } from '@/shared/utils';
 import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/server/profile/profile-http-client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import NotificationsModal from '@/domains/social/ui/notifications-modal';

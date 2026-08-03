@@ -6,8 +6,8 @@ import {
   resolveProviderDescriptors,
   resolveProviderIds,
   uniqueStrings,
-} from '@/domains/auth/capabilities';
-import { RESERVED_CLAIM_KEYS } from './session-constants.server';
+} from '@/domains/auth/utils';
+import { RESERVED_CLAIM_KEYS } from '@/domains/auth/utils';
 import { normalizeValue, toIsoDate, toLowercase } from './session-shared';
 
 function resolveCustomClaims(decodedToken = {}) {

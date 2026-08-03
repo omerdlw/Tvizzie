@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
 

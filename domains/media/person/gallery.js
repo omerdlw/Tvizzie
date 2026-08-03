@@ -41,8 +41,9 @@ export default function PersonGallery({
     if (!node) return;
     const calc = () => {
       const containerW = node.offsetWidth ?? 0;
-      const totalGap = GAP_PX * (CARDS_VISIBLE - 1);
-      setCardWidth(Math.floor((containerW - totalGap) / CARDS_VISIBLE));
+      const cardsVisible = containerW < 640 ? 3 : containerW < 1024 ? 4 : 5;
+      const totalGap = GAP_PX * (cardsVisible - 1);
+      setCardWidth(Math.floor((containerW - totalGap) / cardsVisible));
     };
     calc();
     const observer = new ResizeObserver(calc);

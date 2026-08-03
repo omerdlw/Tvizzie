@@ -1,4 +1,4 @@
-import { SEARCH_TYPES } from './search-constants';
+import { SEARCH_TYPES } from '@/domains/search/utils';
 
 export function normalizeResult(item, type = item?.media_type) {
   return {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { normalizeFeedbackText } from '@/shared/lib';
+import { normalizeFeedbackText } from '@/shared/utils';
 import {
   collectActivitySubjectOptions,
   hasActiveActivityFilters,

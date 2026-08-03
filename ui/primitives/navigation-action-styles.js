@@ -1,4 +1,4 @@
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 
 export const NAV_ACTION_STYLES = {
   base: 'center rounded-2xl transition-colors duration-200 ease-out w-full gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border',

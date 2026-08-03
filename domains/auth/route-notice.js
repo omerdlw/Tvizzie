@@ -1,4 +1,4 @@
-import { normalizeLowerValue } from '@/shared/lib/string';
+import { normalizeLowerValue } from '@/shared/utils';
 
 export const AUTH_ROUTE_NOTICE = Object.freeze({
   GOOGLE_AUTH_FAILED: 'google-auth-failed',

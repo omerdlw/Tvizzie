@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 
-import { isTitleMediaType, normalizeMediaType } from '@/shared/lib/media';
+import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils';
 
 import { TMDB_REVALIDATE } from './tmdb-client-config';
 import { tmdbRequest } from './request';

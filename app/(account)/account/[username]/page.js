@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
 
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
-import { isReservedAccountSegment } from '@/shared/lib/account';
+import { isReservedAccountSegment } from '@/domains/account/utils';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,
-} from '@/domains/account/server/routes/route-read.server';
+} from '@/domains/account/server/routes/route-read';
 
 import Client from '@/app/(account)/account/[username]/client';
 

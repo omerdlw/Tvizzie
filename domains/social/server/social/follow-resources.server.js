@@ -1,14 +1,14 @@
 import 'server-only';
 
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
   getAccountProfileByUserId,
-} from '@/domains/account/server/profile/profile-public-read.server';
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from './follow-constants';
+} from '@/domains/account/server/profile/profile-public-read';
+import { normalizeTimestamp } from '@/shared/utils';
+import { createEmptyRelationshipState, FOLLOW_SELECT, FOLLOW_STATUSES } from '@/domains/social/utils';
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {

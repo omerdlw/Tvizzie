@@ -1,7 +1,7 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import { NOTIFICATION_EVENT_TYPES } from './notification-events-constants';
+import { NOTIFICATION_EVENT_TYPES } from '@/domains/social/utils';
 
 async function postNotificationEvent({ eventType, payload = {} }) {
   return requestApiJson('/api/notifications/events', {

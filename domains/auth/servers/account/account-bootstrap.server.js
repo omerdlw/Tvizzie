@@ -1,6 +1,6 @@
-import { normalizeEmailValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { validateUsername } from '@/shared/lib/account';
+import { validateUsername } from '@/domains/account/utils';
 import { ensureAccountLifecycle } from './account-lifecycle.server';
 
 async function claimUsernameForProfile({

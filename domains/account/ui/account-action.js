@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { DESTRUCTIVE_ACTION_TONE_CLASS } from '@/shared/constants';

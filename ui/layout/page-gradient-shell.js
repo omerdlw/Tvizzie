@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 export const PAGE_GRADIENT_BACKDROP_CLASS =
   'page-gradient-backdrop pointer-events-none absolute inset-0';

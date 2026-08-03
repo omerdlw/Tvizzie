@@ -7,7 +7,7 @@ import {
   notifyAccountLoadError,
   removeAccountCollectionItem,
 } from '@/domains/account/ui/account-data';
-import { logDataError } from '@/shared/lib';
+import { logDataError } from '@/domains/account/utils';
 import { useToast } from '@/modules/notification';
 import {
   removeUserWatchedItem,

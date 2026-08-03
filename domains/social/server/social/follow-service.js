@@ -1,6 +1,6 @@
 'use client';
 
-export { FOLLOW_STATUSES } from './follow-constants';
+export { FOLLOW_STATUSES } from '@/domains/social/utils';
 export {
   acceptFollowRequest,
   cancelFollowRequest,

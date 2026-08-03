@@ -1,6 +1,6 @@
 'use client';
 
-import { createRouteRegistry } from '@/shared/lib/route-registry';
+import { createRouteRegistry } from '@/modules/registry/route-registry';
 
 export default createRouteRegistry({
   displayName: 'LegalNavRegistry',

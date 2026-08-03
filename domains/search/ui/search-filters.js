@@ -1,5 +1,5 @@
-import { SEARCH_TYPES } from './search-constants';
-import { normalizeString, normalizeToken } from './search-text';
+import { SEARCH_TYPES } from '@/domains/search/utils';
+import { normalizeString, normalizeToken } from '@/domains/search/utils';
 
 export const SEARCH_MOVIE_FILTER_DEFAULTS = Object.freeze({
   decade: 'all',

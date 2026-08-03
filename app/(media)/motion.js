@@ -333,9 +333,12 @@ export function getMediaCardProps(index = 0, baseDelay = 0, hasSwitchedTab = fal
   };
 }
 
-export const scrollReviewsSectionVariants = Object.freeze({
+export const scrollSectionVariants = Object.freeze({
   initial: { opacity: 0, y: 44, scale: SCALES.COMPACT, filter: BLURS.DEEP },
   whileInView: { opacity: 1, y: 0, scale: 1, filter: BLURS.NONE },
   viewport: SCROLL_VIEWPORT_CONFIG,
   transition: { duration: 1.5, ease: EASINGS.LUXURY },
 });
+
+export const scrollReviewsSectionVariants = scrollSectionVariants;
+

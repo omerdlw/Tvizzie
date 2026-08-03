@@ -1,4 +1,4 @@
-import { SEARCH_STYLES } from '@/domains/search/ui/search-constants';
+import { SEARCH_STYLES } from '@/domains/search/utils';
 
 function resolveNavActionTone(tone, isActive) {
   if (!tone || tone === 'toggle') {

@@ -2,12 +2,7 @@
 
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
-import {
-  getMediaDetailPath,
-  getMediaReleaseDate,
-  getMediaTitle,
-  resolveExplicitMediaType,
-} from '@/shared/lib/media';
+import { getMediaDetailPath, getMediaReleaseDate, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,

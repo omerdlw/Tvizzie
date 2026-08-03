@@ -5,7 +5,7 @@ import {
   createPollingSubscription,
   invalidatePollingSubscriptions,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import { NOTIFICATION_TYPES } from '@/domains/social/server/notifications/notifications-constants';
+import { NOTIFICATION_TYPES } from '@/domains/social/utils';
 import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 

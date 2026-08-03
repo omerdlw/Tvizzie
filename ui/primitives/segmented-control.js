@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDraggableScroll } from '@/shared/hooks/use-draggable-scroll';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 function defaultGetKey(item) {
   return item?.key;

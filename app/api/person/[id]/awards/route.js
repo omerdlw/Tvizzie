@@ -1,1 +1,1 @@
-export * from '@/domains/media/server/person-awards.server';
+export * from '@/domains/media/server/person-awards';

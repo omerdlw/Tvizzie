@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { TMDB_IMG } from '@/shared/constants';
-import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/shared/lib';
+import { canUseNextImageOptimization, cn, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
-import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/shared/lib';
+import { formatCurrency, getImagePlaceholderDataUrl, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
@@ -29,11 +29,11 @@ function normalizeTaxonomyItems(items = [], prefix = '') {
 
 function SidebarRow({ icon, children }) {
   return (
-    <div className="flex items-center gap-2.5 py-1 text-xs text-black sm:text-sm">
-      <span className="inline-flex shrink-0 text-black/70">
+    <div className="flex items-center gap-2.5 py-1.5 text-xs text-black sm:text-sm">
+      <span className="inline-flex shrink-0 items-center justify-center text-black/70">
         <Icon icon={icon} size={18} />
       </span>
-      <div className="flex-1 leading-normal font-medium">{children}</div>
+      <div className="flex-1 min-w-0 leading-snug font-medium">{children}</div>
     </div>
   );
 }
@@ -94,13 +94,13 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
   }
   let chipIndexCounter = 0;
   const elements = (
-    <div className="mt-2 flex flex-col gap-1.5">
+    <div className="mt-2 flex flex-col gap-2">
       <motion.div {...getTaxonomyHeaderProps(baseDelay)}>
-        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/50 uppercase">
+        <p className="text-[11px] leading-none font-semibold tracking-widest text-black/70 uppercase">
           GENRES / TAGS
         </p>
       </motion.div>
-      <div className="flex flex-wrap gap-1.5 items-center">
+      <div className="flex flex-wrap items-center gap-1.5">
         {normalizedGenres.map((genre) => {
           const currentIndex = chipIndexCounter++;
           return (
@@ -109,7 +109,7 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
               {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
             >
-              <span className="bg-primary inline-flex min-h-7 max-w-full items-center rounded-[10px] border border-black/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/75">
+              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/80 shadow-xs transition-colors hover:border-black/20 hover:text-black">
                 {genre}
               </span>
             </motion.div>
@@ -123,7 +123,7 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
               {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
             >
-              <span className="bg-primary inline-flex max-w-full items-center rounded-[8px] border border-black/5 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-black/65 transition-colors hover:border-black/15 hover:text-black">
+              <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/70 shadow-xs transition-colors hover:border-black/20 hover:text-black">
                 {tag}
               </span>
             </motion.div>
@@ -235,12 +235,12 @@ export default function Sidebar({
   ].filter(Boolean);
 
   const taxonomyData = SidebarTaxonomy({ genres, tags });
-  const rowBaseDelay = 0.50 + (hasTaxonomy ? taxonomyData.count * 0.06 : 0);
+  const rowBaseDelay = 0.50 + (hasTaxonomy ? taxonomyData.count * 0.05 : 0);
 
   return (
     <div className="flex flex-col gap-4">
       <motion.div {...sidebarPosterVariants}>
-        <div className="relative mx-auto aspect-2/3 w-full shrink-0 overflow-hidden rounded-[24px]">
+        <div className="relative mx-auto aspect-2/3 w-full max-w-[320px] shrink-0 overflow-hidden rounded-[24px] sm:max-w-[360px] lg:max-w-none">
           {posterSrc ? (
             <AdaptiveImage
               fill

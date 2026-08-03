@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Z_INDEX } from '@/shared/constants';
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import { ModuleError } from '@/modules/error-boundary';
 import {
   MODAL_BREAKPOINTS,

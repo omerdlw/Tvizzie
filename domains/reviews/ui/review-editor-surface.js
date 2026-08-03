@@ -14,7 +14,7 @@ import RatingSelector from '@/domains/reviews/components/rating-selector';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Textarea } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { INFO_ACTION_TONE_CLASS } from '@/shared/constants';
 
 const REVIEW_MIN_LENGTH = getReviewMinLength();

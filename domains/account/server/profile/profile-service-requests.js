@@ -1,8 +1,8 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import { cleanString } from '@/shared/lib/string';
-import { validateUsername } from '@/shared/lib/account';
+import { cleanString } from '@/shared/utils';
+import { validateUsername } from '@/domains/account/utils';
 
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
 const accountResolveRequestCache = new Map();

@@ -12,7 +12,7 @@ import {
 import { resolveAuthVerificationHeader } from '@/modules/modal/header';
 import { useSurfaceHeader } from '@/modules/nav';
 import { useToast } from '@/modules/notification';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { Spinner } from '@/ui/feedback/spinner';

@@ -1,4 +1,4 @@
-import { isObject, isString } from '@/shared/lib/type';
+import { isObject, isString } from '@/shared/utils';
 
 import { SETTINGS_STORAGE_TARGETS } from './config';
 

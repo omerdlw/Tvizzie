@@ -5,11 +5,11 @@ import {
   buildActivityDedupeLikePattern,
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
-} from '@/domains/social/server/activity/canonical-key';
+} from '@/domains/social/utils';
 import {
   ACTIVITY_EVENT_TYPE_SET,
   ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/server/activity/activity-events-constants';
+} from '@/domains/social/utils';
 import {
   deleteByDedupePattern,
   deleteByExactDedupeKey,

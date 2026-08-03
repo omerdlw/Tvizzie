@@ -1,7 +1,7 @@
 'use client';
 
-import { REVIEW_MIN_LENGTH } from './review-constants.js';
-import { capitalizeLabel, normalizeRating, normalizeReviewContent } from './review-shared.js';
+import { REVIEW_MIN_LENGTH } from '@/domains/reviews/utils';
+import { capitalizeLabel, normalizeRating, normalizeReviewContent } from '@/domains/reviews/utils';
 
 export function getReviewMinLength() {
   return REVIEW_MIN_LENGTH;

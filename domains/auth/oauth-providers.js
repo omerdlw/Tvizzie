@@ -1,4 +1,4 @@
-import { normalizeLowerValue, normalizeValue } from '@/shared/lib/string';
+import { normalizeLowerValue, normalizeValue } from '@/shared/utils';
 
 export const GITHUB_PROVIDER_ID = 'github';
 export const GOOGLE_PROVIDER_ID = 'google.com';

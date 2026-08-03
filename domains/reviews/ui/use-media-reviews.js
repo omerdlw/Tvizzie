@@ -17,7 +17,7 @@ import {
   toggleReviewLike,
 } from '@/domains/reviews/server';
 import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
-import { AUTH_ROUTES } from '@/domains/auth/auth-constants';
+import { AUTH_ROUTES } from '@/domains/auth/utils';
 import { getRatingStats, sortReviews } from './review-data';
 
 // ==========================================

@@ -1,4 +1,4 @@
-import { normalizeValue } from '@/shared/lib/string';
+import { normalizeValue } from '@/shared/utils';
 import { enforceSlidingWindowRateLimit, isSlidingWindowRateLimitError } from './rate-limit.server';
 
 const AUTH_RATE_LIMIT_POLICIES = Object.freeze({

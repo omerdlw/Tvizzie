@@ -1,6 +1,6 @@
 'use client';
 
-import { isListSubjectType, isTitleMediaType } from '@/shared/lib/media';
+import { isListSubjectType, isTitleMediaType } from '@/domains/media/utils';
 import { deleteListReview, toggleListReviewLike } from './list-mutations.js';
 import { deleteMediaReview, toggleReviewLike } from './media-mutations.js';
 

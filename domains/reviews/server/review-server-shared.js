@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { normalizeTimestamp } from '@/shared/lib/format';
-import { isListSubjectType, isTitleMediaType } from '@/shared/lib/media';
+import { normalizeTimestamp } from '@/shared/utils';
+import { isListSubjectType, isTitleMediaType } from '@/domains/media/utils';
 
 export function createListReviewLikeKey(ownerId, listId) {
   return `list:${ownerId}:${listId}`;

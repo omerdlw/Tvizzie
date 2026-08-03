@@ -8,14 +8,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { TMDB_IMG } from '@/shared/constants';
-import {
-  canUseNextImageOptimization,
-  cn,
-  formatDate,
-  getUserAvatarUrl,
-  resolveImageQuality,
-} from '@/shared/lib';
-import { isTitleMediaType, normalizeMediaType } from '@/shared/lib/media';
+import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from '@/shared/utils';
+import { getUserAvatarUrl } from '@/domains/account/utils';
+import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,

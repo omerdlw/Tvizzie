@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 import { FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from './content-filter-controls';
 

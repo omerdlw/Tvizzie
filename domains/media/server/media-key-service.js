@@ -1,5 +1,5 @@
-import { normalizeValue } from '@/shared/lib/string';
-import { isMovieMediaType, isTitleMediaType, normalizeMediaType } from '@/shared/lib/media';
+import { normalizeValue } from '@/shared/utils';
+import { isMovieMediaType, isTitleMediaType, normalizeMediaType } from '@/domains/media/utils';
 
 export function buildMediaItemKey(entityType, entityId) {
   if (!entityType || entityId === undefined || entityId === null) {

@@ -10,7 +10,7 @@ import {
   NAV_TAP_SCALE,
   slideFadeVariants,
 } from '@/modules/nav/motion';
-import { cn } from '@/shared/lib/classnames';
+import { cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 
 const SurfaceHeaderContext = createContext(null);
