@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { requestVerificationCode, verifyCodeRequest } from '@/domains/auth/requests';
+import { requestVerificationCode, verifyCodeRequest } from '@/domains/auth/client/requests';
 import {
   PURPOSES,
   formatVerificationExpiry,

@@ -5,7 +5,7 @@
  * @description Auth API isteklerinin yapıldığı, önbellekleme (cache) ve in-flight yönetimi içeren servis katmanı.
  */
 
-import { createCsrfHeaders } from '@/domains/auth/clients';
+import { createCsrfHeaders } from '@/domains/auth/client';
 
 // ============================================================================
 // 1. ÖNBELLEK VE İSTEK DURUM SAKLAYICILARI (CACHE & STATE)

@@ -1,5 +1,5 @@
 import { normalizeLowerValue } from '@/shared/utils';
-import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/domains/auth/oauth';
+import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/domains/auth/utils/oauth';
 import { EMAIL_DOMAIN_PATTERNS } from './constants';
 
 // ============================================================

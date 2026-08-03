@@ -1,6 +1,6 @@
 'use client';
 
-import { getOAuthProviderIcon } from '@/domains/auth/oauth';
+import { getOAuthProviderIcon } from '@/domains/auth/utils/oauth';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 

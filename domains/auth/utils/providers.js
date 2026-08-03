@@ -6,7 +6,7 @@ import {
   normalizeOAuthProvider,
   normalizeProviderId,
   PASSWORD_PROVIDER_ID,
-} from '@/domains/auth/oauth';
+} from '@/domains/auth/utils/oauth';
 
 // ============================================================
 // Auth Capabilities & Provider Resolution Utilities
