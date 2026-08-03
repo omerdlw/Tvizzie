@@ -2,8 +2,8 @@ import { ACCOUNT_CLIENT } from '@/domains/account/client';
 
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils';
 import { createSearchCacheKey, withClientSearchCache } from './search-cache';
-import { rankAllMediaResults, resolvePreferredMediaType } from './search-ranking';
-import { normalizeResult } from './search-result';
+import { rankAllMediaResults, resolvePreferredMediaType } from '../ui/search-ranking';
+import { normalizeResult } from '../ui/search-result';
 import { normalizeString } from '@/domains/search/utils';
 
 function emptyMediaPage(page = 1) {
