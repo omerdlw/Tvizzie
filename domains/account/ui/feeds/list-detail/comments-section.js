@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import AccountPagination from '@/domains/account/ui/account-pagination';
 import { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import ReviewAuthFallback from '@/domains/reviews/components/review-auth-fallback';
-import ReviewHeader from '@/domains/reviews/components/review-header';
-import ReviewList from '@/domains/reviews/components/review-list';
+import ReviewAuthFallback from '@/domains/reviews/ui/components/review-auth-fallback';
+import ReviewHeader from '@/domains/reviews/ui/components/review-header';
+import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { LIST_COMMENT_SORT_OPTIONS, REVIEW_ITEMS_PER_PAGE } from './list-detail-config';
 
 

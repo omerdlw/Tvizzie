@@ -2,7 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { readSessionFromRequest } from '@/domains/auth/servers/session.server.js';
+import { readSessionFromRequest } from '@/domains/auth/server/session.server.js';
 import {
   getAccountIdByUsername,
   getAccountProfileByUserId,

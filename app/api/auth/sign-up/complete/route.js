@@ -1,2 +1,2 @@
-import { handleSignUpCompletePost } from '@/domains/auth/servers/api-handlers.server';
+import { handleSignUpCompletePost } from '@/domains/auth/server/api-handlers.server';
 export { handleSignUpCompletePost as POST };

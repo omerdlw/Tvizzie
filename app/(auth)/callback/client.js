@@ -11,7 +11,7 @@ import {
   normalizeOAuthIntent,
   normalizeOAuthProvider,
   sanitizeAuthNextPath,
-} from '@/domains/auth/oauth';
+} from '@/domains/auth/utils/oauth';
 import { createClient as createSupabaseClient } from '@/infrastructure/supabase/supabase-client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { isCanonicalSessionAuthenticated } from '@/modules/auth/session-client';

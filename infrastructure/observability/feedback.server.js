@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { readSessionFromRequest } from '@/domains/auth/servers/session.server.js';
+import { readSessionFromRequest } from '@/domains/auth/server/session.server.js';
 import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 
 export const runtime = 'nodejs';

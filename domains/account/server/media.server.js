@@ -8,8 +8,8 @@ import {
   assertCsrfRequest,
   enforceSlidingWindowRateLimit,
   isSlidingWindowRateLimitError,
-} from '@/domains/auth/servers/security.server.js';
-import { getRequestContext, requireSessionRequest } from '@/domains/auth/servers/session.server.js';
+} from '@/domains/auth/server/security.server.js';
+import { getRequestContext, requireSessionRequest } from '@/domains/auth/server/session.server.js';
 import { buildInternalRequestMeta, executeWriteRollout, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 import {
   ALLOWED_MIME_TYPES,

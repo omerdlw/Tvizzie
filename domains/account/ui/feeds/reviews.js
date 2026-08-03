@@ -16,7 +16,7 @@ import {
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPagination from '@/domains/account/ui/account-pagination';
 import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/account-section';
-import ReviewList from '@/domains/reviews/components/review-list';
+import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
 import { TIMELINES } from '@/app/(account)/motion';

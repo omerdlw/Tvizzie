@@ -1,1 +1,1 @@
-export { GET } from '@/domains/search/search-community';
+export { GET } from '@/domains/search/server/search-community';

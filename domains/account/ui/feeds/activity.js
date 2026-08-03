@@ -9,8 +9,8 @@ import {
 } from '@/domains/account/ui/filters/filtering';
 import { AccountActivityFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPagination from '@/domains/account/ui/account-pagination';
-import ReviewCard from '@/domains/reviews/components/review-card';
-import RatingStars from '@/domains/reviews/components/rating-stars';
+import ReviewCard from '@/domains/reviews/ui/components/review-card';
+import RatingStars from '@/domains/reviews/ui/components/rating-stars';
 import AccountSectionLayout from '@/domains/account/ui/account-section';
 import { getActivityItemProps } from '@/app/(account)/motion';
 

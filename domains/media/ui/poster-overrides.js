@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { TMDB_IMG } from '@/shared/constants';
 import { POSTER_PREFERENCE_CHANGE_EVENT } from '@/domains/media/server/user-media';
 import { getMoviePosterPreferenceFilePath } from '@/domains/media/ui/background-preferences';
-import { getPersonPosterPreferenceFilePath } from '@/domains/media/ui/person/';
+import { getPersonPosterPreferenceFilePath } from '@/domains/media/utils/poster-preferences';
 
 let canReadPosterPreferences = false;
 

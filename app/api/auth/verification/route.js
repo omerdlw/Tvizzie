@@ -1,2 +1,2 @@
-import { handleVerificationPost } from '@/domains/auth/servers/api-handlers.server';
+import { handleVerificationPost } from '@/domains/auth/server/api-handlers.server';
 export { handleVerificationPost as POST };

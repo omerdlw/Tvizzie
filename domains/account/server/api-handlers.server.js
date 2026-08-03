@@ -2,8 +2,8 @@ import 'server-only';
 
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { requireSessionRequest, resolveOptionalSessionRequest } from '@/domains/auth/servers/session.server.js';
-import { ensurePasswordAccountRecord } from '@/domains/auth/servers/account.server.js';
+import { requireSessionRequest, resolveOptionalSessionRequest } from '@/domains/auth/server/session.server.js';
+import { ensurePasswordAccountRecord } from '@/domains/auth/server/account.server.js';
 import { getEditableAccountSnapshotByUserId, getAccountIdByUsername, getAccountProfileByUserId } from './profile.server';
 import { fetchAccountActivityFeedServer } from './feed.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';

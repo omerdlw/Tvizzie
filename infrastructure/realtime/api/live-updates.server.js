@@ -1,7 +1,7 @@
 import {
   isTransientSessionError,
   requireAuthenticatedRequest,
-} from '@/domains/auth/servers/session.server.js';
+} from '@/domains/auth/server/session.server.js';
 import { createUserEventStream } from '@/infrastructure/realtime/user-events.server';
 
 import { buildInternalRequestMeta, setResponseRequestMeta } from '@/infrastructure/http/http-server';

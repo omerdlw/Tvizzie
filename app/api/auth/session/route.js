@@ -1,2 +1,2 @@
-import { handleSessionGet } from '@/domains/auth/servers/api-handlers.server';
+import { handleSessionGet } from '@/domains/auth/server/api-handlers.server';
 export { handleSessionGet as GET };

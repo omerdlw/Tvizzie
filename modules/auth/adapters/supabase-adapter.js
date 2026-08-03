@@ -2,7 +2,7 @@
 
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { resolveAuthCapabilities } from '@/domains/auth/utils';
-import { createCsrfHeaders } from '@/domains/auth/clients';
+import { createCsrfHeaders } from '@/domains/auth/client';
 import {
   buildOAuthCallbackUrl,
   getOAuthProviderLabel,
@@ -10,7 +10,7 @@ import {
   normalizeOAuthProvider,
   resolveOAuthIntent,
   sanitizeAuthNextPath,
-} from '@/domains/auth/oauth';
+} from '@/domains/auth/utils/oauth';
 import {
   createClient as createSupabaseClient,
   terminateBrowserSession,

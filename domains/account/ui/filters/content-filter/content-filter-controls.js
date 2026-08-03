@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { cn } from '@/shared/utils';
-import RatingRangeSelector from '@/domains/reviews/components/rating-range-selector';
+import RatingRangeSelector from '@/domains/reviews/ui/components/rating-range-selector';
 import Icon from '@/ui/primitives/icon';
 export const UI = {
   bar: 'flex w-full flex-nowrap flex-auto items-center gap-2 overflow-x-auto scrollbar-none',

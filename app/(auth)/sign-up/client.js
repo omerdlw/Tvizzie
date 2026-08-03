@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { assertSignUpEmailAvailable } from '@/domains/auth/requests';
+import { assertSignUpEmailAvailable } from '@/domains/auth/client/requests';
 import {
   AUTH_PURPOSE,
   AUTH_ROUTE_NOTICE,
@@ -24,8 +24,8 @@ import {
   createPendingSignUpPayload,
   finalizeOAuthSignUp,
   finalizeSignUp,
-} from '@/domains/auth/workflows';
-import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth';
+} from '@/domains/auth/server/workflows';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,

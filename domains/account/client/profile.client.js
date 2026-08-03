@@ -1,6 +1,6 @@
 'use client';
 
-import { clearPendingAccountBootstrap, createCsrfHeaders, getPendingAccountBootstrap } from '@/domains/auth/clients';
+import { clearPendingAccountBootstrap, createCsrfHeaders, getPendingAccountBootstrap } from '@/domains/auth/client';
 import { createAccountAdapter, createAccountClient } from '@/modules/account';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';

@@ -1,4 +1,4 @@
-import { requireAuthenticatedRequest } from '@/domains/auth/servers/session.server.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
 import {
   buildInternalRequestMeta,
   createApiErrorResponse,

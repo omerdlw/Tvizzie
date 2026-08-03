@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/requests';
+import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/client/requests';
 import {
   AUTH_PURPOSE,
   AUTH_ROUTES,
@@ -16,7 +16,7 @@ import {
   resolveSignInNoticeToast,
   validatePassword,
 } from '@/domains/auth/utils';
-import { getOAuthProviderLabel } from '@/domains/auth/oauth';
+import { getOAuthProviderLabel } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
