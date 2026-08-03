@@ -1,6 +1,6 @@
 import { normalizeTimestamp } from '@/shared/utils';
 import { cleanString } from '@/shared/utils';
-import { getUserAccount } from '@/domains/account/server/profile/profile-service';
+import { getUserAccount } from '@/domains/account/client';
 import {
   assertTitleMedia,
   buildMediaItemKey,

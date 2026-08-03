@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { pipe } from '@/shared/utils';
-import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/server/profile/profile-http-client';
+import { ACCOUNT_PROVIDER_CONFIG } from '@/domains/account/client';
 import GlobalContextMenuRegistry from '@/app/_shell/global-context-menu-registry';
 import NotificationsModal from '@/domains/social/ui/notifications-modal';
 import AccountNavRegistry from '@/app/_shell/navigation/account-nav-registry';

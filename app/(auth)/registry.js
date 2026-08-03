@@ -1,6 +1,6 @@
 'use client';
 
-import { AuthRouteRegistry } from '@/domains/auth/page-shell';
+import { AuthRouteRegistry } from '@/domains/auth/ui';
 
 export default function AuthRegistry({
   action = null,

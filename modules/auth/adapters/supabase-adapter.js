@@ -5,14 +5,12 @@ import { resolveAuthCapabilities } from '@/domains/auth/utils';
 import { createCsrfHeaders } from '@/domains/auth/clients';
 import {
   buildOAuthCallbackUrl,
-  resolveOAuthIntent,
-  sanitizeAuthNextPath,
-} from '@/domains/auth/oauth-callback';
-import {
   getOAuthProviderLabel,
   isSupportedOAuthProvider,
   normalizeOAuthProvider,
-} from '@/domains/auth/oauth-providers';
+  resolveOAuthIntent,
+  sanitizeAuthNextPath,
+} from '@/domains/auth/oauth';
 import {
   createClient as createSupabaseClient,
   terminateBrowserSession,

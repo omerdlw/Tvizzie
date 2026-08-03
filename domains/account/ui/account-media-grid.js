@@ -13,7 +13,7 @@ import {
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountPagination from './account-pagination';
-import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from './account-data';
+import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
 import { AccountInlineSectionState } from './account-section';
 import AccountSectionLayout from './account-section';
 import { getCardProps, paginationVariants, TIMELINES } from '@/app/(account)/motion';

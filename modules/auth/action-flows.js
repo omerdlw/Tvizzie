@@ -1,7 +1,7 @@
 'use client';
 
 import { logAuthAuditEvent } from '@/domains/auth/clients';
-import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth-providers';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth';
 import { EVENT_TYPES } from '@/shared/constants/events';
 import { resolvePrimaryProvider } from '@/domains/auth/utils';
 

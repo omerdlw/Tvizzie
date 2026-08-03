@@ -1,4 +1,4 @@
-import { requireAuthenticatedRequest } from '@/domains/auth/servers/auth-session.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/servers/session.server.js';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   createRouteRequestMeta,

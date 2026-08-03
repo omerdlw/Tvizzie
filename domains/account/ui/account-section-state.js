@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo } from 'react';
 
-import { useAccountSectionPage } from '@/domains/account/ui/hooks/section-page';
+import { useAccountSectionPage } from '@/domains/account/hooks';
 import {
   EMPTY_ACCOUNT_REGISTRY_AUTH,
   noopAccountRegistryHandler,

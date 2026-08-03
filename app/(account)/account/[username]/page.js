@@ -5,7 +5,7 @@ import { isReservedAccountSegment } from '@/domains/account/utils';
 import {
   getUsernameAccountOverviewRouteData,
   redirectCurrentAccountSection,
-} from '@/domains/account/server/routes/route-read';
+} from '@/domains/account/server/routes.server';
 
 import Client from '@/app/(account)/account/[username]/client';
 

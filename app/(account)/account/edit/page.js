@@ -1,4 +1,4 @@
-import { getCurrentEditableAccountSnapshot } from '@/domains/account/server/routes/route-read';
+import { getCurrentEditableAccountSnapshot } from '@/domains/account/server/routes.server';
 
 import Client from '@/app/(account)/account/edit/client';
 

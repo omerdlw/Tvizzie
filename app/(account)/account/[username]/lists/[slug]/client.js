@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { mergeCollectionItemsWithExistingMetadata } from '@/domains/account/ui/hooks/collections';
+import { mergeCollectionItemsWithExistingMetadata } from '@/domains/account/hooks';
 import { useAccountProfile } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
@@ -10,7 +10,7 @@ import {
   buildPollingSubscriptionKey,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import { getMediaTitle, removeAccountCollectionItem } from '@/domains/account/ui/account-data';
+import { getMediaTitle, removeAccountCollectionItem } from '@/domains/account/utils';
 import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,

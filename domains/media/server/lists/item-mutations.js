@@ -3,7 +3,7 @@
 import {
   createMediaCollectionToggleRpcParams,
   executeMediaCollectionRpc,
-} from '@/domains/account/server/media/media-collection-service';
+} from '@/domains/account/client';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
   assertTitleMedia,

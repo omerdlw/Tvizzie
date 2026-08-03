@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { createAccountRoutePage } from '@/domains/account/ui/account-page-factory';
-import { getUsernameAccountActivityRouteData } from '@/domains/account/server/routes/route-read';
+import { getUsernameAccountActivityRouteData } from '@/domains/account/server/routes.server';
 import Client from '@/app/(account)/account/[username]/activity/client';
 
 export default createAccountRoutePage(Client, getUsernameAccountActivityRouteData, (query) => ({

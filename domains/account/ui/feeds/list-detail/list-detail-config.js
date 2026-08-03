@@ -1,4 +1,4 @@
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/domains/account/ui/account-data';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import { REVIEW_SORT_MODE } from '@/domains/reviews/ui/review-data';
 
 export const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`;

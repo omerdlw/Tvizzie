@@ -5,8 +5,8 @@
  * @description Auth işlemlerinin ana Orchestrator (yönlendirici/tamamlayıcı) fonksiyonları.
  */
 
-import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
-import { getOAuthProviderLabel } from '@/domains/auth/oauth-providers';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
+import { getOAuthProviderLabel } from '@/domains/auth/oauth';
 import { completeVerifiedSignUp } from './requests';
 
 import {
@@ -15,7 +15,7 @@ import {
   normalizeEmail,
   validateAllowedEmailDomain,
   validatePassword,
-} from './auth-flow';
+} from './utils';
 
 // ============================================================================
 // 1. E-POSTA VE KULLANICI DOĞRULAMA ÇÖZÜMLEMELERİ

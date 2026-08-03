@@ -5,8 +5,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
+  useAccountSectionPage,
   useSeededFeedState,
-} from '@/domains/account/ui/hooks/section-page';
+} from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useToast } from '@/modules/notification';
 import { fetchProfileLikedLists } from '@/domains/media/server/lists';

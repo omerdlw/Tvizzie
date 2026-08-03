@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_ROUTES } from '@/domains/auth/utils';
-import { TMDB_IMG } from '@/shared/constants';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import {
   hasMatchingSeededFeed,
+  useAccountSectionPage,
   useDeferredPreviewFeed,
-} from '@/domains/account/ui/hooks/section-page';
+} from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';

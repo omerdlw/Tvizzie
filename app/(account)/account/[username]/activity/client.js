@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useSeededFeedState } from '@/domains/account/ui/hooks/section-page';
+import { useSeededFeedState } from '@/domains/account/hooks';
 import {
   buildManagedQueryString,
   normalizePage,
   parseActivityFilters,
   parsePageFromSearch,
   toActivityQueryValues,
-} from '@/domains/account/ui/filtering/filtering';
+} from '@/domains/account/ui/filters/filtering';
 import { logDataError } from '@/domains/account/utils';
 import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
 import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';

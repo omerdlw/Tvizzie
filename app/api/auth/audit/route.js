@@ -1,1 +1,2 @@
-export * from '@/domains/auth/servers/api/audit.server';
+import { handleAuditPost } from '@/domains/auth/servers/api-handlers.server';
+export { handleAuditPost as POST };

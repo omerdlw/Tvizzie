@@ -6,7 +6,7 @@ import { normalizeFeedbackText } from '@/shared/utils';
 import {
   collectActivitySubjectOptions,
   hasActiveActivityFilters,
-} from '@/domains/account/ui/filtering/filtering';
+} from '@/domains/account/ui/filters/filtering';
 import { AccountActivityFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPagination from '@/domains/account/ui/account-pagination';
 import ReviewCard from '@/domains/reviews/components/review-card';

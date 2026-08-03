@@ -3,7 +3,7 @@
 import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
-} from '@/domains/account/server/media/media-collection-service';
+} from '@/domains/account/client';
 import { buildPollingSubscriptionKey } from '@/infrastructure/realtime/polling-subscription-service';
 import {
   assertTitleMedia,

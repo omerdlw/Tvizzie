@@ -2,47 +2,41 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { assertSignUpEmailAvailable } from '@/domains/auth/requests';
-import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/utils';
 import {
+  AUTH_PURPOSE,
+  AUTH_ROUTE_NOTICE,
+  AUTH_ROUTES,
+  INITIAL_SIGN_UP_FORM,
+  arePasswordRulesSatisfied,
   buildAuthHref,
+  evaluatePasswordRules,
   hasSatisfiedPasswordRequirements,
   isPasswordConfirmationMismatchError,
   isPasswordRequirementError,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
   validateAllowedEmailDomain,
-} from '@/domains/auth/auth-flow';
+} from '@/domains/auth/utils';
 import {
   createPendingSignUpPayload,
   finalizeOAuthSignUp,
   finalizeSignUp,
 } from '@/domains/auth/workflows';
-import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth-providers';
-import { AUTH_ROUTE_NOTICE } from '@/domains/auth/route-notice';
-import AuthVerificationSurface from '@/domains/auth/auth-verification-surface';
-import { setPendingAccountBootstrap } from '@/domains/auth/clients';
-import { useAuth } from '@/modules/auth';
-import { useNavigationActions } from '@/modules/nav';
-import { useToast } from '@/modules/notification';
-import AuthRegistry from '@/app/(auth)/registry';
-// Sign-up view is defined in this route client.
-import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
-import { OAUTH_PROVIDER_KEYS } from '@/domains/auth/oauth-providers';
-import { arePasswordRulesSatisfied, evaluatePasswordRules } from '@/domains/auth/utils';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  AuthPageShell,
+  AuthVerificationSurface,
+  OAuthProviderButton,
   PasswordToggleButton,
-} from '@/domains/auth/form-primitives';
-import OAuthProviderButton from '@/domains/auth/oauth-provider-button';
-import AuthPageShell from '@/domains/auth/page-shell';
+} from '@/domains/auth/ui';
 import Icon from '@/ui/primitives/icon';
 import { Button, Input } from '@/ui/primitives';
 import {
@@ -59,14 +53,6 @@ import {
   titleVariants,
 } from '@/app/(auth)/motion';
 
-const INITIAL_FORM = Object.freeze({
-  username: '',
-  displayName: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-});
-
 export default function Client() {
   const auth = useAuth();
   const toast = useToast();
@@ -79,7 +65,7 @@ export default function Client() {
   const emailPrefill = useMemo(() => searchParams.get('email') || '', [searchParams]);
 
   const [form, setForm] = useState(() => ({
-    ...INITIAL_FORM,
+    ...INITIAL_SIGN_UP_FORM,
     email: emailPrefill,
   }));
   const [currentStep, setCurrentStep] = useState(0);

@@ -11,7 +11,7 @@ import {
   parsePageFromSearch,
   sortProfileLists,
   toListQueryValues,
-} from '@/domains/account/ui/filtering/filtering';
+} from '@/domains/account/ui/filters/filtering';
 import { AccountListSortBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
 import { AccountSectionState } from '@/domains/account/ui/account-section';

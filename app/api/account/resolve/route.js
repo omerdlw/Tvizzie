@@ -1,1 +1,3 @@
-export * from '@/domains/account/server/api/resolve';
+import { handleAccountResolveGet } from '@/domains/account/server/api-handlers.server';
+
+export const GET = handleAccountResolveGet;

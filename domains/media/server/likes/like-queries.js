@@ -8,7 +8,7 @@ import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import {
   fetchCollectionResource,
   fetchMediaCollectionStatus,
-} from '@/domains/account/server/media/media-collection-service';
+} from '@/domains/account/client';
 
 import { buildFavoriteShowcaseItem, buildLikeRef } from './like-shared.js';
 

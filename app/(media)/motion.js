@@ -46,11 +46,11 @@ export const SCALES = Object.freeze({
 export const MEDIA_BACKGROUND_ANIMATION = Object.freeze({
   initial: { opacity: 0, scale: 1.1, filter: BLURS.CINEMATIC },
   animate: { opacity: 1, scale: 1, filter: BLURS.NONE },
-  exit: { opacity: 0, scale: 0.9, filter: BLURS.MEDIUM },
+  exit: { opacity: 0, scale: 1.1, filter: BLURS.MEDIUM },
   transition: {
     duration: DURATIONS.BACKGROUND_REVEAL,
-    delay: 0.25,
     ease: EASINGS.LUXURY,
+    delay: 0.25,
   },
   exitDurationFactor: 0.4,
 });
@@ -341,4 +341,3 @@ export const scrollSectionVariants = Object.freeze({
 });
 
 export const scrollReviewsSectionVariants = scrollSectionVariants;
-

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { normalizeFeedbackContent, cn } from '@/shared/utils';
 import Icon from '@/ui/primitives/icon';
 import { AccountSectionReveal } from './account-layout';
-import { ACCOUNT_SECTION_SHELL_CLASS } from './account-data';
+import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
 import { sectionHeadingVariants } from '@/app/(account)/motion';
 
 const ACCOUNT_SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';

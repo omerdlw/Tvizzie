@@ -1,6 +1,6 @@
 'use client';
 
-import { LIST_SORT_OPTIONS } from '@/domains/account/ui/filtering/filtering';
+import { LIST_SORT_OPTIONS } from '@/domains/account/ui/filters/filtering';
 import { cn } from '@/shared/utils';
 
 import {

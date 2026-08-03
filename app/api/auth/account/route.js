@@ -1,5 +1,2 @@
-import { handleAccountPost } from '@/domains/auth/servers/account-route/account-route.handlers.server';
-
-export async function POST(request) {
-  return handleAccountPost(request);
-}
+import { handleAccountPost } from '@/domains/auth/servers/account-routes.server';
+export { handleAccountPost as POST };

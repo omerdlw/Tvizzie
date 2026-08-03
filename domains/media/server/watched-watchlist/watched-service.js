@@ -2,8 +2,8 @@
 
 import {
   executeMediaCollectionRpc,
-  refreshMediaCollectionAccountSummary,
-} from '@/domains/account/server/media/media-collection-service';
+  fetchCollectionResource,
+} from '@/domains/account/client';
 import { getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
 import {
   invalidatePollingSubscription,

@@ -1,1 +1,4 @@
-export { GET, POST } from '@/domains/account/server/api/profile';
+import { handleAccountProfileGet, handleAccountProfilePost } from '@/domains/account/server/api-handlers.server';
+
+export const GET = handleAccountProfileGet;
+export const POST = handleAccountProfilePost;

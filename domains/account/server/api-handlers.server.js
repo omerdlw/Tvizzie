@@ -1,0 +1,294 @@
+import 'server-only';
+
+import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { requireSessionRequest, resolveOptionalSessionRequest } from '@/domains/auth/servers/session.server.js';
+import { ensurePasswordAccountRecord } from '@/domains/auth/servers/account.server.js';
+import { getEditableAccountSnapshotByUserId, getAccountIdByUsername, getAccountProfileByUserId } from './profile.server';
+import { fetchAccountActivityFeedServer } from './feed.server';
+import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
+import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION, normalizeAccountDisplayNameSearchValue, sanitizeUsername, validateUsername } from '@/domains/account/utils';
+import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
+import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
+import { normalizeValue } from '@/shared/utils';
+
+// ============================================================
+// GET /api/collections
+// ============================================================
+
+export async function handleAccountCollectionsGet(request) {
+  try {
+    const sessionContext = await resolveOptionalSessionRequest(request);
+    const viewerId = sessionContext?.userId || null;
+    const { searchParams } = new URL(request.url);
+
+    const resource = normalizeValue(searchParams.get('resource'));
+    const userIdParam = normalizeValue(searchParams.get('userId'));
+    const usernameParam = normalizeValue(searchParams.get('username'));
+    const slug = searchParams.get('slug');
+    const listId = searchParams.get('listId');
+    const limitCount = searchParams.get('limitCount');
+    const entityType = searchParams.get('entityType');
+    const entityId = searchParams.get('entityId');
+
+    let resolvedUserId = userIdParam || null;
+    if (!resolvedUserId && usernameParam) {
+      resolvedUserId = await getAccountIdByUsername(usernameParam);
+    }
+    if (!resolvedUserId && viewerId) {
+      resolvedUserId = viewerId;
+    }
+
+    if (!resolvedUserId && resource !== 'list-by-slug') {
+      return NextResponse.json({ data: null, items: [] });
+    }
+
+    const media = entityType && entityId ? { entityId, entityType } : null;
+    const { getAccountCollectionResource } = await import('./collections.server');
+
+    const data = await getAccountCollectionResource({
+      limitCount,
+      listId,
+      media,
+      resource,
+      slug,
+      userId: resolvedUserId,
+      viewerId,
+    });
+
+    return NextResponse.json({ data, items: Array.isArray(data) ? data : [] });
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: String(error?.message || 'Collections could not be loaded') }, { status });
+  }
+}
+
+// ============================================================
+// GET /api/account/activity
+// ============================================================
+
+export async function handleAccountActivityGet(request) {
+  try {
+    const sessionContext = await resolveOptionalSessionRequest(request);
+    const viewerId = sessionContext?.userId || null;
+    const { searchParams } = new URL(request.url);
+
+    const userIdParam = normalizeValue(searchParams.get('userId'));
+    const usernameParam = normalizeValue(searchParams.get('username'));
+    const cursor = searchParams.get('cursor');
+    const pageSize = searchParams.get('pageSize');
+    const scope = searchParams.get('scope');
+    const sort = searchParams.get('sort');
+    const subject = searchParams.get('subject');
+
+    let resolvedUserId = userIdParam || null;
+    if (!resolvedUserId && usernameParam) {
+      resolvedUserId = await getAccountIdByUsername(usernameParam);
+    }
+    if (!resolvedUserId && viewerId) {
+      resolvedUserId = viewerId;
+    }
+
+    if (!resolvedUserId) {
+      return NextResponse.json({ hasMore: false, items: [], nextCursor: null, totalCount: 0 });
+    }
+
+    const payload = await fetchAccountActivityFeedServer({
+      cursor,
+      pageSize,
+      scope,
+      sort,
+      subject,
+      userId: resolvedUserId,
+      viewerId,
+    });
+
+    return NextResponse.json(payload);
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: String(error?.message || 'Activity feed could not be loaded') }, { status });
+  }
+}
+
+// ============================================================
+// GET & POST /api/account/profile
+// ============================================================
+
+export async function handleAccountProfileGet(request) {
+  try {
+    const sessionContext = await resolveOptionalSessionRequest(request);
+    const viewerId = sessionContext?.userId || null;
+    const { searchParams } = new URL(request.url);
+
+    const userId = normalizeValue(searchParams.get('userId'));
+    const username = normalizeValue(searchParams.get('username'));
+
+    let targetUserId = userId || null;
+    if (!targetUserId && username) {
+      targetUserId = await getAccountIdByUsername(username);
+    }
+    if (!targetUserId && viewerId) {
+      targetUserId = viewerId;
+    }
+
+    if (!targetUserId) {
+      return NextResponse.json({ profile: null });
+    }
+
+    const profile = await getAccountProfileByUserId(targetUserId, { viewerId });
+    return NextResponse.json({ profile: profile || null });
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: String(error?.message || 'Profile could not be loaded') }, { status });
+  }
+}
+
+export async function handleAccountProfilePost(request) {
+  try {
+    const authContext = await requireSessionRequest(request);
+    const body = await request.json().catch(() => ({}));
+    const action = normalizeValue(body.action);
+
+    if (action === 'ensure') {
+      const preferredDisplayName = normalizeValue(body.displayName);
+      const preferredUsername = body.username ? validateUsername(body.username) : null;
+      const avatarUrl = normalizeValue(body.avatarUrl);
+      const email = normalizeValue(body.email);
+
+      const snapshot = await ensurePasswordAccountRecord({
+        avatarUrl: avatarUrl || null,
+        displayName: preferredDisplayName || null,
+        email: email || null,
+        userId: authContext.userId,
+        username: preferredUsername || null,
+      });
+
+      return NextResponse.json({ profile: snapshot });
+    }
+
+    if (action === 'update') {
+      const admin = createAdminClient();
+      const updates = {};
+
+      if (body.displayName !== undefined) updates.display_name = normalizeValue(body.displayName);
+      if (body.username !== undefined) updates.username = validateUsername(body.username);
+      if (body.avatarUrl !== undefined) updates.avatar_url = normalizeValue(body.avatarUrl) || null;
+      if (body.bannerUrl !== undefined) updates.banner_url = normalizeValue(body.bannerUrl) || null;
+      if (body.description !== undefined) updates.description = normalizeValue(body.description);
+      if (body.isPrivate !== undefined) updates.is_private = Boolean(body.isPrivate);
+
+      updates.updated_at = new Date().toISOString();
+
+      const { data, error } = await admin.from('accounts').update(updates).eq('id', authContext.userId).select().single();
+      if (error) throw new Error(error.message || 'Account update failed');
+
+      await publishUserEvent(authContext.userId, 'account:updated', { profile: data });
+      return NextResponse.json({ profile: data });
+    }
+
+    return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: String(error?.message || 'Account action failed') }, { status });
+  }
+}
+
+// ============================================================
+// GET /api/account/resolve
+// ============================================================
+
+export async function handleAccountResolveGet(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const username = normalizeValue(searchParams.get('username'));
+
+    const userId = await getOrLoadCachedValue({
+      cacheKey: `account-resolve|username=${username}`,
+      enabled: true,
+      ttlMs: 1500,
+      loader: async () => {
+        const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
+          body: { resource: 'resolve', username },
+        });
+        return payload?.userId || null;
+      },
+    });
+
+    return NextResponse.json({ userId: userId || null });
+  } catch (error) {
+    return NextResponse.json({ error: String(error?.message || 'Username could not be resolved') }, { status: 500 });
+  }
+}
+
+// ============================================================
+// GET /api/account/reviews
+// ============================================================
+
+export async function handleAccountReviewsGet(request) {
+  try {
+    const sessionContext = await resolveOptionalSessionRequest(request);
+    const viewerId = sessionContext?.userId || null;
+    const { searchParams } = new URL(request.url);
+
+    const userIdParam = normalizeValue(searchParams.get('userId'));
+    const usernameParam = normalizeValue(searchParams.get('username'));
+    const mode = normalizeValue(searchParams.get('mode')) || 'authored';
+    const pageSize = searchParams.get('pageSize');
+
+    let resolvedUserId = userIdParam || null;
+    if (!resolvedUserId && usernameParam) {
+      resolvedUserId = await getAccountIdByUsername(usernameParam);
+    }
+
+    if (!resolvedUserId) {
+      return NextResponse.json({ hasMore: false, items: [], nextCursor: null, totalCount: 0 });
+    }
+
+    const payload = await fetchProfileReviewFeedServer({
+      mode,
+      pageSize: Number(pageSize) || 20,
+      userId: resolvedUserId,
+      viewerId,
+    });
+
+    return NextResponse.json(payload);
+  } catch (error) {
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: String(error?.message || 'Reviews could not be loaded') }, { status });
+  }
+}
+
+// ============================================================
+// GET /api/account/search
+// ============================================================
+
+export async function handleAccountSearchGet(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const searchTerm = normalizeValue(searchParams.get('searchTerm'));
+    const limitCount = Math.min(50, Math.max(1, Number(searchParams.get('limitCount')) || 10));
+
+    if (!searchTerm) return NextResponse.json({ items: [] });
+
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from('accounts')
+      .select('id, username, display_name, avatar_url, is_private')
+      .or(`username_lower.ilike.%${searchTerm.toLowerCase()}%,display_name_lower.ilike.%${searchTerm.toLowerCase()}%`)
+      .limit(limitCount);
+
+    if (error) throw new Error(error.message || 'Search failed');
+
+    const items = (data || []).map((row) => ({
+      avatarUrl: row.avatar_url || null,
+      displayName: row.display_name || 'Anonymous User',
+      id: row.id,
+      isPrivate: Boolean(row.is_private),
+      username: row.username,
+    }));
+
+    return NextResponse.json({ items });
+  } catch (error) {
+    return NextResponse.json({ error: String(error?.message || 'Account search failed') }, { status: 500 });
+  }
+}

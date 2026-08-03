@@ -1,1 +1,2 @@
-export { POST } from '@/domains/auth/servers/api/password-reset-complete.server';
+import { handlePasswordResetCompletePost } from '@/domains/auth/servers/api-handlers.server';
+export { handlePasswordResetCompletePost as POST };

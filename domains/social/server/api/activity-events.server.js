@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { requireAuthenticatedRequest } from '@/domains/auth/servers/auth-session.js';
+import { requireAuthenticatedRequest } from '@/domains/auth/servers/session.server.js';
 import {
   deleteActivityEvents,
   processActivityEvent,

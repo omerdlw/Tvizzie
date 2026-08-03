@@ -8,7 +8,7 @@ import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import NotFoundTemplate from '@/ui/feedback/not-found-template';
 import { AccountSkeleton } from '@/app/(account)/account/loading';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from './account-data';
+import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/account-bio-surface';
 import {

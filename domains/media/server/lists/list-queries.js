@@ -1,4 +1,4 @@
-import { fetchCollectionResource } from '@/domains/account/server/media/media-collection-service';
+import { fetchCollectionResource } from '@/domains/account/client';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 export async function fetchUserLists(userId, options = {}) {

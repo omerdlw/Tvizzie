@@ -19,9 +19,9 @@ import {
   sortProfileLists,
   toListQueryValues,
   toMediaQueryValues,
-} from '@/domains/account/ui/filtering/filtering';
+} from '@/domains/account/ui/filters/filtering';
 import AccountPaginatedListGrid from '@/domains/account/ui/lists/list-grid';
-import { getMediaTitle as getAccountMediaTitle } from '@/domains/account/ui/account-data';
+import { getMediaTitle as getAccountMediaTitle } from '@/domains/account/utils';
 import {
   AccountListSortBar,
   AccountMediaFilterBar,

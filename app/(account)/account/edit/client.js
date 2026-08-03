@@ -2,25 +2,22 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_ROUTES } from '@/domains/auth/utils';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
+import { useAccountEditData, useAccountSecurityActions } from '@/domains/account/hooks';
 import {
   INITIAL_DELETE_FLOW,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,
-} from '@/domains/account/ui/account-security';
-import { useAccountSecurityActions } from '@/domains/account/ui/hooks/security-actions';
-import { useAccountEditData } from '@/domains/account/ui/hooks/edit-data';
-import {
   clearAccountFeedback,
   emitAccountFeedback,
   getAvatarFallback,
+  logDataError,
   normalizeEmail,
   normalizeOptionalText,
   normalizeProviderIds,
-} from '@/domains/account/ui/account-data';
-import { logDataError } from '@/domains/account/utils';
-import { uploadAccountMediaFile } from '@/domains/account/server/profile/profile-service';
+} from '@/domains/account/utils';
+import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
+import { uploadAccountMediaFile } from '@/domains/account/client';
 import { useAccount } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
@@ -37,7 +34,6 @@ import {
   AccountSectionReveal,
 } from '@/domains/account/ui/account-layout';
 import { AccountSectionHeading } from '@/domains/account/ui/account-section';
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/domains/account/ui/account-data';
 import AccountHero from '@/domains/account/ui/account-hero';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';

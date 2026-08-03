@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import AccountListCard from './list-card';
 import AccountSectionLayout, { AccountInlineSectionState } from '@/domains/account/ui/account-section';
 import AccountPagination from '@/domains/account/ui/account-pagination';
-import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '../account-data';
+import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;

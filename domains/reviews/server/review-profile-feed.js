@@ -4,7 +4,7 @@ import { createAdminClient } from '@/infrastructure/supabase/admin';
 import {
   canViewerAccessUserContent,
   createPrivateProfileError,
-} from '@/domains/account/server/profile/profile-public-read';
+} from '@/domains/account/server/profile.server';
 import { LIST_REVIEW_SELECT, MEDIA_REVIEW_SELECT, REVIEW_LIKE_SELECT } from '@/domains/reviews/utils';
 import { fetchReviewLikes, loadListSubjectMap } from './review-server-context.js';
 import {

@@ -1,1 +1,2 @@
-export { POST } from '@/domains/auth/servers/api/sign-in.server';
+import { handleSignInPost } from '@/domains/auth/servers/api-handlers.server';
+export { handleSignInPost as POST };

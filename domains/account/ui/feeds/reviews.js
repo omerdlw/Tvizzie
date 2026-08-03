@@ -12,7 +12,7 @@ import {
   parsePageFromSearch,
   parseReviewFilters,
   toReviewQueryValues,
-} from '@/domains/account/ui/filtering/filtering';
+} from '@/domains/account/ui/filters/filtering';
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPagination from '@/domains/account/ui/account-pagination';
 import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/account-section';

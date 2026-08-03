@@ -3,7 +3,7 @@
 import {
   buildMediaCollectionStatusSubscriptionKey,
   buildUserMediaCollectionSubscriptionKey,
-} from '@/domains/account/server/media/media-collection-service';
+} from '@/domains/account/client';
 import { assertTitleMedia, buildMediaItemKey, ensureUserId } from '@/domains/media/server/media';
 
 export function createWatchlistRef(userId, media) {

@@ -21,8 +21,7 @@ import {
 } from '@/domains/media/server/watched-watchlist';
 import { cn } from '@/shared/utils';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
-import { AUTH_ROUTES } from '@/domains/auth/utils';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import { useNavigationActions } from '@/modules/nav';
 import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
 import Icon from '@/ui/primitives/icon';

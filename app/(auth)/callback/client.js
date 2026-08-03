@@ -2,15 +2,16 @@
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { Z_INDEX } from '@/shared/constants';
-import { AUTH_ROUTE_NOTICE } from '@/domains/auth/route-notice';
-import { normalizeOAuthIntent, sanitizeAuthNextPath } from '@/domains/auth/oauth-callback';
+import { AUTH_ROUTE_NOTICE } from '@/domains/auth/utils';
 import {
   getOAuthProviderIcon,
   getOAuthProviderLabel,
+  normalizeOAuthIntent,
   normalizeOAuthProvider,
-} from '@/domains/auth/oauth-providers';
+  sanitizeAuthNextPath,
+} from '@/domains/auth/oauth';
 import { createClient as createSupabaseClient } from '@/infrastructure/supabase/supabase-client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { isCanonicalSessionAuthenticated } from '@/modules/auth/session-client';

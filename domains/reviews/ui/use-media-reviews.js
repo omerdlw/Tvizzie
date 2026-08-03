@@ -16,8 +16,7 @@ import {
   subscribeToMediaReviews,
   toggleReviewLike,
 } from '@/domains/reviews/server';
-import { buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/auth-flow';
-import { AUTH_ROUTES } from '@/domains/auth/utils';
+import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import { getRatingStats, sortReviews } from './review-data';
 
 // ==========================================

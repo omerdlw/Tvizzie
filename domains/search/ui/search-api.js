@@ -1,4 +1,4 @@
-import { ACCOUNT_CLIENT } from '@/domains/account/server/profile/profile-http-client';
+import { ACCOUNT_CLIENT } from '@/domains/account/client';
 
 import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils';
 import { createSearchCacheKey, withClientSearchCache } from './search-cache';

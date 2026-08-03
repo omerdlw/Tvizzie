@@ -3,42 +3,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/requests';
-import { AUTH_PURPOSE, AUTH_ROUTES } from '@/domains/auth/utils';
 import {
+  AUTH_PURPOSE,
+  AUTH_ROUTES,
+  INITIAL_RESET_FLOW,
   buildAuthHref,
+  consumeAuthRouteNoticeCookie,
   createError,
   isEmailIdentifier,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
-  validatePassword,
-} from '@/domains/auth/auth-flow';
-import { getOAuthProviderLabel } from '@/domains/auth/oauth-providers';
-import AuthVerificationSurface from '@/domains/auth/auth-verification-surface';
-import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { useAuth } from '@/modules/auth';
-import { useNavigationActions } from '@/modules/nav';
-import { useToast } from '@/modules/notification';
-import AuthRegistry from '@/app/(auth)/registry';
-import ForgotPasswordAction from '@/domains/auth/forgot-password-action';
-import {
-  INITIAL_RESET_FLOW,
-  consumeAuthRouteNoticeCookie,
   resolveSignInNoticeToast,
-} from '@/domains/auth/ui/sign-in-state';
-// Sign-in view is defined in this route client.
-import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
-import { OAUTH_PROVIDER_KEYS } from '@/domains/auth/oauth-providers';
+  validatePassword,
+} from '@/domains/auth/utils';
+import { getOAuthProviderLabel } from '@/domains/auth/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
   AUTH_PRIMARY_BUTTON_CLASSNAMES,
   AUTH_SECONDARY_BUTTON_CLASSNAMES,
   AuthField,
+  AuthPageShell,
+  AuthVerificationSurface,
+  ForgotPasswordAction,
+  OAuthProviderButton,
   PasswordToggleButton,
-} from '@/domains/auth/form-primitives';
-import OAuthProviderButton from '@/domains/auth/oauth-provider-button';
-import AuthPageShell from '@/domains/auth/page-shell';
+} from '@/domains/auth/ui';
 import { Button, Input } from '@/ui/primitives';
 import {
   dividerVariants,

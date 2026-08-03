@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
+  useAccountSectionPage,
   useSeededFeedState,
-} from '@/domains/account/ui/hooks/section-page';
+} from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
