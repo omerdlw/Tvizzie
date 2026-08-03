@@ -7,7 +7,7 @@ import {
   getPersonPosterPreferenceFilePath,
   setPersonPosterPreference,
 } from '@/domains/media/utils/poster-preferences';
-import { calculateAge, getBackgroundMovieCandidates } from '@/domains/media/utils/poster-preferences';
+import { calculateAge, getBackgroundMovieCandidates } from '@/domains/media/utils/person-data';
 import { TMDB_IMG } from '@/shared/constants';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 // Person view is defined in this route client.

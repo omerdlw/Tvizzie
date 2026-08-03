@@ -6,8 +6,8 @@
  */
 
 import { ACCOUNT_CLIENT } from '@/domains/account/client';
-import { getOAuthProviderLabel } from '@/domains/auth/oauth';
-import { completeVerifiedSignUp } from './requests';
+import { getOAuthProviderLabel } from '@/domains/auth/utils/oauth';
+import { completeVerifiedSignUp } from '@/domains/auth/client/requests';
 
 import {
   createError,
@@ -15,7 +15,7 @@ import {
   normalizeEmail,
   validateAllowedEmailDomain,
   validatePassword,
-} from './utils';
+} from '@/domains/auth/utils';
 
 // ============================================================================
 // 1. E-POSTA VE KULLANICI DOĞRULAMA ÇÖZÜMLEMELERİ
