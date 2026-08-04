@@ -12,7 +12,7 @@ import {
   subscribeToUserWatched,
   subscribeToUserWatchlist,
 } from '@/domains/media/server/watched-watchlist';
-import { updateUserMediaPosition } from '@/domains/media/server/user-media';
+import { updateUserMediaPosition } from '@/domains/media/utils/user-media';
 import { getMediaTitle, notifyAccountLoadError, removeAccountCollectionItem } from '@/domains/account/utils';
 
 // ============================================================

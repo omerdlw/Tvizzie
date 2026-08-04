@@ -1,6 +1,6 @@
 'use client';
 
-import { notifyPosterPreferenceChange } from '@/domains/media/server/user-media';
+import { notifyPosterPreferenceChange } from '@/domains/media/utils/user-media';
 
 const STORAGE_KEY = 'tvizzie.movie.background.preferences';
 const MAX_PREFERENCES = 200;
