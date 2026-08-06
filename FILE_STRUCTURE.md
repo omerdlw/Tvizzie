@@ -4,12 +4,6 @@ This file is generated from the working tree and lists every project file. Gener
 
 ```text
 .
-├── .editorconfig
-├── .env
-├── .gitattributes
-├── .gitignore
-├── .prettierignore
-├── .prettierrc.cjs
 ├── .vscode
 │   └── settings.json
 ├── app
@@ -20,7 +14,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   ├── client.js
 │   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
-│   │   │   │   ├── client.js
 │   │   │   │   ├── likes
 │   │   │   │   │   ├── client.js
 │   │   │   │   │   ├── loading.js
@@ -33,9 +26,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   ├── client.js
 │   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
-│   │   │   │   ├── loading.js
-│   │   │   │   ├── not-found.js
-│   │   │   │   ├── page.js
 │   │   │   │   ├── reviews
 │   │   │   │   │   ├── client.js
 │   │   │   │   │   ├── loading.js
@@ -44,16 +34,20 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   ├── client.js
 │   │   │   │   │   ├── loading.js
 │   │   │   │   │   └── page.js
-│   │   │   │   └── watchlist
-│   │   │   │       ├── client.js
-│   │   │   │       ├── loading.js
-│   │   │   │       └── page.js
-│   │   │   ├── client.js
+│   │   │   │   ├── watchlist
+│   │   │   │   │   ├── client.js
+│   │   │   │   │   ├── loading.js
+│   │   │   │   │   └── page.js
+│   │   │   │   ├── client.js
+│   │   │   │   ├── loading.js
+│   │   │   │   ├── not-found.js
+│   │   │   │   └── page.js
 │   │   │   ├── edit
 │   │   │   │   ├── client.js
 │   │   │   │   ├── loading.js
 │   │   │   │   ├── not-found.js
 │   │   │   │   └── page.js
+│   │   │   ├── client.js
 │   │   │   ├── error.js
 │   │   │   ├── loading.js
 │   │   │   ├── not-found.js
@@ -64,16 +58,16 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── callback
 │   │   │   ├── client.js
 │   │   │   └── page.js
-│   │   ├── error.js
-│   │   ├── loading.js
-│   │   ├── motion.js
-│   │   ├── registry.js
 │   │   ├── sign-in
 │   │   │   ├── client.js
 │   │   │   └── page.js
-│   │   └── sign-up
-│   │       ├── client.js
-│   │       └── page.js
+│   │   ├── sign-up
+│   │   │   ├── client.js
+│   │   │   └── page.js
+│   │   ├── error.js
+│   │   ├── loading.js
+│   │   ├── motion.js
+│   │   └── registry.js
 │   ├── (home)
 │   │   ├── client.js
 │   │   ├── error.js
@@ -82,51 +76,51 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── page.js
 │   │   └── registry.js
 │   ├── (legal)
-│   │   ├── error.js
-│   │   ├── loading.js
-│   │   ├── motion.js
 │   │   ├── privacy
 │   │   │   ├── client.js
 │   │   │   └── page.js
-│   │   ├── registry.js
-│   │   └── terms
-│   │       ├── client.js
-│   │       └── page.js
-│   ├── (media)
+│   │   ├── terms
+│   │   │   ├── client.js
+│   │   │   └── page.js
+│   │   ├── error.js
+│   │   ├── loading.js
 │   │   ├── motion.js
+│   │   └── registry.js
+│   ├── (media)
 │   │   ├── movie
 │   │   │   └── [id]
+│   │   │       ├── reviews
+│   │   │       │   ├── client.js
+│   │   │       │   └── page.js
 │   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
-│   │   │       ├── page.js
-│   │   │       └── reviews
-│   │   │           ├── client.js
-│   │   │           └── page.js
+│   │   │       └── page.js
 │   │   ├── person
 │   │   │   └── [id]
 │   │   │       ├── client.js
 │   │   │       ├── loading.js
 │   │   │       ├── not-found.js
 │   │   │       └── page.js
-│   │   ├── registry.js
-│   │   └── tv
-│   │       └── [id]
-│   │           ├── client.js
-│   │           ├── loading.js
-│   │           ├── not-found.js
-│   │           ├── page.js
-│   │           └── reviews
-│   │               ├── client.js
-│   │               └── page.js
+│   │   ├── tv
+│   │   │   └── [id]
+│   │   │       ├── reviews
+│   │   │       │   ├── client.js
+│   │   │       │   └── page.js
+│   │   │       ├── client.js
+│   │   │       ├── loading.js
+│   │   │       ├── not-found.js
+│   │   │       └── page.js
+│   │   ├── motion.js
+│   │   └── registry.js
 │   ├── _shell
-│   │   ├── global-context-menu-registry.js
-│   │   ├── interactive-boundary.js
-│   │   ├── nav-runtime.js
 │   │   ├── navigation
 │   │   │   ├── account-nav-links.js
 │   │   │   ├── account-nav-registry.js
 │   │   │   └── media-action.js
+│   │   ├── global-context-menu-registry.js
+│   │   ├── interactive-boundary.js
+│   │   ├── nav-runtime.js
 │   │   ├── navigation-config.js
 │   │   ├── settings-modal.js
 │   │   └── smooth-scroll.js
@@ -192,9 +186,9 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │       └── awards
 │   │   │           └── route.js
 │   │   ├── reviews
-│   │   │   ├── route.js
-│   │   │   └── write
-│   │   │       └── route.js
+│   │   │   ├── write
+│   │   │   │   └── route.js
+│   │   │   └── route.js
 │   │   ├── search
 │   │   │   └── community
 │   │   │       └── route.js
@@ -213,89 +207,44 @@ This file is generated from the working tree and lists every project file. Gener
 │   ├── not-found.js
 │   ├── providers.js
 │   └── template.js
-├── ARCHITECTURE.md
 ├── assets
 │   └── fonts
-│       ├── index.js
-│       └── zuume
-│           └── Zuume-Bold.woff2
+│       ├── zuume
+│       │   └── Zuume-Bold.woff2
+│       └── index.js
 ├── domains
 │   ├── account
+│   │   ├── client
+│   │   │   ├── collections.client.js
+│   │   │   ├── index.js
+│   │   │   └── profile.client.js
+│   │   ├── hooks
+│   │   │   ├── collections.hooks.js
+│   │   │   ├── index.js
+│   │   │   ├── page.hooks.js
+│   │   │   └── security.hooks.js
 │   │   ├── server
-│   │   │   ├── account-server.js
-│   │   │   ├── api
-│   │   │   │   ├── activity.js
-│   │   │   │   ├── collections.js
-│   │   │   │   ├── profile.js
-│   │   │   │   ├── resolve.js
-│   │   │   │   ├── reviews.js
-│   │   │   │   └── search.js
-│   │   │   ├── collections
-│   │   │   │   ├── collection-normalizers.js
-│   │   │   │   ├── collection-read.js
-│   │   │   │   ├── collection-shared.js
-│   │   │   │   └── collection-status.js
-│   │   │   ├── feed
-│   │   │   │   ├── feed-derived.js
-│   │   │   │   ├── feed-normalizers.js
-│   │   │   │   ├── feed-projector.js
-│   │   │   │   └── feed-read.js
-│   │   │   ├── media
-│   │   │   │   ├── media-collection-service.js
-│   │   │   │   ├── media-shared.js
-│   │   │   │   ├── media-storage.js
-│   │   │   │   └── media-upload.js
-│   │   │   ├── profile
-│   │   │   │   ├── profile-http-client.js
-│   │   │   │   ├── profile-normalizers.js
-│   │   │   │   ├── profile-public-read.js
-│   │   │   │   ├── profile-read.js
-│   │   │   │   ├── profile-service-normalizers.js
-│   │   │   │   ├── profile-service-requests.js
-│   │   │   │   ├── profile-service-subscriptions.js
-│   │   │   │   ├── profile-service.js
-│   │   │   │   └── profile-summary-service.js
-│   │   │   └── routes
-│   │   │       ├── route-loaders.js
-│   │   │       ├── route-read.js
-│   │   │       ├── route-session.js
-│   │   │       ├── route-snapshot.js
-│   │   │       └── route-state.js
+│   │   │   ├── api-handlers.server.js
+│   │   │   ├── collections.server.js
+│   │   │   ├── feed.server.js
+│   │   │   ├── index.js
+│   │   │   ├── media.server.js
+│   │   │   ├── profile.server.js
+│   │   │   └── routes.server.js
 │   │   ├── ui
-│   │   │   ├── account-action.js
-│   │   │   ├── account-bio-surface.js
-│   │   │   ├── account-data.js
-│   │   │   ├── account-hero.js
-│   │   │   ├── account-layout.js
-│   │   │   ├── account-media-grid.js
-│   │   │   ├── account-page-factory.js
-│   │   │   ├── account-pagination.js
-│   │   │   ├── account-registry-state.js
-│   │   │   ├── account-section-factory.js
-│   │   │   ├── account-section-state.js
-│   │   │   ├── account-section.js
-│   │   │   ├── account-security.js
 │   │   │   ├── feeds
-│   │   │   │   ├── activity.js
-│   │   │   │   ├── likes.js
 │   │   │   │   ├── list-detail
 │   │   │   │   │   ├── comments-section.js
 │   │   │   │   │   ├── list-detail-config.js
 │   │   │   │   │   └── list-detail-filter-state.js
+│   │   │   │   ├── activity.js
+│   │   │   │   ├── likes.js
 │   │   │   │   ├── list-detail.js
 │   │   │   │   ├── lists.js
 │   │   │   │   ├── overview.js
 │   │   │   │   ├── reviews.js
 │   │   │   │   ├── watched.js
 │   │   │   │   └── watchlist.js
-│   │   │   ├── filtering
-│   │   │   │   ├── activity.js
-│   │   │   │   ├── filtering-query-utils.js
-│   │   │   │   ├── filtering-shared.js
-│   │   │   │   ├── filtering.js
-│   │   │   │   ├── lists.js
-│   │   │   │   ├── media.js
-│   │   │   │   └── reviews.js
 │   │   │   ├── filters
 │   │   │   │   ├── content-filter
 │   │   │   │   │   ├── activity-filter-bar.js
@@ -305,22 +254,14 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   ├── media-filter-bar.js
 │   │   │   │   │   ├── review-filter-bar.js
 │   │   │   │   │   └── search-movie-filter-bar.js
-│   │   │   │   └── content-filter-primitives.js
-│   │   │   ├── hooks
-│   │   │   │   ├── collection-metadata.js
-│   │   │   │   ├── collection-remove-actions.js
-│   │   │   │   ├── collection-reorder-actions.js
-│   │   │   │   ├── collection-seed-state.js
-│   │   │   │   ├── collections.js
-│   │   │   │   ├── edit-data.js
-│   │   │   │   ├── page-actions.js
-│   │   │   │   ├── page-data.js
-│   │   │   │   ├── relationships.js
-│   │   │   │   ├── section-page.js
-│   │   │   │   ├── security-actions.js
-│   │   │   │   ├── security-credential-helpers.js
-│   │   │   │   ├── security-credential-validation.js
-│   │   │   │   └── security-credentials.js
+│   │   │   │   ├── activity.js
+│   │   │   │   ├── content-filter-primitives.js
+│   │   │   │   ├── filtering-query-utils.js
+│   │   │   │   ├── filtering-shared.js
+│   │   │   │   ├── filtering.js
+│   │   │   │   ├── lists.js
+│   │   │   │   ├── media.js
+│   │   │   │   └── reviews.js
 │   │   │   ├── lists
 │   │   │   │   ├── list-card.js
 │   │   │   │   └── list-grid.js
@@ -328,132 +269,82 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── create-list-modal.js
 │   │   │   │   ├── list-editor-modal.js
 │   │   │   │   └── list-picker-modal.js
-│   │   │   └── overview
-│   │   │       ├── activity.js
-│   │   │       ├── favorites.js
-│   │   │       ├── lists.js
-│   │   │       ├── reviews.js
-│   │   │       ├── watched.js
-│   │   │       └── watchlist.js
-│   │   └── utils.js
+│   │   │   ├── overview
+│   │   │   │   ├── activity.js
+│   │   │   │   ├── favorites.js
+│   │   │   │   ├── lists.js
+│   │   │   │   ├── reviews.js
+│   │   │   │   ├── watched.js
+│   │   │   │   └── watchlist.js
+│   │   │   ├── account-action.js
+│   │   │   ├── account-bio-surface.js
+│   │   │   ├── account-hero.js
+│   │   │   ├── account-layout.js
+│   │   │   ├── account-media-grid.js
+│   │   │   ├── account-page-factory.js
+│   │   │   ├── account-pagination.js
+│   │   │   ├── account-registry-state.js
+│   │   │   ├── account-section-factory.js
+│   │   │   ├── account-section-state.js
+│   │   │   ├── account-section.js
+│   │   │   └── index.js
+│   │   ├── utils
+│   │   │   ├── avatar.js
+│   │   │   ├── constants.js
+│   │   │   ├── feedback.js
+│   │   │   ├── formatting.js
+│   │   │   ├── index.js
+│   │   │   ├── security.js
+│   │   │   └── validation.js
+│   │   └── index.js
 │   ├── auth
-│   │   ├── auth-flow.js
-│   │   ├── auth-verification-surface.js
-│   │   ├── clients
-│   │   │   ├── audit.client.js
-│   │   │   ├── csrf.client.js
+│   │   ├── client
 │   │   │   ├── index.js
-│   │   │   ├── pending-account.client.js
-│   │   │   └── session-storage.client.js
-│   │   ├── forgot-password-action.js
-│   │   ├── form-primitives.js
-│   │   ├── index.js
-│   │   ├── oauth-callback.js
-│   │   ├── oauth-provider-button.js
-│   │   ├── oauth-providers.js
-│   │   ├── page-shell.js
-│   │   ├── requests.js
-│   │   ├── route-notice.js
-│   │   ├── servers
-│   │   │   ├── account
-│   │   │   │   ├── account-bootstrap.server.js
-│   │   │   │   ├── account-deletion.server.js
-│   │   │   │   ├── account-lifecycle.server.js
-│   │   │   │   └── account-state.server.js
-│   │   │   ├── account-route
-│   │   │   │   ├── account-route-shared.server.js
-│   │   │   │   ├── account-route.delete.server.js
-│   │   │   │   ├── account-route.email.server.js
-│   │   │   │   ├── account-route.handlers.server.js
-│   │   │   │   ├── account-route.password-change.server.js
-│   │   │   │   ├── account-route.password-set.server.js
-│   │   │   │   ├── account-route.password-status.server.js
-│   │   │   │   └── account-route.reauthenticate.server.js
-│   │   │   ├── api
-│   │   │   │   ├── audit.server.js
-│   │   │   │   ├── password-reset-complete.server.js
-│   │   │   │   ├── session.server.js
-│   │   │   │   ├── sign-in.server.js
-│   │   │   │   ├── sign-up-complete.server.js
-│   │   │   │   └── verification.server.js
+│   │   │   └── requests.js
+│   │   ├── server
+│   │   │   ├── account-routes.server.js
+│   │   │   ├── account.server.js
+│   │   │   ├── api-handlers.server.js
 │   │   │   ├── audit-log.server.js
-│   │   │   ├── auth-account.js
-│   │   │   ├── auth-audit.js
-│   │   │   ├── auth-notice.js
-│   │   │   ├── auth-policy.js
-│   │   │   ├── auth-providers.js
-│   │   │   ├── auth-route-notice.server.js
-│   │   │   ├── auth-route-policy.server.js
-│   │   │   ├── auth-security.js
-│   │   │   ├── auth-session.js
-│   │   │   ├── auth-verification.js
+│   │   │   ├── google-provider.server.js
 │   │   │   ├── index.js
-│   │   │   ├── providers
-│   │   │   │   ├── google-auth-intent.server.js
-│   │   │   │   └── google-provider.server.js
-│   │   │   ├── security
-│   │   │   │   ├── csrf.server.js
-│   │   │   │   ├── password-security.server.js
-│   │   │   │   ├── rate-limit-policies.server.js
-│   │   │   │   ├── rate-limit.server.js
-│   │   │   │   ├── recent-reauth.server.js
-│   │   │   │   └── step-up.server.js
-│   │   │   ├── session
-│   │   │   │   ├── authenticated-request.server.js
-│   │   │   │   ├── request-context.server.js
-│   │   │   │   ├── revocation.server.js
-│   │   │   │   ├── session-auth-context.server.js
-│   │   │   │   ├── session-builder.server.js
-│   │   │   │   ├── session-cookie-state.server.js
-│   │   │   │   ├── session-cookies.server.js
-│   │   │   │   ├── session-errors.server.js
-│   │   │   │   ├── session-request-client.server.js
-│   │   │   │   ├── session-shared.js
-│   │   │   │   ├── session.server.js
-│   │   │   │   └── supabase-admin-auth.server.js
-│   │   │   └── verification
-│   │   │       ├── challenge-proof.server.js
-│   │   │       ├── email-sender.server.js
-│   │   │       ├── email-verification-utils.js
-│   │   │       ├── email-verification.rate-limit.server.js
-│   │   │       ├── email-verification.server.js
-│   │   │       ├── email-verification.store.server.js
-│   │   │       ├── email-verification.token.server.js
-│   │   │       ├── login-verification.server.js
-│   │   │       ├── password-account-errors.js
-│   │   │       ├── password-account.server.js
-│   │   │       ├── password-reset-proof.server.js
-│   │   │       ├── secret-fallback.server.js
-│   │   │       ├── signed-token.server.js
-│   │   │       ├── signup-proof.server.js
-│   │   │       └── verification-request.server.js
+│   │   │   ├── policies.server.js
+│   │   │   ├── proof-tokens.server.js
+│   │   │   ├── security.server.js
+│   │   │   ├── session.server.js
+│   │   │   ├── verification.server.js
+│   │   │   └── workflows.js
 │   │   ├── ui
-│   │   │   └── sign-in-state.js
-│   │   ├── utils.js
-│   │   └── workflows.js
+│   │   │   ├── forgot-password-action.js
+│   │   │   ├── form-primitives.js
+│   │   │   ├── index.js
+│   │   │   ├── oauth-provider-button.js
+│   │   │   ├── page-shell.js
+│   │   │   └── verification-surface.js
+│   │   ├── utils
+│   │   │   ├── constants.js
+│   │   │   ├── errors.js
+│   │   │   ├── index.js
+│   │   │   ├── oauth.js
+│   │   │   ├── password.js
+│   │   │   ├── providers.js
+│   │   │   └── routes.js
+│   │   └── index.js
 │   ├── home
-│   │   ├── discover-section.js
-│   │   ├── poster-rail.js
-│   │   ├── trending-section.js
 │   │   ├── ui
-│   │   └── utils.js
+│   │   │   ├── discover-section.js
+│   │   │   ├── poster-rail.js
+│   │   │   └── trending-section.js
+│   │   ├── utils
+│   │   │   └── index.js
+│   │   └── index.js
 │   ├── legal
 │   │   ├── ui
-│   │   └── utils.js
+│   │   ├── utils
+│   │   │   └── index.js
+│   │   └── index.js
 │   ├── media
-│   │   ├── person
-│   │   │   ├── awards.js
-│   │   │   ├── bio.js
-│   │   │   ├── filmography-card.js
-│   │   │   ├── filmography-section.js
-│   │   │   ├── gallery.js
-│   │   │   ├── media-thumb.js
-│   │   │   ├── person-data.js
-│   │   │   ├── poster-preferences.js
-│   │   │   ├── social-links.js
-│   │   │   └── timeline.js
 │   │   ├── server
-│   │   │   ├── index.js
 │   │   │   ├── likes
 │   │   │   │   ├── index.js
 │   │   │   │   ├── like-queries.js
@@ -465,47 +356,36 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── index.js
 │   │   │   │   ├── item-mutations.js
 │   │   │   │   ├── like-mutations.js
-│   │   │   │   ├── list-constants.js
 │   │   │   │   ├── list-mutations.js
 │   │   │   │   ├── list-queries.js
 │   │   │   │   ├── list-service.js
 │   │   │   │   ├── list-shared.js
 │   │   │   │   ├── list-subscriptions.js
 │   │   │   │   └── mutations.js
-│   │   │   ├── media-key-service.js
-│   │   │   ├── media.js
-│   │   │   ├── person-awards.server.js
 │   │   │   ├── social-proof
 │   │   │   │   ├── index.js
 │   │   │   │   └── social-proof-service.js
-│   │   │   ├── supabase-media-utils-service.js
-│   │   │   ├── user-media
+│   │   │   ├── watched-watchlist
 │   │   │   │   ├── index.js
-│   │   │   │   ├── poster-preference-events.js
-│   │   │   │   └── user-media-service.js
-│   │   │   └── watched-watchlist
-│   │   │       ├── index.js
-│   │   │       ├── watched-queries.js
-│   │   │       ├── watched-service.js
-│   │   │       ├── watched-shared.js
-│   │   │       ├── watched-subscriptions.js
-│   │   │       ├── watchlist-queries.js
-│   │   │       ├── watchlist-service.js
-│   │   │       ├── watchlist-shared.js
-│   │   │       └── watchlist-subscriptions.js
+│   │   │   │   ├── watched-queries.js
+│   │   │   │   ├── watched-service.js
+│   │   │   │   ├── watched-shared.js
+│   │   │   │   ├── watched-subscriptions.js
+│   │   │   │   ├── watchlist-queries.js
+│   │   │   │   ├── watchlist-service.js
+│   │   │   │   ├── watchlist-shared.js
+│   │   │   │   └── watchlist-subscriptions.js
+│   │   │   ├── index.js
+│   │   │   ├── media-key-service.js
+│   │   │   ├── media.js
+│   │   │   ├── person-awards.js
+│   │   │   └── supabase-media-utils-service.js
 │   │   ├── ui
-│   │   │   ├── background-preferences.js
-│   │   │   ├── cast-section.js
-│   │   │   ├── collection-actions.js
 │   │   │   ├── components
 │   │   │   │   ├── media-card.js
 │   │   │   │   ├── media-carousel.js
 │   │   │   │   ├── media-list-preview.js
 │   │   │   │   └── media-poster-card.js
-│   │   │   ├── context-menu-actions.js
-│   │   │   ├── gallery-section.js
-│   │   │   ├── images-section.js
-│   │   │   ├── media-data.js
 │   │   │   ├── modals
 │   │   │   │   ├── cast-modal.js
 │   │   │   │   ├── image-preview-modal.js
@@ -514,26 +394,44 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── navigation
 │   │   │   │   ├── movie-action.js
 │   │   │   │   └── person-action.js
+│   │   │   ├── person
+│   │   │   │   ├── awards.js
+│   │   │   │   ├── bio.js
+│   │   │   │   ├── filmography-card.js
+│   │   │   │   ├── filmography-section.js
+│   │   │   │   ├── gallery.js
+│   │   │   │   ├── media-thumb.js
+│   │   │   │   ├── social-links.js
+│   │   │   │   └── timeline.js
+│   │   │   ├── surfaces
+│   │   │   │   ├── person-bio-surface.js
+│   │   │   │   └── watch-providers-surface.js
+│   │   │   ├── background-preferences.js
+│   │   │   ├── cast-section.js
+│   │   │   ├── collection-actions.js
+│   │   │   ├── context-menu-actions.js
+│   │   │   ├── gallery-section.js
+│   │   │   ├── images-section.js
+│   │   │   ├── media-data.js
 │   │   │   ├── poster-overrides.js
 │   │   │   ├── recommendation-card.js
 │   │   │   ├── seasons-section.js
 │   │   │   ├── sidebar.js
 │   │   │   ├── social-proof.js
 │   │   │   ├── static-route-elements.js
-│   │   │   ├── surfaces
-│   │   │   │   ├── person-bio-surface.js
-│   │   │   │   └── watch-providers-surface.js
 │   │   │   └── videos-section.js
-│   │   └── utils.js
+│   │   ├── utils
+│   │   │   ├── index.js
+│   │   │   ├── person-data.js
+│   │   │   ├── poster-preference-events.js
+│   │   │   ├── poster-preferences.js
+│   │   │   ├── user-media-index.js
+│   │   │   ├── user-media-service.js
+│   │   │   └── user-media.js
+│   │   └── index.js
 │   ├── reviews
-│   │   ├── components
-│   │   │   ├── rating-range-selector.js
-│   │   │   ├── rating-selector.js
-│   │   │   ├── rating-stars.js
-│   │   │   ├── review-auth-fallback.js
-│   │   │   ├── review-card.js
-│   │   │   ├── review-header.js
-│   │   │   └── review-list.js
+│   │   ├── hooks
+│   │   │   └── use-media-reviews.js
 │   │   ├── server
 │   │   │   ├── api
 │   │   │   │   └── reviews.js
@@ -557,17 +455,29 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── stored-mutations.js
 │   │   │   └── validation.js
 │   │   ├── ui
+│   │   │   ├── components
+│   │   │   │   ├── rating-range-selector.js
+│   │   │   │   ├── rating-selector.js
+│   │   │   │   ├── rating-stars.js
+│   │   │   │   ├── review-auth-fallback.js
+│   │   │   │   ├── review-card.js
+│   │   │   │   ├── review-header.js
+│   │   │   │   └── review-list.js
 │   │   │   ├── media-reviews.js
 │   │   │   ├── review-action.js
 │   │   │   ├── review-data.js
-│   │   │   ├── review-editor-surface.js
-│   │   │   └── use-media-reviews.js
-│   │   └── utils.js
+│   │   │   └── review-editor-surface.js
+│   │   ├── utils
+│   │   │   └── index.js
+│   │   └── index.js
 │   ├── search
-│   │   ├── search-community.js
-│   │   ├── search-quality.js
+│   │   ├── client
+│   │   │   ├── search-api.js
+│   │   │   └── search-cache.js
+│   │   ├── server
+│   │   │   ├── search-community.js
+│   │   │   └── search-quality.js
 │   │   ├── ui
-│   │   │   ├── grid-item.js
 │   │   │   ├── navigation
 │   │   │   │   └── search-action
 │   │   │   │       ├── components
@@ -577,13 +487,14 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │       ├── index.js
 │   │   │   │       ├── search-action-helpers.js
 │   │   │   │       └── use-search-action-controller.js
-│   │   │   ├── search-api.js
-│   │   │   ├── search-cache.js
+│   │   │   ├── grid-item.js
 │   │   │   ├── search-data.js
 │   │   │   ├── search-filters.js
 │   │   │   ├── search-ranking.js
 │   │   │   └── search-result.js
-│   │   └── utils.js
+│   │   ├── utils
+│   │   │   └── index.js
+│   │   └── index.js
 │   └── social
 │       ├── server
 │       │   ├── activity
@@ -597,28 +508,28 @@ This file is generated from the working tree and lists every project file. Gener
 │       │   │   ├── activity-events.server.js
 │       │   │   ├── notification-events.server.js
 │       │   │   └── social-proof.server.js
-│       │   ├── follow-events.server.js
-│       │   ├── follow-server.js
-│       │   ├── follow-shared.js
 │       │   ├── notifications
 │       │   │   ├── event-processor.server.js
 │       │   │   ├── notification-events-service.js
 │       │   │   ├── notification-resources.server.js
 │       │   │   └── notifications-service.js
-│       │   ├── notifications.server.js
-│       │   └── social
-│       │       ├── follow-client-shared.js
-│       │       ├── follow-mutations.js
-│       │       ├── follow-resources.server.js
-│       │       ├── follow-service.js
-│       │       ├── follow-subscriptions.js
-│       │       └── index.js
+│       │   ├── social
+│       │   │   ├── follow-client-shared.js
+│       │   │   ├── follow-mutations.js
+│       │   │   ├── follow-resources.server.js
+│       │   │   ├── follow-service.js
+│       │   │   ├── follow-subscriptions.js
+│       │   │   └── index.js
+│       │   ├── follow-events.server.js
+│       │   ├── follow-server.js
+│       │   ├── follow-shared.js
+│       │   └── notifications.server.js
 │       ├── ui
 │       │   ├── account-social-modal.js
 │       │   └── notifications-modal.js
-│       └── utils.js
-├── eslint.config.mjs
-├── FILE_STRUCTURE.md
+│       ├── utils
+│       │   └── index.js
+│       └── index.js
 ├── infrastructure
 │   ├── http
 │   │   ├── api
@@ -671,17 +582,17 @@ This file is generated from the working tree and lists every project file. Gener
 │       ├── api
 │       │   └── route.server.js
 │       ├── clients
+│       │   ├── search
+│       │   │   ├── fallback-queries.js
+│       │   │   ├── movie-ranking.js
+│       │   │   ├── person-ranking.js
+│       │   │   └── tmdb-search-shared.js
 │       │   ├── catalog.server.js
 │       │   ├── detail-id.server.js
 │       │   ├── details.server.js
 │       │   ├── request.js
 │       │   ├── runtime-sanitize.server.js
 │       │   ├── sanitize.js
-│       │   ├── search
-│       │   │   ├── fallback-queries.js
-│       │   │   ├── movie-ranking.js
-│       │   │   ├── person-ranking.js
-│       │   │   └── tmdb-search-shared.js
 │       │   ├── search-ranking.js
 │       │   ├── search.server.js
 │       │   ├── tmdb-client-config.js
@@ -691,8 +602,6 @@ This file is generated from the working tree and lists every project file. Gener
 │           ├── tmdb-movie-images.client.js
 │           ├── tmdb-service.js
 │           └── watch-region.js
-├── jsconfig.json
-├── middleware.js
 ├── modules
 │   ├── account
 │   │   ├── client.js
@@ -703,11 +612,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── cache.js
 │   │   └── index.js
 │   ├── auth
-│   │   ├── action-flows.js
 │   │   ├── adapters
 │   │   │   ├── api.js
 │   │   │   ├── create-adapter.js
 │   │   │   └── supabase-adapter.js
+│   │   ├── action-flows.js
 │   │   ├── config.js
 │   │   ├── context.js
 │   │   ├── guards.js
@@ -748,11 +657,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── title.js
 │   │   └── utils.js
 │   ├── nav
-│   │   ├── actions.js
-│   │   ├── context.js
-│   │   ├── elements.js
-│   │   ├── events.js
-│   │   ├── guards.js
 │   │   ├── hooks
 │   │   │   ├── index.js
 │   │   │   ├── navigation-status-model.js
@@ -772,6 +676,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── use-navigation-status.js
 │   │   │   ├── use-navigation.js
 │   │   │   └── use-surface-stack.js
+│   │   ├── actions.js
+│   │   ├── context.js
+│   │   ├── elements.js
+│   │   ├── events.js
+│   │   ├── guards.js
 │   │   ├── index.js
 │   │   ├── item.js
 │   │   ├── layout.js
@@ -789,13 +698,13 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── motion.js
 │   │   └── overlay.js
 │   ├── registry
+│   │   ├── plugins
+│   │   │   └── index.js
 │   │   ├── bootstrap.js
 │   │   ├── constants.js
 │   │   ├── context.js
 │   │   ├── index.js
 │   │   ├── injector.js
-│   │   ├── plugins
-│   │   │   └── index.js
 │   │   ├── route-registry.js
 │   │   ├── store.js
 │   │   └── use-registry.js
@@ -805,16 +714,11 @@ This file is generated from the working tree and lists every project file. Gener
 │       ├── index.js
 │       ├── storage.js
 │       └── utils.js
-├── next.config.mjs
-├── open-next.config.ts
-├── package-lock.json
-├── package.json
-├── postcss.config.mjs
 ├── public
-│   ├── _headers
 │   ├── images
 │   │   ├── default-avatar.svg
 │   │   └── noise.webp
+│   ├── _headers
 │   └── tvizzie.png
 ├── shared
 │   ├── constants
@@ -826,7 +730,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── use-debounce.js
 │   │   └── use-draggable-scroll.js
 │   └── utils.js
-├── tailwind.config.js
 ├── ui
 │   ├── feedback
 │   │   ├── confirmation-surface.js
@@ -844,6 +747,13 @@ This file is generated from the working tree and lists every project file. Gener
 │   │       ├── blurry-text.js
 │   │       └── text-animate.js
 │   └── primitives
+│       ├── select
+│       │   ├── async-select.js
+│       │   ├── combobox.js
+│       │   ├── default-select.js
+│       │   ├── index.js
+│       │   ├── multi-select.js
+│       │   └── searchable-select.js
 │       ├── adaptive-image.js
 │       ├── button.js
 │       ├── checkbox.js
@@ -855,15 +765,25 @@ This file is generated from the working tree and lists every project file. Gener
 │       ├── popover.js
 │       ├── primitive-support.js
 │       ├── segmented-control.js
-│       ├── select
-│       │   ├── async-select.js
-│       │   ├── combobox.js
-│       │   ├── default-select.js
-│       │   ├── index.js
-│       │   ├── multi-select.js
-│       │   └── searchable-select.js
 │       ├── switch.js
 │       ├── textarea.js
 │       └── tooltip.js
+├── .editorconfig
+├── .env
+├── .gitattributes
+├── .gitignore
+├── .prettierignore
+├── .prettierrc.cjs
+├── ARCHITECTURE.md
+├── eslint.config.mjs
+├── FILE_STRUCTURE.md
+├── jsconfig.json
+├── middleware.js
+├── next.config.mjs
+├── open-next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── tailwind.config.js
 └── wrangler.jsonc
 ```
