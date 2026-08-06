@@ -1,6 +1,4 @@
-'use client';
-
-import { requestApiJson } from '@/infrastructure/http/api-request-service';
+import { getAccountCollectionsServer } from '../api/collections.server';
 
 export async function fetchCollectionResource({
   entityId = null,
@@ -12,31 +10,28 @@ export async function fetchCollectionResource({
   slug = null,
   userId = null,
 } = {}) {
-  const resolvedMedia = media || (entityType && entityId ? { entityId, entityType } : null);
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      entityId: resolvedMedia?.entityId || null,
-      entityType: resolvedMedia?.entityType || null,
-      limitCount,
-      listId,
-      resource,
-      slug,
-      userId,
-    },
+  const res = await getAccountCollectionsServer({
+    entityId,
+    entityType,
+    limitCount,
+    listId,
+    media,
+    resource,
+    slug,
+    userId,
   });
-  return payload?.items || payload?.data || payload || [];
+  if (!res.success) return [];
+  return res.items || res.data || [];
 }
 
 export async function fetchMediaCollectionStatus({ media = null, resource, userId = null } = {}) {
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      entityId: media?.entityId || null,
-      entityType: media?.entityType || null,
-      resource,
-      userId,
-    },
+  const res = await getAccountCollectionsServer({
+    media,
+    resource,
+    userId,
   });
-  return payload?.data || payload || null;
+  if (!res.success) return null;
+  return res.data || null;
 }
 
 export function createMediaCollectionToggleRpcParams({ extraPayload = {}, row = {}, userId }) {

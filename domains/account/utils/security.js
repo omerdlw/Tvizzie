@@ -1,4 +1,4 @@
-import { requestApiJson } from '@/infrastructure/http/api-request-service';
+import { changeEmailServer, changePasswordServer, deleteAccountServer, setPasswordServer } from '@/domains/auth/api/account.server';
 
 export const AUTH_PURPOSE = Object.freeze({
   ACCOUNT_DELETE: 'ACCOUNT_DELETE',
@@ -51,30 +51,27 @@ export function resolveSecurityErrorMessage(error, fallbackMessage = 'Security o
   return message;
 }
 
-export async function completePasswordChangeRequest({ currentPassword, newPassword }) {
-  return requestApiJson('/api/auth/password-reset/complete', {
-    method: 'POST',
-    body: { action: 'change-password', currentPassword, newPassword },
-  });
+export async function completePasswordChangeRequest({ userId, newPassword }) {
+  const res = await changePasswordServer({ userId, newPassword });
+  if (!res.success) throw new Error(res.error || 'Password change failed');
+  return res;
 }
 
-export async function completePasswordSetRequest({ newPassword }) {
-  return requestApiJson('/api/auth/password-reset/complete', {
-    method: 'POST',
-    body: { action: 'set-password', newPassword },
-  });
+export async function completePasswordSetRequest({ userId, newPassword }) {
+  const res = await setPasswordServer({ userId, newPassword });
+  if (!res.success) throw new Error(res.error || 'Password setup failed');
+  return res;
 }
 
-export async function completeEmailChangeRequest({ currentPassword, newEmail }) {
-  return requestApiJson('/api/auth/account', {
-    method: 'POST',
-    body: { action: 'change-email', currentPassword, newEmail },
-  });
+export async function completeEmailChangeRequest({ userId, newEmail }) {
+  const res = await changeEmailServer({ userId, newEmail });
+  if (!res.success) throw new Error(res.error || 'Email change failed');
+  return res;
 }
 
-export async function deleteAccountRequest({ currentPassword }) {
-  return requestApiJson('/api/auth/account', {
-    method: 'POST',
-    body: { action: 'delete-account', currentPassword },
-  });
+export async function deleteAccountRequest({ userId }) {
+  const res = await deleteAccountServer({ userId });
+  if (!res.success) throw new Error(res.error || 'Account deletion failed');
+  return res;
 }
+

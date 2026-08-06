@@ -30,15 +30,15 @@ export function resetLinkedProviderOverrides({ setLinkedProviderDescriptorsOverr
 
 export async function logCredentialAuditSuccess(event, metadata = {}) {
   try {
-    const { requestApiJson } = await import('@/infrastructure/http/api-request-service');
-    await requestApiJson('/api/auth/audit', { method: 'POST', body: { event, metadata } });
+    const { logAuditServer } = await import('@/domains/auth/api/audit.server');
+    await logAuditServer({ event, metadata });
   } catch {}
 }
 
 export async function logCredentialAuditFailure(event, error) {
   try {
-    const { requestApiJson } = await import('@/infrastructure/http/api-request-service');
-    await requestApiJson('/api/auth/audit', { method: 'POST', body: { event, metadata: { error: error?.message || 'Action failed' } } });
+    const { logAuditServer } = await import('@/domains/auth/api/audit.server');
+    await logAuditServer({ event, metadata: { error: error?.message || 'Action failed' } });
   } catch {}
 }
 

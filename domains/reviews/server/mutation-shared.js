@@ -37,14 +37,14 @@ export async function ensureWatchedBeforeMediaReview({
   };
 }
 
-export async function toggleReviewLikeByKey({ reviewKey, reviewUserId }) {
-  const writePayload = await requestApiJson('/api/reviews/write', {
-    method: 'POST',
-    body: {
-      action: 'toggle-review-like',
-      reviewKey,
-      reviewUserId,
-    },
+import { executeReviewWriteServer } from '@/domains/reviews/api/reviews-write.server';
+
+export async function toggleReviewLikeByKey({ reviewKey, reviewUserId, userId }) {
+  const writePayload = await executeReviewWriteServer({
+    action: 'toggle-review-like',
+    reviewKey,
+    reviewUserId,
+    userId,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
 

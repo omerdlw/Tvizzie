@@ -7,6 +7,17 @@ This file is generated from the working tree and lists every project file. Gener
 ├── .vscode
 │   └── settings.json
 ├── app
+│   ├── _shell
+│   │   ├── navigation
+│   │   │   ├── account-nav-links.js
+│   │   │   ├── account-nav-registry.js
+│   │   │   └── media-action.js
+│   │   ├── global-context-menu-registry.js
+│   │   ├── interactive-boundary.js
+│   │   ├── nav-runtime.js
+│   │   ├── navigation-config.js
+│   │   ├── settings-modal.js
+│   │   └── smooth-scroll.js
 │   ├── (account)
 │   │   ├── account
 │   │   │   ├── [username]
@@ -113,92 +124,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │       └── page.js
 │   │   ├── motion.js
 │   │   └── registry.js
-│   ├── _shell
-│   │   ├── navigation
-│   │   │   ├── account-nav-links.js
-│   │   │   ├── account-nav-registry.js
-│   │   │   └── media-action.js
-│   │   ├── global-context-menu-registry.js
-│   │   ├── interactive-boundary.js
-│   │   ├── nav-runtime.js
-│   │   ├── navigation-config.js
-│   │   ├── settings-modal.js
-│   │   └── smooth-scroll.js
-│   ├── api
-│   │   ├── account
-│   │   │   ├── activity
-│   │   │   │   └── route.js
-│   │   │   ├── media
-│   │   │   │   └── route.js
-│   │   │   ├── profile
-│   │   │   │   └── route.js
-│   │   │   ├── resolve
-│   │   │   │   └── route.js
-│   │   │   ├── reviews
-│   │   │   │   └── route.js
-│   │   │   └── search
-│   │   │       └── route.js
-│   │   ├── activity
-│   │   │   └── events
-│   │   │       └── route.js
-│   │   ├── auth
-│   │   │   ├── account
-│   │   │   │   └── route.js
-│   │   │   ├── audit
-│   │   │   │   └── route.js
-│   │   │   ├── password-reset
-│   │   │   │   └── complete
-│   │   │   │       └── route.js
-│   │   │   ├── session
-│   │   │   │   └── route.js
-│   │   │   ├── sign-in
-│   │   │   │   └── route.js
-│   │   │   ├── sign-up
-│   │   │   │   └── complete
-│   │   │   │       └── route.js
-│   │   │   └── verification
-│   │   │       └── route.js
-│   │   ├── collections
-│   │   │   └── route.js
-│   │   ├── feedback
-│   │   │   └── route.js
-│   │   ├── follows
-│   │   │   └── route.js
-│   │   ├── health
-│   │   │   └── route.js
-│   │   ├── internal
-│   │   │   └── jobs
-│   │   │       └── app-events
-│   │   │           └── route.js
-│   │   ├── live-updates
-│   │   │   ├── events
-│   │   │   │   └── route.js
-│   │   │   └── route.js
-│   │   ├── notifications
-│   │   │   ├── events
-│   │   │   │   └── route.js
-│   │   │   └── route.js
-│   │   ├── observability
-│   │   │   └── web-vitals
-│   │   │       └── route.js
-│   │   ├── person
-│   │   │   └── [id]
-│   │   │       └── awards
-│   │   │           └── route.js
-│   │   ├── reviews
-│   │   │   ├── write
-│   │   │   │   └── route.js
-│   │   │   └── route.js
-│   │   ├── search
-│   │   │   └── community
-│   │   │       └── route.js
-│   │   ├── social-proof
-│   │   │   └── route.js
-│   │   ├── system
-│   │   │   └── rollout
-│   │   │       └── route.js
-│   │   └── tmdb
-│   │       └── route.js
 │   ├── error.js
 │   ├── global-error.js
 │   ├── globals.css
@@ -212,8 +137,175 @@ This file is generated from the working tree and lists every project file. Gener
 │       ├── zuume
 │       │   └── Zuume-Bold.woff2
 │       └── index.js
+├── core
+│   ├── modules
+│   │   ├── account
+│   │   │   ├── client.js
+│   │   │   ├── context.js
+│   │   │   ├── hooks.js
+│   │   │   └── index.js
+│   │   ├── api
+│   │   │   ├── cache.js
+│   │   │   └── index.js
+│   │   ├── auth
+│   │   │   ├── adapters
+│   │   │   │   ├── api.js
+│   │   │   │   ├── create-adapter.js
+│   │   │   │   └── supabase-adapter.js
+│   │   │   ├── action-flows.js
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── guards.js
+│   │   │   ├── index.js
+│   │   │   ├── provider-utils.js
+│   │   │   ├── session-client.js
+│   │   │   ├── session-ready.js
+│   │   │   ├── storage.js
+│   │   │   └── utils.js
+│   │   ├── background
+│   │   │   ├── context.js
+│   │   │   └── index.js
+│   │   ├── context-menu
+│   │   │   ├── context.js
+│   │   │   ├── index.js
+│   │   │   ├── menu-engine.js
+│   │   │   ├── motion.js
+│   │   │   └── renderer.js
+│   │   ├── countdown
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   └── index.js
+│   │   ├── error-boundary
+│   │   │   ├── core.js
+│   │   │   ├── index.js
+│   │   │   ├── integrations.js
+│   │   │   ├── listener.js
+│   │   │   └── reporter.js
+│   │   ├── loading
+│   │   │   ├── context.js
+│   │   │   └── index.js
+│   │   ├── modal
+│   │   │   ├── config.js
+│   │   │   ├── container.js
+│   │   │   ├── context.js
+│   │   │   ├── header.js
+│   │   │   ├── index.js
+│   │   │   ├── motion.js
+│   │   │   ├── title.js
+│   │   │   └── utils.js
+│   │   ├── nav
+│   │   │   ├── hooks
+│   │   │   │   ├── index.js
+│   │   │   │   ├── navigation-status-model.js
+│   │   │   │   ├── use-action-height.js
+│   │   │   │   ├── use-element-height.js
+│   │   │   │   ├── use-nav-badge.js
+│   │   │   │   ├── use-nav-height-controller.js
+│   │   │   │   ├── use-nav-height.js
+│   │   │   │   ├── use-nav-keyboard.js
+│   │   │   │   ├── use-nav-viewport.js
+│   │   │   │   ├── use-navigation-compact.js
+│   │   │   │   ├── use-navigation-core.js
+│   │   │   │   ├── use-navigation-countdown.js
+│   │   │   │   ├── use-navigation-display.js
+│   │   │   │   ├── use-navigation-items.js
+│   │   │   │   ├── use-navigation-layout.js
+│   │   │   │   ├── use-navigation-status.js
+│   │   │   │   ├── use-navigation.js
+│   │   │   │   └── use-surface-stack.js
+│   │   │   ├── actions.js
+│   │   │   ├── context.js
+│   │   │   ├── elements.js
+│   │   │   ├── events.js
+│   │   │   ├── guards.js
+│   │   │   ├── index.js
+│   │   │   ├── item.js
+│   │   │   ├── layout.js
+│   │   │   ├── motion.js
+│   │   │   ├── state-machine.js
+│   │   │   ├── surface-model.js
+│   │   │   ├── surface.js
+│   │   │   └── utils.js
+│   │   ├── notification
+│   │   │   ├── client-utils.js
+│   │   │   ├── config.js
+│   │   │   ├── context.js
+│   │   │   ├── hooks.js
+│   │   │   ├── index.js
+│   │   │   ├── motion.js
+│   │   │   └── overlay.js
+│   │   ├── registry
+│   │   │   ├── plugins
+│   │   │   │   └── index.js
+│   │   │   ├── bootstrap.js
+│   │   │   ├── constants.js
+│   │   │   ├── context.js
+│   │   │   ├── index.js
+│   │   │   ├── injector.js
+│   │   │   ├── route-registry.js
+│   │   │   ├── store.js
+│   │   │   └── use-registry.js
+│   │   └── settings
+│   │       ├── config.js
+│   │       ├── context.js
+│   │       ├── index.js
+│   │       ├── storage.js
+│   │       └── utils.js
+│   ├── shared
+│   │   ├── constants
+│   │   │   ├── events
+│   │   │   │   └── index.js
+│   │   │   └── index.js
+│   │   ├── hooks
+│   │   │   ├── use-click-outside.js
+│   │   │   ├── use-debounce.js
+│   │   │   └── use-draggable-scroll.js
+│   │   └── utils.js
+│   └── ui
+│       ├── feedback
+│       │   ├── confirmation-surface.js
+│       │   ├── empty-state.js
+│       │   ├── file-upload-surface.js
+│       │   ├── fullscreen-state.js
+│       │   ├── not-found-action.js
+│       │   ├── not-found-template.js
+│       │   └── spinner.js
+│       ├── layout
+│       │   ├── nav-height-spacer.js
+│       │   └── page-gradient-shell.js
+│       ├── motion
+│       │   └── animations
+│       │       ├── blurry-text.js
+│       │       └── text-animate.js
+│       └── primitives
+│           ├── select
+│           │   ├── async-select.js
+│           │   ├── combobox.js
+│           │   ├── default-select.js
+│           │   ├── index.js
+│           │   ├── multi-select.js
+│           │   └── searchable-select.js
+│           ├── adaptive-image.js
+│           ├── button.js
+│           ├── checkbox.js
+│           ├── icon.js
+│           ├── index.js
+│           ├── input.js
+│           ├── navigation-action-styles.js
+│           ├── noise-texture.js
+│           ├── popover.js
+│           ├── primitive-support.js
+│           ├── segmented-control.js
+│           ├── switch.js
+│           ├── textarea.js
+│           └── tooltip.js
 ├── domains
 │   ├── account
+│   │   ├── api
+│   │   │   ├── activity.server.js
+│   │   │   ├── collections.server.js
+│   │   │   ├── profile.server.js
+│   │   │   └── search.server.js
 │   │   ├── client
 │   │   │   ├── collections.client.js
 │   │   │   ├── index.js
@@ -304,6 +396,13 @@ This file is generated from the working tree and lists every project file. Gener
 │   ├── auth
 │   │   ├── actions
 │   │   │   └── forgot-password-action.js
+│   │   ├── api
+│   │   │   ├── account.server.js
+│   │   │   ├── audit.server.js
+│   │   │   ├── password-reset.server.js
+│   │   │   ├── sign-in.server.js
+│   │   │   ├── sign-up.server.js
+│   │   │   └── verification.server.js
 │   │   ├── client
 │   │   │   ├── index.js
 │   │   │   └── requests.js
@@ -360,6 +459,8 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── context-menu-actions.js
 │   │   │   ├── movie-action.js
 │   │   │   └── person-action.js
+│   │   ├── api
+│   │   │   └── person-awards.server.js
 │   │   ├── server
 │   │   │   ├── likes
 │   │   │   │   ├── index.js
@@ -445,6 +546,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   └── user-media.js
 │   │   └── index.js
 │   ├── reviews
+│   │   ├── actions
+│   │   │   └── review-action.js
+│   │   ├── api
+│   │   │   ├── reviews-query.server.js
+│   │   │   └── reviews-write.server.js
 │   │   ├── hooks
 │   │   │   └── use-media-reviews.js
 │   │   ├── server
@@ -476,7 +582,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   ├── rating-range-selector.js
 │   │   │   │   ├── rating-selector.js
 │   │   │   │   ├── rating-stars.js
-│   │   │   │   ├── review-action.js
 │   │   │   │   ├── review-auth-fallback.js
 │   │   │   │   ├── review-card.js
 │   │   │   │   ├── review-header.js
@@ -490,6 +595,8 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   └── index.js
 │   │   └── index.js
 │   ├── search
+│   │   ├── api
+│   │   │   └── community-search.server.js
 │   │   ├── client
 │   │   │   ├── search-api.js
 │   │   │   └── search-cache.js
@@ -517,6 +624,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   └── index.js
 │   │   └── index.js
 │   └── social
+│       ├── api
+│       │   ├── activity-events.server.js
+│       │   ├── follows.server.js
+│       │   ├── notifications.server.js
+│       │   └── social-proof.server.js
 │       ├── server
 │       │   ├── activity
 │       │   │   ├── activity-events-service.js
@@ -625,172 +737,14 @@ This file is generated from the working tree and lists every project file. Gener
 │           ├── tmdb-movie-images.client.js
 │           ├── tmdb-service.js
 │           └── watch-region.js
-├── modules
-│   ├── account
-│   │   ├── client.js
-│   │   ├── context.js
-│   │   ├── hooks.js
-│   │   └── index.js
-│   ├── api
-│   │   ├── cache.js
-│   │   └── index.js
-│   ├── auth
-│   │   ├── adapters
-│   │   │   ├── api.js
-│   │   │   ├── create-adapter.js
-│   │   │   └── supabase-adapter.js
-│   │   ├── action-flows.js
-│   │   ├── config.js
-│   │   ├── context.js
-│   │   ├── guards.js
-│   │   ├── index.js
-│   │   ├── session-client.js
-│   │   ├── session-ready.js
-│   │   ├── storage.js
-│   │   └── utils.js
-│   ├── background
-│   │   ├── context.js
-│   │   └── index.js
-│   ├── context-menu
-│   │   ├── context.js
-│   │   ├── index.js
-│   │   ├── menu-engine.js
-│   │   ├── motion.js
-│   │   └── renderer.js
-│   ├── countdown
-│   │   ├── config.js
-│   │   ├── context.js
-│   │   └── index.js
-│   ├── error-boundary
-│   │   ├── core.js
-│   │   ├── index.js
-│   │   ├── integrations.js
-│   │   ├── listener.js
-│   │   └── reporter.js
-│   ├── loading
-│   │   ├── context.js
-│   │   └── index.js
-│   ├── modal
-│   │   ├── config.js
-│   │   ├── container.js
-│   │   ├── context.js
-│   │   ├── header.js
-│   │   ├── index.js
-│   │   ├── motion.js
-│   │   ├── title.js
-│   │   └── utils.js
-│   ├── nav
-│   │   ├── hooks
-│   │   │   ├── index.js
-│   │   │   ├── navigation-status-model.js
-│   │   │   ├── use-action-height.js
-│   │   │   ├── use-element-height.js
-│   │   │   ├── use-nav-badge.js
-│   │   │   ├── use-nav-height-controller.js
-│   │   │   ├── use-nav-height.js
-│   │   │   ├── use-nav-keyboard.js
-│   │   │   ├── use-nav-viewport.js
-│   │   │   ├── use-navigation-compact.js
-│   │   │   ├── use-navigation-core.js
-│   │   │   ├── use-navigation-countdown.js
-│   │   │   ├── use-navigation-display.js
-│   │   │   ├── use-navigation-items.js
-│   │   │   ├── use-navigation-layout.js
-│   │   │   ├── use-navigation-status.js
-│   │   │   ├── use-navigation.js
-│   │   │   └── use-surface-stack.js
-│   │   ├── actions.js
-│   │   ├── context.js
-│   │   ├── elements.js
-│   │   ├── events.js
-│   │   ├── guards.js
-│   │   ├── index.js
-│   │   ├── item.js
-│   │   ├── layout.js
-│   │   ├── motion.js
-│   │   ├── state-machine.js
-│   │   ├── surface-model.js
-│   │   ├── surface.js
-│   │   └── utils.js
-│   ├── notification
-│   │   ├── client-utils.js
-│   │   ├── config.js
-│   │   ├── context.js
-│   │   ├── hooks.js
-│   │   ├── index.js
-│   │   ├── motion.js
-│   │   └── overlay.js
-│   ├── registry
-│   │   ├── plugins
-│   │   │   └── index.js
-│   │   ├── bootstrap.js
-│   │   ├── constants.js
-│   │   ├── context.js
-│   │   ├── index.js
-│   │   ├── injector.js
-│   │   ├── route-registry.js
-│   │   ├── store.js
-│   │   └── use-registry.js
-│   └── settings
-│       ├── config.js
-│       ├── context.js
-│       ├── index.js
-│       ├── storage.js
-│       └── utils.js
 ├── public
 │   ├── images
 │   │   ├── default-avatar.svg
 │   │   └── noise.webp
 │   ├── _headers
 │   └── tvizzie.png
-├── shared
-│   ├── constants
-│   │   ├── events
-│   │   │   └── index.js
-│   │   └── index.js
-│   ├── hooks
-│   │   ├── use-click-outside.js
-│   │   ├── use-debounce.js
-│   │   └── use-draggable-scroll.js
-│   └── utils.js
-├── ui
-│   ├── feedback
-│   │   ├── confirmation-surface.js
-│   │   ├── empty-state.js
-│   │   ├── file-upload-surface.js
-│   │   ├── fullscreen-state.js
-│   │   ├── not-found-action.js
-│   │   ├── not-found-template.js
-│   │   └── spinner.js
-│   ├── layout
-│   │   ├── nav-height-spacer.js
-│   │   └── page-gradient-shell.js
-│   ├── motion
-│   │   └── animations
-│   │       ├── blurry-text.js
-│   │       └── text-animate.js
-│   └── primitives
-│       ├── select
-│       │   ├── async-select.js
-│       │   ├── combobox.js
-│       │   ├── default-select.js
-│       │   ├── index.js
-│       │   ├── multi-select.js
-│       │   └── searchable-select.js
-│       ├── adaptive-image.js
-│       ├── button.js
-│       ├── checkbox.js
-│       ├── icon.js
-│       ├── index.js
-│       ├── input.js
-│       ├── navigation-action-styles.js
-│       ├── noise-texture.js
-│       ├── popover.js
-│       ├── primitive-support.js
-│       ├── segmented-control.js
-│       ├── switch.js
-│       ├── textarea.js
-│       └── tooltip.js
+├── scratch
+│   └── generate_file_structure.cjs
 ├── .editorconfig
 ├── .env
 ├── .gitattributes
@@ -804,7 +758,6 @@ This file is generated from the working tree and lists every project file. Gener
 ├── middleware.js
 ├── next.config.mjs
 ├── open-next.config.ts
-├── package-lock.json
 ├── package.json
 ├── postcss.config.mjs
 ├── tailwind.config.js

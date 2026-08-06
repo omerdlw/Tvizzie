@@ -28,7 +28,7 @@ import {
 } from '@/domains/reviews/utils';
 import { getReviewValidationError } from './validation.js';
 import { fireReviewLiveEvent, getListReviewsSubscriptionKey } from './review-subscriptions.js';
-import { toggleReviewLikeByKey } from './mutation-shared.js';
+import { executeReviewWriteServer } from '@/domains/reviews/api/reviews-write.server';
 
 export async function upsertListReview({
   list,
@@ -81,19 +81,18 @@ export async function upsertListReview({
       user,
     }),
   };
-  const writePayload = await requestApiJson('/api/reviews/write', {
-    method: 'POST',
-    body: {
-      action: 'upsert-list-review',
-      content: normalizedContent,
-      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
-      listId,
-      payload: {
-        ...payload,
-        updatedAt: nowIso,
-      },
-      rating: null,
+
+  const writePayload = await executeReviewWriteServer({
+    action: 'upsert-list-review',
+    content: normalizedContent,
+    isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+    listId,
+    payload: {
+      ...payload,
+      updatedAt: nowIso,
     },
+    rating: null,
+    userId: user.id,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const isCreated = writeResult?.created === true;
@@ -164,12 +163,10 @@ export async function deleteListReview({ ownerId, listId, userId }) {
     throw new Error('ownerId, listId, and userId are required');
   }
 
-  const writePayload = await requestApiJson('/api/reviews/write', {
-    method: 'POST',
-    body: {
-      action: 'delete-list-review',
-      listId,
-    },
+  const writePayload = await executeReviewWriteServer({
+    action: 'delete-list-review',
+    listId,
+    userId,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const deleted = writeResult?.deleted === true;

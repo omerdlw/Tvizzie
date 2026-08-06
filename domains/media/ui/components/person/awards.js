@@ -93,6 +93,8 @@ function NomineeBadge() {
   );
 }
 
+import { getPersonAwardsServer } from '@/domains/media/api/person-awards.server';
+
 export default function PersonAwards({ personId }) {
   const [awardsData, setAwardsData] = useState(null);
   const [status, setStatus] = useState('loading');
@@ -104,9 +106,9 @@ export default function PersonAwards({ personId }) {
     setErrorMessage(null);
     void (async () => {
       try {
-        const response = await TmdbService.getPersonAwards(personId);
+        const response = await getPersonAwardsServer({ personId });
         if (!isCurrent) return;
-        if (response?.error || !response?.data) {
+        if (!response?.success || !response?.data) {
           setAwardsData(null);
           setErrorMessage('Awards are temporarily unavailable');
           setStatus('error');

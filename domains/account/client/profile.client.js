@@ -97,11 +97,12 @@ export function normalizeEmailAddress(value) {
 // ============================================================
 
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
-const accountResolveRequestCache = new Map();
+import { getAccountProfileServer, updateAccountProfileServer } from '../api/profile.server';
+import { searchAccountsServer } from '../api/search.server';
 
 export async function getUserAccount(userId) {
   if (!userId) return null;
-  const payload = await requestApiJson('/api/account/profile', { query: { userId } });
+  const payload = await getAccountProfileServer({ userId });
   return payload?.profile || null;
 }
 
@@ -117,10 +118,9 @@ export async function getUserIdByUsername(username) {
     return cachedEntry.inFlightPromise;
   }
 
-  const inFlightPromise = Promise.resolve()
-    .then(() => requestApiJson('/api/account/resolve', { query: { username: normalizedUsername } }))
+  const inFlightPromise = getAccountProfileServer({ username: normalizedUsername })
     .then((payload) => {
-      const userId = payload?.userId || null;
+      const userId = payload?.profile?.id || null;
       accountResolveRequestCache.set(normalizedUsername, {
         expiresAt: Date.now() + ACCOUNT_RESOLVE_CACHE_TTL_MS,
         inFlightPromise: null,
@@ -144,7 +144,7 @@ export async function getUserIdByUsername(username) {
 
 export async function getUserAccountByUsername(username) {
   const normalizedUsername = validateUsername(username);
-  const payload = await requestApiJson('/api/account/profile', { query: { username: normalizedUsername } });
+  const payload = await getAccountProfileServer({ username: normalizedUsername });
   return payload?.profile || null;
 }
 
@@ -152,34 +152,24 @@ export async function searchUserAccounts(searchTerm, options = {}) {
   const rawSearchTerm = cleanString(searchTerm);
   if (!rawSearchTerm) return [];
 
-  const payload = await requestApiJson('/api/account/search', {
-    query: { limitCount: options.limitCount ?? null, searchTerm: rawSearchTerm },
-    retryCount: options.retryCount ?? 0,
-    timeoutMs: options.timeoutMs ?? 5000,
+  const payload = await searchAccountsServer({
+    limitCount: options.limitCount ?? null,
+    searchTerm: rawSearchTerm,
   });
 
   return Array.isArray(payload?.items) ? payload.items : [];
 }
 
 export async function requestEnsureUserAccount({ avatarUrl, displayName, email, userId, username }) {
-  return requestApiJson('/api/account/profile', {
-    method: 'POST',
-    body: { action: 'ensure', avatarUrl, displayName, email, userId, username },
-  });
+  return updateAccountProfileServer({ avatarUrl, displayName, email, userId, username });
 }
 
 export async function requestUpdateUserAccount({ avatarUrl, bannerUrl, description, displayName, isPrivate, userId, username }) {
-  return requestApiJson('/api/account/profile', {
-    method: 'POST',
-    body: { action: 'update', avatarUrl, bannerUrl, description, displayName, isPrivate, userId, username },
-  });
+  return updateAccountProfileServer({ avatarUrl, bannerUrl, description, displayName, isPrivate, userId, username });
 }
 
 export async function requestSyncUserAccountEmail({ email, userId }) {
-  return requestApiJson('/api/account/profile', {
-    method: 'POST',
-    body: { action: 'sync-email', email, userId },
-  });
+  return updateAccountProfileServer({ email, userId });
 }
 
 // ============================================================

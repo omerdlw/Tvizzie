@@ -50,6 +50,8 @@ function normalizeKnownMovieIds(value = []) {
   ).slice(0, 30);
 }
 
+import { getSocialProofServer } from '@/domains/social/api/social-proof.server';
+
 async function fetchMediaSocialProof({ media, viewerId, knownMovieIds = [] }) {
   if (!viewerId || !media) {
     return createEmptyMediaSocialProof();
@@ -65,15 +67,13 @@ async function fetchMediaSocialProof({ media, viewerId, knownMovieIds = [] }) {
     return createEmptyMediaSocialProof();
   }
 
-  const payload = await requestApiJson('/api/social-proof', {
-    query: {
-      entityId: mediaSnapshot.entityId,
-      entityType: mediaSnapshot.entityType,
-      knownMovieIds: normalizeKnownMovieIds(knownMovieIds).join(','),
-    },
+  const res = await getSocialProofServer({
+    entityId: mediaSnapshot.entityId,
+    entityType: mediaSnapshot.entityType,
+    viewerId,
   });
 
-  return payload?.data || createEmptyMediaSocialProof();
+  return res?.data || createEmptyMediaSocialProof();
 }
 
 export function subscribeToMediaSocialProof(
@@ -119,13 +119,11 @@ export async function getAccountSocialProof({
     return createEmptyProfileSocialProof();
   }
 
-  const payload = await requestApiJson('/api/social-proof', {
-    query: {
-      canViewPrivateContent,
-      resource: 'account',
-      targetUserId,
-    },
+  const res = await getSocialProofServer({
+    entityId: targetUserId,
+    entityType: 'user',
+    viewerId,
   });
 
-  return payload?.data || createEmptyProfileSocialProof();
+  return res?.data || createEmptyProfileSocialProof();
 }

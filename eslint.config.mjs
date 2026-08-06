@@ -19,6 +19,22 @@ export default [
     },
   },
   {
+    files: ['core/modules/**/*.{js,mjs,cjs,jsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/domains/*', '@/app/*', '@/infrastructure/*'],
+              message: 'Core framework modules (core/modules) must remain black-box agnostics and cannot import from domains, app, or infrastructure.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     ignores: ['node_modules/', '.next/', '.open-next/', 'out/', 'build/'],
   },
 ];

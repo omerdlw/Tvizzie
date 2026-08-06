@@ -26,7 +26,7 @@ import {
 } from '@/domains/reviews/utils';
 import { getReviewValidationError } from './validation.js';
 import { fireReviewLiveEvent, getMediaReviewsSubscriptionKey } from './review-subscriptions.js';
-import { ensureWatchedBeforeMediaReview, toggleReviewLikeByKey } from './mutation-shared.js';
+import { executeReviewWriteServer } from '@/domains/reviews/api/reviews-write.server';
 
 export async function upsertMediaReview({
   media,
@@ -78,19 +78,18 @@ export async function upsertMediaReview({
       user,
     }),
   };
-  const writePayload = await requestApiJson('/api/reviews/write', {
-    method: 'POST',
-    body: {
-      action: 'upsert-media-review',
-      content: normalizedContent,
-      isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
-      mediaKey: subjectMetadata.subjectKey,
-      payload: {
-        ...payload,
-        updatedAt: nowIso,
-      },
-      rating: normalizedRating,
+
+  const writePayload = await executeReviewWriteServer({
+    action: 'upsert-media-review',
+    content: normalizedContent,
+    isSpoiler: normalizedContent ? Boolean(isSpoiler) : false,
+    mediaKey: subjectMetadata.subjectKey,
+    payload: {
+      ...payload,
+      updatedAt: nowIso,
     },
+    rating: normalizedRating,
+    userId: user.id,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const isCreated = writeResult?.created === true;
@@ -141,12 +140,10 @@ export async function deleteMediaReview({ media, userId }) {
 
   const mediaSnapshot = assertTitleMedia(media, 'Only movie and TV reviews are supported');
   const mediaKey = buildMediaItemKey(mediaSnapshot.entityType, mediaSnapshot.entityId);
-  const writePayload = await requestApiJson('/api/reviews/write', {
-    method: 'POST',
-    body: {
-      action: 'delete-media-review',
-      mediaKey,
-    },
+  const writePayload = await executeReviewWriteServer({
+    action: 'delete-media-review',
+    mediaKey,
+    userId,
   });
   const writeResult = unwrapReviewWriteResult(writePayload);
   const deleted = writeResult?.deleted !== false;

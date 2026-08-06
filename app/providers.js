@@ -116,25 +116,6 @@ function postWebVital(metric) {
   if (!TRACKED_METRICS.has(metric?.name)) {
     return;
   }
-
-  const body = JSON.stringify(sanitizeMetric(metric));
-
-  try {
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-      const blob = new Blob([body], { type: 'application/json' });
-      navigator.sendBeacon(WEB_VITALS_ENDPOINT, blob);
-      return;
-    }
-
-    fetch(WEB_VITALS_ENDPOINT, {
-      body,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      keepalive: true,
-      method: 'POST',
-    }).catch(() => null);
-  } catch {}
 }
 
 function WebVitals() {

@@ -13,21 +13,21 @@ const NOTIFICATION_LIMIT = 50;
 const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 3000;
 const NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
 
+import { getNotificationsServer, markNotificationReadServer, removeNotificationServer } from '@/domains/social/api/notifications.server';
+
 async function fetchNotifications(userId, options = {}) {
   if (!userId) {
     return [];
   }
 
-  const payload = await requestApiJson('/api/notifications', {
-    query: {
-      limitCount: Number.isFinite(Number(options.limitCount))
-        ? Math.max(1, Math.min(Number(options.limitCount), 100))
-        : NOTIFICATION_LIMIT,
-      resource: 'list',
-    },
+  const res = await getNotificationsServer({
+    pageSize: Number.isFinite(Number(options.limitCount))
+      ? Math.max(1, Math.min(Number(options.limitCount), 100))
+      : NOTIFICATION_LIMIT,
+    userId,
   });
 
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return Array.isArray(res?.items) ? res.items : Array.isArray(res?.data) ? res.data : [];
 }
 
 async function fetchUnreadCount(userId) {
@@ -35,13 +35,8 @@ async function fetchUnreadCount(userId) {
     return 0;
   }
 
-  const payload = await requestApiJson('/api/notifications', {
-    query: {
-      resource: 'unread-count',
-    },
-  });
-
-  return Number(payload?.data) || 0;
+  const res = await getNotificationsServer({ userId });
+  return Number(res?.unreadCount || res?.data) || 0;
 }
 
 function getNotificationsListSubscriptionKey(userId, options = {}) {
@@ -127,11 +122,9 @@ export function subscribeToUnreadCount(userId, callback, options = {}) {
 export async function markAsRead(userId, notificationId) {
   if (!userId || !notificationId) return;
 
-  await requestApiJson('/api/notifications', {
-    method: 'PATCH',
-    body: {
-      notificationId,
-    },
+  await markNotificationReadServer({
+    notificationId,
+    userId,
   });
 
   refreshNotificationSubscriptions(userId);
@@ -140,11 +133,9 @@ export async function markAsRead(userId, notificationId) {
 export async function markAllAsRead(userId) {
   if (!userId) return;
 
-  await requestApiJson('/api/notifications', {
-    method: 'PATCH',
-    body: {
-      action: 'mark-all-read',
-    },
+  await markNotificationReadServer({
+    action: 'mark-all-read',
+    userId,
   });
 
   refreshNotificationSubscriptions(userId);
@@ -153,11 +144,9 @@ export async function markAllAsRead(userId) {
 export async function deleteNotification(userId, notificationId) {
   if (!userId || !notificationId) return;
 
-  await requestApiJson('/api/notifications', {
-    method: 'DELETE',
-    query: {
-      notificationId,
-    },
+  await removeNotificationServer({
+    notificationId,
+    userId,
   });
 
   refreshNotificationSubscriptions(userId);
@@ -166,11 +155,9 @@ export async function deleteNotification(userId, notificationId) {
 export async function deleteAllNotifications(userId) {
   if (!userId) return;
 
-  await requestApiJson('/api/notifications', {
-    method: 'DELETE',
-    query: {
-      action: 'delete-all',
-    },
+  await removeNotificationServer({
+    action: 'delete-all',
+    userId,
   });
 
   refreshNotificationSubscriptions(userId);

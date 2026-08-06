@@ -29,16 +29,25 @@ export async function fetchLikes(userId, options = {}) {
   return fetchCollectionResource('likes', userId, options);
 }
 
+export async function fetchLikeUserProfiles(userIds = []) {
+  if (!userIds.length) return [];
+
+  const profiles = await Promise.all(
+    userIds.map(async (userId) => {
+      const res = await getAccountProfileServer({ userId });
+      return res?.profile || null;
+    }),
+  );
+
+  return profiles.filter(Boolean);
+}
+
 export async function readFavoriteShowcase(userId) {
   if (!userId) {
     return [];
   }
 
-  const payload = await requestApiJson('/api/account/profile', {
-    query: {
-      userId,
-    },
-  });
+  const payload = await getAccountProfileServer({ userId });
 
   const showcase = Array.isArray(payload?.profile?.favoriteShowcase)
     ? payload.profile.favoriteShowcase.map(buildFavoriteShowcaseItem).filter(Boolean)

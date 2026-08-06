@@ -6,13 +6,13 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
+import { getAccountActivityFeedServerAction } from '@/domains/account/api/activity.server';
+
 async function fetchUserActivity(userId, pageSize = null) {
-  const result = await requestApiJson('/api/account/activity', {
-    query: {
-      pageSize,
-      scope: 'user',
-      userId,
-    },
+  const result = await getAccountActivityFeedServerAction({
+    pageSize,
+    scope: 'user',
+    userId,
   });
 
   return Array.isArray(result?.items) ? result.items : [];
@@ -43,13 +43,11 @@ export async function fetchUserActivityPage({ cursor = null, pageSize = 20, user
     };
   }
 
-  return requestApiJson('/api/account/activity', {
-    query: {
-      cursor,
-      pageSize,
-      scope: 'user',
-      userId,
-    },
+  return getAccountActivityFeedServerAction({
+    cursor,
+    pageSize,
+    scope: 'user',
+    userId,
   });
 }
 
@@ -69,14 +67,12 @@ export async function fetchAccountActivityFeed({
     };
   }
 
-  return requestApiJson('/api/account/activity', {
-    query: {
-      cursor,
-      pageSize,
-      scope,
-      sort,
-      subject,
-      userId,
-    },
+  return getAccountActivityFeedServerAction({
+    cursor,
+    pageSize,
+    scope,
+    sort,
+    subject,
+    userId,
   });
 }

@@ -1,11 +1,7 @@
-'use client';
-
-/**
- * @file requests.js
- * @description Auth API isteklerinin yapıldığı, önbellekleme (cache) ve in-flight yönetimi içeren servis katmanı.
- */
-
-import { createCsrfHeaders } from '@/domains/auth/client';
+import { completeSignUpServer } from '../api/sign-up.server';
+import { completePasswordResetServer } from '../api/password-reset.server';
+import { requestVerificationCodeServer, verifyCodeServer } from '../api/verification.server';
+import { getPasswordStatusServer } from '../api/account.server';
 
 // ============================================================================
 // 1. ÖNBELLEK VE İSTEK DURUM SAKLAYICILARI (CACHE & STATE)
@@ -15,44 +11,12 @@ const PASSWORD_STATUS_CACHE_TTL_MS = 4000;
 const passwordStatusCache = new Map();
 const passwordStatusInFlight = new Map();
 
-// ============================================================================
-// 2. HTTP İSTEK YARDIMCISI (FETCH UTILS)
-// ============================================================================
-
-async function postAuthJson(
-  pathname,
-  body,
-  { cache, credentials, includeCsrf = false, message } = {},
-) {
-  const response = await fetch(pathname, {
-    method: 'POST',
-    ...(cache && { cache }),
-    ...(credentials && { credentials }),
-    headers: {
-      ...(includeCsrf ? createCsrfHeaders() : {}),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  const payload = await response.json().catch(() => ({ error: message }));
-
-  if (response.ok) {
-    return payload;
-  }
-
-  const error = new Error(payload?.error || message);
-  error.code = payload?.code || null;
-  error.status = response.status;
-  throw error;
-}
-
 function normalizeValue(value) {
   return String(value || '').trim();
 }
 
 // ============================================================================
-// 3. HESAP DURUMU SERVİSİ & ÖNBELLEK ÇÖZÜMLEME
+// 2. HESAP DURUMU SERVİSİ & ÖNBELLEK ÇÖZÜMLEME
 // ============================================================================
 
 function createPasswordStatusCacheKey({ email, identifier, intent }) {
@@ -75,7 +39,7 @@ function readPasswordStatusCache(cacheKey) {
   return entry.value;
 }
 
-function resolvePasswordAccountStatus({ email, identifier, intent }) {
+function resolvePasswordAccountStatus({ email, identifier, intent, userId }) {
   const cacheKey = createPasswordStatusCacheKey({ email, identifier, intent });
   const cachedValue = readPasswordStatusCache(cacheKey);
 
@@ -87,12 +51,11 @@ function resolvePasswordAccountStatus({ email, identifier, intent }) {
     return passwordStatusInFlight.get(cacheKey);
   }
 
-  const requestPromise = postAuthJson(
-    '/api/auth/account',
-    { action: 'password-status', email, identifier, intent },
-    { credentials: 'include', message: 'Account status could not be resolved' },
-  )
+  const requestPromise = getPasswordStatusServer({ userId })
     .then((payload) => {
+      if (!payload.success) {
+        throw new Error(payload.error || 'Account status could not be resolved');
+      }
       passwordStatusCache.set(cacheKey, {
         expiresAt: Date.now() + PASSWORD_STATUS_CACHE_TTL_MS,
         value: payload,
@@ -110,51 +73,38 @@ function resolvePasswordAccountStatus({ email, identifier, intent }) {
 }
 
 // ============================================================================
-// 4. DIŞA AKTARILAN API FONKSİYONLARI
+// 3. DIŞA AKTARILAN API FONKSİYONLARI
 // ============================================================================
 
-export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-in' }) {
-  return resolvePasswordAccountStatus({ email, identifier, intent });
+export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-in', userId }) {
+  return resolvePasswordAccountStatus({ email, identifier, intent, userId });
 }
 
 export function assertSignUpEmailAvailable({ email }) {
   return resolvePasswordAccountStatus({ email, intent: 'sign-up' });
 }
 
-export function requestVerificationCode({ email, identifier, forceNew = false, purpose }) {
-  return postAuthJson(
-    '/api/auth/verification',
-    { action: 'resend', email, identifier, forceNew, purpose },
-    { credentials: 'include', includeCsrf: true, message: 'Could not send verification code' },
-  );
+export async function requestVerificationCode({ email, purpose }) {
+  const result = await requestVerificationCodeServer({ email, purpose });
+  if (!result.success) throw new Error(result.error || 'Could not send verification code');
+  return result;
 }
 
-export function verifyCodeRequest({
-  challengeToken,
-  code,
-  email,
-  rememberDevice = false,
-  purpose,
-}) {
-  return postAuthJson(
-    '/api/auth/verification',
-    { action: 'verify', challengeToken, code, email, rememberDevice, purpose },
-    { credentials: 'include', includeCsrf: true, message: 'Verification failed' },
-  );
+export async function verifyCodeRequest({ code, email, purpose }) {
+  const result = await verifyCodeServer({ code, email, purpose });
+  if (!result.success) throw new Error(result.error || 'Verification failed');
+  return result;
 }
 
-export function completeVerifiedSignUp({ displayName, email, password, signUpProof, username }) {
-  return postAuthJson(
-    '/api/auth/sign-up/complete',
-    { displayName, email, password, signUpProof, username },
-    { credentials: 'include', message: 'Sign-up could not be completed' },
-  );
+export async function completeVerifiedSignUp({ email, password, username }) {
+  const result = await completeSignUpServer({ email, password, username });
+  if (!result.success) throw new Error(result.error || 'Sign-up could not be completed');
+  return result;
 }
 
-export function completePasswordReset({ email, newPassword, passwordResetProof }) {
-  return postAuthJson(
-    '/api/auth/password-reset/complete',
-    { email, newPassword, passwordResetProof },
-    { message: 'Password reset failed' },
-  );
+export async function completePasswordReset({ email, newPassword, passwordResetProof, token }) {
+  const result = await completePasswordResetServer({ token: token || passwordResetProof, newPassword });
+  if (!result.success) throw new Error(result.error || 'Password reset failed');
+  return result;
 }
+

@@ -5,28 +5,26 @@ export async function fetchUserLists(userId, options = {}) {
   return fetchCollectionResource('lists', userId, options);
 }
 
+import { getAccountCollectionsServer } from '@/domains/account/api/collections.server';
+
 export async function fetchListById(userId, listId) {
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      listId,
-      resource: 'list-by-id',
-      userId,
-    },
+  const res = await getAccountCollectionsServer({
+    listId,
+    resource: 'list-by-id',
+    userId,
   });
 
-  return payload?.data || null;
+  return res?.data || null;
 }
 
 export async function fetchListBySlug(userId, slug) {
-  const payload = await requestApiJson('/api/collections', {
-    query: {
-      resource: 'list-by-slug',
-      slug,
-      userId,
-    },
+  const res = await getAccountCollectionsServer({
+    resource: 'list-by-slug',
+    slug,
+    userId,
   });
 
-  return payload?.data || null;
+  return res?.data || null;
 }
 
 export async function fetchLikedLists(userId, options = {}) {

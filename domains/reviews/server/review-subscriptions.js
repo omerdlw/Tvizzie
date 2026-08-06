@@ -67,6 +67,8 @@ export function fireReviewLiveEvent(targetUserIds = [], payload = {}) {
   });
 }
 
+import { getReviewsServer } from '@/domains/reviews/api/reviews-query.server';
+
 async function fetchMediaReviews(media, limitCount) {
   const mediaSnapshot = createMediaSnapshot(media);
 
@@ -74,16 +76,14 @@ async function fetchMediaReviews(media, limitCount) {
     return [];
   }
 
-  const payload = await requestApiJson('/api/reviews', {
-    query: {
-      entityId: mediaSnapshot.entityId,
-      entityType: mediaSnapshot.entityType,
-      limitCount,
-      resource: 'media',
-    },
+  const res = await getReviewsServer({
+    entityId: mediaSnapshot.entityId,
+    entityType: mediaSnapshot.entityType,
+    limitCount,
+    resource: 'media',
   });
 
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return Array.isArray(res?.data) ? res.data : [];
 }
 
 async function fetchListReviews({ ownerId, listId }, limitCount) {
@@ -91,16 +91,14 @@ async function fetchListReviews({ ownerId, listId }, limitCount) {
     return [];
   }
 
-  const payload = await requestApiJson('/api/reviews', {
-    query: {
-      limitCount,
-      listId,
-      ownerId,
-      resource: 'list',
-    },
+  const res = await getReviewsServer({
+    limitCount,
+    listId,
+    ownerId,
+    resource: 'list',
   });
 
-  return Array.isArray(payload?.data) ? payload.data : [];
+  return Array.isArray(res?.data) ? res.data : [];
 }
 
 export function subscribeToMediaReviews(media, callback, options = {}) {
