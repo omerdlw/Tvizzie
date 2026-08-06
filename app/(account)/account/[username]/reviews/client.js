@@ -18,15 +18,15 @@ import {
 } from '@/domains/reviews/server';
 import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // ReviewsView is defined in this route client.
-import AccountReviewFeed from '@/domains/account/ui/feeds/reviews';
-import { AccountSectionState } from '@/domains/account/ui/account-section';
+import AccountReviewFeed from '@/domains/account/ui/sections/feeds/reviews';
+import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionState }) {
   const { initialReviewFeed = null } = routeData || {};

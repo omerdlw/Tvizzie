@@ -13,13 +13,13 @@ import {
   removeUserWatchedItem,
   subscribeToUserWatched,
 } from '@/domains/media/server/watched-watchlist';
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // WatchedView is defined in this route client.
-import AccountWatchedFeed from '@/domains/account/ui/feeds/watched';
+import AccountWatchedFeed from '@/domains/account/ui/sections/feeds/watched';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 function useWatchedClientState({
   auth,

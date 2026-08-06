@@ -9,15 +9,15 @@ import ImagePreviewModal from '@/domains/media/ui/modals/image-preview-modal';
 import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
 import VideoPreviewModal from '@/domains/media/ui/modals/video-preview-modal';
 import MediaSocialProofModal from '@/domains/media/ui/modals/media-social-proof-modal';
-import ReviewAction from '@/domains/reviews/ui/review-action';
-import SearchAction from '@/domains/search/ui/navigation/search-action';
-import MovieAction from '@/domains/media/ui/navigation/movie-action';
-import PersonAction from '@/domains/media/ui/navigation/person-action';
+import ReviewAction from '@/domains/reviews/actions/review-action';
+import SearchAction from '@/domains/search/ui/components/search-action';
+import MovieAction from '@/domains/media/actions/movie-action';
+import PersonAction from '@/domains/media/actions/person-action';
 import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-surface';
 import ReviewEditorSurface, {
   createReviewEditorSurfaceEntry,
-} from '@/domains/reviews/ui/review-editor-surface';
-import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/ui/review-data';
+} from '@/domains/reviews/ui/surfaces/review-editor-surface';
+import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/services/review-data';
 import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
 import { TMDB_IMG } from '@/shared/constants';
 import { useRegistry } from '@/modules/registry';
@@ -27,7 +27,7 @@ import Icon from '@/ui/primitives/icon';
 import {
   createMovieBackgroundContextMenuItems,
   createMoviePosterContextMenuItems,
-} from '@/domains/media/ui/context-menu-actions';
+} from '@/domains/media/actions/context-menu-actions';
 import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
 
 const MOVIE_BACKDROP_CONTEXT_TARGET = '[data-context-menu-target="movie-backdrop-card"]';
@@ -501,4 +501,3 @@ export default function Registry({
 
   return null;
 }
-

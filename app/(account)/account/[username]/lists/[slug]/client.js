@@ -23,14 +23,14 @@ import {
 } from '@/domains/reviews/server';
 import { TMDB_IMG } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,
-} from '@/domains/account/ui/account-section-state';
+} from '@/domains/account/hooks/account-section-state';
 // ListView is defined in this route client.
-import AccountListDetailFeed from '@/domains/account/ui/feeds/list-detail';
-import { createAccountSectionRegistry } from '@/domains/account/ui/account-section-factory';
+import AccountListDetailFeed from '@/domains/account/ui/sections/feeds/list-detail';
+import { createAccountSectionRegistry } from '@/domains/account/ui/sections/account-section-factory';
 
 export default function Client({ routeData = null }) {
   const {

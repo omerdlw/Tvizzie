@@ -7,7 +7,7 @@ import {
   normalizeString,
   normalizeToken,
   parseFlagSet,
-} from './filtering-shared';
+} from '../../utils/filtering-shared';
 
 export const ACTIVITY_FILTER_QUERY_KEYS = Object.freeze([
   'aevt',

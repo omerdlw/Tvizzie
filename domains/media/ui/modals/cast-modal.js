@@ -9,7 +9,7 @@ import { Container } from '@/modules/modal';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/ui/poster-overrides';
+} from '@/domains/media/utils/poster-overrides';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import Icon from '@/ui/primitives/icon';

@@ -18,15 +18,15 @@ import {
   toggleStoredReviewLike,
 } from '@/domains/reviews/server';
 import { useNavigationActions } from '@/modules/nav';
-import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/review-editor-surface';
+import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,
   useAccountSectionEngine,
-} from '@/domains/account/ui/account-section-state';
+} from '@/domains/account/hooks/account-section-state';
 import { FullscreenState } from '@/ui/feedback/fullscreen-state';
 // AccountView is defined in this route client.
-import AccountOverviewFeed from '@/domains/account/ui/feeds/overview';
-import { useAccountSectionState } from '@/domains/account/ui/account-section-state';
+import AccountOverviewFeed from '@/domains/account/ui/sections/feeds/overview';
+import { useAccountSectionState } from '@/domains/account/hooks/account-section-state';
 import { AccountOverviewRegistry as Registry } from '@/app/(account)/registry';
 
 const PREVIEW_MEDIA_LIMIT = 12;

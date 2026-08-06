@@ -17,7 +17,7 @@ import {
   toggleReviewLike,
 } from '@/domains/reviews/server';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
-import { getRatingStats, sortReviews } from '../ui/review-data';
+import { getRatingStats, sortReviews } from '../services/review-data';
 
 // ==========================================
 // 1. HELPER FUNCTIONS

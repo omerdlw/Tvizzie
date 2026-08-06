@@ -32,9 +32,9 @@ import {
   AccountNavReveal,
   AccountSectionNav,
   AccountSectionReveal,
-} from '@/domains/account/ui/account-layout';
-import { AccountSectionHeading } from '@/domains/account/ui/account-section';
-import AccountHero from '@/domains/account/ui/account-hero';
+} from '@/domains/account/ui/layouts/account-layout';
+import { AccountSectionHeading } from '@/domains/account/ui/sections/account-section';
+import AccountHero from '@/domains/account/ui/sections/account-hero';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { Spinner } from '@/ui/feedback/spinner';

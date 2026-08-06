@@ -7,8 +7,8 @@ import Registry from '@/app/(home)/registry';
 import { motion } from 'framer-motion';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
-import { DiscoverSection } from '@/domains/home/ui/discover-section';
-import { TrendingSection } from '@/domains/home/ui/trending-section';
+import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
+import { TrendingSection } from '@/domains/home/ui/sections/trending-section';
 import { homePageContainerVariants, homeBackgroundVariants } from '@/app/(home)/motion';
 
 export default function Client({ data = {} }) {

@@ -12,15 +12,15 @@ import {
 } from '@/domains/account/ui/filters/filtering';
 import { logDataError } from '@/domains/account/utils';
 import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // ActivityView is defined in this route client.
-import AccountActivityFeed from '@/domains/account/ui/feeds/activity';
-import { AccountSectionState } from '@/domains/account/ui/account-section';
-import AccountAction from '@/domains/account/ui/account-action';
+import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
+import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
+import AccountAction from '@/domains/account/ui/components/account-action-bar';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 const ACTIVITY_FETCH_PAGE_SIZE = 36;
 

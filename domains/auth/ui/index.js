@@ -1,6 +1,7 @@
-export { default as AuthVerificationSurface } from './verification-surface';
-export { default as ForgotPasswordAction } from './forgot-password-action';
-export * from './form-primitives';
-export { default as OAuthProviderButton } from './oauth-provider-button';
-export { default as AuthPageShell } from './page-shell';
-export * from './page-shell';
+export { default as AuthVerificationSurface } from './surfaces/verification-surface';
+export { default as ForgotPasswordAction } from '../actions/forgot-password-action';
+export * from './components/form-primitives';
+export { default as OAuthProviderButton } from './components/oauth-provider-button';
+export { default as AuthPageShell } from './layouts/page-shell';
+export * from './layouts/page-shell';
+

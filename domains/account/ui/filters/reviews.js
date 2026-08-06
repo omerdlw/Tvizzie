@@ -1,4 +1,4 @@
-import { REVIEW_SORT_MODE, sortReviewsByMode } from '@/domains/reviews/ui/review-data';
+import { REVIEW_SORT_MODE, sortReviewsByMode } from '@/domains/reviews/services/review-data';
 
 import {
   isSameFilterState,
@@ -9,7 +9,7 @@ import {
   normalizeString,
   parseFlagSet,
   serializeFlagSet,
-} from './filtering-shared';
+} from '../../utils/filtering-shared';
 
 export const REVIEW_FILTER_QUERY_KEYS = Object.freeze([
   'rr',

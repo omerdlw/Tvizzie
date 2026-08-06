@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getPreferredMovieBackground } from '@/domains/media/ui/media-data';
+import { getPreferredMovieBackground } from '@/domains/media/services/media-data';
 import {
   clearPersonPosterPreference,
   getPersonPosterPreferenceFilePath,
@@ -13,12 +13,12 @@ import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 // Person view is defined in this route client.
 import { Suspense, use } from 'react';
 import { motion } from 'framer-motion';
-import PersonAwards from '@/domains/media/ui/person/awards';
-import PersonBio from '@/domains/media/ui/person/bio';
-import PersonFilmographySection from '@/domains/media/ui/person/filmography-section';
-import PersonGallery from '@/domains/media/ui/person/gallery';
+import PersonAwards from '@/domains/media/ui/components/person/awards';
+import PersonBio from '@/domains/media/ui/components/person/bio';
+import PersonFilmographySection from '@/domains/media/ui/sections/person/filmography-section';
+import PersonGallery from '@/domains/media/ui/components/person/gallery';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
-import PersonTimeline from '@/domains/media/ui/person/timeline';
+import PersonTimeline from '@/domains/media/ui/components/person/timeline';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';

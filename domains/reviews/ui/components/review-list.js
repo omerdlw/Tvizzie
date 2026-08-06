@@ -7,7 +7,7 @@
 
 import { motion } from 'framer-motion';
 import { normalizeFeedbackText } from '@/shared/utils';
-import { mergeReviewUser } from '../review-data';
+import { mergeReviewUser } from '../../services/review-data';
 import ReviewCard from './review-card';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 

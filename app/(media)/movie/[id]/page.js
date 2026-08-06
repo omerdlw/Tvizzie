@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { notFound } from 'next/navigation';
 
-import { getMovieComputedData } from '@/domains/media/ui/media-data';
+import { getMovieComputedData } from '@/domains/media/services/media-data';
 import { TMDB_IMG } from '@/shared/constants';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';

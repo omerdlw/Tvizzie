@@ -21,7 +21,7 @@ import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/ui/poster-overrides';
+} from '@/domains/media/utils/poster-overrides';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
 

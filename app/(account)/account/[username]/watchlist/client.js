@@ -1,12 +1,12 @@
 'use client';
 
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // WatchlistView is defined in this route client.
-import AccountWatchlistFeed from '@/domains/account/ui/feeds/watchlist';
+import AccountWatchlistFeed from '@/domains/account/ui/sections/feeds/watchlist';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 function useWatchlistClientState({ sectionState }) {
   const { handleRequestRemoveWatchlistItem, watchlist } = sectionState;

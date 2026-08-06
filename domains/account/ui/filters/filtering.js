@@ -3,8 +3,8 @@ export {
   buildManagedQueryString,
   normalizePage,
   parsePageFromSearch,
-} from './filtering-query-utils';
-export { getStarStepValues } from './filtering-shared';
+} from '../../utils/filtering-query-utils';
+export { getStarStepValues } from '../../utils/filtering-shared';
 export {
   ACTIVITY_FILTER_QUERY_KEYS,
   applyActivityFilters,

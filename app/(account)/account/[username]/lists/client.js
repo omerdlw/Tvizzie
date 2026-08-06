@@ -2,14 +2,14 @@
 
 import { useCallback } from 'react';
 import { useModalActions } from '@/modules/modal';
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // ListsView is defined in this route client.
-import AccountListsFeed from '@/domains/account/ui/feeds/lists';
-import AccountAction from '@/domains/account/ui/account-action';
+import AccountListsFeed from '@/domains/account/ui/sections/feeds/lists';
+import AccountAction from '@/domains/account/ui/components/account-action-bar';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 function useListsClientState({ sectionState }) {
   const { openModal } = useModalActions();

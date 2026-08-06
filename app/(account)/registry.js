@@ -2,18 +2,18 @@
 
 import { cloneElement, isValidElement } from 'react';
 import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
-import AccountSocialModal from '@/domains/social/ui/account-social-modal';
+import AccountSocialModal from '@/domains/social/ui/modals/account-social-modal';
 import { resolveVersionedImageUrl } from '@/shared/utils';
 import CreateListModal from '@/domains/account/ui/modals/create-list-modal';
 import ListEditorModal from '@/domains/account/ui/modals/list-editor-modal';
 import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
-import AccountAction from '@/domains/account/ui/account-action';
-import ReviewAction from '@/domains/reviews/ui/review-action';
+import AccountAction from '@/domains/account/ui/components/account-action-bar';
+import ReviewAction from '@/domains/reviews/actions/review-action';
 import Icon from '@/ui/primitives/icon';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { Spinner } from '@/ui/feedback/spinner';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
-import { createAccountSectionRegistry } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionRegistry } from '@/domains/account/ui/sections/account-section-factory';
 import { createRouteRegistry } from '@/modules/registry/route-registry';
 
 const ACCOUNT_LOADING_NAV_PRIORITY = 190;

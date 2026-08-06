@@ -14,14 +14,14 @@ import { fetchProfileLikedLists } from '@/domains/media/server/lists';
 import { updateFavoriteShowcase } from '@/domains/media/server/likes';
 import { fetchProfileReviewFeed, toggleStoredReviewLike } from '@/domains/reviews/server';
 import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
-import { createAccountSectionClient } from '@/domains/account/ui/account-section-factory';
+import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // LikesView is defined in this route client.
-import AccountLikesFeed from '@/domains/account/ui/feeds/likes';
-import AccountAction from '@/domains/account/ui/account-action';
+import AccountLikesFeed from '@/domains/account/ui/sections/feeds/likes';
+import AccountAction from '@/domains/account/ui/components/account-action-bar';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
-} from '@/domains/account/ui/account-section-factory';
+} from '@/domains/account/ui/sections/account-section-factory';
 
 const LIKE_SEGMENTS = new Set(['titles', 'reviews', 'lists']);
 const LIKED_REVIEWS_FETCH_PAGE_SIZE = 100;

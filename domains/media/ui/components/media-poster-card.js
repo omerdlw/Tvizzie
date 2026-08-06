@@ -6,7 +6,7 @@ import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
-} from '@/domains/media/ui/poster-overrides';
+} from '@/domains/media/utils/poster-overrides';
 import MediaCard from '@/domains/media/ui/components/media-card';
 
 export default function MediaPosterCard({

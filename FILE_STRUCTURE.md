@@ -219,6 +219,8 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── index.js
 │   │   │   └── profile.client.js
 │   │   ├── hooks
+│   │   │   ├── account-registry-state.js
+│   │   │   ├── account-section-state.js
 │   │   │   ├── collections.hooks.js
 │   │   │   ├── index.js
 │   │   │   ├── page.hooks.js
@@ -232,19 +234,13 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── profile.server.js
 │   │   │   └── routes.server.js
 │   │   ├── ui
-│   │   │   ├── feeds
-│   │   │   │   ├── list-detail
-│   │   │   │   │   ├── comments-section.js
-│   │   │   │   │   ├── list-detail-config.js
-│   │   │   │   │   └── list-detail-filter-state.js
-│   │   │   │   ├── activity.js
-│   │   │   │   ├── likes.js
-│   │   │   │   ├── list-detail.js
-│   │   │   │   ├── lists.js
-│   │   │   │   ├── overview.js
-│   │   │   │   ├── reviews.js
-│   │   │   │   ├── watched.js
-│   │   │   │   └── watchlist.js
+│   │   │   ├── components
+│   │   │   │   ├── lists
+│   │   │   │   │   ├── list-card.js
+│   │   │   │   │   └── list-grid.js
+│   │   │   │   ├── account-action-bar.js
+│   │   │   │   ├── account-media-grid.js
+│   │   │   │   └── account-pagination.js
 │   │   │   ├── filters
 │   │   │   │   ├── content-filter
 │   │   │   │   │   ├── activity-filter-bar.js
@@ -256,48 +252,58 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   │   │   └── search-movie-filter-bar.js
 │   │   │   │   ├── activity.js
 │   │   │   │   ├── content-filter-primitives.js
-│   │   │   │   ├── filtering-query-utils.js
-│   │   │   │   ├── filtering-shared.js
 │   │   │   │   ├── filtering.js
 │   │   │   │   ├── lists.js
 │   │   │   │   ├── media.js
 │   │   │   │   └── reviews.js
-│   │   │   ├── lists
-│   │   │   │   ├── list-card.js
-│   │   │   │   └── list-grid.js
+│   │   │   ├── layouts
+│   │   │   │   ├── account-layout.js
+│   │   │   │   └── account-page-factory.js
 │   │   │   ├── modals
 │   │   │   │   ├── create-list-modal.js
 │   │   │   │   ├── list-editor-modal.js
 │   │   │   │   └── list-picker-modal.js
-│   │   │   ├── overview
-│   │   │   │   ├── activity.js
-│   │   │   │   ├── favorites.js
-│   │   │   │   ├── lists.js
-│   │   │   │   ├── reviews.js
-│   │   │   │   ├── watched.js
-│   │   │   │   └── watchlist.js
-│   │   │   ├── account-action.js
-│   │   │   ├── account-bio-surface.js
-│   │   │   ├── account-hero.js
-│   │   │   ├── account-layout.js
-│   │   │   ├── account-media-grid.js
-│   │   │   ├── account-page-factory.js
-│   │   │   ├── account-pagination.js
-│   │   │   ├── account-registry-state.js
-│   │   │   ├── account-section-factory.js
-│   │   │   ├── account-section-state.js
-│   │   │   ├── account-section.js
+│   │   │   ├── sections
+│   │   │   │   ├── feeds
+│   │   │   │   │   ├── list-detail
+│   │   │   │   │   │   ├── comments-section.js
+│   │   │   │   │   │   ├── list-detail-config.js
+│   │   │   │   │   │   └── list-detail-filter-state.js
+│   │   │   │   │   ├── activity.js
+│   │   │   │   │   ├── likes.js
+│   │   │   │   │   ├── list-detail.js
+│   │   │   │   │   ├── lists.js
+│   │   │   │   │   ├── overview.js
+│   │   │   │   │   ├── reviews.js
+│   │   │   │   │   ├── watched.js
+│   │   │   │   │   └── watchlist.js
+│   │   │   │   ├── overview
+│   │   │   │   │   ├── activity.js
+│   │   │   │   │   ├── favorites.js
+│   │   │   │   │   ├── lists.js
+│   │   │   │   │   ├── reviews.js
+│   │   │   │   │   ├── watched.js
+│   │   │   │   │   └── watchlist.js
+│   │   │   │   ├── account-hero.js
+│   │   │   │   ├── account-section-factory.js
+│   │   │   │   └── account-section.js
+│   │   │   ├── surfaces
+│   │   │   │   └── account-bio-surface.js
 │   │   │   └── index.js
 │   │   ├── utils
 │   │   │   ├── avatar.js
 │   │   │   ├── constants.js
 │   │   │   ├── feedback.js
+│   │   │   ├── filtering-query-utils.js
+│   │   │   ├── filtering-shared.js
 │   │   │   ├── formatting.js
 │   │   │   ├── index.js
 │   │   │   ├── security.js
 │   │   │   └── validation.js
 │   │   └── index.js
 │   ├── auth
+│   │   ├── actions
+│   │   │   └── forgot-password-action.js
 │   │   ├── client
 │   │   │   ├── index.js
 │   │   │   └── requests.js
@@ -315,12 +321,14 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── verification.server.js
 │   │   │   └── workflows.js
 │   │   ├── ui
-│   │   │   ├── forgot-password-action.js
-│   │   │   ├── form-primitives.js
-│   │   │   ├── index.js
-│   │   │   ├── oauth-provider-button.js
-│   │   │   ├── page-shell.js
-│   │   │   └── verification-surface.js
+│   │   │   ├── components
+│   │   │   │   ├── form-primitives.js
+│   │   │   │   └── oauth-provider-button.js
+│   │   │   ├── layouts
+│   │   │   │   └── page-shell.js
+│   │   │   ├── surfaces
+│   │   │   │   └── verification-surface.js
+│   │   │   └── index.js
 │   │   ├── utils
 │   │   │   ├── constants.js
 │   │   │   ├── errors.js
@@ -332,9 +340,12 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   └── index.js
 │   ├── home
 │   │   ├── ui
-│   │   │   ├── discover-section.js
-│   │   │   ├── poster-rail.js
-│   │   │   └── trending-section.js
+│   │   │   ├── components
+│   │   │   │   └── poster-rail.js
+│   │   │   ├── sections
+│   │   │   │   ├── discover-section.js
+│   │   │   │   └── trending-section.js
+│   │   │   └── index.js
 │   │   ├── utils
 │   │   │   └── index.js
 │   │   └── index.js
@@ -344,6 +355,11 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   └── index.js
 │   │   └── index.js
 │   ├── media
+│   │   ├── actions
+│   │   │   ├── collection-actions.js
+│   │   │   ├── context-menu-actions.js
+│   │   │   ├── movie-action.js
+│   │   │   └── person-action.js
 │   │   ├── server
 │   │   │   ├── likes
 │   │   │   │   ├── index.js
@@ -380,49 +396,48 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── media.js
 │   │   │   ├── person-awards.js
 │   │   │   └── supabase-media-utils-service.js
+│   │   ├── services
+│   │   │   └── media-data.js
 │   │   ├── ui
 │   │   │   ├── components
+│   │   │   │   ├── person
+│   │   │   │   │   ├── awards.js
+│   │   │   │   │   ├── bio.js
+│   │   │   │   │   ├── filmography-card.js
+│   │   │   │   │   ├── gallery.js
+│   │   │   │   │   ├── media-thumb.js
+│   │   │   │   │   ├── social-links.js
+│   │   │   │   │   └── timeline.js
 │   │   │   │   ├── media-card.js
 │   │   │   │   ├── media-carousel.js
 │   │   │   │   ├── media-list-preview.js
-│   │   │   │   └── media-poster-card.js
+│   │   │   │   ├── media-poster-card.js
+│   │   │   │   ├── recommendation-card.js
+│   │   │   │   ├── sidebar.js
+│   │   │   │   ├── social-proof.js
+│   │   │   │   └── static-route-elements.js
 │   │   │   ├── modals
 │   │   │   │   ├── cast-modal.js
 │   │   │   │   ├── image-preview-modal.js
 │   │   │   │   ├── media-social-proof-modal.js
 │   │   │   │   └── video-preview-modal.js
-│   │   │   ├── navigation
-│   │   │   │   ├── movie-action.js
-│   │   │   │   └── person-action.js
-│   │   │   ├── person
-│   │   │   │   ├── awards.js
-│   │   │   │   ├── bio.js
-│   │   │   │   ├── filmography-card.js
-│   │   │   │   ├── filmography-section.js
-│   │   │   │   ├── gallery.js
-│   │   │   │   ├── media-thumb.js
-│   │   │   │   ├── social-links.js
-│   │   │   │   └── timeline.js
+│   │   │   ├── sections
+│   │   │   │   ├── person
+│   │   │   │   │   └── filmography-section.js
+│   │   │   │   ├── cast-section.js
+│   │   │   │   ├── gallery-section.js
+│   │   │   │   ├── images-section.js
+│   │   │   │   ├── seasons-section.js
+│   │   │   │   └── videos-section.js
 │   │   │   ├── surfaces
 │   │   │   │   ├── person-bio-surface.js
 │   │   │   │   └── watch-providers-surface.js
-│   │   │   ├── background-preferences.js
-│   │   │   ├── cast-section.js
-│   │   │   ├── collection-actions.js
-│   │   │   ├── context-menu-actions.js
-│   │   │   ├── gallery-section.js
-│   │   │   ├── images-section.js
-│   │   │   ├── media-data.js
-│   │   │   ├── poster-overrides.js
-│   │   │   ├── recommendation-card.js
-│   │   │   ├── seasons-section.js
-│   │   │   ├── sidebar.js
-│   │   │   ├── social-proof.js
-│   │   │   ├── static-route-elements.js
-│   │   │   └── videos-section.js
+│   │   │   └── index.js
 │   │   ├── utils
+│   │   │   ├── background-preferences.js
 │   │   │   ├── index.js
 │   │   │   ├── person-data.js
+│   │   │   ├── poster-overrides.js
 │   │   │   ├── poster-preference-events.js
 │   │   │   ├── poster-preferences.js
 │   │   │   ├── user-media-index.js
@@ -454,19 +469,23 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── reviews-write.js
 │   │   │   ├── stored-mutations.js
 │   │   │   └── validation.js
+│   │   ├── services
+│   │   │   └── review-data.js
 │   │   ├── ui
 │   │   │   ├── components
 │   │   │   │   ├── rating-range-selector.js
 │   │   │   │   ├── rating-selector.js
 │   │   │   │   ├── rating-stars.js
+│   │   │   │   ├── review-action.js
 │   │   │   │   ├── review-auth-fallback.js
 │   │   │   │   ├── review-card.js
 │   │   │   │   ├── review-header.js
 │   │   │   │   └── review-list.js
-│   │   │   ├── media-reviews.js
-│   │   │   ├── review-action.js
-│   │   │   ├── review-data.js
-│   │   │   └── review-editor-surface.js
+│   │   │   ├── sections
+│   │   │   │   └── media-reviews.js
+│   │   │   ├── surfaces
+│   │   │   │   └── review-editor-surface.js
+│   │   │   └── index.js
 │   │   ├── utils
 │   │   │   └── index.js
 │   │   └── index.js
@@ -477,21 +496,23 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── server
 │   │   │   ├── search-community.js
 │   │   │   └── search-quality.js
-│   │   ├── ui
-│   │   │   ├── navigation
-│   │   │   │   └── search-action
-│   │   │   │       ├── components
-│   │   │   │       │   ├── controls.js
-│   │   │   │       │   ├── item.js
-│   │   │   │       │   └── results-preview.js
-│   │   │   │       ├── index.js
-│   │   │   │       ├── search-action-helpers.js
-│   │   │   │       └── use-search-action-controller.js
-│   │   │   ├── grid-item.js
+│   │   ├── services
 │   │   │   ├── search-data.js
 │   │   │   ├── search-filters.js
 │   │   │   ├── search-ranking.js
 │   │   │   └── search-result.js
+│   │   ├── ui
+│   │   │   ├── components
+│   │   │   │   ├── search-action
+│   │   │   │   │   ├── components
+│   │   │   │   │   │   ├── controls.js
+│   │   │   │   │   │   ├── item.js
+│   │   │   │   │   │   └── results-preview.js
+│   │   │   │   │   ├── index.js
+│   │   │   │   │   ├── search-action-helpers.js
+│   │   │   │   │   └── use-search-action-controller.js
+│   │   │   │   └── grid-item.js
+│   │   │   └── navigation
 │   │   ├── utils
 │   │   │   └── index.js
 │   │   └── index.js
@@ -525,8 +546,10 @@ This file is generated from the working tree and lists every project file. Gener
 │       │   ├── follow-shared.js
 │       │   └── notifications.server.js
 │       ├── ui
-│       │   ├── account-social-modal.js
-│       │   └── notifications-modal.js
+│       │   ├── modals
+│       │   │   ├── account-social-modal.js
+│       │   │   └── notifications-modal.js
+│       │   └── index.js
 │       ├── utils
 │       │   └── index.js
 │       └── index.js

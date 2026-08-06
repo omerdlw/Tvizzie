@@ -8,28 +8,28 @@ import {
   getMoviePosterPreferenceFilePath,
   setMovieBackgroundPreference,
   setMoviePosterPreference,
-} from '@/domains/media/ui/background-preferences';
+} from '@/domains/media/utils/background-preferences';
 import {
   createMovieBackdropImageUrl,
   createMoviePosterImageUrl,
   getPreferredMovieBackground,
-} from '@/domains/media/ui/media-data';
+} from '@/domains/media/services/media-data';
 // Movie view is defined in this route client.
 import { Suspense, use } from 'react';
 import { motion } from 'framer-motion';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
-import CastSection from '@/domains/media/ui/cast-section';
-import CollectionActions from '@/domains/media/ui/collection-actions';
-import GallerySection from '@/domains/media/ui/gallery-section';
-import ImagesSection from '@/domains/media/ui/images-section';
-import RecommendationCard from '@/domains/media/ui/recommendation-card';
-import Sidebar from '@/domains/media/ui/sidebar';
-import { getGalleryImages, getMovieComputedData } from '@/domains/media/ui/media-data';
-import VideosSection from '@/domains/media/ui/videos-section';
-import MediaReviews from '@/domains/reviews/ui/media-reviews';
-import TvSeasonsSection from '@/domains/media/ui/seasons-section';
+import CastSection from '@/domains/media/ui/sections/cast-section';
+import CollectionActions from '@/domains/media/actions/collection-actions';
+import GallerySection from '@/domains/media/ui/sections/gallery-section';
+import ImagesSection from '@/domains/media/ui/sections/images-section';
+import RecommendationCard from '@/domains/media/ui/components/recommendation-card';
+import Sidebar from '@/domains/media/ui/components/sidebar';
+import { getGalleryImages, getMovieComputedData } from '@/domains/media/services/media-data';
+import VideosSection from '@/domains/media/ui/sections/videos-section';
+import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
+import TvSeasonsSection from '@/domains/media/ui/sections/seasons-section';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';

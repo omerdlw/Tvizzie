@@ -1,4 +1,4 @@
-import { normalizeString } from './filtering-shared';
+import { normalizeString } from '../../utils/filtering-shared';
 
 export const LIST_FILTER_QUERY_KEYS = Object.freeze(['lsort']);
 

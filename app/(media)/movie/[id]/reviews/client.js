@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
-import CollectionActions from '@/domains/media/ui/collection-actions';
-import Sidebar from '@/domains/media/ui/sidebar';
-import MediaReviews from '@/domains/reviews/ui/media-reviews';
+import CollectionActions from '@/domains/media/actions/collection-actions';
+import Sidebar from '@/domains/media/ui/components/sidebar';
+import MediaReviews from '@/domains/reviews/ui/sections/media-reviews';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
 import {
