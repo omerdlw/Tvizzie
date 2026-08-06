@@ -1,29 +1,19 @@
-import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
-import { createAdminClient } from '@/infrastructure/supabase/admin';
-import {
-  createRouteRequestMeta,
-  createRouteSuccessResponse,
-  createRouteValidationErrorResponse,
-  createRouteErrorResponse,
-} from '@/infrastructure/http/route-context.server';
+import 'server-only';
 
+import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { requireSessionRequest } from '@/domains/auth/server/session.server.js';
 import { executeReviewWriteAction } from './reviews-write-actions';
-import { normalizePayloadObject, normalizeValue } from './reviews-write-shared';
+import { normalizeValue } from './reviews-write-shared';
 
 export async function handleReviewsWritePost(request) {
-  const requestMeta = createRouteRequestMeta(request, 'api/reviews/write');
-
   try {
-    const authContext = await requireAuthenticatedRequest(request);
+    const session = await requireSessionRequest(request);
     const body = await request.json().catch(() => ({}));
     const action = normalizeValue(body?.action);
 
     if (!action) {
-      return createRouteValidationErrorResponse({
-        authContext,
-        message: 'action is required',
-        requestMeta,
-      });
+      return NextResponse.json({ error: 'Action is required' }, { status: 400 });
     }
 
     const admin = createAdminClient();
@@ -31,28 +21,12 @@ export async function handleReviewsWritePost(request) {
       action,
       admin,
       body,
-      userId: authContext.userId,
+      userId: session.userId,
     });
 
-    return createRouteSuccessResponse({
-      authContext,
-      payload: {
-        result,
-        source: 'authoritative',
-      },
-      legacyPayload: {
-        source: 'authoritative',
-        ...normalizePayloadObject(result),
-      },
-      requestMeta,
-    });
+    return NextResponse.json({ success: true, result });
   } catch (error) {
-    return createRouteErrorResponse({
-      code: 'REVIEWS_WRITE_FAILED',
-      error,
-      fallbackMessage: 'Review write failed',
-      requestMeta,
-      clientErrorPatterns: ['invalid', 'required', 'unsupported', 'not found'],
-    });
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return NextResponse.json({ error: error?.message || 'Review write failed' }, { status });
   }
 }

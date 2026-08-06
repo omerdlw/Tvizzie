@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useAccountProfile, useResolvedAccountUser } from '@/modules/account';
+import { useAccountClient, useAccountProfile, useResolvedAccountUser } from '@/modules/account';
 import { useAuthSessionReady } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
@@ -330,24 +330,79 @@ export function useAccountPageData({
     [toast],
   );
 
+  const accountClient = useAccountClient();
   const { isResolvingProfile, resolveError, resolvedUserId } = useResolvedAccountUser({
     authUserId: auth.user?.id || null,
     initialResolvedUserId,
     initialResolveError,
     username,
   });
-  const { hasLoadedProfile, profile } = useAccountProfile({
+  const { hasLoadedProfile, profile, setProfile } = useAccountProfile({
     resolvedUserId,
     initialProfile,
     onError: handleProfileError,
   });
+
+  const [isBootstrappingProfile, setIsBootstrappingProfile] = useState(false);
+  const [bootstrapAttempted, setBootstrapAttempted] = useState(false);
+
+  useEffect(() => {
+    if (
+      !username &&
+      auth.isAuthenticated &&
+      auth.user?.id &&
+      resolvedUserId === auth.user.id &&
+      hasLoadedProfile &&
+      !profile &&
+      !bootstrapAttempted
+    ) {
+      let ignore = false;
+      setIsBootstrappingProfile(true);
+
+      if (typeof accountClient?.ensureAccount === 'function') {
+        accountClient
+          .ensureAccount(auth.user)
+          .then((bootstrappedProfile) => {
+            if (!ignore && bootstrappedProfile && typeof setProfile === 'function') {
+              setProfile(bootstrappedProfile);
+            }
+          })
+          .catch(() => null)
+          .finally(() => {
+            if (!ignore) {
+              setIsBootstrappingProfile(false);
+              setBootstrapAttempted(true);
+            }
+          });
+      } else {
+        setIsBootstrappingProfile(false);
+        setBootstrapAttempted(true);
+      }
+
+      return () => {
+        ignore = true;
+      };
+    }
+  }, [
+    accountClient,
+    auth.isAuthenticated,
+    auth.user,
+    bootstrapAttempted,
+    hasLoadedProfile,
+    profile,
+    resolvedUserId,
+    setProfile,
+    username,
+  ]);
 
   const isCurrentAccountMissing =
     !username &&
     auth.isAuthenticated &&
     Boolean(resolvedUserId) &&
     !profile &&
-    (initialResolveError === 'Account not found' || hasLoadedProfile);
+    hasLoadedProfile &&
+    !isBootstrappingProfile &&
+    bootstrapAttempted;
   const isOwner = useMemo(() => {
     if (isCurrentAccountMissing) return false;
     if (!username) return Boolean(auth.user?.id || initialResolvedUserId);

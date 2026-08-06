@@ -260,6 +260,7 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── use-click-outside.js
 │   │   │   ├── use-debounce.js
 │   │   │   └── use-draggable-scroll.js
+│   │   ├── scripts
 │   │   └── utils.js
 │   └── ui
 │       ├── feedback
@@ -449,7 +450,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   └── index.js
 │   │   └── index.js
 │   ├── legal
-│   │   ├── ui
 │   │   ├── utils
 │   │   │   └── index.js
 │   │   └── index.js
@@ -554,8 +554,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   ├── hooks
 │   │   │   └── use-media-reviews.js
 │   │   ├── server
-│   │   │   ├── api
-│   │   │   │   └── reviews.js
 │   │   │   ├── index.js
 │   │   │   ├── list-mutations.js
 │   │   │   ├── media-mutations.js
@@ -572,7 +570,6 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── review-subscriptions.js
 │   │   │   ├── reviews-write-actions.js
 │   │   │   ├── reviews-write-shared.js
-│   │   │   ├── reviews-write.js
 │   │   │   ├── stored-mutations.js
 │   │   │   └── validation.js
 │   │   ├── services
@@ -609,17 +606,16 @@ This file is generated from the working tree and lists every project file. Gener
 │   │   │   ├── search-ranking.js
 │   │   │   └── search-result.js
 │   │   ├── ui
-│   │   │   ├── components
-│   │   │   │   ├── search-action
-│   │   │   │   │   ├── components
-│   │   │   │   │   │   ├── controls.js
-│   │   │   │   │   │   ├── item.js
-│   │   │   │   │   │   └── results-preview.js
-│   │   │   │   │   ├── index.js
-│   │   │   │   │   ├── search-action-helpers.js
-│   │   │   │   │   └── use-search-action-controller.js
-│   │   │   │   └── grid-item.js
-│   │   │   └── navigation
+│   │   │   └── components
+│   │   │       ├── search-action
+│   │   │       │   ├── components
+│   │   │       │   │   ├── controls.js
+│   │   │       │   │   ├── item.js
+│   │   │       │   │   └── results-preview.js
+│   │   │       │   ├── index.js
+│   │   │       │   ├── search-action-helpers.js
+│   │   │       │   └── use-search-action-controller.js
+│   │   │       └── grid-item.js
 │   │   ├── utils
 │   │   │   └── index.js
 │   │   └── index.js
@@ -637,26 +633,18 @@ This file is generated from the working tree and lists every project file. Gener
 │       │   │   ├── event-processor-shared.js
 │       │   │   ├── event-processor.server.js
 │       │   │   └── index.js
-│       │   ├── api
-│       │   │   ├── activity-events.server.js
-│       │   │   ├── notification-events.server.js
-│       │   │   └── social-proof.server.js
 │       │   ├── notifications
 │       │   │   ├── event-processor.server.js
 │       │   │   ├── notification-events-service.js
 │       │   │   ├── notification-resources.server.js
 │       │   │   └── notifications-service.js
-│       │   ├── social
-│       │   │   ├── follow-client-shared.js
-│       │   │   ├── follow-mutations.js
-│       │   │   ├── follow-resources.server.js
-│       │   │   ├── follow-service.js
-│       │   │   ├── follow-subscriptions.js
-│       │   │   └── index.js
-│       │   ├── follow-events.server.js
-│       │   ├── follow-server.js
-│       │   ├── follow-shared.js
-│       │   └── notifications.server.js
+│       │   └── social
+│       │       ├── follow-client-shared.js
+│       │       ├── follow-mutations.js
+│       │       ├── follow-resources.server.js
+│       │       ├── follow-service.js
+│       │       ├── follow-subscriptions.js
+│       │       └── index.js
 │       ├── ui
 │       │   ├── modals
 │       │   │   ├── account-social-modal.js

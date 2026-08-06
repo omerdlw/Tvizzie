@@ -11,10 +11,7 @@ import {
   resolveOAuthIntent,
   sanitizeAuthNextPath,
 } from '../provider-utils';
-import {
-  clearCanonicalSessionPayloadCache,
-  fetchCanonicalSessionPayload,
-} from '../session-client';
+import { clearCanonicalSessionPayloadCache, fetchCanonicalSessionPayload } from '../session-client';
 
 import { createAuthAdapter } from './create-adapter';
 
@@ -134,7 +131,12 @@ async function fetchCanonicalSession({ force = false } = {}) {
 }
 
 function getClient(providedClient = null) {
-  if (providedClient) return providedClient;
+  if (providedClient) {
+    if (typeof providedClient === 'function') {
+      return providedClient();
+    }
+    return providedClient;
+  }
   if (typeof window !== 'undefined' && window.__SUPABASE_CLIENT__) {
     return window.__SUPABASE_CLIENT__;
   }

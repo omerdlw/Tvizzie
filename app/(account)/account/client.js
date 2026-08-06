@@ -17,7 +17,7 @@ import {
   fetchProfileReviewFeed,
   toggleStoredReviewLike,
 } from '@/domains/reviews/server';
-import { useNavigationActions } from '@/modules/nav';
+import { useNavigationActions } from '@/modules/nav/context';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import {
   AccountSectionStateProvider,

@@ -14,10 +14,16 @@ import {
   verifyPasswordWithIdentityToolkit,
 } from '../server/security.server';
 
-export async function getPasswordStatusServer({ userId }) {
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function getPasswordStatusServer({ userId } = {}) {
   try {
+    const normId = normalizeValue(userId);
+    if (!normId || !UUID_REGEX.test(normId)) {
+      return { success: true, passwordEnabled: true };
+    }
     const admin = createAdminClient();
-    const userRecord = await admin.auth.admin.getUserById(userId);
+    const userRecord = await admin.auth.admin.getUserById(normId);
     const passwordEnabled = hasPasswordProvider(userRecord?.data?.user);
     return { success: true, passwordEnabled };
   } catch (error) {

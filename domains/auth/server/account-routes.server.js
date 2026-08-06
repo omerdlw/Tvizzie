@@ -26,7 +26,10 @@ import {
   validateStrongPassword,
   verifyPasswordWithIdentityToolkit,
 } from './security.server';
-import { lookupPasswordAccountByEmail, resolvePasswordAccountIdentifier } from './verification.server';
+import {
+  lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
+} from './verification.server';
 import {
   buildInternalRequestMeta,
   createApiErrorResponse,
@@ -79,9 +82,19 @@ function buildRequestMeta(request, action) {
 // Handlers
 // ============================================================
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function handlePasswordStatus(request, body) {
   try {
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_PASSWORD_STATUS });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_PASSWORD_STATUS,
+    });
+    if (!session?.userId || !UUID_REGEX.test(session.userId)) {
+      return createApiSuccessResponse(
+        { passwordEnabled: true },
+        { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.PASSWORD_STATUS) },
+      );
+    }
     const userRecord = await createAdminClient().auth.admin.getUserById(session.userId);
     const passwordEnabled = hasPasswordProvider(userRecord?.data?.user);
 
@@ -91,7 +104,11 @@ export async function handlePasswordStatus(request, body) {
     );
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'STATUS_CHECK_FAILED', message: error.message || 'Status check failed', retryable: true },
+      {
+        code: 'STATUS_CHECK_FAILED',
+        message: error.message || 'Status check failed',
+        retryable: true,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.PASSWORD_STATUS), status: 400 },
     );
   }
@@ -100,7 +117,9 @@ export async function handlePasswordStatus(request, body) {
 export async function handleReauthenticate(request, body) {
   try {
     assertCsrfRequest(request);
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_REAUTHENTICATE });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_REAUTHENTICATE,
+    });
     const currentPassword = String(body?.currentPassword || '');
 
     if (!currentPassword) {
@@ -125,7 +144,11 @@ export async function handleReauthenticate(request, body) {
     return response;
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'REAUTH_FAILED', message: error.message || 'Reauthentication failed', retryable: false },
+      {
+        code: 'REAUTH_FAILED',
+        message: error.message || 'Reauthentication failed',
+        retryable: false,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.REAUTHENTICATE), status: 401 },
     );
   }
@@ -134,7 +157,9 @@ export async function handleReauthenticate(request, body) {
 export async function handleDeleteAccount(request, body) {
   try {
     assertCsrfRequest(request);
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_DELETE });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_DELETE,
+    });
     assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
 
     await beginAccountDeleteLifecycle({ userId: session.userId });
@@ -150,7 +175,11 @@ export async function handleDeleteAccount(request, body) {
     return response;
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'DELETE_FAILED', message: error.message || 'Account deletion failed', retryable: false },
+      {
+        code: 'DELETE_FAILED',
+        message: error.message || 'Account deletion failed',
+        retryable: false,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.DELETE), status: 400 },
     );
   }
@@ -159,7 +188,9 @@ export async function handleDeleteAccount(request, body) {
 export async function handleChangeEmail(request, body) {
   try {
     assertCsrfRequest(request);
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_EMAIL });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_EMAIL,
+    });
     const newEmail = normalizeEmailValue(body?.newEmail);
 
     if (!newEmail || !newEmail.includes('@')) {
@@ -179,7 +210,11 @@ export async function handleChangeEmail(request, body) {
     );
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'EMAIL_CHANGE_FAILED', message: error.message || 'Email change failed', retryable: false },
+      {
+        code: 'EMAIL_CHANGE_FAILED',
+        message: error.message || 'Email change failed',
+        retryable: false,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_EMAIL), status: 400 },
     );
   }
@@ -188,12 +223,16 @@ export async function handleChangeEmail(request, body) {
 export async function handleChangePassword(request, body) {
   try {
     assertCsrfRequest(request);
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_PASSWORD });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_PASSWORD,
+    });
     assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
 
     const newPassword = validateStrongPassword(body?.newPassword);
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(session.userId, { password: newPassword });
+    const updateRes = await admin.auth.admin.updateUserById(session.userId, {
+      password: newPassword,
+    });
     if (updateRes.error) throw updateRes.error;
 
     return createApiSuccessResponse(
@@ -202,7 +241,11 @@ export async function handleChangePassword(request, body) {
     );
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'PASSWORD_CHANGE_FAILED', message: error.message || 'Password change failed', retryable: false },
+      {
+        code: 'PASSWORD_CHANGE_FAILED',
+        message: error.message || 'Password change failed',
+        retryable: false,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_PASSWORD), status: 400 },
     );
   }
@@ -211,11 +254,15 @@ export async function handleChangePassword(request, body) {
 export async function handleSetPassword(request, body) {
   try {
     assertCsrfRequest(request);
-    const session = await requirePolicySession(request, { policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_SET_PASSWORD });
+    const session = await requirePolicySession(request, {
+      policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_SET_PASSWORD,
+    });
     const newPassword = validateStrongPassword(body?.newPassword);
 
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(session.userId, { password: newPassword });
+    const updateRes = await admin.auth.admin.updateUserById(session.userId, {
+      password: newPassword,
+    });
     if (updateRes.error) throw updateRes.error;
 
     return createApiSuccessResponse(
@@ -224,7 +271,11 @@ export async function handleSetPassword(request, body) {
     );
   } catch (error) {
     return createApiErrorResponse(
-      { code: 'PASSWORD_SET_FAILED', message: error.message || 'Password setup failed', retryable: false },
+      {
+        code: 'PASSWORD_SET_FAILED',
+        message: error.message || 'Password setup failed',
+        retryable: false,
+      },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.SET_PASSWORD), status: 400 },
     );
   }

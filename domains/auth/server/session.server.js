@@ -616,9 +616,13 @@ export async function getUserByEmail(email) {
   return toFirebaseLikeUserRecord(result.data);
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function getUserById(userId) {
   const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId) throw new Error('User ID is required');
+  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
+    throw new Error('Valid User ID UUID is required');
+  }
 
   const admin = createAdminClient();
   const result = await admin.auth.admin.getUserById(normalizedUserId);
@@ -643,13 +647,16 @@ export async function createUser(payload = {}) {
 
 export async function updateUser(userId, payload = {}) {
   const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId) throw new Error('User ID is required');
+  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
+    throw new Error('Valid User ID UUID is required');
+  }
 
   const admin = createAdminClient();
   const updatePayload = {};
 
   if (payload.email !== undefined) updatePayload.email = normalizeEmailValue(payload.email);
-  if (payload.emailVerified !== undefined) updatePayload.email_confirm = Boolean(payload.emailVerified);
+  if (payload.emailVerified !== undefined)
+    updatePayload.email_confirm = Boolean(payload.emailVerified);
   if (payload.password !== undefined) updatePayload.password = String(payload.password || '');
   if (payload.appMetadata !== undefined) updatePayload.app_metadata = payload.appMetadata || {};
   if (payload.userMetadata !== undefined) updatePayload.user_metadata = payload.userMetadata || {};
@@ -662,7 +669,9 @@ export async function updateUser(userId, payload = {}) {
 
 export async function deleteUser(userId) {
   const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId) throw new Error('User ID is required');
+  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
+    throw new Error('Valid User ID UUID is required');
+  }
 
   const admin = createAdminClient();
   const result = await admin.auth.admin.deleteUser(normalizedUserId);
@@ -671,7 +680,10 @@ export async function deleteUser(userId) {
   return true;
 }
 
-export async function revokeRefreshTokens(userId, { currentSessionJti = null, reason = null } = {}) {
+export async function revokeRefreshTokens(
+  userId,
+  { currentSessionJti = null, reason = null } = {},
+) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) throw new Error('User ID is required');
 

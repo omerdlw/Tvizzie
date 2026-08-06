@@ -176,6 +176,10 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
     const requestId = latestRequestRef.current + 1;
     latestRequestRef.current = requestId;
 
+    if (!isViewerReady || !effectiveResolvedUserId) {
+      return;
+    }
+
     if (shouldBlockFeedLoad) {
       resetFeed();
       return;

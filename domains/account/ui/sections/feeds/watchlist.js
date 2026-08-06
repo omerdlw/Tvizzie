@@ -85,6 +85,7 @@ export default function AccountWatchlistFeed({
       applyMediaFilters(watchlist, viewState.media, { watchlistKeys: buildMediaKeySet(watchlist) }),
     [viewState.media, watchlist],
   );
+  const genreOptions = useMemo(() => collectMediaGenreOptions(watchlist), [watchlist]);
 
   if (!canShowWatchlistGrid) return <AccountSectionState message="This profile is private." />;
   if (loadError) return <AccountSectionState message={loadError} />;
@@ -113,7 +114,7 @@ export default function AccountWatchlistFeed({
           <AccountMediaFilterBar
             filters={viewState.media}
             decadeOptions={getDecadeOptions()}
-            genreOptions={useMemo(() => collectMediaGenreOptions(watchlist), [watchlist])}
+            genreOptions={genreOptions}
             visibilityOptions={VISIBILITY_OPTIONS}
             onChange={(media) => updateView({ media: { ...viewState.media, ...media }, page: 1 })}
             onReset={

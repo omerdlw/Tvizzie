@@ -41,6 +41,13 @@ import {
   pageContainerVariants,
   titleVariants,
 } from '@/app/(auth)/motion';
+import { useAuth } from '@/modules/auth';
+import { useToast } from '@/modules/notification';
+import { useNavigationActions } from '@/modules/nav';
+import AuthRegistry from '@/app/(auth)/registry';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { OAUTH_PROVIDER_KEYS } from '@/core/modules/auth/provider-utils';
 
 export default function Client() {
   const auth = useAuth();
@@ -593,11 +600,14 @@ function View({
             animate="visible"
             exit="exit"
           >
-            <motion.div variants={headerContainerVariants} className="flex flex-col items-center text-center">
+            <motion.div
+              variants={headerContainerVariants}
+              className="flex flex-col items-center text-center"
+            >
               <motion.div variants={logoVariants} whileHover="hover" whileTap="tap">
                 <Link
                   href="/"
-                  className="mb-6 block rounded-2xl p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+                  className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
                 >
                   <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
                 </Link>
@@ -641,25 +651,35 @@ function View({
             </motion.div>
 
             <motion.div variants={fieldVariants}>
-              <Button type="submit" disabled={isSignInBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
+              <Button
+                type="submit"
+                disabled={isSignInBusy}
+                classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}
+              >
                 {isPasswordSubmitting ? 'Logging in' : 'Log In'}
               </Button>
             </motion.div>
 
             <motion.div
               variants={dividerVariants}
-              className="relative flex items-center py-1.5 mx-[-1.5rem] sm:mx-[-2.5rem]"
+              className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]"
             >
-              <div className="pointer-events-none absolute right-full top-1/2 h-px w-screen -translate-y-1/2 bg-black/10" />
+              <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
               <div className="h-px grow bg-black/10" />
-              <span className="select-none px-4 text-sm font-medium text-black/50">Or</span>
+              <span className="px-4 text-sm font-medium text-black/50 select-none">Or</span>
               <div className="h-px grow bg-black/10" />
-              <div className="pointer-events-none absolute left-full top-1/2 h-px w-screen -translate-y-1/2 bg-black/10" />
+              <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
             </motion.div>
 
             <motion.div variants={oauthContainerVariants} className="flex items-center gap-3">
               {OAUTH_PROVIDER_KEYS.map((provider) => (
-                <motion.div key={provider} variants={oauthItemVariants} whileHover="hover" whileTap="tap" className="flex-1">
+                <motion.div
+                  key={provider}
+                  variants={oauthItemVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="flex-1"
+                >
                   <OAuthProviderButton
                     provider={provider}
                     mode="sign-in"
@@ -671,11 +691,14 @@ function View({
               ))}
             </motion.div>
 
-            <motion.p variants={footerVariants} className="mt-2 text-center text-sm font-medium text-black/50">
+            <motion.p
+              variants={footerVariants}
+              className="mt-2 text-center text-sm font-medium text-black/50"
+            >
               Don&apos;t have an account?{' '}
               <Link
                 href={signUpHref}
-                className="rounded px-1 text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black"
+                className="rounded px-1 text-black hover:underline focus-visible:ring-1 focus-visible:ring-black focus-visible:outline-none"
               >
                 Sign Up
               </Link>

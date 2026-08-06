@@ -179,7 +179,7 @@ export async function handleAccountProfilePost(request) {
 
       updates.updated_at = new Date().toISOString();
 
-      const { data, error } = await admin.from('accounts').update(updates).eq('id', authContext.userId).select().single();
+      const { data, error } = await admin.from('profiles').update(updates).eq('id', authContext.userId).select().single();
       if (error) throw new Error(error.message || 'Account update failed');
 
       await publishUserEvent(authContext.userId, 'account:updated', { profile: data });
@@ -272,7 +272,7 @@ export async function handleAccountSearchGet(request) {
 
     const admin = createAdminClient();
     const { data, error } = await admin
-      .from('accounts')
+      .from('profiles')
       .select('id, username, display_name, avatar_url, is_private')
       .or(`username_lower.ilike.%${searchTerm.toLowerCase()}%,display_name_lower.ilike.%${searchTerm.toLowerCase()}%`)
       .limit(limitCount);

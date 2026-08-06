@@ -29,10 +29,36 @@ import {
   toSourceRecord,
 } from './store';
 
+const NOOP = () => {};
+const DEFAULT_REGISTRY_ACTIONS = Object.freeze({
+  batch: (fn) => (typeof fn === 'function' ? fn({ register: NOOP, unregister: NOOP }) : 0),
+  clearHistory: NOOP,
+  register: NOOP,
+  reset: NOOP,
+  unregister: NOOP,
+});
+
+const DEFAULT_REGISTRY_STATE = Object.freeze({
+  entries: {},
+  history: [],
+});
+
+const DEFAULT_REGISTRY_SUBSCRIPTION = Object.freeze({
+  getEntriesSnapshot: () => ({}),
+  getSnapshot: () => null,
+  subscribe: () => NOOP,
+});
+
+const DEFAULT_REGISTRY_HISTORY = Object.freeze({
+  clearHistory: NOOP,
+  enabled: false,
+  history: [],
+});
+
 const RegistryActionsContext = createContext(null);
-const RegistryHistoryContext = createContext(null);
 const RegistryStateContext = createContext(null);
 const RegistrySubscriptionContext = createContext(null);
+const RegistryHistoryContext = createContext(null);
 
 export { REGISTRY_TYPES };
 
@@ -401,18 +427,12 @@ export function RegistryProvider({ children, enableHistory = true }) {
 
 export function useRegistryActions() {
   const context = useContext(RegistryActionsContext);
-  if (!context) {
-    throw new Error('useRegistryActions must be used within a RegistryProvider');
-  }
-  return context;
+  return context ?? DEFAULT_REGISTRY_ACTIONS;
 }
 
 export function useRegistryState() {
   const context = useContext(RegistryStateContext);
-  if (!context) {
-    throw new Error('useRegistryState must be used within a RegistryProvider');
-  }
-  return context;
+  return context ?? DEFAULT_REGISTRY_STATE;
 }
 
 export function useRegistryContext() {
@@ -423,10 +443,7 @@ export function useRegistryContext() {
 
 function useRegistrySubscription() {
   const context = useContext(RegistrySubscriptionContext);
-  if (!context) {
-    throw new Error('Registry selector hooks must be used within a RegistryProvider');
-  }
-  return context;
+  return context ?? DEFAULT_REGISTRY_SUBSCRIPTION;
 }
 
 export function useRegistryValue(type, key) {
@@ -449,7 +466,7 @@ export function useRegistryHistory(limit = HISTORY_LIMIT) {
   const context = useContext(RegistryHistoryContext);
 
   if (!context) {
-    throw new Error('useRegistryHistory must be used within a RegistryProvider');
+    return DEFAULT_REGISTRY_HISTORY;
   }
 
   const { clearHistory, enabled, getHistory } = context;

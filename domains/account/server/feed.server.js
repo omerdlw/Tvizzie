@@ -90,7 +90,7 @@ export function normalizeActivityRow(row = {}) {
 
 export function isVisibleActivityItem(item = {}) {
   if (!item || !ACTIVITY_EVENT_TYPE_SET.has(item.eventType)) return false;
-  return item.subject.type === 'movie' || item.subject.type === 'list';
+  return item.subject.type === 'movie' || item.subject.type === 'tv' || item.subject.type === 'list';
 }
 
 function getActivityTimestamp(item = {}) {
@@ -292,6 +292,112 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
 
   const actor = normalizeActor({ avatarUrl: profile?.avatarUrl || null, displayName: profile?.displayName || profile?.username || 'Someone', id: profile?.id || userId || null, username: profile?.username || null });
   const derivedItems = [];
+
+  (reviewFeed?.items || []).forEach((review) => {
+    const timestamp = normalizeTimestamp(review.createdAt || review.updatedAt);
+    derivedItems.push({
+      actor,
+      createdAt: timestamp,
+      dedupeKey: `derived:review:${review.id || review.docPath}`,
+      details: { rating: review.rating ?? null },
+      eventType: ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED,
+      id: `derived-review-${review.id || review.docPath}`,
+      occurredAt: timestamp,
+      renderKind: 'text_with_review',
+      reviewCard: normalizeReviewCard({
+        ...review,
+        authorId: userId,
+        reviewUserId: userId,
+        user: { avatarUrl: actor.avatarUrl, name: actor.displayName, username: actor.username },
+      }),
+      sourceUserId: userId,
+      subject: normalizeSubject({
+        id: review.subjectId || review.mediaId,
+        poster: review.subjectPoster || review.posterPath,
+        title: review.subjectTitle || review.title,
+        type: review.subjectType || 'movie',
+      }),
+      updatedAt: timestamp,
+      version: 2,
+      visibility: 'public',
+    });
+  });
+
+  (Array.isArray(watched) ? watched : []).forEach((item) => {
+    const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at);
+    derivedItems.push({
+      actor,
+      createdAt: timestamp,
+      dedupeKey: `derived:watched:${item.mediaKey || item.id}`,
+      details: {},
+      eventType: ACTIVITY_EVENT_TYPES.WATCHED_ADDED,
+      id: `derived-watched-${item.mediaKey || item.id}`,
+      occurredAt: timestamp,
+      renderKind: 'text',
+      reviewCard: null,
+      sourceUserId: userId,
+      subject: normalizeSubject({
+        id: item.entityId || item.id,
+        poster: item.poster_path || item.posterPath,
+        title: item.title || item.name,
+        type: item.entityType || item.media_type || 'movie',
+      }),
+      updatedAt: timestamp,
+      version: 2,
+      visibility: 'public',
+    });
+  });
+
+  (Array.isArray(lists) ? lists : []).forEach((list) => {
+    const timestamp = normalizeTimestamp(list.createdAt || list.updated_at || list.created_at);
+    derivedItems.push({
+      actor,
+      createdAt: timestamp,
+      dedupeKey: `derived:list:${list.id || list.slug}`,
+      details: { itemCount: list.itemCount || 0 },
+      eventType: ACTIVITY_EVENT_TYPES.LIST_CREATED,
+      id: `derived-list-${list.id || list.slug}`,
+      occurredAt: timestamp,
+      renderKind: 'text',
+      reviewCard: null,
+      sourceUserId: userId,
+      subject: normalizeSubject({
+        id: list.id,
+        poster: list.coverPosterPath || list.posterPath,
+        slug: list.slug,
+        title: list.title || list.name,
+        type: 'list',
+      }),
+      updatedAt: timestamp,
+      version: 2,
+      visibility: 'public',
+    });
+  });
+
+  (Array.isArray(likes) ? likes : []).forEach((item) => {
+    const timestamp = normalizeTimestamp(item.addedAt || item.created_at);
+    derivedItems.push({
+      actor,
+      createdAt: timestamp,
+      dedupeKey: `derived:like:${item.mediaKey || item.id}`,
+      details: {},
+      eventType: ACTIVITY_EVENT_TYPES.LIKED_ADDED,
+      id: `derived-like-${item.mediaKey || item.id}`,
+      occurredAt: timestamp,
+      renderKind: 'text',
+      reviewCard: null,
+      sourceUserId: userId,
+      subject: normalizeSubject({
+        id: item.entityId || item.id,
+        poster: item.poster_path || item.posterPath,
+        title: item.title || item.name,
+        type: item.entityType || item.media_type || 'movie',
+      }),
+      updatedAt: timestamp,
+      version: 2,
+      visibility: 'public',
+    });
+  });
 
   return derivedItems.filter(isVisibleActivityItem);
 }

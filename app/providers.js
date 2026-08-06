@@ -18,7 +18,7 @@ import { SmoothScrollProvider } from '@/app/_shell/smooth-scroll';
 import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
 import { GlobalError } from '@/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/modules/loading';
-import { NavigationProvider } from '@/modules/nav';
+import { NavigationProvider } from '@/modules/nav/context';
 import { RegistryBootstrap, REGISTRY_TYPES, RegistryProvider } from '@/modules/registry';
 
 const Nav = dynamic(() => import('@/modules/nav'));

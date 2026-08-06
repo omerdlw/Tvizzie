@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { applySessionCookies, clearAuthCookies, createCsrfToken, getRequestContext, setDeviceIdCookie } from './session.server';
+import {
+  applySessionCookies,
+  clearAuthCookies,
+  createCsrfToken,
+  getRequestContext,
+  readSessionFromRequest,
+  setDeviceIdCookie,
+} from './session.server';
 import { createPendingPasswordSignIn, enforceAuthRateLimit } from './security.server';
 import {
   clearPendingSignInCookie,
@@ -33,19 +40,28 @@ export async function handleSignInPost(request) {
     try {
       email = (await resolvePasswordAccountIdentifier(identifier)).email;
     } catch (error) {
-      return NextResponse.json({ code: 'auth/user-not-found', error: 'No account found' }, { status: 400 });
+      return NextResponse.json(
+        { code: 'auth/user-not-found', error: 'No account found' },
+        { status: 400 },
+      );
     }
 
     const passwordLookup = await lookupPasswordAccountByEmail(email);
     if (!passwordLookup.eligible) {
-      return NextResponse.json({ code: passwordLookup.code || 'invalid_credentials', error: 'Sign in failed' }, { status: 400 });
+      return NextResponse.json(
+        { code: passwordLookup.code || 'invalid_credentials', error: 'Sign in failed' },
+        { status: 400 },
+      );
     }
 
     const requestContext = getRequestContext(request);
     const pendingSignIn = await createPendingPasswordSignIn({ email, password });
 
     const response = NextResponse.json({ success: true });
-    applySessionCookies(response, { accessToken: pendingSignIn.accessToken, refreshToken: pendingSignIn.refreshToken });
+    applySessionCookies(response, {
+      accessToken: pendingSignIn.accessToken,
+      refreshToken: pendingSignIn.refreshToken,
+    });
     clearPendingSignInCookie(response);
     setDeviceIdCookie(response, requestContext.deviceId);
     return response;
@@ -67,7 +83,10 @@ export async function handleSignUpCompletePost(request) {
     const username = normalizeValue(body?.username);
 
     if (!email || !password || !username) {
-      return NextResponse.json({ error: 'email, password, and username are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'email, password, and username are required' },
+        { status: 400 },
+      );
     }
 
     const admin = createAdminClient();
@@ -78,7 +97,10 @@ export async function handleSignUpCompletePost(request) {
     });
 
     if (createRes.error || !createRes.data?.user?.id) {
-      return NextResponse.json({ error: createRes.error?.message || 'Failed to create user' }, { status: 400 });
+      return NextResponse.json(
+        { error: createRes.error?.message || 'Failed to create user' },
+        { status: 400 },
+      );
     }
 
     const userId = createRes.data.user.id;
@@ -106,7 +128,9 @@ export async function handlePasswordResetCompletePost(request) {
 
     const verified = verifyPasswordResetProofToken(token);
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(verified.userId, { password: newPassword });
+    const updateRes = await admin.auth.admin.updateUserById(verified.userId, {
+      password: newPassword,
+    });
 
     if (updateRes.error) throw updateRes.error;
 
@@ -149,7 +173,41 @@ export async function handleVerificationPost(request) {
 // ============================================================
 
 export async function handleSessionGet(request) {
-  return NextResponse.json({ ok: true });
+  try {
+    const sessionContext = await readSessionFromRequest(request, {
+      skipSupabaseFallbackIfNoHint: false,
+      skipSupabaseFallback: false,
+    });
+
+    if (sessionContext?.userId) {
+      return NextResponse.json({
+        status: 'authenticated',
+        expiresAt: sessionContext.decodedToken?.exp ? sessionContext.decodedToken.exp * 1000 : null,
+        user: {
+          id: sessionContext.userId,
+          email: sessionContext.email || null,
+          metadata:
+            sessionContext.decodedToken?.user_metadata || sessionContext.user?.user_metadata || {},
+          app_metadata:
+            sessionContext.decodedToken?.app_metadata || sessionContext.user?.app_metadata || {},
+        },
+        capabilities: {
+          providerIds: sessionContext.decodedToken?.amr || [],
+          primaryProvider: sessionContext.decodedToken?.app_metadata?.provider || 'email',
+        },
+      });
+    }
+
+    return NextResponse.json({
+      status: 'anonymous',
+      user: null,
+    });
+  } catch {
+    return NextResponse.json({
+      status: 'anonymous',
+      user: null,
+    });
+  }
 }
 
 export async function handleAuditPost(request) {

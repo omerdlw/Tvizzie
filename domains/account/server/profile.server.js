@@ -204,7 +204,7 @@ export const getAccountProfile = cache(
     const admin = createAdminClient();
     const profileResult = await admin
       .from('profiles')
-      .select(ACCOUNT_PROFILE_SELECT)
+      .select('*')
       .eq('id', normalizedUserId)
       .maybeSingle();
 
@@ -254,14 +254,15 @@ export const getAccountProfile = cache(
 );
 
 export async function getAccountSnapshotByUserId(userId, options = {}) {
+  const normalizedUserId = normalizeValue(userId);
+  if (!normalizedUserId) {
+    return { profile: null, resolvedUserId: null, resolveError: 'Account not found' };
+  }
   try {
-    const profile = await getAccountProfile(userId, options);
-    if (!profile) {
-      return { profile: null, resolvedUserId: null, resolveError: 'Account not found' };
-    }
-    return { profile, resolvedUserId: normalizeValue(userId), resolveError: null };
+    const profile = await getAccountProfile(normalizedUserId, options);
+    return { profile: profile || null, resolvedUserId: normalizedUserId, resolveError: null };
   } catch {
-    return { profile: null, resolvedUserId: null, resolveError: null };
+    return { profile: null, resolvedUserId: normalizedUserId, resolveError: null };
   }
 }
 
@@ -294,7 +295,7 @@ export async function getEditableAccountSnapshotByUserId(userId) {
     });
 
     if (!profile) {
-      return { counts: EMPTY_EDITABLE_ACCOUNT_COUNTS, profile: null, resolvedUserId: null, resolveError: 'Account not found' };
+      return { counts: EMPTY_EDITABLE_ACCOUNT_COUNTS, profile: null, resolvedUserId: normalizedUserId, resolveError: null };
     }
 
     return {
@@ -418,10 +419,12 @@ export const getAccountIdByUsername = cache(async (username) => {
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
       body: { resource: 'resolve', username: normalizedUsername },
     });
-    return payload?.userId || null;
-  } catch {
-    return resolveAccountIdByUsernameLegacy(normalizedUsername);
-  }
+    if (payload?.userId) {
+      return payload.userId;
+    }
+  } catch {}
+
+  return resolveAccountIdByUsernameLegacy(normalizedUsername);
 });
 
 async function loadAccountProfileFallback(userId, viewerId = null) {
@@ -438,10 +441,12 @@ export async function getAccountProfileByUserId(userId, { viewerId = null } = {}
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
       body: { resource: 'profile', userId: normalizedUserId, viewerId: normalizeValue(viewerId) || null },
     });
-    return payload?.profile || null;
-  } catch {
-    return loadAccountProfileFallback(normalizedUserId, viewerId);
-  }
+    if (payload?.profile) {
+      return payload.profile;
+    }
+  } catch {}
+
+  return loadAccountProfileFallback(normalizedUserId, viewerId);
 }
 
 export async function getAccountProfileByUsername(username, { viewerId = null } = {}) {
@@ -452,10 +457,12 @@ export async function getAccountProfileByUsername(username, { viewerId = null } 
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
       body: { resource: 'profile', username: normalizedUsername, viewerId: normalizeValue(viewerId) || null },
     });
-    return payload?.profile || null;
-  } catch {
-    const accountId = await getAccountIdByUsername(normalizedUsername);
-    if (!accountId) return null;
-    return loadAccountProfileFallback(accountId, viewerId);
-  }
+    if (payload?.profile) {
+      return payload.profile;
+    }
+  } catch {}
+
+  const accountId = await getAccountIdByUsername(normalizedUsername);
+  if (!accountId) return null;
+  return loadAccountProfileFallback(accountId, viewerId);
 }

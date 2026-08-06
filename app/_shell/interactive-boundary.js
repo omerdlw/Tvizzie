@@ -24,9 +24,11 @@ import { NotificationBadgeListener, NotificationListener } from '@/modules/notif
 import { useRegistry } from '@/modules/registry';
 import { SettingsProvider } from '@/modules/settings';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
+import { createClient as createSupabaseClient } from '@/infrastructure/supabase/supabase-client';
 
 const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({
+    client: () => createSupabaseClient(),
     oauthDefaultNextPath: '/account',
   }),
   hydrateFromStorage: true,

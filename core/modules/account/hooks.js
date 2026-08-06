@@ -74,7 +74,11 @@ export function useResolvedAccountUser({
     };
   }, [accountClient, username]);
 
-  const resolvedUserId = username ? remoteUserId : authUserId || initialResolvedUserId || null;
+  // For username-based pages, fall back to the server-resolved ID while the
+  // client-side resolution is still in-flight so we never get an empty shell.
+  const resolvedUserId = username
+    ? remoteUserId || initialResolvedUserId || null
+    : authUserId || initialResolvedUserId || null;
 
   return {
     isResolvingProfile,
@@ -88,7 +92,8 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
   const [profile, setProfile] = useState(initialProfile);
   const [hasLoadedProfile, setHasLoadedProfile] = useState(Boolean(initialProfile?.id));
 
-  // Fix: Stabilize initial profile check using ID to avoid infinite re-subscriptions
+  // Use the primitive ID (string) as dependency — not the object — to avoid
+  // triggering the effect on every render due to new object references.
   const initialProfileId = initialProfile?.id;
 
   useEffect(() => {
@@ -106,16 +111,14 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
       setProfile((currentProfile) =>
         currentProfile?.id === resolvedUserId ? currentProfile : initialProfile,
       );
-    } else {
-      setProfile((currentProfile) =>
-        currentProfile?.id === resolvedUserId ? currentProfile : null,
-      );
     }
 
     return accountClient.subscribeToAccount(
       resolvedUserId,
       (nextProfile) => {
-        setProfile(nextProfile);
+        if (nextProfile) {
+          setProfile(nextProfile);
+        }
         setHasLoadedProfile(true);
       },
       {

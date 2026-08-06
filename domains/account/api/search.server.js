@@ -11,7 +11,7 @@ export async function searchAccountsServer({ searchTerm, limitCount = 10 }) {
     const maxLimit = Math.min(50, Math.max(1, Number(limitCount) || 10));
     const admin = createAdminClient();
     const { data, error } = await admin
-      .from('accounts')
+      .from('profiles')
       .select('id, username, display_name, avatar_url, is_private')
       .or(`username_lower.ilike.%${term.toLowerCase()}%,display_name_lower.ilike.%${term.toLowerCase()}%`)
       .limit(maxLimit);

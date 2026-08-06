@@ -7,7 +7,11 @@ import {
   listSupabaseAuthStorageKeys,
   normalizeStorageValue,
 } from './auth-storage';
-import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-constants';
+import {
+  assertSupabaseBrowserEnv,
+  SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_URL,
+} from './supabase-constants';
 
 if (typeof window !== 'undefined') {
   const originalWarn = console.warn;
@@ -36,9 +40,7 @@ function expireBrowserCookie(name) {
 function removeStorageKey(storage, key) {
   try {
     storage?.removeItem?.(key);
-  } catch {
-    
-  }
+  } catch {}
 }
 
 function purgeMatchingStorageEntries(storage, matcher) {
@@ -54,9 +56,7 @@ function purgeMatchingStorageEntries(storage, matcher) {
     }
 
     keys.forEach((key) => storage.removeItem(key));
-  } catch {
-    
-  }
+  } catch {}
 }
 
 function isIgnorableSignOutError(error) {
@@ -81,6 +81,9 @@ export function createClient() {
   assertSupabaseBrowserEnv();
 
   if (clientInstance) {
+    if (typeof window !== 'undefined' && !window.__SUPABASE_CLIENT__) {
+      window.__SUPABASE_CLIENT__ = clientInstance;
+    }
     return clientInstance;
   }
 
@@ -90,6 +93,11 @@ export function createClient() {
       multiTab: false,
     },
   });
+
+  if (typeof window !== 'undefined') {
+    window.__SUPABASE_CLIENT__ = clientInstance;
+  }
+
   return clientInstance;
 }
 
@@ -134,9 +142,7 @@ export async function clearBrowserSupabaseAuthState({ clearServer = true } = {})
         credentials: 'include',
         keepalive: true,
       });
-    } catch {
-      
-    }
+    } catch {}
   }
 
   clientInstance = null;

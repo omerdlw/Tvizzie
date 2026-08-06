@@ -124,6 +124,10 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
 
   const loadReviews = useCallback(
     async ({ append = false } = {}) => {
+      if (!isViewerReady || !resolvedUserId) {
+        return;
+      }
+
       if (shouldBlockFeedLoad) {
         resetFeed();
         setIsLoadingMore(false);

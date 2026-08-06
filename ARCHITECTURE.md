@@ -1,36 +1,54 @@
 # Tvizzie Application Architecture
 
-This repository is organized around product domains while preserving `modules/` as a dedicated shared foundation.
+This repository is organized around product domains while preserving `core/` as a dedicated shared foundation.
 
 ## Top-level responsibilities
 
 - `app/` contains only Next.js route adapters, layouts, framework special files, and application bootstrap. Product screens and API workflows do not live here.
-- `modules/` is the shared foundation for cross-project runtime capabilities. It is a root-level dependency boundary, not an application domain. Its internal APIs may evolve, but application code must consume them through stable module entrypoints.
+- `core/` is the shared foundation for cross-project runtime capabilities, reusable visual elements, and common utilities:
+  - `core/modules/` provides headless state engines, protocols, and adapters (Auth, Nav, Modal, Registry, etc.). Its internal APIs may evolve, but application code must consume them through stable module entrypoints.
+  - `core/ui/` contains universal controls, visual/primitive components (Button, Icon, Checkbox, etc.), and motion animations.
+  - `core/shared/` contains domain-neutral utils, custom hooks, and pure helper libraries.
 - `domains/` contains product capabilities. Movies, TV, and people are one `media` domain.
 - `infrastructure/` contains Supabase, TMDB, HTTP, realtime, jobs, and runtime integrations.
-- `shared/` contains domain-neutral constants, hooks, and pure libraries.
-- `ui/primitives/` contains universal controls, image/visual primitives, and interaction primitives only.
-- `ui/layout/` contains domain-neutral layout helpers such as page shells and navigation spacers.
-- `ui/feedback/` contains cross-domain loading, empty, error, and confirmation feedback.
 - `assets/` contains build-time assets such as fonts.
 - `public/` contains directly served static assets.
-- `scripts/` contains development and architecture checks.
 
 ## Dependency direction
 
 ```text
 app -> domains -> infrastructure -> shared
-             \-> modules
-ui -> shared
-shared -> no app, domains, or infrastructure
+             \-> core/modules
+core/ui -> core/shared
+core/shared -> no app, domains, or infrastructure
 ```
 
 Domain-specific UI stays inside its domain. For example, review cards live in
 `domains/reviews/components`, media cards and media overlays live in
 `domains/media/ui`, and account overlays live in `domains/account/ui`. A file is
-not promoted to `ui/` merely because it renders JSX. Domain screen modules live
+not promoted to `core/ui/` merely because it renders JSX. Domain screen modules live
 directly under the domain's `ui/` boundary; a parallel `screens/` directory is
 not allowed.
+
+### Domain Layers (api/ vs server/ vs services/)
+
+To maintain a clean separation of concerns and maintain a scalable structure, code inside a domain is organized across three potential layers. A domain is not required to implement all layers; it should only contain folders for the concerns it actually has:
+
+1. **`api/` (Client Interface / Server Actions)**:
+   - Serves as the public interface exposed to the client.
+   - All files in this directory are Next.js **Server Actions** beginning with the `"use server"` directive.
+   - They handle input validation, parameter sanitization, session checking, and error mapping before delegating to the `server/` layer.
+   - *Naming Convention:* When a Server Action file coordinates a concern that has a matching backend server module (e.g., `profile`), they share the same base name: `api/profile.server.js` (Server Action entry point) and `server/profile.server.js` (backend resolver).
+
+2. **`server/` (Backend Logic & Data Access)**:
+   - Contains database queries, transactions, Supabase interactions, mutation logic, access control policies, and server-side events.
+   - Files in this directory must remain strictly server-only and should never expose `"use server"` actions directly to the client.
+
+3. **`services/` (Business Rules, Mappings & Third-Party Integration)**:
+   - Contains data conversion, transformation, model adaptation, and business rules.
+   - Responsible for wrapping external APIs (such as TMDB queries).
+   - If a domain does not interact with external systems or perform complex data mapping, the `services/` directory should be omitted.
+
 
 The account domain uses explicit ownership boundaries rather than generic
 folders. Its UI route composition lives in named `account-*-factory/state`
@@ -53,7 +71,7 @@ decorations. Add them at the smallest route group that benefits from streaming
 or error isolation. Do not duplicate them for every leaf route when one group
 boundary covers the same behavior.
 
-The foundation may depend on application-owned contracts only through explicit, reviewed adapters. There are no `@/core/*` compatibility aliases; foundation imports use `@/modules/*` and application code must not recreate a second `core` namespace.
+The foundation may depend on application-owned contracts only through explicit, reviewed adapters. Foundation imports use `@/modules/*`, `@/ui/*`, and `@/shared/*` which are mapped cleanly to the `core/` namespace.
 
 ## Naming and consolidation
 
@@ -64,6 +82,7 @@ as `service.js`, `shared.js`, `context.js`, or `read.server.js` are not. Dots ar
 reserved for runtime qualifiers (`.server.js` and `.client.js`); concept words
 and behavior qualifiers use dashes. `index.js` is allowed only as a deliberate
 public barrel entrypoint. Files are consolidated when they do not represent an
-independent responsibility.
+`core` namespace.
 
 Run `npm run check:architecture` to verify the high-level boundaries before linting and building.
+

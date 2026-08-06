@@ -13,8 +13,30 @@ import { usePathname } from 'next/navigation';
 
 import { useSurfaceStack } from './hooks/use-surface-stack';
 
-const NavigationActionsContext = createContext(undefined);
-const NavigationStateContext = createContext(undefined);
+const NOOP = () => {};
+const DEFAULT_NAVIGATION_ACTIONS = Object.freeze({
+  closeSurface: NOOP,
+  openSurface: NOOP,
+  setCompactLock: NOOP,
+  setSearchQuery: NOOP,
+  setNavHeight: NOOP,
+  setExpanded: NOOP,
+  collapse: NOOP,
+  expand: NOOP,
+  toggle: NOOP,
+  setIsCompact: NOOP,
+});
+
+const DEFAULT_NAVIGATION_STATE = Object.freeze({
+  searchQuery: '',
+  compactLocked: false,
+  navHeight: 0,
+  expanded: false,
+  isCompact: false,
+  surfaceState: null,
+});
+const NavigationActionsContext = createContext(null);
+const NavigationStateContext = createContext(null);
 
 export function NavigationProvider({ children }) {
   const pathname = usePathname();
@@ -118,18 +140,12 @@ export function NavigationProvider({ children }) {
 
 export function useNavigationState() {
   const context = useContext(NavigationStateContext);
-  if (context === undefined) {
-    throw new Error('useNavigationState must be used within a NavigationProvider');
-  }
-  return context;
+  return context ?? DEFAULT_NAVIGATION_STATE;
 }
 
 export function useNavigationActions() {
   const context = useContext(NavigationActionsContext);
-  if (context === undefined) {
-    throw new Error('useNavigationActions must be used within a NavigationProvider');
-  }
-  return context;
+  return context ?? DEFAULT_NAVIGATION_ACTIONS;
 }
 
 export function useNavigationContext() {

@@ -88,6 +88,7 @@ export default function AccountWatchedFeed({
       }),
     [viewState.media, watchedItems],
   );
+  const genreOptions = useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems]);
 
   if (!canShowWatchedGrid) return <AccountSectionState message="This profile is private." />;
   if (loadError) return <AccountSectionState message={loadError} />;
@@ -116,7 +117,7 @@ export default function AccountWatchedFeed({
           <AccountMediaFilterBar
             filters={viewState.media}
             decadeOptions={getDecadeOptions()}
-            genreOptions={useMemo(() => collectMediaGenreOptions(watchedItems), [watchedItems])}
+            genreOptions={genreOptions}
             visibilityOptions={VISIBILITY_OPTIONS}
             onChange={(media) => updateView({ media: { ...viewState.media, ...media }, page: 1 })}
             onReset={

@@ -360,7 +360,11 @@ export function useAccountCollections({
       return undefined;
     }
 
-    if (isOwner && (!authIsReady || !authIsAuthenticated)) {
+    if (!authIsReady) {
+      return undefined;
+    }
+
+    if (isOwner && !authIsAuthenticated) {
       if (seededState.hasSeededCollectionSnapshot) {
         setLikes(seededState.items.likes);
         setWatched(seededState.items.watched);
@@ -442,6 +446,15 @@ export function useAccountCollections({
         },
         { onError: (error) => notifyAccountLoadError(toast, error, 'Lists'), limitCount: normalizedPreviewLimits.lists, seededItems: shouldUseSeeded.lists ? seededState.items.lists : null },
       );
+    }
+
+    // If no collection subscription is active (e.g. activeTab is 'reviews' or
+    // 'activity'), nothing will ever call setIsLoadingCollections(false) —
+    // causing isPageLoading to be stuck true. Resolve it immediately.
+    const hasAnySubscription =
+      shouldSubscribeLikes || shouldSubscribeWatched || shouldSubscribeWatchlist || shouldSubscribeLists;
+    if (!hasAnySubscription) {
+      setIsLoadingCollections(false);
     }
 
     return () => {

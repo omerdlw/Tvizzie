@@ -1,7 +1,5 @@
 import { TMDB_API_URL } from '@/shared/constants';
 
-const TMDB_PUBLIC_READ_TOKEN = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN || '';
-
 export const TMDB_SEARCH_REQUEST_TIMEOUT_MS = Object.freeze({
   full: 12000,
   preview: 7000,
@@ -79,7 +77,8 @@ export function createApiUrl(pathname, params = {}) {
 }
 
 export async function requestTmdbMovieImages(id) {
-  if (!TMDB_PUBLIC_READ_TOKEN) {
+  const readToken = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN || '';
+  if (!readToken) {
     return null;
   }
 
@@ -87,7 +86,7 @@ export async function requestTmdbMovieImages(id) {
 
   return requestJson(`${normalizedBaseUrl}/movie/${id}/images?include_image_language=en,null`, {
     headers: {
-      Authorization: `Bearer ${TMDB_PUBLIC_READ_TOKEN}`,
+      Authorization: `Bearer ${readToken}`,
     },
   });
 }

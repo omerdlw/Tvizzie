@@ -35,20 +35,38 @@ import { createAccountSectionRegistry } from '@/domains/account/ui/sections/acco
 export default function Client({ routeData = null }) {
   const {
     initialList = null,
-    initialListItems = [],
-    initialListReviews = [],
+    initialListFeed = null,
+    initialListItems: rawInitialListItems = null,
+    initialListReviews: rawInitialListReviews = null,
     slug,
   } = routeData || {};
+
+  const initialListItems = useMemo(
+    () =>
+      Array.isArray(rawInitialListItems)
+        ? rawInitialListItems
+        : Array.isArray(initialListFeed?.items)
+          ? initialListFeed.items
+          : [],
+    [rawInitialListItems, initialListFeed],
+  );
+
+  const initialListReviews = useMemo(
+    () =>
+      Array.isArray(rawInitialListReviews)
+        ? rawInitialListReviews
+        : Array.isArray(initialListFeed?.reviews)
+          ? initialListFeed.reviews
+          : [],
+    [rawInitialListReviews, initialListFeed],
+  );
+
   const auth = useAuth();
   const { openModal } = useModal();
   const toast = useToast();
   const [list, setList] = useState(initialList);
-  const [listItems, setListItems] = useState(
-    Array.isArray(initialListItems) ? initialListItems : [],
-  );
-  const [reviews, setReviews] = useState(
-    Array.isArray(initialListReviews) ? initialListReviews : [],
-  );
+  const [listItems, setListItems] = useState(initialListItems);
+  const [reviews, setReviews] = useState(initialListReviews);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [listItemRemoveConfirmation, setListItemRemoveConfirmation] = useState(null);
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
@@ -83,21 +101,29 @@ export default function Client({ routeData = null }) {
     watched,
     watchlist,
   } = sectionState;
-  const hasSeededList = Boolean(initialList?.id) && initialList.slug === slug;
+  const hasSeededList = Boolean(initialList?.id);
   const hasSeededListItems = hasSeededList && Array.isArray(initialListItems);
   const hasSeededListReviews = hasSeededList && Array.isArray(initialListReviews);
 
-  useEffect(() => {
-    setList(hasSeededList ? initialList : null);
-  }, [hasSeededList, initialList]);
+  const listId = initialList?.id || null;
 
   useEffect(() => {
-    setListItems(hasSeededListItems ? initialListItems : []);
-  }, [hasSeededListItems, initialListItems]);
+    if (hasSeededList && initialList) {
+      setList(initialList);
+    }
+  }, [hasSeededList, slug, listId]);
 
   useEffect(() => {
-    setReviews(hasSeededListReviews ? initialListReviews : []);
-  }, [hasSeededListReviews, initialListReviews]);
+    if (hasSeededListItems) {
+      setListItems(initialListItems);
+    }
+  }, [hasSeededListItems, slug, listId]);
+
+  useEffect(() => {
+    if (hasSeededListReviews) {
+      setReviews(initialListReviews);
+    }
+  }, [hasSeededListReviews, slug, listId]);
 
   useEffect(() => {
     if (!resolvedUserId || !hasSeededList) {
@@ -114,10 +140,10 @@ export default function Client({ routeData = null }) {
       initialList,
       { emit: false },
     );
-  }, [hasSeededList, initialList, resolvedUserId, slug]);
+  }, [hasSeededList, resolvedUserId, slug]);
 
   useEffect(() => {
-    if (!resolvedUserId || !initialList?.id || !hasSeededListItems) {
+    if (!resolvedUserId || !listId || !hasSeededListItems) {
       return;
     }
 
@@ -125,31 +151,34 @@ export default function Client({ routeData = null }) {
       buildPollingSubscriptionKey('lists:items', {
         hiddenIntervalMs: null,
         intervalMs: null,
-        listId: initialList.id,
+        listId,
         userId: resolvedUserId,
       }),
       initialListItems,
       { emit: false },
     );
-  }, [hasSeededListItems, initialList?.id, initialListItems, resolvedUserId]);
+  }, [hasSeededListItems, listId, resolvedUserId]);
 
   useEffect(() => {
-    if (!resolvedUserId || !initialList?.id || !hasSeededListReviews) {
+    if (!resolvedUserId || !listId || !hasSeededListReviews) {
       return;
     }
 
     primePollingSubscription(
       buildPollingSubscriptionKey('reviews:list', {
-        listId: initialList.id,
+        listId,
         ownerId: resolvedUserId,
       }),
       initialListReviews,
       { emit: false },
     );
-  }, [hasSeededListReviews, initialList?.id, initialListReviews, resolvedUserId]);
+  }, [hasSeededListReviews, listId, resolvedUserId]);
 
   useEffect(() => {
-    if (!resolvedUserId || !canViewProfileCollections) {
+    if (!resolvedUserId) {
+      return undefined;
+    }
+    if (!canViewProfileCollections) {
       setList(null);
       return undefined;
     }
@@ -158,7 +187,7 @@ export default function Client({ routeData = null }) {
       resolvedUserId,
       slug,
       (nextList) => {
-        setList(nextList);
+        if (nextList) setList(nextList);
       },
       {
         fetchOnSubscribe: !hasSeededList,
@@ -172,7 +201,10 @@ export default function Client({ routeData = null }) {
   }, [canViewProfileCollections, hasSeededList, resolvedUserId, slug]);
 
   useEffect(() => {
-    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+    if (!resolvedUserId || !list?.id) {
+      return undefined;
+    }
+    if (!canViewProfileCollections) {
       setListItems([]);
       return undefined;
     }
@@ -195,7 +227,10 @@ export default function Client({ routeData = null }) {
   }, [canViewProfileCollections, hasSeededListItems, list?.id, resolvedUserId]);
 
   useEffect(() => {
-    if (!resolvedUserId || !list?.id || !canViewProfileCollections) {
+    if (!resolvedUserId || !list?.id) {
+      return undefined;
+    }
+    if (!canViewProfileCollections) {
       setReviews([]);
       return undefined;
     }

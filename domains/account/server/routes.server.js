@@ -124,13 +124,14 @@ export function createSnapshotInitialCollections(snapshot = null, collections = 
 }
 
 export function createCurrentOverviewFallback(snapshot = null) {
+  const resolvedUserId = resolveSnapshotUserId(snapshot);
   return {
     initialActivityFeed: null,
     initialCollections: null,
     initialCounts: null,
     initialProfile: null,
-    initialResolveError: snapshot?.resolveError || 'Account not found',
-    initialResolvedUserId: null,
+    initialResolveError: snapshot?.resolveError || null,
+    initialResolvedUserId: resolvedUserId,
     initialReviewFeed: null,
     username: null,
   };
@@ -386,6 +387,8 @@ export async function getUsernameAccountListDetailRouteData(username, slug) {
   return createRouteState(snapshot, {
     initialList: list,
     initialListFeed: createInitialListFeed(listItems, snapshot.initialResolvedUserId, { reviews: listReviews }),
+    initialListItems: listItems,
+    initialListReviews: listReviews,
     username,
   });
 }

@@ -213,16 +213,31 @@ export async function handleAccountMediaPost(request) {
 // Media Collection Client Request Helpers
 // ============================================================
 
-export async function fetchCollectionResource({
-  entityId = null,
-  entityType = null,
-  limitCount = null,
-  listId = null,
-  media = null,
-  resource,
-  slug = null,
-  userId = null,
-} = {}) {
+export async function fetchCollectionResource(arg1, arg2, arg3, arg4) {
+  let params = {};
+
+  if (typeof arg1 === 'string') {
+    params = {
+      resource: arg1,
+      userId: arg2,
+      ...(arg3 && typeof arg3 === 'object' ? arg3 : {}),
+      ...(arg4 && typeof arg4 === 'object' ? arg4 : {}),
+    };
+  } else if (arg1 && typeof arg1 === 'object') {
+    params = arg1;
+  }
+
+  const {
+    entityId = null,
+    entityType = null,
+    limitCount = null,
+    listId = null,
+    media = null,
+    resource,
+    slug = null,
+    userId = null,
+  } = params;
+
   const { requestApiJson } = await import('@/infrastructure/http/api-request-service');
   const resolvedMedia = media || (entityType && entityId ? { entityId, entityType } : null);
   const payload = await requestApiJson('/api/collections', {

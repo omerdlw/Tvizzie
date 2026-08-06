@@ -4,16 +4,15 @@ import { TMDB_API_URL } from '@/shared/constants';
 
 import { TMDB_FETCH_TIMEOUT_MS, TMDB_HEADERS } from './tmdb-client-config';
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
-
 function resolveTmdbHeaders() {
-  if (!TMDB_API_KEY) {
+  const apiKey = process.env.TMDB_API_KEY || '';
+  if (!apiKey) {
     throw new Error('TMDB_API_KEY is missing. Configure TMDB_API_KEY on the server.');
   }
 
   return {
     ...TMDB_HEADERS,
-    Authorization: `Bearer ${TMDB_API_KEY}`,
+    Authorization: `Bearer ${apiKey}`,
   };
 }
 
