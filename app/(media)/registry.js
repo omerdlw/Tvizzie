@@ -169,7 +169,7 @@ export default function Registry({
                   overlayOpacity: 0.4,
                   overlayColor: 'var(--white)',
                   noiseStyle: {
-                    opacity: 0.13,
+                    opacity: 0.2,
                   },
                   animation: MEDIA_BACKGROUND_ANIMATION,
                 }

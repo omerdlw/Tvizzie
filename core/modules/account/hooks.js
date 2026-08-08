@@ -96,6 +96,11 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
   // triggering the effect on every render due to new object references.
   const initialProfileId = initialProfile?.id;
 
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  });
+
   useEffect(() => {
     if (!resolvedUserId) {
       setProfile(null);
@@ -106,7 +111,7 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
     const hasInitialProfile = initialProfileId === resolvedUserId;
     setHasLoadedProfile(hasInitialProfile);
 
-    if (hasInitialProfile) {
+    if (hasInitialProfile && initialProfile) {
       accountClient.primeAccount(resolvedUserId, initialProfile);
       setProfile((currentProfile) =>
         currentProfile?.id === resolvedUserId ? currentProfile : initialProfile,
@@ -127,13 +132,13 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
         intervalMs: ACCOUNT_PROFILE_SUBSCRIPTION_INTERVAL_MS,
         onError: (error) => {
           setHasLoadedProfile(true);
-          if (typeof onError === 'function') {
-            onError(error);
+          if (typeof onErrorRef.current === 'function') {
+            onErrorRef.current(error);
           }
         },
       },
     );
-  }, [accountClient, initialProfile, initialProfileId, onError, resolvedUserId]);
+  }, [accountClient, initialProfileId, resolvedUserId]);
 
   return { hasLoadedProfile, profile, setProfile };
 }

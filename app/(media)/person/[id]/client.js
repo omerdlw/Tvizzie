@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getPreferredMovieBackground } from '@/domains/media/services/media-data';
 import {
   clearPersonPosterPreference,
@@ -24,9 +24,13 @@ import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { Spinner } from '@/ui/feedback/spinner';
 import Registry from '@/app/(media)/registry';
+import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import {
-  personTitleVariants,
+  PERSON_TEXT,
+  getDeferredChapterDelay,
+  getMotionTimestamp,
   personBioVariants,
+  personPortraitVariants,
   getSectionHeaderProps,
 } from '@/app/(media)/motion';
 
@@ -154,17 +158,23 @@ export default function Client({ person, secondaryDataPromise }) {
   );
 }
 
-function PersonMainContent({ person }) {
+function PersonMainContent({ person, choreographyStartedAt }) {
   return (
     <>
       {person?.images?.profiles?.length > 0 ? (
         <div className="mt-8 sm:mt-12">
-          <PersonGallery images={person.images} />
+          <PersonGallery
+            images={person.images}
+            baseDelay={getDeferredChapterDelay('gallery', choreographyStartedAt)}
+          />
         </div>
       ) : null}
 
       <div className="mt-8 sm:mt-12">
-        <PersonFilmographySection person={person} />
+        <PersonFilmographySection
+          person={person}
+          baseDelay={getDeferredChapterDelay('filmography', choreographyStartedAt)}
+        />
       </div>
     </>
   );
@@ -174,6 +184,7 @@ function PersonDeferredContent({
   person,
   secondaryDataPromise,
   activeView,
+  choreographyStartedAt,
 }) {
   const secondaryPerson = use(secondaryDataPromise);
   const mergedPerson = {
@@ -184,13 +195,17 @@ function PersonDeferredContent({
     return (
       <motion.div
         className="mt-8 sm:mt-12"
-        {...getSectionHeaderProps(0.15)}
+        {...getSectionHeaderProps(
+          getDeferredChapterDelay('generic', choreographyStartedAt),
+          false,
+          'generic',
+        )}
       >
         <PersonTimeline person={mergedPerson} />
       </motion.div>
     );
   }
-  return <PersonMainContent person={mergedPerson} />;
+  return <PersonMainContent person={mergedPerson} choreographyStartedAt={choreographyStartedAt} />;
 }
 
 function PersonView({
@@ -204,9 +219,10 @@ function PersonView({
   onResetPersonPoster,
   canResetPersonPoster,
 }) {
+  const choreographyStartedAtRef = useRef(getMotionTimestamp());
   if (!person) return null;
   const deferredFallback = (
-    <div className="flex justify-center py-12 mt-8 sm:mt-12">
+    <div className="mt-8 flex justify-center py-12 sm:mt-12">
       <Spinner size={32} />
     </div>
   );
@@ -230,20 +246,36 @@ function PersonView({
         >
           <div className="mt-16 flex w-full flex-col items-center gap-6 sm:mt-24 sm:gap-8 lg:mt-36">
             {activeView !== 'timeline' && activeView !== 'awards' && (
-              <BlurryText
-                as="h1"
-                by="character"
-                delay={0.10}
-                duration={0.75}
-                stagger={0.038}
-                className="font-zuume mx-auto max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl text-center"
-              >
-                {person.name}
-              </BlurryText>
+              <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
+                {person?.profile_path ? (
+                  <motion.div
+                    className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+                    {...personPortraitVariants}
+                  >
+                    <AdaptiveImage
+                      mode="img"
+                      className="h-full w-full rounded-2xl object-cover"
+                      src={`${TMDB_IMG}/w342${person.profile_path}`}
+                      alt={person.name}
+                      decoding="async"
+                      wrapperClassName="h-full w-full rounded-2xl"
+                    />
+                  </motion.div>
+                ) : null}
+
+                <BlurryText
+                  as="h1"
+                  by="character"
+                  {...PERSON_TEXT.TITLE}
+                  className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
+                >
+                  {person.name}
+                </BlurryText>
+              </div>
             )}
 
             {activeView !== 'timeline' && activeView !== 'awards' && person?.biography ? (
-              <motion.div {...personBioVariants} className="mx-auto max-w-[72ch] w-full">
+              <motion.div {...personBioVariants} className="mx-auto w-full max-w-[72ch]">
                 <PersonBio biography={person.biography} person={person} />
               </motion.div>
             ) : null}
@@ -252,7 +284,11 @@ function PersonView({
               {activeView === 'awards' ? (
                 <motion.div
                   className="mt-8 sm:mt-12"
-                  {...getSectionHeaderProps(0.15)}
+                  {...getSectionHeaderProps(
+                    getDeferredChapterDelay('generic', choreographyStartedAtRef.current),
+                    false,
+                    'generic',
+                  )}
                 >
                   <PersonAwards personId={person.id} />
                 </motion.div>
@@ -262,6 +298,7 @@ function PersonView({
                     person={person}
                     secondaryDataPromise={secondaryDataPromise}
                     activeView={activeView}
+                    choreographyStartedAt={choreographyStartedAtRef.current}
                   />
                 </Suspense>
               )}

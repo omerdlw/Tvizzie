@@ -3,7 +3,12 @@
 import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { ensurePasswordAccountRecord } from '@/domains/auth/server/account.server.js';
-import { getAccountIdByUsername, getAccountProfileByUserId } from '../server/profile.server';
+import {
+  getAccountIdByUsername,
+  getAccountProfileByUserId,
+  getAccountSnapshotByUserId,
+  invalidateCachedAccountProfiles,
+} from '../server/profile.server';
 import { getViewerSessionContext } from '../server/routes.server';
 import { sanitizeUsername, validateUsername } from '../utils';
 
@@ -51,7 +56,30 @@ export async function updateAccountProfileServer({ userId, displayName, username
         rawUsername = sanitizeUsername(base) || `user_${normalizedUserId.slice(0, 8)}`;
         if (rawUsername.length < 3) rawUsername = `user_${rawUsername}`;
       }
-      const targetUsername = validateUsername(rawUsername);
+
+      let targetUsername = validateUsername(rawUsername);
+      let isUnique = false;
+      let suffix = 0;
+      let candidateUsername = targetUsername;
+
+      while (!isUnique) {
+        const checkResult = await admin
+          .from('usernames')
+          .select('user_id')
+          .eq('username_lower', candidateUsername.toLowerCase())
+          .maybeSingle();
+
+        if (!checkResult.data?.user_id) {
+          isUnique = true;
+          targetUsername = candidateUsername;
+        } else {
+          suffix += 1;
+          const suffixStr = `_${suffix}`;
+          const baseLength = 24 - suffixStr.length;
+          candidateUsername = validateUsername(targetUsername.slice(0, baseLength) + suffixStr);
+        }
+      }
+
       const targetDisplayName = normalizeValue(displayName) || targetUsername;
       const targetEmail = normalizeValue(email) || `${targetUsername}@tvizzie.local`;
 
@@ -81,7 +109,12 @@ export async function updateAccountProfileServer({ userId, displayName, username
       if (error) throw new Error(error.message || 'Profile update failed');
     }
 
-    const profile = await getAccountProfileByUserId(normalizedUserId);
+    invalidateCachedAccountProfiles(normalizedUserId);
+    const freshSnapshot = await getAccountSnapshotByUserId(normalizedUserId, {
+      includeEmail: true,
+      includePrivateDetails: true,
+    });
+    const profile = freshSnapshot.profile;
     return { success: true, profile };
   } catch (error) {
     return { success: false, error: error.message || 'Account update failed' };

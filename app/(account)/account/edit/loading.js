@@ -1,13 +1,16 @@
 'use client';
 
-import { AccountSkeleton } from '@/app/(account)/account/loading';
 import { AccountEditRegistry as Registry } from '@/app/(account)/registry';
+import { AccountSkeletonLayout } from '@/domains/account/ui/skeletons/account-skeleton-layout';
+import { AccountEditSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
 
 export default function AccountEditLoading() {
   return (
     <>
       <Registry isLoading={true} />
-      <AccountSkeleton />
+      <AccountSkeletonLayout activeTab="overview">
+        <AccountEditSkeleton />
+      </AccountSkeletonLayout>
     </>
   );
 }

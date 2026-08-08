@@ -10,8 +10,8 @@ import { FOLLOW_STATUSES } from '@/domains/social/utils';
 
 export const PENDING_RELATIONSHIP_FALLBACK_REFETCH_MS = 2500;
 export const PENDING_RELATIONSHIP_MAX_POLLS = 60;
-export const FOLLOW_SUBSCRIPTION_INTERVAL_MS = 3000;
-export const FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 9000;
+export const FOLLOW_SUBSCRIPTION_INTERVAL_MS = 20000;
+export const FOLLOW_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 
 export function getFollowersSubscriptionKey(userId, status = FOLLOW_STATUSES.ACCEPTED) {
   return buildPollingSubscriptionKey('follows:followers', {

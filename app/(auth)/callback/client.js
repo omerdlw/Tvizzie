@@ -221,7 +221,7 @@ async function ensureAccountRecord(user = null) {
       null,
     email: user?.email || null,
     id: user.id,
-  }).catch(() => null);
+  });
 }
 
 async function exchangeCodeForSessionWithRetry({ code, supabase }) {
@@ -354,6 +354,23 @@ function OAuthCallbackContent({ initialProvider = null }) {
           isCancelled: () => cancelled,
         });
 
+      const syncCookiesAndServerSession = async (session) => {
+        if (!session?.access_token) return;
+        try {
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token,
+            }),
+          });
+        } catch {}
+        await syncServerSession();
+      };
+
       if (providerError) {
         redirectTo(
           resolveFailureRedirectUrl({
@@ -367,12 +384,32 @@ function OAuthCallbackContent({ initialProvider = null }) {
       }
 
       const supabase = createSupabaseClient();
+
+      const handleCallbackFailure = async () => {
+        try {
+          await supabase.auth.signOut();
+          await fetch('/api/auth/session', { method: 'DELETE' });
+        } catch {}
+        redirectTo(
+          resolveFailureRedirectUrl({
+            intent,
+            nextPath,
+            origin,
+            provider,
+          }),
+        );
+      };
+
       const sessionState = await getBrowserSessionState(supabase);
 
       if (sessionState.userId) {
-        await ensureAccountRecord(sessionState.user);
-        await syncServerSession();
-        redirectTo(nextUrl);
+        try {
+          await ensureAccountRecord(sessionState.user);
+          await syncCookiesAndServerSession(sessionState.session);
+          redirectTo(nextUrl);
+        } catch (err) {
+          await handleCallbackFailure();
+        }
         return;
       }
 
@@ -387,9 +424,13 @@ function OAuthCallbackContent({ initialProvider = null }) {
         exchangeError = exchangeResult.error || null;
 
         if (!exchangeResult.error && exchangeResult.data?.session?.user?.id) {
-          await ensureAccountRecord(exchangeResult.data.session.user);
-          await syncServerSession();
-          redirectTo(nextUrl);
+          try {
+            await ensureAccountRecord(exchangeResult.data.session.user);
+            await syncCookiesAndServerSession(exchangeResult.data.session);
+            redirectTo(nextUrl);
+          } catch (err) {
+            await handleCallbackFailure();
+          }
           return;
         }
       }
@@ -400,9 +441,13 @@ function OAuthCallbackContent({ initialProvider = null }) {
       });
 
       if (browserSessionState.hasSession) {
-        await ensureAccountRecord(browserSessionState.user);
-        await syncServerSession();
-        redirectTo(nextUrl);
+        try {
+          await ensureAccountRecord(browserSessionState.user);
+          await syncCookiesAndServerSession(browserSessionState.session);
+          redirectTo(nextUrl);
+        } catch (err) {
+          await handleCallbackFailure();
+        }
         return;
       }
 
@@ -415,14 +460,7 @@ function OAuthCallbackContent({ initialProvider = null }) {
         }
       }
 
-      redirectTo(
-        resolveFailureRedirectUrl({
-          intent,
-          nextPath,
-          origin,
-          provider,
-        }),
-      );
+      await handleCallbackFailure();
     }
 
     void finalizeOAuthSession();

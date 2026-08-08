@@ -10,7 +10,7 @@ import {
 } from '@/domains/media/utils/poster-overrides';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getCardProps } from '@/app/(account)/motion';
 
@@ -52,6 +52,7 @@ export default function AccountWatchlistOverview({
   emptyMessage = 'Watchlist empty',
   icon = 'solar:bookmark-bold',
   isInitialSection = false,
+  isLoading = false,
   isOwner = false,
   items = [],
   onRemoveItem,
@@ -98,7 +99,9 @@ export default function AccountWatchlistOverview({
       title={title}
       titleHref={titleHref || (username ? `/account/${username}/watchlist` : null)}
     >
-      {cards.length > 0 ? (
+      {isLoading && cards.length === 0 ? (
+        <AccountInlineSectionLoading message="Loading watchlist..." />
+      ) : cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
             const cardProps = getCardProps(index, baseDelay);

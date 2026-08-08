@@ -10,6 +10,7 @@ import {
   getCarouselButtonProps,
   getMediaCardProps,
   getSectionHeaderProps,
+  TIMELINES,
 } from '@/app/(media)/motion';
 
 function normalizeSeasonDetails(seasonDetails = []) {
@@ -76,7 +77,7 @@ function buildSeasonTabs(seasons, detailsBySeason) {
 export default function TvSeasonsSection({
   seasonDetails = [],
   seasons = [],
-  baseDelay = 1.50,
+  baseDelay = TIMELINES.TV_SEASONS_SECTION_BASE_DELAY,
 }) {
   const detailsBySeason = useMemo(() => normalizeSeasonDetails(seasonDetails), [seasonDetails]);
   const seasonTabs = useMemo(
@@ -113,7 +114,7 @@ export default function TvSeasonsSection({
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab)}>
+      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'seasons')}>
         <SegmentedControl
           value={activeSeasonKey}
           className={seasonTabs.length >= 16 ? 'w-full' : 'w-auto self-start'}
@@ -131,7 +132,7 @@ export default function TvSeasonsSection({
             {episodes.map((episode, index) => (
               <motion.div
                 key={episode.id || `${activeSeason.key}-${episode.episode_number || index}`}
-                {...getMediaCardProps(index, baseDelay, hasSwitchedTab)}
+                {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'seasons')}
               >
                 <EpisodeCard episode={episode} index={index} />
               </motion.div>

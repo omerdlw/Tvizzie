@@ -69,6 +69,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     favoriteShowcase,
     handleRequestRemoveLike,
     handleSignInRequest,
+    isLikesLoading,
     isOwner,
     isPrivateProfile,
     isViewerReady,
@@ -471,6 +472,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     handleSegmentChange,
     handleToggleShowcase,
     isLikedListsLoading,
+    isLikesLoading,
     isReviewsLoading,
     isShowcaseSaving,
     likedLists,
@@ -485,8 +487,6 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     watchedItems,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountLikesRegistry',
@@ -535,6 +535,7 @@ const LikesView = createAccountSectionView({
       handleRequestRemoveLike,
       handleToggleShowcase,
       isLikedListsLoading,
+      isLikesLoading,
       isReviewsLoading,
       isShowcaseSaving,
       likedLists,
@@ -557,6 +558,7 @@ const LikesView = createAccountSectionView({
       handleRequestRemoveLike={handleRequestRemoveLike}
       handleToggleShowcase={handleToggleShowcase}
       isLikedListsLoading={isLikedListsLoading}
+      isLikesLoading={isLikesLoading}
       isOwner={sectionState.isOwner}
       isReviewsLoading={isReviewsLoading}
       isShowcaseSaving={isShowcaseSaving}

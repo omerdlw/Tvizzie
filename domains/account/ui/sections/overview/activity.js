@@ -74,7 +74,12 @@ export default function AccountActivityOverview({
       return;
     }
 
-    if (hasInitialFeed) {
+    const hasUsableSeededFeed =
+      hasInitialFeed &&
+      Array.isArray(initialFeed?.items) &&
+      initialFeed.items.length > 0;
+
+    if (hasUsableSeededFeed) {
       setIsFeedLoading(false);
       return;
     }

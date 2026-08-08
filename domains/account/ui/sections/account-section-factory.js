@@ -5,11 +5,10 @@ import { useState } from 'react';
 import { useRegistry } from '@/modules/registry';
 import { useAuth } from '@/modules/auth';
 import SearchAction from '@/domains/search/ui/components/search-action';
-import { AccountPageShell } from '@/domains/account/ui/layouts/account-layout';
+import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 import { buildAccountRegistryState } from '../../hooks/account-registry-state';
 import {
   AccountSectionStateProvider,
-  buildAccountPageShellProps,
   useAccountSectionEngine,
   useAccountSectionState,
 } from '../../hooks/account-section-state';
@@ -28,16 +27,24 @@ export function createAccountSectionRegistry({
 }) {
   function AccountSectionRegistry(props) {
     const sectionState = useAccountSectionState();
+    const profileShell = useAccountProfileShell();
     const [isSearching, setIsSearching] = useState(false);
-    const resolvedOverrides = resolveOverrides ? resolveOverrides(sectionState, props) : null;
+    const stableSectionState = profileShell
+      ? {
+          ...sectionState,
+          profile: sectionState.profile || profileShell.profile,
+          username: sectionState.username || profileShell.username,
+        }
+      : sectionState;
+    const resolvedOverrides = resolveOverrides ? resolveOverrides(stableSectionState, props) : null;
 
     useRegistry(
-      buildAccountRegistryState(sectionState, {
-        isPageLoading: props.isPageLoading ?? sectionState.isPageLoading,
+      buildAccountRegistryState(stableSectionState, {
+        isPageLoading: props.isPageLoading ?? stableSectionState.isPageLoading,
         navDescription:
           typeof navDescription === 'function'
-            ? navDescription(sectionState, props)
-            : (navDescription ?? sectionState.navDescription),
+            ? navDescription(stableSectionState, props)
+            : (navDescription ?? stableSectionState.navDescription),
         navRegistrySource,
         ...(resolvedOverrides || {}),
         extraNavActions: [
@@ -83,18 +90,15 @@ export function createAccountSectionView({
 }) {
   function AccountSectionView(props) {
     const sectionState = useAccountSectionState();
-    const shellProps = buildAccountPageShellProps(sectionState, {
-      activeSection,
-      skeletonVariant,
-    });
     const registryProps = resolveRegistryProps
       ? resolveRegistryProps(sectionState, props)
       : undefined;
 
     return (
-      <AccountPageShell {...shellProps} registry={<Registry {...registryProps} />}>
+      <>
+        <Registry {...registryProps} />
         {renderContent(sectionState, props)}
-      </AccountPageShell>
+      </>
     );
   }
 

@@ -33,7 +33,8 @@ function useWatchedClientState({
   const hasInitialWatchedSnapshot =
     Boolean(resolvedRouteData.initialCollections?.userId && resolvedUserId) &&
     resolvedRouteData.initialCollections.userId === resolvedUserId &&
-    Array.isArray(resolvedRouteData.initialCollections?.watched);
+    Array.isArray(resolvedRouteData.initialCollections?.watched) &&
+    resolvedRouteData.initialCollections.watched.length > 0;
   const initialWatched = useMemo(
     () => (hasInitialWatchedSnapshot ? resolvedRouteData.initialCollections.watched : []),
     [hasInitialWatchedSnapshot, resolvedRouteData.initialCollections],
@@ -142,18 +143,14 @@ function useWatchedClientState({
   return {
     providerValue: {
       ...sectionProviderValue,
-      isPageLoading:
-        isPageLoading ||
-        (canViewProfileCollections && isWatchedLoading && watchedItems.length === 0),
       itemRemoveConfirmation,
     },
     handleRequestRemoveWatchedItem,
+    isWatchedLoading,
     loadError,
     watchedItems,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountWatchedRegistry',
@@ -166,10 +163,11 @@ const WatchedView = createAccountSectionView({
   displayName: 'AccountWatchedView',
   Registry,
   skeletonVariant: 'collection',
-  renderContent: (sectionState, { handleRequestRemoveWatchedItem, loadError, watchedItems }) => (
+  renderContent: (sectionState, { handleRequestRemoveWatchedItem, isWatchedLoading, loadError, watchedItems }) => (
     <AccountWatchedFeed
       auth={sectionState.auth}
       canShowWatchedGrid={sectionState.canViewProfileCollections}
+      isLoading={isWatchedLoading}
       isOwner={sectionState.isOwner}
       loadError={loadError}
       watchedItems={watchedItems}

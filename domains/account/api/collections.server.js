@@ -3,6 +3,7 @@
 import { normalizeValue } from '@/shared/utils';
 import { getAccountIdByUsername } from '../server/profile.server';
 import { getAccountCollectionResource } from '../server/collections.server';
+import { getViewerSessionContext } from '../server/routes.server';
 
 export async function getAccountCollectionsServer({ entityId, entityType, limitCount, listId, media, resource, slug, userId, username, viewerId }) {
   try {
@@ -18,6 +19,15 @@ export async function getAccountCollectionsServer({ entityId, entityType, limitC
       return { success: true, data: null, items: [] };
     }
 
+    // Auto-resolve viewerId from session if not explicitly provided.
+    // This is required for PROTECTED_ACCOUNT_COLLECTION_RESOURCES access checks
+    // (e.g. list-by-slug, list-by-id, list-items) when called from client subscriptions.
+    let resolvedViewerId = viewerId || null;
+    if (!resolvedViewerId) {
+      const sessionContext = await getViewerSessionContext().catch(() => null);
+      resolvedViewerId = sessionContext?.userId || null;
+    }
+
     const resolvedMedia = media || (entityType && entityId ? { entityId, entityType } : null);
 
     const data = await getAccountCollectionResource({
@@ -27,7 +37,7 @@ export async function getAccountCollectionsServer({ entityId, entityType, limitC
       resource,
       slug,
       userId: resolvedUserId,
-      viewerId,
+      viewerId: resolvedViewerId,
     });
 
     return { success: true, data, items: Array.isArray(data) ? data : [] };

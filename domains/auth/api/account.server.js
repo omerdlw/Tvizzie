@@ -14,10 +14,53 @@ import {
   verifyPasswordWithIdentityToolkit,
 } from '../server/security.server';
 
+import {
+  lookupAccountByEmail,
+  lookupPasswordAccountByEmail,
+  resolvePasswordAccountIdentifier,
+} from '../server/verification.server';
+
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export async function getPasswordStatusServer({ userId } = {}) {
+export async function getPasswordStatusServer({ email, identifier, intent, userId } = {}) {
   try {
+    const normIntent = normalizeValue(intent);
+
+    if (normIntent === 'sign-up') {
+      if (!email) {
+        return { success: false, error: 'Email is required' };
+      }
+      const normEmail = normalizeEmailValue(email);
+      const lookup = await lookupAccountByEmail(normEmail);
+      if (lookup.exists) {
+        return { success: false, error: 'This email is already registered' };
+      }
+      return { success: true };
+    }
+
+    if (normIntent === 'password-reset') {
+      if (!identifier) {
+        return { success: false, error: 'Email or username is required' };
+      }
+      let resolvedEmail = null;
+      try {
+        const resolved = await resolvePasswordAccountIdentifier(identifier);
+        resolvedEmail = resolved.email;
+      } catch (err) {
+        return { success: false, error: err.message || 'No account found' };
+      }
+
+      const lookup = await lookupPasswordAccountByEmail(resolvedEmail);
+      if (!lookup.exists) {
+        return { success: false, error: 'No account found with this email' };
+      }
+      if (!lookup.supportsPasswordAuth) {
+        return { success: false, error: 'This account does not support password sign-in' };
+      }
+
+      return { success: true, email: resolvedEmail };
+    }
+
     const normId = normalizeValue(userId);
     if (!normId || !UUID_REGEX.test(normId)) {
       return { success: true, passwordEnabled: true };

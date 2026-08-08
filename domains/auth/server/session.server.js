@@ -38,7 +38,7 @@ const DEVICE_ID_MAX_AGE_SECONDS = DEVICE_ID_MAX_AGE_MS / 1000;
 const SESSION_CONTROL_FUNCTION = 'session-control';
 
 export function isSecureCookieEnvironment() {
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false';
 }
 
 function hashValue(value) {
@@ -118,6 +118,27 @@ export function applySessionCookies(response, { accessToken, refreshToken }) {
   }
   if (refreshToken) {
     response.cookies.set('sb-refresh-token', refreshToken, {
+      httpOnly: true,
+      maxAge: 604800,
+      path: AUTH_COOKIE_PATH,
+      sameSite: 'lax',
+      secure: isSecureCookieEnvironment(),
+    });
+  }
+}
+
+export function applySessionCookiesToCookieStore(cookieStore, { accessToken, refreshToken }) {
+  if (accessToken) {
+    cookieStore.set('sb-access-token', accessToken, {
+      httpOnly: true,
+      maxAge: 604800,
+      path: AUTH_COOKIE_PATH,
+      sameSite: 'lax',
+      secure: isSecureCookieEnvironment(),
+    });
+  }
+  if (refreshToken) {
+    cookieStore.set('sb-refresh-token', refreshToken, {
       httpOnly: true,
       maxAge: 604800,
       path: AUTH_COOKIE_PATH,
@@ -346,9 +367,9 @@ export async function readSessionFromRequest(
     if (skipSupabaseFallbackIfNoHint && !hasSessionHint(request, { allowBearer })) return null;
 
     const supabase = createRequestSupabaseClient(request);
-    let sessionResult;
+    let userResult;
     try {
-      sessionResult = await withTimeout(supabase.auth.getSession(), SUPABASE_FALLBACK_TIMEOUT_MS);
+      userResult = await withTimeout(supabase.auth.getUser(), SUPABASE_FALLBACK_TIMEOUT_MS);
     } catch (fallbackError) {
       if (isTransientNetworkError(fallbackError) || isTransientSessionError(fallbackError)) {
         return null;
@@ -356,19 +377,23 @@ export async function readSessionFromRequest(
       throw fallbackError;
     }
 
-    if (sessionResult.error) {
-      if (isTransientNetworkError(sessionResult.error)) return null;
-      throw normalizeSupabaseError(sessionResult.error);
+    if (userResult.error) {
+      if (isTransientNetworkError(userResult.error)) return null;
+      throw normalizeSupabaseError(userResult.error);
     }
 
-    const resultToken = normalizeValue(sessionResult.data?.session?.access_token);
-    if (!resultToken) return null;
+    const rawUser = userResult.data?.user || null;
+    if (!rawUser?.id) return null;
 
-    return buildAuthContextFromAccessToken(
-      resultToken,
-      'session',
-      sessionResult.data?.session?.user || null,
-    );
+    return {
+      accessToken: null,
+      decodedToken: { sub: rawUser.id, email: rawUser.email },
+      email: normalizeEmailValue(rawUser.email) || null,
+      sessionJti: null,
+      source: 'session',
+      userId: rawUser.id,
+      user: rawUser,
+    };
   } catch (error) {
     if (isTransientNetworkError(error) || isTransientSessionError(error)) return null;
     throw normalizeSupabaseError(error);

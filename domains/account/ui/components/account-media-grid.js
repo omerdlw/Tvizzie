@@ -14,7 +14,7 @@ import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountPagination from './account-pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
-import { AccountInlineSectionState } from '../sections/account-section';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '../sections/account-section';
 import AccountSectionLayout from '../sections/account-section';
 import { getCardProps, paginationVariants, TIMELINES } from '@/app/(account)/motion';
 
@@ -96,6 +96,7 @@ export default function AccountMediaGridPage({
   emptyMessage = 'No items yet',
   icon = 'solar:heart-bold',
   isInitialSection = true,
+  isLoading = false,
   items = [],
   onPageChange = null,
   pageBasePath,
@@ -150,7 +151,13 @@ export default function AccountMediaGridPage({
     >
       {toolbar}
 
-      {cards.length === 0 ? (
+      {isLoading && cards.length === 0 ? (
+        <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <div key={index} className="aspect-[2/3] w-full animate-pulse rounded-2xl bg-black/10" style={{ animationDelay: `${index * 45}ms` }} />
+          ))}
+        </div>
+      ) : cards.length === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <>

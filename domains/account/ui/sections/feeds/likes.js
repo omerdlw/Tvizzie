@@ -64,6 +64,7 @@ export default function AccountLikesFeed({
   handleRequestRemoveLike,
   handleToggleShowcase,
   isLikedListsLoading,
+  isLikesLoading = false,
   isOwner,
   isReviewsLoading,
   isShowcaseSaving,
@@ -145,9 +146,10 @@ export default function AccountLikesFeed({
     sort: viewState.listSort,
   });
   if (!canShowLikesGrid) return <AccountSectionState message="This profile is private." />;
+  const hasLikes = Array.isArray(likes) && likes.length > 0;
   return (
     <>
-      {isOwner && activeSegment === 'titles' && (
+      {isOwner && activeSegment === 'titles' && (hasLikes || isLikesLoading) && (
         <FavoriteShowcaseManager
           items={favoriteShowcase}
           isSaving={isShowcaseSaving}
@@ -161,6 +163,7 @@ export default function AccountLikesFeed({
           currentPage={viewState.page}
           emptyMessage="No liked titles yet"
           icon="solar:heart-bold"
+          isLoading={isLikesLoading}
           items={filteredLikes}
           onPageChange={(page) =>
             updateView({
@@ -260,24 +263,26 @@ export default function AccountLikesFeed({
           showHeader={false}
           title="Lists"
           toolbar={
-            <AccountListSortBar
-              sort={viewState.listSort}
-              onChange={(sort) =>
-                updateView({
-                  listSort: sort,
-                  page: 1,
-                })
-              }
-              onReset={
-                (likedLists.length > 0 && hasListFilters) || hasListFilters
-                  ? () =>
-                      updateView({
-                        listSort: getDefaultFilters().listSort,
-                        page: 1,
-                      })
-                  : null
-              }
-            />
+            sortedLikedLists.length > 0 ? (
+              <AccountListSortBar
+                sort={viewState.listSort}
+                onChange={(sort) =>
+                  updateView({
+                    listSort: sort,
+                    page: 1,
+                  })
+                }
+                onReset={
+                  hasListFilters
+                    ? () =>
+                        updateView({
+                          listSort: getDefaultFilters().listSort,
+                          page: 1,
+                        })
+                    : null
+                }
+              />
+            ) : null
           }
         />
       )}

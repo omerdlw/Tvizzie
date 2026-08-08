@@ -1,22 +1,65 @@
 'use client';
 
+import { createContext, useContext, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSelectedLayoutSegment } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils';
 import AccountHero from '../sections/account-hero';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import NotFoundTemplate from '@/ui/feedback/not-found-template';
-import { AccountSkeleton } from '@/app/(account)/account/loading';
+import { AccountSkeleton, renderAccountSectionSkeleton } from '@/app/(account)/account/loading';
+import AccountBackgroundRegistry from './account-background-registry';
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
+import { useRegistry } from '@/modules/registry';
+import { getUserAvatarUrl } from '@/domains/account/utils';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/surfaces/account-bio-surface';
 import {
-  navBarVariants,
+  AccountProfileShellProvider,
+  useAccountProfileShell,
+} from './account-profile-context';
+import AccountGridFrame from './account-grid-frame';
+import {
   getNavItemProps,
-  pageContainerVariants,
   getSectionRevealProps,
 } from '@/app/(account)/motion';
+
+// ─── Nav Transition Context ───────────────────────────────────────────────────
+
+const AccountNavTransitionContext = createContext({
+  pendingTab: null,
+  startTabTransition: () => {},
+});
+
+export function AccountNavTransitionProvider({ children }) {
+  const [pendingTab, setPendingTab] = useState(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    setPendingTab(null);
+  }, [pathname]);
+
+  const startTabTransition = (tabKey, href) => {
+    setPendingTab(tabKey);
+    startTransition(() => {
+      router.push(href);
+    });
+  };
+
+  return (
+    <AccountNavTransitionContext.Provider value={{ pendingTab, startTabTransition }}>
+      {children}
+    </AccountNavTransitionContext.Provider>
+  );
+}
+
+export function useAccountNavTransition() {
+  return useContext(AccountNavTransitionContext);
+}
 
 // ─── Reveal Wrappers ──────────────────────────────────────────────────────────
 
@@ -25,16 +68,7 @@ export function AccountHeroReveal({ children, className = '' }) {
 }
 
 export function AccountNavReveal({ children, className = '' }) {
-  return (
-    <motion.div
-      className={className}
-      initial={navBarVariants.initial}
-      animate={navBarVariants.animate}
-      transition={navBarVariants.transition}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function AccountSectionReveal({ children, className = '', delay = 0, isInitialSection = false }) {
@@ -72,14 +106,55 @@ function getSectionHref(username, key) {
   return key === 'overview' ? `/account/${username}` : `/account/${username}/${key}`;
 }
 
+const SECTION_KEYS_SET = new Set(['overview', 'activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists']);
+
+function resolveAccountPageDescription(pathname = '') {
+  const segments = String(pathname || '').split('/').filter(Boolean);
+  const section = segments[2];
+
+  if (segments[1] === 'edit') return 'Edit Account';
+  if (!section) return 'Profile Overview';
+
+  return (
+    {
+      activity: 'Activity Feed',
+      likes: 'Likes',
+      watched: 'Watched',
+      watchlist: 'Watchlist',
+      reviews: 'Reviews',
+      lists: 'Lists',
+    }[section] || 'Profile Overview'
+  );
+}
+
+function AccountProfileShellNav({ profile }) {
+  const pathname = usePathname();
+  const accountTitle = String(profile?.displayName || profile?.username || 'Account').trim();
+
+  useRegistry({
+    nav: {
+      path: '/account',
+      title: accountTitle,
+      icon: getUserAvatarUrl(profile),
+      description: resolveAccountPageDescription(pathname),
+      registry: {
+        priority: 180,
+        source: 'account-profile-shell',
+      },
+    },
+  });
+
+  return null;
+}
+
 // ─── Section Nav ──────────────────────────────────────────────────────────────
 
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   if (!username) return null;
   return (
-    <div className={cn('bg-transparent', className)}>
+    <div className={cn('relative bg-transparent', className)}>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] sm:justify-center sm:px-8 sm:py-4 [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto p-5 [scrollbar-width:none] sm:p-6 [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
             <NavViewItem
               key={item.key}
@@ -91,15 +166,37 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
           ))}
         </div>
       </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
+      />
     </div>
   );
 }
 
+export function AccountSectionNavWrapper({ activeSection = null, className = '', username = null }) {
+  const segment = useSelectedLayoutSegment();
+  const { pendingTab } = useAccountNavTransition();
+  const resolvedActiveKey =
+    pendingTab || (segment && SECTION_KEYS_SET.has(segment) ? segment : activeSection || 'overview');
+  return <AccountSectionNav activeKey={resolvedActiveKey} className={className} username={username} />;
+}
+
 function NavViewItem({ item, isActive, href, index }) {
+  const { startTabTransition } = useAccountNavTransition();
   const navItemProps = getNavItemProps(index);
+
+  const handleClick = (e) => {
+    if (!e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      startTabTransition(item.key, href);
+    }
+  };
+
   return (
     <motion.div
-      initial={navItemProps.initial}
+      className="flex min-w-[6.75rem] flex-auto"
+      initial={false}
       animate={navItemProps.animate}
       transition={navItemProps.transition}
       whileHover={navItemProps.whileHover}
@@ -107,8 +204,9 @@ function NavViewItem({ item, isActive, href, index }) {
     >
       <Link
         href={href}
+        onClick={handleClick}
         className={cn(
-          'inline-flex h-8 w-[6.75rem] shrink-0 items-center justify-center rounded-2xl border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
+          'inline-flex h-8 w-full shrink-0 items-center justify-center rounded-2xl border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
           isActive
             ? 'border-black bg-black text-white'
             : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black',
@@ -128,7 +226,20 @@ export function AccountNotFoundState({ description = DEFAULT_NOT_FOUND_DESCRIPTI
 
 export function AccountPageShell(props) {
   const { isLoading, resolvedUserId, profile, registry, skeletonVariant = 'overview' } = props;
-  if (isLoading) return <AccountSkeleton />;
+  const profileShell = useAccountProfileShell();
+
+  if (profileShell) {
+    return (
+      <>
+        {registry}
+        {isLoading
+          ? renderAccountSectionSkeleton(skeletonVariant === 'list-detail' ? 'lists' : skeletonVariant)
+          : props.children}
+      </>
+    );
+  }
+
+  if (isLoading) return <AccountSkeleton activeTab={skeletonVariant} />;
   if (!resolvedUserId || !profile) {
     return (
       <>
@@ -147,7 +258,15 @@ export function AccountPageShell(props) {
 
 // ─── Profile Layout ───────────────────────────────────────────────────────────
 
-export default function ProfileLayout({
+export default function ProfileLayout(props) {
+  return (
+    <AccountNavTransitionProvider>
+      <ProfileLayoutInner {...props} />
+    </AccountNavTransitionProvider>
+  );
+}
+
+function ProfileLayoutInner({
   activeSection = 'overview',
   children,
   followerCount = 0,
@@ -160,8 +279,10 @@ export default function ProfileLayout({
   watchedCount = null,
   watchlistCount = 0,
 }) {
+  const { pendingTab } = useAccountNavTransition();
   const { openSurface } = useNavigationActions();
   const profileHandle = username || profile?.username || null;
+
   const handleReadMore = () => {
     openSurface(
       createAccountBioSurfaceEntry({
@@ -173,33 +294,64 @@ export default function ProfileLayout({
       }),
     );
   };
+
+  const mainContent = pendingTab ? renderAccountSectionSkeleton(pendingTab) : children;
+  const profileShell = useMemo(
+    () => ({
+      followerCount,
+      followingCount,
+      likesCount,
+      listsCount,
+      profile,
+      username: profileHandle,
+      watchedCount,
+      watchlistCount,
+    }),
+    [
+      followerCount,
+      followingCount,
+      likesCount,
+      listsCount,
+      profile,
+      profileHandle,
+      watchedCount,
+      watchlistCount,
+    ],
+  );
+
   return (
-    <PageGradientShell className="overflow-hidden">
-      <motion.div
-        className="relative"
-        initial={pageContainerVariants.hidden}
-        animate={pageContainerVariants.visible}
-        exit={pageContainerVariants.exit}
-      >
-        <AccountNavReveal className="w-full z-20 pt-1 pb-1 sm:pt-2 sm:pb-2">
-          <AccountSectionNav activeKey={activeSection} username={profileHandle} />
-        </AccountNavReveal>
-        <AccountHeroReveal className="mt-24 sm:mt-32 lg:mt-36">
-          <AccountHero
-            profile={profile}
-            likesCount={likesCount}
-            followerCount={followerCount}
-            followingCount={followingCount}
-            listsCount={listsCount}
-            onOpenFollowList={onOpenFollowList}
-            watchedCount={watchedCount}
-            watchlistCount={watchlistCount}
-            onReadMore={handleReadMore}
-          />
-        </AccountHeroReveal>
-      </motion.div>
-      <main className="pt-4 pb-4 sm:pt-6 sm:pb-6">{children}</main>
-      <NavHeightSpacer />
-    </PageGradientShell>
+    <AccountProfileShellProvider value={profileShell}>
+      <AccountProfileShellNav profile={profile} />
+      <AccountBackgroundRegistry bannerUrl={profile?.bannerUrl} />
+      <PageGradientShell className="overflow-hidden">
+        <AccountGridFrame />
+        <div
+          className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 pb-12 sm:gap-8`}
+        >
+          <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
+            <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
+          </AccountNavReveal>
+
+          <div className="mt-28 flex w-full flex-col items-center gap-8 sm:mt-36 sm:gap-12 lg:mt-44 lg:gap-16">
+            <AccountHeroReveal className="w-full">
+              <AccountHero
+                profile={profile}
+                likesCount={likesCount}
+                followerCount={followerCount}
+                followingCount={followingCount}
+                listsCount={listsCount}
+                onOpenFollowList={onOpenFollowList}
+                watchedCount={watchedCount}
+                watchlistCount={watchlistCount}
+                onReadMore={handleReadMore}
+              />
+            </AccountHeroReveal>
+
+            <main className="w-full text-left pt-4 pb-6 sm:pt-6 sm:pb-8">{mainContent}</main>
+          </div>
+        </div>
+        <NavHeightSpacer />
+      </PageGradientShell>
+    </AccountProfileShellProvider>
   );
 }

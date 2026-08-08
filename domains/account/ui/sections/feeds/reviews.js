@@ -19,6 +19,7 @@ import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/sections/accou
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
+import { FilterBarSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import { TIMELINES } from '@/app/(account)/motion';
 const REVIEW_ITEMS_PER_PAGE = 36;
 
@@ -133,7 +134,11 @@ export default function AccountReviewsFeed({
       title={title}
       titleHref={titleHref}
     >
-      {(listedReviewCount > 0 || hasFilters) && (
+      {isLoading && listedReviewCount === 0 ? (
+        <div className="mb-4">
+          <FilterBarSkeleton />
+        </div>
+      ) : (listedReviewCount > 0 || hasFilters) ? (
         <AccountReviewFilterBar
           filters={viewState.filters}
           yearOptions={yearOptions}
@@ -156,7 +161,7 @@ export default function AccountReviewsFeed({
               : null
           }
         />
-      )}
+      ) : null}
 
       {filteredReviews.length === 0 && !isLoading && !loadError ? (
         <div className={ACCOUNT_EMPTY_SECTION_CLASS}>

@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
 import { useModal } from '@/modules/modal';
-import { resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/utils';
+import {
+  resolveImageFetchPriority,
+  resolveImageLoading,
+  resolveImageQuality,
+} from '@/shared/utils';
 import {
   getPreferredPersonPosterSrc,
   usePosterPreferenceVersion,
@@ -17,13 +21,21 @@ import { cn } from '@/shared/utils';
 import {
   getCastCardProps,
   getCastHeaderProps,
+  getCastHoverProps,
   TIMELINES,
 } from '@/app/(media)/motion';
 
 const FEATURED_COUNT = 6;
 const COMPACT_COUNT = 3;
 
-function PersonImage({ person, compact, size, quality = 72, priority = false, fetchPriority = '' }) {
+function PersonImage({
+  person,
+  compact,
+  size,
+  quality = 72,
+  priority = false,
+  fetchPriority = '',
+}) {
   const [error, setError] = useState(false);
   const src = !error
     ? getPreferredPersonPosterSrc(person, size) ||
@@ -55,7 +67,7 @@ function PersonImage({ person, compact, size, quality = 72, priority = false, fe
       quality={resolveImageQuality('thumbnail', quality)}
       decoding="async"
       draggable={false}
-      className={cn("object-cover w-full h-full", compact ? "rounded-xl" : "rounded-2xl")}
+      className={cn('h-full w-full object-cover', compact ? 'rounded-xl' : 'rounded-2xl')}
       onError={() => setError(true)}
     />
   );
@@ -67,7 +79,7 @@ function PersonCard({ person, compact = false, priority = false, fetchPriority }
       href={`/person/${person.id}`}
       onDragStart={(e) => e.preventDefault()}
       className={cn(
-        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs hover:border-black/15 transition-all duration-200',
+        'group bg-primary/30 hover:bg-primary/60 flex items-center gap-3 rounded-[20px] border border-black/10 backdrop-blur-xs transition-all duration-200 hover:border-black/15',
         compact ? 'h-10 min-w-0 flex-1 rounded-2xl! p-1 pr-2' : 'h-[84px] p-1 pr-4',
       )}
     >
@@ -128,7 +140,12 @@ function buildPersonEntryKey(tabKey, person = {}, index = 0, variant = 'entry') 
   return `${tabKey}-${variant}-${creditKey}-${index}`;
 }
 
-export default function CastSection({ cast = [], crew = [], headerAction = null, baseDelay = TIMELINES.CAST_SECTION_BASE_DELAY }) {
+export default function CastSection({
+  cast = [],
+  crew = [],
+  headerAction = null,
+  baseDelay = TIMELINES.CAST_SECTION_BASE_DELAY,
+}) {
   usePosterPreferenceVersion();
   const { openModal } = useModal();
   const [activeTab, setActiveTab] = useState('cast');
@@ -201,11 +218,13 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
                 key={buildPersonEntryKey(tabKey, person, index, 'featured')}
                 {...getCastCardProps(index, baseDelay, hasSwitchedTab)}
               >
-                <PersonCard
-                  person={person}
-                  priority={index < 4}
-                  fetchPriority={index < 4 ? 'high' : undefined}
-                />
+                <motion.div {...getCastHoverProps()} className="h-full w-full">
+                  <PersonCard
+                    person={person}
+                    priority={index < 4}
+                    fetchPriority={index < 4 ? 'high' : undefined}
+                  />
+                </motion.div>
               </motion.div>
             );
           })}
@@ -221,7 +240,9 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
                   {...getCastCardProps(featured.length + index, baseDelay, hasSwitchedTab)}
                   className={`min-w-0 flex-1 ${responsiveClass}`}
                 >
-                  <PersonCard person={person} compact />
+                  <motion.div {...getCastHoverProps()} className="h-full w-full">
+                    <PersonCard person={person} compact />
+                  </motion.div>
                 </motion.div>
               );
             })}
@@ -230,7 +251,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
               type="button"
               aria-label="Show full cast"
               onClick={handleOpenModal}
-              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 border border-black/10 text-black/70 hover:border-black/15 rounded-2xl hover:text-black transition-colors"
+              className="center bg-primary/30 hover:bg-primary/60 size-10 shrink-0 rounded-2xl border border-black/10 text-black/70 transition-colors hover:border-black/15 hover:text-black"
             >
               <Icon icon="solar:alt-arrow-right-linear" size={16} />
             </button>
@@ -260,7 +281,7 @@ export default function CastSection({ cast = [], crew = [], headerAction = null,
         {headerAction ? <div className="flex items-center gap-3">{headerAction}</div> : null}
       </motion.div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-visible">
         {renderPanel(activeTabData.key, activeTabData.entries)}
       </div>
     </section>

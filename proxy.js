@@ -1,5 +1,9 @@
 import { updateSession } from '@/infrastructure/supabase/proxy';
 
+export async function proxy(request) {
+  return updateSession(request);
+}
+
 export async function middleware(request) {
   return updateSession(request);
 }

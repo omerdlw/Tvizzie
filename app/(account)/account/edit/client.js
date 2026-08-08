@@ -16,7 +16,12 @@ import {
   normalizeOptionalText,
   normalizeProviderIds,
 } from '@/domains/account/utils';
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
+import {
+  ACCOUNT_ROUTE_SHELL_CLASS,
+  ACCOUNT_SECTION_SHELL_CLASS,
+  DESTRUCTIVE_ACTION_TONE_CLASS,
+  PAGE_SHELL_MAX_WIDTH_CLASS,
+} from '@/shared/constants';
 import { uploadAccountMediaFile } from '@/domains/account/client';
 import { useAccount } from '@/modules/account';
 import { useAuth } from '@/modules/auth';
@@ -25,14 +30,14 @@ import { useNavigationActions } from '@/modules/nav';
 import { createFileUploadSurfaceEntry } from '@/ui/feedback/file-upload-surface';
 import { useToast } from '@/modules/notification';
 // AccountEditView is defined in this route client.
-import { cn } from '@/shared/utils';
-import { DESTRUCTIVE_ACTION_TONE_CLASS, PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { useNavHeight } from '@/modules/nav';
 import {
+  AccountHeroReveal,
   AccountNavReveal,
   AccountSectionNav,
   AccountSectionReveal,
 } from '@/domains/account/ui/layouts/account-layout';
+import AccountGridFrame from '@/domains/account/ui/layouts/account-grid-frame';
 import { AccountSectionHeading } from '@/domains/account/ui/sections/account-section';
 import AccountHero from '@/domains/account/ui/sections/account-hero';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
@@ -40,7 +45,7 @@ import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { Spinner } from '@/ui/feedback/spinner';
 import Icon from '@/ui/primitives/icon';
 import { AccountEditRegistry as Registry } from '@/app/(account)/registry';
-
+import { cn } from '@/core/shared/utils';
 const ACCOUNT_MEDIA_UPLOAD_CONFIG = Object.freeze({
   avatar: {
     buttonLabel: 'Choose avatar',
@@ -99,28 +104,46 @@ export default function Client({ initialSnapshot = null }) {
     toast,
   });
 
-  const providerIdsFromAuth = auth?.user?.metadata?.providerIds;
-  const normalizedProviderIds = normalizeProviderIds(providerIdsFromAuth);
+  const userIdentities = Array.isArray(auth?.user?.identities)
+    ? auth.user.identities
+    : Array.isArray(auth?.user?.metadata?.identities)
+      ? auth.user.metadata.identities
+      : [];
+
+  const providerIdsFromAuth =
+    auth?.user?.metadata?.providerIds ||
+    auth?.user?.providerIds ||
+    userIdentities.map((i) => i?.provider || i?.identity_provider) ||
+    [];
+
+  const normalizedProviderIds = (
+    Array.isArray(providerIdsFromAuth) ? providerIdsFromAuth : []
+  ).map((p) => String(p || '').trim().toLowerCase());
+
   const linkedProviderIds = Array.isArray(linkedProviderIdsOverride)
     ? linkedProviderIdsOverride
     : normalizedProviderIds;
 
   const isPasswordLinked =
-    auth?.capabilities?.passwordEnabled === true || linkedProviderIds.includes('password');
-  const canUsePasswordSecurity =
-    isPasswordLinked &&
-    typeof auth?.reauthenticate === 'function' &&
-    typeof auth?.updateProfile === 'function';
+    auth?.capabilities?.passwordEnabled === true ||
+    linkedProviderIds.includes('password') ||
+    linkedProviderIds.includes('email') ||
+    userIdentities.some((i) =>
+      ['email', 'password'].includes(String(i?.provider || i?.identity_provider).toLowerCase()),
+    ) ||
+    Boolean(auth?.user?.email || profile?.email);
+
+  const canUsePasswordSecurity = isPasswordLinked;
 
   const avatarPreview = useMemo(() => {
-    const url = form.avatarUrl?.trim();
+    const url = form?.avatarUrl?.trim();
     if (url) return url;
     return getAvatarFallback(profile);
-  }, [form.avatarUrl, profile]);
+  }, [form?.avatarUrl, profile]);
 
   const bannerPreview = useMemo(() => {
-    return normalizeOptionalText(form.bannerUrl) || profile?.bannerUrl || '';
-  }, [form.bannerUrl, profile?.bannerUrl]);
+    return normalizeOptionalText(form?.bannerUrl) || profile?.bannerUrl || '';
+  }, [form?.bannerUrl, profile?.bannerUrl]);
 
   const currentPath = useMemo(
     () => getCurrentPathWithSearch(pathname, searchParams),
@@ -130,18 +153,18 @@ export default function Client({ initialSnapshot = null }) {
   const heroProfile = useMemo(
     () => ({
       ...profile,
-      avatarUrl: normalizeOptionalText(form.avatarUrl),
-      bannerUrl: normalizeOptionalText(form.bannerUrl),
-      description: normalizeOptionalText(form.description),
-      displayName: normalizeOptionalText(form.displayName),
-      username: normalizeOptionalText(form.username),
-      isPrivate: Boolean(form.isPrivate),
+      avatarUrl: normalizeOptionalText(form?.avatarUrl),
+      bannerUrl: normalizeOptionalText(form?.bannerUrl),
+      description: normalizeOptionalText(form?.description),
+      displayName: normalizeOptionalText(form?.displayName),
+      username: normalizeOptionalText(form?.username),
+      isPrivate: Boolean(form?.isPrivate),
     }),
     [form, profile],
   );
   const heroDisplayName = heroProfile?.displayName || heroProfile?.username || 'Account';
   const isGeneralAccountDirty = useMemo(() => {
-    if (!profile) {
+    if (!profile || !form) {
       return false;
     }
 
@@ -436,6 +459,10 @@ function StatusState({ title, description }) {
 function SectionCard({ title, description, children, className, contentClassName, summaryLabel }) {
   return (
     <section className="relative bg-transparent py-4 sm:py-6">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
+      />
       <AccountSectionReveal>
         <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-5`, className)}>
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
@@ -501,7 +528,12 @@ function MediaField({
       </div>
 
       <div>
-        <div className={cn('overflow-hidden border border-black/10 bg-black/5 rounded-2xl', previewClassName)}>
+        <div
+          className={cn(
+            'overflow-hidden rounded-2xl border border-black/10 bg-black/5',
+            previewClassName,
+          )}
+        >
           {preview ? (
             <AdaptiveImage
               mode="img"
@@ -627,34 +659,37 @@ function AccountEditView(props) {
   return (
     <>
       {editRegistry}
-      <PageGradientShell>
-        <main
-          className="relative min-h-screen overflow-hidden"
+      <PageGradientShell className="overflow-hidden">
+        <AccountGridFrame />
+        <div
+          className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 px-3 pb-12 sm:gap-8 sm:px-4 md:px-6`}
           style={{
             paddingBottom: `calc(${resolvedNavHeight}px + 1rem)`,
           }}
         >
-          <div className="relative">
-            <AccountHero
-              profile={heroProfile}
-              likesCount={likesCount}
-              followerCount={followerCount}
-              followingCount={followingCount}
-              listsCount={listsCount}
-              watchedCount={watchedCount}
-              watchlistCount={watchlistCount}
+          <AccountNavReveal className="absolute inset-x-0 top-0 z-20 pt-1 pb-1 sm:pt-2 sm:pb-2">
+            <AccountSectionNav
+              activeKey="overview"
+              username={profile?.username || heroProfile?.username || null}
             />
-            <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
-              <AccountSectionNav
-                activeKey="overview"
-                username={profile?.username || heroProfile?.username || null}
-              />
-            </AccountNavReveal>
-          </div>
+          </AccountNavReveal>
 
-          <div className="relative pt-4 pb-4 sm:pt-6 sm:pb-6">
-            {activeTab === 'general' ? (
-              <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col">
+          <div className="mt-28 flex w-full flex-col items-center gap-8 sm:mt-36 sm:gap-12 lg:mt-44 lg:gap-16">
+            <AccountHeroReveal className="w-full">
+              <AccountHero
+                profile={heroProfile}
+                likesCount={likesCount}
+                followerCount={followerCount}
+                followingCount={followingCount}
+                listsCount={listsCount}
+                watchedCount={watchedCount}
+                watchlistCount={watchlistCount}
+              />
+            </AccountHeroReveal>
+
+            <main className="w-full text-left pt-4 pb-6 sm:pt-6 sm:pb-8">
+              {activeTab === 'general' ? (
+                <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col">
                 <SectionCard title="Identity">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Display Name">
@@ -918,9 +953,10 @@ function AccountEditView(props) {
                 </SectionCard>
               </div>
             )}
-          </div>
-        </main>
-      </PageGradientShell>
-    </>
-  );
+          </main>
+        </div>
+      </div>
+    </PageGradientShell>
+  </>
+);
 }

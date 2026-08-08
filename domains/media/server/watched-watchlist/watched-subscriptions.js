@@ -28,6 +28,6 @@ export function subscribeToUserWatched(userId, callback, options = {}) {
 
   return createPollingSubscription(() => fetchWatchedList(userId, options), callback, {
     ...options,
-    subscriptionKey: getUserWatchedSubscriptionKey(userId),
+    subscriptionKey: getUserWatchedSubscriptionKey(userId, options),
   });
 }

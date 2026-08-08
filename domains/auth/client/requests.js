@@ -51,7 +51,7 @@ function resolvePasswordAccountStatus({ email, identifier, intent, userId }) {
     return passwordStatusInFlight.get(cacheKey);
   }
 
-  const requestPromise = getPasswordStatusServer({ userId })
+  const requestPromise = getPasswordStatusServer({ email, identifier, intent, userId })
     .then((payload) => {
       if (!payload.success) {
         throw new Error(payload.error || 'Account status could not be resolved');
@@ -84,14 +84,14 @@ export function assertSignUpEmailAvailable({ email }) {
   return resolvePasswordAccountStatus({ email, intent: 'sign-up' });
 }
 
-export async function requestVerificationCode({ email, purpose }) {
-  const result = await requestVerificationCodeServer({ email, purpose });
+export async function requestVerificationCode({ email, purpose, forceNew }) {
+  const result = await requestVerificationCodeServer({ email, purpose, forceNew });
   if (!result.success) throw new Error(result.error || 'Could not send verification code');
   return result;
 }
 
-export async function verifyCodeRequest({ code, email, purpose }) {
-  const result = await verifyCodeServer({ code, email, purpose });
+export async function verifyCodeRequest({ code, email, purpose, rememberDevice }) {
+  const result = await verifyCodeServer({ code, email, purpose, rememberDevice });
   if (!result.success) throw new Error(result.error || 'Verification failed');
   return result;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useReportWebVitals } from 'next/web-vitals';
@@ -19,7 +20,12 @@ import { BackgroundOverlay, BackgroundProvider } from '@/modules/background';
 import { GlobalError } from '@/modules/error-boundary';
 import { LoadingOverlay, LoadingProvider } from '@/modules/loading';
 import { NavigationProvider } from '@/modules/nav/context';
-import { RegistryBootstrap, REGISTRY_TYPES, RegistryProvider } from '@/modules/registry';
+import {
+  RegistryBootstrap,
+  REGISTRY_TYPES,
+  RegistryProvider,
+  useNavRegistryActions,
+} from '@/modules/registry';
 
 const Nav = dynamic(() => import('@/modules/nav'));
 const WEB_VITALS_ENDPOINT = '/api/observability/web-vitals';
@@ -124,6 +130,22 @@ function WebVitals() {
   return null;
 }
 
+function AccountRouteNavGuard() {
+  const pathname = usePathname();
+  const { register, unregister } = useNavRegistryActions();
+
+  useEffect(() => {
+    if (pathname?.startsWith('/account')) {
+      unregister('/account', 'static');
+      return;
+    }
+
+    register('/account', NAV_CONFIG.items.profile, 'static', { priority: 100 });
+  }, [pathname, register, unregister]);
+
+  return null;
+}
+
 export const AppProviders = ({ children }) => {
   const pathname = usePathname();
   const enableSmoothScroll = shouldEnableSmoothScroll(pathname);
@@ -132,6 +154,7 @@ export const AppProviders = ({ children }) => {
     <>
       <WebVitals />
       <CoreShellProviders>
+        <AccountRouteNavGuard />
         <PersistentInteractiveShell>
           <BackgroundOverlay />
           <LoadingOverlay />

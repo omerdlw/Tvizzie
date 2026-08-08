@@ -25,12 +25,16 @@ export function getWatchedStatusSubscriptionKey({ media, userId }) {
   return buildMediaCollectionStatusSubscriptionKey('watched', { media, userId });
 }
 
-export function getUserWatchedSubscriptionKey(userId) {
-  return buildUserMediaCollectionSubscriptionKey('watched', userId);
+export function getUserWatchedSubscriptionKey(userId, options = {}) {
+  return buildUserMediaCollectionSubscriptionKey('watched', userId, {
+    limitCount: options.limitCount ?? null,
+  });
 }
 
-export function getUserWatchlistSubscriptionKey(userId) {
-  return buildUserMediaCollectionSubscriptionKey('watchlist', userId);
+export function getUserWatchlistSubscriptionKey(userId, options = {}) {
+  return buildUserMediaCollectionSubscriptionKey('watchlist', userId, {
+    limitCount: options.limitCount ?? null,
+  });
 }
 
 export function getWatchlistStatusSubscriptionKey({ media, userId }) {

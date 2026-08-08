@@ -5,11 +5,7 @@ import { motion } from 'framer-motion';
 import FilmographyCard from '../../components/person/filmography-card';
 import { getFilmographyCredits } from '@/domains/media/utils/person-data';
 import SegmentedControl from '@/ui/primitives/segmented-control';
-import {
-  getMediaCardProps,
-  getSectionHeaderProps,
-  PERSON_TIMELINES,
-} from '@/app/(media)/motion';
+import { getMediaCardProps, getSectionHeaderProps, PERSON_TIMELINES } from '@/app/(media)/motion';
 
 export default function PersonFilmographySection({
   person,
@@ -54,7 +50,7 @@ export default function PersonFilmographySection({
   return (
     <section className="flex flex-col gap-4">
       <motion.div
-        {...getSectionHeaderProps(baseDelay, hasSwitchedTab)}
+        {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'filmography')}
         className="flex items-center justify-between gap-3"
       >
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
@@ -66,9 +62,7 @@ export default function PersonFilmographySection({
             items={mediaTypeItems}
             value={activeTab}
             onChange={handleTabChange}
-            renderSuffix={(item) => (
-              <span className="text-[10px] opacity-60">({item.count})</span>
-            )}
+            renderSuffix={(item) => <span className="text-[10px] opacity-60">({item.count})</span>}
           />
         )}
       </motion.div>
@@ -77,7 +71,7 @@ export default function PersonFilmographySection({
         {activeCredits.map((credit, index) => (
           <motion.div
             key={`${credit.media_type}-${credit.id}-${credit.credit_id || index}`}
-            {...getMediaCardProps(index, baseDelay, hasSwitchedTab)}
+            {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'filmography')}
           >
             <FilmographyCard
               credit={credit}

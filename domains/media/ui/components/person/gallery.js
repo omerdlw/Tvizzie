@@ -27,10 +27,7 @@ function sortProfiles(profiles = []) {
     .slice(0, 20);
 }
 
-export default function PersonGallery({
-  images,
-  baseDelay = PERSON_TIMELINES.GALLERY_BASE_DELAY,
-}) {
+export default function PersonGallery({ images, baseDelay = PERSON_TIMELINES.GALLERY_BASE_DELAY }) {
   const { openModal } = useModal();
   const profiles = useMemo(() => sortProfiles(images?.profiles || []), [images]);
   const containerRef = useRef(null);
@@ -56,7 +53,7 @@ export default function PersonGallery({
   return (
     <section className="flex w-full flex-col gap-3">
       <motion.h2
-        {...getSectionHeaderProps(baseDelay)}
+        {...getSectionHeaderProps(baseDelay, false, 'gallery')}
         className="text-[11px] font-semibold tracking-widest text-black/70 uppercase"
       >
         Gallery
@@ -67,7 +64,7 @@ export default function PersonGallery({
           {profiles.map((image, index) => (
             <motion.div
               key={image.file_path || index}
-              {...getMediaCardProps(index, baseDelay)}
+              {...getMediaCardProps(index, baseDelay, false, 'gallery')}
               style={{ width: cardWidth ?? 160, flexShrink: 0 }}
             >
               <MediaCard
@@ -81,9 +78,7 @@ export default function PersonGallery({
                 imagePreset="feature"
                 fallbackIcon="solar:user-bold"
                 fallbackIconSize={24}
-                onClick={() =>
-                  openModal?.('PREVIEW_MODAL', 'center', { data: image })
-                }
+                onClick={() => openModal?.('PREVIEW_MODAL', 'center', { data: image })}
                 data-poster-file-path={image.file_path || ''}
                 data-context-menu-target="person-poster-card"
               />

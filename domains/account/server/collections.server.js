@@ -367,5 +367,125 @@ export async function getAccountCollectionResource({
     return (result.data || []).map((row) => normalizeWatchedRow(row));
   }
 
+  if (resource === 'list-by-slug') {
+    if (!slug) return null;
+    const decodedSlug = decodeURIComponent(String(slug)).trim();
+    if (!decodedSlug) return null;
+
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = UUID_REGEX.test(decodedSlug);
+    let query = admin.from('lists').select(LIST_COLLECTION_SELECT);
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+    // Only match by id when value is a UUID — mixing id.eq with a non-UUID crashes Postgres (22P02)
+    if (isUuid) {
+      query = query.or(`id.eq.${decodedSlug},slug.eq.${decodedSlug}`);
+    } else {
+      query = query.eq('slug', decodedSlug);
+    }
+    query = query.limit(1);
+
+    const result = await execQuery(query, { label: `List by slug ${decodedSlug}`, fallbackValue: { data: [], error: null }, strict });
+    if (result?.timedOut) return null;
+    checkAssert(result, 'List by slug could not be loaded');
+    const row = Array.isArray(result.data) ? result.data[0] || null : null;
+    if (!row) return null;
+    const likesMap = await countListLikesByListIds(admin, checkAssert, [row.id]);
+    return normalizeListRow(row, likesMap);
+  }
+
+  if (resource === 'list-by-id') {
+    if (!listId) return null;
+    const decodedListId = decodeURIComponent(String(listId)).trim();
+    if (!decodedListId) return null;
+
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = UUID_REGEX.test(decodedListId);
+    let query = admin.from('lists').select(LIST_COLLECTION_SELECT);
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+    if (isUuid) {
+      query = query.eq('id', decodedListId);
+    } else {
+      // Fall back to slug lookup if id is not a UUID
+      query = query.eq('slug', decodedListId);
+    }
+    query = query.limit(1);
+
+    const result = await execQuery(query, { label: `List by id ${decodedListId}`, fallbackValue: { data: [], error: null }, strict });
+    if (result?.timedOut) return null;
+    checkAssert(result, 'List by id could not be loaded');
+    const row = Array.isArray(result.data) ? result.data[0] || null : null;
+    if (!row) return null;
+    const likesMap = await countListLikesByListIds(admin, checkAssert, [row.id]);
+    return normalizeListRow(row, likesMap);
+  }
+
+  if (resource === 'list-items') {
+    if (!listId) return [];
+    const decodedListId = decodeURIComponent(String(listId)).trim();
+    if (!decodedListId) return [];
+
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let targetListId = decodedListId;
+
+    if (!UUID_REGEX.test(decodedListId)) {
+      // Non-UUID: resolve the actual UUID via slug lookup
+      let slugQuery = admin
+        .from('lists')
+        .select('id')
+        .eq('slug', decodedListId)
+        .limit(1);
+      if (userId) slugQuery = slugQuery.eq('user_id', userId);
+      const slugRes = await execQuery(slugQuery, { label: `Resolve list ID for ${decodedListId}`, fallbackValue: { data: [], error: null }, strict });
+      const foundRow = Array.isArray(slugRes?.data) ? slugRes.data[0] : null;
+      if (!foundRow?.id) return [];
+      targetListId = foundRow.id;
+    }
+
+    let query = admin
+      .from('list_items')
+      .select(LIST_ITEM_SELECT)
+      .eq('list_id', targetListId)
+      .order('position', { ascending: true, nullsFirst: false })
+      .order('added_at', { ascending: true });
+    const limit = calcLimit(limitCount, 0, 500);
+    if (limit > 0) query = query.limit(limit);
+
+    const result = await execQuery(query, { label: `List items for list ${targetListId}`, fallbackValue: { data: [], error: null }, strict });
+    if (result?.timedOut) return [];
+    checkAssert(result, 'List items could not be loaded');
+    return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row));
+  }
+
+  if (resource === 'liked-lists') {
+    if (!userId) return [];
+    let likesQuery = admin
+      .from('list_likes')
+      .select('list_id, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    const limit = calcLimit(limitCount, 0, 200);
+    if (limit > 0) likesQuery = likesQuery.limit(limit);
+
+    const likesResult = await execQuery(likesQuery, { label: `Liked lists for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    if (likesResult?.timedOut) return [];
+    checkAssert(likesResult, 'Liked lists could not be loaded');
+
+    const likedRows = likesResult.data || [];
+    if (likedRows.length === 0) return [];
+    const listIds = likedRows.map((r) => r.list_id).filter(Boolean);
+
+    const listsResult = await execQuery(admin.from('lists').select(LIST_COLLECTION_SELECT).in('id', listIds), { label: `Lists by ids for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    if (listsResult?.timedOut) return [];
+    checkAssert(listsResult, 'Liked lists could not be loaded');
+
+    const listsMap = new Map((listsResult.data || []).map((row) => [row.id, row]));
+    const allLikesMap = await countListLikesByListIds(admin, checkAssert, listIds);
+    return listIds.map((id) => listsMap.get(id)).filter(Boolean).map((row) => normalizeListRow(row, allLikesMap));
+  }
+
   return [];
 }

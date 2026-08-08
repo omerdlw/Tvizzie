@@ -4,7 +4,8 @@ import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import AccountListCard from './list-card';
-import AccountSectionLayout, { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import AccountSectionLayout, { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
+import { ListCardsSkeletonGrid } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
 import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
@@ -74,10 +75,10 @@ export default function AccountPaginatedListGrid({
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
-      {toolbar}
+      {lists.length > 0 || isLoading ? toolbar : null}
 
       {isLoading && lists.length === 0 ? (
-        <AccountInlineSectionState>Loading lists</AccountInlineSectionState>
+        <ListCardsSkeletonGrid count={6} />
       ) : lists.length === 0 ? (
         <AccountInlineSectionState>{loadError || emptyMessage}</AccountInlineSectionState>
       ) : (

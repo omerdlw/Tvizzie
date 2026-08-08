@@ -30,8 +30,10 @@ import {
 import { createAdminAuthFacade } from './session.server';
 import {
   createChallengeProofToken,
+  createSignedToken,
   resolveSecretWithFallback,
   verifyChallengeProofToken,
+  verifySignedToken,
 } from './proof-tokens.server';
 
 export { PURPOSES };
@@ -142,7 +144,7 @@ export async function upsertChallengeByKey(key, record) {
   const admin = createAdminClient();
   const result = await admin
     .from(AUTH_CHALLENGE_TABLE)
-    .upsert({ ...record, jti: key }, { onConflict: 'jti' });
+    .upsert({ ...record, challenge_key: key, jti: key }, { onConflict: 'challenge_key' });
 
   if (result.error) throw new Error(result.error.message || 'Challenge save failed');
 }
@@ -173,7 +175,17 @@ export async function requestVerificationCode({ deviceId, email, forceNew = fals
   const existingData = await getChallengeByKey(challengeKey);
 
   const existingResendAtMs = getTimestampMs(existingData?.resend_available_at);
-  if (!forceNew && existingResendAtMs > now) {
+  const existingExpiresAtMs = getTimestampMs(existingData?.expires_at);
+
+  if (existingData && existingExpiresAtMs > now && !forceNew) {
+    return {
+      challengeKey,
+      expiresAt: existingData.expires_at,
+      resendAvailableAt: existingData.resend_available_at,
+    };
+  }
+
+  if (forceNew && existingResendAtMs > now) {
     const waitSeconds = Math.max(1, Math.ceil((existingResendAtMs - now) / 1000));
     throw new Error(`Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting a new code`);
   }
@@ -245,14 +257,22 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
     const isExhausted = newAttemptCount >= challenge.max_attempts;
     await updateChallengeByKey(challengeKey, {
       attempt_count: newAttemptCount,
-      status: isExhausted ? 'failed' : 'pending',
+      status: isExhausted ? 'exhausted' : 'pending',
       updated_at: new Date(now).toISOString(),
     });
     throw new Error('Verification code is invalid');
   }
 
+  let resolvedUserId = challenge.user_id || null;
+  if (!resolvedUserId) {
+    try {
+      const userRecord = await createAdminAuthFacade().getUserByEmail(normalizedEmail);
+      resolvedUserId = userRecord?.uid || null;
+    } catch {}
+  }
+
   await updateChallengeByKey(challengeKey, {
-    status: 'verified',
+    status: 'used',
     updated_at: new Date(now).toISOString(),
     used_at: new Date(now).toISOString(),
   });
@@ -261,7 +281,7 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
     challengeJti: challenge.jti,
     challengeKey,
     email: normalizedEmail,
-    userId: challenge.user_id || null,
+    userId: resolvedUserId,
     verifiedAt: new Date(now).toISOString(),
   };
 }
@@ -285,6 +305,83 @@ export function getTrustedLoginDeviceCookieName(userId) {
   if (!normalizedUserId) return '';
   const hash = createHash('sha256').update(normalizedUserId).digest('hex').slice(0, 16);
   return `${TRUSTED_DEVICE_COOKIE_PREFIX}${hash}`;
+}
+
+export function createTrustedDeviceToken({ userId, deviceId, expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000 }) {
+  return createSignedToken(
+    {
+      userId: normalizeValue(userId),
+      deviceId: normalizeValue(deviceId),
+      exp: Math.floor(Number(expiresAt) / 1000),
+    },
+    { secret: getLoginVerificationSecret() }
+  );
+}
+
+export function verifyTrustedDeviceToken(token, { userId, deviceId }) {
+  try {
+    const payload = verifySignedToken(token, {
+      secret: getLoginVerificationSecret(),
+      invalidMessage: 'Trusted device token is invalid',
+    });
+
+    const expiresAtMs = Number(payload?.exp) * 1000;
+    if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
+      return false;
+    }
+
+    if (normalizeValue(payload?.userId) !== normalizeValue(userId)) {
+      return false;
+    }
+
+    if (normalizeValue(payload?.deviceId) !== normalizeValue(deviceId)) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function setTrustedDeviceCookie(response, { userId, deviceId }) {
+  const cookieName = getTrustedLoginDeviceCookieName(userId);
+  if (!cookieName) return;
+
+  const token = createTrustedDeviceToken({ userId, deviceId });
+
+  response.cookies.set(cookieName, token, {
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    path: AUTH_COOKIE_PATH,
+    sameSite: 'lax',
+    secure: isSecureCookieEnvironment(),
+  });
+}
+
+export function setTrustedDeviceCookieToCookieStore(cookieStore, { userId, deviceId }) {
+  const cookieName = getTrustedLoginDeviceCookieName(userId);
+  if (!cookieName) return;
+
+  const token = createTrustedDeviceToken({ userId, deviceId });
+
+  cookieStore.set(cookieName, token, {
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    path: AUTH_COOKIE_PATH,
+    sameSite: 'lax',
+    secure: isSecureCookieEnvironment(),
+  });
+}
+
+export function isDeviceTrusted(request, { userId, deviceId }) {
+  const cookieName = getTrustedLoginDeviceCookieName(userId);
+  if (!cookieName) return false;
+
+  const cookieVal = request.cookies.get(cookieName)?.value;
+  if (!cookieVal) return false;
+
+  return verifyTrustedDeviceToken(cookieVal, { userId, deviceId });
 }
 
 export function createPendingSignInToken({

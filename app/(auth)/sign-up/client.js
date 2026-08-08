@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import { assertSignUpEmailAvailable } from '@/domains/auth/client/requests';
+import { setPendingAccountBootstrap } from '@/domains/auth/client';
 import {
   AUTH_PURPOSE,
   AUTH_ROUTE_NOTICE,
@@ -25,7 +26,7 @@ import {
   finalizeOAuthSignUp,
   finalizeSignUp,
 } from '@/domains/auth/server/workflows';
-import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils/oauth';
+import { getOAuthProviderLabel, normalizeOAuthProvider, OAUTH_PROVIDER_KEYS } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
@@ -56,6 +57,10 @@ import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import AuthRegistry from '@/app/(auth)/registry';
+import { motion, AnimatePresence } from 'framer-motion'
+import Link  from 'next/link'
+
+
 
 export default function Client() {
   const auth = useAuth();
@@ -63,7 +68,6 @@ export default function Client() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { openSurface } = useNavigationActions();
-
   const nextParam = searchParams.get('next');
   const routeNotice = searchParams.get('notice');
   const emailPrefill = useMemo(() => searchParams.get('email') || '', [searchParams]);
@@ -548,12 +552,6 @@ function SignUpView({
                     classNames={AUTH_INPUT_CLASSNAMES}
                   />
                 </AuthField>
-              </motion.div>
-
-              <motion.div variants={fieldVariants}>
-                <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
-                  {submitLabel}
-                </Button>
               </motion.div>
             </>
           ) : null}

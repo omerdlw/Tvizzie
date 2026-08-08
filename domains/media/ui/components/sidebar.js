@@ -11,6 +11,7 @@ import {
   getSidebarRowProps,
   getTaxonomyChipProps,
   getTaxonomyHeaderProps,
+  TIMELINES,
   sidebarPosterVariants,
 } from '@/app/(media)/motion';
 
@@ -33,7 +34,7 @@ function SidebarRow({ icon, children }) {
       <span className="inline-flex shrink-0 items-center justify-center text-black/70">
         <Icon icon={icon} size={18} />
       </span>
-      <div className="flex-1 min-w-0 leading-snug font-medium">{children}</div>
+      <div className="min-w-0 flex-1 leading-snug font-medium">{children}</div>
     </div>
   );
 }
@@ -86,7 +87,7 @@ function createRow(id, icon, content) {
   };
 }
 
-function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
+function SidebarTaxonomy({ genres = [], tags = [], baseDelay = TIMELINES.TAXONOMY_BASE_DELAY }) {
   const normalizedGenres = normalizeTaxonomyItems(genres);
   const normalizedTags = normalizeTaxonomyItems(tags, '#');
   if (!normalizedGenres.length && !normalizedTags.length) {
@@ -109,7 +110,7 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
               {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
             >
-              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/80 shadow-xs transition-colors hover:border-black/20 hover:text-black">
+              <span className="bg-primary/80 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/80 uppercase shadow-xs transition-colors hover:border-black/20 hover:text-black">
                 {genre}
               </span>
             </motion.div>
@@ -123,7 +124,7 @@ function SidebarTaxonomy({ genres = [], tags = [], baseDelay }) {
               {...getTaxonomyChipProps(currentIndex, baseDelay)}
               className="inline-flex"
             >
-              <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-black/70 shadow-xs transition-colors hover:border-black/20 hover:text-black">
+              <span className="bg-primary/40 inline-flex min-h-[28px] max-w-full items-center rounded-[10px] border border-black/10 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-black/70 uppercase shadow-xs transition-colors hover:border-black/20 hover:text-black">
                 {tag}
               </span>
             </motion.div>
@@ -234,8 +235,13 @@ export default function Sidebar({
       ),
   ].filter(Boolean);
 
-  const taxonomyData = SidebarTaxonomy({ genres, tags });
-  const rowBaseDelay = 0.50 + (hasTaxonomy ? taxonomyData.count * 0.05 : 0);
+  const taxonomyData = SidebarTaxonomy({
+    genres,
+    tags,
+    baseDelay: TIMELINES.TAXONOMY_BASE_DELAY,
+  });
+  const rowBaseDelay =
+    TIMELINES.SIDEBAR_ROWS_DELAY + (hasTaxonomy ? taxonomyData.count * TIMELINES.TAXONOMY_STEP : 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -266,11 +272,7 @@ export default function Sidebar({
         </div>
       </motion.div>
 
-      {topContent ? (
-        <div>
-          {topContent}
-        </div>
-      ) : null}
+      {topContent ? <div>{topContent}</div> : null}
 
       {hasTaxonomy ? taxonomyData.element : null}
 

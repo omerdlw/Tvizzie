@@ -161,6 +161,8 @@ export default function AuthVerificationSurface({ close, data, header }) {
   const [rememberDevice, setRememberDevice] = useState(Boolean(data?.rememberDevice));
   const [isCodeFocused, setIsCodeFocused] = useState(false);
   const [hasCodeError, setHasCodeError] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isStatusError, setIsStatusError] = useState(false);
 
   const resendRemainingMs = Math.max(0, resolveVerificationTimestamp(resendAvailableAt) - now);
   const codeRemainingMs = Math.max(0, resolveVerificationTimestamp(expiresAt) - now);
@@ -183,30 +185,35 @@ export default function AuthVerificationSurface({ close, data, header }) {
       if (isSending || isSubmitting) return;
 
       if (!hasValidVerificationTarget) {
-        toast.error('A valid username or email is required');
+        setStatusMessage('A valid username or email is required');
+        setIsStatusError(true);
         return;
       }
 
       if (!isInitial && !canResendCode) {
-        toast.error(`Please wait ${resendRemainingSeconds}s before resending`);
+        setStatusMessage(`Please wait ${resendRemainingSeconds}s before resending`);
+        setIsStatusError(true);
         return;
       }
 
       setIsSending(true);
+      setStatusMessage('');
+      setIsStatusError(false);
 
       try {
         const challenge = await requestVerificationCode({
           email,
           identifier,
-          forceNew:
+          forceNew: !isInitial || (
             isInitial &&
             data?.forceNewCodeOnOpen === true &&
-            (purpose === PURPOSES.SIGN_IN || purpose === PURPOSES.SIGN_UP),
+            (purpose === PURPOSES.SIGN_IN || purpose === PURPOSES.SIGN_UP)
+          ),
           purpose,
         });
 
         setCode('');
-        setChallengeToken(String(challenge?.challengeToken || '').trim());
+        setChallengeToken(String(challenge?.challengeToken || challenge?.challengeKey || '').trim());
         setExpiresAt(challenge?.expiresAt || null);
         setResendAvailableAt(challenge?.resendAvailableAt || null);
         setNow(Date.now());
@@ -214,14 +221,12 @@ export default function AuthVerificationSurface({ close, data, header }) {
         lastAutoSubmittedCodeRef.current = '';
         completedRef.current = false;
         activeSubmissionKeyRef.current = '';
-      } catch (error) {
-        if (isInitial) {
-          autoSentRef.current = false;
-        }
 
-        toast.error(resolveVerificationErrorMessage(error, 'Verification code could not be sent'), {
-          id: `auth-verification-send-${purpose}`,
-        });
+
+      } catch (error) {
+        const msg = resolveVerificationErrorMessage(error, 'Verification code could not be sent');
+        setStatusMessage(msg);
+        setIsStatusError(true);
       } finally {
         setIsSending(false);
       }
@@ -236,7 +241,6 @@ export default function AuthVerificationSurface({ close, data, header }) {
       purpose,
       resendRemainingSeconds,
       data?.forceNewCodeOnOpen,
-      toast,
     ],
   );
 
@@ -259,6 +263,19 @@ export default function AuthVerificationSurface({ close, data, header }) {
       window.clearInterval(intervalId);
     };
   }, [expiresAt, resendAvailableAt]);
+
+  const prevCanResendRef = useRef(false);
+
+  useEffect(() => {
+    const canResend = resendAvailableAt && (resolveVerificationTimestamp(resendAvailableAt) - now <= 0);
+    
+    if (canResend && !prevCanResendRef.current && resendAvailableAt) {
+      prevCanResendRef.current = true;
+      void sendCode({ isInitial: false });
+    } else if (!canResend) {
+      prevCanResendRef.current = false;
+    }
+  }, [now, resendAvailableAt, sendCode]);
 
   useEffect(() => {
     if (autoSentRef.current) return;
@@ -497,6 +514,19 @@ export default function AuthVerificationSurface({ close, data, header }) {
         setIsFocused={setIsCodeFocused}
         setCode={setCode}
       />
+
+      {statusMessage ? (
+        <div
+          className={cn(
+            "text-center text-xs font-semibold px-3 py-2 rounded-xl transition-all duration-200 border",
+            isStatusError
+              ? "bg-error/10 text-error border-error/20"
+              : "bg-success/10 text-success border-success/20"
+          )}
+        >
+          {statusMessage}
+        </div>
+      ) : null}
 
       <div className="grid gap-2">
         <button

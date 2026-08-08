@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   clearMovieBackgroundPreference,
   clearMoviePosterPreference,
@@ -34,17 +34,15 @@ import Carousel from '@/domains/media/ui/components/media-carousel';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import Registry from '@/app/(media)/registry';
 import {
+  MEDIA_DETAIL_TEXT,
+  getDeferredChapterDelay,
   getMediaCardProps,
+  getMotionTimestamp,
+  getScrollSectionProps,
   heroOverviewVariants,
-  heroSocialProofVariants,
-  heroTaglineVariants,
-  heroTitleVariants,
   mainContentColumnVariants,
-  EASINGS,
   TIMELINES,
-  SCROLL_VIEWPORT_CONFIG,
   scrollReviewsSectionVariants,
-  scrollSectionVariants,
   sidebarColumnVariants,
 } from '@/app/(media)/motion';
 
@@ -89,9 +87,7 @@ async function resolveFirstLoadableImage(candidates = []) {
     try {
       await preloadBackgroundImage(candidate);
       return candidate;
-    } catch {
-      
-    }
+    } catch {}
   }
 
   return null;
@@ -104,9 +100,7 @@ async function resolveFirstLoadablePosterFilePath(candidates = []) {
     try {
       await preloadBackgroundImage(createMoviePosterImageUrl(filePath));
       return filePath;
-    } catch {
-      
-    }
+    } catch {}
   }
 
   return null;
@@ -287,13 +281,13 @@ export default function Client({ computed, mediaType = 'movie', movie, secondary
   );
 }
 
-function RelatedMoviesSection({ items, title }) {
+function RelatedMoviesSection({ items, title, baseDelay = 0 }) {
   if (!items?.length) {
     return null;
   }
 
   return (
-    <motion.div {...scrollSectionVariants}>
+    <motion.div {...getScrollSectionProps('related', baseDelay)}>
       <div className="flex flex-col gap-3">
         <h2 className="text-[11px] font-semibold tracking-widest text-black/70 uppercase">
           {title}
@@ -305,7 +299,7 @@ function RelatedMoviesSection({ items, title }) {
           {items.map((item, index) => (
             <motion.div
               key={`${item.id}-${index}`}
-              {...getMediaCardProps(index, 0, false)}
+              {...getMediaCardProps(index, 0, false, 'related')}
             >
               <RecommendationCard
                 movie={item}
@@ -329,6 +323,7 @@ function MovieVisualMediaDeferred({
   canResetMovieBackground,
   canResetMoviePoster,
   secondaryDataPromise,
+  choreographyStartedAt,
 }) {
   const secondaryMovie = use(secondaryDataPromise);
   const galleryImages = getGalleryImages(secondaryMovie?.images);
@@ -344,7 +339,7 @@ function MovieVisualMediaDeferred({
       {hasGallery ? (
         <GallerySection
           images={galleryImages}
-          baseDelay={TIMELINES.GALLERY_SECTION_BASE_DELAY}
+          baseDelay={getDeferredChapterDelay('gallery', choreographyStartedAt)}
           onSetMovieBackground={onSetMovieBackground}
           onResetMovieBackground={onResetMovieBackground}
           canResetMovieBackground={canResetMovieBackground}
@@ -354,7 +349,7 @@ function MovieVisualMediaDeferred({
       {hasImages ? (
         <ImagesSection
           images={secondaryMovie.images}
-          baseDelay={TIMELINES.IMAGES_SECTION_BASE_DELAY}
+          baseDelay={getDeferredChapterDelay('images', choreographyStartedAt)}
           onSetMovieBackground={onSetMovieBackground}
           onSetMoviePoster={onSetMoviePoster}
           onResetMovieBackground={onResetMovieBackground}
@@ -367,7 +362,7 @@ function MovieVisualMediaDeferred({
   );
 }
 
-function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
+function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [], choreographyStartedAt }) {
   const secondaryMovie = use(secondaryDataPromise);
   const deferredComputed = getMovieComputedData(secondaryMovie);
   const sections = [];
@@ -375,7 +370,12 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
   if (videos.length > 0) {
     sections.push({
       key: 'videos',
-      content: <VideosSection videos={videos} />,
+      content: (
+        <VideosSection
+          videos={videos}
+          baseDelay={getDeferredChapterDelay('videos', choreographyStartedAt)}
+        />
+      ),
     });
   }
 
@@ -403,29 +403,25 @@ function MovieDiscoveryDeferred({ secondaryDataPromise, videos = [] }) {
     <div className="flex flex-col gap-10 lg:gap-12">
       {sections.map((section) =>
         section.key === 'videos' ? (
-          <motion.div key={section.key} {...scrollSectionVariants}>
+          <motion.div key={section.key} {...getScrollSectionProps(section.key)}>
             {section.content}
           </motion.div>
         ) : (
-          <RelatedMoviesSection
-            key={section.key}
-            items={section.items}
-            title={section.title}
-          />
+          <RelatedMoviesSection key={section.key} items={section.items} title={section.title} />
         ),
       )}
     </div>
   );
 }
 
-function TvSeasonsDeferred({ secondaryDataPromise, seasons = [] }) {
+function TvSeasonsDeferred({ secondaryDataPromise, seasons = [], choreographyStartedAt }) {
   const secondaryMovie = use(secondaryDataPromise);
 
   return (
     <TvSeasonsSection
       seasons={seasons}
       seasonDetails={secondaryMovie?.seasonDetails || []}
-      baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY + 0.50}
+      baseDelay={getDeferredChapterDelay('seasons', choreographyStartedAt)}
     />
   );
 }
@@ -441,11 +437,16 @@ function MovieSecondaryContent({
   canResetMovieBackground,
   canResetMoviePoster,
   secondaryDataPromise,
+  choreographyStartedAt,
 }) {
   return (
     <div className="mt-10 flex flex-col gap-10 lg:mt-12 lg:gap-12">
       {computed.cast?.length > 0 || computed.crew?.length > 0 ? (
-        <CastSection cast={computed.cast} crew={computed.crew} baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY} />
+        <CastSection
+          cast={computed.cast}
+          crew={computed.crew}
+          baseDelay={TIMELINES.CAST_SECTION_BASE_DELAY}
+        />
       ) : null}
 
       {mediaType === 'tv' ? (
@@ -453,6 +454,7 @@ function MovieSecondaryContent({
           <TvSeasonsDeferred
             secondaryDataPromise={secondaryDataPromise}
             seasons={movie.seasons || []}
+            choreographyStartedAt={choreographyStartedAt}
           />
         </Suspense>
       ) : null}
@@ -466,6 +468,7 @@ function MovieSecondaryContent({
           canResetMovieBackground={canResetMovieBackground}
           canResetMoviePoster={canResetMoviePoster}
           secondaryDataPromise={secondaryDataPromise}
+          choreographyStartedAt={choreographyStartedAt}
         />
       </Suspense>
 
@@ -473,6 +476,7 @@ function MovieSecondaryContent({
         <MovieDiscoveryDeferred
           secondaryDataPromise={secondaryDataPromise}
           videos={movie.videos?.results || []}
+          choreographyStartedAt={choreographyStartedAt}
         />
       </Suspense>
     </div>
@@ -494,6 +498,7 @@ function MovieView({
   secondaryDataPromise,
   setReviewState,
 }) {
+  const choreographyStartedAtRef = useRef(getMotionTimestamp());
   const { certification, creators, director, genres, rating, runtimeText, tags, writers, year } =
     computed;
   const mediaTitle =
@@ -547,10 +552,7 @@ function MovieView({
               <div className="flex w-full flex-col">
                 <BlurryText
                   as="h1"
-                  by="character"
-                  delay={0.15}
-                  duration={0.75}
-                  stagger={0.038}
+                  {...MEDIA_DETAIL_TEXT.TITLE}
                   className="font-zuume max-w-full text-6xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl"
                 >
                   {mediaTitle}
@@ -559,10 +561,7 @@ function MovieView({
                 {movie.tagline ? (
                   <BlurryText
                     as="p"
-                    by="character"
-                    delay={0.50}
-                    duration={0.65}
-                    stagger={0.025}
+                    {...MEDIA_DETAIL_TEXT.TAGLINE}
                     className="mt-4 text-[11px] font-semibold tracking-widest text-black/80 uppercase sm:text-sm"
                   >
                     {movie.tagline}
@@ -588,6 +587,7 @@ function MovieView({
                   canResetMovieBackground={canResetMovieBackground}
                   canResetMoviePoster={canResetMoviePoster}
                   secondaryDataPromise={secondaryDataPromise}
+                  choreographyStartedAt={choreographyStartedAtRef.current}
                 />
               </div>
             </motion.div>

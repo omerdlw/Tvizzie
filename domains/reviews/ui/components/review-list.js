@@ -10,6 +10,7 @@ import { normalizeFeedbackText } from '@/shared/utils';
 import { mergeReviewUser } from '../../services/review-data';
 import ReviewCard from './review-card';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
+import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';
 
 export default function ReviewList({
   baseDelay = TIMELINES.CARD_BASE_DELAY,
@@ -30,7 +31,7 @@ export default function ReviewList({
   watchedMediaKeys = null,
 }) {
   if (isLoading) {
-    return <div className="py-10 text-center text-sm text-black/70">Loading reviews</div>;
+    return <ReviewCardsSkeletonList count={4} />;
   }
 
   if (loadError) {

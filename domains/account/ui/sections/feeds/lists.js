@@ -19,6 +19,7 @@ import Icon from '@/ui/primitives/icon';
 const LISTS_PAGE_ITEMS_PER_PAGE = 18;
 export default function AccountListsFeed({
   canShowLists,
+  isLoading = false,
   isOwner,
   lists,
   username,
@@ -72,6 +73,7 @@ export default function AccountListsFeed({
       currentPage={viewState.page}
       emptyMessage="No lists yet"
       icon="solar:list-broken"
+      isLoading={isLoading}
       itemsPerPage={LISTS_PAGE_ITEMS_PER_PAGE}
       lists={sortProfileLists(lists, viewState.sort)}
       onPageChange={(page) =>
@@ -89,24 +91,26 @@ export default function AccountListsFeed({
       }
       title="Lists"
       toolbar={
-        <AccountListSortBar
-          sort={viewState.sort}
-          onChange={(sort) =>
-            updateView({
-              sort,
-              page: 1,
-            })
-          }
-          onReset={
-            (lists.length > 0 && hasFilters) || hasFilters
-              ? () =>
-                  updateView({
-                    sort: parseListFilters(new URLSearchParams()).sort,
-                    page: 1,
-                  })
-              : null
-          }
-        />
+        lists.length > 0 ? (
+          <AccountListSortBar
+            sort={viewState.sort}
+            onChange={(sort) =>
+              updateView({
+                sort,
+                page: 1,
+              })
+            }
+            onReset={
+              hasFilters
+                ? () =>
+                    updateView({
+                      sort: parseListFilters(new URLSearchParams()).sort,
+                      page: 1,
+                    })
+                : null
+            }
+          />
+        ) : null
       }
     />
   );

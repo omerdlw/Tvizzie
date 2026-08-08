@@ -13,7 +13,7 @@ import {
 
 function useListsClientState({ sectionState }) {
   const { openModal } = useModalActions();
-  const { handleDeleteList, handleEditList, listDeleteConfirmation, lists } = sectionState;
+  const { handleDeleteList, handleEditList, isListsLoading, listDeleteConfirmation, lists } = sectionState;
 
   const handleOpenListCreator = useCallback(() => {
     openModal('CREATE_LIST_MODAL');
@@ -22,13 +22,12 @@ function useListsClientState({ sectionState }) {
   return {
     handleDeleteList,
     handleEditList,
+    isListsLoading,
     listDeleteConfirmation,
     lists,
     onCreateList: handleOpenListCreator,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountListsRegistry',
@@ -57,9 +56,10 @@ const ListsView = createAccountSectionView({
     onCreateList,
   }),
   skeletonVariant: 'lists',
-  renderContent: (sectionState, { handleDeleteList, handleEditList, lists }) => (
+  renderContent: (sectionState, { handleDeleteList, handleEditList, isListsLoading, lists }) => (
     <AccountListsFeed
       canShowLists={sectionState.canViewProfileCollections}
+      isLoading={isListsLoading}
       isOwner={sectionState.isOwner}
       lists={lists}
       onDeleteList={handleDeleteList}

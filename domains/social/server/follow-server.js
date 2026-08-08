@@ -113,13 +113,16 @@ export async function handleFollowsGet(request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const sessionContext = await readSessionFromRequest(request, {
-      skipSupabaseFallback: true,
-    }).catch(() => null);
     const resource = normalizeValue(searchParams.get('resource'));
     const userId = normalizeValue(searchParams.get('userId'));
     const targetId = normalizeValue(searchParams.get('targetId'));
     const status = normalizeValue(searchParams.get('status'));
+    // For relationship checks, use full Supabase session fallback so viewerId is
+    // reliably resolved even when the access token cookie isn't directly readable.
+    // For other resources, skip the fallback for performance.
+    const sessionContext = await readSessionFromRequest(request, {
+      skipSupabaseFallback: resource !== 'relationship',
+    }).catch(() => null);
     const viewerId = sessionContext?.userId || null;
     const data = await getOrLoadCachedValue({
       cacheKey: createFollowCacheKey({

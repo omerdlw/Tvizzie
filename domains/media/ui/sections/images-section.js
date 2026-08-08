@@ -101,7 +101,7 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab)}>
+      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'images')}>
         <SegmentedControl
           value={activeKey}
           className="w-auto self-start"
@@ -118,13 +118,11 @@ export default function ImagesSection({ images, baseDelay = TIMELINES.IMAGES_SEC
               return (
                 <motion.div
                   key={`${currentTab.key}-${image.file_path || 'image'}-${index}`}
-                  {...getMediaCardProps(index, baseDelay, hasSwitchedTab)}
+                  {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'images')}
                 >
                   <MediaCard
                     imageSrc={
-                      image.file_path
-                        ? `${TMDB_IMG}/${currentTab.size}${image.file_path}`
-                        : null
+                      image.file_path ? `${TMDB_IMG}/${currentTab.size}${image.file_path}` : null
                     }
                     imageClassName={
                       currentTab.key === 'logos' ? 'object-contain p-4' : 'object-cover'

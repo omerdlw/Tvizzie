@@ -185,6 +185,7 @@ export function createSupabaseAuthAdapter(options = {}) {
     client: providedClient = null,
     getOAuthRedirectUrl = null,
     oauthDefaultNextPath = '/account',
+    terminateBrowserSession = null,
   } = options;
 
   async function signInWithOAuthProvider(payload = {}) {
@@ -290,9 +291,10 @@ export function createSupabaseAuthAdapter(options = {}) {
 
     async signOut(_context = {}, options = {}) {
       const mode = normalizeValue(options?.mode).toLowerCase();
+      const terminateSession = terminateBrowserSession || (() => Promise.resolve());
 
       if (mode === 'local-purge') {
-        await terminateBrowserSession({
+        await terminateSession({
           clearServer: true,
           performNetworkSignOut: false,
         });
@@ -302,7 +304,7 @@ export function createSupabaseAuthAdapter(options = {}) {
       }
 
       try {
-        await terminateBrowserSession({
+        await terminateSession({
           clearServer: true,
           performNetworkSignOut: true,
           scope: mode === 'local' ? 'local' : 'global',

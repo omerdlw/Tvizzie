@@ -9,7 +9,7 @@ import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-overrides';
-import { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getCardProps } from '@/app/(account)/motion';
 
@@ -56,6 +56,7 @@ export default function AccountWatchedOverview({
   emptyMessage = 'No watched titles yet',
   icon = 'solar:eye-bold',
   isInitialSection = false,
+  isLoading = false,
   items = [],
   renderOverlay = null,
   revealDelay = 0,
@@ -103,7 +104,9 @@ export default function AccountWatchedOverview({
       title={title}
       titleHref={titleHref || (username ? `/account/${username}/watched` : null)}
     >
-      {cards.length > 0 ? (
+      {isLoading && cards.length === 0 ? (
+        <AccountInlineSectionLoading message="Loading watched titles..." />
+      ) : cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
             const cardProps = getCardProps(index, baseDelay);

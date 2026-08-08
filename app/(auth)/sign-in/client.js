@@ -340,11 +340,17 @@ export default function Client() {
       return;
     }
 
+    const trimmedIdentifier = String(identifier || '').trim();
+    if (!trimmedIdentifier) {
+      toast.error('Enter your email or username to reset your password');
+      return;
+    }
+
     setIsPreparingReset(true);
 
     try {
       const { email } = await assertPasswordAccountStatus({
-        identifier,
+        identifier: trimmedIdentifier,
         intent: 'password-reset',
       });
 
@@ -412,7 +418,6 @@ export default function Client() {
       setCurrentStep('password');
       setResetFlow(INITIAL_RESET_FLOW);
     } catch (error) {
-      setResetFlow(INITIAL_RESET_FLOW);
       toast.error(resolveAuthErrorMessage(error, 'Password reset could not be completed'));
     } finally {
       setResetFlow((prev) => ({ ...prev, isSubmitting: false }));

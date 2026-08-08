@@ -12,7 +12,10 @@ import {
   TIMELINES,
 } from '@/app/(media)/motion';
 
-export default function GallerySection({ images, baseDelay = TIMELINES.GALLERY_SECTION_BASE_DELAY }) {
+export default function GallerySection({
+  images,
+  baseDelay = TIMELINES.GALLERY_SECTION_BASE_DELAY,
+}) {
   const { openModal } = useModal();
   if (!images?.length) {
     return null;
@@ -21,7 +24,7 @@ export default function GallerySection({ images, baseDelay = TIMELINES.GALLERY_S
   return (
     <section className="flex w-full flex-col gap-3">
       <motion.h2
-        {...getSectionHeaderProps(baseDelay)}
+        {...getSectionHeaderProps(baseDelay, false, 'gallery')}
         className="text-[11px] font-semibold tracking-widest text-black/70 uppercase"
       >
         Gallery
@@ -31,7 +34,7 @@ export default function GallerySection({ images, baseDelay = TIMELINES.GALLERY_S
           return (
             <motion.div
               key={image.file_path || index}
-              {...getMediaCardProps(index, baseDelay)}
+              {...getMediaCardProps(index, baseDelay, false, 'gallery')}
             >
               <MediaCard
                 imageSrc={image.file_path ? `${TMDB_IMG}/w780${image.file_path}` : null}

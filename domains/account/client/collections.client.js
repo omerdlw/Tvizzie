@@ -69,8 +69,10 @@ export async function executeMediaCollectionRpc({ client, fnName, params, fallba
   return result.data;
 }
 
-export function buildUserMediaCollectionSubscriptionKey(resource, userId) {
-  return `account:collection:${resource}:${userId}`;
+export function buildUserMediaCollectionSubscriptionKey(resource, userId, options = {}) {
+  const limit = options?.limitCount ?? null;
+  const suffix = limit !== null ? `:${limit}` : '';
+  return `account:collection:${resource}:${userId}${suffix}`;
 }
 
 export function buildMediaCollectionStatusSubscriptionKey(resource, userId, mediaKey) {

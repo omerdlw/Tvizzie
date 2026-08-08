@@ -165,9 +165,9 @@ export async function handleAccountMediaPost(request) {
     assertCsrfRequest(request, getRequestContext(request));
 
     await enforceSlidingWindowRateLimit({
-      key: `rate:account-media:${authContext.userId}`,
-      limitCount: 15,
+      namespace: 'account-media-upload',
       windowMs: 60 * 1000,
+      dimensions: [{ id: 'user', value: authContext.userId, limit: 15 }],
     });
 
     const formData = await request.formData();
@@ -199,7 +199,14 @@ export async function handleAccountMediaPost(request) {
       shadowValidate: () => validateEdgeUploadTicket({ authContext, fileExtension, fileSize, mimeType, request, requestMeta, target }),
     });
 
-    return NextResponse.json({ ...payload, success: true });
+    const mediaResult = payload?.result || payload || {};
+    return NextResponse.json({
+      ...payload,
+      bucket: mediaResult.bucket || payload?.bucket || null,
+      path: mediaResult.path || payload?.path || null,
+      url: mediaResult.url || payload?.url || null,
+      success: true,
+    });
   } catch (error) {
     if (isSlidingWindowRateLimitError(error)) {
       return NextResponse.json({ error: error.message || 'Rate limit exceeded' }, { status: 429 });
@@ -287,8 +294,10 @@ export async function executeMediaCollectionRpc({ client, fnName, params, fallba
   return result.data;
 }
 
-export function buildUserMediaCollectionSubscriptionKey(resource, userId) {
-  return `account:collection:${resource}:${userId}`;
+export function buildUserMediaCollectionSubscriptionKey(resource, userId, options = {}) {
+  const limit = options?.limitCount ?? null;
+  const suffix = limit !== null ? `:${limit}` : '';
+  return `account:collection:${resource}:${userId}${suffix}`;
 }
 
 export function buildMediaCollectionStatusSubscriptionKey(resource, userId, mediaKey) {

@@ -1,7 +1,14 @@
 export const dynamic = 'force-dynamic';
 
-import { createAccountRoutePage } from '@/domains/account/ui/layouts/account-page-factory';
+import { redirect } from 'next/navigation';
 import { getCurrentAccountOverviewRouteData } from '@/domains/account/server/routes.server';
-import Client from '@/app/(account)/account/client';
 
-export default createAccountRoutePage(Client, getCurrentAccountOverviewRouteData);
+export default async function AccountPage() {
+  const routeData = await getCurrentAccountOverviewRouteData();
+
+  if (routeData?.username) {
+    redirect(`/account/${routeData.username}`);
+  }
+
+  redirect('/sign-in');
+}

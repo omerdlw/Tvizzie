@@ -255,8 +255,11 @@ export default function Client({ routeData = null }) {
   }, [auth.user?.id, reviews]);
 
   const handleToggleLike = useCallback(async () => {
-    if (!auth.isAuthenticated || !auth.user?.id || !list?.id || !resolvedUserId) {
+    if (!auth.isAuthenticated || !auth.user?.id) {
       handleSignInRequest();
+      return;
+    }
+    if (!list?.id || !resolvedUserId) {
       return;
     }
 
@@ -648,10 +651,7 @@ const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountListDetailRegistry',
-  navDescription: (_, { list, listItemsCount = 0 }) =>
-    list
-      ? `${listItemsCount} items · ${list?.likesCount || 0} likes · ${list?.reviewsCount || 0} reviews`
-      : null,
+  navDescription: (_, { list }) => list?.title || 'Lists',
   navRegistrySource: ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
   resolveOverrides: (
     _sectionState,

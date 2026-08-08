@@ -31,6 +31,15 @@ function buildReviewDocPath(subject = {}, userId) {
 export function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
   const user = payload.user && typeof payload.user === 'object' ? payload.user : {};
+  const rawKey = String(row.media_key || payload.subjectKey || '').toLowerCase();
+  const inferredSubjectType = rawKey.startsWith('tv_')
+    ? 'tv'
+    : rawKey.startsWith('movie_')
+      ? 'movie'
+      : rawKey.startsWith('list:')
+        ? 'list'
+        : 'movie';
+
   const subject = {
     subjectHref: payload.subjectHref || null,
     subjectId: payload.subjectId || null,
@@ -43,7 +52,7 @@ export function normalizeReviewRow(row = {}, subjectOverrides = {}, likes = []) 
     subjectPoster: payload.subjectPoster || null,
     subjectSlug: payload.subjectSlug || null,
     subjectTitle: payload.subjectTitle || payload.title || 'Untitled',
-    subjectType: payload.subjectType || null,
+    subjectType: payload.subjectType || inferredSubjectType,
     ...subjectOverrides,
   };
   const reviewUserId = row.user_id || payload.authorId || user.id || null;
@@ -119,14 +128,10 @@ export function dedupeReviews(items = []) {
 }
 
 export function isSupportedReviewItem(item = {}) {
-  if (isListSubjectType(item?.subjectType)) {
+  const type = String(item?.subjectType || '').trim().toLowerCase();
+  if (!type || isListSubjectType(type) || isTitleMediaType(type)) {
     return true;
   }
-
-  if (!isTitleMediaType(item?.subjectType)) {
-    return false;
-  }
-
   return true;
 }
 

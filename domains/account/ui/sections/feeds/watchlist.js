@@ -34,6 +34,7 @@ const parseCurrentFilters = (search) =>
 export default function AccountWatchlistFeed({
   auth,
   canShowWatchlistGrid,
+  isLoading = false,
   isOwner,
   loadError,
   watchlist,
@@ -95,6 +96,7 @@ export default function AccountWatchlistFeed({
       currentPage={viewState.page}
       emptyMessage="No watchlist titles yet"
       icon="solar:bookmark-bold"
+      isLoading={isLoading}
       items={filteredWatchlistItems}
       onPageChange={(page) => updateView({ page })}
       pageBasePath={collectionRootPath}

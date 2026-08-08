@@ -9,15 +9,14 @@ import {
 } from '@/domains/account/ui/sections/account-section-factory';
 
 function useWatchlistClientState({ sectionState }) {
-  const { handleRequestRemoveWatchlistItem, watchlist } = sectionState;
+  const { handleRequestRemoveWatchlistItem, isWatchlistLoading, watchlist } = sectionState;
 
   return {
     handleRequestRemoveWatchlistItem,
+    isWatchlistLoading,
     watchlist,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountWatchlistRegistry',
@@ -30,10 +29,11 @@ const WatchlistView = createAccountSectionView({
   displayName: 'AccountWatchlistView',
   Registry,
   skeletonVariant: 'collection',
-  renderContent: (sectionState, { handleRequestRemoveWatchlistItem, watchlist }) => (
+  renderContent: (sectionState, { handleRequestRemoveWatchlistItem, isWatchlistLoading, watchlist }) => (
     <AccountWatchlistFeed
       auth={sectionState.auth}
       canShowWatchlistGrid={sectionState.canViewProfileCollections}
+      isLoading={isWatchlistLoading}
       isOwner={sectionState.isOwner}
       onRemoveItem={handleRequestRemoveWatchlistItem}
       watchlist={watchlist}

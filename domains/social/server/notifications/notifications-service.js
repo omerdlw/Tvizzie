@@ -10,8 +10,8 @@ import { subscribeToUserLiveEvent } from '@/infrastructure/realtime/live-updates
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 const NOTIFICATION_LIMIT = 50;
-const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 3000;
-const NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
+const NOTIFICATION_SUBSCRIPTION_INTERVAL_MS = 20000;
+const NOTIFICATION_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 
 import { getNotificationsServer, markNotificationReadServer, removeNotificationServer } from '@/domains/social/api/notifications.server';
 

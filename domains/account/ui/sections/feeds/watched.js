@@ -35,6 +35,7 @@ const parseCurrentFilters = (search) =>
 export default function AccountWatchedFeed({
   auth,
   canShowWatchedGrid,
+  isLoading = false,
   isOwner,
   loadError,
   watchedItems,
@@ -98,6 +99,7 @@ export default function AccountWatchedFeed({
       currentPage={viewState.page}
       emptyMessage="No watched titles yet"
       icon="solar:eye-bold"
+      isLoading={isLoading}
       items={filteredWatchedItems}
       onPageChange={(page) => updateView({ page })}
       pageBasePath={collectionRootPath}

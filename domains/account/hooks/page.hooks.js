@@ -443,9 +443,14 @@ export function useAccountPageData({
   const {
     collectionCounts,
     isLoadingCollections,
+    isLikesLoading,
+    isListsLoading,
+    isWatchedLoading,
+    isWatchlistLoading,
     likes,
     lists,
     setLikes,
+    setCollectionCounts,
     setLists,
     setWatched,
     setWatchlist,
@@ -488,6 +493,10 @@ export function useAccountPageData({
     hasResolvedAccessState: true,
     likeCount: collectionCounts.likes === null ? likes.length : collectionCounts.likes,
     isLoadingCollections,
+    isLikesLoading,
+    isListsLoading,
+    isWatchedLoading,
+    isWatchlistLoading,
     isLoadingListItems,
     isAuthSessionReady,
     isCurrentAccountMissing,
@@ -532,6 +541,7 @@ export function useAccountPageActions({
   selectedList,
   listItems = [],
   setLikes,
+  setCollectionCounts,
   setLists,
   setListItems,
   setWatched,
@@ -544,6 +554,20 @@ export function useAccountPageActions({
   const searchParams = useSearchParams();
   const toast = useToast();
   const { openModal } = useModal();
+
+  const decrementCollectionCount = useCallback(
+    (key) => {
+      if (typeof setCollectionCounts !== 'function') return;
+      setCollectionCounts((current) => {
+        const value = Number(current?.[key]);
+        return {
+          ...current,
+          [key]: Number.isFinite(value) ? Math.max(0, value - 1) : current?.[key] ?? null,
+        };
+      });
+    },
+    [setCollectionCounts],
+  );
 
   const [itemRemoveConfirmation, setItemRemoveConfirmation] = useState(null);
   const [listDeleteConfirmation, setListDeleteConfirmation] = useState(null);
@@ -596,6 +620,7 @@ export function useAccountPageActions({
           }
           try {
             await deleteUserList({ listId: targetList.id, userId: auth.user.id });
+            decrementCollectionCount('lists');
             setListDeleteConfirmation(null);
             if (activeListId === targetList.id) {
               if (pathname.includes('/lists/') && profileHandle) {
@@ -615,6 +640,7 @@ export function useAccountPageActions({
     [
       activeListId,
       auth.user?.id,
+      decrementCollectionCount,
       isOwner,
       pathname,
       profileHandle,
@@ -723,6 +749,7 @@ export function useAccountPageActions({
 
   const removeActions = useAccountCollectionRemoveActions({
     auth,
+    decrementCollectionCount,
     isOwner,
     selectedList,
     setItemRemoveConfirmation,
@@ -871,16 +898,21 @@ export function useDeferredPreviewFeed({
   const feedState = useSeededFeedState(initialFeed);
   const { applyFeedResult, resetFeed, setFeedError, setIsFeedLoading, syncFeed } = feedState;
 
-  useEffect(() => {
-    if (hasSeededFeed) syncFeed(initialFeed);
-  }, [hasSeededFeed, initialFeed, syncFeed]);
+  const hasUsableSeededFeed =
+    hasSeededFeed &&
+    Array.isArray(initialFeed?.items) &&
+    initialFeed.items.length > 0;
 
   useEffect(() => {
-    if (!canLoad && !hasSeededFeed) {
+    if (hasUsableSeededFeed) syncFeed(initialFeed);
+  }, [hasUsableSeededFeed, initialFeed, syncFeed]);
+
+  useEffect(() => {
+    if (!canLoad && !hasUsableSeededFeed) {
       resetFeed();
       return undefined;
     }
-    if (hasSeededFeed) {
+    if (hasUsableSeededFeed) {
       setIsFeedLoading(false);
       return undefined;
     }
@@ -996,64 +1028,77 @@ export function useAccountSectionPage({
       isResolvingProfile ||
       (!isCurrentAccountMissing &&
         Boolean(resolvedUserId) &&
-        (!profile || !hasResolvedAccessState || (canViewPrivateContent && isLoadingCollections))),
+        (!profile || !hasResolvedAccessState)),
     isViewerReady: auth.isReady && isAuthSessionReady,
   };
 }
 
-export function useAccountEditData({ auth, initialSnapshot = null }) {
-  const { isProfileLoaded, profile } = useAccountProfile({
+export function useAccountEditData({ auth, initialSnapshot = null, toast = null }) {
+  const resolvedUserId = auth?.user?.id || null;
+  const handleProfileError = useCallback(
+    (err) => notifyAccountLoadError(toast, err, 'Profile details could not be loaded'),
+    [toast],
+  );
+  const { hasLoadedProfile, profile, setProfile } = useAccountProfile({
     initialProfile: initialSnapshot?.profile || null,
-    resolvedUserId: auth.user?.id || null,
+    onError: handleProfileError,
+    resolvedUserId,
   });
 
-  const [avatarUrl, setAvatarUrl] = useState(
-    profile?.avatarUrl || initialSnapshot?.profile?.avatarUrl || null,
-  );
-  const [bannerUrl, setBannerUrl] = useState(
-    profile?.bannerUrl || initialSnapshot?.profile?.bannerUrl || null,
-  );
-  const [displayName, setDisplayName] = useState(
-    profile?.displayName || initialSnapshot?.profile?.displayName || '',
-  );
-  const [username, setUsername] = useState(
-    profile?.username || initialSnapshot?.profile?.username || '',
-  );
-  const [description, setDescription] = useState(
-    profile?.description || initialSnapshot?.profile?.description || '',
-  );
-  const [isPrivate, setIsPrivate] = useState(
-    profile?.isPrivate === true || initialSnapshot?.profile?.isPrivate === true,
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const resolvedProfile = profile || initialSnapshot?.profile || null;
+
+  const [form, setForm] = useState(() => ({
+    avatarUrl: resolvedProfile?.avatarUrl || '',
+    bannerUrl: resolvedProfile?.bannerUrl || '',
+    description: resolvedProfile?.description || '',
+    displayName: resolvedProfile?.displayName || '',
+    isPrivate: resolvedProfile?.isPrivate === true,
+    username: resolvedProfile?.username || '',
+  }));
+
+  const [linkedProviderIdsOverride, setLinkedProviderIdsOverride] = useState(null);
+  const [linkedProviderDescriptorsOverride, setLinkedProviderDescriptorsOverride] = useState(null);
 
   useEffect(() => {
-    if (profile) {
-      setAvatarUrl(profile.avatarUrl || null);
-      setBannerUrl(profile.bannerUrl || null);
-      setDisplayName(profile.displayName || '');
-      setUsername(profile.username || '');
-      setDescription(profile.description || '');
-      setIsPrivate(profile.isPrivate === true);
+    if (resolvedProfile) {
+      setForm({
+        avatarUrl: resolvedProfile.avatarUrl || '',
+        bannerUrl: resolvedProfile.bannerUrl || '',
+        description: resolvedProfile.description || '',
+        displayName: resolvedProfile.displayName || '',
+        isPrivate: resolvedProfile.isPrivate === true,
+        username: resolvedProfile.username || '',
+      });
     }
-  }, [profile]);
+  }, [resolvedProfile]);
+
+  const applyProfile = useCallback(
+    (nextProfile) => {
+      if (typeof setProfile === 'function') {
+        setProfile(nextProfile);
+      }
+    },
+    [setProfile],
+  );
+
+  const isLoading =
+    !auth.isReady || (Boolean(resolvedUserId) && !hasLoadedProfile && !resolvedProfile);
 
   return {
-    avatarUrl,
-    bannerUrl,
-    description,
-    displayName,
-    isPrivate,
-    isProfileLoaded,
-    isSubmitting,
-    profile: profile || initialSnapshot?.profile || null,
-    setAvatarUrl,
-    setBannerUrl,
-    setDescription,
-    setDisplayName,
-    setIsPrivate,
-    setIsSubmitting,
-    setUsername,
-    username,
+    applyProfile,
+    followerCount: Number(resolvedProfile?.followerCount || 0),
+    followingCount: Number(resolvedProfile?.followingCount || 0),
+    form,
+    isLoading,
+    likesCount: Number(resolvedProfile?.likeCount || 0),
+    linkedProviderDescriptorsOverride,
+    linkedProviderIdsOverride,
+    listsCount: Number(resolvedProfile?.listCount || 0),
+    profile: resolvedProfile,
+    setForm,
+    setLinkedProviderDescriptorsOverride,
+    setLinkedProviderIdsOverride,
+    watchedCount: Number(resolvedProfile?.watchedCount || 0),
+    watchlistCount: Number(resolvedProfile?.watchlistCount || 0),
   };
 }

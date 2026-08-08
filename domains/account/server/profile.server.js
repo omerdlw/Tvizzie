@@ -202,20 +202,28 @@ export const getAccountProfile = cache(
     if (!normalizedUserId) return null;
 
     const admin = createAdminClient();
-    const profileResult = await admin
-      .from('profiles')
-      .select('*')
-      .eq('id', normalizedUserId)
-      .maybeSingle();
+    const [profileResult, counters] = await Promise.all([
+      admin
+        .from('profiles')
+        .select(ACCOUNT_PROFILE_SELECT)
+        .eq('id', normalizedUserId)
+        .maybeSingle(),
+      loadProfileCounters(normalizedUserId).catch(() => null),
+    ]);
 
     if (profileResult.error) throw new Error(profileResult.error.message || 'Account lookup failed');
     if (!profileResult.data) return null;
 
-    const [counters, followCounts, collectionCounts] = await Promise.all([
-      loadProfileCounters(normalizedUserId).catch(() => null),
-      loadFollowCounts(normalizedUserId).catch(() => null),
-      loadCollectionCounts(normalizedUserId).catch(() => null),
-    ]);
+    // profile_counters is maintained by the collection/follow RPCs and gives
+    // us one consistent snapshot. Only fall back to exact counts for legacy
+    // rows where the counter record has not been created yet.
+    const fallbackCounts = counters
+      ? null
+      : await Promise.all([
+          loadFollowCounts(normalizedUserId).catch(() => null),
+          loadCollectionCounts(normalizedUserId).catch(() => null),
+        ]);
+    const [followCounts, collectionCounts] = fallbackCounts || [];
 
     return normalizeAccountData(
       {
@@ -418,6 +426,7 @@ export const getAccountIdByUsername = cache(async (username) => {
   try {
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
       body: { resource: 'resolve', username: normalizedUsername },
+      timeoutMs: 600,
     });
     if (payload?.userId) {
       return payload.userId;
@@ -433,20 +442,71 @@ async function loadAccountProfileFallback(userId, viewerId = null) {
   return snapshot.profile || null;
 }
 
+const SERVER_PROFILE_CACHE = new Map();
+const SERVER_PROFILE_INFLIGHT = new Map();
+const SERVER_PROFILE_CACHE_TTL_MS = 4000;
+
+function getServerProfileCacheKey(userId, viewerId = null) {
+  return `${normalizeValue(userId)}:${normalizeValue(viewerId) || 'anon'}`;
+}
+
+export function invalidateCachedAccountProfiles(userId) {
+  const normalizedUserId = normalizeValue(userId);
+  if (!normalizedUserId) return;
+
+  for (const key of SERVER_PROFILE_CACHE.keys()) {
+    if (key.startsWith(`${normalizedUserId}:`)) SERVER_PROFILE_CACHE.delete(key);
+  }
+}
+
 export async function getAccountProfileByUserId(userId, { viewerId = null } = {}) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) return null;
 
-  try {
-    const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-      body: { resource: 'profile', userId: normalizedUserId, viewerId: normalizeValue(viewerId) || null },
-    });
-    if (payload?.profile) {
-      return payload.profile;
-    }
-  } catch {}
+  const cacheKey = getServerProfileCacheKey(normalizedUserId, viewerId);
+  const now = Date.now();
+  const cached = SERVER_PROFILE_CACHE.get(cacheKey);
 
-  return loadAccountProfileFallback(normalizedUserId, viewerId);
+  if (cached && cached.expiresAt > now) {
+    return cached.profile;
+  }
+
+  if (SERVER_PROFILE_INFLIGHT.has(cacheKey)) {
+    return SERVER_PROFILE_INFLIGHT.get(cacheKey);
+  }
+
+  const profilePromise = (async () => {
+    let profile = null;
+    try {
+      const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
+        body: { resource: 'profile', userId: normalizedUserId, viewerId: normalizeValue(viewerId) || null },
+        timeoutMs: 600,
+      });
+      if (payload?.profile) profile = payload.profile;
+    } catch {}
+
+    if (!profile) profile = await loadAccountProfileFallback(normalizedUserId, viewerId);
+
+    if (profile) {
+      SERVER_PROFILE_CACHE.set(cacheKey, {
+        expiresAt: Date.now() + SERVER_PROFILE_CACHE_TTL_MS,
+        profile,
+      });
+      if (SERVER_PROFILE_CACHE.size > 300) {
+        const firstKey = SERVER_PROFILE_CACHE.keys().next().value;
+        SERVER_PROFILE_CACHE.delete(firstKey);
+      }
+    }
+
+    return profile;
+  })();
+
+  SERVER_PROFILE_INFLIGHT.set(cacheKey, profilePromise);
+  try {
+    return await profilePromise;
+  } finally {
+    SERVER_PROFILE_INFLIGHT.delete(cacheKey);
+  }
 }
 
 export async function getAccountProfileByUsername(username, { viewerId = null } = {}) {
@@ -456,6 +516,7 @@ export async function getAccountProfileByUsername(username, { viewerId = null } 
   try {
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
       body: { resource: 'profile', username: normalizedUsername, viewerId: normalizeValue(viewerId) || null },
+      timeoutMs: 600,
     });
     if (payload?.profile) {
       return payload.profile;

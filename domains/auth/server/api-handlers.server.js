@@ -13,13 +13,14 @@ import { createPendingPasswordSignIn, enforceAuthRateLimit } from './security.se
 import {
   clearPendingSignInCookie,
   createPendingSignInToken,
+  isDeviceTrusted,
   lookupPasswordAccountByEmail,
   requestVerificationCode,
   resolvePasswordAccountIdentifier,
   setPendingSignInCookie,
   verifyCodeRequest,
 } from './verification.server';
-import { createSignUpProofToken, verifyPasswordResetProofToken } from './proof-tokens.server';
+import { createSignUpProofToken, createPasswordResetProofToken, verifyPasswordResetProofToken } from './proof-tokens.server';
 import { ensurePasswordAccountRecord } from './account.server';
 
 // ============================================================
@@ -56,6 +57,37 @@ export async function handleSignInPost(request) {
 
     const requestContext = getRequestContext(request);
     const pendingSignIn = await createPendingPasswordSignIn({ email, password });
+
+    const isTrusted = isDeviceTrusted(request, {
+      userId: pendingSignIn.userId,
+      deviceId: requestContext.deviceId,
+    });
+
+    if (!isTrusted) {
+      await requestVerificationCode({
+        email,
+        purpose: 'sign-in',
+        userId: pendingSignIn.userId,
+        deviceId: requestContext.deviceId,
+      });
+
+      const pendingToken = createPendingSignInToken({
+        accessToken: pendingSignIn.accessToken,
+        deviceHash: requestContext.deviceHash,
+        email,
+        refreshToken: pendingSignIn.refreshToken,
+        user: pendingSignIn.user || null,
+        userId: pendingSignIn.userId,
+      });
+
+      const response = NextResponse.json({
+        requiresVerification: true,
+        email,
+      });
+      setPendingSignInCookie(response, pendingToken);
+      setDeviceIdCookie(response, requestContext.deviceId);
+      return response;
+    }
 
     const response = NextResponse.json({ success: true });
     applySessionCookies(response, {
@@ -159,7 +191,26 @@ export async function handleVerificationPost(request) {
 
     if (action === 'verify') {
       const verified = await verifyCodeRequest({ code, email, purpose });
-      return NextResponse.json({ success: true, ...verified });
+      const result = { success: true, ...verified };
+      const normPurpose = String(purpose || '').trim().toLowerCase();
+
+      if (normPurpose === 'sign-up') {
+        result.signUpProof = createSignUpProofToken({
+          challengeJti: verified.challengeJti,
+          challengeKey: verified.challengeKey,
+          email: verified.email,
+          userId: verified.userId,
+        });
+      } else if (normPurpose === 'password-reset') {
+        result.passwordResetProof = createPasswordResetProofToken({
+          challengeJti: verified.challengeJti,
+          challengeKey: verified.challengeKey,
+          email: verified.email,
+          userId: verified.userId,
+        });
+      }
+
+      return NextResponse.json(result);
     }
 
     return NextResponse.json({ error: 'Invalid verification action' }, { status: 400 });

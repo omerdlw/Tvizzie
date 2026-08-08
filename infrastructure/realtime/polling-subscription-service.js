@@ -286,30 +286,35 @@ export function invalidatePollingSubscription(subscriptionKey, options = {}) {
     return;
   }
 
-  const entry = sharedSubscriptionRegistry.get(resolvedKey);
-
-  if (!entry) {
-    return;
+  const matchingKeys = [];
+  for (const registryKey of sharedSubscriptionRegistry.keys()) {
+    if (registryKey === resolvedKey || registryKey.startsWith(resolvedKey + ':')) {
+      matchingKeys.push(registryKey);
+    }
   }
 
-  clearEntryCleanup(entry);
+  for (const key of matchingKeys) {
+    const entry = sharedSubscriptionRegistry.get(key);
+    if (!entry) continue;
 
-  if (options.payload !== undefined) {
-    primePollingSubscription(resolvedKey, options.payload, {
-      emit: options.emit !== false,
-    });
-    return;
-  }
+    clearEntryCleanup(entry);
 
-  if (options.clearCache !== false) {
-    clearEntryPayload(entry);
-  }
+    if (options.payload !== undefined && key === resolvedKey) {
+      primePollingSubscription(resolvedKey, options.payload, {
+        emit: options.emit !== false,
+      });
+      continue;
+    }
 
-  if (options.refetch === true && entry.subscribers.size > 0) {
-    
-    void runSharedEntry(entry, {
-      forceEmit: options.forceEmit === true,
-    }).catch(() => {});
+    if (options.clearCache !== false) {
+      clearEntryPayload(entry);
+    }
+
+    if (options.refetch === true && entry.subscribers.size > 0) {
+      void runSharedEntry(entry, {
+        forceEmit: options.forceEmit === true,
+      }).catch(() => {});
+    }
   }
 }
 

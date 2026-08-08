@@ -19,6 +19,20 @@ export async function fetchProfileReviewFeedServer({
   }
 
   try {
+    const directResult = await fetchProfileReviewFeedLegacyServer({
+      cursor,
+      mode,
+      pageSize,
+      userId,
+      viewerId,
+    });
+
+    if (Array.isArray(directResult?.items)) {
+      return directResult;
+    }
+  } catch {}
+
+  try {
     const result = await invokeInternalEdgeFunction(ACCOUNT_REVIEWS_FEED_FUNCTION, {
       body: {
         cursor,
@@ -40,12 +54,6 @@ export async function fetchProfileReviewFeedServer({
           : 0,
     };
   } catch {
-    return fetchProfileReviewFeedLegacyServer({
-      cursor,
-      mode,
-      pageSize,
-      userId,
-      viewerId,
-    });
+    return paginateReviewItems([], cursor, pageSize);
   }
 }

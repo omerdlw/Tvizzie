@@ -28,6 +28,15 @@ import {
 } from './list-shared.js';
 import { syncUserListDerivedState } from './derived-state.js';
 
+async function applyProfileListCounterDelta(client, userId, delta) {
+  const result = await client.rpc('profile_counter_apply_delta', {
+    p_lists_delta: delta,
+    p_user_id: userId,
+  });
+
+  assertSupabaseResult(result, 'Profile list count could not be updated');
+}
+
 function fireListCreatedActivity({ listId, ownerSnapshot, slug, title, userId }) {
   fireActivityEvent(ACTIVITY_EVENT_TYPES.LIST_CREATED, {
     dedupeKey: buildCanonicalActivityDedupeKey({
@@ -85,6 +94,7 @@ export async function createUserList({ userId, title, description = '', coverUrl
     .single();
 
   assertSupabaseResult(insertResult, 'List could not be created');
+  await applyProfileListCounterDelta(client, userId, 1);
 
   fireListCreatedActivity({
     listId: insertResult.data.id,
@@ -142,6 +152,7 @@ export async function createUserListWithItems({
     .single();
 
   assertSupabaseResult(insertResult, 'List could not be created');
+  await applyProfileListCounterDelta(client, userId, 1);
 
   if (normalizedItems.length > 0) {
     const itemRows = normalizedItems.map((item) => {
@@ -261,9 +272,16 @@ export async function deleteUserList({ userId, listId }) {
     action: 'delete-list-activity',
     listId,
   });
-  const result = await client.from('lists').delete().eq('id', listId).eq('user_id', userId);
+  const result = await client
+    .from('lists')
+    .delete()
+    .eq('id', listId)
+    .eq('user_id', userId)
+    .select('id')
+    .single();
 
   assertSupabaseResult(result, 'List could not be deleted');
+  await applyProfileListCounterDelta(client, userId, -1);
 
   return true;
 }

@@ -241,14 +241,15 @@ export function getListCardProps(index = 0, baseDelay = 0) {
   };
 }
 
-export function getActivityItemProps(index = 0) {
+export function getActivityItemProps(index = 0, baseDelay = 0) {
   return {
     initial: { opacity: 0, x: -24, filter: BLURS.LIGHT },
+    animate: { opacity: 1, x: 0, filter: BLURS.NONE },
     whileInView: { opacity: 1, x: 0, filter: BLURS.NONE },
     viewport: SCROLL_VIEWPORT,
     transition: {
       duration: DURATIONS.CARD_FAST,
-      delay: Math.min(index * DURATIONS.STAGGER, 0.28),
+      delay: baseDelay + Math.min(index * DURATIONS.STAGGER, 0.28),
       ease: EASINGS.LUXURY,
     },
   };

@@ -90,7 +90,8 @@ export function normalizeActivityRow(row = {}) {
 
 export function isVisibleActivityItem(item = {}) {
   if (!item || !ACTIVITY_EVENT_TYPE_SET.has(item.eventType)) return false;
-  return item.subject.type === 'movie' || item.subject.type === 'tv' || item.subject.type === 'list';
+  const subjectType = String(item.subject?.type || '').toLowerCase();
+  return !subjectType || subjectType === 'movie' || subjectType === 'tv' || subjectType === 'list';
 }
 
 function getActivityTimestamp(item = {}) {
@@ -278,7 +279,7 @@ export function projectActivityItem(item = {}, viewerId = null) {
 export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId, viewerId = null }) {
   const normalizedOffset = Number.isFinite(Number(offset)) ? Math.max(0, Math.floor(Number(offset))) : 0;
   const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.floor(Number(pageSize))) : 20;
-  const fetchLimit = Math.min(200, Math.max(normalizedOffset + normalizedPageSize * 3, 48));
+  const fetchLimit = Math.min(50, Math.max(normalizedOffset + normalizedPageSize * 2, 8));
 
   const [profile, likes, watchlist, watched, lists, likedLists, reviewFeed] = await Promise.all([
     getAccountProfileByUserId(userId, { viewerId }).catch(() => null),
@@ -294,7 +295,9 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   const derivedItems = [];
 
   (reviewFeed?.items || []).forEach((review) => {
-    const timestamp = normalizeTimestamp(review.createdAt || review.updatedAt);
+    const timestamp = normalizeTimestamp(review.createdAt || review.updatedAt || review.created_at);
+    const mediaKey = String(review.mediaKey || review.subjectKey || review.docPath || '').toLowerCase();
+    const inferredType = mediaKey.startsWith('tv_') ? 'tv' : mediaKey.startsWith('list:') ? 'list' : 'movie';
     derivedItems.push({
       actor,
       createdAt: timestamp,
@@ -312,10 +315,10 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
       }),
       sourceUserId: userId,
       subject: normalizeSubject({
-        id: review.subjectId || review.mediaId,
-        poster: review.subjectPoster || review.posterPath,
-        title: review.subjectTitle || review.title,
-        type: review.subjectType || 'movie',
+        id: review.subjectId || review.mediaId || review.id,
+        poster: review.subjectPoster || review.posterPath || review.poster_path,
+        title: review.subjectTitle || review.title || review.name,
+        type: review.subjectType || review.mediaType || inferredType,
       }),
       updatedAt: timestamp,
       version: 2,
@@ -324,23 +327,25 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   });
 
   (Array.isArray(watched) ? watched : []).forEach((item) => {
-    const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at);
+    const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at || item.updated_at);
+    const mediaKey = String(item.mediaKey || item.media_key || item.id || '').toLowerCase();
+    const inferredType = item.entityType || item.entity_type || item.media_type || (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
     derivedItems.push({
       actor,
       createdAt: timestamp,
-      dedupeKey: `derived:watched:${item.mediaKey || item.id}`,
+      dedupeKey: `derived:watched:${item.mediaKey || item.media_key || item.entityId || item.entity_id || item.id}`,
       details: {},
       eventType: ACTIVITY_EVENT_TYPES.WATCHED_ADDED,
-      id: `derived-watched-${item.mediaKey || item.id}`,
+      id: `derived-watched-${item.mediaKey || item.media_key || item.entityId || item.entity_id || item.id}`,
       occurredAt: timestamp,
       renderKind: 'text',
       reviewCard: null,
       sourceUserId: userId,
       subject: normalizeSubject({
-        id: item.entityId || item.id,
+        id: item.entityId || item.entity_id || item.id,
         poster: item.poster_path || item.posterPath,
         title: item.title || item.name,
-        type: item.entityType || item.media_type || 'movie',
+        type: inferredType,
       }),
       updatedAt: timestamp,
       version: 2,
@@ -363,7 +368,7 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
       sourceUserId: userId,
       subject: normalizeSubject({
         id: list.id,
-        poster: list.coverPosterPath || list.posterPath,
+        poster: list.coverPosterPath || list.posterPath || list.poster_path,
         slug: list.slug,
         title: list.title || list.name,
         type: 'list',
@@ -375,23 +380,25 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   });
 
   (Array.isArray(likes) ? likes : []).forEach((item) => {
-    const timestamp = normalizeTimestamp(item.addedAt || item.created_at);
+    const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at);
+    const mediaKey = String(item.mediaKey || item.media_key || item.id || '').toLowerCase();
+    const inferredType = item.entityType || item.entity_type || item.media_type || (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
     derivedItems.push({
       actor,
       createdAt: timestamp,
-      dedupeKey: `derived:like:${item.mediaKey || item.id}`,
+      dedupeKey: `derived:like:${item.mediaKey || item.media_key || item.entityId || item.entity_id || item.id}`,
       details: {},
       eventType: ACTIVITY_EVENT_TYPES.LIKED_ADDED,
-      id: `derived-like-${item.mediaKey || item.id}`,
+      id: `derived-like-${item.mediaKey || item.media_key || item.entityId || item.entity_id || item.id}`,
       occurredAt: timestamp,
       renderKind: 'text',
       reviewCard: null,
       sourceUserId: userId,
       subject: normalizeSubject({
-        id: item.entityId || item.id,
+        id: item.entityId || item.entity_id || item.id,
         poster: item.poster_path || item.posterPath,
         title: item.title || item.name,
-        type: item.entityType || item.media_type || 'movie',
+        type: inferredType,
       }),
       updatedAt: timestamp,
       version: 2,
@@ -433,12 +440,14 @@ export async function fetchAccountActivityFeedServer({ cursor = null, pageSize =
     isFromFollowing: normalizeValue(item?.sourceUserId) !== normalizeValue(userId),
   }));
 
-  const derivedUserActivityItems = rawActivityItems.length === 0 && scope === 'user'
+  const derivedUserActivityItems = scope === 'user'
     ? (await fetchDerivedUserActivityItems({ offset: normalizedOffset, pageSize: normalizedPageSize, userId, viewerId })).map((item) => ({ ...item, isFromFollowing: false }))
     : [];
 
+  const combinedItems = dedupeActivityItems([...rawActivityItems, ...derivedUserActivityItems]);
+
   const items = sortActivityItemsForMode(
-    filterActivityItemsBySubject(dedupeActivityItems(rawActivityItems.length > 0 ? rawActivityItems : derivedUserActivityItems), normalizedSubject),
+    filterActivityItemsBySubject(combinedItems, normalizedSubject),
     normalizedSort,
   );
 

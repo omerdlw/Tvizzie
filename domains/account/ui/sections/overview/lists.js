@@ -3,13 +3,14 @@
 import { motion } from 'framer-motion';
 import AccountListCard from '@/domains/account/ui/components/lists/list-card';
 import Icon from '@/ui/primitives/icon';
-import { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getListCardProps } from '@/app/(account)/motion';
 const OVERVIEW_LIST_LIMIT = 3;
 export default function AccountListsOverview({
   emptyMessage = 'No lists yet',
   icon = 'solar:list-broken',
+  isLoading = false,
   items = [],
   isOwner = false,
   onDeleteList = null,
@@ -31,7 +32,9 @@ export default function AccountListsOverview({
       title={title}
       titleHref={titleHref || (username ? `/account/${username}/lists` : null)}
     >
-      {visibleLists.length > 0 ? (
+      {isLoading && visibleLists.length === 0 ? (
+        <AccountInlineSectionLoading variant="list" />
+      ) : visibleLists.length > 0 ? (
         <div className="grid w-full grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
           {visibleLists.map((list, index) => {
             const listProps = getListCardProps(index);

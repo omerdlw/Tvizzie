@@ -1,9 +1,7 @@
 'use client';
 
 import { cloneElement, isValidElement } from 'react';
-import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
 import AccountSocialModal from '@/domains/social/ui/modals/account-social-modal';
-import { resolveVersionedImageUrl } from '@/shared/utils';
 import CreateListModal from '@/domains/account/ui/modals/create-list-modal';
 import ListEditorModal from '@/domains/account/ui/modals/list-editor-modal';
 import ListPickerModal from '@/domains/account/ui/modals/list-picker-modal';
@@ -291,31 +289,6 @@ export function buildAccountPageState({
     isLoading: isPageLoading,
     navRegistrySource,
   });
-  const heroBannerSrc =
-    resolveVersionedImageUrl(String(profile?.bannerUrl || ''))
-      .trim()
-      .replace(/^(null|undefined)$/i, '') || null;
-  const backgroundConfig = heroBannerSrc
-    ? {
-        image: heroBannerSrc,
-        overlay: true,
-        overlayOpacity: 0.38,
-        overlayColor: 'var(--white)',
-        noiseStyle: {
-          opacity: 0.12,
-        },
-        animation: MEDIA_BACKGROUND_ANIMATION,
-      }
-    : {
-        image: null,
-        video: null,
-        overlay: false,
-        overlayOpacity: 0,
-        noiseStyle: {
-          opacity: 0,
-        },
-        animation: MEDIA_BACKGROUND_ANIMATION,
-      };
   const confirmationSurface = createConfirmationSurfaceEntry(
     itemRemoveConfirmation || listDeleteConfirmation || unfollowConfirmation,
     {
@@ -327,7 +300,6 @@ export function buildAccountPageState({
   const effectiveNavSurface = confirmationSurface || navSurface;
 
   return {
-    background: backgroundConfig,
     modal: {
       CREATE_LIST_MODAL: CreateListModal,
       LIST_EDITOR_MODAL: ListEditorModal,

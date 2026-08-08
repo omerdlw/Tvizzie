@@ -96,7 +96,7 @@ export const ACTIVITY_SELECT = [
   'user_id',
 ].join(',');
 
-export const ACTIVITY_SUBJECT_FILTERS = new Set(['all', 'list', 'movie']);
+export const ACTIVITY_SUBJECT_FILTERS = new Set(['all', 'list', 'movie', 'tv']);
 export const ACTIVITY_SORT_MODES = new Set(['newest', 'oldest']);
 export const FOLLOW_STATUS_ACCEPTED = 'accepted';
 
@@ -142,6 +142,7 @@ export const PROFILE_COUNTERS_TIMEOUT_MS = 1200;
 export const FOLLOW_COUNTS_TIMEOUT_MS = 1200;
 
 export const OVERVIEW_ACTIVITY_LIMIT = 36;
+export const OVERVIEW_LIKES_LIMIT = 12;
 export const OVERVIEW_LISTS_LIMIT = 3;
 export const OVERVIEW_REVIEW_LIMIT = 3;
 export const OVERVIEW_WATCHED_LIMIT = 12;

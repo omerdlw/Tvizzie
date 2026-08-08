@@ -50,7 +50,7 @@ function getCollectionCount(initialCollections, key, hasSeededCollectionSnapshot
 
 function hasUsableSeededItems(items, seededCount, hasSeededCollectionSnapshot) {
   if (!hasSeededCollectionSnapshot || !Array.isArray(items)) return false;
-  return items.length > 0 || seededCount === 0;
+  return items.length > 0;
 }
 
 export function getCollectionPreviewLimits(previewLimits = null) {
@@ -192,6 +192,7 @@ async function removeWithOptimisticState({ item, serviceCall, setConfirmation, s
 
 export function useAccountCollectionRemoveActions({
   auth,
+  decrementCollectionCount,
   isOwner,
   selectedList,
   setItemRemoveConfirmation,
@@ -227,9 +228,10 @@ export function useAccountCollectionRemoveActions({
         setConfirmation: setItemRemoveConfirmation,
         setItems: setLikes,
         toast,
+        onRemove: () => decrementCollectionCount?.('likes'),
       });
     },
-    [auth.user?.id, canMutateCollection, setItemRemoveConfirmation, setLikes, toast],
+    [auth.user?.id, canMutateCollection, decrementCollectionCount, setItemRemoveConfirmation, setLikes, toast],
   );
 
   const handleRemoveWatchlistItem = useCallback(
@@ -241,9 +243,10 @@ export function useAccountCollectionRemoveActions({
         setConfirmation: setItemRemoveConfirmation,
         setItems: setWatchlist,
         toast,
+        onRemove: () => decrementCollectionCount?.('watchlist'),
       });
     },
-    [auth.user?.id, canMutateCollection, setItemRemoveConfirmation, setWatchlist, toast],
+    [auth.user?.id, canMutateCollection, decrementCollectionCount, setItemRemoveConfirmation, setWatchlist, toast],
   );
 
   const handleRemoveWatchedItem = useCallback(
@@ -255,9 +258,10 @@ export function useAccountCollectionRemoveActions({
         setConfirmation: setItemRemoveConfirmation,
         setItems: setWatched,
         toast,
+        onRemove: () => decrementCollectionCount?.('watched'),
       });
     },
-    [auth.user?.id, canMutateCollection, setItemRemoveConfirmation, setWatched, toast],
+    [auth.user?.id, canMutateCollection, decrementCollectionCount, setItemRemoveConfirmation, setWatched, toast],
   );
 
   const requestRemove = useCallback(
@@ -338,13 +342,17 @@ export function useAccountCollections({
   const [watchlist, setWatchlist] = useState(seededState.items.watchlist);
   const [lists, setLists] = useState(seededState.items.lists);
   const [collectionCounts, setCollectionCounts] = useState(seededState.counts);
-  const [isLoadingCollections, setIsLoadingCollections] = useState(!seededState.hasSeededCollectionSnapshot);
+  const [isLikesLoading, setIsLikesLoading] = useState(!shouldUseSeeded.likes);
+  const [isWatchedLoading, setIsWatchedLoading] = useState(!shouldUseSeeded.watched);
+  const [isWatchlistLoading, setIsWatchlistLoading] = useState(!shouldUseSeeded.watchlist);
+  const [isListsLoading, setIsListsLoading] = useState(!shouldUseSeeded.lists);
 
   useEffect(() => {
     const isPreviewOnlyMode = hasAnyCollectionPreviewLimit(normalizedPreviewLimits);
     const normalizedActiveTab = String(activeTab || '').trim().toLowerCase();
 
-    const shouldScopeByActiveTab = Boolean(normalizedActiveTab);
+    const shouldScopeByActiveTab =
+      Boolean(normalizedActiveTab) && normalizedActiveTab !== 'overview';
     const shouldSubscribeLikes = !shouldScopeByActiveTab || normalizedActiveTab === 'likes';
     const shouldSubscribeLists = !shouldScopeByActiveTab || normalizedActiveTab === 'lists';
     const shouldSubscribeWatched = !shouldScopeByActiveTab || normalizedActiveTab === 'watched';
@@ -356,7 +364,10 @@ export function useAccountCollections({
       setWatchlist([]);
       setLists([]);
       setCollectionCounts(EMPTY_COLLECTION_COUNTS);
-      setIsLoadingCollections(false);
+      setIsLikesLoading(false);
+      setIsWatchedLoading(false);
+      setIsWatchlistLoading(false);
+      setIsListsLoading(false);
       return undefined;
     }
 
@@ -371,7 +382,10 @@ export function useAccountCollections({
         setWatchlist(seededState.items.watchlist);
         setLists(seededState.items.lists);
         setCollectionCounts(seededState.counts);
-        setIsLoadingCollections(false);
+        setIsLikesLoading(false);
+        setIsWatchedLoading(false);
+        setIsWatchlistLoading(false);
+        setIsListsLoading(false);
         return undefined;
       }
 
@@ -380,7 +394,10 @@ export function useAccountCollections({
       setWatchlist([]);
       setLists([]);
       setCollectionCounts(createCollectionCountsForUnavailableState(isPreviewOnlyMode));
-      setIsLoadingCollections(false);
+      setIsLikesLoading(false);
+      setIsWatchedLoading(false);
+      setIsWatchlistLoading(false);
+      setIsListsLoading(false);
       return undefined;
     }
 
@@ -402,11 +419,25 @@ export function useAccountCollections({
         (nextLikes) => {
           if (isDisposed) return;
           setLikes((current) => mergeCollectionItemsWithExistingMetadata(current, nextLikes));
-          setCollectionCounts((prev) => ({ ...prev, likes: nextLikes.length }));
-          setIsLoadingCollections(false);
+          setCollectionCounts((prev) => ({
+            ...prev,
+            // A preview is intentionally truncated; never expose its length
+            // as the user's total collection count.
+            likes: normalizedPreviewLimits.likes > 0 ? prev.likes : nextLikes.length,
+          }));
+          setIsLikesLoading(false);
         },
-        { onError: (error) => notifyAccountLoadError(toast, error, 'Likes'), limitCount: normalizedPreviewLimits.likes, seededItems: shouldUseSeeded.likes ? seededState.items.likes : null },
+        {
+          onError: (error) => {
+            setIsLikesLoading(false);
+            notifyAccountLoadError(toast, error, 'Likes');
+          },
+          limitCount: normalizedPreviewLimits.likes,
+          seededItems: shouldUseSeeded.likes ? seededState.items.likes : null,
+        },
       );
+    } else {
+      setIsLikesLoading(false);
     }
 
     if (shouldSubscribeWatched) {
@@ -415,11 +446,23 @@ export function useAccountCollections({
         (nextWatched) => {
           if (isDisposed) return;
           setWatched((current) => mergeCollectionItemsWithExistingMetadata(current, nextWatched));
-          setCollectionCounts((prev) => ({ ...prev, watched: nextWatched.length }));
-          setIsLoadingCollections(false);
+          setCollectionCounts((prev) => ({
+            ...prev,
+            watched: normalizedPreviewLimits.watched > 0 ? prev.watched : nextWatched.length,
+          }));
+          setIsWatchedLoading(false);
         },
-        { onError: (error) => notifyAccountLoadError(toast, error, 'Watched movies'), limitCount: normalizedPreviewLimits.watched, seededItems: shouldUseSeeded.watched ? seededState.items.watched : null },
+        {
+          onError: (error) => {
+            setIsWatchedLoading(false);
+            notifyAccountLoadError(toast, error, 'Watched movies');
+          },
+          limitCount: normalizedPreviewLimits.watched,
+          seededItems: shouldUseSeeded.watched ? seededState.items.watched : null,
+        },
       );
+    } else {
+      setIsWatchedLoading(false);
     }
 
     if (shouldSubscribeWatchlist) {
@@ -428,11 +471,23 @@ export function useAccountCollections({
         (nextWatchlist) => {
           if (isDisposed) return;
           setWatchlist((current) => mergeCollectionItemsWithExistingMetadata(current, nextWatchlist));
-          setCollectionCounts((prev) => ({ ...prev, watchlist: nextWatchlist.length }));
-          setIsLoadingCollections(false);
+          setCollectionCounts((prev) => ({
+            ...prev,
+            watchlist: normalizedPreviewLimits.watchlist > 0 ? prev.watchlist : nextWatchlist.length,
+          }));
+          setIsWatchlistLoading(false);
         },
-        { onError: (error) => notifyAccountLoadError(toast, error, 'Watchlist'), limitCount: normalizedPreviewLimits.watchlist, seededItems: shouldUseSeeded.watchlist ? seededState.items.watchlist : null },
+        {
+          onError: (error) => {
+            setIsWatchlistLoading(false);
+            notifyAccountLoadError(toast, error, 'Watchlist');
+          },
+          limitCount: normalizedPreviewLimits.watchlist,
+          seededItems: shouldUseSeeded.watchlist ? seededState.items.watchlist : null,
+        },
       );
+    } else {
+      setIsWatchlistLoading(false);
     }
 
     if (shouldSubscribeLists) {
@@ -441,20 +496,23 @@ export function useAccountCollections({
         (nextLists) => {
           if (isDisposed) return;
           setLists(nextLists);
-          setCollectionCounts((prev) => ({ ...prev, lists: nextLists.length }));
-          setIsLoadingCollections(false);
+          setCollectionCounts((prev) => ({
+            ...prev,
+            lists: normalizedPreviewLimits.lists > 0 ? prev.lists : nextLists.length,
+          }));
+          setIsListsLoading(false);
         },
-        { onError: (error) => notifyAccountLoadError(toast, error, 'Lists'), limitCount: normalizedPreviewLimits.lists, seededItems: shouldUseSeeded.lists ? seededState.items.lists : null },
+        {
+          onError: (error) => {
+            setIsListsLoading(false);
+            notifyAccountLoadError(toast, error, 'Lists');
+          },
+          limitCount: normalizedPreviewLimits.lists,
+          seededItems: shouldUseSeeded.lists ? seededState.items.lists : null,
+        },
       );
-    }
-
-    // If no collection subscription is active (e.g. activeTab is 'reviews' or
-    // 'activity'), nothing will ever call setIsLoadingCollections(false) —
-    // causing isPageLoading to be stuck true. Resolve it immediately.
-    const hasAnySubscription =
-      shouldSubscribeLikes || shouldSubscribeWatched || shouldSubscribeWatchlist || shouldSubscribeLists;
-    if (!hasAnySubscription) {
-      setIsLoadingCollections(false);
+    } else {
+      setIsListsLoading(false);
     }
 
     return () => {
@@ -468,7 +526,11 @@ export function useAccountCollections({
 
   return {
     collectionCounts,
-    isLoadingCollections,
+    isLoadingCollections: isLikesLoading || isWatchedLoading || isWatchlistLoading || isListsLoading,
+    isLikesLoading,
+    isListsLoading,
+    isWatchedLoading,
+    isWatchlistLoading,
     likes,
     lists,
     setCollectionCounts,

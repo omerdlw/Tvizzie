@@ -10,35 +10,17 @@ import {
 } from '@/domains/account/utils';
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
-import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
+import { BlurryText } from '@/ui/motion/animations/blurry-text';
 import {
-  heroBannerVariants,
-  heroOverlayVariants,
   heroAvatarVariants,
-  heroNameVariants,
-  getHeroStatProps,
   heroBioVariants,
+  getHeroStatProps,
 } from '@/app/(account)/motion';
-
-const ACCOUNT_HERO_HEIGHT_CLASS = 'min-h-[220px] sm:min-h-[280px] lg:min-h-[260px]';
-const ACCOUNT_HERO_IMAGE_CLASS =
-  'h-full w-full object-cover object-[center_24%] sm:object-[center_28%] lg:object-[center_32%]';
-const ACCOUNT_HERO_BANNER_WRAPPER_CLASS =
-  'mx-auto h-full w-full sm:w-[88%] lg:w-[70%] [mask-image:none] [-webkit-mask-image:none] sm:[mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)] sm:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,black_8%,black_92%,transparent_100%)]';
-const ACCOUNT_HERO_AMBIENT_OVERLAY_CLASS = 'account-hero-ambient-overlay absolute inset-0';
-const ACCOUNT_HERO_SOFTEN_OVERLAY_CLASS = 'account-hero-soften-overlay absolute inset-0';
-const ACCOUNT_HERO_LEFT_FADE_CLASS =
-  'account-hero-left-fade absolute inset-y-0 left-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const ACCOUNT_HERO_RIGHT_FADE_CLASS =
-  'account-hero-right-fade absolute inset-y-0 right-0 w-[16%] sm:w-[26%] lg:w-[34%]';
-const ACCOUNT_HERO_TOP_FADE_CLASS = 'account-hero-top-fade absolute inset-x-0 top-0 h-32 sm:h-36';
-const ACCOUNT_HERO_TINT_CLASS = 'account-hero-tint-overlay absolute inset-0';
-const ACCOUNT_HERO_CENTER_GLOW_CLASS =
-  'absolute left-1/2 top-[16%] h-40 w-40 -translate-x-1/2 bg-white/60 blur-3xl sm:h-64 sm:w-64';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
+
 function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, options = {}) {
   const safeCount = Number(count) || 0;
   return {
@@ -47,6 +29,7 @@ function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, 
     value: formatHeroCount(safeCount),
   };
 }
+
 function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '', index = 0 }) {
   const statProps = getHeroStatProps(index);
   const content = (
@@ -84,10 +67,12 @@ function HeroInlineMetric({ item, className = '', labelClassName = '', valueClas
     </motion.span>
   );
 }
+
 function HeroBioPreview({ description, onReadMore }) {
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const shouldShowReadMore = isOverflowing && typeof onReadMore === 'function';
+
   useEffect(() => {
     const textElement = textRef.current;
     if (!textElement || !description) {
@@ -108,118 +93,33 @@ function HeroBioPreview({ description, onReadMore }) {
     observer.observe(textElement);
     return () => observer.disconnect();
   }, [description]);
+
   if (!description) {
     return null;
   }
+
   return (
-    <motion.div
-      className="relative mt-2 w-full"
-      initial={heroBioVariants.initial}
-      animate={heroBioVariants.animate}
-      transition={heroBioVariants.transition}
-    >
-      <p ref={textRef} className={cn('line-clamp-2 text-sm leading-6 break-words')}>
+    <div className="flex w-full flex-col items-center gap-2 text-center">
+      <p
+        ref={textRef}
+        className="line-clamp-3 text-sm leading-relaxed text-pretty text-black/70 sm:text-base sm:leading-7 break-words"
+      >
         {description}
       </p>
+
       {shouldShowReadMore ? (
-        <div className="account-hero-text-fade absolute right-0 bottom-0 flex h-[24px] items-center justify-end pl-12">
-          <button
-            className="text-sm font-semibold text-black/70 uppercase"
-            type="button"
-            onClick={onReadMore}
-          >
-            More
-          </button>
-        </div>
-      ) : null}
-    </motion.div>
-  );
-}
-function HeroTextContent({ countsLabel, displayName, mobileStats }) {
-  return (
-    <div className="w-full min-w-0 text-left">
-      <div className="flex items-center gap-4">
-        <motion.h1
-          className="font-zuume max-w-full min-w-0 text-[2.9rem] leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-[3.6rem] lg:text-[4.8rem]"
-          initial={heroNameVariants.initial}
-          animate={heroNameVariants.animate}
-          transition={heroNameVariants.transition}
+        <button
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:text-black transition-colors"
+          type="button"
+          onClick={onReadMore}
         >
-          {displayName}
-        </motion.h1>
-      </div>
-
-      <div className="mt-2 flex flex-col gap-0.5 text-sm">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1 min-[420px]:grid-cols-3 lg:hidden">
-          {mobileStats.map((item, index) => (
-            <HeroInlineMetric
-              key={`${item.label}-${item.value}-${index}`}
-              item={item}
-              index={index}
-              className="inline-flex min-w-0 flex-col items-start gap-0.5 text-left"
-              valueClassName="text-base font-semibold leading-none tracking-tight"
-              labelClassName="max-w-full truncate text-[13px] leading-none text-black/75"
-            />
-          ))}
-        </div>
-
-        <div className="hidden items-center gap-x-6 gap-y-2 lg:flex lg:gap-x-7">
-          {countsLabel.map((item, index) => (
-            <HeroInlineMetric
-              key={`${item.label}-${item.value}-${index}`}
-              item={item}
-              index={index}
-              className="inline-flex items-baseline gap-1.5 whitespace-nowrap"
-              valueClassName="text-base font-semibold leading-none tracking-tight "
-              labelClassName="text-base leading-none text-black/75"
-            />
-          ))}
-        </div>
-      </div>
+          Read More
+        </button>
+      ) : null}
     </div>
   );
 }
-function HeroStatsGrid({
-  stats,
-  className = '',
-  itemClassName = '',
-  labelClassName = '',
-  valueClassName = '',
-}) {
-  return (
-    <div className={className}>
-      {stats.map((stat, index) =>
-        stat.href ? (
-          <motion.div key={`${stat.label}-${stat.value}-${index}`} {...getHeroStatProps(index + 4)}>
-            <Link
-              href={stat.href}
-              className={cn(itemClassName, '')}
-            >
-              <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-              <div className={labelClassName}>{stat.label}</div>
-            </Link>
-          </motion.div>
-        ) : typeof stat.onClick === 'function' ? (
-          <motion.div key={`${stat.label}-${stat.value}-${index}`} {...getHeroStatProps(index + 4)}>
-            <button
-              type="button"
-              onClick={stat.onClick}
-              className={cn('border-0 bg-transparent p-0', itemClassName, '')}
-            >
-              <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-              <div className={labelClassName}>{stat.label}</div>
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div key={`${stat.label}-${stat.value}-${index}`} className={itemClassName} {...getHeroStatProps(index + 4)}>
-            <div className={valueClassName}>{formatHeroCount(stat.value)}</div>
-            <div className={labelClassName}>{stat.label}</div>
-          </motion.div>
-        ),
-      )}
-    </div>
-  );
-}
+
 export default function AccountHero({
   likesCount = 0,
   followerCount = 0,
@@ -232,14 +132,11 @@ export default function AccountHero({
   watchlistCount = 0,
 }) {
   const heroDisplayName = String(profile?.displayName || '').trim() || 'Account';
-  const heroBannerSrc =
-    resolveVersionedImageUrl(String(profile?.bannerUrl || ''))
-      .trim()
-      .replace(/^(null|undefined)$/i, '') || null;
   const resolvedWatchedCount =
     watchedCount !== null && watchedCount !== undefined && Number.isFinite(Number(watchedCount))
       ? Number(watchedCount)
       : Number(profile?.watchedCount || 0);
+
   const heroCountItems = [
     createHeroCollectionMetaItem(watchlistCount, 'Watchlist', 'Watchlist', {
       href: profile?.username ? `/account/${profile.username}/watchlist` : null,
@@ -254,6 +151,7 @@ export default function AccountHero({
       href: profile?.username ? `/account/${profile.username}/likes` : null,
     }),
   ].filter(Boolean);
+
   const heroStats = [
     {
       label: 'Following',
@@ -266,57 +164,62 @@ export default function AccountHero({
       value: followerCount,
     },
   ];
-  const mobileHeroStats = [...heroCountItems, ...heroStats].map((item) => ({
+
+  const allHeroMetrics = [...heroCountItems, ...heroStats].map((item) => ({
     ...item,
     value: formatHeroCount(item.value),
   }));
+
   const heroAvatarSrc = getUserAvatarUrl(profile);
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
+
   return (
-    <section className="relative w-full">
-      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative flex items-end px-4 pb-4 sm:px-8 sm:pb-5 lg:pb-6`}>
-        <div className="flex w-full flex-col gap-2 sm:gap-3">
-          <div className="grid w-full gap-y-4 lg:grid-cols-[96px_minmax(0,1fr)_240px] lg:grid-rows-[auto_auto] lg:items-end lg:gap-x-6 lg:gap-y-0">
-            <motion.div
-              className="h-20 w-20 justify-self-start overflow-hidden rounded-2xl sm:h-24 sm:w-24 lg:row-span-2 lg:self-end"
-              initial={heroAvatarVariants.initial}
-              animate={heroAvatarVariants.animate}
-              transition={heroAvatarVariants.transition}
-            >
-              <AdaptiveImage
-                mode="img"
-                className="h-full w-full rounded-2xl object-cover"
-                src={heroAvatarSrc}
-                alt={heroDisplayName}
-                decoding="async"
-                onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
-                wrapperClassName="h-full w-full rounded-2xl"
-              />
-            </motion.div>
+    <section className="relative flex w-full flex-col items-center gap-5 text-center sm:gap-7 lg:gap-8 py-2 sm:py-4">
+      {/* Avatar & Title Row */}
+      <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
+        <motion.div
+          className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+          initial={false}
+          animate={heroAvatarVariants.animate}
+          transition={heroAvatarVariants.transition}
+        >
+          <AdaptiveImage
+            mode="img"
+            className="h-full w-full rounded-2xl object-cover"
+            src={heroAvatarSrc}
+            alt={heroDisplayName}
+            decoding="async"
+            onError={(event) => applyAvatarFallback(event, heroAvatarFallbackSrc)}
+            wrapperClassName="h-full w-full rounded-2xl"
+          />
+        </motion.div>
 
-            <div className="lg:col-start-2 lg:row-span-2 lg:self-end">
-              <HeroTextContent
-                countsLabel={heroCountItems}
-                displayName={heroDisplayName}
-                mobileStats={mobileHeroStats}
-              />
-            </div>
-
-            <div className="hidden lg:col-start-3 lg:row-span-2 lg:block lg:self-center lg:justify-self-end">
-              <HeroStatsGrid
-                stats={heroStats}
-                className="grid grid-cols-2 gap-6 text-center"
-                itemClassName="inline-flex min-w-0 items-baseline gap-1.5 py-1 whitespace-nowrap lg:flex-col lg:items-center lg:gap-0.5 lg:py-0"
-                valueClassName="text-base font-semibold leading-none tracking-tight sm:text-lg lg:text-[2rem]"
-                labelClassName="text-base leading-none text-black/75 lg:mt-1 lg:text-[9px] lg:uppercase lg:tracking-widest"
-              />
-            </div>
-          </div>
-          <div className="w-full lg:pl-[120px]">
-            <HeroBioPreview description={profile?.description} onReadMore={onReadMore} />
-          </div>
-        </div>
+        <h1 className="font-zuume max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl text-left text-black">
+          {heroDisplayName}
+        </h1>
       </div>
+
+      {/* Plain Text Stats Under Title */}
+      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 px-2 text-sm sm:text-base">
+        {allHeroMetrics.map((item, index) => (
+          <HeroInlineMetric
+            key={`${item.label}-${item.value}-${index}`}
+            item={item}
+            index={index}
+            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 hover:text-black transition-colors"
+            valueClassName="font-semibold text-black leading-none tracking-tight"
+            labelClassName="text-black/75 leading-none"
+          />
+        ))}
+      </div>
+
+      {/* Biography */}
+      {profile?.description ? (
+        <motion.div initial={false} animate={heroBioVariants.animate} transition={heroBioVariants.transition} className="mx-auto max-w-[72ch] w-full px-4">
+          <HeroBioPreview description={profile.description} onReadMore={onReadMore} />
+        </motion.div>
+      ) : null}
     </section>
   );
 }
+

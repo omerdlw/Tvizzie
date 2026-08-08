@@ -68,6 +68,7 @@ export function createChallengeProofToken({
   challengeJti,
   challengeKey,
   email,
+  userId = null,
   expiresAt = Date.now() + 10 * 60 * 1000,
   missingPayloadMessage = 'Challenge proof requires challenge, key, and email',
   secret,
@@ -85,6 +86,7 @@ export function createChallengeProofToken({
       challengeJti: normalizedChallengeJti,
       challengeKey: normalizedChallengeKey,
       email: normalizedEmail,
+      userId: normalizeValue(userId) || null,
       exp: Math.floor(Number(expiresAt) / 1000),
       jti: randomBytes(12).toString('hex'),
     },
@@ -117,6 +119,7 @@ export function verifyChallengeProofToken(
     challengeJti,
     challengeKey,
     email: payloadEmail,
+    userId: normalizeValue(payload?.userId) || null,
     expiresAt: new Date(expiresAtMs).toISOString(),
   };
 }
@@ -141,12 +144,14 @@ export function createPasswordResetProofToken({
   challengeJti,
   challengeKey,
   email,
+  userId,
   expiresAt = Date.now() + 10 * 60 * 1000,
 }) {
   return createChallengeProofToken({
     challengeJti,
     challengeKey,
     email,
+    userId,
     expiresAt,
     missingPayloadMessage: 'Password reset proof requires challenge, key, and email',
     secret: getPasswordResetSecret(),
@@ -178,12 +183,14 @@ export function createSignUpProofToken({
   challengeJti,
   challengeKey,
   email,
+  userId,
   expiresAt = Date.now() + 10 * 60 * 1000,
 }) {
   return createChallengeProofToken({
     challengeJti,
     challengeKey,
     email,
+    userId,
     expiresAt,
     missingPayloadMessage: 'Sign-up proof requires challenge, key, and email',
     secret: getSignUpSecret(),

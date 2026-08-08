@@ -104,8 +104,17 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
     ],
   );
 
+  const hasUsableSeededActivityFeed = useMemo(
+    () =>
+      hasSeededActivityFeed &&
+      ((Array.isArray(initialActivityFeed?.items) && initialActivityFeed.items.length > 0) ||
+        Boolean(initialActivityFeed?.hasMore) ||
+        Number(initialActivityFeed?.totalCount || 0) > 0),
+    [hasSeededActivityFeed, initialActivityFeed],
+  );
+
   const shouldBlockFeedLoad = useMemo(() => {
-    if (hasSeededActivityFeed) {
+    if (hasUsableSeededActivityFeed) {
       return false;
     }
 
@@ -116,7 +125,7 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
     return !isOwner && isPrivateProfile && !canViewPrivateContent;
   }, [
     canViewPrivateContent,
-    hasSeededActivityFeed,
+    hasUsableSeededActivityFeed,
     isOwner,
     isPrivateProfile,
     isViewerReady,
@@ -157,12 +166,12 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
   );
 
   useEffect(() => {
-    if (!hasSeededActivityFeed) {
+    if (!hasUsableSeededActivityFeed) {
       return;
     }
 
     syncFeed(initialActivityFeed);
-  }, [hasSeededActivityFeed, initialActivityFeed, syncFeed]);
+  }, [hasUsableSeededActivityFeed, initialActivityFeed, syncFeed]);
 
   useEffect(() => {
     const nextControls = parseInitialActivityControls(searchParams);
@@ -185,7 +194,7 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
       return;
     }
 
-    if (hasSeededActivityFeed) {
+    if (hasUsableSeededActivityFeed) {
       setIsFeedLoading(false);
       return;
     }
@@ -231,7 +240,7 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
     activityFilters.subject,
     currentPage,
     effectiveResolvedUserId,
-    hasSeededActivityFeed,
+    hasUsableSeededActivityFeed,
     resetFeed,
     setFeedError,
     setIsFeedLoading,

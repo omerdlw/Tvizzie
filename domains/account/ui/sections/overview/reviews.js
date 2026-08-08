@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { actionButtonVariants } from '@/app/(account)/motion';
 function buildLikedMediaKeySet(items = []) {
@@ -96,22 +97,20 @@ export default function AccountReviewsOverview({
       title={title}
       titleHref={titleHref}
     >
-      {listedReviewCount === 0 && !isLoading && !loadError ? (
-        <div className="rounded-xl border border-black/15 bg-white/40 p-4 text-sm text-black/70">
-          {emptyMessage}
-        </div>
-      ) : listedReviewCount === 0 && !isLoading && loadError ? (
-        <div className="rounded-xl border border-black/15 bg-white/40 p-4 text-sm text-black/70">
-          {loadError}
-        </div>
+      {isLoading && listedReviewCount === 0 ? (
+        <AccountInlineSectionLoading variant="review" />
+      ) : listedReviewCount === 0 && loadError ? (
+        <AccountInlineSectionState>{loadError}</AccountInlineSectionState>
+      ) : listedReviewCount === 0 ? (
+        <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
         <div>
           <ReviewList
             currentUserId={currentUserId}
             displayVariant="account"
             isInitialSection={isInitialSection}
-            isLoading={isLoading && listedReviewCount === 0}
-            loadError={listedReviewCount === 0 ? loadError : null}
+            isLoading={false}
+            loadError={null}
             onDeleteRequest={onDeleteRequest || (() => {})}
             onEdit={onEdit || (() => {})}
             onLike={onLike}

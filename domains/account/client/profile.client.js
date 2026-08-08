@@ -97,6 +97,7 @@ export function normalizeEmailAddress(value) {
 // ============================================================
 
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
+const accountResolveRequestCache = new Map();
 import { getAccountProfileServer, updateAccountProfileServer } from '../api/profile.server';
 import { searchAccountsServer } from '../api/search.server';
 
@@ -176,8 +177,8 @@ export async function requestSyncUserAccountEmail({ email, userId }) {
 // Subscriptions & Summary Refresh Service
 // ============================================================
 
-const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 2500;
-const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 8000;
+const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 20000;
+const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
 const ACCOUNT_REFRESH_TIMERS = new Map();
 const DEFAULT_REFRESH_DELAY_MS = 250;
 
@@ -299,12 +300,13 @@ export async function uploadAccountMediaFile({ file, target = 'avatar' }) {
   const payload = await response.json().catch(() => ({ error: 'Image upload failed' }));
   if (!response.ok) throw new Error(payload?.error || 'Image upload failed');
 
-  const url = cleanString(payload?.url);
+  const mediaResult = payload?.result || payload || {};
+  const url = cleanString(payload?.url || mediaResult?.url);
   if (!url) throw new Error('Image upload returned an invalid URL');
 
   return {
-    bucket: cleanString(payload?.bucket) || null,
-    path: cleanString(payload?.path) || null,
+    bucket: cleanString(payload?.bucket || mediaResult?.bucket) || null,
+    path: cleanString(payload?.path || mediaResult?.path) || null,
     url,
   };
 }

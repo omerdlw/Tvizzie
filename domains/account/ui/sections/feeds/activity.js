@@ -11,11 +11,11 @@ import { AccountActivityFilterBar } from '@/domains/account/ui/filters/content-f
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
 import ReviewCard from '@/domains/reviews/ui/components/review-card';
 import RatingStars from '@/domains/reviews/ui/components/rating-stars';
-import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
+import AccountSectionLayout, { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import { ActivityItemsSkeletonList, FilterBarSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import { getActivityItemProps } from '@/app/(account)/motion';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
-const STATE_MESSAGE_CLASS = 'bg-primary text-black/50 rounded-xl border border-black/5 p-3';
 
 function formatActivityTime(value) {
   if (!value) return null;
@@ -71,7 +71,11 @@ export default function AccountActivityFeed({
       title={title}
       titleHref={titleHref}
     >
-      {onFiltersChange && (listedActivityCount > 0 || hasFilters) && (
+      {onFiltersChange && isLoading && visibleItems.length === 0 ? (
+        <div className="mb-4">
+          <FilterBarSkeleton />
+        </div>
+      ) : onFiltersChange && (listedActivityCount > 0 || hasFilters) ? (
         <AccountActivityFilterBar
           filters={filters}
           subjectOptions={collectActivitySubjectOptions()}
@@ -91,16 +95,16 @@ export default function AccountActivityFeed({
               : null
           }
         />
-      )}
+      ) : null}
 
       {isLoading && visibleItems.length === 0 ? (
-        <div className={STATE_MESSAGE_CLASS}>Loading activity</div>
+        <ActivityItemsSkeletonList count={6} />
       ) : loadError ? (
-        <div className={STATE_MESSAGE_CLASS}>{normalizeFeedbackText(loadError)}</div>
+        <AccountInlineSectionState>{normalizeFeedbackText(loadError)}</AccountInlineSectionState>
       ) : listedActivityCount === 0 ? (
-        <div className={STATE_MESSAGE_CLASS}>
+        <AccountInlineSectionState>
           {hasFilters ? 'No activity matches the current filters' : emptyMessage}
-        </div>
+        </AccountInlineSectionState>
       ) : (
         <div>
           {visibleItems.map((item, index) => (

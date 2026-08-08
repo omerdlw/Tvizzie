@@ -7,13 +7,18 @@ import MediaCard from '@/domains/media/ui/components/media-card';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import { useModal } from '@/modules/modal';
 import Icon from '@/ui/primitives/icon';
-import { getCarouselButtonProps, getMediaCardProps, getSectionHeaderProps } from '@/app/(media)/motion';
+import {
+  getCarouselButtonProps,
+  getMediaCardProps,
+  getSectionHeaderProps,
+  TIMELINES,
+} from '@/app/(media)/motion';
 
 function getAvailableTypes(videos) {
   return [...new Set(videos?.map((video) => video.type).filter(Boolean))];
 }
 
-export default function VideosSection({ videos }) {
+export default function VideosSection({ videos, baseDelay = TIMELINES.VIDEOS_SECTION_BASE_DELAY }) {
   const { openModal } = useModal();
   const availableTypes = useMemo(() => getAvailableTypes(videos), [videos]);
   const [activeType, setActiveType] = useState(null);
@@ -56,7 +61,7 @@ export default function VideosSection({ videos }) {
 
   return (
     <section className="flex w-full flex-col gap-3">
-      <motion.div {...getSectionHeaderProps(0, hasSwitchedTab)}>
+      <motion.div {...getSectionHeaderProps(baseDelay, hasSwitchedTab, 'videos')}>
         <SegmentedControl
           value={activeType}
           className="w-auto self-start"
@@ -73,7 +78,7 @@ export default function VideosSection({ videos }) {
               return (
                 <motion.div
                   key={video.id}
-                  {...getMediaCardProps(index, 0, hasSwitchedTab)}
+                  {...getMediaCardProps(index, baseDelay, hasSwitchedTab, 'videos')}
                 >
                   <MediaCard
                     className="w-[min(18rem,calc(100vw-4.5rem))] sm:w-72"
@@ -86,15 +91,13 @@ export default function VideosSection({ videos }) {
                     fallbackIconSize={24}
                     overlay={
                       <>
-                        <div className="center absolute transition-all duration-150 ease-linear inset-0 group-hover:opacity-0">
-                          <div className="center rounded-full text-primary size-8 border border-white/20 bg-white/20 backdrop-blur-sm">
+                        <div className="center absolute inset-0 transition-all duration-150 ease-linear group-hover:opacity-0">
+                          <div className="center text-primary size-8 rounded-full border border-white/20 bg-white/20 backdrop-blur-sm">
                             <Icon icon="solar:play-bold" size={16} />
                           </div>
                         </div>
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 text-white group-hover:from-black">
-                          <h3 className="truncate text-sm font-bold text-white">
-                            {video.name}
-                          </h3>
+                          <h3 className="truncate text-sm font-bold text-white">{video.name}</h3>
                         </div>
                       </>
                     }

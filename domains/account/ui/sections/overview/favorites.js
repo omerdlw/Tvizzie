@@ -10,7 +10,7 @@ import {
 } from '@/domains/media/utils/poster-overrides';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
+import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getCardProps } from '@/app/(account)/motion';
 const OVERVIEW_ROW_CARD_LIMIT = 5;
@@ -43,9 +43,11 @@ function getFavoritePoster(item) {
 }
 export default function AccountFavoritesOverview({
   baseDelay,
+  cardLimit = OVERVIEW_ROW_CARD_LIMIT,
   emptyMessage = 'No favorites showcase yet',
   icon = 'solar:star-bold',
   isInitialSection = true,
+  isLoading = false,
   isOwner = false,
   items = [],
   onRemoveItem,
@@ -55,6 +57,7 @@ export default function AccountFavoritesOverview({
   summaryLabel = null,
   title = 'Favorites Showcase',
   titleHref = null,
+  wideGrid = false,
 }) {
   const posterPreferenceVersion = usePosterPreferenceVersion();
   const [pendingItemId, setPendingItemId] = useState(null);
@@ -91,9 +94,15 @@ export default function AccountFavoritesOverview({
       title={title}
       titleHref={titleHref}
     >
-      {cards.length > 0 ? (
-        <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5">
-          {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {
+      {isLoading && cards.length === 0 ? (
+        <AccountInlineSectionLoading message="Loading favorites..." />
+      ) : cards.length > 0 ? (
+        <div
+          className={`grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 ${
+            wideGrid ? 'lg:grid-cols-6' : ''
+          }`}
+        >
+          {cards.slice(0, cardLimit).map((card, index) => {
             const cardProps = getCardProps(index, baseDelay);
             return (
               <motion.div
