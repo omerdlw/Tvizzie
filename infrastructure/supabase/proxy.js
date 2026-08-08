@@ -9,7 +9,12 @@ import {
   normalizeStorageValue,
   parseSupabaseSessionAccessToken,
 } from './auth-storage';
-import { assertSupabaseBrowserEnv, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-constants';
+import {
+  assertSupabaseBrowserEnv,
+  SUPABASE_AUTH_COOKIE_OPTIONS,
+  SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_URL,
+} from './supabase-constants';
 
 const CSRF_COOKIE_NAME = 'tvz_auth_csrf';
 const CSRF_MAX_AGE_SECONDS = 12 * 60 * 60;
@@ -178,6 +183,7 @@ export async function updateSession(request) {
 
   if (shouldRefreshSession(request)) {
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      cookieOptions: SUPABASE_AUTH_COOKIE_OPTIONS,
       global: {
         fetch: async (input, init = {}) => {
           const { signal, cleanup, didTimeout } = createTimeoutSignal(

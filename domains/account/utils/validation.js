@@ -61,12 +61,22 @@ export function normalizeAccountDisplayNameSearchValue(value) {
   return normalizeValue(value).toLocaleLowerCase();
 }
 
+export function sanitizeAccountSearchTerm(value) {
+  return normalizeValue(value)
+    .replace(/[(),.%]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 80)
+    .trim();
+}
+
 export function normalizeProviderIds(value) {
   return Array.isArray(value) ? value : [];
 }
 
 export function normalizeEmail(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 export function normalizeOptionalText(value) {
@@ -81,7 +91,9 @@ export function normalizeProviderDescriptors(value) {
   return value
     .map((provider) => ({
       email: normalizeEmail(provider?.email),
-      id: String(provider?.id || '').trim().toLowerCase(),
+      id: String(provider?.id || '')
+        .trim()
+        .toLowerCase(),
       uid: String(provider?.uid || '').trim() || null,
     }))
     .filter((provider) => provider.id);

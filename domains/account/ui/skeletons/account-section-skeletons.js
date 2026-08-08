@@ -1,42 +1,82 @@
 'use client';
 
-// ─── Shimmer Utility ──────────────────────────────────────────────────────────
-// A single CSS class string used everywhere for a consistent pulse rhythm.
-const S = 'animate-pulse';
+import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
 
-// ─── Section Heading Skeleton (matches AccountSectionHeading 1-to-1) ──────────
+const S = 'skeleton-block animate-pulse';
+const SOFT = 'skeleton-block-soft animate-pulse';
+
+const SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';
+const SECTION_CONTENT_CLASS = 'col-span-12 flex min-w-0 flex-col';
+const BAND_PADDING_CLASS = 'p-5 sm:p-6';
+
+/** The loading state uses the same full-width bands and rules as AccountSectionLayout. */
+function SectionSkeleton({
+  titleWidth = 'w-32',
+  summary = true,
+  showHeader = true,
+  children,
+  contentClassName = '',
+}) {
+  return (
+    <section className="relative bg-transparent">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
+      />
+      <div className={ACCOUNT_SECTION_SHELL_CLASS}>
+        <div className={SECTION_GRID_CLASS}>
+          <div className={SECTION_CONTENT_CLASS}>
+            {showHeader ? (
+              <>
+                <div className={`flex w-full flex-col ${BAND_PADDING_CLASS}`}>
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <div className={`size-5 shrink-0 ${S}`} />
+                      <div className={`h-3 ${titleWidth} ${S}`} />
+                    </div>
+                    {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
+                  </div>
+                </div>
+                <div className="relative left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10" />
+              </>
+            ) : null}
+            <div className={`${BAND_PADDING_CLASS} ${contentClassName}`}>{children}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
   return (
-    <div className="flex w-full flex-col gap-4 mb-4">
-      <div className="flex w-full items-center justify-between gap-4">
+    <div className="flex w-full flex-col">
+      <div className={`${BAND_PADDING_CLASS} flex w-full items-center justify-between gap-4`}>
         <div className="flex min-w-0 items-center gap-2">
-          <div className={`size-5 shrink-0 rounded-md bg-black/10 ${S}`} />
-          <div className={`h-3 ${titleWidth} rounded-md bg-black/10 ${S}`} />
+          <div className={`size-5 shrink-0 ${S}`} />
+          <div className={`h-3 ${titleWidth} ${S}`} />
         </div>
-        <div className={`h-3 w-12 rounded-md bg-black/[0.07] ${S}`} />
+        <div className={`h-3 w-16 ${SOFT}`} />
       </div>
-      <div className="h-px bg-black/10" />
+      <div className="h-px w-screen max-w-6xl self-center bg-black/10" />
     </div>
   );
 }
 
-// ─── Poster Cards Row Skeleton ────────────────────────────────────────────────
 export function PosterCardsSkeletonRow({ count = 6 }) {
   return (
     <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`aspect-[2/3] w-full rounded-2xl bg-black/10 ${S}`}
-          style={{ animationDelay: `${i * 60}ms` }}
+          className={`aspect-[2/3] w-full ${S}`}
+          style={{ animationDelay: `${i * 45}ms` }}
         />
       ))}
     </div>
   );
 }
 
-// ─── Activity Items Skeleton (matches real ActivityItem row 1-to-1) ───────────
-// Real layout: grid-cols-[minmax(0,1fr)_auto], border-b, text line(s) + timestamp
 const ACTIVITY_LINE_WIDTHS = ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2', 'w-3/5', 'w-2/5'];
 
 export function ActivityItemsSkeletonList({ count = 6 }) {
@@ -45,59 +85,44 @@ export function ActivityItemsSkeletonList({ count = 6 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-black/10 py-5 last:border-b-0"
-          style={{ animationDelay: `${i * 50}ms` }}
+          className={`grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-black/10 ${i === 0 ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
         >
-          {/* Text line(s) — mimics inline "OMERDLW rated ★★★★ [Film Title]" */}
           <div className="min-w-0 space-y-2 pt-0.5">
-            <div
-              className={`h-[1.05rem] ${ACTIVITY_LINE_WIDTHS[i % ACTIVITY_LINE_WIDTHS.length]} rounded-md bg-black/10 ${S}`}
-            />
-            {/* Some rows have a sub-line (e.g. review excerpt) */}
-            {i % 3 === 0 && (
-              <div className={`h-3 w-2/5 rounded-md bg-black/[0.07] ${S}`} />
-            )}
+            <div className={`h-4 ${ACTIVITY_LINE_WIDTHS[i % ACTIVITY_LINE_WIDTHS.length]} ${S}`} />
+            {i % 3 === 0 ? <div className={`h-3 w-2/5 ${SOFT}`} /> : null}
           </div>
-          {/* Timestamp pill */}
-          <div className={`h-3.5 w-7 shrink-0 rounded-md bg-black/[0.07] ${S} mt-0.5`} />
+          <div className={`mt-0.5 h-3.5 w-7 shrink-0 ${SOFT}`} />
         </div>
       ))}
     </div>
   );
 }
 
-// ─── List Card Skeleton (matches AccountListCard 3-D stack + glass panel) ─────
 function SingleListCardSkeleton({ delay = 0 }) {
   return (
     <article className="relative w-full" style={{ animationDelay: `${delay}ms` }}>
-      {/* 3-D Stack Panel */}
-      <div className="relative h-[232px] w-full overflow-hidden rounded-2xl bg-black/[0.06]">
+      <div className="relative h-[232px] w-full overflow-hidden bg-white/40">
         <div className="absolute inset-0 flex items-center justify-center">
-          {[-36, -18, 0, 18, 36].map((offset, idx) => (
+          {[-76, -38, 0, 38, 76].map((offset, index) => (
             <div
-              key={idx}
-              className={`absolute h-[156px] w-[98px] rounded-xl bg-black/10 shadow-sm ${S}`}
+              key={index}
+              className={`absolute h-[156px] w-[98px] bg-black/[0.08] ${S}`}
               style={{
-                transform: `translateX(${offset}px) rotate(${offset * 0.28}deg) scale(${1 - Math.abs(offset) * 0.003})`,
-                zIndex: 5 - Math.abs(idx - 2),
-                animationDelay: `${delay + idx * 30}ms`,
+                transform: `translateX(${offset}px) rotate(${(index - 2) * 10}deg)`,
+                zIndex: 5 - Math.abs(index - 2),
+                animationDelay: `${delay + index * 45}ms`,
               }}
             />
           ))}
         </div>
       </div>
-
-      {/* Glass Info Panel */}
-      <div className="relative z-10 -mt-12 space-y-2 rounded-2xl border border-black/10 bg-white/80 p-4 backdrop-blur-md">
-        {/* Title */}
-        <div className={`h-5 w-2/3 rounded-lg bg-black/10 ${S}`} />
-        {/* Description lines */}
-        <div className={`h-3.5 w-full rounded bg-black/[0.08] ${S}`} />
-        <div className={`h-3.5 w-4/5 rounded bg-black/[0.05] ${S}`} />
-        {/* Footer row */}
-        <div className="flex items-center justify-between border-t border-black/10 pt-3">
-          <div className={`h-3 w-20 rounded bg-black/[0.08] ${S}`} />
-          <div className={`h-3 w-16 rounded bg-black/[0.08] ${S}`} />
+      <div className="absolute right-0 bottom-0 left-0 z-10 min-h-[124px] overflow-hidden bg-white p-4">
+        <div className={`h-5 w-2/3 ${S}`} />
+        <div className={`mt-2 h-3.5 w-full ${SOFT}`} />
+        <div className={`mt-1.5 h-3.5 w-4/5 ${SOFT}`} />
+        <div className="mt-3 flex h-11 items-center justify-between pt-3">
+          <div className={`h-3 w-24 ${SOFT}`} />
+          <div className={`h-3 w-20 ${SOFT}`} />
         </div>
       </div>
     </article>
@@ -114,10 +139,7 @@ export function ListCardsSkeletonGrid({ count = 6 }) {
   );
 }
 
-// ─── Review Card Skeleton (matches ReviewCard poster + metadata layout) ────────
-// Real layout: flex gap-4, poster (h-28 w-20 rounded-2xl), flex-1 with title + rating badge + 2 text lines + date
 const REVIEW_TITLE_WIDTHS = ['w-48', 'w-36', 'w-52', 'w-40'];
-const REVIEW_LINE_WIDTHS = ['w-full', 'w-5/6', 'w-4/5', 'w-full'];
 
 export function ReviewCardsSkeletonList({ count = 4 }) {
   return (
@@ -125,24 +147,17 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex gap-4 border-b border-black/10 py-5 last:border-b-0"
-          style={{ animationDelay: `${i * 70}ms` }}
+          className={`flex gap-4 border-b border-black/10 ${i === 0 ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
         >
-          {/* Poster */}
-          <div className={`h-28 w-20 shrink-0 rounded-2xl bg-black/10 ${S}`} />
-
-          {/* Metadata column */}
-          <div className="flex min-w-0 flex-1 flex-col justify-start gap-2 pt-0.5">
-            {/* Title + Rating badge row */}
+          <div className={`h-24 w-16 shrink-0 sm:h-28 sm:w-[72px] ${S}`} />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
             <div className="flex items-center justify-between gap-3">
-              <div className={`h-4 ${REVIEW_TITLE_WIDTHS[i % REVIEW_TITLE_WIDTHS.length]} rounded bg-black/10 ${S}`} />
-              <div className={`h-6 w-14 shrink-0 rounded-xl bg-black/10 ${S}`} />
+              <div className={`h-4 ${REVIEW_TITLE_WIDTHS[i % REVIEW_TITLE_WIDTHS.length]} ${S}`} />
+              <div className={`h-6 w-14 shrink-0 ${S}`} />
             </div>
-            {/* Review text lines */}
-            <div className={`h-3.5 ${REVIEW_LINE_WIDTHS[i % REVIEW_LINE_WIDTHS.length]} rounded bg-black/[0.08] ${S}`} />
-            <div className={`h-3.5 w-3/4 rounded bg-black/[0.06] ${S}`} />
-            {/* Date */}
-            <div className={`mt-1 h-3 w-20 rounded bg-black/[0.06] ${S}`} />
+            <div className={`h-3.5 w-full ${SOFT}`} />
+            <div className={`h-3.5 w-3/4 ${SOFT}`} />
+            <div className={`mt-1 h-3 w-20 ${SOFT}`} />
           </div>
         </div>
       ))}
@@ -150,107 +165,111 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
   );
 }
 
-// ─── Media Grid Skeleton (Watched / Watchlist / Likes full-page) ──────────────
-// No filter bar. Just the 12-poster grid that matches AccountMediaGridPage.
 export function AccountMediaGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <div
-          key={i}
-          className={`aspect-[2/3] w-full rounded-2xl bg-black/10 ${S}`}
-          style={{ animationDelay: `${i * 45}ms` }}
-        />
+    <SectionSkeleton showHeader={false}>
+      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        <FilterBarSkeleton />
+      </div>
+      <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className={`aspect-[2/3] w-full ${S}`}
+            style={{ animationDelay: `${i * 45}ms` }}
+          />
+        ))}
+      </div>
+    </SectionSkeleton>
+  );
+}
+
+export function AccountActivitySkeleton() {
+  return (
+    <SectionSkeleton showHeader={false}>
+      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        <FilterBarSkeleton />
+      </div>
+      <ActivityItemsSkeletonList count={8} />
+    </SectionSkeleton>
+  );
+}
+
+export function AccountReviewsSkeleton() {
+  return (
+    <SectionSkeleton showHeader={false}>
+      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        <FilterBarSkeleton />
+      </div>
+      <ReviewCardsSkeletonList count={6} />
+    </SectionSkeleton>
+  );
+}
+
+export function AccountListsSkeleton() {
+  return (
+    <SectionSkeleton showHeader={false}>
+      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        <FilterBarSkeleton />
+      </div>
+      <ListCardsSkeletonGrid count={6} />
+    </SectionSkeleton>
+  );
+}
+
+export function AccountOverviewSkeleton() {
+  return (
+    <div className="w-full">
+      <SectionSkeleton titleWidth="w-24">
+        <PosterCardsSkeletonRow count={6} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-36">
+        <ActivityItemsSkeletonList count={4} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-20">
+        <ListCardsSkeletonGrid count={3} />
+      </SectionSkeleton>
+      <SectionSkeleton titleWidth="w-32">
+        <ReviewCardsSkeletonList count={3} />
+      </SectionSkeleton>
+    </div>
+  );
+}
+
+export function AccountEditSkeleton() {
+  return (
+    <SectionSkeleton titleWidth="w-28" summary={false} contentClassName="mx-auto w-full max-w-xl">
+      <div className="space-y-6 bg-white/40 p-5 sm:p-6">
+        <div className="flex flex-col items-center gap-3">
+          <div className={`size-28 ${S}`} />
+          <div className={`h-3.5 w-28 ${SOFT}`} />
+        </div>
+        <div className="space-y-4 pt-5">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className={`h-3 w-24 ${SOFT}`} />
+              <div className={`h-12 w-full bg-white/50 ${S}`} />
+            </div>
+          ))}
+          <div className="space-y-2">
+            <div className={`h-3 w-20 ${SOFT}`} />
+            <div className={`h-24 w-full bg-white/50 ${S}`} />
+          </div>
+        </div>
+        <div className="flex justify-end pt-5">
+          <div className={`h-12 w-36 ${S}`} />
+        </div>
+      </div>
+    </SectionSkeleton>
+  );
+}
+
+export function FilterBarSkeleton() {
+  return (
+    <div className="flex w-full items-center gap-2">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div key={index} className={`h-10 min-w-0 flex-auto bg-white/40 ${S}`} />
       ))}
     </div>
   );
-}
-
-// ─── Activity Feed Skeleton (full-page) ───────────────────────────────────────
-// No filter bar. Just the rows.
-export function AccountActivitySkeleton() {
-  return <ActivityItemsSkeletonList count={8} />;
-}
-
-// ─── Reviews Skeleton (full-page) ─────────────────────────────────────────────
-// No filter bar.
-export function AccountReviewsSkeleton() {
-  return <ReviewCardsSkeletonList count={6} />;
-}
-
-// ─── Lists Grid Skeleton (full-page) ─────────────────────────────────────────
-// No sort bar.
-export function AccountListsSkeleton() {
-  return <ListCardsSkeletonGrid count={6} />;
-}
-
-// ─── Overview Section Skeleton ────────────────────────────────────────────────
-// Shows a representative but plausible mix of sections (no filter bars anywhere).
-export function AccountOverviewSkeleton() {
-  return (
-    <div className="w-full space-y-10 sm:space-y-12">
-      {/* Watched/Favorites row */}
-      <section>
-        <SectionHeadingSkeleton titleWidth="w-24" />
-        <PosterCardsSkeletonRow count={6} />
-      </section>
-
-      {/* Activity */}
-      <section>
-        <SectionHeadingSkeleton titleWidth="w-36" />
-        <ActivityItemsSkeletonList count={4} />
-      </section>
-
-      {/* Lists */}
-      <section>
-        <SectionHeadingSkeleton titleWidth="w-20" />
-        <ListCardsSkeletonGrid count={3} />
-      </section>
-
-      {/* Reviews */}
-      <section>
-        <SectionHeadingSkeleton titleWidth="w-32" />
-        <ReviewCardsSkeletonList count={3} />
-      </section>
-    </div>
-  );
-}
-
-// ─── Profile Edit Form Skeleton ───────────────────────────────────────────────
-export function AccountEditSkeleton() {
-  return (
-    <div className="mx-auto max-w-xl space-y-6 rounded-3xl bg-white/40 p-6 backdrop-blur-md sm:p-8">
-      {/* Avatar */}
-      <div className="flex flex-col items-center gap-3">
-        <div className={`size-28 rounded-2xl bg-black/10 ${S}`} />
-        <div className={`h-3.5 w-28 rounded bg-black/[0.08] ${S}`} />
-      </div>
-
-      {/* Input fields */}
-      <div className="space-y-4 pt-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="space-y-2">
-            <div className={`h-3 w-24 rounded bg-black/[0.08] ${S}`} />
-            <div className={`h-12 w-full rounded-2xl bg-white/50 ${S}`} />
-          </div>
-        ))}
-        <div className="space-y-2">
-          <div className={`h-3 w-20 rounded bg-black/[0.08] ${S}`} />
-          <div className={`h-24 w-full rounded-2xl bg-white/50 ${S}`} />
-        </div>
-      </div>
-
-      {/* Submit */}
-      <div className="flex justify-end pt-4">
-        <div className={`h-12 w-36 rounded-2xl bg-black/15 ${S}`} />
-      </div>
-    </div>
-  );
-}
-
-// ─── FilterBarSkeleton — kept as export but intentionally empty ───────────────
-// Some importing modules still reference this; we export a zero-height fragment
-// so those call-sites don't break while rendering nothing visible.
-export function FilterBarSkeleton() {
-  return null;
 }

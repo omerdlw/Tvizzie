@@ -1,12 +1,24 @@
 import 'server-only';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { ACTIVITY_EVENT_TYPES, ACTIVITY_EVENT_TYPE_SET } from '@/domains/social/utils';
-import { canViewerAccessUserContent, createPrivateProfileError, getAccountProfileByUserId } from './profile.server';
+import {
+  canViewerAccessUserContent,
+  createPrivateProfileError,
+  getAccountProfileByUserId,
+} from './profile.server';
 import { getCollectionResource } from './collections.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
-import { ACTIVITY_SELECT, ACTIVITY_SORT_MODES, ACTIVITY_SUBJECT_FILTERS, FOLLOW_STATUS_ACCEPTED } from '@/domains/account/utils';
+import {
+  ACTIVITY_SELECT,
+  ACTIVITY_SORT_MODES,
+  ACTIVITY_SUBJECT_FILTERS,
+  FOLLOW_STATUS_ACCEPTED,
+} from '@/domains/account/utils';
 import { normalizeMediaType } from '@/domains/media/utils';
 import { normalizeTimestamp, normalizeValue } from '@/shared/utils';
+
+const ACTIVITY_QUERY_MINIMUM_WINDOW = 50;
+const ACTIVITY_QUERY_WINDOW_MULTIPLIER = 3;
 
 // ============================================================
 // Feed Normalizers
@@ -194,7 +206,8 @@ function getPossessiveSuffix(label) {
 }
 
 function createActorPart(actor = {}, viewerId = null) {
-  const isViewerActor = normalizeValue(actor.id) && normalizeValue(actor.id) === normalizeValue(viewerId);
+  const isViewerActor =
+    normalizeValue(actor.id) && normalizeValue(actor.id) === normalizeValue(viewerId);
   return {
     href: buildAccountHref(actor),
     kind: 'actor',
@@ -207,8 +220,11 @@ function createSubjectPart(subject = {}) {
 }
 
 function buildListReferenceParts(item, viewerId = null) {
-  const isViewerActor = normalizeValue(item?.actor?.id) && normalizeValue(item.actor.id) === normalizeValue(viewerId);
-  const isOwnList = normalizeValue(item?.subject?.ownerId) && normalizeValue(item.subject.ownerId) === normalizeValue(item?.actor?.id);
+  const isViewerActor =
+    normalizeValue(item?.actor?.id) && normalizeValue(item.actor.id) === normalizeValue(viewerId);
+  const isOwnList =
+    normalizeValue(item?.subject?.ownerId) &&
+    normalizeValue(item.subject.ownerId) === normalizeValue(item?.actor?.id);
 
   if (isOwnList) {
     return [
@@ -232,29 +248,72 @@ function projectActivityLine(item = {}, viewerId = null) {
 
   switch (item.eventType) {
     case ACTIVITY_EVENT_TYPES.WATCHLIST_ADDED:
-      return { parts: [actorPart, createTextPart(' added '), subjectPart, createTextPart(actorPart.text === 'You' ? ' to your watchlist' : ' to their watchlist')] };
+      return {
+        parts: [
+          actorPart,
+          createTextPart(' added '),
+          subjectPart,
+          createTextPart(actorPart.text === 'You' ? ' to your watchlist' : ' to their watchlist'),
+        ],
+      };
     case ACTIVITY_EVENT_TYPES.LIKED_ADDED:
       return { parts: [actorPart, createTextPart(' liked '), subjectPart] };
     case ACTIVITY_EVENT_TYPES.WATCHED_ADDED:
       return { parts: [actorPart, createTextPart(' watched '), subjectPart] };
     case ACTIVITY_EVENT_TYPES.RATING_LOGGED:
-      return { parts: [actorPart, createTextPart(' rated '), subjectPart, ...(ratingPart ? [createTextPart(' '), ratingPart] : [])] };
+      return {
+        parts: [
+          actorPart,
+          createTextPart(' rated '),
+          subjectPart,
+          ...(ratingPart ? [createTextPart(' '), ratingPart] : []),
+        ],
+      };
     case ACTIVITY_EVENT_TYPES.REVIEW_PUBLISHED:
       return { parts: [actorPart, createTextPart(' reviewed '), subjectPart] };
     case ACTIVITY_EVENT_TYPES.LIST_CREATED:
       return { parts: [actorPart, createTextPart(' created a list: '), subjectPart] };
     case ACTIVITY_EVENT_TYPES.LIST_COMMENTED:
-      return { parts: [actorPart, createTextPart(' commented on '), ...buildListReferenceParts(item, viewerId)] };
+      return {
+        parts: [
+          actorPart,
+          createTextPart(' commented on '),
+          ...buildListReferenceParts(item, viewerId),
+        ],
+      };
     case ACTIVITY_EVENT_TYPES.LIST_LIKED:
-      return { parts: [actorPart, createTextPart(' liked '), ...buildListReferenceParts(item, viewerId)] };
+      return {
+        parts: [actorPart, createTextPart(' liked '), ...buildListReferenceParts(item, viewerId)],
+      };
     case ACTIVITY_EVENT_TYPES.REVIEW_LIKED: {
-      const reviewOwnerLabel = item?.details?.reviewOwnerDisplayName || item?.details?.reviewOwnerUsername || 'Someone';
-      const reviewOwnerHref = buildAccountHref({ id: item?.details?.reviewOwnerId, username: item?.details?.reviewOwnerUsername });
-      const likedReviewRatingPart = normalizeMediaType(item?.subject?.type) === 'movie' ? createRatingPart(item?.details?.reviewRating) : null;
+      const reviewOwnerLabel =
+        item?.details?.reviewOwnerDisplayName || item?.details?.reviewOwnerUsername || 'Someone';
+      const reviewOwnerHref = buildAccountHref({
+        id: item?.details?.reviewOwnerId,
+        username: item?.details?.reviewOwnerUsername,
+      });
+      const likedReviewRatingPart =
+        normalizeMediaType(item?.subject?.type) === 'movie'
+          ? createRatingPart(item?.details?.reviewRating)
+          : null;
       return {
         parts: likedReviewRatingPart
-          ? [actorPart, createTextPart(' liked '), createLinkPart('account', reviewOwnerLabel, reviewOwnerHref), createTextPart(getPossessiveSuffix(reviewOwnerLabel)), likedReviewRatingPart, createTextPart(' review of '), subjectPart]
-          : [actorPart, createTextPart(' liked '), createLinkPart('account', reviewOwnerLabel, reviewOwnerHref), createTextPart(`${getPossessiveSuffix(reviewOwnerLabel)}review of `), subjectPart],
+          ? [
+              actorPart,
+              createTextPart(' liked '),
+              createLinkPart('account', reviewOwnerLabel, reviewOwnerHref),
+              createTextPart(getPossessiveSuffix(reviewOwnerLabel)),
+              likedReviewRatingPart,
+              createTextPart(' review of '),
+              subjectPart,
+            ]
+          : [
+              actorPart,
+              createTextPart(' liked '),
+              createLinkPart('account', reviewOwnerLabel, reviewOwnerHref),
+              createTextPart(`${getPossessiveSuffix(reviewOwnerLabel)}review of `),
+              subjectPart,
+            ],
       };
     }
     default:
@@ -267,7 +326,8 @@ export function projectActivityItem(item = {}, viewerId = null) {
   return {
     ...item,
     line,
-    renderKind: item.renderKind === 'text_with_review' && item.reviewCard ? 'text_with_review' : 'text',
+    renderKind:
+      item.renderKind === 'text_with_review' && item.reviewCard ? 'text_with_review' : 'text',
     reviewCard: item.renderKind === 'text_with_review' ? item.reviewCard : null,
   };
 }
@@ -276,28 +336,83 @@ export function projectActivityItem(item = {}, viewerId = null) {
 // Derived Feed Generators & Readers
 // ============================================================
 
-export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20, userId, viewerId = null }) {
-  const normalizedOffset = Number.isFinite(Number(offset)) ? Math.max(0, Math.floor(Number(offset))) : 0;
-  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.floor(Number(pageSize))) : 20;
+export async function fetchDerivedUserActivityItems({
+  offset = 0,
+  pageSize = 20,
+  userId,
+  viewerId = null,
+}) {
+  const normalizedOffset = Number.isFinite(Number(offset))
+    ? Math.max(0, Math.floor(Number(offset)))
+    : 0;
+  const normalizedPageSize = Number.isFinite(Number(pageSize))
+    ? Math.max(1, Math.floor(Number(pageSize)))
+    : 20;
   const fetchLimit = Math.min(50, Math.max(normalizedOffset + normalizedPageSize * 2, 8));
 
   const [profile, likes, watchlist, watched, lists, likedLists, reviewFeed] = await Promise.all([
     getAccountProfileByUserId(userId, { viewerId }).catch(() => null),
-    getCollectionResource({ limitCount: fetchLimit, resource: 'likes', strict: false, userId, viewerId }).catch(() => []),
-    getCollectionResource({ limitCount: fetchLimit, resource: 'watchlist', strict: false, userId, viewerId }).catch(() => []),
-    getCollectionResource({ limitCount: fetchLimit, resource: 'watched', strict: false, userId, viewerId }).catch(() => []),
-    getCollectionResource({ limitCount: fetchLimit, resource: 'lists', strict: false, userId, viewerId }).catch(() => []),
-    getCollectionResource({ limitCount: fetchLimit, resource: 'liked-lists', strict: false, userId, viewerId }).catch(() => []),
-    fetchProfileReviewFeedServer({ mode: 'authored', pageSize: fetchLimit, userId, viewerId }).catch(() => ({ items: [] })),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'likes',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'watchlist',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'watched',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'lists',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
+    getCollectionResource({
+      limitCount: fetchLimit,
+      resource: 'liked-lists',
+      strict: false,
+      userId,
+      viewerId,
+    }).catch(() => []),
+    fetchProfileReviewFeedServer({
+      mode: 'authored',
+      pageSize: fetchLimit,
+      userId,
+      viewerId,
+    }).catch(() => ({ items: [] })),
   ]);
 
-  const actor = normalizeActor({ avatarUrl: profile?.avatarUrl || null, displayName: profile?.displayName || profile?.username || 'Someone', id: profile?.id || userId || null, username: profile?.username || null });
+  const actor = normalizeActor({
+    avatarUrl: profile?.avatarUrl || null,
+    displayName: profile?.displayName || profile?.username || 'Someone',
+    id: profile?.id || userId || null,
+    username: profile?.username || null,
+  });
   const derivedItems = [];
 
   (reviewFeed?.items || []).forEach((review) => {
     const timestamp = normalizeTimestamp(review.createdAt || review.updatedAt || review.created_at);
-    const mediaKey = String(review.mediaKey || review.subjectKey || review.docPath || '').toLowerCase();
-    const inferredType = mediaKey.startsWith('tv_') ? 'tv' : mediaKey.startsWith('list:') ? 'list' : 'movie';
+    const mediaKey = String(
+      review.mediaKey || review.subjectKey || review.docPath || '',
+    ).toLowerCase();
+    const inferredType = mediaKey.startsWith('tv_')
+      ? 'tv'
+      : mediaKey.startsWith('list:')
+        ? 'list'
+        : 'movie';
     derivedItems.push({
       actor,
       createdAt: timestamp,
@@ -327,9 +442,15 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   });
 
   (Array.isArray(watched) ? watched : []).forEach((item) => {
-    const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at || item.updated_at);
+    const timestamp = normalizeTimestamp(
+      item.addedAt || item.added_at || item.created_at || item.updated_at,
+    );
     const mediaKey = String(item.mediaKey || item.media_key || item.id || '').toLowerCase();
-    const inferredType = item.entityType || item.entity_type || item.media_type || (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
+    const inferredType =
+      item.entityType ||
+      item.entity_type ||
+      item.media_type ||
+      (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
     derivedItems.push({
       actor,
       createdAt: timestamp,
@@ -382,7 +503,11 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   (Array.isArray(likes) ? likes : []).forEach((item) => {
     const timestamp = normalizeTimestamp(item.addedAt || item.added_at || item.created_at);
     const mediaKey = String(item.mediaKey || item.media_key || item.id || '').toLowerCase();
-    const inferredType = item.entityType || item.entity_type || item.media_type || (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
+    const inferredType =
+      item.entityType ||
+      item.entity_type ||
+      item.media_type ||
+      (mediaKey.startsWith('tv_') ? 'tv' : 'movie');
     derivedItems.push({
       actor,
       createdAt: timestamp,
@@ -409,40 +534,89 @@ export async function fetchDerivedUserActivityItems({ offset = 0, pageSize = 20,
   return derivedItems.filter(isVisibleActivityItem);
 }
 
-export async function fetchAccountActivityFeedServer({ cursor = null, pageSize = 20, scope = 'user', sort = 'newest', subject = 'all', userId, viewerId = null }) {
+export async function fetchAccountActivityFeedServer({
+  cursor = null,
+  pageSize = 20,
+  scope = 'user',
+  sort = 'newest',
+  subject = 'all',
+  userId,
+  viewerId = null,
+}) {
   if (!userId) return { hasMore: false, items: [], nextCursor: null };
 
   const admin = createAdminClient();
-  const canViewProfile = await canViewerAccessUserContent({ client: admin, ownerId: userId, viewerId });
+  const canViewProfile = await canViewerAccessUserContent({
+    client: admin,
+    ownerId: userId,
+    viewerId,
+  });
   if (!canViewProfile) throw createPrivateProfileError();
 
-  const followingResult = await admin.from('follows').select('following_id').eq('follower_id', userId).eq('status', FOLLOW_STATUS_ACCEPTED);
+  const followingResult = await admin
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+    .eq('status', FOLLOW_STATUS_ACCEPTED);
+  if (followingResult.error) {
+    throw new Error(followingResult.error.message || 'Following accounts could not be loaded');
+  }
   const followingIds = (followingResult.data || []).map((i) => i.following_id).filter(Boolean);
   const sourceIds = scope === 'following' ? [...new Set(followingIds)] : [userId];
 
-  const normalizedPageSize = Number.isFinite(Number(pageSize)) ? Math.max(1, Math.floor(Number(pageSize))) : 20;
-  const normalizedOffset = Number.isFinite(Number(cursor)) ? Math.max(0, Math.floor(Number(cursor))) : 0;
+  const normalizedPageSize = Number.isFinite(Number(pageSize))
+    ? Math.max(1, Math.floor(Number(pageSize)))
+    : 20;
+  const normalizedOffset = Number.isFinite(Number(cursor))
+    ? Math.max(0, Math.floor(Number(cursor)))
+    : 0;
   const normalizedSubject = normalizeActivitySubjectFilter(subject);
   const normalizedSort = normalizeActivitySort(sort);
+  const queryWindowSize = Math.max(
+    ACTIVITY_QUERY_MINIMUM_WINDOW,
+    normalizedOffset + normalizedPageSize * ACTIVITY_QUERY_WINDOW_MULTIPLIER,
+  );
 
   if (sourceIds.length === 0) return { hasMore: false, items: [], nextCursor: null };
 
   const groups = await Promise.all(
     chunkArray(sourceIds, 100).map(async (idChunk) => {
-      const res = await admin.from('activity').select(ACTIVITY_SELECT).in('event_type', [...ACTIVITY_EVENT_TYPE_SET]).in('user_id', idChunk).order('updated_at', { ascending: false });
+      const res = await admin
+        .from('activity')
+        .select(ACTIVITY_SELECT, { count: 'exact' })
+        .in('event_type', [...ACTIVITY_EVENT_TYPE_SET])
+        .in('user_id', idChunk)
+        .order('updated_at', { ascending: normalizedSort === 'oldest' })
+        .range(0, queryWindowSize - 1);
       if (res.error) throw new Error(res.error.message || 'Activity feed could not be loaded');
-      return (res.data || []).map(normalizeActivityRow).filter(isVisibleActivityItem);
+      const items = (res.data || []).map(normalizeActivityRow).filter(isVisibleActivityItem);
+      return {
+        hasMore: Number(res.count || 0) > (res.data || []).length,
+        items,
+        totalCount: Number(res.count || 0),
+      };
     }),
   );
 
-  const rawActivityItems = sortActivityItems(groups.flat()).map((item) => ({
+  const rawActivityItems = sortActivityItemsForMode(
+    groups.flatMap((group) => group.items),
+    normalizedSort,
+  ).map((item) => ({
     ...item,
     isFromFollowing: normalizeValue(item?.sourceUserId) !== normalizeValue(userId),
   }));
 
-  const derivedUserActivityItems = scope === 'user'
-    ? (await fetchDerivedUserActivityItems({ offset: normalizedOffset, pageSize: normalizedPageSize, userId, viewerId })).map((item) => ({ ...item, isFromFollowing: false }))
-    : [];
+  const derivedUserActivityItems =
+    scope === 'user'
+      ? (
+          await fetchDerivedUserActivityItems({
+            offset: normalizedOffset,
+            pageSize: normalizedPageSize,
+            userId,
+            viewerId,
+          })
+        ).map((item) => ({ ...item, isFromFollowing: false }))
+      : [];
 
   const combinedItems = dedupeActivityItems([...rawActivityItems, ...derivedUserActivityItems]);
 
@@ -452,9 +626,17 @@ export async function fetchAccountActivityFeedServer({ cursor = null, pageSize =
   );
 
   const paginated = paginateItems(items, cursor, pageSize);
+  const hasMoreSourceItems = groups.some((group) => group.hasMore);
+  const hasMore = paginated.hasMore || (paginated.items.length > 0 && hasMoreSourceItems);
+  const nextCursor = hasMore ? normalizedOffset + paginated.items.length : null;
   return {
     ...paginated,
+    hasMore,
     items: paginated.items.map((item) => projectActivityItem(item, viewerId)),
-    totalCount: items.length,
+    nextCursor,
+    totalCount: Math.max(
+      items.length,
+      groups.reduce((total, group) => total + group.totalCount, 0),
+    ),
   };
 }

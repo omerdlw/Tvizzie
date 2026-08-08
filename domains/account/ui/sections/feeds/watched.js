@@ -1,21 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 
 import {
-  MEDIA_FILTER_QUERY_KEYS,
   applyMediaFilters,
-  buildCollectionBasePath,
-  buildManagedQueryString,
   buildMediaKeySet,
   collectMediaGenreOptions,
   getDecadeOptions,
   hasActiveMediaFilters,
   parseMediaFilters,
-  parsePageFromSearch,
-  toMediaQueryValues,
 } from '@/domains/account/ui/filters/filtering';
+import { useAccountMediaFeedState } from '@/domains/account/hooks/media-feed-state';
 import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountMediaGridPage, {
   ProfileMediaActions,
@@ -29,9 +24,6 @@ const VISIBILITY_OPTIONS = Object.freeze([
 ]);
 
 const ALLOWED_FLAGS = VISIBILITY_OPTIONS.map((o) => o.key);
-const parseCurrentFilters = (search) =>
-  parseMediaFilters(search, { allowedEyeFlags: ALLOWED_FLAGS });
-
 export default function AccountWatchedFeed({
   auth,
   canShowWatchedGrid,
@@ -41,45 +33,9 @@ export default function AccountWatchedFeed({
   watchedItems,
   onRemoveItem,
 }) {
-  const pathname = usePathname();
-  const searchString = useSearchParams()?.toString?.() || '';
-  const collectionRootPath = buildCollectionBasePath(pathname);
-
-  const [viewState, setViewState] = useState({
-    media: parseCurrentFilters(new URLSearchParams(searchString)),
-    page: parsePageFromSearch(new URLSearchParams(searchString)),
+  const { collectionRootPath, updateView, viewState } = useAccountMediaFeedState({
+    allowedEyeFlags: ALLOWED_FLAGS,
   });
-
-  useEffect(() => {
-    setViewState({
-      media: parseCurrentFilters(new URLSearchParams(searchString)),
-      page: parsePageFromSearch(new URLSearchParams(searchString)),
-    });
-  }, [searchString]);
-
-  const updateView = (updates) => {
-    setViewState((prev) => ({ ...prev, ...updates }));
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const qs = buildManagedQueryString(new URLSearchParams(window.location.search), {
-      managedKeys: MEDIA_FILTER_QUERY_KEYS,
-      resetPage: false,
-      values: toMediaQueryValues(viewState.media),
-    });
-    const params = new URLSearchParams(qs);
-    if (viewState.page > 1) params.set('page', String(viewState.page));
-    else params.delete('page');
-    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
-    if (window.location.pathname + window.location.search !== newUrl) {
-      window.history.replaceState(
-        {},
-        '',
-        newUrl,
-      );
-    }
-  }, [viewState, collectionRootPath]);
 
   const hasFilters = hasActiveMediaFilters(viewState.media);
   const filteredWatchedItems = useMemo(
@@ -124,7 +80,13 @@ export default function AccountWatchedFeed({
             onChange={(media) => updateView({ media: { ...viewState.media, ...media }, page: 1 })}
             onReset={
               hasFilters
-                ? () => updateView({ media: parseCurrentFilters(new URLSearchParams()), page: 1 })
+                ? () =>
+                    updateView({
+                      media: parseMediaFilters(new URLSearchParams(), {
+                        allowedEyeFlags: ALLOWED_FLAGS,
+                      }),
+                      page: 1,
+                    })
                 : null
             }
           />

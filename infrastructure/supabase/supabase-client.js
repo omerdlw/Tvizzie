@@ -10,6 +10,7 @@ import {
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_AUTH_COOKIE_OPTIONS,
   SUPABASE_URL,
 } from './supabase-constants';
 
@@ -92,6 +93,7 @@ export function createClient() {
       flowType: 'pkce',
       multiTab: false,
     },
+    cookieOptions: SUPABASE_AUTH_COOKIE_OPTIONS,
   });
 
   if (typeof window !== 'undefined') {

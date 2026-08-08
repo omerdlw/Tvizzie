@@ -5,27 +5,28 @@ import { getAccountIdByUsername } from '../server/profile.server';
 import { getAccountCollectionResource } from '../server/collections.server';
 import { getViewerSessionContext } from '../server/routes.server';
 
-export async function getAccountCollectionsServer({ entityId, entityType, limitCount, listId, media, resource, slug, userId, username, viewerId }) {
+export async function getAccountCollectionsServer({
+  entityId,
+  entityType,
+  limitCount,
+  listId,
+  media,
+  resource,
+  slug,
+  userId,
+  username,
+}) {
   try {
+    const sessionContext = await getViewerSessionContext().catch(() => null);
+    const authenticatedViewerId = sessionContext?.userId || null;
     let resolvedUserId = userId || null;
     if (!resolvedUserId && username) {
       resolvedUserId = await getAccountIdByUsername(username);
     }
-    if (!resolvedUserId && viewerId) {
-      resolvedUserId = viewerId;
-    }
+    if (!resolvedUserId) resolvedUserId = authenticatedViewerId;
 
     if (!resolvedUserId && resource !== 'list-by-slug') {
       return { success: true, data: null, items: [] };
-    }
-
-    // Auto-resolve viewerId from session if not explicitly provided.
-    // This is required for PROTECTED_ACCOUNT_COLLECTION_RESOURCES access checks
-    // (e.g. list-by-slug, list-by-id, list-items) when called from client subscriptions.
-    let resolvedViewerId = viewerId || null;
-    if (!resolvedViewerId) {
-      const sessionContext = await getViewerSessionContext().catch(() => null);
-      resolvedViewerId = sessionContext?.userId || null;
     }
 
     const resolvedMedia = media || (entityType && entityId ? { entityId, entityType } : null);
@@ -37,7 +38,7 @@ export async function getAccountCollectionsServer({ entityId, entityType, limitC
       resource,
       slug,
       userId: resolvedUserId,
-      viewerId: resolvedViewerId,
+      viewerId: authenticatedViewerId,
     });
 
     return { success: true, data, items: Array.isArray(data) ? data : [] };

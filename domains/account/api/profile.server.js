@@ -12,34 +12,44 @@ import {
 import { getViewerSessionContext } from '../server/routes.server';
 import { sanitizeUsername, validateUsername } from '../utils';
 
-export async function getAccountProfileServer({ userId, username, viewerId }) {
+const MAX_USERNAME_GENERATION_ATTEMPTS = 100;
+
+export async function getAccountProfileServer({ userId, username }) {
   try {
     let targetUserId = userId || null;
     if (!targetUserId && username) {
       targetUserId = await getAccountIdByUsername(username);
     }
-    if (!targetUserId && viewerId) {
-      targetUserId = viewerId;
-    }
+    const sessionContext = await getViewerSessionContext().catch(() => null);
+    const authenticatedViewerId = sessionContext?.userId || null;
+    if (!targetUserId && authenticatedViewerId) targetUserId = authenticatedViewerId;
 
     if (!targetUserId) {
       return { success: true, profile: null };
     }
 
-    const sessionContext = await getViewerSessionContext().catch(() => null);
-    const effectiveViewerId = viewerId || sessionContext?.userId || null;
-
-    const profile = await getAccountProfileByUserId(targetUserId, { viewerId: effectiveViewerId });
+    const profile = await getAccountProfileByUserId(targetUserId, {
+      viewerId: authenticatedViewerId,
+    });
     return { success: true, profile: profile || null };
   } catch (error) {
     return { success: false, error: error.message || 'Profile could not be loaded' };
   }
 }
 
-export async function updateAccountProfileServer({ userId, displayName, username, avatarUrl, bannerUrl, description, isPrivate, email }) {
+export async function updateAccountProfileServer({
+  displayName,
+  username,
+  avatarUrl,
+  bannerUrl,
+  description,
+  isPrivate,
+  email,
+}) {
   try {
-    const normalizedUserId = normalizeValue(userId);
-    if (!normalizedUserId) throw new Error('User ID is required');
+    const sessionContext = await getViewerSessionContext().catch(() => null);
+    const normalizedUserId = normalizeValue(sessionContext?.userId);
+    if (!normalizedUserId) throw new Error('Authentication is required to update an account');
 
     const admin = createAdminClient();
 
@@ -58,25 +68,30 @@ export async function updateAccountProfileServer({ userId, displayName, username
       }
 
       let targetUsername = validateUsername(rawUsername);
-      let isUnique = false;
-      let suffix = 0;
       let candidateUsername = targetUsername;
 
-      while (!isUnique) {
+      for (let suffix = 0; suffix <= MAX_USERNAME_GENERATION_ATTEMPTS; suffix += 1) {
         const checkResult = await admin
           .from('usernames')
           .select('user_id')
           .eq('username_lower', candidateUsername.toLowerCase())
           .maybeSingle();
 
+        if (checkResult.error)
+          throw new Error(
+            checkResult.error.message || 'Username availability could not be checked',
+          );
         if (!checkResult.data?.user_id) {
-          isUnique = true;
           targetUsername = candidateUsername;
+          break;
         } else {
-          suffix += 1;
-          const suffixStr = `_${suffix}`;
+          const suffixStr = `_${suffix + 1}`;
           const baseLength = 24 - suffixStr.length;
           candidateUsername = validateUsername(targetUsername.slice(0, baseLength) + suffixStr);
+        }
+
+        if (suffix === MAX_USERNAME_GENERATION_ATTEMPTS) {
+          throw new Error('Could not generate an available username');
         }
       }
 

@@ -265,6 +265,7 @@ export function createSupabaseAuthAdapter(options = {}) {
           identifier: String(payload.identifier || '').trim() || undefined,
           email: normalizeEmailValue(payload.email),
           password: String(payload.password || ''),
+          signUpProof: String(payload.signUpProof || '').trim() || undefined,
         },
       });
 

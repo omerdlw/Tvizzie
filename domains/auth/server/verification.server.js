@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'crypto';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { validateUsername } from '@/domains/account/utils';
@@ -22,11 +22,7 @@ import {
   TRUSTED_DEVICE_MAX_AGE_MS,
   TRUSTED_DEVICE_MAX_AGE_SECONDS,
 } from '@/domains/auth/utils';
-import {
-  AUTH_COOKIE_PATH,
-  getCookieValue,
-  isSecureCookieEnvironment,
-} from './session.server';
+import { AUTH_COOKIE_PATH, getCookieValue, isSecureCookieEnvironment } from './session.server';
 import { createAdminAuthFacade } from './session.server';
 import {
   createChallengeProofToken,
@@ -75,10 +71,13 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 function resolveBrevoConfig() {
   const apiKey = normalizeValue(process.env.BREVO_API_KEY);
-  const from = normalizeValue(process.env.BREVO_SENDER_EMAIL) || normalizeValue(process.env.BREVO_SMTP_FROM);
+  const from =
+    normalizeValue(process.env.BREVO_SENDER_EMAIL) || normalizeValue(process.env.BREVO_SMTP_FROM);
 
   if (!apiKey || !from) {
-    throw new Error('Brevo email configuration is incomplete. Set BREVO_API_KEY and BREVO_SENDER_EMAIL');
+    throw new Error(
+      'Brevo email configuration is incomplete. Set BREVO_API_KEY and BREVO_SENDER_EMAIL',
+    );
   }
 
   return { apiKey, from };
@@ -151,33 +150,42 @@ export async function upsertChallengeByKey(key, record) {
 
 export async function updateChallengeByKey(key, patch) {
   const admin = createAdminClient();
-  const result = await admin
-    .from(AUTH_CHALLENGE_TABLE)
-    .update(patch)
-    .eq('jti', key);
+  const result = await admin.from(AUTH_CHALLENGE_TABLE).update(patch).eq('jti', key);
 
   if (result.error) throw new Error(result.error.message || 'Challenge update failed');
 }
 
-export async function requestVerificationCode({ deviceId, email, forceNew = false, ipAddress, purpose, userId }) {
+export async function requestVerificationCode({
+  deviceId,
+  email,
+  forceNew = false,
+  ipAddress,
+  purpose,
+  userId,
+}) {
   const normalizedEmail = normalizeEmailValue(email);
   if (!normalizedEmail || !normalizedEmail.includes('@')) {
     throw new Error('A valid email address is required');
   }
 
   const normalizedPurpose = normalizeValue(purpose).toLowerCase();
+  if (!Object.values(PURPOSES).includes(normalizedPurpose)) {
+    throw new Error('Unsupported verification purpose');
+  }
   if (SECURE_PURPOSES.has(normalizedPurpose) && !userId) {
     throw new Error('Authenticated user is required for this verification flow');
   }
 
   const now = Date.now();
-  const challengeKey = createHash('sha256').update(`${normalizedEmail}:${normalizedPurpose}`).digest('hex');
+  const challengeKey = createHash('sha256')
+    .update(`${normalizedEmail}:${normalizedPurpose}`)
+    .digest('hex');
   const existingData = await getChallengeByKey(challengeKey);
 
   const existingResendAtMs = getTimestampMs(existingData?.resend_available_at);
   const existingExpiresAtMs = getTimestampMs(existingData?.expires_at);
 
-  if (existingData && existingExpiresAtMs > now && !forceNew) {
+  if (existingData?.status === 'pending' && existingExpiresAtMs > now && !forceNew) {
     return {
       challengeKey,
       expiresAt: existingData.expires_at,
@@ -187,10 +195,12 @@ export async function requestVerificationCode({ deviceId, email, forceNew = fals
 
   if (forceNew && existingResendAtMs > now) {
     const waitSeconds = Math.max(1, Math.ceil((existingResendAtMs - now) / 1000));
-    throw new Error(`Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting a new code`);
+    throw new Error(
+      `Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting a new code`,
+    );
   }
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(randomInt(100000, 1000000));
   const salt = randomBytes(16).toString('hex');
   const expiresAtMs = now + OTP_TTL_MS;
   const resendAtMs = now + RESEND_COOLDOWN_MS;
@@ -216,7 +226,12 @@ export async function requestVerificationCode({ deviceId, email, forceNew = fals
   };
 
   await upsertChallengeByKey(challengeKey, challengeRecord);
-  await sendVerificationEmail({ code, email: normalizedEmail, expiresAt: expiresAtMs, purpose: normalizedPurpose });
+  await sendVerificationEmail({
+    code,
+    email: normalizedEmail,
+    expiresAt: expiresAtMs,
+    purpose: normalizedPurpose,
+  });
 
   return {
     challengeKey,
@@ -233,17 +248,28 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
   if (!normalizedEmail || !normalizedCode || !normalizedPurpose) {
     throw new Error('Code, email, and purpose are required');
   }
+  if (!Object.values(PURPOSES).includes(normalizedPurpose)) {
+    throw new Error('Verification code is invalid');
+  }
 
-  const challengeKey = createHash('sha256').update(`${normalizedEmail}:${normalizedPurpose}`).digest('hex');
+  const challengeKey = createHash('sha256')
+    .update(`${normalizedEmail}:${normalizedPurpose}`)
+    .digest('hex');
   const challenge = await getChallengeByKey(challengeKey);
 
   if (!challenge || challenge.status !== 'pending' || challenge.used_at) {
     throw new Error('Verification code is invalid');
   }
+  if (challenge.user_id && normalizeValue(userId) !== normalizeValue(challenge.user_id)) {
+    throw new Error('Verification code is invalid');
+  }
 
   const now = Date.now();
   if (getTimestampMs(challenge.expires_at) <= now) {
-    await updateChallengeByKey(challengeKey, { status: 'expired', updated_at: new Date(now).toISOString() });
+    await updateChallengeByKey(challengeKey, {
+      status: 'expired',
+      updated_at: new Date(now).toISOString(),
+    });
     throw new Error('Verification code has expired');
   }
 
@@ -252,7 +278,9 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
   }
 
   const computedHash = hashVerificationCode(normalizedEmail, normalizedCode, challenge.salt);
-  if (computedHash !== challenge.code_hash) {
+  const expectedHash = Buffer.from(String(challenge.code_hash || ''), 'utf8');
+  const receivedHash = Buffer.from(computedHash, 'utf8');
+  if (expectedHash.length !== receivedHash.length || !timingSafeEqual(expectedHash, receivedHash)) {
     const newAttemptCount = challenge.attempt_count + 1;
     const isExhausted = newAttemptCount >= challenge.max_attempts;
     await updateChallengeByKey(challengeKey, {
@@ -286,6 +314,71 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
   };
 }
 
+// A proof must be consumed atomically before it can authorize an account
+// mutation. This prevents a valid signed proof from being replayed.
+export async function claimVerificationProof({ challengeJti, challengeKey, email, purpose }) {
+  const normalizedEmail = normalizeEmailValue(email);
+  const normalizedPurpose = normalizeValue(purpose).toLowerCase();
+  const normalizedJti = normalizeValue(challengeJti);
+  const normalizedKey = normalizeValue(challengeKey);
+  const expectedKey = createHash('sha256')
+    .update(`${normalizedEmail}:${normalizedPurpose}`)
+    .digest('hex');
+
+  if (
+    !normalizedEmail ||
+    !Object.values(PURPOSES).includes(normalizedPurpose) ||
+    normalizedJti !== expectedKey ||
+    normalizedKey !== expectedKey
+  ) {
+    throw new Error('Verification proof is invalid');
+  }
+
+  const admin = createAdminClient();
+  const result = await admin
+    .from(AUTH_CHALLENGE_TABLE)
+    .update({ status: 'processing', updated_at: new Date().toISOString() })
+    .eq('jti', expectedKey)
+    .eq('purpose', normalizedPurpose)
+    .eq('status', 'used')
+    .select('jti')
+    .maybeSingle();
+
+  if (result.error)
+    throw new Error(result.error.message || 'Verification proof could not be claimed');
+  if (!result.data?.jti) throw new Error('Verification proof has already been used');
+
+  return expectedKey;
+}
+
+export async function completeVerificationProof(challengeKey) {
+  const normalizedKey = normalizeValue(challengeKey);
+  if (!normalizedKey) return;
+
+  const result = await createAdminClient()
+    .from(AUTH_CHALLENGE_TABLE)
+    .update({ status: 'completed', updated_at: new Date().toISOString() })
+    .eq('jti', normalizedKey)
+    .eq('status', 'processing');
+
+  if (result.error)
+    throw new Error(result.error.message || 'Verification proof could not be completed');
+}
+
+export async function releaseVerificationProof(challengeKey) {
+  const normalizedKey = normalizeValue(challengeKey);
+  if (!normalizedKey) return;
+
+  const result = await createAdminClient()
+    .from(AUTH_CHALLENGE_TABLE)
+    .update({ status: 'used', updated_at: new Date().toISOString() })
+    .eq('jti', normalizedKey)
+    .eq('status', 'processing');
+
+  if (result.error)
+    throw new Error(result.error.message || 'Verification proof could not be released');
+}
+
 // ============================================================
 // Pending Login & Trusted Device Tokens
 // ============================================================
@@ -296,7 +389,8 @@ function getLoginVerificationSecret() {
     fallbackEnvNames: ['STEP_UP_SECRET', 'EMAIL_VERIFICATION_SECRET'],
     missingMessage: 'LOGIN_VERIFICATION_SECRET is missing and no fallback secret is available',
     warningGlobalKey: '__tvizzie_login_verification_secret_fallback_warned__',
-    warningMessage: '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET.',
+    warningMessage:
+      '[Auth] LOGIN_VERIFICATION_SECRET is missing. Falling back to STEP_UP_SECRET or EMAIL_VERIFICATION_SECRET.',
   });
 }
 
@@ -307,14 +401,18 @@ export function getTrustedLoginDeviceCookieName(userId) {
   return `${TRUSTED_DEVICE_COOKIE_PREFIX}${hash}`;
 }
 
-export function createTrustedDeviceToken({ userId, deviceId, expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000 }) {
+export function createTrustedDeviceToken({
+  userId,
+  deviceId,
+  expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000,
+}) {
   return createSignedToken(
     {
       userId: normalizeValue(userId),
-      deviceId: normalizeValue(deviceId),
+      deviceHash: hashValue(deviceId),
       exp: Math.floor(Number(expiresAt) / 1000),
     },
-    { secret: getLoginVerificationSecret() }
+    { secret: getLoginVerificationSecret() },
   );
 }
 
@@ -334,7 +432,7 @@ export function verifyTrustedDeviceToken(token, { userId, deviceId }) {
       return false;
     }
 
-    if (normalizeValue(payload?.deviceId) !== normalizeValue(deviceId)) {
+    if (normalizeValue(payload?.deviceHash) !== hashValue(deviceId)) {
       return false;
     }
 
@@ -400,7 +498,13 @@ export function createPendingSignInToken({
   const normalizedDeviceHash = normalizeValue(deviceHash);
   const normalizedRefreshToken = normalizeValue(refreshToken);
 
-  if (!normalizedUserId || !normalizedEmail || !normalizedDeviceHash || !normalizedAccessToken || !normalizedRefreshToken) {
+  if (
+    !normalizedUserId ||
+    !normalizedEmail ||
+    !normalizedDeviceHash ||
+    !normalizedAccessToken ||
+    !normalizedRefreshToken
+  ) {
     throw new Error('Pending sign-in payload is invalid');
   }
 
@@ -506,7 +610,10 @@ export async function lookupAccountByEmail(email) {
   } catch (error) {
     const code = normalizeValue(error?.code);
     const message = normalizeValue(error?.message).toLowerCase();
-    if (code === PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND || message.includes('user not found')) {
+    if (
+      code === PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND ||
+      message.includes('user not found')
+    ) {
       return {
         code: PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND,
         email: normalizedEmail,

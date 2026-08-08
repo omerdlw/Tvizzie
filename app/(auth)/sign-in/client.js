@@ -31,15 +31,16 @@ import {
 } from '@/domains/auth/ui';
 import { Button, Input } from '@/ui/primitives';
 import {
-  dividerVariants,
-  fieldVariants,
-  footerVariants,
-  headerContainerVariants,
-  logoVariants,
-  oauthContainerVariants,
-  oauthItemVariants,
-  pageContainerVariants,
-  titleVariants,
+  SIGN_IN_TIMELINE,
+  signInDividerVariants,
+  signInFieldVariants,
+  signInFooterVariants,
+  signInHeaderVariants,
+  signInLogoVariants,
+  signInOAuthContainerVariants,
+  signInOAuthItemVariants,
+  signInPageVariants,
+  signInTitleVariants,
 } from '@/app/(auth)/motion';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
@@ -515,21 +516,29 @@ function View({
             key="reset-mode-form"
             onSubmit={handleResetSubmit}
             className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
-            variants={pageContainerVariants}
+            variants={signInPageVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <motion.div variants={headerContainerVariants} className="text-center">
-              <motion.h1 variants={titleVariants} className="text-3xl font-semibold sm:text-4xl">
+            <motion.div variants={signInHeaderVariants} className="text-center">
+              <motion.h1
+                custom={SIGN_IN_TIMELINE.RESET_TITLE_DELAY}
+                variants={signInTitleVariants}
+                className="text-3xl font-semibold sm:text-4xl"
+              >
                 Reset Password
               </motion.h1>
-              <motion.p variants={titleVariants} className="mt-2 text-base text-black/50">
+              <motion.p
+                custom={SIGN_IN_TIMELINE.RESET_TITLE_DELAY + 0.12}
+                variants={signInTitleVariants}
+                className="mt-2 text-base text-black/50"
+              >
                 {resetFlow.email}
               </motion.p>
             </motion.div>
 
-            <motion.div variants={fieldVariants}>
+            <motion.div custom={SIGN_IN_TIMELINE.RESET_FIELD_DELAY} variants={signInFieldVariants}>
               <Input
                 id="reset-password"
                 type={showResetPassword ? 'text' : 'password'}
@@ -552,7 +561,10 @@ function View({
               />
             </motion.div>
 
-            <motion.div variants={fieldVariants}>
+            <motion.div
+              custom={SIGN_IN_TIMELINE.RESET_CONFIRM_DELAY}
+              variants={signInFieldVariants}
+            >
               <Input
                 id="reset-password-confirmation"
                 type={showResetConfirmPassword ? 'text' : 'password'}
@@ -577,7 +589,11 @@ function View({
               />
             </motion.div>
 
-            <motion.div variants={fieldVariants} className="grid gap-2 sm:grid-cols-2">
+            <motion.div
+              custom={SIGN_IN_TIMELINE.RESET_ACTION_DELAY}
+              variants={signInFieldVariants}
+              className="grid gap-2 sm:grid-cols-2"
+            >
               <Button
                 type="button"
                 onClick={() => setResetFlow(INITIAL_RESET_FLOW)}
@@ -600,16 +616,21 @@ function View({
             key="sign-in-form"
             onSubmit={handleSubmit}
             className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
-            variants={pageContainerVariants}
+            variants={signInPageVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <motion.div
-              variants={headerContainerVariants}
+              variants={signInHeaderVariants}
               className="flex flex-col items-center text-center"
             >
-              <motion.div variants={logoVariants} whileHover="hover" whileTap="tap">
+              <motion.div
+                custom={SIGN_IN_TIMELINE.LOGO_DELAY}
+                variants={signInLogoVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
                 <Link
                   href="/"
                   className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
@@ -617,12 +638,16 @@ function View({
                   <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
                 </Link>
               </motion.div>
-              <motion.h1 variants={titleVariants} className="text-2xl font-semibold sm:text-3xl">
+              <motion.h1
+                custom={SIGN_IN_TIMELINE.TITLE_DELAY}
+                variants={signInTitleVariants}
+                className="text-2xl font-semibold sm:text-3xl"
+              >
                 Welcome back
               </motion.h1>
             </motion.div>
 
-            <motion.div variants={fieldVariants}>
+            <motion.div custom={SIGN_IN_TIMELINE.IDENTIFIER_DELAY} variants={signInFieldVariants}>
               <AuthField className="pt-1" htmlFor="sign-in-identifier" label="Username or Email">
                 <Input
                   id="sign-in-identifier"
@@ -635,7 +660,7 @@ function View({
               </AuthField>
             </motion.div>
 
-            <motion.div variants={fieldVariants}>
+            <motion.div custom={SIGN_IN_TIMELINE.PASSWORD_DELAY} variants={signInFieldVariants}>
               <AuthField htmlFor="sign-in-password" label="Password">
                 <Input
                   id="sign-in-password"
@@ -655,7 +680,7 @@ function View({
               </AuthField>
             </motion.div>
 
-            <motion.div variants={fieldVariants}>
+            <motion.div custom={SIGN_IN_TIMELINE.SUBMIT_DELAY} variants={signInFieldVariants}>
               <Button
                 type="submit"
                 disabled={isSignInBusy}
@@ -666,7 +691,8 @@ function View({
             </motion.div>
 
             <motion.div
-              variants={dividerVariants}
+              custom={SIGN_IN_TIMELINE.DIVIDER_DELAY}
+              variants={signInDividerVariants}
               className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]"
             >
               <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
@@ -676,11 +702,14 @@ function View({
               <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
             </motion.div>
 
-            <motion.div variants={oauthContainerVariants} className="flex items-center gap-3">
-              {OAUTH_PROVIDER_KEYS.map((provider) => (
+            <motion.div variants={signInOAuthContainerVariants} className="flex items-center gap-3">
+              {OAUTH_PROVIDER_KEYS.map((provider, index) => (
                 <motion.div
                   key={provider}
-                  variants={oauthItemVariants}
+                  custom={SIGN_IN_TIMELINE.OAUTH_DELAY + index * 0.08}
+                  variants={signInOAuthItemVariants}
+                  initial="hidden"
+                  animate="visible"
                   whileHover="hover"
                   whileTap="tap"
                   className="flex-1"
@@ -697,7 +726,8 @@ function View({
             </motion.div>
 
             <motion.p
-              variants={footerVariants}
+              custom={SIGN_IN_TIMELINE.FOOTER_DELAY}
+              variants={signInFooterVariants}
               className="mt-2 text-center text-sm font-medium text-black/50"
             >
               Don&apos;t have an account?{' '}

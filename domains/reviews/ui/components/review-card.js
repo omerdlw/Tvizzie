@@ -256,6 +256,8 @@ export default function ReviewCard({
   onEdit,
   onLike,
   rewatchMediaKeys = null,
+  removeBottomPadding = false,
+  removeTopPadding = false,
   showSubject = false,
   watchedMediaKeys = null,
 }) {
@@ -315,7 +317,9 @@ export default function ReviewCard({
     <article
       onClick={handleCardClick}
       className={cn(
-        'relative border-b border-black/10 py-3.5 last:border-b-0 sm:py-4',
+        'relative border-b border-black/10 last:border-b-0',
+        removeTopPadding ? 'pt-0 sm:pt-0' : 'pt-3.5 sm:pt-4',
+        removeBottomPadding ? 'pb-0 sm:pb-0' : 'pb-3.5 sm:pb-4',
         isSpoilerHidden && 'cursor-pointer',
         className,
       )}

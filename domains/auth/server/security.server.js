@@ -66,6 +66,12 @@ export function assertCsrfRequest(request) {
   }
 }
 
+export function assertCsrfRequestForCookieSession(request) {
+  const authorization = normalizeValue(request?.headers?.get?.('authorization'));
+  if (authorization.toLowerCase().startsWith('bearer ')) return;
+  assertCsrfRequest(request);
+}
+
 // ============================================================
 // Password Security & Pending Sign In Verification
 // ============================================================
@@ -509,6 +515,39 @@ export async function enforceSlidingWindowRateLimit({
 }
 
 export const AUTH_RATE_LIMIT_POLICIES = Object.freeze({
+  SIGN_IN: Object.freeze({
+    dimensions: Object.freeze({ device: 12, email: 8, ip: 30 }),
+    dimensionMessages: Object.freeze({
+      default: 'Too many sign-in attempts from this network',
+      device: 'Too many sign-in attempts from this device',
+      email: 'Too many sign-in attempts for this account',
+    }),
+    message: 'Too many sign-in attempts',
+    namespace: 'auth:sign-in',
+    windowMs: 15 * 60 * 1000,
+  }),
+  VERIFICATION_SEND: Object.freeze({
+    dimensions: Object.freeze({ device: 8, email: 5, ip: 20 }),
+    dimensionMessages: Object.freeze({
+      default: 'Too many verification requests from this network',
+      device: 'Too many verification requests from this device',
+      email: 'Too many verification requests for this email',
+    }),
+    message: 'Too many verification requests',
+    namespace: 'auth:verification-send',
+    windowMs: 15 * 60 * 1000,
+  }),
+  VERIFICATION_VERIFY: Object.freeze({
+    dimensions: Object.freeze({ device: 20, email: 12, ip: 40 }),
+    dimensionMessages: Object.freeze({
+      default: 'Too many verification attempts from this network',
+      device: 'Too many verification attempts from this device',
+      email: 'Too many verification attempts for this email',
+    }),
+    message: 'Too many verification attempts',
+    namespace: 'auth:verification-verify',
+    windowMs: 15 * 60 * 1000,
+  }),
   ACCOUNT_DELETE: Object.freeze({
     dimensions: Object.freeze({ device: 6, ip: 10, user: 4 }),
     dimensionMessages: Object.freeze({

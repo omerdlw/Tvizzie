@@ -1,6 +1,11 @@
 import { normalizeValue } from '@/shared/utils';
 import { AUTH_ROUTE_NOTICE_COOKIE_NAME, normalizeAuthRouteNotice } from '@/domains/auth/utils';
-import { AUTH_COOKIE_PATH, isSecureCookieEnvironment, requireSessionRequest } from './session.server';
+import {
+  assertSessionNotRevoked,
+  AUTH_COOKIE_PATH,
+  isSecureCookieEnvironment,
+  requireSessionRequest,
+} from './session.server';
 import { ACCOUNT_LIFECYCLE_STATES, assertAccountLifecycleAllowed } from './account.server';
 
 // ============================================================
@@ -37,6 +42,20 @@ export function clearAuthRouteNoticeCookie(response) {
 // ============================================================
 
 const AUTH_ROUTE_POLICIES = Object.freeze({
+  ACCOUNT_CHANGE_EMAIL: Object.freeze({
+    allowBearerFallback: true,
+    allowedLifecycleStates: Object.freeze([ACCOUNT_LIFECYCLE_STATES.ACTIVE]),
+    requireSession: true,
+    route: '/api/auth/account',
+    session: { requireRecentAuthMs: 0 },
+  }),
+  ACCOUNT_CHANGE_PASSWORD: Object.freeze({
+    allowBearerFallback: true,
+    allowedLifecycleStates: Object.freeze([ACCOUNT_LIFECYCLE_STATES.ACTIVE]),
+    requireSession: true,
+    route: '/api/auth/account',
+    session: { requireRecentAuthMs: 0 },
+  }),
   ACCOUNT_DELETE: Object.freeze({
     allowBearerFallback: true,
     allowedLifecycleStates: Object.freeze([
@@ -48,6 +67,27 @@ const AUTH_ROUTE_POLICIES = Object.freeze({
     requireRecentReauth: false,
     requireSession: true,
     requireStepUp: 'account-delete',
+    route: '/api/auth/account',
+    session: { requireRecentAuthMs: 0 },
+  }),
+  ACCOUNT_PASSWORD_STATUS: Object.freeze({
+    allowBearerFallback: true,
+    allowedLifecycleStates: Object.freeze([ACCOUNT_LIFECYCLE_STATES.ACTIVE]),
+    requireSession: true,
+    route: '/api/auth/account',
+    session: { requireRecentAuthMs: 0 },
+  }),
+  ACCOUNT_REAUTHENTICATE: Object.freeze({
+    allowBearerFallback: true,
+    allowedLifecycleStates: Object.freeze([ACCOUNT_LIFECYCLE_STATES.ACTIVE]),
+    requireSession: true,
+    route: '/api/auth/account',
+    session: { requireRecentAuthMs: 0 },
+  }),
+  ACCOUNT_SET_PASSWORD: Object.freeze({
+    allowBearerFallback: true,
+    allowedLifecycleStates: Object.freeze([ACCOUNT_LIFECYCLE_STATES.ACTIVE]),
+    requireSession: true,
     route: '/api/auth/account',
     session: { requireRecentAuthMs: 0 },
   }),
@@ -114,13 +154,16 @@ function resolvePolicy(policyKey) {
 }
 
 export async function requirePolicySession(request, policyKey) {
-  const policy = resolvePolicy(policyKey);
+  const resolvedPolicyKey =
+    policyKey && typeof policyKey === 'object' ? policyKey.policyKey : policyKey;
+  const policy = resolvePolicy(resolvedPolicyKey);
   if (!policy.requireSession) return null;
 
   const sessionContext = await requireSessionRequest(request, {
     allowBearerFallback: policy.allowBearerFallback !== false,
     requireRecentAuthMs: Number(policy?.session?.requireRecentAuthMs || 0),
   });
+  await assertSessionNotRevoked(sessionContext);
 
   if (Array.isArray(policy.allowedLifecycleStates) && policy.allowedLifecycleStates.length > 0) {
     await assertAccountLifecycleAllowed({

@@ -30,17 +30,17 @@ export const EASINGS = Object.freeze({
 });
 
 export const DURATIONS = Object.freeze({
-  BACKGROUND_REVEAL: 2.8,
-  COLUMN_SLIDE: 1.45,
-  POSTER_REVEAL: 1.55,
-  TITLE_REVEAL: 1.0,
-  TAGLINE_REVEAL: 0.82,
-  OVERVIEW_REVEAL: 1.05,
-  SECTION_HEADER: 0.95,
-  CARD_REVEAL: 0.92,
-  ACTION_BUTTON: 0.72,
+  BACKGROUND_REVEAL: 3.2,
+  COLUMN_SLIDE: 1.7,
+  POSTER_REVEAL: 1.75,
+  TITLE_REVEAL: 1.05,
+  TAGLINE_REVEAL: 0.92,
+  OVERVIEW_REVEAL: 1.2,
+  SECTION_HEADER: 1.05,
+  CARD_REVEAL: 0.9,
+  ACTION_BUTTON: 0.78,
   TAXONOMY_CHIP: 0.62,
-  SIDEBAR_ROW: 0.66,
+  SIDEBAR_ROW: 0.72,
   DEFERRED_SECTION: 1.05,
   SCROLL_SECTION: 1.15,
   TAB_SWITCH: 0.48,
@@ -65,6 +65,9 @@ export const SCALES = Object.freeze({
 
 // This is the order of the visual story. It is shared by Movie and TV; TV only
 // inserts its seasons chapter between cast and visual media.
+const SIDEBAR_SETTLE_END = 3.35;
+const GALLERY_HANDOFF_GAP = 0.1;
+
 export const TIMELINES = Object.freeze({
   BACKGROUND_DELAY: 0.12,
   SIDEBAR_COLUMN_DELAY: 0.16,
@@ -82,13 +85,15 @@ export const TIMELINES = Object.freeze({
   OVERVIEW_DELAY: 1.42,
 
   CAST_SECTION_BASE_DELAY: 2.05,
-  CAST_CARD_STEP: 0.12,
+  CAST_CARD_STEP: 0.1,
   TV_SEASONS_SECTION_BASE_DELAY: 2.75,
-  GALLERY_SECTION_BASE_DELAY: 3.35,
-  IMAGES_SECTION_BASE_DELAY: 3.95,
-  VIDEOS_SECTION_BASE_DELAY: 4.55,
-  DISCOVERY_SECTION_BASE_DELAY: 5.1,
-  REVIEWS_SECTION_BASE_DELAY: 5.7,
+  // Gallery begins in the handoff immediately after the sidebar settles.
+  SIDEBAR_SETTLE_END,
+  GALLERY_SECTION_BASE_DELAY: SIDEBAR_SETTLE_END + GALLERY_HANDOFF_GAP,
+  IMAGES_SECTION_BASE_DELAY: 4.08,
+  VIDEOS_SECTION_BASE_DELAY: 4.72,
+  DISCOVERY_SECTION_BASE_DELAY: 5.28,
+  REVIEWS_SECTION_BASE_DELAY: 5.9,
   GALLERY_CARD_STEP: 0.075,
   TAB_SWITCH_CARD_STEP: 0.045,
 });
@@ -142,6 +147,7 @@ const DEFERRED_CHAPTER_TARGETS = Object.freeze({
   images: MEDIA_DETAIL_TIMELINE.chapters.images,
   videos: MEDIA_DETAIL_TIMELINE.chapters.videos,
   discovery: MEDIA_DETAIL_TIMELINE.chapters.discovery,
+  personGallery: PERSON_TIMELINES.GALLERY_BASE_DELAY,
   filmography: PERSON_TIMELINES.FILMOGRAPHY_BASE_DELAY,
   generic: PERSON_TIMELINES.GALLERY_BASE_DELAY,
 });
@@ -165,36 +171,36 @@ export function getDeferredChapterDelay(chapterKey = 'generic', choreographyStar
 // the per-character implementation.
 export const MEDIA_DETAIL_TEXT = Object.freeze({
   TITLE: Object.freeze({
-    by: 'word',
+    by: 'character',
     delay: TIMELINES.HERO_TITLE_DELAY,
-    duration: 0.72,
-    stagger: 0.04,
-    initialBlur: BLURS.SUBTLE,
-    initialY: 10,
-    initialScale: 1,
+    duration: 0.82,
+    stagger: 0.028,
+    initialBlur: 'blur(8px)',
+    initialY: 12,
+    initialScale: 0.985,
     ease: EASINGS.TEXT,
   }),
   TAGLINE: Object.freeze({
-    by: 'word',
+    by: 'character',
     delay: TIMELINES.TAGLINE_DELAY,
-    duration: 0.58,
-    stagger: 0.045,
-    initialBlur: BLURS.SUBTLE,
-    initialY: 8,
-    initialScale: 1,
+    duration: 0.68,
+    stagger: 0.02,
+    initialBlur: 'blur(6px)',
+    initialY: 9,
+    initialScale: 0.99,
     ease: EASINGS.TEXT,
   }),
 });
 
 export const PERSON_TEXT = Object.freeze({
   TITLE: Object.freeze({
-    by: 'word',
+    by: 'character',
     delay: PERSON_TIMELINES.HERO_TITLE_DELAY,
-    duration: 0.72,
-    stagger: 0.04,
-    initialBlur: BLURS.SUBTLE,
-    initialY: 10,
-    initialScale: 1,
+    duration: 0.82,
+    stagger: 0.028,
+    initialBlur: 'blur(8px)',
+    initialY: 12,
+    initialScale: 0.985,
     ease: EASINGS.TEXT,
   }),
 });
@@ -220,8 +226,11 @@ export const MEDIA_BACKGROUND_ANIMATION = Object.freeze({
 });
 
 export const sidebarColumnVariants = Object.freeze({
-  initial: { opacity: 0, y: 18, scale: 0.985 },
-  animate: { opacity: 1, y: 0, scale: 1 },
+  // Keep the column visible so its poster, actions and metadata can reveal
+  // independently. A parent opacity would hide those child timelines and
+  // make the whole sidebar appear in one completed block.
+  initial: { y: 18, scale: 0.985 },
+  animate: { y: 0, scale: 1 },
   transition: {
     duration: DURATIONS.COLUMN_SLIDE,
     delay: TIMELINES.SIDEBAR_COLUMN_DELAY,
@@ -230,8 +239,10 @@ export const sidebarColumnVariants = Object.freeze({
 });
 
 export const mainContentColumnVariants = Object.freeze({
-  initial: { opacity: 0, y: 12, scale: 0.99 },
-  animate: { opacity: 1, y: 0, scale: 1 },
+  // Child choreography owns opacity. This wrapper only gives the content a
+  // quiet spatial settle without masking title, cast and chapter reveals.
+  initial: { y: 12, scale: 0.99 },
+  animate: { y: 0, scale: 1 },
   transition: {
     duration: DURATIONS.COLUMN_SLIDE,
     delay: 0.3,
@@ -301,6 +312,19 @@ export const heroOverviewVariants = Object.freeze({
 
 // ─── 3. SIDEBAR AND ACTIONS ──────────────────────────────────────────────────
 
+const SHARED_INTERACTION_PROPS = Object.freeze({
+  whileHover: {
+    y: -2,
+    scale: 1.012,
+    transition: { duration: 0.28, ease: EASINGS.CONTROL },
+  },
+  whileTap: { scale: 0.98, transition: { duration: 0.16, ease: EASINGS.CONTROL } },
+});
+
+function getSharedInteractionProps() {
+  return SHARED_INTERACTION_PROPS;
+}
+
 export function getActionButtonProps(index = 0) {
   return {
     initial: { opacity: 0, y: 14, scale: 0.94, filter: BLURS.LIGHT },
@@ -310,8 +334,7 @@ export function getActionButtonProps(index = 0) {
       delay: TIMELINES.ACTION_BUTTON_BASE_DELAY + index * TIMELINES.ACTION_BUTTON_STEP,
       ease: EASINGS.CONTROL,
     },
-    whileHover: { y: -2, scale: 1.025, transition: { duration: 0.25, ease: EASINGS.CONTROL } },
-    whileTap: { scale: 0.97, transition: { duration: 0.16, ease: EASINGS.CONTROL } },
+    ...getSharedInteractionProps(),
   };
 }
 
@@ -497,8 +520,7 @@ export function getCastCardProps(
 export function getCastHoverProps() {
   return {
     initial: false,
-    whileHover: { y: -2, scale: 1.012 },
-    whileTap: { scale: 0.98 },
+    ...getSharedInteractionProps(),
     transition: { duration: 0.28, ease: EASINGS.CONTROL },
   };
 }

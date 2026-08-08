@@ -12,7 +12,11 @@ import {
   resolveEmailAccountState,
 } from './account.server';
 import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from './policies.server';
-import { clearAuthCookies, getRequestContext, requireSessionRequest } from './session.server';
+import {
+  clearAuthCookies,
+  getRequestContext,
+  revokeRefreshTokens,
+} from './session.server';
 import {
   assertCsrfRequest,
   assertRecentReauth,
@@ -75,6 +79,17 @@ function buildRequestMeta(request, action) {
   return buildInternalRequestMeta({
     request,
     source: ACTION_SOURCES[action] || 'api/auth/account',
+  });
+}
+
+async function enforceAccountRateLimit(policyKey, request, session) {
+  const context = getRequestContext(request);
+  await enforceAuthRateLimit(policyKey, {
+    dimensionValues: {
+      device: context.deviceHash,
+      ip: context.ipHash,
+      user: session?.userId || null,
+    },
   });
 }
 
@@ -161,6 +176,8 @@ export async function handleDeleteAccount(request, body) {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_DELETE,
     });
     assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
+    assertStepUp(request, { email: session.email, purpose: 'account-delete', userId: session.userId });
+    await enforceAccountRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.ACCOUNT_DELETE, request, session);
 
     await beginAccountDeleteLifecycle({ userId: session.userId });
     await completeAccountDeleteLifecycle({ userId: session.userId });
@@ -191,6 +208,9 @@ export async function handleChangeEmail(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_EMAIL,
     });
+    assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
+    assertStepUp(request, { email: session.email, purpose: 'email-change', userId: session.userId });
+    await enforceAccountRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.EMAIL_CHANGE_COMPLETE, request, session);
     const newEmail = normalizeEmailValue(body?.newEmail);
 
     if (!newEmail || !newEmail.includes('@')) {
@@ -204,10 +224,15 @@ export async function handleChangeEmail(request, body) {
     const updateRes = await admin.auth.admin.updateUserById(session.userId, { email: newEmail });
     if (updateRes.error) throw updateRes.error;
 
-    return createApiSuccessResponse(
+    await revokeRefreshTokens(session.userId, { reason: 'email-change' });
+    const response = createApiSuccessResponse(
       { updated: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_EMAIL) },
     );
+    clearAuthCookies(response);
+    clearRecentReauthCookie(response);
+    clearStepUpCookie(response);
+    return response;
   } catch (error) {
     return createApiErrorResponse(
       {
@@ -227,6 +252,8 @@ export async function handleChangePassword(request, body) {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_PASSWORD,
     });
     assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
+    assertStepUp(request, { email: session.email, purpose: 'password-change', userId: session.userId });
+    await enforceAccountRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_CHANGE_COMPLETE, request, session);
 
     const newPassword = validateStrongPassword(body?.newPassword);
     const admin = createAdminClient();
@@ -235,10 +262,15 @@ export async function handleChangePassword(request, body) {
     });
     if (updateRes.error) throw updateRes.error;
 
-    return createApiSuccessResponse(
+    await revokeRefreshTokens(session.userId, { reason: 'password-change' });
+    const response = createApiSuccessResponse(
       { updated: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_PASSWORD) },
     );
+    clearAuthCookies(response);
+    clearRecentReauthCookie(response);
+    clearStepUpCookie(response);
+    return response;
   } catch (error) {
     return createApiErrorResponse(
       {
@@ -257,6 +289,8 @@ export async function handleSetPassword(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_SET_PASSWORD,
     });
+    assertStepUp(request, { email: session.email, purpose: 'password-set', userId: session.userId });
+    await enforceAccountRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_SET_COMPLETE, request, session);
     const newPassword = validateStrongPassword(body?.newPassword);
 
     const admin = createAdminClient();
@@ -265,10 +299,14 @@ export async function handleSetPassword(request, body) {
     });
     if (updateRes.error) throw updateRes.error;
 
-    return createApiSuccessResponse(
+    await revokeRefreshTokens(session.userId, { reason: 'password-set' });
+    const response = createApiSuccessResponse(
       { set: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.SET_PASSWORD) },
     );
+    clearAuthCookies(response);
+    clearStepUpCookie(response);
+    return response;
   } catch (error) {
     return createApiErrorResponse(
       {

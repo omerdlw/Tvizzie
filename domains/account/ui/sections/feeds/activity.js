@@ -72,29 +72,31 @@ export default function AccountActivityFeed({
       titleHref={titleHref}
     >
       {onFiltersChange && isLoading && visibleItems.length === 0 ? (
-        <div className="mb-4">
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
           <FilterBarSkeleton />
         </div>
       ) : onFiltersChange && (listedActivityCount > 0 || hasFilters) ? (
-        <AccountActivityFilterBar
-          filters={filters}
-          subjectOptions={collectActivitySubjectOptions()}
-          onChange={(updates) =>
-            onFiltersChange({
-              ...filters,
-              ...updates,
-            })
-          }
-          onReset={
-            hasFilters
-              ? () =>
-                  onFiltersChange({
-                    sort: 'newest',
-                    subject: 'all',
-                  })
-              : null
-          }
-        />
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+          <AccountActivityFilterBar
+            filters={filters}
+            subjectOptions={collectActivitySubjectOptions()}
+            onChange={(updates) =>
+              onFiltersChange({
+                ...filters,
+                ...updates,
+              })
+            }
+            onReset={
+              hasFilters
+                ? () =>
+                    onFiltersChange({
+                      sort: 'newest',
+                      subject: 'all',
+                    })
+                : null
+            }
+          />
+        </div>
       ) : null}
 
       {isLoading && visibleItems.length === 0 ? (
@@ -137,7 +139,7 @@ function ActivityItem({ baseDelay, index = 0, isFirst = false, isInitialSection 
   const motionProps = getActivityItemProps(index, baseDelay, isInitialSection);
   return (
     <motion.article
-      className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
+      className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0 last:pb-0`}
       initial={motionProps.initial}
       animate={isInitialSection ? motionProps.animate : undefined}
       whileInView={!isInitialSection ? motionProps.whileInView : undefined}

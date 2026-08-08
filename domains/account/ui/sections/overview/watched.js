@@ -4,52 +4,16 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 import MediaCard from '@/domains/media/ui/components/media-card';
-import { TMDB_IMG } from '@/shared/constants';
+import { usePosterPreferenceVersion } from '@/domains/media/utils/poster-overrides';
+import { toAccountMediaCard } from '@/domains/account/utils/media-card';
 import {
-  getPreferredMoviePosterSrc,
-  usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
-import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
+  AccountInlineSectionState,
+  AccountInlineSectionLoading,
+} from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getCardProps } from '@/app/(account)/motion';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
-
-function getWatchedType(item) {
-  const explicitType = item?.media_type || item?.entityType;
-
-  if (explicitType === 'movie' || explicitType === 'tv') {
-    return explicitType;
-  }
-
-  return null;
-}
-
-function getWatchedTitle(item) {
-  return item?.title || item?.original_title || item?.name || item?.original_name || 'Untitled';
-}
-
-function getWatchedYear(item) {
-  return item?.release_date?.slice?.(0, 4) || item?.first_air_date?.slice?.(0, 4) || null;
-}
-
-function getWatchedPoster(item) {
-  const mediaType = item?.media_type || item?.entityType;
-  const preferredPoster = mediaType === 'movie' ? getPreferredMoviePosterSrc(item, 'w342') : null;
-  if (preferredPoster) {
-    return preferredPoster;
-  }
-
-  if (item?.poster_path_full) {
-    return item.poster_path_full;
-  }
-
-  if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`;
-  }
-
-  return null;
-}
 
 export default function AccountWatchedOverview({
   baseDelay,
@@ -68,29 +32,7 @@ export default function AccountWatchedOverview({
 }) {
   const posterPreferenceVersion = usePosterPreferenceVersion();
   const cards = useMemo(
-    () =>
-      items
-        .map((item) => {
-          const mediaType = getWatchedType(item);
-          const detailId = item?.entityId || item?.id;
-
-          if (!detailId || !mediaType) {
-            return null;
-          }
-
-          const watchedTitle = getWatchedTitle(item);
-          const year = getWatchedYear(item);
-
-          return {
-            href: `/${mediaType}/${detailId}`,
-            id: item?.mediaKey || `${mediaType}-${detailId}`,
-            imageAlt: watchedTitle,
-            imageSrc: getWatchedPoster(item),
-            item,
-            tooltipText: year ? `${watchedTitle} (${year})` : watchedTitle,
-          };
-        })
-        .filter(Boolean),
+    () => items.map(toAccountMediaCard).filter(Boolean),
     [items, posterPreferenceVersion],
   );
 

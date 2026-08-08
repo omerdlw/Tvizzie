@@ -8,7 +8,7 @@ export default function AccountGridFrame({ className = '' }) {
     <div
       aria-hidden="true"
       className={cn(
-        `pointer-events-none absolute inset-y-0 left-1/2 z-0 w-full -translate-x-1/2 ${ACCOUNT_ROUTE_SHELL_CLASS}`,
+        `pointer-events-none absolute inset-y-0 left-1/2 z-0 min-h-screen w-full -translate-x-1/2 ${ACCOUNT_ROUTE_SHELL_CLASS}`,
         className,
       )}
     >

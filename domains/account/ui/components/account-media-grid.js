@@ -103,6 +103,7 @@ export default function AccountMediaGridPage({
   renderHeaderAction = null,
   renderOverlay = null,
   showHeader = true,
+  showTopRule = true,
   toolbar = null,
   title,
 }) {
@@ -145,11 +146,16 @@ export default function AccountMediaGridPage({
       icon={icon}
       isInitialSection={isInitialSection}
       showHeader={showHeader}
+      showTopRule={showTopRule}
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
-      {toolbar}
+      {toolbar ? (
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+          {toolbar}
+        </div>
+      ) : null}
 
       {isLoading && cards.length === 0 ? (
         <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">

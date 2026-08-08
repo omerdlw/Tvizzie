@@ -1,6 +1,3 @@
-import { completeSignUpServer } from '../api/sign-up.server';
-import { completePasswordResetServer } from '../api/password-reset.server';
-import { requestVerificationCodeServer, verifyCodeServer } from '../api/verification.server';
 import { getPasswordStatusServer } from '../api/account.server';
 
 // ============================================================================
@@ -13,6 +10,33 @@ const passwordStatusInFlight = new Map();
 
 function normalizeValue(value) {
   return String(value || '').trim();
+}
+
+function getCsrfHeaders() {
+  if (typeof document === 'undefined') return {};
+  const prefix = 'tvz_auth_csrf=';
+  const entry = String(document.cookie || '')
+    .split(';')
+    .map((value) => value.trim())
+    .find((value) => value.startsWith(prefix));
+  const token = entry ? decodeURIComponent(entry.slice(prefix.length)) : '';
+  return token ? { 'X-CSRF-Token': token } : {};
+}
+
+async function postAuthJson(path, body, fallbackMessage) {
+  const response = await fetch(path, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...getCsrfHeaders() },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({ error: fallbackMessage }));
+
+  if (!response.ok || payload?.success === false) {
+    throw new Error(payload?.error || fallbackMessage);
+  }
+
+  return payload;
 }
 
 // ============================================================================
@@ -39,7 +63,7 @@ function readPasswordStatusCache(cacheKey) {
   return entry.value;
 }
 
-function resolvePasswordAccountStatus({ email, identifier, intent, userId }) {
+function resolvePasswordAccountStatus({ email, identifier, intent }) {
   const cacheKey = createPasswordStatusCacheKey({ email, identifier, intent });
   const cachedValue = readPasswordStatusCache(cacheKey);
 
@@ -51,7 +75,7 @@ function resolvePasswordAccountStatus({ email, identifier, intent, userId }) {
     return passwordStatusInFlight.get(cacheKey);
   }
 
-  const requestPromise = getPasswordStatusServer({ email, identifier, intent, userId })
+  const requestPromise = getPasswordStatusServer({ email, identifier, intent })
     .then((payload) => {
       if (!payload.success) {
         throw new Error(payload.error || 'Account status could not be resolved');
@@ -76,8 +100,8 @@ function resolvePasswordAccountStatus({ email, identifier, intent, userId }) {
 // 3. DIŞA AKTARILAN API FONKSİYONLARI
 // ============================================================================
 
-export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-in', userId }) {
-  return resolvePasswordAccountStatus({ email, identifier, intent, userId });
+export function assertPasswordAccountStatus({ email, identifier, intent = 'sign-in' }) {
+  return resolvePasswordAccountStatus({ email, identifier, intent });
 }
 
 export function assertSignUpEmailAvailable({ email }) {
@@ -85,26 +109,33 @@ export function assertSignUpEmailAvailable({ email }) {
 }
 
 export async function requestVerificationCode({ email, purpose, forceNew }) {
-  const result = await requestVerificationCodeServer({ email, purpose, forceNew });
-  if (!result.success) throw new Error(result.error || 'Could not send verification code');
-  return result;
+  return postAuthJson(
+    '/api/auth/verification',
+    { action: 'send', email, forceNew: forceNew === true, purpose },
+    'Could not send verification code',
+  );
 }
 
 export async function verifyCodeRequest({ code, email, purpose, rememberDevice }) {
-  const result = await verifyCodeServer({ code, email, purpose, rememberDevice });
-  if (!result.success) throw new Error(result.error || 'Verification failed');
-  return result;
+  return postAuthJson(
+    '/api/auth/verification',
+    { action: 'verify', code, email, purpose, rememberDevice: rememberDevice === true },
+    'Verification failed',
+  );
 }
 
-export async function completeVerifiedSignUp({ email, password, username }) {
-  const result = await completeSignUpServer({ email, password, username });
-  if (!result.success) throw new Error(result.error || 'Sign-up could not be completed');
-  return result;
+export async function completeVerifiedSignUp({ email, password, signUpProof, username }) {
+  return postAuthJson(
+    '/api/auth/sign-up/complete',
+    { email, password, signUpProof, username },
+    'Sign-up could not be completed',
+  );
 }
 
 export async function completePasswordReset({ email, newPassword, passwordResetProof, token }) {
-  const result = await completePasswordResetServer({ token: token || passwordResetProof, newPassword });
-  if (!result.success) throw new Error(result.error || 'Password reset failed');
-  return result;
+  return postAuthJson(
+    '/api/auth/password-reset/complete',
+    { email, newPassword, token: token || passwordResetProof },
+    'Password reset failed',
+  );
 }
-

@@ -1,11 +1,11 @@
 'use server';
 
-import { normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { sanitizeAccountSearchTerm } from '@/domains/account/utils';
 
 export async function searchAccountsServer({ searchTerm, limitCount = 10 }) {
   try {
-    const term = normalizeValue(searchTerm);
+    const term = sanitizeAccountSearchTerm(searchTerm);
     if (!term) return { success: true, items: [] };
 
     const maxLimit = Math.min(50, Math.max(1, Number(limitCount) || 10));
@@ -13,7 +13,9 @@ export async function searchAccountsServer({ searchTerm, limitCount = 10 }) {
     const { data, error } = await admin
       .from('profiles')
       .select('id, username, display_name, avatar_url, is_private')
-      .or(`username_lower.ilike.%${term.toLowerCase()}%,display_name_lower.ilike.%${term.toLowerCase()}%`)
+      .or(
+        `username_lower.ilike.%${term.toLowerCase()}%,display_name_lower.ilike.%${term.toLowerCase()}%`,
+      )
       .limit(maxLimit);
 
     if (error) throw new Error(error.message || 'Search failed');

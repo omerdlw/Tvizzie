@@ -2,13 +2,31 @@ import 'server-only';
 
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { requireSessionRequest, resolveOptionalSessionRequest } from '@/domains/auth/server/session.server.js';
+import {
+  requireSessionRequest,
+  resolveOptionalSessionRequest,
+} from '@/domains/auth/server/session.server.js';
+import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import { ensurePasswordAccountRecord } from '@/domains/auth/server/account.server.js';
-import { getEditableAccountSnapshotByUserId, getAccountIdByUsername, getAccountProfileByUserId } from './profile.server';
+import {
+  getEditableAccountSnapshotByUserId,
+  getAccountIdByUsername,
+  getAccountProfileByUserId,
+} from './profile.server';
 import { fetchAccountActivityFeedServer } from './feed.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
-import { ACCOUNT_READ_FUNCTION, ACCOUNT_WRITE_FUNCTION, normalizeAccountDisplayNameSearchValue, sanitizeUsername, validateUsername } from '@/domains/account/utils';
-import { getOrLoadCachedValue, invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
+import {
+  ACCOUNT_READ_FUNCTION,
+  ACCOUNT_WRITE_FUNCTION,
+  normalizeAccountDisplayNameSearchValue,
+  sanitizeAccountSearchTerm,
+  sanitizeUsername,
+  validateUsername,
+} from '@/domains/account/utils';
+import {
+  getOrLoadCachedValue,
+  invokeInternalEdgeFunction,
+} from '@/infrastructure/http/http-server';
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import { normalizeValue } from '@/shared/utils';
 
@@ -59,7 +77,10 @@ export async function handleAccountCollectionsGet(request) {
     return NextResponse.json({ data, items: Array.isArray(data) ? data : [] });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json({ error: String(error?.message || 'Collections could not be loaded') }, { status });
+    return NextResponse.json(
+      { error: String(error?.message || 'Collections could not be loaded') },
+      { status },
+    );
   }
 }
 
@@ -106,7 +127,10 @@ export async function handleAccountActivityGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json({ error: String(error?.message || 'Activity feed could not be loaded') }, { status });
+    return NextResponse.json(
+      { error: String(error?.message || 'Activity feed could not be loaded') },
+      { status },
+    );
   }
 }
 
@@ -139,12 +163,16 @@ export async function handleAccountProfileGet(request) {
     return NextResponse.json({ profile: profile || null });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json({ error: String(error?.message || 'Profile could not be loaded') }, { status });
+    return NextResponse.json(
+      { error: String(error?.message || 'Profile could not be loaded') },
+      { status },
+    );
   }
 }
 
 export async function handleAccountProfilePost(request) {
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireSessionRequest(request);
     const body = await request.json().catch(() => ({}));
     const action = normalizeValue(body.action);
@@ -179,7 +207,12 @@ export async function handleAccountProfilePost(request) {
 
       updates.updated_at = new Date().toISOString();
 
-      const { data, error } = await admin.from('profiles').update(updates).eq('id', authContext.userId).select().single();
+      const { data, error } = await admin
+        .from('profiles')
+        .update(updates)
+        .eq('id', authContext.userId)
+        .select()
+        .single();
       if (error) throw new Error(error.message || 'Account update failed');
 
       await publishUserEvent(authContext.userId, 'account:updated', { profile: data });
@@ -189,7 +222,10 @@ export async function handleAccountProfilePost(request) {
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json({ error: String(error?.message || 'Account action failed') }, { status });
+    return NextResponse.json(
+      { error: String(error?.message || 'Account action failed') },
+      { status },
+    );
   }
 }
 
@@ -216,7 +252,10 @@ export async function handleAccountResolveGet(request) {
 
     return NextResponse.json({ userId: userId || null });
   } catch (error) {
-    return NextResponse.json({ error: String(error?.message || 'Username could not be resolved') }, { status: 500 });
+    return NextResponse.json(
+      { error: String(error?.message || 'Username could not be resolved') },
+      { status: 500 },
+    );
   }
 }
 
@@ -254,7 +293,10 @@ export async function handleAccountReviewsGet(request) {
     return NextResponse.json(payload);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return NextResponse.json({ error: String(error?.message || 'Reviews could not be loaded') }, { status });
+    return NextResponse.json(
+      { error: String(error?.message || 'Reviews could not be loaded') },
+      { status },
+    );
   }
 }
 
@@ -265,7 +307,7 @@ export async function handleAccountReviewsGet(request) {
 export async function handleAccountSearchGet(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const searchTerm = normalizeValue(searchParams.get('searchTerm'));
+    const searchTerm = sanitizeAccountSearchTerm(searchParams.get('searchTerm'));
     const limitCount = Math.min(50, Math.max(1, Number(searchParams.get('limitCount')) || 10));
 
     if (!searchTerm) return NextResponse.json({ items: [] });
@@ -274,7 +316,9 @@ export async function handleAccountSearchGet(request) {
     const { data, error } = await admin
       .from('profiles')
       .select('id, username, display_name, avatar_url, is_private')
-      .or(`username_lower.ilike.%${searchTerm.toLowerCase()}%,display_name_lower.ilike.%${searchTerm.toLowerCase()}%`)
+      .or(
+        `username_lower.ilike.%${searchTerm.toLowerCase()}%,display_name_lower.ilike.%${searchTerm.toLowerCase()}%`,
+      )
       .limit(limitCount);
 
     if (error) throw new Error(error.message || 'Search failed');
@@ -289,6 +333,9 @@ export async function handleAccountSearchGet(request) {
 
     return NextResponse.json({ items });
   } catch (error) {
-    return NextResponse.json({ error: String(error?.message || 'Account search failed') }, { status: 500 });
+    return NextResponse.json(
+      { error: String(error?.message || 'Account search failed') },
+      { status: 500 },
+    );
   }
 }

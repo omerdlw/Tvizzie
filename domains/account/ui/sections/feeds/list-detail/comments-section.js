@@ -5,13 +5,8 @@ import AccountPagination from '@/domains/account/ui/components/account-paginatio
 import { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import ReviewAuthFallback from '@/domains/reviews/ui/components/review-auth-fallback';
-import ReviewHeader from '@/domains/reviews/ui/components/review-header';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { LIST_COMMENT_SORT_OPTIONS, REVIEW_ITEMS_PER_PAGE } from './list-detail-config';
-
-
-
-
 
 export default function ListDetailCommentsSection({
   auth,
@@ -34,7 +29,6 @@ export default function ListDetailCommentsSection({
 }) {
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
 
-  
   const totalReviewPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEW_ITEMS_PER_PAGE));
   const safeCurrentReviewPage = Math.min(currentReviewPage, totalReviewPages);
   const reviewPageStart = (safeCurrentReviewPage - 1) * REVIEW_ITEMS_PER_PAGE;
@@ -44,7 +38,6 @@ export default function ListDetailCommentsSection({
   );
   const hasListReviews = reviews.length > 0;
 
-  
   useEffect(() => {
     setCurrentReviewPage(1);
   }, [list?.id, reviewFilters]);
@@ -76,10 +69,6 @@ export default function ListDetailCommentsSection({
   );
 }
 
-
-
-
-
 function CommentsView({
   auth,
   filteredReviews,
@@ -105,21 +94,19 @@ function CommentsView({
   setCurrentReviewPage,
 }) {
   return (
-    <div className="relative flex w-full flex-col gap-4">
-      <ReviewHeader
-        itemLabel="comment"
-        showRatingSummary={false}
-        title="Comments"
-        totalReviews={reviews.length}
-      />
-
+    <div className="flex w-full flex-col gap-4">
       {!auth?.user && (
-        <ReviewAuthFallback mode="comment" onSignIn={onSignIn} title={list?.title} />
+        <ReviewAuthFallback
+          mode="comment"
+          onSignIn={onSignIn}
+          title={list?.title}
+          variant="account-section"
+        />
       )}
 
       {hasListReviews && (
         <AccountReviewFilterBar
-          className="border-b-0 pb-0"
+          className="border-b border-black/10 pb-4"
           filters={reviewFilters}
           showRatingFilter={false}
           sortOptions={LIST_COMMENT_SORT_OPTIONS}
@@ -145,11 +132,13 @@ function CommentsView({
       ) : (
         <ReviewList
           currentUserId={auth.user?.id || null}
+          displayVariant="account"
           isLoading={false}
           loadError={null}
           onDeleteRequest={onDeleteRequest}
           onEdit={onEditReview}
           onLike={onLikeReview}
+          showSubject={true}
           sortedReviews={visibleReviews}
           userProfile={userProfile}
         />

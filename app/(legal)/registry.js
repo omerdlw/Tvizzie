@@ -10,7 +10,11 @@ export default createRouteRegistry({
       description,
       icon,
       action: null,
+      style: {
+        card: {
+          className: 'border-none',
+        },
+      },
     },
   }),
 });
-

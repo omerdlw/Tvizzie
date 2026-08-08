@@ -7,16 +7,38 @@
 
 import { Button } from '@/ui/primitives';
 
-export default function ReviewAuthFallback({ mode = 'review', onSignIn, title }) {
+export default function ReviewAuthFallback({
+  mode = 'review',
+  onSignIn,
+  title,
+  variant = 'default',
+}) {
   const helperText =
     mode === 'comment'
       ? `Sign in to leave a comment on ${title}.`
       : `Sign in to leave a rating or review for ${title}.`;
+  const isAccountSection = variant === 'account-section';
 
   return (
-    <div className="flex w-full items-center justify-between border-y border-black/10 py-4">
+    <div
+      className={
+        isAccountSection
+          ? '-mx-5 -mt-5 flex w-[calc(100%+2.5rem)] items-center justify-between border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:w-[calc(100%+3rem)] sm:p-6'
+          : `flex w-full items-center justify-between ${
+              mode === 'comment' ? 'border-b' : 'border-y'
+            } border-black/10 py-4`
+      }
+    >
       <div className="min-w-0">
-        <p className="text-sm font-semibold">Join the conversation</p>
+        <p
+          className={
+            isAccountSection
+              ? 'text-xs font-semibold tracking-widest text-black/70 uppercase'
+              : 'text-sm font-semibold'
+          }
+        >
+          Join the conversation
+        </p>
         <p className="text-xs text-black/70">{helperText}</p>
       </div>
       <Button

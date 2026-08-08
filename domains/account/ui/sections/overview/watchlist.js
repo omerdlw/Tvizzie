@@ -3,49 +3,18 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import MediaCard from '@/domains/media/ui/components/media-card';
-import { TMDB_IMG } from '@/shared/constants';
-import {
-  getPreferredMoviePosterSrc,
-  usePosterPreferenceVersion,
-} from '@/domains/media/utils/poster-overrides';
+import { usePosterPreferenceVersion } from '@/domains/media/utils/poster-overrides';
+import { toAccountMediaCard } from '@/domains/account/utils/media-card';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
+import {
+  AccountInlineSectionState,
+  AccountInlineSectionLoading,
+} from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { getCardProps } from '@/app/(account)/motion';
 
 const OVERVIEW_ROW_CARD_LIMIT = 6;
-
-function getWatchlistType(item) {
-  const explicitType = item?.media_type || item?.entityType;
-  if (explicitType === 'movie' || explicitType === 'tv') {
-    return explicitType;
-  }
-  return null;
-}
-
-function getWatchlistTitle(item) {
-  return item?.title || item?.original_title || item?.name || item?.original_name || 'Untitled';
-}
-
-function getWatchlistYear(item) {
-  return item?.release_date?.slice?.(0, 4) || item?.first_air_date?.slice?.(0, 4) || null;
-}
-
-function getWatchlistPoster(item) {
-  const mediaType = item?.media_type || item?.entityType;
-  const preferredPoster = mediaType === 'movie' ? getPreferredMoviePosterSrc(item, 'w342') : null;
-  if (preferredPoster) {
-    return preferredPoster;
-  }
-  if (item?.poster_path_full) {
-    return item.poster_path_full;
-  }
-  if (item?.poster_path) {
-    return `${TMDB_IMG}/w342${item.poster_path}`;
-  }
-  return null;
-}
 
 export default function AccountWatchlistOverview({
   baseDelay,
@@ -67,26 +36,7 @@ export default function AccountWatchlistOverview({
   const posterPreferenceVersion = usePosterPreferenceVersion();
   const [pendingItemId, setPendingItemId] = useState(null);
   const cards = useMemo(
-    () =>
-      items
-        .map((item) => {
-          const mediaType = getWatchlistType(item);
-          const detailId = item?.entityId || item?.id;
-          if (!detailId || !mediaType) {
-            return null;
-          }
-          const title = getWatchlistTitle(item);
-          const year = getWatchlistYear(item);
-          return {
-            href: `/${mediaType}/${detailId}`,
-            id: item?.mediaKey || `${mediaType}-${detailId}`,
-            imageAlt: title,
-            imageSrc: getWatchlistPoster(item),
-            item,
-            tooltipText: year ? `${title}(${year})` : title,
-          };
-        })
-        .filter(Boolean),
+    () => items.map(toAccountMediaCard).filter(Boolean),
     [items, posterPreferenceVersion],
   );
   return (

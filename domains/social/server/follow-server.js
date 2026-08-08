@@ -4,6 +4,7 @@ import {
   readSessionFromRequest,
   requireAuthenticatedRequest,
 } from '@/domains/auth/server/session.server.js';
+import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import { getFollowResource } from '@/domains/social/server/social/follow-resources.server';
 import {
   createApiErrorResponse,
@@ -180,6 +181,7 @@ export async function handleFollowsPost(request) {
   const requestMeta = createRequestMeta(request, 'api/follows:post');
 
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireAuthenticatedRequest(request);
     const body = await parseJsonBody(request);
     const action = normalizeValue(body?.action);
@@ -239,6 +241,7 @@ export async function handleFollowsPatch(request) {
   const requestMeta = createRequestMeta(request, 'api/follows:patch');
 
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireAuthenticatedRequest(request);
     const body = await parseJsonBody(request);
     const action = normalizeValue(body?.action);
@@ -360,6 +363,7 @@ export async function handleFollowsDelete(request) {
   const requestMeta = createRequestMeta(request, 'api/follows:delete');
 
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireAuthenticatedRequest(request);
     const body = await parseJsonBody(request);
     const action = normalizeValue(body?.action);

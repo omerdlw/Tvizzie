@@ -57,6 +57,8 @@ export default function ReviewList({
         const mergedReview = isOwnReview ? mergeReviewUser(review, userProfile) : review;
         const key = review.docPath || review.id || `review-${index}`;
         const motionProps = getListCardProps(index, baseDelay, isInitialSection);
+        const isFirst = index === 0;
+        const isLast = index === sortedReviews.length - 1;
 
         return (
           <motion.div
@@ -69,10 +71,11 @@ export default function ReviewList({
             style={{ willChange: 'transform, opacity, filter' }}
           >
             <ReviewCard
-              className={index === 0 ? 'pt-0 pb-6' : ''}
               review={mergedReview}
               currentUserId={currentUserId}
               displayVariant={displayVariant}
+              removeBottomPadding={isLast}
+              removeTopPadding={isFirst}
               isOwnReview={showOwnActions && isOwnReview}
               likedMediaKeys={likedMediaKeys}
               onLike={() => onLike(review)}

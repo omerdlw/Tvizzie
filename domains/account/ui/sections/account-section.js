@@ -123,13 +123,14 @@ export default function AccountSectionLayout({
   showHeader = true,
   showDivider = true,
   showSeeMore = false,
+  showTopRule = true,
   summaryLabel = null,
   title,
   titleHref = null,
 }) {
   return (
     <section className="relative bg-transparent">
-      <div aria-hidden="true" className={ACCOUNT_SECTION_RULE_CLASS} />
+      {showTopRule && <div aria-hidden="true" className={ACCOUNT_SECTION_RULE_CLASS} />}
       <AccountSectionReveal delay={revealDelay} isInitialSection={isInitialSection}>
         <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, className)}>
           <div className={ACCOUNT_SECTION_GRID_CLASS}>

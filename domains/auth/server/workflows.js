@@ -99,6 +99,7 @@ export async function finalizeSignUp({
   const session = await auth.signIn({
     email,
     password,
+    signUpProof,
   });
 
   if (!session?.user?.id) {

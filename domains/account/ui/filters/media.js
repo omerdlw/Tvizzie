@@ -372,9 +372,12 @@ function formatDiscoveredLabel(value) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
-export function buildMediaKeySet(items = []) {
+export function buildMediaKeySet(items = [], shouldInclude = () => true) {
   return new Set(
-    (Array.isArray(items) ? items : []).map((item) => toMediaKey(item)).filter(Boolean),
+    (Array.isArray(items) ? items : [])
+      .filter(shouldInclude)
+      .map((item) => toMediaKey(item))
+      .filter(Boolean),
   );
 }
 

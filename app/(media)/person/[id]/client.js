@@ -44,6 +44,18 @@ function getFallbackBackgroundImage(person) {
   return candidates.map(getMovieBackdropSrc).find(Boolean) || null;
 }
 
+function useViewChoreographyClock(activeView) {
+  const activeViewRef = useRef(activeView);
+  const choreographyStartedAtRef = useRef(getMotionTimestamp());
+
+  if (activeViewRef.current !== activeView) {
+    activeViewRef.current = activeView;
+    choreographyStartedAtRef.current = getMotionTimestamp();
+  }
+
+  return choreographyStartedAtRef.current;
+}
+
 async function resolvePersonBackgroundImage(person) {
   const candidates = getBackgroundMovieCandidates(person);
 
@@ -165,7 +177,7 @@ function PersonMainContent({ person, choreographyStartedAt }) {
         <div className="mt-8 sm:mt-12">
           <PersonGallery
             images={person.images}
-            baseDelay={getDeferredChapterDelay('gallery', choreographyStartedAt)}
+            baseDelay={getDeferredChapterDelay('personGallery', choreographyStartedAt)}
           />
         </div>
       ) : null}
@@ -219,7 +231,7 @@ function PersonView({
   onResetPersonPoster,
   canResetPersonPoster,
 }) {
-  const choreographyStartedAtRef = useRef(getMotionTimestamp());
+  const choreographyStartedAt = useViewChoreographyClock(activeView);
   if (!person) return null;
   const deferredFallback = (
     <div className="mt-8 flex justify-center py-12 sm:mt-12">
@@ -244,7 +256,10 @@ function PersonView({
         <div
           className={`relative mx-auto flex w-full ${PAGE_SHELL_MAX_WIDTH_CLASS} flex-col gap-6 px-3 pb-12 [overflow-anchor:none] sm:gap-8 sm:px-4 md:px-6`}
         >
-          <div className="mt-16 flex w-full flex-col items-center gap-6 sm:mt-24 sm:gap-8 lg:mt-36">
+          <div
+            key={`person-scene-${activeView}`}
+            className="mt-16 flex w-full flex-col items-center gap-6 sm:mt-24 sm:gap-8 lg:mt-36"
+          >
             {activeView !== 'timeline' && activeView !== 'awards' && (
               <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
                 {person?.profile_path ? (
@@ -285,7 +300,7 @@ function PersonView({
                 <motion.div
                   className="mt-8 sm:mt-12"
                   {...getSectionHeaderProps(
-                    getDeferredChapterDelay('generic', choreographyStartedAtRef.current),
+                    getDeferredChapterDelay('generic', choreographyStartedAt),
                     false,
                     'generic',
                   )}
@@ -298,7 +313,7 @@ function PersonView({
                     person={person}
                     secondaryDataPromise={secondaryDataPromise}
                     activeView={activeView}
-                    choreographyStartedAt={choreographyStartedAtRef.current}
+                    choreographyStartedAt={choreographyStartedAt}
                   />
                 </Suspense>
               )}

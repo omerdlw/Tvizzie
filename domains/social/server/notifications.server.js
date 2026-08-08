@@ -16,6 +16,7 @@ import {
 } from '@/infrastructure/http/http-server';
 import { normalizeValue } from '@/shared/utils';
 import { requireAuthenticatedRequest } from '@/domains/auth/server/session.server.js';
+import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
 import {
   createRouteAuthMeta,
   createRouteErrorResponse,
@@ -266,6 +267,7 @@ export async function handleNotificationsPatch(request) {
   const requestMeta = createRouteRequestMeta(request, 'api/notifications:patch');
 
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireAuthenticatedRequest(request);
     const body = await request.json().catch(() => ({}));
     const action = normalizeValue(body?.action);
@@ -309,6 +311,7 @@ export async function handleNotificationsDelete(request) {
   const requestMeta = createRouteRequestMeta(request, 'api/notifications:delete');
 
   try {
+    assertCsrfRequestForCookieSession(request);
     const authContext = await requireAuthenticatedRequest(request);
     const { searchParams } = new URL(request.url);
     const action = normalizeValue(searchParams.get('action'));

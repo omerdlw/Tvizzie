@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 
-import { AccountPageShell, AccountSectionReveal } from '@/domains/account/ui/layouts/account-layout';
+import {
+  AccountPageShell,
+  AccountSectionReveal,
+} from '@/domains/account/ui/layouts/account-layout';
 import AccountMediaGridPage, {
   ProfileMediaActions,
 } from '@/domains/account/ui/components/account-media-grid';
 import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
-import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
+import AccountSectionLayout, {
+  AccountSectionState,
+} from '@/domains/account/ui/sections/account-section';
 import ListDetailCommentsSection from './list-detail/comments-section';
 import {
   LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS,
@@ -146,6 +151,10 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
         <>
           <AccountSectionReveal>
             <header className="relative">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
+              />
               <div className={`${LIST_SECTION_SHELL_CLASS} pt-10 pb-8`}>
                 <div className="flex w-full flex-col gap-3">
                   <h1 className="w-full text-3xl font-bold tracking-tight sm:text-4xl">
@@ -156,6 +165,10 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                   </p>
                 </div>
               </div>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
+              />
             </header>
           </AccountSectionReveal>
 
@@ -169,6 +182,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
               items={filteredListItems}
               onPageChange={setMediaPage}
               showHeader={false}
+              showTopRule={false}
               title={list?.title || 'List'}
               renderOverlay={(item) =>
                 isOwner ? (
@@ -202,29 +216,33 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
             />
           </AccountSectionReveal>
 
-          <AccountSectionReveal delay={0.1}>
-            <div className={`${LIST_SECTION_SHELL_CLASS} pt-2 pb-20`}>
-              <ListDetailCommentsSection
-                auth={auth}
-                filteredReviews={filteredReviews}
-                hasReviewFilters={hasReviewFilters}
-                isOwner={isOwner}
-                list={list}
-                onDeleteRequest={handleDeleteRequest}
-                onEditReview={handleEditReview}
-                onLikeReview={handleLikeReview}
-                onOpenReviewComposer={handleOpenReviewComposer}
-                onResetReviewFilters={resetReviewFilters}
-                onSignIn={handleSignInRequest}
-                onUpdateReviewFilters={updateReviewFilters}
-                ownReview={ownReview}
-                reviewFilters={reviewFilters}
-                reviewYearOptions={reviewYearOptions}
-                reviews={reviews}
-                userProfile={userProfile}
-              />
-            </div>
-          </AccountSectionReveal>
+          <AccountSectionLayout
+            contentClassName="pb-20"
+            icon="solar:chat-round-line-bold"
+            revealDelay={0.1}
+            summaryLabel={`${reviews.length} ${reviews.length === 1 ? 'Comment' : 'Comments'}`}
+            title="Comments"
+          >
+            <ListDetailCommentsSection
+              auth={auth}
+              filteredReviews={filteredReviews}
+              hasReviewFilters={hasReviewFilters}
+              isOwner={isOwner}
+              list={list}
+              onDeleteRequest={handleDeleteRequest}
+              onEditReview={handleEditReview}
+              onLikeReview={handleLikeReview}
+              onOpenReviewComposer={handleOpenReviewComposer}
+              onResetReviewFilters={resetReviewFilters}
+              onSignIn={handleSignInRequest}
+              onUpdateReviewFilters={updateReviewFilters}
+              ownReview={ownReview}
+              reviewFilters={reviewFilters}
+              reviewYearOptions={reviewYearOptions}
+              reviews={reviews}
+              userProfile={userProfile}
+            />
+          </AccountSectionLayout>
         </>
       )}
     </AccountPageShell>

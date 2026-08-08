@@ -15,6 +15,17 @@ function buildUrl(path, query = {}) {
   return queryString ? `${path}?${queryString}` : path;
 }
 
+function readCsrfToken() {
+  if (typeof document === 'undefined') return '';
+
+  const prefix = 'tvz_auth_csrf=';
+  for (const entry of String(document.cookie || '').split(';')) {
+    const value = entry.trim();
+    if (value.startsWith(prefix)) return decodeURIComponent(value.slice(prefix.length));
+  }
+  return '';
+}
+
 export async function requestApiJson(
   path,
   {
@@ -33,6 +44,12 @@ export async function requestApiJson(
     Accept: 'application/json',
     ...headers,
   };
+  const normalizedMethod = String(method || 'GET').toUpperCase();
+  const csrfToken =
+    !['GET', 'HEAD', 'OPTIONS'].includes(normalizedMethod) && !requestHeaders['X-CSRF-Token']
+      ? readCsrfToken()
+      : '';
+  if (csrfToken) requestHeaders['X-CSRF-Token'] = csrfToken;
 
   const maxAttempts = Math.max(1, Number(retryCount) + 1);
   const retriableStatusCodes = new Set([408, 425, 429, 500, 502, 503, 504]);
@@ -47,7 +64,7 @@ export async function requestApiJson(
 
     try {
       const response = await fetch(url, {
-        method,
+        method: normalizedMethod,
         cache,
         credentials: 'include',
         signal: controller.signal,

@@ -4,61 +4,13 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
-import { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
+import {
+  AccountInlineSectionState,
+  AccountInlineSectionLoading,
+} from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { actionButtonVariants } from '@/app/(account)/motion';
-function buildLikedMediaKeySet(items = []) {
-  return new Set(
-    items
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
-        if (!entityType || !entityId) {
-          return null;
-        }
-        return `${entityType}_${entityId}`;
-      })
-      .filter(Boolean),
-  );
-}
-function buildWatchedMediaKeySet(items = []) {
-  return new Set(
-    items
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
-        if (!entityType || !entityId) {
-          return null;
-        }
-        return `${entityType}_${entityId}`;
-      })
-      .filter(Boolean),
-  );
-}
-function buildRewatchMediaKeySet(items = []) {
-  return new Set(
-    items
-      .filter((item) => Number(item?.watchCount || 0) > 1)
-      .map((item) => {
-        if (item?.mediaKey) {
-          return item.mediaKey;
-        }
-        const entityType = item?.entityType || item?.media_type || null;
-        const entityId = String(item?.entityId || item?.id || '').trim();
-        if (!entityType || !entityId) {
-          return null;
-        }
-        return `${entityType}_${entityId}`;
-      })
-      .filter(Boolean),
-  );
-}
+import { buildMediaKeySet } from '@/domains/account/ui/filters/filtering';
 export default function AccountReviewsOverview({
   currentUserId = null,
   emptyMessage = 'No reviews yet',
@@ -85,11 +37,15 @@ export default function AccountReviewsOverview({
   const listedReviewCount = Array.isArray(items) ? items.length : 0;
   const resolvedSummaryLabel =
     summaryLabel === null ? `${listedReviewCount} Reviews` : summaryLabel;
-  const likedMediaKeys = useMemo(() => buildLikedMediaKeySet(likes), [likes]);
-  const watchedMediaKeys = useMemo(() => buildWatchedMediaKeySet(watchedItems), [watchedItems]);
-  const rewatchMediaKeys = useMemo(() => buildRewatchMediaKeySet(watchedItems), [watchedItems]);
+  const likedMediaKeys = useMemo(() => buildMediaKeySet(likes), [likes]);
+  const watchedMediaKeys = useMemo(() => buildMediaKeySet(watchedItems), [watchedItems]);
+  const rewatchMediaKeys = useMemo(
+    () => buildMediaKeySet(watchedItems, (item) => Number(item?.watchCount || 0) > 1),
+    [watchedItems],
+  );
   return (
     <AccountSectionLayout
+      contentClassName="px-5 py-0 sm:px-6 sm:py-0"
       icon={icon}
       isInitialSection={isInitialSection}
       showSeeMore={showSeeMore}
@@ -104,7 +60,7 @@ export default function AccountReviewsOverview({
       ) : listedReviewCount === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
-        <div>
+        <div className="pt-5 sm:pt-6">
           <ReviewList
             currentUserId={currentUserId}
             displayVariant="account"

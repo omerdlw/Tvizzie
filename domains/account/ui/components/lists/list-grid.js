@@ -75,7 +75,11 @@ export default function AccountPaginatedListGrid({
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
     >
-      {lists.length > 0 || isLoading ? toolbar : null}
+      {toolbar && (lists.length > 0 || isLoading) ? (
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+          {toolbar}
+        </div>
+      ) : null}
 
       {isLoading && lists.length === 0 ? (
         <ListCardsSkeletonGrid count={6} />

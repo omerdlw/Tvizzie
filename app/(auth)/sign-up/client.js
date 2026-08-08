@@ -26,7 +26,11 @@ import {
   finalizeOAuthSignUp,
   finalizeSignUp,
 } from '@/domains/auth/server/workflows';
-import { getOAuthProviderLabel, normalizeOAuthProvider, OAUTH_PROVIDER_KEYS } from '@/domains/auth/utils/oauth';
+import {
+  getOAuthProviderLabel,
+  normalizeOAuthProvider,
+  OAUTH_PROVIDER_KEYS,
+} from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
@@ -41,26 +45,25 @@ import {
 import Icon from '@/ui/primitives/icon';
 import { Button, Input } from '@/ui/primitives';
 import {
-  dividerVariants,
-  fieldVariants,
-  footerVariants,
-  headerContainerVariants,
-  logoVariants,
-  oauthContainerVariants,
-  oauthItemVariants,
-  requirementContainerVariants,
-  requirementItemVariants,
-  stepContentVariants,
-  titleVariants,
+  SIGN_UP_TIMELINE,
+  signUpDividerVariants,
+  signUpFieldVariants,
+  signUpFooterVariants,
+  signUpHeaderVariants,
+  signUpLogoVariants,
+  signUpOAuthContainerVariants,
+  signUpOAuthItemVariants,
+  signUpRequirementContainerVariants,
+  signUpRequirementItemVariants,
+  signUpStepVariants,
+  signUpTitleVariants,
 } from '@/app/(auth)/motion';
 import { useAuth } from '@/modules/auth';
 import { useToast } from '@/modules/notification';
 import { useNavigationActions } from '@/modules/nav';
 import AuthRegistry from '@/app/(auth)/registry';
-import { motion, AnimatePresence } from 'framer-motion'
-import Link  from 'next/link'
-
-
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function Client() {
   const auth = useAuth();
@@ -448,17 +451,22 @@ function SignUpView({
           key={currentStep}
           custom={direction}
           onSubmit={handleStepSubmit}
-          variants={stepContentVariants}
+          variants={signUpStepVariants}
           initial="hidden"
           animate="visible"
           exit="exit"
           className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-6 sm:px-10"
         >
           <motion.div
-            variants={headerContainerVariants}
+            variants={signUpHeaderVariants}
             className="flex flex-col items-center text-center"
           >
-            <motion.div variants={logoVariants} whileHover="hover" whileTap="tap">
+            <motion.div
+              custom={SIGN_UP_TIMELINE.LOGO_DELAY}
+              variants={signUpLogoVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
               <Link
                 href="/"
                 className="mb-6 block rounded-2xl p-1 focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:outline-none"
@@ -466,14 +474,18 @@ function SignUpView({
                 <img src="/tvizzie.png" alt="Tvizzie" className="size-16" />
               </Link>
             </motion.div>
-            <motion.h1 variants={titleVariants} className="text-2xl font-semibold sm:text-3xl">
+            <motion.h1
+              custom={SIGN_UP_TIMELINE.TITLE_DELAY}
+              variants={signUpTitleVariants}
+              className="text-2xl font-semibold sm:text-3xl"
+            >
               {stepTitle}
             </motion.h1>
           </motion.div>
 
           {currentStep === 0 ? (
             <>
-              <motion.div variants={fieldVariants}>
+              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
                 <AuthField className="pt-1" htmlFor="sign-up-email" label="Email">
                   <Input
                     id="sign-up-email"
@@ -487,14 +499,18 @@ function SignUpView({
                 </AuthField>
               </motion.div>
 
-              <motion.div variants={fieldVariants}>
+              <motion.div
+                variants={signUpFieldVariants}
+                custom={SIGN_UP_TIMELINE.FIELD_START + SIGN_UP_TIMELINE.FIELD_STEP}
+              >
                 <Button type="submit" disabled={isBusy} classNames={AUTH_PRIMARY_BUTTON_CLASSNAMES}>
                   {submitLabel}
                 </Button>
               </motion.div>
 
               <motion.div
-                variants={dividerVariants}
+                custom={SIGN_UP_TIMELINE.DIVIDER_DELAY}
+                variants={signUpDividerVariants}
                 className="relative mx-[-1.5rem] flex items-center py-1.5 sm:mx-[-2.5rem]"
               >
                 <div className="pointer-events-none absolute top-1/2 right-full h-px w-screen -translate-y-1/2 bg-black/10" />
@@ -504,11 +520,17 @@ function SignUpView({
                 <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
               </motion.div>
 
-              <motion.div variants={oauthContainerVariants} className="flex items-center gap-3">
-                {OAUTH_PROVIDER_KEYS.map((provider) => (
+              <motion.div
+                variants={signUpOAuthContainerVariants}
+                className="flex items-center gap-3"
+              >
+                {OAUTH_PROVIDER_KEYS.map((provider, index) => (
                   <motion.div
                     key={provider}
-                    variants={oauthItemVariants}
+                    custom={SIGN_UP_TIMELINE.OAUTH_DELAY + index * 0.08}
+                    variants={signUpOAuthItemVariants}
+                    initial="hidden"
+                    animate="visible"
                     whileHover="hover"
                     whileTap="tap"
                     className="flex-1"
@@ -528,7 +550,7 @@ function SignUpView({
 
           {currentStep === 1 ? (
             <>
-              <motion.div variants={fieldVariants}>
+              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
                 <AuthField className="pt-1" htmlFor="sign-up-username" label="Username">
                   <Input
                     id="sign-up-username"
@@ -541,7 +563,10 @@ function SignUpView({
                 </AuthField>
               </motion.div>
 
-              <motion.div variants={fieldVariants}>
+              <motion.div
+                variants={signUpFieldVariants}
+                custom={SIGN_UP_TIMELINE.FIELD_START + SIGN_UP_TIMELINE.FIELD_STEP}
+              >
                 <AuthField htmlFor="sign-up-display-name" label="Display name">
                   <Input
                     id="sign-up-display-name"
@@ -558,7 +583,7 @@ function SignUpView({
 
           {currentStep === 2 ? (
             <>
-              <motion.div variants={fieldVariants}>
+              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.FIELD_START}>
                 <AuthField className="pt-1" htmlFor="sign-up-password" label="Password">
                   <Input
                     id="sign-up-password"
@@ -579,13 +604,15 @@ function SignUpView({
               </motion.div>
 
               <motion.div
-                variants={requirementContainerVariants}
+                variants={signUpRequirementContainerVariants}
+                custom={SIGN_UP_TIMELINE.REQUIREMENTS_DELAY}
                 className="space-y-1.5 overflow-hidden"
               >
-                {passwordRequirements.map((requirement) => (
+                {passwordRequirements.map((requirement, index) => (
                   <motion.div
                     key={requirement.id}
-                    variants={requirementItemVariants}
+                    variants={signUpRequirementItemVariants}
+                    custom={index * 0.055}
                     className={`flex items-center gap-2 text-sm ${requirement.satisfied ? 'text-success' : 'text-error'}`}
                   >
                     <Icon
@@ -602,7 +629,7 @@ function SignUpView({
                 ))}
               </motion.div>
 
-              <motion.div variants={fieldVariants}>
+              <motion.div variants={signUpFieldVariants} custom={SIGN_UP_TIMELINE.CONFIRM_DELAY}>
                 <AuthField htmlFor="sign-up-confirm-password" label="Confirm password">
                   <Input
                     id="sign-up-confirm-password"
@@ -627,7 +654,11 @@ function SignUpView({
           ) : null}
 
           {currentStep > 0 ? (
-            <motion.div variants={fieldVariants} className="grid gap-2 sm:grid-cols-2">
+            <motion.div
+              variants={signUpFieldVariants}
+              custom={SIGN_UP_TIMELINE.ACTION_DELAY}
+              className="grid gap-2 sm:grid-cols-2"
+            >
               <Button
                 type="button"
                 onClick={handlePreviousStep}
@@ -652,7 +683,8 @@ function SignUpView({
           ) : null}
 
           <motion.p
-            variants={footerVariants}
+            custom={SIGN_UP_TIMELINE.FOOTER_DELAY}
+            variants={signUpFooterVariants}
             className="mt-2 text-center text-sm font-medium text-black/50"
           >
             Already have an account?{' '}

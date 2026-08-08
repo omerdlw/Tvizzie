@@ -1,8 +1,11 @@
 import 'server-only';
 import { createHash } from 'crypto';
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
+import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
+import { listSupabaseAuthStorageKeys } from '@/infrastructure/supabase/auth-storage';
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,
@@ -60,7 +63,11 @@ export function getCookieValue(request, cookieName) {
   for (const item of items) {
     const normalizedItem = normalizeValue(item);
     if (normalizedItem.startsWith(prefix)) {
-      return decodeURIComponent(normalizedItem.slice(prefix.length));
+      try {
+        return decodeURIComponent(normalizedItem.slice(prefix.length));
+      } catch {
+        return '';
+      }
     }
   }
   return '';
@@ -95,7 +102,13 @@ export function clearCsrfCookie(response) {
 
 export function clearAuthCookies(response) {
   clearCsrfCookie(response);
-  [LEGACY_CSRF_COOKIE_NAME, 'sb-access-token', 'sb-refresh-token'].forEach((cookieName) => {
+  const legacyCookieNames = [LEGACY_CSRF_COOKIE_NAME, 'sb-access-token', 'sb-refresh-token'];
+  const supabaseCookieNames = listSupabaseAuthStorageKeys().flatMap((cookieName) => [
+    cookieName,
+    ...Array.from({ length: 8 }, (_, index) => `${cookieName}.${index}`),
+  ]);
+
+  [...new Set([...legacyCookieNames, ...supabaseCookieNames])].forEach((cookieName) => {
     response.cookies.set(cookieName, '', {
       httpOnly: true,
       maxAge: 0,
@@ -106,46 +119,31 @@ export function clearAuthCookies(response) {
   });
 }
 
-export function applySessionCookies(response, { accessToken, refreshToken }) {
-  if (accessToken) {
-    response.cookies.set('sb-access-token', accessToken, {
-      httpOnly: true,
-      maxAge: 604800,
-      path: AUTH_COOKIE_PATH,
-      sameSite: 'lax',
-      secure: isSecureCookieEnvironment(),
-    });
-  }
-  if (refreshToken) {
-    response.cookies.set('sb-refresh-token', refreshToken, {
-      httpOnly: true,
-      maxAge: 604800,
-      path: AUTH_COOKIE_PATH,
-      sameSite: 'lax',
-      secure: isSecureCookieEnvironment(),
-    });
-  }
-}
+// Write sessions through the SSR client so the proxy and server components use
+// the same cookie format and refresh lifecycle as the browser client.
+export async function applySupabaseSessionToResponse(
+  request,
+  response,
+  { accessToken, refreshToken },
+) {
+  const normalizedAccessToken = normalizeValue(accessToken);
+  const normalizedRefreshToken = normalizeValue(refreshToken);
 
-export function applySessionCookiesToCookieStore(cookieStore, { accessToken, refreshToken }) {
-  if (accessToken) {
-    cookieStore.set('sb-access-token', accessToken, {
-      httpOnly: true,
-      maxAge: 604800,
-      path: AUTH_COOKIE_PATH,
-      sameSite: 'lax',
-      secure: isSecureCookieEnvironment(),
-    });
+  if (!normalizedAccessToken || !normalizedRefreshToken) {
+    throw new Error('A complete authentication session is required');
   }
-  if (refreshToken) {
-    cookieStore.set('sb-refresh-token', refreshToken, {
-      httpOnly: true,
-      maxAge: 604800,
-      path: AUTH_COOKIE_PATH,
-      sameSite: 'lax',
-      secure: isSecureCookieEnvironment(),
-    });
+
+  const client = createSupabaseResponseClient(request, response);
+  const result = await client.auth.setSession({
+    access_token: normalizedAccessToken,
+    refresh_token: normalizedRefreshToken,
+  });
+
+  if (result.error || !result.data?.session?.access_token) {
+    throw new Error(result.error?.message || 'Authentication session could not be established');
   }
+
+  return buildNormalizedSession(result.data.session, result.data.user || null);
 }
 
 // ============================================================
@@ -159,10 +157,7 @@ function getIpAddress(request) {
 }
 
 function resolveDeviceId(request, ipAddress) {
-  const explicitDeviceId =
-    getHeader(request, 'x-device-id') ||
-    getHeader(request, 'x-tvz-device-id') ||
-    getCookieValue(request, DEVICE_ID_COOKIE_NAME);
+  const explicitDeviceId = getCookieValue(request, DEVICE_ID_COOKIE_NAME);
 
   if (explicitDeviceId) return explicitDeviceId;
 
@@ -267,6 +262,42 @@ export function buildAuthContextFromAccessToken(token, source = 'session', rawUs
   };
 }
 
+async function verifyAccessTokenWithSupabase(token, source) {
+  const normalizedToken = normalizeValue(token);
+  if (!normalizedToken) return null;
+
+  assertSupabaseBrowserEnv();
+  const client = createSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  });
+  const result = await withTimeout(
+    client.auth.getUser(normalizedToken),
+    SUPABASE_FALLBACK_TIMEOUT_MS,
+  );
+
+  if (result.error || !result.data?.user?.id) {
+    throw new Error('Invalid or expired authentication token');
+  }
+
+  const context = buildAuthContextFromAccessToken(normalizedToken, source, result.data.user);
+  if (context.userId !== result.data.user.id) {
+    throw new Error('Invalid or expired authentication token');
+  }
+
+  // The user object is the authoritative identity. JWT claims are only used
+  // after signature verification to carry session metadata such as session_id.
+  return {
+    ...context,
+    email: normalizeEmailValue(result.data.user.email) || context.email,
+    user: result.data.user,
+    userId: result.data.user.id,
+  };
+}
+
 export function createSessionFromIdToken(idToken) {
   return buildAuthContextFromAccessToken(idToken, 'idToken');
 }
@@ -355,12 +386,12 @@ export async function readSessionFromRequest(
   try {
     const bearerToken = allowBearer ? getBearerToken(request) : '';
     if (bearerToken) {
-      return buildAuthContextFromAccessToken(bearerToken, 'bearer');
+      return await verifyAccessTokenWithSupabase(bearerToken, 'bearer');
     }
 
     const cookieSession = readSessionFromSupabaseCookies(request);
     if (cookieSession?.accessToken) {
-      return buildAuthContextFromAccessToken(cookieSession.accessToken, 'session');
+      return await verifyAccessTokenWithSupabase(cookieSession.accessToken, 'legacy-session');
     }
 
     if (skipSupabaseFallback) return null;

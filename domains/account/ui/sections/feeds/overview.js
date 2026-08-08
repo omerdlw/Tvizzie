@@ -114,7 +114,7 @@ export default function AccountOverviewFeed({ model = {}, RegistryComponent = nu
       watchedCount={watchedCount}
       watchlistCount={watchlistCount}
     >
-      <div className="w-full space-y-8">
+      <div className="w-full">
         {!canViewProfileCollections ? (
           <AccountSectionState message="This profile is private." />
         ) : isOverviewEmpty ? (

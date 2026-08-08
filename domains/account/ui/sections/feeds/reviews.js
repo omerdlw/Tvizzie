@@ -6,6 +6,7 @@ import {
   REVIEW_FILTER_QUERY_KEYS,
   applyReviewFilters,
   buildCollectionBasePath,
+  buildMediaKeySet,
   buildManagedQueryString,
   collectReviewYears,
   hasActiveReviewFilters,
@@ -22,16 +23,6 @@ import AccountSectionLayout from '@/domains/account/ui/sections/account-section'
 import { FilterBarSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import { TIMELINES } from '@/app/(account)/motion';
 const REVIEW_ITEMS_PER_PAGE = 36;
-
-function resolveMediaKey(item) {
-  if (item?.mediaKey) return item.mediaKey;
-  const entityType = item?.entityType || item?.media_type || null;
-  const entityId = String(item?.entityId || item?.id || '').trim();
-  return entityType && entityId ? `${entityType}_${entityId}` : null;
-}
-function buildMediaKeySet(items = [], shouldInclude = () => true) {
-  return new Set(items.filter(shouldInclude).map(resolveMediaKey).filter(Boolean));
-}
 
 export default function AccountReviewsFeed({
   baseDelay = TIMELINES.CARD_BASE_DELAY,
@@ -89,13 +80,11 @@ export default function AccountReviewsFeed({
     const params = new URLSearchParams(qs);
     if (enablePagination && viewState.page > 1) params.set('page', String(viewState.page));
     else params.delete('page');
-    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    const newUrl = params.toString()
+      ? `${collectionRootPath}?${params.toString()}`
+      : collectionRootPath;
     if (window.location.pathname + window.location.search !== newUrl) {
-      window.history.replaceState(
-        {},
-        '',
-        newUrl,
-      );
+      window.history.replaceState({}, '', newUrl);
     }
   }, [viewState, collectionRootPath, enablePagination]);
 
@@ -135,32 +124,34 @@ export default function AccountReviewsFeed({
       titleHref={titleHref}
     >
       {isLoading && listedReviewCount === 0 ? (
-        <div className="mb-4">
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
           <FilterBarSkeleton />
         </div>
-      ) : (listedReviewCount > 0 || hasFilters) ? (
-        <AccountReviewFilterBar
-          filters={viewState.filters}
-          yearOptions={yearOptions}
-          onChange={(filters) =>
-            updateView({
-              filters: {
-                ...viewState.filters,
-                ...filters,
-              },
-              page: 1,
-            })
-          }
-          onReset={
-            hasFilters
-              ? () =>
-                  updateView({
-                    filters: parseReviewFilters(new URLSearchParams()),
-                    page: 1,
-                  })
-              : null
-          }
-        />
+      ) : listedReviewCount > 0 || hasFilters ? (
+        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+          <AccountReviewFilterBar
+            filters={viewState.filters}
+            yearOptions={yearOptions}
+            onChange={(filters) =>
+              updateView({
+                filters: {
+                  ...viewState.filters,
+                  ...filters,
+                },
+                page: 1,
+              })
+            }
+            onReset={
+              hasFilters
+                ? () =>
+                    updateView({
+                      filters: parseReviewFilters(new URLSearchParams()),
+                      page: 1,
+                    })
+                : null
+            }
+          />
+        </div>
       ) : null}
 
       {filteredReviews.length === 0 && !isLoading && !loadError ? (

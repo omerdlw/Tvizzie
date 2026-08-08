@@ -82,6 +82,20 @@ export function normalizeAccountData(
   };
 }
 
+async function resolveWithTimeout(operation, timeoutMs) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      operation,
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve({ data: null, error: null, timedOut: true }), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 // ============================================================
 // Server-Side Profile Readers & Snapshot Loaders
 // ============================================================
@@ -105,22 +119,18 @@ async function loadProfileCounters(userId) {
   if (!normalizedUserId) return null;
 
   const admin = createAdminClient();
-  const timeoutResult = await Promise.race([
+  const timeoutResult = await resolveWithTimeout(
     admin
       .from('profile_counters')
       .select(COUNTER_SELECT)
       .eq('user_id', normalizedUserId)
       .maybeSingle(),
-    new Promise((resolve) =>
-      setTimeout(
-        () => resolve({ data: null, error: null, timedOut: true }),
-        PROFILE_COUNTERS_TIMEOUT_MS,
-      ),
-    ),
-  ]);
+    PROFILE_COUNTERS_TIMEOUT_MS,
+  );
 
   if (timeoutResult?.timedOut) return null;
-  if (timeoutResult.error) throw new Error(timeoutResult.error.message || 'Profile counters could not be loaded');
+  if (timeoutResult.error)
+    throw new Error(timeoutResult.error.message || 'Profile counters could not be loaded');
   return timeoutResult.data || null;
 }
 
@@ -129,7 +139,7 @@ async function loadFollowCounts(userId) {
   if (!normalizedUserId) return null;
 
   const admin = createAdminClient();
-  const timeoutResult = await Promise.race([
+  const timeoutResult = await resolveWithTimeout(
     Promise.all([
       admin
         .from('follows')
@@ -142,19 +152,16 @@ async function loadFollowCounts(userId) {
         .eq('follower_id', normalizedUserId)
         .eq('status', FOLLOW_STATUS_ACCEPTED),
     ]),
-    new Promise((resolve) =>
-      setTimeout(
-        () => resolve({ data: null, error: null, timedOut: true }),
-        FOLLOW_COUNTS_TIMEOUT_MS,
-      ),
-    ),
-  ]);
+    FOLLOW_COUNTS_TIMEOUT_MS,
+  );
 
   if (timeoutResult?.timedOut) return null;
   const [followersResult, followingResult] = timeoutResult;
 
-  if (followersResult?.error) throw new Error(followersResult.error.message || 'Follower count could not be loaded');
-  if (followingResult?.error) throw new Error(followingResult.error.message || 'Following count could not be loaded');
+  if (followersResult?.error)
+    throw new Error(followersResult.error.message || 'Follower count could not be loaded');
+  if (followingResult?.error)
+    throw new Error(followingResult.error.message || 'Following count could not be loaded');
 
   return {
     followerCount: normalizeCount(followersResult?.count, 0),
@@ -167,24 +174,33 @@ async function loadCollectionCounts(userId) {
   if (!normalizedUserId) return null;
 
   const admin = createAdminClient();
-  const timeoutResult = await Promise.race([
+  const timeoutResult = await resolveWithTimeout(
     Promise.all([
-      admin.from('likes').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
-      admin.from('lists').select('id', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
-      admin.from('watched').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
-      admin.from('watchlist').select('media_key', { count: 'exact', head: true }).eq('user_id', normalizedUserId),
+      admin
+        .from('likes')
+        .select('media_key', { count: 'exact', head: true })
+        .eq('user_id', normalizedUserId),
+      admin
+        .from('lists')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', normalizedUserId),
+      admin
+        .from('watched')
+        .select('media_key', { count: 'exact', head: true })
+        .eq('user_id', normalizedUserId),
+      admin
+        .from('watchlist')
+        .select('media_key', { count: 'exact', head: true })
+        .eq('user_id', normalizedUserId),
     ]),
-    new Promise((resolve) =>
-      setTimeout(
-        () => resolve({ data: null, error: null, timedOut: true }),
-        PROFILE_COUNTERS_TIMEOUT_MS,
-      ),
-    ),
-  ]);
+    PROFILE_COUNTERS_TIMEOUT_MS,
+  );
 
   if (timeoutResult?.timedOut) return null;
   const [likesResult, listsResult, watchedResult, watchlistResult] = timeoutResult;
-  const firstError = [likesResult, listsResult, watchedResult, watchlistResult].find((r) => r?.error)?.error;
+  const firstError = [likesResult, listsResult, watchedResult, watchlistResult].find(
+    (r) => r?.error,
+  )?.error;
 
   if (firstError) throw new Error(firstError.message || 'Collection counts could not be loaded');
 
@@ -211,7 +227,8 @@ export const getAccountProfile = cache(
       loadProfileCounters(normalizedUserId).catch(() => null),
     ]);
 
-    if (profileResult.error) throw new Error(profileResult.error.message || 'Account lookup failed');
+    if (profileResult.error)
+      throw new Error(profileResult.error.message || 'Account lookup failed');
     if (!profileResult.data) return null;
 
     // profile_counters is maintained by the collection/follow RPCs and gives
@@ -229,13 +246,15 @@ export const getAccountProfile = cache(
       {
         ...profileResult.data,
         follower_count:
-          Number.isFinite(Number(followCounts?.followerCount)) && Number(followCounts.followerCount) >= 0
+          Number.isFinite(Number(followCounts?.followerCount)) &&
+          Number(followCounts.followerCount) >= 0
             ? Number(followCounts.followerCount)
             : Number.isFinite(Number(counters?.follower_count))
               ? Number(counters.follower_count)
               : 0,
         following_count:
-          Number.isFinite(Number(followCounts?.followingCount)) && Number(followCounts.followingCount) >= 0
+          Number.isFinite(Number(followCounts?.followingCount)) &&
+          Number(followCounts.followingCount) >= 0
             ? Number(followCounts.followingCount)
             : Number.isFinite(Number(counters?.following_count))
               ? Number(counters.following_count)
@@ -269,8 +288,12 @@ export async function getAccountSnapshotByUserId(userId, options = {}) {
   try {
     const profile = await getAccountProfile(normalizedUserId, options);
     return { profile: profile || null, resolvedUserId: normalizedUserId, resolveError: null };
-  } catch {
-    return { profile: null, resolvedUserId: normalizedUserId, resolveError: null };
+  } catch (error) {
+    return {
+      profile: null,
+      resolvedUserId: normalizedUserId,
+      resolveError: error?.message || 'Account could not be loaded',
+    };
   }
 }
 
@@ -285,15 +308,24 @@ export async function getAccountSnapshotByUsername(username, options = {}) {
       return { profile: null, resolvedUserId: null, resolveError: 'Account not found' };
     }
     return { profile, resolvedUserId: userId, resolveError: null };
-  } catch {
-    return { profile: null, resolvedUserId: null, resolveError: null };
+  } catch (error) {
+    return {
+      profile: null,
+      resolvedUserId: null,
+      resolveError: error?.message || 'Account could not be loaded',
+    };
   }
 }
 
 export async function getEditableAccountSnapshotByUserId(userId) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) {
-    return { counts: EMPTY_EDITABLE_ACCOUNT_COUNTS, profile: null, resolvedUserId: null, resolveError: 'Account not found' };
+    return {
+      counts: EMPTY_EDITABLE_ACCOUNT_COUNTS,
+      profile: null,
+      resolvedUserId: null,
+      resolveError: 'Account not found',
+    };
   }
 
   try {
@@ -303,7 +335,12 @@ export async function getEditableAccountSnapshotByUserId(userId) {
     });
 
     if (!profile) {
-      return { counts: EMPTY_EDITABLE_ACCOUNT_COUNTS, profile: null, resolvedUserId: normalizedUserId, resolveError: null };
+      return {
+        counts: EMPTY_EDITABLE_ACCOUNT_COUNTS,
+        profile: null,
+        resolvedUserId: normalizedUserId,
+        resolveError: null,
+      };
     }
 
     return {
@@ -319,8 +356,13 @@ export async function getEditableAccountSnapshotByUserId(userId) {
       resolvedUserId: normalizedUserId,
       resolveError: null,
     };
-  } catch {
-    return { counts: EMPTY_EDITABLE_ACCOUNT_COUNTS, profile: null, resolvedUserId: normalizedUserId, resolveError: null };
+  } catch (error) {
+    return {
+      counts: EMPTY_EDITABLE_ACCOUNT_COUNTS,
+      profile: null,
+      resolvedUserId: normalizedUserId,
+      resolveError: error?.message || 'Account could not be loaded',
+    };
   }
 }
 
@@ -329,14 +371,20 @@ export async function getEditableAccountSnapshotByUserId(userId) {
 // ============================================================
 
 function isUuidLike(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalizeValue(value));
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    normalizeValue(value),
+  );
 }
 
 function assertResult(result, fallbackMessage) {
   if (result?.error) {
     const error = result.error;
     const message = String(error?.message || '').toLowerCase();
-    if (message.includes('fetch failed') || message.includes('socket') || message.includes('connection')) {
+    if (
+      message.includes('fetch failed') ||
+      message.includes('socket') ||
+      message.includes('connection')
+    ) {
       console.error(`[Supabase Connection Error] ${fallbackMessage}:`, error);
       return { data: null, error };
     }
@@ -437,7 +485,10 @@ export const getAccountIdByUsername = cache(async (username) => {
 });
 
 async function loadAccountProfileFallback(userId, viewerId = null) {
-  const includePrivateDetails = await canViewerAccessUserContent({ ownerId: userId, viewerId }).catch(() => false);
+  const includePrivateDetails = await canViewerAccessUserContent({
+    ownerId: userId,
+    viewerId,
+  }).catch(() => false);
   const snapshot = await getAccountSnapshotByUserId(userId, { includePrivateDetails });
   return snapshot.profile || null;
 }
@@ -479,7 +530,11 @@ export async function getAccountProfileByUserId(userId, { viewerId = null } = {}
     let profile = null;
     try {
       const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-        body: { resource: 'profile', userId: normalizedUserId, viewerId: normalizeValue(viewerId) || null },
+        body: {
+          resource: 'profile',
+          userId: normalizedUserId,
+          viewerId: normalizeValue(viewerId) || null,
+        },
         timeoutMs: 600,
       });
       if (payload?.profile) profile = payload.profile;
@@ -515,7 +570,11 @@ export async function getAccountProfileByUsername(username, { viewerId = null } 
 
   try {
     const payload = await invokeInternalEdgeFunction(ACCOUNT_READ_FUNCTION, {
-      body: { resource: 'profile', username: normalizedUsername, viewerId: normalizeValue(viewerId) || null },
+      body: {
+        resource: 'profile',
+        username: normalizedUsername,
+        viewerId: normalizeValue(viewerId) || null,
+      },
       timeoutMs: 600,
     });
     if (payload?.profile) {

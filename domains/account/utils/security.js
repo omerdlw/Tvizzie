@@ -1,10 +1,10 @@
-import { changeEmailServer, changePasswordServer, deleteAccountServer, setPasswordServer } from '@/domains/auth/api/account.server';
+import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
 export const AUTH_PURPOSE = Object.freeze({
-  ACCOUNT_DELETE: 'ACCOUNT_DELETE',
-  EMAIL_CHANGE: 'EMAIL_CHANGE',
-  PASSWORD_SET: 'PASSWORD_SET',
-  PASSWORD_UPDATE: 'PASSWORD_UPDATE',
+  ACCOUNT_DELETE: 'account-delete',
+  EMAIL_CHANGE: 'email-change',
+  PASSWORD_SET: 'password-set',
+  PASSWORD_UPDATE: 'password-change',
 });
 
 export const INITIAL_PASSWORD_FLOW = Object.freeze({
@@ -51,27 +51,30 @@ export function resolveSecurityErrorMessage(error, fallbackMessage = 'Security o
   return message;
 }
 
-export async function completePasswordChangeRequest({ userId, newPassword }) {
-  const res = await changePasswordServer({ userId, newPassword });
-  if (!res.success) throw new Error(res.error || 'Password change failed');
-  return res;
+export async function completePasswordChangeRequest({ newPassword }) {
+  return requestApiJson('/api/auth/account', {
+    body: { action: 'change-password', newPassword },
+    method: 'POST',
+  });
 }
 
-export async function completePasswordSetRequest({ userId, newPassword }) {
-  const res = await setPasswordServer({ userId, newPassword });
-  if (!res.success) throw new Error(res.error || 'Password setup failed');
-  return res;
+export async function completePasswordSetRequest({ newPassword }) {
+  return requestApiJson('/api/auth/account', {
+    body: { action: 'set-password', newPassword },
+    method: 'POST',
+  });
 }
 
-export async function completeEmailChangeRequest({ userId, newEmail }) {
-  const res = await changeEmailServer({ userId, newEmail });
-  if (!res.success) throw new Error(res.error || 'Email change failed');
-  return res;
+export async function completeEmailChangeRequest({ newEmail }) {
+  return requestApiJson('/api/auth/account', {
+    body: { action: 'change-email', newEmail },
+    method: 'POST',
+  });
 }
 
-export async function deleteAccountRequest({ userId }) {
-  const res = await deleteAccountServer({ userId });
-  if (!res.success) throw new Error(res.error || 'Account deletion failed');
-  return res;
+export async function deleteAccountRequest() {
+  return requestApiJson('/api/auth/account', {
+    body: { action: 'delete' },
+    method: 'POST',
+  });
 }
-

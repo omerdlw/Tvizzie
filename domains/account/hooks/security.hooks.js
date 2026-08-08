@@ -117,7 +117,7 @@ export function useAccountCredentialActions({
       if (typeof auth?.reauthenticate !== 'function') {
         throw new Error('Reauthentication is not supported by this auth adapter');
       }
-      return auth.reauthenticate(password);
+      return auth.reauthenticate({ password });
     },
     [auth],
   );

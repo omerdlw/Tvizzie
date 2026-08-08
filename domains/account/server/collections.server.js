@@ -58,7 +58,11 @@ export function assertResult(result, fallbackMessage) {
   if (result?.error) {
     const error = result.error;
     const message = String(error?.message || '').toLowerCase();
-    if (message.includes('fetch failed') || message.includes('socket') || message.includes('connection')) {
+    if (
+      message.includes('fetch failed') ||
+      message.includes('socket') ||
+      message.includes('connection')
+    ) {
       console.error(`[Supabase Connection Error] ${fallbackMessage}:`, error);
       return { data: null, error };
     }
@@ -69,14 +73,25 @@ export function assertResult(result, fallbackMessage) {
 
 export async function executeCollectionQuery(
   query,
-  { fallbackValue = { data: [], error: null }, label = 'Collection query', strict = false, timeoutMs = 4000 } = {},
+  {
+    fallbackValue = { data: [], error: null },
+    label = 'Collection query',
+    strict = false,
+    timeoutMs = 4000,
+  } = {},
 ) {
   if (strict) return query;
 
-  const timeoutPromise = new Promise((resolve) =>
-    setTimeout(() => resolve({ ...fallbackValue, timedOut: true, label }), timeoutMs),
-  );
-  const result = await Promise.race([query, timeoutPromise]);
+  let timer = null;
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(() => resolve({ ...fallbackValue, timedOut: true, label }), timeoutMs);
+  });
+  let result;
+  try {
+    result = await Promise.race([query, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 
   if (result?.timedOut) {
     console.warn(`[Supabase ${label} Timeout] After ${timeoutMs}ms. Returning fallback.`);
@@ -91,13 +106,11 @@ export async function countListLikesByListIds(client, assertQueryResult, listIds
 
   for (let index = 0; index < listIds.length; index += 100) {
     const ids = listIds.slice(index, index + 100);
-    const result = await client.from('list_likes').select('list_id, user_id').in('list_id', ids);
+    const result = await client.from('list_likes').select('list_id').in('list_id', ids);
     assertQueryResult(result, 'List likes could not be loaded');
 
     (result.data || []).forEach((row) => {
-      const current = likesMap.get(row.list_id) || [];
-      current.push(row.user_id);
-      likesMap.set(row.list_id, current);
+      likesMap.set(row.list_id, (likesMap.get(row.list_id) || 0) + 1);
     });
   }
   return likesMap;
@@ -116,9 +129,19 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function decodeRouteValue(value) {
+  try {
+    return decodeURIComponent(String(value || '')).trim();
+  } catch {
+    return '';
+  }
+}
+
 export function normalizeMediaPayload(payload = {}, row = {}) {
   const entityId = normalizeValue(payload.entityId || row.entity_id || payload.id || '');
-  const entityType = normalizeValue(payload.entityType || row.entity_type || payload.media_type).toLowerCase();
+  const entityType = normalizeValue(
+    payload.entityType || row.entity_type || payload.media_type,
+  ).toLowerCase();
 
   return {
     addedAt: normalizeTimestamp(payload.addedAt || row.added_at),
@@ -147,13 +170,22 @@ export function normalizeMediaPayload(payload = {}, row = {}) {
     rating: normalizeNumber(payload.rating ?? row.rating, null),
     release_date: payload.release_date || null,
     runtime: normalizeNumber(payload.runtime, null),
-    title: payload.title || payload.original_title || row.title || payload.name || payload.original_name || '',
+    title:
+      payload.title ||
+      payload.original_title ||
+      row.title ||
+      payload.name ||
+      payload.original_name ||
+      '',
     updatedAt: normalizeTimestamp(payload.updatedAt || row.updated_at),
     userRating: normalizeNumber(payload.userRating ?? payload.rating ?? row.rating, null),
     userId: payload.userId || row.user_id || null,
     vote_average: normalizeNumber(payload.vote_average, null),
     vote_count: normalizeNumber(payload.vote_count, null),
-    watchProviders: payload.watchProviders && typeof payload.watchProviders === 'object' ? payload.watchProviders : null,
+    watchProviders:
+      payload.watchProviders && typeof payload.watchProviders === 'object'
+        ? payload.watchProviders
+        : null,
   };
 }
 
@@ -193,7 +225,7 @@ function normalizeListPreviewItem(value = {}) {
 export function normalizeListRow(row = {}, likesMap = new Map()) {
   const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
   const ownerSnapshot = normalizeListOwnerSnapshot(payload.ownerSnapshot || {}, row.user_id);
-  const likes = Array.isArray(likesMap.get(row.id)) ? likesMap.get(row.id) : [];
+  const computedLikesCount = Number(likesMap.get(row.id) || 0);
 
   return {
     coverUrl: payload.coverUrl || row.poster_path || '',
@@ -201,8 +233,10 @@ export function normalizeListRow(row = {}, likesMap = new Map()) {
     description: row.description || payload.description || '',
     id: row.id,
     itemsCount: Number.isFinite(Number(payload.itemsCount)) ? Number(payload.itemsCount) : 0,
-    likes,
-    likesCount: Number.isFinite(Number(row.likes_count)) ? Number(row.likes_count) : likes.length,
+    likes: [],
+    likesCount: Number.isFinite(Number(row.likes_count))
+      ? Number(row.likes_count)
+      : computedLikesCount,
     ownerId: row.user_id,
     ownerSnapshot,
     previewItems: Array.isArray(payload.previewItems)
@@ -224,11 +258,19 @@ export function normalizeListRow(row = {}, likesMap = new Map()) {
 function resolveMediaKey(media = null) {
   return (
     media?.mediaKey ||
-    (media?.entityType && media?.entityId ? buildMediaItemKey(media.entityType, media.entityId) : null)
+    (media?.entityType && media?.entityId
+      ? buildMediaItemKey(media.entityType, media.entityId)
+      : null)
   );
 }
 
-export async function resolveAccountCollectionStatusResource({ admin, assertResult: localAssert, media, resource, userId }) {
+export async function resolveAccountCollectionStatusResource({
+  admin,
+  assertResult: localAssert,
+  media,
+  resource,
+  userId,
+}) {
   const checkAssert = localAssert || assertResult;
   const mediaKey = resolveMediaKey(media);
 
@@ -244,7 +286,13 @@ export async function resolveAccountCollectionStatusResource({ admin, assertResu
       .limit(1);
     checkAssert(result, 'Like status could not be loaded');
     const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    return { data: { isLiked: Boolean(row), like: row ? normalizeMediaPayload(row.payload || {}, row) : null }, handled: true };
+    return {
+      data: {
+        isLiked: Boolean(row),
+        like: row ? normalizeMediaPayload(row.payload || {}, row) : null,
+      },
+      handled: true,
+    };
   }
 
   if (resource === 'watchlist-status') {
@@ -259,7 +307,13 @@ export async function resolveAccountCollectionStatusResource({ admin, assertResu
       .limit(1);
     checkAssert(result, 'Watchlist status could not be loaded');
     const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    return { data: { isInWatchlist: Boolean(row), item: row ? normalizeMediaPayload(row.payload || {}, row) : null }, handled: true };
+    return {
+      data: {
+        isInWatchlist: Boolean(row),
+        item: row ? normalizeMediaPayload(row.payload || {}, row) : null,
+      },
+      handled: true,
+    };
   }
 
   if (resource === 'watched-status') {
@@ -274,7 +328,10 @@ export async function resolveAccountCollectionStatusResource({ admin, assertResu
       .limit(1);
     checkAssert(result, 'Watched status could not be loaded');
     const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    return { data: { isWatched: Boolean(row), watched: row ? normalizeWatchedRow(row) : null }, handled: true };
+    return {
+      data: { isWatched: Boolean(row), watched: row ? normalizeWatchedRow(row) : null },
+      handled: true,
+    };
   }
 
   return { data: null, handled: false };
@@ -322,46 +379,84 @@ export async function getAccountCollectionResource({
   if (statusResource.handled) return statusResource.data;
 
   if (resource === 'likes') {
-    let query = admin.from('likes').select(MEDIA_COLLECTION_SELECT).eq('user_id', userId).order('added_at', { ascending: false });
+    let query = admin
+      .from('likes')
+      .select(MEDIA_COLLECTION_SELECT)
+      .eq('user_id', userId)
+      .order('added_at', { ascending: false });
     const limit = calcLimit(limitCount, 0, 200);
     if (limit > 0) query = query.limit(limit);
 
-    const result = await execQuery(query, { label: `Likes for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `Likes for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return [];
     checkAssert(result, 'Likes could not be loaded');
-    return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row)).filter((item) => isTitleMediaType(item?.entityType));
+    return (result.data || [])
+      .map((row) => normalizeMediaPayload(row.payload || {}, row))
+      .filter((item) => isTitleMediaType(item?.entityType));
   }
 
   if (resource === 'watchlist') {
-    let query = admin.from('watchlist').select(MEDIA_COLLECTION_SELECT).eq('user_id', userId).order('added_at', { ascending: false });
+    let query = admin
+      .from('watchlist')
+      .select(MEDIA_COLLECTION_SELECT)
+      .eq('user_id', userId)
+      .order('added_at', { ascending: false });
     const limit = calcLimit(limitCount, 0, 200);
     if (limit > 0) query = query.limit(limit);
 
-    const result = await execQuery(query, { label: `Watchlist for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `Watchlist for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return [];
     checkAssert(result, 'Watchlist could not be loaded');
     return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row));
   }
 
   if (resource === 'lists') {
-    let query = admin.from('lists').select(LIST_COLLECTION_SELECT).eq('user_id', userId).order('updated_at', { ascending: false });
+    let query = admin
+      .from('lists')
+      .select(LIST_COLLECTION_SELECT)
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
     const limit = calcLimit(limitCount, 0, 200);
     if (limit > 0) query = query.limit(limit);
 
-    const result = await execQuery(query, { label: `Lists for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `Lists for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return [];
     checkAssert(result, 'Lists could not be loaded');
     const lists = result.data || [];
-    const likesMap = await countListLikesByListIds(admin, checkAssert, lists.map((l) => l.id));
+    const likesMap = await countListLikesByListIds(
+      admin,
+      checkAssert,
+      lists.filter((list) => !Number.isFinite(Number(list.likes_count))).map((list) => list.id),
+    );
     return lists.map((row) => normalizeListRow(row, likesMap));
   }
 
   if (resource === 'watched') {
-    let query = admin.from('watched').select(WATCHED_SELECT).eq('user_id', userId).order('last_watched_at', { ascending: false });
+    let query = admin
+      .from('watched')
+      .select(WATCHED_SELECT)
+      .eq('user_id', userId)
+      .order('last_watched_at', { ascending: false });
     const limit = calcLimit(limitCount, 0, 200);
     if (limit > 0) query = query.limit(limit);
 
-    const result = await execQuery(query, { label: `Watched for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `Watched for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return [];
     checkAssert(result, 'Watched items could not be loaded');
     return (result.data || []).map((row) => normalizeWatchedRow(row));
@@ -369,7 +464,7 @@ export async function getAccountCollectionResource({
 
   if (resource === 'list-by-slug') {
     if (!slug) return null;
-    const decodedSlug = decodeURIComponent(String(slug)).trim();
+    const decodedSlug = decodeRouteValue(slug);
     if (!decodedSlug) return null;
 
     const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -386,18 +481,24 @@ export async function getAccountCollectionResource({
     }
     query = query.limit(1);
 
-    const result = await execQuery(query, { label: `List by slug ${decodedSlug}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `List by slug ${decodedSlug}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return null;
     checkAssert(result, 'List by slug could not be loaded');
     const row = Array.isArray(result.data) ? result.data[0] || null : null;
     if (!row) return null;
-    const likesMap = await countListLikesByListIds(admin, checkAssert, [row.id]);
+    const likesMap = Number.isFinite(Number(row.likes_count))
+      ? new Map()
+      : await countListLikesByListIds(admin, checkAssert, [row.id]);
     return normalizeListRow(row, likesMap);
   }
 
   if (resource === 'list-by-id') {
     if (!listId) return null;
-    const decodedListId = decodeURIComponent(String(listId)).trim();
+    const decodedListId = decodeRouteValue(listId);
     if (!decodedListId) return null;
 
     const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -414,18 +515,24 @@ export async function getAccountCollectionResource({
     }
     query = query.limit(1);
 
-    const result = await execQuery(query, { label: `List by id ${decodedListId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `List by id ${decodedListId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return null;
     checkAssert(result, 'List by id could not be loaded');
     const row = Array.isArray(result.data) ? result.data[0] || null : null;
     if (!row) return null;
-    const likesMap = await countListLikesByListIds(admin, checkAssert, [row.id]);
+    const likesMap = Number.isFinite(Number(row.likes_count))
+      ? new Map()
+      : await countListLikesByListIds(admin, checkAssert, [row.id]);
     return normalizeListRow(row, likesMap);
   }
 
   if (resource === 'list-items') {
     if (!listId) return [];
-    const decodedListId = decodeURIComponent(String(listId)).trim();
+    const decodedListId = decodeRouteValue(listId);
     if (!decodedListId) return [];
 
     const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -433,13 +540,13 @@ export async function getAccountCollectionResource({
 
     if (!UUID_REGEX.test(decodedListId)) {
       // Non-UUID: resolve the actual UUID via slug lookup
-      let slugQuery = admin
-        .from('lists')
-        .select('id')
-        .eq('slug', decodedListId)
-        .limit(1);
+      let slugQuery = admin.from('lists').select('id').eq('slug', decodedListId).limit(1);
       if (userId) slugQuery = slugQuery.eq('user_id', userId);
-      const slugRes = await execQuery(slugQuery, { label: `Resolve list ID for ${decodedListId}`, fallbackValue: { data: [], error: null }, strict });
+      const slugRes = await execQuery(slugQuery, {
+        label: `Resolve list ID for ${decodedListId}`,
+        fallbackValue: { data: [], error: null },
+        strict,
+      });
       const foundRow = Array.isArray(slugRes?.data) ? slugRes.data[0] : null;
       if (!foundRow?.id) return [];
       targetListId = foundRow.id;
@@ -454,7 +561,11 @@ export async function getAccountCollectionResource({
     const limit = calcLimit(limitCount, 0, 500);
     if (limit > 0) query = query.limit(limit);
 
-    const result = await execQuery(query, { label: `List items for list ${targetListId}`, fallbackValue: { data: [], error: null }, strict });
+    const result = await execQuery(query, {
+      label: `List items for list ${targetListId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (result?.timedOut) return [];
     checkAssert(result, 'List items could not be loaded');
     return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row));
@@ -470,7 +581,11 @@ export async function getAccountCollectionResource({
     const limit = calcLimit(limitCount, 0, 200);
     if (limit > 0) likesQuery = likesQuery.limit(limit);
 
-    const likesResult = await execQuery(likesQuery, { label: `Liked lists for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const likesResult = await execQuery(likesQuery, {
+      label: `Liked lists for user ${userId}`,
+      fallbackValue: { data: [], error: null },
+      strict,
+    });
     if (likesResult?.timedOut) return [];
     checkAssert(likesResult, 'Liked lists could not be loaded');
 
@@ -478,13 +593,29 @@ export async function getAccountCollectionResource({
     if (likedRows.length === 0) return [];
     const listIds = likedRows.map((r) => r.list_id).filter(Boolean);
 
-    const listsResult = await execQuery(admin.from('lists').select(LIST_COLLECTION_SELECT).in('id', listIds), { label: `Lists by ids for user ${userId}`, fallbackValue: { data: [], error: null }, strict });
+    const listsResult = await execQuery(
+      admin.from('lists').select(LIST_COLLECTION_SELECT).in('id', listIds),
+      {
+        label: `Lists by ids for user ${userId}`,
+        fallbackValue: { data: [], error: null },
+        strict,
+      },
+    );
     if (listsResult?.timedOut) return [];
     checkAssert(listsResult, 'Liked lists could not be loaded');
 
     const listsMap = new Map((listsResult.data || []).map((row) => [row.id, row]));
-    const allLikesMap = await countListLikesByListIds(admin, checkAssert, listIds);
-    return listIds.map((id) => listsMap.get(id)).filter(Boolean).map((row) => normalizeListRow(row, allLikesMap));
+    const allLikesMap = await countListLikesByListIds(
+      admin,
+      checkAssert,
+      (listsResult.data || [])
+        .filter((list) => !Number.isFinite(Number(list.likes_count)))
+        .map((list) => list.id),
+    );
+    return listIds
+      .map((id) => listsMap.get(id))
+      .filter(Boolean)
+      .map((row) => normalizeListRow(row, allLikesMap));
   }
 
   return [];
