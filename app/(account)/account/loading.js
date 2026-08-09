@@ -6,6 +6,7 @@ import {
   AccountActivitySkeleton,
   AccountEditSkeleton,
   AccountListsSkeleton,
+  AccountListDetailSkeleton,
   AccountMediaGridSkeleton,
   AccountOverviewSkeleton,
   AccountReviewsSkeleton,
@@ -58,6 +59,8 @@ export function renderAccountSectionSkeleton(tabOrVariant) {
       return <AccountReviewsSkeleton />;
     case 'lists':
       return <AccountListsSkeleton />;
+    case 'list-detail':
+      return <AccountListDetailSkeleton />;
     case 'edit':
       return <AccountEditSkeleton />;
     case 'overview':
@@ -72,11 +75,7 @@ export function AccountSkeleton({ activeTab: explicitActiveTab, children }) {
   const activeTab = explicitActiveTab || pathActiveTab;
   const content = children || renderAccountSectionSkeleton(explicitActiveTab || variant);
 
-  return (
-    <AccountSkeletonLayout activeTab={activeTab}>
-      {content}
-    </AccountSkeletonLayout>
-  );
+  return <AccountSkeletonLayout activeTab={activeTab}>{content}</AccountSkeletonLayout>;
 }
 
 /**

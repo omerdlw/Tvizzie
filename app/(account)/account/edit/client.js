@@ -116,9 +116,12 @@ export default function Client({ initialSnapshot = null }) {
     userIdentities.map((i) => i?.provider || i?.identity_provider) ||
     [];
 
-  const normalizedProviderIds = (
-    Array.isArray(providerIdsFromAuth) ? providerIdsFromAuth : []
-  ).map((p) => String(p || '').trim().toLowerCase());
+  const normalizedProviderIds = (Array.isArray(providerIdsFromAuth) ? providerIdsFromAuth : []).map(
+    (p) =>
+      String(p || '')
+        .trim()
+        .toLowerCase(),
+  );
 
   const linkedProviderIds = Array.isArray(linkedProviderIdsOverride)
     ? linkedProviderIdsOverride
@@ -458,16 +461,19 @@ function StatusState({ title, description }) {
 }
 function SectionCard({ title, description, children, className, contentClassName, summaryLabel }) {
   return (
-    <section className="relative bg-transparent py-4 sm:py-6">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
-      />
+    <section className="relative bg-transparent">
       <AccountSectionReveal>
-        <div className={cn(`${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col gap-5`, className)}>
+        <div
+          className={cn(
+            `${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col border-t border-black/10`,
+            className,
+          )}
+        >
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
-          {description ? <p className="text-sm leading-6 text-black/70">{description}</p> : null}
-          <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
+          <div className="p-6">
+            {description ? <p className="text-sm leading-6 text-black/70">{description}</p> : null}
+            <div className={cn('flex flex-col gap-4', contentClassName)}>{children}</div>
+          </div>
         </div>
       </AccountSectionReveal>
     </section>
@@ -662,12 +668,12 @@ function AccountEditView(props) {
       <PageGradientShell className="overflow-hidden">
         <AccountGridFrame />
         <div
-          className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 px-3 pb-12 sm:gap-8 sm:px-4 md:px-6`}
+          className={`relative z-10 mx-auto flex w-full ${ACCOUNT_ROUTE_SHELL_CLASS} flex-col gap-6 pb-12 sm:gap-8`}
           style={{
             paddingBottom: `calc(${resolvedNavHeight}px + 1rem)`,
           }}
         >
-          <AccountNavReveal className="absolute inset-x-0 top-0 z-20 pt-1 pb-1 sm:pt-2 sm:pb-2">
+          <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
             <AccountSectionNav
               activeKey="overview"
               username={profile?.username || heroProfile?.username || null}
@@ -687,132 +693,174 @@ function AccountEditView(props) {
               />
             </AccountHeroReveal>
 
-            <main className="w-full text-left pt-4 pb-6 sm:pt-6 sm:pb-8">
+            <main className="w-full pt-4 pb-6 text-left sm:pt-6 sm:pb-8">
               {activeTab === 'general' ? (
                 <form ref={formRef} onSubmit={handleAccountSubmit} className="flex flex-col">
-                <SectionCard title="Identity">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Display Name">
-                      <input
-                        value={form.displayName}
-                        onChange={(event) => handleChange('displayName', event.target.value)}
-                        placeholder="Your name"
-                        className={INPUT_BASE_CLASSES}
-                      />
-                    </Field>
+                  <SectionCard title="Identity">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Display Name">
+                        <input
+                          value={form.displayName}
+                          onChange={(event) => handleChange('displayName', event.target.value)}
+                          placeholder="Your name"
+                          className={INPUT_BASE_CLASSES}
+                        />
+                      </Field>
 
-                    <Field label="Username">
-                      <input
-                        value={form.username}
-                        onChange={(event) => handleChange('username', event.target.value)}
-                        placeholder="username"
-                        spellCheck={false}
-                        className={INPUT_BASE_CLASSES}
-                      />
-                    </Field>
-                  </div>
-
-                  <Field label="Bio">
-                    <textarea
-                      value={form.description}
-                      onChange={(event) => handleChange('description', event.target.value)}
-                      placeholder="Write something about yourself"
-                      rows={6}
-                      className={TEXTAREA_BASE_CLASSES}
-                    />
-                  </Field>
-                </SectionCard>
-
-                <SectionCard title="Avatar & Logo">
-                  <MediaField
-                    fieldLabel="Avatar URL"
-                    value={form.avatarUrl}
-                    preview={avatarPreview}
-                    previewAlt={`${heroDisplayName} avatar preview`}
-                    previewClassName="aspect-square"
-                    isUploading={Boolean(mediaUploadState?.avatar)}
-                    isDisabled={isSaving || isAnyMediaUploading}
-                    onChange={(value) => handleChange('avatarUrl', value)}
-                    onClear={() => handleClearMedia('avatar')}
-                    onOpenUpload={() => handleOpenMediaUpload('avatar')}
-                  />
-
-                  <div className="h-px w-full bg-black/10" />
-
-                  <MediaField
-                    fieldLabel="Logo URL"
-                    value={form.bannerUrl}
-                    preview={bannerPreview}
-                    previewAlt={`${heroDisplayName} logo preview`}
-                    previewClassName="aspect-[16/7]"
-                    isUploading={Boolean(mediaUploadState?.banner)}
-                    isDisabled={isSaving || isAnyMediaUploading}
-                    onChange={(value) => handleChange('bannerUrl', value)}
-                    onClear={() => handleClearMedia('logo')}
-                    onOpenUpload={() => handleOpenMediaUpload('banner')}
-                  />
-                </SectionCard>
-
-                <SectionCard title="Privacy">
-                  <button
-                    type="button"
-                    onClick={() => handleChange('isPrivate', !form.isPrivate)}
-                    className="flex w-full items-center justify-between gap-3 text-left"
-                  >
-                    <div className="flex flex-col gap-2">
-                      <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">
-                        {form.isPrivate ? 'Private profile' : 'Public profile'}
-                      </span>
-                      <span className="text-xs leading-5 text-black/70">
-                        {form.isPrivate
-                          ? 'Only approved followers can inspect your collections.'
-                          : 'Anyone can inspect your collections and profile activity.'}
-                      </span>
+                      <Field label="Username">
+                        <input
+                          value={form.username}
+                          onChange={(event) => handleChange('username', event.target.value)}
+                          placeholder="username"
+                          spellCheck={false}
+                          className={INPUT_BASE_CLASSES}
+                        />
+                      </Field>
                     </div>
 
-                    <span
-                      className="flex h-6 w-11 border border-black/15 bg-white p-px"
-                      aria-hidden="true"
-                    >
-                      <span
-                        className={cn(
-                          'h-full w-5 bg-black',
-                          form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0',
-                        )}
+                    <Field label="Bio">
+                      <textarea
+                        value={form.description}
+                        onChange={(event) => handleChange('description', event.target.value)}
+                        placeholder="Write something about yourself"
+                        rows={6}
+                        className={TEXTAREA_BASE_CLASSES}
                       />
-                    </span>
-                  </button>
-                </SectionCard>
-              </form>
-            ) : (
-              <div className="flex flex-col">
-                {!canUsePasswordSecurity ? (
-                  <SectionCard title="Enable Password Sign-In">
-                    <div className="bg-black/5 p-3 text-sm leading-6 text-black/50">
-                      Email/password sign-in is not linked yet. Complete the set password flow below
-                      to continue.
-                    </div>
+                    </Field>
                   </SectionCard>
-                ) : null}
 
-                {canUsePasswordSecurity ? (
-                  <SectionCard
-                    title="Change Email"
-                    summaryLabel={
-                      currentAuthEmail && (
-                        <span className="text-[10px] font-medium tracking-normal text-black/50 lowercase">
-                          {currentAuthEmail}
+                  <SectionCard title="Avatar & Logo">
+                    <MediaField
+                      fieldLabel="Avatar URL"
+                      value={form.avatarUrl}
+                      preview={avatarPreview}
+                      previewAlt={`${heroDisplayName} avatar preview`}
+                      previewClassName="aspect-square"
+                      isUploading={Boolean(mediaUploadState?.avatar)}
+                      isDisabled={isSaving || isAnyMediaUploading}
+                      onChange={(value) => handleChange('avatarUrl', value)}
+                      onClear={() => handleClearMedia('avatar')}
+                      onOpenUpload={() => handleOpenMediaUpload('avatar')}
+                    />
+
+                    <div className="h-px w-full bg-black/10" />
+
+                    <MediaField
+                      fieldLabel="Logo URL"
+                      value={form.bannerUrl}
+                      preview={bannerPreview}
+                      previewAlt={`${heroDisplayName} logo preview`}
+                      previewClassName="aspect-[16/7]"
+                      isUploading={Boolean(mediaUploadState?.banner)}
+                      isDisabled={isSaving || isAnyMediaUploading}
+                      onChange={(value) => handleChange('bannerUrl', value)}
+                      onClear={() => handleClearMedia('logo')}
+                      onOpenUpload={() => handleOpenMediaUpload('banner')}
+                    />
+                  </SectionCard>
+
+                  <SectionCard title="Privacy">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('isPrivate', !form.isPrivate)}
+                      className="flex w-full items-center justify-between gap-3 text-left"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-semibold tracking-wide text-black/70 uppercase">
+                          {form.isPrivate ? 'Private profile' : 'Public profile'}
                         </span>
-                      )
-                    }
-                  >
-                    <div className="grid gap-3 sm:grid-cols-2">
+                        <span className="text-xs leading-5 text-black/70">
+                          {form.isPrivate
+                            ? 'Only approved followers can inspect your collections.'
+                            : 'Anyone can inspect your collections and profile activity.'}
+                        </span>
+                      </div>
+
+                      <span
+                        className="flex h-6 w-11 border border-black/15 bg-white p-px"
+                        aria-hidden="true"
+                      >
+                        <span
+                          className={cn(
+                            'h-full w-5 bg-black',
+                            form.isPrivate ? 'bg-info translate-x-5' : 'translate-x-0',
+                          )}
+                        />
+                      </span>
+                    </button>
+                  </SectionCard>
+                </form>
+              ) : (
+                <div className="flex flex-col">
+                  {!canUsePasswordSecurity ? (
+                    <SectionCard title="Enable Password Sign-In">
+                      <div className="bg-black/5 p-3 text-sm leading-6 text-black/50">
+                        Email/password sign-in is not linked yet. Complete the set password flow
+                        below to continue.
+                      </div>
+                    </SectionCard>
+                  ) : null}
+
+                  {canUsePasswordSecurity ? (
+                    <SectionCard
+                      title="Change Email"
+                      summaryLabel={
+                        currentAuthEmail && (
+                          <span className="text-[10px] font-medium tracking-normal text-black/50 lowercase">
+                            {currentAuthEmail}
+                          </span>
+                        )
+                      }
+                    >
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="Current Password">
+                          <input
+                            type="password"
+                            value={emailFlow.currentPassword}
+                            onChange={(event) =>
+                              setEmailFlow((prev) => ({
+                                ...prev,
+                                currentPassword: event.target.value,
+                              }))
+                            }
+                            className={INPUT_BASE_CLASSES}
+                          />
+                        </Field>
+
+                        <Field label="New Email">
+                          <input
+                            type="email"
+                            value={emailFlow.newEmail}
+                            onChange={(event) =>
+                              setEmailFlow((prev) => ({
+                                ...prev,
+                                newEmail: event.target.value,
+                              }))
+                            }
+                            className={INPUT_BASE_CLASSES}
+                          />
+                        </Field>
+                      </div>
+
+                      <ActionButton
+                        type="button"
+                        onClick={handleCompleteEmailChange}
+                        disabled={emailFlow.isSubmitting}
+                        className="w-full sm:w-fit"
+                      >
+                        {emailFlow.isSubmitting ? 'Verifying' : 'Verify and Update'}
+                      </ActionButton>
+                    </SectionCard>
+                  ) : null}
+
+                  <SectionCard title={isPasswordLinked ? 'Change Password' : 'Set Password'}>
+                    {isPasswordLinked ? (
                       <Field label="Current Password">
                         <input
                           type="password"
-                          value={emailFlow.currentPassword}
+                          value={passwordFlow.currentPassword}
                           onChange={(event) =>
-                            setEmailFlow((prev) => ({
+                            setPasswordFlow((prev) => ({
                               ...prev,
                               currentPassword: event.target.value,
                             }))
@@ -820,15 +868,31 @@ function AccountEditView(props) {
                           className={INPUT_BASE_CLASSES}
                         />
                       </Field>
+                    ) : null}
 
-                      <Field label="New Email">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="New Password">
                         <input
-                          type="email"
-                          value={emailFlow.newEmail}
+                          type="password"
+                          value={passwordFlow.newPassword}
                           onChange={(event) =>
-                            setEmailFlow((prev) => ({
+                            setPasswordFlow((prev) => ({
                               ...prev,
-                              newEmail: event.target.value,
+                              newPassword: event.target.value,
+                            }))
+                          }
+                          className={INPUT_BASE_CLASSES}
+                        />
+                      </Field>
+
+                      <Field label="Confirm Password">
+                        <input
+                          type="password"
+                          value={passwordFlow.confirmPassword}
+                          onChange={(event) =>
+                            setPasswordFlow((prev) => ({
+                              ...prev,
+                              confirmPassword: event.target.value,
                             }))
                           }
                           className={INPUT_BASE_CLASSES}
@@ -838,125 +902,67 @@ function AccountEditView(props) {
 
                     <ActionButton
                       type="button"
-                      onClick={handleCompleteEmailChange}
-                      disabled={emailFlow.isSubmitting}
+                      onClick={isPasswordLinked ? handleCompletePasswordChange : handleSetPassword}
+                      disabled={passwordFlow.isSubmitting}
                       className="w-full sm:w-fit"
                     >
-                      {emailFlow.isSubmitting ? 'Verifying' : 'Verify and Update'}
+                      {passwordFlow.isSubmitting
+                        ? isPasswordLinked
+                          ? 'Verifying'
+                          : 'Setting'
+                        : isPasswordLinked
+                          ? 'Verify and Update'
+                          : 'Verify and Set Password'}
                     </ActionButton>
                   </SectionCard>
-                ) : null}
 
-                <SectionCard title={isPasswordLinked ? 'Change Password' : 'Set Password'}>
-                  {isPasswordLinked ? (
-                    <Field label="Current Password">
+                  <SectionCard title="Delete Account">
+                    <Field label="Type DELETE to Confirm">
                       <input
-                        type="password"
-                        value={passwordFlow.currentPassword}
-                        onChange={(event) =>
-                          setPasswordFlow((prev) => ({
-                            ...prev,
-                            currentPassword: event.target.value,
-                          }))
-                        }
-                        className={INPUT_BASE_CLASSES}
-                      />
-                    </Field>
-                  ) : null}
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label="New Password">
-                      <input
-                        type="password"
-                        value={passwordFlow.newPassword}
-                        onChange={(event) =>
-                          setPasswordFlow((prev) => ({
-                            ...prev,
-                            newPassword: event.target.value,
-                          }))
-                        }
-                        className={INPUT_BASE_CLASSES}
-                      />
-                    </Field>
-
-                    <Field label="Confirm Password">
-                      <input
-                        type="password"
-                        value={passwordFlow.confirmPassword}
-                        onChange={(event) =>
-                          setPasswordFlow((prev) => ({
-                            ...prev,
-                            confirmPassword: event.target.value,
-                          }))
-                        }
-                        className={INPUT_BASE_CLASSES}
-                      />
-                    </Field>
-                  </div>
-
-                  <ActionButton
-                    type="button"
-                    onClick={isPasswordLinked ? handleCompletePasswordChange : handleSetPassword}
-                    disabled={passwordFlow.isSubmitting}
-                    className="w-full sm:w-fit"
-                  >
-                    {passwordFlow.isSubmitting
-                      ? isPasswordLinked
-                        ? 'Verifying'
-                        : 'Setting'
-                      : isPasswordLinked
-                        ? 'Verify and Update'
-                        : 'Verify and Set Password'}
-                  </ActionButton>
-                </SectionCard>
-
-                <SectionCard title="Delete Account">
-                  <Field label="Type DELETE to Confirm">
-                    <input
-                      value={deleteFlow.confirmText}
-                      onChange={(event) =>
-                        setDeleteFlow((prev) => ({
-                          ...prev,
-                          confirmText: event.target.value,
-                        }))
-                      }
-                      placeholder="DELETE"
-                      className={INPUT_BASE_CLASSES}
-                    />
-                  </Field>
-
-                  {isPasswordLinked ? (
-                    <Field label="Current Password">
-                      <input
-                        type="password"
-                        value={deleteFlow.currentPassword}
+                        value={deleteFlow.confirmText}
                         onChange={(event) =>
                           setDeleteFlow((prev) => ({
                             ...prev,
-                            currentPassword: event.target.value,
+                            confirmText: event.target.value,
                           }))
                         }
+                        placeholder="DELETE"
                         className={INPUT_BASE_CLASSES}
                       />
                     </Field>
-                  ) : null}
 
-                  <ActionButton
-                    type="button"
-                    tone="danger"
-                    onClick={handleDeleteAccount}
-                    disabled={deleteFlow.isSubmitting}
-                    className="w-full"
-                  >
-                    {deleteFlow.isSubmitting ? 'Deleting' : 'Delete Account'}
-                  </ActionButton>
-                </SectionCard>
-              </div>
-            )}
-          </main>
+                    {isPasswordLinked ? (
+                      <Field label="Current Password">
+                        <input
+                          type="password"
+                          value={deleteFlow.currentPassword}
+                          onChange={(event) =>
+                            setDeleteFlow((prev) => ({
+                              ...prev,
+                              currentPassword: event.target.value,
+                            }))
+                          }
+                          className={INPUT_BASE_CLASSES}
+                        />
+                      </Field>
+                    ) : null}
+
+                    <ActionButton
+                      type="button"
+                      tone="danger"
+                      onClick={handleDeleteAccount}
+                      disabled={deleteFlow.isSubmitting}
+                      className="w-full"
+                    >
+                      {deleteFlow.isSubmitting ? 'Deleting' : 'Delete Account'}
+                    </ActionButton>
+                  </SectionCard>
+                </div>
+              )}
+            </main>
+          </div>
         </div>
-      </div>
-    </PageGradientShell>
-  </>
-);
+      </PageGradientShell>
+    </>
+  );
 }

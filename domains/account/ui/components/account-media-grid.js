@@ -13,9 +13,15 @@ import {
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import AccountPagination from './account-pagination';
-import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
-import { AccountInlineSectionState, AccountInlineSectionLoading } from '../sections/account-section';
-import AccountSectionLayout from '../sections/account-section';
+import {
+  buildAccountCollectionPageHref,
+  formatPaginationSummaryLabel,
+} from '@/domains/account/utils';
+import { AccountInlineSectionState } from '../sections/account-section';
+import AccountSectionLayout, {
+  ACCOUNT_SECTION_PAGINATION_CLASS,
+} from '../sections/account-section';
+import { MediaCardsSkeletonGrid } from '../skeletons/account-section-skeletons';
 import { getCardProps, paginationVariants, TIMELINES } from '@/app/(account)/motion';
 
 const ITEMS_PER_PAGE = 36;
@@ -150,19 +156,10 @@ export default function AccountMediaGridPage({
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
+      toolbar={toolbar}
     >
-      {toolbar ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-          {toolbar}
-        </div>
-      ) : null}
-
       {isLoading && cards.length === 0 ? (
-        <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
-          {Array.from({ length: 12 }).map((_, index) => (
-            <div key={index} className="aspect-[2/3] w-full animate-pulse rounded-2xl bg-black/10" style={{ animationDelay: `${index * 45}ms` }} />
-          ))}
-        </div>
+        <MediaCardsSkeletonGrid />
       ) : cards.length === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
@@ -185,7 +182,9 @@ export default function AccountMediaGridPage({
                     imageSrc={card.imageSrc}
                     imageAlt={card.imageAlt}
                     imageSizes="(max-width: 419px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 16vw"
-                    topOverlay={typeof renderOverlay === 'function' ? renderOverlay(card.item) : null}
+                    topOverlay={
+                      typeof renderOverlay === 'function' ? renderOverlay(card.item) : null
+                    }
                     tooltipText={card.tooltipText}
                   />
                 </motion.div>
@@ -199,7 +198,7 @@ export default function AccountMediaGridPage({
               whileInView={paginationVariants.whileInView}
               viewport={paginationVariants.viewport}
               transition={paginationVariants.transition}
-              className="mt-6 flex justify-center"
+              className={ACCOUNT_SECTION_PAGINATION_CLASS}
             >
               <AccountPagination
                 currentPage={activePage}

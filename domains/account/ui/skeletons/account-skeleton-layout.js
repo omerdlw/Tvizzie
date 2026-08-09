@@ -11,7 +11,7 @@ export function AccountSectionNavSkeleton({ activeTab = 'overview' }) {
   return (
     <div className="bg-transparent">
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto p-5 [scrollbar-width:none] sm:p-6 [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto border-b border-black/10 p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((label) => {
             const isSelected = label.toLowerCase() === activeTab.toLowerCase();
             return (

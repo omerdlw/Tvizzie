@@ -30,8 +30,8 @@ import { useAccountSectionState } from '@/domains/account/hooks/account-section-
 import { AccountOverviewRegistry as Registry } from '@/app/(account)/registry';
 
 const PREVIEW_MEDIA_LIMIT = 12;
-const PREVIEW_REVIEW_LIMIT = 3;
-const PREVIEW_LIST_LIMIT = 3;
+const PREVIEW_REVIEW_LIMIT = 6;
+const PREVIEW_LIST_LIMIT = 6;
 const COLLECTION_PREVIEW_LIMITS = Object.freeze({
   likes: PREVIEW_MEDIA_LIMIT,
   lists: PREVIEW_LIST_LIMIT,

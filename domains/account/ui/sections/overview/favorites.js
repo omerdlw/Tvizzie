@@ -49,7 +49,7 @@ export default function AccountFavoritesOverview({
       titleHref={titleHref}
     >
       {isLoading && cards.length === 0 ? (
-        <AccountInlineSectionLoading message="Loading favorites..." />
+        <AccountInlineSectionLoading />
       ) : cards.length > 0 ? (
         <div
           className={`grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 ${

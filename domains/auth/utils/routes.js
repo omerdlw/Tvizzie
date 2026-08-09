@@ -1,5 +1,9 @@
 import { normalizeLowerValue } from '@/shared/utils';
-import { AUTH_DEFAULT_POST_LOGIN_PATH, sanitizeAuthNextPath } from '@/domains/auth/utils/oauth';
+import {
+  AUTH_DEFAULT_POST_LOGIN_PATH,
+  getOAuthProviderLabel,
+  sanitizeAuthNextPath,
+} from '@/domains/auth/utils/oauth';
 import { EMAIL_DOMAIN_PATTERNS } from './constants';
 
 // ============================================================
@@ -13,6 +17,7 @@ export const AUTH_ROUTES = Object.freeze({
 
 export const AUTH_ROUTE_NOTICE = Object.freeze({
   GOOGLE_AUTH_FAILED: 'google-auth-failed',
+  OAUTH_ACCOUNT_ALREADY_REGISTERED: 'oauth-account-already-registered',
   GOOGLE_PASSWORD_LOGIN_REQUIRED: 'google-password-login-required',
   GOOGLE_PROVIDER_COLLISION: 'google-provider-collision',
   GOOGLE_SIGNUP_REQUIRED: 'google-signup-required',
@@ -49,8 +54,13 @@ export function consumeAuthRouteNoticeCookie() {
   return normalizeAuthRouteNotice(decodeURIComponent(cookieEntry.slice(prefix.length)));
 }
 
-export function resolveSignInNoticeToast(notice) {
+export function resolveSignInNoticeToast(notice, provider = null) {
   switch (notice) {
+    case AUTH_ROUTE_NOTICE.OAUTH_ACCOUNT_ALREADY_REGISTERED:
+      return {
+        type: 'warning',
+        message: `This email is already registered with ${getOAuthProviderLabel(provider, 'a social provider')}. Continue with it, then set a password from Account Settings.`,
+      };
     case AUTH_ROUTE_NOTICE.GOOGLE_PASSWORD_LOGIN_REQUIRED:
       return {
         type: 'warning',
@@ -140,7 +150,7 @@ export function getCurrentPathWithSearch(pathname, searchParams) {
   return query ? `${normalizedPath}?${query}` : normalizedPath;
 }
 
-export function buildAuthHref(pathname, { next, email, identifier, notice } = {}) {
+export function buildAuthHref(pathname, { next, email, identifier, notice, provider } = {}) {
   const params = new URLSearchParams();
   const safeNext = sanitizeNextPath(next, '');
 
@@ -149,10 +159,12 @@ export function buildAuthHref(pathname, { next, email, identifier, notice } = {}
   const normalizedIdentifier = String(identifier || '').trim();
   const normalizedEmail = normalizeEmail(email);
   const normalizedNotice = String(notice || '').trim();
+  const normalizedProvider = String(provider || '').trim();
 
   if (normalizedIdentifier) params.set('identifier', normalizedIdentifier);
   if (normalizedEmail) params.set('email', normalizedEmail);
   if (normalizedNotice) params.set('notice', normalizedNotice);
+  if (normalizedProvider) params.set('provider', normalizedProvider);
 
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;

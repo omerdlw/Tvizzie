@@ -7,6 +7,7 @@ import { Button } from '@/ui/primitives';
 import {
   AccountInlineSectionState,
   AccountInlineSectionLoading,
+  ACCOUNT_SECTION_PAGINATION_CLASS,
 } from '@/domains/account/ui/sections/account-section';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
 import { actionButtonVariants } from '@/app/(account)/motion';
@@ -45,7 +46,6 @@ export default function AccountReviewsOverview({
   );
   return (
     <AccountSectionLayout
-      contentClassName="px-5 py-0 sm:px-6 sm:py-0"
       icon={icon}
       isInitialSection={isInitialSection}
       showSeeMore={showSeeMore}
@@ -60,30 +60,28 @@ export default function AccountReviewsOverview({
       ) : listedReviewCount === 0 ? (
         <AccountInlineSectionState>{emptyMessage}</AccountInlineSectionState>
       ) : (
-        <div className="pt-5 sm:pt-6">
-          <ReviewList
-            currentUserId={currentUserId}
-            displayVariant="account"
-            isInitialSection={isInitialSection}
-            isLoading={false}
-            loadError={null}
-            onDeleteRequest={onDeleteRequest || (() => {})}
-            onEdit={onEdit || (() => {})}
-            onLike={onLike}
-            likedMediaKeys={likedMediaKeys}
-            rewatchMediaKeys={rewatchMediaKeys}
-            showOwnActions={showOwnActions}
-            showSubject={true}
-            sortedReviews={items}
-            userProfile={userProfile}
-            watchedMediaKeys={watchedMediaKeys}
-          />
-        </div>
+        <ReviewList
+          currentUserId={currentUserId}
+          displayVariant="account"
+          isInitialSection={isInitialSection}
+          isLoading={false}
+          loadError={null}
+          onDeleteRequest={onDeleteRequest || (() => {})}
+          onEdit={onEdit || (() => {})}
+          onLike={onLike}
+          likedMediaKeys={likedMediaKeys}
+          rewatchMediaKeys={rewatchMediaKeys}
+          showOwnActions={showOwnActions}
+          showSubject={true}
+          sortedReviews={items}
+          userProfile={userProfile}
+          watchedMediaKeys={watchedMediaKeys}
+        />
       )}
 
       {hasMore && typeof onLoadMore === 'function' ? (
         <motion.div
-          className="flex justify-center"
+          className={ACCOUNT_SECTION_PAGINATION_CLASS}
           initial={actionButtonVariants.initial}
           animate={actionButtonVariants.animate}
           transition={actionButtonVariants.transition}

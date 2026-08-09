@@ -2,7 +2,7 @@
 
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 import { AccountSkeleton } from '@/app/(account)/account/loading';
-import { AccountMediaGridSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import { AccountListDetailSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
 
 export default function Loading() {
   const profileShell = useAccountProfileShell();
@@ -10,10 +10,10 @@ export default function Loading() {
   if (!profileShell) {
     return (
       <AccountSkeleton activeTab="lists">
-        <AccountMediaGridSkeleton />
+        <AccountListDetailSkeleton />
       </AccountSkeleton>
     );
   }
 
-  return <AccountMediaGridSkeleton />;
+  return <AccountListDetailSkeleton />;
 }

@@ -22,8 +22,8 @@ function evaluateEnvironment() {
     'PASSWORD_RESET_PROOF_SECRET',
     'STEP_UP_SECRET',
     'RECENT_REAUTH_SECRET',
-    'BREVO_SMTP_LOGIN',
-    'BREVO_SMTP_KEY',
+    'BREVO_API_KEY',
+    'BREVO_SENDER_EMAIL',
   ];
 
   requiredKeys.forEach((key) => {

@@ -25,6 +25,7 @@ import {
   createPendingSignInToken,
   isDeviceTrusted,
   lookupPasswordAccountByEmail,
+  lookupAccountByEmail,
   requestVerificationCode,
   releaseVerificationProof,
   resolvePasswordAccountIdentifier,
@@ -39,7 +40,7 @@ import {
   verifySignUpProofToken,
 } from './proof-tokens.server';
 import { ensurePasswordAccountRecord } from './account.server';
-import { SECURE_PURPOSES } from '@/domains/auth/utils';
+import { resolvePrimaryProvider, SECURE_PURPOSES } from '@/domains/auth/utils';
 
 // ============================================================
 // Sign-In Route Handler
@@ -289,6 +290,25 @@ export async function handleVerificationPost(request) {
     }
 
     if (action === 'send') {
+      if (normalizedPurpose === 'sign-up') {
+        const lookup = await lookupAccountByEmail(email);
+        if (lookup.exists) {
+          const oauthProvider = !lookup.supportsPasswordAuth
+            ? resolvePrimaryProvider(lookup.providerIds)
+            : null;
+          const error = new Error(
+            oauthProvider
+              ? `This email is already registered with ${oauthProvider}. Continue with ${oauthProvider} sign-in, then set a password from Account Settings.`
+              : 'This email is already registered',
+          );
+          error.code = oauthProvider
+            ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED'
+            : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
+          error.data = { email, needsPasswordSetup: Boolean(oauthProvider), provider: oauthProvider };
+          throw error;
+        }
+      }
+
       await enforceAuthRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.VERIFICATION_SEND, {
         dimensionValues: {
           device: requestContext.deviceHash,
@@ -394,7 +414,14 @@ export async function handleVerificationPost(request) {
 
     return NextResponse.json({ error: 'Invalid verification action' }, { status: 400 });
   } catch (error) {
-    return NextResponse.json({ error: error.message || 'Verification failed' }, { status: 400 });
+    return NextResponse.json(
+      {
+        code: error?.code || null,
+        data: error?.data || null,
+        error: error.message || 'Verification failed',
+      },
+      { status: 400 },
+    );
   }
 }
 

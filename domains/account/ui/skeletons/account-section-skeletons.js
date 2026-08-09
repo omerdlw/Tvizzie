@@ -1,13 +1,12 @@
 'use client';
 
-import { ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
+import { ACCOUNT_ROUTE_SHELL_CLASS, ACCOUNT_SECTION_SHELL_CLASS } from '@/shared/constants';
 
 const S = 'skeleton-block animate-pulse';
 const SOFT = 'skeleton-block-soft animate-pulse';
 
-const SECTION_GRID_CLASS = 'grid grid-cols-12 gap-x-4 sm:gap-x-6';
-const SECTION_CONTENT_CLASS = 'col-span-12 flex min-w-0 flex-col';
-const BAND_PADDING_CLASS = 'p-5 sm:p-6';
+const HEADER_PADDING_CLASS = 'p-4';
+const CONTENT_PADDING_CLASS = 'p-6';
 
 /** The loading state uses the same full-width bands and rules as AccountSectionLayout. */
 function SectionSkeleton({
@@ -16,33 +15,32 @@ function SectionSkeleton({
   showHeader = true,
   children,
   contentClassName = '',
+  showTopRule = true,
+  toolbar = null,
 }) {
   return (
     <section className="relative bg-transparent">
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
-      />
-      <div className={ACCOUNT_SECTION_SHELL_CLASS}>
-        <div className={SECTION_GRID_CLASS}>
-          <div className={SECTION_CONTENT_CLASS}>
-            {showHeader ? (
-              <>
-                <div className={`flex w-full flex-col ${BAND_PADDING_CLASS}`}>
-                  <div className="flex w-full items-center justify-between gap-4">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <div className={`size-5 shrink-0 ${S}`} />
-                      <div className={`h-3 ${titleWidth} ${S}`} />
-                    </div>
-                    {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
-                  </div>
+        className={`${ACCOUNT_SECTION_SHELL_CLASS} ${showTopRule ? 'border-t border-black/10' : ''}`}
+      >
+        {showHeader ? (
+          <>
+            <div className={`flex w-full flex-col ${HEADER_PADDING_CLASS}`}>
+              <div className="flex w-full items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className={`size-5 shrink-0 ${S}`} />
+                  <div className={`h-3 ${titleWidth} ${S}`} />
                 </div>
-                <div className="relative left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10" />
-              </>
-            ) : null}
-            <div className={`${BAND_PADDING_CLASS} ${contentClassName}`}>{children}</div>
-          </div>
-        </div>
+                {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
+              </div>
+            </div>
+            <div className="h-px w-full bg-black/10" />
+          </>
+        ) : null}
+        {toolbar ? (
+          <div className={`${HEADER_PADDING_CLASS} border-b border-black/10`}>{toolbar}</div>
+        ) : null}
+        <div className={`${CONTENT_PADDING_CLASS} ${contentClassName}`}>{children}</div>
       </div>
     </section>
   );
@@ -51,25 +49,41 @@ function SectionSkeleton({
 export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
   return (
     <div className="flex w-full flex-col">
-      <div className={`${BAND_PADDING_CLASS} flex w-full items-center justify-between gap-4`}>
+      <div className={`${HEADER_PADDING_CLASS} flex w-full items-center justify-between gap-4`}>
         <div className="flex min-w-0 items-center gap-2">
           <div className={`size-5 shrink-0 ${S}`} />
           <div className={`h-3 ${titleWidth} ${S}`} />
         </div>
         <div className={`h-3 w-16 ${SOFT}`} />
       </div>
-      <div className="h-px w-screen max-w-6xl self-center bg-black/10" />
+      <div className="h-px w-full bg-black/10" />
     </div>
   );
 }
 
-export function PosterCardsSkeletonRow({ count = 6 }) {
+export function PosterCardsSkeletonRow({ count = 6, wideGrid = true }) {
   return (
-    <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+    <div
+      className={`grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 ${wideGrid ? 'lg:grid-cols-6' : ''}`}
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`aspect-[2/3] w-full ${S}`}
+          className={`aspect-[2/3] w-full rounded-[20px] ${S}`}
+          style={{ animationDelay: `${i * 45}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function MediaCardsSkeletonGrid({ count = 12 }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className={`aspect-[2/3] w-full rounded-[20px] ${S}`}
           style={{ animationDelay: `${i * 45}ms` }}
         />
       ))}
@@ -85,7 +99,7 @@ export function ActivityItemsSkeletonList({ count = 6 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-black/10 ${i === 0 ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 border-b border-black/10 py-5 first:pt-0 last:border-b-0 last:pb-0"
         >
           <div className="min-w-0 space-y-2 pt-0.5">
             <div className={`h-4 ${ACTIVITY_LINE_WIDTHS[i % ACTIVITY_LINE_WIDTHS.length]} ${S}`} />
@@ -147,7 +161,7 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={`flex gap-4 border-b border-black/10 ${i === 0 ? 'pt-0 pb-5' : 'py-5'} last:border-b-0`}
+          className="flex gap-4 border-b border-black/10 py-3.5 first:pt-0 last:border-b-0 last:pb-0 sm:py-4 sm:first:pt-0 sm:last:pb-0"
         >
           <div className={`h-24 w-16 shrink-0 sm:h-28 sm:w-[72px] ${S}`} />
           <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
@@ -167,29 +181,15 @@ export function ReviewCardsSkeletonList({ count = 4 }) {
 
 export function AccountMediaGridSkeleton() {
   return (
-    <SectionSkeleton showHeader={false}>
-      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-        <FilterBarSkeleton />
-      </div>
-      <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className={`aspect-[2/3] w-full ${S}`}
-            style={{ animationDelay: `${i * 45}ms` }}
-          />
-        ))}
-      </div>
+    <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
+      <MediaCardsSkeletonGrid />
     </SectionSkeleton>
   );
 }
 
 export function AccountActivitySkeleton() {
   return (
-    <SectionSkeleton showHeader={false}>
-      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-        <FilterBarSkeleton />
-      </div>
+    <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
       <ActivityItemsSkeletonList count={8} />
     </SectionSkeleton>
   );
@@ -197,10 +197,7 @@ export function AccountActivitySkeleton() {
 
 export function AccountReviewsSkeleton() {
   return (
-    <SectionSkeleton showHeader={false}>
-      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-        <FilterBarSkeleton />
-      </div>
+    <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
       <ReviewCardsSkeletonList count={6} />
     </SectionSkeleton>
   );
@@ -208,12 +205,30 @@ export function AccountReviewsSkeleton() {
 
 export function AccountListsSkeleton() {
   return (
-    <SectionSkeleton showHeader={false}>
-      <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-        <FilterBarSkeleton />
-      </div>
+    <SectionSkeleton showHeader={false} toolbar={<FilterBarSkeleton />}>
       <ListCardsSkeletonGrid count={6} />
     </SectionSkeleton>
+  );
+}
+
+export function AccountListDetailSkeleton() {
+  return (
+    <div className="w-full">
+      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} border-y border-black/10 p-4`}>
+        <div className="flex w-full flex-col gap-3">
+          <div className={`h-9 w-2/3 ${S}`} />
+          <div className={`h-4 w-full max-w-2xl ${SOFT}`} />
+        </div>
+      </div>
+
+      <SectionSkeleton showHeader={false} showTopRule={false} toolbar={<FilterBarSkeleton />}>
+        <MediaCardsSkeletonGrid />
+      </SectionSkeleton>
+
+      <SectionSkeleton titleWidth="w-24" toolbar={<FilterBarSkeleton />}>
+        <ReviewCardsSkeletonList count={3} />
+      </SectionSkeleton>
+    </div>
   );
 }
 
@@ -224,13 +239,13 @@ export function AccountOverviewSkeleton() {
         <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-36">
-        <ActivityItemsSkeletonList count={4} />
+        <ActivityItemsSkeletonList count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-20">
-        <ListCardsSkeletonGrid count={3} />
+        <ListCardsSkeletonGrid count={6} />
       </SectionSkeleton>
       <SectionSkeleton titleWidth="w-32">
-        <ReviewCardsSkeletonList count={3} />
+        <ReviewCardsSkeletonList count={6} />
       </SectionSkeleton>
     </div>
   );
@@ -239,12 +254,12 @@ export function AccountOverviewSkeleton() {
 export function AccountEditSkeleton() {
   return (
     <SectionSkeleton titleWidth="w-28" summary={false} contentClassName="mx-auto w-full max-w-xl">
-      <div className="space-y-6 bg-white/40 p-5 sm:p-6">
+      <div className="space-y-4 bg-white/40">
         <div className="flex flex-col items-center gap-3">
           <div className={`size-28 ${S}`} />
           <div className={`h-3.5 w-28 ${SOFT}`} />
         </div>
-        <div className="space-y-4 pt-5">
+        <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <div className={`h-3 w-24 ${SOFT}`} />
@@ -256,7 +271,7 @@ export function AccountEditSkeleton() {
             <div className={`h-24 w-full bg-white/50 ${S}`} />
           </div>
         </div>
-        <div className="flex justify-end pt-5">
+        <div className="flex justify-end">
           <div className={`h-12 w-36 ${S}`} />
         </div>
       </div>

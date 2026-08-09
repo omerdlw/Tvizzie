@@ -11,8 +11,14 @@ import { AccountActivityFilterBar } from '@/domains/account/ui/filters/content-f
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
 import ReviewCard from '@/domains/reviews/ui/components/review-card';
 import RatingStars from '@/domains/reviews/ui/components/rating-stars';
-import AccountSectionLayout, { AccountInlineSectionState } from '@/domains/account/ui/sections/account-section';
-import { ActivityItemsSkeletonList, FilterBarSkeleton } from '@/domains/account/ui/skeletons/account-section-skeletons';
+import AccountSectionLayout, {
+  AccountInlineSectionState,
+  ACCOUNT_SECTION_PAGINATION_CLASS,
+} from '@/domains/account/ui/sections/account-section';
+import {
+  ActivityItemsSkeletonList,
+  FilterBarSkeleton,
+} from '@/domains/account/ui/skeletons/account-section-skeletons';
 import { getActivityItemProps } from '@/app/(account)/motion';
 
 const ACTIVITY_ITEMS_PER_PAGE = 36;
@@ -70,13 +76,10 @@ export default function AccountActivityFeed({
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
-    >
-      {onFiltersChange && isLoading && visibleItems.length === 0 ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+      toolbar={
+        onFiltersChange && isLoading && visibleItems.length === 0 ? (
           <FilterBarSkeleton />
-        </div>
-      ) : onFiltersChange && (listedActivityCount > 0 || hasFilters) ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        ) : onFiltersChange && (listedActivityCount > 0 || hasFilters) ? (
           <AccountActivityFilterBar
             filters={filters}
             subjectOptions={collectActivitySubjectOptions()}
@@ -96,9 +99,9 @@ export default function AccountActivityFeed({
                 : null
             }
           />
-        </div>
-      ) : null}
-
+        ) : null
+      }
+    >
       {isLoading && visibleItems.length === 0 ? (
         <ActivityItemsSkeletonList count={6} />
       ) : loadError ? (
@@ -108,61 +111,80 @@ export default function AccountActivityFeed({
           {hasFilters ? 'No activity matches the current filters' : emptyMessage}
         </AccountInlineSectionState>
       ) : (
-        <div>
-          {visibleItems.map((item, index) => (
-            <ActivityItem
-              key={item?.dedupeKey || item?.id || `activity-${index}`}
-              baseDelay={revealDelay ? revealDelay : undefined}
-              index={index}
-              isFirst={index === 0}
-              isInitialSection={isInitialSection}
-              item={item}
-            />
-          ))}
-        </div>
+        <ActivityList
+          baseDelay={revealDelay ? revealDelay : undefined}
+          isInitialSection={isInitialSection}
+          items={visibleItems}
+        />
       )}
 
       {listedActivityCount > ACTIVITY_ITEMS_PER_PAGE && onPageChange && (
-        <AccountPagination
-          className="w-full"
-          currentPage={activePage}
-          onPageChange={onPageChange}
-          totalPages={totalPages}
-        />
+        <div className={ACCOUNT_SECTION_PAGINATION_CLASS}>
+          <AccountPagination
+            className="w-full"
+            currentPage={activePage}
+            onPageChange={onPageChange}
+            totalPages={totalPages}
+          />
+        </div>
       )}
     </AccountSectionLayout>
   );
 }
 
-function ActivityItem({ baseDelay, index = 0, isFirst = false, isInitialSection = false, item }) {
+const ACTIVITY_ROW_CLASS = 'border-b border-black/10 py-5 first:pt-0 last:border-b-0 last:pb-0';
+const ACTIVITY_LINE_CLASS = 'min-w-0 text-[1.02rem] leading-[1.1]';
+
+function ActivityList({ baseDelay, isInitialSection = false, items }) {
+  return (
+    <div className="w-full">
+      {items.map((item, index) => (
+        <ActivityRow
+          key={item?.dedupeKey || item?.id || `activity-${index}`}
+          baseDelay={baseDelay}
+          index={index}
+          isInitialSection={isInitialSection}
+          item={item}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
   const createdLabel = formatActivityTime(item?.occurredAt || item?.updatedAt || item?.createdAt);
   const motionProps = getActivityItemProps(index, baseDelay, isInitialSection);
+  const hasReview = item?.renderKind === 'text_with_review' && item?.reviewCard;
+
   return (
     <motion.article
-      className={`border-b border-black/10 ${isFirst ? 'pt-0 pb-5' : 'py-5'} last:border-b-0 last:pb-0`}
+      className={ACTIVITY_ROW_CLASS}
       initial={motionProps.initial}
       animate={isInitialSection ? motionProps.animate : undefined}
       whileInView={!isInitialSection ? motionProps.whileInView : undefined}
       viewport={!isInitialSection ? motionProps.viewport : undefined}
       transition={motionProps.transition}
     >
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
-        <div className="min-w-0 text-[1.02rem] leading-7">
-          {(item?.line?.parts || []).map((part, i) => (
-            <LinePart key={i} part={part} />
+      <div className="flex min-w-0 items-start justify-between gap-4">
+        <div className={ACTIVITY_LINE_CLASS}>
+          {(item?.line?.parts || []).map((part, partIndex) => (
+            <LinePart key={partIndex} part={part} />
           ))}
         </div>
-        {createdLabel && <div className="shrink-0 pt-0.5 text-sm font-medium">{createdLabel}</div>}
+        {createdLabel && (
+          <div className="shrink-0 text-sm leading-[1.1] font-medium">{createdLabel}</div>
+        )}
       </div>
-      {item?.renderKind === 'text_with_review' && item?.reviewCard && (
-        <div className="mt-3">
-          <ReviewCard
-            className="border-b-0 py-0"
-            displayVariant="activity"
-            review={item.reviewCard}
-          />
-        </div>
-      )}
+
+      {hasReview ? (
+        <ReviewCard
+          className="mt-3 border-b-0"
+          displayVariant="activity"
+          removeBottomPadding
+          removeTopPadding
+          review={item.reviewCard}
+        />
+      ) : null}
     </motion.article>
   );
 }

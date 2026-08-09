@@ -9,13 +9,18 @@ import {
 import AccountMediaGridPage, {
   ProfileMediaActions,
 } from '@/domains/account/ui/components/account-media-grid';
-import { AccountMediaFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
+import {
+  AccountMediaFilterBar,
+  AccountReviewFilterBar,
+} from '@/domains/account/ui/filters/content-filter-primitives';
+import ReviewAuthFallback from '@/domains/reviews/ui/components/review-auth-fallback';
 import AccountSectionLayout, {
   AccountSectionState,
 } from '@/domains/account/ui/sections/account-section';
 import ListDetailCommentsSection from './list-detail/comments-section';
 import {
   LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS,
+  LIST_COMMENT_SORT_OPTIONS,
   LIST_SECTION_SHELL_CLASS,
 } from './list-detail/list-detail-config';
 import { useListDetailFilterState } from './list-detail/list-detail-filter-state';
@@ -151,11 +156,7 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
         <>
           <AccountSectionReveal>
             <header className="relative">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
-              />
-              <div className={`${LIST_SECTION_SHELL_CLASS} pt-10 pb-8`}>
+              <div className={`${LIST_SECTION_SHELL_CLASS} border-y border-black/10 p-4`}>
                 <div className="flex w-full flex-col gap-3">
                   <h1 className="w-full text-3xl font-bold tracking-tight sm:text-4xl">
                     {list.title}
@@ -165,10 +166,6 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
                   </p>
                 </div>
               </div>
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen max-w-6xl -translate-x-1/2 bg-black/10"
-              />
             </header>
           </AccountSectionReveal>
 
@@ -217,28 +214,50 @@ export default function AccountListDetailFeed({ model = {}, RegistryComponent = 
           </AccountSectionReveal>
 
           <AccountSectionLayout
-            contentClassName="pb-20"
+            contentPaddingClassName="p-0"
             icon="solar:chat-round-line-bold"
             revealDelay={0.1}
             summaryLabel={`${reviews.length} ${reviews.length === 1 ? 'Comment' : 'Comments'}`}
             title="Comments"
+            toolbarPaddingClassName="p-0"
+            toolbar={
+              <>
+                {!auth?.user && (
+                  <ReviewAuthFallback
+                    mode="comment"
+                    onSignIn={handleSignInRequest}
+                    title={list.title}
+                    variant="account-section"
+                  />
+                )}
+                {reviews.length > 0 ? (
+                  <div className="p-4">
+                    <AccountReviewFilterBar
+                      filters={reviewFilters}
+                      showRatingFilter={false}
+                      sortOptions={LIST_COMMENT_SORT_OPTIONS}
+                      visibilityOptions={[]}
+                      yearOptions={reviewYearOptions}
+                      onChange={updateReviewFilters}
+                      onReset={hasReviewFilters ? resetReviewFilters : null}
+                    />
+                    {hasReviewFilters && (
+                      <p className="mt-3 text-xs font-semibold tracking-widest text-black/50 uppercase">
+                        {filteredReviews.length} of {reviews.length} comments shown
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+              </>
+            }
           >
             <ListDetailCommentsSection
               auth={auth}
               filteredReviews={filteredReviews}
-              hasReviewFilters={hasReviewFilters}
-              isOwner={isOwner}
               list={list}
               onDeleteRequest={handleDeleteRequest}
               onEditReview={handleEditReview}
               onLikeReview={handleLikeReview}
-              onOpenReviewComposer={handleOpenReviewComposer}
-              onResetReviewFilters={resetReviewFilters}
-              onSignIn={handleSignInRequest}
-              onUpdateReviewFilters={updateReviewFilters}
-              ownReview={ownReview}
-              reviewFilters={reviewFilters}
-              reviewYearOptions={reviewYearOptions}
               reviews={reviews}
               userProfile={userProfile}
             />

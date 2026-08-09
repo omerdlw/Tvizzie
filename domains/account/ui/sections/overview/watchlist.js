@@ -50,7 +50,7 @@ export default function AccountWatchlistOverview({
       titleHref={titleHref || (username ? `/account/${username}/watchlist` : null)}
     >
       {isLoading && cards.length === 0 ? (
-        <AccountInlineSectionLoading message="Loading watchlist..." />
+        <AccountInlineSectionLoading />
       ) : cards.length > 0 ? (
         <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
           {cards.slice(0, OVERVIEW_ROW_CARD_LIMIT).map((card, index) => {

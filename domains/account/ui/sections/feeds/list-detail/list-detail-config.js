@@ -1,7 +1,7 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
 import { REVIEW_SORT_MODE } from '@/domains/reviews/services/review-data';
 
-export const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6 px-4 sm:px-8`;
+export const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6`;
 
 export const REVIEW_ITEMS_PER_PAGE = 36;
 

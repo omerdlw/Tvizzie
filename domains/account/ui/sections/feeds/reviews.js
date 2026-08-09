@@ -16,7 +16,10 @@ import {
 } from '@/domains/account/ui/filters/filtering';
 import { AccountReviewFilterBar } from '@/domains/account/ui/filters/content-filter-primitives';
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
-import { ACCOUNT_EMPTY_SECTION_CLASS } from '@/domains/account/ui/sections/account-section';
+import {
+  ACCOUNT_EMPTY_SECTION_CLASS,
+  ACCOUNT_SECTION_PAGINATION_CLASS,
+} from '@/domains/account/ui/sections/account-section';
 import ReviewList from '@/domains/reviews/ui/components/review-list';
 import { Button } from '@/ui/primitives';
 import AccountSectionLayout from '@/domains/account/ui/sections/account-section';
@@ -122,13 +125,10 @@ export default function AccountReviewsFeed({
       summaryLabel={resolvedSummaryLabel}
       title={title}
       titleHref={titleHref}
-    >
-      {isLoading && listedReviewCount === 0 ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+      toolbar={
+        isLoading && listedReviewCount === 0 ? (
           <FilterBarSkeleton />
-        </div>
-      ) : listedReviewCount > 0 || hasFilters ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
+        ) : listedReviewCount > 0 || hasFilters ? (
           <AccountReviewFilterBar
             filters={viewState.filters}
             yearOptions={yearOptions}
@@ -151,9 +151,9 @@ export default function AccountReviewsFeed({
                 : null
             }
           />
-        </div>
-      ) : null}
-
+        ) : null
+      }
+    >
       {filteredReviews.length === 0 && !isLoading && !loadError ? (
         <div className={ACCOUNT_EMPTY_SECTION_CLASS}>
           {hasFilters ? 'No reviews match the current filters' : emptyMessage}
@@ -182,7 +182,7 @@ export default function AccountReviewsFeed({
       )}
 
       {!enablePagination && hasMore && onLoadMore && (
-        <div className="flex justify-center">
+        <div className={ACCOUNT_SECTION_PAGINATION_CLASS}>
           <Button
             type="button"
             onClick={onLoadMore}
@@ -195,16 +195,18 @@ export default function AccountReviewsFeed({
       )}
 
       {enablePagination && filteredReviews.length > 0 && (
-        <AccountPagination
-          className="w-full"
-          currentPage={resolvedPage}
-          onPageChange={(page) =>
-            updateView({
-              page,
-            })
-          }
-          totalPages={totalPages}
-        />
+        <div className={ACCOUNT_SECTION_PAGINATION_CLASS}>
+          <AccountPagination
+            className="w-full"
+            currentPage={resolvedPage}
+            onPageChange={(page) =>
+              updateView({
+                page,
+              })
+            }
+            totalPages={totalPages}
+          />
+        </div>
       )}
     </AccountSectionLayout>
   );

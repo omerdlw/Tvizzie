@@ -16,15 +16,9 @@ import { useNavigationActions } from '@/modules/nav';
 import { useRegistry } from '@/modules/registry';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/surfaces/account-bio-surface';
-import {
-  AccountProfileShellProvider,
-  useAccountProfileShell,
-} from './account-profile-context';
+import { AccountProfileShellProvider, useAccountProfileShell } from './account-profile-context';
 import AccountGridFrame from './account-grid-frame';
-import {
-  getNavItemProps,
-  getSectionRevealProps,
-} from '@/app/(account)/motion';
+import { getNavItemProps, getSectionRevealProps } from '@/app/(account)/motion';
 
 // ─── Nav Transition Context ───────────────────────────────────────────────────
 
@@ -71,7 +65,12 @@ export function AccountNavReveal({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 }
 
-export function AccountSectionReveal({ children, className = '', delay = 0, isInitialSection = false }) {
+export function AccountSectionReveal({
+  children,
+  className = '',
+  delay = 0,
+  isInitialSection = false,
+}) {
   const revealProps = getSectionRevealProps(delay, isInitialSection);
   return (
     <motion.div
@@ -90,13 +89,13 @@ export function AccountSectionReveal({ children, className = '', delay = 0, isIn
 // ─── Nav Items ────────────────────────────────────────────────────────────────
 
 const SECTION_ITEMS = [
-  { key: 'overview',  label: 'Overview'  },
-  { key: 'activity',  label: 'Activity'  },
-  { key: 'likes',     label: 'Likes'     },
-  { key: 'watched',   label: 'Watched'   },
+  { key: 'overview', label: 'Overview' },
+  { key: 'activity', label: 'Activity' },
+  { key: 'likes', label: 'Likes' },
+  { key: 'watched', label: 'Watched' },
   { key: 'watchlist', label: 'Watchlist' },
-  { key: 'reviews',   label: 'Reviews'   },
-  { key: 'lists',     label: 'Lists'     },
+  { key: 'reviews', label: 'Reviews' },
+  { key: 'lists', label: 'Lists' },
 ];
 
 const DEFAULT_NOT_FOUND_DESCRIPTION =
@@ -106,10 +105,20 @@ function getSectionHref(username, key) {
   return key === 'overview' ? `/account/${username}` : `/account/${username}/${key}`;
 }
 
-const SECTION_KEYS_SET = new Set(['overview', 'activity', 'likes', 'watched', 'watchlist', 'reviews', 'lists']);
+const SECTION_KEYS_SET = new Set([
+  'overview',
+  'activity',
+  'likes',
+  'watched',
+  'watchlist',
+  'reviews',
+  'lists',
+]);
 
 function resolveAccountPageDescription(pathname = '') {
-  const segments = String(pathname || '').split('/').filter(Boolean);
+  const segments = String(pathname || '')
+    .split('/')
+    .filter(Boolean);
   const section = segments[2];
 
   if (segments[1] === 'edit') return 'Edit Account';
@@ -154,7 +163,7 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
   return (
     <div className={cn('relative bg-transparent', className)}>
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto p-5 [scrollbar-width:none] sm:p-6 [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full items-stretch gap-2 overflow-x-auto border-b border-black/10 p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
             <NavViewItem
               key={item.key}
@@ -166,20 +175,23 @@ export function AccountSectionNav({ activeKey = 'overview', className = '', user
           ))}
         </div>
       </div>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-1/2 h-px w-screen -translate-x-1/2 bg-black/10"
-      />
     </div>
   );
 }
 
-export function AccountSectionNavWrapper({ activeSection = null, className = '', username = null }) {
+export function AccountSectionNavWrapper({
+  activeSection = null,
+  className = '',
+  username = null,
+}) {
   const segment = useSelectedLayoutSegment();
   const { pendingTab } = useAccountNavTransition();
   const resolvedActiveKey =
-    pendingTab || (segment && SECTION_KEYS_SET.has(segment) ? segment : activeSection || 'overview');
-  return <AccountSectionNav activeKey={resolvedActiveKey} className={className} username={username} />;
+    pendingTab ||
+    (segment && SECTION_KEYS_SET.has(segment) ? segment : activeSection || 'overview');
+  return (
+    <AccountSectionNav activeKey={resolvedActiveKey} className={className} username={username} />
+  );
 }
 
 function NavViewItem({ item, isActive, href, index }) {
@@ -187,7 +199,14 @@ function NavViewItem({ item, isActive, href, index }) {
   const navItemProps = getNavItemProps(index);
 
   const handleClick = (e) => {
-    if (!e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+    if (
+      !e.defaultPrevented &&
+      e.button === 0 &&
+      !e.metaKey &&
+      !e.ctrlKey &&
+      !e.shiftKey &&
+      !e.altKey
+    ) {
       e.preventDefault();
       startTabTransition(item.key, href);
     }
@@ -232,14 +251,15 @@ export function AccountPageShell(props) {
     return (
       <>
         {registry}
-        {isLoading
-          ? renderAccountSectionSkeleton(skeletonVariant === 'list-detail' ? 'lists' : skeletonVariant)
-          : props.children}
+        {isLoading ? renderAccountSectionSkeleton(skeletonVariant) : props.children}
       </>
     );
   }
 
-  if (isLoading) return <AccountSkeleton activeTab={skeletonVariant} />;
+  if (isLoading) {
+    const skeletonActiveTab = skeletonVariant === 'list-detail' ? 'lists' : skeletonVariant;
+    return <AccountSkeleton activeTab={skeletonActiveTab} />;
+  }
   if (!resolvedUserId || !profile) {
     return (
       <>
@@ -347,7 +367,7 @@ function ProfileLayoutInner({
               />
             </AccountHeroReveal>
 
-            <main className="w-full text-left pt-4 pb-6 sm:pt-6 sm:pb-8">{mainContent}</main>
+            <main className="w-full pt-4 pb-6 text-left sm:pt-6 sm:pb-8">{mainContent}</main>
           </div>
         </div>
         <NavHeightSpacer />

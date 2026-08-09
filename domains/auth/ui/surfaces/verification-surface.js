@@ -264,19 +264,6 @@ export default function AuthVerificationSurface({ close, data, header }) {
     };
   }, [expiresAt, resendAvailableAt]);
 
-  const prevCanResendRef = useRef(false);
-
-  useEffect(() => {
-    const canResend = resendAvailableAt && (resolveVerificationTimestamp(resendAvailableAt) - now <= 0);
-    
-    if (canResend && !prevCanResendRef.current && resendAvailableAt) {
-      prevCanResendRef.current = true;
-      void sendCode({ isInitial: false });
-    } else if (!canResend) {
-      prevCanResendRef.current = false;
-    }
-  }, [now, resendAvailableAt, sendCode]);
-
   useEffect(() => {
     if (autoSentRef.current) return;
     if (!hasValidVerificationTarget) {

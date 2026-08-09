@@ -116,7 +116,16 @@ export async function sendVerificationEmail({ code, email, expiresAt, purpose })
   });
 
   if (!response.ok) {
-    throw new Error(`Email sending failed with status ${response.status}`);
+    const responseBody = await response.text().catch(() => '');
+    let providerMessage = '';
+
+    try {
+      providerMessage = normalizeValue(JSON.parse(responseBody)?.message);
+    } catch {}
+
+    throw new Error(
+      `Email sending failed with status ${response.status}${providerMessage ? `: ${providerMessage}` : ''}`,
+    );
   }
 }
 
@@ -193,7 +202,7 @@ export async function requestVerificationCode({
     };
   }
 
-  if (forceNew && existingResendAtMs > now) {
+  if (forceNew && existingData?.status === 'pending' && existingResendAtMs > now) {
     const waitSeconds = Math.max(1, Math.ceil((existingResendAtMs - now) / 1000));
     throw new Error(
       `Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting a new code`,
@@ -226,12 +235,21 @@ export async function requestVerificationCode({
   };
 
   await upsertChallengeByKey(challengeKey, challengeRecord);
-  await sendVerificationEmail({
-    code,
-    email: normalizedEmail,
-    expiresAt: expiresAtMs,
-    purpose: normalizedPurpose,
-  });
+
+  try {
+    await sendVerificationEmail({
+      code,
+      email: normalizedEmail,
+      expiresAt: expiresAtMs,
+      purpose: normalizedPurpose,
+    });
+  } catch (error) {
+    await updateChallengeByKey(challengeKey, {
+      status: 'expired',
+      updated_at: new Date().toISOString(),
+    }).catch(() => null);
+    throw error;
+  }
 
   return {
     challengeKey,

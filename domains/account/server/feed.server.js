@@ -553,15 +553,18 @@ export async function fetchAccountActivityFeedServer({
   });
   if (!canViewProfile) throw createPrivateProfileError();
 
-  const followingResult = await admin
-    .from('follows')
-    .select('following_id')
-    .eq('follower_id', userId)
-    .eq('status', FOLLOW_STATUS_ACCEPTED);
-  if (followingResult.error) {
-    throw new Error(followingResult.error.message || 'Following accounts could not be loaded');
+  let followingIds = [];
+  if (scope === 'following') {
+    const followingResult = await admin
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .eq('status', FOLLOW_STATUS_ACCEPTED);
+    if (followingResult.error) {
+      throw new Error(followingResult.error.message || 'Following accounts could not be loaded');
+    }
+    followingIds = (followingResult.data || []).map((i) => i.following_id).filter(Boolean);
   }
-  const followingIds = (followingResult.data || []).map((i) => i.following_id).filter(Boolean);
   const sourceIds = scope === 'following' ? [...new Set(followingIds)] : [userId];
 
   const normalizedPageSize = Number.isFinite(Number(pageSize))
@@ -605,9 +608,24 @@ export async function fetchAccountActivityFeedServer({
     ...item,
     isFromFollowing: normalizeValue(item?.sourceUserId) !== normalizeValue(userId),
   }));
+  const hasMoreSourceItems = groups.some((group) => group.hasMore);
+
+  // Activity is now persisted for every supported event. The derived readers
+  // remain as a compatibility fallback for legacy users, but they fan out to
+  // all collections and reviews and can be much slower than the activity
+  // query itself. Only pay that cost when the persisted feed cannot fill the
+  // requested page after subject filtering and the persisted source is
+  // exhausted.
+  const rawFilteredItemCount = filterActivityItemsBySubject(
+    dedupeActivityItems(rawActivityItems),
+    normalizedSubject,
+  ).length;
+  const minimumItemsNeeded = normalizedOffset + normalizedPageSize;
+  const shouldLoadDerivedUserActivity =
+    scope === 'user' && !hasMoreSourceItems && rawFilteredItemCount < minimumItemsNeeded;
 
   const derivedUserActivityItems =
-    scope === 'user'
+    shouldLoadDerivedUserActivity
       ? (
           await fetchDerivedUserActivityItems({
             offset: normalizedOffset,
@@ -626,7 +644,6 @@ export async function fetchAccountActivityFeedServer({
   );
 
   const paginated = paginateItems(items, cursor, pageSize);
-  const hasMoreSourceItems = groups.some((group) => group.hasMore);
   const hasMore = paginated.hasMore || (paginated.items.length > 0 && hasMoreSourceItems);
   const nextCursor = hasMore ? normalizedOffset + paginated.items.length : null;
   return {

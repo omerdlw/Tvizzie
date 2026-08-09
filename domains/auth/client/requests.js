@@ -33,7 +33,10 @@ async function postAuthJson(path, body, fallbackMessage) {
   const payload = await response.json().catch(() => ({ error: fallbackMessage }));
 
   if (!response.ok || payload?.success === false) {
-    throw new Error(payload?.error || fallbackMessage);
+    const error = new Error(payload?.error || fallbackMessage);
+    if (payload?.code) error.code = payload.code;
+    if (payload?.data) error.data = payload.data;
+    throw error;
   }
 
   return payload;
@@ -78,7 +81,10 @@ function resolvePasswordAccountStatus({ email, identifier, intent }) {
   const requestPromise = getPasswordStatusServer({ email, identifier, intent })
     .then((payload) => {
       if (!payload.success) {
-        throw new Error(payload.error || 'Account status could not be resolved');
+        const error = new Error(payload.error || 'Account status could not be resolved');
+        if (payload.code) error.code = payload.code;
+        if (payload.data) error.data = payload.data;
+        throw error;
       }
       passwordStatusCache.set(cacheKey, {
         expiresAt: Date.now() + PASSWORD_STATUS_CACHE_TTL_MS,

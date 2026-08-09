@@ -59,6 +59,7 @@ export default function Client() {
 
   const nextParam = searchParams.get('next');
   const routeNotice = searchParams.get('notice');
+  const routeProvider = searchParams.get('provider');
   const identifierPrefill = useMemo(
     () => searchParams.get('identifier') || searchParams.get('email') || '',
     [searchParams],
@@ -112,7 +113,7 @@ export default function Client() {
       return;
     }
 
-    const noticeToast = resolveSignInNoticeToast(activeNotice);
+    const noticeToast = resolveSignInNoticeToast(activeNotice, routeProvider);
 
     if (noticeToast?.type === 'warning') {
       toast.warning(noticeToast.message);
@@ -128,10 +129,11 @@ export default function Client() {
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete('notice');
+    params.delete('provider');
     const nextHref = params.toString() ? `/sign-in?${params.toString()}` : AUTH_ROUTES.SIGN_IN;
 
     router.replace(nextHref);
-  }, [routeNotice, router, searchParams, toast]);
+  }, [routeNotice, routeProvider, router, searchParams, toast]);
 
   const finalizeVerifiedSignIn = async (verificationResult) => {
     if (!verificationResult?.success) {

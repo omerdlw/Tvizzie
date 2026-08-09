@@ -310,6 +310,17 @@ export default function Client() {
         setForm((prev) => ({ ...prev, email }));
         setCurrentStep(1);
       } catch (error) {
+        if (error?.code === 'OAUTH_ACCOUNT_ALREADY_REGISTERED') {
+          const nextHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, {
+            identifier: form.email,
+            next: nextParam,
+            notice: AUTH_ROUTE_NOTICE.OAUTH_ACCOUNT_ALREADY_REGISTERED,
+            provider: error?.data?.provider,
+          });
+          window.location.assign(nextHref);
+          return;
+        }
+
         toast.error(resolveAuthErrorMessage(error, 'Enter a valid email'), {
           id: 'auth-signup-step-email-error',
         });

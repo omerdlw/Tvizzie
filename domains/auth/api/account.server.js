@@ -1,6 +1,7 @@
 'use server';
 
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { resolvePrimaryProvider } from '@/domains/auth/utils';
 
 import {
   lookupAccountByEmail,
@@ -19,7 +20,24 @@ export async function getPasswordStatusServer({ email, identifier, intent } = {}
       const normEmail = normalizeEmailValue(email);
       const lookup = await lookupAccountByEmail(normEmail);
       if (lookup.exists) {
-        return { success: false, error: 'This email is already registered' };
+        const oauthProvider = !lookup.supportsPasswordAuth
+          ? resolvePrimaryProvider(lookup.providerIds)
+          : null;
+
+        return {
+          success: false,
+          code: oauthProvider
+            ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED'
+            : 'AUTH_ACCOUNT_ALREADY_REGISTERED',
+          data: {
+            email: normEmail,
+            needsPasswordSetup: Boolean(oauthProvider),
+            provider: oauthProvider,
+          },
+          error: oauthProvider
+            ? `This email is already registered with ${oauthProvider}. Continue with ${oauthProvider} sign-in, then set a password from Account Settings.`
+            : 'This email is already registered',
+        };
       }
       return { success: true };
     }

@@ -4,10 +4,16 @@ import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import AccountListCard from './list-card';
-import AccountSectionLayout, { AccountInlineSectionState, AccountInlineSectionLoading } from '@/domains/account/ui/sections/account-section';
+import AccountSectionLayout, {
+  AccountInlineSectionState,
+  ACCOUNT_SECTION_PAGINATION_CLASS,
+} from '@/domains/account/ui/sections/account-section';
 import { ListCardsSkeletonGrid } from '@/domains/account/ui/skeletons/account-section-skeletons';
 import AccountPagination from '@/domains/account/ui/components/account-pagination';
-import { buildAccountCollectionPageHref, formatPaginationSummaryLabel } from '@/domains/account/utils';
+import {
+  buildAccountCollectionPageHref,
+  formatPaginationSummaryLabel,
+} from '@/domains/account/utils';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 
 const DEFAULT_ITEMS_PER_PAGE = 36;
@@ -74,13 +80,8 @@ export default function AccountPaginatedListGrid({
       summaryLabel={showHeader ? paginationSummaryLabel : null}
       title={title}
       action={typeof renderHeaderAction === 'function' ? renderHeaderAction() : null}
+      toolbar={toolbar && (lists.length > 0 || isLoading) ? toolbar : null}
     >
-      {toolbar && (lists.length > 0 || isLoading) ? (
-        <div className="-mx-5 -mt-5 mb-5 border-b border-black/10 p-5 sm:-mx-6 sm:-mt-6 sm:mb-6 sm:p-6">
-          {toolbar}
-        </div>
-      ) : null}
-
       {isLoading && lists.length === 0 ? (
         <ListCardsSkeletonGrid count={6} />
       ) : lists.length === 0 ? (
@@ -111,7 +112,10 @@ export default function AccountPaginatedListGrid({
           </div>
 
           {totalPages > 1 ? (
-            <div key={`list-grid-pagination-${activePage}-${totalPages}`}>
+            <div
+              key={`list-grid-pagination-${activePage}-${totalPages}`}
+              className={ACCOUNT_SECTION_PAGINATION_CLASS}
+            >
               <AccountPagination
                 className="w-full"
                 currentPage={activePage}
