@@ -17,7 +17,7 @@ import WatchProvidersSurface from '@/domains/media/ui/surfaces/watch-providers-s
 import ReviewEditorSurface, {
   createReviewEditorSurfaceEntry,
 } from '@/domains/reviews/ui/surfaces/review-editor-surface';
-import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/services/review-data';
+import { REVIEW_SORT_MODE, parseReviewSortMode } from '@/domains/reviews/shared/review-data';
 import { getNavActionClass } from '@/ui/primitives/navigation-action-styles';
 import { TMDB_IMG } from '@/shared/constants';
 import { useRegistry } from '@/modules/registry';
@@ -91,7 +91,6 @@ function getPersonNavDescription(person, age) {
 }
 
 export default function Registry({
-  // Movie & TV props
   movie,
   onSetMoviePoster,
   onSetMovieBackground,
@@ -106,7 +105,6 @@ export default function Registry({
   mediaType = 'movie',
   reviewState,
 
-  // Person props
   person,
   activeView,
   setActiveView,
@@ -232,7 +230,6 @@ export default function Registry({
     return null;
   }
 
-  // Movie & TV logic
   const isMediaReviewsRoute = new RegExp(`^/${mediaType}/[^/]+/reviews$`).test(pathname || '');
   const reviewUserFilter = String(searchParams?.get('user') || '').trim();
   const hasReviewUserFilter = Boolean(reviewUserFilter);

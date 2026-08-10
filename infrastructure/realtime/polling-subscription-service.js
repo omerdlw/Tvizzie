@@ -173,10 +173,6 @@ function subscribeToSharedEntry(subscriptionKey, fetcher, callback, options = {}
     (!entry.hasPayload || options.refreshOnSubscribe === true);
 
   if (shouldFetch) {
-    
-    
-    
-    
     Promise.resolve().then(() => {
       void runSharedEntry(entry, {
         forceEmit: !hadPayloadOnSubscribe || !shouldEmitCachedPayloadOnSubscribe,

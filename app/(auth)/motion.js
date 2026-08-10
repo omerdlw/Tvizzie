@@ -1,8 +1,3 @@
-/**
- * @file domains/auth/ui/auth-animation.js
- * @description Shared animation definitions for sign-in and sign-up flows.
- */
-
 export const EASINGS = Object.freeze({
   LUXURY: [0.19, 1, 0.22, 1],
   CINEMATIC: [0.19, 1, 0.22, 1],
@@ -342,8 +337,6 @@ export const footerVariants = Object.freeze({
   },
 });
 
-// Sign-in has its own opening score. The form wrapper only settles spatially;
-// each visible part owns its opacity so the sequence remains legible.
 export const SIGN_IN_TIMELINE = Object.freeze({
   PAGE_DELAY: 0.04,
   LOGO_DELAY: 0.08,
@@ -483,8 +476,6 @@ export const SIGN_UP_TIMELINE = Object.freeze({
   FOOTER_DELAY: 1.56,
 });
 
-// Sign-up shares the same motion language as sign-in while keeping its own
-// timeline and step transition behavior.
 export const signUpPageVariants = signInPageVariants;
 export const signUpHeaderVariants = signInHeaderVariants;
 export const signUpLogoVariants = signInLogoVariants;

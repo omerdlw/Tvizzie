@@ -2,7 +2,13 @@
 
 import { cn } from '@/shared/utils';
 
-import { FilterPopover, OptionSection, ResetButton, UI, resolveOptionLabel } from './content-filter-controls';
+import {
+  FilterPopover,
+  OptionSection,
+  ResetButton,
+  UI,
+  resolveOptionLabel,
+} from './content-filter-controls';
 
 export function SearchMovieFilterBar({
   className = '',

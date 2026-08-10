@@ -7,7 +7,7 @@ import {
   getAccountProfileByUserId,
 } from './profile.server';
 import { getAccountResource } from './collections.server';
-import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
+import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/feeds.server';
 import {
   ACTIVITY_SELECT,
   ACTIVITY_SORT_MODES,

@@ -1,9 +1,8 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
+import { randomBytes } from 'crypto';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
+import { createSignedToken, verifySignedToken } from './tokens.server';
 
-// ============================================================
-// Secret Resolution Helper
-// ============================================================
+export { createSignedToken, verifySignedToken };
 
 export function resolveSecretWithFallback({
   primaryEnvName,
@@ -28,41 +27,6 @@ export function resolveSecretWithFallback({
 
   throw new Error(missingMessage);
 }
-
-// ============================================================
-// Generic Signed Token Generator & Verifier
-// ============================================================
-
-export function createSignedToken(payload, { secret }) {
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signature = createHmac('sha256', normalizeValue(secret)).update(encodedPayload).digest('base64url');
-  return `${encodedPayload}.${signature}`;
-}
-
-export function verifySignedToken(token, { secret, invalidMessage }) {
-  const normalizedToken = normalizeValue(token);
-  const [encodedPayload, signature] = normalizedToken.split('.');
-
-  if (!encodedPayload || !signature) throw new Error(invalidMessage);
-
-  const expectedSignature = createHmac('sha256', normalizeValue(secret)).update(encodedPayload).digest('base64url');
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(signature);
-
-  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
-    throw new Error(invalidMessage);
-  }
-
-  try {
-    return JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
-  } catch {
-    throw new Error(invalidMessage);
-  }
-}
-
-// ============================================================
-// Challenge Proof Token Operations
-// ============================================================
 
 export function createChallengeProofToken({
   challengeJti,
@@ -96,7 +60,12 @@ export function createChallengeProofToken({
 
 export function verifyChallengeProofToken(
   token,
-  { email, expiredMessage = 'Verification expired', invalidMessage = 'Verification invalid', secret } = {},
+  {
+    email,
+    expiredMessage = 'Verification expired',
+    invalidMessage = 'Verification invalid',
+    secret,
+  } = {},
 ) {
   const payload = verifySignedToken(token, { secret, invalidMessage });
   const expiresAtMs = Number(payload?.exp) * 1000;
@@ -123,10 +92,6 @@ export function verifyChallengeProofToken(
     expiresAt: new Date(expiresAtMs).toISOString(),
   };
 }
-
-// ============================================================
-// Password Reset & Sign-Up Proof Tokens
-// ============================================================
 
 function getPasswordResetSecret() {
   return resolveSecretWithFallback({

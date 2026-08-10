@@ -55,9 +55,7 @@ export function writeMovieImagesCache(id, value) {
 
   try {
     window.localStorage.setItem(createMovieImagesStorageKey(id), JSON.stringify(entry));
-  } catch {
-    
-  }
+  } catch {}
 }
 
 export async function withMovieImageInFlightRequest(id, requestFactory) {

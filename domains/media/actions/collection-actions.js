@@ -8,17 +8,16 @@ import { useAuth, useAuthSessionReady } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import {
-  ensureLegacyFavoritesBackfilled,
   subscribeToLikeStatus,
   toggleUserLike,
-} from '@/domains/media/server/likes';
+} from '@/domains/media/client/collections/likes';
 import {
   markUserWatched,
   removeUserWatchedItem,
   subscribeToWatchedStatus,
   subscribeToWatchlistStatus,
   toggleUserWatchlistItem,
-} from '@/domains/media/server/watched-watchlist';
+} from '@/domains/media/client/collections/watched-watchlist';
 import { cn } from '@/shared/utils';
 import { getMediaDetailPath, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
@@ -54,7 +53,7 @@ function getMediaSnapshot(media) {
         .filter((value) => Number.isFinite(Number(value)))
         .map((value) => Number(value));
   const watchProviders =
-    media?.watchProviders && typeof media.watchProviders === 'object' ? media.watchProviders : null;
+    media?.watchProviders || media?.['watch/providers'] || null;
   return {
     entityId: media?.id,
     entityType: resolveExplicitMediaType(media, 'movie'),
@@ -75,6 +74,23 @@ function getMediaSnapshot(media) {
     vote_average: media?.vote_average ?? null,
     vote_count: Number.isFinite(Number(media?.vote_count)) ? Number(media.vote_count) : null,
     watchProviders,
+  };
+}
+
+function createCollectionActionState(isLoading = true) {
+  return {
+    liked: false,
+    watched: false,
+    watchlist: false,
+    loadingLike: isLoading,
+    loadingWatched: isLoading,
+    loadingWatchlist: isLoading,
+    submittingLike: false,
+    submittingWatched: false,
+    submittingWatchlist: false,
+    likeIntent: null,
+    watchedIntent: null,
+    watchlistIntent: null,
   };
 }
 
@@ -107,7 +123,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'group center h-11 sm:h-12 w-full gap-1.5 sm:gap-2 rounded-[20px] px-2.5 sm:px-4 py-2.5 text-[11px] xs:text-xs font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed',
+        'group center xs:text-xs h-11 w-full gap-1.5 rounded-[20px] px-2.5 py-2.5 text-[11px] font-bold tracking-wide uppercase transition-colors duration-200 ease-in-out disabled:cursor-not-allowed sm:h-12 sm:gap-2 sm:px-4',
         getActionPalette(palette, active),
       )}
     >
@@ -143,55 +159,56 @@ export default function CollectionActions({ media }) {
     () => getCurrentPathWithSearch(pathname, searchParams),
     [pathname, searchParams],
   );
-  const mediaSnapshot = useMemo(() => getMediaSnapshot(media), [media]);
+  const mediaSnapshot = useMemo(
+    () => getMediaSnapshot(media),
+    [
+      media?.['watch/providers'],
+      media?.backdrop_path,
+      media?.backdropPath,
+      media?.entityId,
+      media?.entityType,
+      media?.first_air_date,
+      media?.genre_ids,
+      media?.genres,
+      media?.id,
+      media?.media_type,
+      media?.name,
+      media?.original_name,
+      media?.original_title,
+      media?.popularity,
+      media?.poster_path,
+      media?.posterPath,
+      media?.release_date,
+      media?.runtime,
+      media?.title,
+      media?.vote_average,
+      media?.vote_count,
+      media?.watchProviders,
+    ],
+  );
   const isMediaReviewsRoute = Boolean(
     pathname?.endsWith('/reviews') && mediaSnapshot?.entityId && mediaSnapshot?.entityType,
   );
-  const [state, setState] = useState({
-    liked: false,
-    watched: false,
-    watchlist: false,
-    loadingLike: true,
-    loadingWatched: true,
-    loadingWatchlist: true,
-    submittingLike: false,
-    submittingWatched: false,
-    submittingWatchlist: false,
-    likeIntent: null,
-    watchedIntent: null,
-    watchlistIntent: null,
-  });
+  const [state, setState] = useState(createCollectionActionState);
 
   useEffect(() => {
     if (!mediaSnapshot.entityId) {
-      setState((prev) => ({
-        ...prev,
-        loadingLike: false,
-        loadingWatched: false,
-        loadingWatchlist: false,
-      }));
+      setState(createCollectionActionState(false));
       return undefined;
     }
     if (!auth.isReady) {
       return undefined;
     }
     if (!auth.isAuthenticated) {
-      setState((prev) => ({
-        ...prev,
-        liked: false,
-        watched: false,
-        watchlist: false,
-        loadingLike: false,
-        loadingWatched: false,
-        loadingWatchlist: false,
-      }));
+      setState(createCollectionActionState(false));
       return undefined;
     }
     if (!isSessionReady || !userId) {
+      setState(createCollectionActionState());
       return undefined;
     }
     let isMounted = true;
-    ensureLegacyFavoritesBackfilled(userId).catch(() => {});
+    setState(createCollectionActionState());
 
     const unsubscribeLike = subscribeToLikeStatus(
       { media: mediaSnapshot, userId },
@@ -258,8 +275,7 @@ export default function CollectionActions({ media }) {
         media: mediaSnapshot,
         userId: auth.user.id,
       });
-    } catch (error) {
-      console.error('[CollectionActions handleLikeClick error]:', error);
+    } catch {
       toast.error('Action Failed', 'Could not update your like status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingLike: false, likeIntent: null }));
@@ -294,8 +310,7 @@ export default function CollectionActions({ media }) {
           userId: auth.user.id,
         });
       }
-    } catch (error) {
-      console.error('[CollectionActions handleWatchedClick error]:', error);
+    } catch {
       toast.error('Action Failed', 'Could not update watched status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatched: false, watchedIntent: null }));
@@ -323,8 +338,7 @@ export default function CollectionActions({ media }) {
         media: mediaSnapshot,
         userId: auth.user.id,
       });
-    } catch (error) {
-      console.error('[CollectionActions handleWatchlistClick error]:', error);
+    } catch {
       toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatchlist: false, watchlistIntent: null }));
@@ -401,12 +415,7 @@ export default function CollectionActions({ media }) {
         </ActionItem>
       ) : null}
 
-      <div
-        className={cn(
-          'grid gap-2',
-          showWatchlistAction ? 'grid-cols-2' : 'grid-cols-1',
-        )}
-      >
+      <div className={cn('grid gap-2', showWatchlistAction ? 'grid-cols-2' : 'grid-cols-1')}>
         <ActionItem index={2}>
           <ActionButton
             active={state.watched}
@@ -448,12 +457,7 @@ export default function CollectionActions({ media }) {
         ) : null}
       </div>
 
-      <div
-        className={cn(
-          'grid gap-2',
-          shouldShowAuthActions ? 'grid-cols-2' : 'grid-cols-1',
-        )}
-      >
+      <div className={cn('grid gap-2', shouldShowAuthActions ? 'grid-cols-2' : 'grid-cols-1')}>
         <ActionItem index={4}>
           <ActionButton
             icon="solar:list-broken"

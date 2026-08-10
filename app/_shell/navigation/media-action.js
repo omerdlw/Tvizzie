@@ -111,7 +111,7 @@ export default function MediaAction() {
       />
 
       <div
-        className="absolute top-0 bottom-0 left-0 bg-black/10 rounded-full transition-all duration-150 ease-out"
+        className="absolute top-0 bottom-0 left-0 rounded-full bg-black/10 transition-all duration-150 ease-out"
         style={{ width: `${Math.max(0, Math.min(progressRatio, 1)) * 100}%` }}
       />
     </motion.div>

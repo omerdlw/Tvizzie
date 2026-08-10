@@ -1,77 +1,19 @@
-export const dynamic = 'force-dynamic';
-
-import { notFound } from 'next/navigation';
-
-import { getMovieComputedData } from '@/domains/media/services/media-data';
-import { TMDB_IMG } from '@/shared/constants';
+import { createTitleDetailRoute } from '@/domains/media/server/title-route.server';
 import { getMovieBase, getMovieSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableMovie } from '@/infrastructure/tmdb/clients/sanitize';
 
 import Client from '@/app/(media)/movie/[id]/client';
 
-export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const response = await getMovieBase(id);
-  const movie = response?.data;
+const route = createTitleDetailRoute({
+  Client,
+  fallbackTitle: 'Movie Not Found',
+  getBase: getMovieBase,
+  getSecondary: getMovieSecondary,
+  isDisplayable: isDisplayableMovie,
+  mediaType: 'movie',
+  openGraphType: 'video.movie',
+});
 
-  if (!movie || !isDisplayableMovie(movie, 'detail')) {
-    return { title: 'Movie Not Found' };
-  }
-
-  const title = movie.release_date
-    ? `${movie.title} (${movie.release_date.split('-')[0]}) - Tvizzie`
-    : `${movie.title} - Tvizzie`;
-
-  let description = movie.overview || `Details for ${movie.title}`;
-  if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '');
-  }
-
-  const imageUrl = movie.backdrop_path ? `${TMDB_IMG}/w1280${movie.backdrop_path}` : undefined;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'video.movie',
-      images: imageUrl ? [{ url: imageUrl, width: 1280, height: 720 }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : [],
-    },
-  };
-}
-
-export default async function Page({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-
-  const response = await getMovieBase(id);
-  const movie = response?.data;
-
-  if (!movie || response.status === 404 || !isDisplayableMovie(movie, 'detail')) {
-    notFound();
-  }
-
-  const secondaryDataPromise = getMovieSecondary(id).then(
-    (secondaryResponse) => secondaryResponse?.data || {},
-  );
-  const computed = getMovieComputedData(movie);
-
-  return (
-    <Client
-      key={movie.id}
-      computed={computed}
-      movie={movie}
-      secondaryDataPromise={secondaryDataPromise}
-    />
-  );
-}
-
+export const { generateMetadata } = route;
 export const revalidate = 3600;
+export default route.Page;

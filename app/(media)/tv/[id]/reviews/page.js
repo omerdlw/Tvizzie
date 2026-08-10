@@ -1,66 +1,17 @@
-export const dynamic = 'force-dynamic';
-
-import { notFound } from 'next/navigation';
-
-import { getMovieComputedData } from '@/domains/media/services/media-data';
-import { TMDB_IMG } from '@/shared/constants';
+import { createTitleReviewsRoute } from '@/domains/media/server/title-route.server';
 import { getTvBase } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
 import Client from '@/app/(media)/tv/[id]/reviews/client';
 
-function getTvTitle(tv = {}) {
-  return tv?.name || tv?.original_name || 'Untitled';
-}
+const route = createTitleReviewsRoute({
+  Client,
+  fallbackTitle: 'TV Reviews Not Found',
+  getBase: getTvBase,
+  isDisplayable: isDisplayableTv,
+  mediaType: 'tv',
+});
 
-export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const response = await getTvBase(id);
-  const tv = response?.data;
-
-  if (!tv || !isDisplayableTv(tv, 'detail')) {
-    return { title: 'TV Reviews Not Found' };
-  }
-
-  const titleText = getTvTitle(tv);
-  const title = tv.first_air_date
-    ? `${titleText} (${tv.first_air_date.split('-')[0]}) Reviews - Tvizzie`
-    : `${titleText} Reviews - Tvizzie`;
-  const description = `Read all reviews for ${titleText}.`;
-  const imageUrl = tv.backdrop_path ? `${TMDB_IMG}/w1280${tv.backdrop_path}` : undefined;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      images: imageUrl ? [{ url: imageUrl, width: 1280, height: 720 }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : [],
-    },
-  };
-}
-
-export default async function Page({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const response = await getTvBase(id);
-  const tv = response?.data;
-
-  if (!tv || response.status === 404 || !isDisplayableTv(tv, 'detail')) {
-    notFound();
-  }
-
-  const computed = getMovieComputedData(tv);
-
-  return <Client computed={computed} mediaType="tv" movie={tv} />;
-}
-
+export const { generateMetadata } = route;
 export const revalidate = 3600;
+export default route.Page;

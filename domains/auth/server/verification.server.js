@@ -23,7 +23,7 @@ import {
   TRUSTED_DEVICE_MAX_AGE_SECONDS,
 } from '@/domains/auth/utils';
 import { AUTH_COOKIE_PATH, getCookieValue, isSecureCookieEnvironment } from './session.server';
-import { createAdminAuthFacade } from './session.server';
+import { createAdminAuthFacade } from './session/admin.server';
 import {
   createChallengeProofToken,
   createSignedToken,
@@ -33,10 +33,6 @@ import {
 } from './proof-tokens.server';
 
 export { PURPOSES };
-
-// ============================================================
-// Password Account Lookup Error Codes & Helpers
-// ============================================================
 
 export const PASSWORD_ACCOUNT_LOOKUP_CODES = Object.freeze({
   PASSWORD_RESET_UNAVAILABLE: 'password-reset-unavailable',
@@ -68,10 +64,6 @@ function createVerificationChallengeKey(email, purpose) {
     .update(`${normalizeEmailValue(email)}:${normalizeValue(purpose).toLowerCase()}`)
     .digest('hex');
 }
-
-// ============================================================
-// Email Delivery Service (Brevo API)
-// ============================================================
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
@@ -134,10 +126,6 @@ export async function sendVerificationEmail({ code, email, expiresAt, purpose })
     );
   }
 }
-
-// ============================================================
-// Email Verification Challenge Store & Rate Limit
-// ============================================================
 
 export async function getChallengeByKey(key) {
   const normalizedKey = normalizeValue(key);
@@ -350,8 +338,6 @@ export async function verifyCodeRequest({ code, email, purpose, userId }) {
   };
 }
 
-// A proof must be consumed atomically before it can authorize an account
-// mutation. This prevents a valid signed proof from being replayed.
 export async function claimVerificationProof({ challengeJti, challengeKey, email, purpose }) {
   const normalizedEmail = normalizeEmailValue(email);
   const normalizedPurpose = normalizeValue(purpose).toLowerCase();
@@ -412,10 +398,6 @@ export async function releaseVerificationProof(challengeKey) {
   if (result.error)
     throw new Error(result.error.message || 'Verification proof could not be released');
 }
-
-// ============================================================
-// Pending Login & Trusted Device Tokens
-// ============================================================
 
 function getLoginVerificationSecret() {
   return resolveSecretWithFallback({
@@ -599,10 +581,6 @@ export function clearPendingSignInCookie(response) {
     secure: isSecureCookieEnvironment(),
   });
 }
-
-// ============================================================
-// Password Account Resolution & Lookups
-// ============================================================
 
 export async function resolvePasswordAccountIdentifier(identifier) {
   const normalizedIdentifier = normalizeValue(identifier);

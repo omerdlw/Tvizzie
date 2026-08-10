@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Media Reviews - Unauthenticated Fallback View
- * Path: features/media-reviews/parts/review-auth-fallback.js
- */
-
 import { Button } from '@/ui/primitives';
 
 export default function ReviewAuthFallback({

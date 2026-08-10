@@ -11,11 +11,7 @@ import {
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
-import {
-  heroAvatarVariants,
-  heroBioVariants,
-  getHeroStatProps,
-} from '@/app/(account)/motion';
+import { heroAvatarVariants, heroBioVariants, getHeroStatProps } from '@/app/(account)/motion';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -30,7 +26,13 @@ function createHeroCollectionMetaItem(count, singular, plural = `${singular}s`, 
   };
 }
 
-function HeroInlineMetric({ item, className = '', labelClassName = '', valueClassName = '', index = 0 }) {
+function HeroInlineMetric({
+  item,
+  className = '',
+  labelClassName = '',
+  valueClassName = '',
+  index = 0,
+}) {
   const statProps = getHeroStatProps(index);
   const content = (
     <>
@@ -102,14 +104,14 @@ function HeroBioPreview({ description, onReadMore }) {
     <div className="flex w-full flex-col items-center gap-2 text-center">
       <p
         ref={textRef}
-        className="line-clamp-3 text-sm leading-relaxed text-pretty text-black/70 sm:text-base sm:leading-7 break-words"
+        className="line-clamp-3 text-sm leading-relaxed text-pretty break-words text-black/70 sm:text-base sm:leading-7"
       >
         {description}
       </p>
 
       {shouldShowReadMore ? (
         <button
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:text-black transition-colors"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-colors hover:text-black"
           type="button"
           onClick={onReadMore}
         >
@@ -174,7 +176,7 @@ export default function AccountHero({
   const heroAvatarFallbackSrc = getUserAvatarFallbackUrl(profile);
 
   return (
-    <section className="relative flex w-full flex-col items-center gap-5 text-center sm:gap-7 lg:gap-8 py-2 sm:py-4">
+    <section className="relative flex w-full flex-col items-center gap-5 py-2 text-center sm:gap-7 sm:py-4 lg:gap-8">
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <motion.div
@@ -194,7 +196,7 @@ export default function AccountHero({
           />
         </motion.div>
 
-        <h1 className="font-zuume max-w-full text-5xl leading-none font-bold [overflow-wrap:anywhere] uppercase sm:text-7xl lg:text-8xl text-left text-black">
+        <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl">
           {heroDisplayName}
         </h1>
       </div>
@@ -206,7 +208,7 @@ export default function AccountHero({
             key={`${item.label}-${item.value}-${index}`}
             item={item}
             index={index}
-            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 hover:text-black transition-colors"
+            className="inline-flex items-baseline gap-1.5 whitespace-nowrap text-black/80 transition-colors hover:text-black"
             valueClassName="font-semibold text-black leading-none tracking-tight"
             labelClassName="text-black/75 leading-none"
           />
@@ -215,7 +217,12 @@ export default function AccountHero({
 
       {/* Biography */}
       {profile?.description ? (
-        <motion.div initial={false} animate={heroBioVariants.animate} transition={heroBioVariants.transition} className="mx-auto max-w-[72ch] w-full px-4">
+        <motion.div
+          initial={false}
+          animate={heroBioVariants.animate}
+          transition={heroBioVariants.transition}
+          className="mx-auto w-full max-w-[72ch] px-4"
+        >
           <HeroBioPreview description={profile.description} onReadMore={onReadMore} />
         </motion.div>
       ) : null}

@@ -5,9 +5,14 @@ const NOTIFICATION_EASINGS = Object.freeze({
 });
 
 const NOTIFICATION_TIERS = Object.freeze({
-  MICRO:    { duration: 0.28, distance: 8,  scaleDelta: 0.01, ease: NOTIFICATION_EASINGS.EMPHASIZED },
-  FAST:     { duration: 0.46, distance: 60, scaleDelta: 0.05, ease: NOTIFICATION_EASINGS.EMPHASIZED },
-  STANDARD: { duration: 0.68, distance: 80, scaleDelta: 0.05, ease: NOTIFICATION_EASINGS.EMPHASIZED },
+  MICRO: { duration: 0.28, distance: 8, scaleDelta: 0.01, ease: NOTIFICATION_EASINGS.EMPHASIZED },
+  FAST: { duration: 0.46, distance: 60, scaleDelta: 0.05, ease: NOTIFICATION_EASINGS.EMPHASIZED },
+  STANDARD: {
+    duration: 0.68,
+    distance: 80,
+    scaleDelta: 0.05,
+    ease: NOTIFICATION_EASINGS.EMPHASIZED,
+  },
 });
 
 const NOTIFICATION_SPRINGS = Object.freeze({
@@ -23,7 +28,7 @@ export const NOTIFICATION_MICRO_TAP_SCALE = 0.95;
 
 function buildVariants(
   tierName,
-  { axis, includeScale = false, direction = 1, distanceScale = 1 } = {}
+  { axis, includeScale = false, direction = 1, distanceScale = 1 } = {},
 ) {
   const tier = NOTIFICATION_TIERS[tierName];
   const distance = tier.distance * distanceScale;

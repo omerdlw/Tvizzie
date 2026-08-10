@@ -56,7 +56,9 @@ export async function fetchCanonicalSessionPayload({ force = false } = {}) {
       CANONICAL_SESSION_STATE.expiresAt = Date.now() + CANONICAL_SESSION_CACHE_TTL_MS;
       return payload;
     } finally {
-      CANONICAL_SESSION_STATE.inFlightPromise = null;
+      if (CANONICAL_SESSION_STATE.inFlightPromise === requestPromise) {
+        CANONICAL_SESSION_STATE.inFlightPromise = null;
+      }
     }
   })();
 

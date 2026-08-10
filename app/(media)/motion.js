@@ -1,31 +1,12 @@
 'use client';
 
-/**
- * @file app/(media)/motion.js
- * @description
- * Motion direction for the complete media surface: movie, TV and person pages.
- *
- * This file is intentionally a choreography map, not a bag of generic fades.
- * The first-load timeline belongs to the media detail page; interaction and
- * scroll reveals are kept separate so deferred data can enter the scene without
- * restarting the opening sequence.
- */
-
-// ─── 1. MOTION LANGUAGE ──────────────────────────────────────────────────────
-
 export const EASINGS = Object.freeze({
-  // A long, quiet settle for hero and image-led movement.
   CINEMATIC: [0.16, 1, 0.3, 1],
-  // A slightly more deliberate curve for typography.
   TEXT: [0.22, 1, 0.36, 1],
-  // Used for controls and compact content where the movement must resolve cleanly.
   CONTROL: [0.33, 1, 0.68, 1],
-  // A restrained accent curve for cards and chips.
   ACCENT: [0.32, 0.72, 0, 1],
-  // Kept as a named exit language for route transitions.
   EXIT: [0.7, 0, 0.84, 0],
-  // Backwards-compatible alias used by the shared background registry.
-  LUXURY: [0.16, 1, 0.3, 1],
+  LUXURY: [0.19, 1, 0.22, 1],
   SMOOTH: [0.25, 0.1, 0.25, 1],
 });
 
@@ -63,8 +44,12 @@ export const SCALES = Object.freeze({
   DEEP: 0.9,
 });
 
-// This is the order of the visual story. It is shared by Movie and TV; TV only
-// inserts its seasons chapter between cast and visual media.
+export const SPRINGS = Object.freeze({
+  RESPONSIVE: { type: 'spring', stiffness: 380, damping: 28, mass: 0.9 },
+  TAP: { type: 'spring', stiffness: 480, damping: 30, mass: 0.8 },
+  SOFT: { type: 'spring', stiffness: 260, damping: 32, mass: 1 },
+});
+
 const SIDEBAR_SETTLE_END = 3.35;
 const GALLERY_HANDOFF_GAP = 0.1;
 
@@ -87,7 +72,6 @@ export const TIMELINES = Object.freeze({
   CAST_SECTION_BASE_DELAY: 2.05,
   CAST_CARD_STEP: 0.1,
   TV_SEASONS_SECTION_BASE_DELAY: 2.75,
-  // Gallery begins in the handoff immediately after the sidebar settles.
   SIDEBAR_SETTLE_END,
   GALLERY_SECTION_BASE_DELAY: SIDEBAR_SETTLE_END + GALLERY_HANDOFF_GAP,
   IMAGES_SECTION_BASE_DELAY: 4.08,
@@ -105,7 +89,6 @@ export const PERSON_TIMELINES = Object.freeze({
   GALLERY_BASE_DELAY: 1.9,
   FILMOGRAPHY_BASE_DELAY: 2.5,
   TIMELINE_BASE_DELAY: 1.75,
-  AWARDS_BASE_DELAY: 1.75,
 });
 
 export const MEDIA_DETAIL_TIMELINE = Object.freeze({
@@ -137,9 +120,6 @@ export const MEDIA_DETAIL_TIMELINE = Object.freeze({
   }),
 });
 
-// Deferred chapters are anchored to the opening scene instead of the moment
-// their Suspense boundary resolves. This prevents a fast secondary response
-// from overtaking the title, overview or cast chapter.
 const DEFERRED_CHAPTER_TARGETS = Object.freeze({
   cast: MEDIA_DETAIL_TIMELINE.chapters.cast,
   seasons: MEDIA_DETAIL_TIMELINE.chapters.seasons,
@@ -167,8 +147,30 @@ export function getDeferredChapterDelay(chapterKey = 'generic', choreographyStar
   return Math.max(0.12, target - elapsed);
 }
 
-// These props keep text choreography in this file even though BlurryText owns
-// the per-character implementation.
+export function prefersReducedMotion() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function toOpacityOnly(state) {
+  if (!state || typeof state !== 'object') return state;
+  return { opacity: state.opacity ?? 1 };
+}
+
+export function getMotionSafeProps(props) {
+  if (!props || !prefersReducedMotion()) return props;
+  return {
+    ...props,
+    initial: toOpacityOnly(props.initial ?? { opacity: 0 }),
+    animate: toOpacityOnly(props.animate ?? { opacity: 1 }),
+    whileInView: props.whileInView ? toOpacityOnly(props.whileInView) : undefined,
+    exit: props.exit ? toOpacityOnly(props.exit) : undefined,
+    transition: { duration: 0.2, ease: 'linear', delay: 0 },
+    whileHover: undefined,
+    whileTap: undefined,
+  };
+}
+
 export const MEDIA_DETAIL_TEXT = Object.freeze({
   TITLE: Object.freeze({
     by: 'character',
@@ -211,8 +213,6 @@ export const SCROLL_VIEWPORT_CONFIG = Object.freeze({
   margin: '0px 0px 120px 0px',
 });
 
-// ─── 2. OPENING SCENE ────────────────────────────────────────────────────────
-
 export const MEDIA_BACKGROUND_ANIMATION = Object.freeze({
   initial: { opacity: 0, scale: 1.08, filter: BLURS.CINEMATIC },
   animate: { opacity: 1, scale: 1, filter: BLURS.NONE },
@@ -226,9 +226,6 @@ export const MEDIA_BACKGROUND_ANIMATION = Object.freeze({
 });
 
 export const sidebarColumnVariants = Object.freeze({
-  // Keep the column visible so its poster, actions and metadata can reveal
-  // independently. A parent opacity would hide those child timelines and
-  // make the whole sidebar appear in one completed block.
   initial: { y: 18, scale: 0.985 },
   animate: { y: 0, scale: 1 },
   transition: {
@@ -239,8 +236,6 @@ export const sidebarColumnVariants = Object.freeze({
 });
 
 export const mainContentColumnVariants = Object.freeze({
-  // Child choreography owns opacity. This wrapper only gives the content a
-  // quiet spatial settle without masking title, cast and chapter reveals.
   initial: { y: 12, scale: 0.99 },
   animate: { y: 0, scale: 1 },
   transition: {
@@ -310,15 +305,13 @@ export const heroOverviewVariants = Object.freeze({
   },
 });
 
-// ─── 3. SIDEBAR AND ACTIONS ──────────────────────────────────────────────────
-
 const SHARED_INTERACTION_PROPS = Object.freeze({
   whileHover: {
     y: -2,
     scale: 1.012,
-    transition: { duration: 0.28, ease: EASINGS.CONTROL },
+    transition: SPRINGS.RESPONSIVE,
   },
-  whileTap: { scale: 0.98, transition: { duration: 0.16, ease: EASINGS.CONTROL } },
+  whileTap: { scale: 0.98, transition: SPRINGS.TAP },
 });
 
 function getSharedInteractionProps() {
@@ -348,8 +341,8 @@ export function getCarouselButtonProps(baseDelay = 0.18) {
       delay: baseDelay + 0.12,
       ease: EASINGS.CONTROL,
     },
-    whileHover: { scale: 1.08, transition: { duration: 0.22, ease: EASINGS.CONTROL } },
-    whileTap: { scale: 0.92, transition: { duration: 0.16, ease: EASINGS.CONTROL } },
+    whileHover: { scale: 1.08, transition: SPRINGS.RESPONSIVE },
+    whileTap: { scale: 0.92, transition: SPRINGS.TAP },
   };
 }
 
@@ -374,7 +367,7 @@ export function getTaxonomyChipProps(currentIndex = 0, baseDelay = TIMELINES.TAX
       delay: baseDelay + (currentIndex + 1) * TIMELINES.TAXONOMY_STEP,
       ease: EASINGS.ACCENT,
     },
-    whileHover: { y: -1, scale: 1.035, transition: { duration: 0.2 } },
+    whileHover: { y: -1, scale: 1.035, transition: SPRINGS.SOFT },
   };
 }
 
@@ -389,8 +382,6 @@ export function getSidebarRowProps(index = 0, baseDelay = TIMELINES.SIDEBAR_ROWS
     },
   };
 }
-
-// ─── 4. CHAPTER-BASED SCROLL REVEALS ─────────────────────────────────────────
 
 const SECTION_HEADER_PRESETS = Object.freeze({
   cast: Object.freeze({
@@ -494,9 +485,9 @@ export function getMediaCardProps(
           whileHover: {
             y: sectionKey === 'videos' ? -3 : -2,
             scale: sectionKey === 'cast' ? 1.012 : 1.025,
-            transition: { duration: 0.28, ease: EASINGS.CONTROL },
+            transition: SPRINGS.RESPONSIVE,
           },
-          whileTap: { scale: 0.98, transition: { duration: 0.16 } },
+          whileTap: { scale: 0.98, transition: SPRINGS.TAP },
         }
       : {}),
   };
@@ -556,8 +547,6 @@ export function getScrollSectionProps(sectionKey = 'related', baseDelay = 0) {
 export const scrollSectionVariants = Object.freeze(getScrollSectionProps('related'));
 export const scrollReviewsSectionVariants = Object.freeze(getScrollSectionProps('reviews'));
 
-// ─── 5. PERSON CHAPTERS ──────────────────────────────────────────────────────
-
 export const personTitleVariants = Object.freeze({
   initial: { opacity: 0, y: 18, filter: BLURS.CINEMATIC },
   animate: { opacity: 1, y: 0, filter: BLURS.NONE },
@@ -582,4 +571,13 @@ export const deferredContentFallbackVariants = Object.freeze({
   initial: { opacity: 0, y: 12, filter: BLURS.LIGHT },
   animate: { opacity: 1, y: 0, filter: BLURS.NONE },
   transition: { duration: DURATIONS.DEFERRED_SECTION, ease: EASINGS.CINEMATIC },
+});
+
+export const pageExitVariants = Object.freeze({
+  exit: {
+    opacity: 0,
+    scale: 0.985,
+    filter: BLURS.LIGHT,
+    transition: { duration: 0.42, ease: EASINGS.EXIT },
+  },
 });

@@ -1,9 +1,13 @@
 'use client';
 
-import { REVIEW_SORT_MODE } from '@/domains/reviews/services/review-data';
+import { REVIEW_SORT_MODE } from '@/domains/reviews/shared/review-data';
 import { cn } from '@/shared/utils';
 
-import { RATING_MODE_OPTIONS, REVIEW_SORT_OPTIONS, REVIEW_VISIBILITY_OPTIONS } from './content-filter-options';
+import {
+  RATING_MODE_OPTIONS,
+  REVIEW_SORT_OPTIONS,
+  REVIEW_VISIBILITY_OPTIONS,
+} from './content-filter-options';
 import {
   DefaultMenuItem,
   FilterPopover,

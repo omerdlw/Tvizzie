@@ -13,9 +13,9 @@ import {
   fetchAccountResource,
   fetchAccountReviewFeed,
 } from '@/domains/account/client/account-api.client';
-import { updateFavoriteShowcase } from '@/domains/media/server/likes';
-import { toggleStoredReviewLike } from '@/domains/reviews/server';
-import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
+import { updateFavoriteShowcase } from '@/domains/media/client/collections/likes';
+import { toggleStoredReviewLike } from '@/domains/reviews/client';
+import { subscribeToUserWatched } from '@/domains/media/client/collections/watched-watchlist';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 import AccountLikesFeed from '@/domains/account/ui/sections/collections/likes-collection';
 import AccountAction from '@/domains/account/ui/components/account-action-bar';

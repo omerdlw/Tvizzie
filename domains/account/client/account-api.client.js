@@ -1,6 +1,7 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
+import { ensureAuthCsrfToken } from '@/core/modules/auth/http.client';
 
 function toCollectionQuery({
   entityId = null,
@@ -37,8 +38,14 @@ export function searchAccountProfiles({ limitCount, searchTerm }) {
   });
 }
 
-export function saveAccountProfile(body) {
-  return requestApiJson('/api/account/profile', { body, method: 'POST' });
+export async function saveAccountProfile(body) {
+  const csrfToken = await ensureAuthCsrfToken();
+
+  return requestApiJson('/api/account/profile', {
+    body,
+    headers: { 'X-CSRF-Token': csrfToken },
+    method: 'POST',
+  });
 }
 
 export function fetchAccountResource(params) {

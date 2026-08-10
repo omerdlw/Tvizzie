@@ -41,7 +41,7 @@ function normalizeUser(rawUser = {}, fallbackUser = {}) {
   const capabilities = uniqueStrings([...toArray(source.capabilities), ...permissions]);
 
   return {
-    avatarUrl: source.avatarUrl || source.avatar || source.image || source.picture || null,
+    avatarUrl: source.avatarUrl || source.avatar || null,
     capabilities,
     permissions,
     metadata: isPlainObject(source.metadata) ? source.metadata : {},

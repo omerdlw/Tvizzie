@@ -1,10 +1,9 @@
 import { ACCOUNT_CLIENT } from '@/domains/account/client';
 
-import { SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils';
+import { normalizeString, SEARCH_LIMITS, SEARCH_TYPES } from '@/domains/search/utils';
 import { createSearchCacheKey, withClientSearchCache } from './search-cache';
-import { rankAllMediaResults, resolvePreferredMediaType } from '../services/search-ranking';
-import { normalizeResult } from '../services/search-result';
-import { normalizeString } from '@/domains/search/utils';
+import { rankAllMediaResults, resolvePreferredMediaType } from '../shared/ranking';
+import { normalizeResult } from '../shared/result';
 
 function emptyMediaPage(page = 1) {
   return {
@@ -125,11 +124,17 @@ export function inferSearchType({ normalizedQuery, userResults = [], mediaResult
 }
 
 export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS) {
-  const cacheKey = createSearchCacheKey('users', [query, limitCount]);
+  const normalizedQuery = normalizeString(query);
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const cacheKey = createSearchCacheKey('users', [normalizedQuery, limitCount]);
 
   return withClientSearchCache(cacheKey, async () => {
     try {
-      const users = await ACCOUNT_CLIENT.searchAccounts(query, {
+      const users = await ACCOUNT_CLIENT.searchAccounts(normalizedQuery, {
         limitCount,
         retryCount: 0,
         timeoutMs: 5000,
@@ -143,17 +148,19 @@ export async function fetchUsers(query, limitCount = SEARCH_LIMITS.USER_RESULTS)
 }
 
 export async function fetchMediaPage(query, type, page = 1, options = {}) {
-  if (!isSearchableMediaType(type)) {
+  const normalizedQuery = normalizeString(query);
+
+  if (!normalizedQuery || !isSearchableMediaType(type)) {
     return emptyMediaPage();
   }
 
   const scope = options.scope === 'full' ? 'full' : 'preview';
-  const cacheKey = createSearchCacheKey('media-page', [query, type, page, scope]);
+  const cacheKey = createSearchCacheKey('media-page', [normalizedQuery, type, page, scope]);
 
   return withClientSearchCache(cacheKey, async () => {
     try {
       const { TmdbService } = await import('@/infrastructure/tmdb/services/tmdb-service');
-      const response = await TmdbService.searchContent(query, type, page, { scope });
+      const response = await TmdbService.searchContent(normalizedQuery, type, page, { scope });
 
       if (response.status !== 200 || !response.data?.results) {
         return emptyMediaPage();

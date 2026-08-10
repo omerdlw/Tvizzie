@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { normalizeEmailValue, normalizeLowerValue, normalizeValue } from '@/shared/utils';
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -23,10 +23,7 @@ import {
   SUPABASE_URL,
 } from '@/infrastructure/supabase/supabase-constants';
 import { RATE_LIMIT_FALLBACK_MODE } from '@/infrastructure/http/http-server';
-
-// ============================================================
-// CSRF Protection Helpers
-// ============================================================
+import { createSignedToken, verifySignedToken } from './tokens.server';
 
 function toBuffer(value) {
   return Buffer.from(normalizeValue(value));
@@ -71,10 +68,6 @@ export function assertCsrfRequestForCookieSession(request) {
   if (authorization.toLowerCase().startsWith('bearer ')) return;
   assertCsrfRequest(request);
 }
-
-// ============================================================
-// Password Security & Pending Sign In Verification
-// ============================================================
 
 function getPasswordSecurityClient() {
   assertSupabaseBrowserEnv();
@@ -172,10 +165,6 @@ export async function createPendingPasswordSignIn({ email, password }) {
   };
 }
 
-// ============================================================
-// Recent Reauthentication Tokens
-// ============================================================
-
 export const RECENT_REAUTH_COOKIE_NAME = 'tvz_recent_reauth';
 export const RECENT_REAUTH_MAX_AGE_MS = 5 * 60 * 1000;
 const RECENT_REAUTH_MAX_AGE_SECONDS = RECENT_REAUTH_MAX_AGE_MS / 1000;
@@ -187,7 +176,9 @@ function getReauthSecret() {
     normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
 
   if (!secret) {
-    throw new Error('RECENT_REAUTH_SECRET is missing on the server and no fallback secret is available');
+    throw new Error(
+      'RECENT_REAUTH_SECRET is missing on the server and no fallback secret is available',
+    );
   }
 
   return secret;
@@ -209,31 +200,14 @@ export function createRecentReauthToken({
     userId: normalizedUserId,
   };
 
-  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signature = createHmac('sha256', getReauthSecret()).update(encoded).digest('base64url');
-  return `${encoded}.${signature}`;
+  return createSignedToken(payload, { secret: getReauthSecret() });
 }
 
 export function verifyRecentReauthToken(token) {
-  const normalizedToken = normalizeValue(token);
-  const [encodedPayload, signature] = normalizedToken.split('.');
-
-  if (!encodedPayload || !signature) throw new Error('Recent authentication is required');
-
-  const expectedSignature = createHmac('sha256', getReauthSecret()).update(encodedPayload).digest('base64url');
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(signature);
-
-  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
-    throw new Error('Recent authentication is required');
-  }
-
-  let payload = null;
-  try {
-    payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
-  } catch {
-    throw new Error('Recent authentication is required');
-  }
+  const payload = verifySignedToken(token, {
+    invalidMessage: 'Recent authentication is required',
+    secret: getReauthSecret(),
+  });
 
   const expiresAtMs = Number(payload?.exp) * 1000;
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
@@ -261,9 +235,12 @@ export function assertRecentReauth(request, { email = null, sessionJti = null, u
   const expectedEmail = normalizeEmailValue(email);
 
   if (!reauth) throw new Error('Recent authentication is required');
-  if (!expectedUserId || reauth.userId !== expectedUserId) throw new Error('Recent authentication is required');
-  if (expectedSessionJti && reauth.sessionJti !== expectedSessionJti) throw new Error('Recent authentication is required');
-  if (expectedEmail && reauth.email && reauth.email !== expectedEmail) throw new Error('Recent authentication is required');
+  if (!expectedUserId || reauth.userId !== expectedUserId)
+    throw new Error('Recent authentication is required');
+  if (expectedSessionJti && reauth.sessionJti !== expectedSessionJti)
+    throw new Error('Recent authentication is required');
+  if (expectedEmail && reauth.email && reauth.email !== expectedEmail)
+    throw new Error('Recent authentication is required');
 
   return reauth;
 }
@@ -288,13 +265,12 @@ export function clearRecentReauthCookie(response) {
   });
 }
 
-// ============================================================
-// Step-Up Verification Tokens
-// ============================================================
-
 function getStepUpSecret() {
-  const secret = normalizeValue(process.env.STEP_UP_SECRET) || normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
-  if (!secret) throw new Error('STEP_UP_SECRET is missing on the server and no fallback secret is available');
+  const secret =
+    normalizeValue(process.env.STEP_UP_SECRET) ||
+    normalizeValue(process.env.EMAIL_VERIFICATION_SECRET);
+  if (!secret)
+    throw new Error('STEP_UP_SECRET is missing on the server and no fallback secret is available');
   return secret;
 }
 
@@ -320,31 +296,14 @@ export function createStepUpToken({
     userId: normalizedUserId,
   };
 
-  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signature = createHmac('sha256', getStepUpSecret()).update(encoded).digest('base64url');
-  return `${encoded}.${signature}`;
+  return createSignedToken(payload, { secret: getStepUpSecret() });
 }
 
 export function verifyStepUpToken(token) {
-  const normalizedToken = normalizeValue(token);
-  const [encodedPayload, signature] = normalizedToken.split('.');
-
-  if (!encodedPayload || !signature) throw new Error('Invalid step-up token');
-
-  const expectedSignature = createHmac('sha256', getStepUpSecret()).update(encodedPayload).digest('base64url');
-  const expectedBuffer = Buffer.from(expectedSignature);
-  const receivedBuffer = Buffer.from(signature);
-
-  if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
-    throw new Error('Invalid step-up token');
-  }
-
-  let payload = null;
-  try {
-    payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
-  } catch {
-    throw new Error('Invalid step-up token');
-  }
+  const payload = verifySignedToken(token, {
+    invalidMessage: 'Invalid step-up token',
+    secret: getStepUpSecret(),
+  });
 
   const expiresAtMs = Number(payload?.exp) * 1000;
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
@@ -386,7 +345,8 @@ export function assertStepUp(request, { purpose, userId, email = null }) {
     .filter(Boolean);
 
   if (!purposeList.includes(expectedPurpose)) throw new Error('Step-up verification is invalid');
-  if (expectedEmail && stepUp.email !== expectedEmail) throw new Error('Step-up verification is invalid');
+  if (expectedEmail && stepUp.email !== expectedEmail)
+    throw new Error('Step-up verification is invalid');
 
   return stepUp;
 }
@@ -410,10 +370,6 @@ export function clearStepUpCookie(response) {
     secure: isSecureCookieEnvironment(),
   });
 }
-
-// ============================================================
-// Rate Limit Engine & Policies
-// ============================================================
 
 class SlidingWindowRateLimitError extends Error {
   constructor({ message, retryAfterMs, dimension, key }) {
@@ -497,7 +453,6 @@ export async function enforceSlidingWindowRateLimit({
     }
   }
 
-  // Memory fallback
   const now = Date.now();
   const bucket = Math.floor(now / normalizedWindowMs);
   const store = getMemoryStore();
@@ -509,7 +464,12 @@ export async function enforceSlidingWindowRateLimit({
 
     if (current > dimension.limit) {
       const retryAfterMs = normalizedWindowMs - (now - bucket * normalizedWindowMs);
-      throw new SlidingWindowRateLimitError({ message, retryAfterMs, dimension: dimension.id, key });
+      throw new SlidingWindowRateLimitError({
+        message,
+        retryAfterMs,
+        dimension: dimension.id,
+        key,
+      });
     }
   }
 }
@@ -645,7 +605,10 @@ export async function enforceAuthRateLimit(policyKey, { dimensionValues = {} } =
   } catch (error) {
     if (!isSlidingWindowRateLimitError(error)) throw error;
     const dim = normalizeLowerValue(error.dimension);
-    const msg = (dim && policy.dimensionMessages?.[dim]) || policy.dimensionMessages?.default || policy.message;
+    const msg =
+      (dim && policy.dimensionMessages?.[dim]) ||
+      policy.dimensionMessages?.default ||
+      policy.message;
     throw new Error(msg);
   }
 }

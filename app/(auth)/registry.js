@@ -2,13 +2,7 @@
 
 import { AuthRouteRegistry } from '@/domains/auth/ui';
 
-export default function AuthRegistry({
-  action = null,
-  authIsReady,
-  description,
-  icon,
-  title,
-}) {
+export default function AuthRegistry({ action = null, authIsReady, description, icon, title }) {
   return (
     <AuthRouteRegistry
       action={action}
@@ -19,4 +13,3 @@ export default function AuthRegistry({
     />
   );
 }
-

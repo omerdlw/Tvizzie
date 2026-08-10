@@ -1,15 +1,9 @@
 'use client';
 
-/**
- * Media Reviews - Main Container Feature Component
- * Path: features/media-reviews/media-reviews.js
- */
-
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TMDB_IMG } from '@/shared/constants';
 import { AuthGate } from '@/modules/auth';
-import { useModal } from '@/modules/modal';
 import { useNavigationActions } from '@/modules/nav';
 import { createConfirmationSurfaceEntry } from '@/ui/feedback/confirmation-surface';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
@@ -24,7 +18,7 @@ import {
   REVIEW_SORT_MODE,
   REVIEW_SORT_OPTIONS,
   sortReviewsByMode,
-} from '../../services/review-data';
+} from '../../shared/review-data';
 
 export default function MediaReviews({
   entityId,
@@ -36,7 +30,6 @@ export default function MediaReviews({
   listMode = 'all',
   allReviewsHref,
   sectionClassName = 'mt-12 md:mt-16',
-  showBackdropGradient = true,
   enableSortControl = false,
   defaultSortMode = REVIEW_SORT_MODE.NEWEST,
   useQuerySortMode = false,
@@ -45,9 +38,6 @@ export default function MediaReviews({
   showComposer = false,
   onReviewStateChange,
 }) {
-  // ------------------------------------------
-  // 1. STATE & ROUTING PARAMS
-  // ------------------------------------------
   const [sortMode, setSortMode] = useState(defaultSortMode);
   const searchParams = useSearchParams();
 
@@ -58,9 +48,6 @@ export default function MediaReviews({
   const isSortControlEnabled = enableSortControl && !isRecentListMode;
   const activeSortMode = useQuerySortMode ? querySortMode : sortMode;
 
-  // ------------------------------------------
-  // 2. FEATURE HOOK & SERVICES
-  // ------------------------------------------
   const {
     currentUserId,
     handleDelete,
@@ -68,7 +55,6 @@ export default function MediaReviews({
     handleSignInRequest,
     isLoading,
     loadError,
-    navHeight,
     ownReview,
     applyOptimisticReviewUpdate,
     ratingStats,
@@ -86,9 +72,6 @@ export default function MediaReviews({
 
   const { openSurface } = useNavigationActions();
 
-  // ------------------------------------------
-  // 3. HANDLERS & MODAL TRIGGERS
-  // ------------------------------------------
   const buildReviewUser = useCallback(
     (review = null) => {
       if (!currentUserId) return null;
@@ -112,9 +95,7 @@ export default function MediaReviews({
       openSurface(
         createReviewEditorSurfaceEntry({
           media: { entityId, entityType, posterPath, title },
-          onSuccess: targetReview
-            ? (updated) => applyOptimisticReviewUpdate(targetReview, updated)
-            : (newRev) => applyOptimisticReviewUpdate(null, newRev),
+          onSuccess: applyOptimisticReviewUpdate,
           review: targetReview,
           user: buildReviewUser(targetReview),
         }),
@@ -162,9 +143,6 @@ export default function MediaReviews({
     openSurface(createConfirmationSurfaceEntry(confirmation));
   }, [handleDelete, openSurface, posterPath]);
 
-  // ------------------------------------------
-  // 4. MEMOIZED DATA FILTERS & SORTS
-  // ------------------------------------------
   const filteredReviews = useMemo(() => {
     if (!useQueryUserFilter || !queryReviewUser) return reviews;
     const normalizedUser = queryReviewUser.toLowerCase();
@@ -190,13 +168,10 @@ export default function MediaReviews({
     return sortReviewsByMode(filteredReviews, REVIEW_SORT_MODE.NEWEST);
   }, [filteredReviews, queryReviewUser, sortedReviews, useQueryUserFilter]);
 
-  const recentReviews = useMemo(() => {
-    return [...filteredReviews].sort((a, b) => {
-      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-      return timeB - timeA;
-    });
-  }, [filteredReviews]);
+  const recentReviews = useMemo(
+    () => sortReviewsByMode(filteredReviews, REVIEW_SORT_MODE.NEWEST),
+    [filteredReviews],
+  );
 
   const sortedByModeReviews = useMemo(
     () => sortReviewsByMode(filteredReviews, activeSortMode),
@@ -217,11 +192,6 @@ export default function MediaReviews({
   const shouldHideRecentList =
     hideWhenEmpty && isRecentListMode && !isLoading && !loadError && displayedReviews.length === 0;
 
-  const backdropExtension = Math.max(0, Math.round(navHeight || 0));
-
-  // ------------------------------------------
-  // 5. RENDER UI
-  // ------------------------------------------
   return (
     <section
       data-community-reviews="true"

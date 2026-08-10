@@ -52,7 +52,7 @@ export default function GlobalContextMenuRegistry() {
   const { openModal } = useModal();
   const toast = useToast();
   const { register, unregister } = useRegistryActions();
-  
+
   const globalContextMenuConfig = useMemo(
     () => ({
       key: 'global-page-context-menu',

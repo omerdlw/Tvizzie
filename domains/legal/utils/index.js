@@ -22,7 +22,9 @@ export function normalizeAnchorId(text = '') {
 }
 
 export function getLegalDocumentMeta(documentKey = '') {
-  const normalizedKey = String(documentKey || '').toLowerCase().trim();
+  const normalizedKey = String(documentKey || '')
+    .toLowerCase()
+    .trim();
 
   const META = {
     privacy: {

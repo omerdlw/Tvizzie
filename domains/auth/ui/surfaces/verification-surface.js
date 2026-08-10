@@ -91,7 +91,7 @@ function OtpBoxes({
               whileHover={{ scale: 1.04 }}
               transition={{ type: 'spring', stiffness: 450, damping: 25 }}
               className={cn(
-                'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70 hover:text-black transition-colors duration-200',
+                'center h-14 rounded-2xl border border-black/5 text-lg font-semibold text-black/70 transition-colors duration-200 hover:text-black',
                 hasError &&
                   digit &&
                   'border-error/30 bg-error/15 text-error hover:border-error/20 hover:bg-error/20 border',
@@ -147,8 +147,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
   const initialChallengeToken = String(
     initialChallenge?.challengeToken || initialChallenge?.challengeKey || '',
   ).trim();
-  const forceNewCodeOnOpen =
-    purpose !== PURPOSES.SIGN_IN && data?.forceNewCodeOnOpen === true;
+  const forceNewCodeOnOpen = purpose !== PURPOSES.SIGN_IN && data?.forceNewCodeOnOpen === true;
   const hasValidVerificationTarget =
     purpose === PURPOSES.ACCOUNT_DELETE ||
     purpose === PURPOSES.PASSWORD_CHANGE ||
@@ -221,7 +220,9 @@ export default function AuthVerificationSurface({ close, data, header }) {
         });
 
         setCode('');
-        setChallengeToken(String(challenge?.challengeToken || challenge?.challengeKey || '').trim());
+        setChallengeToken(
+          String(challenge?.challengeToken || challenge?.challengeKey || '').trim(),
+        );
         setExpiresAt(challenge?.expiresAt || null);
         setResendAvailableAt(challenge?.resendAvailableAt || null);
         setNow(Date.now());
@@ -230,8 +231,6 @@ export default function AuthVerificationSurface({ close, data, header }) {
         lastAutoSubmittedCodeRef.current = '';
         completedRef.current = false;
         activeSubmissionKeyRef.current = '';
-
-
       } catch (error) {
         const cooldownAt = error?.data?.resendAvailableAt || null;
         if (cooldownAt) {
@@ -541,7 +540,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
       {statusMessage ? (
         <div
           className={cn(
-            'text-center text-xs font-semibold px-3.5 py-2.5 rounded-2xl transition-all duration-200 border',
+            'rounded-2xl border px-3.5 py-2.5 text-center text-xs font-semibold transition-all duration-200',
             isStatusError
               ? 'bg-error/10 text-error border-error/20'
               : 'bg-success/10 text-success border-success/20',
@@ -574,7 +573,7 @@ export default function AuthVerificationSurface({ close, data, header }) {
             aria-pressed={rememberDevice}
             onClick={() => setRememberDevice((prev) => !prev)}
             className={cn(
-              'flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3.5 text-left text-xs font-semibold uppercase tracking-wider transition-colors duration-150',
+              'flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3.5 text-left text-xs font-semibold tracking-wider uppercase transition-colors duration-150',
               rememberDevice
                 ? 'border-success/30 bg-success/15 text-success hover:bg-success/20'
                 : 'border-black/10 bg-black/5 text-black/70 hover:bg-black/10 hover:text-black',

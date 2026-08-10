@@ -15,7 +15,7 @@ function getMotionConfig(pageAnimation) {
     exitDurationFactor: Number(resolvedAnimation?.exitDurationFactor),
     transition: resolvedAnimation?.transition ?? {
       duration: 0.6,
-      ease: [0.4, 0, 0.2, 1]
+      ease: [0.4, 0, 0.2, 1],
     },
     initial: resolvedAnimation?.initial ?? { opacity: 0 },
     animate: resolvedAnimation?.animate ?? { opacity: 1 },
@@ -64,10 +64,19 @@ function shouldRestartFromBeginning(videoElement, corp) {
     return true;
   }
 
-  return Boolean(videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp);
+  return Boolean(
+    videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp,
+  );
 }
 
-function applyVideoPlaybackState({ setVideoPlaying, playbackRate, videoElement, isPlaying, isMuted, corp }) {
+function applyVideoPlaybackState({
+  setVideoPlaying,
+  playbackRate,
+  videoElement,
+  isPlaying,
+  isMuted,
+  corp,
+}) {
   if (!videoElement) {
     return;
   }
@@ -135,8 +144,15 @@ export function BackgroundOverlay() {
   const motionConfig = useMemo(() => getMotionConfig(animation), [animation]);
 
   const currentStyle = isVideo ? videoStyle : imageStyle;
-  const { baseStyle, leftGradient, rightGradient } = useMemo(() => getVisualStyle(currentStyle), [currentStyle]);
-  const { opacity: noiseOpacity, mixBlendMode: noiseBlendMode, ...noiseInlineStyle } = noiseStyle || {};
+  const { baseStyle, leftGradient, rightGradient } = useMemo(
+    () => getVisualStyle(currentStyle),
+    [currentStyle],
+  );
+  const {
+    opacity: noiseOpacity,
+    mixBlendMode: noiseBlendMode,
+    ...noiseInlineStyle
+  } = noiseStyle || {};
   const overlayTransitionStyle = useMemo(
     () => ({
       transitionDuration: toCssDuration(motionConfig.transition?.duration),
@@ -144,14 +160,14 @@ export function BackgroundOverlay() {
       transitionDelay: toCssDelay(motionConfig.transition?.delay),
       transitionProperty: 'opacity',
     }),
-    [motionConfig.transition]
+    [motionConfig.transition],
   );
   const exitDurationFactor = Number.isFinite(motionConfig.exitDurationFactor)
     ? Math.max(0, motionConfig.exitDurationFactor)
     : 0.6;
-  const resolvedExitDuration = motionConfig.exit?.transition?.duration ?? (
-    (motionConfig.transition?.duration ?? 0.6) * exitDurationFactor
-  );
+  const resolvedExitDuration =
+    motionConfig.exit?.transition?.duration ??
+    (motionConfig.transition?.duration ?? 0.6) * exitDurationFactor;
 
   useEffect(() => {
     if (!isVideo || !videoRef.current) {
@@ -198,7 +214,12 @@ export function BackgroundOverlay() {
   function handleTimeUpdate() {
     const videoElement = videoRef.current;
 
-    if (videoElement && videoElement.duration && corp > 0 && videoElement.currentTime >= videoElement.duration - corp) {
+    if (
+      videoElement &&
+      videoElement.duration &&
+      corp > 0 &&
+      videoElement.currentTime >= videoElement.duration - corp
+    ) {
       handleEnded();
     }
   }
@@ -281,7 +302,11 @@ export function BackgroundOverlay() {
           <NoiseTexture
             className="fixed inset-0 h-screen w-screen transform-gpu"
             opacity={typeof noiseOpacity === 'number' ? noiseOpacity : 0.04}
-            blend={typeof noiseBlendMode === 'string' && noiseBlendMode.trim() ? noiseBlendMode : 'overlay'}
+            blend={
+              typeof noiseBlendMode === 'string' && noiseBlendMode.trim()
+                ? noiseBlendMode
+                : 'overlay'
+            }
             grain="medium"
             style={noiseInlineStyle}
           />

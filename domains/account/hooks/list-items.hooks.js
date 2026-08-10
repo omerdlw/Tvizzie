@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useToast } from '@/modules/notification';
-import { subscribeToUserListItems } from '@/domains/media/server/lists';
+import { subscribeToUserListItems } from '@/domains/media/client/collections/lists';
 import { notifyAccountLoadError } from '@/domains/account/utils';
 
 export function useAccountListItems({

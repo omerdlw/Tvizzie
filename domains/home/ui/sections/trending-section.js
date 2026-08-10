@@ -1,25 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { homeSectionVariants } from '@/app/(home)/motion';
+import { homeSectionVariants } from '@/domains/home/ui/motion';
+import { getUniqueDiscoverItems } from '@/domains/home/shared/discover';
 import { PosterRail } from '../components/poster-rail';
 
-function getUniqueItems(items = [], limit = items.length) {
-  const seen = new Set();
-  return items
-    .filter((item) => {
-      const id = item?.id;
-      if (!id || seen.has(id)) {
-        return false;
-      }
-      seen.add(id);
-      return true;
-    })
-    .slice(0, limit);
-}
-
 export function TrendingSection({ title, items = [] }) {
-  const railItems = getUniqueItems(items, 12);
+  const railItems = getUniqueDiscoverItems(items, 12);
 
   if (!railItems.length) {
     return null;

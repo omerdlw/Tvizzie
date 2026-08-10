@@ -42,7 +42,7 @@ export default function PersonBio({ biography, person = null }) {
         <button
           type="button"
           onClick={handleReadMore}
-          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase hover:text-black transition-colors"
+          className="mt-1 cursor-pointer text-[11px] font-semibold tracking-widest text-black/70 uppercase transition-colors hover:text-black"
         >
           Read More
         </button>

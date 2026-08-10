@@ -8,10 +8,6 @@ import {
 } from './session.server';
 import { ACCOUNT_LIFECYCLE_STATES, assertAccountLifecycleAllowed } from './account.server';
 
-// ============================================================
-// Auth Route Notice Cookies
-// ============================================================
-
 const AUTH_ROUTE_NOTICE_MAX_AGE_SECONDS = 60;
 
 export function setAuthRouteNoticeCookie(response, notice) {
@@ -36,10 +32,6 @@ export function clearAuthRouteNoticeCookie(response) {
     secure: isSecureCookieEnvironment(),
   });
 }
-
-// ============================================================
-// Auth Route Security Policies & Session Assertions
-// ============================================================
 
 const AUTH_ROUTE_POLICIES = Object.freeze({
   ACCOUNT_CHANGE_EMAIL: Object.freeze({

@@ -7,14 +7,10 @@ import {
   sanitizeAuthNextPath,
 } from '@/domains/auth/utils/oauth';
 import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
+import { makeAuthResponsePrivate } from '@/domains/auth/server/response.server';
 
 function normalizeValue(value) {
   return String(value || '').trim();
-}
-
-function noStore(response) {
-  response.headers.set('Cache-Control', 'private, no-store');
-  return response;
 }
 
 function buildFailureRedirectUrl({ intent, nextPath, origin, provider }) {
@@ -33,9 +29,6 @@ function buildFailureRedirectUrl({ intent, nextPath, origin, provider }) {
 }
 
 function buildCompletionRedirectUrl({ intent, nextPath, origin, provider }) {
-  // Keep the existing completion page for account bootstrapping. It now only
-  // verifies the server session and creates a profile if the OAuth user is new;
-  // it no longer owns the PKCE exchange.
   const url = new URL('/callback', origin);
 
   url.searchParams.set('next', nextPath);
@@ -59,14 +52,14 @@ export async function GET(request) {
   );
 
   if (providerError || !code) {
-    return noStore(
+    return makeAuthResponsePrivate(
       NextResponse.redirect(buildFailureRedirectUrl({ intent, nextPath, origin, provider }), {
         status: 302,
       }),
     );
   }
 
-  const response = noStore(
+  const response = makeAuthResponsePrivate(
     NextResponse.redirect(buildCompletionRedirectUrl({ intent, nextPath, origin, provider }), {
       status: 302,
     }),
@@ -81,7 +74,7 @@ export async function GET(request) {
     }
   } catch {}
 
-  return noStore(
+  return makeAuthResponsePrivate(
     NextResponse.redirect(buildFailureRedirectUrl({ intent, nextPath, origin, provider }), {
       status: 302,
     }),

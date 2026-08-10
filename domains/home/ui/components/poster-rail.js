@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Carousel from '@/domains/media/ui/components/media-carousel';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
-import { getTrendingCardProps } from '@/app/(home)/motion';
+import { getTrendingCardProps } from '@/domains/home/ui/motion';
 
 export function PosterRail({ items = [] }) {
   if (!items.length) {

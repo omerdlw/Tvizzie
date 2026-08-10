@@ -19,6 +19,7 @@
     --white: #f8f8f6;
     --black: #141413;
     --primary:
+  ;
   }
 
   html,
@@ -29,10 +30,11 @@
 }
 
 * {
+  border-radius: 0 !important;
   -ms-overflow-style: none;
   box-sizing: border-box;
   scrollbar-width: none;
-  outline: none;
+  outline: 0;
 }
 
 *::-webkit-scrollbar {
@@ -60,16 +62,16 @@
   }
 
   .skeleton-block,
-   .skeleton-block-soft {
-     position: relative;
-     overflow: hidden;
-   }
+  .skeleton-block-soft {
+    position: relative;
+    overflow: hidden;
+  }
 
-   .skeleton-block {
-     background-color: rgb(23 23 23 / 0.1);
-   }
+  .skeleton-block {
+    background-color: rgb(23 23 23 / 0.1);
+  }
 
-   .skeleton-block-soft {
-     background-color: rgb(23 23 23 / 0.05);
-   }
+  .skeleton-block-soft {
+    background-color: rgb(23 23 23 / 0.05);
+  }
 }

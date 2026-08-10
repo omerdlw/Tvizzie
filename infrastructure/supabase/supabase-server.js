@@ -8,20 +8,6 @@ import {
   SUPABASE_URL,
 } from './supabase-constants';
 
-if (typeof window === 'undefined') {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('supabase.auth.getSession()') &&
-      args[0].includes('insecure')
-    ) {
-      return;
-    }
-    originalWarn(...args);
-  };
-}
-
 export async function createClient() {
   assertSupabaseBrowserEnv();
   const cookieStore = await cookies();
@@ -35,9 +21,7 @@ export async function createClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        } catch {
-          
-        }
+        } catch {}
       },
     },
   });

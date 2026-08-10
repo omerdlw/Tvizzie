@@ -144,9 +144,7 @@ export function createUserEventStream(userId) {
 
         try {
           controller.close();
-        } catch {
-          
-        }
+        } catch {}
       };
 
       cleanupCurrent = cleanup;

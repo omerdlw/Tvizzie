@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-// Reviews view is defined in this route client.
 import { motion } from 'framer-motion';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
@@ -40,13 +39,7 @@ export default function Client({ computed, mediaType = 'movie', movie }) {
   );
 }
 
-function View({
-  computed,
-  mediaType = 'movie',
-  movie,
-  reviewState,
-  setReviewState,
-}) {
+function View({ computed, mediaType = 'movie', movie, reviewState, setReviewState }) {
   const { certification, creators, director, runtimeText, writers, year } = computed;
   const mediaTitle =
     movie.title || movie.original_title || movie.name || movie.original_name || 'Untitled';

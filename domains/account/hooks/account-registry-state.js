@@ -1,8 +1,6 @@
 'use client';
 
-import {
-  buildAccountPageState,
-} from '@/app/(account)/registry';
+import { buildAccountPageState } from '@/app/(account)/registry';
 
 export const EMPTY_ACCOUNT_REGISTRY_AUTH = Object.freeze({
   isAuthenticated: false,

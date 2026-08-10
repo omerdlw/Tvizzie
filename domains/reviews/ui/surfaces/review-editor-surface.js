@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useToast } from '@/modules/notification';
+import { upsertListReview, upsertMediaReview } from '@/domains/reviews/client';
 import {
   getReviewMinLength,
   getReviewValidationError,
-  upsertListReview,
-  upsertMediaReview,
-} from '@/domains/reviews/server';
+} from '@/domains/reviews/shared/review-validation';
+import { REVIEW_MAX_LENGTH } from '@/domains/reviews/shared/review-utils';
 import RatingSelector from '@/domains/reviews/ui/components/rating-selector';
 import { getNavActionClass, NAV_ACTION_STYLES } from '@/ui/primitives/navigation-action-styles';
 import { Textarea } from '@/ui/primitives';
@@ -298,7 +298,7 @@ export default function ReviewEditorSurface({ close, data }) {
       )}
       <motion.div whileFocusWithin={{ scale: 1.006 }} className="relative w-full">
         <Textarea
-          maxLength={800}
+          maxLength={REVIEW_MAX_LENGTH}
           value={reviewText}
           placeholder={
             isListSubject
@@ -307,7 +307,8 @@ export default function ReviewEditorSurface({ close, data }) {
           }
           onChange={handleTextChange}
           className={{
-            wrapper: 'flex rounded-xl border border-black/5 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
+            wrapper:
+              'flex rounded-xl border border-black/5 transition-all duration-300 ease-out focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5',
             textarea:
               'min-h-[130px] w-full resize-none bg-transparent p-4 text-sm leading-normal outline-none placeholder:text-black/50',
           }}
@@ -335,7 +336,7 @@ export default function ReviewEditorSurface({ close, data }) {
             className={getNavActionClass({
               isActive: false,
               className: cn(
-                'disabled:cursor-not-allowed disabled:opacity-50 flex-1',
+                'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
                 isSpoiler && hasText && 'border-error/30 bg-error/10 text-error hover:bg-error/20',
               ),
             })}
@@ -357,7 +358,7 @@ export default function ReviewEditorSurface({ close, data }) {
           className={getNavActionClass({
             isActive: true,
             className: cn(
-              'disabled:cursor-not-allowed disabled:opacity-50 flex-1',
+              'flex-1 disabled:cursor-not-allowed disabled:opacity-50',
               INFO_ACTION_TONE_CLASS,
             ),
           })}

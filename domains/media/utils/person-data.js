@@ -136,7 +136,8 @@ export function getKnownForCredits(person) {
 
 export function getFilmographyCredits(person, mediaType = 'movie') {
   const isDirector = person?.known_for_department === 'Directing';
-  const rawCredits = mediaType === 'tv' ? normalizeTvCredits(person) : normalizeMovieCredits(person);
+  const rawCredits =
+    mediaType === 'tv' ? normalizeTvCredits(person) : normalizeMovieCredits(person);
 
   return uniqueByMediaId(rawCredits)
     .filter((credit) => credit.poster_path)

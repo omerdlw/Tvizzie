@@ -8,7 +8,9 @@ function normalizeArray(value) {
 }
 
 function normalizeEntityType(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 function normalizeFavoriteShowcaseItem(value = {}) {

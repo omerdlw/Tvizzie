@@ -27,7 +27,8 @@ export default [
           patterns: [
             {
               group: ['@/domains/*', '@/app/*', '@/infrastructure/*'],
-              message: 'Core framework modules (core/modules) must remain black-box agnostics and cannot import from domains, app, or infrastructure.',
+              message:
+                'Core framework modules (core/modules) must remain black-box agnostics and cannot import from domains, app, or infrastructure.',
             },
           ],
         },

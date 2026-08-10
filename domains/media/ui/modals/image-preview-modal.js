@@ -8,8 +8,6 @@ import { TMDB_IMG } from '@/shared/constants';
 import { Container } from '@/modules/modal';
 import { Spinner } from '@/ui/feedback/spinner';
 
-// --- HELPERS ---
-
 function calculateAspectRatio(data) {
   const ratio = Number(data?.aspect_ratio);
   if (Number.isFinite(ratio) && ratio > 0) return ratio;
@@ -21,8 +19,6 @@ function calculateAspectRatio(data) {
   }
   return 16 / 9;
 }
-
-// --- MAIN COMPONENT ---
 
 export default function ImagePreviewModal({ close, data }) {
   const [isLoaded, setIsLoaded] = useState(false);

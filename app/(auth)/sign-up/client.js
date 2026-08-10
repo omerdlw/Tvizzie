@@ -2,9 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ACCOUNT_CLIENT } from '@/domains/account/client';
 import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
-import { assertSignUpEmailAvailable } from '@/domains/auth/client/requests';
 import { setPendingAccountBootstrap } from '@/domains/auth/client';
 import {
   AUTH_PURPOSE,
@@ -19,18 +17,20 @@ import {
   isPasswordRequirementError,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
-  validateAllowedEmailDomain,
 } from '@/domains/auth/utils';
 import {
   createPendingSignUpPayload,
   finalizeOAuthSignUp,
   finalizeSignUp,
-} from '@/domains/auth/server/workflows';
-import {
-  getOAuthProviderLabel,
-  normalizeOAuthProvider,
-  OAUTH_PROVIDER_KEYS,
-} from '@/domains/auth/utils/oauth';
+  getSignUpStepTitle,
+  getSignUpSubmitLabel,
+  resolveOAuthSignUpFallback,
+  resolveSignUpEmailFallback,
+  SIGN_UP_FEEDBACK,
+  validateSignUpEmail,
+  validateSignUpProfile,
+} from '@/domains/auth/client/sign-up-workflow.client';
+import { getOAuthProviderLabel, normalizeOAuthProvider } from '@/domains/auth/utils/oauth';
 import {
   AUTH_INPUT_CLASSNAMES,
   AUTH_PASSWORD_INPUT_CLASSNAMES,
@@ -39,7 +39,7 @@ import {
   AuthField,
   AuthPageShell,
   AuthVerificationSurface,
-  OAuthProviderButton,
+  OAuthProviderList,
   PasswordToggleButton,
 } from '@/domains/auth/ui';
 import Icon from '@/ui/primitives/icon';
@@ -107,31 +107,16 @@ export default function Client() {
   }, [emailPrefill]);
 
   useEffect(() => {
-    if (pendingAction === 'creating-account') {
-      globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
-        description: 'Creating your account and starting your session.',
-        flow: 'signup-complete',
-        isOverlay: true,
-        phase: 'start',
-        priority: 110,
-        statusType: 'SIGNUP',
-        themeType: 'SIGNUP',
-        title: 'Creating account',
-      });
-      return;
-    }
+    const feedback = SIGN_UP_FEEDBACK[pendingAction];
 
-    if (pendingAction === 'redirecting') {
+    if (feedback) {
       globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
-        description: 'Redirecting to your account.',
-        duration: 3000,
+        ...feedback,
         flow: 'signup-complete',
         isOverlay: true,
-        phase: 'success',
         priority: 110,
         statusType: 'SIGNUP',
         themeType: 'SIGNUP',
-        title: 'Account ready',
       });
       return;
     }
@@ -200,16 +185,14 @@ export default function Client() {
 
       router.replace(postAuthRedirect);
     } catch (error) {
-      const code = String(error?.code || '').trim();
-      const resolvedEmail = String(error?.data?.email || '').trim();
+      const fallbackHref = resolveOAuthSignUpFallback({
+        email: form.email,
+        error,
+        nextPath: nextParam,
+      });
 
-      if (code === 'GOOGLE_PASSWORD_LOGIN_REQUIRED') {
-        const nextHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-          identifier: resolvedEmail || form.email,
-          next: nextParam,
-          notice: 'google-password-login-required',
-        });
-        window.location.assign(nextHref);
+      if (fallbackHref) {
+        window.location.assign(fallbackHref);
         return;
       }
 
@@ -303,21 +286,18 @@ export default function Client() {
       setPendingAction('step-email');
 
       try {
-        const email = validateAllowedEmailDomain(form.email);
-        await assertSignUpEmailAvailable({
-          email,
-        });
+        const email = await validateSignUpEmail(form.email);
         setForm((prev) => ({ ...prev, email }));
         setCurrentStep(1);
       } catch (error) {
-        if (error?.code === 'OAUTH_ACCOUNT_ALREADY_REGISTERED') {
-          const nextHref = buildAuthHref(AUTH_ROUTES.SIGN_IN, {
-            identifier: form.email,
-            next: nextParam,
-            notice: AUTH_ROUTE_NOTICE.OAUTH_ACCOUNT_ALREADY_REGISTERED,
-            provider: error?.data?.provider,
-          });
-          window.location.assign(nextHref);
+        const fallbackHref = resolveSignUpEmailFallback({
+          email: form.email,
+          error,
+          nextPath: nextParam,
+        });
+
+        if (fallbackHref) {
+          window.location.assign(fallbackHref);
           return;
         }
 
@@ -335,17 +315,11 @@ export default function Client() {
       setPendingAction('step-profile');
 
       try {
-        const username = ACCOUNT_CLIENT.validateUsername(form.username);
-        const existingUserId = await ACCOUNT_CLIENT.getAccountIdByUsername(username);
-
-        if (existingUserId) {
-          throw new Error('This username is already taken');
-        }
+        const profile = await validateSignUpProfile(form);
 
         setForm((prev) => ({
           ...prev,
-          username,
-          displayName: String(prev.displayName || '').trim(),
+          ...profile,
         }));
         setCurrentStep(2);
       } catch (error) {
@@ -431,29 +405,8 @@ function SignUpView({
   const passwordRequirements = evaluatePasswordRules(form.password);
   const passwordRequirementsSatisfied = arePasswordRulesSatisfied(form.password);
 
-  const stepTitle =
-    currentStep === 0
-      ? 'Create account'
-      : currentStep === 1
-        ? 'Profile details'
-        : 'Secure your account';
-
-  const submitLabel =
-    currentStep === 0
-      ? pendingAction === 'step-email'
-        ? 'Checking email'
-        : 'Continue'
-      : currentStep === 1
-        ? pendingAction === 'step-profile'
-          ? 'Checking username'
-          : 'Continue'
-        : pendingAction === 'email'
-          ? 'Sending verification'
-          : pendingAction === 'creating-account'
-            ? 'Creating account'
-            : pendingAction === 'redirecting'
-              ? 'Redirecting'
-              : 'Verify and create';
+  const stepTitle = getSignUpStepTitle(currentStep);
+  const submitLabel = getSignUpSubmitLabel(currentStep, pendingAction);
 
   return (
     <AuthPageShell>
@@ -531,31 +484,15 @@ function SignUpView({
                 <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
               </motion.div>
 
-              <motion.div
-                variants={signUpOAuthContainerVariants}
-                className="flex items-center gap-3"
-              >
-                {OAUTH_PROVIDER_KEYS.map((provider, index) => (
-                  <motion.div
-                    key={provider}
-                    custom={SIGN_UP_TIMELINE.OAUTH_DELAY + index * 0.08}
-                    variants={signUpOAuthItemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    whileHover="hover"
-                    whileTap="tap"
-                    className="flex-1"
-                  >
-                    <OAuthProviderButton
-                      provider={provider}
-                      mode="sign-up"
-                      isBusy={activeOAuthProvider === provider}
-                      disabled={Boolean(activeOAuthProvider) || isBusy}
-                      onClick={() => handleOAuthSignUp(provider)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+              <OAuthProviderList
+                activeProvider={activeOAuthProvider}
+                containerVariants={signUpOAuthContainerVariants}
+                disabled={isBusy}
+                itemDelay={SIGN_UP_TIMELINE.OAUTH_DELAY}
+                itemVariants={signUpOAuthItemVariants}
+                mode="sign-up"
+                onSelect={handleOAuthSignUp}
+              />
             </>
           ) : null}
 

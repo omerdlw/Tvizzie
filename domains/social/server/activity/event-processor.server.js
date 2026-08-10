@@ -6,10 +6,7 @@ import {
   buildActivitySubjectRef,
   buildCanonicalActivityDedupeKey,
 } from '@/domains/social/utils';
-import {
-  ACTIVITY_EVENT_TYPE_SET,
-  ACTIVITY_SLOT_TYPES,
-} from '@/domains/social/utils';
+import { ACTIVITY_EVENT_TYPE_SET, ACTIVITY_SLOT_TYPES } from '@/domains/social/utils';
 import {
   deleteByDedupePattern,
   deleteByExactDedupeKey,
@@ -33,9 +30,7 @@ export async function processActivityEvent({ actorUserId, eventType, payload = {
   const admin = createAdminClient();
   const actorProfile = await getUserProfile(admin, normalizedActorUserId);
   const actor = buildActorSnapshot(normalizedActorUserId, actorProfile || {});
-  const visibility =
-    normalizeValue(payload.visibility) ||
-    (actorProfile?.is_private === true ? 'followers' : 'public');
+  const visibility = actorProfile?.is_private === true ? 'followers' : 'public';
   const occurredAt = new Date().toISOString();
   const activityRecord = buildEventRecord({
     actor,

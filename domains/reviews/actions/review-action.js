@@ -15,7 +15,9 @@ export default function ReviewAction({ reviewState }) {
 
   const fallbackSubmitLabel = ownReview ? 'Update Review' : 'Publish Review';
   const fallbackLoadingLabel = ownReview ? 'Updating' : 'Publishing';
-  const currentLabel = isSubmitting ? loadingLabel || fallbackLoadingLabel : submitLabel || fallbackSubmitLabel;
+  const currentLabel = isSubmitting
+    ? loadingLabel || fallbackLoadingLabel
+    : submitLabel || fallbackSubmitLabel;
 
   return (
     <div className={NAV_ACTION_STYLES.row}>

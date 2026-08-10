@@ -118,7 +118,7 @@ export default function Carousel({
         onDragStart={(event) => event.preventDefault()}
         onScroll={updateScrollState}
         className={cn(
-          'scrollbar-hide rounded-[20px] flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth select-none py-1',
+          'scrollbar-hide flex cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth rounded-[20px] py-1 select-none',
           className,
           gap,
         )}
@@ -141,7 +141,7 @@ export default function Carousel({
             onClick={() => scrollByDirection(-1)}
             {...resolveButtonProps(-1)}
             className={cn(
-              'center absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full bg-black/90 text-primary shadow-md backdrop-blur-xs border border-white/10 sm:size-10 md:-left-4',
+              'center text-primary absolute top-1/2 left-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 shadow-md backdrop-blur-xs sm:size-10 md:-left-4',
             )}
           >
             <Icon icon="solar:alt-arrow-left-bold" className="size-4 sm:size-5" />
@@ -158,7 +158,7 @@ export default function Carousel({
             onClick={() => scrollByDirection(1)}
             {...resolveButtonProps(1)}
             className={cn(
-              'center absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full bg-black/90 text-primary shadow-md backdrop-blur-xs border border-white/10 sm:size-10 md:-right-4',
+              'center text-primary absolute top-1/2 right-1 z-10 size-9 -translate-y-1/2 cursor-pointer rounded-full border border-white/10 bg-black/90 shadow-md backdrop-blur-xs sm:size-10 md:-right-4',
             )}
           >
             <Icon icon="solar:alt-arrow-right-bold" className="size-4 sm:size-5" />

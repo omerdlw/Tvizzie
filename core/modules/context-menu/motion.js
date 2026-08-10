@@ -5,23 +5,25 @@ const CONTEXT_MENU_EASINGS = Object.freeze({
 });
 
 const CONTEXT_MENU_TIERS = Object.freeze({
-  MICRO:    { duration: 0.22, distance: 4,  scaleDelta: 0.008, ease: CONTEXT_MENU_EASINGS.EMPHASIZED },
-  FAST:     { duration: 0.32, distance: 8,  scaleDelta: 0.020, ease: CONTEXT_MENU_EASINGS.EMPHASIZED },
-  STANDARD: { duration: 0.44, distance: 12, scaleDelta: 0.035, ease: CONTEXT_MENU_EASINGS.EMPHASIZED },
+  MICRO: { duration: 0.22, distance: 4, scaleDelta: 0.008, ease: CONTEXT_MENU_EASINGS.EMPHASIZED },
+  FAST: { duration: 0.32, distance: 8, scaleDelta: 0.02, ease: CONTEXT_MENU_EASINGS.EMPHASIZED },
+  STANDARD: {
+    duration: 0.44,
+    distance: 12,
+    scaleDelta: 0.035,
+    ease: CONTEXT_MENU_EASINGS.EMPHASIZED,
+  },
 });
 
 const CONTEXT_MENU_SPRINGS = Object.freeze({
-  MENU:  Object.freeze({ type: 'spring', stiffness: 280, damping: 26, mass: 0.75 }),
+  MENU: Object.freeze({ type: 'spring', stiffness: 280, damping: 26, mass: 0.75 }),
   MICRO: Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
 });
 
 export const CONTEXT_MENU_MICRO_SPRING = CONTEXT_MENU_SPRINGS.MICRO;
 export const CONTEXT_MENU_TAP_SCALE = 0.97;
 
-function buildVariants(
-  tierName,
-  { includeScale = false, distanceScale = 1 } = {}
-) {
+function buildVariants(tierName, { includeScale = false, distanceScale = 1 } = {}) {
   const tier = CONTEXT_MENU_TIERS[tierName];
   const distance = tier.distance * distanceScale;
 

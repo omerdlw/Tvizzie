@@ -7,7 +7,7 @@ import Icon from '@/ui/primitives/icon';
 import { SEARCH_STYLES, SEARCH_TAB_ITEMS } from '@/domains/search/utils';
 import { navActionClass } from '../search-action-helpers';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 function PaginationArrow({ direction, onClick }) {
   const isLeft = direction === 'left';
@@ -17,7 +17,7 @@ function PaginationArrow({ direction, onClick }) {
       animate={{ opacity: 1, scale: 1, width: 'auto' }}
       exit={{ opacity: 0, scale: 0.8, width: 0 }}
       transition={{ duration: 0.28, ease: [0.16, 1, 0.24, 1] }}
-      className={`overflow-hidden shrink-0 ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}
+      className={`shrink-0 overflow-hidden ${isLeft ? 'mr-1.5' : 'ml-1.5'}`}
     >
       <motion.button
         type="button"
@@ -30,7 +30,7 @@ function PaginationArrow({ direction, onClick }) {
             button: SEARCH_STYLES.tabButton,
             isActive: false,
           }),
-          'center h-[38px] w-[38px] p-0 cursor-pointer !rounded-2xl',
+          'center h-[38px] w-[38px] cursor-pointer !rounded-2xl p-0',
         )}
         onClick={onClick}
       >
@@ -62,11 +62,11 @@ export default function SearchActionControls({
   const [isActive, setIsActive] = useState(false);
   return (
     <>
-      <div className="flex items-center w-full">
+      <div className="flex w-full items-center">
         <AnimatePresence>
           {hasPrevPage && <PaginationArrow direction="left" onClick={onPrevPage} />}
         </AnimatePresence>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <Input
             value={query}
             onFocus={() => setIsActive(true)}

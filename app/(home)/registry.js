@@ -2,7 +2,7 @@
 
 import SearchAction from '@/domains/search/ui/components/search-action';
 import { createRouteRegistry } from '@/modules/registry/route-registry';
-import { MEDIA_BACKGROUND_ANIMATION } from '@/app/(media)/motion';
+import { HOME_BACKGROUND_ANIMATION } from '@/domains/home/ui/motion';
 
 export default createRouteRegistry({
   displayName: 'HomeRegistry',
@@ -18,7 +18,7 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0.2,
             },
-            animation: MEDIA_BACKGROUND_ANIMATION,
+            animation: HOME_BACKGROUND_ANIMATION,
           },
         }
       : {
@@ -30,10 +30,9 @@ export default createRouteRegistry({
             noiseStyle: {
               opacity: 0,
             },
-            animation: MEDIA_BACKGROUND_ANIMATION,
+            animation: HOME_BACKGROUND_ANIMATION,
           },
         }),
     loading: { isLoading },
   }),
 });
-

@@ -116,7 +116,7 @@ export default function WatchProvidersSurface({ close, providers }) {
             {providerList.map((provider) => (
               <motion.div
                 key={`${provider.provider_id}-${provider.type}`}
-                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2.5 py-2 first:pt-0 last:pb-0 last:border-b-0 transition-colors duration-200 ease-out"
+                className="-mx-1 flex cursor-pointer items-center justify-between border-b border-black/5 px-2.5 py-2 transition-colors duration-200 ease-out first:pt-0 last:border-b-0 last:pb-0"
                 variants={itemVariants}
                 whileTap={{ scale: 0.985 }}
                 transition={{ type: 'spring', stiffness: 450, damping: 26 }}
@@ -129,21 +129,24 @@ export default function WatchProvidersSurface({ close, providers }) {
                     alt={provider.provider_name}
                     loading="lazy"
                     decoding="async"
-                    className="h-7 w-7 shrink-0 object-cover rounded-[10px]"
+                    className="h-7 w-7 shrink-0 rounded-[10px] object-cover"
                     wrapperClassName="h-7 w-7 shrink-0 rounded-[10px] bg-black/5"
                   />
                   <span className="truncate text-sm font-medium text-black/70">
                     {provider.provider_name}
                   </span>
                 </div>
-                <span className="bg-primary border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase rounded-[10px]">
+                <span className="bg-primary rounded-[10px] border border-black/5 px-2 py-1 text-[10px] font-semibold tracking-wide text-black/50 uppercase">
                   {provider.type}
                 </span>
               </motion.div>
             ))}
           </motion.div>
         ) : (
-          <div key={`empty-${resolvedRegion}`} className="center p-4 text-sm bg-primary rounded-2xl">
+          <div
+            key={`empty-${resolvedRegion}`}
+            className="center bg-primary rounded-2xl p-4 text-sm"
+          >
             Watch providers are not available for this region
           </div>
         )}

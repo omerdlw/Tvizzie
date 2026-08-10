@@ -12,10 +12,10 @@ export const AUTH_STATUS = Object.freeze({
 export const DEFAULT_AUTH_CONFIG = Object.freeze({
   clearSessionOnUnauthorized: true,
   refreshOnWindowFocus: true,
-  hydrateFromStorage: true,
+  hydrateFromStorage: false,
   refreshLeewayMs: 60 * 1000,
   initialSession: null,
-  persistSession: true,
+  persistSession: false,
   storageKey: 'app_auth_session',
   adapter: null,
   enabled: true,

@@ -1,8 +1,16 @@
 'use client';
 
-import { clearPendingAccountBootstrap, createCsrfHeaders, getPendingAccountBootstrap } from '@/domains/auth/client';
+import {
+  clearPendingAccountBootstrap,
+  createCsrfHeaders,
+  getPendingAccountBootstrap,
+} from '@/domains/auth/client';
+import { ensureAuthCsrfToken } from '@/core/modules/auth/http.client';
 import { createAccountAdapter, createAccountClient } from '@/modules/account';
-import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
+import {
+  assertSupabaseResult,
+  getSupabaseClient,
+} from '@/infrastructure/http/supabase-data-service';
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
@@ -75,9 +83,17 @@ export function normalizeOptionalUrl(value) {
 }
 
 export function createUserIdentity(user = {}) {
+  const metadata = user.metadata || user.user_metadata || {};
+
   return {
-    avatarUrl: user.avatarUrl || user.photoURL || null,
-    displayName: user.displayName || user.name || user.email || 'Anonymous User',
+    displayName:
+      user.displayName ||
+      user.name ||
+      metadata.display_name ||
+      metadata.full_name ||
+      metadata.name ||
+      user.email ||
+      'Anonymous User',
     email: user.email || null,
     id: user.id || user.uid || null,
   };
@@ -91,7 +107,9 @@ export function normalizeMediaTarget(value) {
 }
 
 export function normalizeEmailAddress(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -166,10 +184,9 @@ export async function searchUserAccounts(searchTerm, options = {}) {
   return Array.isArray(payload?.items) ? payload.items : [];
 }
 
-export async function requestEnsureUserAccount({ avatarUrl, displayName, email, username }) {
+export async function requestEnsureUserAccount({ displayName, email, username }) {
   return saveAccountProfile({
     action: 'ensure',
-    avatarUrl,
     displayName,
     email,
     username,
@@ -240,10 +257,13 @@ export function scheduleAccountSummaryRefresh(userId, { delayMs = DEFAULT_REFRES
   const existingTimer = ACCOUNT_REFRESH_TIMERS.get(normalizedUserId);
   if (existingTimer) clearTimeout(existingTimer);
 
-  const timer = setTimeout(() => {
-    ACCOUNT_REFRESH_TIMERS.delete(normalizedUserId);
-    refreshAccountSummaryNow(normalizedUserId);
-  }, Math.max(0, Math.floor(Number(delayMs) || DEFAULT_REFRESH_DELAY_MS)));
+  const timer = setTimeout(
+    () => {
+      ACCOUNT_REFRESH_TIMERS.delete(normalizedUserId);
+      refreshAccountSummaryNow(normalizedUserId);
+    },
+    Math.max(0, Math.floor(Number(delayMs) || DEFAULT_REFRESH_DELAY_MS)),
+  );
 
   ACCOUNT_REFRESH_TIMERS.set(normalizedUserId, timer);
 }
@@ -268,7 +288,6 @@ export async function ensureUserAccount(user = {}, options = {}) {
   }
 
   const payload = await requestEnsureUserAccount({
-    avatarUrl: identity.avatarUrl ? normalizeOptionalUrl(identity.avatarUrl) : null,
     displayName: preferredDisplayName || identity.displayName,
     email: identity.email || null,
     username: preferredUsername,
@@ -284,10 +303,15 @@ export async function updateUserAccount({ userId, updates = {} }) {
   if (!userId) throw new Error('Authenticated user is required to update the account');
 
   const payload = await requestUpdateUserAccount({
-    avatarUrl: updates.avatarUrl !== undefined ? normalizeOptionalUrl(updates.avatarUrl) : undefined,
-    bannerUrl: updates.bannerUrl !== undefined ? normalizeOptionalUrl(updates.bannerUrl) : undefined,
+    avatarUrl:
+      updates.avatarUrl !== undefined ? normalizeOptionalUrl(updates.avatarUrl) : undefined,
+    bannerUrl:
+      updates.bannerUrl !== undefined ? normalizeOptionalUrl(updates.bannerUrl) : undefined,
     description: updates.description !== undefined ? cleanString(updates.description) : undefined,
-    displayName: updates.displayName !== undefined ? cleanString(updates.displayName) || 'Anonymous User' : undefined,
+    displayName:
+      updates.displayName !== undefined
+        ? cleanString(updates.displayName) || 'Anonymous User'
+        : undefined,
     isPrivate: updates.isPrivate !== undefined ? Boolean(updates.isPrivate) : undefined,
     username: updates.username !== undefined ? validateUsername(updates.username) : undefined,
   });
@@ -302,6 +326,7 @@ export async function uploadAccountMediaFile({ file, target = 'avatar' }) {
   if (!file || typeof file !== 'object') throw new Error('Select an image file');
 
   const normalizedTarget = normalizeMediaTarget(target);
+  const csrfToken = await ensureAuthCsrfToken();
   const formData = new FormData();
   formData.set('target', normalizedTarget);
   formData.set('file', file);
@@ -309,7 +334,7 @@ export async function uploadAccountMediaFile({ file, target = 'avatar' }) {
   const response = await fetch('/api/account/media', {
     method: 'POST',
     credentials: 'include',
-    headers: createCsrfHeaders(),
+    headers: createCsrfHeaders({ 'X-CSRF-Token': csrfToken }),
     body: formData,
   });
 

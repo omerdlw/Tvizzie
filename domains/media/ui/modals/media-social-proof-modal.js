@@ -4,12 +4,14 @@ import { memo } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+import {
+  applyAvatarFallback,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+} from '@/domains/account/utils';
 import { Container } from '@/modules/modal';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
-
-// --- HELPERS ---
 
 function buildUserActionMap(socialProof) {
   const userMap = new Map();
@@ -61,8 +63,6 @@ function formatActionSummary(actions = []) {
   return actions.map((item) => item.toUpperCase()).join(' • ');
 }
 
-// --- SUB-COMPONENTS ---
-
 const SocialUserRow = memo(function SocialUserRow({ close, user, actions }) {
   const username = user?.username || 'user';
 
@@ -110,8 +110,6 @@ const SocialUserRow = memo(function SocialUserRow({ close, user, actions }) {
   );
 });
 
-// --- MAIN COMPONENT ---
-
 export default function MediaSocialProofModal({ close, data }) {
   const userEntries = buildUserActionMap(data?.socialProof);
 
@@ -147,7 +145,8 @@ export default function MediaSocialProofModal({ close, data }) {
           <Icon icon="solar:users-group-two-rounded-linear" size={32} className="text-black/30" />
           <p className="text-sm font-medium text-black/60">No social activity found yet</p>
           <p className="text-xs text-black/40">
-            When people you follow like, review, or watch this title, their activity will appear here.
+            When people you follow like, review, or watch this title, their activity will appear
+            here.
           </p>
         </div>
       )}

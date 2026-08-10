@@ -8,7 +8,12 @@ import { Check } from 'lucide-react';
 import { Z_INDEX } from '@/shared/constants';
 
 import Input from '../input';
-import { cn, filterOptions, resolveNestedClassName, resolveSlotClasses } from '../primitive-support';
+import {
+  cn,
+  filterOptions,
+  resolveNestedClassName,
+  resolveSlotClasses,
+} from '../primitive-support';
 
 const Combobox = forwardRef(
   (

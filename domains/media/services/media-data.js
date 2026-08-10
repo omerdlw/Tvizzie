@@ -219,7 +219,7 @@ function rankRelatedMovies(
     .slice(0, limit);
 }
 
-export function getMovieComputedData(movie) {
+export function getMediaComputedData(movie) {
   if (!movie) {
     return {};
   }

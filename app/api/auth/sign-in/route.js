@@ -1,8 +1,6 @@
 import { handleSignInPost } from '@/domains/auth/server/api-handlers.server';
+import { makeAuthResponsePrivate } from '@/domains/auth/server/response.server';
 
 export async function POST(request) {
-  const response = await handleSignInPost(request);
-  response.headers.set('Cache-Control', 'private, no-store');
-  response.headers.set('Vary', 'Cookie');
-  return response;
+  return makeAuthResponsePrivate(await handleSignInPost(request), { varyByCookie: true });
 }

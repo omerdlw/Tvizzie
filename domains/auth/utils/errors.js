@@ -1,7 +1,3 @@
-// ============================================================
-// Auth Error Messages & Resolvers
-// ============================================================
-
 export const AUTH_ERROR_MESSAGES = Object.freeze({
   'auth/email-already-in-use': 'This email address is already in use',
   'auth/invalid-credential': 'The username/email or password is incorrect',
@@ -27,6 +23,8 @@ export const AUTH_ERROR_MESSAGES = Object.freeze({
   GOOGLE_UNLINK_REQUIRES_PASSWORD:
     'Google can only be unlinked while email/password sign-in remains enabled',
   INVALID_LOGIN_CREDENTIALS: 'The username/email or password is incorrect',
+  PASSWORD_SIGN_IN_DISABLED:
+    'Password sign-in is not enabled for this account. Use a connected provider or set a password from Account Security.',
 });
 
 export const AUTH_ERROR_MESSAGE_PATTERNS = Object.freeze([
@@ -35,6 +33,8 @@ export const AUTH_ERROR_MESSAGE_PATTERNS = Object.freeze([
   ['Invalid login credentials', AUTH_ERROR_MESSAGES.INVALID_LOGIN_CREDENTIALS],
   ['invalid_credentials', AUTH_ERROR_MESSAGES.INVALID_LOGIN_CREDENTIALS],
   ['invalid_login_credentials', AUTH_ERROR_MESSAGES.INVALID_LOGIN_CREDENTIALS],
+  ['PASSWORD_SIGN_IN_DISABLED', AUTH_ERROR_MESSAGES.PASSWORD_SIGN_IN_DISABLED],
+  ['password-sign-in-disabled', AUTH_ERROR_MESSAGES.PASSWORD_SIGN_IN_DISABLED],
   ['auth/invalid-email', AUTH_ERROR_MESSAGES['auth/invalid-email']],
   ['auth/user-not-found', AUTH_ERROR_MESSAGES['auth/user-not-found']],
   ['auth/wrong-password', AUTH_ERROR_MESSAGES['auth/wrong-password']],

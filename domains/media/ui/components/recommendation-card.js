@@ -2,17 +2,18 @@
 
 import MediaCard from '@/domains/media/ui/components/media-card';
 import { TMDB_IMG } from '@/shared/constants';
-import { getMediaDetailPath, getMediaReleaseDate, getMediaTitle, resolveExplicitMediaType } from '@/domains/media/utils';
+import {
+  getMediaDetailPath,
+  getMediaReleaseDate,
+  getMediaTitle,
+  resolveExplicitMediaType,
+} from '@/domains/media/utils';
 import {
   getPreferredMoviePosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-overrides';
 
-export default function RecommendationCard({
-  movie,
-  imagePriority = false,
-  imageFetchPriority,
-}) {
+export default function RecommendationCard({ movie, imagePriority = false, imageFetchPriority }) {
   usePosterPreferenceVersion();
   const mediaType = resolveExplicitMediaType(movie, 'movie');
   const resolvedTitle = getMediaTitle(movie);

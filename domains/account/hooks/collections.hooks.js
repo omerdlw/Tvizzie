@@ -4,19 +4,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/modules/notification';
 import { TMDB_IMG } from '@/shared/constants';
 import {
-  ensureLegacyFavoritesBackfilled,
   getLikeDocRef,
   removeUserLike,
   subscribeToUserLikes,
-} from '@/domains/media/server/likes';
-import { toggleUserListItem, subscribeToUserLists } from '@/domains/media/server/lists';
+} from '@/domains/media/client/collections/likes';
+import { toggleUserListItem, subscribeToUserLists } from '@/domains/media/client/collections/lists';
 import {
   getWatchlistDocRef,
   removeUserWatchedItem,
   removeUserWatchlistItem,
   subscribeToUserWatched,
   subscribeToUserWatchlist,
-} from '@/domains/media/server/watched-watchlist';
+} from '@/domains/media/client/collections/watched-watchlist';
 import { updateUserMediaPosition } from '@/domains/media/utils/user-media';
 import {
   getMediaTitle,
@@ -608,14 +607,6 @@ export function useAccountCollections({
 
     let isDisposed = false;
     const hasBeenDisposed = () => isDisposed;
-
-    if (isOwner) {
-      ensureLegacyFavoritesBackfilled(resolvedUserId).catch((error) => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[Account] Favorites backfill failed:', error);
-        }
-      });
-    }
 
     const unsubscribers = COLLECTION_SUBSCRIPTIONS.map((config) => {
       const shouldSubscribe = !activeCollectionKey || activeCollectionKey === config.key;

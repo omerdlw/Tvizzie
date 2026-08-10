@@ -19,17 +19,17 @@ const SEARCH_CONTAINER_VARIANTS = Object.freeze({
 
 const SEARCH_ITEM_VARIANTS = Object.freeze({
   hidden: { opacity: 0, y: 16, scale: 0.96 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
+  visible: {
+    opacity: 1,
+    y: 0,
     scale: 1,
-    transition: { duration: 0.58, ease: [0.16, 1, 0.24, 1] }
+    transition: { duration: 0.58, ease: [0.16, 1, 0.24, 1] },
   },
-  exit: { 
-    opacity: 0, 
-    y: -8, 
+  exit: {
+    opacity: 0,
+    y: -8,
     scale: 0.98,
-    transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
   },
 });
 

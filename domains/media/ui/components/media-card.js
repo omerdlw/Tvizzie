@@ -2,7 +2,13 @@
 
 import { forwardRef, useState } from 'react';
 import Link from 'next/link';
-import { cn, getImagePlaceholderDataUrl, resolveImageFetchPriority, resolveImageLoading, resolveImageQuality } from '@/shared/utils';
+import {
+  cn,
+  getImagePlaceholderDataUrl,
+  resolveImageFetchPriority,
+  resolveImageLoading,
+  resolveImageQuality,
+} from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Tooltip from '@/ui/primitives/tooltip';
 import Icon from '@/ui/primitives/icon';
@@ -95,7 +101,7 @@ export default function MediaCard({
     priority: imagePriority,
   });
   const resolvedImageQuality = resolveImageQuality(imagePreset, imageQuality);
-  
+
   const cardNode = (
     <CardWrapper
       href={href}

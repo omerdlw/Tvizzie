@@ -1,83 +1,19 @@
-export const dynamic = 'force-dynamic';
-
-import { notFound } from 'next/navigation';
-
-import { getMovieComputedData } from '@/domains/media/services/media-data';
-import { TMDB_IMG } from '@/shared/constants';
+import { createTitleDetailRoute } from '@/domains/media/server/title-route.server';
 import { getTvBase, getTvSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import { isDisplayableTv } from '@/infrastructure/tmdb/clients/sanitize';
 
 import Client from '@/app/(media)/tv/[id]/client';
 
-function getTvTitle(tv = {}) {
-  return tv?.name || tv?.original_name || 'Untitled';
-}
+const route = createTitleDetailRoute({
+  Client,
+  fallbackTitle: 'TV Series Not Found',
+  getBase: getTvBase,
+  getSecondary: getTvSecondary,
+  isDisplayable: isDisplayableTv,
+  mediaType: 'tv',
+  openGraphType: 'video.tv_show',
+});
 
-export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const response = await getTvBase(id);
-  const tv = response?.data;
-
-  if (!tv || !isDisplayableTv(tv, 'detail')) {
-    return { title: 'TV Series Not Found' };
-  }
-
-  const titleText = getTvTitle(tv);
-  const title = tv.first_air_date
-    ? `${titleText} (${tv.first_air_date.split('-')[0]}) - Tvizzie`
-    : `${titleText} - Tvizzie`;
-
-  let description = tv.overview || `Details for ${titleText}`;
-  if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '');
-  }
-
-  const imageUrl = tv.backdrop_path ? `${TMDB_IMG}/w1280${tv.backdrop_path}` : undefined;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'video.tv_show',
-      images: imageUrl ? [{ url: imageUrl, width: 1280, height: 720 }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : [],
-    },
-  };
-}
-
-export default async function Page({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-
-  const response = await getTvBase(id);
-  const tv = response?.data;
-
-  if (!tv || response.status === 404 || !isDisplayableTv(tv, 'detail')) {
-    notFound();
-  }
-
-  const secondaryDataPromise = getTvSecondary(id).then(
-    (secondaryResponse) => secondaryResponse?.data || {},
-  );
-  const computed = getMovieComputedData(tv);
-
-  return (
-    <Client
-      key={`tv-${tv.id}`}
-      computed={computed}
-      mediaType="tv"
-      movie={tv}
-      secondaryDataPromise={secondaryDataPromise}
-    />
-  );
-}
-
+export const { generateMetadata } = route;
 export const revalidate = 3600;
+export default route.Page;

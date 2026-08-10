@@ -1,7 +1,3 @@
-// ============================================================
-// Media Type Utilities
-// ============================================================
-
 const MOVIE_MEDIA_TYPE = 'movie';
 const PERSON_MEDIA_TYPE = 'person';
 const TV_MEDIA_TYPE = 'tv';
@@ -76,10 +72,6 @@ export function getMediaReleaseDate(item = {}) {
   return item?.release_date || item?.first_air_date || '';
 }
 
-// ============================================================
-// Collection Utilities
-// ============================================================
-
 export function uniqueBy(items, key = 'id') {
   if (!Array.isArray(items)) return [];
   const getKey = typeof key === 'function' ? key : (item) => item?.[key];
@@ -91,10 +83,6 @@ export function uniqueBy(items, key = 'id') {
   });
   return Array.from(map.values());
 }
-
-// ============================================================
-// Media List Constants
-// ============================================================
 
 export const LIST_ROW_SELECT = [
   'created_at',
@@ -111,4 +99,3 @@ export const LIST_ROW_SELECT = [
 ].join(',');
 
 export const LIST_ITEM_PREVIEW_SELECT = ['added_at', 'payload'].join(',');
-

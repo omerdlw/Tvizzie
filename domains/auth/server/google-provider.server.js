@@ -1,8 +1,16 @@
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
-import { normalizeProvider, resolveProviderDescriptors as resolveAuthProviderDescriptors, resolveProviderIds } from '@/domains/auth/utils';
+import {
+  normalizeProvider,
+  resolveProviderDescriptors as resolveAuthProviderDescriptors,
+  resolveProviderIds,
+} from '@/domains/auth/utils';
 import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from '@/domains/auth/oauth';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '@/infrastructure/supabase/supabase-constants';
+import {
+  SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL,
+} from '@/infrastructure/supabase/supabase-constants';
 
 export const GOOGLE_AUTH_INTENTS = Object.freeze({
   LINK: 'link',
@@ -30,7 +38,12 @@ function normalizeIntent(value) {
   return Object.values(GOOGLE_AUTH_INTENTS).includes(norm) ? norm : GOOGLE_AUTH_INTENTS.SIGN_IN;
 }
 
-export async function resolveGoogleAuthIntent({ currentUserId = null, decodedToken = null, pageIntent = GOOGLE_AUTH_INTENTS.SIGN_IN, userRecord = null } = {}) {
+export async function resolveGoogleAuthIntent({
+  currentUserId = null,
+  decodedToken = null,
+  pageIntent = GOOGLE_AUTH_INTENTS.SIGN_IN,
+  userRecord = null,
+} = {}) {
   const intent = normalizeIntent(pageIntent);
   const userId = normalizeValue(userRecord?.uid || decodedToken?.uid || decodedToken?.sub);
   const providerDescriptors = resolveAuthProviderDescriptors({
@@ -44,7 +57,9 @@ export async function resolveGoogleAuthIntent({ currentUserId = null, decodedTok
     tokenClaims: decodedToken || {},
   });
   const googleProvider = providerDescriptors.find((p) => p.id === GOOGLE_PROVIDER_ID);
-  const googleEmail = normalizeEmailValue(googleProvider?.email || userRecord?.email || decodedToken?.email);
+  const googleEmail = normalizeEmailValue(
+    googleProvider?.email || userRecord?.email || decodedToken?.email,
+  );
   const emailVerified = Boolean(userRecord?.emailVerified || decodedToken?.email_verified);
   const hasGoogleProvider = providerIds.includes(GOOGLE_PROVIDER_ID);
   const hasPasswordProvider = providerIds.includes(PASSWORD_PROVIDER_ID);
@@ -53,7 +68,12 @@ export async function resolveGoogleAuthIntent({ currentUserId = null, decodedTok
   if (userId) {
     const admin = createAdminClient();
     const res = await admin.from('profiles').select('id, email').eq('id', userId).maybeSingle();
-    if (res.data) profile = { exists: true, id: normalizeValue(res.data.id) || userId, email: normalizeEmailValue(res.data.email) };
+    if (res.data)
+      profile = {
+        exists: true,
+        id: normalizeValue(res.data.id) || userId,
+        email: normalizeEmailValue(res.data.email),
+      };
   }
 
   const baseMetadata = {
@@ -104,19 +124,29 @@ export function isGoogleOAuthSession(decodedToken = {}) {
   const amr = Array.isArray(decodedToken?.amr) ? decodedToken.amr : [];
   const amrMethods = amr.map((e) => (typeof e === 'string' ? normalizeValue(e).toLowerCase() : ''));
 
-  if (amrMethods.includes(PASSWORD_PROVIDER_ID) || amrMethods.includes('pwd') || amrMethods.includes('email')) {
+  if (
+    amrMethods.includes(PASSWORD_PROVIDER_ID) ||
+    amrMethods.includes('pwd') ||
+    amrMethods.includes('email')
+  ) {
     return false;
   }
   if (amrMethods.includes('google')) return true;
 
   const provider = normalizeProvider(
     decodedToken?.app_metadata?.provider ||
-      (Array.isArray(decodedToken?.app_metadata?.providers) ? decodedToken.app_metadata.providers[0] : null),
+      (Array.isArray(decodedToken?.app_metadata?.providers)
+        ? decodedToken.app_metadata.providers[0]
+        : null),
   );
   return amrMethods.includes('oauth') && provider === GOOGLE_PROVIDER_ID;
 }
 
-export async function unlinkIdentityWithAccessToken({ accessToken, identityId, fallbackMessage = 'Google provider cleanup failed' }) {
+export async function unlinkIdentityWithAccessToken({
+  accessToken,
+  identityId,
+  fallbackMessage = 'Google provider cleanup failed',
+}) {
   const normToken = normalizeValue(accessToken);
   const normId = normalizeValue(identityId);
 
@@ -134,10 +164,17 @@ export async function unlinkIdentityWithAccessToken({ accessToken, identityId, f
   throw new Error(payload?.msg || payload?.message || fallbackMessage);
 }
 
-export async function assertGoogleSessionConsistency({ decodedToken = {}, userRecord = null } = {}) {
+export async function assertGoogleSessionConsistency({
+  decodedToken = {},
+  userRecord = null,
+} = {}) {
   if (!isGoogleOAuthSession(decodedToken)) return null;
 
-  const result = await resolveGoogleAuthIntent({ decodedToken, pageIntent: GOOGLE_AUTH_INTENTS.SIGN_IN, userRecord });
+  const result = await resolveGoogleAuthIntent({
+    decodedToken,
+    pageIntent: GOOGLE_AUTH_INTENTS.SIGN_IN,
+    userRecord,
+  });
   const shouldReject =
     result?.result === GOOGLE_AUTH_RESULTS.REQUIRE_PASSWORD_LOGIN ||
     (result?.profileExists && result?.result === GOOGLE_AUTH_RESULTS.PROVIDER_COLLISION);

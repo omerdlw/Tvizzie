@@ -1,1 +1,1 @@
-export * from '@/domains/social/server/api/notification-events.server';
+export * from '@/domains/social/server/notifications/event-route.server';

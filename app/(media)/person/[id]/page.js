@@ -1,54 +1,38 @@
-export const dynamic = 'force-dynamic';
-
 import { notFound } from 'next/navigation';
 
-import { TMDB_IMG } from '@/shared/constants';
-import { getPersonBase, getPersonSecondary } from '@/infrastructure/tmdb/clients/tmdb-server-client';
+import {
+  createMediaMetadata,
+  loadMediaRouteData,
+} from '@/domains/media/server/title-route.server';
+import {
+  getPersonBase,
+  getPersonSecondary,
+} from '@/infrastructure/tmdb/clients/tmdb-server-client';
 import Client from '@/app/(media)/person/[id]/client';
 
 export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const response = await getPersonBase(id);
-  const person = response?.data;
+  const { media: person, response } = await loadMediaRouteData(params, getPersonBase);
 
-  if (!person) {
+  if (!person || response.status === 404) {
     return { title: 'Person Not Found' };
   }
 
   const title = `${person.name} - Tvizzie`;
-
-  let description = person.biography?.trim() || `Information about ${person.name}`;
-  if (description.length > 150) {
-    description = description.substring(0, 150).replace(/\s+\S*$/, '');
-  }
-
-  const imageUrl = person.profile_path ? `${TMDB_IMG}/w500${person.profile_path}` : undefined;
-
-  return {
+  return createMediaMetadata({
+    description: person.biography,
+    fallbackDescription: `Information about ${person.name}`,
+    fallbackTitle: 'Person Not Found',
+    imageHeight: 750,
+    imagePath: person.profile_path,
+    imageSize: 'w500',
+    imageWidth: 500,
+    openGraphType: 'profile',
     title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'profile',
-      images: imageUrl ? [{ url: imageUrl, width: 500, height: 750 }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : [],
-    },
-  };
+  });
 }
 
 export default async function PersonDetailPage({ params }) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-
-  const response = await getPersonBase(id);
-  const person = response?.data;
+  const { id, media: person, response } = await loadMediaRouteData(params, getPersonBase);
 
   if (!person || response.status === 404) {
     notFound();

@@ -23,6 +23,17 @@ function normalizeMovieId(movieId) {
   return value ? value : null;
 }
 
+function normalizeTitleMediaType(mediaType) {
+  const normalizedType = String(mediaType || '').trim().toLowerCase();
+  return normalizedType === 'movie' || normalizedType === 'tv' ? normalizedType : null;
+}
+
+function createMediaPreferenceKey(mediaType, mediaId) {
+  const normalizedType = normalizeTitleMediaType(mediaType);
+  const normalizedId = normalizeMovieId(mediaId);
+  return normalizedType && normalizedId ? `${normalizedType}-${normalizedId}` : null;
+}
+
 function normalizeFilePath(filePath) {
   if (typeof filePath !== 'string') return null;
   const value = filePath.trim();
@@ -321,4 +332,66 @@ export function clearMoviePosterPreference(movieId) {
   }
 
   return didClear;
+}
+
+export function getMediaBackgroundPreferenceFilePath(mediaType, mediaId) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  if (!preferenceKey) return null;
+
+  return (
+    getMovieBackgroundPreferenceFilePath(preferenceKey) ||
+    (mediaType === 'movie' ? getMovieBackgroundPreferenceFilePath(mediaId) : null)
+  );
+}
+
+export function setMediaBackgroundPreference(mediaType, mediaId, filePath) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  return preferenceKey
+    ? setMovieBackgroundPreference(preferenceKey, filePath)
+    : false;
+}
+
+export function clearMediaBackgroundPreference(mediaType, mediaId) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  if (!preferenceKey) return false;
+
+  const didClear = clearMovieBackgroundPreference(preferenceKey);
+  const didClearLegacy =
+    mediaType === 'movie' ? clearMovieBackgroundPreference(mediaId) : false;
+  return didClear || didClearLegacy;
+}
+
+export function getMediaPosterPreferenceFilePath(mediaType, mediaId) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  if (!preferenceKey) return null;
+
+  return (
+    getMoviePosterPreferenceFilePath(preferenceKey) ||
+    (mediaType === 'movie' ? getMoviePosterPreferenceFilePath(mediaId) : null)
+  );
+}
+
+export function setMediaPosterPreference(mediaType, mediaId, filePath) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  if (!preferenceKey) return false;
+
+  const didSet = setMoviePreferenceByKind(preferenceKey, filePath, PREFERENCE_KIND.POSTER);
+  if (didSet) {
+    notifyPosterPreferenceChange({ entityType: mediaType, entityId: mediaId });
+  }
+  return didSet;
+}
+
+export function clearMediaPosterPreference(mediaType, mediaId) {
+  const preferenceKey = createMediaPreferenceKey(mediaType, mediaId);
+  if (!preferenceKey) return false;
+
+  const didClear = clearMoviePreferenceByKind(preferenceKey, PREFERENCE_KIND.POSTER);
+  const didClearLegacy =
+    mediaType === 'movie' ? clearMoviePreferenceByKind(mediaId, PREFERENCE_KIND.POSTER) : false;
+  const didClearPreference = didClear || didClearLegacy;
+  if (didClearPreference) {
+    notifyPosterPreferenceChange({ entityType: mediaType, entityId: mediaId });
+  }
+  return didClearPreference;
 }

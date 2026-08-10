@@ -1,15 +1,6 @@
 'use client';
 
-/**
- * Media Reviews - Single Rating Selector Component
- * Path: features/media-reviews/parts/rating-selector.js
- */
-
 import { useCallback, useState } from 'react';
-
-// ==========================================
-// 1. CONSTANTS & UTILS
-// ==========================================
 
 const STAR_COUNT = 5;
 const STAR_PATH = [
@@ -32,10 +23,6 @@ function getFillPercent(starIndex, activeValue) {
   if (activeValue >= starIndex - 0.5) return 50;
   return 0;
 }
-
-// ==========================================
-// 2. SUB-COMPONENTS
-// ==========================================
 
 function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft, onSelectRight }) {
   const fillPercent = getFillPercent(starIndex, activeValue);
@@ -81,10 +68,6 @@ function Star({ starIndex, activeValue, onHoverLeft, onHoverRight, onSelectLeft,
     </div>
   );
 }
-
-// ==========================================
-// 3. MAIN COMPONENT
-// ==========================================
 
 export default function RatingSelector({ value, onChange }) {
   const [hoverValue, setHoverValue] = useState(null);

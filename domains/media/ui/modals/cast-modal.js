@@ -14,8 +14,6 @@ import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import SegmentedControl from '@/ui/primitives/segmented-control';
 import Icon from '@/ui/primitives/icon';
 
-// --- HELPERS ---
-
 function normalizeEntries(list, fallbackSubtitle) {
   if (!Array.isArray(list)) return [];
   return list.map((member) => ({
@@ -28,8 +26,6 @@ function normalizeEntries(list, fallbackSubtitle) {
       fallbackSubtitle,
   }));
 }
-
-// --- SUB-COMPONENTS ---
 
 const PersonCard = memo(function PersonCard({ close, person }) {
   const [imageError, setImageError] = useState(false);
@@ -73,8 +69,6 @@ const PersonCard = memo(function PersonCard({ close, person }) {
     </Link>
   );
 });
-
-// --- MAIN COMPONENT ---
 
 export default function CastModal({ close, data, header }) {
   usePosterPreferenceVersion();

@@ -1,9 +1,5 @@
 import { isValidUrl, resolveVersionedImageUrl } from '@/shared/utils';
 
-// ============================================================
-// Avatar & Image Fallback Utilities
-// ============================================================
-
 const DEFAULT_USER_AVATAR = '/images/default-avatar.svg';
 
 function resolveAvatarSource(user) {
@@ -47,13 +43,6 @@ function resolveAvatarUrlCandidate(user = {}) {
   const candidates = [
     user?.avatarUrl,
     user?.avatar_url,
-    user?.photoURL,
-    user?.photoUrl,
-    user?.picture,
-    user?.image,
-    user?.user_metadata?.avatar_url,
-    user?.user_metadata?.picture,
-    user?.user_metadata?.avatar,
   ];
 
   for (const candidate of candidates) {

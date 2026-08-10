@@ -45,7 +45,6 @@ export default function PersonAction({ activeView, setActiveView, externalIds })
             </motion.span>
           </AnimatePresence>
         </motion.button>
-
         <motion.button
           type="button"
           whileHover={{ scale: 1.012 }}
@@ -66,27 +65,15 @@ export default function PersonAction({ activeView, setActiveView, externalIds })
               transition={{ duration: 0.22, ease: [0.16, 1, 0.24, 1] }}
               className="flex items-center justify-center gap-2"
             >
-              {activeView === 'awards' ? (
-                <>
-                  <Icon icon="solar:arrow-left-bold" size={NAV_ACTION_STYLES.icon} />
-                  Back
-                </>
-              ) : (
-                <>
-                  <Icon icon="solar:cup-star-bold" size={NAV_ACTION_STYLES.icon} />
-                  Awards
-                </>
-              )}
+              <Icon icon={activeView === 'awards' ? 'solar:arrow-left-bold' : 'solar:cup-star-bold'} size={NAV_ACTION_STYLES.icon} />
+              {activeView === 'awards' ? 'Back' : 'Awards'}
             </motion.span>
           </AnimatePresence>
         </motion.button>
       </div>
 
       {externalIds ? (
-        <SocialLinks
-          externalIds={externalIds}
-          className="w-full justify-center rounded-2xl"
-        />
+        <SocialLinks externalIds={externalIds} className="w-full justify-center rounded-2xl" />
       ) : null}
     </div>
   );

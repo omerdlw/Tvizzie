@@ -1,7 +1,3 @@
-// ============================================================
-// Search Domain Utilities & Text Normalizers
-// ============================================================
-
 export const SEARCH_TEXT_STOPWORDS = new Set([
   'a',
   'an',
@@ -63,10 +59,6 @@ export function hasExactComparableMatch(values = [], normalizedQuery = '') {
   return values.some((value) => normalizeComparableText(value) === normalizedQuery);
 }
 
-// ============================================================
-// Search Types, Limits, Grid & Style Constants
-// ============================================================
-
 export const SEARCH_TYPES = Object.freeze({
   ALL: 'all',
   MOVIE: 'movie',
@@ -81,14 +73,6 @@ export const SEARCH_LIMITS = Object.freeze({
   RESULTS_PER_PAGE: 4,
   USER_RESULTS: 8,
   USER_FULL_RESULTS: 10,
-});
-
-export const SEARCH_GRID = Object.freeze({
-  MOBILE_COLUMNS: 6,
-  MOBILE_ROWS: 12,
-  DESKTOP_COLUMNS: 12,
-  DESKTOP_ROWS: 8,
-  DESKTOP_BREAKPOINT: 1024,
 });
 
 export const SEARCH_TAB_ITEMS = Object.freeze([
@@ -116,18 +100,14 @@ export const SEARCH_TAB_ITEMS = Object.freeze([
 
 export const SEARCH_STYLES = Object.freeze({
   action: Object.freeze({
-    muted:
-      'border border-black/5 bg-black/5 text-black/70 hover:bg-black/10',
-    active:
-      'border border-black/10 bg-primary/50 hover:bg-primary/70 text-black',
+    muted: 'border border-black/5 bg-black/5 text-black/70 hover:bg-black/10',
+    active: 'border border-black/10 bg-primary/50 hover:bg-primary/70 text-black',
   }),
   input: 'flex w-full text-sm items-center rounded-2xl p-2 pl-4',
-  tabButton:
-    'relative rounded-xl shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto',
+  tabButton: 'relative rounded-xl shrink-0 px-3 py-1.5 text-xs whitespace-nowrap w-full flex-auto',
   tabList: 'hide-scrollbar flex items-center gap-2 overflow-x-auto',
   resultItem:
     'group flex transition-colors duration-150 ease-in-out cursor-pointer rounded-2xl items-center justify-between p-0.5 hover:bg-primary/50',
   thumbnail: 'relative rounded-xl h-20 w-16 shrink-0 overflow-hidden ',
-  metaBadge:
-    'flex  w-fit items-center rounded-[8px] gap-1 border border-black/5',
+  metaBadge: 'flex  w-fit items-center rounded-[8px] gap-1 border border-black/5',
 });

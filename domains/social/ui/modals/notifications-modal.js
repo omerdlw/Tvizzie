@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import Link from 'next/link';
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
 import { useAuth, useAuthSessionReady } from '@/modules/auth';
+import { useToast } from '@/modules/notification';
 import {
   NOTIFICATION_TYPES,
   deleteAllNotifications,
@@ -11,15 +12,17 @@ import {
   markAllAsRead,
   markAsRead,
   subscribeToNotifications,
-} from '@/domains/social/server/notifications/notifications-service';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+} from '@/domains/social/client/notifications/notification-service';
+import {
+  applyAvatarFallback,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+} from '@/domains/account/utils';
 import { cn } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 import { DESTRUCTIVE_ACTION_TONE_CLASS, INFO_ACTION_TONE_CLASS } from '@/shared/constants/index';
-
-// --- CONSTANTS & HELPERS ---
 
 const TOOL_BUTTON_CLASS = 'size-7 rounded-xl transition-colors duration-150 ease-in-out';
 const SKELETON_COUNT = 16;
@@ -70,8 +73,6 @@ function getNotificationSubject(payload, type) {
   }
   return null;
 }
-
-// --- SUB-COMPONENTS ---
 
 const InlineEntity = memo(function InlineEntity({ href, children, muted = false }) {
   const className = muted ? 'font-semibold text-black/70' : 'font-semibold';
@@ -213,14 +214,14 @@ function NotificationSkeleton() {
   );
 }
 
-// --- MAIN COMPONENT ---
-
 export default function NotificationsModal({ close, header, data }) {
   const auth = useAuth();
+  const toast = useToast();
   const userId = data?.userId || auth.user?.id || null;
   const isAuthSessionReady = useAuthSessionReady(auth.isAuthenticated ? userId : null);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const optimisticStateRef = useRef({ deletedIds: new Set(), forceReadIds: new Set() });
 
@@ -243,22 +244,25 @@ export default function NotificationsModal({ close, header, data }) {
     if (!auth.isReady || !auth.isAuthenticated || !isAuthSessionReady || !userId) {
       resetOptimisticState();
       setNotifications([]);
+      setLoadError(null);
       setIsLoading(false);
       return;
     }
 
     resetOptimisticState();
+    setLoadError(null);
     setIsLoading(true);
 
     return subscribeToNotifications(
       userId,
       (nextNotifications) => {
         setNotifications(projectNotifications(nextNotifications));
+        setLoadError(null);
         setIsLoading(false);
       },
       {
         onError: (error) => {
-          console.error('[NotificationsModal] Subscription failed:', error);
+          setLoadError(error);
           setIsLoading(false);
         },
       },
@@ -278,7 +282,7 @@ export default function NotificationsModal({ close, header, data }) {
     } catch (error) {
       unreadIds.forEach((id) => optimisticStateRef.current.forceReadIds.delete(id));
       setNotifications(previous);
-      console.error(error);
+      toast.error(error?.message || 'Notifications could not be updated');
     }
   };
 
@@ -299,10 +303,10 @@ export default function NotificationsModal({ close, header, data }) {
       } catch (error) {
         optimisticStateRef.current.forceReadIds.delete(notificationId);
         setNotifications(previous);
-        console.error(error);
+        toast.error(error?.message || 'Notification could not be updated');
       }
     },
-    [userId, notifications],
+    [notifications, toast, userId],
   );
 
   const handleDelete = useCallback(
@@ -320,10 +324,10 @@ export default function NotificationsModal({ close, header, data }) {
       } catch (error) {
         optimisticStateRef.current.deletedIds.delete(notificationId);
         setNotifications(previous);
-        console.error(error);
+        toast.error(error?.message || 'Notification could not be deleted');
       }
     },
-    [userId, notifications],
+    [notifications, toast, userId],
   );
 
   const handleDeleteAll = async () => {
@@ -339,7 +343,7 @@ export default function NotificationsModal({ close, header, data }) {
     } catch (error) {
       ids.forEach((id) => optimisticStateRef.current.deletedIds.delete(id));
       setNotifications(previous);
-      console.error(error);
+      toast.error(error?.message || 'Notifications could not be deleted');
     }
   };
 
@@ -377,6 +381,10 @@ export default function NotificationsModal({ close, header, data }) {
       <div className="min-h-0 overflow-y-auto">
         {isLoading ? (
           Array.from({ length: SKELETON_COUNT }, (_, index) => <NotificationSkeleton key={index} />)
+        ) : loadError ? (
+          <div className="center h-52 px-6 text-center text-sm font-medium text-black/50">
+            Notifications could not be loaded. Please try again.
+          </div>
         ) : notifications.length === 0 ? (
           <div className="center h-screen text-sm font-medium text-black/50">
             You have no notifications yet

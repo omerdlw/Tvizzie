@@ -9,11 +9,11 @@ import {
   fetchAllMedia,
   fetchMedia,
   fetchUsers,
-  getDetailPath,
   inferSearchType,
   limitMediaResults,
   mergeAllResults,
-} from '@/domains/search/services/search-data';
+} from '@/domains/search/client/search-api';
+import { getDetailPath } from '@/domains/search/shared/result';
 
 async function resolveSearchActionResults({ isManualTab, query, searchType }) {
   const normalizedQuery = query.trim().toLowerCase();
@@ -83,7 +83,7 @@ export function useSearchActionController({
 
   const query = isQueryControlled ? controlledQuery : localQuery;
   const searchType = isSearchTypeControlled ? controlledSearchType : localSearchType;
-  const loading = localLoading;
+  const loading = controlledLoading || localLoading;
   const debouncedQuery = useDebounce(query, 500);
   const { expanded, navigate, setCompactLock, setExpanded } = useNavigation();
 

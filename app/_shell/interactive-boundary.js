@@ -24,7 +24,10 @@ import { NotificationBadgeListener, NotificationListener } from '@/modules/notif
 import { useRegistry } from '@/modules/registry';
 import { SettingsProvider } from '@/modules/settings';
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
-import { createClient as createSupabaseClient, terminateBrowserSession } from '@/infrastructure/supabase/supabase-client';
+import {
+  createClient as createSupabaseClient,
+  terminateBrowserSession,
+} from '@/infrastructure/supabase/supabase-client';
 
 const APP_AUTH_CONFIG = {
   adapter: createSupabaseAuthAdapter({
@@ -32,8 +35,8 @@ const APP_AUTH_CONFIG = {
     oauthDefaultNextPath: '/account',
     terminateBrowserSession,
   }),
-  hydrateFromStorage: true,
-  persistSession: true,
+  hydrateFromStorage: false,
+  persistSession: false,
 };
 
 const APP_SETTINGS_CONFIG = {

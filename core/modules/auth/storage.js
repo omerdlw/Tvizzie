@@ -13,17 +13,14 @@ function getLocalStorage() {
 export function createAuthStorage(storageKey = 'app_auth_session') {
   const key = String(storageKey || '').trim() || 'app_auth_session';
 
+  function clear() {
+    try {
+      getLocalStorage()?.removeItem(key);
+    } catch {}
+  }
+
   return {
-    clear() {
-      const storage = getLocalStorage();
-      if (storage) {
-        try {
-          storage.removeItem(key);
-        } catch {
-          // Ignores local storage restrictions
-        }
-      }
-    },
+    clear,
 
     read() {
       const storage = getLocalStorage();
@@ -33,7 +30,7 @@ export function createAuthStorage(storageKey = 'app_auth_session') {
         const rawValue = storage.getItem(key);
         return rawValue ? JSON.parse(rawValue) : null;
       } catch {
-        this.clear();
+        clear();
         return null;
       }
     },
@@ -43,14 +40,14 @@ export function createAuthStorage(storageKey = 'app_auth_session') {
       if (!storage) return;
 
       if (!session) {
-        this.clear();
+        clear();
         return;
       }
 
       try {
         storage.setItem(key, JSON.stringify(session));
       } catch {
-        this.clear();
+        clear();
       }
     },
   };

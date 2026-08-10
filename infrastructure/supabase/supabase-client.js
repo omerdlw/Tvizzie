@@ -19,20 +19,6 @@ import {
   SUPABASE_URL,
 } from './supabase-constants';
 
-if (typeof window !== 'undefined') {
-  const originalWarn = console.warn;
-  console.warn = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('supabase.auth.getSession()') &&
-      args[0].includes('insecure')
-    ) {
-      return;
-    }
-    originalWarn(...args);
-  };
-}
-
 let clientInstance = null;
 let dataClientAccessToken = null;
 let dataClientInstance = null;
@@ -63,9 +49,7 @@ export function getBrowserSupabaseAccessToken() {
     });
 
   for (const cookieName of sessionCookieNames) {
-    const accessToken = parseSupabaseSessionAccessToken(
-      combineCookieChunks(cookieMap, cookieName),
-    );
+    const accessToken = parseSupabaseSessionAccessToken(combineCookieChunks(cookieMap, cookieName));
     if (accessToken) return accessToken;
   }
 
@@ -132,9 +116,6 @@ export function createClient() {
 
   clientInstance = createBrowserClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      // OAuth callback handling is explicit in app/(auth)/callback. Leaving
-      // URL detection enabled here races that exchange with Supabase's own
-      // automatic code exchange and can leave the server cookie unsynced.
       detectSessionInUrl: false,
       flowType: 'pkce',
       multiTab: false,

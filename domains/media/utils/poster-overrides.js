@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { TMDB_IMG } from '@/shared/constants';
 import { POSTER_PREFERENCE_CHANGE_EVENT } from '@/domains/media/utils/user-media';
-import { getMoviePosterPreferenceFilePath } from '@/domains/media/utils/background-preferences';
+import { getMediaPosterPreferenceFilePath } from '@/domains/media/utils/background-preferences';
 import { getPersonPosterPreferenceFilePath } from '@/domains/media/utils/poster-preferences';
 
 let canReadPosterPreferences = false;
@@ -66,9 +66,16 @@ export function usePosterPreferenceVersion() {
 }
 
 export function getPreferredMoviePosterSrc(item, size = 'w342') {
+  return getPreferredMediaPosterSrc(item, size, 'movie');
+}
+
+export function getPreferredMediaPosterSrc(item, size = 'w342', fallbackMediaType = null) {
   const mediaId = getMediaId(item);
+  const mediaType = String(item?.entityType || item?.media_type || fallbackMediaType || '')
+    .trim()
+    .toLowerCase();
   const preferredPath =
-    canReadPosterPreferences && mediaId ? getMoviePosterPreferenceFilePath(mediaId) : null;
+    canReadPosterPreferences && mediaId ? getMediaPosterPreferenceFilePath(mediaType, mediaId) : null;
 
   return (
     createTmdbImageSrc(preferredPath, size) ||
@@ -94,7 +101,7 @@ export function getPreferredSearchImageSrc(item, size = 'w342') {
   }
 
   if (item?.media_type === 'tv') {
-    return createTmdbImageSrc(item?.poster_path || item?.posterPath, size);
+    return getPreferredMediaPosterSrc(item, size, 'tv');
   }
 
   if (item?.media_type === 'person') {

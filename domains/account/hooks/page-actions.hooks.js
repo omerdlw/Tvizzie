@@ -5,13 +5,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { deleteUserList } from '@/domains/media/server/lists';
+import { deleteUserList } from '@/domains/media/client/collections/lists';
 import {
   FOLLOW_STATUSES,
   cancelFollowRequest,
   followUser,
   unfollowUser,
-} from '@/domains/social/server/social/follow-service';
+} from '@/domains/social/client/follows';
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
 import {

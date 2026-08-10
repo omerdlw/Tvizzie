@@ -1,13 +1,8 @@
 'use client';
 
-/**
- * Media Reviews - Reviews List View Component
- * Path: features/media-reviews/parts/review-list.js
- */
-
 import { motion } from 'framer-motion';
 import { normalizeFeedbackText } from '@/shared/utils';
-import { mergeReviewUser } from '../../services/review-data';
+import { mergeReviewUser } from '../../shared/review-data';
 import ReviewCard from './review-card';
 import { getListCardProps, TIMELINES } from '@/app/(account)/motion';
 import { ReviewCardsSkeletonList } from '@/domains/account/ui/skeletons/account-section-skeletons';

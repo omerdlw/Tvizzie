@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/utils';
 import { NAV_SURFACE_RENDER_MODE } from '@/modules/nav';
 
-
 const BUTTON_TONES = Object.freeze({
   danger:
     'border border-error/20 bg-error/10 text-error hover:bg-error hover:text-white hover:border-error',

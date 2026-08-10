@@ -1,9 +1,5 @@
 import { normalizeValue as normalizeActivityKeyPart } from '@/shared/utils';
 
-// ============================================================
-// Social Domain Utilities & Key Generators
-// ============================================================
-
 export { normalizeActivityKeyPart };
 
 export function buildActivitySubjectRef({ subjectId, subjectType }) {
@@ -63,10 +59,6 @@ export function normalizeLiveFollowPayload(payload = {}) {
     status: normalizeActivityKeyPart(payload.status).toLowerCase(),
   };
 }
-
-// ============================================================
-// Social Follow & Activity Event Constants
-// ============================================================
 
 export const FOLLOW_SELECT = [
   'created_at',
@@ -142,5 +134,3 @@ export const NOTIFICATION_EVENT_TYPES = Object.freeze({
 });
 
 export const NOTIFICATION_EVENT_TYPE_SET = new Set(Object.values(NOTIFICATION_EVENT_TYPES));
-
-

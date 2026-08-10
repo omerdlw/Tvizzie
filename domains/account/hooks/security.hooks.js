@@ -19,13 +19,13 @@ import {
 import { AuthVerificationSurface } from '@/domains/auth/ui';
 import { AUTH_ROUTES, buildAuthHref } from '@/domains/auth/utils';
 
-// ============================================================
-// Security Helpers & Validation
-// ============================================================
-
-export function resetLinkedProviderOverrides({ setLinkedProviderDescriptorsOverride, setLinkedProviderIdsOverride }) {
+export function resetLinkedProviderOverrides({
+  setLinkedProviderDescriptorsOverride,
+  setLinkedProviderIdsOverride,
+}) {
   if (typeof setLinkedProviderIdsOverride === 'function') setLinkedProviderIdsOverride(null);
-  if (typeof setLinkedProviderDescriptorsOverride === 'function') setLinkedProviderDescriptorsOverride(null);
+  if (typeof setLinkedProviderDescriptorsOverride === 'function')
+    setLinkedProviderDescriptorsOverride(null);
 }
 
 export async function logCredentialAuditSuccess(event, metadata = {}) {
@@ -42,9 +42,10 @@ export async function logCredentialAuditFailure(event, error) {
   } catch {}
 }
 
-export async function signOutIfRequested(auth, nextAction) {
+export async function signOutIfRequested(auth, nextAction, { email, router } = {}) {
   if (nextAction !== 'signed_out' || typeof auth?.signOut !== 'function') return;
   await auth.signOut({ reason: 'security-credential-update', redirect: false }).catch(() => {});
+  router?.replace?.(buildAuthHref(AUTH_ROUTES.SIGN_IN, { email }));
 }
 
 export function redirectToSignInWithEmail(router, email) {
@@ -52,10 +53,16 @@ export function redirectToSignInWithEmail(router, email) {
   router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, { email }));
 }
 
-export function validateEmailChangeInput({ currentEmail, currentPassword, newEmail, isPasswordLinked }) {
+export function validateEmailChangeInput({
+  currentEmail,
+  currentPassword,
+  newEmail,
+  isPasswordLinked,
+}) {
   if (isPasswordLinked && !currentPassword) return 'Current password is required';
   if (!newEmail || !newEmail.includes('@')) return 'Valid new email address is required';
-  if (currentEmail && newEmail.toLowerCase() === currentEmail.toLowerCase()) return 'New email must be different from current email';
+  if (currentEmail && newEmail.toLowerCase() === currentEmail.toLowerCase())
+    return 'New email must be different from current email';
   return null;
 }
 
@@ -65,34 +72,41 @@ export function validateNewPasswordPair(newPassword, confirmPassword) {
   return null;
 }
 
-export function validatePasswordChangeInput({ currentPassword, newPassword, confirmPassword, isPasswordLinked }) {
+export function validatePasswordChangeInput({
+  currentPassword,
+  newPassword,
+  confirmPassword,
+  isPasswordLinked,
+}) {
   if (isPasswordLinked && !currentPassword) return 'Current password is required';
   const pairError = validateNewPasswordPair(newPassword, confirmPassword);
   if (pairError) return pairError;
-  if (isPasswordLinked && currentPassword === newPassword) return 'New password must be different from current password';
+  if (isPasswordLinked && currentPassword === newPassword)
+    return 'New password must be different from current password';
   return null;
 }
 
-// ============================================================
-// Account Verification Prompt Helper
-// ============================================================
-
-export async function openAccountVerificationPrompt({ description, email, openModal, openSurface, purpose, title, toast }) {
+export async function openAccountVerificationPrompt({
+  description,
+  email,
+  openModal,
+  openSurface,
+  purpose,
+  title,
+  toast,
+}) {
   const verificationEmail = normalizeEmail(email);
   try {
     const config = { header: { description, title }, data: { email: verificationEmail, purpose } };
     if (typeof openSurface === 'function') return openSurface(AuthVerificationSurface, config);
-    if (typeof openModal === 'function') return openModal('AUTH_VERIFICATION_MODAL', 'bottom', config);
+    if (typeof openModal === 'function')
+      return openModal('AUTH_VERIFICATION_MODAL', 'bottom', config);
     return { error: new Error('Verification prompt is unavailable'), success: false };
   } catch (error) {
     toast?.error?.(error?.message || 'Verification prompt is unavailable');
     return { error, success: false };
   }
 }
-
-// ============================================================
-// Credential Actions Hook (Email & Password Changes)
-// ============================================================
 
 export function useAccountCredentialActions({
   auth,
@@ -108,8 +122,12 @@ export function useAccountCredentialActions({
   setPasswordFlow,
   toast,
 }) {
+  const router = useRouter();
   const resetLinkedProviders = useCallback(() => {
-    resetLinkedProviderOverrides({ setLinkedProviderDescriptorsOverride, setLinkedProviderIdsOverride });
+    resetLinkedProviderOverrides({
+      setLinkedProviderDescriptorsOverride,
+      setLinkedProviderIdsOverride,
+    });
   }, [setLinkedProviderDescriptorsOverride, setLinkedProviderIdsOverride]);
 
   const reauthenticateWithPassword = useCallback(
@@ -130,7 +148,12 @@ export function useAccountCredentialActions({
       const newPassword = String(passwordFlow.newPassword || '');
       const confirmPassword = String(passwordFlow.confirmPassword || '');
 
-      const validationError = validatePasswordChangeInput({ confirmPassword, currentPassword, isPasswordLinked, newPassword });
+      const validationError = validatePasswordChangeInput({
+        confirmPassword,
+        currentPassword,
+        isPasswordLinked,
+        newPassword,
+      });
       if (validationError) {
         toast.error(validationError);
         return;
@@ -144,7 +167,9 @@ export function useAccountCredentialActions({
         }
 
         const verification = await openAccountVerificationPrompt({
-          description: isPasswordLinked ? 'Verify your email before updating password' : 'Verify your email before setting password',
+          description: isPasswordLinked
+            ? 'Verify your email before updating password'
+            : 'Verify your email before setting password',
           email: currentAuthEmail,
           openModal,
           openSurface,
@@ -166,20 +191,41 @@ export function useAccountCredentialActions({
 
         resetLinkedProviders();
         setPasswordFlow(INITIAL_PASSWORD_FLOW);
-        toast.success(isPasswordLinked ? 'Password updated successfully' : 'Password created successfully');
-        await logCredentialAuditSuccess(isPasswordLinked ? 'password_update' : 'password_set', { userId: auth?.user?.id });
+        toast.success(
+          isPasswordLinked ? 'Password updated successfully' : 'Password created successfully',
+        );
+        await logCredentialAuditSuccess(isPasswordLinked ? 'password_update' : 'password_set', {
+          userId: auth?.user?.id,
+        });
 
-        await signOutIfRequested(auth, result?.nextAction);
+        await signOutIfRequested(auth, result?.nextAction, {
+          email: currentAuthEmail,
+          router,
+        });
       } catch (error) {
         setPasswordFlow((prev) => ({ ...prev, isSubmitting: false }));
         const errorMessage = resolveSecurityErrorMessage(error, 'Password update failed');
         toast.error(errorMessage);
-        await logCredentialAuditFailure(isPasswordLinked ? 'password_update' : 'password_set', error);
+        await logCredentialAuditFailure(
+          isPasswordLinked ? 'password_update' : 'password_set',
+          error,
+        );
       } finally {
         clearAccountFeedback('password-update');
       }
     },
-    [auth, currentAuthEmail, openModal, openSurface, passwordFlow, reauthenticateWithPassword, resetLinkedProviders, setPasswordFlow, toast],
+    [
+      auth,
+      currentAuthEmail,
+      openModal,
+      openSurface,
+      passwordFlow,
+      reauthenticateWithPassword,
+      resetLinkedProviders,
+      router,
+      setPasswordFlow,
+      toast,
+    ],
   );
 
   const handleUpdateEmail = useCallback(
@@ -189,7 +235,12 @@ export function useAccountCredentialActions({
       const currentPassword = String(emailFlow.currentPassword || '');
       const newEmail = normalizeEmail(emailFlow.newEmail);
 
-      const validationError = validateEmailChangeInput({ currentEmail: currentAuthEmail, currentPassword, isPasswordLinked, newEmail });
+      const validationError = validateEmailChangeInput({
+        currentEmail: currentAuthEmail,
+        currentPassword,
+        isPasswordLinked,
+        newEmail,
+      });
       if (validationError) {
         toast.error(validationError);
         return;
@@ -219,12 +270,18 @@ export function useAccountCredentialActions({
 
         emitAccountFeedback('email-update', 'start');
 
-        const result = await completeEmailChangeRequest({ currentPassword: isPasswordLinked ? currentPassword : '', newEmail });
+        const result = await completeEmailChangeRequest({
+          currentPassword: isPasswordLinked ? currentPassword : '',
+          newEmail,
+        });
         setEmailFlow(INITIAL_EMAIL_FLOW);
         toast.success('Email update completed successfully');
         await logCredentialAuditSuccess('email_change', { newEmail, userId: auth?.user?.id });
 
-        await signOutIfRequested(auth, result?.nextAction);
+        await signOutIfRequested(auth, result?.nextAction, {
+          email: newEmail,
+          router,
+        });
       } catch (error) {
         setEmailFlow((prev) => ({ ...prev, isSubmitting: false }));
         const errorMessage = resolveSecurityErrorMessage(error, 'Email update failed');
@@ -234,15 +291,21 @@ export function useAccountCredentialActions({
         clearAccountFeedback('email-update');
       }
     },
-    [auth, currentAuthEmail, emailFlow, openModal, openSurface, reauthenticateWithPassword, setEmailFlow, toast],
+    [
+      auth,
+      currentAuthEmail,
+      emailFlow,
+      openModal,
+      openSurface,
+      reauthenticateWithPassword,
+      router,
+      setEmailFlow,
+      toast,
+    ],
   );
 
   return { handleUpdateEmail, handleUpdatePassword, reauthenticateWithPassword };
 }
-
-// ============================================================
-// Account Delete Action Hook
-// ============================================================
 
 export function useAccountDeleteAction({
   auth,
@@ -307,7 +370,9 @@ export function useAccountDeleteAction({
           }
 
           emitAccountFeedback('account-delete', 'start');
-          const result = await deleteAccountRequest({ currentPassword: isPasswordLinked ? currentPassword : '' });
+          const result = await deleteAccountRequest({
+            currentPassword: isPasswordLinked ? currentPassword : '',
+          });
           setDeleteConfirmation(null);
 
           if (result?.nextAction === 'signed_out') {
@@ -329,7 +394,19 @@ export function useAccountDeleteAction({
         }
       },
     });
-  }, [auth, currentAuthEmail, deleteFlow, isPasswordLinked, openModal, openSurface, reauthenticateWithPassword, router, setDeleteConfirmation, setDeleteFlow, toast]);
+  }, [
+    auth,
+    currentAuthEmail,
+    deleteFlow,
+    isPasswordLinked,
+    openModal,
+    openSurface,
+    reauthenticateWithPassword,
+    router,
+    setDeleteConfirmation,
+    setDeleteFlow,
+    toast,
+  ]);
 
   return { handleDeleteAccount };
 }

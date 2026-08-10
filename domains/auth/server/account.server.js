@@ -1,11 +1,11 @@
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { validateUsername } from '@/domains/account/utils';
-import { ACCOUNT_LIFECYCLE_TABLE, resolveAuthCapabilities, resolveProviderIds } from '@/domains/auth/utils';
-
-// ============================================================
-// Account State Enums
-// ============================================================
+import {
+  ACCOUNT_LIFECYCLE_TABLE,
+  resolveAuthCapabilities,
+  resolveProviderIds,
+} from '@/domains/auth/utils';
 
 export const ACCOUNT_LIFECYCLE_STATES = Object.freeze({
   ACTIVE: 'ACTIVE',
@@ -20,10 +20,6 @@ export const EMAIL_ACCOUNT_STATES = Object.freeze({
   EXISTING_PASSWORD_ACCOUNT: 'existing_password_account',
   RECOVERABLE_PASSWORD_ORPHAN: 'recoverable_password_orphan',
 });
-
-// ============================================================
-// Account Bootstrap & Record Creation
-// ============================================================
 
 export async function claimUsernameForProfile({
   avatarUrl = null,
@@ -50,7 +46,63 @@ export async function claimUsernameForProfile({
   }
 }
 
-export async function ensurePasswordAccountRecord({
+function isUsernameTakenError(error) {
+  return normalizeValue(error?.message).toUpperCase().includes('USERNAME_TAKEN');
+}
+
+function createUsernameBase({ displayName, email, userId }) {
+  const preferredValue = normalizeValue(displayName) || normalizeValue(email).split('@')[0];
+  const fallbackValue = `user_${normalizeValue(userId).replace(/-/g, '').slice(0, 8)}`;
+
+  try {
+    return validateUsername(preferredValue).slice(0, 18);
+  } catch {
+    return validateUsername(fallbackValue).slice(0, 18);
+  }
+}
+
+function createUsernameCandidate(baseUsername, userId, attempt) {
+  if (attempt === 0) return baseUsername;
+
+  const uniqueSuffix = `${normalizeValue(userId).replace(/-/g, '').slice(0, 6)}${attempt}`;
+  const candidateBase = baseUsername.slice(0, Math.max(3, 24 - uniqueSuffix.length - 1));
+  return validateUsername(`${candidateBase}_${uniqueSuffix}`);
+}
+
+async function claimAvailableUsernameForProfile({
+  avatarUrl,
+  displayName,
+  email,
+  userId,
+  username,
+}) {
+  const baseUsername = username
+    ? validateUsername(username)
+    : createUsernameBase({ displayName, email, userId });
+  const maxAttempts = username ? 1 : 3;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const candidate = createUsernameCandidate(baseUsername, userId, attempt);
+
+    try {
+      await claimUsernameForProfile({
+        avatarUrl,
+        displayName,
+        email,
+        preserveExisting: false,
+        userId,
+        username: candidate,
+      });
+      return candidate;
+    } catch (error) {
+      if (!isUsernameTakenError(error) || attempt === maxAttempts - 1) throw error;
+    }
+  }
+
+  throw new Error('Username could not be claimed');
+}
+
+export async function ensureAccountProfileRecord({
   avatarUrl = null,
   displayName,
   email,
@@ -59,20 +111,18 @@ export async function ensurePasswordAccountRecord({
 }) {
   const normalizedUserId = normalizeValue(userId);
   const normalizedEmail = normalizeEmailValue(email);
-  const normalizedUsername = validateUsername(username);
-  const resolvedDisplayName = normalizeValue(displayName) || normalizedUsername;
 
   if (!normalizedUserId || !normalizedEmail) {
     throw new Error('User ID and email are required to create the account profile');
   }
 
-  await claimUsernameForProfile({
+  const resolvedDisplayName = normalizeValue(displayName) || normalizedEmail.split('@')[0];
+  const normalizedUsername = await claimAvailableUsernameForProfile({
     avatarUrl,
     displayName: resolvedDisplayName,
     email: normalizedEmail,
-    preserveExisting: false,
     userId: normalizedUserId,
-    username: normalizedUsername,
+    username,
   });
 
   const profileResult = await createAdminClient()
@@ -95,10 +145,6 @@ export async function ensurePasswordAccountRecord({
 
   return profile;
 }
-
-// ============================================================
-// Account Deletion & Purging
-// ============================================================
 
 export function hasPasswordProvider(userRecord) {
   const providerIds = resolveProviderIds({
@@ -153,10 +199,6 @@ export async function purgeAccountData({ userId }) {
   );
 }
 
-// ============================================================
-// Account Lifecycle & State Management
-// ============================================================
-
 function normalizeState(value) {
   const normalized = normalizeValue(value).toUpperCase();
   return normalized || ACCOUNT_LIFECYCLE_STATES.ACTIVE;
@@ -201,7 +243,9 @@ export async function ensureAccountLifecycle(userId) {
   if (!normalizedUserId) throw new Error('Authenticated user is required');
 
   try {
-    const rpcData = await callLifecycleRpc('ensure_account_lifecycle', { p_user_id: normalizedUserId });
+    const rpcData = await callLifecycleRpc('ensure_account_lifecycle', {
+      p_user_id: normalizedUserId,
+    });
     return buildLifecycleRow(rpcData);
   } catch (error) {
     if (!isLifecycleUnavailableError(error)) {
@@ -254,8 +298,10 @@ export async function assertAccountLifecycleAllowed({
   );
 
   if (!normalizedAllowedStates.has(lifecycle.state)) {
-    if (lifecycle.state === ACCOUNT_LIFECYCLE_STATES.DELETED) throw new Error('Account has already been deleted');
-    if (lifecycle.state === ACCOUNT_LIFECYCLE_STATES.PENDING_DELETE) throw new Error('Account is pending deletion');
+    if (lifecycle.state === ACCOUNT_LIFECYCLE_STATES.DELETED)
+      throw new Error('Account has already been deleted');
+    if (lifecycle.state === ACCOUNT_LIFECYCLE_STATES.PENDING_DELETE)
+      throw new Error('Account is pending deletion');
     throw new Error('Account is not active');
   }
 
@@ -288,11 +334,20 @@ export async function beginAccountDeleteLifecycle({
     if (!isLifecycleUnavailableError(error)) {
       throw new Error(error?.message || 'Account delete lifecycle could not be started');
     }
-    return { accepted: true, reason: 'lifecycle_unavailable', state: ACCOUNT_LIFECYCLE_STATES.PENDING_DELETE };
+    return {
+      accepted: true,
+      reason: 'lifecycle_unavailable',
+      state: ACCOUNT_LIFECYCLE_STATES.PENDING_DELETE,
+    };
   }
 }
 
-export async function completeAccountDeleteLifecycle({ metadata = null, requestId = null, sessionJti = null, userId } = {}) {
+export async function completeAccountDeleteLifecycle({
+  metadata = null,
+  requestId = null,
+  sessionJti = null,
+  userId,
+} = {}) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) throw new Error('Authenticated user is required');
 
@@ -310,7 +365,12 @@ export async function completeAccountDeleteLifecycle({ metadata = null, requestI
   }
 }
 
-export async function abortAccountDeleteLifecycle({ metadata = null, reason = 'delete_failed', requestId = null, userId } = {}) {
+export async function abortAccountDeleteLifecycle({
+  metadata = null,
+  reason = 'delete_failed',
+  requestId = null,
+  userId,
+} = {}) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) throw new Error('Authenticated user is required');
 
@@ -362,7 +422,9 @@ export async function resolveEmailAccountState(email) {
       raw: profile,
       username: normalizeValue(profile?.username),
     },
-    state: profile?.id ? EMAIL_ACCOUNT_STATES.EXISTING_PASSWORD_ACCOUNT : EMAIL_ACCOUNT_STATES.AVAILABLE,
+    state: profile?.id
+      ? EMAIL_ACCOUNT_STATES.EXISTING_PASSWORD_ACCOUNT
+      : EMAIL_ACCOUNT_STATES.AVAILABLE,
     userId: normalizeValue(profile?.id) || null,
   };
 }

@@ -1,7 +1,11 @@
 import { getRealtimeTransportMode } from '@/infrastructure/realtime/realtime-transport-config';
 import { NextResponse } from 'next/server';
 
-import { CACHE_CONTROL, ROLLOUT_CONFIG, cacheControlHeaders } from '@/infrastructure/http/http-server';
+import {
+  CACHE_CONTROL,
+  ROLLOUT_CONFIG,
+  cacheControlHeaders,
+} from '@/infrastructure/http/http-server';
 
 function normalizeValue(value) {
   return String(value || '').trim();

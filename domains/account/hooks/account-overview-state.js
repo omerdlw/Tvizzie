@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/auth/utils';
-import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/server';
+import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import { TMDB_IMG } from '@/shared/constants';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
@@ -130,14 +130,11 @@ export function useAccountOverviewState(routeData = null) {
     if (!isCurrentAccountMissing || handledMissingAccountRef.current) return;
 
     handledMissingAccountRef.current = true;
-    toast.warning('This account no longer exists. You have been signed out.', {
+    toast.error('Your account profile could not be initialized. Refresh the page and try again.', {
       dedupeKey: 'current-account-missing',
       duration: 6000,
     });
-    void auth.signOut({ reason: 'delete-account' }).finally(() => {
-      router.replace(AUTH_ROUTES.SIGN_IN);
-    });
-  }, [auth, isCurrentAccountMissing, router, toast]);
+  }, [isCurrentAccountMissing, toast]);
 
   const reviewPreview = useOverviewPreviewFeed({
     canLoad: canLoadPreviews,

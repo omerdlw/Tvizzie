@@ -11,8 +11,8 @@ import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.cli
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import { TMDB_IMG } from '@/shared/constants';
-import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/server';
-import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
+import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/client';
+import { subscribeToUserWatched } from '@/domains/media/client/collections/watched-watchlist';
 import { useNavigationActions } from '@/modules/nav';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';

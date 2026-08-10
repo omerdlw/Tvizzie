@@ -225,7 +225,7 @@ export const navPlugin = createPlugin({
     }
 
     const filteredNavItem = Object.fromEntries(
-      Object.entries(navItem).filter(([, val]) => val !== undefined)
+      Object.entries(navItem).filter(([, val]) => val !== undefined),
     );
 
     if (itemPath) {

@@ -31,9 +31,7 @@ export function createAccountBioSurfaceEntry(data = {}, config = {}) {
   };
 }
 
-export default function AccountBioSurface({
-  description = '',
-}) {
+export default function AccountBioSurface({ description = '' }) {
   const normalizedDescription = String(description || '').trim();
 
   return (

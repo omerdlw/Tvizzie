@@ -42,10 +42,6 @@ export class TmdbService {
     );
   }
 
-  static async getPersonAwards(id) {
-    return requestJson(`/api/person/${id}/awards`);
-  }
-
   static async getMovieImages(id) {
     const normalizedId = toRequiredId(id);
 

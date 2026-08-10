@@ -11,15 +11,9 @@ export const SUPABASE_PUBLISHABLE_KEY = normalizeValue(
 );
 export const SUPABASE_SERVICE_ROLE_KEY = normalizeValue(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-// The browser refreshes a Supabase session while the user is active. Giving the
-// auth cookies a sliding 30-day lifetime keeps that behavior across browser
-// restarts, while an inactive browser loses its local session after 30 days.
 export const SUPABASE_AUTH_INACTIVITY_TIMEOUT_SECONDS =
   DAYS_PER_MONTH * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
-// Supabase's browser client must be able to refresh a rich-client session, so
-// these cookies cannot be HttpOnly. Keep their transport and cross-site scope
-// explicit and protect them from XSS with the application's CSP.
 export const SUPABASE_AUTH_COOKIE_OPTIONS = Object.freeze({
   maxAge: SUPABASE_AUTH_INACTIVITY_TIMEOUT_SECONDS,
   path: '/',

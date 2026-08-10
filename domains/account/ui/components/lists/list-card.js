@@ -145,10 +145,13 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
                 const distanceFromCenter = Math.abs(imgIndex - centerIndex);
                 const zIndex = 10 - distanceFromCenter;
 
-                const brightness = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.60 : 0.35;
-                const blurAmount = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 0.5 : 1.5;
+                const brightness =
+                  distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.6 : 0.35;
+                const blurAmount =
+                  distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 0.5 : 1.5;
                 const yOffset = -16 * (1 - distanceFromCenter / centerIndex) || 0;
-                const scale = distanceFromCenter === 0 ? 1.05 : distanceFromCenter === 1 ? 0.95 : 0.88;
+                const scale =
+                  distanceFromCenter === 0 ? 1.05 : distanceFromCenter === 1 ? 0.95 : 0.88;
 
                 const xPos = isHovered ? pos.x * 1.38 : pos.x;
                 const yPos = isHovered ? -12 + yOffset : 6 + yOffset;
@@ -238,7 +241,7 @@ export default function AccountListCard({ list, ownerUsername = null, renderActi
               </h3>
               <p
                 className={`mt-1 line-clamp-2 text-xs leading-relaxed ${
-                  listDescription ? 'text-black/60 font-normal' : 'text-black/40 font-normal italic'
+                  listDescription ? 'font-normal text-black/60' : 'font-normal text-black/40 italic'
                 }`}
               >
                 {listDescription || 'No description'}

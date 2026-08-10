@@ -1,6 +1,10 @@
 import { isPersonMediaType } from '@/domains/media/utils';
 
-import { SEARCH_PAGE_SIZE, SEARCH_RUNTIME_CHECK_LIMITS, SEARCH_SCAN_PAGE_LIMITS } from '../tmdb-client-config';
+import {
+  SEARCH_PAGE_SIZE,
+  SEARCH_RUNTIME_CHECK_LIMITS,
+  SEARCH_SCAN_PAGE_LIMITS,
+} from '../tmdb-client-config';
 
 const SEARCH_TEXT_BASE_SCORES = Object.freeze({
   exact: 1200,

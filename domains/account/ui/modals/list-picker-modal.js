@@ -16,7 +16,7 @@ import {
   getUserListMemberships,
   subscribeToUserLists,
   toggleUserListItem,
-} from '@/domains/media/server/lists';
+} from '@/domains/media/client/collections/lists';
 import { cn } from '@/shared/utils';
 import {
   getPreferredMoviePosterSrc,

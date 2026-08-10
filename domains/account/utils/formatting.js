@@ -1,4 +1,4 @@
-import { FOLLOW_STATUSES } from '@/domains/social/server/social/follow-service';
+import { FOLLOW_STATUSES } from '@/domains/social/client/follows';
 
 export function getMediaTitle(item = {}) {
   return item?.title || item?.name || item?.original_title || item?.original_name || 'Untitled';
@@ -28,7 +28,9 @@ export function sortAccountItems(items, sortMethod) {
     case 'rating_low':
       return sorted.sort((first, second) => (first.vote_average || 0) - (second.vote_average || 0));
     case 'title_az':
-      return sorted.sort((first, second) => getMediaTitle(first).localeCompare(getMediaTitle(second)));
+      return sorted.sort((first, second) =>
+        getMediaTitle(first).localeCompare(getMediaTitle(second)),
+      );
     default:
       return sorted;
   }
@@ -36,7 +38,9 @@ export function sortAccountItems(items, sortMethod) {
 
 export function removeAccountCollectionItem(items = [], itemToRemove) {
   const removedId = String(itemToRemove?.entityId || itemToRemove?.id || '').trim();
-  const removedType = String(itemToRemove?.media_type || itemToRemove?.entityType || '').trim().toLowerCase();
+  const removedType = String(itemToRemove?.media_type || itemToRemove?.entityType || '')
+    .trim()
+    .toLowerCase();
 
   return items.filter((item) => {
     if (itemToRemove?.mediaKey && item?.mediaKey) {
@@ -44,12 +48,19 @@ export function removeAccountCollectionItem(items = [], itemToRemove) {
     }
     return (
       String(item?.entityId || item?.id || '').trim() !== removedId ||
-      String(item?.media_type || item?.entityType || '').trim().toLowerCase() !== removedType
+      String(item?.media_type || item?.entityType || '')
+        .trim()
+        .toLowerCase() !== removedType
     );
   });
 }
 
-export function formatPaginationSummaryLabel({ emptyLabel = '0 items', pageSize, startIndex, totalCount }) {
+export function formatPaginationSummaryLabel({
+  emptyLabel = '0 items',
+  pageSize,
+  startIndex,
+  totalCount,
+}) {
   if (!Number.isFinite(totalCount) || totalCount <= 0) {
     return emptyLabel;
   }

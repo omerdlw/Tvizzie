@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { getAccountSocialProof } from '@/domains/media/server/social-proof';
+import { getAccountSocialProof } from '@/domains/media/client/social-proof';
 import {
   FOLLOW_STATUSES,
   subscribeToFollowRelationship,
   subscribeToFollowers,
   subscribeToFollowing,
-} from '@/domains/social/server/social/follow-service';
+} from '@/domains/social/client/follows';
 import { logDataError } from '@/domains/account/utils';
 
 export function useAccountRelationshipData({

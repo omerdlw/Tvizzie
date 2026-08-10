@@ -10,7 +10,8 @@ const DEFAULT_ACCEPT = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
 
 export function createFileUploadSurfaceEntry(data = {}, config = {}) {
   const title = data?.title || 'Upload media';
-  const description = data?.description || 'Drag and drop a file here, or pick one from your device';
+  const description =
+    data?.description || 'Drag and drop a file here, or pick one from your device';
 
   return {
     component: FileUploadSurface,
@@ -102,7 +103,7 @@ export default function FileUploadSurface({ close, data }) {
       }}
       onDrop={handleDrop}
       className={cn(
-        'group flex min-h-[232px] rounded-[16px] w-full cursor-pointer flex-col items-center justify-center gap-4 border px-6 py-8 text-center transition-colors duration-300 ease-out',
+        'group flex min-h-[232px] w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-[16px] border px-6 py-8 text-center transition-colors duration-300 ease-out',
         isDragActive
           ? 'border-info/30 bg-info/10'
           : 'bg-primary border-transparent hover:border-black/10',
@@ -126,7 +127,7 @@ export default function FileUploadSurface({ close, data }) {
         </p>
         <p className="text-xs leading-relaxed text-black/50">{hint}</p>
       </div>
-      <div className="p-1 overflow-visible">
+      <div className="overflow-visible p-1">
         <motion.button
           type="button"
           whileHover={{ scale: 1.012 }}
@@ -137,12 +138,12 @@ export default function FileUploadSurface({ close, data }) {
             inputRef.current?.click();
           }}
           className={cn(
-            'inline-flex h-9 rounded-xl items-center justify-center border px-4 text-xs font-bold tracking-wider uppercase transition-colors duration-300 ease-out',
+            'inline-flex h-9 items-center justify-center rounded-xl border px-4 text-xs font-bold tracking-wider uppercase transition-colors duration-300 ease-out',
             isDragActive
               ? 'border-info/20 bg-info/10 text-info hover:bg-info/20'
               : 'hover:bg-primary border-black/5 bg-black/5 hover:border-black/10',
           )}
-        > 
+        >
           {buttonLabel}
         </motion.button>
       </div>

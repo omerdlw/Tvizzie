@@ -96,8 +96,7 @@ export function useAccountEditPageState({ initialSnapshot = null }) {
     linkedProviderIds.includes('email') ||
     userIdentities.some((i) =>
       ['email', 'password'].includes(String(i?.provider || i?.identity_provider).toLowerCase()),
-    ) ||
-    Boolean(auth?.user?.email || profile?.email);
+    );
 
   const canUsePasswordSecurity = isPasswordLinked;
 

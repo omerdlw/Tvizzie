@@ -2,7 +2,7 @@ import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { canViewerAccessUserContent, createPrivateProfileError } from './profile.server';
 import { normalizeTimestamp, normalizeValue } from '@/shared/utils';
 
-import { buildMediaItemKey } from '@/domains/media/server/media';
+import { buildMediaItemKey } from '@/domains/media/shared/media';
 import { isTitleMediaType } from '@/domains/media/utils';
 import {
   LIST_COLLECTION_SELECT,

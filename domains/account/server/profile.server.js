@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { invokeInternalEdgeFunction } from '@/infrastructure/http/http-server';
 import { cleanString, normalizeTimestamp } from '@/shared/utils';
-import { normalizeFavoriteShowcaseItems } from '@/domains/media/server/media';
+import { normalizeFavoriteShowcaseItems } from '@/domains/media/shared/media';
 import {
   ACCOUNT_PROFILE_SELECT,
   ACCOUNT_READ_FUNCTION,

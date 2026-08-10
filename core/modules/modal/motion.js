@@ -5,10 +5,10 @@ const MODAL_EASINGS = Object.freeze({
 });
 
 const MODAL_TIERS = Object.freeze({
-  MICRO:    { duration: 0.28, distance: 10, scaleDelta: 0.02,  ease: MODAL_EASINGS.EMPHASIZED },
-  FAST:     { duration: 0.42, distance: 16, scaleDelta: 0.05,  ease: MODAL_EASINGS.EMPHASIZED },
-  STANDARD: { duration: 0.58, distance: 16, scaleDelta: 0.08,  ease: MODAL_EASINGS.EMPHASIZED },
-  SURFACE:  { duration: 0.75, distance: 22, scaleDelta: 0.02,  ease: MODAL_EASINGS.EMPHASIZED },
+  MICRO: { duration: 0.28, distance: 10, scaleDelta: 0.02, ease: MODAL_EASINGS.EMPHASIZED },
+  FAST: { duration: 0.42, distance: 16, scaleDelta: 0.05, ease: MODAL_EASINGS.EMPHASIZED },
+  STANDARD: { duration: 0.58, distance: 16, scaleDelta: 0.08, ease: MODAL_EASINGS.EMPHASIZED },
+  SURFACE: { duration: 0.75, distance: 22, scaleDelta: 0.02, ease: MODAL_EASINGS.EMPHASIZED },
 });
 
 const POSITIONS = Object.freeze({
@@ -30,7 +30,7 @@ export const MODAL_MICRO_TAP_SCALE = 0.95;
 
 function buildVariants(
   tierName,
-  { axis, fullSlide = false, includeScale = false, direction = 1 } = {}
+  { axis, fullSlide = false, includeScale = false, direction = 1 } = {},
 ) {
   const tier = MODAL_TIERS[tierName];
   const distance = fullSlide ? '100%' : tier.distance;
@@ -51,7 +51,9 @@ function buildVariants(
     visible[axis] = 0;
     exit[axis] = fullSlide
       ? signedDistance
-      : (typeof signedDistance === 'number' ? signedDistance * 0.4 : signedDistance);
+      : typeof signedDistance === 'number'
+        ? signedDistance * 0.4
+        : signedDistance;
   }
 
   if (includeScale) {

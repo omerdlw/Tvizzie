@@ -14,7 +14,7 @@ import { fetchAccountActivityFeedServer } from './feed.server';
 import {
   fetchListReviewFeedServer,
   fetchProfileReviewFeedServer,
-} from '@/domains/reviews/server/review-server.js';
+} from '@/domains/reviews/server/feeds.server';
 import {
   ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS,
   EMPTY_ARRAY,

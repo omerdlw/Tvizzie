@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Media Reviews - Single Review Card Component
- * Path: features/media-reviews/parts/review-card.js
- */
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { TMDB_IMG } from '@/shared/constants';
@@ -12,7 +7,7 @@ import { canUseNextImageOptimization, cn, formatDate, resolveImageQuality } from
 import { getUserAvatarUrl } from '@/domains/account/utils';
 import { isTitleMediaType, normalizeMediaType } from '@/domains/media/utils';
 import {
-  getPreferredMoviePosterSrc,
+  getPreferredMediaPosterSrc,
   usePosterPreferenceVersion,
 } from '@/domains/media/utils/poster-overrides';
 import { Button } from '@/ui/primitives';
@@ -21,15 +16,16 @@ import Icon from '@/ui/primitives/icon';
 import ListPreviewComposition from '@/domains/media/ui/components/media-list-preview';
 import RatingStars from './rating-stars';
 
-// ==========================================
-// 1. HELPER FUNCTIONS
-// ==========================================
-
 function getReviewPosterSrc(review) {
-  if (review?.subjectType === 'movie') {
-    const preferred = getPreferredMoviePosterSrc(
-      { id: review?.subjectId, poster_path: review?.subjectPoster },
+  if (isTitleMediaType(review?.subjectType)) {
+    const preferred = getPreferredMediaPosterSrc(
+      {
+        entityType: review.subjectType,
+        id: review.subjectId,
+        poster_path: review.subjectPoster,
+      },
       'w342',
+      review.subjectType,
     );
     if (preferred) return preferred;
   }
@@ -116,10 +112,6 @@ function isInteractiveTarget(target) {
     target.closest('a, button, input, textarea, select, summary, [role="button"]'),
   );
 }
-
-// ==========================================
-// 2. SUB-COMPONENTS
-// ==========================================
 
 function ReviewLikeButton({ disabled = false, hasLiked = false, likesCount = 0, onClick }) {
   return (
@@ -241,10 +233,6 @@ function SpoilerNotice({ compact = false, onReveal }) {
   );
 }
 
-// ==========================================
-// 3. MAIN COMPONENT
-// ==========================================
-
 export default function ReviewCard({
   className = '',
   review,
@@ -264,7 +252,6 @@ export default function ReviewCard({
   usePosterPreferenceVersion();
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
 
-  // Variant & State Computations
   const isAccountVariant = displayVariant === 'account';
   const isActivityVariant = displayVariant === 'activity';
   const isSubjectCardVariant = isAccountVariant || isActivityVariant;
@@ -325,7 +312,6 @@ export default function ReviewCard({
       )}
     >
       <div className="relative flex min-w-0 items-start gap-3 sm:gap-4">
-        {/* Visual Element */}
         <div className="relative shrink-0">
           <ReviewVisual
             alt={isSubjectCardVariant ? review.subjectTitle || 'Poster' : displayName}
@@ -339,7 +325,6 @@ export default function ReviewCard({
           )}
         </div>
 
-        {/* Content Body */}
         <div
           className={cn(
             'flex min-w-0 flex-1 flex-col gap-1',
@@ -347,7 +332,6 @@ export default function ReviewCard({
           )}
         >
           {isSubjectCardVariant ? (
-            /* Subject Card Mode (Account/Activity) */
             <>
               {!isActivityVariant ? (
                 <>
@@ -413,10 +397,8 @@ export default function ReviewCard({
               )}
             </>
           ) : (
-            /* Media Review Mode (Standard) */
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                {/* Mobile Header */}
                 <div className="flex flex-col gap-0.5 sm:hidden">
                   <div className="flex items-center gap-1.5 text-xs text-black/50">
                     {hasRating && <RatingStars rating={resolvedRating} />}
@@ -431,7 +413,6 @@ export default function ReviewCard({
                   </div>
                 </div>
 
-                {/* Desktop Header */}
                 <div className="hidden text-sm text-black/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-2.5">
                   {hasRating && <RatingStars rating={resolvedRating} />}
                   <span className="text-black/60">{activityLabel}</span>
@@ -442,7 +423,6 @@ export default function ReviewCard({
                   <span className="text-xs text-black/50">{formattedDate}</span>
                 </div>
 
-                {/* Content Body */}
                 {hasText ? (
                   isSpoilerHidden ? (
                     <SpoilerNotice onReveal={revealSpoiler} />
@@ -457,7 +437,6 @@ export default function ReviewCard({
                   )
                 )}
 
-                {/* Subject Link */}
                 {showSubject && subjectHref && review.subjectTitle && (
                   <Link
                     href={subjectHref}
@@ -484,7 +463,6 @@ export default function ReviewCard({
                   </Link>
                 )}
 
-                {/* Like Button */}
                 {!isSpoilerHidden && (
                   <ReviewLikeButton
                     disabled={isLikeDisabled}

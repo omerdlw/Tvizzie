@@ -1,1 +1,1 @@
-export * from '@/domains/reviews/server/api/reviews';
+export * from '@/domains/reviews/server/read-route.server';

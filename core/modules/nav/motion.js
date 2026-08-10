@@ -5,17 +5,17 @@ const NAV_EASINGS = Object.freeze({
 });
 
 const NAV_TIERS = Object.freeze({
-  MICRO:      { duration: 0.28, distance: 6,  scaleDelta: 0.008, ease: NAV_EASINGS.EMPHASIZED },
-  FAST:       { duration: 0.42, distance: 10, scaleDelta: 0.012, ease: NAV_EASINGS.EMPHASIZED },
-  STANDARD:   { duration: 0.60, distance: 16, scaleDelta: 0.018, ease: NAV_EASINGS.EMPHASIZED },
-  SURFACE:    { duration: 0.75, distance: 22, scaleDelta: 0.022, ease: NAV_EASINGS.EMPHASIZED },
+  MICRO: { duration: 0.28, distance: 6, scaleDelta: 0.008, ease: NAV_EASINGS.EMPHASIZED },
+  FAST: { duration: 0.42, distance: 10, scaleDelta: 0.012, ease: NAV_EASINGS.EMPHASIZED },
+  STANDARD: { duration: 0.6, distance: 16, scaleDelta: 0.018, ease: NAV_EASINGS.EMPHASIZED },
+  SURFACE: { duration: 0.75, distance: 22, scaleDelta: 0.022, ease: NAV_EASINGS.EMPHASIZED },
 });
 
 const NAV_SPRINGS = Object.freeze({
-  CARD:    Object.freeze({ type: 'spring', stiffness: 160, damping: 24, mass: 0.95 }),
+  CARD: Object.freeze({ type: 'spring', stiffness: 160, damping: 24, mass: 0.95 }),
   SURFACE: Object.freeze({ type: 'spring', stiffness: 180, damping: 26, mass: 1.0 }),
-  PRESS:   Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
-  BADGE:   Object.freeze({ type: 'spring', stiffness: 280, damping: 22, mass: 0.55 }),
+  PRESS: Object.freeze({ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }),
+  BADGE: Object.freeze({ type: 'spring', stiffness: 280, damping: 22, mass: 0.55 }),
 });
 
 const NAV_STAGGER_TIMINGS = Object.freeze({
@@ -58,7 +58,7 @@ export const NAV_BADGE_TRANSITION = NAV_SPRINGS.BADGE;
 
 function buildVariants(
   tierName,
-  { includeY = false, includeScale = false, direction = 'y', distanceScale = 1 } = {}
+  { includeY = false, includeScale = false, direction = 'y', distanceScale = 1 } = {},
 ) {
   const tier = NAV_TIERS[tierName];
   const distance = tier.distance * distanceScale;

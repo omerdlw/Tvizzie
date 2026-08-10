@@ -39,7 +39,11 @@ export function resolveSecurityErrorMessage(error, fallbackMessage = 'Security o
   if (!message) return fallbackMessage;
 
   const lower = message.toLowerCase();
-  if (lower.includes('invalid-credential') || lower.includes('wrong-password') || lower.includes('invalid password')) {
+  if (
+    lower.includes('invalid-credential') ||
+    lower.includes('wrong-password') ||
+    lower.includes('invalid password')
+  ) {
     return 'Current password is incorrect';
   }
   if (lower.includes('email-already-in-use') || lower.includes('email exists')) {

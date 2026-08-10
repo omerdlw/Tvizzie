@@ -7,7 +7,7 @@ import {
   resolveOptionalSessionRequest,
 } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
-import { ensurePasswordAccountRecord } from '@/domains/auth/server/account.server.js';
+import { ensureAccountProfileRecord } from '@/domains/auth/server/account.server.js';
 import {
   getEditableAccountSnapshotByUserId,
   getAccountProfileByUserId,
@@ -15,7 +15,7 @@ import {
 } from './profile.server';
 import { resolveAccountRequestUserId } from './request-target.server';
 import { fetchAccountActivityFeedServer } from './feed.server';
-import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
+import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/feeds.server';
 import {
   ACCOUNT_READ_FUNCTION,
   ACCOUNT_WRITE_FUNCTION,
@@ -154,11 +154,9 @@ export async function handleAccountProfilePost(request) {
     if (action === 'ensure') {
       const preferredDisplayName = normalizeValue(body.displayName);
       const preferredUsername = body.username ? validateUsername(body.username) : null;
-      const avatarUrl = normalizeValue(body.avatarUrl);
       const email = normalizeValue(body.email);
 
-      await ensurePasswordAccountRecord({
-        avatarUrl: avatarUrl || null,
+      await ensureAccountProfileRecord({
         displayName: preferredDisplayName || null,
         email: email || null,
         userId: authContext.userId,

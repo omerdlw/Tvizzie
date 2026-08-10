@@ -1,15 +1,6 @@
 'use client';
 
-/**
- * Media Reviews - Range Rating Selector Component
- * Path: features/media-reviews/parts/rating-range-selector.js
- */
-
 import { useCallback, useMemo, useRef, useState } from 'react';
-
-// ==========================================
-// 1. CONSTANTS & HELPERS
-// ==========================================
 
 const STAR_COUNT = 5;
 const STAR_PATH = [
@@ -73,10 +64,6 @@ function scoreFromPointerEvent(event, element) {
   return stepIndex / 2;
 }
 
-// ==========================================
-// 2. SUB-COMPONENTS
-// ==========================================
-
 function Star({ fillPercent, starIndex }) {
   const clipId = `rating-range-fill-${starIndex}-${Math.round(fillPercent)}`;
   const clipWidth = (fillPercent / 100) * 24;
@@ -93,10 +80,6 @@ function Star({ fillPercent, starIndex }) {
     </svg>
   );
 }
-
-// ==========================================
-// 3. MAIN COMPONENT
-// ==========================================
 
 export default function RatingRangeSelector({ maxValue = 5, minValue = 0.5, onChange }) {
   const containerRef = useRef(null);

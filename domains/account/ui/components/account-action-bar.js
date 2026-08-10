@@ -15,7 +15,6 @@ import {
   WARNING_ACTION_TONE_CLASS,
 } from '@/shared/constants/index';
 
-
 const PROFILE_FOLLOW_ACTIONS = Object.freeze({
   follow: {
     icon: 'solar:user-plus-bold',
@@ -98,7 +97,7 @@ export default function AccountAction(props) {
     showSaveAction = false,
     showUploadAction = false,
     uploadLabel = 'Upload Media',
-    
+
     isLiked,
     isLikeLoading,
     onDeleteList,
@@ -157,7 +156,7 @@ export default function AccountAction(props) {
                 aria-pressed={isActive}
                 className={actionClass({
                   tone: isActive ? 'active' : 'muted',
-                  className: 'justify-center relative overflow-hidden',
+                  className: 'relative justify-center overflow-hidden',
                 })}
                 whileHover={{ scale: 1.012 }}
                 whileTap={{ scale: 0.97 }}
@@ -329,7 +328,7 @@ export default function AccountAction(props) {
       </div>
     );
   }
- 
+
   if (mode === 'save') {
     return (
       <div className={NAV_ACTION_STYLES.row}>

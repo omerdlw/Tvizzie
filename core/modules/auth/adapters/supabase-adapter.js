@@ -3,7 +3,6 @@
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import {
   buildOAuthCallbackUrl,
-  createCsrfHeaders,
   getOAuthProviderLabel,
   isSupportedOAuthProvider,
   normalizeOAuthProvider,
@@ -12,6 +11,7 @@ import {
   sanitizeAuthNextPath,
 } from '../provider-utils';
 import { clearCanonicalSessionPayloadCache, fetchCanonicalSessionPayload } from '../session-client';
+import { requestAuthJson } from '../http.client';
 
 import { createAuthAdapter } from './create-adapter';
 
@@ -144,34 +144,15 @@ function getClient(providedClient = null) {
 }
 
 async function fetchAppAuthJson(path, { body, fallbackError, headers = {} } = {}) {
-  const csrfResponse = await fetch('/api/auth/csrf', {
-    cache: 'no-store',
-    credentials: 'include',
-  });
-  const csrfPayload = await csrfResponse.json().catch(() => null);
-  const requestHeaders = createCsrfHeaders({
-    ...headers,
-    ...(csrfPayload?.csrfToken ? { 'X-CSRF-Token': csrfPayload.csrfToken } : {}),
-  });
-
-  const response = await fetch(path, {
-    method: 'POST',
-    cache: 'no-store',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...requestHeaders,
-    },
-    body: JSON.stringify(body || {}),
-  });
-
-  const result = await response.json().catch(() => ({ error: fallbackError }));
-
-  if (!response.ok) {
-    throw toAdapterError(result, fallbackError);
+  try {
+    return await requestAuthJson(path, {
+      body,
+      fallbackMessage: fallbackError,
+      headers,
+    });
+  } catch (error) {
+    throw toAdapterError(error, fallbackError);
   }
-
-  return result;
 }
 
 function createProfilePatch(payload = {}) {
@@ -272,7 +253,6 @@ export function createSupabaseAuthAdapter(options = {}) {
 
       const result = await fetchAppAuthJson('/api/auth/sign-in', {
         fallbackError: 'Sign in failed',
-        headers: createCsrfHeaders(),
         body: {
           identifier: String(payload.identifier || '').trim() || undefined,
           email: normalizeEmailValue(payload.email),
@@ -353,7 +333,6 @@ export function createSupabaseAuthAdapter(options = {}) {
     async reauthenticate(payload = {}, adapterContext = {}) {
       await fetchAppAuthJson('/api/auth/account', {
         fallbackError: 'Reauthentication failed',
-        headers: createCsrfHeaders(),
         body: {
           action: 'reauthenticate',
           currentPassword: String(payload.password || ''),

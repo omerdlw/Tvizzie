@@ -4,7 +4,10 @@ import {
 } from '@/domains/auth/server/session.server.js';
 import { createUserEventStream } from '@/infrastructure/realtime/user-events.server';
 
-import { buildInternalRequestMeta, setResponseRequestMeta } from '@/infrastructure/http/http-server';
+import {
+  buildInternalRequestMeta,
+  setResponseRequestMeta,
+} from '@/infrastructure/http/http-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

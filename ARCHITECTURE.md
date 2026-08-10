@@ -38,7 +38,7 @@ To maintain a clean separation of concerns and maintain a scalable structure, co
    - Serves as the public interface exposed to the client.
    - All files in this directory are Next.js **Server Actions** beginning with the `"use server"` directive.
    - They handle input validation, parameter sanitization, session checking, and error mapping before delegating to the `server/` layer.
-   - *Naming Convention:* When a Server Action file coordinates a concern that has a matching backend server module (e.g., `profile`), they share the same base name: `api/profile.server.js` (Server Action entry point) and `server/profile.server.js` (backend resolver).
+   - _Naming Convention:_ When a Server Action file coordinates a concern that has a matching backend server module (e.g., `profile`), they share the same base name: `api/profile.server.js` (Server Action entry point) and `server/profile.server.js` (backend resolver).
 
 2. **`server/` (Backend Logic & Data Access)**:
    - Contains database queries, transactions, Supabase interactions, mutation logic, access control policies, and server-side events.
@@ -48,7 +48,6 @@ To maintain a clean separation of concerns and maintain a scalable structure, co
    - Contains data conversion, transformation, model adaptation, and business rules.
    - Responsible for wrapping external APIs (such as TMDB queries).
    - If a domain does not interact with external systems or perform complex data mapping, the `services/` directory should be omitted.
-
 
 The account domain uses explicit ownership boundaries rather than generic
 folders. Its UI route composition lives in named `account-*-factory/state`
@@ -85,4 +84,3 @@ public barrel entrypoint. Files are consolidated when they do not represent an
 `core` namespace.
 
 Run `npm run check:architecture` to verify the high-level boundaries before linting and building.
-

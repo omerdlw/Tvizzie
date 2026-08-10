@@ -104,7 +104,7 @@ export default function SegmentedControl({
     <div
       style={{ padding: `${PADDING}px`, borderRadius: `${OUTER_RADIUS}px` }}
       className={cn(
-        'inline-flex max-w-full w-fit shrink-0 items-stretch border border-black/5 bg-black/5',
+        'inline-flex w-fit max-w-full shrink-0 items-stretch border border-black/5 bg-black/5',
         className,
         classNames.wrapper,
       )}

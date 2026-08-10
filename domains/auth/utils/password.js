@@ -1,7 +1,3 @@
-// ============================================================
-// Password Validation & Evaluation Utilities
-// ============================================================
-
 export function normalizePassword(value) {
   return String(value || '');
 }
@@ -55,7 +51,9 @@ export function hasSatisfiedPasswordRequirements(value) {
 }
 
 export function isPasswordRequirementError(error) {
-  const msg = String(error?.message || '').trim().toLowerCase();
+  const msg = String(error?.message || '')
+    .trim()
+    .toLowerCase();
   return (
     msg.includes('password must be at least 8 characters long') ||
     msg.includes('password must contain at least 1 number')
@@ -63,5 +61,8 @@ export function isPasswordRequirementError(error) {
 }
 
 export function isPasswordConfirmationMismatchError(error) {
-  return String(error?.message || '').trim().toLowerCase().includes('password confirmation does not match');
+  return String(error?.message || '')
+    .trim()
+    .toLowerCase()
+    .includes('password confirmation does not match');
 }

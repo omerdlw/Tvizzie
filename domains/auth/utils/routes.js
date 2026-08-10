@@ -6,10 +6,6 @@ import {
 } from '@/domains/auth/utils/oauth';
 import { EMAIL_DOMAIN_PATTERNS } from './constants';
 
-// ============================================================
-// Auth Routing, Notice Cookies & Href Helpers
-// ============================================================
-
 export const AUTH_ROUTES = Object.freeze({
   SIGN_IN: '/sign-in',
   SIGN_UP: '/sign-up',
@@ -88,7 +84,9 @@ export function resolveSignInNoticeToast(notice, provider = null) {
 }
 
 export function normalizeEmail(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .trim()
+    .toLowerCase();
 }
 
 export function isEmailIdentifier(value) {

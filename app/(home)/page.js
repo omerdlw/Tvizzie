@@ -1,23 +1,11 @@
-export const dynamic = 'force-dynamic';
-
 import Client from '@/app/(home)/client';
+import { getUniqueDiscoverItems } from '@/domains/home/shared/discover';
 
-import { discoverContent, getGenres, getTrending } from '@/infrastructure/tmdb/clients/tmdb-server-client';
-
-function getUniqueItems(items = []) {
-  const seen = new Set();
-
-  return items.filter((item) => {
-    const id = item?.id;
-
-    if (!id || seen.has(id)) {
-      return false;
-    }
-
-    seen.add(id);
-    return true;
-  });
-}
+import {
+  discoverContent,
+  getGenres,
+  getTrending,
+} from '@/infrastructure/tmdb/clients/tmdb-server-client';
 
 export default async function Page() {
   const [dailyTrendingResponse, weeklyTrendingResponse, discoverFirstResponse, genresResponse] =
@@ -31,7 +19,7 @@ export default async function Page() {
   const dailyTrendingItems = dailyTrendingResponse.data?.results || [];
   const weeklyPopularMovies = weeklyTrendingResponse.data?.results || [];
   const firstDiscoverData = discoverFirstResponse.data || {};
-  const initialDiscoverItems = getUniqueItems(firstDiscoverData.results || []);
+  const initialDiscoverItems = getUniqueDiscoverItems(firstDiscoverData.results || []);
   const initialDiscoverPage = firstDiscoverData.page || 1;
   const totalDiscoverPages = firstDiscoverData.total_pages || initialDiscoverPage;
   const initialHasMore = initialDiscoverPage < totalDiscoverPages;

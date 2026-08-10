@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { assertPasswordAccountStatus, completePasswordReset } from '@/domains/auth/client/requests';
+import { signInWithPassword } from '@/domains/auth/client/sign-in-workflow.client';
 import {
   AUTH_PURPOSE,
   AUTH_ROUTES,
   INITIAL_RESET_FLOW,
   buildAuthHref,
   consumeAuthRouteNoticeCookie,
-  createError,
   isEmailIdentifier,
   resolveAuthErrorMessage,
   resolvePostAuthRedirect,
@@ -26,7 +26,7 @@ import {
   AuthPageShell,
   AuthVerificationSurface,
   ForgotPasswordAction,
-  OAuthProviderButton,
+  OAuthProviderList,
   PasswordToggleButton,
 } from '@/domains/auth/ui';
 import { Button, Input } from '@/ui/primitives';
@@ -49,7 +49,6 @@ import { EVENT_TYPES, globalEvents } from '@/shared/constants/events';
 import AuthRegistry from '@/app/(auth)/registry';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { OAUTH_PROVIDER_KEYS } from '@/core/modules/auth/provider-utils';
 
 export default function Client() {
   const auth = useAuth();
@@ -71,11 +70,9 @@ export default function Client() {
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [activeOAuthProvider, setActiveOAuthProvider] = useState(null);
   const [isPreparingReset, setIsPreparingReset] = useState(false);
-  const [isIdentifierChecking, setIsIdentifierChecking] = useState(false);
-  const [currentStep, setCurrentStep] = useState('identifier');
   const [resetFlow, setResetFlow] = useState(INITIAL_RESET_FLOW);
   const isSubmitting = isPasswordSubmitting || Boolean(activeOAuthProvider);
-  const isSignInBusy = isSubmitting || isPreparingReset || isIdentifierChecking;
+  const isSignInBusy = isSubmitting || isPreparingReset;
   const isResetMode = resetFlow.active;
 
   const postAuthRedirect = useMemo(() => resolvePostAuthRedirect(nextParam), [nextParam]);
@@ -192,28 +189,6 @@ export default function Client() {
     return finalizeVerifiedSignIn(verification);
   };
 
-  const handleContinueToPassword = async (event) => {
-    event.preventDefault();
-
-    if (isSignInBusy || resetFlow.active) {
-      return;
-    }
-
-    setIsIdentifierChecking(true);
-
-    try {
-      await assertPasswordAccountStatus({
-        identifier,
-        intent: 'sign-in',
-      });
-      setCurrentStep('password');
-    } catch (error) {
-      toast.error(resolveAuthErrorMessage(error, 'Could not continue'));
-    } finally {
-      setIsIdentifierChecking(false);
-    }
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -221,52 +196,9 @@ export default function Client() {
       return;
     }
 
-    let passwordAccountEligible = false;
     setIsPasswordSubmitting(true);
     try {
-      const rawPassword = String(password || '');
-      const trimmedPassword = rawPassword.trim();
-
-      if (!trimmedPassword) {
-        throw new Error('Password is required');
-      }
-
-      await assertPasswordAccountStatus({
-        identifier,
-        intent: 'sign-in',
-      });
-      passwordAccountEligible = true;
-      let signInResult = null;
-
-      try {
-        signInResult = await auth.signIn({
-          identifier,
-          password: rawPassword,
-        });
-      } catch (error) {
-        const errorCode = String(error?.code || '')
-          .trim()
-          .toLowerCase();
-        const errorMessage = String(error?.message || '')
-          .trim()
-          .toLowerCase();
-        const isInvalidCredentials =
-          errorCode === 'invalid_credentials' ||
-          errorCode === 'invalid_login_credentials' ||
-          errorCode === 'auth/invalid-credential' ||
-          errorMessage.includes('invalid login credentials') ||
-          errorMessage.includes('invalid_credentials') ||
-          errorMessage.includes('auth/invalid-credential');
-
-        if (isInvalidCredentials && rawPassword !== trimmedPassword && trimmedPassword) {
-          signInResult = await auth.signIn({
-            identifier,
-            password: trimmedPassword,
-          });
-        } else {
-          throw error;
-        }
-      }
+      const signInResult = await signInWithPassword({ auth, identifier, password });
 
       if (signInResult?.requiresRedirect) {
         return;
@@ -284,20 +216,7 @@ export default function Client() {
 
       router.replace(postAuthRedirect);
     } catch (error) {
-      const code = String(error?.code || '').trim();
-      const message = String(error?.message || '').trim();
-      const resolvedError =
-        passwordAccountEligible &&
-        (code === 'auth/invalid-credential' ||
-          code === 'invalid_credentials' ||
-          code === 'invalid_login_credentials' ||
-          message.includes('auth/invalid-credential') ||
-          message.toLowerCase().includes('invalid login credentials') ||
-          message.toLowerCase().includes('invalid_credentials'))
-          ? createError('auth/wrong-password')
-          : error;
-
-      toast.error(resolveAuthErrorMessage(resolvedError, 'Sign-in failed'));
+      toast.error(resolveAuthErrorMessage(error, 'Sign-in failed'));
     } finally {
       setIsPasswordSubmitting(false);
     }
@@ -310,6 +229,7 @@ export default function Client() {
 
     const providerLabel = getOAuthProviderLabel(provider);
     setActiveOAuthProvider(provider);
+    let isRedirectingToProvider = false;
     try {
       const signInResult = await auth.signIn({
         oauthIntent: 'sign-in',
@@ -318,6 +238,7 @@ export default function Client() {
       });
 
       if (signInResult?.requiresRedirect) {
+        isRedirectingToProvider = true;
         return;
       }
 
@@ -352,7 +273,9 @@ export default function Client() {
 
       toast.error(resolveAuthErrorMessage(error, `${providerLabel} sign-in failed`));
     } finally {
-      setActiveOAuthProvider(null);
+      if (!isRedirectingToProvider) {
+        setActiveOAuthProvider(null);
+      }
     }
   };
 
@@ -436,7 +359,6 @@ export default function Client() {
 
       setIdentifier(resetFlow.email);
       setPassword('');
-      setCurrentStep('password');
       setResetFlow(INITIAL_RESET_FLOW);
     } catch (error) {
       toast.error(resolveAuthErrorMessage(error, 'Password reset could not be completed'));
@@ -480,17 +402,11 @@ export default function Client() {
       {registry}
       <View
         activeOAuthProvider={activeOAuthProvider}
-        currentStep={currentStep}
         handleOAuthSignIn={handleOAuthSignIn}
-        handleContinueToPassword={handleContinueToPassword}
-        handleGoBackToIdentifier={() => setCurrentStep('identifier')}
-        handleRequestPasswordReset={handleRequestPasswordReset}
         handleResetSubmit={handleResetSubmit}
         handleSubmit={handleSubmit}
         identifier={identifier}
-        isIdentifierChecking={isIdentifierChecking}
         isPasswordSubmitting={isPasswordSubmitting}
-        isPreparingReset={isPreparingReset}
         isResetMode={isResetMode}
         isSignInBusy={isSignInBusy}
         password={password}
@@ -508,12 +424,10 @@ export default function Client() {
 function View({
   activeOAuthProvider,
   handleOAuthSignIn,
-  handleRequestPasswordReset,
   handleResetSubmit,
   handleSubmit,
   identifier,
   isPasswordSubmitting,
-  isPreparingReset,
   isResetMode,
   isSignInBusy,
   password,
@@ -722,28 +636,15 @@ function View({
               <div className="pointer-events-none absolute top-1/2 left-full h-px w-screen -translate-y-1/2 bg-black/10" />
             </motion.div>
 
-            <motion.div variants={signInOAuthContainerVariants} className="flex items-center gap-3">
-              {OAUTH_PROVIDER_KEYS.map((provider, index) => (
-                <motion.div
-                  key={provider}
-                  custom={SIGN_IN_TIMELINE.OAUTH_DELAY + index * 0.08}
-                  variants={signInOAuthItemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
-                  className="flex-1"
-                >
-                  <OAuthProviderButton
-                    provider={provider}
-                    mode="sign-in"
-                    isBusy={activeOAuthProvider === provider}
-                    disabled={Boolean(activeOAuthProvider) || isSignInBusy}
-                    onClick={() => handleOAuthSignIn(provider)}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
+            <OAuthProviderList
+              activeProvider={activeOAuthProvider}
+              containerVariants={signInOAuthContainerVariants}
+              disabled={isSignInBusy}
+              itemDelay={SIGN_IN_TIMELINE.OAUTH_DELAY}
+              itemVariants={signInOAuthItemVariants}
+              mode="sign-in"
+              onSelect={handleOAuthSignIn}
+            />
 
             <motion.p
               custom={SIGN_IN_TIMELINE.FOOTER_DELAY}

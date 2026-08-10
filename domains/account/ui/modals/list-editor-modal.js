@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 import { Container, CANCEL_BUTTON_CLASS, ACTION_BUTTON_CLASS } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { createUserList, toggleUserListItem, updateUserList } from '@/domains/media/server/lists';
+import { createUserList, toggleUserListItem, updateUserList } from '@/domains/media/client/collections/lists';
 import { Input, Textarea } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
 

@@ -4,51 +4,47 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import { createAdminClient } from '@/infrastructure/supabase/admin';
-import { createSupabaseResponseClient } from '@/infrastructure/supabase/response-client.server';
 import {
   combineCookieChunks,
   getCookieChunkBaseName,
   isSupabaseAuthCookieName,
-  listSupabaseAuthStorageKeys,
   parseSupabaseSessionAccessToken,
 } from '@/infrastructure/supabase/auth-storage';
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,
-  SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_URL,
 } from '@/infrastructure/supabase/supabase-constants';
-import {
-  AUTH_COOKIE_PATH,
-  CSRF_COOKIE_NAME,
-  LEGACY_CSRF_COOKIE_NAME,
-  resolveProviderDescriptors,
-  STEP_UP_COOKIE_NAME,
-  STEP_UP_MAX_AGE_MS,
-  STEP_UP_MAX_AGE_SECONDS,
-  SUPABASE_FALLBACK_TIMEOUT_MS,
-} from '@/domains/auth/utils';
-
+import { SUPABASE_FALLBACK_TIMEOUT_MS } from '@/domains/auth/utils';
 export {
+  applySupabaseSessionToResponse,
   AUTH_COOKIE_PATH,
+  buildNormalizedSession,
+  clearAuthCookies,
+  clearCsrfCookie,
+  createCsrfToken,
   CSRF_COOKIE_NAME,
+  getCookieValue,
+  isSecureCookieEnvironment,
+  setCsrfCookie,
+  setDeviceIdCookie,
   STEP_UP_COOKIE_NAME,
   STEP_UP_MAX_AGE_MS,
   STEP_UP_MAX_AGE_SECONDS,
-};
-
-// ============================================================
-// Cookie & Environment Utilities
-// ============================================================
+} from './session/cookies.server';
+import { getCookieValue } from './session/cookies.server';
+export {
+  createAdminAuthFacade,
+  createUser,
+  deleteUser,
+  getUserByEmail,
+  getUserById,
+  invokeSessionControl,
+  revokeRefreshTokens,
+  updateUser,
+} from './session/admin.server';
 
 const DEVICE_ID_COOKIE_NAME = 'tvz_device_id';
-const DEVICE_ID_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
-const DEVICE_ID_MAX_AGE_SECONDS = DEVICE_ID_MAX_AGE_MS / 1000;
-const SESSION_CONTROL_FUNCTION = 'session-control';
-
-export function isSecureCookieEnvironment() {
-  return process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false';
-}
 
 function hashValue(value) {
   const normalized = normalizeValue(value);
@@ -58,103 +54,6 @@ function hashValue(value) {
 function getHeader(request, name) {
   return normalizeValue(request?.headers?.get?.(name));
 }
-
-export function getCookieValue(request, cookieName) {
-  const cookieHeader = getHeader(request, 'cookie');
-  if (!cookieHeader) return '';
-
-  const items = cookieHeader.split(';');
-  const prefix = `${cookieName}=`;
-
-  for (const item of items) {
-    const normalizedItem = normalizeValue(item);
-    if (normalizedItem.startsWith(prefix)) {
-      try {
-        return decodeURIComponent(normalizedItem.slice(prefix.length));
-      } catch {
-        return '';
-      }
-    }
-  }
-  return '';
-}
-
-export function createCsrfToken() {
-  return createHash('sha256').update(`${Date.now()}-${Math.random()}`).digest('hex');
-}
-
-export function setCsrfCookie(response, token) {
-  const normalizedToken = normalizeValue(token);
-  if (!normalizedToken) return;
-
-  response.cookies.set(CSRF_COOKIE_NAME, normalizedToken, {
-    httpOnly: false,
-    maxAge: 86400,
-    path: AUTH_COOKIE_PATH,
-    sameSite: 'lax',
-    secure: isSecureCookieEnvironment(),
-  });
-}
-
-export function clearCsrfCookie(response) {
-  response.cookies.set(CSRF_COOKIE_NAME, '', {
-    httpOnly: false,
-    maxAge: 0,
-    path: AUTH_COOKIE_PATH,
-    sameSite: 'lax',
-    secure: isSecureCookieEnvironment(),
-  });
-}
-
-export function clearAuthCookies(response) {
-  clearCsrfCookie(response);
-  const legacyCookieNames = [LEGACY_CSRF_COOKIE_NAME, 'sb-access-token', 'sb-refresh-token'];
-  const supabaseCookieNames = listSupabaseAuthStorageKeys().flatMap((cookieName) => [
-    cookieName,
-    ...Array.from({ length: 8 }, (_, index) => `${cookieName}.${index}`),
-  ]);
-
-  [...new Set([...legacyCookieNames, ...supabaseCookieNames])].forEach((cookieName) => {
-    response.cookies.set(cookieName, '', {
-      httpOnly: true,
-      maxAge: 0,
-      path: AUTH_COOKIE_PATH,
-      sameSite: 'lax',
-      secure: isSecureCookieEnvironment(),
-    });
-  });
-}
-
-// Write sessions through the SSR client so the proxy and server components use
-// the same cookie format and refresh lifecycle as the browser client.
-export async function applySupabaseSessionToResponse(
-  request,
-  response,
-  { accessToken, refreshToken },
-) {
-  const normalizedAccessToken = normalizeValue(accessToken);
-  const normalizedRefreshToken = normalizeValue(refreshToken);
-
-  if (!normalizedAccessToken || !normalizedRefreshToken) {
-    throw new Error('A complete authentication session is required');
-  }
-
-  const client = createSupabaseResponseClient(request, response);
-  const result = await client.auth.setSession({
-    access_token: normalizedAccessToken,
-    refresh_token: normalizedRefreshToken,
-  });
-
-  if (result.error || !result.data?.session?.access_token) {
-    throw new Error(result.error?.message || 'Authentication session could not be established');
-  }
-
-  return buildNormalizedSession(result.data.session, result.data.user || null);
-}
-
-// ============================================================
-// Request Context & Device Fingerprinting
-// ============================================================
 
 function getIpAddress(request) {
   const forwardedFor = getHeader(request, 'x-forwarded-for');
@@ -195,23 +94,6 @@ export function getRequestContext(request) {
     userAgentHash: hashValue(userAgent),
   };
 }
-
-export function setDeviceIdCookie(response, deviceId) {
-  const normalizedDeviceId = normalizeValue(deviceId);
-  if (!normalizedDeviceId) return;
-
-  response.cookies.set(DEVICE_ID_COOKIE_NAME, normalizedDeviceId, {
-    httpOnly: true,
-    maxAge: DEVICE_ID_MAX_AGE_SECONDS,
-    path: AUTH_COOKIE_PATH,
-    sameSite: 'lax',
-    secure: isSecureCookieEnvironment(),
-  });
-}
-
-// ============================================================
-// JWT & Session Context Building
-// ============================================================
 
 export function getBearerToken(request) {
   const authHeader = getHeader(request, 'authorization');
@@ -266,9 +148,7 @@ export function readSessionFromSupabaseCookies(request) {
   });
 
   for (const cookieName of sessionCookieNames) {
-    const accessToken = parseSupabaseSessionAccessToken(
-      combineCookieChunks(cookieMap, cookieName),
-    );
+    const accessToken = parseSupabaseSessionAccessToken(combineCookieChunks(cookieMap, cookieName));
     if (accessToken) {
       return {
         accessToken,
@@ -341,8 +221,6 @@ async function verifyAccessTokenWithSupabase(token, source) {
     throw new Error('Invalid or expired authentication token');
   }
 
-  // The user object is the authoritative identity. JWT claims are only used
-  // after signature verification to carry session metadata such as session_id.
   return {
     ...context,
     email: normalizeEmailValue(result.data.user.email) || context.email,
@@ -353,16 +231,6 @@ async function verifyAccessTokenWithSupabase(token, source) {
 
 export function createSessionFromIdToken(idToken) {
   return buildAuthContextFromAccessToken(idToken, 'idToken');
-}
-
-export function buildNormalizedSession(session, user) {
-  if (!session?.access_token) return null;
-  return {
-    accessToken: session.access_token,
-    refreshToken: session.refresh_token || null,
-    expiresAt: session.expires_at || null,
-    user: user || session.user || null,
-  };
 }
 
 export function buildSessionUser(user) {
@@ -383,10 +251,6 @@ export function serializeSessionState(sessionContext) {
     source: sessionContext.source,
   };
 }
-
-// ============================================================
-// Error Handling & Async Timeout Helpers
-// ============================================================
 
 export function isTransientNetworkError(error) {
   const msg = normalizeValue(error?.message).toLowerCase();
@@ -469,10 +333,6 @@ export function createAuthenticatedSupabaseClient(accessToken) {
   });
 }
 
-// ============================================================
-// Request Session Resolvers & Assertions
-// ============================================================
-
 export async function readSessionFromRequest(
   request,
   { allowBearer = true, skipSupabaseFallbackIfNoHint = true, skipSupabaseFallback = false } = {},
@@ -491,9 +351,10 @@ export async function readSessionFromRequest(
           cookieSession.source || 'cookie-session',
         );
       } catch (legacyCookieError) {
-        // Older releases used sb-access-token. If that stale cookie is still
-        // present, let the current @supabase/ssr cookie be resolved below.
-        if (isTransientNetworkError(legacyCookieError) || isTransientSessionError(legacyCookieError)) {
+        if (
+          isTransientNetworkError(legacyCookieError) ||
+          isTransientSessionError(legacyCookieError)
+        ) {
           throw legacyCookieError;
         }
       }
@@ -609,10 +470,6 @@ export async function resolveOptionalSessionRequest(
   }
 }
 
-// ============================================================
-// Session Revocation & Control
-// ============================================================
-
 export async function isSessionRevoked({ decodedToken = {}, sessionJti = null, userId }) {
   const normalizedUserId = normalizeValue(userId);
   if (!normalizedUserId) return false;
@@ -660,221 +517,4 @@ export async function assertSessionNotRevoked(authContext = null) {
   const error = new Error('Authentication token has been revoked');
   error.code = 'AUTH_TOKEN_REVOKED';
   throw error;
-}
-
-export async function invokeSessionControl({ currentSessionJti = null, reason = null, userId }) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId) throw new Error('User ID is required');
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Supabase server admin environment is not configured');
-  }
-
-  const internalToken = normalizeValue(process.env.INFRA_INTERNAL_TOKEN);
-  if (!internalToken) {
-    throw new Error('INFRA_INTERNAL_TOKEN is required for session control');
-  }
-
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/${SESSION_CONTROL_FUNCTION}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      'x-infra-internal-token': internalToken,
-    },
-    body: JSON.stringify({
-      currentSessionJti: normalizeValue(currentSessionJti) || null,
-      reason: normalizeValue(reason) || null,
-      userId: normalizedUserId,
-    }),
-    cache: 'no-store',
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(
-      normalizeValue(payload?.error) ||
-        `Session control function failed with status ${response.status}`,
-    );
-  }
-
-  if (normalizeValue(payload?.ok).toLowerCase() === 'false') {
-    throw new Error('Session control function did not confirm success');
-  }
-
-  return payload;
-}
-
-// ============================================================
-// Admin Auth User Management Facade Functions
-// ============================================================
-
-function normalizeIdentities(value) {
-  if (Array.isArray(value)) return value;
-  if (value && typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-  return [];
-}
-
-function toFirebaseLikeUserRecord(user = null) {
-  if (!user?.id) return null;
-  const identities = normalizeIdentities(user?.identities);
-
-  const providerData = resolveProviderDescriptors({
-    identities,
-    email: user?.email || null,
-    userId: user?.id || null,
-  }).map((provider) => ({
-    email: provider.email,
-    providerId: provider.id,
-    uid: provider.uid,
-  }));
-
-  return {
-    app_metadata: user?.app_metadata || {},
-    disabled: user?.banned_until != null,
-    email: normalizeEmailValue(user?.email) || null,
-    emailVerified: user?.email_confirmed_at != null || user?.confirmed_at != null || false,
-    metadata: {
-      creationTime: user?.created_at || null,
-      lastSignInTime: user?.last_sign_in_at || null,
-    },
-    photoURL:
-      user?.user_metadata?.avatar_url ||
-      user?.user_metadata?.picture ||
-      user?.user_metadata?.avatar ||
-      null,
-    identityCount: identities.length,
-    providerData,
-    uid: normalizeValue(user?.id),
-    user_metadata: user?.user_metadata || {},
-  };
-}
-
-export async function getUserByEmail(email) {
-  const normalizedEmail = normalizeEmailValue(email);
-  if (!normalizedEmail) throw new Error('Email is required');
-
-  const admin = createAdminClient();
-  const result = await admin
-    .rpc('auth_get_user_by_email', { p_email: normalizedEmail })
-    .maybeSingle();
-
-  if (result.error) throw new Error(result.error.message || 'User lookup failed');
-  if (!result.data) {
-    const error = new Error('User not found');
-    error.code = 'auth/user-not-found';
-    throw error;
-  }
-
-  return toFirebaseLikeUserRecord(result.data);
-}
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export async function getUserById(userId) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
-    throw new Error('Valid User ID UUID is required');
-  }
-
-  const admin = createAdminClient();
-  const result = await admin.auth.admin.getUserById(normalizedUserId);
-
-  if (result.error) throw new Error(result.error.message || 'User could not be loaded');
-  return toFirebaseLikeUserRecord(result.data?.user || null);
-}
-
-export async function createUser(payload = {}) {
-  const admin = createAdminClient();
-  const result = await admin.auth.admin.createUser({
-    app_metadata: payload.appMetadata || {},
-    email: normalizeEmailValue(payload.email),
-    email_confirm: Boolean(payload.emailVerified),
-    password: payload.password !== undefined ? String(payload.password || '') : undefined,
-    user_metadata: payload.userMetadata || {},
-  });
-
-  if (result.error) throw new Error(result.error.message || 'User could not be created');
-  return toFirebaseLikeUserRecord(result.data?.user || null);
-}
-
-export async function updateUser(userId, payload = {}) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
-    throw new Error('Valid User ID UUID is required');
-  }
-
-  const admin = createAdminClient();
-  const updatePayload = {};
-
-  if (payload.email !== undefined) updatePayload.email = normalizeEmailValue(payload.email);
-  if (payload.emailVerified !== undefined)
-    updatePayload.email_confirm = Boolean(payload.emailVerified);
-  if (payload.password !== undefined) updatePayload.password = String(payload.password || '');
-  if (payload.appMetadata !== undefined) updatePayload.app_metadata = payload.appMetadata || {};
-  if (payload.userMetadata !== undefined) updatePayload.user_metadata = payload.userMetadata || {};
-
-  const result = await admin.auth.admin.updateUserById(normalizedUserId, updatePayload);
-  if (result.error) throw new Error(result.error.message || 'User could not be updated');
-
-  return toFirebaseLikeUserRecord(result.data?.user || null);
-}
-
-export async function deleteUser(userId) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
-    throw new Error('Valid User ID UUID is required');
-  }
-
-  const admin = createAdminClient();
-  const result = await admin.auth.admin.deleteUser(normalizedUserId);
-
-  if (result.error) throw new Error(result.error.message || 'User could not be deleted');
-  return true;
-}
-
-export async function revokeRefreshTokens(
-  userId,
-  { currentSessionJti = null, reason = null } = {},
-) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId) throw new Error('User ID is required');
-
-  await invokeSessionControl({
-    currentSessionJti,
-    reason: reason || 'credential-change',
-    userId: normalizedUserId,
-  });
-
-  return true;
-}
-
-export function createAdminAuthFacade(options = {}) {
-  const defaults = {
-    currentSessionJti: normalizeValue(options.currentSessionJti) || null,
-    reason: normalizeValue(options.reason) || null,
-  };
-
-  return {
-    createUser,
-    deleteUser,
-    getUser: getUserById,
-    getUserByEmail,
-    revokeRefreshTokens(userId, overrideOptions = {}) {
-      return revokeRefreshTokens(userId, {
-        currentSessionJti:
-          normalizeValue(overrideOptions.currentSessionJti) || defaults.currentSessionJti,
-        reason: normalizeValue(overrideOptions.reason) || defaults.reason,
-      });
-    },
-    updateUser,
-  };
 }

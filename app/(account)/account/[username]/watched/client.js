@@ -12,7 +12,7 @@ import { useToast } from '@/modules/notification';
 import {
   removeUserWatchedItem,
   subscribeToUserWatched,
-} from '@/domains/media/server/watched-watchlist';
+} from '@/domains/media/client/collections/watched-watchlist';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // WatchedView is defined in this route client.
 import AccountWatchedFeed from '@/domains/account/ui/sections/collections/watched-collection';

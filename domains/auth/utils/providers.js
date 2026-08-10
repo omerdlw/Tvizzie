@@ -1,32 +1,13 @@
 import { normalizeEmailValue, normalizeValue } from '@/shared/utils';
 import {
-  getEnabledOAuthProviderIds,
-  GITHUB_PROVIDER_ID,
-  GOOGLE_PROVIDER_ID,
-  normalizeOAuthProvider,
   normalizeProviderId,
-  PASSWORD_PROVIDER_ID,
-} from '@/domains/auth/utils/oauth';
+  resolveAuthCapabilities,
+  resolvePrimaryProvider,
+  uniqueStrings,
+} from '@/core/modules/auth/provider-utils';
+import { GOOGLE_PROVIDER_ID, PASSWORD_PROVIDER_ID } from './oauth';
 
-// ============================================================
-// Auth Capabilities & Provider Resolution Utilities
-// ============================================================
-
-function toArray(value) {
-  if (Array.isArray(value)) return value;
-  if (value === undefined || value === null || value === '') return [];
-  return [value];
-}
-
-export function uniqueStrings(items) {
-  return Array.from(
-    new Set(
-      toArray(items)
-        .map((item) => normalizeValue(item))
-        .filter(Boolean),
-    ),
-  );
-}
+export { resolveAuthCapabilities, resolvePrimaryProvider, uniqueStrings };
 
 export function normalizeProvider(value) {
   return normalizeProviderId(value);
@@ -38,14 +19,12 @@ function getMetadataProviders(appMetadata = {}) {
     appMetadata?.provider,
     appMetadata?.tvz_password_enabled === true ? PASSWORD_PROVIDER_ID : null,
   ]
-    .map((provider) => normalizeProvider(provider))
+    .map(normalizeProvider)
     .filter(Boolean);
 }
 
 function getAmrProviders(tokenClaims = {}) {
-  const amr = Array.isArray(tokenClaims?.amr) ? tokenClaims.amr : [];
-
-  return amr
+  return (Array.isArray(tokenClaims?.amr) ? tokenClaims.amr : [])
     .map((entry) => {
       if (typeof entry === 'string') return normalizeValue(entry).toLowerCase();
       if (entry && typeof entry === 'object') {
@@ -54,7 +33,6 @@ function getAmrProviders(tokenClaims = {}) {
       return '';
     })
     .map((method) => {
-      if (!method) return null;
       if (method === PASSWORD_PROVIDER_ID || method === 'pwd' || method === 'email') {
         return PASSWORD_PROVIDER_ID;
       }
@@ -72,21 +50,19 @@ export function resolveProviderIds({
   tokenClaims = {},
 } = {}) {
   const providerIdsFromProviderData = Array.isArray(providerData)
-    ? providerData.map((p) => normalizeProvider(p?.providerId || p?.id)).filter(Boolean)
+    ? providerData
+        .map((provider) => normalizeProvider(provider?.providerId || provider?.id))
+        .filter(Boolean)
     : [];
-
   const providerIdsFromIdentities = Array.isArray(identities)
-    ? identities.map((i) => normalizeProvider(i?.provider)).filter(Boolean)
+    ? identities.map((identity) => normalizeProvider(identity?.provider)).filter(Boolean)
     : [];
-
-  const providerIdsFromMetadata = getMetadataProviders(appMetadata);
-  const providerIdsFromTokenMetadata = getMetadataProviders(tokenClaims?.app_metadata || {});
 
   return uniqueStrings([
     ...providerIdsFromProviderData,
     ...providerIdsFromIdentities,
-    ...providerIdsFromMetadata,
-    ...providerIdsFromTokenMetadata,
+    ...getMetadataProviders(appMetadata),
+    ...getMetadataProviders(tokenClaims?.app_metadata || {}),
     ...getAmrProviders(tokenClaims),
   ]);
 }
@@ -97,70 +73,37 @@ export function resolveProviderDescriptors({
   email = null,
   userId = null,
 } = {}) {
-  const providerMap = new Map();
+  const providers = new Map();
+  const addProvider = (providerId, providerEmail, uid) => {
+    const id = normalizeProvider(providerId);
+    if (!id || providers.has(id)) return;
+
+    providers.set(id, {
+      email: normalizeEmailValue(providerEmail || email) || null,
+      id,
+      uid: normalizeValue(uid || userId) || null,
+    });
+  };
 
   if (Array.isArray(providerData)) {
     providerData.forEach((provider) => {
-      const providerId = normalizeProvider(provider?.providerId || provider?.id);
-      if (!providerId || providerMap.has(providerId)) return;
-
-      providerMap.set(providerId, {
-        email: normalizeEmailValue(provider?.email || email) || null,
-        id: providerId,
-        uid: normalizeValue(provider?.uid || provider?.user_id || userId) || null,
-      });
+      addProvider(
+        provider?.providerId || provider?.id,
+        provider?.email,
+        provider?.uid || provider?.user_id,
+      );
     });
   }
 
   if (Array.isArray(identities)) {
     identities.forEach((identity) => {
-      const providerId = normalizeProvider(identity?.provider);
-      if (!providerId || providerMap.has(providerId)) return;
-
-      providerMap.set(providerId, {
-        email: normalizeEmailValue(identity?.identity_data?.email || email) || null,
-        id: providerId,
-        uid:
-          normalizeValue(identity?.id || identity?.identity_id || identity?.user_id || userId) ||
-          null,
-      });
+      addProvider(
+        identity?.provider,
+        identity?.identity_data?.email,
+        identity?.id || identity?.identity_id || identity?.user_id,
+      );
     });
   }
 
-  return Array.from(providerMap.values());
-}
-
-export function resolvePrimaryProvider(providerIds = []) {
-  const normalizedProviderIds = uniqueStrings(
-    providerIds.map((p) => normalizeProvider(p)).filter(Boolean),
-  );
-
-  if (normalizedProviderIds.includes(PASSWORD_PROVIDER_ID)) return PASSWORD_PROVIDER_ID;
-  if (normalizedProviderIds.includes(GOOGLE_PROVIDER_ID)) return 'google';
-  if (normalizedProviderIds.includes(GITHUB_PROVIDER_ID)) return 'github';
-
-  return normalizeOAuthProvider(normalizedProviderIds[0]) || normalizedProviderIds[0] || null;
-}
-
-export function resolveAuthCapabilities({ providerIds = [], email = null } = {}) {
-  const uniqueProviderIds = uniqueStrings(
-    providerIds.map((p) => normalizeProvider(p)).filter(Boolean),
-  );
-  const passwordEnabled = uniqueProviderIds.includes(PASSWORD_PROVIDER_ID);
-  const oauthProviderIds = getEnabledOAuthProviderIds(uniqueProviderIds);
-  const oauthEnabled = oauthProviderIds.length > 0;
-  const googleEnabled = uniqueProviderIds.includes(GOOGLE_PROVIDER_ID);
-  const githubEnabled = uniqueProviderIds.includes(GITHUB_PROVIDER_ID);
-  const primaryProvider = resolvePrimaryProvider(uniqueProviderIds);
-
-  return {
-    passwordEnabled,
-    oauthEnabled,
-    oauthProviderIds,
-    googleEnabled,
-    githubEnabled,
-    primaryProvider,
-    needsPasswordSetup: oauthEnabled && !passwordEnabled,
-    canResetPassword: passwordEnabled && Boolean(normalizeEmailValue(email)),
-  };
+  return Array.from(providers.values());
 }

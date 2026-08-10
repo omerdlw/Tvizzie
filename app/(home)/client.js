@@ -3,13 +3,12 @@
 import { TMDB_IMG } from '@/shared/constants';
 import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import Registry from '@/app/(home)/registry';
-// Home view is defined in this route client.
 import { motion } from 'framer-motion';
 import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { DiscoverSection } from '@/domains/home/ui/sections/discover-section';
 import { TrendingSection } from '@/domains/home/ui/sections/trending-section';
-import { homePageContainerVariants, homeBackgroundVariants } from '@/app/(home)/motion';
+import { homeBackgroundVariants, homePageContainerVariants } from '@/domains/home/ui/motion';
 
 export default function Client({ data = {} }) {
   const activeHeroItem = Array.isArray(data.initialDiscoverItems)
@@ -63,15 +62,9 @@ function View({ homeData = {} }) {
           initialHasMore={initialHasMore}
         />
 
-        <TrendingSection
-          title="Today's popular movies"
-          items={dailyItems}
-        />
+        <TrendingSection title="Today's popular movies" items={dailyItems} />
 
-        <TrendingSection
-          title="This week's popular movies"
-          items={weeklyItems}
-        />
+        <TrendingSection title="This week's popular movies" items={weeklyItems} />
       </motion.div>
     </PageGradientShell>
   );

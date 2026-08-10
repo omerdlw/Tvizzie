@@ -5,10 +5,10 @@ import {
   applySupabaseSessionToResponse,
   getRequestContext,
   readSessionFromRequest,
-  revokeRefreshTokens,
   requireSessionRequest,
   setDeviceIdCookie,
 } from './session.server';
+import { revokeRefreshTokens } from './session/admin.server';
 import {
   AUTH_RATE_LIMIT_POLICY_KEYS,
   assertCsrfRequest,
@@ -33,6 +33,7 @@ import {
   setTrustedDeviceCookie,
   verifyPendingSignInToken,
   verifyCodeRequest,
+  PASSWORD_ACCOUNT_LOOKUP_CODES,
 } from './verification.server';
 import {
   createPasswordResetProofToken,
@@ -40,12 +41,13 @@ import {
   verifyPasswordResetProofToken,
   verifySignUpProofToken,
 } from './proof-tokens.server';
-import { ensurePasswordAccountRecord } from './account.server';
-import { resolvePrimaryProvider, SECURE_PURPOSES } from '@/domains/auth/utils';
-
-// ============================================================
-// Sign-In Route Handler
-// ============================================================
+import { ensureAccountProfileRecord } from './account.server';
+import {
+  resolveAuthCapabilities,
+  resolvePrimaryProvider,
+  resolveProviderIds,
+  SECURE_PURPOSES,
+} from '@/domains/auth/utils';
 
 export async function handleSignInPost(request) {
   try {
@@ -80,8 +82,17 @@ export async function handleSignInPost(request) {
 
     const passwordLookup = await lookupPasswordAccountByEmail(email);
     if (!passwordLookup.eligible) {
+      const isPasswordSignInDisabled =
+        passwordLookup.code === PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_SIGN_IN_DISABLED;
       return NextResponse.json(
-        { code: passwordLookup.code || 'invalid_credentials', error: 'Sign in failed' },
+        {
+          code: isPasswordSignInDisabled
+            ? 'PASSWORD_SIGN_IN_DISABLED'
+            : passwordLookup.code || 'invalid_credentials',
+          error: isPasswordSignInDisabled
+            ? 'Password sign-in is not enabled for this account'
+            : 'Sign in failed',
+        },
         { status: 400 },
       );
     }
@@ -143,16 +154,13 @@ export async function handleSignInPost(request) {
   }
 }
 
-// ============================================================
-// Sign-Up Complete Route Handler
-// ============================================================
-
 export async function handleSignUpCompletePost(request) {
   let claimedProofKey = null;
   let createdUserId = null;
   try {
     assertCsrfRequest(request);
     const body = await request.json().catch(() => ({}));
+    const displayName = normalizeValue(body?.displayName);
     const email = normalizeEmailValue(body?.email);
     const password = String(body?.password || '');
     const signUpProof = normalizeValue(body?.signUpProof);
@@ -197,7 +205,12 @@ export async function handleSignUpCompletePost(request) {
 
     const userId = createRes.data.user.id;
     createdUserId = userId;
-    await ensurePasswordAccountRecord({ displayName: username, email, userId, username });
+    await ensureAccountProfileRecord({
+      displayName: displayName || username,
+      email,
+      userId,
+      username,
+    });
     await completeVerificationProof(claimedProofKey);
     claimedProofKey = null;
 
@@ -214,10 +227,6 @@ export async function handleSignUpCompletePost(request) {
     return NextResponse.json({ error: error.message || 'Sign up failed' }, { status: 400 });
   }
 }
-
-// ============================================================
-// Password Reset Complete Route Handler
-// ============================================================
 
 export async function handlePasswordResetCompletePost(request) {
   let claimedProofKey = null;
@@ -265,10 +274,6 @@ export async function handlePasswordResetCompletePost(request) {
   }
 }
 
-// ============================================================
-// Verification Route Handler
-// ============================================================
-
 export async function handleVerificationPost(request) {
   try {
     assertCsrfRequest(request);
@@ -305,7 +310,11 @@ export async function handleVerificationPost(request) {
           error.code = oauthProvider
             ? 'OAUTH_ACCOUNT_ALREADY_REGISTERED'
             : 'AUTH_ACCOUNT_ALREADY_REGISTERED';
-          error.data = { email, needsPasswordSetup: Boolean(oauthProvider), provider: oauthProvider };
+          error.data = {
+            email,
+            needsPasswordSetup: Boolean(oauthProvider),
+            provider: oauthProvider,
+          };
           throw error;
         }
       }
@@ -435,10 +444,6 @@ export async function handleVerificationPost(request) {
   }
 }
 
-// ============================================================
-// Session & Audit Route Handlers
-// ============================================================
-
 export async function handleSessionGet(request) {
   try {
     const sessionContext = await readSessionFromRequest(request, {
@@ -447,20 +452,30 @@ export async function handleSessionGet(request) {
     });
 
     if (sessionContext?.userId) {
+      const user = sessionContext.user || {};
+      const tokenClaims = sessionContext.decodedToken || {};
+      const appMetadata = tokenClaims.app_metadata || user.app_metadata || {};
+      const providerIds = resolveProviderIds({
+        appMetadata,
+        identities: user.identities || [],
+        tokenClaims,
+      });
       return NextResponse.json({
         status: 'authenticated',
-        expiresAt: sessionContext.decodedToken?.exp ? sessionContext.decodedToken.exp * 1000 : null,
+        expiresAt: tokenClaims.exp ? tokenClaims.exp * 1000 : null,
         user: {
           id: sessionContext.userId,
           email: sessionContext.email || null,
-          metadata:
-            sessionContext.decodedToken?.user_metadata || sessionContext.user?.user_metadata || {},
-          app_metadata:
-            sessionContext.decodedToken?.app_metadata || sessionContext.user?.app_metadata || {},
+          metadata: tokenClaims.user_metadata || user.user_metadata || {},
+          app_metadata: appMetadata,
+          identities: user.identities || [],
         },
         capabilities: {
-          providerIds: sessionContext.decodedToken?.amr || [],
-          primaryProvider: sessionContext.decodedToken?.app_metadata?.provider || 'email',
+          ...resolveAuthCapabilities({
+            email: sessionContext.email || user.email || null,
+            providerIds,
+          }),
+          providerIds,
         },
       });
     }
@@ -475,8 +490,4 @@ export async function handleSessionGet(request) {
       user: null,
     });
   }
-}
-
-export async function handleAuditPost(request) {
-  return NextResponse.json({ logged: true });
 }

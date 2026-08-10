@@ -18,4 +18,3 @@ export { RegistryBootstrap } from './bootstrap';
 export { useRegistry } from './use-registry';
 export { isRegistryType, REGISTRY_RESOLVERS } from './constants';
 export { createPlugin, createPluginRunner, PLUGINS } from './plugins/index';
-

@@ -1,8 +1,5 @@
-// ============================================================
-// Auth Domain Utilities (Index Aggregator)
-// ============================================================
-
 export * from './constants';
+export * from './oauth';
 export * from './password';
 export * from './providers';
 export * from './errors';

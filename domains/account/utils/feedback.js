@@ -56,7 +56,13 @@ export const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
 });
 
 function resolveAccountFeedbackConfig(flow) {
-  return ACCOUNT_FEEDBACK_CONFIG[String(flow || '').trim().toLowerCase()] || {};
+  return (
+    ACCOUNT_FEEDBACK_CONFIG[
+      String(flow || '')
+        .trim()
+        .toLowerCase()
+    ] || {}
+  );
 }
 
 export function notifyAccountLoadError(toast, error, fallbackMessage) {
@@ -72,9 +78,22 @@ export function emitAccountFeedback(flow, phase, overrides = {}) {
   globalEvents.emit(EVENT_TYPES.AUTH_FEEDBACK, {
     flow,
     phase,
-    statusType: overrides.statusType || config.statusType || String(flow || 'ACCOUNT_FEEDBACK').trim().toUpperCase(),
-    title: overrides.title || (phase === 'success' ? config.successTitle || config.title || 'Account' : config.title || 'Account'),
-    description: overrides.description ?? (phase === 'success' ? config.successDescription || config.description || '' : config.description || ''),
+    statusType:
+      overrides.statusType ||
+      config.statusType ||
+      String(flow || 'ACCOUNT_FEEDBACK')
+        .trim()
+        .toUpperCase(),
+    title:
+      overrides.title ||
+      (phase === 'success'
+        ? config.successTitle || config.title || 'Account'
+        : config.title || 'Account'),
+    description:
+      overrides.description ??
+      (phase === 'success'
+        ? config.successDescription || config.description || ''
+        : config.description || ''),
     icon: overrides.icon || config.icon || 'solar:user-circle-bold',
     themeType: overrides.themeType || config.themeType || DEFAULT_ACCOUNT_FEEDBACK_THEME_TYPE,
     priority: overrides.priority ?? config.priority ?? DEFAULT_ACCOUNT_FEEDBACK_PRIORITY,

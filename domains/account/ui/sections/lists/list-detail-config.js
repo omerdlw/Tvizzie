@@ -1,5 +1,5 @@
 import { ACCOUNT_ROUTE_SHELL_CLASS } from '@/shared/constants';
-import { REVIEW_SORT_MODE } from '@/domains/reviews/services/review-data';
+import { REVIEW_SORT_MODE } from '@/domains/reviews/shared/review-data';
 
 export const LIST_SECTION_SHELL_CLASS = `${ACCOUNT_ROUTE_SHELL_CLASS} flex flex-col gap-6`;
 

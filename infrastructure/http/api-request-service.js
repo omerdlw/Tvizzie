@@ -34,7 +34,7 @@ export async function requestApiJson(
     body,
     headers = {},
     cache = 'no-store',
-    
+
     timeoutMs = 15000,
     retryCount = method === 'GET' ? 1 : 0,
     retryDelayMs = 120,

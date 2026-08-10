@@ -1,1 +1,1 @@
-export * from '@/domains/social/server/api/activity-events.server';
+export * from '@/domains/social/server/activity/route.server';

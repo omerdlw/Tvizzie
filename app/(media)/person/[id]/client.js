@@ -1,16 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getPreferredMovieBackground } from '@/domains/media/services/media-data';
 import {
   clearPersonPosterPreference,
   getPersonPosterPreferenceFilePath,
   setPersonPosterPreference,
 } from '@/domains/media/utils/poster-preferences';
 import { calculateAge, getBackgroundMovieCandidates } from '@/domains/media/utils/person-data';
-import { TMDB_IMG } from '@/shared/constants';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
-// Person view is defined in this route client.
+import { PAGE_SHELL_MAX_WIDTH_CLASS, TMDB_IMG } from '@/shared/constants';
 import { Suspense, use } from 'react';
 import { motion } from 'framer-motion';
 import PersonAwards from '@/domains/media/ui/components/person/awards';
@@ -21,7 +18,6 @@ import NavHeightSpacer from '@/ui/layout/nav-height-spacer';
 import PersonTimeline from '@/domains/media/ui/components/person/timeline';
 import { PageGradientShell } from '@/ui/layout/page-gradient-shell';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
-import { PAGE_SHELL_MAX_WIDTH_CLASS } from '@/shared/constants';
 import { Spinner } from '@/ui/feedback/spinner';
 import Registry from '@/app/(media)/registry';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
@@ -29,9 +25,9 @@ import {
   PERSON_TEXT,
   getDeferredChapterDelay,
   getMotionTimestamp,
+  getSectionHeaderProps,
   personBioVariants,
   personPortraitVariants,
-  getSectionHeaderProps,
 } from '@/app/(media)/motion';
 
 function getMovieBackdropSrc(credit) {
@@ -54,28 +50,6 @@ function useViewChoreographyClock(activeView) {
   }
 
   return choreographyStartedAtRef.current;
-}
-
-async function resolvePersonBackgroundImage(person) {
-  const candidates = getBackgroundMovieCandidates(person);
-
-  if (!candidates.length) {
-    return null;
-  }
-
-  const results = await Promise.all(
-    candidates.map(async (credit) => {
-      try {
-        const response = await TmdbService.getMovieImages(credit.id);
-
-        return getPreferredMovieBackground(response?.data) || getMovieBackdropSrc(credit);
-      } catch {
-        return getMovieBackdropSrc(credit);
-      }
-    }),
-  );
-
-  return results.find(Boolean) || null;
 }
 
 export default function Client({ person, secondaryDataPromise }) {
@@ -135,7 +109,7 @@ export default function Client({ person, secondaryDataPromise }) {
     void (async () => {
       try {
         const secondaryPerson = await Promise.resolve(secondaryDataPromise);
-        const nextBackgroundImage = await resolvePersonBackgroundImage({
+        const nextBackgroundImage = getFallbackBackgroundImage({
           ...person,
           ...secondaryPerson,
         });
@@ -299,11 +273,7 @@ function PersonView({
               {activeView === 'awards' ? (
                 <motion.div
                   className="mt-8 sm:mt-12"
-                  {...getSectionHeaderProps(
-                    getDeferredChapterDelay('generic', choreographyStartedAt),
-                    false,
-                    'generic',
-                  )}
+                  {...getSectionHeaderProps(getDeferredChapterDelay('generic', choreographyStartedAt))}
                 >
                   <PersonAwards personId={person.id} />
                 </motion.div>

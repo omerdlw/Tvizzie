@@ -1,5 +1,8 @@
 import { handlePasswordResetCompletePost } from '@/domains/auth/server/api-handlers.server';
+import { makeAuthResponsePrivate } from '@/domains/auth/server/response.server';
 
 export async function POST(request) {
-  return handlePasswordResetCompletePost(request);
+  return makeAuthResponsePrivate(await handlePasswordResetCompletePost(request), {
+    varyByCookie: true,
+  });
 }

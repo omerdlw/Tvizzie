@@ -25,9 +25,6 @@ export default function PersonBioSurface({
 }) {
   const normalizedBiography = String(biography || '').trim();
 
-
-
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}

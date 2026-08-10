@@ -39,80 +39,74 @@ export function BlurryText({
 
   return (
     <Component className={cn('whitespace-pre-wrap', className)} {...props}>
-      {by === 'character' ? (
-        words.map((word, wordIndex) => {
-          const chars = word.split('');
-          return (
-            <span key={`word-${wordIndex}`} className="inline-block whitespace-nowrap">
-              {chars.map((char) => {
-                const charIndex = globalCharIndex++;
-                const itemDelay = delay + charIndex * stagger;
+      {by === 'character'
+        ? words.map((word, wordIndex) => {
+            const chars = word.split('');
+            return (
+              <span key={`word-${wordIndex}`} className="inline-block whitespace-nowrap">
+                {chars.map((char) => {
+                  const charIndex = globalCharIndex++;
+                  const itemDelay = delay + charIndex * stagger;
 
-                return (
-                  <motion.span
-                    key={`char-${charIndex}`}
-                    initial={{
-                      opacity: 0,
-                      y: initialY,
-                      scale: initialScale,
-                      filter: initialBlur,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      filter: 'blur(0px)',
-                    }}
-                    transition={{
-                      duration,
-                      delay: itemDelay,
-                      ease,
-                    }}
-                    className={cn('inline-block', segmentClassName)}
-                  >
-                    {char}
-                  </motion.span>
-                );
-              })}
-              {wordIndex < words.length - 1 && (
-                <span className="inline-block">&nbsp;</span>
-              )}
-            </span>
-          );
-        })
-      ) : (
-        words.map((word, wordIndex) => {
-          const itemDelay = delay + wordIndex * (stagger * 3);
-          return (
-            <motion.span
-              key={`word-${wordIndex}`}
-              initial={{
-                opacity: 0,
-                y: initialY,
-                scale: initialScale,
-                filter: initialBlur,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                filter: 'blur(0px)',
-              }}
-              transition={{
-                duration,
-                delay: itemDelay,
-                ease,
-              }}
-              className={cn('inline-block', segmentClassName)}
-            >
-              {word}
-              {wordIndex < words.length - 1 && (
-                <span className="inline-block">&nbsp;</span>
-              )}
-            </motion.span>
-          );
-        })
-      )}
+                  return (
+                    <motion.span
+                      key={`char-${charIndex}`}
+                      initial={{
+                        opacity: 0,
+                        y: initialY,
+                        scale: initialScale,
+                        filter: initialBlur,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        filter: 'blur(0px)',
+                      }}
+                      transition={{
+                        duration,
+                        delay: itemDelay,
+                        ease,
+                      }}
+                      className={cn('inline-block', segmentClassName)}
+                    >
+                      {char}
+                    </motion.span>
+                  );
+                })}
+                {wordIndex < words.length - 1 && <span className="inline-block">&nbsp;</span>}
+              </span>
+            );
+          })
+        : words.map((word, wordIndex) => {
+            const itemDelay = delay + wordIndex * (stagger * 3);
+            return (
+              <motion.span
+                key={`word-${wordIndex}`}
+                initial={{
+                  opacity: 0,
+                  y: initialY,
+                  scale: initialScale,
+                  filter: initialBlur,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  filter: 'blur(0px)',
+                }}
+                transition={{
+                  duration,
+                  delay: itemDelay,
+                  ease,
+                }}
+                className={cn('inline-block', segmentClassName)}
+              >
+                {word}
+                {wordIndex < words.length - 1 && <span className="inline-block">&nbsp;</span>}
+              </motion.span>
+            );
+          })}
     </Component>
   );
 }

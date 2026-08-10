@@ -15,12 +15,12 @@ import {
   subscribeToUserListBySlug,
   subscribeToUserListItems,
   toggleListLike,
-} from '@/domains/media/server/lists';
+} from '@/domains/media/client/collections/lists';
 import {
   deleteListReview,
   subscribeToListReviews,
   toggleStoredReviewLike,
-} from '@/domains/reviews/server';
+} from '@/domains/reviews/client';
 import { TMDB_IMG } from '@/shared/constants';
 import { useNavigationActions } from '@/modules/nav';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';

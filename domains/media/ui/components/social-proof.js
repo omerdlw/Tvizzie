@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/modules/auth';
 import { useModal } from '@/modules/modal';
-import { subscribeToMediaSocialProof } from '@/domains/media/server/social-proof';
+import { subscribeToMediaSocialProof } from '@/domains/media/client/social-proof';
 import Icon from '@/ui/primitives/icon';
 const EMPTY_SOCIAL_PROOF = Object.freeze({
   reviews: {
@@ -101,9 +101,13 @@ export default function MediaSocialProof({ media, viewerId }) {
       />
       <span>Social activity</span>
       {summaryParts.length > 0 && (
-        <span className="text-black/40 font-normal">({summaryParts.join(' • ')})</span>
+        <span className="font-normal text-black/40">({summaryParts.join(' • ')})</span>
       )}
-      <Icon icon="solar:alt-arrow-right-linear" size={14} className="shrink-0 text-black/40 group-hover:text-black" />
+      <Icon
+        icon="solar:alt-arrow-right-linear"
+        size={14}
+        className="shrink-0 text-black/40 group-hover:text-black"
+      />
     </button>
   );
 }

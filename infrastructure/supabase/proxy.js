@@ -171,7 +171,11 @@ function shouldLogClaimsError() {
 }
 
 function createCsrfToken() {
-  return crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+  return crypto.randomUUID();
+}
+
+function applySupabaseResponseHeaders(response, headers = {}) {
+  Object.entries(headers).forEach(([name, value]) => response.headers.set(name, value));
 }
 
 export async function updateSession(request) {
@@ -214,7 +218,7 @@ export async function updateSession(request) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
           supabaseResponse = NextResponse.next({
@@ -224,6 +228,7 @@ export async function updateSession(request) {
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
           );
+          applySupabaseResponseHeaders(supabaseResponse, headers);
         },
       },
     });

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import MediaPosterCard from '@/domains/media/ui/components/media-poster-card';
 import Icon from '@/ui/primitives/icon';
 import { useRegistry } from '@/modules/registry';
@@ -12,13 +11,14 @@ import {
   genreNavButtonProps,
   getDiscoverCardProps,
   loadMoreButtonVariants,
-} from '@/app/(home)/motion';
+} from '@/domains/home/ui/motion';
 import {
   ALL_GENRE_ID,
   MOBILE_DISCOVER_MEDIA_QUERY,
   getUniqueDiscoverItems,
   getDiscoverBatchSize,
-} from '@/domains/home/utils';
+} from '@/domains/home/shared/discover';
+import { useDiscoverFeed } from '@/domains/home/client/use-discover-feed';
 
 function GenreChip({ genre, isActive, onClick, index = 0 }) {
   const chipProps = getGenreChipProps(index);
@@ -41,19 +41,15 @@ export function DiscoverSection({
   initialDiscoverPage = 1,
   initialHasMore = false,
 }) {
-  const requestIdRef = useRef(0);
   const scrollContainerRef = useRef(null);
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
   const scrollLeftRef = useRef(0);
   const draggedDistanceRef = useRef(0);
-  const genreItems = [
-    {
-      id: ALL_GENRE_ID,
-      name: 'All',
-    },
-    ...initialGenres,
-  ];
+  const genreItems = useMemo(
+    () => [{ id: ALL_GENRE_ID, name: 'All' }, ...initialGenres],
+    [initialGenres],
+  );
   const [isMobileGrid, setIsMobileGrid] = useState(false);
   const [activeGenreId, setActiveGenreId] = useState(ALL_GENRE_ID);
   const [discoverItems, setDiscoverItems] = useState(initialDiscoverItems);
@@ -63,6 +59,7 @@ export function DiscoverSection({
   const [isFiltering, setIsFiltering] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [gridError, setGridError] = useState('');
+  const requestDiscoverPage = useDiscoverFeed();
 
   const activeGenreName = useMemo(() => {
     return genreItems.find((g) => String(g.id) === String(activeGenreId))?.name || '';
@@ -97,38 +94,26 @@ export function DiscoverSection({
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
   }, []);
-  async function loadDiscover({ genreId, page, append = false, minimumCount = 0 }) {
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-    const minimumTarget = Math.max(0, Number(minimumCount) || 0);
-    let aggregatedItems = append ? getUniqueDiscoverItems(discoverItems, discoverItems.length) : [];
-    let nextPageToFetch = page;
-    let resolvedPage = append ? discoverPage : page - 1;
-    let nextHasMore = hasMore;
-    while (nextPageToFetch > 0) {
-      const response = await TmdbService.discoverContent({
+  const loadDiscover = useCallback(
+    async ({ append = false, genreId, minimumCount = 0, page }) => {
+      const payload = await requestDiscoverPage({
         genreId,
-        page: nextPageToFetch,
+        items: append ? discoverItems : [],
+        minimumCount,
+        page,
       });
-      if (requestIdRef.current !== requestId) {
-        return;
+
+      if (!payload) {
+        return false;
       }
-      if (!response?.data) {
-        throw new Error(response?.error || 'Failed to load discover content.');
-      }
-      const nextResults = Array.isArray(response.data?.results) ? response.data.results : [];
-      resolvedPage = Number(response.data?.page) || nextPageToFetch;
-      nextHasMore = resolvedPage < (Number(response.data?.total_pages) || resolvedPage);
-      aggregatedItems = getUniqueDiscoverItems([...aggregatedItems, ...nextResults]);
-      if (!nextHasMore || aggregatedItems.length >= minimumTarget || minimumTarget === 0) {
-        break;
-      }
-      nextPageToFetch = resolvedPage + 1;
-    }
-    setDiscoverItems(aggregatedItems);
-    setDiscoverPage(resolvedPage);
-    setHasMore(nextHasMore);
-  }
+
+      setDiscoverItems(payload.items);
+      setDiscoverPage(payload.page);
+      setHasMore(payload.hasMore);
+      return true;
+    },
+    [discoverItems, requestDiscoverPage],
+  );
   async function handleGenreChange(nextGenreId) {
     if (nextGenreId === activeGenreId || isFiltering) {
       return;
@@ -232,17 +217,18 @@ export function DiscoverSection({
     isFiltering,
     isLoadingMore,
     sectionsLoaded,
+    loadDiscover,
   ]);
 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const updateScrollButtons = () => {
+  const updateScrollButtons = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     setCanScrollLeft(el.scrollLeft > 1);
     setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
-  };
+  }, []);
 
   const scroll = (direction) => {
     const el = scrollContainerRef.current;
@@ -258,15 +244,17 @@ export function DiscoverSection({
     const el = scrollContainerRef.current;
     if (!el) return;
 
-    const observer = new ResizeObserver(() => {
-      updateScrollButtons();
-    });
-    observer.observe(el);
+    updateScrollButtons();
+    el.addEventListener('scroll', updateScrollButtons, { passive: true });
+    const observer =
+      typeof ResizeObserver === 'function' ? new ResizeObserver(updateScrollButtons) : null;
+    observer?.observe(el);
 
     return () => {
-      observer.disconnect();
+      el.removeEventListener('scroll', updateScrollButtons);
+      observer?.disconnect();
     };
-  }, []);
+  }, [updateScrollButtons]);
 
   return (
     <motion.section
@@ -290,7 +278,6 @@ export function DiscoverSection({
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          onScroll={updateScrollButtons}
         >
           {genreItems.map((genre, index) => (
             <div key={genre.id} className="w-[calc((100%-72px)/10)] shrink-0 snap-start">

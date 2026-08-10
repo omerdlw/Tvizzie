@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TMDB_IMG } from '@/shared/constants';
-import { applyAvatarFallback, getUserAvatarFallbackUrl, getUserAvatarUrl } from '@/domains/account/utils';
+import {
+  applyAvatarFallback,
+  getUserAvatarFallbackUrl,
+  getUserAvatarUrl,
+} from '@/domains/account/utils';
 import { resolveImageLoading, resolveImageQuality } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import Icon from '@/ui/primitives/icon';
@@ -14,7 +18,7 @@ import {
   getItemDirector,
   getItemTitle,
   getItemYear,
-} from '@/domains/search/services/search-data';
+} from '@/domains/search/shared/result';
 
 export default function SearchResultItem({ item, imageErrors, onImageError, onSelect }) {
   const title = getItemTitle(item);
@@ -33,7 +37,7 @@ export default function SearchResultItem({ item, imageErrors, onImageError, onSe
       whileHover={{ scale: 1.012, x: 2 }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.45 }}
-      className="flex min-w-0 w-full items-center gap-3"
+      className="flex w-full min-w-0 items-center gap-3"
     >
       <div className={SEARCH_STYLES.thumbnail}>
         {item.media_type === SEARCH_TYPES.USER ? (

@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Media Reviews - Section Header Component
- * Path: features/media-reviews/parts/review-header.js
- */
-
 import Link from 'next/link';
 import Icon from '@/ui/primitives/icon';
 
@@ -30,7 +25,6 @@ export default function ReviewHeader({
 
   return (
     <div className="flex flex-col gap-2.5 border-b border-black/10 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      {/* Title & Metadata */}
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex min-w-0 items-center gap-2">
           <Icon
@@ -67,7 +61,6 @@ export default function ReviewHeader({
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
         {hasEditOwnReview && (
           <button

@@ -13,7 +13,7 @@ import {
   useModalActions,
 } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
-import { createUserListWithItems } from '@/domains/media/server/lists';
+import { createUserListWithItems } from '@/domains/media/client/collections/lists';
 import { TmdbService } from '@/infrastructure/tmdb/services/tmdb-service';
 import { cn, formatYear } from '@/shared/utils';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
@@ -367,10 +367,7 @@ export default function CreateListModal({ close, data }) {
             leftIcon={<Icon icon="solar:magnifer-linear" size={16} className="text-black/50" />}
             rightIcon={
               isSearching ? (
-                <Icon
-                  icon="solar:spinner-bold-duotone"
-                  size={16}
-                />
+                <Icon icon="solar:spinner-bold-duotone" size={16} />
               ) : searchQuery ? (
                 <button
                   type="button"

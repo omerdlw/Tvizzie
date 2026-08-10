@@ -49,9 +49,12 @@ function mergeBackgroundState(baseState, patch = {}) {
       ...baseState.videoOptions,
       ...(patch.videoOptions || {}),
     },
-    animation: patch.animation !== undefined
-      ? (patch.animation ? { ...(baseState.animation || {}), ...patch.animation } : patch.animation)
-      : baseState.animation,
+    animation:
+      patch.animation !== undefined
+        ? patch.animation
+          ? { ...(baseState.animation || {}), ...patch.animation }
+          : patch.animation
+        : baseState.animation,
   };
 }
 

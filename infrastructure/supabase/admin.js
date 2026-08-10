@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-import { assertSupabaseServerAdminEnv, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from './supabase-constants';
+import {
+  assertSupabaseServerAdminEnv,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL,
+} from './supabase-constants';
 
 let adminClient = null;
 

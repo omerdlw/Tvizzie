@@ -1,9 +1,9 @@
-import { getOAuthProviderLabel, normalizeOAuthProvider, resolvePrimaryProvider } from './provider-utils';
+import {
+  getOAuthProviderLabel,
+  normalizeOAuthProvider,
+  resolvePrimaryProvider,
+} from './provider-utils';
 import { EVENT_TYPES } from '@/shared/constants/events';
-
-function logAuthAuditEvent(event) {
-  // Headless engine audit hook placeholder
-}
 
 import { AUTH_STATUS } from './config';
 import { isSessionExpired, mergeUserIntoSession, normalizeSession } from './utils';
@@ -51,10 +51,6 @@ function resolveAuthProvider(payload = {}, session = null) {
   );
 }
 
-function resolveSignInIdentifier(payload = {}) {
-  return payload?.email || payload?.identifier || payload?.username || payload?.userId || null;
-}
-
 function isPendingSignInResult(value) {
   return Boolean(value?.requiresVerification || value?.requiresRedirect);
 }
@@ -69,7 +65,6 @@ function isIgnorableSignOutError(error) {
   );
 }
 
-// DRY Helper for auth mutations
 async function executeAuthMutation({
   adapterMethod,
   applySession,
@@ -103,11 +98,11 @@ export async function runAuthSignIn({
   emitAuthFeedback,
   emitSessionEvent,
   getAdapterContext,
+  previousSession = null,
   setAuthError,
   setLoadingState,
 }) {
   const provider = resolveAuthProvider(credentials);
-  const identifier = resolveSignInIdentifier(credentials);
 
   setLoadingState();
   emitAuthFeedback('login', 'start', {
@@ -132,7 +127,11 @@ export async function runAuthSignIn({
         }, 12000);
       }
 
-      clearSession();
+      if (previousSession) {
+        applySession(previousSession);
+      } else {
+        clearSession();
+      }
       return signInResult;
     }
 
@@ -145,32 +144,9 @@ export async function runAuthSignIn({
 
     emitSessionEvent(EVENT_TYPES.AUTH_SIGN_IN, session);
 
-    logAuthAuditEvent({
-      eventType: 'sign-in',
-      status: 'success',
-      userId: session?.user?.id || null,
-      email: session?.user?.email || identifier || null,
-      provider,
-      metadata: { source: 'context' },
-    });
-
     return session;
   } catch (error) {
     emitAuthFeedback('login', 'failure');
-
-    logAuthAuditEvent({
-      eventType: 'failed-attempt',
-      status: 'failure',
-      email: identifier || null,
-      provider,
-      metadata: {
-        action: 'sign-in',
-        code: error?.code || null,
-        message: error?.message || 'Sign in failed',
-        source: 'context',
-      },
-    });
-
     throw setAuthError(error, 'Sign in failed');
   }
 }
@@ -271,16 +247,30 @@ export async function runAuthInitialize({
   }
 }
 
-export async function runAuthSignUp(params) {
-  return executeAuthMutation({
-    adapterMethod: () => params.adapter.signUp(params.payload, params.getAdapterContext()),
-    applySession: params.applySession,
-    emitSessionEvent: params.emitSessionEvent,
-    eventName: EVENT_TYPES.AUTH_SIGN_UP,
-    errorMessage: 'Sign up failed',
-    setAuthError: params.setAuthError,
-    setLoadingState: params.setLoadingState,
-  });
+export async function runAuthSignUp({
+  adapter,
+  applySession,
+  emitSessionEvent,
+  getAdapterContext,
+  payload,
+  setAuthError,
+  setLoadingState,
+}) {
+  setLoadingState();
+
+  try {
+    const signUpResult = await adapter.signUp(payload, getAdapterContext());
+
+    if (isPendingSignInResult(signUpResult)) {
+      return signUpResult;
+    }
+
+    const session = applySession(signUpResult);
+    emitSessionEvent(EVENT_TYPES.AUTH_SIGN_UP, session);
+    return session;
+  } catch (error) {
+    throw setAuthError(error, 'Sign up failed');
+  }
 }
 
 export async function runAuthSignOut({
@@ -368,20 +358,15 @@ export async function runAuthReauthenticate(params) {
 export async function runAuthProviderMutation({
   adapter,
   applySession,
-  currentSession,
   emitSessionEvent,
-  failureAction,
   failureMessage,
   getAdapterContext,
   methodName,
   payload,
   setAuthError,
   setLoadingState,
-  successAuditType,
   successEventName,
 }) {
-  const provider = resolveAuthProvider(payload, currentSession);
-
   setLoadingState();
 
   try {
@@ -389,31 +374,8 @@ export async function runAuthProviderMutation({
 
     emitSessionEvent(successEventName, session);
 
-    logAuthAuditEvent({
-      eventType: successAuditType,
-      status: 'success',
-      userId: session?.user?.id || null,
-      email: session?.user?.email || null,
-      provider,
-      metadata: { source: 'context' },
-    });
-
     return session;
   } catch (error) {
-    logAuthAuditEvent({
-      eventType: 'failed-attempt',
-      status: 'failure',
-      userId: currentSession?.user?.id || null,
-      email: currentSession?.user?.email || null,
-      provider,
-      metadata: {
-        action: failureAction,
-        code: error?.code || null,
-        message: error?.message || failureMessage,
-        source: 'context',
-      },
-    });
-
     throw setAuthError(error, failureMessage);
   }
 }
