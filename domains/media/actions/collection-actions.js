@@ -266,9 +266,10 @@ export default function CollectionActions({ media }) {
     if (state.submittingLike || state.loadingLike) {
       return;
     }
+    const previousLikedState = state.liked;
     const nextLikedState = !state.liked;
     const intent = nextLikedState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, submittingLike: true, likeIntent: intent }));
+    setState((prev) => ({ ...prev, liked: nextLikedState, submittingLike: true, likeIntent: intent }));
 
     try {
       await toggleUserLike({
@@ -276,6 +277,7 @@ export default function CollectionActions({ media }) {
         userId: auth.user.id,
       });
     } catch {
+      setState((prev) => ({ ...prev, liked: previousLikedState }));
       toast.error('Action Failed', 'Could not update your like status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingLike: false, likeIntent: null }));
@@ -294,9 +296,10 @@ export default function CollectionActions({ media }) {
     if (state.submittingWatched || state.loadingWatched) {
       return;
     }
+    const previousWatchedState = state.watched;
     const nextWatchedState = !state.watched;
     const intent = nextWatchedState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, submittingWatched: true, watchedIntent: intent }));
+    setState((prev) => ({ ...prev, watched: nextWatchedState, submittingWatched: true, watchedIntent: intent }));
 
     try {
       if (nextWatchedState) {
@@ -311,6 +314,7 @@ export default function CollectionActions({ media }) {
         });
       }
     } catch {
+      setState((prev) => ({ ...prev, watched: previousWatchedState }));
       toast.error('Action Failed', 'Could not update watched status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatched: false, watchedIntent: null }));
@@ -329,9 +333,10 @@ export default function CollectionActions({ media }) {
     if (state.submittingWatchlist || state.loadingWatchlist) {
       return;
     }
+    const previousWatchlistState = state.watchlist;
     const nextWatchlistState = !state.watchlist;
     const intent = nextWatchlistState ? 'add' : 'remove';
-    setState((prev) => ({ ...prev, submittingWatchlist: true, watchlistIntent: intent }));
+    setState((prev) => ({ ...prev, watchlist: nextWatchlistState, submittingWatchlist: true, watchlistIntent: intent }));
 
     try {
       await toggleUserWatchlistItem({
@@ -339,6 +344,7 @@ export default function CollectionActions({ media }) {
         userId: auth.user.id,
       });
     } catch {
+      setState((prev) => ({ ...prev, watchlist: previousWatchlistState }));
       toast.error('Action Failed', 'Could not update watchlist status. Please try again.');
     } finally {
       setState((prev) => ({ ...prev, submittingWatchlist: false, watchlistIntent: null }));

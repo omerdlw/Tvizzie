@@ -51,12 +51,8 @@ export function SectionCard({
   return (
     <section className="relative bg-transparent">
       <AccountSectionReveal>
-        <div
-          className={cn(
-            `${ACCOUNT_SECTION_SHELL_CLASS} flex flex-col border-t border-black/10`,
-            className,
-          )}
-        >
+        <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'relative flex flex-col', className)}>
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
           <AccountSectionHeading title={title} summaryLabel={summaryLabel} />
           <div className="p-6">
             {description ? <p className="text-sm leading-6 text-black/70">{description}</p> : null}

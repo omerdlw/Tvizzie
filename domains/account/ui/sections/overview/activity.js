@@ -75,7 +75,7 @@ export default function AccountActivityOverview({
     }
 
     const hasUsableSeededFeed =
-      hasInitialFeed && Array.isArray(initialFeed?.items) && initialFeed.items.length > 0;
+      hasInitialFeed && Array.isArray(initialFeed?.items);
 
     if (hasUsableSeededFeed) {
       setIsFeedLoading(false);

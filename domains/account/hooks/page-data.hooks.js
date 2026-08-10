@@ -16,6 +16,7 @@ export function useAccountPageData({
   auth,
   collectionPreviewLimits = null,
   initialCollections = null,
+  initialFollowRelationship = null,
   initialProfile = null,
   initialResolvedUserId = null,
   initialResolveError = null,
@@ -120,18 +121,26 @@ export function useAccountPageData({
   ]);
 
   const isPrivateProfile = profile?.isPrivate === true;
-  const { followerCount, followingCount, followRelationship, pendingFollowRequestCount } =
-    useAccountRelationshipData({
-      authIsReady: auth.isReady && isAuthSessionReady,
-      authUserId: auth.user?.id || null,
-      canManageRequests: Boolean(isOwner && isSocialFollowsEnabled && isPrivateProfile),
-      isOwner,
-      isPrivateProfile,
-      isProfileLoaded: Boolean(profile),
-      publicFollowerCount: Number(profile?.followerCount || 0),
-      publicFollowingCount: Number(profile?.followingCount || 0),
-      resolvedUserId,
-    });
+  const {
+    followerCount,
+    setFollowerCount,
+    followingCount,
+    setFollowingCount,
+    followRelationship,
+    setFollowRelationship,
+    pendingFollowRequestCount,
+  } = useAccountRelationshipData({
+    authIsReady: auth.isReady && isAuthSessionReady,
+    authUserId: auth.user?.id || null,
+    canManageRequests: Boolean(isOwner && isSocialFollowsEnabled && isPrivateProfile),
+    initialFollowRelationship,
+    isOwner,
+    isPrivateProfile,
+    isProfileLoaded: Boolean(profile),
+    publicFollowerCount: Number(profile?.followerCount || 0),
+    publicFollowingCount: Number(profile?.followingCount || 0),
+    resolvedUserId,
+  });
 
   const hasKnownPrivacyState =
     !resolvedUserId || isOwner || Boolean(profile) || followRelationship.isTargetProfileLoaded;
@@ -213,6 +222,9 @@ export function useAccountPageData({
     profileSocialProof,
     resolveError,
     resolvedUserId,
+    setFollowRelationship,
+    setFollowerCount,
+    setFollowingCount,
     setLikes,
     setLists,
     setListItems,

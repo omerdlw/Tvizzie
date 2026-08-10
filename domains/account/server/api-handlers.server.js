@@ -7,7 +7,7 @@ import {
   resolveOptionalSessionRequest,
 } from '@/domains/auth/server/session.server.js';
 import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/security.server.js';
-import { ensureAccountProfileRecord } from '@/domains/auth/server/account.server.js';
+import { claimUsernameForProfile, ensureAccountProfileRecord } from '@/domains/auth/server/account.server.js';
 import {
   getEditableAccountSnapshotByUserId,
   getAccountProfileByUserId,
@@ -133,7 +133,24 @@ export async function handleAccountProfileGet(request) {
       return NextResponse.json({ profile: null });
     }
 
-    const profile = await getAccountProfileByUserId(targetUserId, { viewerId });
+    let profile = await getAccountProfileByUserId(targetUserId, { viewerId });
+
+    if (!profile && viewerId && targetUserId === viewerId) {
+      const userEmail = sessionContext?.email || sessionContext?.user?.email || null;
+      if (userEmail) {
+        try {
+          await ensureAccountProfileRecord({
+            email: userEmail,
+            userId: viewerId,
+          });
+          invalidateCachedAccountProfiles(viewerId);
+          profile = await getAccountProfileByUserId(targetUserId, { viewerId });
+        } catch (bootstrapErr) {
+          console.error('Failed auto-bootstrapping profile in handleAccountProfileGet:', bootstrapErr);
+        }
+      }
+    }
+
     return NextResponse.json({ profile: profile || null });
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 500;
@@ -172,10 +189,34 @@ export async function handleAccountProfilePost(request) {
 
     if (action === 'update') {
       const admin = createAdminClient();
+      const userId = authContext.userId;
+
+      const newUsername = body.username ? validateUsername(body.username) : null;
+      const newDisplayName =
+        body.displayName !== undefined ? normalizeValue(body.displayName) : null;
+
+      if (newUsername) {
+        await claimUsernameForProfile({
+          avatarUrl: body.avatarUrl !== undefined ? normalizeValue(body.avatarUrl) || null : null,
+          displayName: newDisplayName || newUsername,
+          email: authContext.email || null,
+          failIfProfileHasUsername: false,
+          preserveExisting: false,
+          userId,
+          username: newUsername,
+        });
+      }
+
       const updates = {};
 
-      if (body.displayName !== undefined) updates.display_name = normalizeValue(body.displayName);
-      if (body.username !== undefined) updates.username = validateUsername(body.username);
+      if (newDisplayName !== null) {
+        updates.display_name = newDisplayName;
+        updates.display_name_lower = newDisplayName.toLowerCase();
+      }
+      if (newUsername) {
+        updates.username = newUsername;
+        updates.username_lower = newUsername.toLowerCase();
+      }
       if (body.avatarUrl !== undefined) updates.avatar_url = normalizeValue(body.avatarUrl) || null;
       if (body.bannerUrl !== undefined) updates.banner_url = normalizeValue(body.bannerUrl) || null;
       if (body.description !== undefined) updates.description = normalizeValue(body.description);
@@ -186,16 +227,30 @@ export async function handleAccountProfilePost(request) {
       const { error } = await admin
         .from('profiles')
         .update(updates)
-        .eq('id', authContext.userId)
+        .eq('id', userId)
         .select('id')
         .single();
       if (error) throw new Error(error.message || 'Account update failed');
 
-      invalidateCachedAccountProfiles(authContext.userId);
-      const profile = await getAccountProfileByUserId(authContext.userId, {
-        viewerId: authContext.userId,
+      if (newUsername) {
+        try {
+          await admin.from('usernames').upsert(
+            {
+              user_id: userId,
+              username: newUsername,
+              username_lower: newUsername.toLowerCase(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' },
+          );
+        } catch {}
+      }
+
+      invalidateCachedAccountProfiles(userId);
+      const profile = await getAccountProfileByUserId(userId, {
+        viewerId: userId,
       });
-      await publishUserEvent(authContext.userId, 'account:updated', { profile });
+      await publishUserEvent(userId, 'account:updated', { profile });
       return NextResponse.json({ profile });
     }
 

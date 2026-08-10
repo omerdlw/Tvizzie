@@ -15,30 +15,49 @@ function SectionSkeleton({
   showHeader = true,
   children,
   contentClassName = '',
+  isInitialSection = true,
   showTopRule = true,
   toolbar = null,
 }) {
   return (
     <section className="relative bg-transparent">
       <div
-        className={`${ACCOUNT_SECTION_SHELL_CLASS} ${showTopRule ? 'border-t border-black/10' : ''}`}
+        className={`${ACCOUNT_SECTION_SHELL_CLASS} relative ${
+          showTopRule && !isInitialSection ? 'border-t border-black/10' : ''
+        }`}
       >
+        {showTopRule && isInitialSection ? (
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+        ) : null}
         {showHeader ? (
-          <>
-            <div className={`flex w-full flex-col ${HEADER_PADDING_CLASS}`}>
-              <div className="flex w-full items-center justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-2">
-                  <div className={`size-5 shrink-0 ${S}`} />
-                  <div className={`h-3 ${titleWidth} ${S}`} />
-                </div>
-                {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
+          <div
+            className={`relative flex w-full flex-col ${
+              !isInitialSection ? 'border-b border-black/10' : ''
+            }`}
+          >
+            <div className={`flex w-full items-center justify-between gap-4 ${HEADER_PADDING_CLASS}`}>
+              <div className="flex min-w-0 items-center gap-2">
+                <div className={`size-5 shrink-0 ${S}`} />
+                <div className={`h-3 ${titleWidth} ${S}`} />
               </div>
+              {summary ? <div className={`h-3 w-16 shrink-0 ${SOFT}`} /> : null}
             </div>
-            <div className="h-px w-full bg-black/10" />
-          </>
+            {isInitialSection ? (
+              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+            ) : null}
+          </div>
         ) : null}
         {toolbar ? (
-          <div className={`${HEADER_PADDING_CLASS} border-b border-black/10`}>{toolbar}</div>
+          <div
+            className={`relative ${HEADER_PADDING_CLASS} ${
+              !isInitialSection ? 'border-b border-black/10' : ''
+            }`}
+          >
+            {isInitialSection ? (
+              <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+            ) : null}
+            {toolbar}
+          </div>
         ) : null}
         <div className={`${CONTENT_PADDING_CLASS} ${contentClassName}`}>{children}</div>
       </div>
@@ -48,7 +67,7 @@ function SectionSkeleton({
 
 export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
   return (
-    <div className="flex w-full flex-col">
+    <div className="relative flex w-full flex-col">
       <div className={`${HEADER_PADDING_CLASS} flex w-full items-center justify-between gap-4`}>
         <div className="flex min-w-0 items-center gap-2">
           <div className={`size-5 shrink-0 ${S}`} />
@@ -56,7 +75,7 @@ export function SectionHeadingSkeleton({ titleWidth = 'w-32' }) {
         </div>
         <div className={`h-3 w-16 ${SOFT}`} />
       </div>
-      <div className="h-px w-full bg-black/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
     </div>
   );
 }
@@ -214,7 +233,8 @@ export function AccountListsSkeleton() {
 export function AccountListDetailSkeleton() {
   return (
     <div className="w-full">
-      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} border-y border-black/10 p-4`}>
+      <div className={`${ACCOUNT_ROUTE_SHELL_CLASS} relative p-4`}>
+        <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-screen -translate-x-1/2 border-y border-black/10" />
         <div className="flex w-full flex-col gap-3">
           <div className={`h-9 w-2/3 ${S}`} />
           <div className={`h-4 w-full max-w-2xl ${SOFT}`} />
@@ -235,16 +255,16 @@ export function AccountListDetailSkeleton() {
 export function AccountOverviewSkeleton() {
   return (
     <div className="w-full">
-      <SectionSkeleton titleWidth="w-24">
+      <SectionSkeleton titleWidth="w-24" isInitialSection={true}>
         <PosterCardsSkeletonRow count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-36">
+      <SectionSkeleton titleWidth="w-36" isInitialSection={false}>
         <ActivityItemsSkeletonList count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-20">
+      <SectionSkeleton titleWidth="w-20" isInitialSection={false}>
         <ListCardsSkeletonGrid count={6} />
       </SectionSkeleton>
-      <SectionSkeleton titleWidth="w-32">
+      <SectionSkeleton titleWidth="w-32" isInitialSection={false}>
         <ReviewCardsSkeletonList count={6} />
       </SectionSkeleton>
     </div>

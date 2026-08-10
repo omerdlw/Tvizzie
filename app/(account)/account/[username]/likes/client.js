@@ -437,30 +437,37 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
         return;
       }
 
-      try {
-        const nextLikedState = await toggleStoredReviewLike({
-          review,
-          userId: auth.user.id,
+      const reviewId = review.docPath || review.id;
+      const currentUserId = auth.user.id;
+      let previousReviews = [];
+
+      setReviews((current) => {
+        previousReviews = current;
+        return current.map((item) => {
+          if ((item.docPath || item.id) !== reviewId) {
+            return item;
+          }
+
+          const currentLikes = Array.isArray(item.likes) ? item.likes : [];
+          const currentlyLiked = currentLikes.includes(currentUserId);
+          const nextLikes = currentlyLiked
+            ? currentLikes.filter((likeUserId) => likeUserId !== currentUserId)
+            : Array.from(new Set([...currentLikes, currentUserId]));
+
+          return {
+            ...item,
+            likes: nextLikes,
+          };
         });
+      });
 
-        setReviews((current) =>
-          current.map((item) => {
-            if ((item.docPath || item.id) !== (review.docPath || review.id)) {
-              return item;
-            }
-
-            const currentLikes = Array.isArray(item.likes) ? item.likes : [];
-            const nextLikes = nextLikedState
-              ? Array.from(new Set([...currentLikes, auth.user.id]))
-              : currentLikes.filter((likeUserId) => likeUserId !== auth.user.id);
-
-            return {
-              ...item,
-              likes: nextLikes,
-            };
-          }),
-        );
+      try {
+        await toggleStoredReviewLike({
+          review,
+          userId: currentUserId,
+        });
       } catch (error) {
+        setReviews(previousReviews);
         toast.error(error?.message || 'Review could not be updated');
       }
     },

@@ -10,12 +10,49 @@ import { resolveProviderDescriptors } from '@/domains/auth/utils';
 const SESSION_CONTROL_FUNCTION = 'session-control';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function extractUuid(input) {
+  if (!input) return null;
+  if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (UUID_REGEX.test(trimmed)) return trimmed;
+    const match = trimmed.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    return match ? match[1] : null;
+  }
+  if (typeof input === 'object' && input !== null) {
+    if (typeof input.userId === 'string') {
+      const extracted = extractUuid(input.userId);
+      if (extracted) return extracted;
+    }
+    if (input.user) {
+      const extracted = extractUuid(input.user);
+      if (extracted) return extracted;
+    }
+    if (typeof input.id === 'string') {
+      const extracted = extractUuid(input.id);
+      if (extracted) return extracted;
+    }
+    if (typeof input.uid === 'string') {
+      const extracted = extractUuid(input.uid);
+      if (extracted) return extracted;
+    }
+    if (typeof input.sub === 'string') {
+      const extracted = extractUuid(input.sub);
+      if (extracted) return extracted;
+    }
+    if (typeof input.user_id === 'string') {
+      const extracted = extractUuid(input.user_id);
+      if (extracted) return extracted;
+    }
+  }
+  return null;
+}
+
 function assertUserId(userId) {
-  const normalizedUserId = normalizeValue(userId);
-  if (!normalizedUserId || !UUID_REGEX.test(normalizedUserId)) {
+  const uuid = extractUuid(userId);
+  if (!uuid) {
     throw new Error('Valid User ID UUID is required');
   }
-  return normalizedUserId;
+  return uuid;
 }
 
 function normalizeIdentities(value) {
@@ -99,18 +136,26 @@ export async function getUserByEmail(email) {
 
 export async function getUserById(userId) {
   const result = await createAdminClient().auth.admin.getUserById(assertUserId(userId));
-  if (result.error) throw new Error(result.error.message || 'User could not be loaded');
+  if (result.error) {
+    const msg = normalizeValue(result.error.message).toLowerCase();
+    if (msg.includes('not found') || msg.includes('does not exist')) {
+      return null;
+    }
+    throw new Error(result.error.message || 'User could not be loaded');
+  }
   return toUserRecord(result.data?.user || null);
 }
 
 export async function createUser(payload = {}) {
-  const result = await createAdminClient().auth.admin.createUser({
-    app_metadata: payload.appMetadata || {},
+  const createPayload = {
     email: normalizeEmailValue(payload.email),
-    email_confirm: Boolean(payload.emailVerified),
-    password: payload.password !== undefined ? String(payload.password || '') : undefined,
-    user_metadata: payload.userMetadata || {},
-  });
+    email_confirm: Boolean(payload.emailVerified ?? true),
+  };
+  if (payload.password) createPayload.password = String(payload.password);
+  if (payload.appMetadata) createPayload.app_metadata = payload.appMetadata;
+  if (payload.userMetadata) createPayload.user_metadata = payload.userMetadata;
+
+  const result = await createAdminClient().auth.admin.createUser(createPayload);
   if (result.error) throw new Error(result.error.message || 'User could not be created');
   return toUserRecord(result.data?.user || null);
 }
@@ -134,7 +179,13 @@ export async function updateUser(userId, payload = {}) {
 
 export async function deleteUser(userId) {
   const result = await createAdminClient().auth.admin.deleteUser(assertUserId(userId));
-  if (result.error) throw new Error(result.error.message || 'User could not be deleted');
+  if (result.error) {
+    const msg = normalizeValue(result.error.message).toLowerCase();
+    if (msg.includes('not found') || msg.includes('does not exist')) {
+      return true;
+    }
+    throw new Error(result.error.message || 'User could not be deleted');
+  }
   return true;
 }
 

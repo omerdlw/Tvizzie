@@ -213,16 +213,26 @@ export function useAccountOverviewState(routeData = null) {
         return;
       }
 
+      const reviewId = review.docPath || review.id;
+      const currentUserId = auth.user.id;
+      let previousItems = [];
+
+      reviewPreview.setItems((items) => {
+        previousItems = items;
+        return items.map((item) => {
+          if ((item.docPath || item.id) !== reviewId) {
+            return item;
+          }
+          const currentLikes = Array.isArray(item.likes) ? item.likes : [];
+          const currentlyLiked = currentLikes.includes(currentUserId);
+          return updateReviewLikes(item, currentUserId, !currentlyLiked);
+        });
+      });
+
       try {
-        const isLiked = await toggleStoredReviewLike({ review, userId: auth.user.id });
-        reviewPreview.setItems((items) =>
-          items.map((item) =>
-            (item.docPath || item.id) === (review.docPath || review.id)
-              ? updateReviewLikes(item, auth.user.id, isLiked)
-              : item,
-          ),
-        );
+        await toggleStoredReviewLike({ review, userId: currentUserId });
       } catch (error) {
+        reviewPreview.setItems(previousItems);
         toast.error(error?.message || 'Review could not be updated');
       }
     },

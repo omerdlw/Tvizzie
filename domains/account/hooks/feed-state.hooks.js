@@ -112,7 +112,7 @@ export function useDeferredPreviewFeed({
   const { applyFeedResult, resetFeed, setFeedError, setIsFeedLoading, syncFeed } = feedState;
 
   const hasUsableSeededFeed =
-    hasSeededFeed && Array.isArray(initialFeed?.items) && initialFeed.items.length > 0;
+    hasSeededFeed && Array.isArray(initialFeed?.items);
 
   useEffect(() => {
     if (hasUsableSeededFeed) syncFeed(initialFeed);

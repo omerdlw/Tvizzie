@@ -15,3 +15,7 @@ export {
   subscribeToFollowRelationship,
   subscribeToFollowStatus,
 } from './follow-subscriptions.js';
+export {
+  primeFollowRelationshipState,
+  refreshFollowSubscriptions,
+} from './follow-cache.js';

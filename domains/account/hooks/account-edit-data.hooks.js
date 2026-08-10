@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAccountProfile } from '@/modules/account';
 import { notifyAccountLoadError } from '@/domains/account/utils';
@@ -31,8 +31,11 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast = null 
   const [linkedProviderIdsOverride, setLinkedProviderIdsOverride] = useState(null);
   const [linkedProviderDescriptorsOverride, setLinkedProviderDescriptorsOverride] = useState(null);
 
+  const initializedUserIdRef = useRef(null);
+
   useEffect(() => {
-    if (resolvedProfile) {
+    if (resolvedProfile && initializedUserIdRef.current !== resolvedProfile.id) {
+      initializedUserIdRef.current = resolvedProfile.id;
       setForm({
         avatarUrl: resolvedProfile.avatarUrl || '',
         bannerUrl: resolvedProfile.bannerUrl || '',
@@ -48,6 +51,16 @@ export function useAccountEditData({ auth, initialSnapshot = null, toast = null 
     (nextProfile) => {
       if (typeof setProfile === 'function') {
         setProfile(nextProfile);
+      }
+      if (nextProfile) {
+        setForm({
+          avatarUrl: nextProfile.avatarUrl || '',
+          bannerUrl: nextProfile.bannerUrl || '',
+          description: nextProfile.description || '',
+          displayName: nextProfile.displayName || '',
+          isPrivate: nextProfile.isPrivate === true,
+          username: nextProfile.username || '',
+        });
       }
     },
     [setProfile],

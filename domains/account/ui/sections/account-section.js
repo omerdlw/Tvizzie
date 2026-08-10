@@ -47,6 +47,7 @@ export function AccountSectionHeading({
   action = null,
   className = '',
   icon,
+  isInitialSection = true,
   showDivider = true,
   showSeeMore = false,
   summaryLabel = null,
@@ -58,7 +59,7 @@ export function AccountSectionHeading({
   const TitleWrapper = titleHref ? Link : 'h2';
   return (
     <motion.div
-      className={cn('flex w-full flex-col', className)}
+      className={cn('relative flex w-full flex-col', className)}
       initial={sectionHeadingVariants.initial}
       animate={sectionHeadingVariants.animate || sectionHeadingVariants.whileInView}
       transition={sectionHeadingVariants.transition}
@@ -67,7 +68,7 @@ export function AccountSectionHeading({
         className={cn(
           'flex w-full items-center justify-between gap-4',
           ACCOUNT_SECTION_HEADER_PADDING_CLASS,
-          showDivider && `border-b ${ACCOUNT_SECTION_BORDER_CLASS}`,
+          showDivider && !isInitialSection && `border-b ${ACCOUNT_SECTION_BORDER_CLASS}`,
         )}
       >
         <div className="flex min-w-0 items-center gap-2">
@@ -94,20 +95,43 @@ export function AccountSectionHeading({
           )}
         </div>
       </div>
+      {showDivider && isInitialSection && (
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      )}
     </motion.div>
   );
 }
 
-export function AccountSectionBand({ children, className = '' }) {
+export function AccountSectionBand({ children, className = '', isInitialSection = true }) {
   return (
-    <div className={cn('w-full border-b', ACCOUNT_SECTION_BORDER_CLASS, className)}>{children}</div>
+    <div
+      className={cn(
+        'relative w-full',
+        !isInitialSection && `border-b ${ACCOUNT_SECTION_BORDER_CLASS}`,
+        className,
+      )}
+    >
+      {isInitialSection && (
+        <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
+      )}
+      {children}
+    </div>
   );
 }
 
-export function AccountSectionState({ message }) {
+export function AccountSectionState({ message, isInitialSection = true }) {
   return (
     <section className="relative bg-transparent">
-      <div className={cn(ACCOUNT_SECTION_SHELL_CLASS, 'border-t', ACCOUNT_SECTION_BORDER_CLASS)}>
+      <div
+        className={cn(
+          ACCOUNT_SECTION_SHELL_CLASS,
+          'relative',
+          !isInitialSection && `border-t ${ACCOUNT_SECTION_BORDER_CLASS}`,
+        )}
+      >
+        {isInitialSection && (
+          <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+        )}
         <div className={ACCOUNT_SECTION_CONTENT_PADDING_CLASS}>
           <div className={ACCOUNT_EMPTY_SECTION_CLASS}>{normalizeFeedbackContent(message)}</div>
         </div>
@@ -122,7 +146,7 @@ export default function AccountSectionLayout({
   className = '',
   contentClassName = '',
   icon,
-  isInitialSection = false,
+  isInitialSection = true,
   revealDelay = 0,
   showHeader = true,
   showDivider = true,
@@ -142,14 +166,19 @@ export default function AccountSectionLayout({
         <div
           className={cn(
             ACCOUNT_SECTION_SHELL_CLASS,
-            showTopRule && `border-t ${ACCOUNT_SECTION_BORDER_CLASS}`,
+            'relative',
+            showTopRule && !isInitialSection && `border-t ${ACCOUNT_SECTION_BORDER_CLASS}`,
             className,
           )}
         >
+          {showTopRule && isInitialSection && (
+            <div className="pointer-events-none absolute top-0 left-1/2 w-screen -translate-x-1/2 border-t border-black/10" />
+          )}
           {showHeader ? (
             <AccountSectionHeading
               action={action}
               icon={icon}
+              isInitialSection={isInitialSection}
               showDivider={showDivider}
               showSeeMore={showSeeMore}
               summaryLabel={summaryLabel}
@@ -161,7 +190,10 @@ export default function AccountSectionLayout({
           )}
 
           {toolbar ? (
-            <AccountSectionBand className={cn(toolbarPaddingClassName, toolbarClassName)}>
+            <AccountSectionBand
+              isInitialSection={isInitialSection}
+              className={cn(toolbarPaddingClassName, toolbarClassName)}
+            >
               {toolbar}
             </AccountSectionBand>
           ) : null}

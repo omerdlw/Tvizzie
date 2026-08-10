@@ -116,8 +116,22 @@ export async function ensureAccountProfileRecord({
     throw new Error('User ID and email are required to create the account profile');
   }
 
+  const admin = createAdminClient();
+  const existingProfileRes = await admin
+    .from('profiles')
+    .select('id, email, username, display_name')
+    .eq('id', normalizedUserId)
+    .maybeSingle();
+
+  const existingProfile = existingProfileRes.data || null;
+
+  if (existingProfile?.id && normalizeValue(existingProfile?.username)) {
+    await ensureAccountLifecycle(normalizedUserId);
+    return existingProfile;
+  }
+
   const resolvedDisplayName = normalizeValue(displayName) || normalizedEmail.split('@')[0];
-  const normalizedUsername = await claimAvailableUsernameForProfile({
+  await claimAvailableUsernameForProfile({
     avatarUrl,
     displayName: resolvedDisplayName,
     email: normalizedEmail,
@@ -125,7 +139,7 @@ export async function ensureAccountProfileRecord({
     username,
   });
 
-  const profileResult = await createAdminClient()
+  const profileResult = await admin
     .from('profiles')
     .select('id, email, username')
     .eq('id', normalizedUserId)
@@ -164,8 +178,10 @@ export function assertPasswordProviderLinked(userRecord) {
   }
 }
 
-export async function purgeAccountData({ userId }) {
-  const normalizedUserId = normalizeValue(userId);
+import { extractUuid } from './session/admin.server';
+
+export async function purgeAccountData(userIdInput) {
+  const normalizedUserId = extractUuid(userIdInput);
   if (!normalizedUserId) throw new Error('Authenticated user is required');
 
   const admin = createAdminClient();
@@ -174,14 +190,32 @@ export async function purgeAccountData({ userId }) {
     if (res?.error) throw new Error(res.error.message || fallbackMessage);
   };
 
-  await executeDelete(
-    admin.from('review_likes').delete().eq('user_id', normalizedUserId),
-    'Review likes could not be deleted',
-  );
-  await executeDelete(
-    admin.from('list_likes').delete().eq('user_id', normalizedUserId),
-    'List likes could not be deleted',
-  );
+  const tablesToClearByUser = [
+    'usernames',
+    'profile_counters',
+    'favorites',
+    'likes',
+    'watchlist',
+    'watched',
+    'activity',
+    'list_items',
+    'list_reviews',
+    'media_reviews',
+    'review_likes',
+    'list_likes',
+    'lists',
+    'auth_challenges',
+    'auth_audit_logs',
+    'auth_revocation_state',
+    'feedback_submissions',
+  ];
+
+  for (const table of tablesToClearByUser) {
+    try {
+      await admin.from(table).delete().eq('user_id', normalizedUserId);
+    } catch {}
+  }
+
   await executeDelete(
     admin
       .from('follows')
@@ -189,14 +223,23 @@ export async function purgeAccountData({ userId }) {
       .or(`follower_id.eq.${normalizedUserId},following_id.eq.${normalizedUserId}`),
     'Follow relations could not be deleted',
   );
+
   await executeDelete(
-    admin.from('notifications').delete().eq('user_id', normalizedUserId),
+    admin
+      .from('notifications')
+      .delete()
+      .or(`user_id.eq.${normalizedUserId},actor_user_id.eq.${normalizedUserId}`),
     'Notifications could not be deleted',
   );
+
   await executeDelete(
     admin.from('profiles').delete().eq('id', normalizedUserId),
     'Profile could not be deleted',
   );
+
+  try {
+    await admin.from('account_lifecycle').delete().eq('user_id', normalizedUserId);
+  } catch {}
 }
 
 function normalizeState(value) {

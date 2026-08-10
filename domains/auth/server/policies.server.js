@@ -145,6 +145,8 @@ function resolvePolicy(policyKey) {
   return policy;
 }
 
+import { extractUuid } from './session/admin.server';
+
 export async function requirePolicySession(request, policyKey) {
   const resolvedPolicyKey =
     policyKey && typeof policyKey === 'object' ? policyKey.policyKey : policyKey;
@@ -155,6 +157,12 @@ export async function requirePolicySession(request, policyKey) {
     allowBearerFallback: policy.allowBearerFallback !== false,
     requireRecentAuthMs: Number(policy?.session?.requireRecentAuthMs || 0),
   });
+
+  const uuid = extractUuid(sessionContext);
+  if (sessionContext && uuid) {
+    sessionContext.userId = uuid;
+  }
+
   await assertSessionNotRevoked(sessionContext);
 
   if (Array.isArray(policy.allowedLifecycleStates) && policy.allowedLifecycleStates.length > 0) {

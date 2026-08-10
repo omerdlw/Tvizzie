@@ -15,6 +15,7 @@ import {
   fetchListReviewFeedServer,
   fetchProfileReviewFeedServer,
 } from '@/domains/reviews/server/feeds.server';
+import { getFollowResource } from '@/domains/social/server/follows/resources.server';
 import {
   ACCOUNT_ROUTE_OPTIONAL_LOAD_TIMEOUT_MS,
   EMPTY_ARRAY,
@@ -184,6 +185,7 @@ export const getUsernameAccountSnapshot = cache(async (username) => {
   if (!resolvedUserId) {
     return {
       initialCounts: null,
+      initialFollowRelationship: null,
       initialProfile: null,
       initialResolveError: 'Account not found',
       initialResolvedUserId: null,
@@ -191,7 +193,21 @@ export const getUsernameAccountSnapshot = cache(async (username) => {
     };
   }
 
-  const profile = await getAccountProfileByUserId(resolvedUserId, { viewerId });
+  const [profile, initialFollowRelationship] = await Promise.all([
+    getAccountProfileByUserId(resolvedUserId, { viewerId }),
+    viewerId && viewerId !== resolvedUserId
+      ? safeLoad(
+          () =>
+            getFollowResource({
+              resource: 'relationship',
+              targetId: resolvedUserId,
+              viewerId,
+            }),
+          null,
+        )
+      : null,
+  ]);
+
   return {
     initialCounts: {
       likes: Number(profile?.likesCount || 0),
@@ -199,6 +215,7 @@ export const getUsernameAccountSnapshot = cache(async (username) => {
       watched: Number(profile?.watchedCount || 0),
       watchlist: Number(profile?.watchlistCount || 0),
     },
+    initialFollowRelationship: initialFollowRelationship || null,
     initialProfile: profile,
     initialResolveError: profile ? null : 'Account not found',
     initialResolvedUserId: profile ? resolvedUserId : null,

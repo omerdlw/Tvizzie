@@ -30,6 +30,9 @@ export function useAccountPageActions({
   resolvedUserId,
   selectedList,
   listItems = [],
+  setFollowRelationship,
+  setFollowerCount,
+  setFollowingCount,
   setLikes,
   setCollectionCounts,
   setLists,
@@ -144,17 +147,47 @@ export function useAccountPageActions({
 
   const handleConfirmUnfollow = useCallback(async () => {
     if (!auth.user?.id || !profile?.id) return;
+    const previousRelationship = followRelationship;
+
+    if (typeof setFollowRelationship === 'function') {
+      setFollowRelationship((prev) => ({
+        ...prev,
+        canViewPrivateContent: prev.isPrivateProfile ? false : prev.canViewPrivateContent,
+        isInboundRelationshipLoaded: true,
+        isOutboundRelationshipLoaded: true,
+        isTargetProfileLoaded: true,
+        outboundStatus: null,
+        showFollowBack: prev.inboundStatus === FOLLOW_STATUSES.ACCEPTED,
+      }));
+    }
+    if (typeof setFollowerCount === 'function') {
+      setFollowerCount((count) => Math.max(0, count - 1));
+    }
+
     setIsFollowLoading(true);
     try {
       await unfollowUser(auth.user.id, profile.id);
       setUnfollowConfirmation(null);
     } catch (error) {
+      if (typeof setFollowRelationship === 'function') {
+        setFollowRelationship(previousRelationship);
+      }
+      if (typeof setFollowerCount === 'function') {
+        setFollowerCount((count) => Math.max(0, count + 1));
+      }
       toast.error(error?.message || 'Follow state could not be updated');
       throw error;
     } finally {
       setIsFollowLoading(false);
     }
-  }, [auth.user?.id, profile?.id, toast]);
+  }, [
+    auth.user?.id,
+    followRelationship,
+    profile?.id,
+    setFollowRelationship,
+    setFollowerCount,
+    toast,
+  ]);
 
   const handleSignInRequest = useCallback(() => {
     router.push(buildAuthHref(AUTH_ROUTES.SIGN_IN, { next: currentPath }));
@@ -185,14 +218,45 @@ export function useAccountPageActions({
       return;
     }
 
+    const previousRelationship = followRelationship;
+    const isCancelRequest = followRelationship.outboundStatus === FOLLOW_STATUSES.PENDING;
+    const isTargetPrivate = Boolean(isPrivateProfile || profile?.isPrivate);
+    const nextStatus = isCancelRequest
+      ? null
+      : isTargetPrivate
+        ? FOLLOW_STATUSES.PENDING
+        : FOLLOW_STATUSES.ACCEPTED;
+
+    if (typeof setFollowRelationship === 'function') {
+      setFollowRelationship((prev) => ({
+        ...prev,
+        canViewPrivateContent: prev.canViewPrivateContent || nextStatus === FOLLOW_STATUSES.ACCEPTED,
+        isInboundRelationshipLoaded: true,
+        isOutboundRelationshipLoaded: true,
+        isPrivateProfile: isTargetPrivate,
+        isTargetProfileLoaded: true,
+        outboundStatus: nextStatus,
+        showFollowBack: false,
+      }));
+    }
+    if (!isCancelRequest && nextStatus === FOLLOW_STATUSES.ACCEPTED && typeof setFollowerCount === 'function') {
+      setFollowerCount((count) => Math.max(0, count + 1));
+    }
+
     setIsFollowLoading(true);
     try {
-      if (followRelationship.outboundStatus === FOLLOW_STATUSES.PENDING) {
+      if (isCancelRequest) {
         await cancelFollowRequest(auth.user.id, profile.id);
       } else {
         await followUser(auth.user.id, profile.id);
       }
     } catch (error) {
+      if (typeof setFollowRelationship === 'function') {
+        setFollowRelationship(previousRelationship);
+      }
+      if (!isCancelRequest && nextStatus === FOLLOW_STATUSES.ACCEPTED && typeof setFollowerCount === 'function') {
+        setFollowerCount((count) => Math.max(0, count - 1));
+      }
       toast.error(error?.message || 'Follow state could not be updated');
     } finally {
       setIsFollowLoading(false);
@@ -200,10 +264,13 @@ export function useAccountPageActions({
   }, [
     auth.isAuthenticated,
     auth.user?.id,
-    followRelationship.outboundStatus,
+    followRelationship,
     handleConfirmUnfollow,
     handleSignInRequest,
+    isPrivateProfile,
     profile,
+    setFollowRelationship,
+    setFollowerCount,
     toast,
   ]);
 

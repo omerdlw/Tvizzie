@@ -56,6 +56,7 @@ export function useAccountSectionEngine({
     auth,
     collectionPreviewLimits,
     initialCollections: resolvedRouteData.initialCollections ?? null,
+    initialFollowRelationship: resolvedRouteData.initialFollowRelationship ?? null,
     initialProfile: resolvedRouteData.initialProfile ?? null,
     initialResolvedUserId: resolvedRouteData.initialResolvedUserId ?? null,
     initialResolveError: resolvedRouteData.initialResolveError ?? null,

@@ -264,48 +264,46 @@ export default function Client({ routeData = null }) {
     }
 
     const currentUserId = auth.user.id;
+    const previousList = list;
+    const currentLikes = Array.isArray(list.likes) ? list.likes : [];
+    const currentlyLiked = currentLikes.includes(currentUserId);
+    const optimisticIsLiked = !currentlyLiked;
+
+    setList((current) => {
+      if (!current) return current;
+      const likesList = Array.isArray(current.likes) ? current.likes : [];
+      const nextLikes = optimisticIsLiked
+        ? Array.from(new Set([...likesList, currentUserId]))
+        : likesList.filter((likedUserId) => likedUserId !== currentUserId);
+      const baseLikesCount = Number.isFinite(Number(current.likesCount))
+        ? Number(current.likesCount)
+        : likesList.length;
+      const nextLikesCount = optimisticIsLiked
+        ? (currentlyLiked ? baseLikesCount : baseLikesCount + 1)
+        : (currentlyLiked ? Math.max(0, baseLikesCount - 1) : baseLikesCount);
+
+      return {
+        ...current,
+        likes: nextLikes,
+        likesCount: nextLikesCount,
+      };
+    });
+
     setIsLikeLoading(true);
 
     try {
-      const isNowLiked = await toggleListLike({
+      await toggleListLike({
         listId: list.id,
         ownerId: resolvedUserId,
         userId: currentUserId,
       });
-
-      setList((current) => {
-        if (!current) {
-          return current;
-        }
-
-        const currentLikes = Array.isArray(current.likes) ? current.likes : [];
-        const hasLike = currentLikes.includes(currentUserId);
-        const nextLikes = isNowLiked
-          ? Array.from(new Set([...currentLikes, currentUserId]))
-          : currentLikes.filter((likedUserId) => likedUserId !== currentUserId);
-        const baseLikesCount = Number.isFinite(Number(current.likesCount))
-          ? Number(current.likesCount)
-          : currentLikes.length;
-        const nextLikesCount = isNowLiked
-          ? hasLike
-            ? baseLikesCount
-            : baseLikesCount + 1
-          : hasLike
-            ? Math.max(0, baseLikesCount - 1)
-            : baseLikesCount;
-
-        return {
-          ...current,
-          likes: nextLikes,
-          likesCount: nextLikesCount,
-        };
-      });
     } catch (error) {
+      setList(previousList);
       toast.error(error?.message || 'List could not be updated');
     } finally {
       setIsLikeLoading(false);
     }
-  }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list?.id, resolvedUserId, toast]);
+  }, [auth.isAuthenticated, auth.user?.id, handleSignInRequest, list, resolvedUserId, toast]);
 
   const primeListItemsCache = useCallback(
     (nextItems) => {
@@ -647,11 +645,40 @@ export default function Client({ routeData = null }) {
   );
 }
 
+function buildListNavDescription(props = {}) {
+  const { list, listItems = [], reviews = [] } = props;
+  if (!list) return 'Lists';
+  const itemCount =
+    Array.isArray(listItems) && listItems.length > 0
+      ? listItems.length
+      : Number(list?.itemCount ?? list?.itemsCount ?? list?.item_count) || 0;
+  const likesCount = Number.isFinite(Number(list?.likesCount ?? list?.likes_count))
+    ? Number(list.likesCount ?? list.likes_count)
+    : Array.isArray(list?.likes)
+      ? list.likes.length
+      : 0;
+  const reviewCount =
+    Array.isArray(reviews) && reviews.length > 0
+      ? reviews.length
+      : Number(list?.reviewsCount ?? list?.commentsCount) || 0;
+
+  const parts = [
+    `${itemCount} ${itemCount === 1 ? 'title' : 'titles'}`,
+    `${likesCount} ${likesCount === 1 ? 'like' : 'likes'}`,
+  ];
+
+  if (reviewCount > 0) {
+    parts.push(`${reviewCount} ${reviewCount === 1 ? 'comment' : 'comments'}`);
+  }
+
+  return parts.join(' • ');
+}
+
 const ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE = 'account-list-detail';
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountListDetailRegistry',
-  navDescription: (_, { list }) => list?.title || 'Lists',
+  navDescription: (_, props) => buildListNavDescription(props),
   navRegistrySource: ACCOUNT_LIST_DETAIL_REGISTRY_SOURCE,
   resolveOverrides: (
     _sectionState,

@@ -77,7 +77,7 @@ export function FilterMenuItem({ active = false, children, onClick }) {
 }
 export function DefaultMenuItem({ active = false, label = 'Default', onClick }) {
   return (
-    <div className="space-y-1 pb-1">
+    <div className="space-y-1">
       <FilterMenuItem active={active} onClick={onClick}>
         {label}
       </FilterMenuItem>
@@ -106,6 +106,8 @@ export function FilterPopover({ label, active = false, children }) {
           avoidCollisions={false}
           side="bottom"
           sideOffset={8}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.preventDefault()}
           className={UI.menu}
           style={{
             maxHeight: '60dvh',
@@ -122,7 +124,7 @@ export function FilterPopover({ label, active = false, children }) {
 }
 export function OptionSection({ title = '', options, value, onChange }) {
   return (
-    <div className="space-y-1 pb-1">
+    <div className="space-y-1">
       {title ? <SectionLabel>{title}</SectionLabel> : null}
       {options.map((option) => (
         <FilterMenuItem

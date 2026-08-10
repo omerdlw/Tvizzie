@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getAccountSocialProof } from '@/domains/media/client/social-proof';
 import {
   FOLLOW_STATUSES,
+  primeFollowRelationshipState,
   subscribeToFollowRelationship,
   subscribeToFollowers,
   subscribeToFollowing,
@@ -15,6 +16,7 @@ export function useAccountRelationshipData({
   authIsReady,
   authUserId,
   canManageRequests,
+  initialFollowRelationship = null,
   isOwner,
   isPrivateProfile,
   isProfileLoaded,
@@ -22,21 +24,33 @@ export function useAccountRelationshipData({
   publicFollowingCount = 0,
   resolvedUserId,
 }) {
-  const [followRelationship, setFollowRelationship] = useState({
-    canViewPrivateContent: false,
-    inboundStatus: null,
-    isInboundRelationshipLoaded: false,
-    isOutboundRelationshipLoaded: false,
-    isPrivateProfile: false,
-    isTargetProfileLoaded: false,
-    outboundStatus: null,
-    showFollowBack: false,
-  });
+  const [followRelationship, setFollowRelationship] = useState(() => ({
+    canViewPrivateContent: initialFollowRelationship?.canViewPrivateContent ?? false,
+    inboundStatus: initialFollowRelationship?.inboundStatus ?? null,
+    isInboundRelationshipLoaded: Boolean(
+      initialFollowRelationship?.isInboundRelationshipLoaded ?? initialFollowRelationship,
+    ),
+    isOutboundRelationshipLoaded: Boolean(
+      initialFollowRelationship?.isOutboundRelationshipLoaded ?? initialFollowRelationship,
+    ),
+    isPrivateProfile: initialFollowRelationship?.isPrivateProfile ?? Boolean(isPrivateProfile),
+    isTargetProfileLoaded: Boolean(
+      initialFollowRelationship?.isTargetProfileLoaded ?? isProfileLoaded,
+    ),
+    outboundStatus: initialFollowRelationship?.outboundStatus ?? null,
+    showFollowBack: initialFollowRelationship?.showFollowBack ?? false,
+  }));
   const [followerCount, setFollowerCount] = useState(publicFollowerCount);
   const [followingCount, setFollowingCount] = useState(publicFollowingCount);
   const [pendingFollowRequestCount, setPendingFollowRequestCount] = useState(0);
 
   const followPollingOptions = useMemo(() => ({ hiddenIntervalMs: 60000, intervalMs: 15000 }), []);
+
+  useEffect(() => {
+    if (initialFollowRelationship && authUserId && resolvedUserId) {
+      primeFollowRelationshipState(authUserId, resolvedUserId, initialFollowRelationship);
+    }
+  }, [authUserId, initialFollowRelationship, resolvedUserId]);
 
   useEffect(() => {
     if (!resolvedUserId || !authIsReady) {
@@ -179,7 +193,15 @@ export function useAccountRelationshipData({
     resolvedUserId,
   ]);
 
-  return { followerCount, followingCount, followRelationship, pendingFollowRequestCount };
+  return {
+    followerCount,
+    setFollowerCount,
+    followingCount,
+    setFollowingCount,
+    followRelationship,
+    setFollowRelationship,
+    pendingFollowRequestCount,
+  };
 }
 
 export function useAccountSocialProof({

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import { invalidateCachedValuesWhere } from '@/infrastructure/http/http-server';
+import { invalidateCachedAccountProfiles } from '@/domains/account/server/profile.server';
 import { normalizeValue } from './shared.server';
 
 export function publishFollowChange({
@@ -39,3 +40,29 @@ export function invalidateNotificationCachesForUsers(userIds = []) {
       normalizedUserIds.some((userId) => cacheKey.includes(`|user=${userId}`)),
   );
 }
+
+export function invalidateFollowCachesForUsers(userIds = []) {
+  const normalizedUserIds = [
+    ...new Set((Array.isArray(userIds) ? userIds : []).map(normalizeValue).filter(Boolean)),
+  ];
+
+  if (!normalizedUserIds.length) {
+    return;
+  }
+
+  invalidateCachedValuesWhere(
+    (cacheKey) =>
+      cacheKey.startsWith('follows|') &&
+      normalizedUserIds.some(
+        (userId) =>
+          cacheKey.includes(`user=${userId}`) ||
+          cacheKey.includes(`target=${userId}`) ||
+          cacheKey.includes(`viewer=${userId}`),
+      ),
+  );
+
+  normalizedUserIds.forEach((userId) => {
+    invalidateCachedAccountProfiles(userId);
+  });
+}
+

@@ -20,6 +20,23 @@ export const MAX_UPLOAD_BYTES_BY_TARGET = Object.freeze({
   banner: MAX_UPLOAD_BYTES,
 });
 
+export const ACCOUNT_MEDIA_UPLOAD_CONFIG = Object.freeze({
+  avatar: Object.freeze({
+    buttonLabel: 'Select Avatar',
+    description: 'Pick an image to use as your profile avatar (max 3MB)',
+    hint: 'PNG, JPG, WEBP, AVIF or GIF up to 3MB',
+    target: 'avatar',
+    title: 'Upload Avatar',
+  }),
+  banner: Object.freeze({
+    buttonLabel: 'Select Banner',
+    description: 'Pick an image to display at the top of your profile (max 8MB)',
+    hint: 'PNG, JPG, WEBP, AVIF or GIF up to 8MB',
+    target: 'banner',
+    title: 'Upload Banner',
+  }),
+});
+
 export const MIME_EXTENSION_MAP = Object.freeze({
   'image/avif': 'avif',
   'image/gif': 'gif',

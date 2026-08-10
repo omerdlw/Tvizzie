@@ -3,6 +3,7 @@
 import {
   buildPollingSubscriptionKey,
   invalidatePollingSubscriptions,
+  primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { scheduleAccountSummaryRefresh } from '@/domains/account/client';
 
@@ -95,3 +96,10 @@ export function refreshRelationshipSubscription(subscriptionKey, viewerId) {
     scheduleAccountSummaryRefresh(viewerId);
   }
 }
+
+export function primeFollowRelationshipState(viewerId, targetId, relationshipPayload) {
+  if (!viewerId || !targetId || !relationshipPayload) return;
+  const key = getRelationshipSubscriptionKey(viewerId, targetId);
+  primePollingSubscription(key, relationshipPayload, { emit: true });
+}
+

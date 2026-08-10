@@ -9,11 +9,12 @@ import {
   completeAccountDeleteLifecycle,
   EMAIL_ACCOUNT_STATES,
   hasPasswordProvider,
+  purgeAccountData,
   resolveEmailAccountState,
 } from './account.server';
 import { AUTH_ROUTE_POLICY_KEYS, requirePolicySession } from './policies.server';
 import { clearAuthCookies, getRequestContext } from './session.server';
-import { revokeRefreshTokens } from './session/admin.server';
+import { deleteUser, extractUuid, getUserById, revokeRefreshTokens } from './session/admin.server';
 import {
   assertCsrfRequest,
   assertRecentReauth,
@@ -88,9 +89,18 @@ async function enforceAccountRateLimit(policyKey, request, session) {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function getPasswordEnabledAppMetadata(session) {
+function getPasswordEnabledAppMetadata(session, userRecord = null) {
+  const existingAppMetadata =
+    userRecord?.app_metadata || userRecord?.raw_app_meta_data || session?.user?.app_metadata || {};
+  const existingProviders = Array.isArray(existingAppMetadata.providers)
+    ? existingAppMetadata.providers
+    : [existingAppMetadata.provider || 'email'];
+
+  const updatedProviders = Array.from(new Set([...existingProviders, 'email']));
+
   return {
-    ...(session?.user?.app_metadata || {}),
+    ...existingAppMetadata,
+    providers: updatedProviders,
     tvz_password_enabled: true,
   };
 }
@@ -100,13 +110,14 @@ export async function handlePasswordStatus(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_PASSWORD_STATUS,
     });
-    if (!session?.userId || !UUID_REGEX.test(session.userId)) {
+    const userId = extractUuid(session);
+    if (!userId) {
       return createApiSuccessResponse(
         { passwordEnabled: true },
         { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.PASSWORD_STATUS) },
       );
     }
-    const userRecord = await createAdminClient().auth.admin.getUserById(session.userId);
+    const userRecord = await createAdminClient().auth.admin.getUserById(userId);
     const passwordEnabled = hasPasswordProvider(userRecord?.data?.user);
 
     return createApiSuccessResponse(
@@ -131,6 +142,7 @@ export async function handleReauthenticate(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_REAUTHENTICATE,
     });
+    const userId = extractUuid(session);
     const currentPassword = String(body?.currentPassword || '');
 
     if (!currentPassword) {
@@ -140,11 +152,11 @@ export async function handleReauthenticate(request, body) {
       );
     }
 
-    await verifyPasswordWithIdentityToolkit({ email: session.email, password: currentPassword });
+    await verifyPasswordWithIdentityToolkit({ email: session?.email, password: currentPassword });
     const reauthToken = createRecentReauthToken({
-      email: session.email,
-      sessionJti: session.sessionJti,
-      userId: session.userId,
+      email: session?.email,
+      sessionJti: session?.sessionJti,
+      userId,
     });
 
     const response = createApiSuccessResponse(
@@ -171,19 +183,38 @@ export async function handleDeleteAccount(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_DELETE,
     });
-    assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
-    assertStepUp(request, {
-      email: session.email,
-      purpose: 'account-delete',
-      userId: session.userId,
-    });
+
+    const userId = extractUuid(session);
+
+    if (!userId) {
+      return createApiErrorResponse(
+        {
+          code: 'INVALID_USER_ID',
+          message: 'Valid User ID UUID is required',
+          retryable: false,
+        },
+        { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.DELETE), status: 400 },
+      );
+    }
+
+    const userRecord = await getUserById(userId).catch(() => null);
+    const isPassword = userRecord ? hasPasswordProvider(userRecord) : false;
+
+    if (isPassword) {
+      assertRecentReauth(request, { sessionJti: session.sessionJti, userId });
+      assertStepUp(request, {
+        email: session.email,
+        purpose: 'account-delete',
+        userId,
+      });
+    }
     await enforceAccountRateLimit(AUTH_RATE_LIMIT_POLICY_KEYS.ACCOUNT_DELETE, request, session);
 
-    await beginAccountDeleteLifecycle({ userId: session.userId });
-    await completeAccountDeleteLifecycle({ userId: session.userId });
+    await purgeAccountData(userId);
+    await deleteUser(userId);
 
     const response = createApiSuccessResponse(
-      { deleted: true },
+      { deleted: true, nextAction: 'signed_out' },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.DELETE) },
     );
     clearAuthCookies(response, request);
@@ -208,11 +239,12 @@ export async function handleChangeEmail(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_EMAIL,
     });
-    assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
+    const userId = extractUuid(session);
+    assertRecentReauth(request, { sessionJti: session?.sessionJti, userId });
     assertStepUp(request, {
-      email: session.email,
+      email: session?.email,
       purpose: 'email-change',
-      userId: session.userId,
+      userId,
     });
     await enforceAccountRateLimit(
       AUTH_RATE_LIMIT_POLICY_KEYS.EMAIL_CHANGE_COMPLETE,
@@ -229,10 +261,10 @@ export async function handleChangeEmail(request, body) {
     }
 
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(session.userId, { email: newEmail });
+    const updateRes = await admin.auth.admin.updateUserById(userId, { email: newEmail });
     if (updateRes.error) throw updateRes.error;
 
-    await revokeRefreshTokens(session.userId, { reason: 'email-change' });
+    await revokeRefreshTokens(userId, { reason: 'email-change' });
     const response = createApiSuccessResponse(
       { nextAction: 'signed_out', updated: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_EMAIL) },
@@ -259,11 +291,12 @@ export async function handleChangePassword(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_CHANGE_PASSWORD,
     });
-    assertRecentReauth(request, { sessionJti: session.sessionJti, userId: session.userId });
+    const userId = extractUuid(session);
+    assertRecentReauth(request, { sessionJti: session?.sessionJti, userId });
     assertStepUp(request, {
-      email: session.email,
+      email: session?.email,
       purpose: 'password-change',
-      userId: session.userId,
+      userId,
     });
     await enforceAccountRateLimit(
       AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_CHANGE_COMPLETE,
@@ -273,13 +306,16 @@ export async function handleChangePassword(request, body) {
 
     const newPassword = validateStrongPassword(body?.newPassword);
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(session.userId, {
-      app_metadata: getPasswordEnabledAppMetadata(session),
+    const targetUserRes = await admin.auth.admin.getUserById(userId).catch(() => null);
+    const targetUser = targetUserRes?.data?.user || null;
+
+    const updateRes = await admin.auth.admin.updateUserById(userId, {
+      app_metadata: getPasswordEnabledAppMetadata(session, targetUser),
       password: newPassword,
     });
     if (updateRes.error) throw updateRes.error;
 
-    await revokeRefreshTokens(session.userId, { reason: 'password-change' });
+    await revokeRefreshTokens(userId, { reason: 'password-change' });
     const response = createApiSuccessResponse(
       { nextAction: 'signed_out', updated: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.CHANGE_PASSWORD) },
@@ -306,10 +342,11 @@ export async function handleSetPassword(request, body) {
     const session = await requirePolicySession(request, {
       policyKey: AUTH_ROUTE_POLICY_KEYS.ACCOUNT_SET_PASSWORD,
     });
+    const userId = extractUuid(session);
     assertStepUp(request, {
-      email: session.email,
+      email: session?.email,
       purpose: 'password-set',
-      userId: session.userId,
+      userId,
     });
     await enforceAccountRateLimit(
       AUTH_RATE_LIMIT_POLICY_KEYS.PASSWORD_SET_COMPLETE,
@@ -319,13 +356,16 @@ export async function handleSetPassword(request, body) {
     const newPassword = validateStrongPassword(body?.newPassword);
 
     const admin = createAdminClient();
-    const updateRes = await admin.auth.admin.updateUserById(session.userId, {
-      app_metadata: getPasswordEnabledAppMetadata(session),
+    const targetUserRes = await admin.auth.admin.getUserById(userId).catch(() => null);
+    const targetUser = targetUserRes?.data?.user || null;
+
+    const updateRes = await admin.auth.admin.updateUserById(userId, {
+      app_metadata: getPasswordEnabledAppMetadata(session, targetUser),
       password: newPassword,
     });
     if (updateRes.error) throw updateRes.error;
 
-    await revokeRefreshTokens(session.userId, { reason: 'password-set' });
+    await revokeRefreshTokens(userId, { reason: 'password-set' });
     const response = createApiSuccessResponse(
       { nextAction: 'signed_out', set: true },
       { requestMeta: buildRequestMeta(request, ACCOUNT_ACTIONS.SET_PASSWORD) },

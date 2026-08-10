@@ -16,6 +16,7 @@ import {
   isSecureCookieEnvironment,
   setCsrfCookie,
 } from './session.server';
+import { extractUuid } from './session/admin.server';
 import {
   assertSupabaseBrowserEnv,
   SUPABASE_PUBLISHABLE_KEY,
@@ -130,7 +131,7 @@ export async function createPendingPasswordSignIn({ email, password }) {
   if (response.error) {
     const message = normalizeValue(response.error?.message).toLowerCase();
     if (message.includes('invalid login credentials') || message.includes('invalid_credentials')) {
-      const err = new Error('Invalid login credentials');
+      const err = new Error('The password you entered is incorrect. Please check your password or reset it.');
       err.code = 'invalid_login_credentials';
       throw err;
     }
@@ -139,7 +140,10 @@ export async function createPendingPasswordSignIn({ email, password }) {
       err.code = 'auth/user-disabled';
       throw err;
     }
-    const err = new Error(response.error.message || 'Sign in failed');
+    const err = new Error(
+      response.error.message ||
+        'The password you entered is incorrect. Please check your password or reset it.',
+    );
     err.code = response.error.code || null;
     throw err;
   }
@@ -190,7 +194,7 @@ export function createRecentReauthToken({
   sessionJti = null,
   userId,
 }) {
-  const normalizedUserId = normalizeValue(userId);
+  const normalizedUserId = extractUuid(userId) || normalizeValue(userId);
   if (!normalizedUserId) throw new Error('Recent reauthentication requires a userId');
 
   const payload = {
@@ -230,7 +234,7 @@ export function readRecentReauthFromRequest(request) {
 
 export function assertRecentReauth(request, { email = null, sessionJti = null, userId }) {
   const reauth = readRecentReauthFromRequest(request);
-  const expectedUserId = normalizeValue(userId);
+  const expectedUserId = extractUuid(userId) || normalizeValue(userId);
   const expectedSessionJti = normalizeValue(sessionJti);
   const expectedEmail = normalizeEmailValue(email);
 
@@ -282,7 +286,7 @@ export function createStepUpToken({
   expiresAt = Date.now() + STEP_UP_MAX_AGE_MS,
 }) {
   const normalizedPurpose = normalizeLowerValue(purpose);
-  const normalizedUserId = normalizeValue(userId);
+  const normalizedUserId = extractUuid(userId) || normalizeValue(userId);
 
   if (!normalizedPurpose || !normalizedUserId) {
     throw new Error('Step-up purpose and userId are required');
@@ -333,7 +337,7 @@ export function listStepUpPurposes(stepUpPayload = null) {
 export function assertStepUp(request, { purpose, userId, email = null }) {
   const stepUp = readStepUpFromRequest(request);
   const expectedPurpose = normalizeLowerValue(purpose);
-  const expectedUserId = normalizeValue(userId);
+  const expectedUserId = extractUuid(userId) || normalizeValue(userId);
   const expectedEmail = normalizeEmailValue(email);
 
   if (!stepUp) throw new Error('Step-up verification is required');

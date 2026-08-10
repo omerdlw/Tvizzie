@@ -13,7 +13,11 @@ import {
   invokeInternalEdgeFunction,
 } from '@/infrastructure/http/http-server';
 
-import { invalidateNotificationCachesForUsers, publishFollowChange } from './events.server';
+import {
+  invalidateFollowCachesForUsers,
+  invalidateNotificationCachesForUsers,
+  publishFollowChange,
+} from './events.server';
 import {
   createRequestMeta,
   createValidationErrorResponse,
@@ -88,6 +92,7 @@ async function executeFollowMutation({
     traceId: requestMeta.traceId,
   });
   invalidateNotificationCachesForUsers(userIdsForNotificationInvalidation);
+  invalidateFollowCachesForUsers(userIdsForNotificationInvalidation);
 
   return createWriteSuccessResponse({
     authContext,

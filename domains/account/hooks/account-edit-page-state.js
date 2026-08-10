@@ -7,6 +7,7 @@ import { AUTH_ROUTES, buildAuthHref, getCurrentPathWithSearch } from '@/domains/
 import { uploadAccountMediaFile } from '@/domains/account/client';
 import { useAccountEditData, useAccountSecurityActions } from '@/domains/account/hooks';
 import {
+  ACCOUNT_MEDIA_UPLOAD_CONFIG,
   INITIAL_DELETE_FLOW,
   INITIAL_EMAIL_FLOW,
   INITIAL_PASSWORD_FLOW,

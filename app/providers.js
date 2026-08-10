@@ -103,7 +103,8 @@ function renderInteractiveBoundary(children, variant) {
 }
 
 function shouldEnableSmoothScroll(pathname = '/') {
-  return resolveInteractiveBoundaryVariant(pathname) === 'full';
+//  return resolveInteractiveBoundaryVariant(pathname) === 'full';
+  return false;
 }
 
 function sanitizeMetric(metric) {

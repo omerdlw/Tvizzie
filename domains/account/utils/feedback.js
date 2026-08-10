@@ -29,6 +29,14 @@ export const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
     successTitle: 'Email Updated',
     title: 'Updating Email',
   }),
+  'email-update': Object.freeze({
+    description: 'Applying secure account changes',
+    icon: 'solar:letter-bold',
+    statusType: 'EMAIL_CHANGE',
+    successDescription: 'Please sign in again with your new email',
+    successTitle: 'Email Updated',
+    title: 'Updating Email',
+  }),
   'google-link': Object.freeze({
     description: 'Preparing secure provider connection',
     icon: 'flat-color-icons:google',
@@ -52,6 +60,14 @@ export const ACCOUNT_FEEDBACK_CONFIG = Object.freeze({
     successDescription: 'Please sign in again with your new password',
     successTitle: 'Password Added',
     title: 'Setting Password',
+  }),
+  'password-update': Object.freeze({
+    description: 'Applying secure account changes',
+    icon: 'solar:shield-keyhole-bold',
+    statusType: 'PASSWORD_CHANGE',
+    successDescription: 'Please sign in again with your new password',
+    successTitle: 'Password Updated',
+    title: 'Updating Password',
   }),
 });
 

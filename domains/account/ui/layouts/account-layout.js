@@ -18,7 +18,7 @@ import { getUserAvatarUrl } from '@/domains/account/utils';
 import { createAccountBioSurfaceEntry } from '@/domains/account/ui/surfaces/account-bio-surface';
 import { AccountProfileShellProvider, useAccountProfileShell } from './account-profile-context';
 import AccountGridFrame from './account-grid-frame';
-import { getNavItemProps, getSectionRevealProps } from '@/app/(account)/motion';
+import { getNavItemProps, getSectionRevealProps, navBarVariants, SPRINGS } from '@/app/(account)/motion';
 
 // ─── Nav Transition Context ───────────────────────────────────────────────────
 
@@ -62,7 +62,16 @@ export function AccountHeroReveal({ children, className = '' }) {
 }
 
 export function AccountNavReveal({ children, className = '' }) {
-  return <div className={className}>{children}</div>;
+  return (
+    <motion.div
+      className={className}
+      initial={navBarVariants.initial}
+      animate={navBarVariants.animate}
+      transition={navBarVariants.transition}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 export function AccountSectionReveal({
@@ -161,17 +170,20 @@ function AccountProfileShellNav({ profile }) {
 export function AccountSectionNav({ activeKey = 'overview', className = '', username = null }) {
   if (!username) return null;
   return (
-    <div className={cn('relative bg-transparent', className)}>
+    <div className={cn('relative w-full bg-transparent', className)}>
+      <div className="pointer-events-none absolute bottom-0 left-1/2 w-screen -translate-x-1/2 border-b border-black/10" />
       <div className={ACCOUNT_ROUTE_SHELL_CLASS}>
-        <div className="flex w-full items-stretch gap-2 overflow-x-auto border-b border-black/10 p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full items-stretch divide-x divide-black/10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SECTION_ITEMS.map((item, index) => (
-            <NavViewItem
-              key={item.key}
-              item={item}
-              index={index}
-              isActive={item.key === activeKey}
-              href={getSectionHref(username, item.key)}
-            />
+            <div key={index} className="p-2 w-full flex-auto">
+              <NavViewItem
+                key={item.key}
+                item={item}
+                index={index}
+                isActive={item.key === activeKey}
+                href={getSectionHref(username, item.key)}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -215,7 +227,7 @@ function NavViewItem({ item, isActive, href, index }) {
   return (
     <motion.div
       className="flex min-w-[6.75rem] flex-auto"
-      initial={false}
+      initial={navItemProps.initial}
       animate={navItemProps.animate}
       transition={navItemProps.transition}
       whileHover={navItemProps.whileHover}
@@ -225,13 +237,20 @@ function NavViewItem({ item, isActive, href, index }) {
         href={href}
         onClick={handleClick}
         className={cn(
-          'inline-flex h-8 w-full shrink-0 items-center justify-center rounded-2xl border px-3 text-[10px] font-bold tracking-widest whitespace-nowrap uppercase backdrop-blur-md sm:text-xs',
+          'relative center h-10 last:border-none w-full shrink-0 rounded-2xl px-2 text-[10px] tracking-wide whitespace-nowrap uppercase transition-colors sm:text-xs',
           isActive
-            ? 'border-black bg-black text-white'
-            : 'border-black/15 bg-white/40 text-black/70 hover:bg-white/80 hover:text-black',
+            ? 'text-white font-bold'
+            : 'text-black/70 hover:bg-primary hover:text-black font-semibold',
         )}
       >
-        <span>{item.label}</span>
+        {isActive ? (
+          <motion.span
+            layoutId="activeAccountNavTab"
+            className="absolute inset-0 rounded-2xl bg-black"
+            transition={SPRINGS.NAV_TAB}
+          />
+        ) : null}
+        <span className="relative z-10">{item.label}</span>
       </Link>
     </motion.div>
   );
@@ -351,7 +370,6 @@ function ProfileLayoutInner({
           <AccountNavReveal className="absolute inset-x-0 top-0 z-20">
             <AccountSectionNavWrapper activeSection={activeSection} username={profileHandle} />
           </AccountNavReveal>
-
           <div className="mt-28 flex w-full flex-col items-center gap-8 sm:mt-36 sm:gap-12 lg:mt-44 lg:gap-16">
             <AccountHeroReveal className="w-full">
               <AccountHero

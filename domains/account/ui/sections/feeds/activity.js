@@ -112,7 +112,7 @@ export default function AccountActivityFeed({
         </AccountInlineSectionState>
       ) : (
         <ActivityList
-          baseDelay={revealDelay ? revealDelay : undefined}
+          baseDelay={0}
           isInitialSection={isInitialSection}
           items={visibleItems}
         />
@@ -160,9 +160,7 @@ function ActivityRow({ baseDelay, index = 0, isInitialSection = false, item }) {
     <motion.article
       className={ACTIVITY_ROW_CLASS}
       initial={motionProps.initial}
-      animate={isInitialSection ? motionProps.animate : undefined}
-      whileInView={!isInitialSection ? motionProps.whileInView : undefined}
-      viewport={!isInitialSection ? motionProps.viewport : undefined}
+      animate={motionProps.animate}
       transition={motionProps.transition}
     >
       <div className="flex min-w-0 items-start justify-between gap-4">

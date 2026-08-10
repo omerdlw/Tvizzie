@@ -43,6 +43,7 @@ import {
 } from './proof-tokens.server';
 import { ensureAccountProfileRecord } from './account.server';
 import {
+  PURPOSES,
   resolveAuthCapabilities,
   resolvePrimaryProvider,
   resolveProviderIds,
@@ -71,27 +72,50 @@ export async function handleSignInPost(request) {
     });
 
     let email = null;
+    let resolveError = null;
     try {
       email = (await resolvePasswordAccountIdentifier(identifier)).email;
-    } catch {
+    } catch (err) {
+      resolveError = err;
+    }
+
+    if (resolveError || !email) {
       return NextResponse.json(
-        { code: 'invalid_credentials', error: 'Sign in failed' },
+        {
+          code: 'USER_NOT_FOUND',
+          error:
+            'No account was found with this email or username. Please check your credentials or sign up.',
+        },
         { status: 400 },
       );
     }
 
     const passwordLookup = await lookupPasswordAccountByEmail(email);
     if (!passwordLookup.eligible) {
+      if (
+        passwordLookup.code === PASSWORD_ACCOUNT_LOOKUP_CODES.USER_NOT_FOUND ||
+        !passwordLookup.exists
+      ) {
+        return NextResponse.json(
+          {
+            code: 'USER_NOT_FOUND',
+            error:
+              'No account was found with this email. Please check your credentials or sign up.',
+          },
+          { status: 400 },
+        );
+      }
+
       const isPasswordSignInDisabled =
         passwordLookup.code === PASSWORD_ACCOUNT_LOOKUP_CODES.PASSWORD_SIGN_IN_DISABLED;
       return NextResponse.json(
         {
           code: isPasswordSignInDisabled
             ? 'PASSWORD_SIGN_IN_DISABLED'
-            : passwordLookup.code || 'invalid_credentials',
+            : passwordLookup.code || 'USER_NOT_FOUND',
           error: isPasswordSignInDisabled
             ? 'Password sign-in is not enabled for this account'
-            : 'Sign in failed',
+            : 'No account was found with this email. Please check your credentials or sign up.',
         },
         { status: 400 },
       );
@@ -290,7 +314,18 @@ export async function handleVerificationPost(request) {
 
     if (requiresAuthenticatedStepUp) {
       stepUpSession = await requireSessionRequest(request, { allowBearerFallback: false });
-      if (normalizeEmailValue(stepUpSession.email) !== email) {
+      const isEmailChange =
+        normalizedPurpose === PURPOSES.EMAIL_CHANGE || normalizedPurpose === 'email_change';
+
+      if (isEmailChange) {
+        if (normalizeEmailValue(stepUpSession.email) === email) {
+          throw new Error('New email must be different from your current email');
+        }
+        const lookup = await lookupAccountByEmail(email);
+        if (lookup.exists) {
+          throw new Error('This email address is already in use by another account');
+        }
+      } else if (normalizeEmailValue(stepUpSession.email) !== email) {
         throw new Error('Verification email does not match the authenticated account');
       }
     }

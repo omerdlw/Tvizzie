@@ -356,12 +356,14 @@ export default function AccountSocialModal({ close, data }) {
   }, [authUserId, isAuthSessionReady]);
 
   const runUserAction = useCallback(
-    async (targetUserId, actionKey, actionFn, errorMessage) => {
+    async (targetUserId, actionKey, actionFn, errorMessage, optimisticFn, rollbackFn) => {
       if (!authUserId || pendingActionByUserId[targetUserId]) return;
       setPendingActionByUserId((current) => ({ ...current, [targetUserId]: actionKey }));
+      if (typeof optimisticFn === 'function') optimisticFn();
       try {
         await actionFn();
       } catch (error) {
+        if (typeof rollbackFn === 'function') rollbackFn();
         toast.error(error?.message || errorMessage);
       } finally {
         setPendingActionByUserId((current) => {
@@ -376,48 +378,112 @@ export default function AccountSocialModal({ close, data }) {
   );
 
   const handleAccept = useCallback(
-    (id) =>
+    (id) => {
+      let previousList = [];
       runUserAction(
         id,
         'accept',
         () => acceptFollowRequest(authUserId, id),
         'Request could not be accepted',
-      ),
+        () => {
+          setRequestsState((current) => {
+            previousList = current.list;
+            return { ...current, list: current.list.filter((u) => u.id !== id) };
+          });
+        },
+        () => setRequestsState((current) => ({ ...current, list: previousList })),
+      );
+    },
     [authUserId, runUserAction],
   );
   const handleReject = useCallback(
-    (id) =>
+    (id) => {
+      let previousList = [];
       runUserAction(
         id,
         'reject',
         () => rejectFollowRequest(authUserId, id),
         'Request could not be rejected',
-      ),
+        () => {
+          setRequestsState((current) => {
+            previousList = current.list;
+            return { ...current, list: current.list.filter((u) => u.id !== id) };
+          });
+        },
+        () => setRequestsState((current) => ({ ...current, list: previousList })),
+      );
+    },
     [authUserId, runUserAction],
   );
   const handleUnfollow = useCallback(
-    (id) =>
+    (id) => {
+      let previousMap = {};
+      let previousFollowingList = [];
       runUserAction(
         id,
         'unfollow',
         () => unfollowUser(authUserId, id),
         'Could not unfollow this user',
-      ),
-    [authUserId, runUserAction],
+        () => {
+          setFollowingStatusMap((current) => {
+            previousMap = current;
+            const next = { ...current };
+            delete next[id];
+            return next;
+          });
+          if (isOwnProfile) {
+            setFollowingState((current) => {
+              previousFollowingList = current.list;
+              return { ...current, list: current.list.filter((u) => u.id !== id) };
+            });
+          }
+        },
+        () => {
+          setFollowingStatusMap(previousMap);
+          if (isOwnProfile) {
+            setFollowingState((current) => ({ ...current, list: previousFollowingList }));
+          }
+        },
+      );
+    },
+    [authUserId, isOwnProfile, runUserAction],
   );
   const handleRemoveFollower = useCallback(
-    (id) =>
+    (id) => {
+      let previousList = [];
       runUserAction(
         id,
         'remove-follower',
         () => removeFollower(authUserId, id),
         'Could not remove follower',
-      ),
+        () => {
+          setFollowersState((current) => {
+            previousList = current.list;
+            return { ...current, list: current.list.filter((u) => u.id !== id) };
+          });
+        },
+        () => setFollowersState((current) => ({ ...current, list: previousList })),
+      );
+    },
     [authUserId, runUserAction],
   );
   const handleFollow = useCallback(
-    (id) =>
-      runUserAction(id, 'follow', () => followUser(authUserId, id), 'Could not follow this user'),
+    (id) => {
+      let previousMap = {};
+      runUserAction(
+        id,
+        'follow',
+        () => followUser(authUserId, id),
+        'Could not follow this user',
+        () => {
+          setFollowingStatusMap((current) => {
+            previousMap = current;
+            return { ...current, [id]: FOLLOW_STATUSES.ACCEPTED };
+          });
+        },
+        () => setFollowingStatusMap(previousMap),
+      );
+    },
     [authUserId, runUserAction],
   );
 

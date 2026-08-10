@@ -183,7 +183,8 @@ export function useAccountCredentialActions({
           return;
         }
 
-        emitAccountFeedback('password-update', 'start');
+        const feedbackFlow = isPasswordLinked ? 'password-change' : 'password-set';
+        emitAccountFeedback(feedbackFlow, 'start');
 
         const result = isPasswordLinked
           ? await completePasswordChangeRequest({ currentPassword, newPassword })
@@ -211,7 +212,8 @@ export function useAccountCredentialActions({
           error,
         );
       } finally {
-        clearAccountFeedback('password-update');
+        const feedbackFlow = isPasswordLinked ? 'password-change' : 'password-set';
+        clearAccountFeedback(feedbackFlow);
       }
     },
     [
@@ -304,7 +306,29 @@ export function useAccountCredentialActions({
     ],
   );
 
-  return { handleUpdateEmail, handleUpdatePassword, reauthenticateWithPassword };
+  const handleCompletePasswordChange = useCallback(
+    () => handleUpdatePassword(true),
+    [handleUpdatePassword],
+  );
+
+  const handleSetPassword = useCallback(
+    () => handleUpdatePassword(false),
+    [handleUpdatePassword],
+  );
+
+  const handleCompleteEmailChange = useCallback(
+    () => handleUpdateEmail(true),
+    [handleUpdateEmail],
+  );
+
+  return {
+    handleCompleteEmailChange,
+    handleCompletePasswordChange,
+    handleSetPassword,
+    handleUpdateEmail,
+    handleUpdatePassword,
+    reauthenticateWithPassword,
+  };
 }
 
 export function useAccountDeleteAction({
@@ -350,23 +374,25 @@ export function useAccountDeleteAction({
         setDeleteFlow((prev) => ({ ...prev, isSubmitting: true }));
 
         try {
-          if (isPasswordLinked) await reauthenticateWithPassword(currentPassword);
+          if (isPasswordLinked) {
+            await reauthenticateWithPassword(currentPassword);
 
-          const verification = await openAccountVerificationPrompt({
-            description: 'Verify your current email before deletion',
-            email: currentAuthEmail,
-            openModal,
-            openSurface,
-            purpose: AUTH_PURPOSE.ACCOUNT_DELETE,
-            title: 'Delete account verification',
-            toast,
-          });
+            const verification = await openAccountVerificationPrompt({
+              description: 'Verify your current email before deletion',
+              email: currentAuthEmail,
+              openModal,
+              openSurface,
+              purpose: AUTH_PURPOSE.ACCOUNT_DELETE,
+              title: 'Delete account verification',
+              toast,
+            });
 
-          if (!verification?.success) {
-            setDeleteConfirmation(null);
-            setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
-            deleteRequestLockRef.current = false;
-            return;
+            if (!verification?.success) {
+              setDeleteConfirmation(null);
+              setDeleteFlow((prev) => ({ ...prev, isSubmitting: false }));
+              deleteRequestLockRef.current = false;
+              return;
+            }
           }
 
           emitAccountFeedback('account-delete', 'start');
@@ -375,7 +401,7 @@ export function useAccountDeleteAction({
           });
           setDeleteConfirmation(null);
 
-          if (result?.nextAction === 'signed_out') {
+          if (result?.deleted || result?.nextAction === 'signed_out') {
             await auth.signOut({ reason: 'delete-account', redirect: false }).catch(() => {});
           }
 

@@ -1,13 +1,13 @@
 'use client';
 
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import { refreshFollowSubscriptions } from './follow-cache';
+import { primeFollowRelationshipState, refreshFollowSubscriptions } from './follow-cache';
 
 export async function followUser(followerId, followingId) {
   if (!followerId || !followingId) throw new Error('Invalid user IDs');
   if (followerId === followingId) throw new Error('You cannot follow yourself');
 
-  await requestApiJson('/api/follows', {
+  const res = await requestApiJson('/api/follows', {
     method: 'POST',
     body: {
       action: 'follow',
@@ -15,10 +15,31 @@ export async function followUser(followerId, followingId) {
     },
   });
 
+  const nextStatus = res?.data?.status || res?.status || 'accepted';
+  primeFollowRelationshipState(followerId, followingId, {
+    canViewPrivateContent: nextStatus === 'accepted',
+    inboundRelationship: null,
+    inboundStatus: null,
+    isInboundRelationshipLoaded: true,
+    isOutboundRelationshipLoaded: true,
+    isPrivateProfile: nextStatus === 'pending',
+    isTargetProfileLoaded: true,
+    outboundRelationship: {
+      followerId,
+      followingId,
+      status: nextStatus,
+    },
+    outboundStatus: nextStatus,
+    showFollowBack: false,
+  });
+
   refreshFollowSubscriptions({
     followerId,
     followingId,
+    status: nextStatus,
   });
+
+  return nextStatus;
 }
 
 export async function unfollowUser(followerId, followingId) {
@@ -30,6 +51,19 @@ export async function unfollowUser(followerId, followingId) {
       action: 'unfollow',
       followingId,
     },
+  });
+
+  primeFollowRelationshipState(followerId, followingId, {
+    canViewPrivateContent: false,
+    inboundRelationship: null,
+    inboundStatus: null,
+    isInboundRelationshipLoaded: true,
+    isOutboundRelationshipLoaded: true,
+    isPrivateProfile: false,
+    isTargetProfileLoaded: true,
+    outboundRelationship: null,
+    outboundStatus: null,
+    showFollowBack: false,
   });
 
   refreshFollowSubscriptions({
@@ -65,6 +99,19 @@ export async function cancelFollowRequest(followerId, followingId) {
       action: 'cancel-request',
       followingId,
     },
+  });
+
+  primeFollowRelationshipState(followerId, followingId, {
+    canViewPrivateContent: false,
+    inboundRelationship: null,
+    inboundStatus: null,
+    isInboundRelationshipLoaded: true,
+    isOutboundRelationshipLoaded: true,
+    isPrivateProfile: false,
+    isTargetProfileLoaded: true,
+    outboundRelationship: null,
+    outboundStatus: null,
+    showFollowBack: false,
   });
 
   refreshFollowSubscriptions({

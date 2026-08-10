@@ -11,7 +11,15 @@ import {
 import Link from 'next/link';
 import AdaptiveImage from '@/ui/primitives/adaptive-image';
 import { BlurryText } from '@/ui/motion/animations/blurry-text';
-import { heroAvatarVariants, heroBioVariants, getHeroStatProps } from '@/app/(account)/motion';
+import { useModal } from '@/modules/modal';
+import { useAuth } from '@/modules/auth';
+import {
+  heroAvatarVariants,
+  heroNameVariants,
+  heroBioVariants,
+  getHeroStatProps,
+  SPRINGS,
+} from '@/app/(account)/motion';
 
 function formatHeroCount(value) {
   return new Intl.NumberFormat('en-US').format(Number(value) || 0);
@@ -43,7 +51,13 @@ function HeroInlineMetric({
   const wrapperClassName = cn(className, (item.href || typeof item.onClick === 'function') && '');
   if (item.href) {
     return (
-      <motion.div {...statProps}>
+      <motion.div
+        initial={statProps.initial}
+        animate={statProps.animate}
+        transition={statProps.transition}
+        whileHover={statProps.whileHover}
+        whileTap={statProps.whileTap}
+      >
         <Link href={item.href} className={wrapperClassName}>
           {content}
         </Link>
@@ -52,11 +66,17 @@ function HeroInlineMetric({
   }
   if (typeof item.onClick === 'function') {
     return (
-      <motion.div {...statProps}>
+      <motion.div
+        initial={statProps.initial}
+        animate={statProps.animate}
+        transition={statProps.transition}
+        whileHover={statProps.whileHover}
+        whileTap={statProps.whileTap}
+      >
         <button
           type="button"
           onClick={item.onClick}
-          className={cn('border-0 bg-transparent p-0 text-left', wrapperClassName)}
+          className={cn('border-0 bg-transparent p-0 text-left cursor-pointer', wrapperClassName)}
         >
           {content}
         </button>
@@ -64,7 +84,14 @@ function HeroInlineMetric({
     );
   }
   return (
-    <motion.span {...statProps} className={wrapperClassName}>
+    <motion.span
+      initial={statProps.initial}
+      animate={statProps.animate}
+      transition={statProps.transition}
+      whileHover={statProps.whileHover}
+      whileTap={statProps.whileTap}
+      className={wrapperClassName}
+    >
       {content}
     </motion.span>
   );
@@ -133,11 +160,33 @@ export default function AccountHero({
   watchedCount = null,
   watchlistCount = 0,
 }) {
+  const auth = useAuth();
+  const { openModal } = useModal();
   const heroDisplayName = String(profile?.displayName || '').trim() || 'Account';
   const resolvedWatchedCount =
     watchedCount !== null && watchedCount !== undefined && Number.isFinite(Number(watchedCount))
       ? Number(watchedCount)
       : Number(profile?.watchedCount || 0);
+
+  const handleFollowListClick = (type) => {
+    if (typeof onOpenFollowList === 'function') {
+      onOpenFollowList(type);
+      return;
+    }
+    const targetUserId = profile?.id;
+    if (!targetUserId) return;
+    openModal(
+      'ACCOUNT_SOCIAL_MODAL',
+      { desktop: 'center', mobile: 'bottom' },
+      {
+        data: {
+          canManageRequests: Boolean(auth.user?.id === targetUserId && profile?.isPrivate),
+          userId: targetUserId,
+          tab: type,
+        },
+      },
+    );
+  };
 
   const heroCountItems = [
     createHeroCollectionMetaItem(watchlistCount, 'Watchlist', 'Watchlist', {
@@ -157,12 +206,12 @@ export default function AccountHero({
   const heroStats = [
     {
       label: 'Following',
-      onClick: typeof onOpenFollowList === 'function' ? () => onOpenFollowList('following') : null,
+      onClick: () => handleFollowListClick('following'),
       value: followingCount,
     },
     {
       label: 'Followers',
-      onClick: typeof onOpenFollowList === 'function' ? () => onOpenFollowList('followers') : null,
+      onClick: () => handleFollowListClick('followers'),
       value: followerCount,
     },
   ];
@@ -180,14 +229,16 @@ export default function AccountHero({
       {/* Avatar & Title Row */}
       <div className="flex max-w-full items-center justify-center gap-3 sm:gap-4 lg:gap-5">
         <motion.div
-          className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-          initial={false}
+          className="group relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/40 backdrop-blur-md transition-shadow duration-300 hover:shadow-lg sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+          initial={heroAvatarVariants.initial}
           animate={heroAvatarVariants.animate}
           transition={heroAvatarVariants.transition}
+          whileHover={{ scale: 1.05, transition: SPRINGS.HERO_AVATAR }}
+          whileTap={{ scale: 0.95 }}
         >
           <AdaptiveImage
             mode="img"
-            className="h-full w-full rounded-2xl object-cover"
+            className="h-full w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
             src={heroAvatarSrc}
             alt={heroDisplayName}
             decoding="async"
@@ -196,9 +247,14 @@ export default function AccountHero({
           />
         </motion.div>
 
-        <h1 className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl">
+        <motion.h1
+          className="font-zuume max-w-full text-left text-5xl leading-none font-bold [overflow-wrap:anywhere] text-black uppercase sm:text-7xl lg:text-8xl"
+          initial={heroNameVariants.initial}
+          animate={heroNameVariants.animate}
+          transition={heroNameVariants.transition}
+        >
           {heroDisplayName}
-        </h1>
+        </motion.h1>
       </div>
 
       {/* Plain Text Stats Under Title */}
@@ -218,7 +274,7 @@ export default function AccountHero({
       {/* Biography */}
       {profile?.description ? (
         <motion.div
-          initial={false}
+          initial={heroBioVariants.initial}
           animate={heroBioVariants.animate}
           transition={heroBioVariants.transition}
           className="mx-auto w-full max-w-[72ch] px-4"
