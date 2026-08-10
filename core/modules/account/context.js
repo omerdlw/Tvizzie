@@ -111,7 +111,6 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
     return auth.user;
   }, [auth.isAuthenticated, auth.user, isAuthSessionReady]);
 
-  // DRY Runner for Account Async Actions
   const runAccountAction = useCallback(
     async (actionFn, fallbackErrorMessage, stateFlags = { isLoading: true }) => {
       setAccountState({ error: null, ...stateFlags });
@@ -207,7 +206,6 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
     [requireAuthenticatedUser, runAccountAction],
   );
 
-  // Auto Bootstrap Effect
   useEffect(() => {
     if (!auth.isReady) return;
 
@@ -277,6 +275,7 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
         setAccountState({
           error: toAccountError(error, 'Account bootstrap failed'),
           isBootstrapping: false,
+          isLoading: false,
           isReady: true,
         });
       }
@@ -297,7 +296,6 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
     setAccountState,
   ]);
 
-  // Subscription Effect
   useEffect(() => {
     if (!auth.isReady) return;
 
@@ -317,47 +315,48 @@ export function AccountProvider({ children, config = EMPTY_OBJECT }) {
       setAccountState({ error: null, isLoading: true });
 
       try {
-        if (typeof adapter?.getAccount === 'function') {
-          const initialAccount = await adapter.getAccount(auth.user.id);
-          if (ignore) return;
-
-          setAccountState({
-            currentAccount: initialAccount,
-            error: null,
-            isLoading: !shouldSubscribe || typeof adapter?.subscribeToAccount !== 'function',
-            isReady: true,
-          });
-        }
-
-        if (!shouldSubscribe || typeof adapter?.subscribeToAccount !== 'function') {
-          if (!ignore) setAccountState({ isLoading: false, isReady: true });
-          return;
-        }
-
-        unsubscribe = adapter.subscribeToAccount(
-          auth.user.id,
-          (nextAccount) => {
-            if (ignore) return;
-            setAccountState({
-              currentAccount: nextAccount,
-              error: null,
-              isLoading: false,
-              isReady: true,
-            });
-          },
-          {
-            hiddenIntervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
-            intervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS,
-            onError: (error) => {
+        if (shouldSubscribe && typeof adapter?.subscribeToAccount === 'function') {
+          unsubscribe = adapter.subscribeToAccount(
+            auth.user.id,
+            (nextAccount) => {
               if (ignore) return;
               setAccountState({
-                error: toAccountError(error, 'Account subscription failed'),
+                currentAccount: nextAccount,
+                error: null,
                 isLoading: false,
                 isReady: true,
               });
             },
-          },
-        );
+            {
+              hiddenIntervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS,
+              intervalMs: CURRENT_ACCOUNT_SUBSCRIPTION_INTERVAL_MS,
+              onError: (error) => {
+                if (ignore) return;
+                setAccountState({
+                  error: toAccountError(error, 'Account subscription failed'),
+                  isLoading: false,
+                  isReady: true,
+                });
+              },
+            },
+          );
+          return;
+        }
+
+        if (typeof adapter?.getAccount !== 'function') {
+          if (!ignore) setAccountState({ isLoading: false, isReady: true });
+          return;
+        }
+
+        const account = await adapter.getAccount(auth.user.id);
+        if (ignore) return;
+
+        setAccountState({
+          currentAccount: account,
+          error: null,
+          isLoading: false,
+          isReady: true,
+        });
       } catch (error) {
         if (ignore) return;
         setAccountState({

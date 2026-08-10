@@ -3,23 +3,28 @@
 import { clearPendingAccountBootstrap, createCsrfHeaders, getPendingAccountBootstrap } from '@/domains/auth/client';
 import { createAccountAdapter, createAccountClient } from '@/modules/account';
 import { assertSupabaseResult, getSupabaseClient } from '@/infrastructure/http/supabase-data-service';
-import { requestApiJson } from '@/infrastructure/http/api-request-service';
 import {
   buildPollingSubscriptionKey,
   createPollingSubscription,
   invalidatePollingSubscription,
   primePollingSubscription,
 } from '@/infrastructure/realtime/polling-subscription-service';
-import { normalizeFavoriteShowcaseItems } from '@/domains/media/server/media';
 import { validateUsername } from '@/domains/account/utils';
 import { cleanString, isValidUrl, normalizeTimestamp, normalizeValue } from '@/shared/utils';
-
-// ============================================================
-// Client Profile Normalizers & Utilities
-// ============================================================
+import {
+  fetchAccountIdByUsername,
+  fetchAccountProfile,
+  saveAccountProfile,
+  searchAccountProfiles,
+} from './account-api.client';
+import { normalizeFavoriteShowcaseItems } from './profile-normalizer.client';
 
 function normalizeAccountDisplayNameSearchValue(value) {
   return normalizeValue(value).toLocaleLowerCase();
+}
+
+function normalizeAccountCount(value) {
+  return Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0;
 }
 
 function normalizeAccountData(data = {}, id = null) {
@@ -36,20 +41,17 @@ function normalizeAccountData(data = {}, id = null) {
       data.displayNameLower ||
       normalizeAccountDisplayNameSearchValue(displayName),
     email: data.email || null,
-    followerCount: Number.isFinite(Number(data.follower_count ?? data.followerCount))
-      ? Number(data.follower_count ?? data.followerCount)
-      : 0,
+    followerCount: normalizeAccountCount(data.follower_count ?? data.followerCount),
     favoriteShowcase: normalizeFavoriteShowcaseItems(data.favorite_showcase),
     id: id || data.id || null,
     isPrivate: data.is_private === true || data.isPrivate === true,
     lastActivityAt: normalizeTimestamp(data.last_activity_at || data.lastActivityAt),
-    followingCount: Number.isFinite(Number(data.following_count ?? data.followingCount))
-      ? Number(data.following_count ?? data.followingCount)
-      : 0,
+    followingCount: normalizeAccountCount(data.following_count ?? data.followingCount),
+    likesCount: normalizeAccountCount(data.likes_count ?? data.likesCount),
+    listsCount: normalizeAccountCount(data.lists_count ?? data.listsCount),
     updatedAt: normalizeTimestamp(data.updated_at || data.updatedAt),
-    watchedCount: Number.isFinite(Number(data.watched_count ?? data.watchedCount))
-      ? Number(data.watched_count ?? data.watchedCount)
-      : 0,
+    watchedCount: normalizeAccountCount(data.watched_count ?? data.watchedCount),
+    watchlistCount: normalizeAccountCount(data.watchlist_count ?? data.watchlistCount),
     username: data.username || null,
     usernameLower:
       data.username_lower ||
@@ -92,18 +94,21 @@ export function normalizeEmailAddress(value) {
   return String(value || '').trim().toLowerCase();
 }
 
-// ============================================================
-// Client Profile HTTP API Requests
-// ============================================================
-
 const ACCOUNT_RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_ACCOUNT_RESOLVE_CACHE_ENTRIES = 200;
 const accountResolveRequestCache = new Map();
-import { getAccountProfileServer, updateAccountProfileServer } from '../api/profile.server';
-import { searchAccountsServer } from '../api/search.server';
+
+function cacheAccountResolution(username, value) {
+  accountResolveRequestCache.set(username, value);
+
+  if (accountResolveRequestCache.size > MAX_ACCOUNT_RESOLVE_CACHE_ENTRIES) {
+    accountResolveRequestCache.delete(accountResolveRequestCache.keys().next().value);
+  }
+}
 
 export async function getUserAccount(userId) {
   if (!userId) return null;
-  const payload = await getAccountProfileServer({ userId });
+  const payload = await fetchAccountProfile({ userId });
   return payload?.profile || null;
 }
 
@@ -119,10 +124,10 @@ export async function getUserIdByUsername(username) {
     return cachedEntry.inFlightPromise;
   }
 
-  const inFlightPromise = getAccountProfileServer({ username: normalizedUsername })
+  const inFlightPromise = fetchAccountIdByUsername(normalizedUsername)
     .then((payload) => {
-      const userId = payload?.profile?.id || null;
-      accountResolveRequestCache.set(normalizedUsername, {
+      const userId = payload?.userId || null;
+      cacheAccountResolution(normalizedUsername, {
         expiresAt: Date.now() + ACCOUNT_RESOLVE_CACHE_TTL_MS,
         inFlightPromise: null,
         value: userId,
@@ -134,7 +139,7 @@ export async function getUserIdByUsername(username) {
       throw error;
     });
 
-  accountResolveRequestCache.set(normalizedUsername, {
+  cacheAccountResolution(normalizedUsername, {
     expiresAt: now + ACCOUNT_RESOLVE_CACHE_TTL_MS,
     inFlightPromise,
     value: undefined,
@@ -145,7 +150,7 @@ export async function getUserIdByUsername(username) {
 
 export async function getUserAccountByUsername(username) {
   const normalizedUsername = validateUsername(username);
-  const payload = await getAccountProfileServer({ username: normalizedUsername });
+  const payload = await fetchAccountProfile({ username: normalizedUsername });
   return payload?.profile || null;
 }
 
@@ -153,7 +158,7 @@ export async function searchUserAccounts(searchTerm, options = {}) {
   const rawSearchTerm = cleanString(searchTerm);
   if (!rawSearchTerm) return [];
 
-  const payload = await searchAccountsServer({
+  const payload = await searchAccountProfiles({
     limitCount: options.limitCount ?? null,
     searchTerm: rawSearchTerm,
   });
@@ -161,21 +166,38 @@ export async function searchUserAccounts(searchTerm, options = {}) {
   return Array.isArray(payload?.items) ? payload.items : [];
 }
 
-export async function requestEnsureUserAccount({ avatarUrl, displayName, email, userId, username }) {
-  return updateAccountProfileServer({ avatarUrl, displayName, email, userId, username });
+export async function requestEnsureUserAccount({ avatarUrl, displayName, email, username }) {
+  return saveAccountProfile({
+    action: 'ensure',
+    avatarUrl,
+    displayName,
+    email,
+    username,
+  });
 }
 
-export async function requestUpdateUserAccount({ avatarUrl, bannerUrl, description, displayName, isPrivate, userId, username }) {
-  return updateAccountProfileServer({ avatarUrl, bannerUrl, description, displayName, isPrivate, userId, username });
+export async function requestUpdateUserAccount({
+  avatarUrl,
+  bannerUrl,
+  description,
+  displayName,
+  isPrivate,
+  username,
+}) {
+  return saveAccountProfile({
+    action: 'update',
+    avatarUrl,
+    bannerUrl,
+    description,
+    displayName,
+    isPrivate,
+    username,
+  });
 }
 
-export async function requestSyncUserAccountEmail({ email, userId }) {
-  return updateAccountProfileServer({ email, userId });
+export async function requestSyncUserAccountEmail({ email }) {
+  return saveAccountProfile({ action: 'update', email });
 }
-
-// ============================================================
-// Subscriptions & Summary Refresh Service
-// ============================================================
 
 const ACCOUNT_SUBSCRIPTION_INTERVAL_MS = 20000;
 const ACCOUNT_SUBSCRIPTION_HIDDEN_INTERVAL_MS = 60000;
@@ -226,10 +248,6 @@ export function scheduleAccountSummaryRefresh(userId, { delayMs = DEFAULT_REFRES
   ACCOUNT_REFRESH_TIMERS.set(normalizedUserId, timer);
 }
 
-// ============================================================
-// Service Actions (Ensure, Update, Upload Media, Delete Username)
-// ============================================================
-
 export async function ensureUserAccount(user = {}, options = {}) {
   const identity = createUserIdentity(user);
   const preferredDisplayName = cleanString(options.displayName) || null;
@@ -253,7 +271,6 @@ export async function ensureUserAccount(user = {}, options = {}) {
     avatarUrl: identity.avatarUrl ? normalizeOptionalUrl(identity.avatarUrl) : null,
     displayName: preferredDisplayName || identity.displayName,
     email: identity.email || null,
-    userId: identity.id,
     username: preferredUsername,
   });
   const profile = normalizeAccountSnapshot(payload?.profile);
@@ -272,7 +289,6 @@ export async function updateUserAccount({ userId, updates = {} }) {
     description: updates.description !== undefined ? cleanString(updates.description) : undefined,
     displayName: updates.displayName !== undefined ? cleanString(updates.displayName) || 'Anonymous User' : undefined,
     isPrivate: updates.isPrivate !== undefined ? Boolean(updates.isPrivate) : undefined,
-    userId,
     username: updates.username !== undefined ? validateUsername(updates.username) : undefined,
   });
   const profile = normalizeAccountSnapshot(payload?.profile);
@@ -326,17 +342,13 @@ export async function syncUserAccountEmail({ userId, email }) {
     throw new Error('Enter a valid email address');
   }
 
-  const payload = await requestSyncUserAccountEmail({ email: normalizedEmail, userId });
+  const payload = await requestSyncUserAccountEmail({ email: normalizedEmail });
   const profile = normalizeAccountSnapshot(payload?.profile);
   if (!profile) throw new Error('Email could not be synced');
 
   primeUserAccount(userId, profile);
   return profile;
 }
-
-// ============================================================
-// Account Client Adapter & Config
-// ============================================================
 
 function isFreshEmailPasswordSession(user) {
   const providerIds = Array.isArray(user?.metadata?.providerIds) ? user.metadata.providerIds : [];

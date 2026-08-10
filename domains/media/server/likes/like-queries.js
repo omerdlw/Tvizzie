@@ -5,10 +5,7 @@ import {
   getSupabaseClient,
 } from '@/infrastructure/http/supabase-data-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
-import {
-  fetchCollectionResource,
-  fetchMediaCollectionStatus,
-} from '@/domains/account/client';
+import { fetchCollectionResource, fetchMediaCollectionStatus } from '@/domains/account/client';
 
 import { buildFavoriteShowcaseItem, buildLikeRef } from './like-shared.js';
 

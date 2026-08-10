@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { useSeededFeedState } from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
-import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
+import { fetchAccountActivityFeed } from '@/domains/account/client/account-api.client';
 import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
 
 function hasMatchingInitialFeed(initialFeed = null, resolvedUserId = null) {
@@ -75,9 +75,7 @@ export default function AccountActivityOverview({
     }
 
     const hasUsableSeededFeed =
-      hasInitialFeed &&
-      Array.isArray(initialFeed?.items) &&
-      initialFeed.items.length > 0;
+      hasInitialFeed && Array.isArray(initialFeed?.items) && initialFeed.items.length > 0;
 
     if (hasUsableSeededFeed) {
       setIsFeedLoading(false);

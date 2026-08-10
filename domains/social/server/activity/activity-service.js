@@ -6,7 +6,7 @@ import {
 } from '@/infrastructure/realtime/polling-subscription-service';
 import { requestApiJson } from '@/infrastructure/http/api-request-service';
 
-import { getAccountActivityFeedServerAction } from '@/domains/account/api/activity.server';
+import { getAccountActivityFeedServerAction } from '@/domains/account/server/actions/activity.server';
 
 async function fetchUserActivity(userId, pageSize = null) {
   const result = await getAccountActivityFeedServerAction({

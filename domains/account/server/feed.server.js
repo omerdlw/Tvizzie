@@ -6,7 +6,7 @@ import {
   createPrivateProfileError,
   getAccountProfileByUserId,
 } from './profile.server';
-import { getCollectionResource } from './collections.server';
+import { getAccountResource } from './collections.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
 import {
   ACTIVITY_SELECT,
@@ -352,35 +352,35 @@ export async function fetchDerivedUserActivityItems({
 
   const [profile, likes, watchlist, watched, lists, likedLists, reviewFeed] = await Promise.all([
     getAccountProfileByUserId(userId, { viewerId }).catch(() => null),
-    getCollectionResource({
+    getAccountResource({
       limitCount: fetchLimit,
       resource: 'likes',
       strict: false,
       userId,
       viewerId,
     }).catch(() => []),
-    getCollectionResource({
+    getAccountResource({
       limitCount: fetchLimit,
       resource: 'watchlist',
       strict: false,
       userId,
       viewerId,
     }).catch(() => []),
-    getCollectionResource({
+    getAccountResource({
       limitCount: fetchLimit,
       resource: 'watched',
       strict: false,
       userId,
       viewerId,
     }).catch(() => []),
-    getCollectionResource({
+    getAccountResource({
       limitCount: fetchLimit,
       resource: 'lists',
       strict: false,
       userId,
       viewerId,
     }).catch(() => []),
-    getCollectionResource({
+    getAccountResource({
       limitCount: fetchLimit,
       resource: 'liked-lists',
       strict: false,
@@ -624,17 +624,16 @@ export async function fetchAccountActivityFeedServer({
   const shouldLoadDerivedUserActivity =
     scope === 'user' && !hasMoreSourceItems && rawFilteredItemCount < minimumItemsNeeded;
 
-  const derivedUserActivityItems =
-    shouldLoadDerivedUserActivity
-      ? (
-          await fetchDerivedUserActivityItems({
-            offset: normalizedOffset,
-            pageSize: normalizedPageSize,
-            userId,
-            viewerId,
-          })
-        ).map((item) => ({ ...item, isFromFollowing: false }))
-      : [];
+  const derivedUserActivityItems = shouldLoadDerivedUserActivity
+    ? (
+        await fetchDerivedUserActivityItems({
+          offset: normalizedOffset,
+          pageSize: normalizedPageSize,
+          userId,
+          viewerId,
+        })
+      ).map((item) => ({ ...item, isFromFollowing: false }))
+    : [];
 
   const combinedItems = dedupeActivityItems([...rawActivityItems, ...derivedUserActivityItems]);
 

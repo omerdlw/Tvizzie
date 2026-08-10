@@ -35,7 +35,7 @@ import AccountMediaGridPage, {
 } from '@/domains/account/ui/components/account-media-grid';
 import { Button } from '@/ui/primitives';
 import Icon from '@/ui/primitives/icon';
-import AccountReviewsFeed from './reviews';
+import AccountReviewsFeed from '../feeds/reviews';
 const LIKES_VISIBILITY_OPTIONS = Object.freeze([
   Object.freeze({
     key: 'hide_unreleased',
@@ -63,13 +63,16 @@ export default function AccountLikesFeed({
   handleLike,
   handleRequestRemoveLike,
   handleToggleShowcase,
+  hasMoreReviews = false,
   isLikedListsLoading,
   isLikesLoading = false,
   isOwner,
   isReviewsLoading,
+  isReviewsLoadingMore = false,
   isShowcaseSaving,
   likedLists,
   likedListsError,
+  loadReviews = null,
   likes,
   persistShowcase,
   reviews,
@@ -117,13 +120,11 @@ export default function AccountLikesFeed({
     const params = new URLSearchParams(qs);
     if (viewState.page > 1) params.set('page', String(viewState.page));
     else params.delete('page');
-    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    const newUrl = params.toString()
+      ? `${collectionRootPath}?${params.toString()}`
+      : collectionRootPath;
     if (window.location.pathname + window.location.search !== newUrl) {
-      window.history.replaceState(
-        {},
-        '',
-        newUrl,
-      );
+      window.history.replaceState({}, '', newUrl);
     }
   }, [viewState, collectionRootPath]);
 
@@ -226,14 +227,16 @@ export default function AccountLikesFeed({
 
       {activeSegment === 'reviews' && (
         <AccountReviewsFeed
-          enablePagination
           currentUserId={auth.user?.id}
           emptyMessage="No liked reviews yet"
           icon="solar:chat-round-bold"
+          hasMore={hasMoreReviews}
           isLoading={isReviewsLoading}
+          isLoadingMore={isReviewsLoadingMore}
           items={reviews}
           loadError={reviewsError}
           onLike={handleLike}
+          onLoadMore={hasMoreReviews ? () => loadReviews?.({ append: true }) : null}
           showOwnActions={false}
           showHeader={false}
           summaryLabel={

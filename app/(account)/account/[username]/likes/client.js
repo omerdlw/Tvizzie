@@ -1,22 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
-  useAccountSectionPage,
   useSeededFeedState,
 } from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
 import { useToast } from '@/modules/notification';
-import { fetchProfileLikedLists } from '@/domains/media/server/lists';
+import {
+  fetchAccountResource,
+  fetchAccountReviewFeed,
+} from '@/domains/account/client/account-api.client';
 import { updateFavoriteShowcase } from '@/domains/media/server/likes';
-import { fetchProfileReviewFeed, toggleStoredReviewLike } from '@/domains/reviews/server';
+import { toggleStoredReviewLike } from '@/domains/reviews/server';
 import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
-// LikesView is defined in this route client.
-import AccountLikesFeed from '@/domains/account/ui/sections/feeds/likes';
+import AccountLikesFeed from '@/domains/account/ui/sections/collections/likes-collection';
 import AccountAction from '@/domains/account/ui/components/account-action-bar';
 import {
   createAccountSectionRegistry,
@@ -24,8 +25,7 @@ import {
 } from '@/domains/account/ui/sections/account-section-factory';
 
 const LIKE_SEGMENTS = new Set(['titles', 'reviews', 'lists']);
-const LIKED_REVIEWS_FETCH_PAGE_SIZE = 100;
-const LIKED_REVIEWS_FETCH_MAX_PAGES = 80;
+const LIKED_REVIEWS_PAGE_SIZE = 36;
 
 function buildReviewDedupKey(item = {}, fallbackIndex = 0) {
   return String(
@@ -36,21 +36,13 @@ function buildReviewDedupKey(item = {}, fallbackIndex = 0) {
 }
 
 function mergeUniqueReviews(currentItems = [], nextItems = []) {
-  const dedupe = new Set();
-  const output = [];
-
-  [...currentItems, ...nextItems].forEach((item, index) => {
+  const keys = new Set();
+  return [...currentItems, ...nextItems].filter((item, index) => {
     const key = buildReviewDedupKey(item, index);
-
-    if (dedupe.has(key)) {
-      return;
-    }
-
-    dedupe.add(key);
-    output.push(item);
+    if (keys.has(key)) return false;
+    keys.add(key);
+    return true;
   });
-
-  return output;
 }
 
 function useLikesClientState({ auth, routeData, sectionProviderValue, sectionState }) {
@@ -61,6 +53,7 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
   const toast = useToast();
   const [isShowcaseSaving, setIsShowcaseSaving] = useState(false);
   const [watchedItems, setWatchedItems] = useState([]);
+  const latestLikedReviewsRequestRef = useRef(0);
   const activeSegment = LIKE_SEGMENTS.has(searchParams.get('segment'))
     ? searchParams.get('segment')
     : 'titles';
@@ -78,7 +71,9 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
   } = sectionState;
   const shouldForcePrivateRefresh = !isOwner && isPrivateProfile === true && canViewPrivateContent;
   const {
+    cursor: reviewCursor,
     feedError: reviewsError,
+    hasMore: hasMoreReviews,
     isFeedLoading: isReviewsLoading,
     items: reviews,
     resetFeed: resetReviews,
@@ -88,6 +83,12 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     syncFeed: syncReviewFeed,
     totalCount: totalReviewsCount,
   } = useSeededFeedState(initialReviewFeed);
+  const [isReviewsLoadingMore, setIsReviewsLoadingMore] = useState(false);
+  const reviewItemsRef = useRef(reviews);
+  const reviewPaginationRef = useRef({
+    cursor: reviewCursor,
+    hasMore: hasMoreReviews,
+  });
   const {
     feedError: likedListsError,
     isFeedLoading: isLikedListsLoading,
@@ -128,6 +129,23 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     isViewerReady,
     resolvedUserId,
   });
+
+  useEffect(() => {
+    return () => {
+      latestLikedReviewsRequestRef.current += 1;
+    };
+  }, [activeSegment, resolvedUserId]);
+
+  useEffect(() => {
+    reviewItemsRef.current = reviews;
+  }, [reviews]);
+
+  useEffect(() => {
+    reviewPaginationRef.current = {
+      cursor: reviewCursor,
+      hasMore: hasMoreReviews,
+    };
+  }, [hasMoreReviews, reviewCursor]);
 
   useEffect(() => {
     if (!hasSeededReviewFeed) {
@@ -231,94 +249,79 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     [activeSegment, updateLikesQuery],
   );
 
-  const loadReviews = useCallback(async () => {
-    if (!resolvedUserId) {
-      resetReviews();
-      return;
-    }
+  const loadReviews = useCallback(
+    async ({ append = false } = {}) => {
+      const requestId = latestLikedReviewsRequestRef.current + 1;
+      latestLikedReviewsRequestRef.current = requestId;
 
-    if (!isViewerReady) {
-      return;
-    }
+      if (!resolvedUserId) {
+        resetReviews();
+        return;
+      }
 
-    if (shouldBlockReviewLoad) {
-      resetReviews();
-      return;
-    }
+      if (!isViewerReady) return;
 
-    setIsReviewsLoading(true);
-    setReviewsError(null);
+      if (shouldBlockReviewLoad) {
+        resetReviews();
+        return;
+      }
 
-    try {
-      const seededItems =
-        hasSeededReviewFeed && Array.isArray(initialReviewFeed?.items)
-          ? initialReviewFeed.items
-          : [];
-      let allItems = [...seededItems];
-      let nextCursor = hasSeededReviewFeed ? (initialReviewFeed?.nextCursor ?? null) : null;
-      let hasMorePages = hasSeededReviewFeed ? Boolean(initialReviewFeed?.hasMore) : true;
-      let pagesFetched = 0;
+      if (!append && hasSeededReviewFeed) {
+        setIsReviewsLoading(false);
+        return;
+      }
 
-      if (!hasSeededReviewFeed) {
-        const firstPage = await fetchProfileReviewFeed({
-          cursor: null,
+      const pagination = reviewPaginationRef.current;
+      if (append && (!pagination.hasMore || pagination.cursor === null)) {
+        return;
+      }
+
+      const setLoading = append ? setIsReviewsLoadingMore : setIsReviewsLoading;
+      setLoading(true);
+      setReviewsError(null);
+
+      try {
+        const result = await fetchAccountReviewFeed({
+          cursor: append ? pagination.cursor : null,
           mode: 'liked',
-          pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
+          pageSize: LIKED_REVIEWS_PAGE_SIZE,
           userId: resolvedUserId,
         });
-        const firstItems = Array.isArray(firstPage?.items) ? firstPage.items : [];
+        if (latestLikedReviewsRequestRef.current !== requestId) return;
 
-        allItems = mergeUniqueReviews([], firstItems);
-        nextCursor = firstPage?.nextCursor ?? null;
-        hasMorePages = Boolean(firstPage?.hasMore);
-        pagesFetched += 1;
-      }
-
-      while (hasMorePages && nextCursor !== null && pagesFetched < LIKED_REVIEWS_FETCH_MAX_PAGES) {
-        const page = await fetchProfileReviewFeed({
-          cursor: nextCursor,
+        const incomingItems = Array.isArray(result?.items) ? result.items : [];
+        syncReviewFeed({
+          ...result,
+          items: append ? mergeUniqueReviews(reviewItemsRef.current, incomingItems) : incomingItems,
           mode: 'liked',
-          pageSize: LIKED_REVIEWS_FETCH_PAGE_SIZE,
           userId: resolvedUserId,
         });
-        const pageItems = Array.isArray(page?.items) ? page.items : [];
+      } catch (error) {
+        if (latestLikedReviewsRequestRef.current !== requestId) return;
 
-        allItems = mergeUniqueReviews(allItems, pageItems);
-        nextCursor = page?.nextCursor ?? null;
-        hasMorePages = Boolean(page?.hasMore);
-        pagesFetched += 1;
+        if (!append) resetReviews();
+
+        if (!isPermissionDeniedError(error)) {
+          logDataError('[Account] Liked reviews could not be loaded:', error);
+          setReviewsError('Liked reviews could not be loaded right now.');
+        }
+      } finally {
+        if (latestLikedReviewsRequestRef.current === requestId) {
+          setLoading(false);
+        }
       }
-
-      syncReviewFeed({
-        error: null,
-        hasMore: false,
-        items: allItems,
-        mode: 'liked',
-        nextCursor: null,
-        totalCount: allItems.length,
-        userId: resolvedUserId,
-      });
-    } catch (error) {
-      resetReviews();
-
-      if (!isPermissionDeniedError(error)) {
-        logDataError('[Account] Liked reviews could not be loaded:', error);
-        setReviewsError('Liked reviews could not be loaded right now.');
-      }
-    } finally {
-      setIsReviewsLoading(false);
-    }
-  }, [
-    hasSeededReviewFeed,
-    initialReviewFeed,
-    isViewerReady,
-    resolvedUserId,
-    resetReviews,
-    setReviewsError,
-    setIsReviewsLoading,
-    shouldBlockReviewLoad,
-    syncReviewFeed,
-  ]);
+    },
+    [
+      hasSeededReviewFeed,
+      isViewerReady,
+      resetReviews,
+      resolvedUserId,
+      setIsReviewsLoading,
+      setReviewsError,
+      shouldBlockReviewLoad,
+      syncReviewFeed,
+    ],
+  );
 
   useEffect(() => {
     if (activeSegment !== 'reviews') {
@@ -384,14 +387,14 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
       setLikedListsError(null);
 
       try {
-        const result = await fetchProfileLikedLists({
-          pageSize: 500,
+        const result = await fetchAccountResource({
+          limitCount: 500,
+          resource: 'liked-lists',
           userId: resolvedUserId,
-          viewerId: auth.user?.id || null,
         });
 
         if (!ignore) {
-          setLikedLists(result.items || []);
+          setLikedLists(result?.items || result?.data || []);
         }
       } catch (error) {
         if (!ignore) {
@@ -473,13 +476,16 @@ function useLikesClientState({ auth, routeData, sectionProviderValue, sectionSta
     handleToggleShowcase,
     isLikedListsLoading,
     isLikesLoading,
+    hasMoreReviews,
     isReviewsLoading,
+    isReviewsLoadingMore,
     isShowcaseSaving,
     likedLists,
     likedListsError,
     likes,
     persistShowcase,
     providerValue: sectionProviderValue,
+    loadReviews,
     reviews,
     reviewsError,
     reviewsTotalCount: totalReviewsCount,
@@ -536,12 +542,15 @@ const LikesView = createAccountSectionView({
       handleToggleShowcase,
       isLikedListsLoading,
       isLikesLoading,
+      hasMoreReviews,
       isReviewsLoading,
+      isReviewsLoadingMore,
       isShowcaseSaving,
       likedLists,
       likedListsError,
       likes,
       persistShowcase,
+      loadReviews,
       reviews,
       reviewsError,
       reviewsTotalCount,
@@ -560,12 +569,15 @@ const LikesView = createAccountSectionView({
       isLikedListsLoading={isLikedListsLoading}
       isLikesLoading={isLikesLoading}
       isOwner={sectionState.isOwner}
+      hasMoreReviews={hasMoreReviews}
       isReviewsLoading={isReviewsLoading}
+      isReviewsLoadingMore={isReviewsLoadingMore}
       isShowcaseSaving={isShowcaseSaving}
       likedLists={likedLists}
       likedListsError={likedListsError}
       likes={likes}
       persistShowcase={persistShowcase}
+      loadReviews={loadReviews}
       reviews={reviews}
       reviewsError={reviewsError}
       reviewsTotalCount={reviewsTotalCount}

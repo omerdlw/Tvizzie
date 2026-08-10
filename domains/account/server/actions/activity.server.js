@@ -1,9 +1,9 @@
 'use server';
 
 import { normalizeValue } from '@/shared/utils';
-import { getAccountIdByUsername } from '../server/profile.server';
-import { fetchAccountActivityFeedServer } from '../server/feed.server';
-import { getViewerSessionContext } from '../server/routes.server';
+import { getAccountIdByUsername } from '../profile.server';
+import { fetchAccountActivityFeedServer } from '../feed.server';
+import { getViewerSessionContext } from '../routes.server';
 
 export async function getAccountActivityFeedServerAction({
   cursor,

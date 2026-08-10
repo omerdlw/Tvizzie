@@ -29,7 +29,7 @@ import {
   useAccountSectionEngine,
 } from '@/domains/account/hooks/account-section-state';
 // ListView is defined in this route client.
-import AccountListDetailFeed from '@/domains/account/ui/sections/feeds/list-detail';
+import AccountListDetailFeed from '@/domains/account/ui/sections/lists/list-detail';
 import { createAccountSectionRegistry } from '@/domains/account/ui/sections/account-section-factory';
 
 export default function Client({ routeData = null }) {

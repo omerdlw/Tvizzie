@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useModalActions } from '@/modules/modal';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // ListsView is defined in this route client.
-import AccountListsFeed from '@/domains/account/ui/sections/feeds/lists';
+import AccountListsFeed from '@/domains/account/ui/sections/lists/lists-collection';
 import AccountAction from '@/domains/account/ui/components/account-action-bar';
 import {
   createAccountSectionRegistry,
@@ -13,7 +13,8 @@ import {
 
 function useListsClientState({ sectionState }) {
   const { openModal } = useModalActions();
-  const { handleDeleteList, handleEditList, isListsLoading, listDeleteConfirmation, lists } = sectionState;
+  const { handleDeleteList, handleEditList, isListsLoading, listDeleteConfirmation, lists } =
+    sectionState;
 
   const handleOpenListCreator = useCallback(() => {
     openModal('CREATE_LIST_MODAL');

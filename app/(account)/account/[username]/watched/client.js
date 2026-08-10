@@ -15,7 +15,7 @@ import {
 } from '@/domains/media/server/watched-watchlist';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // WatchedView is defined in this route client.
-import AccountWatchedFeed from '@/domains/account/ui/sections/feeds/watched';
+import AccountWatchedFeed from '@/domains/account/ui/sections/collections/watched-collection';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
@@ -163,7 +163,10 @@ const WatchedView = createAccountSectionView({
   displayName: 'AccountWatchedView',
   Registry,
   skeletonVariant: 'collection',
-  renderContent: (sectionState, { handleRequestRemoveWatchedItem, isWatchedLoading, loadError, watchedItems }) => (
+  renderContent: (
+    sectionState,
+    { handleRequestRemoveWatchedItem, isWatchedLoading, loadError, watchedItems },
+  ) => (
     <AccountWatchedFeed
       auth={sectionState.auth}
       canShowWatchedGrid={sectionState.canViewProfileCollections}

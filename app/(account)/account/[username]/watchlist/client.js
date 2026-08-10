@@ -2,7 +2,7 @@
 
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
 // WatchlistView is defined in this route client.
-import AccountWatchlistFeed from '@/domains/account/ui/sections/feeds/watchlist';
+import AccountWatchlistFeed from '@/domains/account/ui/sections/collections/watchlist-collection';
 import {
   createAccountSectionRegistry,
   createAccountSectionView,
@@ -29,7 +29,10 @@ const WatchlistView = createAccountSectionView({
   displayName: 'AccountWatchlistView',
   Registry,
   skeletonVariant: 'collection',
-  renderContent: (sectionState, { handleRequestRemoveWatchlistItem, isWatchlistLoading, watchlist }) => (
+  renderContent: (
+    sectionState,
+    { handleRequestRemoveWatchlistItem, isWatchlistLoading, watchlist },
+  ) => (
     <AccountWatchlistFeed
       auth={sectionState.auth}
       canShowWatchlistGrid={sectionState.canViewProfileCollections}

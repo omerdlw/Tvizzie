@@ -1,4 +1,8 @@
-import { getAccountCollectionsServer } from '../api/collections.server';
+import { fetchAccountResource } from './account-api.client';
+
+function getResourceItems(response) {
+  return response?.items || response?.data || [];
+}
 
 export async function fetchCollectionResource(arg1, arg2, arg3, arg4) {
   let params = {};
@@ -25,7 +29,7 @@ export async function fetchCollectionResource(arg1, arg2, arg3, arg4) {
     userId = null,
   } = params;
 
-  const res = await getAccountCollectionsServer({
+  const res = await fetchAccountResource({
     entityId,
     entityType,
     limitCount,
@@ -35,18 +39,50 @@ export async function fetchCollectionResource(arg1, arg2, arg3, arg4) {
     slug,
     userId,
   });
-  if (!res.success) return [];
-  return res.items || res.data || [];
+  return getResourceItems(res);
+}
+
+export async function fetchAccountListById({ listId, userId } = {}) {
+  if (!listId) return null;
+
+  const response = await fetchAccountResource({
+    listId,
+    resource: 'list-by-id',
+    userId,
+  });
+  return response?.data || null;
+}
+
+export async function fetchAccountListBySlug({ slug, userId } = {}) {
+  if (!slug) return null;
+
+  const response = await fetchAccountResource({
+    resource: 'list-by-slug',
+    slug,
+    userId,
+  });
+  return response?.data || null;
+}
+
+export async function fetchAccountListItems({ limitCount = null, listId, userId } = {}) {
+  if (!listId || !userId) return [];
+
+  const response = await fetchAccountResource({
+    limitCount,
+    listId,
+    resource: 'list-items',
+    userId,
+  });
+  return getResourceItems(response);
 }
 
 export async function fetchMediaCollectionStatus({ media = null, resource, userId = null } = {}) {
-  const res = await getAccountCollectionsServer({
+  const res = await fetchAccountResource({
     media,
     resource,
     userId,
   });
-  if (!res.success) return null;
-  return res.data || null;
+  return res?.data || null;
 }
 
 export function createMediaCollectionToggleRpcParams({ extraPayload = {}, row = {}, userId }) {
@@ -54,7 +90,9 @@ export function createMediaCollectionToggleRpcParams({ extraPayload = {}, row = 
     p_added_at: row.addedAt || row.added_at || new Date().toISOString(),
     p_backdrop_path: row.backdrop_path || row.backdropPath || null,
     p_entity_id: String(row.entityId || row.entity_id || row.id || '').trim(),
-    p_entity_type: String(row.entityType || row.entity_type || row.media_type || '').trim().toLowerCase(),
+    p_entity_type: String(row.entityType || row.entity_type || row.media_type || '')
+      .trim()
+      .toLowerCase(),
     p_extra_payload: extraPayload,
     p_media_key: row.mediaKey || row.media_key || null,
     p_poster_path: row.poster_path || row.posterPath || null,

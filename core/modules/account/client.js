@@ -51,20 +51,14 @@ export function createAccountAdapter(adapter = {}) {
 export function createAccountClient(adapterOrConfig) {
   const adapter = resolveAccountAdapter(adapterOrConfig);
 
-  const client = {};
-
-  // Dynamically map standard required adapter methods
-  ACCOUNT_ADAPTER_METHOD_NAMES.forEach((methodName) => {
-    client[methodName] = (...args) => getRequiredMethod(adapter, methodName)(...args);
-  });
-
-  // Optional method with default fallback
-  client.primeAccount = (userId, profile) => {
-    if (typeof adapter?.primeAccount === 'function') {
-      return adapter.primeAccount(userId, profile);
-    }
-    return profile;
+  return {
+    ...Object.fromEntries(
+      ACCOUNT_ADAPTER_METHOD_NAMES.map((methodName) => [
+        methodName,
+        (...args) => getRequiredMethod(adapter, methodName)(...args),
+      ]),
+    ),
+    primeAccount: (userId, profile) =>
+      typeof adapter.primeAccount === 'function' ? adapter.primeAccount(userId, profile) : profile,
   };
-
-  return client;
 }

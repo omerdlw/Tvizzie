@@ -2,7 +2,6 @@ import { createAdminClient } from '@/infrastructure/supabase/admin';
 import { canViewerAccessUserContent, createPrivateProfileError } from './profile.server';
 import { normalizeTimestamp, normalizeValue } from '@/shared/utils';
 
-export { getAccountCollectionResource as getCollectionResource };
 import { buildMediaItemKey } from '@/domains/media/server/media';
 import { isTitleMediaType } from '@/domains/media/utils';
 import {
@@ -12,40 +11,32 @@ import {
   WATCHED_SELECT,
 } from '@/domains/account/utils';
 
-// ============================================================
-// Collection Resources & Config Constants
-// ============================================================
-
-export const ACCOUNT_COLLECTION_RESOURCES = new Set([
+export const ACCOUNT_COLLECTION_RESOURCE_KEYS = new Set([
   'likes',
-  'watchlist',
   'lists',
-  'list-items',
-  'list-by-id',
-  'list-by-slug',
   'liked-lists',
+  'watched',
+  'watchlist',
+]);
+
+export const ACCOUNT_LIST_RESOURCE_KEYS = new Set(['list-by-id', 'list-by-slug', 'list-items']);
+
+export const ACCOUNT_MEDIA_STATUS_RESOURCE_KEYS = new Set([
   'like-status',
   'watchlist-status',
   'watched-status',
-  'watched',
 ]);
 
-export const PROTECTED_ACCOUNT_COLLECTION_RESOURCES = new Set([
-  'like-status',
-  'liked-lists',
-  'likes',
-  'list-by-id',
-  'list-by-slug',
-  'list-items',
-  'lists',
-  'watchlist',
-  'watchlist-status',
-  'watched',
-  'watched-status',
+export const ACCOUNT_RESOURCE_KEYS = new Set([
+  ...ACCOUNT_COLLECTION_RESOURCE_KEYS,
+  ...ACCOUNT_LIST_RESOURCE_KEYS,
+  ...ACCOUNT_MEDIA_STATUS_RESOURCE_KEYS,
 ]);
 
-export function isAccountCollectionResource(resource) {
-  return ACCOUNT_COLLECTION_RESOURCES.has(resource);
+export const PROTECTED_ACCOUNT_RESOURCE_KEYS = new Set(ACCOUNT_RESOURCE_KEYS);
+
+export function isAccountResource(resource) {
+  return ACCOUNT_RESOURCE_KEYS.has(resource);
 }
 
 export function resolveLimitCount(value, fallback = 0, max = 100) {
@@ -115,10 +106,6 @@ export async function countListLikesByListIds(client, assertQueryResult, listIds
   }
   return likesMap;
 }
-
-// ============================================================
-// Normalizers
-// ============================================================
 
 function normalizeNumber(value, fallback = null) {
   const parsed = Number(value);
@@ -251,10 +238,6 @@ export function normalizeListRow(row = {}, likesMap = new Map()) {
   };
 }
 
-// ============================================================
-// Status Resource Resolvers
-// ============================================================
-
 function resolveMediaKey(media = null) {
   return (
     media?.mediaKey ||
@@ -264,6 +247,175 @@ function resolveMediaKey(media = null) {
   );
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const STANDARD_COLLECTION_CONFIG = Object.freeze({
+  likes: Object.freeze({
+    filter: (item) => isTitleMediaType(item?.entityType),
+    label: 'Likes',
+    limit: 200,
+    normalize: (row) => normalizeMediaPayload(row.payload || {}, row),
+    order: [['added_at', { ascending: false }]],
+    select: MEDIA_COLLECTION_SELECT,
+    table: 'likes',
+  }),
+  watchlist: Object.freeze({
+    label: 'Watchlist',
+    limit: 200,
+    normalize: (row) => normalizeMediaPayload(row.payload || {}, row),
+    order: [['added_at', { ascending: false }]],
+    select: MEDIA_COLLECTION_SELECT,
+    table: 'watchlist',
+  }),
+  watched: Object.freeze({
+    label: 'Watched items',
+    limit: 200,
+    normalize: normalizeWatchedRow,
+    order: [['last_watched_at', { ascending: false }]],
+    select: WATCHED_SELECT,
+    table: 'watched',
+  }),
+});
+
+const STATUS_COLLECTION_CONFIG = Object.freeze({
+  'like-status': Object.freeze({
+    itemKey: 'like',
+    label: 'Like status',
+    normalize: (row) => normalizeMediaPayload(row.payload || {}, row),
+    order: [
+      ['updated_at', { ascending: false }],
+      ['added_at', { ascending: false }],
+    ],
+    select: MEDIA_COLLECTION_SELECT,
+    statusKey: 'isLiked',
+    table: 'likes',
+  }),
+  'watchlist-status': Object.freeze({
+    itemKey: 'item',
+    label: 'Watchlist status',
+    normalize: (row) => normalizeMediaPayload(row.payload || {}, row),
+    order: [
+      ['updated_at', { ascending: false }],
+      ['added_at', { ascending: false }],
+    ],
+    select: MEDIA_COLLECTION_SELECT,
+    statusKey: 'isInWatchlist',
+    table: 'watchlist',
+  }),
+  'watched-status': Object.freeze({
+    itemKey: 'watched',
+    label: 'Watched status',
+    normalize: normalizeWatchedRow,
+    order: [
+      ['last_watched_at', { ascending: false }],
+      ['updated_at', { ascending: false }],
+    ],
+    select: WATCHED_SELECT,
+    statusKey: 'isWatched',
+    table: 'watched',
+  }),
+});
+
+function getFirstResultRow(result) {
+  return Array.isArray(result?.data) ? result.data[0] || null : null;
+}
+
+function applyQueryOrder(query, order = []) {
+  return order.reduce(
+    (currentQuery, [column, options]) => currentQuery.order(column, options),
+    query,
+  );
+}
+
+function isUuid(value) {
+  return UUID_PATTERN.test(value);
+}
+
+function createListQuery(admin, { reference, select, userId, usesSlugFallback = false }) {
+  let query = admin.from('lists').select(select);
+  if (userId) query = query.eq('user_id', userId);
+
+  if (usesSlugFallback) {
+    return isUuid(reference)
+      ? query.or(`id.eq.${reference},slug.eq.${reference}`)
+      : query.eq('slug', reference);
+  }
+
+  return isUuid(reference) ? query.eq('id', reference) : query.eq('slug', reference);
+}
+
+async function findListRow({
+  admin,
+  checkAssert,
+  execQuery,
+  fallbackMessage,
+  label,
+  reference,
+  select = LIST_COLLECTION_SELECT,
+  strict,
+  userId,
+  usesSlugFallback = false,
+}) {
+  const decodedReference = decodeRouteValue(reference);
+  if (!decodedReference) return null;
+
+  const result = await execQuery(
+    createListQuery(admin, {
+      reference: decodedReference,
+      select,
+      userId,
+      usesSlugFallback,
+    }).limit(1),
+    {
+      fallbackValue: { data: [], error: null },
+      label,
+      strict,
+    },
+  );
+
+  if (result?.timedOut) return null;
+  checkAssert(result, fallbackMessage);
+  return getFirstResultRow(result);
+}
+
+async function normalizeListRowWithLikes({ admin, checkAssert, row }) {
+  if (!row) return null;
+  const likesMap = Number.isFinite(Number(row.likes_count))
+    ? new Map()
+    : await countListLikesByListIds(admin, checkAssert, [row.id]);
+
+  return normalizeListRow(row, likesMap);
+}
+
+async function loadStandardCollection({
+  admin,
+  calcLimit,
+  checkAssert,
+  config,
+  execQuery,
+  limitCount,
+  strict,
+  userId,
+}) {
+  let query = applyQueryOrder(
+    admin.from(config.table).select(config.select).eq('user_id', userId),
+    config.order,
+  );
+  const limit = calcLimit(limitCount, 0, config.limit);
+  if (limit > 0) query = query.limit(limit);
+
+  const result = await execQuery(query, {
+    fallbackValue: { data: [], error: null },
+    label: `${config.label} for user ${userId}`,
+    strict,
+  });
+  if (result?.timedOut) return null;
+
+  checkAssert(result, `${config.label} could not be loaded`);
+  const items = (result.data || []).map(config.normalize);
+  return config.filter ? items.filter(config.filter) : items;
+}
+
 export async function resolveAccountCollectionStatusResource({
   admin,
   assertResult: localAssert,
@@ -271,77 +423,34 @@ export async function resolveAccountCollectionStatusResource({
   resource,
   userId,
 }) {
-  const checkAssert = localAssert || assertResult;
+  const config = STATUS_COLLECTION_CONFIG[resource];
+  if (!config) return { data: null, handled: false };
+
   const mediaKey = resolveMediaKey(media);
-
-  if (resource === 'like-status') {
-    if (!userId || !mediaKey) return { data: { isLiked: false, like: null }, handled: true };
-    const result = await admin
-      .from('likes')
-      .select(MEDIA_COLLECTION_SELECT)
-      .eq('user_id', userId)
-      .eq('media_key', mediaKey)
-      .order('updated_at', { ascending: false })
-      .order('added_at', { ascending: false })
-      .limit(1);
-    checkAssert(result, 'Like status could not be loaded');
-    const row = Array.isArray(result.data) ? result.data[0] || null : null;
+  if (!userId || !mediaKey) {
     return {
-      data: {
-        isLiked: Boolean(row),
-        like: row ? normalizeMediaPayload(row.payload || {}, row) : null,
-      },
+      data: { [config.itemKey]: null, [config.statusKey]: false },
       handled: true,
     };
   }
 
-  if (resource === 'watchlist-status') {
-    if (!userId || !mediaKey) return { data: { isInWatchlist: false, item: null }, handled: true };
-    const result = await admin
-      .from('watchlist')
-      .select(MEDIA_COLLECTION_SELECT)
-      .eq('user_id', userId)
-      .eq('media_key', mediaKey)
-      .order('updated_at', { ascending: false })
-      .order('added_at', { ascending: false })
-      .limit(1);
-    checkAssert(result, 'Watchlist status could not be loaded');
-    const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    return {
-      data: {
-        isInWatchlist: Boolean(row),
-        item: row ? normalizeMediaPayload(row.payload || {}, row) : null,
-      },
-      handled: true,
-    };
-  }
+  const result = await applyQueryOrder(
+    admin.from(config.table).select(config.select).eq('user_id', userId).eq('media_key', mediaKey),
+    config.order,
+  ).limit(1);
+  (localAssert || assertResult)(result, `${config.label} could not be loaded`);
 
-  if (resource === 'watched-status') {
-    if (!userId || !mediaKey) return { data: { isWatched: false, watched: null }, handled: true };
-    const result = await admin
-      .from('watched')
-      .select(WATCHED_SELECT)
-      .eq('user_id', userId)
-      .eq('media_key', mediaKey)
-      .order('last_watched_at', { ascending: false })
-      .order('updated_at', { ascending: false })
-      .limit(1);
-    checkAssert(result, 'Watched status could not be loaded');
-    const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    return {
-      data: { isWatched: Boolean(row), watched: row ? normalizeWatchedRow(row) : null },
-      handled: true,
-    };
-  }
-
-  return { data: null, handled: false };
+  const row = getFirstResultRow(result);
+  return {
+    data: {
+      [config.itemKey]: row ? config.normalize(row) : null,
+      [config.statusKey]: Boolean(row),
+    },
+    handled: true,
+  };
 }
 
-// ============================================================
-// Account Collection Resource Reader
-// ============================================================
-
-export async function getAccountCollectionResource({
+export async function getAccountResource({
   admin: customAdmin,
   assertResult: customAssertResult,
   canViewerAccessUserContent: customAccessCheck,
@@ -364,7 +473,7 @@ export async function getAccountCollectionResource({
   const execQuery = customQueryExec || executeCollectionQuery;
   const calcLimit = customResolveLimit || resolveLimitCount;
 
-  if (PROTECTED_ACCOUNT_COLLECTION_RESOURCES.has(resource)) {
+  if (PROTECTED_ACCOUNT_RESOURCE_KEYS.has(resource)) {
     const canAccess = await accessCheck({ ownerId: userId, viewerId });
     if (!canAccess) throw makePrivateError();
   }
@@ -378,195 +487,96 @@ export async function getAccountCollectionResource({
   });
   if (statusResource.handled) return statusResource.data;
 
-  if (resource === 'likes') {
-    let query = admin
-      .from('likes')
-      .select(MEDIA_COLLECTION_SELECT)
-      .eq('user_id', userId)
-      .order('added_at', { ascending: false });
-    const limit = calcLimit(limitCount, 0, 200);
-    if (limit > 0) query = query.limit(limit);
-
-    const result = await execQuery(query, {
-      label: `Likes for user ${userId}`,
-      fallbackValue: { data: [], error: null },
+  const standardCollectionConfig = STANDARD_COLLECTION_CONFIG[resource];
+  if (standardCollectionConfig) {
+    const items = await loadStandardCollection({
+      admin,
+      calcLimit,
+      checkAssert,
+      config: standardCollectionConfig,
+      execQuery,
+      limitCount,
       strict,
+      userId,
     });
-    if (result?.timedOut) return [];
-    checkAssert(result, 'Likes could not be loaded');
-    return (result.data || [])
-      .map((row) => normalizeMediaPayload(row.payload || {}, row))
-      .filter((item) => isTitleMediaType(item?.entityType));
-  }
 
-  if (resource === 'watchlist') {
-    let query = admin
-      .from('watchlist')
-      .select(MEDIA_COLLECTION_SELECT)
-      .eq('user_id', userId)
-      .order('added_at', { ascending: false });
-    const limit = calcLimit(limitCount, 0, 200);
-    if (limit > 0) query = query.limit(limit);
-
-    const result = await execQuery(query, {
-      label: `Watchlist for user ${userId}`,
-      fallbackValue: { data: [], error: null },
-      strict,
-    });
-    if (result?.timedOut) return [];
-    checkAssert(result, 'Watchlist could not be loaded');
-    return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row));
+    return items || [];
   }
 
   if (resource === 'lists') {
-    let query = admin
-      .from('lists')
-      .select(LIST_COLLECTION_SELECT)
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
-    const limit = calcLimit(limitCount, 0, 200);
-    if (limit > 0) query = query.limit(limit);
-
-    const result = await execQuery(query, {
-      label: `Lists for user ${userId}`,
-      fallbackValue: { data: [], error: null },
+    const rows = await loadStandardCollection({
+      admin,
+      calcLimit,
+      checkAssert,
+      config: {
+        label: 'Lists',
+        limit: 200,
+        normalize: (row) => row,
+        order: [['updated_at', { ascending: false }]],
+        select: LIST_COLLECTION_SELECT,
+        table: 'lists',
+      },
+      execQuery,
+      limitCount,
       strict,
+      userId,
     });
-    if (result?.timedOut) return [];
-    checkAssert(result, 'Lists could not be loaded');
-    const lists = result.data || [];
+    if (!rows) return [];
+
     const likesMap = await countListLikesByListIds(
       admin,
       checkAssert,
-      lists.filter((list) => !Number.isFinite(Number(list.likes_count))).map((list) => list.id),
+      rows.filter((row) => !Number.isFinite(Number(row.likes_count))).map((row) => row.id),
     );
-    return lists.map((row) => normalizeListRow(row, likesMap));
+    return rows.map((row) => normalizeListRow(row, likesMap));
   }
 
-  if (resource === 'watched') {
-    let query = admin
-      .from('watched')
-      .select(WATCHED_SELECT)
-      .eq('user_id', userId)
-      .order('last_watched_at', { ascending: false });
-    const limit = calcLimit(limitCount, 0, 200);
-    if (limit > 0) query = query.limit(limit);
-
-    const result = await execQuery(query, {
-      label: `Watched for user ${userId}`,
-      fallbackValue: { data: [], error: null },
+  if (resource === 'list-by-slug' || resource === 'list-by-id') {
+    const row = await findListRow({
+      admin,
+      checkAssert,
+      execQuery,
+      fallbackMessage: 'List could not be loaded',
+      label: resource === 'list-by-slug' ? `List by slug ${slug}` : `List by id ${listId}`,
+      reference: resource === 'list-by-slug' ? slug : listId,
       strict,
+      userId,
+      usesSlugFallback: resource === 'list-by-slug',
     });
-    if (result?.timedOut) return [];
-    checkAssert(result, 'Watched items could not be loaded');
-    return (result.data || []).map((row) => normalizeWatchedRow(row));
-  }
 
-  if (resource === 'list-by-slug') {
-    if (!slug) return null;
-    const decodedSlug = decodeRouteValue(slug);
-    if (!decodedSlug) return null;
-
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isUuid = UUID_REGEX.test(decodedSlug);
-    let query = admin.from('lists').select(LIST_COLLECTION_SELECT);
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-    // Only match by id when value is a UUID — mixing id.eq with a non-UUID crashes Postgres (22P02)
-    if (isUuid) {
-      query = query.or(`id.eq.${decodedSlug},slug.eq.${decodedSlug}`);
-    } else {
-      query = query.eq('slug', decodedSlug);
-    }
-    query = query.limit(1);
-
-    const result = await execQuery(query, {
-      label: `List by slug ${decodedSlug}`,
-      fallbackValue: { data: [], error: null },
-      strict,
-    });
-    if (result?.timedOut) return null;
-    checkAssert(result, 'List by slug could not be loaded');
-    const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    if (!row) return null;
-    const likesMap = Number.isFinite(Number(row.likes_count))
-      ? new Map()
-      : await countListLikesByListIds(admin, checkAssert, [row.id]);
-    return normalizeListRow(row, likesMap);
-  }
-
-  if (resource === 'list-by-id') {
-    if (!listId) return null;
-    const decodedListId = decodeRouteValue(listId);
-    if (!decodedListId) return null;
-
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isUuid = UUID_REGEX.test(decodedListId);
-    let query = admin.from('lists').select(LIST_COLLECTION_SELECT);
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-    if (isUuid) {
-      query = query.eq('id', decodedListId);
-    } else {
-      // Fall back to slug lookup if id is not a UUID
-      query = query.eq('slug', decodedListId);
-    }
-    query = query.limit(1);
-
-    const result = await execQuery(query, {
-      label: `List by id ${decodedListId}`,
-      fallbackValue: { data: [], error: null },
-      strict,
-    });
-    if (result?.timedOut) return null;
-    checkAssert(result, 'List by id could not be loaded');
-    const row = Array.isArray(result.data) ? result.data[0] || null : null;
-    if (!row) return null;
-    const likesMap = Number.isFinite(Number(row.likes_count))
-      ? new Map()
-      : await countListLikesByListIds(admin, checkAssert, [row.id]);
-    return normalizeListRow(row, likesMap);
+    return normalizeListRowWithLikes({ admin, checkAssert, row });
   }
 
   if (resource === 'list-items') {
-    if (!listId) return [];
-    const decodedListId = decodeRouteValue(listId);
-    if (!decodedListId) return [];
-
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    let targetListId = decodedListId;
-
-    if (!UUID_REGEX.test(decodedListId)) {
-      // Non-UUID: resolve the actual UUID via slug lookup
-      let slugQuery = admin.from('lists').select('id').eq('slug', decodedListId).limit(1);
-      if (userId) slugQuery = slugQuery.eq('user_id', userId);
-      const slugRes = await execQuery(slugQuery, {
-        label: `Resolve list ID for ${decodedListId}`,
-        fallbackValue: { data: [], error: null },
-        strict,
-      });
-      const foundRow = Array.isArray(slugRes?.data) ? slugRes.data[0] : null;
-      if (!foundRow?.id) return [];
-      targetListId = foundRow.id;
-    }
+    const list = await findListRow({
+      admin,
+      checkAssert,
+      execQuery,
+      fallbackMessage: 'List items could not be loaded',
+      label: `Resolve list ID for ${listId}`,
+      reference: listId,
+      select: 'id',
+      strict,
+      userId,
+    });
+    if (!list?.id) return [];
 
     let query = admin
       .from('list_items')
       .select(LIST_ITEM_SELECT)
-      .eq('list_id', targetListId)
+      .eq('list_id', list.id)
       .order('position', { ascending: true, nullsFirst: false })
       .order('added_at', { ascending: true });
     const limit = calcLimit(limitCount, 0, 500);
     if (limit > 0) query = query.limit(limit);
 
     const result = await execQuery(query, {
-      label: `List items for list ${targetListId}`,
       fallbackValue: { data: [], error: null },
+      label: `List items for list ${list.id}`,
       strict,
     });
     if (result?.timedOut) return [];
+
     checkAssert(result, 'List items could not be loaded');
     return (result.data || []).map((row) => normalizeMediaPayload(row.payload || {}, row));
   }

@@ -55,13 +55,11 @@ export default function AccountListsFeed({
     const params = new URLSearchParams(qs);
     if (viewState.page > 1) params.set('page', String(viewState.page));
     else params.delete('page');
-    const newUrl = params.toString() ? `${collectionRootPath}?${params.toString()}` : collectionRootPath;
+    const newUrl = params.toString()
+      ? `${collectionRootPath}?${params.toString()}`
+      : collectionRootPath;
     if (window.location.pathname + window.location.search !== newUrl) {
-      window.history.replaceState(
-        {},
-        '',
-        newUrl,
-      );
+      window.history.replaceState({}, '', newUrl);
     }
   }, [viewState, collectionRootPath]);
   if (!canShowLists) return <AccountSectionState message="This profile is private." />;

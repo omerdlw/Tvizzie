@@ -17,13 +17,13 @@ import ReviewAuthFallback from '@/domains/reviews/ui/components/review-auth-fall
 import AccountSectionLayout, {
   AccountSectionState,
 } from '@/domains/account/ui/sections/account-section';
-import ListDetailCommentsSection from './list-detail/comments-section';
+import ListDetailCommentsSection from './list-detail-comments';
 import {
   LIST_DETAIL_MEDIA_VISIBILITY_OPTIONS,
   LIST_COMMENT_SORT_OPTIONS,
   LIST_SECTION_SHELL_CLASS,
-} from './list-detail/list-detail-config';
-import { useListDetailFilterState } from './list-detail/list-detail-filter-state';
+} from './list-detail-config';
+import { useListDetailFilterState } from './use-list-detail-filters';
 
 export default function AccountListDetailFeed({ model = {}, RegistryComponent = null }) {
   const {

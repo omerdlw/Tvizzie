@@ -4,23 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   hasMatchingSeededFeed,
   shouldBlockAccountFeedLoad,
-  useAccountSectionPage,
   useSeededFeedState,
 } from '@/domains/account/hooks';
 import { isPermissionDeniedError, logDataError } from '@/domains/account/utils';
+import { fetchAccountReviewFeed } from '@/domains/account/client/account-api.client';
 import { useModal } from '@/modules/modal';
 import { useToast } from '@/modules/notification';
 import { TMDB_IMG } from '@/shared/constants';
-import {
-  deleteStoredReview,
-  fetchProfileReviewFeed,
-  toggleStoredReviewLike,
-} from '@/domains/reviews/server';
+import { deleteStoredReview, toggleStoredReviewLike } from '@/domains/reviews/server';
 import { subscribeToUserWatched } from '@/domains/media/server/watched-watchlist';
 import { useNavigationActions } from '@/modules/nav';
 import { createReviewEditorSurfaceEntry } from '@/domains/reviews/ui/surfaces/review-editor-surface';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
-// ReviewsView is defined in this route client.
 import AccountReviewFeed from '@/domains/account/ui/sections/feeds/reviews';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
 import {
@@ -36,6 +31,7 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
   const [reviewDeleteConfirmation, setReviewDeleteConfirmation] = useState(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const pendingLikesRef = useRef(new Map());
+  const latestReviewRequestRef = useRef(0);
   const {
     canViewProfileCollections,
     canViewPrivateContent,
@@ -104,6 +100,12 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
   });
 
   useEffect(() => {
+    return () => {
+      latestReviewRequestRef.current += 1;
+    };
+  }, [resolvedUserId]);
+
+  useEffect(() => {
     if (!hasSeededReviewFeed) {
       return;
     }
@@ -124,6 +126,9 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
 
   const loadReviews = useCallback(
     async ({ append = false } = {}) => {
+      const requestId = latestReviewRequestRef.current + 1;
+      latestReviewRequestRef.current = requestId;
+
       if (!isViewerReady || !resolvedUserId) {
         return;
       }
@@ -148,14 +153,18 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
       setFeedError(null);
 
       try {
-        const result = await fetchProfileReviewFeed({
+        const result = await fetchAccountReviewFeed({
           cursor: append ? cursor : null,
           mode: 'authored',
           userId: resolvedUserId,
         });
 
+        if (latestReviewRequestRef.current !== requestId) return;
+
         applyFeedResult(result, { append });
       } catch (error) {
+        if (latestReviewRequestRef.current !== requestId) return;
+
         if (!append) {
           resetFeed();
         }
@@ -165,6 +174,8 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
           setFeedError('Reviews could not be loaded right now.');
         }
       } finally {
+        if (latestReviewRequestRef.current !== requestId) return;
+
         if (append) {
           setIsLoadingMore(false);
         } else {
@@ -240,10 +251,7 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
         ? currentLikes.filter((id) => id !== userId)
         : [...new Set([...currentLikes, userId])];
 
-      
       pendingLikesRef.current.set(reviewId, nextLikes);
-
-      
       setReviews((current) =>
         current.map((item) => {
           if ((item.docPath || item.id) !== reviewId) {
@@ -263,12 +271,10 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
           userId,
         });
 
-        
         setTimeout(() => {
           pendingLikesRef.current.delete(reviewId);
         }, 3000);
       } catch (error) {
-        
         pendingLikesRef.current.delete(reviewId);
         setReviews(previousReviews);
         toast.error(error?.message || 'Review could not be updated');
@@ -359,8 +365,6 @@ function useReviewsClientState({ auth, routeData, sectionProviderValue, sectionS
     watchedItems,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountReviewsRegistry',

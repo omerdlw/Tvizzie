@@ -2,39 +2,29 @@
 
 @theme {
   --color-white: var(--white);
-  --color-primary: #fff;
   --color-black: var(--black);
-  --color-error: #9b1c1c;
+  --color-primary: #fff;
+
   --color-warning: #92400e;
   --color-success: #14532d;
+  --color-error: #9b1c1c;
   --color-info: #1e3a5f;
-  --font-sans: var(--font-inter);
+
   --font-zuume: var(--font-zuume);
+  --font-sans: var(--font-inter);
 }
 
 @layer base {
   :root {
     --white: #f8f8f6;
     --black: #141413;
+    --primary:
   }
 
   html,
   body {
-    color-scheme: light;
     overscroll-behavior: none;
-  }
-
-  button:not(:disabled),
-  [role='button']:not([aria-disabled='true']),
-  a[href],
-  label[for],
-  summary {
-    cursor: pointer;
-  }
-
-  button:disabled,
-  [role='button'][aria-disabled='true'] {
-    cursor: not-allowed;
+    color-scheme: light;
   }
 }
 
@@ -63,41 +53,23 @@
     );
   }
 
-  .home-top-radial-gradient {
-    background-image: radial-gradient(
-      circle at top,
-      color-mix(in srgb, var(--white) 20%, transparent),
-      transparent 55%
-    );
-  }
-
-  .media-reviews-backdrop-gradient {
-    background-image: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--white) 0%, transparent) 0%,
-      color-mix(in srgb, var(--white) 84%, transparent) 12%,
-      var(--white) 34%,
-      var(--white) 100%
-    );
-  }
-
-  .skeleton-block,
-  .skeleton-block-soft {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .skeleton-block {
-    background-color: rgb(23 23 23 / 0.1);
-  }
-
-  .skeleton-block-soft {
-    background-color: rgb(23 23 23 / 0.06);
-  }
-
   .center {
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
+  .skeleton-block,
+   .skeleton-block-soft {
+     position: relative;
+     overflow: hidden;
+   }
+
+   .skeleton-block {
+     background-color: rgb(23 23 23 / 0.1);
+   }
+
+   .skeleton-block-soft {
+     background-color: rgb(23 23 23 / 0.05);
+   }
 }

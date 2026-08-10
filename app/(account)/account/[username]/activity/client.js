@@ -11,9 +11,8 @@ import {
   toActivityQueryValues,
 } from '@/domains/account/ui/filters/filtering';
 import { logDataError } from '@/domains/account/utils';
-import { fetchAccountActivityFeed } from '@/domains/social/server/activity/activity-service';
+import { fetchAccountActivityFeed } from '@/domains/account/client/account-api.client';
 import { createAccountSectionClient } from '@/domains/account/ui/sections/account-section-factory';
-// ActivityView is defined in this route client.
 import AccountActivityFeed from '@/domains/account/ui/sections/feeds/activity';
 import { AccountSectionState } from '@/domains/account/ui/sections/account-section';
 import AccountAction from '@/domains/account/ui/components/account-action-bar';
@@ -311,8 +310,6 @@ function useActivityClientState({ auth, routeData, sectionProviderValue, section
     totalCount,
   };
 }
-
-
 
 export const Registry = createAccountSectionRegistry({
   displayName: 'AccountActivityRegistry',

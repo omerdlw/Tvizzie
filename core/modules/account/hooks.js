@@ -14,9 +14,8 @@ export function useResolvedAccountUser({
 }) {
   const accountClient = useAccountClient();
   const hasServerSnapshot = Boolean(initialResolvedUserId) || initialResolveError !== null;
-
-  const initialStateConsumedRef = useRef(hasServerSnapshot);
   const [remoteUserId, setRemoteUserId] = useState(initialResolvedUserId);
+  const [resolvedUsername, setResolvedUsername] = useState(username || null);
   const [isResolvingProfile, setIsResolvingProfile] = useState(
     Boolean(username) && !hasServerSnapshot,
   );
@@ -25,19 +24,25 @@ export function useResolvedAccountUser({
   useEffect(() => {
     if (!username) {
       setRemoteUserId(null);
+      setResolvedUsername(null);
       setResolveError(null);
       setIsResolvingProfile(false);
       return;
     }
 
-    if (initialStateConsumedRef.current) {
-      initialStateConsumedRef.current = false;
+    if (hasServerSnapshot) {
+      setRemoteUserId(initialResolvedUserId);
+      setResolvedUsername(username);
+      setResolveError(initialResolveError);
+      setIsResolvingProfile(false);
       return;
     }
 
     let ignore = false;
 
     async function resolveProfile() {
+      setRemoteUserId(null);
+      setResolvedUsername(username);
       setIsResolvingProfile(true);
       setResolveError(null);
 
@@ -46,19 +51,19 @@ export function useResolvedAccountUser({
 
         if (!userId) {
           const profileSnapshot = await accountClient.getAccountByUsername(username);
-          if (profileSnapshot) {
-            userId = profileSnapshot.id || username;
-          }
+          userId = profileSnapshot?.id || null;
         }
 
         if (ignore) return;
 
         setRemoteUserId(userId);
+        setResolvedUsername(username);
         setResolveError(userId ? null : 'Profile not found');
       } catch (error) {
         if (ignore) return;
 
         setRemoteUserId(null);
+        setResolvedUsername(username);
         setResolveError(error?.message || 'Profile not found');
       } finally {
         if (!ignore) {
@@ -72,12 +77,10 @@ export function useResolvedAccountUser({
     return () => {
       ignore = true;
     };
-  }, [accountClient, username]);
+  }, [accountClient, initialResolveError, initialResolvedUserId, username]);
 
-  // For username-based pages, fall back to the server-resolved ID while the
-  // client-side resolution is still in-flight so we never get an empty shell.
   const resolvedUserId = username
-    ? remoteUserId || initialResolvedUserId || null
+    ? (resolvedUsername === username ? remoteUserId : null) || initialResolvedUserId || null
     : authUserId || initialResolvedUserId || null;
 
   return {
@@ -92,8 +95,6 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
   const [profile, setProfile] = useState(initialProfile);
   const [hasLoadedProfile, setHasLoadedProfile] = useState(Boolean(initialProfile?.id));
 
-  // Use the primitive ID (string) as dependency — not the object — to avoid
-  // triggering the effect on every render due to new object references.
   const initialProfileId = initialProfile?.id;
 
   const onErrorRef = useRef(onError);
@@ -116,6 +117,8 @@ export function useAccountProfile({ resolvedUserId, initialProfile = null, onErr
       setProfile((currentProfile) =>
         currentProfile?.id === resolvedUserId ? currentProfile : initialProfile,
       );
+    } else {
+      setProfile(null);
     }
 
     return accountClient.subscribeToAccount(

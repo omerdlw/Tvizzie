@@ -1,7 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { renderAccountSectionSkeleton, resolveAccountTabFromPathname } from '@/app/(account)/account/loading';
+import {
+  renderAccountSectionSkeleton,
+  resolveAccountTabFromPathname,
+} from '@/app/(account)/account/loading';
 import { AccountSkeleton } from '@/app/(account)/account/loading';
 import { useAccountProfileShell } from '@/domains/account/ui/layouts/account-profile-context';
 
@@ -16,5 +19,9 @@ export default function AccountUserSubrouteLoading() {
   const pathname = usePathname();
   const { variant } = resolveAccountTabFromPathname(pathname);
   const profileShell = useAccountProfileShell();
-  return profileShell ? renderAccountSectionSkeleton(variant) : <AccountSkeleton activeTab={variant} />;
+  return profileShell ? (
+    renderAccountSectionSkeleton(variant)
+  ) : (
+    <AccountSkeleton activeTab={variant} />
+  );
 }

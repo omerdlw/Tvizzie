@@ -227,15 +227,6 @@ export default function MediaReviews({
       data-community-reviews="true"
       className={`relative isolate z-0 flex w-full flex-col gap-6 overflow-hidden ${sectionClassName}`}
     >
-      {/* Background Gradient */}
-      {showBackdropGradient && (
-        <div
-          className="media-reviews-backdrop-gradient pointer-events-none absolute inset-0 -z-10"
-          style={{ bottom: -backdropExtension }}
-        />
-      )}
-
-      {/* Header */}
       <ReviewHeader
         ratingStats={effectiveRatingStats}
         title={headerTitle}
@@ -245,8 +236,6 @@ export default function MediaReviews({
         onEditOwnReview={ownReview ? () => openReviewModal(ownReview) : null}
         onAddReview={!currentUserId ? handleSignInRequest : null}
       />
-
-      {/* Composer Section */}
       {showComposer && !ownReview && (
         <AuthGate fallback={<ReviewAuthFallback onSignIn={handleSignInRequest} title={title} />}>
           <div className="flex w-full flex-col items-start gap-3 border-y border-black/10 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -266,8 +255,6 @@ export default function MediaReviews({
           </div>
         </AuthGate>
       )}
-
-      {/* Sort Control */}
       {isSortControlEnabled && (
         <div className="flex w-full items-center justify-between border-b border-black/10 pb-4">
           <span className="text-[11px] font-semibold tracking-wider text-black/50 uppercase">
@@ -291,8 +278,6 @@ export default function MediaReviews({
           />
         </div>
       )}
-
-      {/* Review List */}
       {!shouldHideRecentList && (
         <div key={listAnimationKey} style={{ willChange: 'transform, opacity, filter' }}>
           <ReviewList

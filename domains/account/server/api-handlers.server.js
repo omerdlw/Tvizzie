@@ -10,9 +10,10 @@ import { assertCsrfRequestForCookieSession } from '@/domains/auth/server/securit
 import { ensurePasswordAccountRecord } from '@/domains/auth/server/account.server.js';
 import {
   getEditableAccountSnapshotByUserId,
-  getAccountIdByUsername,
   getAccountProfileByUserId,
+  invalidateCachedAccountProfiles,
 } from './profile.server';
+import { resolveAccountRequestUserId } from './request-target.server';
 import { fetchAccountActivityFeedServer } from './feed.server';
 import { fetchProfileReviewFeedServer } from '@/domains/reviews/server/review-server.js';
 import {
@@ -30,10 +31,6 @@ import {
 import { publishUserEvent } from '@/infrastructure/realtime/user-events.server';
 import { normalizeValue } from '@/shared/utils';
 
-// ============================================================
-// GET /api/collections
-// ============================================================
-
 export async function handleAccountCollectionsGet(request) {
   try {
     const sessionContext = await resolveOptionalSessionRequest(request);
@@ -41,30 +38,27 @@ export async function handleAccountCollectionsGet(request) {
     const { searchParams } = new URL(request.url);
 
     const resource = normalizeValue(searchParams.get('resource'));
-    const userIdParam = normalizeValue(searchParams.get('userId'));
-    const usernameParam = normalizeValue(searchParams.get('username'));
     const slug = searchParams.get('slug');
     const listId = searchParams.get('listId');
     const limitCount = searchParams.get('limitCount');
     const entityType = searchParams.get('entityType');
     const entityId = searchParams.get('entityId');
-
-    let resolvedUserId = userIdParam || null;
-    if (!resolvedUserId && usernameParam) {
-      resolvedUserId = await getAccountIdByUsername(usernameParam);
-    }
-    if (!resolvedUserId && viewerId) {
-      resolvedUserId = viewerId;
-    }
+    const resolvedUserId = await resolveAccountRequestUserId({
+      fallbackUserId: viewerId,
+      searchParams,
+    });
 
     if (!resolvedUserId && resource !== 'list-by-slug') {
       return NextResponse.json({ data: null, items: [] });
     }
 
     const media = entityType && entityId ? { entityId, entityType } : null;
-    const { getAccountCollectionResource } = await import('./collections.server');
+    const { getAccountResource, isAccountResource } = await import('./collections.server');
+    if (!isAccountResource(resource)) {
+      return NextResponse.json({ error: 'Unsupported account resource' }, { status: 400 });
+    }
 
-    const data = await getAccountCollectionResource({
+    const data = await getAccountResource({
       limitCount,
       listId,
       media,
@@ -84,31 +78,21 @@ export async function handleAccountCollectionsGet(request) {
   }
 }
 
-// ============================================================
-// GET /api/account/activity
-// ============================================================
-
 export async function handleAccountActivityGet(request) {
   try {
     const sessionContext = await resolveOptionalSessionRequest(request);
     const viewerId = sessionContext?.userId || null;
     const { searchParams } = new URL(request.url);
 
-    const userIdParam = normalizeValue(searchParams.get('userId'));
-    const usernameParam = normalizeValue(searchParams.get('username'));
     const cursor = searchParams.get('cursor');
     const pageSize = searchParams.get('pageSize');
     const scope = searchParams.get('scope');
     const sort = searchParams.get('sort');
     const subject = searchParams.get('subject');
-
-    let resolvedUserId = userIdParam || null;
-    if (!resolvedUserId && usernameParam) {
-      resolvedUserId = await getAccountIdByUsername(usernameParam);
-    }
-    if (!resolvedUserId && viewerId) {
-      resolvedUserId = viewerId;
-    }
+    const resolvedUserId = await resolveAccountRequestUserId({
+      fallbackUserId: viewerId,
+      searchParams,
+    });
 
     if (!resolvedUserId) {
       return NextResponse.json({ hasMore: false, items: [], nextCursor: null, totalCount: 0 });
@@ -134,26 +118,16 @@ export async function handleAccountActivityGet(request) {
   }
 }
 
-// ============================================================
-// GET & POST /api/account/profile
-// ============================================================
-
 export async function handleAccountProfileGet(request) {
   try {
     const sessionContext = await resolveOptionalSessionRequest(request);
     const viewerId = sessionContext?.userId || null;
     const { searchParams } = new URL(request.url);
 
-    const userId = normalizeValue(searchParams.get('userId'));
-    const username = normalizeValue(searchParams.get('username'));
-
-    let targetUserId = userId || null;
-    if (!targetUserId && username) {
-      targetUserId = await getAccountIdByUsername(username);
-    }
-    if (!targetUserId && viewerId) {
-      targetUserId = viewerId;
-    }
+    const targetUserId = await resolveAccountRequestUserId({
+      fallbackUserId: viewerId,
+      searchParams,
+    });
 
     if (!targetUserId) {
       return NextResponse.json({ profile: null });
@@ -183,15 +157,19 @@ export async function handleAccountProfilePost(request) {
       const avatarUrl = normalizeValue(body.avatarUrl);
       const email = normalizeValue(body.email);
 
-      const snapshot = await ensurePasswordAccountRecord({
+      await ensurePasswordAccountRecord({
         avatarUrl: avatarUrl || null,
         displayName: preferredDisplayName || null,
         email: email || null,
         userId: authContext.userId,
         username: preferredUsername || null,
       });
+      invalidateCachedAccountProfiles(authContext.userId);
+      const profile = await getAccountProfileByUserId(authContext.userId, {
+        viewerId: authContext.userId,
+      });
 
-      return NextResponse.json({ profile: snapshot });
+      return NextResponse.json({ profile });
     }
 
     if (action === 'update') {
@@ -207,16 +185,20 @@ export async function handleAccountProfilePost(request) {
 
       updates.updated_at = new Date().toISOString();
 
-      const { data, error } = await admin
+      const { error } = await admin
         .from('profiles')
         .update(updates)
         .eq('id', authContext.userId)
-        .select()
+        .select('id')
         .single();
       if (error) throw new Error(error.message || 'Account update failed');
 
-      await publishUserEvent(authContext.userId, 'account:updated', { profile: data });
-      return NextResponse.json({ profile: data });
+      invalidateCachedAccountProfiles(authContext.userId);
+      const profile = await getAccountProfileByUserId(authContext.userId, {
+        viewerId: authContext.userId,
+      });
+      await publishUserEvent(authContext.userId, 'account:updated', { profile });
+      return NextResponse.json({ profile });
     }
 
     return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
@@ -229,14 +211,11 @@ export async function handleAccountProfilePost(request) {
   }
 }
 
-// ============================================================
-// GET /api/account/resolve
-// ============================================================
-
 export async function handleAccountResolveGet(request) {
   try {
     const { searchParams } = new URL(request.url);
     const username = normalizeValue(searchParams.get('username'));
+    if (!username) return NextResponse.json({ userId: null });
 
     const userId = await getOrLoadCachedValue({
       cacheKey: `account-resolve|username=${username}`,
@@ -259,33 +238,26 @@ export async function handleAccountResolveGet(request) {
   }
 }
 
-// ============================================================
-// GET /api/account/reviews
-// ============================================================
-
 export async function handleAccountReviewsGet(request) {
   try {
     const sessionContext = await resolveOptionalSessionRequest(request);
     const viewerId = sessionContext?.userId || null;
     const { searchParams } = new URL(request.url);
 
-    const userIdParam = normalizeValue(searchParams.get('userId'));
-    const usernameParam = normalizeValue(searchParams.get('username'));
-    const mode = normalizeValue(searchParams.get('mode')) || 'authored';
-    const pageSize = searchParams.get('pageSize');
-
-    let resolvedUserId = userIdParam || null;
-    if (!resolvedUserId && usernameParam) {
-      resolvedUserId = await getAccountIdByUsername(usernameParam);
-    }
+    const cursor = searchParams.get('cursor');
+    const requestedMode = normalizeValue(searchParams.get('mode'));
+    const mode = requestedMode === 'liked' ? 'liked' : 'authored';
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize')) || 20));
+    const resolvedUserId = await resolveAccountRequestUserId({ searchParams });
 
     if (!resolvedUserId) {
       return NextResponse.json({ hasMore: false, items: [], nextCursor: null, totalCount: 0 });
     }
 
     const payload = await fetchProfileReviewFeedServer({
+      cursor,
       mode,
-      pageSize: Number(pageSize) || 20,
+      pageSize,
       userId: resolvedUserId,
       viewerId,
     });
@@ -299,10 +271,6 @@ export async function handleAccountReviewsGet(request) {
     );
   }
 }
-
-// ============================================================
-// GET /api/account/search
-// ============================================================
 
 export async function handleAccountSearchGet(request) {
   try {
